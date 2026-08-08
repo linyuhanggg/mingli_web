@@ -1,0 +1,22 @@
+{
+  "kind": "prepare",
+  "query": "这次岗位面试能否进入下一轮？",
+  "intent": {
+    "subject_refs": ["user:test"],
+    "object_id": "concrete_event",
+    "dimension_ids": ["career", "outcome", "timing"],
+    "horizon": {"kind_id": "instant", "start": null, "end": null},
+    "capability_id": "liuyao",
+    "comparisons": []
+  },
+  "facts": {
+    "user:test": {
+      "cast": [9, 7, 7, 7, 7, 6],
+      "event_datetime": "2026-08-09T20:10:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "location": "上海"
+    }
+  },
+  "state_token": null,
+  "transition": null
+}

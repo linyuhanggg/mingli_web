@@ -1,0 +1,29 @@
+{
+  "kind": "prepare",
+  "query": "看一下这周运势",
+  "intent": {
+    "subject_refs": ["profile-version:test"],
+    "object_id": "near_time_personal",
+    "dimension_ids": [],
+    "horizon": {
+      "kind_id": "week",
+      "start": "2026-08-03",
+      "end": "2026-08-09"
+    },
+    "capability_id": "fortune",
+    "comparisons": []
+  },
+  "facts": {
+    "profile-version:test": {
+      "birth_datetime": "1994-04-30T05:55:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "location": "福建省福州市",
+      "gender": "female",
+      "reference_datetime": "2026-08-03T09:00:00+08:00",
+      "time_basis_policy": "civil",
+      "zi_hour_policy": "midnight"
+    }
+  },
+  "state_token": null,
+  "transition": null
+}

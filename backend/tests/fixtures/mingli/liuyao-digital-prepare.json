@@ -1,0 +1,22 @@
+{
+  "kind": "prepare",
+  "query": "这次合作能否按期落地？",
+  "intent": {
+    "subject_refs": ["user:test"],
+    "object_id": "concrete_event",
+    "dimension_ids": ["outcome", "timing"],
+    "horizon": {"kind_id": "instant", "start": null, "end": null},
+    "capability_id": "liuyao",
+    "comparisons": []
+  },
+  "facts": {
+    "user:test": {
+      "cast": "digital_coin",
+      "event_datetime": "2026-08-09T20:30:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "location": "上海"
+    }
+  },
+  "state_token": null,
+  "transition": null
+}
