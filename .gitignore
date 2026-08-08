@@ -1,0 +1,33 @@
+# Local secrets and machine-specific files
+.env
+.env.*
+!.env.example
+project.private.config.json
+.DS_Store
+
+# JavaScript / Next.js
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime data
+*.db
+*.sqlite
+*.sqlite3
+logs/
+tmp/
+
+# IDEs
+.idea/
+.vscode/
