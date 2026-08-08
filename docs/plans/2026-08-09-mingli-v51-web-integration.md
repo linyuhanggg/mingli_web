@@ -4,7 +4,7 @@
 
 **Goal:** Add the deterministic mingli-master 5.1 `describe → prepare → single-model candidate → guard → complete → Accepted` path to the existing web foundation without importing the core or adding an Agent loop.
 
-**Architecture:** The FastAPI modular monolith owns profiles, immutable reading records and job state. A dedicated Worker runs an explicit `ReadingOrchestrator`, calls the 5.1 one-shot JSON adapter through a small port, calls one standalone model with only the Prepared brief, validates a traceable candidate, and submits the exact assembled copy to complete. P0 exposes only bazi, fortune and liuyao; the real runtime stays single-replica on a private persistent volume until its filesystem state model is deliberately replaced.
+**Architecture:** The FastAPI modular monolith owns profiles, immutable reading records and job state. A dedicated Worker runs an explicit `ReadingOrchestrator`, calls the 5.1 one-shot JSON adapter through a small port, calls one standalone model with only the Prepared brief, validates a traceable candidate, and submits the exact assembled copy to complete. The Runtime Release is always the complete, unchanged 5.1 artifact: all 13 Providers, algorithms, 55/55 ancient-book reference packs and 1328 evidence-index records are packaged and admitted together. P0 exposes only bazi, fortune and liuyao through a separate product policy; that allowlist must never slim the runtime artifact or its regression scope. The real runtime stays single-replica on a private persistent volume until its filesystem state model is deliberately replaced.
 
 **Tech Stack:** Python 3.12 FastAPI/SQLAlchemy/asyncio for the business service, dedicated pinned Python 3.14.6 for mingli-master, PostgreSQL 16, JSON Schema, pytest, Next.js/TypeScript, a company-controlled standalone model HTTP endpoint, Docker/Alibaba Cloud ECS.
 
@@ -133,7 +133,7 @@ class NarrativeModel(Protocol):
     async def generate(self, request: NarrativeRequest) -> NarrativeCandidate: ...
 ```
 
-Assert Fake Runtime describes exactly `("bazi", "fortune", "liuyao")`, can return Prepared/Stopped/Accepted fixtures, and never sets `production_ready=True`. Assert Fake Model returns traceable blocks with `accepted=False`; it must not own an `accepted` business decision.
+Assert Fake Runtime describes the exact frozen 13-capability set (`bazi`, `fengshui`, `fortune`, `liuren`, `liuyao`, `luming-nayin`, `meihua`, `physiognomy`, `qimen`, `selection`, `taiyi`, `xingming`, `ziwei`), can return Prepared/Stopped/Accepted fixtures, and never sets `production_ready=True`. Assert the separate Product Capability Policy exposes exactly `("bazi", "fortune", "liuyao")` in P0 and rejects direct business requests for the other ten. Assert Fake Model returns traceable blocks and does not own an `accepted` business decision.
 
 **Step 2: Verify RED**
 
@@ -160,6 +160,8 @@ It must not contain User, Order, Entitlement or state token fields.
 **Step 4: Implement deterministic Fakes**
 
 Use fixed test-only tokens such as `fake-opaque-state`, never a production-looking token. Fake complete must implement first-write-wins so orchestrator recovery can be tested before the real runtime exists.
+
+The Fake Runtime must preserve the distinction between runtime inventory and product exposure: `describe` returns all 13 capabilities, while `capability_policy.py` filters the three P0 products. Do not hard-code the three-product allowlist into generic runtime DTOs, Narrative Guard or Orchestrator branches.
 
 **Step 5: Run tests**
 
@@ -463,7 +465,7 @@ git commit -m "feat: process reading jobs through the worker"
 
 **Step 1: Write a fail-closed release test**
 
-Require exact values from the authority document: version 5.1, source commit `494ce0...`, 217-file release manifest, protocol v2, expected describe digest and bazi/fortune/liuyao snapshots. The test must fail if the Linux lock or audited artifact is absent.
+Require exact values from the authority document: version 5.1, source commit `494ce0...`, 217-file release manifest, protocol v2, expected describe digest, the exact 13-Provider inventory/readiness snapshot, 55/55 reference packs, 1328 evidence-index records and runtime closure. Keep deeper bazi/fortune/liuyao product snapshots as an additional P0 layer. The test must fail if the Linux lock or complete audited artifact is absent; a three-Provider slim artifact must fail.
 
 **Step 2: Verify the Gate is RED**
 
@@ -478,6 +480,7 @@ Expected: FAIL until an audited Linux artifact is supplied. Do not weaken or ski
 For Linux x86_64 and pinned CPython 3.14.6:
 
 - download/build PyYAML 6.0.3, sxtwl 2.0.7, astronomy-engine 2.1.19 and cnlunar 0.2.4 in a controlled builder;
+- pin and audit the Node.js runtime used by the Ziwei provider, and verify the provenance/hash of the release's vendored iztro 2.5.8 artifact;
 - review provenance/licenses and store wheel SHA-256 values;
 - keep the host lock outside `/opt/mingli-master` so the signed 5.1 files remain unchanged;
 - create the runtime integrity manifest expected by 5.1;
@@ -499,7 +502,7 @@ Run as a fixed non-root UID. Set `MINGLI_PYTHON` and `MINGLI_STORE_ROOT`; do not
 
 **Step 5: Run in-image golden tests**
 
-Run describe and real prepare/complete fixtures for bazi, fortune day/week, liuyao manual/digital. Run malformed input, tamper, timeout, concurrency and token replay probes. Record exact commands/output digests in `release-5.1.json`.
+Run the complete release regression suite in the final image. Run a fixed characterization/smoke fixture for every one of the 13 Providers, including dependency loading, deterministic facts, evidence mapping and repeatable digest. Verify 55/55 reference packs and 1328 evidence-index records for presence, hash, parseability and reference closure. Then run deeper prepare/complete trajectories for bazi, fortune day/week and liuyao manual/digital, plus malformed input, tamper, timeout, concurrency and token replay probes. Record exact commands/output digests in `release-5.1.json`.
 
 **Step 6: Perform state backup/restore drill**
 
@@ -540,7 +543,7 @@ Use a fake executable fixture to cover:
 
 **Step 2: Write the startup describe Gate test**
 
-Production readiness requires protocol v2, exact manifest digest and the frozen shape of bazi/fortune/liuyao. Extra described capabilities are ignored by the Request Compiler.
+Production readiness requires protocol v2, exact manifest digest, the exact frozen 13-Provider set with 13/13 readiness, full reference/evidence inventory and the frozen shape of all described capabilities. The separate Product Capability Policy allows only bazi/fortune/liuyao in P0; the other ten are installed and admitted but cannot be selected by a public product request.
 
 **Step 3: Verify RED**
 
@@ -728,6 +731,7 @@ Expected: all backend, frontend and contract checks PASS.
 Exercise:
 
 ```text
+all 13 providers -> frozen describe snapshot -> dependency/evidence smoke fixture
 new bazi -> need input -> prepared -> one model call -> guard -> accepted
 fortune day and week -> exact target period -> accepted
 liuyao manual and digital -> accepted
@@ -745,6 +749,8 @@ Search API bodies, browser storage, structured logs, error tracking and database
 Do not enable production if any of these remain pending:
 
 - Linux Runtime release audit;
+- complete 13-Provider characterization matrix and release regression;
+- 55/55 reference-pack and 1328-entry evidence-index integrity checks;
 - state-volume backup/restore;
 - model DPA/data retention and fixed evaluation;
 - Narrative Guard red-team set;

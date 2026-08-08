@@ -14,8 +14,8 @@
 | 短信通道与模板 | 待确认 | 供应商、签名、模板、数据位置与防轰炸评审 | 手机 OTP 使用 Fake Adapter；本地目标/游客/网络多层限流不能替代生产 Redis 限流 |
 | 邮件通道与模板 | 待确认 | 发信域名、供应商、退信和数据处理评审 | 邮箱 OTP 使用 Fake Adapter；真实发送在共享限流与渠道 Gate 前保持关闭 |
 | 模型供应商和数据位置 | 待确认 | DPA、保存期限、训练退出、预算、固定 Model Profile 和故障策略 | `ModelGateway` 使用结构化 Fake；不运行 Agent |
-| mingli-master 5.1 发布物 | 待确认 | source commit、217 文件 manifest、协议版本、describe digest 与 bazi/fortune/liuyao allowlist | `RuntimeAdapter` 使用固定 Fake 能力 |
-| Linux Runtime 制品 | 待确认 | Linux x86_64 wheel/hash 审计、runtime-integrity、SBOM、镜像 digest 和三能力黄金回归 | 不把现有 macOS arm64 依赖锁用于生产 |
+| mingli-master 5.1 完整发布物 | 待确认 | source commit、217 文件 manifest、协议版本、describe digest、13/13 Provider readiness、55/55 古籍 reference pack、1328 条 evidence index 与 runtime closure | Fake Runtime 描述完整 13 项；Product Policy 另行只开放 P0 三项 |
+| Linux Runtime 制品 | 待确认 | Linux x86_64 Python wheel/hash、Node.js/iztro 审计、runtime-integrity、SBOM、镜像 digest、13 Provider characterization matrix、release 全量回归和三能力 P0 端到端黄金回归 | 不把现有 macOS arm64 依赖锁用于生产，不接受三 Provider 裁剪制品 |
 | Runtime 状态与恢复 | 待确认 | 固定安装路径/UID/状态卷、Prepared 与 Accepted token 的备份恢复实测 | 真实 Runtime 保持关闭，开发只用 Fake |
 | 单模型成稿合同 | 待确认 | Narrative Policy、Candidate Schema、Narrative Guard 反例集和固定盲测通过 | Fake Model 输出不能进入 complete 或成为 Accepted |
 | 生产密钥托管与轮换 | 待确认 | Secret Manager、最小权限、轮换和演练记录 | 只接受运行时注入；示例值均为非密钥 |

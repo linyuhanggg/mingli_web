@@ -84,6 +84,7 @@ P0 不运行 Agent，不让模型调用工具、选择术法、访问数据库�
 11. 网站与 iOS 共用商品族和权益语义，但渠道商品 ID、价格和退款规则可以不同。
 12. 采用模块化单体和深模块接口，不以页面或支付渠道为边界拆微服务。
 13. P0 使用显式 Reading Orchestrator 和单独大模型，不引入 Agent loop；所有自然语言校验在 complete 前完成。
+14. Runtime Release 始终完整迁移和验收 5.1 的 13 个 Provider、全部算法、55/55 古籍 reference pack 与 1328 条 evidence index；P0 的三能力 allowlist 只控制产品曝光，不得用于裁剪制品或测试。
 
 ### 2.2 可配置项
 
@@ -654,7 +655,9 @@ PENDING → PROCESSING → DELIVERED
 
 产品只开放 allowlist 中、通过黄金样例和回归测试的 Capability。核心新增能力不能自动出现在网站。
 
-P0 allowlist 固定为 `bazi`、`fortune`、`liuyao`：本命与深度解读走 bazi，今日/近七日走 fortune，一事一问走 liuyao。术法由页面和 Product 映射决定，不增加模型路由调用。
+Runtime 制品与准入范围固定为完整 13 项：`bazi`、`fengshui`、`fortune`、`liuren`、`liuyao`、`luming-nayin`、`meihua`、`physiognomy`、`qimen`、`selection`、`taiyi`、`xingming`、`ziwei`。部署必须同时验证 13/13 Provider readiness、完整 manifest、55/55 古籍 reference pack、1328 条 evidence index 和 release 全量回归；未开放的十项也不得从镜像或验收中移除。
+
+P0 产品 allowlist 另行固定为 `bazi`、`fortune`、`liuyao`：本命与深度解读走 bazi，今日/近七日走 fortune，一事一问走 liuyao。术法由页面和 Product 映射决定，不增加模型路由调用。其余十项是“已安装并通过 Runtime 准入、尚未建立产品入口”，后续补齐表单、输出合同、合规与产品回归即可灰度开启，不需要重做核心迁移。
 
 ### 13.3 Prepare
 
@@ -667,6 +670,8 @@ Reading Module 将不可变 Profile Version 或六爻输入交给 Runtime Adapte
 - digest 和协议元数据。
 
 业务侧加密保存连续状态，只把必要 Fact Brief 发送给 Model Gateway，不把用户全量账号信息放进模型请求。
+
+完整古籍与 evidence index 留在核心侧：Provider 先按本次计算结果和问题范围筛选证据，再把命中的 evidence 投影进 Fact Brief。模型不能浏览整库、不能自由检索未命中资料，也不能补造出处；古籍零命中必须保持零。
 
 `Stopped.need_input` 按结构化 `input_request` 补资料并复用同一 token；`unsupported/conflict/error` 不通过换术法或改语义盲重试。不带 token 的 prepare 会创建新 Reading Root，结果不明时不得自动重放。
 
@@ -926,8 +931,10 @@ OpenAPI 以 /api/v1 开始。下面冻结资源语义，具体字段在实现前
 
 - 历法、时区、真太阳时、闰月和未知时辰黄金样例；
 - 同一输入、同一核心版本产生同一 Fact Brief digest；
-- describe allowlist 回归；
-- Linux x86_64 依赖 wheel/hash、Runtime Release 验签和启动 describe；
+- 完整 13-Provider describe/readiness 冻结快照与 Product allowlist 分层回归；
+- Linux x86_64 Python wheel/hash、Node.js/iztro 依赖、Runtime Release 验签和启动 describe；
+- 13 个 Provider characterization/smoke matrix 与 release 全量回归；
+- 55/55 古籍 reference pack、1328 条 evidence index 的完整性与引用闭合；
 - bazi/fortune/liuyao 准确 Request Compiler 夹具；
 - 古籍零命中保持零；
 - 追问产生新 digest 且复用同一 Reading Root；
@@ -993,7 +1000,8 @@ OpenAPI 以 /api/v1 开始。下面冻结资源语义，具体字段在实现前
 ### Phase 2：免费闭环
 
 - Profile Draft/Version；
-- 单副本 Runtime Worker、describe/prepare/complete 与 Reading Orchestrator；
+- 完整 13-Provider Runtime Release 的单副本 Worker、describe/prepare/complete 与 Reading Orchestrator；
+- P0 Product Capability Policy 只曝光 bazi/fortune/liuyao；
 - 单独模型 Candidate Schema、Narrative Guard 和 Accepted 崩溃恢复；
 - 免费 Preview、3 条 Verification；
 - 今日/近七日；
@@ -1046,7 +1054,7 @@ OpenAPI 以 /api/v1 开始。下面冻结资源语义，具体字段在实现前
 10. 数据导出、删除、撤销设备和人工支持可用；
 11. 备案、支付、隐私、条款、AI 标识和经营许可检查有书面证据；
 12. 备份恢复、日志脱敏、密钥轮换和告警演练通过；
-13. Linux Runtime Release 逐文件验签，三能力黄金回归与依赖审计通过；
+13. Linux Runtime Release 逐文件验签，13/13 Provider、全部依赖、55/55 古籍 reference pack、1328 条 evidence index 和 release 全量回归通过；P0 三能力端到端黄金回归另行通过；
 14. `state_token` 未进入客户端或日志，状态卷恢复后旧 token 可继续/重放；
 15. 正常路径只有一次模型调用，Guard 前不 complete，Accepted 后字节不变。
 

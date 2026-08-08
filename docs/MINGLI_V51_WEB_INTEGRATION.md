@@ -41,6 +41,36 @@
 
 当前机器上的完整源码导出包含测试，但不是 Git 工作树。生产打包前仍须归档可验证的上述 source commit、完整测试源码和逐文件验签结果；仅凭一个散落目录不能宣称服务器发布完成。
 
+### 2.1 完整发布物范围
+
+网站迁移、生产打包和 Runtime 验收的对象始终是**完整、原样的 5.1 发布物**，不是只保留首发页面会调用的三个能力。当前发布物包含 13 个 Provider：
+
+| Capability | 中文体系 |
+|---|---|
+| `bazi` | 八字 |
+| `fengshui` | 风水 |
+| `fortune` | 日运/近时运势 |
+| `liuren` | 大六壬 |
+| `liuyao` | 六爻 |
+| `luming-nayin` | 禄命/纳音 |
+| `meihua` | 梅花易数 |
+| `physiognomy` | 相法 |
+| `qimen` | 奇门遁甲 |
+| `selection` | 择日 |
+| `taiyi` | 太乙 |
+| `xingming` | 星命/七政四余 |
+| `ziwei` | 紫微斗数 |
+
+发布物还包含 55/55 个古籍 reference pack、1328 条 evidence index 记录、各体系的规则矩阵、事实适配器、来源映射、边界与回归资产。不得为了 P0 缩小镜像而删除未开放 Provider、古籍目录、证据索引、vendored engine 或其测试。
+
+这里必须分清三个范围：
+
+1. **Runtime 制品范围**：完整 13 个 Provider 和全部算法/古籍资产，原样打包；
+2. **Runtime 准入范围**：完整制品逐文件验签，13/13 Provider、55/55 reference pack、1328 条 evidence index 和全量回归均通过；
+3. **产品曝光范围**：P0 页面和业务 API 暂时只允许 `bazi`、`fortune`、`liuyao`。
+
+第三项是产品节奏，不得反向裁剪前两项。
+
 ## 3. 5.1 真正提供了什么
 
 5.1 的外部接口只有三个 JSON Command：
@@ -83,6 +113,12 @@
 - `request_view`
 
 大模型写作时只能看到这份 brief 加上不含新事实的商品输出合同。它不能再查数据库、用户记忆、聊天全文、互联网、RAG 或其他命理资料。续问需要的上一版正文由核心通过 `prior_answer` 明确投影进 brief。
+
+### 3.3 古籍和算法如何进入答案
+
+55 个古籍 reference pack 和 1328 条 evidence index 记录留在确定性核心侧。Provider 在 `prepare` 中先完成本体系计算、规则匹配和证据检索，只把**本次问题实际命中的**事实、finding、evidence、claim scope 与 limit 投影进 `ReadingBrief`。模型只能解释这份投影，不能浏览整套古籍，也不能自行补出处。
+
+因此“模型只看 Brief”不等于“古籍没有迁移”，而是把职责固定为：完整语料与算法由核心管理，相关证据由核心筛选，模型只负责对已选中的材料成稿。零命中必须保持零；把整套古籍塞进 Prompt 或另建一个让模型自由检索的 RAG 都会破坏这个边界。
 
 ## 4. 没有 Agent 后，各项职责由谁接手
 
@@ -127,9 +163,9 @@ NarrativeGuard.validate(Candidate, Brief, OutputContract) -> GuardResult
 
 生产实现与测试 Fake 都实现同一接口。业务后端不得 import `reading_engine`，也不得复制 Provider 算法。
 
-## 6. P0 Capability 白名单
+## 6. 完整 Runtime 与 P0 Capability 白名单
 
-5.1 当前能 `describe` 出 13 个能力，但网站首发只开放三个。新增能力不能因为核心“已经有”就自动出现在页面。
+5.1 的完整 Runtime 必须 `describe` 出并通过验收的 13 个能力；网站首发只开放其中三个。新增能力不能因为核心“已经有”就自动出现在页面，但也不能因为页面尚未开放就从 Runtime 制品、验签或回归中删掉。
 
 | 网站任务 | Capability | object | horizon | 说明 |
 |---|---|---|---|---|
@@ -148,7 +184,7 @@ NarrativeGuard.validate(Candidate, Brief, OutputContract) -> GuardResult
 }
 ```
 
-`describe` 仍用于启动验签和生成字段元数据，但页面路由不让模型从 13 个能力里自由猜。
+`describe` 用于验证完整 13 能力发布物并生成字段元数据；独立的 Product Capability Policy 再把可被页面和 API 选择的范围收窄到上述三项。页面路由不让模型从 13 个能力里自由猜。
 
 ## 7. 三类首发请求的准确映射
 
@@ -534,10 +570,11 @@ P0 只启用一个通过评测的模型配置。Model Gateway 只是 HTTP/SDK �
 1. 选定生产架构，P0 建议 Linux x86_64；
 2. 为固定 CPython 版本建立私有 wheelhouse；
 3. 对 PyYAML、sxtwl、astronomy-engine、cnlunar 的 Linux wheel 或受控构建产物逐个验来源、许可证和 SHA-256；
-4. 生成宿主侧 Linux 锁文件，不改写 5.1 release 内的已签文件；
-5. 生成并验证 5.1 所要求的 `runtime-integrity.json`；
-6. 在最终镜像中跑 describe、三类 prepare/complete 黄金样例、并发与篡改探针；
-7. 保存 SBOM、镜像 digest 和验收报告。
+4. 固定并验收完整 13 Provider 需要的其他宿主依赖；其中紫微链必须包含可审计的 Node.js runtime，并校验 release 内 vendored `iztro 2.5.8` 的来源和哈希；
+5. 生成宿主侧 Linux 锁文件，不改写 5.1 release 内的已签文件；
+6. 生成并验证 5.1 所要求的 `runtime-integrity.json`；
+7. 在最终镜像中运行完整 release 回归、13 Provider characterization/smoke matrix、三类 P0 prepare/complete 端到端黄金样例、并发与篡改探针；
+8. 保存 SBOM、镜像 digest 和验收报告。
 
 该 Gate 未通过前只能使用 Fake Runtime 开发网站，不能把 macOS Skill 目录挂到 Linux 生产机凑合运行。
 
@@ -613,9 +650,10 @@ Runtime Worker 启动时必须先执行一次 `describe` 并 fail closed：
 1. `kind == described`；
 2. `protocol_version == mingli-portable-interface-v2`；
 3. `manifest_digest` 等于该 Runtime Release 的预期值；
-4. `bazi`、`fortune`、`liuyao` 均存在；
-5. 三者的 object/horizon/dimension/required input group 与冻结快照一致；
-6. 未 allowlist 的能力即使存在，也不能被业务 Request Compiler 选择。
+4. Capability 集合与冻结的 13 Provider 清单完全一致，且 13/13 readiness 通过；
+5. 完整 release manifest、55/55 reference pack、1328 条 evidence index 和 runtime closure 均通过验签；
+6. 13 个能力的 object/horizon/dimension/required input group 与冻结快照一致；
+7. Product Capability Policy 只允许 P0 的 `bazi`、`fortune`、`liuyao` 被业务 Request Compiler 选择。
 
 Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、状态盘可读写、describe 合同和数据库/队列连接。
 
@@ -630,7 +668,12 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 - no-token prepare 传输不明时禁止自动重放；
 - complete 传输不明时原样重放。
 
-### 16.2 三类黄金样例
+### 16.2 全量 Runtime 与三类 P0 黄金样例
+
+- 完整 release 自带回归在目标 Linux 镜像中通过；
+- 13 个 Provider 各自至少有一个固定输入的 characterization/smoke fixture，覆盖依赖加载、事实层、证据映射与可重现 digest；
+- 55/55 reference pack 和 1328 条 evidence index 通过存在性、哈希、可解析性和引用闭合检查；
+- P0 三类产品再做以下更深的 API/Orchestrator 端到端黄金样例：
 
 - 八字：出生时间输入、四柱输入、时区/子时策略、life/year/month/day；
 - fortune：day/week 边界、跨时区、只给 start/end、目标七日与 period markers 一致；
@@ -681,7 +724,8 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 - 归档精确 5.1 release、manifest 与完整测试源码；
 - 建 Linux x86_64 私有 wheelhouse 和不可变镜像；
 - 固定安装路径、UID 与状态卷；
-- 跑三能力黄金测试、篡改测试、备份恢复演练。
+- 验收完整 13 Provider、全部运行时依赖、55/55 reference pack、1328 条 evidence index 和 release 全量回归；
+- 另跑三类 P0 端到端黄金测试、篡改测试、备份恢复演练。
 
 ### Phase A：端口与 Fake
 
@@ -723,7 +767,8 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 - 不对无 token prepare 做盲目自动重试；
 - 不在 Guard 前调用 complete；
 - 不在 Accepted 后改写、截断或“二次润色”；
-- 不因为 describe 出现 13 个能力就全量开放；
+- 不因为 describe 出现 13 个能力就把 13 个入口全量开放；
+- 不因为 P0 只开放三个入口就裁剪其余十个 Provider、算法、古籍、证据或测试；
 - 不修改 5.1 release 文件来迁就 Linux 打包；
 - 不用 macOS 依赖锁冒充 Linux 已验收；
 - 不复制命理算法到业务代码做第二套结果。
@@ -732,8 +777,8 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 
 以下全部满足，才算“5.1 已经真正迁到网站”：
 
-1. Linux Runtime Release 有镜像 digest、SBOM、逐文件验签和黄金回归；
-2. 启动 describe 严格匹配协议、manifest 和三能力 allowlist；
+1. Linux Runtime Release 原样包含 13 Provider、完整算法/古籍/证据资产，并有镜像 digest、SBOM、逐文件验签和全量回归；
+2. 启动 describe 严格匹配协议、manifest、13/13 Provider 冻结快照；Product Capability Policy 另行把 P0 曝光限制为三项；
 3. 三类 Request Compiler 通过真实 fixture，不再手拼错误 facts；
 4. Runtime 单副本状态卷通过备份恢复与旧 token 重放；
 5. 模型只有 brief + 版本化输出合同，无工具、无记忆、无网络；
