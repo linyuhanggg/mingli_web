@@ -7,6 +7,7 @@
 > 保留：V1 的命理核心、不可变版本、Accepted、权益账本与模型账务边界  
 > 上位方向：[PRODUCT_DIRECTION.md](./PRODUCT_DIRECTION.md)  
 > 共同语言：[CONTEXT.md](../CONTEXT.md)
+> 算法接入细则：[MINGLI_V51_WEB_INTEGRATION.md](./MINGLI_V51_WEB_INTEGRATION.md)
 
 ## 0. 本文怎么用
 
@@ -51,9 +52,11 @@ P0 不做自动续费、代币余额、永久无限 AI、自带 API Key、真人
 
 ### 1.4 算法
 
-mingli-master 负责确定性事实、古籍证据、边界和连续状态；Model Gateway 只负责把 Fact Brief 写成自然中文；业务层负责账户、商品、支付、权益、任务与交付。
+mingli-master 负责确定性事实、古籍证据、边界和连续状态；Reading Orchestrator 用普通代码执行固定状态机；一个独立大模型只负责把 Fact Brief 写成结构化自然中文；业务层负责账户、商品、支付、权益、任务与交付。
 
 免费 Preview 和付费报告都是完整的 prepare → candidate → validate → complete → Accepted 流程，但属于不同 Reading Root。
+
+P0 不运行 Agent，不让模型调用工具、选择术法、访问数据库或管理连续状态。正常路径只直接调用一次模型。
 
 ### 1.5 技术
 
@@ -80,6 +83,7 @@ mingli-master 负责确定性事实、古籍证据、边界和连续状态；Mod
 10. P0 两种单次商品；P1 订阅只在数据和渠道准入通过后开放。
 11. 网站与 iOS 共用商品族和权益语义，但渠道商品 ID、价格和退款规则可以不同。
 12. 采用模块化单体和深模块接口，不以页面或支付渠道为边界拆微服务。
+13. P0 使用显式 Reading Orchestrator 和单独大模型，不引入 Agent loop；所有自然语言校验在 complete 前完成。
 
 ### 2.2 可配置项
 
@@ -415,10 +419,13 @@ flowchart LR
     A --> BL["Billing"]
     BL --> EN["Entitlement Ledger"]
     RD --> EN
-    RD --> MR["Mingli Runtime Adapter"]
-    RD --> MG["Model Gateway"]
     A --> DB["PostgreSQL"]
     RD --> Q["Outbox / Worker"]
+    Q --> OR["Reading Orchestrator"]
+    OR --> MR["Mingli Runtime Adapter"]
+    OR --> MG["Standalone Model"]
+    MG --> NG["Narrative Guard"]
+    NG --> OR
     Q --> OS["Private OSS"]
     A --> R["Redis"]
     BL --> WX["WeChat Pay"]
@@ -458,17 +465,21 @@ Payment Gateway 最小接口：
 
 ### 9.6 Reading Module
 
-负责 Reading Root/Version、Fact Brief、生成任务、核对反馈、同盘追问、Fulfillment 和 Accepted Copy。它编排运行时、模型和权益，但不读取支付渠道细节。
+负责 Reading Root/Version、Fact Brief、生成任务、核对反馈、同盘追问、Fulfillment 和 Accepted Copy。内部 Reading Orchestrator 以显式代码状态机编排运行时、模型、Guard 和权益，但不读取支付渠道细节，也不是 Agent。
 
 ### 9.7 Mingli Runtime Module
 
-只通过固定 JSON 进程协议调用 mingli-master 的 describe、prepare、complete；校验协议版本、输出种类、digest、超时和状态命名空间。提供 Fake Runtime 做合同测试。
+只通过固定 JSON 进程协议调用 mingli-master 的 describe、prepare、complete；校验协议版本、输出种类、digest、超时和状态命名空间。P0 由一个固定路径、私有状态卷的 Runtime Worker 持有真实状态，API 多副本不得各自运行一份核心。提供 Fake Runtime 做合同测试。
 
 ### 9.8 Model Gateway
 
-输入固定 Narrative Request，输出结构化 Candidate Copy。适配外部 API、自有服务或模板降级；统一处理超时、预算、模型标识和可重试错误。用户不能提供 API Key。
+输入固定 Narrative Request，输出结构化 Candidate Copy。它只是直接模型 API 适配层，不提供工具、记忆、规划或自主循环；统一处理超时、预算、模型标识和有限重试。用户不能提供 API Key。
 
-### 9.9 Compliance/Audit Module
+### 9.9 Narrative Guard
+
+以普通代码验证 Candidate schema、subject/dimension、fact/finding/evidence 引用闭合、certainty ceiling、limits、商品长度与平台边界。当前 5.1 的 complete 只验证 token、非空正文和首次原子提交，所以 Guard 是 complete 前的强制网站责任，不是第二个评审模型。
+
+### 9.10 Compliance/Audit Module
 
 集中处理 Consent、AI 标识、敏感字段脱敏、数据导出/删除、审计事件和内容风险标签。它不能在 Accepted 后偷偷改正文；风险校验必须在 complete 前完成。
 
@@ -495,6 +506,7 @@ legacy/miniapp/          迁移确认后再放置旧小程序骨架
 - Next.js Node 进程：公共 SSR 与私人应用壳；
 - FastAPI：/api/v1；
 - Worker：读取 PostgreSQL Outbox/任务表并执行生成、补单、通知和导出；
+- Runtime Worker：P0 单副本、固定非 root UID、固定安装路径和独立持久云盘，串行调用 5.1 JSON Adapter；
 - PostgreSQL：唯一业务事实源；
 - Redis/Tair：缓存、限流、OTP、短租约，不保存唯一业务事实；
 - 私有 OSS：导出文件和需要对象存储的报告附件；
@@ -529,7 +541,7 @@ Web 与 API 对用户保持同一站点域名，减少 CORS、Cookie 和支付�
 - reading_roots
 - reading_versions
 - fact_briefs
-- candidate_runs
+- generation_attempts
 - accepted_copies
 - verifications
 - followups
@@ -552,6 +564,7 @@ Web 与 API 对用户保持同一站点域名，减少 CORS、Cookie 和支付�
 ### 11.4 运行与审计
 
 - model_runs
+- runtime_releases
 - runtime_invocations
 - outbox_events
 - inbox_events
@@ -642,6 +655,8 @@ PENDING → PROCESSING → DELIVERED
 
 产品只开放 allowlist 中、通过黄金样例和回归测试的 Capability。核心新增能力不能自动出现在网站。
 
+P0 allowlist 固定为 `bazi`、`fortune`、`liuyao`：本命与深度解读走 bazi，今日/近七日走 fortune，一事一问走 liuyao。术法由页面和 Product 映射决定，不增加模型路由调用。
+
 ### 13.3 Prepare
 
 Reading Module 将不可变 Profile Version 或六爻输入交给 Runtime Adapter。prepare 返回：
@@ -654,34 +669,34 @@ Reading Module 将不可变 Profile Version 或六爻输入交给 Runtime Adapte
 
 业务侧加密保存连续状态，只把必要 Fact Brief 发送给 Model Gateway，不把用户全量账号信息放进模型请求。
 
+`Stopped.need_input` 按结构化 `input_request` 补资料并复用同一 token；`unsupported/conflict/error` 不通过换术法或改语义盲重试。不带 token 的 prepare 会创建新 Reading Root，结果不明时不得自动重放。
+
 ### 13.4 Candidate 生成
 
 Narrative Request 固定包含：
 
-- product_kind 与必须章节；
-- Fact Brief 引用 ID；
-- 允许使用的事实和证据；
-- 必须表达的边界；
-- 禁止领域与风险提示；
-- 用户语言和受控风格；
-- 追问时最近 Accepted 摘要与新的 Brief。
+- 版本化 Narrative Policy；
+- Product Output Contract 的长度、语言和结构上限；
+- Prepared 返回的完整 Fact Brief；
+- 严格 Candidate JSON Schema。
 
-Candidate 必须返回结构化 schema，而不是任意 Markdown。各章节可渲染为网站块和 iOS 原生组件。
+模型不能访问工具、网络、RAG、数据库、账户资料、`state_token` 或环境记忆。续问需要的最近正文只使用 Brief 自带的 `prior_answer`。Candidate 以自然段 block 加 subject/dimension/kind/certainty 和 fact/finding/evidence/limit refs 返回；block 是内部校验轨迹，不是强制可见标题。只有用户明确选择的报告商品才能要求固定章节。
 
 ### 13.5 Complete 前校验
 
 校验顺序固定：
 
 1. JSON/schema 完整；
-2. 商品承诺的章节、长度和追问边界；
-3. 每个事实声明可回指 Fact Brief；
-4. 古籍引用存在且定位正确；无命中时不得生成伪出处；
-5. 不泄露内部 Provider、规则 ID、prompt 或置信字段；
-6. 医疗、法律、投资、心理和重大人生决策边界；
-7. 隐私、辱骂、仇恨、自伤等内容安全；
-8. AI 生成/辅助标识元数据。
+2. subject、dimension、kind 与 claim scope 一致；
+3. fact/finding/evidence 引用存在且闭合；无命中时不得生成伪出处；
+4. certainty 不超过 ceiling，所需 limits 使用核心公开文本；
+5. 商品承诺的章节、长度和追问边界；
+6. 不泄露内部 Provider、规则 ID、token、prompt 或置信字段；
+7. 医疗、法律、投资、心理和重大人生决策边界；
+8. 隐私、辱骂、仇恨、自伤等内容安全；
+9. AI 生成/辅助标识元数据。
 
-失败时可用同一 Brief 重写、换已批准模型或模板降级。不能重新起盘来“碰一个更好答案”。
+5.1 的公开 complete 不会替网站复核这些自然语言条件，只会检查 token、非空与首次提交。P0 失败时最多用同一 Brief、同一模型重生一次；仍失败则延迟交付，不换术法、不重新起盘、不用模板生成付费 Accepted。
 
 ### 13.6 Complete 与 Accepted
 
@@ -692,6 +707,8 @@ Candidate 必须返回结构化 schema，而不是任意 Markdown。各章节可
 3. 更新 Fulfillment 为 DELIVERED；
 4. 写 Outbox 通知事件；
 5. 后续 API 原样返回 Accepted 内容，不二次改写。
+
+如果核心已经 Accepted 而业务事务在落库前崩溃，Worker 以同一 token 和完全相同的 public_copy 重放 complete，取回第一次 Accepted 后再落库与核销，不能重新生成一稿。
 
 ### 13.7 核对反馈
 
@@ -720,7 +737,7 @@ Verification 只记录符合、部分符合、不符合、不知道及可选说�
 
 ### 14.1 自有模型接入
 
-“自有”可以是公司控制的 API、微调模型或独立推理服务。统一通过 Model Gateway：
+“自有”可以是公司控制的 API、微调模型或独立推理服务。P0 以一次普通服务端请求直接调用，不运行 Agent SDK。统一通过 Model Gateway：
 
 - 输入输出 schema 固定；
 - 服务端保存供应商、模型、版本、请求 digest、延迟、成本和错误类别；
@@ -728,14 +745,14 @@ Verification 只记录符合、部分符合、不符合、不知道及可选说�
 - Web 和 iOS 永远不知道模型密钥；
 - 自托管推理与业务 API 独立扩缩容。
 
-### 14.2 回退顺序
+### 14.2 失败与回退
 
-1. 主自有模型；
-2. 已批准的备用模型；
-3. 只用 Fact Brief 的受控模板降级；
-4. 延迟交付并保留权益。
+1. 主模型正常生成一次；
+2. schema 或 Guard 失败时，用同一 Brief、同一模型最多重生一次；
+3. 仍失败则延迟交付并保留/释放权益 Reservation；
+4. 备用模型只有完成独立评测并发布新 Model Profile 后才能启用。
 
-回退不能降低事实合同。没有任何候选稿通过校验时，宁可延迟，也不能把未校验文字标为 Accepted。
+P0 不用模板生成付费 Accepted Copy，也不在后台静默切换供应商。没有任何候选稿通过校验时，宁可延迟，也不能把未校验文字标为 Accepted。
 
 ### 14.3 成本控制
 
@@ -911,15 +928,18 @@ OpenAPI 以 /api/v1 开始。下面冻结资源语义，具体字段在实现前
 - 历法、时区、真太阳时、闰月和未知时辰黄金样例；
 - 同一输入、同一核心版本产生同一 Fact Brief digest；
 - describe allowlist 回归；
+- Linux x86_64 依赖 wheel/hash、Runtime Release 验签和启动 describe；
+- bazi/fortune/liuyao 准确 Request Compiler 夹具；
 - 古籍零命中保持零；
 - 追问产生新 digest 且复用同一 Reading Root；
-- 换资料、换卦和换问题正确识别为 Recast。
+- 换资料、换卦和换问题正确识别为 Recast；
+- Runtime 状态盘备份恢复与旧 token 重放。
 
 ### 19.2 模型与 Accepted
 
-- Candidate schema、事实引用、章节和边界测试；
+- Candidate schema、subject/dimension、fact/finding/evidence/limit 闭合测试；
 - 模型幻觉证据被 complete 前拦截；
-- 主模型失败、备用模型和模板降级；
+- 单模型一次成功、一次有限重生和延迟交付；
 - Accepted 后 API 原样返回；
 - 并发 complete 只有一个首次 Accepted 胜出。
 
@@ -959,6 +979,8 @@ OpenAPI 以 /api/v1 开始。下面冻结资源语义，具体字段在实现前
 
 - 确认运营主体、域名、备案路线和支付申请；
 - 确认模型供应商、数据位置和预算；
+- 归档精确 mingli-master 5.1 release、source commit、manifest 和测试源码；
+- 建立并审计 Linux Runtime wheelhouse、镜像、固定状态路径和恢复手册；
 - 建立版本控制，给旧小程序骨架做历史提交；
 - 冻结 OpenAPI/JSON Schema 的第一版命名。
 
@@ -972,7 +994,8 @@ OpenAPI 以 /api/v1 开始。下面冻结资源语义，具体字段在实现前
 ### Phase 2：免费闭环
 
 - Profile Draft/Version；
-- Runtime describe/prepare/complete；
+- 单副本 Runtime Worker、describe/prepare/complete 与 Reading Orchestrator；
+- 单独模型 Candidate Schema、Narrative Guard 和 Accepted 崩溃恢复；
 - 免费 Preview、3 条 Verification；
 - 今日/近七日；
 - 六爻基础起卦；
@@ -1023,7 +1046,10 @@ OpenAPI 以 /api/v1 开始。下面冻结资源语义，具体字段在实现前
 9. 档案、Fact Brief、Accepted Copy 可按版本复现；
 10. 数据导出、删除、撤销设备和人工支持可用；
 11. 备案、支付、隐私、条款、AI 标识和经营许可检查有书面证据；
-12. 备份恢复、日志脱敏、密钥轮换和告警演练通过。
+12. 备份恢复、日志脱敏、密钥轮换和告警演练通过；
+13. Linux Runtime Release 逐文件验签，三能力黄金回归与依赖审计通过；
+14. `state_token` 未进入客户端或日志，状态卷恢复后旧 token 可继续/重放；
+15. 正常路径只有一次模型调用，Guard 前不 complete，Accepted 后字节不变。
 
 ## 22. 外部依据快照
 
