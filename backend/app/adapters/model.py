@@ -1,42 +1,71 @@
-from dataclasses import dataclass
-from decimal import Decimal
-from typing import Protocol
-from uuid import UUID
+from collections.abc import Mapping
+from typing import Protocol, runtime_checkable
+
+from app.readings.narrative_contracts import (
+    NarrativeCandidate,
+    NarrativeRequest,
+)
 
 
-@dataclass(frozen=True, slots=True)
-class NarrativeRequest:
-    fact_brief_id: UUID
-    product_kind: str
-    required_sections: tuple[str, ...]
-    max_cost: Decimal
+@runtime_checkable
+class NarrativeModel(Protocol):
+    async def generate(self, request: NarrativeRequest) -> NarrativeCandidate: ...
 
 
-@dataclass(frozen=True, slots=True)
-class CandidateCopy:
-    sections: dict[str, str]
-    provider: str
-    model: str
-    accepted: bool
-    cost: Decimal
+def _objects(value: object) -> tuple[Mapping[str, object], ...]:
+    if not isinstance(value, tuple):
+        return ()
+    return tuple(item for item in value if isinstance(item, Mapping))
 
 
-class ModelGateway(Protocol):
-    async def generate(self, request: NarrativeRequest) -> CandidateCopy: ...
+def _strings(value: object) -> tuple[str, ...]:
+    if not isinstance(value, tuple):
+        return ()
+    return tuple(str(item) for item in value)
 
 
 class FakeModelGateway:
-    """Schema-only model substitute; its output is never an Accepted Copy."""
+    """Deterministic schema Fake; it has no tools, memory, network or acceptance role."""
 
-    async def generate(self, request: NarrativeRequest) -> CandidateCopy:
-        sections = {
-            section: f"FAKE:{section}:尚未进入 Phase 2 生成链。"
-            for section in request.required_sections
-        }
-        return CandidateCopy(
-            sections=sections,
-            provider="fake",
-            model="fake-schema-v1",
-            accepted=False,
-            cost=Decimal("0"),
+    async def generate(self, request: NarrativeRequest) -> NarrativeCandidate:
+        scopes = _objects(request.brief.get("claim_scopes"))
+        scope = scopes[0] if scopes else {}
+        subject_ref = str(scope.get("subject_ref", "fixture:subject"))
+        dimension_id = str(scope.get("dimension_id", "overview"))
+        allowed_kinds = _strings(scope.get("allowed_kind_ids"))
+        findings = _objects(request.brief.get("findings"))
+        limit_ids = tuple(
+            item
+            for item in request.output_contract.required_limit_kind_ids
+            if item
+        )
+
+        return NarrativeCandidate.from_dict(
+            {
+                "schema_version": "mingli-narrative-candidate-v1",
+                "blocks": [
+                    {
+                        "block_id": "fake-block-1",
+                        "block_type": "claim",
+                        "text": "这是合同测试候选稿，不是正式命理解读。",
+                        "subject_ref": subject_ref,
+                        "dimension_id": dimension_id,
+                        "claim_kind_id": (
+                            allowed_kinds[0] if allowed_kinds else "kind.fixture"
+                        ),
+                        "certainty_id": str(
+                            scope.get("certainty_ceiling_id", "certainty.fixture")
+                        ),
+                        "fact_refs": list(_strings(scope.get("fact_refs"))),
+                        "finding_refs": [
+                            str(item["ref"])
+                            for item in findings
+                            if item.get("subject_ref") == subject_ref
+                            and dimension_id in _strings(item.get("dimension_ids"))
+                        ],
+                        "evidence_refs": list(_strings(scope.get("evidence_refs"))),
+                        "limit_kind_ids": list(limit_ids),
+                    }
+                ],
+            }
         )

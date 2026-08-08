@@ -25,6 +25,7 @@ dev = [
   "pyyaml>=6.0,<7",
   "ruff>=0.12,<1",
   "types-pyyaml>=6.0,<7",
+  "types-jsonschema>=4.25,<5",
 ]
 
 [tool.pytest.ini_options]
