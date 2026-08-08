@@ -1,7 +1,8 @@
 import argparse
 import asyncio
 import json
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass, field
 from typing import Protocol
 
@@ -9,6 +10,8 @@ from typing import Protocol
 @dataclass(frozen=True, slots=True)
 class WorkItem:
     id: str
+    claim_token: str | None = None
+    lease_generation: int | None = None
 
 
 class WorkSource(Protocol):
@@ -64,6 +67,10 @@ class Worker:
         return True
 
 
+def build_worker(*, source: WorkSource, processor: WorkProcessor) -> Worker:
+    return Worker(source=source, processor=processor)
+
+
 async def run_forever(worker: Worker, poll_interval: float = 2.0) -> None:
     while True:
         processed = await worker.run_once()
@@ -78,15 +85,30 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(arguments)
 
 
-async def async_main(arguments: Sequence[str] | None = None) -> int:
-    args = parse_args(arguments)
-    worker = Worker(source=EmptyWorkSource())
+ConfiguredWorkerFactory = Callable[[], AbstractAsyncContextManager[Worker]]
+
+
+async def _run_configured_worker(worker: Worker, args: argparse.Namespace) -> int:
     if args.once:
         processed = await worker.run_once()
         print(json.dumps({"event": "worker_iteration", "processed": processed}))
         return 0
     await run_forever(worker, poll_interval=args.poll_interval)
     return 0
+
+
+async def async_main(
+    arguments: Sequence[str] | None = None,
+    *,
+    configured_worker_factory: ConfiguredWorkerFactory | None = None,
+) -> int:
+    args = parse_args(arguments)
+    if configured_worker_factory is None:
+        from worker.readings import configured_reading_worker
+
+        configured_worker_factory = configured_reading_worker
+    async with configured_worker_factory() as worker:
+        return await _run_configured_worker(worker, args)
 
 
 def main() -> int:

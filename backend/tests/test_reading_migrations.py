@@ -65,6 +65,14 @@ def test_reading_migration_builds_immutable_phase_two_tables(
         index["name"] == "uq_reading_jobs_active_version" and index["unique"]
         for index in inspector.get_indexes("reading_jobs")
     )
+    reading_job_columns = {
+        column["name"]: column for column in inspector.get_columns("reading_jobs")
+    }
+    assert reading_job_columns["lease_generation"]["nullable"] is False
+    assert reading_job_columns["lease_token"]["nullable"] is True
+    assert {"ck_reading_jobs_lease_envelope_all_or_none"} <= {
+        constraint["name"] for constraint in inspector.get_check_constraints("reading_jobs")
+    }
 
     expected_checks = {
         "subject_profiles": {"ck_subject_profiles_owner_exactly_one"},

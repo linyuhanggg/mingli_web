@@ -247,6 +247,12 @@ class ReadingJobRecord(Base):
             postgresql_where=text("status IN ('queued', 'claimed', 'running')"),
         ),
         Index("ix_reading_jobs_claim", "status", "available_at"),
+        CheckConstraint(
+            "(lease_owner IS NULL AND lease_token IS NULL AND lease_expires_at IS NULL) "
+            "OR (lease_owner IS NOT NULL AND lease_token IS NOT NULL "
+            "AND lease_expires_at IS NOT NULL)",
+            name="lease_envelope_all_or_none",
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
@@ -262,7 +268,13 @@ class ReadingJobRecord(Base):
     max_output_chars: Mapped[int] = mapped_column(nullable=False)
     max_attempts: Mapped[int] = mapped_column(nullable=False)
     available_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    lease_generation: Mapped[int] = mapped_column(
+        default=0,
+        server_default=text("0"),
+        nullable=False,
+    )
     lease_owner: Mapped[str | None] = mapped_column(String(120))
+    lease_token: Mapped[str | None] = mapped_column(String(64))
     lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

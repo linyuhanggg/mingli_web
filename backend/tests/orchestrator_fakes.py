@@ -157,7 +157,7 @@ class MemoryRepository:
             completion_copy=public_copy,
         )
 
-    async def record_accepted(self, job_id: str, accepted: Any, at: datetime) -> None:
+    async def record_accepted(self, job_id: str, accepted: Any, at: datetime) -> Any:
         del at
         assert job_id == self.job.id
         self.events.append("repo:accepted")
@@ -166,6 +166,7 @@ class MemoryRepository:
             status=self.orchestrator.ReadingStatus.ACCEPTED,
             accepted=accepted,
         )
+        return accepted
 
     async def mark_delayed(self, job_id: str, at: datetime) -> None:
         del at
