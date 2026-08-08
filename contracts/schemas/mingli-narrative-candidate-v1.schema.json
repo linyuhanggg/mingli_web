@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/mingli-narrative-candidate-v1.schema.json",
+  "title": "Mingli Narrative Candidate v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "blocks"],
+  "properties": {
+    "schema_version": { "const": "mingli-narrative-candidate-v1" },
+    "blocks": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/claimBlock" }
+    }
+  },
+  "$defs": {
+    "nonEmptyText": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "referenceArray": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/nonEmptyText" },
+      "uniqueItems": true
+    },
+    "claimBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "block_id",
+        "block_type",
+        "text",
+        "subject_ref",
+        "dimension_id",
+        "claim_kind_id",
+        "certainty_id",
+        "fact_refs",
+        "finding_refs",
+        "evidence_refs",
+        "limit_kind_ids"
+      ],
+      "properties": {
+        "block_id": { "$ref": "#/$defs/nonEmptyText" },
+        "block_type": { "const": "claim" },
+        "text": { "$ref": "#/$defs/nonEmptyText" },
+        "subject_ref": { "$ref": "#/$defs/nonEmptyText" },
+        "dimension_id": { "$ref": "#/$defs/nonEmptyText" },
+        "claim_kind_id": { "$ref": "#/$defs/nonEmptyText" },
+        "certainty_id": { "$ref": "#/$defs/nonEmptyText" },
+        "fact_refs": { "$ref": "#/$defs/referenceArray" },
+        "finding_refs": { "$ref": "#/$defs/referenceArray" },
+        "evidence_refs": { "$ref": "#/$defs/referenceArray" },
+        "limit_kind_ids": { "$ref": "#/$defs/referenceArray" }
+      }
+    }
+  }
+}

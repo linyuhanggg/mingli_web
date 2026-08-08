@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/mingli-output-contract-v1.schema.json",
+  "title": "Mingli Product Output Contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_id",
+    "language",
+    "min_blocks",
+    "max_blocks",
+    "max_output_chars",
+    "required_dimension_ids",
+    "required_limit_kind_ids",
+    "disclosure_text"
+  ],
+  "properties": {
+    "schema_version": { "const": "mingli-output-contract-v1" },
+    "contract_id": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "language": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}(?:-[A-Z]{2})?$"
+    },
+    "min_blocks": { "type": "integer", "minimum": 1 },
+    "max_blocks": { "type": "integer", "minimum": 1 },
+    "max_output_chars": { "type": "integer", "minimum": 1 },
+    "required_dimension_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "pattern": "\\S" },
+      "uniqueItems": true
+    },
+    "required_limit_kind_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "pattern": "\\S" },
+      "uniqueItems": true
+    },
+    "disclosure_text": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    }
+  }
+}

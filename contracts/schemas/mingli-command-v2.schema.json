@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/mingli-command-v2.schema.json",
+  "title": "Mingli Portable Command v2",
+  "oneOf": [
+    { "$ref": "#/$defs/describe" },
+    { "$ref": "#/$defs/prepare" },
+    { "$ref": "#/$defs/complete" }
+  ],
+  "$defs": {
+    "nonEmptyText": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "nullableText": {
+      "oneOf": [
+        { "$ref": "#/$defs/nonEmptyText" },
+        { "type": "null" }
+      ]
+    },
+    "horizonSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind_id", "start", "end"],
+      "properties": {
+        "kind_id": { "$ref": "#/$defs/nonEmptyText" },
+        "start": { "type": ["string", "null"] },
+        "end": { "type": ["string", "null"] }
+      }
+    },
+    "comparisonSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capability_id", "requirement"],
+      "properties": {
+        "capability_id": { "$ref": "#/$defs/nonEmptyText" },
+        "requirement": { "enum": ["required", "optional"] }
+      }
+    },
+    "intentSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject_refs",
+        "object_id",
+        "dimension_ids",
+        "horizon",
+        "capability_id",
+        "comparisons"
+      ],
+      "properties": {
+        "subject_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nonEmptyText" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "object_id": { "$ref": "#/$defs/nonEmptyText" },
+        "dimension_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nonEmptyText" },
+          "uniqueItems": true
+        },
+        "horizon": { "$ref": "#/$defs/horizonSelection" },
+        "capability_id": { "$ref": "#/$defs/nullableText" },
+        "comparisons": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/comparisonSelection" }
+        }
+      }
+    },
+    "factsBySubject": {
+      "type": "object",
+      "propertyNames": { "minLength": 1, "pattern": "\\S" },
+      "additionalProperties": {
+        "type": "object",
+        "propertyNames": { "minLength": 1, "pattern": "\\S" }
+      }
+    },
+    "describe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "const": "describe" }
+      }
+    },
+    "prepare": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "query",
+        "intent",
+        "facts",
+        "state_token",
+        "transition"
+      ],
+      "properties": {
+        "kind": { "const": "prepare" },
+        "query": { "$ref": "#/$defs/nonEmptyText" },
+        "intent": { "$ref": "#/$defs/intentSelection" },
+        "facts": { "$ref": "#/$defs/factsBySubject" },
+        "state_token": { "$ref": "#/$defs/nullableText" },
+        "transition": {
+          "oneOf": [
+            { "enum": ["correct", "restart"] },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "complete": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "state_token", "public_copy"],
+      "properties": {
+        "kind": { "const": "complete" },
+        "state_token": { "$ref": "#/$defs/nonEmptyText" },
+        "public_copy": { "$ref": "#/$defs/nonEmptyText" }
+      }
+    }
+  }
+}

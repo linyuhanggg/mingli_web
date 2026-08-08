@@ -1,0 +1,391 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/mingli-result-v2.schema.json",
+  "title": "Mingli Portable Result v2",
+  "oneOf": [
+    { "$ref": "#/$defs/described" },
+    { "$ref": "#/$defs/prepared" },
+    { "$ref": "#/$defs/accepted" },
+    { "$ref": "#/$defs/stopped" }
+  ],
+  "$defs": {
+    "nonEmptyText": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "nullableText": {
+      "oneOf": [
+        { "$ref": "#/$defs/nonEmptyText" },
+        { "type": "null" }
+      ]
+    },
+    "stringArray": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/nonEmptyText" },
+      "uniqueItems": true
+    },
+    "publicTerm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "description"],
+      "properties": {
+        "id": { "$ref": "#/$defs/nonEmptyText" },
+        "label": { "$ref": "#/$defs/nonEmptyText" },
+        "description": { "$ref": "#/$defs/nullableText" }
+      }
+    },
+    "inputFieldView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "type_id", "description", "choices"],
+      "properties": {
+        "id": { "$ref": "#/$defs/nonEmptyText" },
+        "label": { "$ref": "#/$defs/nonEmptyText" },
+        "type_id": { "$ref": "#/$defs/nonEmptyText" },
+        "description": { "$ref": "#/$defs/nullableText" },
+        "choices": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/publicTerm" }
+        }
+      }
+    },
+    "inputRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["any_of"],
+      "properties": {
+        "any_of": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/inputFieldView" }
+        }
+      }
+    },
+    "inputRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirements"],
+      "properties": {
+        "requirements": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/inputRequirement" }
+        }
+      }
+    },
+    "timeSemanticsView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role_id",
+        "supported_policy_ids",
+        "default_policy_id",
+        "coordinate_required_policy_ids",
+        "unsupported_behavior_id"
+      ],
+      "properties": {
+        "role_id": { "$ref": "#/$defs/nonEmptyText" },
+        "supported_policy_ids": { "$ref": "#/$defs/stringArray" },
+        "default_policy_id": { "$ref": "#/$defs/nonEmptyText" },
+        "coordinate_required_policy_ids": { "$ref": "#/$defs/stringArray" },
+        "unsupported_behavior_id": { "$ref": "#/$defs/nonEmptyText" }
+      }
+    },
+    "capabilityView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "description",
+        "objects",
+        "horizons",
+        "dimensions",
+        "default_dimension_ids",
+        "input_fields",
+        "required_input_groups"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/nonEmptyText" },
+        "label": { "$ref": "#/$defs/nonEmptyText" },
+        "description": { "$ref": "#/$defs/nonEmptyText" },
+        "objects": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/publicTerm" }
+        },
+        "horizons": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/publicTerm" }
+        },
+        "dimensions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/publicTerm" }
+        },
+        "default_dimension_ids": { "$ref": "#/$defs/stringArray" },
+        "input_fields": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/inputFieldView" }
+        },
+        "required_input_groups": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/$defs/nonEmptyText" },
+            "uniqueItems": true
+          }
+        },
+        "time_semantics": {
+          "oneOf": [
+            { "$ref": "#/$defs/timeSemanticsView" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "publicFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "subject_ref", "kind_id", "value", "display_text"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/nonEmptyText" },
+        "subject_ref": { "$ref": "#/$defs/nonEmptyText" },
+        "kind_id": { "$ref": "#/$defs/nonEmptyText" },
+        "value": {},
+        "display_text": { "$ref": "#/$defs/nonEmptyText" }
+      }
+    },
+    "publicEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "source_title",
+        "locator",
+        "excerpt",
+        "supports_fact_refs"
+      ],
+      "properties": {
+        "ref": { "$ref": "#/$defs/nonEmptyText" },
+        "source_title": { "$ref": "#/$defs/nonEmptyText" },
+        "locator": { "$ref": "#/$defs/nullableText" },
+        "excerpt": { "$ref": "#/$defs/nullableText" },
+        "supports_fact_refs": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "publicFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "subject_ref",
+        "dimension_ids",
+        "kind_id",
+        "data",
+        "fact_refs",
+        "evidence_refs",
+        "limit_kind_ids",
+        "support_mode"
+      ],
+      "properties": {
+        "ref": { "$ref": "#/$defs/nonEmptyText" },
+        "subject_ref": { "$ref": "#/$defs/nonEmptyText" },
+        "dimension_ids": { "$ref": "#/$defs/stringArray" },
+        "kind_id": { "$ref": "#/$defs/nonEmptyText" },
+        "data": {},
+        "fact_refs": { "$ref": "#/$defs/stringArray" },
+        "evidence_refs": { "$ref": "#/$defs/stringArray" },
+        "limit_kind_ids": { "$ref": "#/$defs/stringArray" },
+        "support_mode": { "enum": ["exact", "shared_turn"] }
+      }
+    },
+    "claimScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject_ref",
+        "dimension_id",
+        "allowed_kind_ids",
+        "certainty_ceiling_id",
+        "fact_refs",
+        "evidence_refs"
+      ],
+      "properties": {
+        "subject_ref": { "$ref": "#/$defs/nonEmptyText" },
+        "dimension_id": { "$ref": "#/$defs/nonEmptyText" },
+        "allowed_kind_ids": { "$ref": "#/$defs/stringArray" },
+        "certainty_ceiling_id": { "$ref": "#/$defs/nonEmptyText" },
+        "fact_refs": { "$ref": "#/$defs/stringArray" },
+        "evidence_refs": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "publicLimit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind_id", "public_text", "scope_refs", "detail_ids"],
+      "properties": {
+        "kind_id": { "$ref": "#/$defs/nonEmptyText" },
+        "public_text": { "$ref": "#/$defs/nonEmptyText" },
+        "scope_refs": { "$ref": "#/$defs/stringArray" },
+        "detail_ids": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "horizonSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind_id", "start", "end"],
+      "properties": {
+        "kind_id": { "$ref": "#/$defs/nonEmptyText" },
+        "start": { "type": ["string", "null"] },
+        "end": { "type": ["string", "null"] }
+      }
+    },
+    "requestView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject_refs",
+        "capability_ids",
+        "object_id",
+        "dimension_ids",
+        "horizon"
+      ],
+      "properties": {
+        "subject_refs": { "$ref": "#/$defs/stringArray" },
+        "capability_ids": { "$ref": "#/$defs/stringArray" },
+        "object_id": { "$ref": "#/$defs/nonEmptyText" },
+        "dimension_ids": { "$ref": "#/$defs/stringArray" },
+        "horizon": { "$ref": "#/$defs/horizonSelection" }
+      }
+    },
+    "readingBrief": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question",
+        "vocabulary",
+        "facts",
+        "evidence",
+        "findings",
+        "claim_scopes",
+        "limits",
+        "prior_answer",
+        "request_view"
+      ],
+      "properties": {
+        "question": { "$ref": "#/$defs/nonEmptyText" },
+        "vocabulary": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/publicTerm" }
+        },
+        "facts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/publicFact" }
+        },
+        "evidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/publicEvidence" }
+        },
+        "findings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/publicFinding" }
+        },
+        "claim_scopes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/claimScope" }
+        },
+        "limits": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/publicLimit" }
+        },
+        "prior_answer": { "$ref": "#/$defs/nullableText" },
+        "request_view": {
+          "oneOf": [
+            { "$ref": "#/$defs/requestView" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "described": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "protocol_version", "manifest_digest", "capabilities"],
+      "properties": {
+        "kind": { "const": "described" },
+        "protocol_version": { "const": "mingli-portable-interface-v2" },
+        "manifest_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/capabilityView" }
+        }
+      }
+    },
+    "prepared": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "state_token", "brief"],
+      "properties": {
+        "kind": { "const": "prepared" },
+        "state_token": { "$ref": "#/$defs/nonEmptyText" },
+        "brief": { "$ref": "#/$defs/readingBrief" }
+      }
+    },
+    "accepted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "state_token", "public_copy"],
+      "properties": {
+        "kind": { "const": "accepted" },
+        "state_token": { "$ref": "#/$defs/nonEmptyText" },
+        "public_copy": { "$ref": "#/$defs/nonEmptyText" }
+      }
+    },
+    "stopped": {
+      "oneOf": [
+        { "$ref": "#/$defs/stoppedNeedInput" },
+        { "$ref": "#/$defs/stoppedTerminal" }
+      ]
+    },
+    "stoppedNeedInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "reason",
+        "public_copy",
+        "state_token",
+        "input_request"
+      ],
+      "properties": {
+        "kind": { "const": "stopped" },
+        "reason": { "const": "need_input" },
+        "public_copy": { "$ref": "#/$defs/nonEmptyText" },
+        "state_token": { "$ref": "#/$defs/nonEmptyText" },
+        "input_request": { "$ref": "#/$defs/inputRequest" }
+      }
+    },
+    "stoppedTerminal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "reason",
+        "public_copy",
+        "state_token",
+        "input_request"
+      ],
+      "properties": {
+        "kind": { "const": "stopped" },
+        "reason": { "enum": ["unsupported", "conflict", "error"] },
+        "public_copy": { "$ref": "#/$defs/nonEmptyText" },
+        "state_token": { "$ref": "#/$defs/nullableText" },
+        "input_request": { "type": "null" }
+      }
+    }
+  }
+}
