@@ -16,6 +16,27 @@ from app.readings.runtime_contracts import (
 
 FAKE_STATE_TOKEN = "fake-opaque-state"
 FAKE_MANIFEST_DIGEST = "f" * 64
+_FAKE_RELEASE_CAPABILITY_SPECS = (
+    ("bazi", "八字 Fake", "natal", ("life", "year", "month", "day")),
+    ("fengshui", "风水 Fake", "fixture_object", ("fixture",)),
+    ("fortune", "近时 Fake", "near_time_personal", ("day", "week")),
+    ("liuren", "大六壬 Fake", "fixture_object", ("fixture",)),
+    ("liuyao", "六爻 Fake", "concrete_event", ("instant",)),
+    ("luming-nayin", "禄命纳音 Fake", "fixture_object", ("fixture",)),
+    ("meihua", "梅花易数 Fake", "fixture_object", ("fixture",)),
+    ("physiognomy", "相法 Fake", "fixture_object", ("fixture",)),
+    ("qimen", "奇门遁甲 Fake", "fixture_object", ("fixture",)),
+    ("selection", "择日 Fake", "fixture_object", ("fixture",)),
+    ("taiyi", "太乙 Fake", "fixture_object", ("fixture",)),
+    ("xingming", "星命 Fake", "fixture_object", ("fixture",)),
+    ("ziwei", "紫微斗数 Fake", "fixture_object", ("fixture",)),
+)
+_FAKE_RELEASE_CAPABILITY_IDS = frozenset(
+    capability_id
+    for capability_id, _label, _object_id, _horizons in (
+        _FAKE_RELEASE_CAPABILITY_SPECS
+    )
+)
 
 
 @runtime_checkable
@@ -83,34 +104,25 @@ class FakeMingliRuntimeAdapter:
         return Described(
             protocol_version="mingli-portable-interface-v2",
             manifest_digest=FAKE_MANIFEST_DIGEST,
-            capabilities=(
+            capabilities=tuple(
                 _capability(
-                    "bazi",
-                    label="八字 Fake",
-                    object_id="natal",
-                    horizons=("life", "year", "month", "day"),
-                ),
-                _capability(
-                    "fortune",
-                    label="近时 Fake",
-                    object_id="near_time_personal",
-                    horizons=("day", "week"),
-                ),
-                _capability(
-                    "liuyao",
-                    label="六爻 Fake",
-                    object_id="concrete_event",
-                    horizons=("instant",),
-                ),
+                    capability_id,
+                    label=label,
+                    object_id=object_id,
+                    horizons=horizons,
+                )
+                for capability_id, label, object_id, horizons in (
+                    _FAKE_RELEASE_CAPABILITY_SPECS
+                )
             ),
         )
 
     def _prepare(self, command: Prepare) -> Prepared | Stopped:
         capability_id = command.intent.get("capability_id")
-        if capability_id not in {"bazi", "fortune", "liuyao"}:
+        if capability_id not in _FAKE_RELEASE_CAPABILITY_IDS:
             return Stopped(
                 reason="unsupported",
-                public_copy="Fake Runtime 不支持该网站能力。",
+                public_copy="Fake Runtime 未描述该测试能力。",
                 state_token=None,
                 input_request=None,
             )

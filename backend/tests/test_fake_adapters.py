@@ -129,9 +129,43 @@ async def test_fake_runtime_is_explicitly_non_production() -> None:
     assert description.protocol_version == "mingli-portable-interface-v2"
     assert tuple(capability["id"] for capability in description.capabilities) == (
         "bazi",
+        "fengshui",
         "fortune",
+        "liuren",
         "liuyao",
+        "luming-nayin",
+        "meihua",
+        "physiognomy",
+        "qimen",
+        "selection",
+        "taiyi",
+        "xingming",
+        "ziwei",
     )
+
+
+async def test_fake_runtime_does_not_apply_the_p0_product_allowlist() -> None:
+    runtime = importlib.import_module("app.adapters.runtime")
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    adapter = runtime.FakeMingliRuntimeAdapter()
+
+    result = await adapter.execute(
+        contracts.Prepare(
+            query="验证未公开能力仍由完整 Runtime 承载",
+            intent={
+                "subject_refs": ["fixture:test"],
+                "object_id": "fixture_object",
+                "dimension_ids": ["overview"],
+                "horizon": {"kind_id": "fixture", "start": None, "end": None},
+                "capability_id": "ziwei",
+                "comparisons": [],
+            },
+            facts={"fixture:test": {"fixture_input": "test-only"}},
+        )
+    )
+
+    assert isinstance(result, contracts.Prepared)
+    assert result.brief.to_dict()["request_view"]["capability_ids"] == ["ziwei"]
 
 
 async def test_fake_runtime_can_stop_prepare_and_accept_first_copy_only() -> None:
