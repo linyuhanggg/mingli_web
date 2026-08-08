@@ -206,7 +206,7 @@ export function OtpForm() {
   }
 
   return (
-    <section className={styles.form}>
+    <section className={styles.form} aria-busy={busy || phase === "bootstrapping"}>
       <p className={styles.status} role="status">
         {phase === "bootstrapping"
           ? "正在建立安全会话…"
@@ -244,7 +244,7 @@ export function OtpForm() {
       </div>
 
       {phase === "destination" || phase === "bootstrapping" ? (
-        <form onSubmit={destinationForm.handleSubmit(sendCode)} noValidate>
+        <form onSubmit={destinationForm.handleSubmit(sendCode)} noValidate aria-label="发送验证码">
           <div className={styles.field}>
             <label htmlFor="otp-destination">
               {channel === "phone" ? "中国大陆手机号" : "邮箱地址"}
@@ -258,11 +258,14 @@ export function OtpForm() {
               aria-describedby={
                 destinationForm.formState.errors.destination
                   ? "otp-destination-error"
-                  : undefined
+                  : "otp-destination-help"
               }
               required
               {...destinationForm.register("destination")}
             />
+            <p className={styles.hint} id="otp-destination-help">
+              {channel === "phone" ? "仅支持中国大陆手机号；正式短信通道尚未接入。" : "邮箱只作为可验证登录入口，不是内部 User ID。"}
+            </p>
             {destinationForm.formState.errors.destination ? (
               <p
                 className={styles.fieldError}
@@ -280,7 +283,7 @@ export function OtpForm() {
       ) : null}
 
       {phase === "code" && challenge ? (
-        <form onSubmit={codeForm.handleSubmit(verifyCode)} noValidate>
+        <form onSubmit={codeForm.handleSubmit(verifyCode)} noValidate aria-label="验证登录">
           {challenge.development_code ? (
             <p className={styles.hint}>本地测试验证码：{challenge.development_code}</p>
           ) : null}
@@ -295,11 +298,12 @@ export function OtpForm() {
               maxLength={6}
               aria-invalid={Boolean(codeForm.formState.errors.code)}
               aria-describedby={
-                codeForm.formState.errors.code ? "otp-code-error" : undefined
+                codeForm.formState.errors.code ? "otp-code-error" : "otp-code-help"
               }
               required
               {...codeForm.register("code")}
             />
+            <p className={styles.hint} id="otp-code-help">验证码为六位数字，验证成功后建立当前设备会话。</p>
             {codeForm.formState.errors.code ? (
               <p className={styles.fieldError} id="otp-code-error" role="alert">
                 {codeForm.formState.errors.code.message}

@@ -1,13 +1,23 @@
-import { privateShellStyles as styles } from "@/components/private-shell";
+import { LockKeyhole, ScanLine } from "lucide-react";
+
+import styles from "@/components/app-surface.module.css";
+import { ProfileForm } from "@/components/profile-form";
 
 
 export default function NewProfilePage() {
   return (
-    <section className={styles.panel}>
-      <h1>建档将在 Phase 2 开放。</h1>
-      <p>
-        表单会覆盖公历/农历、未知时辰、出生地与时区、真太阳时口径、资料确认和隐私同意。在服务端规范化完成前，本页不会在浏览器里自行算盘。
-      </p>
-    </section>
+    <div className={styles.page}>
+      <header className={styles.pageHeader}>
+        <h1>建立一份可复现的受测档案。</h1>
+        <div>
+          <p>先确认原始资料和时间口径，再由服务端规范化。修改资料会产生新版本，不覆盖已经用于解读的历史快照。</p>
+          <div className={styles.metaLine}>
+            <span><ScanLine aria-hidden="true" size={15} /> 游客可先核对输入</span>
+            <span><LockKeyhole aria-hidden="true" size={15} /> 登录后才承诺保存</span>
+          </div>
+        </div>
+      </header>
+      <ProfileForm />
+    </div>
   );
 }
