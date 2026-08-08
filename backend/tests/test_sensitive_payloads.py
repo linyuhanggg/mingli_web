@@ -1,5 +1,6 @@
 import base64
 import importlib
+from dataclasses import replace
 
 import pytest
 from pydantic import ValidationError
@@ -21,6 +22,22 @@ def test_envelope_cipher_uses_random_nonces_and_stable_fingerprints() -> None:
     assert cipher.decrypt_text(first, context="profile-version:test") == raw
     with pytest.raises(envelope.EnvelopeDecryptionError):
         cipher.decrypt_text(first, context="reading-version:wrong")
+
+
+def test_envelope_cipher_rejects_a_tampered_fingerprint() -> None:
+    envelope = importlib.import_module("app.security.envelope")
+    cipher = envelope.EnvelopeCipher(key=b"k" * 32, key_id="test-key-v1")
+    payload = cipher.encrypt_text(
+        "已经通过 AES-GCM 解密的正文",
+        context="reading-version:test:accepted-copy",
+    )
+    replacement = "0" * 64 if payload.fingerprint != "0" * 64 else "1" * 64
+
+    with pytest.raises(envelope.EnvelopeDecryptionError, match="fingerprint"):
+        cipher.decrypt_text(
+            replace(payload, fingerprint=replacement),
+            context="reading-version:test:accepted-copy",
+        )
 
 
 def test_production_requires_an_explicit_256_bit_content_key() -> None:

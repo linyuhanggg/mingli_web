@@ -1,7 +1,16 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, ForeignKey, String, Text, UniqueConstraint, event, func
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    String,
+    Text,
+    UniqueConstraint,
+    event,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import Uuid
 
@@ -11,6 +20,13 @@ from app.persistence import ImmutableRecordError
 
 class SubjectProfile(Base):
     __tablename__ = "subject_profiles"
+    __table_args__ = (
+        CheckConstraint(
+            "(owner_user_id IS NOT NULL AND owner_guest_session_id IS NULL) "
+            "OR (owner_user_id IS NULL AND owner_guest_session_id IS NOT NULL)",
+            name="owner_exactly_one",
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
     owner_user_id: Mapped[UUID | None] = mapped_column(

@@ -4,10 +4,12 @@ import importlib
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from typing import Any
+from uuid import uuid4
 
 import pytest
 from orchestrator_fakes import make_candidate
 from sqlalchemy import text
+from sqlalchemy.dialects import postgresql
 from test_narrative_guard import build_brief
 
 
@@ -212,3 +214,31 @@ async def test_immutable_records_and_first_write_wins_are_enforced(
         profile_version.payload_ciphertext = "tampered"
         with pytest.raises(readings.ImmutableRecordError):
             await session.flush()
+
+
+async def test_reading_version_capability_must_match_its_locked_root(
+    reading_database: Any,
+) -> None:
+    async with reading_database.sessions() as session, session.begin():
+        repository, _profile, version, job, contracts = await create_reading_graph(session)
+        original = (await repository.load_job(str(job.id))).prepare_command.to_dict()
+        original["intent"]["capability_id"] = "fortune"
+        mismatched = contracts.command_from_dict(original)
+        assert isinstance(mismatched, contracts.Prepare)
+
+        with pytest.raises(ValueError, match="capability"):
+            await repository.create_version(
+                reading_root_id=version.reading_root_id,
+                runtime_release_id=version.runtime_release_id,
+                prepare_command=mismatched,
+            )
+
+
+def test_reading_version_numbers_are_serialized_by_a_postgresql_root_lock() -> None:
+    readings = importlib.import_module("app.readings.repository")
+
+    compiled = str(
+        readings.reading_root_version_lock_statement(uuid4()).compile(dialect=postgresql.dialect())
+    ).upper()
+
+    assert "FOR UPDATE" in compiled

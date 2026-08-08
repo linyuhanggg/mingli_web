@@ -51,6 +51,13 @@ class RuntimeRelease(Base):
 
 class ReadingRoot(Base):
     __tablename__ = "reading_roots"
+    __table_args__ = (
+        CheckConstraint(
+            "(owner_user_id IS NOT NULL AND owner_guest_session_id IS NULL) "
+            "OR (owner_user_id IS NULL AND owner_guest_session_id IS NOT NULL)",
+            name="owner_exactly_one",
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
     owner_user_id: Mapped[UUID | None] = mapped_column(
@@ -82,14 +89,26 @@ class ReadingVersion(Base):
             name="uq_reading_versions_reading_root_id_version",
         ),
         CheckConstraint(
-            "(state_token_ciphertext IS NULL AND state_token_fingerprint IS NULL) "
-            "OR (state_token_ciphertext IS NOT NULL AND state_token_fingerprint IS NOT NULL)",
-            name="state_token_ciphertext_has_fingerprint",
+            "(state_token_key_id IS NULL AND state_token_nonce IS NULL "
+            "AND state_token_ciphertext IS NULL AND state_token_fingerprint IS NULL) "
+            "OR (state_token_key_id IS NOT NULL AND state_token_nonce IS NOT NULL "
+            "AND state_token_ciphertext IS NOT NULL "
+            "AND state_token_fingerprint IS NOT NULL)",
+            name="state_token_envelope_all_or_none",
         ),
         CheckConstraint(
-            "(completion_ciphertext IS NULL AND completion_digest IS NULL) "
-            "OR (completion_ciphertext IS NOT NULL AND completion_digest IS NOT NULL)",
-            name="completion_ciphertext_has_digest",
+            "(last_result_key_id IS NULL AND last_result_nonce IS NULL "
+            "AND last_result_ciphertext IS NULL AND last_result_digest IS NULL) "
+            "OR (last_result_key_id IS NOT NULL AND last_result_nonce IS NOT NULL "
+            "AND last_result_ciphertext IS NOT NULL AND last_result_digest IS NOT NULL)",
+            name="last_result_envelope_all_or_none",
+        ),
+        CheckConstraint(
+            "(completion_key_id IS NULL AND completion_nonce IS NULL "
+            "AND completion_ciphertext IS NULL AND completion_digest IS NULL) "
+            "OR (completion_key_id IS NOT NULL AND completion_nonce IS NOT NULL "
+            "AND completion_ciphertext IS NOT NULL AND completion_digest IS NOT NULL)",
+            name="completion_envelope_all_or_none",
         ),
     )
 
@@ -168,9 +187,11 @@ class GenerationAttempt(Base):
             name="uq_generation_attempts_reading_version_id_attempt_number",
         ),
         CheckConstraint(
-            "(candidate_ciphertext IS NULL AND candidate_digest IS NULL) "
-            "OR (candidate_ciphertext IS NOT NULL AND candidate_digest IS NOT NULL)",
-            name="candidate_ciphertext_has_digest",
+            "(candidate_key_id IS NULL AND candidate_nonce IS NULL "
+            "AND candidate_ciphertext IS NULL AND candidate_digest IS NULL) "
+            "OR (candidate_key_id IS NOT NULL AND candidate_nonce IS NOT NULL "
+            "AND candidate_ciphertext IS NOT NULL AND candidate_digest IS NOT NULL)",
+            name="candidate_envelope_all_or_none",
         ),
     )
 

@@ -75,16 +75,24 @@ class EnvelopeCipher:
     def decrypt_text(self, payload: EncryptedPayload, *, context: str) -> str:
         if payload.key_id != self._key_id:
             raise EnvelopeDecryptionError("ciphertext key id is unavailable")
+        aad = context.encode("utf-8")
         try:
             nonce = base64.b64decode(payload.nonce, validate=True)
             ciphertext = base64.b64decode(payload.ciphertext, validate=True)
             plaintext = AESGCM(self._key).decrypt(
                 nonce,
                 ciphertext,
-                context.encode("utf-8"),
+                aad,
             )
         except (InvalidTag, binascii.Error, ValueError) as error:
             raise EnvelopeDecryptionError("authenticated payload decryption failed") from error
+        expected_fingerprint = hmac.new(
+            self._fingerprint_key,
+            aad + b"\x00" + plaintext,
+            hashlib.sha256,
+        ).hexdigest()
+        if not hmac.compare_digest(payload.fingerprint, expected_fingerprint):
+            raise EnvelopeDecryptionError("encrypted payload fingerprint mismatch")
         return plaintext.decode("utf-8")
 
     def encrypt_json(

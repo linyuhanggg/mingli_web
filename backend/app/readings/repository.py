@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import Select
 
 from app.persistence import ImmutableRecordError as ImmutableRecordError
 from app.readings.models import (
@@ -31,6 +32,13 @@ from app.readings.runtime_contracts import (
 )
 from app.readings.status import ReadingStatus
 from app.security.envelope import EncryptedPayload, EnvelopeCipher
+
+
+def reading_root_version_lock_statement(
+    reading_root_id: UUID,
+) -> Select[tuple[ReadingRoot]]:
+    """Serialize version allocation for one Reading Root on PostgreSQL."""
+    return select(ReadingRoot).where(ReadingRoot.id == reading_root_id).with_for_update()
 
 
 class SqlReadingRepository:
@@ -93,6 +101,12 @@ class SqlReadingRepository:
         runtime_release_id: UUID,
         prepare_command: Prepare,
     ) -> ReadingVersion:
+        root = await self.session.scalar(reading_root_version_lock_statement(reading_root_id))
+        if root is None:
+            raise LookupError("Reading Root not found")
+        capability_id = str(prepare_command.intent["capability_id"])
+        if root.capability_id != capability_id:
+            raise ValueError("Prepare capability_id must match the locked Reading Root capability")
         current = await self.session.scalar(
             select(func.max(ReadingVersion.version)).where(
                 ReadingVersion.reading_root_id == reading_root_id
@@ -115,7 +129,7 @@ class SqlReadingRepository:
             runtime_release_id=runtime_release_id,
             version=(current or 0) + 1,
             status=ReadingStatus.INPUT_READY.value,
-            capability_id=str(intent["capability_id"]),
+            capability_id=capability_id,
             object_id=str(intent["object_id"]),
             dimension_ids=[str(value) for value in dimension_ids],
             horizon={str(key): value for key, value in horizon.items()},
