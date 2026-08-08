@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/auth-session.schema.json",
+  "title": "AuthSessionResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["user_id", "session_id", "expires_at", "csrf_token"],
+  "properties": {
+    "user_id": { "type": "string", "format": "uuid" },
+    "session_id": { "type": "string", "format": "uuid" },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "csrf_token": { "type": "string", "minLength": 32 }
+  }
+}

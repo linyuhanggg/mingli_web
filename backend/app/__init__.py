@@ -1,0 +1,1 @@
+"""FateRadar API application package."""

@@ -1,0 +1,97 @@
+.form {
+  margin-top: 1.5rem;
+}
+
+.status,
+.error,
+.success {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+}
+
+.status {
+  background: var(--ivory-100);
+  color: var(--ink-700);
+}
+
+.error {
+  background: #fbe9e4;
+  color: #7e3927;
+}
+
+.success {
+  background: #e5f1ea;
+  color: var(--ink-900);
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.tabs button,
+.submit {
+  min-height: 2.75rem;
+  border: 1px solid rgb(18 58 50 / 18%);
+  border-radius: 999px;
+  background: var(--ivory-50);
+  color: var(--ink-900);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.tabs button[aria-pressed="true"] {
+  border-color: var(--ink-900);
+  background: var(--ink-900);
+  color: var(--ivory-50);
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1rem;
+}
+
+.field label {
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.field input {
+  width: 100%;
+  min-height: 3rem;
+  padding-inline: 0.9rem;
+  border: 1px solid rgb(18 58 50 / 24%);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--ink-950);
+}
+
+.hint {
+  margin: 0.45rem 0 0;
+  color: var(--ink-500);
+  font-size: 0.78rem;
+}
+
+.submit {
+  width: 100%;
+  margin-top: 1rem;
+  border-color: var(--ink-900);
+  background: var(--ink-900);
+  color: var(--ivory-50);
+}
+
+.submit:disabled,
+.tabs button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.accountRoot {
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+}

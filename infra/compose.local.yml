@@ -1,0 +1,91 @@
+name: mingli-local
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mingli}
+      POSTGRES_USER: ${POSTGRES_USER:-mingli}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mingli-local}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/docker/backend.Dockerfile
+    environment:
+      MINGLI_ENVIRONMENT: local
+      MINGLI_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-mingli}:${POSTGRES_PASSWORD:-mingli-local}@postgres:5432/${POSTGRES_DB:-mingli}
+      MINGLI_COOKIE_SECURE: "false"
+      MINGLI_OTP_ADAPTER: fake
+      MINGLI_IDENTITY_HASH_KEY: ${MINGLI_IDENTITY_HASH_KEY:-local-only-identity-hash-key-change-in-production}
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  worker:
+    build:
+      context: ..
+      dockerfile: infra/docker/backend.Dockerfile
+    environment:
+      MINGLI_ENVIRONMENT: local
+      MINGLI_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-mingli}:${POSTGRES_PASSWORD:-mingli-local}@postgres:5432/${POSTGRES_DB:-mingli}
+      MINGLI_COOKIE_SECURE: "false"
+      MINGLI_OTP_ADAPTER: fake
+      MINGLI_IDENTITY_HASH_KEY: ${MINGLI_IDENTITY_HASH_KEY:-local-only-identity-hash-key-change-in-production}
+    command: ["python", "-m", "worker.main", "--poll-interval", "2"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/docker/web.Dockerfile
+      args:
+        BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://api:8000}
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  edge:
+    image: nginx:1.27-alpine
+    depends_on:
+      - api
+      - web
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./nginx/app.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  postgres-data:

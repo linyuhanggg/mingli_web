@@ -1,0 +1,74 @@
+.shell {
+  min-height: 100vh;
+  background: var(--ivory-100);
+}
+
+.header {
+  border-bottom: 1px solid rgb(18 58 50 / 12%);
+  background: var(--ivory-50);
+}
+
+.headerInner {
+  display: flex;
+  min-height: 4.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.back {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  color: var(--ink-700);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.main {
+  padding-block: clamp(2rem, 6vw, 4rem);
+}
+
+.panel {
+  width: min(46rem, 100%);
+  margin-inline: auto;
+  padding: clamp(1.25rem, 5vw, 2.8rem);
+  border: 1px solid rgb(18 58 50 / 12%);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  box-shadow: var(--shadow-soft);
+}
+
+.panel h1 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 8vw, 3.8rem);
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.panel > p {
+  color: var(--ink-700);
+}
+
+.nextGrid {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.nextCard {
+  padding: 1rem;
+  border: 1px solid rgb(18 58 50 / 12%);
+  border-radius: var(--radius-sm);
+  background: var(--ivory-50);
+}
+
+.nextCard strong {
+  display: block;
+}
+
+.nextCard span {
+  color: var(--ink-500);
+  font-size: 0.86rem;
+}

@@ -1,0 +1,67 @@
+.card {
+  display: flex;
+  min-height: 22rem;
+  flex-direction: column;
+  padding: 1.35rem;
+  border: 1px solid rgb(18 58 50 / 12%);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 64%);
+  box-shadow: var(--shadow-card);
+}
+
+.card:nth-child(2) {
+  background: var(--ink-900);
+  color: var(--ivory-50);
+}
+
+.card:nth-child(3) {
+  background: #ede2ce;
+}
+
+.topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--gold-500);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.card h3 {
+  margin: auto 0 0.75rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.7rem, 7vw, 2.5rem);
+  font-weight: 650;
+  line-height: 1.15;
+}
+
+.card p {
+  margin: 0;
+  color: currentColor;
+  opacity: 0.76;
+}
+
+.card a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.3rem;
+  border-top: 1px solid currentColor;
+  font-size: 0.9rem;
+  font-weight: 750;
+  opacity: 0.9;
+}
+
+.card a::after {
+  content: "→";
+}
+
+@media (min-width: 48rem) {
+  .card {
+    min-height: 25rem;
+    padding: 1.7rem;
+  }
+}

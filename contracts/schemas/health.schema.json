@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/health.schema.json",
+  "title": "HealthResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "service"],
+  "properties": {
+    "status": { "const": "ok" },
+    "service": { "enum": ["api", "database"] }
+  }
+}

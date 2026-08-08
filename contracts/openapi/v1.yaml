@@ -1,0 +1,314 @@
+openapi: 3.1.0
+info:
+  title: FateRadar API
+  version: 0.1.0
+  description: Phase 1 identity and service-health contract.
+servers:
+  - url: /
+    description: Same-origin web entry
+tags:
+  - name: Health
+  - name: Identity
+paths:
+  /api/v1/health/live:
+    get:
+      operationId: getLiveness
+      tags: [Health]
+      summary: Confirm that the API process can serve requests
+      responses:
+        "200":
+          description: API process is live
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /api/v1/health/ready:
+    get:
+      operationId: getReadiness
+      tags: [Health]
+      summary: Confirm that required durable dependencies are reachable
+      responses:
+        "200":
+          description: API and PostgreSQL are ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /api/v1/guest-sessions:
+    post:
+      operationId: createGuestSession
+      tags: [Identity]
+      summary: Create or rotate a short-lived anonymous browser session
+      responses:
+        "201":
+          description: Guest Session created; opaque token is set as an HttpOnly cookie
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuestSessionResponse"
+  /api/v1/auth/otp/request:
+    post:
+      operationId: requestOtp
+      tags: [Identity]
+      summary: Request a phone or email one-time code through the configured adapter
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpRequest"
+      responses:
+        "202":
+          description: Request accepted without disclosing whether an identity exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtpChallengeResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /api/v1/auth/otp/verify:
+    post:
+      operationId: verifyOtp
+      tags: [Identity]
+      summary: Verify a code and create a revocable Device Session
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpVerifyRequest"
+      responses:
+        "200":
+          description: Identity verified and Device Session cookie set
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSessionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /api/v1/auth/logout:
+    post:
+      operationId: logout
+      tags: [Identity]
+      summary: Revoke the current Device Session
+      security:
+        - deviceSession: []
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "204":
+          description: Current Device Session revoked
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/account:
+    get:
+      operationId: getAccount
+      tags: [Identity]
+      summary: Read the current internal User and verified Login Identities
+      security:
+        - deviceSession: []
+      responses:
+        "200":
+          description: Current account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+components:
+  securitySchemes:
+    deviceSession:
+      type: apiKey
+      in: cookie
+      name: mingli_session
+  parameters:
+    CsrfToken:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 32
+  schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [status, service]
+      properties:
+        status:
+          type: string
+          const: ok
+        service:
+          type: string
+          enum: [api, database]
+    GuestSessionResponse:
+      type: object
+      additionalProperties: false
+      required: [status, expires_at, csrf_token]
+      properties:
+        status:
+          type: string
+          const: active
+        expires_at:
+          type: string
+          format: date-time
+        csrf_token:
+          type: string
+          minLength: 32
+    OtpRequest:
+      type: object
+      additionalProperties: false
+      required: [channel, destination]
+      properties:
+        channel:
+          type: string
+          enum: [phone, email]
+        destination:
+          type: string
+          minLength: 3
+          maxLength: 320
+    OtpChallengeResponse:
+      type: object
+      additionalProperties: false
+      required: [challenge_id, expires_at, retry_after_seconds]
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        expires_at:
+          type: string
+          format: date-time
+        retry_after_seconds:
+          type: integer
+          minimum: 0
+        development_code:
+          type: string
+          description: Present only in local/test with the explicit Fake adapter.
+    OtpVerifyRequest:
+      type: object
+      additionalProperties: false
+      required: [challenge_id, code]
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          pattern: "^[0-9]{6}$"
+    AuthSessionResponse:
+      type: object
+      additionalProperties: false
+      required: [user_id, session_id, expires_at, csrf_token]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        session_id:
+          type: string
+          format: uuid
+        expires_at:
+          type: string
+          format: date-time
+        csrf_token:
+          type: string
+          minLength: 32
+    LoginIdentitySummary:
+      type: object
+      additionalProperties: false
+      required: [id, provider, masked_destination, verified_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        provider:
+          type: string
+          enum: [phone, email]
+        masked_destination:
+          type: string
+        verified_at:
+          type: string
+          format: date-time
+    AccountResponse:
+      type: object
+      additionalProperties: false
+      required: [user_id, identities]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        identities:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoginIdentitySummary"
+    Problem:
+      type: object
+      additionalProperties: false
+      required: [type, title, status, request_id]
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        request_id:
+          type: string
+  responses:
+    BadRequest:
+      description: Invalid or expired request
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Unauthorized:
+      description: A valid Device Session is required
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Forbidden:
+      description: CSRF or origin validation failed
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    TooManyRequests:
+      description: Rate or attempt limit reached
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    ServiceUnavailable:
+      description: Required dependency is unavailable
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
