@@ -210,13 +210,15 @@ class ReadingOrchestrator:
                 checkpoint.prepared,
                 checkpoint.attempt_count,
             )
-        return await self._prepare(job, checkpoint.attempt_count)
+        return await self._prepare(job)
 
     async def _prepare(
         self,
         job: ReadingJob,
-        attempt_count: int,
     ) -> ReadingOutcome:
+        # A successful no-token Prepare followed by host death before this
+        # checkpoint commits can leave an orphan Runtime Root. It is not safe
+        # to invent request idempotency or replay that unknown Prepare here.
         try:
             result = await self.runtime.execute(job.prepare_command)
         except RuntimeTransportError:
@@ -224,7 +226,7 @@ class ReadingOrchestrator:
             return ReadingOutcome(status=ReadingStatus.RUNTIME_UNKNOWN)
         if isinstance(result, Prepared):
             await self.repository.record_prepared(job.id, result, self.clock.now())
-            return await self._generate(job, result, attempt_count)
+            return ReadingOutcome(status=ReadingStatus.PREPARED)
         if isinstance(result, Stopped):
             if result.reason == "need_input":
                 await self.repository.record_waiting_input(
@@ -255,52 +257,56 @@ class ReadingOrchestrator:
             language=job.language,
             max_output_chars=job.max_output_chars,
         )
-        for attempt_number in range(completed_attempts + 1, job.max_attempts + 1):
-            candidate: NarrativeCandidate | None = None
-            errors: tuple[str, ...]
-            public_copy: str | None = None
-            try:
-                candidate = await self.model.generate(request)
-                guard_result = self.guard.validate(
-                    candidate,
-                    brief,
-                    job.output_contract,
-                )
-                errors = guard_result.errors
-                if guard_result.passed:
-                    try:
-                        public_copy = self.assembler.assemble(
-                            candidate,
-                            brief,
-                            job.output_contract,
-                        )
-                    except PublicCopyAssemblyError:
-                        errors = ("public_copy_invalid",)
-            except NarrativeGenerationError:
-                errors = ("model_generation_failed",)
+        if completed_attempts >= job.max_attempts:
+            await self.repository.mark_delayed(job.id, self.clock.now())
+            return ReadingOutcome(status=ReadingStatus.DELAYED)
 
-            if public_copy is None:
-                await self.repository.record_generation_attempt(
-                    job.id,
-                    attempt_number,
-                    candidate,
-                    errors,
-                    self.clock.now(),
-                )
-                continue
-            if candidate is None:
-                raise OrchestratorInvariantError("public copy exists without a Narrative Candidate")
-            await self.repository.record_successful_attempt(
+        attempt_number = completed_attempts + 1
+        candidate: NarrativeCandidate | None = None
+        errors: tuple[str, ...]
+        public_copy: str | None = None
+        try:
+            candidate = await self.model.generate(request)
+            guard_result = self.guard.validate(
+                candidate,
+                brief,
+                job.output_contract,
+            )
+            errors = guard_result.errors
+            if guard_result.passed:
+                try:
+                    public_copy = self.assembler.assemble(
+                        candidate,
+                        brief,
+                        job.output_contract,
+                    )
+                except PublicCopyAssemblyError:
+                    errors = ("public_copy_invalid",)
+        except NarrativeGenerationError:
+            errors = ("model_generation_failed",)
+
+        if public_copy is None:
+            await self.repository.record_generation_attempt(
                 job.id,
                 attempt_number,
                 candidate,
-                public_copy,
+                errors,
                 self.clock.now(),
             )
-            return await self._complete(job.id, prepared, public_copy)
-
-        await self.repository.mark_delayed(job.id, self.clock.now())
-        return ReadingOutcome(status=ReadingStatus.DELAYED)
+            if attempt_number >= job.max_attempts:
+                await self.repository.mark_delayed(job.id, self.clock.now())
+                return ReadingOutcome(status=ReadingStatus.DELAYED)
+            return ReadingOutcome(status=ReadingStatus.PREPARED)
+        if candidate is None:
+            raise OrchestratorInvariantError("public copy exists without a Narrative Candidate")
+        await self.repository.record_successful_attempt(
+            job.id,
+            attempt_number,
+            candidate,
+            public_copy,
+            self.clock.now(),
+        )
+        return ReadingOutcome(status=ReadingStatus.COMPLETING)
 
     async def _complete(
         self,
@@ -315,11 +321,9 @@ class ReadingOrchestrator:
         try:
             result = await self.runtime.execute(command)
         except RuntimeTransportError:
-            try:
-                result = await self.runtime.execute(command)
-            except RuntimeTransportError:
-                await self.repository.mark_runtime_unknown(job_id, self.clock.now())
-                return ReadingOutcome(status=ReadingStatus.RUNTIME_UNKNOWN)
+            # The completion intent is already durable. Requeue this stage so
+            # the next transaction replays the exact token and copy once.
+            return ReadingOutcome(status=ReadingStatus.COMPLETING)
 
         if isinstance(result, Accepted):
             if result.state_token != prepared.state_token:

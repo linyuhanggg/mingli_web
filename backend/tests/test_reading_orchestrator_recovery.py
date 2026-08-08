@@ -66,14 +66,22 @@ async def test_complete_transport_unknown_replays_identical_token_and_copy() -> 
     job = make_job(orchestrator, contracts, narrative)
     repository = MemoryRepository(orchestrator, job)
 
-    outcome = await orchestrator.ReadingOrchestrator(
+    machine = orchestrator.ReadingOrchestrator(
         repository=repository,
         runtime=runtime,
         model=ScriptedModel([candidate]),
         guard=orchestrator.NarrativeGuard(),
         assembler=orchestrator.PublicCopyAssembler(),
         clock=FixedClock(),
-    ).run(job.id)
+    )
+
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.COMPLETING
+    retry_outcome = await machine.run(job.id)
+    assert retry_outcome.status is orchestrator.ReadingStatus.COMPLETING
+    assert [command.kind for command in runtime.commands] == ["prepare", "complete"]
+
+    outcome = await machine.run(job.id)
 
     first, replay = runtime.commands[1:]
     assert first.state_token == replay.state_token
@@ -106,6 +114,7 @@ async def test_successful_attempt_and_completion_intent_survive_one_atomic_crash
         clock=FixedClock(),
     )
 
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
     with pytest.raises(InjectedCrash):
         await machine.run(job.id)
 
@@ -133,15 +142,19 @@ async def test_accepted_token_must_equal_the_prepared_token() -> None:
     job = make_job(orchestrator, contracts, narrative)
     repository = MemoryRepository(orchestrator, job)
 
+    machine = orchestrator.ReadingOrchestrator(
+        repository=repository,
+        runtime=runtime,
+        model=ScriptedModel([make_candidate(narrative)]),
+        guard=orchestrator.NarrativeGuard(),
+        assembler=orchestrator.PublicCopyAssembler(),
+        clock=FixedClock(),
+    )
+
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.COMPLETING
     with pytest.raises(errors.OrchestratorInvariantError, match="token"):
-        await orchestrator.ReadingOrchestrator(
-            repository=repository,
-            runtime=runtime,
-            model=ScriptedModel([make_candidate(narrative)]),
-            guard=orchestrator.NarrativeGuard(),
-            assembler=orchestrator.PublicCopyAssembler(),
-            clock=FixedClock(),
-        ).run(job.id)
+        await machine.run(job.id)
 
 
 async def test_persisted_completion_intent_recovers_without_regeneration() -> None:

@@ -367,6 +367,8 @@ stateDiagram-v2
 - 子进程启动后若发生“结果是否返回不明”的传输故障，不得自动再发一个无 token `prepare`；
 - 该情况进入 `runtime_unknown` 人工/恢复队列，避免悄悄重起一盘。
 
+这里存在一个不能靠网站事务消除的窗口：无 token `prepare` 已在 Runtime 成功创建 Root，但宿主在收到响应或把 Prepared token 提交到 PostgreSQL 前崩溃，可能留下无法关联的孤儿 Runtime Root。这个窗口不具备 exactly-once 语义，也不得给 5.1 私加请求幂等含义来掩盖。P0 通过调用超时、Runtime 单副本、禁止自动重放，以及孤儿 Root 审计和清理流程控制风险；只有 Prepared token 已提交后，后续阶段才能按持久化 checkpoint 安全恢复。
+
 `complete` 不同：同一 token、同一候选稿可安全重放，核心会返回第一次接纳的正文。
 
 ## 9. 单独大模型的调用合同
@@ -785,7 +787,7 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 6. Candidate JSON Schema、Narrative Guard 和组装器通过反例测试；
 7. 正常路径一次模型调用，失败路径有明确上限且不会形成 Agent loop；
 8. complete 前后字节一致，Accepted 后不再改文；
-9. 崩溃恢复不会重复起盘、重复正文或重复核销；
+9. Prepared token 提交后，崩溃恢复不会重复起盘、重复正文或重复核销；无 token `prepare` 的提交前孤儿窗口被明确审计，且不伪称 exactly-once；
 10. 免费、八字深度与六爻一问的输出范围和页面组成有版本快照；
 11. `state_token`、出生资料、Prompt 和支付密钥不进入客户端或日志；
 12. 模型/Prompt/Runtime 任一升级都能通过版本化灰度，不影响历史交付。

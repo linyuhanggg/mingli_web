@@ -26,3 +26,9 @@
 - 数据库迁移以 PostgreSQL 为目标；测试数据库不承载生产事实。
 - 所有外部 Gate 保持关闭，不以页面入口或占位配置冒充渠道已经开通。
 - 私人页面、API、Cookie 和日志的安全边界先于真实渠道接入建立。
+
+## Runtime 恢复边界
+
+Worker 每次事务只推进一个持久化阶段：Prepare 后提交 Prepared、一次模型尝试后提交 attempt（成功时与 exact completion intent 原子提交）、Complete 后提交 Accepted。已提交的 token、attempt 和 completion intent 可在租约重领后恢复。
+
+无 token `prepare` 仍有不可消除的提交前窗口：Runtime 可能已经创建 Root，而宿主在响应到达或 Prepared 提交前崩溃，留下孤儿 Runtime Root。此处不宣称 exactly-once，也不自动重放无 token Prepare。上线前必须落实调用超时、Runtime 单副本、孤儿审计与清理手册；未知结果进入 `runtime_unknown`。

@@ -443,6 +443,10 @@ uv run --project backend pytest backend/tests/test_worker.py backend/tests/test_
 
 Keep the current generic Worker loop. Add reading-specific implementations through dependency construction; do not turn `worker/main.py` into the domain module.
 
+Each Worker transaction advances exactly one durable orchestration stage. Prepare commits `Prepared` before requeueing; one model attempt commits its attempt record (and, on success, the exact completion intent) before requeueing; Complete commits `Accepted` separately. Do not cascade prepare, model and complete through one database transaction. Prove the boundaries with the real orchestrator and PostgreSQL, including a failed Accepted commit replay with the same token and byte-identical copy, plus a committed failed model attempt that resumes at the next attempt number.
+
+Do not claim exactly-once for an initial no-token Prepare: if the Runtime succeeds before the response or Prepared checkpoint commits, the Runtime may retain an orphan Root. Never retry that unknown call automatically or add an idempotency meaning that 5.1 does not define; control the residual risk with timeouts, a single Runtime replica, and orphan audit/cleanup.
+
 **Step 5: Run tests and commit**
 
 ```bash

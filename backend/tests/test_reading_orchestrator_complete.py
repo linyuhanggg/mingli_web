@@ -39,14 +39,25 @@ async def test_prepared_is_persisted_before_the_model_and_copy_is_exact() -> Non
     job = make_job(orchestrator, contracts, narrative)
     repository = MemoryRepository(orchestrator, job, events)
 
-    outcome = await orchestrator.ReadingOrchestrator(
+    machine = orchestrator.ReadingOrchestrator(
         repository=repository,
         runtime=runtime,
         model=model,
         guard=orchestrator.NarrativeGuard(),
         assembler=orchestrator.PublicCopyAssembler(),
         clock=FixedClock(),
-    ).run(job.id)
+    )
+
+    prepared_outcome = await machine.run(job.id)
+    assert prepared_outcome.status is orchestrator.ReadingStatus.PREPARED
+    assert model.requests == []
+    assert [command.kind for command in runtime.commands] == ["prepare"]
+
+    completing_outcome = await machine.run(job.id)
+    assert completing_outcome.status is orchestrator.ReadingStatus.COMPLETING
+    assert [command.kind for command in runtime.commands] == ["prepare"]
+
+    outcome = await machine.run(job.id)
 
     assert events.index("repo:prepared") < events.index("model:generate")
     request_payload = model.requests[0].to_dict()
@@ -84,14 +95,19 @@ async def test_guard_failure_retries_the_same_model_once_then_succeeds() -> None
     job = make_job(orchestrator, contracts, narrative)
     repository = MemoryRepository(orchestrator, job)
 
-    outcome = await orchestrator.ReadingOrchestrator(
+    machine = orchestrator.ReadingOrchestrator(
         repository=repository,
         runtime=runtime,
         model=model,
         guard=guard,
         assembler=orchestrator.PublicCopyAssembler(),
         clock=FixedClock(),
-    ).run(job.id)
+    )
+
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.COMPLETING
+    outcome = await machine.run(job.id)
 
     assert outcome.status is orchestrator.ReadingStatus.ACCEPTED
     assert len(model.requests) == 2
@@ -115,14 +131,18 @@ async def test_exhausted_guard_failures_never_call_complete() -> None:
     job = make_job(orchestrator, contracts, narrative)
     repository = MemoryRepository(orchestrator, job)
 
-    outcome = await orchestrator.ReadingOrchestrator(
+    machine = orchestrator.ReadingOrchestrator(
         repository=repository,
         runtime=runtime,
         model=model,
         guard=guard,
         assembler=orchestrator.PublicCopyAssembler(),
         clock=FixedClock(),
-    ).run(job.id)
+    )
+
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    outcome = await machine.run(job.id)
 
     assert outcome.status is orchestrator.ReadingStatus.DELAYED
     assert [command.kind for command in runtime.commands] == ["prepare"]
