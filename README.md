@@ -6,12 +6,10 @@
 
 - 产品方向：[docs/PRODUCT_DIRECTION.md](./docs/PRODUCT_DIRECTION.md)
 - 商业化与技术蓝图：[docs/PRODUCT_BLUEPRINT_WEB_IOS_V2.md](./docs/PRODUCT_BLUEPRINT_WEB_IOS_V2.md)
-- mingli-master 5.1 单模型接入合同：[docs/MINGLI_V51_WEB_INTEGRATION.md](./docs/MINGLI_V51_WEB_INTEGRATION.md)
 - 共同语言：[CONTEXT.md](./CONTEXT.md)
 - 架构决策：[docs/adr](./docs/adr)
 - Phase 0 外部 Gate：[docs/PHASE_0_GATES.md](./docs/PHASE_0_GATES.md)
 - 当前实施计划：[docs/plans/2026-08-09-phase-0-1-web-foundation.md](./docs/plans/2026-08-09-phase-0-1-web-foundation.md)
-- 下一阶段命理接入计划：[docs/plans/2026-08-09-mingli-v51-web-integration.md](./docs/plans/2026-08-09-mingli-v51-web-integration.md)
 
 ## 目录边界
 
@@ -82,4 +80,4 @@ Metis 紫薇及其开源仓库只作为信息层级和交互参考，不复制�
 
 ## 下一阶段入口
 
-Phase 2 严格从 [mingli-master 5.1 接入计划](./docs/plans/2026-08-09-mingli-v51-web-integration.md) 的 Task 1 开始：先冻结 Command/Result、Candidate 与 Output Contract 四组 JSON Schema，再深化 Runtime/Model Fake Ports、三类 Request Compiler、Narrative Guard 和显式 Reading Orchestrator。真实 Runtime 必须等 Linux Runtime Gate 通过后才启用。当前 `/app/profile/new` 和 `/app/ask/liuyao` 只明确说明下一阶段，不伪造排盘结果。
+Phase 2 先冻结 Command/Result、Candidate 与 Output Contract 四组 JSON Schema，再深化 Runtime/Model Fake Ports、三类 Request Compiler、Narrative Guard 和显式 Reading Orchestrator。真实 Runtime 必须等 Linux Runtime Gate 通过后才启用。当前 `/app/profile/new` 和 `/app/ask/liuyao` 只明确说明下一阶段，不伪造排盘结果。

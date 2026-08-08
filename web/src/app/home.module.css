@@ -14,11 +14,9 @@
   right: max(-12rem, -10vw);
   width: min(33rem, 86vw);
   aspect-ratio: 1;
-  border: 1px solid rgb(169 133 63 / 28%);
+  border: 1px solid var(--border-hero-orbit);
   border-radius: 50%;
-  box-shadow:
-    0 0 0 3rem rgb(169 133 63 / 4%),
-    0 0 0 7rem rgb(169 133 63 / 3%);
+  box-shadow: var(--shadow-hero-orbit);
   content: "";
 }
 
@@ -32,7 +30,7 @@
   align-items: center;
   gap: 0.55rem;
   margin: 0 0 1rem;
-  color: var(--gold-500);
+  color: var(--ink-700);
   font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -87,7 +85,7 @@
   gap: 0.65rem 1rem;
   margin: 1.5rem 0 0;
   padding: 0;
-  color: var(--ink-500);
+  color: var(--ink-700);
   font-size: 0.78rem;
   list-style: none;
 }
@@ -143,7 +141,11 @@
 }
 
 .method .sectionHeader p {
-  color: rgb(248 243 231 / 65%);
+  color: var(--text-on-dark-muted);
+}
+
+.method .sectionHeader .eyebrow {
+  color: var(--gold-400);
 }
 
 .method .sectionHeader {
@@ -163,7 +165,7 @@
   grid-template-columns: 2.75rem 1fr;
   gap: 0.8rem;
   padding-block: 1.2rem;
-  border-top: 1px solid rgb(248 243 231 / 14%);
+  border-top: 1px solid var(--border-on-dark);
 }
 
 .steps strong {
@@ -184,14 +186,14 @@
 
 .sampleCard {
   padding: clamp(1.4rem, 4vw, 2.4rem);
-  border: 1px solid rgb(18 58 50 / 12%);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background: var(--white);
   box-shadow: var(--shadow-card);
 }
 
 .sampleCard small {
-  color: var(--gold-500);
+  color: var(--ink-700);
   font-weight: 800;
   letter-spacing: 0.12em;
 }
@@ -208,7 +210,7 @@
 }
 
 .pricing {
-  background: #eee5d3;
+  background: var(--ivory-200);
 }
 
 .priceGrid {
@@ -221,9 +223,9 @@
   min-height: 18rem;
   flex-direction: column;
   padding: 1.5rem;
-  border: 1px solid rgb(18 58 50 / 13%);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: rgb(255 253 247 / 72%);
+  background: var(--surface-ivory-translucent);
 }
 
 .priceCard h3 {
@@ -235,6 +237,7 @@
   margin: 1.3rem 0 0;
   font-family: var(--font-serif);
   font-size: 2.8rem;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 

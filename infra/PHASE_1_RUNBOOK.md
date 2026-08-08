@@ -23,8 +23,12 @@ docker compose --env-file infra/.env.example -f infra/compose.local.yml up --bui
 - `web` 只负责页面、私人应用壳和本地 `/api` rewrite；
 - `api` 负责 Cookie、CSRF、Guest Session、Login Identity 和 Device Session；
 - `worker` 是独立进程，目前只运行空任务源，不伪造 Phase 2 任务；
-- PostgreSQL 是持久事实源；Redis 已建立但 Phase 1 的 Fake OTP 仍为进程内状态；
+- PostgreSQL 是持久事实源；Redis 已建立但 Phase 1 的 Fake OTP、目标 cooldown 与游客/网络窗口限流仍为进程内状态，不能用于多副本真实发送；
 - `edge` 把 `/api/` 和网页保持在同一个浏览器 origin。
+
+API 只在直接连接来源命中 `MINGLI_TRUSTED_PROXY_CIDRS` 时解析
+`X-Forwarded-For`，并从右向左跳过可信代理。入口 Nginx 会覆写该头为
+`$remote_addr`，避免客户端自行伪造。生产环境必须把 CIDR 收紧为实际代理网段。
 
 ## Fake 边界
 

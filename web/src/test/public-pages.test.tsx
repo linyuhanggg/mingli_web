@@ -23,8 +23,11 @@ describe("public contract pages", () => {
   it("explains calculation, evidence, accepted copy, and AI boundaries", () => {
     render(<MethodologyPage />);
     const main = screen.getByRole("main");
+    const pipeline = within(main).getByRole("list", { name: "标准解读链" });
 
-    expect(within(main).getByText(/prepare → Fact Brief/)).toBeVisible();
+    expect(within(pipeline).getAllByRole("listitem")).toHaveLength(8);
+    expect(within(pipeline).getByText("prepare")).toBeVisible();
+    expect(within(pipeline).getByText("Fact Brief")).toBeVisible();
     expect(within(main).getByText(/零命中就保持零/)).toBeVisible();
     expect(within(main).getByText(/已接纳正文/)).toBeVisible();
     expect(within(main).getByText(/模型不能自行算盘/)).toBeVisible();

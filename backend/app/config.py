@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Literal, Self
 
-from pydantic import SecretStr, model_validator
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Environment = Literal["local", "test", "staging", "production"]
@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     otp_ttl_seconds: int = 5 * 60
     otp_cooldown_seconds: int = 60
     otp_max_attempts: int = 5
+    otp_rate_window_seconds: int = Field(default=10 * 60, ge=1)
+    otp_guest_window_limit: int = Field(default=5, ge=1)
+    otp_network_window_limit: int = Field(default=30, ge=1)
+    trusted_proxy_cidrs: str = ""
     device_session_days: int = 30
     log_level: str = "INFO"
 

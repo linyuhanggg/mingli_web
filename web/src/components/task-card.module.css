@@ -3,9 +3,9 @@
   min-height: 22rem;
   flex-direction: column;
   padding: 1.35rem;
-  border: 1px solid rgb(18 58 50 / 12%);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: rgb(255 255 255 / 64%);
+  background: var(--surface-card-translucent);
   box-shadow: var(--shadow-card);
 }
 
@@ -15,18 +15,22 @@
 }
 
 .card:nth-child(3) {
-  background: #ede2ce;
+  background: var(--ivory-200);
 }
 
 .topline {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: var(--gold-500);
+  color: var(--ink-700);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.13em;
   text-transform: uppercase;
+}
+
+.card:nth-child(2) .topline {
+  color: var(--gold-400);
 }
 
 .card h3 {

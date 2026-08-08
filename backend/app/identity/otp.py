@@ -43,6 +43,68 @@ class OtpChallenge:
     consumed_at: datetime | None = None
 
 
+@dataclass(slots=True)
+class RateWindow:
+    started_at: datetime
+    count: int
+
+
+class InMemoryOtpRequestLimiter:
+    """Layered local/test limiter; a real delivery adapter requires Redis."""
+
+    def __init__(
+        self,
+        *,
+        window_seconds: int,
+        guest_limit: int,
+        network_limit: int,
+        max_keys: int = 20_000,
+    ) -> None:
+        self.window = timedelta(seconds=window_seconds)
+        self.guest_limit = guest_limit
+        self.network_limit = network_limit
+        self.max_keys = max_keys
+        self._guest_windows: dict[str, RateWindow] = {}
+        self._network_windows: dict[str, RateWindow] = {}
+        self._lock = asyncio.Lock()
+
+    async def check(self, *, guest_key: str, network_key: str) -> None:
+        now = datetime.now(UTC)
+        async with self._lock:
+            self._consume(self._guest_windows, guest_key, self.guest_limit, now)
+            self._consume(self._network_windows, network_key, self.network_limit, now)
+
+    def _consume(
+        self,
+        windows: dict[str, RateWindow],
+        key: str,
+        limit: int,
+        now: datetime,
+    ) -> None:
+        current = windows.get(key)
+        if current is None or now - current.started_at >= self.window:
+            if current is None and len(windows) >= self.max_keys:
+                self._drop_expired(windows, now)
+                if len(windows) >= self.max_keys:
+                    raise OtpRateLimited(max(1, int(self.window.total_seconds())))
+            windows[key] = RateWindow(started_at=now, count=1)
+            return
+
+        if current.count >= limit:
+            remaining = self.window - (now - current.started_at)
+            raise OtpRateLimited(max(1, int(remaining.total_seconds()) + 1))
+        current.count += 1
+
+    def _drop_expired(self, windows: dict[str, RateWindow], now: datetime) -> None:
+        expired = [
+            key
+            for key, value in windows.items()
+            if now - value.started_at >= self.window
+        ]
+        for key in expired:
+            windows.pop(key, None)
+
+
 def normalize_destination(channel: OtpChannel, destination: str) -> IdentityAddress:
     if channel == "phone":
         compact = "".join(character for character in destination if character.isdigit())

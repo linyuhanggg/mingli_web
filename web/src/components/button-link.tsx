@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import Link from "next/link";
 import type { ComponentPropsWithoutRef } from "react";
 
@@ -15,7 +16,7 @@ export function ButtonLink({
 }: ButtonLinkProps) {
   return (
     <Link
-      className={`${styles.button} ${styles[variant]} ${className}`.trim()}
+      className={clsx(styles.button, styles[variant], className)}
       {...props}
     />
   );

@@ -12,7 +12,8 @@ from app.api.problems import problem_response
 from app.api.router import build_api_router
 from app.config import Settings, get_settings
 from app.database import Database
-from app.identity.otp import InMemoryOtpChallengeStore
+from app.identity.otp import InMemoryOtpChallengeStore, InMemoryOtpRequestLimiter
+from app.network import parse_trusted_proxy_cidrs
 from app.observability import configure_logging, install_request_observability
 
 
@@ -48,6 +49,14 @@ def create_app(
         ttl_seconds=resolved_settings.otp_ttl_seconds,
         cooldown_seconds=resolved_settings.otp_cooldown_seconds,
         max_attempts=resolved_settings.otp_max_attempts,
+    )
+    application.state.otp_request_limiter = InMemoryOtpRequestLimiter(
+        window_seconds=resolved_settings.otp_rate_window_seconds,
+        guest_limit=resolved_settings.otp_guest_window_limit,
+        network_limit=resolved_settings.otp_network_window_limit,
+    )
+    application.state.trusted_proxy_networks = parse_trusted_proxy_cidrs(
+        resolved_settings.trusted_proxy_cidrs
     )
     application.state.otp_delivery = (
         FakeOtpDeliveryAdapter()

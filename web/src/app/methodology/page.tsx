@@ -15,9 +15,20 @@ export default function MethodologyPage() {
       title="先算再讲，证据和边界都能回看。"
       intro="命理核心、模型表达与产品交付各管一件事。换模型不会改盘，用户反馈也不会覆盖历史事实。"
     >
-      <div className={styles.pipeline} role="img" aria-label="标准解读链">
-        输入确认 → Profile Version → prepare → Fact Brief → 候选成稿 → 校验 → complete → Accepted
-      </div>
+      <ol className={styles.pipeline} aria-label="标准解读链">
+        {[
+          "输入确认",
+          "Profile Version",
+          "prepare",
+          "Fact Brief",
+          "候选成稿",
+          "校验",
+          "complete",
+          "Accepted",
+        ].map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
       <section className={styles.grid3}>
         <article className={styles.card}>
           <h2>确定性命理层</h2>

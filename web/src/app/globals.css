@@ -12,6 +12,20 @@
   --gold-400: #c1a263;
   --terracotta-500: #a85e46;
   --white: #ffffff;
+  --border-subtle: rgb(18 58 50 / 12%);
+  --border-control: rgb(18 58 50 / 20%);
+  --border-emphasis: rgb(18 58 50 / 25%);
+  --border-on-dark: rgb(248 243 231 / 14%);
+  --surface-card-translucent: rgb(255 255 255 / 64%);
+  --surface-ivory-translucent: rgb(255 253 247 / 72%);
+  --surface-header-translucent: rgb(255 253 247 / 88%);
+  --border-hero-orbit: rgb(169 133 63 / 28%);
+  --text-on-dark-secondary: rgb(248 243 231 / 78%);
+  --text-on-dark-muted: rgb(248 243 231 / 68%);
+  --shadow-hero-orbit:
+    0 0 0 3rem rgb(169 133 63 / 4%),
+    0 0 0 7rem rgb(169 133 63 / 3%);
+  --shadow-action: 0 10px 28px rgb(10 40 35 / 18%);
   --shadow-soft: 0 22px 60px rgb(16 52 45 / 10%);
   --shadow-card: 0 12px 36px rgb(16 52 45 / 8%);
   --radius-sm: 0.75rem;

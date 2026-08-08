@@ -11,8 +11,8 @@
 | 公安联网备案 | 待确认 | 网站开通后的备案记录与真实页脚链接 | 页脚保留合规信息区域，不展示虚构编号 |
 | 微信支付商户能力 | 待确认 | JSAPI、H5、Native 各产品获批和小额实测 | `PaymentGateway` 仅提供 Fake，不加载 SDK |
 | 支付宝商户能力 | 待确认 | 手机/电脑网站支付获批和小额实测 | `PaymentGateway` 仅提供 Fake，不加载 SDK |
-| 短信通道与模板 | 待确认 | 供应商、签名、模板、数据位置与防轰炸评审 | 手机 OTP 使用 Fake Adapter |
-| 邮件通道与模板 | 待确认 | 发信域名、供应商、退信和数据处理评审 | 邮箱 OTP 使用 Fake Adapter |
+| 短信通道与模板 | 待确认 | 供应商、签名、模板、数据位置与防轰炸评审 | 手机 OTP 使用 Fake Adapter；本地目标/游客/网络多层限流不能替代生产 Redis 限流 |
+| 邮件通道与模板 | 待确认 | 发信域名、供应商、退信和数据处理评审 | 邮箱 OTP 使用 Fake Adapter；真实发送在共享限流与渠道 Gate 前保持关闭 |
 | 模型供应商和数据位置 | 待确认 | DPA、保存期限、训练退出、预算、固定 Model Profile 和故障策略 | `ModelGateway` 使用结构化 Fake；不运行 Agent |
 | mingli-master 5.1 发布物 | 待确认 | source commit、217 文件 manifest、协议版本、describe digest 与 bazi/fortune/liuyao allowlist | `RuntimeAdapter` 使用固定 Fake 能力 |
 | Linux Runtime 制品 | 待确认 | Linux x86_64 wheel/hash 审计、runtime-integrity、SBOM、镜像 digest 和三能力黄金回归 | 不把现有 macOS arm64 依赖锁用于生产 |

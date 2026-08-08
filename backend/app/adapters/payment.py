@@ -17,6 +17,20 @@ class PaymentNotificationResult:
     channel_transaction_id: str | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class PaymentQueryResult:
+    status: Literal["unavailable", "pending", "succeeded", "failed"]
+    payment_succeeded: bool
+    channel_transaction_id: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class RefundResult:
+    status: Literal["unavailable", "pending", "succeeded", "failed"]
+    refund_succeeded: bool
+    channel_refund_id: str | None = None
+
+
 class PaymentGateway(Protocol):
     async def create_checkout(
         self,
@@ -27,6 +41,18 @@ class PaymentGateway(Protocol):
     ) -> CheckoutResult: ...
 
     async def verify_notification(self, payload: bytes) -> PaymentNotificationResult: ...
+
+    async def query_payment(self, *, attempt_id: UUID) -> PaymentQueryResult: ...
+
+    async def request_refund(
+        self,
+        *,
+        payment_id: UUID,
+        amount_minor: int,
+        reason: str,
+    ) -> RefundResult: ...
+
+    async def query_refund(self, *, refund_id: UUID) -> RefundResult: ...
 
 
 class FakePaymentGateway:
@@ -45,3 +71,21 @@ class FakePaymentGateway:
     async def verify_notification(self, payload: bytes) -> PaymentNotificationResult:
         del payload
         return PaymentNotificationResult(verified=False, payment_succeeded=False)
+
+    async def query_payment(self, *, attempt_id: UUID) -> PaymentQueryResult:
+        del attempt_id
+        return PaymentQueryResult(status="unavailable", payment_succeeded=False)
+
+    async def request_refund(
+        self,
+        *,
+        payment_id: UUID,
+        amount_minor: int,
+        reason: str,
+    ) -> RefundResult:
+        del payment_id, amount_minor, reason
+        return RefundResult(status="unavailable", refund_succeeded=False)
+
+    async def query_refund(self, *, refund_id: UUID) -> RefundResult:
+        del refund_id
+        return RefundResult(status="unavailable", refund_succeeded=False)

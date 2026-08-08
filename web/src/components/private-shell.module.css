@@ -4,7 +4,7 @@
 }
 
 .header {
-  border-bottom: 1px solid rgb(18 58 50 / 12%);
+  border-bottom: 1px solid var(--border-subtle);
   background: var(--ivory-50);
 }
 
@@ -33,7 +33,7 @@
   width: min(46rem, 100%);
   margin-inline: auto;
   padding: clamp(1.25rem, 5vw, 2.8rem);
-  border: 1px solid rgb(18 58 50 / 12%);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   background: var(--white);
   box-shadow: var(--shadow-soft);
@@ -59,7 +59,7 @@
 
 .nextCard {
   padding: 1rem;
-  border: 1px solid rgb(18 58 50 / 12%);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   background: var(--ivory-50);
 }
@@ -69,6 +69,6 @@
 }
 
 .nextCard span {
-  color: var(--ink-500);
+  color: var(--ink-700);
   font-size: 0.86rem;
 }

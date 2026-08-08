@@ -37,6 +37,7 @@ services:
       MINGLI_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-mingli}:${POSTGRES_PASSWORD:-mingli-local}@postgres:5432/${POSTGRES_DB:-mingli}
       MINGLI_COOKIE_SECURE: "false"
       MINGLI_OTP_ADAPTER: fake
+      MINGLI_TRUSTED_PROXY_CIDRS: ${MINGLI_TRUSTED_PROXY_CIDRS:-10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
       MINGLI_IDENTITY_HASH_KEY: ${MINGLI_IDENTITY_HASH_KEY:-local-only-identity-hash-key-change-in-production}
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
     depends_on:

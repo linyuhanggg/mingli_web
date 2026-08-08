@@ -1,8 +1,8 @@
 .header {
   position: relative;
   z-index: 10;
-  border-bottom: 1px solid rgb(18 58 50 / 10%);
-  background: rgb(255 253 247 / 88%);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-header-translucent);
   backdrop-filter: blur(16px);
 }
 
@@ -34,7 +34,7 @@
 
 .brand small {
   margin-top: 0.25rem;
-  color: var(--ink-500);
+  color: var(--ink-700);
   font-size: 0.68rem;
   letter-spacing: 0.18em;
 }
@@ -57,7 +57,7 @@
   align-items: center;
   gap: 0.25rem;
   overflow-x: auto;
-  border-top: 1px solid rgb(18 58 50 / 8%);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .nav a {
@@ -83,7 +83,7 @@
   min-height: 2.75rem;
   align-items: center;
   padding-inline: 0.95rem;
-  border: 1px solid rgb(18 58 50 / 20%);
+  border: 1px solid var(--border-control);
   border-radius: 999px;
   color: var(--ink-900);
   font-size: 0.88rem;
@@ -107,7 +107,7 @@
 
 .footerCopy p {
   margin: 0.8rem 0 0;
-  color: rgb(248 243 231 / 68%);
+  color: var(--text-on-dark-muted);
   font-size: 0.9rem;
 }
 
@@ -120,15 +120,15 @@
 .footerLinks a {
   min-height: 2.75rem;
   align-content: center;
-  color: rgb(248 243 231 / 78%);
+  color: var(--text-on-dark-secondary);
   font-size: 0.88rem;
 }
 
 .legal {
   margin-top: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid rgb(248 243 231 / 12%);
-  color: rgb(248 243 231 / 55%);
+  border-top: 1px solid var(--border-on-dark);
+  color: var(--text-on-dark-muted);
   font-size: 0.76rem;
 }
 

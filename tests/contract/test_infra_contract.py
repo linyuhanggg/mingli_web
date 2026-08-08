@@ -36,6 +36,11 @@ def test_api_location_preserves_security_headers_with_no_store() -> None:
         assert f"add_header {header} " in api_location
 
 
+def test_nginx_overwrites_the_client_forwarding_header_at_ingress() -> None:
+    for path in ("/api/", "/"):
+        assert "proxy_set_header X-Forwarded-For $remote_addr;" in nginx_location(path)
+
+
 def test_compose_declares_the_phase_one_process_boundaries() -> None:
     with COMPOSE_CONFIG.open(encoding="utf-8") as stream:
         compose: dict[str, Any] = yaml.safe_load(stream)
@@ -48,3 +53,4 @@ def test_compose_declares_the_phase_one_process_boundaries() -> None:
         "web",
         "edge",
     }
+    assert "MINGLI_TRUSTED_PROXY_CIDRS" in compose["services"]["api"]["environment"]

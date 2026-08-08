@@ -1,7 +1,7 @@
 from typing import Any
 from uuid import UUID
 
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
 
 
@@ -192,3 +192,133 @@ async def test_account_requires_a_device_session(client: AsyncClient) -> None:
 
     assert response.status_code == 401
     assert response.json()["title"] == "Authentication required"
+
+
+async def test_nonlocal_fake_response_omits_the_development_code(database: Any) -> None:
+    config = __import__("app.config", fromlist=["Settings"])
+    main = __import__("app.main", fromlist=["create_app"])
+    settings = config.Settings(
+        environment="staging",
+        database_url="sqlite+aiosqlite:///:memory:",
+        cookie_secure=True,
+        otp_adapter="fake",
+    )
+    application = main.create_app(settings=settings, database=database)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as staging_client:
+        headers = await create_guest(staging_client)
+        response = await staging_client.post(
+            "/api/v1/auth/otp/request",
+            headers=headers,
+            json={"channel": "phone", "destination": "13900139000"},
+        )
+
+    assert response.status_code == 202
+    assert "development_code" not in response.json()
+
+
+async def test_otp_requests_are_limited_across_destinations_for_one_guest(
+    database: Any,
+) -> None:
+    config = __import__("app.config", fromlist=["Settings"])
+    main = __import__("app.main", fromlist=["create_app"])
+    settings = config.Settings(
+        environment="test",
+        database_url="sqlite+aiosqlite:///:memory:",
+        cookie_secure=True,
+        otp_adapter="fake",
+        otp_guest_window_limit=2,
+        otp_network_window_limit=10,
+    )
+    application = main.create_app(settings=settings, database=database)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as limited_client:
+        headers = await create_guest(limited_client)
+        responses = [
+            await limited_client.post(
+                "/api/v1/auth/otp/request",
+                headers=headers,
+                json={"channel": "phone", "destination": destination},
+            )
+            for destination in ("13800138000", "13900139000", "13700137000")
+        ]
+
+    assert [response.status_code for response in responses] == [202, 202, 429]
+
+
+async def test_otp_requests_are_limited_across_rotating_guest_sessions(
+    database: Any,
+) -> None:
+    config = __import__("app.config", fromlist=["Settings"])
+    main = __import__("app.main", fromlist=["create_app"])
+    settings = config.Settings(
+        environment="test",
+        database_url="sqlite+aiosqlite:///:memory:",
+        cookie_secure=True,
+        otp_adapter="fake",
+        otp_guest_window_limit=10,
+        otp_network_window_limit=2,
+    )
+    application = main.create_app(settings=settings, database=database)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as limited_client:
+        responses = []
+        for destination in ("13800138000", "13900139000", "13700137000"):
+            headers = await create_guest(limited_client)
+            responses.append(
+                await limited_client.post(
+                    "/api/v1/auth/otp/request",
+                    headers=headers,
+                    json={"channel": "phone", "destination": destination},
+                )
+            )
+
+    assert [response.status_code for response in responses] == [202, 202, 429]
+
+
+async def test_network_limiter_distinguishes_clients_behind_trusted_proxies(
+    database: Any,
+) -> None:
+    config = __import__("app.config", fromlist=["Settings"])
+    main = __import__("app.main", fromlist=["create_app"])
+    settings = config.Settings(
+        environment="test",
+        database_url="sqlite+aiosqlite:///:memory:",
+        cookie_secure=True,
+        otp_adapter="fake",
+        otp_guest_window_limit=10,
+        otp_network_window_limit=2,
+        trusted_proxy_cidrs="127.0.0.0/8,10.0.0.0/8",
+    )
+    application = main.create_app(settings=settings, database=database)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as limited_client:
+        csrf_headers = await create_guest(limited_client)
+        cases = (
+            ("203.0.113.10, 10.2.0.4", "13800138000"),
+            ("203.0.113.10, 10.2.0.4", "13900139000"),
+            ("203.0.113.11, 10.2.0.4", "13700137000"),
+            ("203.0.113.10, 10.2.0.4", "13600136000"),
+        )
+        responses = [
+            await limited_client.post(
+                "/api/v1/auth/otp/request",
+                headers={**csrf_headers, "X-Forwarded-For": forwarded_for},
+                json={"channel": "phone", "destination": destination},
+            )
+            for forwarded_for, destination in cases
+        ]
+
+    assert [response.status_code for response in responses] == [202, 202, 202, 429]

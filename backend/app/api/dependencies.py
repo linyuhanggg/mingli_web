@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.errors import ApiProblem
 from app.identity.cookies import CSRF_COOKIE, GUEST_COOKIE, SESSION_COOKIE
-from app.identity.models import DeviceSession
+from app.identity.models import DeviceSession, GuestSession
 from app.identity.repository import IdentityRepository
 from app.identity.security import hash_token
 
@@ -35,7 +35,7 @@ def _valid_double_submit(request: Request) -> tuple[str, str] | None:
 async def require_guest_csrf(
     request: Request,
     session: AsyncSession = Depends(database_session),
-) -> None:
+) -> GuestSession:
     guest_token = request.cookies.get(GUEST_COOKIE)
     csrf = _valid_double_submit(request)
     if not guest_token or csrf is None:
@@ -47,6 +47,7 @@ async def require_guest_csrf(
     )
     if guest is None or not hmac.compare_digest(guest.csrf_token_hash, csrf_hash):
         raise ApiProblem(status=403, title="CSRF validation failed")
+    return guest
 
 
 async def require_device_session(

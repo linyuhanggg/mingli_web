@@ -12,7 +12,7 @@ from app.api.dependencies import (
 from app.api.errors import ApiProblem
 from app.config import Settings
 from app.identity.cookies import clear_device_cookies, set_device_cookies
-from app.identity.models import AuditEvent, DeviceSession
+from app.identity.models import AuditEvent, DeviceSession, GuestSession
 from app.identity.otp import InvalidDestination, InvalidOtp, OtpRateLimited
 from app.identity.repository import IdentityRepository
 from app.identity.schemas import (
@@ -22,6 +22,7 @@ from app.identity.schemas import (
     OtpVerifyRequest,
 )
 from app.identity.service import AuthService
+from app.network import resolve_client_ip
 
 router = APIRouter(prefix="/auth", tags=["Identity"])
 
@@ -43,16 +44,25 @@ def _auth_service(request: Request, session: AsyncSession) -> AuthService:
     "/otp/request",
     operation_id="requestOtp",
     response_model=OtpChallengeResponse,
+    response_model_exclude_none=True,
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def request_otp(
     request: Request,
     payload: OtpRequest,
     session: AsyncSession = Depends(database_session),
-    _: None = Depends(require_guest_csrf),
+    guest_session: GuestSession = Depends(require_guest_csrf),
 ) -> OtpChallengeResponse:
     settings: Settings = request.app.state.settings
     try:
+        network_key = resolve_client_ip(
+            request,
+            trusted_proxy_networks=request.app.state.trusted_proxy_networks,
+        )
+        await request.app.state.otp_request_limiter.check(
+            guest_key=str(guest_session.id),
+            network_key=network_key,
+        )
         requested = await _auth_service(request, session).request_otp(
             payload.channel, payload.destination
         )

@@ -13,12 +13,25 @@ async def test_fake_payment_never_reports_real_settlement() -> None:
         currency="CNY",
     )
     notification = await gateway.verify_notification(b"untrusted callback")
+    queried = await gateway.query_payment(attempt_id=uuid4())
+    refund = await gateway.request_refund(
+        payment_id=uuid4(),
+        amount_minor=2990,
+        reason="test-only",
+    )
+    queried_refund = await gateway.query_refund(refund_id=uuid4())
 
     assert checkout.channel == "fake"
     assert checkout.status == "unavailable"
     assert checkout.redirect_url is None
     assert notification.verified is False
     assert notification.payment_succeeded is False
+    assert queried.status == "unavailable"
+    assert queried.payment_succeeded is False
+    assert refund.status == "unavailable"
+    assert refund.refund_succeeded is False
+    assert queried_refund.status == "unavailable"
+    assert queried_refund.refund_succeeded is False
 
 
 async def test_fake_model_returns_schema_shaped_non_accepted_copy() -> None:

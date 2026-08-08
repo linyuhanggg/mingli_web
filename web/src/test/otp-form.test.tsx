@@ -162,3 +162,58 @@ it("turns a non-JSON bootstrap failure into a recoverable service message", asyn
   expect(await screen.findByText("安全会话已建立")).toBeVisible();
   expect(fetchMock).toHaveBeenCalledTimes(2);
 });
+
+it("validates the destination locally and associates the error with the field", async () => {
+  const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(
+    jsonResponse(
+      {
+        status: "active",
+        expires_at: "2026-08-10T00:00:00Z",
+        csrf_token: "guest-csrf-token-with-at-least-32-characters",
+      },
+      201,
+    ),
+  );
+  vi.stubGlobal("fetch", fetchMock);
+  const user = userEvent.setup();
+
+  render(<OtpForm />);
+
+  await screen.findByText("安全会话已建立");
+  const input = screen.getByRole("textbox", { name: "中国大陆手机号" });
+  await user.type(input, "123");
+  await user.click(screen.getByRole("button", { name: "发送验证码" }));
+
+  expect(await screen.findByText("请输入有效的中国大陆手机号")).toBeVisible();
+  expect(input).toHaveAttribute("aria-invalid", "true");
+  expect(input.getAttribute("aria-describedby")).toContain("otp-destination-error");
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+it("renders an OTP request failure next to the destination field", async () => {
+  const fetchMock = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(
+      jsonResponse(
+        {
+          status: "active",
+          expires_at: "2026-08-10T00:00:00Z",
+          csrf_token: "guest-csrf-token-with-at-least-32-characters",
+        },
+        201,
+      ),
+    )
+    .mockResolvedValueOnce(jsonResponse({ title: "请求过于频繁，请稍后重试" }, 429));
+  vi.stubGlobal("fetch", fetchMock);
+  const user = userEvent.setup();
+
+  render(<OtpForm />);
+
+  await screen.findByText("安全会话已建立");
+  const input = screen.getByRole("textbox", { name: "中国大陆手机号" });
+  await user.type(input, "13800138000");
+  await user.click(screen.getByRole("button", { name: "发送验证码" }));
+
+  expect(await screen.findByText("请求过于频繁，请稍后重试")).toBeVisible();
+  expect(input.getAttribute("aria-describedby")).toContain("otp-destination-error");
+});
