@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
 
 from app.persistence import ImmutableRecordError as ImmutableRecordError
+from app.profiles.models import ProfileVersion, SubjectProfile
 from app.readings.models import (
     AcceptedCopy,
     FactBrief,
@@ -83,6 +84,22 @@ class SqlReadingRepository:
     ) -> ReadingRoot:
         if (owner_user_id is None) == (owner_guest_session_id is None):
             raise ValueError("a Reading Root must have exactly one User or Guest owner")
+        if profile_version_id is not None:
+            profile_version = await self.session.get(ProfileVersion, profile_version_id)
+            if profile_version is None:
+                raise LookupError("ProfileVersion not found")
+            profile = await self.session.scalar(
+                select(SubjectProfile)
+                .where(SubjectProfile.id == profile_version.profile_id)
+                .with_for_update()
+            )
+            if profile is None:
+                raise ImmutableRecordError("ProfileVersion points to a missing SubjectProfile")
+            if (
+                profile.owner_user_id != owner_user_id
+                or profile.owner_guest_session_id != owner_guest_session_id
+            ):
+                raise ValueError("ProfileVersion owner must match the Reading Root owner")
         root = ReadingRoot(
             id=uuid4(),
             owner_user_id=owner_user_id,

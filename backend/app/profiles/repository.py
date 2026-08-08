@@ -5,9 +5,17 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import Select
 
 from app.profiles.models import ProfileVersion, SubjectProfile
 from app.security.envelope import EncryptedPayload, EnvelopeCipher
+
+
+def subject_profile_version_lock_statement(
+    profile_id: UUID,
+) -> Select[tuple[SubjectProfile]]:
+    """Serialize immutable Profile Version allocation per Subject Profile."""
+    return select(SubjectProfile).where(SubjectProfile.id == profile_id).with_for_update()
 
 
 class ProfileRepository:
@@ -38,6 +46,9 @@ class ProfileRepository:
         profile_id: UUID,
         payload: Mapping[str, object],
     ) -> ProfileVersion:
+        profile = await self.session.scalar(subject_profile_version_lock_statement(profile_id))
+        if profile is None:
+            raise LookupError("Subject Profile not found")
         current = await self.session.scalar(
             select(func.max(ProfileVersion.version)).where(ProfileVersion.profile_id == profile_id)
         )

@@ -242,3 +242,60 @@ def test_reading_version_numbers_are_serialized_by_a_postgresql_root_lock() -> N
     ).upper()
 
     assert "FOR UPDATE" in compiled
+
+
+def test_profile_version_numbers_are_serialized_by_a_postgresql_profile_lock() -> None:
+    profiles = importlib.import_module("app.profiles.repository")
+
+    compiled = str(
+        profiles.subject_profile_version_lock_statement(uuid4()).compile(
+            dialect=postgresql.dialect()
+        )
+    ).upper()
+
+    assert "FOR UPDATE" in compiled
+
+
+async def test_profile_version_requires_an_existing_locked_profile(
+    reading_database: Any,
+) -> None:
+    profiles = importlib.import_module("app.profiles.repository")
+    envelope = importlib.import_module("app.security.envelope")
+    cipher = envelope.EnvelopeCipher(key=b"k" * 32, key_id="test-key-v1")
+
+    async with reading_database.sessions() as session, session.begin():
+        repository = profiles.ProfileRepository(session, cipher)
+        with pytest.raises(LookupError, match="Profile"):
+            await repository.create_version(
+                profile_id=uuid4(),
+                payload={"birth_datetime": "1994-04-30T05:55:00+08:00"},
+            )
+
+
+async def test_reading_root_rejects_a_profile_version_owned_by_another_user(
+    reading_database: Any,
+) -> None:
+    identity_models = importlib.import_module("app.identity.models")
+    profiles = importlib.import_module("app.profiles.repository")
+    readings = importlib.import_module("app.readings.repository")
+    envelope = importlib.import_module("app.security.envelope")
+    cipher = envelope.EnvelopeCipher(key=b"k" * 32, key_id="test-key-v1")
+
+    async with reading_database.sessions() as session, session.begin():
+        profile_owner = identity_models.User()
+        other_user = identity_models.User()
+        session.add_all((profile_owner, other_user))
+        await session.flush()
+        profile_repository = profiles.ProfileRepository(session, cipher)
+        profile = await profile_repository.create_profile(owner_user_id=profile_owner.id)
+        profile_version = await profile_repository.create_version(
+            profile_id=profile.id,
+            payload={"birth_datetime": "1994-04-30T05:55:00+08:00"},
+        )
+
+        with pytest.raises(ValueError, match="owner"):
+            await readings.SqlReadingRepository(session, cipher).create_root(
+                owner_user_id=other_user.id,
+                profile_version_id=profile_version.id,
+                capability_id="bazi",
+            )
