@@ -1,0 +1,18 @@
+{
+  "schema_version": "mingli-narrative-candidate-v1",
+  "blocks": [
+    {
+      "block_id": "b1",
+      "block_type": "claim",
+      "text": "事业主线更适合先抓住可持续积累，再决定是否扩张方向。",
+      "subject_ref": "profile-version:test",
+      "dimension_id": "career",
+      "claim_kind_id": "kind.tendency",
+      "certainty_id": "certainty.tendency",
+      "fact_refs": ["fact:career-structure"],
+      "finding_refs": ["finding:career-main"],
+      "evidence_refs": ["evidence:classic-1"],
+      "limit_kind_ids": ["limit:traditional"]
+    }
+  ]
+}

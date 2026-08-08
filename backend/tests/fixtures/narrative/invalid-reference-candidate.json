@@ -1,0 +1,18 @@
+{
+  "schema_version": "mingli-narrative-candidate-v1",
+  "blocks": [
+    {
+      "block_id": "b1",
+      "block_type": "claim",
+      "text": "这段文字引用了当前 Brief 中不存在的事实。",
+      "subject_ref": "profile-version:test",
+      "dimension_id": "career",
+      "claim_kind_id": "kind.tendency",
+      "certainty_id": "certainty.tendency",
+      "fact_refs": ["fact:not-in-brief"],
+      "finding_refs": ["finding:career-main"],
+      "evidence_refs": ["evidence:classic-1"],
+      "limit_kind_ids": ["limit:traditional"]
+    }
+  ]
+}
