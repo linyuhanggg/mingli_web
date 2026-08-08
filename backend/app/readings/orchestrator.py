@@ -144,6 +144,15 @@ class ReadingRepository(Protocol):
         at: datetime,
     ) -> None: ...
 
+    async def record_successful_attempt(
+        self,
+        job_id: str,
+        attempt_number: int,
+        candidate: NarrativeCandidate,
+        public_copy: str,
+        at: datetime,
+    ) -> None: ...
+
     async def record_accepted(
         self,
         job_id: str,
@@ -270,17 +279,21 @@ class ReadingOrchestrator:
             except NarrativeGenerationError:
                 errors = ("model_generation_failed",)
 
-            await self.repository.record_generation_attempt(
+            if public_copy is None:
+                await self.repository.record_generation_attempt(
+                    job.id,
+                    attempt_number,
+                    candidate,
+                    errors,
+                    self.clock.now(),
+                )
+                continue
+            if candidate is None:
+                raise OrchestratorInvariantError("public copy exists without a Narrative Candidate")
+            await self.repository.record_successful_attempt(
                 job.id,
                 attempt_number,
                 candidate,
-                errors,
-                self.clock.now(),
-            )
-            if public_copy is None:
-                continue
-            await self.repository.record_completion_intent(
-                job.id,
                 public_copy,
                 self.clock.now(),
             )
@@ -309,6 +322,8 @@ class ReadingOrchestrator:
                 return ReadingOutcome(status=ReadingStatus.RUNTIME_UNKNOWN)
 
         if isinstance(result, Accepted):
+            if result.state_token != prepared.state_token:
+                raise OrchestratorInvariantError("Accepted token differs from the Prepared token")
             if result.public_copy != public_copy:
                 raise OrchestratorInvariantError(
                     "Accepted bytes differ from the persisted completion intent"

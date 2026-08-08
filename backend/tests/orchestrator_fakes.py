@@ -138,6 +138,25 @@ class MemoryRepository:
             completion_copy=public_copy,
         )
 
+    async def record_successful_attempt(
+        self,
+        job_id: str,
+        attempt_number: int,
+        candidate: Any,
+        public_copy: str,
+        at: datetime,
+    ) -> None:
+        del candidate, at
+        assert job_id == self.job.id
+        self.events.append(f"repo:successful_attempt:{attempt_number}")
+        self.attempts.append((attempt_number, ()))
+        self.checkpoint = replace(
+            self.checkpoint,
+            status=self.orchestrator.ReadingStatus.COMPLETING,
+            attempt_count=attempt_number,
+            completion_copy=public_copy,
+        )
+
     async def record_accepted(self, job_id: str, accepted: Any, at: datetime) -> None:
         del at
         assert job_id == self.job.id
