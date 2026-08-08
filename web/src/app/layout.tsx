@@ -23,10 +23,26 @@ export const viewport: Viewport = {
   themeColor: "#123a32",
 };
 
+const directionContract = `<!--
+THESIS: FateRadar turns time into a private, checkable archive; it refuses the empty-chat homepage.
+OWN-WORLD: Deep ink fields, warm paper, restrained gold rules, terracotta focus, serif reading hierarchy, and sans-serif controls.
+STORY: A visitor understands the deterministic core, sees how evidence and limits are preserved, then starts one of three P0 tasks before login.
+FIRST VIEWPORT: A dark editorial folio pairs a large promise and two actions with a calibrated time dial; the three trust facts remain visible without scrolling on desktop.
+FORM: Eastern Editorial Archive, inherited authority, contract key FATERADAR-EASTERN-ARCHIVE-V1.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+-->`;
+
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body>
+        <span
+          aria-hidden="true"
+          hidden
+          dangerouslySetInnerHTML={{ __html: directionContract }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

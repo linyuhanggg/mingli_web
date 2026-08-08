@@ -4,30 +4,27 @@ import styles from "./task-card.module.css";
 
 
 type TaskCardProps = {
-  index: string;
   title: string;
   description: string;
-  eyebrow: string;
+  label: string;
   href: string;
   action: string;
+  tone: "paper" | "ink" | "clay";
 };
 
 export function TaskCard({
-  index,
   title,
   description,
-  eyebrow,
+  label,
   href,
   action,
+  tone,
 }: TaskCardProps) {
   return (
-    <article className={styles.card}>
-      <div className={styles.topline}>
-        <span>{index}</span>
-        <span>{eyebrow}</span>
-      </div>
+    <article className={styles.card} data-tone={tone}>
       <h3>{title}</h3>
       <p>{description}</p>
+      <span className={styles.label}>{label}</span>
       <Link href={href}>{action}</Link>
     </article>
   );

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { EditorialPage, editorialStyles as styles } from "@/components/editorial-page";
+import { StatusPanel } from "@/components/status-panel";
 
 
 export const metadata: Metadata = {
@@ -36,6 +37,11 @@ export default function SupportPage() {
       <p className={styles.notice}>
         人工支持入口将在客服主体、服务时间与隐私处理流程确认后启用。紧急医疗、法律或人身安全问题请直接联系相应专业机构。
       </p>
+      <StatusPanel
+        state="disabled"
+        title="人工工单入口尚未启用"
+        description="真实客服主体、服务时间与隐私处理流程确认前，不展示虚构电话、邮箱或即时在线状态。"
+      />
     </EditorialPage>
   );
 }

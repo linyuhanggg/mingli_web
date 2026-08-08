@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { EditorialPage, editorialStyles as styles } from "@/components/editorial-page";
+import { StatusPanel } from "@/components/status-panel";
 
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export default function PricingPage() {
     <EditorialPage
       eyebrow="Pricing · P0 catalog"
       title="每一次付款，都绑定一份明确结果。"
-      intro="先免费建立信任，需要更完整的主题报告时再单次购买。当前支付渠道仍是 Fake Adapter，不会产生真实扣款。"
+      intro="先免费建立信任，需要更完整的主题报告时再单次购买。当前在线支付尚未开放，不会产生真实扣款。"
     >
       <section className={styles.grid3} aria-label="商品列表">
         <article className={styles.card}>
@@ -61,6 +62,11 @@ export default function PricingPage() {
       <p className={styles.notice}>
         当前不开放自动续费、代币余额、充值钱包或永久无限 AI。真实微信与支付宝支付须在商户能力获批并完成小额验收后另行启用。
       </p>
+      <StatusPanel
+        state="disabled"
+        title="在线购买暂未开放"
+        description="支付方式必须由服务端 Payment Capability 决定。当前不展示微信、支付宝或二维码入口，也不会把按钮点击写成已付款。"
+      />
     </EditorialPage>
   );
 }

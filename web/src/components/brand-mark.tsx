@@ -7,11 +7,11 @@ export function BrandMark() {
   return (
     <Link className={styles.brand} href="/" aria-label="FateRadar 首页">
       <span className={styles.symbol} aria-hidden="true">
-        命
+        <span>命</span>
       </span>
       <span>
         <strong>FateRadar</strong>
-        <small>命理档案</small>
+        <small>个人命理档案</small>
       </span>
     </Link>
   );

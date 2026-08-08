@@ -1,0 +1,133 @@
+.panel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding: clamp(1.25rem, 5vw, 2rem);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card-translucent);
+  color: var(--ink-950);
+  animation: status-panel-enter 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.icon {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ivory-100);
+  color: var(--ink-700);
+}
+
+.content {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.25rem, 4vw, 1.55rem);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.description {
+  max-width: 62ch;
+  margin: 0.45rem 0 0;
+  color: var(--ink-700);
+  font-size: 1rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.action {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--ink-900);
+  color: var(--ivory-50);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  -webkit-tap-highlight-color: var(--gold-400);
+  touch-action: manipulation;
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease;
+}
+
+.action:hover {
+  background: var(--ink-800);
+  transform: translateY(-2px);
+}
+
+.action:active {
+  transform: translateY(0);
+}
+
+.loading .icon,
+.processing .icon {
+  color: var(--gold-500);
+}
+
+.error {
+  border-color: var(--terracotta-500);
+}
+
+.error .icon {
+  color: var(--terracotta-500);
+}
+
+.success .icon {
+  color: var(--ink-800);
+}
+
+.disabled {
+  border-style: dashed;
+  background: var(--ivory-100);
+}
+
+.disabled .icon {
+  background: var(--ivory-200);
+  color: var(--ink-700);
+}
+
+@keyframes status-panel-enter {
+  from {
+    opacity: 0.72;
+    transform: translateY(0.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 24rem) {
+  .panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+
+  .action {
+    transition: none;
+  }
+}

@@ -11,6 +11,10 @@
   --gold-500: #a9853f;
   --gold-400: #c1a263;
   --terracotta-500: #a85e46;
+  --terracotta-600: #884532;
+  --moss-100: #dfe9df;
+  --moss-700: #2d6253;
+  --amber-100: #f2e6c8;
   --white: #ffffff;
   --border-subtle: rgb(18 58 50 / 12%);
   --border-control: rgb(18 58 50 / 20%);
@@ -22,12 +26,10 @@
   --border-hero-orbit: rgb(169 133 63 / 28%);
   --text-on-dark-secondary: rgb(248 243 231 / 78%);
   --text-on-dark-muted: rgb(248 243 231 / 68%);
-  --shadow-hero-orbit:
-    0 0 0 3rem rgb(169 133 63 / 4%),
-    0 0 0 7rem rgb(169 133 63 / 3%);
+  --shadow-hero-orbit: 0 28px 80px rgb(4 25 21 / 28%);
   --shadow-action: 0 10px 28px rgb(10 40 35 / 18%);
-  --shadow-soft: 0 22px 60px rgb(16 52 45 / 10%);
-  --shadow-card: 0 12px 36px rgb(16 52 45 / 8%);
+  --shadow-soft: 0 24px 60px 4px rgb(16 52 45 / 10%);
+  --shadow-card: 0 14px 36px 2px rgb(16 52 45 / 8%);
   --radius-sm: 0.75rem;
   --radius-md: 1.25rem;
   --radius-lg: 2rem;
@@ -52,9 +54,7 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 8% 5%, rgb(193 162 99 / 13%), transparent 28rem),
-    var(--ivory-50);
+  background: var(--ivory-50);
   color: var(--ink-950);
   font-family: var(--font-sans);
   font-size: 1rem;
@@ -68,10 +68,31 @@ a {
 }
 
 button,
+a {
+  -webkit-tap-highlight-color: rgb(169 133 63 / 18%);
+  touch-action: manipulation;
+}
+
+button,
 input,
 select,
 textarea {
   font: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  accent-color: var(--ink-900);
+  caret-color: var(--terracotta-500);
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
 }
 
 ::selection {
@@ -82,6 +103,41 @@ textarea {
 :focus-visible {
   outline: 3px solid var(--terracotta-500);
   outline-offset: 3px;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+:where(h1, h2, h3)[id] {
+  scroll-margin-top: 1.5rem;
+}
+
+html {
+  scrollbar-color: var(--gold-500) var(--ivory-100);
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ivory-100);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid var(--ivory-100);
+  border-radius: 999px;
+  background: var(--gold-500);
 }
 
 .sr-only {
