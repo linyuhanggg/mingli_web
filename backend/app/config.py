@@ -1,3 +1,5 @@
+import base64
+import binascii
 from functools import lru_cache
 from typing import Literal, Self
 
@@ -6,6 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Environment = Literal["local", "test", "staging", "production"]
 OtpAdapterName = Literal["fake", "disabled"]
+_LOCAL_CONTENT_KEY_B64 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
 
 class Settings(BaseSettings):
@@ -25,6 +28,8 @@ class Settings(BaseSettings):
     otp_adapter: OtpAdapterName = "fake"
     fake_otp_code: str = "246810"
     identity_hash_key: SecretStr = SecretStr("local-only-identity-hash-key-change-in-production")
+    content_encryption_key_b64: SecretStr = SecretStr(_LOCAL_CONTENT_KEY_B64)
+    content_encryption_key_id: str = Field(default="local-only-content-v1", min_length=1)
     otp_ttl_seconds: int = 5 * 60
     otp_cooldown_seconds: int = 60
     otp_max_attempts: int = 5
@@ -44,6 +49,26 @@ class Settings(BaseSettings):
         uses_local_hash_key = self.identity_hash_key.get_secret_value().startswith("local-only-")
         if self.environment == "production" and uses_local_hash_key:
             raise ValueError("production identity hash key must be injected")
+        encoded_content_key = self.content_encryption_key_b64.get_secret_value()
+        try:
+            decoded_content_key = base64.b64decode(
+                encoded_content_key,
+                validate=True,
+            )
+        except (binascii.Error, ValueError) as error:
+            raise ValueError(
+                "content encryption key must be valid base64 for exactly 32 bytes"
+            ) from error
+        if len(decoded_content_key) != 32:
+            raise ValueError("content encryption key must decode to exactly 32 bytes")
+        uses_local_content_key = (
+            encoded_content_key == _LOCAL_CONTENT_KEY_B64
+            or self.content_encryption_key_id.startswith("local-only-")
+        )
+        if self.environment == "production" and uses_local_content_key:
+            raise ValueError("production content encryption key must be injected")
+        if encoded_content_key == self.identity_hash_key.get_secret_value():
+            raise ValueError("content encryption key must not reuse identity_hash_key")
         return self
 
 
