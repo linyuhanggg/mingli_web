@@ -495,10 +495,9 @@ contracts/openapi/       Web、iOS、服务端共享接口合同
 contracts/schemas/       Fact Brief、Candidate、Accepted 等 JSON Schema
 infra/                   部署模板、反向代理和观测配置
 tests/contract/          跨模块、支付、运行时合同测试
-legacy/miniapp/          迁移确认后再放置旧小程序骨架
 ~~~
 
-当前根目录的小程序文件先保持原样，待建立版本控制和迁移提交后再移动，不能边搭网站边删除历史资料。
+旧小程序骨架已在 Git 提交 `15cbc95` 中完整保全；迁移确认后从当前工作树移除，不沿用为网站架构。
 
 ### 10.1 生产拓扑
 
