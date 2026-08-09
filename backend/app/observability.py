@@ -8,10 +8,13 @@ from fastapi import FastAPI, Request, Response
 
 REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 logger = logging.getLogger("mingli.api")
+_SENSITIVE_TRANSPORT_LOGGERS = ("httpx", "httpcore", "h2", "hpack")
 
 
 def configure_logging(level: str) -> None:
     logging.basicConfig(level=level, format="%(message)s")
+    for logger_name in _SENSITIVE_TRANSPORT_LOGGERS:
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
 
 
 def _request_id(request: Request) -> str:

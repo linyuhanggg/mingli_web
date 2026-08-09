@@ -2,6 +2,7 @@ import asyncio
 import base64
 import hashlib
 import json
+import logging
 import traceback
 from collections.abc import Mapping
 from dataclasses import replace
@@ -20,6 +21,7 @@ from app.adapters.model import (
     build_deepseek_model_adapter,
 )
 from app.config import Settings
+from app.observability import configure_logging
 from app.readings.errors import NarrativeGenerationError
 from app.readings.model_contracts import ModelCost, ModelPriceReceipt, ModelTokenUsage
 from app.readings.narrative_contracts import NarrativeRequest, OutputContract
@@ -974,6 +976,25 @@ async def test_provider_metadata_can_never_echo_the_api_key_into_a_receipt(
     assert len(audits.records) == 1
     assert api_key not in repr(audits.records[0])
     assert api_key not in json.dumps(audits.records[0].to_dict(), sort_keys=True)
+
+
+def test_root_debug_never_enables_raw_model_transport_header_logging(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    echoed_key = "sk-test-only-obviously-not-a-real-key"
+    caplog.set_level(logging.DEBUG)
+    configure_logging("DEBUG")
+    caplog.clear()
+
+    for logger_name in ("httpx", "httpcore", "h2", "hpack"):
+        transport_logger = logging.getLogger(logger_name)
+        transport_logger.debug(
+            "receive_response_headers headers=%r",
+            [(b"x-request-id", echoed_key.encode())],
+        )
+        assert transport_logger.getEffectiveLevel() >= logging.WARNING
+
+    assert echoed_key not in caplog.text
 
 
 async def test_configured_worker_builds_and_closes_the_selected_model_adapter(
