@@ -57,6 +57,39 @@ same admitted `.deb` must be served from a controlled read-only artifact
 mirror under the same hash; silently falling back to an ordinary mirror is not
 an admissible rebuild.
 
+## Mac mini local profiles
+
+The local entry point exposes two separate evidence domains. `native-full`
+runs the complete signed 126-target/93-module/1584-test suite as the daily and
+merge gate, with a hard 600-second and 10-slot ceiling. `linux-certify` never
+uses that native result as Linux evidence. Its first admitted stage is only an
+exact VZ+Rosetta identity tracer and therefore publishes
+`linux-identity-tracer.json` with status `tracer-passed-not-certified`; it must
+not create `release-5.1.json`.
+
+`lima-vz-rosetta.yaml` fills to a mountless `vz/aarch64` guest with Rosetta
+binfmt, pinned Docker 29.7.2, containerd 2.3.3, and rootlesskit 3.0.2. Validate
+and freeze the effective bytes before starting the instance:
+
+```bash
+limactl template validate --fill infra/mingli-runtime/lima-vz-rosetta.yaml
+limactl template copy --fill infra/mingli-runtime/lima-vz-rosetta.yaml \
+  /tmp/mingli-linux-gate-vz-effective.yaml
+```
+
+The tracer requires the full OCI index whose digest is the final artifact ID,
+including its amd64 manifest and attestation manifest. A platform-filtered
+`docker save` can flatten that index and change the loaded local ID to the
+child manifest digest; such an archive is rejected. The controller must export
+and import the complete OCI index, bind the archive SHA-256 in PreparedInputs,
+and then re-inspect the loaded ID. The probe container uses fixed argv, the
+label `io.fateradar.mingli.gate=linux-amd64-identity-tracer`, no network,
+Rosetta AOT caching, a read-only root, non-root execution, and strict resource
+limits. It verifies x86_64 platform/uname and ELF identity for runtime Python,
+Node, Git, sxtwl, and PyYAML, plus real sxtwl execution and the required native
+linkage. Only a later full `linux-certify` run through the existing audit and
+release verifier may publish Linux release evidence.
+
 ## Audit evidence
 
 `run_lima_gate.py` is the mountless host controller. It streams the projected

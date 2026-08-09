@@ -1,0 +1,113 @@
+minimumLimaVersion: 2.2.0
+vmType: vz
+os: Linux
+arch: aarch64
+
+images:
+  - location: https://cloud-images.ubuntu.com/releases/resolute/release-20260720/ubuntu-26.04-server-cloudimg-arm64.img
+    arch: aarch64
+    digest: sha256:7bcf159e29ad0000bfed9c57875908c39268f5ed1257f4958fa6a9f5f60edd54
+    variant: server
+
+cpus: 10
+memory: 10GiB
+disk: 60GiB
+mounts: []
+mountInotify: false
+propagateProxyEnv: false
+
+vmOpts:
+  vz:
+    diskImageFormat: raw
+    rosetta:
+      enabled: true
+      binfmt: true
+
+containerd:
+  system: false
+  user: false
+
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      test "$(dpkg --print-architecture)" = arm64
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update
+      apt-get install -y --no-install-recommends \
+        ca-certificates=20260601~26.04.1 \
+        curl=8.18.0-1ubuntu2.3
+      install -m 0755 -d /etc/apt/keyrings
+      curl --fail --silent --show-error --location \
+        https://download.docker.com/linux/ubuntu/gpg \
+        --output /tmp/docker.asc
+      echo '1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570  /tmp/docker.asc' \
+        | sha256sum --check --strict
+      install -m 0644 /tmp/docker.asc /etc/apt/keyrings/docker.asc
+      rm -f /tmp/docker.asc
+      echo 'deb [arch=arm64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu resolute stable' \
+        > /etc/apt/sources.list.d/docker.list
+      apt-get update
+      apt-get install -y --no-install-recommends \
+        docker-ce=5:29.7.2-1~ubuntu.26.04~resolute \
+        docker-ce-cli=5:29.7.2-1~ubuntu.26.04~resolute \
+        docker-ce-rootless-extras=5:29.7.2-1~ubuntu.26.04~resolute \
+        containerd.io=2.3.3-1~ubuntu.26.04~resolute \
+        docker-buildx-plugin=0.36.1-1~ubuntu.26.04~resolute \
+        docker-compose-plugin=5.4.0-1~ubuntu.26.04~resolute \
+        uidmap=1:4.17.4-2ubuntu3 \
+        dbus-user-session=1.16.2-2ubuntu4
+      apt-mark hold \
+        docker-ce docker-ce-cli docker-ce-rootless-extras containerd.io \
+        docker-buildx-plugin docker-compose-plugin uidmap dbus-user-session
+      systemctl disable --now \
+        docker.service docker.socket containerd.service containerd.socket || true
+      systemctl mask \
+        docker.service docker.socket containerd.service containerd.socket || true
+  - mode: yq
+    path: "{{.Home}}/.config/docker/daemon.json"
+    owner: "{{.User}}"
+    permissions: "644"
+    expression: |
+      .features.cdi = true |
+      .features.containerd-snapshotter = true
+  - mode: user
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      systemctl --user start dbus
+      dockerd-rootless-setuptool.sh install
+      docker context use rootless
+
+probes:
+  - mode: readiness
+    description: pinned rootless Docker and Rosetta readiness
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      test "$(uname -m)" = aarch64
+      test -e /proc/sys/fs/binfmt_misc/rosetta
+      timeout 60s bash -c 'until docker info >/dev/null 2>&1; do sleep 2; done'
+      docker version | grep -F 'Version:           29.7.2'
+      rootlesskit --version | grep -F 'rootlesskit version 3.0.2'
+      containerd --version | grep -F 'containerd v2.3.3'
+
+hostResolver:
+  enabled: true
+  ipv6: false
+  hosts:
+    host.docker.internal: host.lima.internal
+
+portForwards:
+  - guestSocket: "/run/user/{{.UID}}/docker.sock"
+    hostSocket: "{{.Dir}}/sock/docker.sock"
+
+ssh:
+  loadDotSSHPubKeys: false
+  forwardAgent: false
+  forwardX11: false
+
+message: |
+  Pinned VZ+Rosetta runtime. Use --platform=linux/amd64 and
+  --device=lima-vm.io/rosetta=cached for every certification container.

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, NoReturn
@@ -14,6 +15,8 @@ EXPECTED_RELEASE_MANIFEST_SHA256 = (
     "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
 )
 SCHEMA = "mingli-prepared-inputs-v1"
+INSTANCE_RE = re.compile(r"[a-z0-9][a-z0-9_.-]{0,127}")
+IMAGE_ID_RE = re.compile(r"sha256:[0-9a-f]{64}")
 
 
 class PreparedInputsError(RuntimeError):
@@ -68,6 +71,18 @@ class PreparedInputs:
     native_python: Path
     runner_path: Path
     payload: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class LinuxRuntimeInputs:
+    instance: str
+    effective_config: Path
+    effective_config_sha256: str
+    image_ref: str
+    image_config_id: str
+    oci_archive: Path
+    oci_archive_sha256: str
+    docker: dict[str, Any]
 
 
 def load(path: Path, expected_sha256: str) -> PreparedInputs:
@@ -154,4 +169,60 @@ def load(path: Path, expected_sha256: str) -> PreparedInputs:
         native_python=native_python,
         runner_path=runner_path,
         payload=payload,
+    )
+
+
+def require_linux(inputs: PreparedInputs) -> LinuxRuntimeInputs:
+    linux = _mapping(inputs.payload.get("linux_runtime"), "linux_runtime")
+    instance = _string(linux.get("instance"), "linux_runtime.instance")
+    if INSTANCE_RE.fullmatch(instance) is None:
+        _fail("linux runtime instance is malformed")
+    effective_config = _absolute_path(
+        linux.get("effective_config"),
+        "linux_runtime.effective_config",
+        directory=False,
+    )
+    effective_config_sha256 = _string(
+        linux.get("effective_config_sha256"),
+        "linux_runtime.effective_config_sha256",
+    )
+    if sha256_file(effective_config) != effective_config_sha256:
+        _fail("effective Lima config SHA-256 mismatch")
+    image_ref = _string(linux.get("image_ref"), "linux_runtime.image_ref")
+    if any(character.isspace() for character in image_ref):
+        _fail("linux runtime image ref is malformed")
+    image_config_id = _string(
+        linux.get("image_config_id"), "linux_runtime.image_config_id"
+    )
+    if IMAGE_ID_RE.fullmatch(image_config_id) is None:
+        _fail("linux runtime image config ID is malformed")
+    oci_archive = _absolute_path(
+        linux.get("oci_archive"),
+        "linux_runtime.oci_archive",
+        directory=False,
+    )
+    oci_archive_sha256 = _string(
+        linux.get("oci_archive_sha256"), "linux_runtime.oci_archive_sha256"
+    )
+    if sha256_file(oci_archive) != oci_archive_sha256:
+        _fail("Linux OCI archive SHA-256 mismatch")
+    docker = _mapping(linux.get("docker"), "linux_runtime.docker")
+    expected_docker = {
+        "client_version": "29.7.2",
+        "server_version": "29.7.2",
+        "server_arch": "arm64",
+        "containerd_version": "v2.3.3",
+        "rootlesskit_version": "3.0.2",
+    }
+    if docker != expected_docker:
+        _fail("Linux Docker identity drift")
+    return LinuxRuntimeInputs(
+        instance=instance,
+        effective_config=effective_config,
+        effective_config_sha256=effective_config_sha256,
+        image_ref=image_ref,
+        image_config_id=image_config_id,
+        oci_archive=oci_archive,
+        oci_archive_sha256=oci_archive_sha256,
+        docker=docker,
     )
