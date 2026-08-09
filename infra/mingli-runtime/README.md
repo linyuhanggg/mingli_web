@@ -39,6 +39,14 @@ manifest directly in the Dockerfile; no build argument can override it. Node
 26.3.0, the manylinux x86_64 PyYAML wheel, the sxtwl source archive and rebuilt
 CPython 3.14 wheel, astronomy-engine, cnlunar, and vendored iztro are bound to
 the frozen hashes in `dependency-provenance.json` and the generated SBOM.
+Node's `libatomic1` dependency is fetched from the timestamped Debian Snapshot
+`20250501T000000Z`, not from the mutable mirror pool. Provenance records both
+the original Debian pool URL and the pinned snapshot fetch URL; Docker also
+checks the exact amd64 `.deb` SHA-256 before installing it and the installed
+`libatomic.so.1.2.0` SHA-256 afterward. If Debian Snapshot is unavailable, the
+same admitted `.deb` must be served from a controlled read-only artifact
+mirror under the same hash; silently falling back to an ordinary mirror is not
+an admissible rebuild.
 
 ## Audit evidence
 
@@ -62,9 +70,14 @@ runtime and audit commands execute as that non-root identity.
    suite, and produces the final report.
 
 Both phases independently hash `/opt/mingli-master`,
-`/opt/mingli-runtime/venv`, and `/opt/node`; the Gate requires byte-for-byte
-identical machine output before admitting the derived audit result. The audit
-phase requires:
+`/opt/mingli-runtime/venv`, and `/opt/node`. They also run normalized dynamic
+linkage inspection for the runtime CPython executable, the sxtwl native
+extension, the installed PyYAML C extension, and Node. Every resolved system
+library path and file SHA-256 must be identical between production and the
+derived audit image. The Gate therefore admits the Git-dependent 1584-test
+result only when the code trees, native entry points, and all of their resolved
+system-library bytes are the same bytes present in the deployable Git-free
+production image. The audit phase requires:
 
 - a clean, read-only checkout of source commit `494ce0...` at `/audit-source`;
 - a blank writable output mount at `/audit-output`;
@@ -86,19 +99,33 @@ with mode `0700`. Backup must be taken from a quiesced single Runtime replica.
 The drill uses one source volume and two separately created, proven-empty
 destination volumes:
 
-1. capture a Prepared snapshot and restore it into the first blank volume;
-2. replay the same Prepare plus the restored token and prove the Prepared
+1. run a source `describe`, capture a Prepared snapshot, and restore it into
+   the first blank volume;
+2. run `describe` in that restored environment and require the protocol,
+   manifest digest, all 13 capability records, and raw output bytes to match
+   the source result;
+3. replay the same Prepare plus the restored token and prove the Prepared
    bytes, brief, and token are identical;
-3. Complete that restored Prepared, then use its Accepted token with a new
+4. Complete that restored Prepared, then use its Accepted token with a new
    query to create and Complete a real version-2 follow-up; the child token
    record must bind version 2, its parent fingerprint, and the original
    `prior_answer` byte digest;
-4. independently Complete the source Prepared, capture the Accepted snapshot,
-   restore it into the second blank volume, and replay the original
-   byte-identical Complete;
-5. compare only the original/restored/replayed Accepted public-copy and command
+5. independently Complete the source Prepared, capture the Accepted snapshot,
+   restore it into the second blank volume, repeat the exact `describe`
+   validation, and replay the original byte-identical Complete;
+6. compare only the original/restored/replayed Accepted public-copy and command
    digests. The child follow-up copy is deliberately excluded from this
    byte-identity assertion.
+
+The restore target must keep the absolute path `/var/lib/mingli`, numeric
+UID/GID `10001:10001`, and directory mode `0700`, on a local POSIX filesystem
+that preserves private ownership, regular files, atomic rename, fsync, and
+file-lock semantics. The machine evidence records `st_dev` and `st_ino` for
+the source and both proven-empty restore volumes and requires all three
+observed `(device, inode)` pairs to be distinct. Those numeric device and inode values may change
+during a real restore; they are evidence that fresh volume
+roots were used, not values that must be copied from the source. Path,
+ownership, mode, content bytes, and filesystem semantics are the invariants.
 
 Raw state tokens never enter committed logs. Runtime results are sanitized to
 SHA-256 token fingerprints. Snapshot archives used during the drill are sealed

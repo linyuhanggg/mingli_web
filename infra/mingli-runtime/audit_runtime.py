@@ -45,6 +45,7 @@ PRODUCTION_COMMAND_IDS = frozenset(
         "characterization-a",
         "characterization-b",
         "p0-trajectories",
+        "production-native-linkage",
         "production-tree-identity",
         "provider-matrix-a",
         "provider-matrix-b",
@@ -55,7 +56,12 @@ PRODUCTION_COMMAND_IDS = frozenset(
     }
 )
 AUDIT_COMMAND_IDS = frozenset(
-    {"audit-tree-identity", "release-regression", "source-binding"}
+    {
+        "audit-native-linkage",
+        "audit-tree-identity",
+        "release-regression",
+        "source-binding",
+    }
 )
 
 
@@ -219,65 +225,103 @@ def _run_runtime(stdin: str, state_root: Path, *, timeout: float) -> dict[str, A
     return value
 
 
-def _probe_launcher_timeout(state_root: Path) -> bool:
-    """Timeout the real shell launcher and prove its process group is gone."""
+def _probe_launcher_timeout(
+    state_root: Path,
+    *,
+    release_root: Path = RELEASE_ROOT,
+    runtime_python: Path = RUNTIME_PYTHON,
+    timeout_seconds: float = 1.0,
+) -> bool:
+    """Timeout the signed launcher and prove its whole process group is gone."""
 
     with tempfile.TemporaryDirectory(prefix="mingli-timeout-probe-") as temporary:
         root = Path(temporary)
-        hanging_python = root / "python-hang"
+        scripts = root / "scripts"
+        scripts.mkdir(mode=0o700)
+        source_launcher = release_root / "scripts/run_reading_transaction.sh"
+        probe_launcher = scripts / "run_reading_transaction.sh"
+        if source_launcher.is_symlink() or not source_launcher.is_file():
+            return False
+        shutil.copyfile(source_launcher, probe_launcher)
+        probe_launcher.chmod(0o600)
+        if verify_release.sha256_file(source_launcher) != verify_release.sha256_file(
+            probe_launcher
+        ):
+            return False
+        hanging_script = scripts / "runtime_launcher.py"
         pid_path = root / "pid"
-        hanging_python.write_text(
-            "#!/usr/local/bin/python3.14\n"
-            "import os,time\n"
-            "open(os.environ['MINGLI_HANG_PID'], 'w').write(str(os.getpid()))\n"
+        hanging_script.write_text(
+            "import json, os, signal, subprocess, sys, time\n"
+            "child = subprocess.Popen([sys.executable, '-I', '-S', '-B', '-c', "
+            "'import time; time.sleep(3600)'])\n"
+            "def stop(signum, _frame):\n"
+            "    child.terminate()\n"
+            "    try:\n"
+            "        child.wait(timeout=1)\n"
+            "    except subprocess.TimeoutExpired:\n"
+            "        child.kill(); child.wait(timeout=1)\n"
+            "    raise SystemExit(128 + signum)\n"
+            "signal.signal(signal.SIGTERM, stop)\n"
+            "with open(os.environ['MINGLI_HANG_PID'], 'x', encoding='utf-8') as f:\n"
+            "    json.dump({'child': child.pid, 'parent': os.getpid()}, f)\n"
             "while True: time.sleep(60)\n",
             encoding="utf-8",
         )
-        hanging_python.chmod(0o700)
+        hanging_script.chmod(0o600)
         environment = {
             "HOME": "/nonexistent",
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
             "MINGLI_HANG_PID": str(pid_path),
-            "MINGLI_PYTHON": str(hanging_python),
+            "MINGLI_PYTHON": str(runtime_python),
             "MINGLI_STORE_ROOT": str(state_root),
             "PATH": "/opt/node/bin:/usr/local/bin:/usr/bin:/bin",
             "PYTHONDONTWRITEBYTECODE": "1",
             "TZ": "UTC",
         }
+        command = ["/bin/sh", str(probe_launcher)]
         process = subprocess.Popen(
-            [str(RELEASE_ROOT / "scripts/run_reading_transaction.sh")],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            cwd=RELEASE_ROOT,
+            command,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            cwd=root,
             env=environment,
             start_new_session=True,
-            text=True,
         )
         timed_out = False
         try:
-            process.communicate('{"kind":"describe"}\n', timeout=0.2)
+            process.wait(timeout=timeout_seconds)
         except subprocess.TimeoutExpired:
             timed_out = True
             os.killpg(process.pid, signal.SIGTERM)
             try:
-                process.communicate(timeout=2)
+                process.wait(timeout=2)
             except subprocess.TimeoutExpired:
                 os.killpg(process.pid, signal.SIGKILL)
-                process.communicate(timeout=2)
+                process.wait(timeout=2)
         if not timed_out or process.returncode is None:
             return False
-        if not pid_path.is_file() or pid_path.read_text(encoding="utf-8") != str(
-            process.pid
+        try:
+            pid_record = json.loads(pid_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            return False
+        if (
+            not isinstance(pid_record, dict)
+            or pid_record.get("parent") != process.pid
+            or not isinstance(pid_record.get("child"), int)
+            or pid_record["child"] == process.pid
         ):
             return False
-        try:
-            os.killpg(process.pid, 0)
-        except ProcessLookupError:
-            return True
-        except PermissionError:
-            return False
+        deadline = time.monotonic() + 2
+        while time.monotonic() < deadline:
+            try:
+                os.killpg(process.pid, 0)
+            except ProcessLookupError:
+                return True
+            except PermissionError:
+                return False
+            time.sleep(0.02)
         return False
 
 
@@ -386,6 +430,44 @@ def emit_tree_identity() -> int:
         },
     }
     print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+    return 0
+
+
+def emit_native_linkage() -> int:
+    payload = verify_release.inspect_native_linkage(RUNTIME_PYTHON, NODE)
+    print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+    return 0
+
+
+def _state_root_identity(state_root: Path) -> dict[str, Any]:
+    if not state_root.is_absolute() or state_root.is_symlink():
+        _fail("state root identity path is relative or unsafe")
+    try:
+        resolved = state_root.resolve(strict=True)
+        info = state_root.stat()
+    except OSError as exc:
+        raise AuditError("state root identity path is missing") from exc
+    if not resolved.is_dir():
+        _fail("state root identity path is not a directory")
+    return {
+        "gid": info.st_gid,
+        "mode": stat.S_IMODE(info.st_mode),
+        "path": str(resolved),
+        "schema_version": "mingli-state-root-identity-v1",
+        "st_dev": info.st_dev,
+        "st_ino": info.st_ino,
+        "uid": info.st_uid,
+    }
+
+
+def emit_state_root_identity(state_root: Path) -> int:
+    print(
+        json.dumps(
+            _state_root_identity(state_root),
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
     return 0
 
 
@@ -849,6 +931,18 @@ def run_production_audit(
         timeout=3600,
     )
     recorder.run(
+        "production-native-linkage",
+        (
+            str(RUNTIME_PYTHON),
+            "-B",
+            str(AUDIT_SCRIPT),
+            "--emit-native-linkage",
+        ),
+        cwd=RELEASE_ROOT,
+        environment=environment,
+        timeout=300,
+    )
+    recorder.run(
         "production-tree-identity",
         (
             str(RUNTIME_PYTHON),
@@ -1083,6 +1177,18 @@ def finalize_audit(
         environment=environment,
         timeout=900,
     )
+    audit_native_linkage = recorder.run(
+        "audit-native-linkage",
+        (
+            str(RUNTIME_PYTHON),
+            "-B",
+            str(AUDIT_SCRIPT),
+            "--emit-native-linkage",
+        ),
+        cwd=RELEASE_ROOT,
+        environment=environment,
+        timeout=300,
+    )
     regression = recorder.run(
         "release-regression",
         (
@@ -1103,6 +1209,28 @@ def finalize_audit(
     production_commands = {
         str(record["id"]): record for record in production["commands"]
     }
+    production_native_linkage = production_commands["production-native-linkage"]
+    if (
+        production_native_linkage["stdout_sha256"]
+        != audit_native_linkage["stdout_sha256"]
+    ):
+        _fail("derived audit image changed native runtime linkage")
+    production_native_payload = _read_json(
+        output_root / str(production_native_linkage["stdout_path"]),
+        "production native linkage",
+    )
+    audit_native_payload = _read_json(
+        output_root / str(audit_native_linkage["stdout_path"]),
+        "audit native linkage",
+    )
+    if production_native_payload != audit_native_payload:
+        _fail("production and audit native linkage identities differ")
+    runtime_inventory = _read_json(
+        output_root / "evidence/runtime-inventory.json",
+        "runtime inventory",
+    )
+    if runtime_inventory.get("native_linkage") != production_native_payload:
+        _fail("runtime inventory and production native linkage differ")
     production_tree = production_commands["production-tree-identity"]
     if production_tree["stdout_sha256"] != audit_tree["stdout_sha256"]:
         _fail("derived audit image changed an admitted runtime tree")
@@ -1152,17 +1280,13 @@ def finalize_audit(
             "image_id": image_id,
         },
         "backup_restore": {
-            "accepted_followup_created": backup.get("accepted_followup_created"),
-            "accepted_token_replayed": backup.get("accepted_token_replayed"),
+            **{
+                field: backup.get(field)
+                for field in verify_release.EXPECTED_BACKUP_FLAGS
+            },
             "command_ids": sorted(
                 record["id"] for record in backup.get("commands", [])
             ),
-            "followup_version_advanced": backup.get("followup_version_advanced"),
-            "prepared_replay_byte_identical": backup.get(
-                "prepared_replay_byte_identical"
-            ),
-            "prepared_restored_completed": backup.get("prepared_restored_completed"),
-            "prepared_token_restored": backup.get("prepared_token_restored"),
             "status": "passed",
         },
         "characterization": production["characterization"],
@@ -1170,6 +1294,7 @@ def finalize_audit(
             "astronomy-engine": python_distributions["astronomy-engine"],
             "cnlunar": python_distributions["cnlunar"],
             "iztro": provenance["vendored"]["iztro"],
+            "libatomic1": provenance["system_runtime"]["libatomic1"],
             "node": provenance["node"],
             "pyyaml": python_distributions["PyYAML"],
             "sxtwl": python_distributions["sxtwl"],
@@ -1214,6 +1339,16 @@ def finalize_audit(
             "sha256": production_tree["stdout_sha256"],
             "status": "passed",
         },
+        "runtime_native_linkage_identity": {
+            "audit_command_id": "audit-native-linkage",
+            "payload_sha256": verify_release.canonical_sha256(
+                production_native_payload
+            ),
+            "production_command_id": "production-native-linkage",
+            "sha256": production_native_linkage["stdout_sha256"],
+            "status": "passed",
+            "targets": ["node", "python", "sxtwl", "yaml_c_extension"],
+        },
         "schema_version": "mingli-linux-runtime-audit-v1",
         "source_binding": {"command_id": "source-binding", "status": "passed"},
         "target": production["target"],
@@ -1231,6 +1366,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     mode.add_argument("--emit-runtime-probes", action="store_true")
     mode.add_argument("--emit-token-record", action="store_true")
     mode.add_argument("--emit-tree-identity", action="store_true")
+    mode.add_argument("--emit-native-linkage", action="store_true")
+    mode.add_argument("--emit-state-root-identity", action="store_true")
     mode.add_argument("--production-audit", action="store_true")
     mode.add_argument("--finalize-audit", action="store_true")
     parser.add_argument("--source-root", type=Path)
@@ -1257,6 +1394,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             return emit_token_record(args.state_root)
         if args.emit_tree_identity:
             return emit_tree_identity()
+        if args.emit_native_linkage:
+            return emit_native_linkage()
+        if args.emit_state_root_identity:
+            if args.state_root is None:
+                parser.error("--emit-state-root-identity requires --state-root")
+            return emit_state_root_identity(args.state_root)
         if args.production_audit:
             required = {
                 "image_id": args.image_id,

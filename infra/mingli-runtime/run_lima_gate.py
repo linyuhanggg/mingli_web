@@ -28,6 +28,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, NoReturn
 
 import build_context
+import verify_release
 
 EXPECTED_COMMIT = "494ce0bba174a77800daf9b9c38ce9c9166d9a94"
 EXPECTED_FULLTEXT_COUNT = 54
@@ -545,6 +546,81 @@ class BackupRestoreDrill:
         record["elapsed_seconds"] = round(time.monotonic() - started, 3)
         return result, sanitized
 
+    def describe(self, command_id: str, volume: str) -> dict[str, Any]:
+        argv = self._runtime_argv(volume)
+        completed = self.vm.docker(
+            argv[1:],
+            input_bytes=json_bytes({"kind": "describe"}),
+            timeout=900,
+        )
+        if completed.stderr or len(completed.stdout.splitlines()) != 1:
+            _fail(f"restore describe command failed: {command_id}")
+        try:
+            value = json.loads(completed.stdout)
+        except (UnicodeDecodeError, json.JSONDecodeError, TypeError) as exc:
+            raise GateError(f"restore describe is invalid JSON: {command_id}") from exc
+        verified = verify_release.validate_describe_payload(
+            value,
+            f"backup/restore {command_id}",
+        )
+        self.writer.record(
+            command_id,
+            argv,
+            completed.stdout,
+            completed.stderr,
+            stdout_capture="describe-result-v1",
+        )
+        return verified
+
+    def state_root_identity(self, command_id: str, volume: str) -> dict[str, Any]:
+        argv = [
+            "docker",
+            "run",
+            "--rm",
+            "--network=none",
+            "--read-only",
+            "--mount",
+            f"source={volume},target=/var/lib/mingli,readonly",
+            "--entrypoint",
+            "/opt/mingli-runtime/venv/bin/python",
+            self.image_id,
+            "-B",
+            "/opt/mingli-runtime/audit_runtime.py",
+            "--emit-state-root-identity",
+            "--state-root",
+            "/var/lib/mingli",
+        ]
+        completed = self.vm.docker(argv[1:], timeout=60)
+        if completed.stderr or len(completed.stdout.splitlines()) != 1:
+            _fail(f"state-root identity command failed: {command_id}")
+        try:
+            value = json.loads(completed.stdout)
+        except (UnicodeDecodeError, json.JSONDecodeError, TypeError) as exc:
+            raise GateError(
+                f"state-root identity is invalid JSON: {command_id}"
+            ) from exc
+        if (
+            not isinstance(value, dict)
+            or value.get("schema_version") != "mingli-state-root-identity-v1"
+            or value.get("path") != "/var/lib/mingli"
+            or value.get("uid") != RUNTIME_UID
+            or value.get("gid") != RUNTIME_GID
+            or value.get("mode") != 0o700
+            or not isinstance(value.get("st_dev"), int)
+            or value["st_dev"] <= 0
+            or not isinstance(value.get("st_ino"), int)
+            or value["st_ino"] <= 0
+        ):
+            _fail(f"state-root identity result mismatch: {command_id}")
+        self.writer.record(
+            command_id,
+            argv,
+            completed.stdout,
+            completed.stderr,
+            stdout_capture="state-root-identity-v1",
+        )
+        return value
+
     def token_record(
         self,
         command_id: str,
@@ -766,6 +842,7 @@ class BackupRestoreDrill:
         accepted_volume = self.volumes["accepted_restore_blank"]
         self.check_empty("prepared-restore-volume-empty", prepared_volume)
         self.check_empty("accepted-restore-volume-empty", accepted_volume)
+        source_describe = self.describe("source-describe", source_volume)
 
         base_prepare: dict[str, Any] = {
             "facts": {
@@ -798,6 +875,10 @@ class BackupRestoreDrill:
             source_volume,
             source_token,
         )
+        source_state_root = self.state_root_identity(
+            "source-state-root-identity",
+            source_volume,
+        )
         prepared_snapshot = self.capture_snapshot(
             "prepared-snapshot-capture", source_volume
         )
@@ -810,6 +891,14 @@ class BackupRestoreDrill:
             prepared_snapshot,
             prepared_pad,
             prepared_ciphertext,
+        )
+        prepared_restore_describe = self.describe(
+            "prepared-restore-describe",
+            prepared_volume,
+        )
+        prepared_state_root = self.state_root_identity(
+            "prepared-restore-state-root-identity",
+            prepared_volume,
         )
 
         replay_command = {**base_prepare, "state_token": source_token}
@@ -880,6 +969,14 @@ class BackupRestoreDrill:
             accepted_pad,
             accepted_ciphertext,
         )
+        accepted_restore_describe = self.describe(
+            "accepted-restore-describe",
+            accepted_volume,
+        )
+        accepted_state_root = self.state_root_identity(
+            "accepted-restore-state-root-identity",
+            accepted_volume,
+        )
         accepted_replay_raw, accepted_replay = self.runtime(
             "accepted-complete-replay",
             accepted_volume,
@@ -931,6 +1028,40 @@ class BackupRestoreDrill:
                 "sha256": indexed_commands[command_id]["stdout_sha256"],
             }
             for record_id, (command_id, _value) in token_record_map.items()
+        }
+        describe_map = {
+            "accepted_restore": "accepted-restore-describe",
+            "prepared_restore": "prepared-restore-describe",
+            "source": "source-describe",
+        }
+        state_root_map = {
+            "accepted_restore": "accepted-restore-state-root-identity",
+            "prepared_restore": "prepared-restore-state-root-identity",
+            "source": "source-state-root-identity",
+        }
+        describe_records = {
+            role: {
+                "command_id": command_id,
+                "path": indexed_commands[command_id]["stdout_path"],
+                "sha256": indexed_commands[command_id]["stdout_sha256"],
+            }
+            for role, command_id in describe_map.items()
+        }
+        state_root_records = {
+            role: {
+                "command_id": command_id,
+                "path": indexed_commands[command_id]["stdout_path"],
+                "sha256": indexed_commands[command_id]["stdout_sha256"],
+            }
+            for role, command_id in state_root_map.items()
+        }
+        root_identities = (
+            source_state_root,
+            prepared_state_root,
+            accepted_state_root,
+        )
+        root_identity_pairs = {
+            (item.get("st_dev"), item.get("st_ino")) for item in root_identities
         }
         original_copies = {
             source_accepted["public_copy_sha256"],
@@ -991,6 +1122,25 @@ class BackupRestoreDrill:
                 and prepared_restored_accepted["token_fingerprint"]
                 == source_fingerprint
             ),
+            "restore_environment": {
+                "constraints": {
+                    "device_inode_values_may_change": True,
+                    "must_match": {
+                        "gid": RUNTIME_GID,
+                        "mode": 0o700,
+                        "path": "/var/lib/mingli",
+                        "uid": RUNTIME_UID,
+                    },
+                    "root_identity_pairs_distinct": len(root_identity_pairs) == 3,
+                },
+                "describe_byte_identical": (
+                    source_describe
+                    == prepared_restore_describe
+                    == accepted_restore_describe
+                ),
+                "describes": describe_records,
+                "state_roots": state_root_records,
+            },
             "schema_version": "mingli-backup-restore-v1",
             "snapshots": {
                 "accepted": accepted_record,
@@ -1009,6 +1159,10 @@ class BackupRestoreDrill:
                 evidence["prepared_replay_byte_identical"],
                 evidence["prepared_restored_completed"],
                 evidence["prepared_token_restored"],
+                evidence["restore_environment"]["describe_byte_identical"],
+                evidence["restore_environment"]["constraints"][
+                    "root_identity_pairs_distinct"
+                ],
                 source_accepted_raw.get("public_copy")
                 == accepted_replay_raw.get("public_copy"),
                 source_accepted_raw.get("public_copy")
@@ -1384,7 +1538,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         run_gate(args)
-    except (GateError, build_context.ProjectionError) as exc:
+    except (
+        GateError,
+        build_context.ProjectionError,
+        verify_release.ReleaseVerificationError,
+    ) as exc:
         print(f"Linux Gate failed: {exc}", file=sys.stderr)
         return 1
     return 0

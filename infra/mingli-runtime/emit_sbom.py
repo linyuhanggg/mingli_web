@@ -99,8 +99,11 @@ def _component(
     component_type: str,
     digest: str,
     license_id: str | None = None,
+    license_expression: str | None = None,
     properties: Mapping[str, object] | None = None,
 ) -> dict[str, Any]:
+    if license_id is not None and license_expression is not None:
+        _fail("SBOM component cannot use both a license ID and expression")
     value: dict[str, Any] = {
         "bom-ref": f"mingli:{name}@{version}",
         "hashes": _hash(digest),
@@ -110,6 +113,8 @@ def _component(
     }
     if license_id is not None:
         value["licenses"] = [{"license": {"id": license_id}}]
+    if license_expression is not None:
+        value["licenses"] = [{"expression": license_expression}]
     if properties:
         value["properties"] = _properties(properties)
     return value
@@ -131,6 +136,7 @@ def build_sbom(image_id: str) -> dict[str, Any]:
     )
     if node.returncode != 0 or node.stdout.strip() != "v26.3.0":
         _fail("installed Node runtime identity mismatch")
+    native_linkage = verify_release.inspect_native_linkage(RUNTIME_PYTHON, NODE)
 
     provenance = _load_json(PROVENANCE, "dependency provenance")
     runtime_integrity = _load_json(RUNTIME_INTEGRITY, "runtime integrity")
@@ -225,6 +231,30 @@ def build_sbom(image_id: str) -> dict[str, Any]:
             },
         )
     )
+    system_runtime = provenance.get("system_runtime")
+    if system_runtime != {"libatomic1": verify_release.EXPECTED_LIBATOMIC}:
+        _fail("libatomic1 system-runtime provenance mismatch")
+    libatomic = system_runtime["libatomic1"]
+    components.append(
+        _component(
+            name="libatomic1",
+            version=str(libatomic["version"]),
+            component_type="library",
+            digest=str(libatomic["sha256"]),
+            license_expression=str(libatomic["license"]),
+            properties={
+                "mingli:architecture": libatomic["architecture"],
+                "mingli:artifact-filename": libatomic["filename"],
+                "mingli:fetch-url": libatomic["fetch_url"],
+                "mingli:installed-path": libatomic["installed_path"],
+                "mingli:installed-sha256": libatomic["installed_sha256"],
+                "mingli:origin-url": libatomic["origin_url"],
+                "mingli:snapshot-timestamp": libatomic["snapshot_timestamp"],
+                "mingli:soname-path": libatomic["soname_path"],
+                "mingli:soname-target": libatomic["soname_target"],
+            },
+        )
+    )
     iztro_provenance = provenance.get("vendored", {}).get("iztro")
     if not isinstance(iztro_provenance, dict):
         _fail("iztro dependency provenance is missing")
@@ -270,6 +300,9 @@ def build_sbom(image_id: str) -> dict[str, Any]:
                         "mingli:oci-config-digest": image_id,
                         "mingli:release-manifest-sha256": release_manifest_sha256,
                         "mingli:runtime-integrity-sha256": runtime_integrity_sha256,
+                        "mingli:native-linkage-sha256": verify_release.canonical_sha256(
+                            native_linkage
+                        ),
                     }
                 ),
                 "type": "container",

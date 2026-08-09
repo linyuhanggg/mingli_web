@@ -84,8 +84,7 @@ FROM python:3.14.6-slim-bookworm@sha256:ff83a535339812dd72e69c93b3c48ddf7c85a324
 ADD --checksum=sha256:a6e65cc653e40c1653b77742f9185dbce3ff1f99fa2746d211bddb53530ef206 \
     https://nodejs.org/dist/v26.3.0/node-v26.3.0-linux-x64.tar.gz /tmp/node.tar.gz
 RUN mkdir -p /opt/node \
-    && tar -xzf /tmp/node.tar.gz -C /opt/node --strip-components=1 \
-    && test "$(/opt/node/bin/node --version)" = "v26.3.0"
+    && tar -xzf /tmp/node.tar.gz -C /opt/node --strip-components=1
 
 FROM python:3.14.6-slim-bookworm@sha256:ff83a535339812dd72e69c93b3c48ddf7c85a324d6330af5797c82a255dbeef4 AS production
 
@@ -98,6 +97,19 @@ ENV HOME=/nonexistent \
     PATH=/opt/node/bin:/opt/mingli-runtime/venv/bin:/usr/local/bin:/usr/bin:/bin \
     PYTHONDONTWRITEBYTECODE=1 \
     TZ=UTC
+
+ADD --checksum=sha256:fbd4e154a6b444229ea002cc209df099209c0adc09102e5fd21239a3d2b55e2d \
+    https://snapshot.debian.org/archive/debian/20250501T000000Z/pool/main/g/gcc-12/libatomic1_12.2.0-14+deb12u1_amd64.deb \
+    /opt/mingli-runtime/artifacts/libatomic1_12.2.0-14+deb12u1_amd64.deb
+
+RUN test "$(dpkg-deb -f /opt/mingli-runtime/artifacts/libatomic1_12.2.0-14+deb12u1_amd64.deb Package)" = "libatomic1" \
+    && test "$(dpkg-deb -f /opt/mingli-runtime/artifacts/libatomic1_12.2.0-14+deb12u1_amd64.deb Version)" = "12.2.0-14+deb12u1" \
+    && test "$(dpkg-deb -f /opt/mingli-runtime/artifacts/libatomic1_12.2.0-14+deb12u1_amd64.deb Architecture)" = "amd64" \
+    && dpkg --install /opt/mingli-runtime/artifacts/libatomic1_12.2.0-14+deb12u1_amd64.deb \
+    && test "$(readlink /usr/lib/x86_64-linux-gnu/libatomic.so.1)" = "libatomic.so.1.2.0" \
+    && test "$(sha256sum /usr/lib/x86_64-linux-gnu/libatomic.so.1.2.0 | cut -d' ' -f1)" \
+        = "107ab9f7661a1c47cddfb5cd1def99ec537a50a9a537fbe38cdde1b34b8ba280" \
+    && chmod 0444 /opt/mingli-runtime/artifacts/libatomic1_12.2.0-14+deb12u1_amd64.deb
 
 RUN /usr/sbin/groupadd --gid ${RUNTIME_GID} mingli \
     && /usr/sbin/useradd --uid ${RUNTIME_UID} --gid ${RUNTIME_GID} \
@@ -118,6 +130,8 @@ RUN chown ${RUNTIME_UID}:${RUNTIME_GID} /opt/mingli-runtime/.venv.runtime.lock \
         /opt/mingli-runtime/emit_sbom.py \
         /opt/mingli-runtime/verify_release.py \
     && find /opt/mingli-master -type d -exec chmod 0555 {} + \
+    && test "$(/opt/node/bin/node --version)" = "v26.3.0" \
+    && ! /usr/bin/ldd /opt/node/bin/node | grep -q "not found" \
     && python /opt/mingli-runtime/verify_release.py \
         --release-root /opt/mingli-master \
         --runtime-python /opt/mingli-runtime/venv/bin/python \

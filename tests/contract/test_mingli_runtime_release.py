@@ -5,9 +5,12 @@ from __future__ import annotations
 import copy
 import hashlib
 import importlib.util
+import inspect
 import io
 import json
+import os
 import re
+import shutil
 import stat
 import sys
 import tarfile
@@ -83,6 +86,14 @@ def load_lima_gate() -> ModuleType:
     sys.path.insert(0, str(RUNTIME_DIR))
     try:
         return load_module(RUNTIME_DIR / "run_lima_gate.py", "mingli_lima_gate")
+    finally:
+        sys.path.remove(str(RUNTIME_DIR))
+
+
+def load_audit_runtime() -> ModuleType:
+    sys.path.insert(0, str(RUNTIME_DIR))
+    try:
+        return load_module(AUDIT_PATH, "mingli_runtime_audit")
     finally:
         sys.path.remove(str(RUNTIME_DIR))
 
@@ -213,6 +224,12 @@ def test_three_provider_slim_report_is_rejected() -> None:
             lambda report: report["release_regression"].__setitem__("test_count", 1),
             "1584",
         ),
+        (
+            lambda report: report["dependencies"]["libatomic1"].__setitem__(
+                "sha256", "0" * 64
+            ),
+            "libatomic",
+        ),
     ],
 )
 def test_verifier_recomputes_evidence_instead_of_trusting_passed_status(
@@ -269,6 +286,16 @@ def test_linux_lock_and_image_are_immutable_and_arch_specific() -> None:
     assert "apt-get install" not in production_stage
     assert "/usr/sbin/groupadd --gid ${RUNTIME_GID} mingli" in production_stage
     assert "/usr/sbin/useradd --uid ${RUNTIME_UID}" in production_stage
+    assert "apt-get install libatomic1" not in production_stage
+    assert (
+        "ADD --checksum=sha256:"
+        "fbd4e154a6b444229ea002cc209df099209c0adc09102e5fd21239a3d2b55e2d"
+    ) in production_stage
+    assert "libatomic1_12.2.0-14+deb12u1_amd64.deb" in production_stage
+    assert "snapshot.debian.org/archive/debian/20250501T000000Z" in production_stage
+    assert "107ab9f7661a1c47cddfb5cd1def99ec537a50a9a537fbe38cdde1b34b8ba280" in (
+        production_stage
+    )
     assert "apt-get install -y --no-install-recommends git" in dockerfile
     assert dockerfile.index("COPY verify_release.py") < dockerfile.index(
         "COPY release/ /opt/mingli-master/"
@@ -293,6 +320,29 @@ def test_linux_lock_and_image_are_immutable_and_arch_specific() -> None:
         "version": "26.3.0",
     }
     assert provenance["node"]["sha256"] in dockerfile
+    assert provenance["system_runtime"]["libatomic1"] == {
+        "architecture": "amd64",
+        "fetch_url": (
+            "https://snapshot.debian.org/archive/debian/20250501T000000Z/"
+            "pool/main/g/gcc-12/libatomic1_12.2.0-14+deb12u1_amd64.deb"
+        ),
+        "filename": "libatomic1_12.2.0-14+deb12u1_amd64.deb",
+        "installed_path": "/usr/lib/x86_64-linux-gnu/libatomic.so.1.2.0",
+        "installed_sha256": (
+            "107ab9f7661a1c47cddfb5cd1def99ec537a50a9a537fbe38cdde1b34b8ba280"
+        ),
+        "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+        "origin_url": (
+            "https://deb.debian.org/debian/pool/main/g/gcc-12/"
+            "libatomic1_12.2.0-14+deb12u1_amd64.deb"
+        ),
+        "package": "libatomic1",
+        "sha256": "fbd4e154a6b444229ea002cc209df099209c0adc09102e5fd21239a3d2b55e2d",
+        "soname_path": "/usr/lib/x86_64-linux-gnu/libatomic.so.1",
+        "soname_target": "libatomic.so.1.2.0",
+        "snapshot_timestamp": "20250501T000000Z",
+        "version": "12.2.0-14+deb12u1",
+    }
 
 
 def test_build_context_projects_only_the_signed_manifest(tmp_path: Path) -> None:
@@ -433,12 +483,46 @@ def test_image_audit_entry_is_present_and_non_agentic() -> None:
     assert "--finalize-audit" in audit
     assert "production-tree-identity" in audit
     assert "audit-tree-identity" in audit
+    assert "production-native-linkage" in audit
+    assert "audit-native-linkage" in audit
+    assert "--emit-native-linkage" in audit
     assert "--production-audit" in controller
     assert "--finalize-audit" in controller
     assert "production_output" in controller
     assert "production_state" in controller
     for forbidden in ("langchain", "agent.run", "tools=", "function_call"):
         assert forbidden not in audit.lower()
+
+
+def test_timeout_probe_uses_fixed_interpreter_on_noexec_tmpfs(tmp_path: Path) -> None:
+    controller = LIMA_GATE_PATH.read_text(encoding="utf-8")
+    module = load_audit_runtime()
+    source = inspect.getsource(module._probe_launcher_timeout)
+    release_root = tmp_path / "release"
+    scripts = release_root / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "run_reading_transaction.sh").write_text(
+        "#!/bin/sh\n"
+        "set -eu\n"
+        'skill_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)\n'
+        'exec "$MINGLI_PYTHON" -I -S -B '
+        '"$skill_dir/scripts/runtime_launcher.py"\n',
+        encoding="utf-8",
+    )
+
+    assert "/tmp:rw,noexec,nosuid,nodev" in controller
+    assert 'hanging_script = scripts / "runtime_launcher.py"' in source
+    assert "hanging_script.chmod(0o600)" in source
+    assert 'command = ["/bin/sh", str(probe_launcher)]' in source
+    assert '"MINGLI_PYTHON": str(runtime_python)' in source
+    assert "shutil.copyfile(source_launcher, probe_launcher)" in source
+    assert source.count("verify_release.sha256_file(") == 2
+    assert module._probe_launcher_timeout(
+        tmp_path,
+        release_root=release_root,
+        runtime_python=Path(sys.executable),
+        timeout_seconds=0.2,
+    )
 
 
 def test_backup_drill_distinguishes_replay_from_true_followup() -> None:
@@ -457,6 +541,148 @@ def test_backup_drill_distinguishes_replay_from_true_followup() -> None:
     assert '"prepared-followup"' not in controller
     assert '"prepared-followup"' not in verifier
 
+    module = load_verifier()
+    assert set(module.EXPECTED_BACKUP_FLAGS) == {
+        "accepted_followup_created",
+        "accepted_token_replayed",
+        "complete_public_copy_byte_identical",
+        "followup_version_advanced",
+        "prepared_replay_byte_identical",
+        "prepared_restored_completed",
+        "prepared_token_restored",
+    }
+    assert "verify_release.EXPECTED_BACKUP_FLAGS" in AUDIT_PATH.read_text(
+        encoding="utf-8"
+    )
+
+
+def test_backup_restore_validates_describe_and_state_root_identity(
+    tmp_path: Path,
+) -> None:
+    controller = LIMA_GATE_PATH.read_text(encoding="utf-8")
+    verifier = VERIFY_PATH.read_text(encoding="utf-8")
+    readme = (RUNTIME_DIR / "README.md").read_text(encoding="utf-8")
+    audit = load_audit_runtime()
+
+    tmp_path.chmod(0o700)
+    identity = audit._state_root_identity(tmp_path)
+    assert identity == {
+        "gid": os.getgid(),
+        "mode": 0o700,
+        "path": str(tmp_path.resolve()),
+        "schema_version": "mingli-state-root-identity-v1",
+        "st_dev": tmp_path.stat().st_dev,
+        "st_ino": tmp_path.stat().st_ino,
+        "uid": os.getuid(),
+    }
+    for command_id in (
+        "source-describe",
+        "prepared-restore-describe",
+        "accepted-restore-describe",
+        "source-state-root-identity",
+        "prepared-restore-state-root-identity",
+        "accepted-restore-state-root-identity",
+    ):
+        assert command_id in controller
+        assert command_id in verifier
+    for required in (
+        "protocol_version",
+        "manifest_digest",
+        "EXPECTED_PROVIDERS",
+        "st_dev",
+        "st_ino",
+        "10001:10001",
+        "0700",
+    ):
+        assert required in verifier or required in readme
+    assert "device and inode values may change" in readme
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ("describe", "manifest digest"),
+        ("mode", "state-root invariant"),
+        ("identity_pair", "filesystem identity constraints"),
+        ("binding", "binding failed"),
+    ],
+)
+def test_backup_restore_machine_evidence_tamper_is_rejected(
+    tmp_path: Path,
+    mutation: str,
+    message: str,
+) -> None:
+    verifier = load_verifier()
+    report = copy.deepcopy(load_report())
+    artifacts = tmp_path / "artifacts"
+    shutil.copytree(RUNTIME_DIR, artifacts)
+    backup_path = artifacts / report["evidence"]["backup_restore_path"]
+    backup = json.loads(backup_path.read_text(encoding="utf-8"))
+    commands = {item["id"]: item for item in backup["commands"]}
+
+    def rewrite(
+        command_id: str, value: dict[str, Any], binding: dict[str, Any]
+    ) -> None:
+        payload = (
+            json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+            + "\n"
+        ).encode("utf-8")
+        command = commands[command_id]
+        (artifacts / command["stdout_path"]).write_bytes(payload)
+        digest = hashlib.sha256(payload).hexdigest()
+        command["stdout_sha256"] = digest
+        binding["sha256"] = digest
+
+    environment = backup["restore_environment"]
+    if mutation == "describe":
+        binding = environment["describes"]["source"]
+        value = json.loads((artifacts / binding["path"]).read_text(encoding="utf-8"))
+        value["manifest_digest"] = "0" * 64
+        rewrite("source-describe", value, binding)
+    elif mutation == "mode":
+        binding = environment["state_roots"]["prepared_restore"]
+        value = json.loads((artifacts / binding["path"]).read_text(encoding="utf-8"))
+        value["mode"] = 0o755
+        rewrite("prepared-restore-state-root-identity", value, binding)
+    elif mutation == "identity_pair":
+        source_binding = environment["state_roots"]["source"]
+        source = json.loads(
+            (artifacts / source_binding["path"]).read_text(encoding="utf-8")
+        )
+        binding = environment["state_roots"]["accepted_restore"]
+        value = json.loads((artifacts / binding["path"]).read_text(encoding="utf-8"))
+        value["st_dev"] = source["st_dev"]
+        value["st_ino"] = source["st_ino"]
+        rewrite("accepted-restore-state-root-identity", value, binding)
+    else:
+        environment["describes"]["source"]["sha256"] = "0" * 64
+
+    backup_payload = (
+        json.dumps(backup, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        + "\n"
+    ).encode("utf-8")
+    backup_path.write_bytes(backup_payload)
+    report["evidence"]["backup_restore_sha256"] = hashlib.sha256(
+        backup_payload
+    ).hexdigest()
+
+    with pytest.raises(verifier.ReleaseVerificationError, match=message):
+        verifier.validate_audit_report(report, artifacts_root=artifacts)
+
+
+def test_native_linkage_identity_covers_all_runtime_entrypoints() -> None:
+    verifier = VERIFY_PATH.read_text(encoding="utf-8")
+    audit = AUDIT_PATH.read_text(encoding="utf-8")
+
+    for target in ("node", "python", "sxtwl", "yaml_c_extension"):
+        assert f'"{target}"' in verifier
+    for command_id in ("production-native-linkage", "audit-native-linkage"):
+        assert command_id in verifier
+        assert command_id in audit
+    assert "inspect_native_linkage" in verifier
+    assert "runtime_native_linkage_identity" in verifier
+    assert "runtime_native_linkage_identity" in audit
+
 
 def test_sbom_covers_python_node_and_vendored_iztro() -> None:
     report = load_report()
@@ -473,5 +699,6 @@ def test_sbom_covers_python_node_and_vendored_iztro() -> None:
         ("sxtwl", "2.0.7"),
         ("astronomy-engine", "2.1.19"),
         ("cnlunar", "0.2.4"),
+        ("libatomic1", "12.2.0-14+deb12u1"),
     ):
         assert expected in components

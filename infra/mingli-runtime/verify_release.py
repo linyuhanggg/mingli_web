@@ -72,6 +72,41 @@ EXPECTED_NODE = {
     "sha256": "a6e65cc653e40c1653b77742f9185dbce3ff1f99fa2746d211bddb53530ef206",
     "version": "26.3.0",
 }
+EXPECTED_LIBATOMIC = {
+    "architecture": "amd64",
+    "fetch_url": (
+        "https://snapshot.debian.org/archive/debian/20250501T000000Z/"
+        "pool/main/g/gcc-12/libatomic1_12.2.0-14+deb12u1_amd64.deb"
+    ),
+    "filename": "libatomic1_12.2.0-14+deb12u1_amd64.deb",
+    "installed_path": "/usr/lib/x86_64-linux-gnu/libatomic.so.1.2.0",
+    "installed_sha256": (
+        "107ab9f7661a1c47cddfb5cd1def99ec537a50a9a537fbe38cdde1b34b8ba280"
+    ),
+    "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+    "origin_url": (
+        "https://deb.debian.org/debian/pool/main/g/gcc-12/"
+        "libatomic1_12.2.0-14+deb12u1_amd64.deb"
+    ),
+    "package": "libatomic1",
+    "sha256": "fbd4e154a6b444229ea002cc209df099209c0adc09102e5fd21239a3d2b55e2d",
+    "soname_path": "/usr/lib/x86_64-linux-gnu/libatomic.so.1",
+    "soname_target": "libatomic.so.1.2.0",
+    "snapshot_timestamp": "20250501T000000Z",
+    "version": "12.2.0-14+deb12u1",
+}
+EXPECTED_NODE_LINKAGE = frozenset(
+    {
+        "ld-linux-x86-64.so.2",
+        "libatomic.so.1",
+        "libc.so.6",
+        "libdl.so.2",
+        "libgcc_s.so.1",
+        "libm.so.6",
+        "libpthread.so.0",
+        "libstdc++.so.6",
+    }
+)
 EXPECTED_BASE_IMAGE = {
     "linux_amd64_manifest_digest": (
         "sha256:ff83a535339812dd72e69c93b3c48ddf7c85a324d6330af5797c82a255dbeef4"
@@ -123,6 +158,7 @@ EXPECTED_PRODUCTION_COMMAND_IDS = frozenset(
         "characterization-a",
         "characterization-b",
         "p0-trajectories",
+        "production-native-linkage",
         "production-tree-identity",
         "provider-matrix-a",
         "provider-matrix-b",
@@ -133,7 +169,21 @@ EXPECTED_PRODUCTION_COMMAND_IDS = frozenset(
     }
 )
 EXPECTED_AUDIT_COMMAND_IDS = frozenset(
-    {"audit-tree-identity", "release-regression", "source-binding"}
+    {
+        "audit-native-linkage",
+        "audit-tree-identity",
+        "release-regression",
+        "source-binding",
+    }
+)
+EXPECTED_BACKUP_FLAGS = (
+    "accepted_followup_created",
+    "accepted_token_replayed",
+    "complete_public_copy_byte_identical",
+    "followup_version_advanced",
+    "prepared_replay_byte_identical",
+    "prepared_restored_completed",
+    "prepared_token_restored",
 )
 EXPECTED_CHARACTERIZATION_DIGESTS = {
     "bazi": "8414c2fed081d148fd47a7472ebe70669eae673b6510627097485dd25a5cbc4c",
@@ -655,6 +705,265 @@ def _verify_node(executable: Path) -> dict[str, str]:
     return dict(EXPECTED_NODE)
 
 
+def _verify_libatomic() -> dict[str, str]:
+    artifact = Path("/opt/mingli-runtime/artifacts") / EXPECTED_LIBATOMIC["filename"]
+    if artifact.is_symlink() or not artifact.is_file():
+        _fail("libatomic1 frozen amd64 package artifact is missing or unsafe")
+    if sha256_file(artifact) != EXPECTED_LIBATOMIC["sha256"]:
+        _fail("libatomic1 amd64 package artifact SHA-256 mismatch")
+    for field, expected in (
+        ("Package", EXPECTED_LIBATOMIC["package"]),
+        ("Version", EXPECTED_LIBATOMIC["version"]),
+        ("Architecture", EXPECTED_LIBATOMIC["architecture"]),
+    ):
+        completed = subprocess.run(
+            ["/usr/bin/dpkg-deb", "--field", str(artifact), field],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        if completed.returncode != 0 or completed.stdout.strip() != expected:
+            _fail(f"libatomic1 package metadata mismatch: {field}")
+    for field, expected in (
+        ("${Version}", EXPECTED_LIBATOMIC["version"]),
+        ("${Architecture}", EXPECTED_LIBATOMIC["architecture"]),
+    ):
+        completed = subprocess.run(
+            [
+                "/usr/bin/dpkg-query",
+                "--show",
+                f"--showformat={field}",
+                "libatomic1:amd64",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        if completed.returncode != 0 or completed.stdout.strip() != expected:
+            _fail("installed libatomic1 package identity mismatch")
+    soname = Path(EXPECTED_LIBATOMIC["soname_path"])
+    if (
+        not soname.is_symlink()
+        or os.readlink(soname) != EXPECTED_LIBATOMIC["soname_target"]
+    ):
+        _fail("libatomic1 SONAME link mismatch")
+    installed = Path(EXPECTED_LIBATOMIC["installed_path"])
+    if installed.is_symlink() or not installed.is_file():
+        _fail("libatomic1 installed shared object is missing or unsafe")
+    if sha256_file(installed) != EXPECTED_LIBATOMIC["installed_sha256"]:
+        _fail("libatomic1 installed shared object SHA-256 mismatch")
+    if soname.resolve(strict=True) != installed.resolve(strict=True):
+        _fail("libatomic1 SONAME does not resolve to the admitted shared object")
+    return dict(EXPECTED_LIBATOMIC)
+
+
+def _inspect_dynamic_target(executable: Path, label: str) -> dict[str, Any]:
+    if executable.is_symlink() or not executable.is_file():
+        _fail(f"{label} native target is missing or unsafe")
+    completed = subprocess.run(
+        ["/usr/bin/ldd", str(executable)],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={"LANG": "C.UTF-8", "LC_ALL": "C.UTF-8", "PATH": "/usr/bin:/bin"},
+        timeout=30,
+    )
+    if completed.returncode != 0 or completed.stderr.strip():
+        _fail(f"{label} dynamic linkage inspection failed")
+    dependencies: dict[str, dict[str, object]] = {}
+    for raw_line in completed.stdout.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("linux-vdso.so.1 "):
+            continue
+        if "=>" in line:
+            name, raw_target = line.split("=>", 1)
+            target = raw_target.strip().split()[0]
+            name = name.strip()
+            if target == "not":
+                _fail(f"{label} dynamic dependency is unresolved: {name}")
+        else:
+            target = line.split()[0]
+            name = Path(target).name
+        path = Path(target)
+        try:
+            resolved = path.resolve(strict=True)
+        except OSError as exc:
+            raise ReleaseVerificationError(
+                f"{label} dynamic dependency is missing: {name}"
+            ) from exc
+        if not path.is_absolute() or not resolved.is_file():
+            _fail(f"{label} dynamic dependency path is unsafe: {name}")
+        if name in dependencies:
+            _fail(f"{label} dynamic dependency is duplicated: {name}")
+        dependencies[name] = {
+            "reported_path": str(path),
+            "resolved_path": str(resolved),
+            "sha256": sha256_file(resolved),
+        }
+    if not dependencies:
+        _fail(f"{label} dynamic dependency inventory is empty")
+    return {
+        "dependencies": dependencies,
+        "path": str(executable),
+        "sha256": sha256_file(executable),
+    }
+
+
+def _runtime_extension_paths(runtime_python: Path) -> dict[str, Path]:
+    script = (
+        "import importlib.util,json\n"
+        "modules={'sxtwl':'_sxtwl','yaml_c_extension':'yaml._yaml'}\n"
+        "result={}\n"
+        "for label,module in modules.items():\n"
+        "    spec=importlib.util.find_spec(module)\n"
+        "    result[label]=None if spec is None else spec.origin\n"
+        "print(json.dumps(result,sort_keys=True,separators=(',',':')))\n"
+    )
+    completed = subprocess.run(
+        [str(runtime_python), "-I", "-B", "-c", script],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={"LANG": "C.UTF-8", "LC_ALL": "C.UTF-8", "PATH": "/usr/bin:/bin"},
+        timeout=30,
+    )
+    if completed.returncode != 0 or completed.stderr.strip():
+        _fail("runtime native extension discovery failed")
+    try:
+        raw = json.loads(completed.stdout)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise ReleaseVerificationError(
+            "runtime native extension discovery returned invalid JSON"
+        ) from exc
+    if not isinstance(raw, dict) or set(raw) != {"sxtwl", "yaml_c_extension"}:
+        _fail("runtime native extension discovery is incomplete")
+    runtime_root = runtime_python.parent.parent.resolve(strict=True)
+    result: dict[str, Path] = {}
+    for label, value in raw.items():
+        if not isinstance(value, str) or not value.endswith(".so"):
+            _fail(f"runtime native extension is absent: {label}")
+        path = Path(value)
+        try:
+            resolved = path.resolve(strict=True)
+        except OSError as exc:
+            raise ReleaseVerificationError(
+                f"runtime native extension is missing: {label}"
+            ) from exc
+        if (
+            path.is_symlink()
+            or not resolved.is_file()
+            or not resolved.is_relative_to(runtime_root)
+        ):
+            _fail(f"runtime native extension path is unsafe: {label}")
+        result[label] = resolved
+    return result
+
+
+def inspect_native_linkage(runtime_python: Path, node: Path) -> dict[str, Any]:
+    node_record = _verify_node(node)
+    libatomic = _verify_libatomic()
+    extensions = _runtime_extension_paths(runtime_python)
+    targets = {
+        "node": _inspect_dynamic_target(node, "Node"),
+        "python": _inspect_dynamic_target(runtime_python, "CPython"),
+        "sxtwl": _inspect_dynamic_target(extensions["sxtwl"], "sxtwl"),
+        "yaml_c_extension": _inspect_dynamic_target(
+            extensions["yaml_c_extension"],
+            "PyYAML C extension",
+        ),
+    }
+    node_dependencies = targets["node"]["dependencies"]
+    if set(node_dependencies) != EXPECTED_NODE_LINKAGE:
+        _fail("Node dynamic dependency inventory is not exact")
+    atomic = node_dependencies.get("libatomic.so.1")
+    if not isinstance(atomic, dict) or (
+        atomic.get("resolved_path") != libatomic["installed_path"]
+        or atomic.get("sha256") != libatomic["installed_sha256"]
+    ):
+        _fail("Node linkage is not bound to the admitted libatomic1 bytes")
+    return {
+        "libatomic1": libatomic,
+        "node_version": node_record["version"],
+        "schema_version": "mingli-native-linkage-v1",
+        "targets": targets,
+    }
+
+
+def _validate_native_target(record: object, label: str) -> dict[str, Any]:
+    if not isinstance(record, dict):
+        _fail(f"{label} must be an object")
+    if set(record) != {"dependencies", "path", "sha256"}:
+        _fail(f"{label} fields are not exact")
+    path = record.get("path")
+    if not isinstance(path, str) or not path.startswith("/"):
+        _fail(f"{label} path is invalid")
+    _require_sha256(record.get("sha256"), f"{label} target")
+    dependencies = record.get("dependencies")
+    if not isinstance(dependencies, dict) or not dependencies:
+        _fail(f"{label} dynamic dependency inventory is empty")
+    for name, item in dependencies.items():
+        if not isinstance(name, str) or not name or not isinstance(item, dict):
+            _fail(f"{label} dynamic dependency record is invalid: {name}")
+        if set(item) != {"reported_path", "resolved_path", "sha256"}:
+            _fail(f"{label} dynamic dependency fields are not exact: {name}")
+        reported_path = item.get("reported_path")
+        resolved_path = item.get("resolved_path")
+        if (
+            not isinstance(reported_path, str)
+            or not reported_path.startswith("/")
+            or not isinstance(resolved_path, str)
+            or not resolved_path.startswith("/")
+        ):
+            _fail(f"{label} dynamic dependency path is invalid: {name}")
+        _require_sha256(item.get("sha256"), f"{label} dynamic dependency {name}")
+    return record
+
+
+def _validate_native_linkage_record(record: object, label: str) -> dict[str, Any]:
+    if not isinstance(record, dict):
+        _fail(f"{label} must be an object")
+    if record.get("schema_version") != "mingli-native-linkage-v1":
+        _fail(f"{label} schema mismatch")
+    if record.get("node_version") != EXPECTED_NODE["version"]:
+        _fail(f"{label} Node version mismatch")
+    if record.get("libatomic1") != EXPECTED_LIBATOMIC:
+        _fail(f"{label} libatomic1 provenance mismatch")
+    targets = record.get("targets")
+    expected_targets = {"node", "python", "sxtwl", "yaml_c_extension"}
+    if not isinstance(targets, dict) or set(targets) != expected_targets:
+        _fail(f"{label} native target inventory mismatch")
+    validated = {
+        name: _validate_native_target(value, f"{label} {name}")
+        for name, value in targets.items()
+    }
+    if validated["node"].get("path") != "/opt/node/bin/node":
+        _fail(f"{label} Node path mismatch")
+    if validated["python"].get("path") != "/opt/mingli-runtime/venv/bin/python":
+        _fail(f"{label} CPython path mismatch")
+    for name in ("sxtwl", "yaml_c_extension"):
+        path = validated[name].get("path")
+        if not isinstance(path, str) or not path.startswith(
+            "/opt/mingli-runtime/venv/"
+        ):
+            _fail(f"{label} extension path mismatch: {name}")
+    if not Path(str(validated["sxtwl"]["path"])).name.startswith("_sxtwl."):
+        _fail(f"{label} sxtwl native extension identity mismatch")
+    if not Path(str(validated["yaml_c_extension"]["path"])).name.startswith("_yaml."):
+        _fail(f"{label} PyYAML C extension identity mismatch")
+    node_dependencies = validated["node"]["dependencies"]
+    if set(node_dependencies) != EXPECTED_NODE_LINKAGE:
+        _fail(f"{label} Node dynamic dependency inventory mismatch")
+    atomic = node_dependencies["libatomic.so.1"]
+    if (
+        atomic.get("resolved_path") != EXPECTED_LIBATOMIC["installed_path"]
+        or atomic.get("sha256") != EXPECTED_LIBATOMIC["installed_sha256"]
+    ):
+        _fail(f"{label} is not bound to admitted libatomic1 bytes")
+    return record
+
+
 def _verify_state_root(state_root: Path) -> dict[str, int]:
     if (
         not state_root.is_absolute()
@@ -761,6 +1070,22 @@ def _verify_research_source(
     }
 
 
+def validate_describe_payload(result: object, label: str) -> dict[str, Any]:
+    if not isinstance(result, dict) or result.get("kind") != "described":
+        _fail(f"{label} did not return Described")
+    if result.get("protocol_version") != EXPECTED_RELEASE["protocol_version"]:
+        _fail(f"{label} protocol mismatch")
+    if result.get("manifest_digest") != EXPECTED_RELEASE["describe_digest"]:
+        _fail(f"{label} manifest digest mismatch")
+    capabilities = result.get("capabilities")
+    if not isinstance(capabilities, list):
+        _fail(f"{label} capabilities are invalid")
+    provider_ids = {item.get("id") for item in capabilities if isinstance(item, dict)}
+    if len(capabilities) != 13 or provider_ids != EXPECTED_PROVIDERS:
+        _fail(f"{label} does not expose all 13 Provider capabilities")
+    return result
+
+
 def _run_describe(
     release_root: Path,
     runtime_python: Path,
@@ -798,19 +1123,7 @@ def _run_describe(
         raise ReleaseVerificationError(
             "portable describe output is invalid JSON"
         ) from exc
-    if not isinstance(result, dict) or result.get("kind") != "described":
-        _fail("portable describe did not return Described")
-    if result.get("protocol_version") != EXPECTED_RELEASE["protocol_version"]:
-        _fail("portable describe protocol mismatch")
-    if result.get("manifest_digest") != EXPECTED_RELEASE["describe_digest"]:
-        _fail("portable describe manifest digest mismatch")
-    capabilities = result.get("capabilities")
-    if not isinstance(capabilities, list):
-        _fail("portable describe capabilities are invalid")
-    provider_ids = {item.get("id") for item in capabilities if isinstance(item, dict)}
-    if len(capabilities) != 13 or provider_ids != EXPECTED_PROVIDERS:
-        _fail("portable describe does not expose all 13 Provider capabilities")
-    return result
+    return validate_describe_payload(result, "portable describe")
 
 
 def inspect_runtime(
@@ -859,6 +1172,7 @@ def inspect_runtime(
         _fail("full runtime inspection requires Python, Node, and state root")
     runtime = _verify_runtime_python(release_root, runtime_python)
     node_record = _verify_node(node)
+    native_linkage = inspect_native_linkage(runtime_python, node)
     state = _verify_state_root(state_root)
     first_describe = _run_describe(release_root, runtime_python, state_root)
     second_describe = _run_describe(release_root, runtime_python, state_root)
@@ -869,6 +1183,7 @@ def inspect_runtime(
             "describe": first_describe,
             "describe_output_sha256": canonical_sha256(first_describe),
             "node": node_record,
+            "native_linkage": native_linkage,
             "runtime_integrity": runtime,
             "state_root": state,
         }
@@ -968,6 +1283,10 @@ def _verify_inventory_artifact(
         _fail("runtime inventory portable describe lacks the exact 13 Provider set")
     if inventory.get("describe_output_sha256") != canonical_sha256(describe):
         _fail("runtime inventory portable describe output digest mismatch")
+    _validate_native_linkage_record(
+        inventory.get("native_linkage"),
+        "runtime inventory native linkage",
+    )
     if not isinstance(report_inventory, dict):
         _fail("release report inventory must be an object")
     expected_projection = {
@@ -1051,7 +1370,13 @@ def _verify_source_binding_artifact(
     }
     if inventory.get("authoritative_source") != expected_source:
         _fail("authoritative source binding is not a clean exact commit")
-    forbidden_runtime_fields = {"describe", "node", "runtime_integrity", "state_root"}
+    forbidden_runtime_fields = {
+        "describe",
+        "native_linkage",
+        "node",
+        "runtime_integrity",
+        "state_root",
+    }
     if forbidden_runtime_fields & set(inventory):
         _fail("source binding must remain a release-only audit artifact")
     return inventory
@@ -1096,6 +1421,7 @@ def _verify_sbom(path: Path, report: Mapping[str, Any]) -> None:
         ("sxtwl", "2.0.7"),
         ("astronomy-engine", "2.1.19"),
         ("cnlunar", "0.2.4"),
+        ("libatomic1", EXPECTED_LIBATOMIC["version"]),
     }
     if not required <= set(by_identity):
         _fail("SBOM omits a required Python, Node, or vendored component")
@@ -1126,6 +1452,9 @@ def _verify_sbom(path: Path, report: Mapping[str, Any]) -> None:
             "linux_amd64_manifest_digest"
         ],
         "mingli:oci-config-digest": artifact.get("image_digest"),
+        "mingli:native-linkage-sha256": report.get(
+            "runtime_native_linkage_identity", {}
+        ).get("payload_sha256"),
         "mingli:release-manifest-sha256": EXPECTED_RELEASE["release_manifest_sha256"],
         "mingli:runtime-integrity-sha256": artifact.get("runtime_integrity_sha256"),
     }:
@@ -1246,6 +1575,31 @@ def _verify_sbom(path: Path, report: Mapping[str, Any]) -> None:
         != EXPECTED_PYTHON_ARTIFACTS["sxtwl"]["sdist_sha256"]
     ):
         _fail("SBOM sxtwl source sdist SHA-256 provenance mismatch")
+    libatomic_identity = ("libatomic1", EXPECTED_LIBATOMIC["version"])
+    if component_hashes(libatomic_identity) != {EXPECTED_LIBATOMIC["sha256"]}:
+        _fail("SBOM libatomic1 amd64 package SHA-256 mismatch")
+    libatomic_component = by_identity[libatomic_identity]
+    if libatomic_component.get("licenses") != [
+        {"expression": EXPECTED_LIBATOMIC["license"]}
+    ]:
+        _fail("SBOM libatomic1 license expression mismatch")
+    libatomic_properties = {
+        item.get("name"): item.get("value")
+        for item in libatomic_component.get("properties") or ()
+        if isinstance(item, dict)
+    }
+    if libatomic_properties != {
+        "mingli:architecture": EXPECTED_LIBATOMIC["architecture"],
+        "mingli:artifact-filename": EXPECTED_LIBATOMIC["filename"],
+        "mingli:installed-path": EXPECTED_LIBATOMIC["installed_path"],
+        "mingli:installed-sha256": EXPECTED_LIBATOMIC["installed_sha256"],
+        "mingli:soname-path": EXPECTED_LIBATOMIC["soname_path"],
+        "mingli:soname-target": EXPECTED_LIBATOMIC["soname_target"],
+        "mingli:fetch-url": EXPECTED_LIBATOMIC["fetch_url"],
+        "mingli:origin-url": EXPECTED_LIBATOMIC["origin_url"],
+        "mingli:snapshot-timestamp": EXPECTED_LIBATOMIC["snapshot_timestamp"],
+    }:
+        _fail("SBOM libatomic1 installed/provenance properties mismatch")
     if report.get("target", {}).get("node_version") != EXPECTED_NODE["version"]:
         _fail("release report Node version differs from SBOM provenance")
 
@@ -1452,6 +1806,44 @@ def _verify_tree_identity(
         _require_sha256(record.get("sha256"), f"runtime tree identity {name}")
 
 
+def _verify_native_linkage_identity(
+    section: object,
+    commands: Mapping[str, Mapping[str, Any]],
+    runtime_inventory: Mapping[str, Any],
+) -> None:
+    if not isinstance(section, dict) or section.get("status") != "passed":
+        _fail("production/audit native linkage identity did not pass")
+    if (
+        section.get("production_command_id"),
+        section.get("audit_command_id"),
+    ) != ("production-native-linkage", "audit-native-linkage"):
+        _fail("native linkage identity command binding mismatch")
+    if section.get("targets") != [
+        "node",
+        "python",
+        "sxtwl",
+        "yaml_c_extension",
+    ]:
+        _fail("native linkage identity target inventory mismatch")
+    digest = _require_sha256(section.get("sha256"), "native linkage identity")
+    production = commands["production-native-linkage"]
+    audit = commands["audit-native-linkage"]
+    if (
+        production.get("stdout_sha256") != digest
+        or audit.get("stdout_sha256") != digest
+    ):
+        _fail("production and audit native linkage stdout digests differ")
+    first = _load_json(production["stdout_file"], "production native linkage")
+    second = _load_json(audit["stdout_file"], "audit native linkage")
+    if first != second:
+        _fail("derived audit stage changed native runtime linkage")
+    _validate_native_linkage_record(first, "production/audit native linkage")
+    if section.get("payload_sha256") != canonical_sha256(first):
+        _fail("native linkage canonical payload digest mismatch")
+    if runtime_inventory.get("native_linkage") != first:
+        _fail("runtime inventory and native linkage command evidence differ")
+
+
 def _verify_backup_restore(
     section: object,
     evidence_path: Path,
@@ -1518,18 +1910,24 @@ def _verify_backup_restore(
         "accepted-followup-prepare",
         "accepted-followup-token-record",
         "accepted-restore",
+        "accepted-restore-describe",
+        "accepted-restore-state-root-identity",
         "accepted-restore-volume-empty",
         "accepted-snapshot-capture",
         "accepted-snapshot-seal",
         "prepared-restore",
+        "prepared-restore-describe",
+        "prepared-restore-state-root-identity",
         "prepared-restore-volume-empty",
         "prepared-restored-complete",
         "prepared-snapshot-capture",
         "prepared-snapshot-seal",
         "prepared-token-replay",
         "source-complete",
+        "source-describe",
         "source-prepare",
         "source-prepared-token-record",
+        "source-state-root-identity",
     }
     command_records = evidence.get("commands")
     if not isinstance(command_records, list):
@@ -1539,9 +1937,12 @@ def _verify_backup_restore(
         "accepted-complete-replay",
         "accepted-followup-complete",
         "accepted-followup-prepare",
+        "accepted-restore-describe",
+        "prepared-restore-describe",
         "prepared-restored-complete",
         "prepared-token-replay",
         "source-complete",
+        "source-describe",
         "source-prepare",
     }
     for command in command_records:
@@ -1589,10 +1990,18 @@ def _verify_backup_restore(
         "accepted-complete-replay": "accepted_restore_blank",
         "accepted-followup-complete": "prepared_restore_blank",
         "accepted-followup-prepare": "prepared_restore_blank",
+        "accepted-restore-describe": "accepted_restore_blank",
+        "prepared-restore-describe": "prepared_restore_blank",
         "prepared-restored-complete": "prepared_restore_blank",
         "prepared-token-replay": "prepared_restore_blank",
         "source-complete": "source",
+        "source-describe": "source",
         "source-prepare": "source",
+    }
+    describe_command_ids = {
+        "accepted-restore-describe",
+        "prepared-restore-describe",
+        "source-describe",
     }
     for command_id, role in command_volume_roles.items():
         expected_argv = [
@@ -1610,10 +2019,13 @@ def _verify_backup_restore(
         ]
         if commands[command_id].get("argv") != expected_argv:
             _fail(f"backup runtime command argv drift: {command_id}")
-        if commands[command_id].get("stdout_capture") != (
-            "sanitized-runtime-result-v1"
-        ):
-            _fail(f"backup runtime command was not sanitized: {command_id}")
+        expected_capture = (
+            "describe-result-v1"
+            if command_id in describe_command_ids
+            else "sanitized-runtime-result-v1"
+        )
+        if commands[command_id].get("stdout_capture") != expected_capture:
+            _fail(f"backup runtime command capture drift: {command_id}")
     token_record_roles = {
         "accepted-followup-token-record": "prepared_restore_blank",
         "source-prepared-token-record": "source",
@@ -1643,6 +2055,33 @@ def _verify_backup_restore(
             _fail(f"backup token-record command argv drift: {command_id}")
         if commands[command_id].get("stdout_capture") != "token-record-audit-v1":
             _fail(f"backup token-record command capture drift: {command_id}")
+    state_root_roles = {
+        "accepted-restore-state-root-identity": "accepted_restore_blank",
+        "prepared-restore-state-root-identity": "prepared_restore_blank",
+        "source-state-root-identity": "source",
+    }
+    for command_id, role in state_root_roles.items():
+        expected_argv = [
+            "docker",
+            "run",
+            "--rm",
+            "--network=none",
+            "--read-only",
+            "--mount",
+            f"source={volume_ids[role]},target=/var/lib/mingli,readonly",
+            "--entrypoint",
+            "/opt/mingli-runtime/venv/bin/python",
+            image_digest,
+            "-B",
+            "/opt/mingli-runtime/audit_runtime.py",
+            "--emit-state-root-identity",
+            "--state-root",
+            "/var/lib/mingli",
+        ]
+        if commands[command_id].get("argv") != expected_argv:
+            _fail(f"backup state-root identity command argv drift: {command_id}")
+        if commands[command_id].get("stdout_capture") != "state-root-identity-v1":
+            _fail(f"backup state-root identity capture drift: {command_id}")
     empty_roles = {
         "accepted-restore-volume-empty": "accepted_restore_blank",
         "prepared-restore-volume-empty": "prepared_restore_blank",
@@ -1753,6 +2192,114 @@ def _verify_backup_restore(
             "schema_version": "mingli-snapshot-restore-v1",
         }:
             _fail(f"snapshot restore receipt binding failed: {name}")
+
+    restore_environment = evidence.get("restore_environment")
+    if not isinstance(restore_environment, dict):
+        _fail("backup/restore environment evidence is missing")
+    expected_roles = {"accepted_restore", "prepared_restore", "source"}
+
+    def load_bound_output(
+        bindings: object,
+        role: str,
+        command_id: str,
+        label: str,
+    ) -> dict[str, Any]:
+        if not isinstance(bindings, dict) or set(bindings) != expected_roles:
+            _fail(f"backup/restore {label} bindings are incomplete")
+        binding = bindings[role]
+        command = commands[command_id]
+        if (
+            not isinstance(binding, dict)
+            or binding.get("command_id") != command_id
+            or binding.get("path") != command.get("stdout_path")
+            or binding.get("sha256") != command.get("stdout_sha256")
+        ):
+            _fail(f"backup/restore {label} binding failed: {role}")
+        return _load_json(command["stdout_file"], f"backup/restore {label} {role}")
+
+    describe_ids = {
+        "accepted_restore": "accepted-restore-describe",
+        "prepared_restore": "prepared-restore-describe",
+        "source": "source-describe",
+    }
+    describes = {
+        role: validate_describe_payload(
+            load_bound_output(
+                restore_environment.get("describes"),
+                role,
+                command_id,
+                "describe",
+            ),
+            f"backup/restore {role} describe",
+        )
+        for role, command_id in describe_ids.items()
+    }
+    describe_hashes = {
+        commands[command_id].get("stdout_sha256")
+        for command_id in describe_ids.values()
+    }
+    if (
+        restore_environment.get("describe_byte_identical") is not True
+        or len(describe_hashes) != 1
+        or len({canonical_sha256(item) for item in describes.values()}) != 1
+    ):
+        _fail("backup/restore describe results are not byte-identical")
+
+    state_root_ids = {
+        "accepted_restore": "accepted-restore-state-root-identity",
+        "prepared_restore": "prepared-restore-state-root-identity",
+        "source": "source-state-root-identity",
+    }
+    state_roots = {
+        role: load_bound_output(
+            restore_environment.get("state_roots"),
+            role,
+            command_id,
+            "state-root identity",
+        )
+        for role, command_id in state_root_ids.items()
+    }
+    identity_pairs: set[tuple[int, int]] = set()
+    for role, item in state_roots.items():
+        if item.get("schema_version") != "mingli-state-root-identity-v1":
+            _fail(f"backup/restore state-root identity schema mismatch: {role}")
+        if {
+            "gid": item.get("gid"),
+            "mode": item.get("mode"),
+            "path": item.get("path"),
+            "uid": item.get("uid"),
+        } != {
+            "gid": 10001,
+            "mode": 0o700,
+            "path": "/var/lib/mingli",
+            "uid": 10001,
+        }:
+            _fail(f"backup/restore state-root invariant mismatch: {role}")
+        st_dev = item.get("st_dev")
+        st_ino = item.get("st_ino")
+        if (
+            not isinstance(st_dev, int)
+            or st_dev <= 0
+            or not isinstance(st_ino, int)
+            or st_ino <= 0
+        ):
+            _fail(f"backup/restore device/inode evidence is invalid: {role}")
+        identity_pairs.add((st_dev, st_ino))
+    expected_constraints = {
+        "device_inode_values_may_change": True,
+        "must_match": {
+            "gid": 10001,
+            "mode": 0o700,
+            "path": "/var/lib/mingli",
+            "uid": 10001,
+        },
+        "root_identity_pairs_distinct": True,
+    }
+    if (
+        restore_environment.get("constraints") != expected_constraints
+        or len(identity_pairs) != 3
+    ):
+        _fail("backup/restore filesystem identity constraints are unproven")
 
     transcript_ids = {
         "accepted-replay": "accepted-complete-replay",
@@ -1943,22 +2490,13 @@ def _verify_backup_restore(
         == source_token_record.get("reading_id_sha256")
     ):
         _fail("Accepted follow-up token record does not prove child version 2")
-    expected_flags = (
-        "accepted_followup_created",
-        "accepted_token_replayed",
-        "complete_public_copy_byte_identical",
-        "followup_version_advanced",
-        "prepared_replay_byte_identical",
-        "prepared_restored_completed",
-        "prepared_token_restored",
-    )
-    if any(evidence.get(field) is not True for field in expected_flags):
+    if any(evidence.get(field) is not True for field in EXPECTED_BACKUP_FLAGS):
         _fail("backup/restore semantic evidence flags are incomplete")
     if "state_token" in json.dumps(evidence, sort_keys=True):
         _fail("backup/restore evidence must not contain a plaintext state token")
     if not isinstance(section, dict) or section.get("status") != "passed":
         _fail("backup/restore report section did not pass")
-    for field in expected_flags:
+    for field in EXPECTED_BACKUP_FLAGS:
         if section.get(field) is not evidence.get(field):
             _fail(f"backup/restore report differs from evidence: {field}")
     if section.get("command_ids") != sorted(expected_command_ids):
@@ -2085,6 +2623,8 @@ def validate_audit_report(
         "source_url": ("https://nodejs.org/dist/v26.3.0/node-v26.3.0-linux-x64.tar.gz"),
     }:
         _fail("Node 26.3.0 tarball provenance mismatch")
+    if provenance.get("system_runtime") != {"libatomic1": EXPECTED_LIBATOMIC}:
+        _fail("libatomic1 frozen system-runtime provenance mismatch")
     dependencies = report.get("dependencies")
     if not isinstance(dependencies, dict):
         _fail("release dependency projection is missing")
@@ -2109,6 +2649,7 @@ def validate_audit_report(
         "pyyaml": python_distributions.get("PyYAML"),
         "sxtwl": python_distributions.get("sxtwl"),
         "iztro": provenance.get("vendored", {}).get("iztro"),
+        "libatomic1": provenance.get("system_runtime", {}).get("libatomic1"),
     }
     if dependencies != expected_dependency_projection:
         _fail("release dependencies differ from recomputed provenance")
@@ -2239,6 +2780,31 @@ def validate_audit_report(
         image_id=audit_image_id,
     )
     _verify_tree_identity(report.get("runtime_tree_identity"), commands)
+    native_linkage_argv = (
+        runtime_path,
+        "-B",
+        audit_script,
+        "--emit-native-linkage",
+    )
+    _require_command(
+        commands,
+        "production-native-linkage",
+        argv=native_linkage_argv,
+        cwd="/opt/mingli-master",
+        image_id=image_id,
+    )
+    _require_command(
+        commands,
+        "audit-native-linkage",
+        argv=native_linkage_argv,
+        cwd="/opt/mingli-master",
+        image_id=audit_image_id,
+    )
+    _verify_native_linkage_identity(
+        report.get("runtime_native_linkage_identity"),
+        commands,
+        runtime_inventory,
+    )
     _verify_production_evidence(
         production_evidence_path,
         artifacts_root=artifacts_root,
