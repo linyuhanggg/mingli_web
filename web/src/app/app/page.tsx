@@ -5,25 +5,41 @@ import { privateShellStyles as styles } from "@/components/private-shell";
 export default function AppPage() {
   return (
     <section className={styles.panel}>
-      <h1>你的命理档案，从这里继续。</h1>
+      <h1>选择一项，开始你的解读。</h1>
       <p>
-        Phase 1 已完成网站壳与身份基础。档案、今日/近七日、六爻起卦和正式解读将在 Phase 2 接入确定性运行时后开放，这里不会先伪造计算结果。
+        先建立可复现的命理档案，再查看今日与近七日提示；也可以不建档，直接就一件具体的事起卦。
       </p>
-      <div className={styles.nextGrid} aria-label="下一阶段能力">
-        <div className={styles.nextCard}>
-          <strong>建立受测档案</strong>
-          <span>下一阶段：资料确认、隐私同意和不可变 Profile Version</span>
-        </div>
-        <div className={styles.nextCard}>
-          <strong>今日与近七日</strong>
-          <span>下一阶段：基于已确认档案生成轻量摘要</span>
-        </div>
-        <div className={styles.nextCard}>
-          <strong>一事一问 · 六爻</strong>
-          <span>下一阶段：记录问题、卦象、起卦方式与时刻</span>
-        </div>
+      <div className={styles.nextGrid} aria-label="可用功能">
+        <article className={styles.nextCard}>
+          <h2>命理档案</h2>
+          <span>确认出生资料与时间口径，保存不可变的档案版本。</span>
+          <ButtonLink href="/app/profile/new" variant="text">
+            建立命理档案
+          </ButtonLink>
+        </article>
+        <article className={styles.nextCard}>
+          <h2>今日与近七日</h2>
+          <span>从已确认档案出发，查看服务端确定的日期范围与轻量提示。</span>
+          <div className={styles.cardActions}>
+            <ButtonLink href="/app/fortune/today" variant="text">
+              查看今日
+            </ButtonLink>
+            <ButtonLink href="/app/fortune/week" variant="text">
+              查看近七日
+            </ButtonLink>
+          </div>
+        </article>
+        <article className={styles.nextCard}>
+          <h2>一事一问 · 六爻</h2>
+          <span>记录具体问题、卦象、起卦时刻与地点，再生成可核对的解读。</span>
+          <ButtonLink href="/app/ask/liuyao" variant="text">
+            开始六爻起卦
+          </ButtonLink>
+        </article>
       </div>
-      <ButtonLink href="/account">先完成手机号或邮箱登录</ButtonLink>
+      <ButtonLink href="/account" variant="secondary">
+        管理登录与账户
+      </ButtonLink>
     </section>
   );
 }

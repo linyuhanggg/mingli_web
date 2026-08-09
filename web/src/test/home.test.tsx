@@ -1,5 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 
+import AppPage from "@/app/app/page";
 import HomePage from "@/app/page";
 
 
@@ -11,6 +12,9 @@ describe("responsive public home", () => {
       screen.getByRole("link", { name: "免费建立命理档案" }),
     ).toHaveAttribute("href", "/app/profile/new");
     expect(screen.getByText("今日与近七日")).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "查看今日提示" }),
+    ).toHaveAttribute("href", "/app/fortune/today");
     expect(
       screen.getByRole("link", { name: "问一件具体的事" }),
     ).toHaveAttribute("href", "/app/ask/liuyao");
@@ -51,5 +55,29 @@ describe("responsive public home", () => {
       "/methodology",
     );
     expect(screen.getByRole("contentinfo")).toBeVisible();
+  });
+});
+
+describe("private app home", () => {
+  it("links directly to every available Phase 2 flow", () => {
+    render(<AppPage />);
+
+    expect(screen.queryByText(/将在 Phase 2/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "建立命理档案" })).toHaveAttribute(
+      "href",
+      "/app/profile/new",
+    );
+    expect(screen.getByRole("link", { name: "查看今日" })).toHaveAttribute(
+      "href",
+      "/app/fortune/today",
+    );
+    expect(screen.getByRole("link", { name: "查看近七日" })).toHaveAttribute(
+      "href",
+      "/app/fortune/week",
+    );
+    expect(screen.getByRole("link", { name: "开始六爻起卦" })).toHaveAttribute(
+      "href",
+      "/app/ask/liuyao",
+    );
   });
 });

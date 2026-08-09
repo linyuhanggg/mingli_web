@@ -1,0 +1,154 @@
+.wrap {
+  display: grid;
+  gap: 1rem;
+}
+
+.lead {
+  margin: 0;
+  color: var(--ink-700);
+}
+
+.status,
+.error {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+}
+
+.status {
+  background: var(--ivory-100);
+  color: var(--ink-700);
+}
+
+.error {
+  border-left: 3px solid var(--terracotta-500);
+  background: var(--ivory-100);
+  color: var(--ink-950);
+}
+
+.state {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.secondary {
+  min-height: 2.75rem;
+  padding-inline: 1.1rem;
+  border: 1px solid var(--border-control);
+  border-radius: 999px;
+  background: var(--ivory-50);
+  color: var(--ink-900);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.form {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.field label,
+.radioGroup legend {
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  min-height: 3rem;
+  padding-inline: 0.9rem;
+  font-size: 1rem;
+  border: 1px solid var(--border-emphasis);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--ink-950);
+}
+
+.field textarea {
+  min-height: 7.5rem;
+  padding-block: 0.75rem;
+  resize: vertical;
+}
+
+.field input:disabled,
+.field select:disabled,
+.field textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.fieldError {
+  margin: 0;
+  color: var(--ink-950);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.fieldError::before {
+  margin-right: 0.35rem;
+  color: var(--terracotta-500);
+  content: "—";
+}
+
+.hint {
+  margin: 0.45rem 0 0;
+  color: var(--ink-700);
+  font-size: 0.78rem;
+}
+
+.radioGroup {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.radioOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.radioOption {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--ink-900);
+}
+
+.tossGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.submit {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--ink-900);
+  border-radius: 999px;
+  background: var(--ink-900);
+  color: var(--ivory-50);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (min-width: 40rem) {
+  .tossGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

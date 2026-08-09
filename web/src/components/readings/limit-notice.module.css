@@ -1,0 +1,29 @@
+.section {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.heading {
+  margin: 0 0 1rem;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink-950);
+}
+
+.list {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.item {
+  color: var(--ink-950);
+  line-height: 1.7;
+}
+
+.empty {
+  margin: 0;
+  color: var(--ink-700);
+}

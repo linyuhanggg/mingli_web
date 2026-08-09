@@ -1,0 +1,122 @@
+.section {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.heading {
+  margin: 0 0 1rem;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink-950);
+}
+
+.fieldset {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-bottom: 0.3rem;
+  color: var(--ink-900);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.outcomes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.optionLabel {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.95rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--ivory-50);
+  color: var(--ink-900);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.optionInput {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--ink-900);
+}
+
+.noteField {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+
+.noteLabel {
+  color: var(--ink-900);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.note {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  padding: 0.7rem 0.85rem;
+  font-size: 1rem;
+  border: 1px solid var(--border-emphasis);
+  border-radius: var(--radius-sm);
+  background: var(--ivory-50);
+  color: var(--ink-950);
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--ink-900);
+  color: var(--ivory-50);
+  box-shadow: var(--shadow-action);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--ink-800);
+  transform: translateY(-2px);
+}
+
+.button:disabled {
+  cursor: progress;
+  opacity: 0.8;
+}
+
+.success {
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--gold-500);
+  color: var(--ink-900);
+}
+
+.error {
+  margin: 0.9rem 0 0;
+  color: var(--terracotta-500);
+}

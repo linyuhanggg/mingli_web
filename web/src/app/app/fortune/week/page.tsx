@@ -1,12 +1,12 @@
 "use client";
 
-import { LiuyaoForm } from "@/components/liuyao-form";
+import { FortuneFlow } from "@/components/fortune-flow";
 import { privateShellStyles as styles } from "@/components/private-shell";
 
-export default function LiuyaoPage() {
+export default function FortuneWeekPage() {
   return (
     <section className={styles.panel}>
-      <LiuyaoForm />
+      <FortuneFlow mode="week" />
     </section>
   );
 }

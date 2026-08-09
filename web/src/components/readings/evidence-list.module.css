@@ -1,0 +1,50 @@
+.section {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.heading {
+  margin: 0 0 1rem;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink-950);
+}
+
+.list {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.9rem 1rem;
+  border-left: 3px solid var(--gold-400);
+  background: var(--ivory-100);
+}
+
+.source {
+  margin: 0;
+  color: var(--ink-900);
+  font-weight: 750;
+}
+
+.locator {
+  color: var(--ink-700);
+  font-weight: 600;
+}
+
+.excerpt {
+  margin: 0;
+  color: var(--ink-700);
+  line-height: 1.7;
+}
+
+.empty {
+  margin: 0;
+  color: var(--ink-700);
+}

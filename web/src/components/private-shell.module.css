@@ -64,11 +64,21 @@
   background: var(--ivory-50);
 }
 
-.nextCard strong {
-  display: block;
+.nextCard h2 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
 }
 
 .nextCard span {
+  display: block;
+  margin-block: 0.45rem 0.25rem;
   color: var(--ink-700);
   font-size: 0.86rem;
+}
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
 }

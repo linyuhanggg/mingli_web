@@ -20,8 +20,8 @@ const tasks = [
     eyebrow: "Rhythm",
     title: "今日与近七日",
     description: "从自己的档案出发，查看轻量阶段提示，不制造每天都要算一遍的焦虑。",
-    href: "/app",
-    action: "查看应用入口",
+    href: "/app/fortune/today",
+    action: "查看今日提示",
   },
   {
     index: "03",
