@@ -1,10 +1,11 @@
 import hashlib
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from app.adapters.runtime import FakeMingliRuntimeAdapter
+from app.identity.models import GuestSession
 from app.readings.models import (
     GenerationAttempt,
     ReadingIdempotencyKey,
@@ -12,7 +13,9 @@ from app.readings.models import (
     ReadingRoot,
     ReadingVerification,
     ReadingVersion,
+    RuntimeRelease,
 )
+from app.readings.request_compiler import compile_liuyao_prepare
 from app.readings.runtime_contracts import Accepted, Prepared, ReadingBrief, Stopped
 from app.security.envelope import EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
@@ -1306,3 +1309,203 @@ async def test_user_owner_can_start_a_reading_after_login_claim(
         root = (await session.scalars(select(ReadingRoot))).one()
         assert str(root.owner_user_id) == logged_in["user_id"]
         assert root.owner_guest_session_id is None
+
+
+async def _seed_release_id(database: Any) -> UUID:
+    async with database.sessions() as session:
+        release = await session.scalar(select(RuntimeRelease))
+        assert release is not None
+        return release.id
+
+
+async def _seed_listed_version(
+    database: Any,
+    test_settings: Any,
+    *,
+    release_id: UUID,
+    owner_guest_session_id: UUID | None,
+    owner_user_id: UUID | None = None,
+    version_id: UUID | None = None,
+    created_at: datetime | None = None,
+) -> str:
+    version_id = version_id or uuid4()
+    prepare = compile_liuyao_prepare(
+        action="liuyao_one_question",
+        query="请为这个问题起一卦。",
+        subject_ref=f"liuyao:{uuid4().hex}",
+        cast=(7, 8, 6, 9, 7, 8),
+        event_datetime=datetime(2026, 8, 10, 12, 0, tzinfo=UTC),
+        confirmed_timezone="Asia/Shanghai",
+        location="北京市朝阳区",
+        dimension_ids=("career",),
+    )
+    encrypted = EnvelopeCipher.from_settings(test_settings).encrypt_json(
+        prepare.to_dict(),
+        context=f"reading-version:{version_id}:prepare",
+    )
+    root_id = uuid4()
+    version = ReadingVersion(
+        id=version_id,
+        reading_root_id=root_id,
+        runtime_release_id=release_id,
+        version=1,
+        status="input_ready",
+        capability_id="liuyao",
+        object_id="one_question",
+        dimension_ids=["career"],
+        horizon={"kind_id": "one_question", "start": None, "end": None},
+        prepare_key_id=encrypted.key_id,
+        prepare_nonce=encrypted.nonce,
+        prepare_ciphertext=encrypted.ciphertext,
+        prepare_digest=encrypted.fingerprint,
+        created_at=created_at or datetime.now(UTC),
+    )
+    root = ReadingRoot(
+        id=root_id,
+        owner_user_id=owner_user_id,
+        owner_guest_session_id=owner_guest_session_id,
+        capability_id="liuyao",
+    )
+    async with database.sessions() as session:
+        session.add_all([root, version])
+        await session.commit()
+    return str(version.id)
+
+
+async def test_list_readings_orders_newest_first_caps_at_50_and_stays_private(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    await create_guest(client)
+    await seed_runtime_release(database, test_settings)
+    release_id = await _seed_release_id(database)
+    async with database.sessions() as session:
+        guest = await session.scalar(
+            select(GuestSession).order_by(GuestSession.created_at.desc())
+        )
+    assert guest is not None
+
+    base = datetime(2026, 8, 1, tzinfo=UTC)
+    seeded: list[str] = []
+    for index in range(55):
+        seeded.append(
+            await _seed_listed_version(
+                database,
+                test_settings,
+                release_id=release_id,
+                owner_guest_session_id=guest.id,
+                created_at=base + timedelta(minutes=index),
+            )
+        )
+
+    # Two versions share the newest created_at; the id-descending tie-break
+    # must order the higher UUID first.
+    older_id, newer_id = uuid4(), uuid4()
+    if older_id.int > newer_id.int:
+        older_id, newer_id = newer_id, older_id
+    shared_created_at = base + timedelta(minutes=60)
+    await _seed_listed_version(
+        database,
+        test_settings,
+        release_id=release_id,
+        owner_guest_session_id=guest.id,
+        version_id=older_id,
+        created_at=shared_created_at,
+    )
+    await _seed_listed_version(
+        database,
+        test_settings,
+        release_id=release_id,
+        owner_guest_session_id=guest.id,
+        version_id=newer_id,
+        created_at=shared_created_at,
+    )
+
+    listed = await client.get("/api/v1/readings")
+
+    assert listed.status_code == 200
+    body = listed.json()
+    version_ids = [item["reading_version_id"] for item in body["readings"]]
+    assert len(version_ids) == 50
+    assert version_ids[:2] == [str(newer_id), str(older_id)]
+    assert version_ids[2:] == seeded[::-1][:48]
+
+    item = body["readings"][0]
+    assert set(item) == {
+        "reading_version_id",
+        "reading_root_id",
+        "profile_version_id",
+        "capability_id",
+        "version",
+        "status",
+        "object_id",
+        "dimension_ids",
+        "horizon",
+        "prior_answer",
+        "input_request",
+        "created_at",
+    }
+    assert item["reading_root_id"]
+    assert item["profile_version_id"] is None
+    assert item["capability_id"] == "liuyao"
+    assert item["version"] == 1
+    assert item["status"] == "input_ready"
+    assert item["object_id"] == "one_question"
+    assert item["dimension_ids"] == ["career"]
+    assert item["horizon"] == {"kind_id": "one_question", "start": None, "end": None}
+    assert item["prior_answer"] is None
+    assert item["input_request"] is None
+    assert_private_headers(listed)
+    for banned in ("state_token", "ciphertext", "prompt", "candidate"):
+        assert banned not in listed.text
+
+
+async def test_list_readings_is_isolated_per_owner_and_survives_user_claim(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    guest_a = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, guest_a)
+    await seed_runtime_release(database, test_settings)
+    version_a = (
+        await start_preview(
+            client,
+            guest_a,
+            confirmed["profile_version_id"],
+            idempotency_key="list-isolation-a",
+        )
+    )["reading_version_id"]
+
+    listed_a = await client.get("/api/v1/readings")
+    assert listed_a.status_code == 200
+    assert [item["reading_version_id"] for item in listed_a.json()["readings"]] == [
+        version_a
+    ]
+
+    guest_b = await create_guest(client)
+    confirmed_b = await create_confirmed_profile(client, guest_b)
+    version_b = (
+        await start_preview(
+            client,
+            guest_b,
+            confirmed_b["profile_version_id"],
+            idempotency_key="list-isolation-b",
+        )
+    )["reading_version_id"]
+
+    listed_b = await client.get("/api/v1/readings")
+    assert listed_b.status_code == 200
+    assert [item["reading_version_id"] for item in listed_b.json()["readings"]] == [
+        version_b
+    ]
+
+    # After guest B claims a User account, the same session must still see only
+    # its own readings: guest A's Version must never leak across owners.
+    logged_in = await login_current_guest(client, guest_b)
+    claimed = await client.get("/api/v1/readings")
+    claimed_ids = [item["reading_version_id"] for item in claimed.json()["readings"]]
+    assert claimed_ids == [version_b]
+    assert str(logged_in["user_id"])
+    assert version_a not in claimed_ids

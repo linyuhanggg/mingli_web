@@ -102,6 +102,12 @@ class ReadingStartResponse(ReadingVersionSummary):
     pass
 
 
+class ReadingListResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    readings: list[ReadingVersionSummary]
+
+
 class ReadingVerificationSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

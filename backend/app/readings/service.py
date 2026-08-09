@@ -18,9 +18,10 @@ from app.readings.api_schemas import (
     ReadingResultResponse,
     ReadingStartResponse,
     ReadingVerificationSummary,
+    ReadingVersionSummary,
 )
 from app.readings.output_contracts import PREVIEW_V1
-from app.readings.repository import SqlReadingRepository
+from app.readings.repository import READING_HISTORY_LIMIT, SqlReadingRepository
 from app.readings.request_compiler import (
     ConfirmedProfileVersion,
     compile_bazi_prepare,
@@ -299,6 +300,19 @@ class ReadingService:
             version_id,
         )
         return await self._summary(root, version)
+
+    async def list_summaries(
+        self,
+        owner: OwnerProtocol,
+    ) -> list[ReadingVersionSummary]:
+        """List the newest owned Reading Versions, newest first (max 50)."""
+        user_id, guest_id = owner_ids(owner)
+        rows = await self.repository.list_owned_versions(
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+            limit=READING_HISTORY_LIMIT,
+        )
+        return [await self._summary(root, version) for root, version in rows]
 
     async def get_result(
         self,

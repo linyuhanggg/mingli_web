@@ -50,6 +50,7 @@ PHASE_TWO_PATHS = {
     "/api/v1/readings/today": "post",
     "/api/v1/readings/week": "post",
     "/api/v1/readings/liuyao": "post",
+    "/api/v1/readings": "get",
     "/api/v1/readings/{reading_version_id}": "get",
     "/api/v1/readings/{reading_version_id}/input": "post",
     "/api/v1/readings/{reading_version_id}/result": "get",
@@ -86,6 +87,7 @@ def test_phase_two_contracts_never_expose_runtime_or_birth_secrets() -> None:
         "ProfileListResponse",
         "ReadingVersionSummary",
         "ReadingStartResponse",
+        "ReadingListResponse",
         "ReadingResultResponse",
         "ReadingFactPanel",
         "ReadingFact",
@@ -143,3 +145,23 @@ def test_phase_two_mutating_routes_declare_csrf_and_idempotency() -> None:
         parameters = paths[path][method].get("parameters", [])
         parameter_names = {item.get("$ref") for item in parameters}
         assert "#/components/parameters/IdempotencyKey" in parameter_names
+
+
+def test_readings_list_contract_is_frozen_with_summary_items() -> None:
+    document = load_openapi_document()
+    operation = document["paths"]["/api/v1/readings"]["get"]
+
+    assert operation["operationId"] == "listReadings"
+    assert operation["tags"] == ["Readings"]
+    response_schema = operation["responses"]["200"]["content"]["application/json"][
+        "schema"
+    ]
+    assert response_schema == {"$ref": "#/components/schemas/ReadingListResponse"}
+
+    list_schema = document["components"]["schemas"]["ReadingListResponse"]
+    assert list_schema["type"] == "object"
+    assert list_schema["additionalProperties"] is False
+    assert list_schema["required"] == ["readings"]
+    assert list_schema["properties"]["readings"]["items"] == {
+        "$ref": "#/components/schemas/ReadingVersionSummary"
+    }

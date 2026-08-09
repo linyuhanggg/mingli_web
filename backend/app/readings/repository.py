@@ -39,6 +39,9 @@ from app.readings.status import ReadingStatus
 from app.security.envelope import EncryptedPayload, EnvelopeCipher
 
 
+READING_HISTORY_LIMIT = 50
+
+
 def reading_root_version_lock_statement(
     reading_root_id: UUID,
 ) -> Select[tuple[ReadingRoot]]:
@@ -254,6 +257,29 @@ class SqlReadingRepository:
         if found is None:
             raise LookupError("Reading Version not found")
         return found[0], found[1]
+
+    async def list_owned_versions(
+        self,
+        *,
+        owner_user_id: UUID | None,
+        owner_guest_session_id: UUID | None,
+        limit: int = READING_HISTORY_LIMIT,
+    ) -> list[tuple[ReadingRoot, ReadingVersion]]:
+        rows = await self.session.execute(
+            select(ReadingRoot, ReadingVersion)
+            .join(ReadingVersion, ReadingVersion.reading_root_id == ReadingRoot.id)
+            .where(
+                ReadingRoot.owner_user_id == owner_user_id,
+                ReadingRoot.owner_guest_session_id == owner_guest_session_id,
+            )
+            .order_by(
+                ReadingVersion.created_at.desc(),
+                ReadingVersion.id.desc(),
+            )
+            .limit(limit)
+        )
+        found = rows.all()
+        return [(root, version) for root, version in found]
 
     async def load_prepare(self, version_id: UUID) -> Prepare:
         version = await self.session.get(ReadingVersion, version_id)

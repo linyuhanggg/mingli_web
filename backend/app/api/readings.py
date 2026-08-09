@@ -17,6 +17,7 @@ from app.readings.api_schemas import (
     FortuneStartRequest,
     LiuyaoStartRequest,
     PreviewStartRequest,
+    ReadingListResponse,
     ReadingResultResponse,
     ReadingStartResponse,
     ReadingVerificationSummary,
@@ -234,6 +235,23 @@ async def start_liuyao_reading(
     await session.commit()
     mark_private(response)
     return _start_response(result, response)
+
+
+@router.get(
+    "",
+    operation_id="listReadings",
+    response_model=ReadingListResponse,
+)
+async def list_readings(
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(database_session),
+    owner: Owner = Depends(require_owner),
+) -> ReadingListResponse:
+    summaries = await _service(request, session).list_summaries(owner)
+    await session.commit()
+    mark_private(response)
+    return ReadingListResponse(readings=summaries)
 
 
 @router.get(

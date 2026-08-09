@@ -364,6 +364,20 @@ paths:
           $ref: "#/components/responses/TooManyRequests"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
+  /api/v1/readings:
+    get:
+      operationId: listReadings
+      tags: [Readings]
+      summary: List the newest Reading Versions owned by the current session
+      responses:
+        "200":
+          description: Public Reading Version summaries only; payloads stay encrypted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /api/v1/readings/{reading_version_id}:
     get:
       operationId: getReadingVersion
@@ -929,6 +943,15 @@ components:
       additionalProperties: false
       allOf:
         - $ref: "#/components/schemas/ReadingVersionSummary"
+    ReadingListResponse:
+      type: object
+      additionalProperties: false
+      required: [readings]
+      properties:
+        readings:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadingVersionSummary"
     ReadingFact:
       type: object
       additionalProperties: false
