@@ -1469,10 +1469,55 @@ def test_gate_volume_cleanup_is_fail_closed_and_attempts_every_volume() -> None:
     assert vm.removed == ["volume-c", "volume-b", "volume-a"]
 
 
+def test_gate_container_cleanup_resolves_exact_volume_memberships() -> None:
+    gate = load_lima_gate()
+    first_id = "a" * 64
+    second_id = "b" * 64
+
+    class FakeVM:
+        def __init__(self) -> None:
+            self.calls: list[list[str]] = []
+            self.queries: dict[str, int] = {}
+
+        def docker(
+            self,
+            argv: list[str],
+            *,
+            input_bytes: bytes | bytearray | None = None,
+            capture: bool = True,
+            timeout: float | None = None,
+        ) -> subprocess.CompletedProcess[bytes]:
+            del input_bytes, capture, timeout
+            self.calls.append(argv)
+            if argv[:3] == ["ps", "-aq", "--filter"]:
+                volume = argv[3].removeprefix("volume=")
+                count = self.queries.get(volume, 0)
+                self.queries[volume] = count + 1
+                if count == 0:
+                    payload = {
+                        "volume-a": first_id + "\n",
+                        "volume-b": first_id + "\n" + second_id + "\n",
+                    }[volume]
+                    return subprocess.CompletedProcess(argv, 0, payload.encode(), b"")
+                return subprocess.CompletedProcess(argv, 0, b"", b"")
+            return subprocess.CompletedProcess(argv, 0, b"", b"")
+
+    vm = FakeVM()
+    gate._remove_gate_containers(vm, ["volume-a", "volume-b"])
+
+    assert ["rm", "--force", first_id] in vm.calls
+    assert ["rm", "--force", second_id] in vm.calls
+    assert sum(call == ["rm", "--force", first_id] for call in vm.calls) == 1
+    assert vm.queries == {"volume-a": 2, "volume-b": 2}
+
+
 def test_gate_publishes_only_after_cleanup_contract() -> None:
     gate = load_lima_gate()
     source = inspect.getsource(gate.run_gate)
 
+    assert source.index("_remove_gate_containers") < source.index(
+        "_remove_gate_volumes"
+    )
     assert source.index("_remove_gate_volumes") < source.index(
         "os.replace(final_temporary, output)"
     )

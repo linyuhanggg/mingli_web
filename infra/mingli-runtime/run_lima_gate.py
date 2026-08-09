@@ -1514,6 +1514,38 @@ def _remove_gate_volumes(vm: LimaDocker, volumes: Sequence[str]) -> None:
         _fail("Gate cleanup failed for volumes: " + ", ".join(failures))
 
 
+def _gate_container_ids(vm: LimaDocker, volumes: Sequence[str]) -> set[str]:
+    container_ids: set[str] = set()
+    for volume in volumes:
+        completed = vm.docker(
+            ["ps", "-aq", "--filter", f"volume={volume}"],
+            timeout=60,
+        )
+        if completed.stderr:
+            _fail("Gate container membership query emitted stderr")
+        try:
+            candidates = completed.stdout.decode("ascii").splitlines()
+        except UnicodeDecodeError as exc:
+            raise GateError("Gate container membership is not ASCII") from exc
+        for candidate in candidates:
+            if re.fullmatch(r"[0-9a-f]{12,64}", candidate) is None:
+                _fail("Gate container membership returned an invalid container ID")
+            container_ids.add(candidate)
+    return container_ids
+
+
+def _remove_gate_containers(vm: LimaDocker, volumes: Sequence[str]) -> None:
+    failures: list[str] = []
+    for container_id in sorted(_gate_container_ids(vm, volumes)):
+        try:
+            vm.docker(["rm", "--force", container_id], timeout=60)
+        except (GateError, OSError, subprocess.SubprocessError):
+            failures.append(container_id)
+    remaining = _gate_container_ids(vm, volumes)
+    if failures or remaining:
+        _fail("Gate cleanup failed for attached containers")
+
+
 def run_gate(args: argparse.Namespace) -> Path:
     output = args.output.absolute()
     if output.exists() or output.is_symlink():
@@ -1848,18 +1880,22 @@ def run_gate(args: argparse.Namespace) -> Path:
             )
             gate_ready = True
         finally:
-            cleanup_error: GateError | None = None
+            cleanup_failures: list[str] = []
+            try:
+                _remove_gate_containers(vm, created_volumes)
+            except (GateError, OSError, subprocess.SubprocessError):
+                cleanup_failures.append("containers")
             try:
                 _remove_gate_volumes(vm, created_volumes)
-            except GateError as exc:
-                cleanup_error = exc
-            if not gate_ready or cleanup_error is not None:
+            except (GateError, OSError, subprocess.SubprocessError):
+                cleanup_failures.append("volumes")
+            if not gate_ready or cleanup_failures:
                 gate_ready = False
             if not gate_ready and final_temporary is not None:
                 shutil.rmtree(final_temporary, ignore_errors=True)
                 final_temporary = None
-            if cleanup_error is not None:
-                raise cleanup_error
+            if cleanup_failures:
+                _fail("Gate cleanup failed for: " + ", ".join(cleanup_failures))
     if not gate_ready or final_temporary is None:
         _fail("Linux Gate did not produce a publishable staging bundle")
     try:
