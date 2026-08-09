@@ -287,6 +287,11 @@ def test_linux_lock_and_image_are_immutable_and_arch_specific() -> None:
     assert "/usr/sbin/groupadd --gid ${RUNTIME_GID} mingli" in production_stage
     assert "/usr/sbin/useradd --uid ${RUNTIME_UID}" in production_stage
     assert "apt-get install libatomic1" not in production_stage
+    assert re.search(
+        r"env\s+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        r"\s+\\\s+/usr/bin/dpkg\s+--install",
+        production_stage,
+    )
     assert (
         "ADD --checksum=sha256:"
         "fbd4e154a6b444229ea002cc209df099209c0adc09102e5fd21239a3d2b55e2d"

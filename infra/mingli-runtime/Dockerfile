@@ -105,7 +105,9 @@ ADD --checksum=sha256:fbd4e154a6b444229ea002cc209df099209c0adc09102e5fd21239a3d2
 RUN test "$(dpkg-deb -f /opt/mingli-runtime/artifacts/libatomic1_12.2.0-14+deb12u1_amd64.deb Package)" = "libatomic1" \
     && test "$(dpkg-deb -f /opt/mingli-runtime/artifacts/libatomic1_12.2.0-14+deb12u1_amd64.deb Version)" = "12.2.0-14+deb12u1" \
     && test "$(dpkg-deb -f /opt/mingli-runtime/artifacts/libatomic1_12.2.0-14+deb12u1_amd64.deb Architecture)" = "amd64" \
-    && dpkg --install /opt/mingli-runtime/artifacts/libatomic1_12.2.0-14+deb12u1_amd64.deb \
+    && env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+        /usr/bin/dpkg --install \
+        /opt/mingli-runtime/artifacts/libatomic1_12.2.0-14+deb12u1_amd64.deb \
     && test "$(readlink /usr/lib/x86_64-linux-gnu/libatomic.so.1)" = "libatomic.so.1.2.0" \
     && test "$(sha256sum /usr/lib/x86_64-linux-gnu/libatomic.so.1.2.0 | cut -d' ' -f1)" \
         = "107ab9f7661a1c47cddfb5cd1def99ec537a50a9a537fbe38cdde1b34b8ba280" \
