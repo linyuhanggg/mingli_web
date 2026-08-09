@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import type { ComponentPropsWithoutRef } from "react";
 
@@ -18,6 +19,9 @@ export function ButtonLink({
     <Link
       className={clsx(styles.button, styles[variant], className)}
       {...props}
-    />
+    >
+      <span>{props.children}</span>
+      <ArrowUpRight aria-hidden="true" size={17} strokeWidth={1.8} />
+    </Link>
   );
 }

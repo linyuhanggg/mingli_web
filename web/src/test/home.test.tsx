@@ -28,7 +28,7 @@ describe("responsive public home", () => {
     expect(
       within(main).getByRole("heading", {
         level: 1,
-        name: /先把人生事实算清楚/,
+        name: /把时间读成一份.*可核对的个人档案/,
       }),
     ).toBeVisible();
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
@@ -37,7 +37,7 @@ describe("responsive public home", () => {
   it("explains deterministic calculation, AI boundaries, and verification", () => {
     render(<HomePage />);
 
-    expect(screen.getByText(/确定性计算/)).toBeVisible();
+    expect(screen.getByText(/确定性命理核心/)).toBeVisible();
     expect(screen.getByText(/AI 只负责白话表达/)).toBeVisible();
     expect(screen.getByText(/三条现实核对/)).toBeVisible();
   });

@@ -1,6 +1,27 @@
 .shell {
   min-height: 100vh;
-  background: var(--ivory-100);
+  padding-bottom: calc(5.25rem + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 100% 0, rgb(169 133 63 / 10%), transparent 28rem),
+    var(--ivory-100);
+}
+
+.skipLink {
+  position: fixed;
+  z-index: 100;
+  top: 0.75rem;
+  left: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--ink-950);
+  color: var(--ivory-50);
+  transform: translateY(-160%);
+  transition: transform 160ms ease-out;
+}
+
+.skipLink:focus {
+  transform: translateY(0);
 }
 
 .header {
@@ -21,47 +42,138 @@
   min-height: 2.75rem;
   align-items: center;
   color: var(--ink-700);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--gold-400);
+  text-underline-offset: 0.3rem;
+}
+
+.frame {
+  display: grid;
+}
+
+.aside {
+  display: none;
+}
+
+.archiveLabel {
+  margin: 0 0 1.5rem;
+  color: var(--gold-500);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+}
+
+.sideNav {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.sideNav a,
+.mobileNav a {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--ink-700);
+  font-size: 0.9rem;
+  font-weight: 680;
+}
+
+.sideNav a {
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+}
+
+.sideNav a:hover {
+  background: var(--ivory-50);
+  color: var(--ink-950);
+}
+
+.sideNav a[aria-current="page"] {
+  background: var(--ivory-50);
+  box-shadow: inset 3px 0 0 var(--gold-400);
+  color: var(--ink-950);
+}
+
+.asideNote {
+  margin: auto 0 0;
+  padding-top: 2rem;
+  color: var(--ink-700);
+  font-size: 0.76rem;
+  line-height: 1.6;
 }
 
 .main {
-  padding-block: clamp(2rem, 6vw, 4rem);
+  min-width: 0;
+  padding-block: clamp(2rem, 6vw, 4.5rem);
+}
+
+.mobileNav {
+  position: fixed;
+  z-index: 30;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 0.45rem 0.35rem calc(0.45rem + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border-subtle);
+  background: var(--ivory-50);
+  box-shadow: 0 -12px 32px 2px rgb(10 40 35 / 8%);
+}
+
+.mobileNav a {
+  min-width: 0;
+  min-height: 3.4rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.15rem;
+  font-size: 0.68rem;
+}
+
+.mobileNav a[aria-current="page"] {
+  background: rgb(169 133 63 / 12%);
+  box-shadow: inset 0 2px 0 var(--gold-400);
+  color: var(--ink-950);
 }
 
 .panel {
-  width: min(46rem, 100%);
+  width: min(48rem, 100%);
   margin-inline: auto;
   padding: clamp(1.25rem, 5vw, 2.8rem);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--white);
   box-shadow: var(--shadow-soft);
 }
 
 .panel h1 {
+  max-width: 13ch;
   margin: 0;
   font-family: var(--font-serif);
-  font-size: clamp(2rem, 8vw, 3.8rem);
+  font-size: clamp(2.25rem, 8vw, 4.4rem);
   font-weight: 600;
-  line-height: 1.05;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
 }
 
 .panel > p {
+  max-width: 64ch;
   color: var(--ink-700);
 }
 
 .nextGrid {
   display: grid;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
+  gap: 0;
+  margin-block: 1.5rem;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .nextCard {
-  padding: 1rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-50);
+  display: grid;
+  gap: 0.3rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .nextCard h2 {
@@ -81,4 +193,39 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem 0.75rem;
+}
+
+@media (min-width: 64rem) {
+  .shell {
+    padding-bottom: 0;
+  }
+
+  .frame {
+    grid-template-columns: 12.5rem minmax(0, 1fr);
+    gap: clamp(2.5rem, 6vw, 5.5rem);
+  }
+
+  .aside {
+    position: sticky;
+    top: 0;
+    display: flex;
+    height: calc(100vh - 4.75rem);
+    flex-direction: column;
+    padding-block: 2.5rem;
+    border-right: 1px solid var(--border-subtle);
+  }
+
+  .main {
+    min-height: calc(100vh - 4.75rem);
+  }
+
+  .mobileNav {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skipLink {
+    transition: none;
+  }
 }

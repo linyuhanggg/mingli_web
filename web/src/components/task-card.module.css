@@ -1,50 +1,82 @@
 .card {
+  position: relative;
   display: flex;
-  min-height: 22rem;
+  min-height: 20rem;
   flex-direction: column;
-  padding: 1.35rem;
-  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  padding: clamp(1.45rem, 4vw, 2.2rem);
   border-radius: var(--radius-md);
-  background: var(--surface-card-translucent);
+}
+
+.card::before {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 4rem;
+  aspect-ratio: 1;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  content: "";
+  opacity: 0.16;
+}
+
+.card::after {
+  position: absolute;
+  top: 3.2rem;
+  right: 0.75rem;
+  width: 5rem;
+  height: 1px;
+  background: currentColor;
+  content: "";
+  opacity: 0.16;
+  transform: rotate(-28deg);
+}
+
+.card[data-tone="paper"] {
+  border: 1px solid var(--border-subtle);
+  background: var(--white);
+  color: var(--ink-950);
   box-shadow: var(--shadow-card);
 }
 
-.card:nth-child(2) {
+.card[data-tone="ink"] {
   background: var(--ink-900);
   color: var(--ivory-50);
+  box-shadow: 0 22px 54px 4px rgb(10 40 35 / 22%);
 }
 
-.card:nth-child(3) {
+.card[data-tone="clay"] {
   background: var(--ivory-200);
-}
-
-.topline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: var(--ink-700);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-
-.card:nth-child(2) .topline {
-  color: var(--gold-400);
+  color: var(--ink-950);
 }
 
 .card h3 {
-  margin: auto 0 0.75rem;
+  max-width: 8ch;
+  margin: auto 0 0.8rem;
   font-family: var(--font-serif);
-  font-size: clamp(1.7rem, 7vw, 2.5rem);
-  font-weight: 650;
-  line-height: 1.15;
+  font-size: clamp(2.15rem, 8vw, 3.6rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
 }
 
 .card p {
+  max-width: 34rem;
   margin: 0;
   color: currentColor;
   opacity: 0.76;
+}
+
+.label {
+  order: -1;
+  width: fit-content;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid currentColor;
+  color: currentColor;
+  font-size: 0.72rem;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  opacity: 0.72;
 }
 
 .card a {
@@ -52,20 +84,39 @@
   min-height: 2.75rem;
   align-items: center;
   justify-content: space-between;
-  margin-top: 1.3rem;
+  gap: 1rem;
+  margin-top: 1.4rem;
   border-top: 1px solid currentColor;
   font-size: 0.9rem;
   font-weight: 750;
   opacity: 0.9;
+  transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .card a::after {
   content: "→";
 }
 
+.card a:hover {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
 @media (min-width: 48rem) {
   .card {
-    min-height: 25rem;
-    padding: 1.7rem;
+    min-height: 24rem;
+  }
+
+  .card:first-child {
+    grid-row: 1 / span 2;
+    min-height: 34rem;
+  }
+
+  .card:not(:first-child) {
+    min-height: 16.5rem;
+  }
+
+  .card:not(:first-child) h3 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
   }
 }

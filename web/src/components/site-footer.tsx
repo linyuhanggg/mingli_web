@@ -25,8 +25,8 @@ export function SiteFooter() {
           </nav>
         </div>
         <div className={styles.legal}>
-          <span>© 2026 FateRadar</span>
-          <span> · ICP 与公安备案信息待正式审核后展示</span>
+          <span>© 2026 FateRadar · 开发期界面</span>
+          <span>备案信息仅在正式审核完成后按真实资料展示</span>
         </div>
       </Container>
     </footer>

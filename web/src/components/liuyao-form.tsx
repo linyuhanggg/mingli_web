@@ -13,17 +13,10 @@ import {
 } from "@/lib/api";
 import { localDateTimeWithOffset } from "@/lib/date-time";
 import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
+import { isIanaTimeZone } from "@/lib/iana-timezones";
 
 import styles from "./liuyao-form.module.css";
-
-const TIMEZONES = [
-  "Asia/Shanghai",
-  "Asia/Hong_Kong",
-  "Asia/Tokyo",
-  "Europe/London",
-  "America/New_York",
-  "UTC",
-] as const;
+import { IanaTimeZoneOptions } from "./iana-timezone-options";
 
 const tossKeys = [
   "toss_1",
@@ -40,12 +33,20 @@ const localDateTimePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/;
 
 const liuyaoSchema = z
   .object({
-    question: z.string().trim().min(2, "请至少输入两个字，把问题想清楚"),
+    question: z
+      .string()
+      .trim()
+      .min(6, "请把问题写得更具体，至少 6 个字")
+      .max(120, "问题最多 120 个字"),
     event_datetime: z
       .string()
       .regex(localDateTimePattern, "请确认起卦时刻"),
-    timezone: z.string().min(1, "请选择起卦时区"),
-    location: z.string().trim().min(1, "请填写起卦地点"),
+    timezone: z.string(),
+    location: z
+      .string()
+      .trim()
+      .min(1, "请填写起卦地点")
+      .max(80, "地点最多 80 个字"),
     cast_mode: z.enum(["manual", "digital_coin"]),
     toss_1: z.string().default(""),
     toss_2: z.string().default(""),
@@ -55,6 +56,19 @@ const liuyaoSchema = z
     toss_6: z.string().default(""),
   })
   .superRefine((value, ctx) => {
+    if (!value.timezone) {
+      ctx.addIssue({
+        code: "custom",
+        message: "请确认 IANA 时区",
+        path: ["timezone"],
+      });
+    } else if (!isIanaTimeZone(value.timezone)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "请选择列表中的有效 IANA 时区",
+        path: ["timezone"],
+      });
+    }
     if (value.cast_mode !== "manual") return;
     tossKeys.forEach((key, index) => {
       const toss = value[key];
@@ -132,46 +146,46 @@ export function LiuyaoForm() {
 
   const handleStart = useCallback(
     async (values: LiuyaoFormValues) => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    setBusy(true);
-    setSubmitError("");
+      if (busyRef.current) return;
+      busyRef.current = true;
+      setBusy(true);
+      setSubmitError("");
 
-    const cast: LiuyaoStartRequest["cast"] =
-      values.cast_mode === "digital_coin"
-        ? "digital_coin"
-        : (tossKeys.map((key) => Number(values[key])) as [
-            number,
-            number,
-            number,
-            number,
-            number,
-            number,
-          ]);
-    const payload: LiuyaoStartRequest = {
-      cast,
-      event_datetime: localDateTimeWithOffset(
-        values.event_datetime,
-        values.timezone,
-      ),
-      timezone: values.timezone,
-      location: values.location.trim(),
-      query: values.question.trim(),
-    };
-    const intent = stableKeyForIntent(intentKeyRef.current, payload);
-    intentKeyRef.current = intent;
+      const cast: LiuyaoStartRequest["cast"] =
+        values.cast_mode === "digital_coin"
+          ? "digital_coin"
+          : (tossKeys.map((key) => Number(values[key])) as [
+              number,
+              number,
+              number,
+              number,
+              number,
+              number,
+            ]);
+      const payload: LiuyaoStartRequest = {
+        cast,
+        event_datetime: localDateTimeWithOffset(
+          values.event_datetime,
+          values.timezone,
+        ),
+        timezone: values.timezone,
+        location: values.location.trim(),
+        query: values.question.trim(),
+      };
+      const intent = stableKeyForIntent(intentKeyRef.current, payload);
+      intentKeyRef.current = intent;
 
-    try {
-      const response = await startLiuyaoReading(payload, intent.key);
-      router.push(`/app/readings/${response.reading_version_id}`);
-    } catch (reason) {
-      setSubmitError(
-        reason instanceof Error ? reason.message : "解读启动失败，请稍后重试。",
-      );
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-    }
+      try {
+        const response = await startLiuyaoReading(payload, intent.key);
+        router.push(`/app/readings/${response.reading_version_id}`);
+      } catch (reason) {
+        setSubmitError(
+          reason instanceof Error ? reason.message : "解读启动失败，请稍后重试。",
+        );
+      } finally {
+        busyRef.current = false;
+        setBusy(false);
+      }
     },
     [router],
   );
@@ -184,7 +198,7 @@ export function LiuyaoForm() {
 
   return (
     <div className={styles.wrap}>
-      <h1>一事一问 · 六爻</h1>
+      <h2>一事一问 · 六爻</h2>
       <p className={styles.lead}>
         把问题想清楚，再确认起卦事实。浏览器只收集输入，不计算卦象。
       </p>
@@ -248,7 +262,9 @@ export function LiuyaoForm() {
               aria-required="true"
               aria-invalid={Boolean(errors.event_datetime)}
               aria-describedby={
-                errors.event_datetime ? "liuyao-event-datetime-error" : undefined
+                errors.event_datetime
+                  ? "liuyao-event-datetime-error"
+                  : "liuyao-event-datetime-help"
               }
               {...register("event_datetime")}
             />
@@ -261,30 +277,39 @@ export function LiuyaoForm() {
                 {errors.event_datetime.message}
               </p>
             ) : null}
+            <p className={styles.hint} id="liuyao-event-datetime-help">
+              不自动回填设备时间；此处记录当地钟表时间，并与所选时区配对。
+            </p>
           </div>
 
           <div className={styles.field}>
             <label htmlFor="liuyao-timezone">起卦时区</label>
-            <select
+            <input
               id="liuyao-timezone"
+              type="text"
+              inputMode="text"
+              autoComplete="off"
+              spellCheck="false"
+              list="liuyao-timezone-options"
+              placeholder="输入并选择，例如 Asia/Shanghai…"
               disabled={busy}
               required
               aria-required="true"
               aria-invalid={Boolean(errors.timezone)}
-              aria-describedby={errors.timezone ? "liuyao-timezone-error" : undefined}
+              aria-describedby={
+                errors.timezone ? "liuyao-timezone-error" : "liuyao-timezone-help"
+              }
               {...register("timezone")}
-            >
-              {TIMEZONES.map((timezone) => (
-                <option key={timezone} value={timezone}>
-                  {timezone}
-                </option>
-              ))}
-            </select>
+            />
+            <IanaTimeZoneOptions id="liuyao-timezone-options" />
             {errors.timezone ? (
               <p className={styles.fieldError} id="liuyao-timezone-error" role="alert">
                 {errors.timezone.message}
               </p>
             ) : null}
+            <p className={styles.hint} id="liuyao-timezone-help">
+              按起卦城市主动确认；输入地区或城市可筛选完整 IANA 列表，界面不会读取设备时区。
+            </p>
           </div>
 
           <div className={styles.field}>
@@ -293,11 +318,14 @@ export function LiuyaoForm() {
               id="liuyao-location"
               type="text"
               autoComplete="address-level2"
+              placeholder="例如：上海市…"
               disabled={busy}
               required
               aria-required="true"
               aria-invalid={Boolean(errors.location)}
-              aria-describedby={errors.location ? "liuyao-location-error" : undefined}
+              aria-describedby={
+                errors.location ? "liuyao-location-error" : "liuyao-location-help"
+              }
               {...register("location")}
             />
             {errors.location ? (
@@ -305,6 +333,9 @@ export function LiuyaoForm() {
                 {errors.location.message}
               </p>
             ) : null}
+            <p className={styles.hint} id="liuyao-location-help">
+              城市级即可，不索取或伪造经纬度。
+            </p>
           </div>
 
           <fieldset className={styles.radioGroup}>
@@ -354,11 +385,10 @@ export function LiuyaoForm() {
                       {...register(key)}
                     >
                       <option value="">请选择</option>
-                      {[6, 7, 8, 9].map((value) => (
-                        <option key={value} value={value}>
-                          {value}
-                        </option>
-                      ))}
+                      <option value="6">6 · 老阴（变）</option>
+                      <option value="7">7 · 少阳</option>
+                      <option value="8">8 · 少阴</option>
+                      <option value="9">9 · 老阳（变）</option>
                     </select>
                     {errors[key] ? (
                       <p

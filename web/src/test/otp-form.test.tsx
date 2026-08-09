@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, vi } from "vitest";
 
@@ -216,4 +216,65 @@ it("renders an OTP request failure next to the destination field", async () => {
 
   expect(await screen.findByText("请求过于频繁，请稍后重试")).toBeVisible();
   expect(input.getAttribute("aria-describedby")).toContain("otp-destination-error");
+});
+
+it("moves focus to the code input after a successful OTP request", async () => {
+  const fetchMock = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(
+      jsonResponse(
+        {
+          status: "active",
+          expires_at: "2026-08-10T00:00:00Z",
+          csrf_token: "guest-csrf-token-with-at-least-32-characters",
+        },
+        201,
+      ),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse(
+        {
+          challenge_id: "967ea7cc-7b77-4db3-8d27-5a897679791f",
+          expires_at: "2026-08-09T00:05:00Z",
+          retry_after_seconds: 60,
+          development_code: "246810",
+        },
+        202,
+      ),
+    );
+  vi.stubGlobal("fetch", fetchMock);
+  const user = userEvent.setup();
+
+  render(<OtpForm />);
+
+  await screen.findByText("安全会话已建立");
+  await user.type(screen.getByRole("textbox", { name: "中国大陆手机号" }), "13800138000");
+  await user.click(screen.getByRole("button", { name: "发送验证码" }));
+
+  const codeInput = await screen.findByRole("textbox", { name: "六位验证码" });
+  await waitFor(() => {
+    expect(codeInput).toHaveFocus();
+  });
+});
+
+it("exposes the login method switcher as a named group", async () => {
+  const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(
+    jsonResponse(
+      {
+        status: "active",
+        expires_at: "2026-08-10T00:00:00Z",
+        csrf_token: "guest-csrf-token-with-at-least-32-characters",
+      },
+      201,
+    ),
+  );
+  vi.stubGlobal("fetch", fetchMock);
+
+  render(<OtpForm />);
+
+  await screen.findByText("安全会话已建立");
+  const group = screen.getByRole("group", { name: "验证码方式" });
+  expect(group).toBeVisible();
+  expect(within(group).getByRole("button", { name: "手机号验证码" })).toBeInTheDocument();
+  expect(within(group).getByRole("button", { name: "邮箱验证码" })).toBeInTheDocument();
 });

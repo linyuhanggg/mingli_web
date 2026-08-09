@@ -1,5 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 
+import AccountPage from "@/app/account/page";
 import MethodologyPage from "@/app/methodology/page";
 import PricingPage from "@/app/pricing/page";
 import PrivacyPage from "@/app/privacy/page";
@@ -8,6 +9,14 @@ import TermsPage from "@/app/terms/page";
 
 
 describe("public contract pages", () => {
+  it("exposes a skip-target main landmark on the account page", () => {
+    render(<AccountPage />);
+    const main = screen.getByRole("main");
+
+    expect(main).toHaveAttribute("id", "main-content");
+    expect(main).toHaveAttribute("tabindex", "-1");
+  });
+
   it("states the frozen free and one-off product promises", () => {
     render(<PricingPage />);
     const main = screen.getByRole("main");

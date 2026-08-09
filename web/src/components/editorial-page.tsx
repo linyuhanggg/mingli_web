@@ -15,14 +15,14 @@ type EditorialPageProps = {
 export function EditorialPage({ eyebrow, title, intro, children }: EditorialPageProps) {
   return (
     <PublicPageShell>
-      <main className={styles.main}>
+      <main className={styles.main} id="main-content" tabIndex={-1}>
         <Container>
           <header className={styles.hero}>
-            <div>
-              <p className={styles.eyebrow}>{eyebrow}</p>
-              <h1>{title}</h1>
+            <h1>{title}</h1>
+            <div className={styles.heroAside}>
+              <p className={styles.intro}>{intro}</p>
+              <p className={styles.folio}>{eyebrow}</p>
             </div>
-            <p className={styles.intro}>{intro}</p>
           </header>
           <div className={styles.content}>{children}</div>
         </Container>

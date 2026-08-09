@@ -14,17 +14,10 @@ import {
   type ZiHourPolicy,
 } from "@/lib/api";
 import { localDateTimeWithOffset } from "@/lib/date-time";
+import { isIanaTimeZone } from "@/lib/iana-timezones";
 
 import styles from "./profile-form.module.css";
-
-const TIMEZONES = [
-  "Asia/Shanghai",
-  "Asia/Hong_Kong",
-  "Asia/Tokyo",
-  "Europe/London",
-  "America/New_York",
-  "UTC",
-] as const;
+import { IanaTimeZoneOptions } from "./iana-timezone-options";
 
 const GENDERS: { value: Gender; label: string }[] = [
   { value: "female", label: "女" },
@@ -64,19 +57,43 @@ const latitudeField = z
     "请输入 -90 到 90 之间的纬度",
   );
 
-const profileSchema = z.object({
-  birth_datetime: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/, "请填写出生时间"),
-  timezone: z.string().min(1, "请选择出生时区"),
-  location: z.string().trim().min(1, "请填写出生地点"),
-  gender: z.enum(["female", "male", "other"]),
-  time_basis_policy: z.enum(["civil", "solar", "lunar"]),
-  zi_hour_policy: z.enum(["midnight", "substitute", "solar"]),
-  longitude: longitudeField.default(""),
-  latitude: latitudeField.default(""),
-  coordinate_source: z.string().trim().default(""),
-});
+const profileSchema = z
+  .object({
+    birth_datetime: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/, "请填写出生时间"),
+    timezone: z.string(),
+    location: z
+      .string()
+      .trim()
+      .min(1, "请填写出生地点")
+      .max(80, "地点最多 80 个字"),
+    gender: z.enum(["female", "male", "other"]),
+    time_basis_policy: z.enum(["civil", "solar", "lunar"]),
+    zi_hour_policy: z.enum(["midnight", "substitute", "solar"]),
+    longitude: longitudeField.default(""),
+    latitude: latitudeField.default(""),
+    coordinate_source: z
+      .string()
+      .trim()
+      .max(40, "坐标来源最多 40 个字")
+      .default(""),
+  })
+  .superRefine((data, context) => {
+    if (!data.timezone) {
+      context.addIssue({
+        code: "custom",
+        message: "请选择出生时区",
+        path: ["timezone"],
+      });
+    } else if (!isIanaTimeZone(data.timezone)) {
+      context.addIssue({
+        code: "custom",
+        message: "请选择列表中的有效 IANA 时区",
+        path: ["timezone"],
+      });
+    }
+  });
 
 type ProfileFormValues = z.input<typeof profileSchema>;
 
@@ -106,47 +123,47 @@ export function ProfileForm() {
 
   const handleSave = useCallback(
     async (values: ProfileFormValues) => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    setBusy(true);
-    setSubmitError("");
-    try {
-      const draft = await createProfileDraft("本人");
-      await confirmProfileDraft(draft.draft_id, {
-        birth_datetime: localDateTimeWithOffset(
-          values.birth_datetime,
-          values.timezone,
-        ),
-        timezone: values.timezone,
-        location: values.location.trim(),
-        gender: values.gender,
-        time_basis_policy: values.time_basis_policy,
-        zi_hour_policy: values.zi_hour_policy,
-        longitude:
-          values.longitude?.trim() === "" ? undefined : Number(values.longitude),
-        latitude:
-          values.latitude?.trim() === "" ? undefined : Number(values.latitude),
-        coordinate_source:
-          values.coordinate_source?.trim() === ""
-            ? undefined
-            : values.coordinate_source?.trim(),
-      });
-      router.push("/app");
-    } catch (reason) {
-      setSubmitError(
-        reason instanceof Error ? reason.message : "档案保存失败，请稍后重试。",
-      );
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-    }
+      if (busyRef.current) return;
+      busyRef.current = true;
+      setBusy(true);
+      setSubmitError("");
+      try {
+        const draft = await createProfileDraft("本人");
+        await confirmProfileDraft(draft.draft_id, {
+          birth_datetime: localDateTimeWithOffset(
+            values.birth_datetime,
+            values.timezone,
+          ),
+          timezone: values.timezone,
+          location: values.location.trim(),
+          gender: values.gender,
+          time_basis_policy: values.time_basis_policy,
+          zi_hour_policy: values.zi_hour_policy,
+          longitude:
+            values.longitude?.trim() === "" ? undefined : Number(values.longitude),
+          latitude:
+            values.latitude?.trim() === "" ? undefined : Number(values.latitude),
+          coordinate_source:
+            values.coordinate_source?.trim() === ""
+              ? undefined
+              : values.coordinate_source?.trim(),
+        });
+        router.push("/app");
+      } catch (reason) {
+        setSubmitError(
+          reason instanceof Error ? reason.message : "档案保存失败，请稍后重试。",
+        );
+      } finally {
+        busyRef.current = false;
+        setBusy(false);
+      }
     },
     [router],
   );
 
   return (
     <div className={styles.wrap}>
-      <h1>建立命理档案</h1>
+      <h2>建立命理档案</h2>
       <p className={styles.lead}>这里只记录出生事实，不进行任何本地推算。</p>
 
       {submitError ? (
@@ -175,7 +192,9 @@ export function ProfileForm() {
               aria-required="true"
               aria-invalid={Boolean(errors.birth_datetime)}
               aria-describedby={
-                errors.birth_datetime ? "profile-birth-datetime-error" : undefined
+                errors.birth_datetime
+                  ? "profile-birth-datetime-error"
+                  : "profile-birth-datetime-help"
               }
               {...register("birth_datetime")}
             />
@@ -188,32 +207,43 @@ export function ProfileForm() {
                 {errors.birth_datetime.message}
               </p>
             ) : null}
+            <p className={styles.hint} id="profile-birth-datetime-help">
+              只记录出生地钟表时间；与所选时区配对后，由服务端规范化。
+            </p>
           </div>
 
           <div className={styles.field}>
             <label htmlFor="profile-timezone">出生时区</label>
-            <select
+            <input
               id="profile-timezone"
+              type="text"
+              inputMode="text"
+              autoComplete="off"
+              spellCheck="false"
+              list="profile-timezone-options"
+              placeholder="输入并选择，例如 Asia/Shanghai…"
               disabled={busy}
               required
               aria-required="true"
               aria-invalid={Boolean(errors.timezone)}
               aria-describedby={
-                errors.timezone ? "profile-timezone-error" : undefined
+                errors.timezone ? "profile-timezone-error" : "profile-timezone-help"
               }
               {...register("timezone")}
-            >
-              {TIMEZONES.map((timezone) => (
-                <option key={timezone} value={timezone}>
-                  {timezone}
-                </option>
-              ))}
-            </select>
+            />
+            <IanaTimeZoneOptions id="profile-timezone-options" />
             {errors.timezone ? (
-              <p className={styles.fieldError} id="profile-timezone-error" role="alert">
+              <p
+                className={styles.fieldError}
+                id="profile-timezone-error"
+                role="alert"
+              >
                 {errors.timezone.message}
               </p>
             ) : null}
+            <p className={styles.hint} id="profile-timezone-help">
+              按出生城市主动确认；输入地区或城市可筛选完整 IANA 列表，界面不会读取设备时区。
+            </p>
           </div>
 
           <div className={styles.field}>
@@ -222,12 +252,13 @@ export function ProfileForm() {
               id="profile-location"
               type="text"
               autoComplete="address-level2"
+              placeholder="例如：浙江省杭州市…"
               disabled={busy}
               required
               aria-required="true"
               aria-invalid={Boolean(errors.location)}
               aria-describedby={
-                errors.location ? "profile-location-error" : undefined
+                errors.location ? "profile-location-error" : "profile-location-help"
               }
               {...register("location")}
             />
@@ -236,6 +267,9 @@ export function ProfileForm() {
                 {errors.location.message}
               </p>
             ) : null}
+            <p className={styles.hint} id="profile-location-help">
+              城市级信息用于确认时区与口径，不自动索取精确定位。
+            </p>
           </div>
 
           <div className={styles.field}>
@@ -305,7 +339,9 @@ export function ProfileForm() {
               aria-required="true"
               aria-invalid={Boolean(errors.zi_hour_policy)}
               aria-describedby={
-                errors.zi_hour_policy ? "profile-zi-hour-policy-error" : undefined
+                errors.zi_hour_policy
+                  ? "profile-zi-hour-policy-error"
+                  : "profile-zi-hour-policy-help"
               }
               {...register("zi_hour_policy")}
             >
@@ -324,6 +360,9 @@ export function ProfileForm() {
                 {errors.zi_hour_policy.message}
               </p>
             ) : null}
+            <p className={styles.hint} id="profile-zi-hour-policy-help">
+              换日策略决定 23:00–23:59 的日柱归属与子时起算口径，请按原始资料确认。
+            </p>
           </div>
 
           <div className={styles.field}>
