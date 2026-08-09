@@ -1037,7 +1037,7 @@ def test_native_reports_are_independently_revalidated(tmp_path: Path) -> None:
     )
 
     assert verified["profile"] == "native-full"
-    assert verified["elapsed_seconds"] == 434.62
+    assert verified["evidence_seal_elapsed_seconds"] == 434.62
 
 
 def test_native_report_archives_prepared_inputs_for_later_verification(
@@ -1233,7 +1233,7 @@ def test_native_full_rejects_total_profile_wall_clock_over_budget(
     assert_nothing_published(request.output_parent)
 
 
-def test_native_report_records_tail_verification_in_total_profile_elapsed(
+def test_native_report_records_explicit_pre_seal_elapsed_boundary(
     tmp_path: Path,
 ) -> None:
     gate_module = load_local_gate()
@@ -1261,8 +1261,79 @@ def test_native_report_records_tail_verification_in_total_profile_elapsed(
     envelope = json.loads(result.local_summary.read_text(encoding="utf-8"))
 
     assert result.elapsed_seconds == 5.0
-    assert report["profile_elapsed_seconds"] == 5.0
-    assert envelope["elapsed_seconds"] == 5.0
+    assert "profile_elapsed_seconds" not in report
+    assert envelope["evidence_seal_elapsed_seconds"] == 5.0
+    assert envelope["measurement_boundary"] == (
+        "post-semantic-verification-pre-evidence-seal"
+    )
+    assert envelope["deadline_enforced_through_atomic_publication"] is True
+    assert "elapsed_seconds" not in envelope
+
+
+def test_native_profile_elapsed_includes_final_verifier_and_publication_check(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    request, _ = native_request(gate_module, tmp_path)
+
+    class FakeMonotonic:
+        def __init__(self) -> None:
+            self.values = [0.0, 0.0, 2.0, 5.0, 8.0, 8.0, 8.0]
+            self.index = 0
+
+        def __call__(self) -> float:
+            value = self.values[min(self.index, len(self.values) - 1)]
+            self.index += 1
+            return value
+
+    result = gate_module.LocalFullGate(
+        ScriptedExecution(
+            gate_module,
+            stdout=complete_summary(elapsed_seconds=1.0),
+            elapsed_seconds=1.0,
+        ),
+        monotonic=FakeMonotonic(),
+    ).run(request)
+    report = json.loads(result.profile_report.read_text(encoding="utf-8"))
+    envelope = json.loads(result.local_summary.read_text(encoding="utf-8"))
+
+    assert result.elapsed_seconds == 8.0
+    assert envelope["evidence_seal_elapsed_seconds"] == 5.0
+    assert envelope["measurement_boundary"] == (
+        "post-semantic-verification-pre-evidence-seal"
+    )
+    assert envelope["deadline_enforced_through_atomic_publication"] is True
+    assert "profile_elapsed_seconds" not in report
+    assert "elapsed_seconds" not in envelope
+
+
+def test_native_publication_deadline_failure_removes_published_bundle(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    request, _ = native_request(gate_module, tmp_path)
+
+    class FakeMonotonic:
+        def __init__(self) -> None:
+            self.values = [0.0, 0.0, 2.0, 5.0, 5.0, 601.0]
+            self.index = 0
+
+        def __call__(self) -> float:
+            value = self.values[min(self.index, len(self.values) - 1)]
+            self.index += 1
+            return value
+
+    with pytest.raises(gate_module.GateRejected, match="profile.*deadline"):
+        gate_module.LocalFullGate(
+            ScriptedExecution(
+                gate_module,
+                stdout=complete_summary(elapsed_seconds=1.0),
+                elapsed_seconds=1.0,
+            ),
+            monotonic=FakeMonotonic(),
+        ).run(request)
+
+    assert_nothing_published(request.output_parent)
 
 
 @pytest.mark.parametrize("tree_name", ["source", "research", "native_runtime"])

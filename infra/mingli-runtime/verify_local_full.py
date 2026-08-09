@@ -224,11 +224,20 @@ def validate_native_run(
         _fail("native stdout digest mismatch")
     if hashlib.sha256(stderr).hexdigest() != command.get("stderr_sha256"):
         _fail("native stderr digest mismatch")
-    profile_elapsed = _number(report.get("profile_elapsed_seconds"), "profile elapsed")
-    if not command_elapsed <= profile_elapsed <= limit:
-        _fail("native profile exceeded its complete wall-clock limit")
-    if _number(envelope.get("elapsed_seconds"), "local elapsed") != profile_elapsed:
-        _fail("native local SLA elapsed mismatch")
+    if "profile_elapsed_seconds" in report or "elapsed_seconds" in envelope:
+        _fail("native evidence must not label pre-seal time as total profile elapsed")
+    evidence_seal_elapsed = _number(
+        envelope.get("evidence_seal_elapsed_seconds"),
+        "evidence seal elapsed",
+    )
+    if not command_elapsed <= evidence_seal_elapsed <= limit:
+        _fail("native evidence seal exceeded its wall-clock limit")
+    if envelope.get("measurement_boundary") != (
+        "post-semantic-verification-pre-evidence-seal"
+    ):
+        _fail("native evidence measurement boundary mismatch")
+    if envelope.get("deadline_enforced_through_atomic_publication") is not True:
+        _fail("native atomic publication deadline was not enforced")
     if (
         _number(envelope.get("command_elapsed_seconds"), "local command elapsed")
         != command_elapsed
@@ -242,7 +251,7 @@ def validate_native_run(
         _fail("native profile report SHA-256 mismatch")
     return {
         "profile": "native-full",
-        "elapsed_seconds": profile_elapsed,
+        "evidence_seal_elapsed_seconds": evidence_seal_elapsed,
         "prepared_inputs_sha256": expected_prepared_inputs_sha256,
     }
 

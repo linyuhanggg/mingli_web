@@ -70,6 +70,17 @@ exact VZ+Rosetta identity tracer and therefore publishes
 `linux-identity-tracer.json` with status `tracer-passed-not-certified`; it must
 not create `release-5.1.json`.
 
+The persisted native SLA envelope deliberately does not call its stored clock
+value a total profile duration. `evidence_seal_elapsed_seconds` is measured at
+the fixed `post-semantic-verification-pre-evidence-seal` boundary. The final
+independent seal validation and atomic directory publication remain inside the
+600-second fail-closed deadline, expressed by
+`deadline_enforced_through_atomic_publication=true`, but are not folded back
+into the self-referential sealed JSON. The live `local_gate.py native-full`
+result measures again after validation and atomic publication and reports that
+later value as `LocalFullResult.elapsed_seconds`. Aggregators must not present
+the persisted evidence-seal value as the complete command wall clock.
+
 `lima-vz-rosetta.yaml` fills to a mountless `vz/aarch64` guest with Rosetta
 binfmt, pinned Docker 29.7.2, containerd 2.3.3, and rootlesskit 3.0.2. Validate
 and freeze the effective bytes before starting the instance:

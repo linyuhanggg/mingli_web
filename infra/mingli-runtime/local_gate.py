@@ -626,7 +626,7 @@ class LocalFullGate:
                     f"prepared inputs could not be archived exactly: {exc}"
                 ) from exc
 
-            profile_elapsed_seconds = self._profile_elapsed(
+            evidence_seal_elapsed_seconds = self._profile_elapsed(
                 profile_started,
                 elapsed_seconds,
                 request.deadline_seconds,
@@ -648,7 +648,6 @@ class LocalFullGate:
                 "run_id": run_id,
                 "prepared_inputs_sha256": inputs.manifest_sha256,
                 "prepared_inputs_path": "prepared-inputs.json",
-                "profile_elapsed_seconds": profile_elapsed_seconds,
                 "summary": {
                     "targets": summary.targets,
                     "modules": summary.modules,
@@ -692,7 +691,11 @@ class LocalFullGate:
                 "run_id": run_id,
                 "limit_seconds": request.deadline_seconds,
                 "max_slots": request.slots,
-                "elapsed_seconds": profile_elapsed_seconds,
+                "evidence_seal_elapsed_seconds": evidence_seal_elapsed_seconds,
+                "measurement_boundary": (
+                    "post-semantic-verification-pre-evidence-seal"
+                ),
+                "deadline_enforced_through_atomic_publication": True,
                 "command_elapsed_seconds": elapsed_seconds,
                 "profile_report_sha256": _sha256_bytes(_json_bytes(report)),
             }
@@ -713,15 +716,14 @@ class LocalFullGate:
                     f"native independent verification failed: {exc}"
                 ) from exc
 
-            profile_elapsed_seconds = self._profile_elapsed(
+            evidence_seal_elapsed_seconds = self._profile_elapsed(
                 profile_started,
                 elapsed_seconds,
                 request.deadline_seconds,
             )
-            report["profile_elapsed_seconds"] = profile_elapsed_seconds
-            local_summary["elapsed_seconds"] = profile_elapsed_seconds
-            local_summary["profile_report_sha256"] = _sha256_bytes(_json_bytes(report))
-            (staging / "native-full-5.1.json").write_bytes(_json_bytes(report))
+            local_summary["evidence_seal_elapsed_seconds"] = (
+                evidence_seal_elapsed_seconds
+            )
             (staging / "local-native-full-5.1.json").write_bytes(
                 _json_bytes(local_summary)
             )
@@ -740,7 +742,7 @@ class LocalFullGate:
             )
             os.replace(staging, published)
             try:
-                self._profile_elapsed(
+                completed_elapsed_seconds = self._profile_elapsed(
                     profile_started,
                     elapsed_seconds,
                     request.deadline_seconds,
@@ -753,7 +755,7 @@ class LocalFullGate:
                 profile_report=published / "native-full-5.1.json",
                 local_summary=published / "local-native-full-5.1.json",
                 timeline=timeline,
-                elapsed_seconds=profile_elapsed_seconds,
+                elapsed_seconds=completed_elapsed_seconds,
             )
         except BaseException:
             if staging.exists():
