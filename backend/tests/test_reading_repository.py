@@ -32,6 +32,7 @@ async def create_reading_graph(
     session: Any,
     *,
     prepare_state_token: str | None = None,
+    available_at: datetime | None = None,
 ) -> tuple[Any, Any, Any, Any, Any]:
     identity_models = importlib.import_module("app.identity.models")
     profiles = importlib.import_module("app.profiles.repository")
@@ -111,6 +112,7 @@ async def create_reading_graph(
         language="zh-CN",
         max_output_chars=1200,
         max_attempts=2,
+        available_at=available_at,
     )
     return repository, profile_version, version, job, runtime_contracts
 

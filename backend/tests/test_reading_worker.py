@@ -18,6 +18,8 @@ from orchestrator_fakes import make_candidate
 from test_narrative_guard import build_brief
 from test_reading_repository import create_reading_graph
 
+WORKER_TEST_NOW = datetime(2026, 8, 9, 12, 0, tzinfo=UTC)
+
 
 @pytest.fixture
 async def worker_database() -> AsyncIterator[Any]:
@@ -185,6 +187,7 @@ async def seed_job(
         _repository, _profile, _version, job, _contracts = await create_reading_graph(
             session,
             prepare_state_token=prepare_state_token,
+            available_at=WORKER_TEST_NOW,
         )
         return job
 
