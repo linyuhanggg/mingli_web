@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Fail-closed loading for immutable local Gate inputs."""
 
 from __future__ import annotations

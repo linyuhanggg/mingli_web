@@ -1189,6 +1189,44 @@ def test_image_audit_entry_is_present_and_non_agentic() -> None:
         assert forbidden not in audit.lower()
 
 
+def test_linux_gate_separates_matrix_source_from_fulltext_research(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    audit = load_audit_runtime()
+    source_root = tmp_path / "audit-source"
+    research_root = tmp_path / "audit-research"
+    source_root.mkdir()
+    research_root.mkdir()
+    monkeypatch.setattr(audit, "SOURCE_ROOT", source_root)
+    monkeypatch.setattr(audit, "RESEARCH_ROOT", research_root)
+
+    audit._source_roots_are_safe(source_root, research_root)
+    environment = audit._audit_environment(source_root, research_root)
+
+    assert environment["PYTHONPATH"] == str(source_root / "scripts")
+    assert environment["MINGLI_RESEARCH_ROOT"] == str(research_root)
+    with pytest.raises(audit.AuditError, match="must be separate"):
+        audit._source_roots_are_safe(source_root, source_root)
+
+    production = inspect.getsource(audit.run_production_audit)
+    finalizer = inspect.getsource(audit.finalize_audit)
+    verifier = inspect.getsource(load_verifier().validate_audit_report)
+    controller = LIMA_GATE_PATH.read_text(encoding="utf-8")
+    assert '"audit_research"' in controller
+    assert "/audit-research" in controller
+    assert "--research-root" in controller
+    assert "_prepare_clean_source" in controller
+    assert '"--research-root",\n            str(research_root)' in production
+    assert '"--research-source",\n            str(research_root)' in finalizer
+    assert 'research_root = "/audit-research"' in verifier
+    assert '"--research-root",\n            research_root' in verifier
+    assert '"--research-source",\n            research_root' in verifier
+    readme = (RUNTIME_DIR / "README.md").read_text(encoding="utf-8")
+    assert "clean matrix source at `/audit-source`" in readme
+    assert "fulltext research checkout at `/audit-research`" in readme
+
+
 def test_timeout_probe_uses_fixed_interpreter_on_noexec_tmpfs(tmp_path: Path) -> None:
     controller = LIMA_GATE_PATH.read_text(encoding="utf-8")
     module = load_audit_runtime()

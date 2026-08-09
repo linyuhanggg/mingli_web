@@ -3377,6 +3377,7 @@ def validate_audit_report(
     runtime_path = "/opt/mingli-runtime/venv/bin/python"
     audit_script = "/opt/mingli-runtime/audit_runtime.py"
     source_root = "/audit-source"
+    research_root = "/audit-research"
     output_root = "/audit-output"
     production_output_root = "/production-output"
     matrix_path = "/audit-source/references/matrices/provider-completeness.yaml"
@@ -3426,7 +3427,7 @@ def validate_audit_report(
             "--release-root",
             "/opt/mingli-master",
             "--research-source",
-            source_root,
+            research_root,
             "--release-only",
             "--inventory-output",
             f"{output_root}/evidence/source-binding.json",
@@ -3686,7 +3687,7 @@ def validate_audit_report(
             "--jobs",
             "10",
             "--research-root",
-            source_root,
+            research_root,
         ),
         cwd=source_root,
         image_id=image_id,

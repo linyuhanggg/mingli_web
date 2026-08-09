@@ -41,6 +41,7 @@ VERIFIER = Path("/opt/mingli-runtime/verify_release.py")
 PROVENANCE = Path("/opt/mingli-runtime/dependency-provenance.json")
 STATE_ROOT = Path("/var/lib/mingli")
 SOURCE_ROOT = Path("/audit-source")
+RESEARCH_ROOT = Path("/audit-research")
 OUTPUT_ROOT = Path("/audit-output")
 PRODUCTION_OUTPUT_ROOT = Path("/production-output")
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
@@ -632,7 +633,10 @@ def emit_token_record(state_root: Path) -> int:
     return 0
 
 
-def _audit_environment(source_root: Path) -> dict[str, str]:
+def _audit_environment(
+    source_root: Path,
+    research_root: Path,
+) -> dict[str, str]:
     home = Path("/tmp/mingli-linux-audit-home")
     home.mkdir(mode=0o700, exist_ok=True)
     home.chmod(0o700)
@@ -644,7 +648,7 @@ def _audit_environment(source_root: Path) -> dict[str, str]:
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
             "MINGLI_PYTHON": str(RUNTIME_PYTHON),
-            "MINGLI_RESEARCH_ROOT": str(source_root),
+            "MINGLI_RESEARCH_ROOT": str(research_root),
             "MINGLI_STORE_ROOT": str(STATE_ROOT),
             "PATH": "/opt/git/bin:/opt/node/bin:/opt/mingli-runtime/venv/bin:/usr/local/bin:/usr/bin:/bin",
             "PYTHONDONTWRITEBYTECODE": "1",
@@ -981,6 +985,22 @@ def _source_root_is_safe(source_root: Path) -> None:
         _fail("authoritative source must be mounted read-only at /audit-source")
 
 
+def _source_roots_are_safe(source_root: Path, research_root: Path) -> None:
+    _source_root_is_safe(source_root)
+    if (
+        source_root == research_root
+        or source_root.is_relative_to(research_root)
+        or research_root.is_relative_to(source_root)
+    ):
+        _fail("authoritative source and research roots must be separate")
+    if (
+        research_root != RESEARCH_ROOT
+        or research_root.is_symlink()
+        or not research_root.is_dir()
+    ):
+        _fail("authoritative research must be mounted read-only at /audit-research")
+
+
 def _characterization_report(
     providers: Mapping[str, Any],
     first: Mapping[str, Any],
@@ -1029,6 +1049,7 @@ def _target_record() -> dict[str, Any]:
 def run_production_audit(
     *,
     source_root: Path,
+    research_root: Path,
     output_root: Path,
     image_id: str,
     run_id: str,
@@ -1037,8 +1058,8 @@ def run_production_audit(
     _prepare_output_root(output_root, PRODUCTION_OUTPUT_ROOT)
     verify_release._require_image_digest(image_id, "production image ID")
     _validate_run_id(run_id)
-    _source_root_is_safe(source_root)
-    environment = _audit_environment(source_root)
+    _source_roots_are_safe(source_root, research_root)
+    environment = _audit_environment(source_root, research_root)
     environment["MINGLI_PRODUCTION_IMAGE_ID"] = image_id
     recorder = CommandRecorder(output_root, image_id)
 
@@ -1106,7 +1127,7 @@ def run_production_audit(
             "--jobs",
             "10",
             "--research-root",
-            str(source_root),
+            str(research_root),
         ),
         cwd=source_root,
         environment=environment,
@@ -1475,6 +1496,7 @@ def _copy_production_evidence(
 def finalize_audit(
     *,
     source_root: Path,
+    research_root: Path,
     output_root: Path,
     production_evidence_path: Path,
     backup_evidence: Path,
@@ -1496,14 +1518,14 @@ def finalize_audit(
     if audit_image_id != image_id:
         _fail("audit image must be an alias of the exact production OCI config")
     _validate_run_id(run_id)
-    _source_root_is_safe(source_root)
+    _source_roots_are_safe(source_root, research_root)
     production = _copy_production_evidence(
         production_evidence_path,
         output_root,
         image_id,
         run_id,
     )
-    environment = _audit_environment(source_root)
+    environment = _audit_environment(source_root, research_root)
     environment["MINGLI_PRODUCTION_IMAGE_ID"] = image_id
     recorder = CommandRecorder(output_root, audit_image_id)
 
@@ -1517,7 +1539,7 @@ def finalize_audit(
             "--release-root",
             str(RELEASE_ROOT),
             "--research-source",
-            str(source_root),
+            str(research_root),
             "--release-only",
             "--inventory-output",
             str(source_binding_path),
@@ -1734,6 +1756,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     mode.add_argument("--production-audit", action="store_true")
     mode.add_argument("--finalize-audit", action="store_true")
     parser.add_argument("--source-root", type=Path)
+    parser.add_argument("--research-root", type=Path)
     parser.add_argument("--state-root", type=Path)
     parser.add_argument("--output-root", type=Path)
     parser.add_argument("--backup-evidence", type=Path)
@@ -1774,6 +1797,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             required = {
                 "image_id": args.image_id,
                 "output_root": args.output_root,
+                "research_root": args.research_root,
                 "run_id": args.run_id,
                 "source_root": args.source_root,
             }
@@ -1782,6 +1806,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 parser.error("production audit is missing: " + ", ".join(missing))
             return run_production_audit(
                 source_root=args.source_root,
+                research_root=args.research_root,
                 output_root=args.output_root,
                 image_id=args.image_id,
                 run_id=args.run_id,
@@ -1793,6 +1818,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "image_id": args.image_id,
             "output_root": args.output_root,
             "production_evidence": args.production_evidence,
+            "research_root": args.research_root,
             "run_id": args.run_id,
             "source_root": args.source_root,
         }
@@ -1801,6 +1827,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             parser.error("audit finalization is missing: " + ", ".join(missing))
         return finalize_audit(
             source_root=args.source_root,
+            research_root=args.research_root,
             output_root=args.output_root,
             production_evidence_path=args.production_evidence,
             backup_evidence=args.backup_evidence,

@@ -101,10 +101,15 @@ release verifier may publish Linux release evidence.
 
 `run_lima_gate.py` is the mountless host controller. It streams the projected
 build context over `limactl shell`, creates uniquely named Docker volumes, and
-streams a self-contained clean Git checkout plus the 54 ignored fulltexts into
-the VM. It never depends on `/Users` or `/Volumes` being mounted in Lima. Every
-temporary volume is initialized as root, then owned by `10001:10001`; all real
-runtime and audit commands execute as that non-root identity.
+streams two self-contained exact-commit checkouts into the VM. The first is the
+clean matrix source at `/audit-source`. The second is the
+fulltext research checkout at `/audit-research`, with the 54 Git-ignored
+fulltexts added. Keeping
+those roots separate preserves the signed Provider Matrix generator fingerprint
+while the complete regression still verifies all 55 reference packs. It never
+depends on `/Users` or `/Volumes` being mounted in Lima. Every temporary volume
+is initialized as root, then owned by `10001:10001`; all real runtime and audit
+commands execute as that non-root identity.
 
 The signed V5.1 launcher opens
 `/opt/mingli-runtime/.venv.runtime.lock` with `O_RDWR|O_CREAT` on every
@@ -143,6 +148,8 @@ The 1584-test result is admitted only when its command record is bound directly
 to the final artifact digest. The audit phase requires:
 
 - a clean, read-only checkout of source commit `494ce0...` at `/audit-source`;
+- a separate read-only checkout of the same commit plus the 54 ignored
+  fulltexts at `/audit-research`;
 - a blank writable output mount at `/audit-output`;
 - a CycloneDX SBOM generated for the production image;
 - sanitized backup/restore evidence produced with the production image;

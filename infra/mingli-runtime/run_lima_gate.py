@@ -256,15 +256,10 @@ class LimaDocker:
         self.docker(["volume", "rm", "--force", name], capture=True)
 
 
-def _prepare_research_source(
-    repository: Path,
-    installed_release: Path,
-    destination: Path,
-) -> Path:
+def _clone_exact_source(repository: Path, destination: Path) -> Path:
     repository = repository.resolve(strict=True)
-    installed_release = installed_release.resolve(strict=True)
     if destination.exists():
-        _fail("research checkout destination already exists")
+        _fail("source checkout destination already exists")
     _run_local(
         [
             "git",
@@ -282,7 +277,39 @@ def _prepare_research_source(
     )
     alternates = destination / ".git/objects/info/alternates"
     if alternates.exists() and alternates.read_text(encoding="utf-8").strip():
-        _fail("research checkout depends on an external Git object alternate")
+        _fail("source checkout depends on an external Git object alternate")
+    head = (
+        _run_local(["git", "-C", str(destination), "rev-parse", "HEAD"])
+        .stdout.decode()
+        .strip()
+    )
+    status = _run_local(
+        [
+            "git",
+            "-C",
+            str(destination),
+            "status",
+            "--porcelain",
+            "--untracked-files=all",
+        ]
+    ).stdout.decode()
+    if head != EXPECTED_COMMIT or status.strip():
+        _fail("source is not a clean exact-commit checkout")
+    _run_local(["git", "-C", str(destination), "fsck", "--no-dangling"], timeout=900)
+    return destination
+
+
+def _prepare_clean_source(repository: Path, destination: Path) -> Path:
+    return _clone_exact_source(repository, destination)
+
+
+def _prepare_research_source(
+    repository: Path,
+    installed_release: Path,
+    destination: Path,
+) -> Path:
+    installed_release = installed_release.resolve(strict=True)
+    _clone_exact_source(repository, destination)
 
     source_fulltexts = installed_release / "references/fulltext"
     fulltexts = sorted(source_fulltexts.glob("*/*/fulltext.md"))
@@ -308,11 +335,6 @@ def _prepare_research_source(
     )
     if set(ignored) != set(copied):
         _fail("research fulltexts are not all covered by the source ignore policy")
-    head = (
-        _run_local(["git", "-C", str(destination), "rev-parse", "HEAD"])
-        .stdout.decode()
-        .strip()
-    )
     status = _run_local(
         [
             "git",
@@ -323,9 +345,8 @@ def _prepare_research_source(
             "--untracked-files=all",
         ]
     ).stdout.decode()
-    if head != EXPECTED_COMMIT or status.strip():
+    if status.strip():
         _fail("research source is not a clean exact-commit checkout")
-    _run_local(["git", "-C", str(destination), "fsck", "--no-dangling"], timeout=900)
     return destination
 
 
@@ -1332,6 +1353,7 @@ def run_gate(args: argparse.Namespace) -> Path:
         "source": f"{prefix}-backup-source",
         "prepared_restore_blank": f"{prefix}-prepared-restore",
         "accepted_restore_blank": f"{prefix}-accepted-restore",
+        "audit_research": f"{prefix}-audit-research",
         "audit_source": f"{prefix}-audit-source",
         "audit_input": f"{prefix}-audit-input",
         "audit_output": f"{prefix}-audit-output",
@@ -1349,6 +1371,10 @@ def run_gate(args: argparse.Namespace) -> Path:
             context = build_context.build_context(
                 args.release_source,
                 temporary / "context",
+            )
+            clean_source = _prepare_clean_source(
+                args.research_repository,
+                temporary / "clean-source",
             )
             research_source = _prepare_research_source(
                 args.research_repository,
@@ -1382,13 +1408,17 @@ def run_gate(args: argparse.Namespace) -> Path:
                     "/var/lib/mingli",
                     mode="0700",
                 )
-            _initialize_volume(
-                vm,
-                image_id,
-                volumes["audit_source"],
-                "/audit-source",
-                mode="0700",
-            )
+            for role, target in (
+                ("audit_source", "/audit-source"),
+                ("audit_research", "/audit-research"),
+            ):
+                _initialize_volume(
+                    vm,
+                    image_id,
+                    volumes[role],
+                    target,
+                    mode="0700",
+                )
             _initialize_volume(
                 vm,
                 image_id,
@@ -1410,34 +1440,38 @@ def run_gate(args: argparse.Namespace) -> Path:
                 "/audit-output",
                 mode="0700",
             )
-            _populate_volume(
-                vm,
-                image_id,
-                volumes["audit_source"],
-                "/audit-source",
-                _tar_tree(research_source),
-            )
-            source_check = vm.docker(
-                [
-                    "run",
-                    "--rm",
-                    "--network=none",
-                    "--read-only",
-                    "--mount",
-                    f"source={volumes['audit_source']},target=/audit-source,readonly",
-                    "--entrypoint",
-                    "/opt/git/bin/git",
-                    audit_image_id,
-                    "-C",
-                    "/audit-source",
-                    "status",
-                    "--porcelain",
-                    "--untracked-files=all",
-                ],
-                timeout=300,
-            )
-            if source_check.stderr or source_check.stdout:
-                _fail("source volume is not a clean independent checkout")
+            for role, target, tree in (
+                ("audit_source", "/audit-source", clean_source),
+                ("audit_research", "/audit-research", research_source),
+            ):
+                _populate_volume(
+                    vm,
+                    image_id,
+                    volumes[role],
+                    target,
+                    _tar_tree(tree),
+                )
+                source_check = vm.docker(
+                    [
+                        "run",
+                        "--rm",
+                        "--network=none",
+                        "--read-only",
+                        "--mount",
+                        f"source={volumes[role]},target={target},readonly",
+                        "--entrypoint",
+                        "/opt/git/bin/git",
+                        audit_image_id,
+                        "-C",
+                        target,
+                        "status",
+                        "--porcelain",
+                        "--untracked-files=all",
+                    ],
+                    timeout=300,
+                )
+                if source_check.stderr or source_check.stdout:
+                    _fail(f"{role} volume is not a clean independent checkout")
 
             audit_input = temporary / "audit-input"
             audit_input.mkdir(mode=0o700)
@@ -1463,6 +1497,8 @@ def run_gate(args: argparse.Namespace) -> Path:
                 "--mount",
                 f"source={volumes['audit_source']},target=/audit-source,readonly",
                 "--mount",
+                f"source={volumes['audit_research']},target=/audit-research,readonly",
+                "--mount",
                 (f"source={volumes['production_output']},target=/production-output"),
                 "--mount",
                 f"source={volumes['production_state']},target=/var/lib/mingli",
@@ -1474,6 +1510,8 @@ def run_gate(args: argparse.Namespace) -> Path:
                 "--production-audit",
                 "--source-root",
                 "/audit-source",
+                "--research-root",
+                "/audit-research",
                 "--output-root",
                 "/production-output",
                 "--image-id",
@@ -1519,6 +1557,8 @@ def run_gate(args: argparse.Namespace) -> Path:
                 "--mount",
                 f"source={volumes['audit_source']},target=/audit-source,readonly",
                 "--mount",
+                f"source={volumes['audit_research']},target=/audit-research,readonly",
+                "--mount",
                 f"source={volumes['audit_input']},target=/audit-input,readonly",
                 "--mount",
                 f"source={volumes['audit_output']},target=/audit-output",
@@ -1532,6 +1572,8 @@ def run_gate(args: argparse.Namespace) -> Path:
                 "--finalize-audit",
                 "--source-root",
                 "/audit-source",
+                "--research-root",
+                "/audit-research",
                 "--output-root",
                 "/audit-output",
                 "--production-evidence",
