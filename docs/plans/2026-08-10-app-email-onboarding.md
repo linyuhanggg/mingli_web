@@ -301,7 +301,7 @@ git commit -m "feat: align private app with FateRadar design"
 
 **Step 1: Write failing reading-anatomy tests**
 
-- Accepted output follows the visible order `01 结论`, `02 事实`, `03 依据与边界`, `04 现实核对`.
+- Accepted output follows the visible order `01 事实`, `02 判断`, `03 依据与边界`, `04 复核与追问`, so the claim is read after its deterministic facts and before verification or follow-up actions.
 - At 68rem the evidence rail uses the existing sticky layout; mobile remains one continuous sheet.
 - Empty evidence is explicit and never fabricates a source.
 - Waiting, delayed, runtime-unknown, terminal and recovery forms preserve semantics.
