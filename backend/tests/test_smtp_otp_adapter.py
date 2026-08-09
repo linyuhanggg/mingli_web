@@ -204,7 +204,9 @@ async def test_otp_service_generates_a_fresh_six_digit_code_per_challenge() -> N
     assert all(re.fullmatch(r"\d{6}", code) is not None for code in delivered_codes)
 
 
-def test_random_otp_factory_zero_pads_the_secure_random_value(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_random_otp_factory_zero_pads_the_secure_random_value(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     values = iter([0, 999_999])
     monkeypatch.setattr("app.identity.service.secrets.randbelow", lambda upper: next(values))
 

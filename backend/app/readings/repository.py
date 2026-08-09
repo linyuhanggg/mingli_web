@@ -38,7 +38,6 @@ from app.readings.runtime_contracts import (
 from app.readings.status import ReadingStatus
 from app.security.envelope import EncryptedPayload, EnvelopeCipher
 
-
 READING_HISTORY_LIMIT = 50
 
 
