@@ -110,20 +110,40 @@ def test_linux_watchdogs_cover_qemu_matrix_and_regression_budgets() -> None:
     )
     assert gate.PRODUCTION_AUDIT_TIMEOUT_SECONDS == 32_400
     assert gate.PRODUCTION_AUDIT_TIMEOUT_SECONDS > (
-        2 * gate.PROVIDER_MATRIX_TIMEOUT_SECONDS
+        gate.PROVIDER_MATRIX_TIMEOUT_SECONDS
+        + audit.RELEASE_REGRESSION_TIMEOUT_SECONDS
+        + 3_000
     )
-    assert gate.FINALIZER_TIMEOUT_SECONDS == 21_600
-    assert gate.FINALIZER_TIMEOUT_SECONDS > (
-        audit.RELEASE_REGRESSION_TIMEOUT_SECONDS + 3_000
-    )
+    assert gate.FINALIZER_TIMEOUT_SECONDS >= 3_600
     source = inspect.getsource(audit.run_production_audit)
-    assert source.count("timeout=PROVIDER_MATRIX_TIMEOUT_SECONDS") == 2
-    assert "timeout=RELEASE_REGRESSION_TIMEOUT_SECONDS" in inspect.getsource(
+    assert source.count("timeout=PROVIDER_MATRIX_TIMEOUT_SECONDS") == 1
+    assert "timeout=RELEASE_REGRESSION_TIMEOUT_SECONDS" in source
+    assert "timeout=RELEASE_REGRESSION_TIMEOUT_SECONDS" not in inspect.getsource(
         audit.finalize_audit
     )
     controller = inspect.getsource(gate.run_gate)
     assert "timeout=PRODUCTION_AUDIT_TIMEOUT_SECONDS" in controller
     assert "timeout=FINALIZER_TIMEOUT_SECONDS" in controller
+
+
+def test_full_regression_is_matrix_a_and_finalizer_does_not_repeat_it() -> None:
+    audit = load_audit_runtime()
+    verifier = load_verifier()
+    production = inspect.getsource(audit.run_production_audit)
+    finalizer = inspect.getsource(audit.finalize_audit)
+
+    assert "release-regression" in audit.PRODUCTION_COMMAND_IDS
+    assert "provider-matrix-b" in audit.PRODUCTION_COMMAND_IDS
+    assert "provider-matrix-a" not in audit.PRODUCTION_COMMAND_IDS
+    assert "release-regression" not in audit.AUDIT_COMMAND_IDS
+    assert audit.PRODUCTION_COMMAND_IDS == verifier.EXPECTED_PRODUCTION_COMMAND_IDS
+    assert audit.AUDIT_COMMAND_IDS == verifier.EXPECTED_AUDIT_COMMAND_IDS
+    assert production.count('"release-regression"') == 1
+    assert production.count('"provider-matrix-b"') >= 1
+    assert '"provider-matrix-a"' not in production
+    assert "run_test_suite.py" in production
+    assert "run_test_suite.py" not in finalizer
+    assert 'recorder.run(\n        "release-regression"' not in finalizer
 
 
 def test_command_evidence_records_elapsed_and_fixed_timeout_budget(

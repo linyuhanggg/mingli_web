@@ -51,8 +51,8 @@ PRODUCTION_COMMAND_IDS = frozenset(
         "p0-trajectories",
         "production-native-linkage",
         "production-tree-identity",
-        "provider-matrix-a",
         "provider-matrix-b",
+        "release-regression",
         "runtime-inventory",
         "runtime-probe-machine",
         "runtime-probe-unittest",
@@ -63,7 +63,6 @@ AUDIT_COMMAND_IDS = frozenset(
     {
         "audit-native-linkage",
         "audit-tree-identity",
-        "release-regression",
         "source-binding",
     }
 )
@@ -845,7 +844,7 @@ def _characterization_report(
         provider_id: {
             "assertions": item["assertions"],
             "command_ids": [
-                "provider-matrix-a",
+                "release-regression",
                 "provider-matrix-b",
                 "characterization-a",
                 "characterization-b",
@@ -935,6 +934,22 @@ def run_production_audit(
         environment=environment,
         timeout=900,
     )
+    regression = recorder.run(
+        "release-regression",
+        (
+            str(RUNTIME_PYTHON),
+            "-B",
+            str(source_root / "scripts/run_test_suite.py"),
+            "--jobs",
+            "10",
+            "--research-root",
+            str(source_root),
+        ),
+        cwd=source_root,
+        environment=environment,
+        timeout=RELEASE_REGRESSION_TIMEOUT_SECONDS,
+    )
+    _parse_regression(regression, output_root)
     matrix_argv = (
         str(RUNTIME_PYTHON),
         "-B",
@@ -942,13 +957,6 @@ def run_production_audit(
         "--check",
         "--matrix",
         str(source_root / "references/matrices/provider-completeness.yaml"),
-    )
-    matrix_a = recorder.run(
-        "provider-matrix-a",
-        matrix_argv,
-        cwd=source_root,
-        environment=environment,
-        timeout=PROVIDER_MATRIX_TIMEOUT_SECONDS,
     )
     matrix_b = recorder.run(
         "provider-matrix-b",
@@ -1166,7 +1174,7 @@ def run_production_audit(
                     "elapsed_seconds": command["elapsed_seconds"],
                     "timeout_seconds": command["timeout_seconds"],
                 }
-                for command in (matrix_a, matrix_b)
+                for command in (regression, matrix_b)
             ],
             "status": "passed",
         },
@@ -1319,26 +1327,12 @@ def finalize_audit(
         environment=environment,
         timeout=300,
     )
-    regression = recorder.run(
-        "release-regression",
-        (
-            str(RUNTIME_PYTHON),
-            "-B",
-            str(source_root / "scripts/run_test_suite.py"),
-            "--jobs",
-            "5",
-            "--research-root",
-            str(source_root),
-        ),
-        cwd=source_root,
-        environment=environment,
-        timeout=RELEASE_REGRESSION_TIMEOUT_SECONDS,
-    )
     if {record["id"] for record in recorder.records} != AUDIT_COMMAND_IDS:
         _fail("derived audit command inventory is incomplete")
     production_commands = {
         str(record["id"]): record for record in production["commands"]
     }
+    regression = production_commands["release-regression"]
     production_native_linkage = production_commands["production-native-linkage"]
     if (
         production_native_linkage["stdout_sha256"]

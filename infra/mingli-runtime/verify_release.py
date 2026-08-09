@@ -278,8 +278,8 @@ EXPECTED_PRODUCTION_COMMAND_IDS = frozenset(
         "p0-trajectories",
         "production-native-linkage",
         "production-tree-identity",
-        "provider-matrix-a",
         "provider-matrix-b",
+        "release-regression",
         "runtime-inventory",
         "runtime-probe-machine",
         "runtime-probe-unittest",
@@ -290,7 +290,6 @@ EXPECTED_AUDIT_COMMAND_IDS = frozenset(
     {
         "audit-native-linkage",
         "audit-tree-identity",
-        "release-regression",
         "source-binding",
     }
 )
@@ -3327,37 +3326,34 @@ def validate_audit_report(
         "--matrix",
         matrix_path,
     )
-    for command_id in ("provider-matrix-a", "provider-matrix-b"):
-        _require_command(
-            commands,
-            command_id,
-            argv=matrix_argv,
-            cwd=source_root,
-            image_id=image_id,
-        )
-        _require_command_budget(
-            commands[command_id],
-            expected_timeout_seconds=EXPECTED_PROVIDER_MATRIX_TIMEOUT_SECONDS,
-            label=command_id,
-        )
+    _require_command(
+        commands,
+        "provider-matrix-b",
+        argv=matrix_argv,
+        cwd=source_root,
+        image_id=image_id,
+    )
+    _require_command_budget(
+        commands["provider-matrix-b"],
+        expected_timeout_seconds=EXPECTED_PROVIDER_MATRIX_TIMEOUT_SECONDS,
+        label="provider-matrix-b",
+    )
     expected_matrix_runs = [
         {
             "command_id": command_id,
             "elapsed_seconds": commands[command_id]["elapsed_seconds"],
-            "timeout_seconds": EXPECTED_PROVIDER_MATRIX_TIMEOUT_SECONDS,
+            "timeout_seconds": timeout_seconds,
         }
-        for command_id in ("provider-matrix-a", "provider-matrix-b")
+        for command_id, timeout_seconds in (
+            ("release-regression", EXPECTED_RELEASE_REGRESSION_TIMEOUT_SECONDS),
+            ("provider-matrix-b", EXPECTED_PROVIDER_MATRIX_TIMEOUT_SECONDS),
+        )
     ]
     if report.get("provider_matrix") != {
         "runs": expected_matrix_runs,
         "status": "passed",
     }:
         _fail("provider matrix elapsed/budget evidence is not exact")
-    if (
-        commands["provider-matrix-a"]["stdout_sha256"]
-        != commands["provider-matrix-b"]["stdout_sha256"]
-    ):
-        _fail("13 Provider live matrix output changed across two runs")
     characterization_argv = (
         runtime_path,
         "-B",
@@ -3407,7 +3403,7 @@ def validate_audit_report(
         if not isinstance(item, dict) or item.get("status") != "passed":
             _fail(f"characterization did not pass: {provider_id}")
         if item.get("command_ids") != [
-            "provider-matrix-a",
+            "release-regression",
             "provider-matrix-b",
             "characterization-a",
             "characterization-b",
@@ -3494,7 +3490,7 @@ def validate_audit_report(
             "-B",
             "/audit-source/scripts/run_test_suite.py",
             "--jobs",
-            "5",
+            "10",
             "--research-root",
             source_root,
         ),

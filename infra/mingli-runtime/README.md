@@ -114,15 +114,18 @@ without that mount V5.1 readiness fails closed before `describe`.
 `audit_runtime.py` uses two explicit evidence phases:
 
 1. `--production-audit` runs directly in the final deployable production image. It
-   recomputes the SBOM and runtime inventory, runs the live 13-Provider matrix
-   twice, characterization twice, P0 trajectories, the fixed Git fixture, and
-   the malformed/tamper/launcher-timeout/concurrency/token-replay probes. Every
-   command record is bound to the production OCI config digest.
+   recomputes the SBOM and runtime inventory, runs the complete
+   126-target/93-module/1584-test regression once, treats its real
+   `CanonicalMatrixSnapshotTests` target as Matrix A, runs one independent
+   standalone Matrix B, runs characterization twice, P0 trajectories, the
+   fixed Git fixture, and the malformed/tamper/launcher-timeout/concurrency/
+   token-replay probes. Every command record is bound to the production OCI
+   config digest.
 2. `--finalize-audit` runs under the audit tag for that exact same OCI config.
    It verifies and copies the production evidence bundle, binds the clean
-   source commit to all 217 signed files, runs the Git-dependent
-   126-target/93-module/1584-test suite in the final artifact itself, and
-   produces the report.
+   source commit to all 217 signed files, independently consumes the original
+   regression and Matrix B command bytes from that same run, and produces the
+   report. It does not launch a second regression.
 
 Both phases independently hash four trees: `/opt/mingli-master`,
 `/opt/mingli-runtime/venv`, `/opt/node`, and `/opt/git`. They also run
@@ -141,13 +144,13 @@ to the final artifact digest. The audit phase requires:
 
 Both phases write exact command argv, executing image ID, exit code,
 stdout/stderr bytes, hashes, elapsed seconds, and the fixed timeout budget.
-The QEMU Linux calibration gives each complete Provider-matrix run 10,800
-seconds. The production-audit watchdog is 32,400 seconds, strictly longer than
-both matrix budgets together plus inventory, P0, probe, SBOM, Git, and identity
-work. The 1,584-test regression keeps its own 10,800-second budget, while its
-finalizer watchdog is 21,600 seconds so source/tree/native verification cannot
-consume the regression window. A command timeout remains a RED capacity result
-and is never reported as an algorithm pass; a non-zero command exit remains an
+The QEMU fallback gives the standalone Provider Matrix B and the complete
+regression separate 10,800-second budgets. The production-audit watchdog is
+32,400 seconds, longer than both long commands plus inventory, P0, probe, SBOM,
+Git, and identity work. The finalizer has a separate 7,200-second watchdog for
+source binding, tree/native equivalence, backup evidence, and report
+verification only. A command timeout remains a RED capacity result and is
+never reported as an algorithm pass; a non-zero command exit remains an
 algorithm/Gate failure. `verify_release.py` independently rehashes every
 referenced file and validates the recorded elapsed/budget pairs before
 `release-5.1.json` is written.
