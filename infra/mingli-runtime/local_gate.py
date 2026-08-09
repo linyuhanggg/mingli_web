@@ -16,12 +16,13 @@ import signal
 import subprocess
 import sys
 import time
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, NoReturn, Protocol
 
 import prepared_inputs
+import verify_local_full
 
 LocalProfile = Literal["native-full", "linux-certify"]
 NATIVE_SUMMARY_RE = re.compile(
@@ -77,7 +78,7 @@ class GateCommand:
     command_id: str
     argv: tuple[str, ...]
     cwd: Path
-    timeout_seconds: int
+    timeout_seconds: float
     slots: int
     stdout_limit_bytes: int = MAX_STDOUT_BYTES
     stderr_limit_bytes: int = MAX_STDERR_BYTES
@@ -139,15 +140,18 @@ class SubprocessExecution:
         if command.shell:
             raise ExecutionFailure("shell execution is forbidden")
         started = time.monotonic()
-        process = subprocess.Popen(
-            list(command.argv),
-            cwd=command.cwd,
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=False,
-            start_new_session=True,
-        )
+        try:
+            process = subprocess.Popen(
+                list(command.argv),
+                cwd=command.cwd,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=False,
+                start_new_session=True,
+            )
+        except (OSError, ValueError, subprocess.SubprocessError) as exc:
+            raise ExecutionFailure(f"{command.command_id} could not start") from exc
         assert process.stdout is not None
         assert process.stderr is not None
         streams = {
@@ -193,9 +197,19 @@ class SubprocessExecution:
                     f"{command.command_id} exceeded {command.timeout_seconds}s"
                 )
             process.wait(timeout=remaining)
-        except (ExecutionFailure, subprocess.TimeoutExpired):
+        except BaseException as exc:
             self._terminate_group(process)
-            raise
+            if isinstance(exc, ExecutionFailure):
+                raise
+            if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+                raise
+            if isinstance(exc, subprocess.TimeoutExpired):
+                raise ExecutionFailure(
+                    f"{command.command_id} exceeded {command.timeout_seconds}s"
+                ) from exc
+            raise ExecutionFailure(
+                f"{command.command_id} execution infrastructure failed"
+            ) from exc
         finally:
             selector.close()
             for stream in streams.values():
@@ -312,8 +326,31 @@ def _parse_linux_identity(
 
 
 class LocalFullGate:
-    def __init__(self, execution: Execution) -> None:
+    def __init__(
+        self,
+        execution: Execution,
+        *,
+        monotonic: Callable[[], float] = time.monotonic,
+    ) -> None:
         self._execution = execution
+        self._monotonic = monotonic
+
+    def _remaining_seconds(self, started: float, deadline_seconds: int) -> float:
+        remaining = deadline_seconds - (self._monotonic() - started)
+        if not math.isfinite(remaining) or remaining <= 0:
+            _fail("profile exceeded its deadline")
+        return remaining
+
+    def _profile_elapsed(
+        self,
+        started: float,
+        command_elapsed_seconds: float,
+        deadline_seconds: int,
+    ) -> float:
+        elapsed = max(self._monotonic() - started, command_elapsed_seconds)
+        if not math.isfinite(elapsed) or elapsed < 0 or elapsed > deadline_seconds:
+            _fail("profile exceeded its deadline")
+        return elapsed
 
     def _run_linux_identity(
         self,
@@ -323,6 +360,7 @@ class LocalFullGate:
         run_id: str,
         staging: Path,
         published: Path,
+        profile_started: float,
     ) -> LocalFullResult:
         try:
             linux = prepared_inputs.require_linux(inputs)
@@ -349,13 +387,15 @@ class LocalFullGate:
                 linux.effective_config_sha256,
             ),
             cwd=Path(__file__).resolve().parent,
-            timeout_seconds=request.deadline_seconds,
+            timeout_seconds=self._remaining_seconds(
+                profile_started, request.deadline_seconds
+            ),
             slots=1,
         )
         try:
             try:
                 result = self._execution.run(command)
-            except ExecutionFailure as exc:
+            except Exception as exc:
                 raise GateRejected(f"Linux identity execution failed: {exc}") from exc
             if len(result.stdout) > command.stdout_limit_bytes:
                 _fail("Linux identity stdout exceeded its byte limit")
@@ -370,6 +410,11 @@ class LocalFullGate:
                 or elapsed_seconds > request.deadline_seconds
             ):
                 _fail("Linux identity tracer exceeded its deadline")
+            profile_elapsed_seconds = self._profile_elapsed(
+                profile_started,
+                elapsed_seconds,
+                request.deadline_seconds,
+            )
             identity = _parse_linux_identity(result.stdout, linux)
             try:
                 ending_inputs = prepared_inputs.load(
@@ -396,6 +441,7 @@ class LocalFullGate:
                 "status": "tracer-passed-not-certified",
                 "run_id": run_id,
                 "prepared_inputs_sha256": inputs.manifest_sha256,
+                "prepared_inputs_path": str(inputs.manifest_path),
                 "identity": identity,
                 "command": {
                     "command_id": command.command_id,
@@ -403,6 +449,9 @@ class LocalFullGate:
                     "cwd": str(command.cwd),
                     "returncode": result.returncode,
                     "elapsed_seconds": elapsed_seconds,
+                    "slots": command.slots,
+                    "timeout_seconds": command.timeout_seconds,
+                    "shell": command.shell,
                     "stdout_sha256": _sha256_bytes(result.stdout),
                     "stderr_sha256": _sha256_bytes(result.stderr),
                 },
@@ -415,7 +464,8 @@ class LocalFullGate:
                 "run_id": run_id,
                 "limit_seconds": request.deadline_seconds,
                 "max_slots": request.slots,
-                "elapsed_seconds": elapsed_seconds,
+                "elapsed_seconds": profile_elapsed_seconds,
+                "command_elapsed_seconds": elapsed_seconds,
                 "profile_report_sha256": _sha256_bytes(_json_bytes(report)),
             }
             (staging / "linux-identity-tracer.json").write_bytes(_json_bytes(report))
@@ -428,7 +478,7 @@ class LocalFullGate:
                 profile_report=published / "linux-identity-tracer.json",
                 local_summary=published / "local-linux-identity-tracer.json",
                 timeline=timeline,
-                elapsed_seconds=elapsed_seconds,
+                elapsed_seconds=profile_elapsed_seconds,
             )
         except BaseException:
             if staging.exists():
@@ -436,6 +486,7 @@ class LocalFullGate:
             raise
 
     def run(self, request: LocalFullRequest) -> LocalFullResult:
+        profile_started = self._monotonic()
         if request.profile not in {"native-full", "linux-certify"}:
             _fail("unknown profile")
         if not 1 <= request.deadline_seconds <= MAX_DEADLINE_SECONDS:
@@ -456,6 +507,8 @@ class LocalFullGate:
         ):
             _fail("output parent must be a non-symlink directory")
         output_parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if any(output_parent.iterdir()):
+            _fail("output parent must be empty")
         run_id = secrets.token_hex(16)
         staging = output_parent / f".{run_id}.tmp"
         published = output_parent / run_id
@@ -468,6 +521,7 @@ class LocalFullGate:
                 run_id=run_id,
                 staging=staging,
                 published=published,
+                profile_started=profile_started,
             )
 
         command = GateCommand(
@@ -482,13 +536,15 @@ class LocalFullGate:
                 str(inputs.research_root),
             ),
             cwd=inputs.source_root,
-            timeout_seconds=request.deadline_seconds,
+            timeout_seconds=self._remaining_seconds(
+                profile_started, request.deadline_seconds
+            ),
             slots=request.slots,
         )
         try:
             try:
                 result = self._execution.run(command)
-            except ExecutionFailure as exc:
+            except Exception as exc:
                 raise GateRejected(f"native execution failed: {exc}") from exc
             if len(result.stdout) > command.stdout_limit_bytes:
                 _fail("native suite stdout exceeded its byte limit")
@@ -517,6 +573,12 @@ class LocalFullGate:
                     f"prepared inputs changed during run: {exc}"
                 ) from exc
 
+            profile_elapsed_seconds = self._profile_elapsed(
+                profile_started,
+                elapsed_seconds,
+                request.deadline_seconds,
+            )
+
             timeline = (
                 TimelineEntry(
                     command_id=command.command_id,
@@ -532,6 +594,8 @@ class LocalFullGate:
                 "status": "passed",
                 "run_id": run_id,
                 "prepared_inputs_sha256": inputs.manifest_sha256,
+                "prepared_inputs_path": str(inputs.manifest_path),
+                "profile_elapsed_seconds": profile_elapsed_seconds,
                 "summary": {
                     "targets": summary.targets,
                     "modules": summary.modules,
@@ -545,8 +609,23 @@ class LocalFullGate:
                     "cwd": str(command.cwd),
                     "returncode": result.returncode,
                     "elapsed_seconds": elapsed_seconds,
+                    "slots": command.slots,
+                    "timeout_seconds": command.timeout_seconds,
+                    "shell": command.shell,
                     "stdout_sha256": _sha256_bytes(result.stdout),
                     "stderr_sha256": _sha256_bytes(result.stderr),
+                },
+                "artifacts": {
+                    "stdout": {
+                        "path": "native-release-regression.stdout",
+                        "sha256": _sha256_bytes(result.stdout),
+                        "size_bytes": len(result.stdout),
+                    },
+                    "stderr": {
+                        "path": "native-release-regression.stderr",
+                        "sha256": _sha256_bytes(result.stderr),
+                        "size_bytes": len(result.stderr),
+                    },
                 },
             }
             local_summary = {
@@ -555,20 +634,47 @@ class LocalFullGate:
                 "run_id": run_id,
                 "limit_seconds": request.deadline_seconds,
                 "max_slots": request.slots,
-                "elapsed_seconds": elapsed_seconds,
+                "elapsed_seconds": profile_elapsed_seconds,
+                "command_elapsed_seconds": elapsed_seconds,
                 "profile_report_sha256": _sha256_bytes(_json_bytes(report)),
             }
+            (staging / "native-release-regression.stdout").write_bytes(result.stdout)
+            (staging / "native-release-regression.stderr").write_bytes(result.stderr)
             (staging / "native-full-5.1.json").write_bytes(_json_bytes(report))
             (staging / "local-native-full-5.1.json").write_bytes(
                 _json_bytes(local_summary)
             )
+            try:
+                verify_local_full.validate_native_run(
+                    staging / "native-full-5.1.json",
+                    staging / "local-native-full-5.1.json",
+                    expected_prepared_inputs_sha256=inputs.manifest_sha256,
+                )
+            except Exception as exc:
+                raise GateRejected(
+                    f"native independent verification failed: {exc}"
+                ) from exc
+            self._profile_elapsed(
+                profile_started,
+                elapsed_seconds,
+                request.deadline_seconds,
+            )
             os.replace(staging, published)
+            try:
+                self._profile_elapsed(
+                    profile_started,
+                    elapsed_seconds,
+                    request.deadline_seconds,
+                )
+            except BaseException:
+                shutil.rmtree(published)
+                raise
             return LocalFullResult(
                 profile=request.profile,
                 profile_report=published / "native-full-5.1.json",
                 local_summary=published / "local-native-full-5.1.json",
                 timeline=timeline,
-                elapsed_seconds=elapsed_seconds,
+                elapsed_seconds=profile_elapsed_seconds,
             )
         except BaseException:
             if staging.exists():

@@ -3,12 +3,23 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import hmac
 import json
 import math
+import re
+import sys
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, NoReturn
+
+import prepared_inputs
+
+NATIVE_SUMMARY_RE = re.compile(
+    r"^summary: targets=(\d+) modules=(\d+) tests=(\d+) "
+    r"failed_modules=(\d+) elapsed=(\d+(?:\.\d+)?)s$"
+)
 
 
 class LocalVerificationError(RuntimeError):
@@ -41,6 +52,52 @@ def _number(value: object, label: str) -> float:
     return number
 
 
+def _artifact_bytes(
+    parent: Path,
+    value: object,
+    *,
+    label: str,
+    expected_name: str,
+) -> bytes:
+    if not isinstance(value, dict) or set(value) != {
+        "path",
+        "sha256",
+        "size_bytes",
+    }:
+        _fail(f"{label} artifact metadata is not exact")
+    if value.get("path") != expected_name:
+        _fail(f"{label} artifact path mismatch")
+    path = parent / expected_name
+    if path.is_symlink() or not path.is_file() or path.parent != parent:
+        _fail(f"{label} artifact is absent or unsafe")
+    raw = path.read_bytes()
+    if value.get("size_bytes") != len(raw):
+        _fail(f"{label} artifact size mismatch")
+    if not hmac.compare_digest(
+        str(value.get("sha256", "")), hashlib.sha256(raw).hexdigest()
+    ):
+        _fail(f"{label} artifact SHA-256 mismatch")
+    return raw
+
+
+def _native_summary(stdout: bytes) -> dict[str, object]:
+    try:
+        lines = stdout.decode("utf-8").splitlines()
+    except UnicodeDecodeError as exc:
+        raise LocalVerificationError("native stdout is not UTF-8") from exc
+    matches = [match for line in lines if (match := NATIVE_SUMMARY_RE.fullmatch(line))]
+    if len(matches) != 1:
+        _fail("native stdout lacks one authoritative summary")
+    match = matches[0]
+    return {
+        "targets": int(match.group(1)),
+        "modules": int(match.group(2)),
+        "tests": int(match.group(3)),
+        "failed_modules": int(match.group(4)),
+        "elapsed_seconds": float(match.group(5)),
+    }
+
+
 def validate_native_run(
     profile_report_path: Path,
     local_summary_path: Path | None,
@@ -58,6 +115,32 @@ def validate_native_run(
         expected_prepared_inputs_sha256,
     ):
         _fail("prepared inputs binding mismatch")
+    prepared_path_raw = report.get("prepared_inputs_path")
+    if not isinstance(prepared_path_raw, str):
+        _fail("prepared inputs path is absent")
+    try:
+        inputs = prepared_inputs.load(
+            Path(prepared_path_raw), expected_prepared_inputs_sha256
+        )
+    except prepared_inputs.PreparedInputsError as exc:
+        raise LocalVerificationError(f"prepared inputs are invalid: {exc}") from exc
+
+    artifacts = report.get("artifacts")
+    if not isinstance(artifacts, dict) or set(artifacts) != {"stdout", "stderr"}:
+        _fail("native raw artifacts are incomplete")
+    stdout = _artifact_bytes(
+        profile_report_path.parent,
+        artifacts["stdout"],
+        label="stdout",
+        expected_name="native-release-regression.stdout",
+    )
+    stderr = _artifact_bytes(
+        profile_report_path.parent,
+        artifacts["stderr"],
+        label="stderr",
+        expected_name="native-release-regression.stderr",
+    )
+    raw_summary = _native_summary(stdout)
     summary = report.get("summary")
     if not isinstance(summary, dict):
         _fail("native summary is absent")
@@ -68,9 +151,11 @@ def validate_native_run(
         "failed_modules": 0,
     }
     for key, expected in expected_counts.items():
-        if summary.get(key) != expected:
+        if summary.get(key) != expected or raw_summary.get(key) != expected:
             _fail(f"native summary {key} mismatch")
     suite_elapsed = _number(summary.get("elapsed_seconds"), "suite elapsed")
+    if suite_elapsed != raw_summary["elapsed_seconds"]:
+        _fail("native summary does not match raw stdout")
     if not 0 <= suite_elapsed <= 600:
         _fail("native suite exceeded 600 seconds")
 
@@ -98,8 +183,42 @@ def validate_native_run(
         _fail("native local SLA limit is invalid")
     if isinstance(slots, bool) or not isinstance(slots, int) or not 1 <= slots <= 10:
         _fail("native local SLA slots are invalid")
-    if _number(envelope.get("elapsed_seconds"), "local elapsed") != command_elapsed:
+    expected_argv = [
+        str(inputs.native_python),
+        "-B",
+        str(inputs.runner_path),
+        "--jobs",
+        str(slots),
+        "--research-root",
+        str(inputs.research_root),
+    ]
+    timeout_seconds = _number(command.get("timeout_seconds"), "command timeout")
+    if (
+        command.get("argv") != expected_argv
+        or command.get("cwd") != str(inputs.source_root)
+        or command.get("slots") != slots
+        or command.get("shell") is not False
+        or not 0 < timeout_seconds <= limit
+    ):
+        _fail("native command contract mismatch")
+    if command.get("stdout_sha256") != artifacts["stdout"]["sha256"]:
+        _fail("native command stdout binding mismatch")
+    if command.get("stderr_sha256") != artifacts["stderr"]["sha256"]:
+        _fail("native command stderr binding mismatch")
+    if hashlib.sha256(stdout).hexdigest() != command.get("stdout_sha256"):
+        _fail("native stdout digest mismatch")
+    if hashlib.sha256(stderr).hexdigest() != command.get("stderr_sha256"):
+        _fail("native stderr digest mismatch")
+    profile_elapsed = _number(report.get("profile_elapsed_seconds"), "profile elapsed")
+    if not command_elapsed <= profile_elapsed <= limit:
+        _fail("native profile exceeded its complete wall-clock limit")
+    if _number(envelope.get("elapsed_seconds"), "local elapsed") != profile_elapsed:
         _fail("native local SLA elapsed mismatch")
+    if (
+        _number(envelope.get("command_elapsed_seconds"), "local command elapsed")
+        != command_elapsed
+    ):
+        _fail("native local command elapsed mismatch")
     actual_report_sha256 = hashlib.sha256(report_raw).hexdigest()
     if not hmac.compare_digest(
         str(envelope.get("profile_report_sha256", "")),
@@ -108,6 +227,33 @@ def validate_native_run(
         _fail("native profile report SHA-256 mismatch")
     return {
         "profile": "native-full",
-        "elapsed_seconds": command_elapsed,
+        "elapsed_seconds": profile_elapsed,
         "prepared_inputs_sha256": expected_prepared_inputs_sha256,
     }
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--profile-report", type=Path, required=True)
+    parser.add_argument("--local-summary", type=Path, required=True)
+    parser.add_argument("--prepared-inputs-sha256", required=True)
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = _build_parser().parse_args(argv)
+    try:
+        verified = validate_native_run(
+            args.profile_report.expanduser().absolute(),
+            args.local_summary.expanduser().absolute(),
+            expected_prepared_inputs_sha256=args.prepared_inputs_sha256,
+        )
+    except LocalVerificationError as exc:
+        print(f"local verification failed: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(verified, sort_keys=True, separators=(",", ":")))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

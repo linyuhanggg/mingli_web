@@ -1,11 +1,12 @@
-#!/usr/bin/env python3
 """Fail-closed loading for immutable local Gate inputs."""
 
 from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, NoReturn
@@ -17,6 +18,8 @@ EXPECTED_RELEASE_MANIFEST_SHA256 = (
 SCHEMA = "mingli-prepared-inputs-v1"
 INSTANCE_RE = re.compile(r"[a-z0-9][a-z0-9_.-]{0,127}")
 IMAGE_ID_RE = re.compile(r"sha256:[0-9a-f]{64}")
+COMMIT_RE = re.compile(r"[0-9a-f]{40}")
+GIT = Path("/usr/bin/git")
 
 
 class PreparedInputsError(RuntimeError):
@@ -37,6 +40,108 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _sha256(value: object, label: str) -> str:
+    digest = _string(value, label)
+    if len(digest) != 64 or any(
+        character not in "0123456789abcdef" for character in digest
+    ):
+        _fail(f"{label} must be a lowercase SHA-256")
+    return digest
+
+
+def sha256_tree(root: Path) -> str:
+    """Hash every visible tree entry without following directory symlinks.
+
+    Git administration bytes are not runtime input and are excluded. Every other
+    regular file and symlink is bound by relative path, mode, type, and content or
+    link target. Special files are rejected because their bytes are not stable.
+    """
+
+    digest = hashlib.sha256()
+    candidates = sorted(
+        (
+            path
+            for path in root.rglob("*")
+            if ".git" not in path.relative_to(root).parts
+        ),
+        key=lambda path: path.relative_to(root).as_posix(),
+    )
+    for path in candidates:
+        relative = path.relative_to(root).as_posix().encode("utf-8")
+        if path.is_symlink():
+            record = b"L\0" + relative + b"\0" + os.fsencode(os.readlink(path)) + b"\0"
+        elif path.is_file():
+            mode = path.stat().st_mode & 0o777
+            record = (
+                b"F\0"
+                + relative
+                + b"\0"
+                + f"{mode:o}".encode("ascii")
+                + b"\0"
+                + sha256_file(path).encode("ascii")
+                + b"\0"
+            )
+        elif path.is_dir():
+            continue
+        else:
+            _fail(f"tree contains unsupported entry: {path}")
+        digest.update(record)
+    return digest.hexdigest()
+
+
+def _require_within(path: Path, root: Path, label: str) -> None:
+    try:
+        path.resolve(strict=True).relative_to(root.resolve(strict=True))
+    except ValueError:
+        _fail(f"{label} must be inside its declared root")
+
+
+def _git(root: Path, *args: str) -> bytes:
+    if not GIT.is_file():
+        _fail("fixed Git executable is absent")
+    try:
+        completed = subprocess.run(
+            [str(GIT), "--no-replace-objects", "-C", str(root), *args],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            check=False,
+            shell=False,
+            timeout=30,
+            env={
+                "GIT_CONFIG_GLOBAL": "/dev/null",
+                "GIT_CONFIG_NOSYSTEM": "1",
+                "GIT_OPTIONAL_LOCKS": "0",
+                "LANG": "C",
+                "LC_ALL": "C",
+                "PATH": "/usr/bin:/bin",
+            },
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise PreparedInputsError("source Git identity command failed") from exc
+    if (
+        completed.returncode != 0
+        or len(completed.stdout) > 1024 * 1024
+        or len(completed.stderr) > 1024 * 1024
+    ):
+        _fail("source Git identity command failed")
+    return completed.stdout
+
+
+def _verify_source_git(root: Path, expected_commit: str) -> None:
+    if COMMIT_RE.fullmatch(expected_commit) is None:
+        _fail("source commit is malformed")
+    try:
+        head = (
+            _git(root, "rev-parse", "--verify", "HEAD^{commit}").decode("ascii").strip()
+        )
+    except UnicodeDecodeError as exc:
+        raise PreparedInputsError("source Git HEAD is not ASCII") from exc
+    if head != expected_commit:
+        _fail("source Git HEAD mismatch")
+    if _git(root, "status", "--porcelain=v1", "--untracked-files=all"):
+        _fail("source Git worktree is not clean")
 
 
 def _mapping(value: object, label: str) -> dict[str, Any]:
@@ -67,7 +172,11 @@ class PreparedInputs:
     manifest_path: Path
     manifest_sha256: str
     source_root: Path
+    source_tree_sha256: str
     research_root: Path
+    research_tree_sha256: str
+    native_runtime_root: Path
+    native_runtime_tree_sha256: str
     native_python: Path
     runner_path: Path
     payload: dict[str, Any]
@@ -125,6 +234,11 @@ def load(path: Path, expected_sha256: str) -> PreparedInputs:
         or research_resolved.is_relative_to(source_resolved)
     ):
         _fail("research root must be external to the source projection")
+    release_manifest = _absolute_path(
+        source.get("release_manifest"), "source.release_manifest", directory=False
+    )
+    if sha256_file(release_manifest) != EXPECTED_RELEASE_MANIFEST_SHA256:
+        _fail("release manifest bytes do not match the signed SHA-256")
     source_fulltext = source_root / "references" / "fulltext"
     if source_fulltext.is_symlink():
         _fail("source projection contains fulltext through a symlink")
@@ -132,11 +246,39 @@ def load(path: Path, expected_sha256: str) -> PreparedInputs:
         candidate.is_file() for candidate in source_fulltext.rglob("*")
     ):
         _fail("source projection contains fulltext generator drift")
+    source_tree_sha256 = _sha256(source.get("tree_sha256"), "source.tree_sha256")
+    if sha256_tree(source_root) != source_tree_sha256:
+        _fail("source tree SHA-256 mismatch")
+    research_tree_sha256 = _sha256(research.get("tree_sha256"), "research.tree_sha256")
+    if sha256_tree(research_root) != research_tree_sha256:
+        _fail("research tree SHA-256 mismatch")
+    _verify_source_git(source_root, EXPECTED_COMMIT)
+    native_runtime_root = _absolute_path(
+        native_runtime.get("root"), "native_runtime.root", directory=True
+    )
+    native_runtime_tree_sha256 = _sha256(
+        native_runtime.get("tree_sha256"), "native_runtime.tree_sha256"
+    )
+    if sha256_tree(native_runtime_root) != native_runtime_tree_sha256:
+        _fail("native_runtime tree SHA-256 mismatch")
     native_python = _absolute_path(
         native_runtime.get("python"), "native_runtime.python", directory=False
     )
+    _require_within(native_python, native_runtime_root, "native_runtime.python")
     if sha256_file(native_python) != native_runtime.get("python_sha256"):
         _fail("native Python SHA-256 mismatch")
+    runtime_integrity = _absolute_path(
+        native_runtime.get("runtime_integrity"),
+        "native_runtime.runtime_integrity",
+        directory=False,
+    )
+    _require_within(
+        runtime_integrity,
+        native_runtime_root,
+        "native_runtime.runtime_integrity",
+    )
+    if sha256_file(runtime_integrity) != native_runtime.get("runtime_integrity_sha256"):
+        _fail("native runtime integrity SHA-256 mismatch")
     lock = _absolute_path(
         native_runtime.get("requirements_lock"),
         "native_runtime.requirements_lock",
@@ -144,6 +286,7 @@ def load(path: Path, expected_sha256: str) -> PreparedInputs:
     )
     if sha256_file(lock) != native_runtime.get("requirements_lock_sha256"):
         _fail("runtime lock SHA-256 mismatch")
+    _require_within(lock, source_root, "native_runtime.requirements_lock")
 
     bindings = payload.get("bindings")
     if not isinstance(bindings, list) or not bindings:
@@ -165,7 +308,11 @@ def load(path: Path, expected_sha256: str) -> PreparedInputs:
         manifest_path=path,
         manifest_sha256=actual_sha256,
         source_root=source_root,
+        source_tree_sha256=source_tree_sha256,
         research_root=research_root,
+        research_tree_sha256=research_tree_sha256,
+        native_runtime_root=native_runtime_root,
+        native_runtime_tree_sha256=native_runtime_tree_sha256,
         native_python=native_python,
         runner_path=runner_path,
         payload=payload,

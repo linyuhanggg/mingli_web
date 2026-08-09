@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from __future__ import annotations
 
 import copy
@@ -7,6 +5,7 @@ import hashlib
 import importlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -58,6 +57,8 @@ def load_local_gate() -> ModuleType:
     try:
         importlib.invalidate_caches()
         sys.modules.pop("local_gate", None)
+        sys.modules.pop("prepared_inputs", None)
+        sys.modules.pop("verify_local_full", None)
         return importlib.import_module("local_gate")
     finally:
         sys.path.remove(str(RUNTIME_DIR))
@@ -93,23 +94,66 @@ def write_prepared_inputs(tmp_path: Path) -> tuple[Path, str, dict[str, Any]]:
     )
     lock = source_root / "requirements-runtime.lock"
     lock.write_text("locked\n", encoding="utf-8")
+    release_manifest = source_root / ".mingli-release-manifest.json"
+    release_manifest.write_text('{"fixture":"release"}\n', encoding="utf-8")
     research_root = tmp_path / "research"
     research_root.mkdir()
-    python = Path(sys.executable).resolve(strict=True)
+    (research_root / "book.txt").write_text("fixture research\n", encoding="utf-8")
+    runtime_root = tmp_path / "native-runtime"
+    runtime_bin = runtime_root / "bin"
+    runtime_bin.mkdir(parents=True)
+    python = runtime_bin / "python"
+    shutil.copy2(Path(sys.executable).resolve(strict=True), python)
+    runtime_integrity = runtime_root / "runtime-integrity.json"
+    runtime_integrity.write_text('{"schema_version":1}\n', encoding="utf-8")
+    subprocess.run(["git", "-C", str(source_root), "init", "-q"], check=True)
+    subprocess.run(["git", "-C", str(source_root), "add", "--all"], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(source_root),
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "-qm",
+            "fixture",
+        ],
+        check=True,
+    )
+    source_commit = subprocess.check_output(
+        ["git", "-C", str(source_root), "rev-parse", "HEAD"], text=True
+    ).strip()
+    source_tree_sha256 = tree_sha256(source_root)
+    research_tree_sha256 = tree_sha256(research_root)
+    runtime_tree_sha256 = tree_sha256(runtime_root)
+    prepared_module = sys.modules.get("prepared_inputs")
+    if prepared_module is not None:
+        prepared_module.EXPECTED_RELEASE_MANIFEST_SHA256 = sha256_file(release_manifest)
+        prepared_module.EXPECTED_COMMIT = source_commit
     payload = {
         "schema": "mingli-prepared-inputs-v1",
         "source": {
             "root": str(source_root),
-            "commit": EXPECTED_COMMIT,
-            "release_manifest_sha256": EXPECTED_RELEASE_MANIFEST_SHA256,
+            "commit": source_commit,
+            "release_manifest": str(release_manifest),
+            "release_manifest_sha256": sha256_file(release_manifest),
+            "tree_sha256": source_tree_sha256,
         },
         "research": {
             "root": str(research_root),
-            "commit": EXPECTED_COMMIT,
+            "commit": source_commit,
+            "tree_sha256": research_tree_sha256,
         },
         "native_runtime": {
+            "root": str(runtime_root),
+            "tree_sha256": runtime_tree_sha256,
             "python": str(python),
             "python_sha256": sha256_file(python),
+            "runtime_integrity": str(runtime_integrity),
+            "runtime_integrity_sha256": sha256_file(runtime_integrity),
             "requirements_lock": str(lock),
             "requirements_lock_sha256": sha256_file(lock),
         },
@@ -124,12 +168,56 @@ def write_prepared_inputs(tmp_path: Path) -> tuple[Path, str, dict[str, Any]]:
                 "kind": "file",
                 "sha256": sha256_file(lock),
             },
+            {
+                "path": str(release_manifest),
+                "kind": "file",
+                "sha256": sha256_file(release_manifest),
+            },
+            {
+                "path": str(runtime_integrity),
+                "kind": "file",
+                "sha256": sha256_file(runtime_integrity),
+            },
         ],
     }
     raw = (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode()
     path = tmp_path / "prepared-inputs.json"
     path.write_bytes(raw)
     return path, sha256_bytes(raw), payload
+
+
+def tree_sha256(root: Path) -> str:
+    """Test-side canonical digest for a closed regular-file/symlink tree."""
+
+    digest = hashlib.sha256()
+    for path in sorted(
+        (
+            path
+            for path in root.rglob("*")
+            if ".git" not in path.relative_to(root).parts
+        ),
+        key=lambda item: item.relative_to(root).as_posix(),
+    ):
+        relative = path.relative_to(root).as_posix().encode()
+        if path.is_symlink():
+            record = b"L\0" + relative + b"\0" + os.readlink(path).encode() + b"\0"
+        elif path.is_file():
+            mode = path.stat().st_mode & 0o777
+            record = (
+                b"F\0"
+                + relative
+                + b"\0"
+                + f"{mode:o}".encode()
+                + b"\0"
+                + sha256_file(path).encode()
+                + b"\0"
+            )
+        elif path.is_dir():
+            continue
+        else:
+            raise AssertionError(f"unsupported fixture entry: {path}")
+        digest.update(record)
+    return digest.hexdigest()
 
 
 def write_linux_prepared_inputs(tmp_path: Path) -> tuple[Path, str, dict[str, Any]]:
@@ -526,6 +614,46 @@ def test_subprocess_execution_enforces_output_cap_and_kills_process_group(
         pytest.fail("output-cap child process survived process-group cleanup")
 
 
+def test_subprocess_execution_converts_wait_timeout_and_reaps_group(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    parent_pid_path = tmp_path / "parent.pid"
+    program = (
+        "import os, pathlib, time; "
+        f"pathlib.Path({str(parent_pid_path)!r}).write_text(str(os.getpid())); "
+        "os.close(1); os.close(2); time.sleep(30)"
+    )
+    command = gate_module.GateCommand(
+        command_id="wait-timeout-probe",
+        argv=(sys.executable, "-c", program),
+        cwd=tmp_path,
+        timeout_seconds=0.1,
+        slots=1,
+    )
+
+    with pytest.raises(gate_module.ExecutionFailure, match="exceeded"):
+        gate_module.SubprocessExecution().run(command)
+
+    parent_pid = int(parent_pid_path.read_text())
+    with pytest.raises(ProcessLookupError):
+        os.kill(parent_pid, 0)
+
+
+def test_subprocess_execution_wraps_spawn_failure(tmp_path: Path) -> None:
+    gate_module = load_local_gate()
+    command = gate_module.GateCommand(
+        command_id="spawn-failure-probe",
+        argv=(str(tmp_path / "does-not-exist"),),
+        cwd=tmp_path,
+        timeout_seconds=1,
+        slots=1,
+    )
+
+    with pytest.raises(gate_module.ExecutionFailure, match="could not start"):
+        gate_module.SubprocessExecution().run(command)
+
+
 def test_native_full_wraps_execution_failure_and_removes_staging(
     tmp_path: Path,
 ) -> None:
@@ -540,6 +668,22 @@ def test_native_full_wraps_execution_failure_and_removes_staging(
 
     with pytest.raises(gate_module.GateRejected, match="native execution failed"):
         gate_module.LocalFullGate(TimedOutExecution()).run(request)
+
+    assert_nothing_published(request.output_parent)
+
+
+def test_native_full_wraps_unexpected_execution_error_and_removes_staging(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    request, _ = native_request(gate_module, tmp_path)
+
+    class BrokenExecution:
+        def run(self, command: Any) -> Any:
+            raise OSError(f"{command.command_id} transport broke")
+
+    with pytest.raises(gate_module.GateRejected, match="native execution failed"):
+        gate_module.LocalFullGate(BrokenExecution()).run(request)
 
     assert_nothing_published(request.output_parent)
 
@@ -595,6 +739,266 @@ def test_native_reports_are_independently_revalidated(tmp_path: Path) -> None:
 
     assert verified["profile"] == "native-full"
     assert verified["elapsed_seconds"] == 434.62
+
+
+def test_native_report_publishes_raw_bytes_and_cli_revalidates_them(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    gate_module = load_local_gate()
+    request, _ = native_request(gate_module, tmp_path)
+    stdout = complete_summary()
+    execution = ScriptedExecution(
+        gate_module,
+        stdout=stdout,
+        elapsed_seconds=434.62,
+    )
+    result = gate_module.LocalFullGate(execution).run(request)
+    report = json.loads(result.profile_report.read_text(encoding="utf-8"))
+
+    assert report["prepared_inputs_path"] == str(request.prepared_inputs.path)
+    assert report["command"]["slots"] == 10
+    assert report["command"]["timeout_seconds"] <= 600
+    assert report["command"]["shell"] is False
+    for stream, expected in (("stdout", stdout.encode()), ("stderr", b"")):
+        artifact = report["artifacts"][stream]
+        artifact_path = result.profile_report.parent / artifact["path"]
+        assert artifact_path.read_bytes() == expected
+        assert artifact["size_bytes"] == len(expected)
+        assert artifact["sha256"] == sha256_bytes(expected)
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(RUNTIME_DIR / "verify_local_full.py"),
+            "--help",
+        ],
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "--profile-report" in completed.stdout
+    verifier = load_local_verifier()
+    exit_code = verifier.main(
+        [
+            "--profile-report",
+            str(result.profile_report),
+            "--local-summary",
+            str(result.local_summary),
+            "--prepared-inputs-sha256",
+            request.prepared_inputs.sha256,
+        ]
+    )
+    assert exit_code == 0
+    assert json.loads(capsys.readouterr().out)["profile"] == "native-full"
+
+
+def test_native_verifier_rejects_raw_stdout_tampering(tmp_path: Path) -> None:
+    gate_module = load_local_gate()
+    request, _ = native_request(gate_module, tmp_path)
+    result = gate_module.LocalFullGate(
+        ScriptedExecution(
+            gate_module,
+            stdout=complete_summary(),
+            elapsed_seconds=434.62,
+        )
+    ).run(request)
+    report = json.loads(result.profile_report.read_text(encoding="utf-8"))
+    stdout_path = result.profile_report.parent / report["artifacts"]["stdout"]["path"]
+    stdout_path.write_text("forged pass\n", encoding="utf-8")
+    verifier = load_local_verifier()
+
+    with pytest.raises(verifier.LocalVerificationError):
+        verifier.validate_native_run(
+            result.profile_report,
+            result.local_summary,
+            expected_prepared_inputs_sha256=request.prepared_inputs.sha256,
+        )
+
+
+def test_native_verifier_rejects_self_consistent_command_forgery(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    request, _ = native_request(gate_module, tmp_path)
+    result = gate_module.LocalFullGate(
+        ScriptedExecution(
+            gate_module,
+            stdout=complete_summary(),
+            elapsed_seconds=434.62,
+        )
+    ).run(request)
+    report = json.loads(result.profile_report.read_text(encoding="utf-8"))
+    report["command"]["argv"][-1] = "/tmp/forged-research"
+    report_raw = (
+        json.dumps(report, sort_keys=True, separators=(",", ":")) + "\n"
+    ).encode()
+    result.profile_report.write_bytes(report_raw)
+    envelope = json.loads(result.local_summary.read_text(encoding="utf-8"))
+    envelope["profile_report_sha256"] = sha256_bytes(report_raw)
+    result.local_summary.write_text(
+        json.dumps(envelope, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    verifier = load_local_verifier()
+
+    with pytest.raises(verifier.LocalVerificationError, match="command"):
+        verifier.validate_native_run(
+            result.profile_report,
+            result.local_summary,
+            expected_prepared_inputs_sha256=request.prepared_inputs.sha256,
+        )
+
+
+def test_native_full_verifies_staging_before_atomic_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    gate_module = load_local_gate()
+    request, _ = native_request(gate_module, tmp_path)
+    verifier = gate_module.verify_local_full
+
+    def reject(*args: object, **kwargs: object) -> object:
+        raise verifier.LocalVerificationError("scripted verifier rejection")
+
+    monkeypatch.setattr(verifier, "validate_native_run", reject)
+
+    with pytest.raises(gate_module.GateRejected, match="independent verification"):
+        gate_module.LocalFullGate(
+            ScriptedExecution(
+                gate_module,
+                stdout=complete_summary(),
+                elapsed_seconds=434.62,
+            )
+        ).run(request)
+
+    assert_nothing_published(request.output_parent)
+
+
+def test_native_full_rejects_total_profile_wall_clock_over_budget(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    request, _ = native_request(gate_module, tmp_path)
+
+    class FakeMonotonic:
+        def __init__(self) -> None:
+            self.values = [0.0, 0.0, 601.0]
+            self.index = 0
+
+        def __call__(self) -> float:
+            value = self.values[min(self.index, len(self.values) - 1)]
+            self.index += 1
+            return value
+
+    with pytest.raises(gate_module.GateRejected, match="profile.*deadline"):
+        gate_module.LocalFullGate(
+            ScriptedExecution(
+                gate_module,
+                stdout=complete_summary(elapsed_seconds=1.0),
+                elapsed_seconds=1.0,
+            ),
+            monotonic=FakeMonotonic(),
+        ).run(request)
+
+    assert_nothing_published(request.output_parent)
+
+
+@pytest.mark.parametrize("tree_name", ["source", "research", "native_runtime"])
+def test_prepared_inputs_rejects_unbound_tree_bytes(
+    tmp_path: Path,
+    tree_name: str,
+) -> None:
+    gate_module = load_local_gate()
+    request, payload = native_request(gate_module, tmp_path)
+    root = Path(payload[tree_name]["root"])
+    (root / "unbound.bin").write_bytes(b"not in prepared closure")
+    execution = ScriptedExecution(
+        gate_module,
+        stdout=complete_summary(elapsed_seconds=1.0),
+        elapsed_seconds=1.0,
+    )
+
+    with pytest.raises(gate_module.GateRejected, match="tree SHA-256 mismatch"):
+        gate_module.LocalFullGate(execution).run(request)
+
+    assert execution.commands == []
+    assert_nothing_published(request.output_parent)
+
+
+def test_prepared_inputs_rejects_release_manifest_bytes_mismatch(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    request, payload = native_request(gate_module, tmp_path)
+    Path(payload["source"]["release_manifest"]).write_text(
+        "forged manifest\n", encoding="utf-8"
+    )
+    execution = ScriptedExecution(
+        gate_module,
+        stdout=complete_summary(elapsed_seconds=1.0),
+        elapsed_seconds=1.0,
+    )
+
+    with pytest.raises(gate_module.GateRejected, match="release manifest"):
+        gate_module.LocalFullGate(execution).run(request)
+
+    assert execution.commands == []
+    assert_nothing_published(request.output_parent)
+
+
+def test_prepared_inputs_verifies_real_source_git_head(tmp_path: Path) -> None:
+    gate_module = load_local_gate()
+    request, payload = native_request(gate_module, tmp_path)
+    source_root = payload["source"]["root"]
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            source_root,
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "--allow-empty",
+            "-qm",
+            "drifted head",
+        ],
+        check=True,
+    )
+    execution = ScriptedExecution(
+        gate_module,
+        stdout=complete_summary(elapsed_seconds=1.0),
+        elapsed_seconds=1.0,
+    )
+
+    with pytest.raises(gate_module.GateRejected, match="source Git HEAD mismatch"):
+        gate_module.LocalFullGate(execution).run(request)
+
+    assert execution.commands == []
+    assert_nothing_published(request.output_parent)
+
+
+def test_native_full_rejects_unbound_research_drift_during_run(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    request, payload = native_request(gate_module, tmp_path)
+    research_file = Path(payload["research"]["root"]) / "book.txt"
+    execution = ScriptedExecution(
+        gate_module,
+        stdout=complete_summary(elapsed_seconds=1.0),
+        elapsed_seconds=1.0,
+        on_run=lambda: research_file.write_text("drifted\n", encoding="utf-8"),
+    )
+
+    with pytest.raises(gate_module.GateRejected, match="changed during run"):
+        gate_module.LocalFullGate(execution).run(request)
+
+    assert_nothing_published(request.output_parent)
 
 
 def test_prepared_inputs_requires_external_research_root(tmp_path: Path) -> None:
