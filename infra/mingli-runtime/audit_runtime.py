@@ -1514,9 +1514,9 @@ def finalize_audit(
     ):
         verify_release._require_image_digest(value, label)
     if image_id != image_digest:
-        _fail("local production image ID and OCI config digest must be identical")
+        _fail("local production image ID and OCI index digest must be identical")
     if audit_image_id != image_id:
-        _fail("audit image must be an alias of the exact production OCI config")
+        _fail("audit image must be an alias of the exact production OCI index")
     _validate_run_id(run_id)
     _source_roots_are_safe(source_root, research_root)
     production = _copy_production_evidence(
@@ -1645,7 +1645,7 @@ def finalize_audit(
                 "linux_amd64_manifest_digest"
             ],
             "image_digest": image_digest,
-            "image_digest_kind": "oci_config",
+            "image_digest_kind": verify_release.IMAGE_DIGEST_KIND,
             "runtime_integrity_sha256": verify_release.sha256_file(
                 output_root / "evidence/runtime-integrity.json"
             ),

@@ -123,7 +123,7 @@ def _component(
 
 def build_sbom(image_id: str) -> dict[str, Any]:
     if IMAGE_ID_RE.fullmatch(image_id) is None:
-        _fail("production image ID must be an OCI config digest")
+        _fail("production image ID must be an OCI index digest")
     if platform.system() != "Linux" or platform.machine() != "x86_64":
         _fail("SBOM must be generated inside Linux x86_64 production")
     if platform.python_version() != "3.14.6" or Path(sys.executable) != RUNTIME_PYTHON:
@@ -341,7 +341,7 @@ def build_sbom(image_id: str) -> dict[str, Any]:
                         "mingli:base-image-manifest-digest": provenance["base_image"][
                             "linux_amd64_manifest_digest"
                         ],
-                        "mingli:oci-config-digest": image_id,
+                        verify_release.IMAGE_DIGEST_PROPERTY: image_id,
                         "mingli:release-manifest-sha256": release_manifest_sha256,
                         "mingli:runtime-integrity-sha256": runtime_integrity_sha256,
                         "mingli:native-linkage-sha256": verify_release.canonical_sha256(

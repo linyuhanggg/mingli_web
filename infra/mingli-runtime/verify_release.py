@@ -27,6 +27,8 @@ from pathlib import Path, PurePosixPath
 from typing import Any, NoReturn
 
 MANIFEST_NAME = ".mingli-release-manifest.json"
+IMAGE_DIGEST_KIND = "oci_index"
+IMAGE_DIGEST_PROPERTY = "mingli:oci-index-digest"
 EXPECTED_RELEASE = {
     "name": "mingli-master-portable-core",
     "version": "5.1",
@@ -1819,7 +1821,7 @@ def _verify_sbom(path: Path, report: Mapping[str, Any]) -> None:
         "mingli:base-image-manifest-digest": EXPECTED_BASE_IMAGE[
             "linux_amd64_manifest_digest"
         ],
-        "mingli:oci-config-digest": artifact.get("image_digest"),
+        IMAGE_DIGEST_PROPERTY: artifact.get("image_digest"),
         "mingli:native-linkage-sha256": report.get(
             "runtime_native_linkage_identity", {}
         ).get("payload_sha256"),
@@ -3236,11 +3238,11 @@ def validate_audit_report(
         audit.get("audit_image_id"),
         "audit image ID",
     )
-    if artifact.get("image_digest_kind") != "oci_config":
-        _fail("production image digest kind must be the local OCI config digest")
+    if artifact.get("image_digest_kind") != IMAGE_DIGEST_KIND:
+        _fail("production image digest kind must be the OCI index digest")
     if not (image_digest == image_id == audit_image_id):
         _fail(
-            "artifact, production, and audit image IDs must be the same OCI config digest"
+            "artifact, production, and audit image IDs must be the same OCI index digest"
         )
     if (
         artifact.get("base_image_digest")

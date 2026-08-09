@@ -108,6 +108,32 @@ def load_audit_runtime() -> ModuleType:
         sys.path.remove(str(RUNTIME_DIR))
 
 
+def load_sbom_emitter() -> ModuleType:
+    sys.path.insert(0, str(RUNTIME_DIR))
+    try:
+        return load_module(RUNTIME_DIR / "emit_sbom.py", "mingli_sbom_emitter")
+    finally:
+        sys.path.remove(str(RUNTIME_DIR))
+
+
+def test_release_names_the_docker_buildx_identity_as_an_oci_index() -> None:
+    verifier = load_verifier()
+    emitter = load_sbom_emitter()
+    audit_source = AUDIT_PATH.read_text(encoding="utf-8")
+    emitter_source = (RUNTIME_DIR / "emit_sbom.py").read_text(encoding="utf-8")
+    verifier_source = VERIFY_PATH.read_text(encoding="utf-8")
+
+    assert verifier.IMAGE_DIGEST_KIND == "oci_index"
+    assert verifier.IMAGE_DIGEST_PROPERTY == "mingli:oci-index-digest"
+    assert emitter.verify_release.IMAGE_DIGEST_KIND == "oci_index"
+    assert '"image_digest_kind": verify_release.IMAGE_DIGEST_KIND' in audit_source
+    assert "verify_release.IMAGE_DIGEST_PROPERTY" in emitter_source
+    assert "IMAGE_DIGEST_PROPERTY" in verifier_source
+    assert "oci_config" not in audit_source
+    assert "oci-config-digest" not in emitter_source
+    assert "oci-config-digest" not in verifier_source
+
+
 def test_linux_watchdogs_cover_qemu_matrix_and_regression_budgets() -> None:
     audit = load_audit_runtime()
     gate = load_lima_gate()
@@ -810,7 +836,7 @@ def test_release_regression_is_executed_in_the_final_artifact() -> None:
     report["audit"]["audit_image_id"] = "sha256:" + "1" * 64
     with pytest.raises(
         verifier.ReleaseVerificationError,
-        match="same OCI config digest",
+        match="same OCI index digest",
     ):
         verifier.validate_audit_report(report, artifacts_root=RUNTIME_DIR)
 

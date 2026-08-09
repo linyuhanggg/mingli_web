@@ -382,7 +382,7 @@ def _prepare_research_source(
 
 def _validate_image_id(value: str, label: str) -> str:
     if IMAGE_ID_RE.fullmatch(value) is None:
-        _fail(f"{label} is not an OCI config digest: {value!r}")
+        _fail(f"{label} is not an OCI index digest: {value!r}")
     return value
 
 
@@ -1349,7 +1349,7 @@ def _build_images(
     vm.docker(["tag", production_tag, audit_tag])
     audit_image_id = _docker_image_id(vm, audit_tag)
     if audit_image_id != image_id:
-        _fail("audit tag does not resolve to the exact production OCI config")
+        _fail("audit tag does not resolve to the exact production OCI index")
     return production_tag, image_id, audit_tag, audit_image_id
 
 

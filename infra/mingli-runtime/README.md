@@ -26,9 +26,12 @@ replace an existing destination.
 The production image is the default `final` target. It includes the narrowly
 built, frozen Git 2.39.5 runtime required by the authoritative release tests;
 the Gate never substitutes a mutable distribution Git package. The `audit`
-stage adds no bytes. The controller gives the exact production OCI config a
+stage adds no bytes. With the pinned containerd image store, Docker resolves
+the loaded multi-platform image ID to the exact top-level production OCI index.
+The controller gives that immutable index a
 second audit tag and rejects the run before starting any container unless the
-production, audit, and artifact config digests are identical.
+production, audit, and artifact index digests are identical. The child amd64
+manifest and config digests remain separate identities in the OCI closure.
 
 ```bash
 docker build --target final -t mingli-v51:production /tmp/mingli-v51-linux-context
@@ -138,8 +141,8 @@ without that mount V5.1 readiness fails closed before `describe`.
    standalone Matrix B, runs characterization twice, P0 trajectories, the
    fixed Git fixture, and the malformed/tamper/launcher-timeout/concurrency/
    token-replay probes. Every command record is bound to the production OCI
-   config digest.
-2. `--finalize-audit` runs under the audit tag for that exact same OCI config.
+   index digest.
+2. `--finalize-audit` runs under the audit tag for that exact same OCI index.
    It verifies and copies the production evidence bundle, binds the clean
    source commit to all 217 signed files, independently consumes the original
    regression and Matrix B command bytes from that same run, and produces the
@@ -159,7 +162,7 @@ to the final artifact digest. The audit phase requires:
 - a blank writable output mount at `/audit-output`;
 - a CycloneDX SBOM generated for the production image;
 - sanitized backup/restore evidence produced with the production image;
-- one OCI config digest shared by the production tag, audit tag, command
+- one top-level OCI index digest shared by the production tag, audit tag, command
   records, release-regression section, and final artifact.
 
 Both phases write exact command argv, executing image ID, exit code,
