@@ -1,6 +1,8 @@
 from typing import Any
 from uuid import UUID
 
+import pytest
+from app.adapters.otp import OtpDeliveryUnavailable
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
 
@@ -322,3 +324,62 @@ async def test_network_limiter_distinguishes_clients_behind_trusted_proxies(
         ]
 
     assert [response.status_code for response in responses] == [202, 202, 202, 429]
+
+
+async def test_production_otp_delivery_fails_closed_with_durable_store_message(
+    database: Any,
+) -> None:
+    config = __import__("app.config", fromlist=["Settings"])
+    main = __import__("app.main", fromlist=["create_app"])
+    settings = config.Settings(
+        environment="production",
+        database_url="sqlite+aiosqlite:///:memory:",
+        cookie_secure=True,
+        otp_adapter="disabled",
+        identity_hash_key="production-identity-key",
+        content_encryption_key_b64="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg=",
+        content_encryption_key_id="production-content-v1",
+        runtime_adapter="one-shot",
+        runtime_launcher_path="/opt/mingli-master/scripts/run_reading_transaction.sh",
+        runtime_python_path="/opt/mingli-runtime/venv/bin/python",
+        runtime_release_root="/opt/mingli-master",
+        runtime_state_root="/var/lib/mingli",
+        runtime_expected_manifest_digest=(
+            "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"
+        ),
+        runtime_expected_capability_shape_sha256=(
+            "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
+        ),
+        model_adapter="deepseek",
+        deepseek_api_key="test-only-obviously-not-a-real-key",
+        model_price_snapshot_version="fixture-price-v1",
+        model_input_price_microunits_per_million_tokens=1,
+        model_output_price_microunits_per_million_tokens=1,
+    )
+    application = main.create_app(settings=settings, database=database)
+
+    with pytest.raises(OtpDeliveryUnavailable, match="durable challenge store"):
+        await application.state.otp_delivery.deliver(
+            channel="email",
+            destination="someone@example.com",
+            code="246810",
+        )
+
+
+async def test_non_fake_app_emits_random_six_digit_codes(database: Any) -> None:
+    config = __import__("app.config", fromlist=["Settings"])
+    main = __import__("app.main", fromlist=["create_app"])
+    settings = config.Settings(
+        environment="test",
+        database_url="sqlite+aiosqlite:///:memory:",
+        cookie_secure=True,
+        otp_adapter="disabled",
+    )
+    application = main.create_app(settings=settings, database=database)
+    factory = application.state.otp_code_factory
+
+    code = factory()
+
+    assert factory is main.random_six_digit_otp_code
+    assert len(code) == 6
+    assert code.isdigit()

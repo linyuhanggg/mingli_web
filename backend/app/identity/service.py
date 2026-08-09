@@ -1,3 +1,5 @@
+import secrets
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
@@ -13,6 +15,11 @@ from app.identity.repository import IdentityRepository
 from app.identity.security import hash_token, new_opaque_token
 
 GUEST_SESSION_LIFETIME = timedelta(hours=24)
+
+
+def random_six_digit_otp_code() -> str:
+    """Cryptographically random six-digit code for non-Fake OTP delivery."""
+    return f"{secrets.randbelow(1_000_000):06d}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,7 +80,7 @@ class AuthService:
         challenge_store: InMemoryOtpChallengeStore,
         delivery: OtpDeliveryAdapter,
         identity_hash_key: str,
-        otp_code: str,
+        otp_code_factory: Callable[[], str],
         otp_cooldown_seconds: int,
         device_session_days: int,
     ) -> None:
@@ -81,22 +88,23 @@ class AuthService:
         self.challenge_store = challenge_store
         self.delivery = delivery
         self.identity_hash_key = identity_hash_key
-        self.otp_code = otp_code
+        self.otp_code_factory = otp_code_factory
         self.otp_cooldown_seconds = otp_cooldown_seconds
         self.device_session_days = device_session_days
 
     async def request_otp(self, channel: OtpChannel, destination: str) -> RequestedOtp:
         address = normalize_destination(channel, destination)
         subject_hash = hash_identity(self.identity_hash_key, address)
+        code = self.otp_code_factory()
         challenge = await self.challenge_store.issue(
             address=address,
             provider_subject_hash=subject_hash,
-            code=self.otp_code,
+            code=code,
         )
         await self.delivery.deliver(
             channel=address.channel,
             destination=address.normalized,
-            code=self.otp_code,
+            code=code,
         )
         return RequestedOtp(
             challenge_id=challenge.id,

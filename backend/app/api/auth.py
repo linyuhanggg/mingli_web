@@ -34,7 +34,7 @@ def _auth_service(request: Request, session: AsyncSession) -> AuthService:
         challenge_store=request.app.state.otp_challenge_store,
         delivery=request.app.state.otp_delivery,
         identity_hash_key=settings.identity_hash_key.get_secret_value(),
-        otp_code=settings.fake_otp_code,
+        otp_code_factory=request.app.state.otp_code_factory,
         otp_cooldown_seconds=settings.otp_cooldown_seconds,
         device_session_days=settings.device_session_days,
     )

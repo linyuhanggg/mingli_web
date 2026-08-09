@@ -5,8 +5,15 @@ from typing import Any, cast
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import SecretStr
 
-from app.adapters.otp import DisabledOtpDeliveryAdapter, FakeOtpDeliveryAdapter
+from app.adapters.otp import (
+    DisabledOtpDeliveryAdapter,
+    FakeOtpDeliveryAdapter,
+    OtpDeliveryAdapter,
+    ProductionFailClosedOtpDeliveryAdapter,
+    SmtpOtpDeliveryAdapter,
+)
 from app.api.errors import ApiProblem
 from app.api.health import ReadinessProbe
 from app.api.problems import problem_response
@@ -14,6 +21,7 @@ from app.api.router import build_api_router
 from app.config import Settings, get_settings
 from app.database import Database
 from app.identity.otp import InMemoryOtpChallengeStore, InMemoryOtpRequestLimiter
+from app.identity.service import random_six_digit_otp_code
 from app.network import parse_trusted_proxy_cidrs
 from app.observability import configure_logging, install_request_observability
 from app.readings.rate_limit import WindowRateLimiter
@@ -70,10 +78,27 @@ def create_app(
     application.state.trusted_proxy_networks = parse_trusted_proxy_cidrs(
         resolved_settings.trusted_proxy_cidrs
     )
-    application.state.otp_delivery = (
-        FakeOtpDeliveryAdapter()
+    otp_delivery: OtpDeliveryAdapter
+    if resolved_settings.environment == "production":
+        otp_delivery = ProductionFailClosedOtpDeliveryAdapter()
+    elif resolved_settings.otp_adapter == "fake":
+        otp_delivery = FakeOtpDeliveryAdapter()
+    elif resolved_settings.otp_adapter == "smtp":
+        otp_delivery = SmtpOtpDeliveryAdapter(
+            sender=resolved_settings.smtp_sender or "",
+            host=resolved_settings.smtp_host or "",
+            port=resolved_settings.smtp_port,
+            username=resolved_settings.smtp_username or SecretStr(""),
+            password=resolved_settings.smtp_password or SecretStr(""),
+            security=resolved_settings.smtp_security,
+        )
+    else:
+        otp_delivery = DisabledOtpDeliveryAdapter()
+    application.state.otp_delivery = otp_delivery
+    application.state.otp_code_factory = (
+        (lambda: resolved_settings.fake_otp_code)
         if resolved_settings.otp_adapter == "fake"
-        else DisabledOtpDeliveryAdapter()
+        else random_six_digit_otp_code
     )
 
     @application.exception_handler(ApiProblem)

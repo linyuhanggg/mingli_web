@@ -12,8 +12,10 @@ from pydantic import Field, SecretStr, model_validator
 from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
+from app.adapters.otp import OtpSecurityMode
+
 Environment = Literal["local", "test", "staging", "production"]
-OtpAdapterName = Literal["fake", "disabled"]
+OtpAdapterName = Literal["fake", "disabled", "smtp"]
 RuntimeAdapterName = Literal["fake", "one-shot"]
 ModelAdapterName = Literal["fake", "deepseek"]
 _LOCAL_CONTENT_KEY_B64 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
@@ -67,6 +69,12 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
     cookie_domain: str | None = None
     otp_adapter: OtpAdapterName = "fake"
+    smtp_host: str | None = None
+    smtp_port: int = Field(default=587, ge=1, le=65535)
+    smtp_security: OtpSecurityMode = "starttls"
+    smtp_username: SecretStr | None = None
+    smtp_password: SecretStr | None = None
+    smtp_sender: str | None = None
     runtime_adapter: RuntimeAdapterName = "fake"
     runtime_launcher_path: Path | None = None
     runtime_python_path: Path | None = None
@@ -167,6 +175,22 @@ class Settings(BaseSettings):
             raise ValueError("production requires secure cookies")
         if self.environment == "production" and self.otp_adapter == "fake":
             raise ValueError("Fake OTP adapter is forbidden in production")
+        if self.otp_adapter == "smtp":
+            missing = []
+            if not self.smtp_host:
+                missing.append("host")
+            if self.smtp_username is None or not self.smtp_username.get_secret_value():
+                missing.append("username")
+            if self.smtp_password is None or not self.smtp_password.get_secret_value():
+                missing.append("password")
+            if not self.smtp_sender:
+                missing.append("sender")
+            if missing:
+                raise ValueError(f"SMTP OTP adapter requires {', '.join(missing)}")
+        if self.environment == "production" and self.otp_adapter == "smtp":
+            raise ValueError(
+                "SMTP OTP delivery requires a durable challenge store; unavailable in production"
+            )
         uses_local_hash_key = self.identity_hash_key.get_secret_value().startswith("local-only-")
         if self.environment == "production" and uses_local_hash_key:
             raise ValueError("production identity hash key must be injected")
