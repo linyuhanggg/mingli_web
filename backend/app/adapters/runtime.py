@@ -896,7 +896,7 @@ class FakeMingliRuntimeAdapter:
                         "data": {"fixture": True},
                         "fact_refs": ["fact:fake-1"],
                         "evidence_refs": [],
-                        "limit_kind_ids": ["limit:fake"],
+                        "limit_kind_ids": ["limit:traditional"],
                         "support_mode": "exact",
                     }
                 ],
@@ -912,7 +912,7 @@ class FakeMingliRuntimeAdapter:
                 ],
                 "limits": [
                     {
-                        "kind_id": "limit:fake",
+                        "kind_id": "limit:traditional",
                         "public_text": "这是 Fake Runtime 合同边界。",
                         "scope_refs": [subject_ref],
                         "detail_ids": [],

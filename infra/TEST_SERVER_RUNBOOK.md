@@ -130,7 +130,8 @@ INSERT INTO runtime_releases (
 )
 VALUES (
   gen_random_uuid(), 'fateradar-fake-contract', 'test-v1', :'release_sha',
-  repeat('f', 64), 'mingli-portable-interface-v2', repeat('f', 64), NULL, TRUE
+  rpad(:'release_sha', 64, '0'),
+  'mingli-portable-interface-v2', repeat('f', 64), NULL, TRUE
 )
 ON CONFLICT (release_manifest_digest) DO NOTHING;
 SQL
