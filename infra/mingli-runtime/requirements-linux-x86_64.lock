@@ -1,0 +1,18 @@
+# Linux x86_64 runtime lock for CPython 3.14.6. Runtime artifacts were fetched
+# from the pinned PyPI releases and audited in the Lima QEMU x86_64 gate on
+# 2026-08-09. The sxtwl wheel is built twice from the locked sdist with
+# SOURCE_DATE_EPOCH=315532800; both builds must be byte-identical.
+PyYAML==6.0.3 \
+    --hash=sha256:c458b6d084f9b935061bc36216e8a69a7e293a2f1e68bf956dcd9e6cbcd143f5
+sxtwl==2.0.7 \
+    --hash=sha256:38b24472389f7f6f3521c2c99e4b5e86c0184c7d6eb02e5409c239d21f0a6512 \
+    --hash=sha256:bd03d0b56d81112d87ad340a3d65458059497dc33496b1938fb23056dfe8ba80
+astronomy-engine==2.1.19 \
+    --hash=sha256:232ba7dd2bbf42225c48be6721b676e8c6c079dbd4588d2781dfa68adcb6f67f
+cnlunar==0.2.4 \
+    --hash=sha256:19689288604e86a3ef48dba23d39d6a7efbd5efabcb3923d4d656319762af4ea
+
+# Audited artifact identities (the comments are parsed by the Linux Gate):
+# PyYAML wheel: pyyaml-6.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+# sxtwl sdist: sxtwl-2.0.7.tar.gz
+# sxtwl wheel: sxtwl-2.0.7-cp314-cp314-linux_x86_64.whl
