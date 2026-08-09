@@ -42,6 +42,7 @@ def create_app(
         yield
         application.state.reading_write_rate_limiter.clear()
         application.state.profile_write_rate_limiter.clear()
+        application.state.guest_session_create_rate_limiter.clear()
         if owns_database:
             await resolved_database.dispose()
 
@@ -66,6 +67,11 @@ def create_app(
         window_seconds=resolved_settings.otp_rate_window_seconds,
         guest_limit=resolved_settings.otp_guest_window_limit,
         network_limit=resolved_settings.otp_network_window_limit,
+        destination_limit=resolved_settings.otp_destination_window_limit,
+    )
+    application.state.guest_session_create_rate_limiter = WindowRateLimiter(
+        limit=resolved_settings.guest_session_create_rate_limit,
+        window_seconds=resolved_settings.guest_session_create_rate_window_seconds,
     )
     application.state.reading_write_rate_limiter = WindowRateLimiter(
         limit=resolved_settings.reading_write_rate_limit,

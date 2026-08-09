@@ -37,6 +37,7 @@ def _auth_service(request: Request, session: AsyncSession) -> AuthService:
         otp_code_factory=request.app.state.otp_code_factory,
         otp_cooldown_seconds=settings.otp_cooldown_seconds,
         device_session_days=settings.device_session_days,
+        request_limiter=request.app.state.otp_request_limiter,
     )
 
 
@@ -59,12 +60,11 @@ async def request_otp(
             request,
             trusted_proxy_networks=request.app.state.trusted_proxy_networks,
         )
-        await request.app.state.otp_request_limiter.check(
+        requested = await _auth_service(request, session).request_otp(
+            payload.channel,
+            payload.destination,
             guest_key=str(guest_session.id),
             network_key=network_key,
-        )
-        requested = await _auth_service(request, session).request_otp(
-            payload.channel, payload.destination
         )
     except InvalidDestination as error:
         raise ApiProblem(status=400, title="Invalid destination", detail=str(error)) from error

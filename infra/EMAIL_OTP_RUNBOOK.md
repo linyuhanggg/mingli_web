@@ -77,3 +77,36 @@ signature, then verify the six-digit code round-trips through
 - Durable challenge store (Redis or Postgres) for challenges and rate limits.
 - Sender domain, SPF/DKIM/DMARC verified.
 - SMTP credentials injected through a secret manager.
+
+## 7. Abuse protection and single-process limits
+
+All OTP and guest-session abuse limits are enforced with in-process memory
+state; there is no persistent fake and no distributed counter:
+
+- Destination rolling window: `MINGLI_OTP_DESTINATION_WINDOW_LIMIT` (default 5)
+  requests per `MINGLI_OTP_RATE_WINDOW_SECONDS` (default 600s) per normalized
+  destination, shared across guest sessions. The key is the HMAC of
+  `channel + normalized destination` (`identity_hash_key`), so raw email
+  addresses and phone numbers are never stored by the limiter.
+- Per-guest and per-network OTP windows: `MINGLI_OTP_GUEST_WINDOW_LIMIT`
+  (default 5) and `MINGLI_OTP_NETWORK_WINDOW_LIMIT` (default 30).
+- Guest-session creation window: `MINGLI_GUEST_SESSION_CREATE_RATE_LIMIT`
+  (default 10) per client IP per
+  `MINGLI_GUEST_SESSION_CREATE_RATE_WINDOW_SECONDS` (default 600s). The client
+  IP resolves through the trusted proxy chain configured by
+  `MINGLI_TRUSTED_PROXY_CIDRS`; the 429 response carries `Retry-After`.
+
+Delivery-failure semantics: when SMTP delivery raises
+`OtpDeliveryUnavailable`, the just-issued challenge is deleted, its own
+cooldown claim is released, and the guest and destination windows that attempt
+consumed are rolled back so a retry succeeds immediately; the network window is
+kept so a provider outage cannot be used to hammer retries past the per-IP
+limit.
+
+Single-process constraint: challenge, cooldown, and all rolling-window state
+live in the API process (`max_keys` caps each window table at 20,000 entries).
+Run a single API instance for these endpoints; a second instance, a restart, or
+a blue/green deploy resets or splits the state. Production keeps
+`otp_adapter` fail-closed until a durable Redis/Postgres-backed store replaces
+the in-memory ports, and the same durable store is required before any
+multi-instance deployment can enforce these limits safely.

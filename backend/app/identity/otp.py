@@ -49,6 +49,18 @@ class RateWindow:
     count: int
 
 
+@dataclass(frozen=True, slots=True)
+class OtpRequestReservation:
+    """Tracks which limiter windows one OTP request consumed, for rollback."""
+
+    guest_key: str
+    guest_started_at: datetime
+    network_key: str
+    network_started_at: datetime
+    destination_hash: str
+    destination_started_at: datetime
+
+
 class InMemoryOtpRequestLimiter:
     """Layered local/test limiter; a real delivery adapter requires Redis."""
 
@@ -58,21 +70,73 @@ class InMemoryOtpRequestLimiter:
         window_seconds: int,
         guest_limit: int,
         network_limit: int,
+        destination_limit: int,
         max_keys: int = 20_000,
     ) -> None:
         self.window = timedelta(seconds=window_seconds)
         self.guest_limit = guest_limit
         self.network_limit = network_limit
+        self.destination_limit = destination_limit
         self.max_keys = max_keys
         self._guest_windows: dict[str, RateWindow] = {}
         self._network_windows: dict[str, RateWindow] = {}
+        self._destination_windows: dict[str, RateWindow] = {}
         self._lock = asyncio.Lock()
 
-    async def check(self, *, guest_key: str, network_key: str) -> None:
+    async def check(
+        self,
+        *,
+        guest_key: str,
+        network_key: str,
+        destination_hash: str,
+    ) -> OtpRequestReservation:
         now = datetime.now(UTC)
         async with self._lock:
-            self._consume(self._guest_windows, guest_key, self.guest_limit, now)
-            self._consume(self._network_windows, network_key, self.network_limit, now)
+            guest_started = self._consume(self._guest_windows, guest_key, self.guest_limit, now)
+            try:
+                network_started = self._consume(
+                    self._network_windows, network_key, self.network_limit, now
+                )
+            except OtpRateLimited:
+                # A rejection at a later layer must not keep the counts this
+                # call already consumed: release them atomically under the same
+                # lock before propagating, so a denied request never burns
+                # guest or network capacity.
+                self._release(self._guest_windows, guest_key, guest_started)
+                raise
+            try:
+                destination_started = self._consume(
+                    self._destination_windows, destination_hash, self.destination_limit, now
+                )
+            except OtpRateLimited:
+                self._release(self._guest_windows, guest_key, guest_started)
+                self._release(self._network_windows, network_key, network_started)
+                raise
+        return OtpRequestReservation(
+            guest_key=guest_key,
+            guest_started_at=guest_started,
+            network_key=network_key,
+            network_started_at=network_started,
+            destination_hash=destination_hash,
+            destination_started_at=destination_started,
+        )
+
+    async def rollback_delivery_failure(self, reservation: OtpRequestReservation) -> None:
+        """Undo a request whose delivery failed, keeping the network window.
+
+        A provider outage must not consume guest or destination capacity or hold
+        the destination cooldown hostage, so a retry succeeds immediately once
+        delivery recovers. The network window is intentionally preserved: an
+        attacker must not be able to bypass the per-IP limit by hammering
+        retries for the whole duration of an outage.
+        """
+        async with self._lock:
+            self._release(self._guest_windows, reservation.guest_key, reservation.guest_started_at)
+            self._release(
+                self._destination_windows,
+                reservation.destination_hash,
+                reservation.destination_started_at,
+            )
 
     def _consume(
         self,
@@ -80,7 +144,7 @@ class InMemoryOtpRequestLimiter:
         key: str,
         limit: int,
         now: datetime,
-    ) -> None:
+    ) -> datetime:
         current = windows.get(key)
         if current is None or now - current.started_at >= self.window:
             if current is None and len(windows) >= self.max_keys:
@@ -88,12 +152,27 @@ class InMemoryOtpRequestLimiter:
                 if len(windows) >= self.max_keys:
                     raise OtpRateLimited(max(1, int(self.window.total_seconds())))
             windows[key] = RateWindow(started_at=now, count=1)
-            return
+            return now
 
         if current.count >= limit:
             remaining = self.window - (now - current.started_at)
             raise OtpRateLimited(max(1, int(remaining.total_seconds()) + 1))
         current.count += 1
+        return current.started_at
+
+    def _release(
+        self,
+        windows: dict[str, RateWindow],
+        key: str,
+        started_at: datetime,
+    ) -> None:
+        """Drop one count only if the window this request touched is still live."""
+        current = windows.get(key)
+        if current is None or current.started_at != started_at:
+            return
+        current.count -= 1
+        if current.count <= 0:
+            windows.pop(key, None)
 
     def _drop_expired(self, windows: dict[str, RateWindow], now: datetime) -> None:
         expired = [key for key, value in windows.items() if now - value.started_at >= self.window]
@@ -184,6 +263,22 @@ class InMemoryOtpChallengeStore:
             self._challenges[challenge_id] = challenge
             self._last_issued_at[provider_subject_hash] = now
             return challenge
+
+    async def release(self, challenge_id: UUID) -> None:
+        """Drop an issued-but-undelivered challenge and its own cooldown claim.
+
+        Delivery failures must not leave an orphaned challenge or hold the
+        destination cooldown hostage. The cooldown entry is only cleared when it
+        still belongs to this challenge (its issue timestamp), so releasing a
+        stale challenge never removes a newer claim for the same destination.
+        """
+        async with self._lock:
+            challenge = self._challenges.pop(challenge_id, None)
+            if challenge is None:
+                return
+            issued_at = self._last_issued_at.get(challenge.provider_subject_hash)
+            if issued_at == challenge.created_at:
+                self._last_issued_at.pop(challenge.provider_subject_hash, None)
 
     async def verify(self, challenge_id: UUID, code: str) -> OtpChallenge:
         now = datetime.now(UTC)

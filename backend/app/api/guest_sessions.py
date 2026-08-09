@@ -2,11 +2,13 @@ from fastapi import APIRouter, Cookie, Depends, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import database_session
+from app.api.rate_guard import check_rate_limiter
 from app.config import Settings
 from app.identity.cookies import GUEST_COOKIE, set_guest_cookies
 from app.identity.repository import IdentityRepository
 from app.identity.schemas import GuestSessionResponse
 from app.identity.service import GuestSessionService
+from app.network import resolve_client_ip
 
 router = APIRouter(prefix="/guest-sessions", tags=["Identity"])
 
@@ -23,6 +25,15 @@ async def create_guest_session(
     session: AsyncSession = Depends(database_session),
     existing_token: str | None = Cookie(default=None, alias=GUEST_COOKIE),
 ) -> GuestSessionResponse:
+    network_key = resolve_client_ip(
+        request,
+        trusted_proxy_networks=request.app.state.trusted_proxy_networks,
+    )
+    check_rate_limiter(
+        limiter=request.app.state.guest_session_create_rate_limiter,
+        key=network_key,
+        title="Too many guest sessions; please wait and retry",
+    )
     service = GuestSessionService(IdentityRepository(session))
     created = await service.create(existing_token)
     await session.commit()

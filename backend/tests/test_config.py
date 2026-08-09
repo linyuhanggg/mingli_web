@@ -96,3 +96,19 @@ def test_production_rejects_the_smtp_otp_adapter_until_durable_store() -> None:
             smtp_password="mailpass",
             smtp_sender="no-reply@example.com",
         )
+
+
+def test_otp_destination_window_limit_defaults_to_five_per_window() -> None:
+    Settings = settings_type()
+    settings = Settings()
+
+    assert settings.otp_destination_window_limit == 5
+    assert settings.otp_rate_window_seconds == 10 * 60
+
+
+def test_guest_session_creation_rate_limit_defaults() -> None:
+    Settings = settings_type()
+    settings = Settings()
+
+    assert settings.guest_session_create_rate_limit == 10
+    assert settings.guest_session_create_rate_window_seconds == 600

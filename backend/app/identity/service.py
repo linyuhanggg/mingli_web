@@ -4,10 +4,13 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
-from app.adapters.otp import OtpChannel, OtpDeliveryAdapter
+from app.adapters.otp import OtpChannel, OtpDeliveryAdapter, OtpDeliveryUnavailable
 from app.identity.models import AuditEvent, DeviceSession, GuestSession, LoginIdentity, User
 from app.identity.otp import (
     InMemoryOtpChallengeStore,
+    InMemoryOtpRequestLimiter,
+    OtpRateLimited,
+    OtpRequestReservation,
     hash_identity,
     normalize_destination,
 )
@@ -83,6 +86,7 @@ class AuthService:
         otp_code_factory: Callable[[], str],
         otp_cooldown_seconds: int,
         device_session_days: int,
+        request_limiter: InMemoryOtpRequestLimiter | None = None,
     ) -> None:
         self.repository = repository
         self.challenge_store = challenge_store
@@ -91,8 +95,16 @@ class AuthService:
         self.otp_code_factory = otp_code_factory
         self.otp_cooldown_seconds = otp_cooldown_seconds
         self.device_session_days = device_session_days
+        self.request_limiter = request_limiter
 
-    async def request_otp(self, channel: OtpChannel, destination: str) -> RequestedOtp:
+    async def request_otp(
+        self,
+        channel: OtpChannel,
+        destination: str,
+        *,
+        guest_key: str | None = None,
+        network_key: str | None = None,
+    ) -> RequestedOtp:
         address = normalize_destination(channel, destination)
         subject_hash = hash_identity(self.identity_hash_key, address)
         code = self.otp_code_factory()
@@ -101,11 +113,37 @@ class AuthService:
             provider_subject_hash=subject_hash,
             code=code,
         )
-        await self.delivery.deliver(
-            channel=address.channel,
-            destination=address.normalized,
-            code=code,
-        )
+        reservation: OtpRequestReservation | None = None
+        try:
+            if (
+                self.request_limiter is not None
+                and guest_key is not None
+                and network_key is not None
+            ):
+                reservation = await self.request_limiter.check(
+                    guest_key=guest_key,
+                    network_key=network_key,
+                    destination_hash=subject_hash,
+                )
+        except OtpRateLimited:
+            await self.challenge_store.release(challenge.id)
+            raise
+        try:
+            await self.delivery.deliver(
+                channel=address.channel,
+                destination=address.normalized,
+                code=code,
+            )
+        except OtpDeliveryUnavailable:
+            # A provider outage must not consume guest or destination slots or
+            # hold the destination cooldown hostage, so the retry succeeds
+            # immediately once delivery recovers. The network window is
+            # deliberately kept so an outage cannot be used to hammer retries
+            # past the per-IP limit.
+            if self.request_limiter is not None and reservation is not None:
+                await self.request_limiter.rollback_delivery_failure(reservation)
+            await self.challenge_store.release(challenge.id)
+            raise
         return RequestedOtp(
             challenge_id=challenge.id,
             expires_at=challenge.expires_at,

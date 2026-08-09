@@ -383,3 +383,157 @@ async def test_non_fake_app_emits_random_six_digit_codes(database: Any) -> None:
     assert factory is main.random_six_digit_otp_code
     assert len(code) == 6
     assert code.isdigit()
+
+
+class _FlakyOtpDelivery:
+    """Fails the first delivery attempt, then records later deliveries."""
+
+    def __init__(self) -> None:
+        self.fail_times = 1
+        self.deliveries: list[tuple[str, str, str]] = []
+
+    async def deliver(self, *, channel: str, destination: str, code: str) -> None:
+        if self.fail_times > 0:
+            self.fail_times -= 1
+            raise OtpDeliveryUnavailable("vendor unavailable")
+        self.deliveries.append((channel, destination, code))
+
+
+class _AlwaysFailingOtpDelivery:
+    async def deliver(self, *, channel: str, destination: str, code: str) -> None:
+        del channel, destination, code
+        raise OtpDeliveryUnavailable("vendor unavailable")
+
+
+async def test_failed_delivery_releases_challenge_and_cooldown_for_immediate_retry(
+    database: Any,
+) -> None:
+    config = __import__("app.config", fromlist=["Settings"])
+    main = __import__("app.main", fromlist=["create_app"])
+    settings = config.Settings(
+        environment="test",
+        database_url="sqlite+aiosqlite:///:memory:",
+        cookie_secure=True,
+        otp_adapter="fake",
+    )
+    application = main.create_app(settings=settings, database=database)
+    flaky = _FlakyOtpDelivery()
+    application.state.otp_delivery = flaky
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as limited_client:
+        headers = await create_guest(limited_client)
+        failed = await limited_client.post(
+            "/api/v1/auth/otp/request",
+            headers=headers,
+            json={"channel": "email", "destination": "retry@example.com"},
+        )
+        assert failed.status_code == 503
+        assert failed.json()["title"] == "OTP delivery unavailable"
+        # The failed attempt must not leave an orphaned challenge behind.
+        assert application.state.otp_challenge_store._challenges == {}
+
+        # The cooldown claim of the failed challenge is gone, so the retry
+        # succeeds immediately instead of waiting out the cooldown window.
+        retried = await limited_client.post(
+            "/api/v1/auth/otp/request",
+            headers=headers,
+            json={"channel": "email", "destination": "retry@example.com"},
+        )
+        assert retried.status_code == 202
+        verified = await verify_otp(limited_client, headers, retried.json()["challenge_id"])
+        assert verified.status_code == 200
+
+    assert flaky.deliveries == [("email", "retry@example.com", "246810")]
+
+
+async def test_otp_destination_window_limits_across_guests_without_storing_raw_destination(
+    database: Any,
+) -> None:
+    config = __import__("app.config", fromlist=["Settings"])
+    main = __import__("app.main", fromlist=["create_app"])
+    settings = config.Settings(
+        environment="test",
+        database_url="sqlite+aiosqlite:///:memory:",
+        cookie_secure=True,
+        otp_adapter="fake",
+        otp_cooldown_seconds=0,
+        otp_guest_window_limit=10,
+        otp_network_window_limit=10,
+        otp_destination_window_limit=2,
+    )
+    application = main.create_app(settings=settings, database=database)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as limited_client:
+        responses = []
+        for _ in range(3):
+            headers = await create_guest(limited_client)
+            responses.append(
+                await limited_client.post(
+                    "/api/v1/auth/otp/request",
+                    headers=headers,
+                    json={"channel": "phone", "destination": "13800138000"},
+                )
+            )
+
+    assert [response.status_code for response in responses] == [202, 202, 429]
+    assert responses[2].json()["title"] == "Please wait before requesting another code"
+    # The rolling window is keyed by a destination hash, never the raw address.
+    limiter_state = str(application.state.otp_request_limiter._destination_windows)
+    assert "13800138000" not in limiter_state
+
+
+async def test_delivery_failures_keep_network_limit_but_free_guest_and_destination_slots(
+    database: Any,
+) -> None:
+    config = __import__("app.config", fromlist=["Settings"])
+    main = __import__("app.main", fromlist=["create_app"])
+    settings = config.Settings(
+        environment="test",
+        database_url="sqlite+aiosqlite:///:memory:",
+        cookie_secure=True,
+        otp_adapter="fake",
+        otp_cooldown_seconds=0,
+        otp_guest_window_limit=3,
+        otp_network_window_limit=3,
+        otp_destination_window_limit=3,
+    )
+    application = main.create_app(settings=settings, database=database)
+    application.state.otp_delivery = _AlwaysFailingOtpDelivery()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as limited_client:
+        responses = []
+        for _ in range(5):
+            headers = await create_guest(limited_client)
+            responses.append(
+                await limited_client.post(
+                    "/api/v1/auth/otp/request",
+                    headers=headers,
+                    json={"channel": "phone", "destination": "13800138000"},
+                )
+            )
+
+    # The first three failures consume the network window (delivery never
+    # happened, so the provider-outage protection must stay); the fourth and
+    # fifth requests are rejected by the per-IP limit before delivery is tried.
+    assert [response.status_code for response in responses] == [503, 503, 503, 429, 429]
+    assert all(response.json()["title"] == "OTP delivery unavailable" for response in responses[:3])
+    assert all(
+        response.json()["title"] == "Please wait before requesting another code"
+        for response in responses[3:]
+    )
+    # Guest and destination windows are rolled back after each failure...
+    limiter = application.state.otp_request_limiter
+    assert limiter._guest_windows == {}
+    assert limiter._destination_windows == {}
+    # ...while the network window still holds the three failed attempts.
+    assert [window.count for window in limiter._network_windows.values()] == [3]
+    assert application.state.otp_challenge_store._challenges == {}
