@@ -6,7 +6,10 @@ import { useState } from "react";
 import { type FieldPath, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
+import { isIanaTimeZone } from "@/lib/iana-timezones";
+
 import styles from "./app-surface.module.css";
+import { IanaTimeZoneOptions } from "./iana-timezone-options";
 import { StatusPanel } from "./status-panel";
 
 
@@ -34,6 +37,13 @@ const profileSchema = z
         code: "custom",
         message: "请选择子时换日策略",
         path: ["zi_hour_policy"],
+      });
+    }
+    if (data.timezone && !isIanaTimeZone(data.timezone)) {
+      context.addIssue({
+        code: "custom",
+        message: "请选择列表中的有效 IANA 时区",
+        path: ["timezone"],
       });
     }
     if (data.calendar === "solar" && !data.solarBirthDate) {
@@ -346,13 +356,23 @@ export function ProfileForm() {
             {errors.birthPlace ? <p className={styles.fieldError} id={errorId("birthPlace")} role="alert">{errors.birthPlace.message}</p> : null}
           </div>
           <div className={styles.field}>
-            <label htmlFor="profile-timezone">时区 <span className={styles.required}>*</span></label>
-            <select className={styles.control} id="profile-timezone" autoComplete="off" {...register("timezone")}>
-              <option value="Asia/Shanghai">中国标准时间 · Asia/Shanghai</option>
-              <option value="Asia/Hong_Kong">香港时间 · Asia/Hong_Kong</option>
-              <option value="Asia/Taipei">台北时间 · Asia/Taipei</option>
-              <option value="Asia/Singapore">新加坡时间 · Asia/Singapore</option>
-            </select>
+            <label htmlFor="profile-timezone">IANA 时区 <span className={styles.required}>*</span></label>
+            <input
+              className={styles.control}
+              id="profile-timezone"
+              type="text"
+              inputMode="text"
+              autoComplete="off"
+              spellCheck="false"
+              list="profile-timezone-options"
+              placeholder="输入并选择，例如 Asia/Shanghai…"
+              aria-invalid={Boolean(errors.timezone)}
+              aria-describedby={errors.timezone ? errorId("timezone") : "profile-timezone-help"}
+              {...register("timezone")}
+            />
+            <IanaTimeZoneOptions id="profile-timezone-options" />
+            <p className={styles.help} id="profile-timezone-help">按出生城市主动确认；输入地区或城市可筛选完整 IANA 列表，界面不会读取设备时区。</p>
+            {errors.timezone ? <p className={styles.fieldError} id={errorId("timezone")} role="alert">{errors.timezone.message}</p> : null}
           </div>
           <label className={`${styles.checkbox} ${styles.span2}`}>
             <input type="checkbox" {...register("solarTime")} />

@@ -83,4 +83,27 @@ describe("ProfileForm", () => {
     expect(await screen.findByText("请选择子时换日策略")).toBeVisible();
     expect(screen.getByRole("heading", { name: "时间口径" })).toBeVisible();
   });
+
+  it("offers the complete searchable IANA list and rejects values outside it", async () => {
+    const user = userEvent.setup();
+    render(<ProfileForm />);
+
+    await user.click(screen.getByRole("button", { name: /继续确认/ }));
+    fireEvent.change(screen.getByLabelText(/公历出生日期/), { target: { value: "1990-06-18" } });
+    await user.click(screen.getByRole("checkbox", { name: /出生时辰不确定/ }));
+    await user.type(screen.getByRole("textbox", { name: /出生地/ }), "美国纽约市");
+    await user.click(screen.getByRole("radio", { name: /午夜换日/ }));
+
+    const timezone = screen.getByLabelText(/^IANA 时区/);
+    expect(timezone).toHaveAttribute("list", "profile-timezone-options");
+    expect(document.querySelectorAll("#profile-timezone-options option").length).toBeGreaterThan(300);
+    expect(document.querySelector('#profile-timezone-options option[value="America/New_York"]')).not.toBeNull();
+
+    await user.clear(timezone);
+    await user.type(timezone, "Foo/Bar");
+    await user.click(screen.getByRole("button", { name: /继续确认/ }));
+
+    expect(await screen.findByText("请选择列表中的有效 IANA 时区")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "时间口径" })).toBeVisible();
+  });
 });

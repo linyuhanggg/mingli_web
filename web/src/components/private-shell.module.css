@@ -90,6 +90,12 @@
   color: var(--ink-950);
 }
 
+.sideNav a[aria-current="page"] {
+  background: var(--ivory-50);
+  box-shadow: inset 3px 0 0 var(--gold-400);
+  color: var(--ink-950);
+}
+
 .asideNote {
   margin: auto 0 0;
   padding-top: 2rem;
@@ -124,6 +130,12 @@
   justify-content: center;
   gap: 0.15rem;
   font-size: 0.68rem;
+}
+
+.mobileNav a[aria-current="page"] {
+  background: rgb(169 133 63 / 12%);
+  box-shadow: inset 0 2px 0 var(--gold-400);
+  color: var(--ink-950);
 }
 
 .panel {

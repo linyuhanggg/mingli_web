@@ -1,3 +1,5 @@
+"use client";
+
 import {
   BookOpenText,
   CalendarDays,
@@ -6,6 +8,7 @@ import {
   UserRound,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { BrandMark } from "./brand-mark";
@@ -21,14 +24,26 @@ const navigation = [
   { href: "/account", label: "账户", icon: UserRound },
 ] as const;
 
+function isCurrentDestination(pathname: string, href: string) {
+  if (href === "/app") return pathname === href;
+  if (href === "/app/profiles") return pathname.startsWith("/app/profile");
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 function PrivateNavigation({ mobile = false }: { mobile?: boolean }) {
+  const pathname = usePathname() ?? "";
+
   return (
     <nav
       className={mobile ? styles.mobileNav : styles.sideNav}
       aria-label={mobile ? "移动应用导航" : "私人应用导航"}
     >
       {navigation.map(({ href, icon: Icon, label }) => (
-        <Link href={href} key={href}>
+        <Link
+          aria-current={isCurrentDestination(pathname, href) ? "page" : undefined}
+          href={href}
+          key={href}
+        >
           <Icon aria-hidden="true" size={19} strokeWidth={1.7} />
           <span>{label}</span>
         </Link>

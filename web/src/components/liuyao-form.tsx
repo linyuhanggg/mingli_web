@@ -6,7 +6,10 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
+import { isIanaTimeZone } from "@/lib/iana-timezones";
+
 import styles from "./app-surface.module.css";
+import { IanaTimeZoneOptions } from "./iana-timezone-options";
 import { StatusPanel } from "./status-panel";
 
 
@@ -23,10 +26,10 @@ const liuyaoSchema = z
     consent: z.boolean().refine(Boolean, "请确认问题与卦象将作为同一个目标保存"),
   })
   .superRefine((data, context) => {
-    if (data.confirmed_timezone && !/^[A-Za-z_]+(?:\/[A-Za-z0-9_+.-]+)+$/.test(data.confirmed_timezone)) {
+    if (data.confirmed_timezone && !isIanaTimeZone(data.confirmed_timezone)) {
       context.addIssue({
         code: "custom",
-        message: "请输入 IANA 时区，例如 Asia/Shanghai",
+        message: "请选择列表中的有效 IANA 时区",
         path: ["confirmed_timezone"],
       });
     }
@@ -166,12 +169,14 @@ export function LiuyaoForm() {
             inputMode="text"
             autoComplete="off"
             spellCheck="false"
-            placeholder="例如：Asia/Shanghai…"
+            list="liuyao-timezone-options"
+            placeholder="输入并选择，例如 Asia/Shanghai…"
             aria-invalid={Boolean(errors.confirmed_timezone)}
             aria-describedby={errors.confirmed_timezone ? "liuyao-timezone-error" : "liuyao-timezone-help"}
             {...register("confirmed_timezone")}
           />
-          <p className={styles.help} id="liuyao-timezone-help">不会读取或偷用浏览器时区；请按起卦地点主动确认 IANA 标识。</p>
+          <IanaTimeZoneOptions id="liuyao-timezone-options" />
+          <p className={styles.help} id="liuyao-timezone-help">按起卦城市主动确认；输入地区或城市可筛选完整 IANA 列表，界面不会读取设备时区。</p>
           {errors.confirmed_timezone ? <p className={styles.fieldError} id="liuyao-timezone-error" role="alert">{errors.confirmed_timezone.message}</p> : null}
         </div>
       </div>

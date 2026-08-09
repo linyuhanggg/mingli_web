@@ -1,10 +1,15 @@
 import { render, screen, within } from "@testing-library/react";
+import { vi } from "vitest";
 
 import AppPage from "@/app/app/page";
 import ProfilesPage from "@/app/app/profiles/page";
 import ReadingDetailPage from "@/app/app/readings/[id]/page";
 import ReadingsPage from "@/app/app/readings/page";
 import { PrivateShell } from "@/components/private-shell";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/app/readings/demo-reading",
+}));
 
 
 describe("private P0 surfaces", () => {
@@ -54,5 +59,8 @@ describe("private P0 surfaces", () => {
     expect(within(desktopNavigation).getByRole("link", { name: "解读", hidden: true })).toHaveAttribute("href", "/app/readings");
     expect(within(mobileNavigation).getAllByRole("link")).toHaveLength(5);
     expect(within(mobileNavigation).getByRole("link", { name: "解读" })).toHaveAttribute("href", "/app/readings");
+    expect(within(desktopNavigation).getByRole("link", { name: "解读", hidden: true })).toHaveAttribute("aria-current", "page");
+    expect(within(mobileNavigation).getByRole("link", { name: "解读" })).toHaveAttribute("aria-current", "page");
+    expect(within(mobileNavigation).getByRole("link", { name: "今日" })).not.toHaveAttribute("aria-current");
   });
 });
