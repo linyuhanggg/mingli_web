@@ -9,10 +9,12 @@ from typing import Any
 from uuid import uuid4
 
 import pytest
-from orchestrator_fakes import make_candidate
 from sqlalchemy import event, func, select, text
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+# isort: split
+from orchestrator_fakes import make_candidate
 from test_narrative_guard import build_brief
 from test_reading_repository import create_reading_graph
 

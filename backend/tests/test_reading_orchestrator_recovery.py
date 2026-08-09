@@ -2,6 +2,8 @@ import importlib
 from dataclasses import replace
 
 import pytest
+
+# isort: split
 from orchestrator_fakes import (
     FixedClock,
     MemoryRepository,
