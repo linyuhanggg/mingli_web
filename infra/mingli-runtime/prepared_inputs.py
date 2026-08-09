@@ -8,9 +8,12 @@ import json
 import os
 import re
 import subprocess
-from dataclasses import dataclass
-from pathlib import Path
+import tarfile
+from dataclasses import dataclass, replace
+from pathlib import Path, PurePosixPath
 from typing import Any, NoReturn
+
+import linux_identity
 
 EXPECTED_COMMIT = "494ce0bba174a77800daf9b9c38ce9c9166d9a94"
 EXPECTED_RELEASE_MANIFEST_SHA256 = (
@@ -21,6 +24,33 @@ INSTANCE_RE = re.compile(r"[a-z0-9][a-z0-9_.-]{0,127}")
 IMAGE_ID_RE = re.compile(r"sha256:[0-9a-f]{64}")
 COMMIT_RE = re.compile(r"[0-9a-f]{40}")
 GIT = Path("/usr/bin/git")
+EXPECTED_LIMA_VERSION = "2.2.0"
+PREPARATION_SCHEMA = "mingli-linux-preparation-v1"
+BUILD_CONTEXT_INPUT_NAMES = (
+    "Dockerfile",
+    "audit_runtime.py",
+    "dependency-provenance.json",
+    "emit_sbom.py",
+    "git-build-config.json",
+    "requirements-linux-x86_64.lock",
+    "verify_release.py",
+)
+CONTROLLER_INPUT_PATHS = (
+    "infra/mingli-runtime/Dockerfile",
+    "infra/mingli-runtime/audit_runtime.py",
+    "infra/mingli-runtime/build_context.py",
+    "infra/mingli-runtime/dependency-provenance.json",
+    "infra/mingli-runtime/emit_sbom.py",
+    "infra/mingli-runtime/git-build-config.json",
+    "infra/mingli-runtime/linux_identity.py",
+    "infra/mingli-runtime/local_gate.py",
+    "infra/mingli-runtime/prepare_linux_inputs.py",
+    "infra/mingli-runtime/prepared_inputs.py",
+    "infra/mingli-runtime/requirements-linux-x86_64.lock",
+    "infra/mingli-runtime/run_lima_gate.py",
+    "infra/mingli-runtime/verify_local_full.py",
+    "infra/mingli-runtime/verify_release.py",
+)
 
 
 class PreparedInputsError(RuntimeError):
@@ -186,6 +216,7 @@ class PreparedInputs:
 @dataclass(frozen=True)
 class LinuxRuntimeInputs:
     instance: str
+    lima_version: str
     effective_config: Path
     effective_config_sha256: str
     image_ref: str
@@ -200,6 +231,8 @@ class LinuxRuntimeInputs:
     oci_archive: Path
     oci_archive_sha256: str
     docker: dict[str, Any]
+    controller_commit: str | None = None
+    build_context_tree_sha256: str | None = None
 
 
 def load(path: Path, expected_sha256: str) -> PreparedInputs:
@@ -348,6 +381,9 @@ def require_linux(inputs: PreparedInputs) -> LinuxRuntimeInputs:
     instance = _string(linux.get("instance"), "linux_runtime.instance")
     if INSTANCE_RE.fullmatch(instance) is None:
         _fail("linux runtime instance is malformed")
+    lima_version = _string(linux.get("lima_version"), "Linux Lima version")
+    if lima_version != EXPECTED_LIMA_VERSION:
+        _fail("Linux Lima version drift")
     effective_config = _absolute_path(
         linux.get("effective_config"),
         "linux_runtime.effective_config",
@@ -452,6 +488,7 @@ def require_linux(inputs: PreparedInputs) -> LinuxRuntimeInputs:
         _fail("Linux Docker identity drift")
     return LinuxRuntimeInputs(
         instance=instance,
+        lima_version=lima_version,
         effective_config=effective_config,
         effective_config_sha256=effective_config_sha256,
         image_ref=image_ref,
@@ -466,4 +503,288 @@ def require_linux(inputs: PreparedInputs) -> LinuxRuntimeInputs:
         oci_archive=oci_archive,
         oci_archive_sha256=oci_archive_sha256,
         docker=docker,
+    )
+
+
+def _bound_file_digests(inputs: PreparedInputs) -> dict[Path, str]:
+    bindings = inputs.payload.get("bindings")
+    if not isinstance(bindings, list):
+        _fail("prepared inputs bindings are absent")
+    result: dict[Path, str] = {}
+    for index, raw_binding in enumerate(bindings):
+        binding = _mapping(raw_binding, f"bindings[{index}]")
+        path = _absolute_path(
+            binding.get("path"), f"bindings[{index}].path", directory=False
+        ).resolve(strict=True)
+        digest = _sha256(binding.get("sha256"), f"bindings[{index}].sha256")
+        result[path] = digest
+    return result
+
+
+def _safe_tar_name(raw: str) -> str:
+    if not raw or "\\" in raw:
+        _fail("build-context archive path is unsafe")
+    path = PurePosixPath(raw)
+    if path.is_absolute() or any(part in {"", ".", ".."} for part in path.parts):
+        _fail("build-context archive path is unsafe")
+    return path.as_posix()
+
+
+def _inspect_build_context_archive(path: Path) -> tuple[str, dict[str, str]]:
+    try:
+        archive = tarfile.open(path, "r:")  # noqa: SIM115 - normalize open errors
+    except (OSError, tarfile.TarError) as exc:
+        raise PreparedInputsError("build-context archive cannot be opened") from exc
+    digest = hashlib.sha256()
+    file_sha256: dict[str, str] = {}
+    with archive:
+        members = archive.getmembers()
+        names = [_safe_tar_name(member.name) for member in members]
+        if names != sorted(names) or len(names) != len(set(names)):
+            _fail("build-context archive inventory is not canonical")
+        for member, relative in zip(members, names, strict=True):
+            if (
+                member.uid != 0
+                or member.gid != 0
+                or member.uname
+                or member.gname
+                or member.mtime != 0
+            ):
+                _fail("build-context archive metadata is not canonical")
+            if member.isdir():
+                continue
+            if not member.isfile() or member.size > 64 * 1024 * 1024:
+                _fail("build-context archive contains an unsafe entry")
+            stream = archive.extractfile(member)
+            if stream is None:
+                _fail("build-context archive file cannot be read")
+            content_digest = hashlib.sha256()
+            while chunk := stream.read(1024 * 1024):
+                content_digest.update(chunk)
+            content_sha256 = content_digest.hexdigest()
+            file_sha256[relative] = content_sha256
+            digest.update(
+                b"F\0"
+                + relative.encode("utf-8")
+                + b"\0"
+                + f"{member.mode & 0o777:o}".encode("ascii")
+                + b"\0"
+                + content_sha256.encode("ascii")
+                + b"\0"
+            )
+    return digest.hexdigest(), file_sha256
+
+
+def _read_preparation_record(path: Path) -> dict[str, Any]:
+    if path.stat().st_size > 1024 * 1024:
+        _fail("Linux preparation record exceeds its byte limit")
+    try:
+        return _mapping(json.loads(path.read_bytes()), "Linux preparation record")
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise PreparedInputsError("Linux preparation record is invalid JSON") from exc
+
+
+def _verify_controller_git(
+    root: Path,
+    *,
+    expected_commit: str,
+    expected_inputs: dict[str, str],
+) -> None:
+    if COMMIT_RE.fullmatch(expected_commit) is None:
+        _fail("controller commit is malformed")
+    try:
+        head = (
+            _git(root, "rev-parse", "--verify", "HEAD^{commit}").decode("ascii").strip()
+        )
+    except UnicodeDecodeError as exc:
+        raise PreparedInputsError("controller Git HEAD is not ASCII") from exc
+    if head != expected_commit:
+        _fail("controller Git HEAD mismatch")
+    if _git(root, "status", "--porcelain=v1", "--untracked-files=no"):
+        _fail("controller Git tracked worktree is not clean")
+    tracked = set(
+        _git(root, "ls-files", "--", *CONTROLLER_INPUT_PATHS)
+        .decode("utf-8")
+        .splitlines()
+    )
+    if tracked != set(CONTROLLER_INPUT_PATHS):
+        _fail("controller input is not fully tracked")
+    if set(expected_inputs) != set(CONTROLLER_INPUT_PATHS):
+        _fail("controller input inventory is not exact")
+    for relative, expected_sha256 in expected_inputs.items():
+        path = root / relative
+        if path.is_symlink() or not path.is_file():
+            _fail(f"controller input is missing or unsafe: {relative}")
+        if sha256_file(path) != _sha256(expected_sha256, relative):
+            _fail(f"controller input SHA-256 mismatch: {relative}")
+
+
+def require_certifiable_linux(inputs: PreparedInputs) -> LinuxRuntimeInputs:
+    """Require the persisted post-commit build provenance used by a full Gate."""
+
+    linux = require_linux(inputs)
+    linux_payload = _mapping(inputs.payload.get("linux_runtime"), "linux_runtime")
+    preparation = _mapping(
+        linux_payload.get("preparation"), "Linux preparation provenance"
+    )
+    if set(preparation) != {
+        "record",
+        "record_sha256",
+        "controller_commit",
+        "build_context_archive",
+        "build_context_archive_sha256",
+        "build_context_tree_sha256",
+    }:
+        _fail("Linux preparation provenance fields are not exact")
+    record_path = _absolute_path(
+        preparation.get("record"), "Linux preparation record", directory=False
+    )
+    record_sha256 = _sha256(
+        preparation.get("record_sha256"), "Linux preparation record SHA-256"
+    )
+    if sha256_file(record_path) != record_sha256:
+        _fail("Linux preparation record SHA-256 mismatch")
+    context_archive = _absolute_path(
+        preparation.get("build_context_archive"),
+        "build-context archive",
+        directory=False,
+    )
+    context_archive_sha256 = _sha256(
+        preparation.get("build_context_archive_sha256"),
+        "build-context archive SHA-256",
+    )
+    if sha256_file(context_archive) != context_archive_sha256:
+        _fail("build-context archive SHA-256 mismatch")
+    context_tree_sha256 = _sha256(
+        preparation.get("build_context_tree_sha256"),
+        "build-context tree SHA-256",
+    )
+    actual_tree_sha256, context_files = _inspect_build_context_archive(context_archive)
+    if actual_tree_sha256 != context_tree_sha256:
+        _fail("build-context tree SHA-256 mismatch")
+    try:
+        linux_identity.verify_oci_archive(
+            linux.oci_archive,
+            expected_archive_sha256=linux.oci_archive_sha256,
+            image_ref=linux.image_ref,
+            expected=_mapping(linux_payload.get("oci"), "linux runtime OCI"),
+            expected_build_context_sha256=context_archive_sha256,
+        )
+    except linux_identity.IdentityError as exc:
+        raise PreparedInputsError(
+            f"Linux OCI preparation provenance is invalid: {exc}"
+        ) from exc
+
+    bound = _bound_file_digests(inputs)
+    for required in (record_path, context_archive):
+        resolved = required.resolve(strict=True)
+        if resolved not in bound or bound[resolved] != sha256_file(required):
+            _fail("Linux preparation artifact is not bound by PreparedInputs")
+
+    record = _read_preparation_record(record_path)
+    if (
+        set(record)
+        != {
+            "schema",
+            "controller",
+            "build_context",
+            "runtime",
+            "image",
+            "commands",
+        }
+        or record.get("schema") != PREPARATION_SCHEMA
+    ):
+        _fail("Linux preparation record schema mismatch")
+    controller = _mapping(record.get("controller"), "preparation controller")
+    if set(controller) != {"repository_root", "commit", "input_sha256"}:
+        _fail("preparation controller fields are not exact")
+    controller_root = _absolute_path(
+        controller.get("repository_root"),
+        "preparation controller root",
+        directory=True,
+    )
+    controller_commit = _string(controller.get("commit"), "controller commit")
+    if controller_commit != preparation.get("controller_commit"):
+        _fail("preparation controller commit cross-binding mismatch")
+    controller_inputs = _mapping(
+        controller.get("input_sha256"), "preparation controller inputs"
+    )
+    _verify_controller_git(
+        controller_root,
+        expected_commit=controller_commit,
+        expected_inputs=controller_inputs,
+    )
+    for relative, expected_sha256 in controller_inputs.items():
+        resolved = (controller_root / relative).resolve(strict=True)
+        if resolved not in bound or bound[resolved] != expected_sha256:
+            _fail("controller input is not bound by PreparedInputs")
+
+    context = _mapping(record.get("build_context"), "preparation build context")
+    if set(context) != {
+        "archive",
+        "archive_sha256",
+        "tree_sha256",
+        "infra_sha256",
+    }:
+        _fail("preparation build-context fields are not exact")
+    if context != {
+        "archive": str(context_archive),
+        "archive_sha256": context_archive_sha256,
+        "tree_sha256": context_tree_sha256,
+        "infra_sha256": context.get("infra_sha256"),
+    }:
+        _fail("preparation build-context cross-binding mismatch")
+    infra_sha256 = _mapping(
+        context.get("infra_sha256"), "preparation build-context infra"
+    )
+    if set(infra_sha256) != set(BUILD_CONTEXT_INPUT_NAMES):
+        _fail("preparation build-context infra inventory is not exact")
+    for name, expected_sha256 in infra_sha256.items():
+        expected = _sha256(expected_sha256, f"build-context {name}")
+        if context_files.get(name) != expected:
+            _fail(f"build-context input SHA-256 mismatch: {name}")
+        controller_relative = f"infra/mingli-runtime/{name}"
+        if controller_inputs.get(controller_relative) != expected:
+            _fail(f"build-context controller binding mismatch: {name}")
+
+    expected_runtime = {
+        "instance": linux.instance,
+        "lima_version": linux.lima_version,
+        "effective_config_sha256": linux.effective_config_sha256,
+        "docker": linux.docker,
+    }
+    if record.get("runtime") != expected_runtime:
+        _fail("preparation runtime identity mismatch")
+    expected_image = {
+        "image_ref": linux.image_ref,
+        "image_repository": linux.image_repository,
+        "immutable_image_ref": linux.immutable_image_ref,
+        "oci_archive": str(linux.oci_archive),
+        "oci_archive_sha256": linux.oci_archive_sha256,
+        "oci": linux_payload.get("oci"),
+    }
+    if record.get("image") != expected_image:
+        _fail("preparation image identity mismatch")
+    expected_commands = {
+        "lima_version": ["limactl", "--version"],
+        "build": [
+            "docker",
+            "build",
+            "--platform",
+            "linux/amd64",
+            "--progress=plain",
+            "--target",
+            "final",
+            "--tag",
+            linux.image_ref,
+            "-",
+        ],
+        "export": ["docker", "image", "save", linux.image_ref],
+    }
+    if record.get("commands") != expected_commands:
+        _fail("preparation command contract mismatch")
+    return replace(
+        linux,
+        controller_commit=controller_commit,
+        build_context_tree_sha256=context_tree_sha256,
     )

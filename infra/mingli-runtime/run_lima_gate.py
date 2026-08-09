@@ -1492,7 +1492,7 @@ def _resolve_gate_inputs(
             _fail("prepared mode cannot accept mutable release source arguments")
         try:
             inputs = prepared_inputs.load(manifest.absolute(), manifest_sha256)
-            linux = prepared_inputs.require_linux(inputs)
+            linux = prepared_inputs.require_certifiable_linux(inputs)
         except prepared_inputs.PreparedInputsError as exc:
             raise GateError(f"prepared inputs are invalid: {exc}") from exc
         if instance is not None and instance != linux.instance:
@@ -1855,7 +1855,9 @@ def run_gate(args: argparse.Namespace) -> Path:
                         bound_inputs.manifest_path,
                         bound_inputs.manifest_sha256,
                     )
-                    ending_linux = prepared_inputs.require_linux(ending_inputs)
+                    ending_linux = prepared_inputs.require_certifiable_linux(
+                        ending_inputs
+                    )
                 except prepared_inputs.PreparedInputsError as exc:
                     raise GateError(
                         f"prepared inputs changed during Linux Gate: {exc}"

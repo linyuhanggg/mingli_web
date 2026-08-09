@@ -1357,7 +1357,11 @@ def test_run_gate_prepared_mode_skips_build_and_derives_all_bound_inputs(
     events: list[object] = []
 
     monkeypatch.setattr(gate.prepared_inputs, "load", lambda path, digest: prepared)
-    monkeypatch.setattr(gate.prepared_inputs, "require_linux", lambda value: linux)
+    monkeypatch.setattr(
+        gate.prepared_inputs,
+        "require_certifiable_linux",
+        lambda value: linux,
+    )
     monkeypatch.setattr(
         gate,
         "_prepare_clean_source",

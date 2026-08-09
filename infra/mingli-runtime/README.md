@@ -91,6 +91,33 @@ limactl template copy --fill infra/mingli-runtime/lima-vz-rosetta.yaml \
   /tmp/mingli-linux-gate-vz-effective.yaml
 ```
 
+Formal preparation also requires the host command `limactl --version` to emit
+exactly `limactl version 2.2.0`; `minimumLimaVersion` in the YAML is not runtime
+identity evidence. Build and export the immutable OCI artifact outside the timed
+profile with the committed producer:
+
+```bash
+python infra/mingli-runtime/prepare_linux_inputs.py \
+  --base-prepared-inputs /absolute/path/native-prepared-inputs.json \
+  --base-prepared-inputs-sha256 <sha256> \
+  --controller-root /absolute/path/mingli_web \
+  --release-source /read-only/path/to/mingli-master \
+  --effective-config /tmp/mingli-linux-gate-vz-effective.yaml \
+  --effective-config-sha256 <sha256> \
+  --instance mingli-linux-gate-vz \
+  --output-directory /absolute/new/path/linux-prepared
+```
+
+The producer records the exact Lima 2.2.0 and Docker identities, controller
+commit, persisted build-context bytes, unfiltered OCI archive, and fixed build
+and export argv. It revalidates the base manifest, controller inputs, and
+effective config after the build. The output directory initially contains only
+a hidden pending manifest; independent certifiable loading happens there, and
+`prepared-inputs.json` appears only as the final same-directory atomic rename.
+Every failure before that admission point removes the entire output directory.
+The identity tracer samples `limactl --version` both before and after all VM,
+image, container, config, and OCI checks and rejects either endpoint drifting.
+
 The tracer requires the full OCI index whose digest is the final artifact ID,
 including its amd64 manifest and attestation manifest. The identity contract
 keeps four distinct digests: the top-level index, the `linux/amd64` child

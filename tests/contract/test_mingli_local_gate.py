@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import copy
 import gzip
 import hashlib
@@ -17,7 +18,7 @@ import tarfile
 import time
 from collections.abc import Callable
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from typing import Any
 
 import pytest
@@ -30,6 +31,7 @@ EXPECTED_RELEASE_MANIFEST_SHA256 = (
     "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
 )
 VZ_PROFILE_PATH = RUNTIME_DIR / "lima-vz-rosetta.yaml"
+PREPARE_LINUX_INPUTS_PATH = RUNTIME_DIR / "prepare_linux_inputs.py"
 EXPECTED_LINUX_IMAGE_ID = (
     "sha256:608401536f5c0a84efbbaf17e9e6e5c76ef3e2991562ae38a01b79a0232df0fd"
 )
@@ -95,6 +97,29 @@ def load_linux_identity() -> ModuleType:
         importlib.invalidate_caches()
         sys.modules.pop("linux_identity", None)
         return importlib.import_module("linux_identity")
+    finally:
+        sys.path.remove(str(RUNTIME_DIR))
+
+
+def load_linux_preparer() -> ModuleType:
+    assert PREPARE_LINUX_INPUTS_PATH.is_file(), (
+        "Linux PreparedInputs producer is absent; formal certification stays RED"
+    )
+    sys.path.insert(0, str(RUNTIME_DIR))
+    try:
+        importlib.invalidate_caches()
+        sys.modules.pop("prepare_linux_inputs", None)
+        return importlib.import_module("prepare_linux_inputs")
+    finally:
+        sys.path.remove(str(RUNTIME_DIR))
+
+
+def load_lima_controller() -> ModuleType:
+    sys.path.insert(0, str(RUNTIME_DIR))
+    try:
+        importlib.invalidate_caches()
+        sys.modules.pop("run_lima_gate", None)
+        return importlib.import_module("run_lima_gate")
     finally:
         sys.path.remove(str(RUNTIME_DIR))
 
@@ -243,7 +268,12 @@ def digest_ref(raw: bytes) -> str:
     return f"sha256:{sha256_bytes(raw)}"
 
 
-def write_oci_archive(path: Path, image_ref: str) -> dict[str, Any]:
+def write_oci_archive(
+    path: Path,
+    image_ref: str,
+    *,
+    build_context_sha256: str = "f" * 64,
+) -> dict[str, Any]:
     layer_uncompressed = b"fixture-linux-amd64-layer"
     layer = gzip.compress(layer_uncompressed, mtime=0)
     layer_digest = digest_ref(layer)
@@ -283,7 +313,40 @@ def write_oci_archive(path: Path, image_ref: str) -> dict[str, Any]:
     )
     platform_digest = digest_ref(platform_raw)
     empty_raw = b"{}"
-    statement_raw = canonical_json_bytes({"fixture": "provenance"})
+    context_uri = "http://buildkit-session/fixture"
+    statement_raw = canonical_json_bytes(
+        {
+            "_type": "https://in-toto.io/Statement/v1",
+            "predicateType": "https://slsa.dev/provenance/v1",
+            "subject": [
+                {
+                    "name": f"pkg:docker/{image_ref}?platform=linux%2Famd64",
+                    "digest": {"sha256": platform_digest.removeprefix("sha256:")},
+                }
+            ],
+            "predicate": {
+                "buildDefinition": {
+                    "resolvedDependencies": [
+                        {
+                            "uri": context_uri,
+                            "digest": {"sha256": build_context_sha256},
+                        }
+                    ],
+                    "externalParameters": {
+                        "configSource": {
+                            "uri": context_uri,
+                            "digest": {"sha256": build_context_sha256},
+                            "path": "Dockerfile",
+                        },
+                        "request": {
+                            "frontend": "gateway.v0",
+                            "args": {"target": "final"},
+                        },
+                    },
+                }
+            },
+        }
+    )
     statement_digest = digest_ref(statement_raw)
     attestation_raw = canonical_json_bytes(
         {
@@ -300,6 +363,9 @@ def write_oci_archive(path: Path, image_ref: str) -> dict[str, Any]:
                     "mediaType": "application/vnd.in-toto+json",
                     "digest": statement_digest,
                     "size": len(statement_raw),
+                    "annotations": {
+                        "in-toto.io/predicate-type": ("https://slsa.dev/provenance/v1")
+                    },
                 }
             ],
             "subject": {
@@ -408,6 +474,7 @@ def write_linux_prepared_inputs(tmp_path: Path) -> tuple[Path, str, dict[str, An
     oci = write_oci_archive(oci_archive, image_ref)
     payload["linux_runtime"] = {
         "instance": "mingli-linux-gate-vz",
+        "lima_version": "2.2.0",
         "effective_config": str(effective_config),
         "effective_config_sha256": sha256_file(effective_config),
         "image_ref": image_ref,
@@ -443,6 +510,199 @@ def write_linux_prepared_inputs(tmp_path: Path) -> tuple[Path, str, dict[str, An
     return path, sha256_bytes(raw), payload
 
 
+def write_controller_repository(
+    tmp_path: Path, preparer: ModuleType
+) -> tuple[Path, str]:
+    controller_root = tmp_path / "controller"
+    for relative in preparer.CONTROLLER_INPUT_PATHS:
+        target = controller_root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(f"fixture controller input: {relative}\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(controller_root), "init", "-q"], check=True)
+    subprocess.run(["git", "-C", str(controller_root), "add", "--all"], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(controller_root),
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "-qm",
+            "controller fixture",
+        ],
+        check=True,
+        env={
+            **os.environ,
+            "GIT_AUTHOR_DATE": "2000-01-01T00:00:00Z",
+            "GIT_COMMITTER_DATE": "2000-01-01T00:00:00Z",
+        },
+    )
+    controller_commit = subprocess.check_output(
+        ["git", "-C", str(controller_root), "rev-parse", "HEAD"], text=True
+    ).strip()
+    return controller_root, controller_commit
+
+
+def write_formal_linux_prepared_inputs(
+    tmp_path: Path,
+    gate_module: ModuleType,
+) -> tuple[Path, str, dict[str, Any]]:
+    preparer = load_linux_preparer()
+    path, _, payload = write_linux_prepared_inputs(tmp_path)
+    controller_root, controller_commit = write_controller_repository(tmp_path, preparer)
+    context_root = tmp_path / "build-context"
+    context_root.mkdir()
+    release_fixture = context_root / "release" / "fixture.txt"
+    release_fixture.parent.mkdir()
+    release_fixture.write_text("signed projection fixture\n", encoding="utf-8")
+    for name in preparer.BUILD_CONTEXT_INPUT_NAMES:
+        source = controller_root / "infra" / "mingli-runtime" / name
+        shutil.copy2(source, context_root / name)
+    provenance = context_root / "context-provenance.json"
+    provenance.write_text('{"schema":"fixture"}\n', encoding="utf-8")
+    context_tree_sha256 = tree_sha256(context_root)
+    context_archive = tmp_path / preparer.BUILD_CONTEXT_ARCHIVE_NAME
+    with tarfile.open(context_archive, "w", format=tarfile.PAX_FORMAT) as archive:
+        for candidate in sorted(
+            context_root.rglob("*"),
+            key=lambda item: item.relative_to(context_root).as_posix(),
+        ):
+            relative = candidate.relative_to(context_root).as_posix()
+            info = archive.gettarinfo(str(candidate), arcname=relative)
+            info.uid = 0
+            info.gid = 0
+            info.uname = ""
+            info.gname = ""
+            info.mtime = 0
+            if candidate.is_dir():
+                archive.addfile(info)
+            else:
+                with candidate.open("rb") as stream:
+                    archive.addfile(info, stream)
+    linux = payload["linux_runtime"]
+    oci_archive = Path(linux["oci_archive"])
+    oci = write_oci_archive(
+        oci_archive,
+        linux["image_ref"],
+        build_context_sha256=sha256_file(context_archive),
+    )
+    linux["oci"] = {key: value for key, value in oci.items() if key != "runtime_config"}
+    linux["oci_archive_sha256"] = sha256_file(oci_archive)
+    linux["immutable_image_ref"] = f"{linux['image_repository']}@{oci['index_digest']}"
+    for binding in payload["bindings"]:
+        if binding["path"] == str(oci_archive):
+            binding["sha256"] = sha256_file(oci_archive)
+    preparation_record = tmp_path / preparer.PREPARATION_RECORD_NAME
+    controller_sha256 = {
+        relative: sha256_file(controller_root / relative)
+        for relative in preparer.CONTROLLER_INPUT_PATHS
+    }
+    infra_sha256 = {
+        name: sha256_file(context_root / name)
+        for name in preparer.BUILD_CONTEXT_INPUT_NAMES
+    }
+    record = {
+        "schema": preparer.PREPARATION_SCHEMA,
+        "controller": {
+            "repository_root": str(controller_root),
+            "commit": controller_commit,
+            "input_sha256": controller_sha256,
+        },
+        "build_context": {
+            "archive": str(context_archive),
+            "archive_sha256": sha256_file(context_archive),
+            "tree_sha256": context_tree_sha256,
+            "infra_sha256": infra_sha256,
+        },
+        "runtime": {
+            "instance": linux["instance"],
+            "lima_version": linux["lima_version"],
+            "effective_config_sha256": linux["effective_config_sha256"],
+            "docker": linux["docker"],
+        },
+        "image": {
+            "image_ref": linux["image_ref"],
+            "image_repository": linux["image_repository"],
+            "immutable_image_ref": linux["immutable_image_ref"],
+            "oci_archive": linux["oci_archive"],
+            "oci_archive_sha256": linux["oci_archive_sha256"],
+            "oci": linux["oci"],
+        },
+        "commands": {
+            "lima_version": ["limactl", "--version"],
+            "build": [
+                "docker",
+                "build",
+                "--platform",
+                "linux/amd64",
+                "--progress=plain",
+                "--target",
+                "final",
+                "--tag",
+                linux["image_ref"],
+                "-",
+            ],
+            "export": ["docker", "image", "save", linux["image_ref"]],
+        },
+    }
+    preparation_record.write_bytes(canonical_json_bytes(record) + b"\n")
+    linux["preparation"] = {
+        "record": str(preparation_record),
+        "record_sha256": sha256_file(preparation_record),
+        "controller_commit": controller_commit,
+        "build_context_archive": str(context_archive),
+        "build_context_archive_sha256": sha256_file(context_archive),
+        "build_context_tree_sha256": context_tree_sha256,
+    }
+    payload["bindings"].extend(
+        [
+            {
+                "path": str(preparation_record),
+                "kind": "file",
+                "sha256": sha256_file(preparation_record),
+            },
+            {
+                "path": str(context_archive),
+                "kind": "file",
+                "sha256": sha256_file(context_archive),
+            },
+            *[
+                {
+                    "path": str(controller_root / relative),
+                    "kind": "file",
+                    "sha256": controller_sha256[relative],
+                }
+                for relative in preparer.CONTROLLER_INPUT_PATHS
+            ],
+        ]
+    )
+    raw = (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    path.write_bytes(raw)
+    loaded = gate_module.prepared_inputs.load(path, sha256_bytes(raw))
+    gate_module.prepared_inputs.require_certifiable_linux(loaded)
+    return path, sha256_bytes(raw), payload
+
+
+def reseal_linux_preparation(
+    manifest_path: Path,
+    payload: dict[str, Any],
+    record: dict[str, Any],
+) -> str:
+    preparation = payload["linux_runtime"]["preparation"]
+    record_path = Path(preparation["record"])
+    record_path.write_bytes(canonical_json_bytes(record) + b"\n")
+    preparation["record_sha256"] = sha256_file(record_path)
+    for binding in payload["bindings"]:
+        if binding["path"] == str(record_path):
+            binding["sha256"] = sha256_file(record_path)
+    raw = (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    manifest_path.write_bytes(raw)
+    return sha256_bytes(raw)
+
+
 def docker_image_payload(payload: dict[str, Any]) -> dict[str, Any]:
     linux = payload["linux_runtime"]
     oci = linux["oci"]
@@ -472,6 +732,7 @@ def complete_linux_identity(payload: dict[str, Any]) -> dict[str, Any]:
     oci = linux["oci"]
     return {
         "schema": "mingli-vz-amd64-identity-v1",
+        "lima_version": payload["linux_runtime"]["lima_version"],
         "instance": {
             "vm_type": "vz",
             "guest_arch": "aarch64",
@@ -947,10 +1208,8 @@ def test_subprocess_execution_reaps_group_when_selector_setup_fails(
         if parent_pid is None and parent_pid_path.is_file():
             parent_pid = int(parent_pid_path.read_text(encoding="utf-8"))
         if parent_pid is not None:
-            try:
+            with contextlib.suppress(ProcessLookupError):
                 os.kill(parent_pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
 
 
 def test_native_full_wraps_execution_failure_and_removes_staging(
@@ -1619,6 +1878,605 @@ def test_vz_profile_fills_to_pinned_mountless_rosetta_contract() -> None:
         assert version in provision
 
 
+def test_formal_linux_preparation_requires_persisted_build_provenance() -> None:
+    preparer = load_linux_preparer()
+
+    assert preparer.PREPARATION_SCHEMA == "mingli-linux-preparation-v1"
+    assert set(preparer.CONTROLLER_INPUT_PATHS) >= {
+        "infra/mingli-runtime/Dockerfile",
+        "infra/mingli-runtime/audit_runtime.py",
+        "infra/mingli-runtime/local_gate.py",
+        "infra/mingli-runtime/verify_release.py",
+        "infra/mingli-runtime/verify_local_full.py",
+        "infra/mingli-runtime/run_lima_gate.py",
+        "infra/mingli-runtime/prepare_linux_inputs.py",
+    }
+    assert preparer.BUILD_CONTEXT_ARCHIVE_NAME == "build-context.tar"
+    assert preparer.PREPARATION_RECORD_NAME == "linux-preparation.json"
+
+
+def test_identity_only_linux_inputs_cannot_enter_formal_release_gate(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    manifest_path, manifest_sha256, _ = write_linux_prepared_inputs(tmp_path)
+    loaded = gate_module.prepared_inputs.load(manifest_path, manifest_sha256)
+
+    with pytest.raises(
+        gate_module.prepared_inputs.PreparedInputsError,
+        match="preparation provenance",
+    ):
+        gate_module.prepared_inputs.require_certifiable_linux(loaded)
+
+
+def test_linux_runtime_inputs_require_actual_lima_version(tmp_path: Path) -> None:
+    gate_module = load_local_gate()
+    manifest_path, _, payload = write_linux_prepared_inputs(tmp_path)
+    payload["linux_runtime"].pop("lima_version")
+    raw = (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    manifest_path.write_bytes(raw)
+    manifest_sha256 = sha256_bytes(raw)
+    loaded = gate_module.prepared_inputs.load(manifest_path, manifest_sha256)
+
+    with pytest.raises(
+        gate_module.prepared_inputs.PreparedInputsError,
+        match="Lima version",
+    ):
+        gate_module.prepared_inputs.require_linux(loaded)
+
+
+def test_run_lima_gate_rejects_identity_only_prepared_inputs(
+    tmp_path: Path,
+) -> None:
+    controller = load_lima_controller()
+    manifest_path, manifest_sha256, _ = write_linux_prepared_inputs(tmp_path)
+    args = SimpleNamespace(
+        prepared_inputs=manifest_path,
+        prepared_inputs_sha256=manifest_sha256,
+        release_source=None,
+        research_repository=None,
+        instance=None,
+    )
+
+    with pytest.raises(controller.GateError, match="preparation provenance"):
+        controller._resolve_gate_inputs(args)
+
+
+def test_formal_linux_inputs_recompute_controller_and_build_context(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    manifest_path, manifest_sha256, payload = write_formal_linux_prepared_inputs(
+        tmp_path, gate_module
+    )
+
+    loaded = gate_module.prepared_inputs.load(manifest_path, manifest_sha256)
+    linux = gate_module.prepared_inputs.require_certifiable_linux(loaded)
+
+    assert linux.index_digest == payload["linux_runtime"]["oci"]["index_digest"]
+    assert (
+        linux.controller_commit
+        == payload["linux_runtime"]["preparation"]["controller_commit"]
+    )
+    assert (
+        linux.build_context_tree_sha256
+        == payload["linux_runtime"]["preparation"]["build_context_tree_sha256"]
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "error"),
+    [
+        ("controller_commit", "controller Git HEAD mismatch"),
+        ("context_tree", "build-context tree SHA-256 mismatch"),
+        ("image_index", "OCI outer index digest mismatch"),
+    ],
+)
+def test_formal_linux_inputs_reject_consistently_resealed_false_provenance(
+    tmp_path: Path,
+    mutation: str,
+    error: str,
+) -> None:
+    gate_module = load_local_gate()
+    manifest_path, _, payload = write_formal_linux_prepared_inputs(
+        tmp_path, gate_module
+    )
+    preparation = payload["linux_runtime"]["preparation"]
+    record_path = Path(preparation["record"])
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    if mutation == "controller_commit":
+        record["controller"]["commit"] = "0" * 40
+        preparation["controller_commit"] = "0" * 40
+    elif mutation == "context_tree":
+        record["build_context"]["tree_sha256"] = "0" * 64
+        preparation["build_context_tree_sha256"] = "0" * 64
+    elif mutation == "image_index":
+        false_index = "sha256:" + "0" * 64
+        payload["linux_runtime"]["oci"]["index_digest"] = false_index
+        payload["linux_runtime"]["immutable_image_ref"] = (
+            f"{payload['linux_runtime']['image_repository']}@{false_index}"
+        )
+        record["image"]["oci"]["index_digest"] = false_index
+        record["image"]["immutable_image_ref"] = payload["linux_runtime"][
+            "immutable_image_ref"
+        ]
+    else:  # pragma: no cover - exhaustive parametrization guard
+        raise AssertionError(mutation)
+    manifest_sha256 = reseal_linux_preparation(manifest_path, payload, record)
+    loaded = gate_module.prepared_inputs.load(manifest_path, manifest_sha256)
+
+    with pytest.raises(gate_module.prepared_inputs.PreparedInputsError, match=error):
+        gate_module.prepared_inputs.require_certifiable_linux(loaded)
+
+
+def test_formal_linux_inputs_reject_resealed_dirty_controller_file(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    manifest_path, _, payload = write_formal_linux_prepared_inputs(
+        tmp_path, gate_module
+    )
+    preparation = payload["linux_runtime"]["preparation"]
+    record_path = Path(preparation["record"])
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    controller_root = Path(record["controller"]["repository_root"])
+    relative = "infra/mingli-runtime/local_gate.py"
+    controller_file = controller_root / relative
+    controller_file.write_text("synchronized malicious rewrite\n", encoding="utf-8")
+    false_sha256 = sha256_file(controller_file)
+    record["controller"]["input_sha256"][relative] = false_sha256
+    for binding in payload["bindings"]:
+        if binding["path"] == str(controller_file):
+            binding["sha256"] = false_sha256
+    manifest_sha256 = reseal_linux_preparation(manifest_path, payload, record)
+    loaded = gate_module.prepared_inputs.load(manifest_path, manifest_sha256)
+
+    with pytest.raises(
+        gate_module.prepared_inputs.PreparedInputsError,
+        match="controller Git tracked worktree is not clean",
+    ):
+        gate_module.prepared_inputs.require_certifiable_linux(loaded)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "error"),
+    [
+        ("lima_command", "preparation command contract mismatch"),
+        ("build", "preparation command contract mismatch"),
+        ("export", "preparation command contract mismatch"),
+        ("instance", "preparation runtime identity mismatch"),
+        ("effective_config", "preparation runtime identity mismatch"),
+        ("lima_version", "Lima version drift"),
+        ("docker", "preparation runtime identity mismatch"),
+    ],
+)
+def test_formal_linux_inputs_reject_resealed_command_and_runtime_drift(
+    tmp_path: Path,
+    mutation: str,
+    error: str,
+) -> None:
+    gate_module = load_local_gate()
+    manifest_path, _, payload = write_formal_linux_prepared_inputs(
+        tmp_path, gate_module
+    )
+    preparation = payload["linux_runtime"]["preparation"]
+    record = json.loads(Path(preparation["record"]).read_text(encoding="utf-8"))
+    if mutation == "lima_command":
+        record["commands"]["lima_version"] = ["limactl", "version"]
+    elif mutation == "build":
+        record["commands"]["build"].insert(2, "--pull")
+    elif mutation == "export":
+        record["commands"]["export"].extend(["--platform", "linux/amd64"])
+    elif mutation == "instance":
+        record["runtime"]["instance"] = "drifted-instance"
+    elif mutation == "effective_config":
+        record["runtime"]["effective_config_sha256"] = "0" * 64
+    elif mutation == "lima_version":
+        payload["linux_runtime"]["lima_version"] = "2.2.1"
+        record["runtime"]["lima_version"] = "2.2.1"
+    elif mutation == "docker":
+        record["runtime"]["docker"]["server_version"] = "0.0.0"
+    else:  # pragma: no cover - exhaustive parametrization guard
+        raise AssertionError(mutation)
+    manifest_sha256 = reseal_linux_preparation(manifest_path, payload, record)
+    loaded = gate_module.prepared_inputs.load(manifest_path, manifest_sha256)
+
+    with pytest.raises(gate_module.prepared_inputs.PreparedInputsError, match=error):
+        gate_module.prepared_inputs.require_certifiable_linux(loaded)
+
+
+def make_linux_preparer_case(
+    tmp_path: Path,
+    preparer: ModuleType,
+) -> SimpleNamespace:
+    base_manifest, base_sha256, base_payload = write_prepared_inputs(tmp_path / "base")
+    controller_root, controller_commit = write_controller_repository(
+        tmp_path / "control", preparer
+    )
+    effective_config = tmp_path / "effective-vz.yaml"
+    effective_config.write_text("vmType: vz\narch: aarch64\n", encoding="utf-8")
+
+    def project_context(
+        _release_source: Path,
+        destination: Path,
+        *,
+        infra_root: Path,
+    ) -> Path:
+        destination.mkdir()
+        release = destination / "release"
+        release.mkdir()
+        (release / "fixture.txt").write_text(
+            "signed projection fixture\n", encoding="utf-8"
+        )
+        for name in preparer.BUILD_CONTEXT_INPUT_NAMES:
+            shutil.copy2(infra_root / name, destination / name)
+        (destination / "context-provenance.json").write_text(
+            '{"schema":"fixture"}\n', encoding="utf-8"
+        )
+        return destination
+
+    request = preparer.PrepareRequest(
+        base_prepared_inputs=base_manifest,
+        base_prepared_inputs_sha256=base_sha256,
+        controller_root=controller_root,
+        release_source=Path(base_payload["source"]["root"]),
+        effective_config=effective_config,
+        effective_config_sha256=sha256_file(effective_config),
+        instance="mingli-linux-gate-vz",
+        output_directory=tmp_path / "prepared-linux",
+    )
+    return SimpleNamespace(
+        base_manifest=base_manifest,
+        base_sha256=base_sha256,
+        controller_commit=controller_commit,
+        controller_root=controller_root,
+        project_context=project_context,
+        request=request,
+    )
+
+
+class FakeLinuxImageBuilder:
+    def __init__(
+        self,
+        *,
+        before_build: Callable[[], None] | None = None,
+        failure: BaseException | None = None,
+    ) -> None:
+        self.before_build = before_build
+        self.failure = failure
+        self.observed_context_sha256: str | None = None
+
+    def build_and_export(
+        self,
+        *,
+        context_tar: bytes,
+        image_ref: str,
+        destination: Path,
+    ) -> Any:
+        if self.before_build is not None:
+            self.before_build()
+        if self.failure is not None:
+            raise self.failure
+        self.observed_context_sha256 = sha256_bytes(context_tar)
+        oci = write_oci_archive(
+            destination,
+            image_ref,
+            build_context_sha256=self.observed_context_sha256,
+        )
+        return SimpleNamespace(
+            index_digest=oci["index_digest"],
+            lima_version="2.2.0",
+            docker={
+                "client_version": "29.7.2",
+                "server_version": "29.7.2",
+                "server_arch": "arm64",
+                "containerd_version": "v2.3.3",
+                "rootlesskit_version": "3.0.2",
+            },
+        )
+
+
+def test_linux_preparer_builds_from_the_persisted_post_commit_context(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    gate_module = load_local_gate()
+    preparer = load_linux_preparer()
+    case = make_linux_preparer_case(tmp_path, preparer)
+    final_manifest = case.request.output_directory / preparer.PREPARED_INPUTS_NAME
+    builder = FakeLinuxImageBuilder(
+        before_build=lambda: assert_path_absent(final_manifest)
+    )
+    original_validator = preparer.prepared_inputs.require_certifiable_linux
+
+    def validate_before_admission(inputs: Any) -> Any:
+        assert not final_manifest.exists()
+        assert case.request.output_directory.is_dir()
+        return original_validator(inputs)
+
+    monkeypatch.setattr(
+        preparer.prepared_inputs,
+        "require_certifiable_linux",
+        validate_before_admission,
+    )
+
+    result = preparer.prepare(
+        case.request,
+        builder=builder,
+        context_builder=case.project_context,
+    )
+
+    assert result.controller_commit == case.controller_commit
+    assert result.prepared_inputs.is_file()
+    loaded = gate_module.prepared_inputs.load(
+        result.prepared_inputs, result.prepared_inputs_sha256
+    )
+    linux = original_validator(loaded)
+    assert linux.controller_commit == case.controller_commit
+    assert sha256_file(result.build_context_archive) == (
+        builder.observed_context_sha256
+    )
+    assert result.index_digest == linux.index_digest
+    assert result.lima_version == "2.2.0"
+    assert not (
+        result.output_directory / preparer.PENDING_PREPARED_INPUTS_NAME
+    ).exists()
+    assert not (result.output_directory / "release-5.1.json").exists()
+
+
+def test_linux_preparer_reads_the_exact_lima_version_command(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    preparer = load_linux_preparer()
+    observed: list[list[str]] = []
+
+    def exact_version(argv: list[str], **kwargs: Any) -> Any:
+        del kwargs
+        observed.append(argv)
+        return subprocess.CompletedProcess(
+            argv,
+            0,
+            b"limactl version 2.2.0\n",
+            b"",
+        )
+
+    monkeypatch.setattr(preparer.subprocess, "run", exact_version)
+
+    assert preparer.LimaImageBuilder._lima_version() == "2.2.0"
+    assert observed == [["limactl", "--version"]]
+
+    def drifted_version(argv: list[str], **kwargs: Any) -> Any:
+        del kwargs
+        return subprocess.CompletedProcess(
+            argv,
+            0,
+            b"limactl version 2.2.1\n",
+            b"",
+        )
+
+    monkeypatch.setattr(preparer.subprocess, "run", drifted_version)
+    with pytest.raises(preparer.PreparationError, match="Lima version drift"):
+        preparer.LimaImageBuilder._lima_version()
+
+
+def assert_path_absent(path: Path) -> None:
+    assert not path.exists()
+
+
+def test_linux_preparer_rejects_existing_output_before_builder(
+    tmp_path: Path,
+) -> None:
+    preparer = load_linux_preparer()
+    case = make_linux_preparer_case(tmp_path, preparer)
+    case.request.output_directory.mkdir()
+    builder = FakeLinuxImageBuilder(
+        before_build=lambda: pytest.fail("builder must not run")
+    )
+
+    with pytest.raises(
+        preparer.PreparationError,
+        match="must not already exist",
+    ):
+        preparer.prepare(
+            case.request,
+            builder=builder,
+            context_builder=case.project_context,
+        )
+
+
+def test_linux_preparer_builder_failure_leaves_no_output(
+    tmp_path: Path,
+) -> None:
+    preparer = load_linux_preparer()
+    case = make_linux_preparer_case(tmp_path, preparer)
+
+    with pytest.raises(RuntimeError, match="scripted builder failure"):
+        preparer.prepare(
+            case.request,
+            builder=FakeLinuxImageBuilder(
+                failure=RuntimeError("scripted builder failure")
+            ),
+            context_builder=case.project_context,
+        )
+
+    assert not case.request.output_directory.exists()
+
+
+def test_linux_preparer_validation_failure_never_publishes_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    preparer = load_linux_preparer()
+    case = make_linux_preparer_case(tmp_path, preparer)
+    final_manifest = case.request.output_directory / preparer.PREPARED_INPUTS_NAME
+
+    def reject(_inputs: Any) -> Any:
+        assert not final_manifest.exists()
+        raise preparer.prepared_inputs.PreparedInputsError(
+            "scripted independent validation failure"
+        )
+
+    monkeypatch.setattr(
+        preparer.prepared_inputs,
+        "require_certifiable_linux",
+        reject,
+    )
+
+    with pytest.raises(
+        preparer.PreparationError,
+        match="independent validation failure",
+    ):
+        preparer.prepare(
+            case.request,
+            builder=FakeLinuxImageBuilder(),
+            context_builder=case.project_context,
+        )
+
+    assert not final_manifest.exists()
+    assert not case.request.output_directory.exists()
+
+
+def test_linux_preparer_base_exception_before_admission_removes_output(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    preparer = load_linux_preparer()
+    case = make_linux_preparer_case(tmp_path, preparer)
+    final_manifest = case.request.output_directory / preparer.PREPARED_INPUTS_NAME
+
+    def interrupt(_inputs: Any) -> Any:
+        assert case.request.output_directory.is_dir()
+        assert not final_manifest.exists()
+        raise KeyboardInterrupt("scripted interruption")
+
+    monkeypatch.setattr(
+        preparer.prepared_inputs,
+        "require_certifiable_linux",
+        interrupt,
+    )
+
+    with pytest.raises(KeyboardInterrupt, match="scripted interruption"):
+        preparer.prepare(
+            case.request,
+            builder=FakeLinuxImageBuilder(),
+            context_builder=case.project_context,
+        )
+
+    assert not final_manifest.exists()
+    assert not case.request.output_directory.exists()
+
+
+def test_linux_preparer_manifest_is_the_final_atomic_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    preparer = load_linux_preparer()
+    case = make_linux_preparer_case(tmp_path, preparer)
+    final_manifest = case.request.output_directory / preparer.PREPARED_INPUTS_NAME
+    real_replace = preparer.os.replace
+    manifest_publications = 0
+
+    def observed_replace(source: Any, destination: Any) -> None:
+        nonlocal manifest_publications
+        destination_path = Path(destination)
+        if destination_path == final_manifest:
+            manifest_publications += 1
+            assert case.request.output_directory.is_dir()
+            assert not final_manifest.exists()
+            assert Path(source).name.startswith(".")
+            for name in (
+                preparer.BUILD_CONTEXT_ARCHIVE_NAME,
+                preparer.OCI_ARCHIVE_NAME,
+                preparer.PREPARATION_RECORD_NAME,
+                "lima-effective.yaml",
+            ):
+                assert (case.request.output_directory / name).is_file()
+        real_replace(source, destination)
+
+    monkeypatch.setattr(preparer.os, "replace", observed_replace)
+
+    result = preparer.prepare(
+        case.request,
+        builder=FakeLinuxImageBuilder(),
+        context_builder=case.project_context,
+    )
+
+    assert manifest_publications == 1
+    assert result.prepared_inputs == final_manifest
+    assert final_manifest.is_file()
+
+
+def test_linux_preparer_revalidates_base_and_controller_before_admission(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    preparer = load_linux_preparer()
+    case = make_linux_preparer_case(tmp_path, preparer)
+    controller_checks = 0
+    real_controller_identity = preparer._controller_identity
+
+    def observed_controller_identity(root: Path) -> tuple[str, dict[str, str]]:
+        nonlocal controller_checks
+        controller_checks += 1
+        return real_controller_identity(root)
+
+    monkeypatch.setattr(
+        preparer,
+        "_controller_identity",
+        observed_controller_identity,
+    )
+
+    def mutate_base_manifest() -> None:
+        case.base_manifest.write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(
+        preparer.PreparationError,
+        match="PreparedInputs changed during Linux preparation",
+    ):
+        preparer.prepare(
+            case.request,
+            builder=FakeLinuxImageBuilder(before_build=mutate_base_manifest),
+            context_builder=case.project_context,
+        )
+
+    assert controller_checks >= 2
+    assert not case.request.output_directory.exists()
+
+
+def test_linux_preparer_revalidates_effective_config_before_admission(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    preparer = load_linux_preparer()
+    case = make_linux_preparer_case(tmp_path, preparer)
+    real_validator = preparer.prepared_inputs.require_certifiable_linux
+
+    def mutate_after_independent_validation(inputs: Any) -> Any:
+        result = real_validator(inputs)
+        case.request.effective_config.write_text(
+            "vmType: qemu\narch: aarch64\n", encoding="utf-8"
+        )
+        return result
+
+    monkeypatch.setattr(
+        preparer.prepared_inputs,
+        "require_certifiable_linux",
+        mutate_after_independent_validation,
+    )
+
+    with pytest.raises(
+        preparer.PreparationError,
+        match="effective Lima config changed",
+    ):
+        preparer.prepare(
+            case.request,
+            builder=FakeLinuxImageBuilder(),
+            context_builder=case.project_context,
+        )
+
+    assert not case.request.output_directory.exists()
+
+
 def test_linux_certify_first_stage_accepts_only_exact_amd64_identity(
     tmp_path: Path,
 ) -> None:
@@ -1647,6 +2505,9 @@ def test_linux_certify_first_stage_accepts_only_exact_amd64_identity(
     assert result.profile_report.is_file()
     assert not (result.profile_report.parent / "release-5.1.json").exists()
     assert result.timeline[0].command_id == "linux-amd64-identity-tracer"
+    command = execution.commands[0]
+    lima_version_index = command.argv.index("--lima-version")
+    assert command.argv[lima_version_index + 1] == "2.2.0"
 
 
 def test_linux_identity_timeout_reaps_the_whole_process_group(
@@ -1683,10 +2544,8 @@ def test_linux_identity_timeout_reaps_the_whole_process_group(
         if child_pid is None and child_pid_path.is_file():
             child_pid = int(child_pid_path.read_text(encoding="utf-8"))
         if child_pid is not None:
-            try:
+            with contextlib.suppress(ProcessLookupError):
                 os.kill(child_pid, 9)
-            except ProcessLookupError:
-                pass
 
 
 def test_linux_identity_input_rejection_removes_staging(tmp_path: Path) -> None:
@@ -1723,6 +2582,7 @@ def test_linux_identity_input_rejection_removes_staging(tmp_path: Path) -> None:
     [
         lambda value: value["instance"].__setitem__("vm_type", "qemu"),
         lambda value: value["instance"].__setitem__("rosetta_binfmt", False),
+        lambda value: value.__setitem__("lima_version", "2.2.1"),
         lambda value: value["docker"].__setitem__("server_arch", "amd64"),
         lambda value: value["image"].__setitem__("index_digest", "sha256:" + "0" * 64),
         lambda value: value["image"].__setitem__(
@@ -1799,10 +2659,12 @@ def test_linux_identity_collector_uses_exact_rosetta_container_boundary(
         def __init__(self) -> None:
             self.commands: list[tuple[str, ...]] = []
             self.outputs = [
+                b"limactl version 2.2.0\n",
                 (json.dumps(instance_payload) + "\n").encode(),
                 (json.dumps(docker_payload) + "\n").encode(),
                 (json.dumps(docker_image_payload(payload)) + "\n").encode(),
                 (json.dumps(container_payload) + "\n").encode(),
+                b"limactl version 2.2.0\n",
             ]
 
         def run(self, argv: tuple[str, ...]) -> bytes:
@@ -1820,12 +2682,15 @@ def test_linux_identity_collector_uses_exact_rosetta_container_boundary(
         expected_oci=payload["linux_runtime"]["oci"],
         effective_config=effective_config,
         expected_effective_config_sha256=sha256_file(effective_config),
+        expected_lima_version="2.2.0",
         runner=runner,
     )
 
     assert identity == complete_linux_identity(payload)
     assert runner.outputs == []
-    container_argv = runner.commands[-1]
+    assert runner.commands[0] == ("limactl", "--version")
+    assert runner.commands[-1] == ("limactl", "--version")
+    container_argv = runner.commands[-2]
     assert "--platform=linux/amd64" in container_argv
     assert "--device=lima-vm.io/rosetta=cached" in container_argv
     assert "--network=none" in container_argv
@@ -1838,6 +2703,22 @@ def test_linux_identity_collector_uses_exact_rosetta_container_boundary(
     assert "/opt/mingli-runtime/venv/bin/python" in container_argv
     assert payload["linux_runtime"]["immutable_image_ref"] in container_argv
     assert payload["linux_runtime"]["image_ref"] not in container_argv
+
+    drifted_runner = ScriptedHostRunner()
+    drifted_runner.outputs[-1] = b"limactl version 2.2.1\n"
+    with pytest.raises(identity_module.IdentityError, match="Lima version"):
+        identity_module.collect_identity(
+            instance="mingli-linux-gate-vz",
+            image_ref=payload["linux_runtime"]["image_ref"],
+            immutable_image_ref=payload["linux_runtime"]["immutable_image_ref"],
+            oci_archive=Path(payload["linux_runtime"]["oci_archive"]),
+            expected_oci_archive_sha256=payload["linux_runtime"]["oci_archive_sha256"],
+            expected_oci=payload["linux_runtime"]["oci"],
+            effective_config=effective_config,
+            expected_effective_config_sha256=sha256_file(effective_config),
+            expected_lima_version="2.2.0",
+            runner=drifted_runner,
+        )
 
 
 @pytest.mark.parametrize(

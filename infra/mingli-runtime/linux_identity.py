@@ -20,6 +20,7 @@ from typing import Any, NoReturn, Protocol
 IMAGE_ID_RE = re.compile(r"sha256:[0-9a-f]{64}")
 MAX_OUTPUT_BYTES = 4 * 1024 * 1024
 COMMAND_TIMEOUT_SECONDS = 120
+EXPECTED_LIMA_VERSION = "2.2.0"
 EXPECTED_VZ_IMAGE = {
     "location": (
         "https://cloud-images.ubuntu.com/releases/resolute/"
@@ -162,6 +163,7 @@ def verify_oci_archive(
     expected_archive_sha256: str,
     image_ref: str,
     expected: dict[str, Any],
+    expected_build_context_sha256: str | None = None,
 ) -> dict[str, object]:
     """Verify the complete OCI index, amd64 child, attestation, and layers."""
 
@@ -394,10 +396,88 @@ def verify_oci_archive(
         attestation_layers = [
             _object(item, "OCI attestation layer") for item in attestation_layers_raw
         ]
-        for descriptor in attestation_layers:
+        attestation_payloads = [
             _descriptor_blob(
                 members, archive, descriptor, label="OCI attestation payload"
             )
+            for descriptor in attestation_layers
+        ]
+        if expected_build_context_sha256 is not None:
+            if len(expected_build_context_sha256) != 64 or any(
+                character not in "0123456789abcdef"
+                for character in expected_build_context_sha256
+            ):
+                _fail("expected build-context SHA-256 is malformed")
+            if len(attestation_layers) != 1:
+                _fail("OCI build provenance payload is not singular")
+            provenance_descriptor = attestation_layers[0]
+            if provenance_descriptor.get(
+                "mediaType"
+            ) != "application/vnd.in-toto+json" or provenance_descriptor.get(
+                "annotations"
+            ) != {"in-toto.io/predicate-type": ("https://slsa.dev/provenance/v1")}:
+                _fail("OCI build provenance descriptor mismatch")
+            statement = _json_object(
+                attestation_payloads[0], "OCI build provenance statement"
+            )
+            statement_subjects = statement.get("subject")
+            if (
+                statement.get("_type") != "https://in-toto.io/Statement/v1"
+                or statement.get("predicateType") != "https://slsa.dev/provenance/v1"
+                or not isinstance(statement_subjects, list)
+                or len(statement_subjects) != 1
+            ):
+                _fail("OCI build provenance statement mismatch")
+            statement_subject = _object(
+                statement_subjects[0], "OCI build provenance subject"
+            )
+            if statement_subject.get("digest") != {
+                "sha256": platform_digest.removeprefix("sha256:")
+            }:
+                _fail("OCI build provenance subject mismatch")
+            predicate = _object(
+                statement.get("predicate"), "OCI build provenance predicate"
+            )
+            build_definition = _object(
+                predicate.get("buildDefinition"),
+                "OCI build provenance definition",
+            )
+            external = _object(
+                build_definition.get("externalParameters"),
+                "OCI build provenance external parameters",
+            )
+            config_source = _object(
+                external.get("configSource"),
+                "OCI build provenance config source",
+            )
+            context_digest = {"sha256": expected_build_context_sha256}
+            if (
+                config_source.get("path") != "Dockerfile"
+                or config_source.get("digest") != context_digest
+            ):
+                _fail("OCI build provenance context digest mismatch")
+            request = _object(external.get("request"), "OCI build provenance request")
+            request_args = _object(
+                request.get("args"), "OCI build provenance request arguments"
+            )
+            if (
+                request.get("frontend") != "gateway.v0"
+                or request_args.get("target") != "final"
+            ):
+                _fail("OCI build provenance request mismatch")
+            dependencies = build_definition.get("resolvedDependencies")
+            if not isinstance(dependencies, list):
+                _fail("OCI build provenance dependencies are absent")
+            matching_contexts = [
+                item
+                for raw_item in dependencies
+                if isinstance(raw_item, dict)
+                for item in [raw_item]
+                if item.get("uri") == config_source.get("uri")
+                and item.get("digest") == context_digest
+            ]
+            if len(matching_contexts) != 1:
+                _fail("OCI build provenance context dependency mismatch")
 
         reachable = {
             index_digest,
@@ -569,6 +649,17 @@ def _docker_identity(raw: bytes) -> dict[str, str]:
     }
 
 
+def _lima_version(raw: bytes) -> str:
+    try:
+        output = raw.decode("ascii").strip()
+    except UnicodeDecodeError as exc:
+        raise IdentityError("Lima version output is not ASCII") from exc
+    expected = f"limactl version {EXPECTED_LIMA_VERSION}"
+    if output != expected:
+        _fail("Lima version drift")
+    return EXPECTED_LIMA_VERSION
+
+
 def collect_identity(
     *,
     instance: str,
@@ -579,8 +670,14 @@ def collect_identity(
     expected_oci: dict[str, Any],
     effective_config: Path,
     expected_effective_config_sha256: str,
+    expected_lima_version: str,
     runner: Runner,
 ) -> dict[str, object]:
+    if expected_lima_version != EXPECTED_LIMA_VERSION:
+        _fail("expected Lima version drift")
+    starting_lima_version = _lima_version(runner.run(("limactl", "--version")))
+    if starting_lima_version != expected_lima_version:
+        _fail("starting Lima version mismatch")
     index_digest = _digest(expected_oci.get("index_digest"), "expected OCI index")
     repository, separator, digest = immutable_image_ref.rpartition("@")
     if not separator or not repository or digest != index_digest:
@@ -704,6 +801,9 @@ def collect_identity(
     )
     if ending_archive_identity != archive_identity:
         _fail("OCI archive identity changed during trace")
+    ending_lima_version = _lima_version(runner.run(("limactl", "--version")))
+    if ending_lima_version != starting_lima_version:
+        _fail("Lima version changed during identity trace")
     config = _object(instance_record.get("config"), "Lima effective config")
     rosetta = _object(
         _object(
@@ -714,6 +814,7 @@ def collect_identity(
     )
     return {
         "schema": "mingli-vz-amd64-identity-v1",
+        "lima_version": starting_lima_version,
         "instance": {
             "vm_type": instance_record["vmType"],
             "guest_arch": instance_record["arch"],
@@ -746,6 +847,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--oci-rootfs-diff-id", action="append", required=True)
     parser.add_argument("--effective-config", type=Path, required=True)
     parser.add_argument("--effective-config-sha256", required=True)
+    parser.add_argument("--lima-version", required=True)
     return parser
 
 
@@ -768,6 +870,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             },
             effective_config=args.effective_config.expanduser().resolve(),
             expected_effective_config_sha256=args.effective_config_sha256,
+            expected_lima_version=args.lima_version,
             runner=SubprocessRunner(),
         )
     except IdentityError as exc:

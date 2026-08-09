@@ -280,6 +280,8 @@ def _parse_linux_identity(
         raise GateRejected("Linux identity payload is not valid JSON") from exc
     if identity.get("schema") != "mingli-vz-amd64-identity-v1":
         _fail("Linux identity schema mismatch")
+    if identity.get("lima_version") != linux.lima_version:
+        _fail("Linux Lima version mismatch")
     instance = _identity_object(identity.get("instance"), "instance")
     if instance != {
         "vm_type": "vz",
@@ -424,6 +426,8 @@ class LocalFullGate:
                 str(linux.effective_config),
                 "--effective-config-sha256",
                 linux.effective_config_sha256,
+                "--lima-version",
+                linux.lima_version,
             ),
             cwd=Path(__file__).resolve().parent,
             timeout_seconds=self._remaining_seconds(
