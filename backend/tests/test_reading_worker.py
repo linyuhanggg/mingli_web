@@ -4,6 +4,7 @@ import asyncio
 import importlib
 import os
 from collections.abc import AsyncIterator
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
@@ -431,6 +432,78 @@ async def test_processor_passes_only_job_id_and_records_outcome(
     assert "sensitive accepted copy" not in caplog.text
     assert "runtime-secret-token" not in caplog.text
     assert item.claim_token not in caplog.text
+
+
+async def test_model_cancellation_commits_attempt_before_worker_propagates(
+    worker_database: Any,
+) -> None:
+    errors = importlib.import_module("app.readings.errors")
+    models = importlib.import_module("app.readings.models")
+    readings = importlib.import_module("worker.readings")
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    clock = MutableClock(WORKER_TEST_NOW)
+    job = await seed_prepared_job(worker_database)
+
+    class CancellingModel:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def generate(self, request: Any) -> Any:
+            self.calls += 1
+            receipt = make_model_receipt(request)
+            raise errors.NarrativeGenerationCancelled(
+                receipt=replace(
+                    receipt,
+                    outcome="failed",
+                    error_code="model_cancelled",
+                )
+            )
+
+    model = CancellingModel()
+    factory = readings.SqlReadingOrchestratorFactory(
+        cipher=make_test_cipher(),
+        runtime=FirstWriteRuntime(contracts),
+        model=model,
+        clock=clock,
+    )
+    source = readings.ReadingJobWorkSource(
+        sessions=worker_database.sessions,
+        worker_id="worker-cancelled-model",
+        clock=clock,
+        lease_seconds=30,
+    )
+    item = await source.claim_one()
+    assert item is not None
+    processor = readings.ReadingJobProcessor(
+        sessions=worker_database.sessions,
+        orchestrator_factory=factory,
+        worker_id="worker-cancelled-model",
+        clock=clock,
+    )
+
+    with pytest.raises(asyncio.CancelledError):
+        await processor.process(item)
+
+    async with worker_database.sessions() as session:
+        persisted_job = await session.get(models.ReadingJobRecord, job.id)
+        attempt = await session.scalar(
+            select(models.GenerationAttempt).where(
+                models.GenerationAttempt.reading_version_id == job.reading_version_id
+            )
+        )
+    assert model.calls == 1
+    assert attempt is not None
+    assert attempt.attempt_number == 1
+    assert attempt.model_receipt["outcome"] == "failed"
+    assert attempt.model_receipt["error_code"] == "model_cancelled"
+    assert persisted_job.status == "queued"
+    assert persisted_job.lease_owner is None
+    assert persisted_job.lease_token is None
+    assert persisted_job.lease_expires_at is None
+
+    reclaimed = await source.claim_one()
+    assert reclaimed is not None
+    assert reclaimed.lease_generation == item.lease_generation + 1
 
 
 async def test_processor_schedules_tokened_prepare_transport_retry(

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from typing import Protocol, cast
 
 from app.readings.errors import (
+    NarrativeGenerationCancelled,
     NarrativeGenerationError,
     OrchestratorInvariantError,
     RuntimeTransportError,
@@ -72,6 +73,7 @@ class ReadingOutcome:
     input_request: Mapping[str, object] | None = None
     stopped_reason: str | None = None
     retry_not_before: datetime | None = None
+    cancel_after_commit: bool = False
 
 
 class Clock(Protocol):
@@ -285,6 +287,7 @@ class ReadingOrchestrator:
         model_receipt: ModelCallReceipt | None = None
         errors: tuple[str, ...]
         public_copy: str | None = None
+        cancel_after_commit = False
         try:
             generation = await self.model.generate(request)
             candidate = generation.candidate
@@ -308,6 +311,14 @@ class ReadingOrchestrator:
             if isinstance(error.receipt, ModelCallReceipt):
                 model_receipt = error.receipt
             errors = ("model_generation_failed",)
+        except NarrativeGenerationCancelled as error:
+            if not isinstance(error.receipt, ModelCallReceipt):
+                raise OrchestratorInvariantError(
+                    "cancelled model call is missing its safe receipt"
+                ) from None
+            model_receipt = error.receipt
+            errors = ("model_generation_cancelled",)
+            cancel_after_commit = True
 
         if public_copy is None:
             await self.repository.record_generation_attempt(
@@ -320,8 +331,14 @@ class ReadingOrchestrator:
             )
             if attempt_number >= job.max_attempts:
                 await self.repository.mark_delayed(job.id, self.clock.now())
-                return ReadingOutcome(status=ReadingStatus.DELAYED)
-            return ReadingOutcome(status=ReadingStatus.PREPARED)
+                return ReadingOutcome(
+                    status=ReadingStatus.DELAYED,
+                    cancel_after_commit=cancel_after_commit,
+                )
+            return ReadingOutcome(
+                status=ReadingStatus.PREPARED,
+                cancel_after_commit=cancel_after_commit,
+            )
         if candidate is None:
             raise OrchestratorInvariantError("public copy exists without a Narrative Candidate")
         await self.repository.record_successful_attempt(

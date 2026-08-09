@@ -115,6 +115,35 @@ async def test_safe_failed_model_receipt_is_persisted_with_the_failed_attempt() 
     assert repository.model_receipts == [failed_receipt]
 
 
+async def test_cancelled_model_receipt_is_persisted_before_post_commit_signal() -> None:
+    orchestrator, contracts, narrative = modules()
+    errors = importlib.import_module("app.readings.errors")
+    _generation, successful_receipt = model_generation(make_candidate(narrative))
+    cancelled_receipt = replace(
+        successful_receipt,
+        outcome="failed",
+        error_code="model_cancelled",
+    )
+    job = make_job(orchestrator, contracts, narrative)
+    repository = MemoryRepository(orchestrator, job)
+    machine = orchestrator.ReadingOrchestrator(
+        repository=repository,
+        runtime=ScriptedRuntime([make_prepared(contracts)]),
+        model=ScriptedModel([errors.NarrativeGenerationCancelled(receipt=cancelled_receipt)]),
+        guard=orchestrator.NarrativeGuard(),
+        assembler=orchestrator.PublicCopyAssembler(),
+        clock=FixedClock(),
+    )
+
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    outcome = await machine.run(job.id)
+
+    assert outcome.status is orchestrator.ReadingStatus.PREPARED
+    assert outcome.cancel_after_commit is True
+    assert repository.attempts == [(1, ("model_generation_cancelled",))]
+    assert repository.model_receipts == [cancelled_receipt]
+
+
 async def test_receipt_persistence_failure_never_advances_to_complete() -> None:
     orchestrator, contracts, narrative = modules()
     generation, _audit = model_generation(make_candidate(narrative))

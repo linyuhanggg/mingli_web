@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 import socket
 from collections.abc import AsyncIterator
@@ -172,6 +173,7 @@ class ReadingJobProcessor:
 
     async def process(self, item: WorkItem) -> None:
         now = self.clock.now()
+        cancel_after_commit = False
         async with self.sessions() as session, session.begin():
             job = await session.scalar(
                 current_lease_statement(item, worker_id=self.worker_id, now=now)
@@ -210,6 +212,9 @@ class ReadingJobProcessor:
             )
             if finished_id is None:
                 raise LeaseLostError("Reading Job fencing token changed before COMMIT")
+            cancel_after_commit = outcome.cancel_after_commit
+        if cancel_after_commit:
+            raise asyncio.CancelledError from None
 
     @staticmethod
     def _job_status(status: ReadingStatus) -> str:

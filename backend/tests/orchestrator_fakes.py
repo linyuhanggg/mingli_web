@@ -26,7 +26,7 @@ class ScriptedRuntime:
         if not self.script:
             raise AssertionError("runtime script exhausted")
         item = self.script.pop(0)
-        if isinstance(item, Exception):
+        if isinstance(item, BaseException):
             raise item
         if callable(item):
             return item(command)
@@ -45,7 +45,7 @@ class ScriptedModel:
         if not self.script:
             raise AssertionError("model script exhausted")
         item = self.script.pop(0)
-        if isinstance(item, Exception):
+        if isinstance(item, BaseException):
             raise item
         narrative = __import__(
             "app.readings.narrative_contracts",
