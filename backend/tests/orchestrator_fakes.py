@@ -244,6 +244,12 @@ def make_model_receipt(request: Any) -> Any:
         fromlist=["ModelCallReceipt"],
     )
     usage = contracts.ModelTokenUsage(input_tokens=0, output_tokens=0, total_tokens=0)
+    price_digest = contracts.model_price_snapshot_digest(
+        version="fake-model-price-v1",
+        currency="CNY",
+        input_microunits_per_million_tokens=0,
+        output_microunits_per_million_tokens=0,
+    )
     return contracts.ModelCallReceipt(
         outcome="succeeded",
         error_code=None,
@@ -251,7 +257,7 @@ def make_model_receipt(request: Any) -> Any:
         model_profile_snapshot_digest=hashlib.sha256(b"fake-model-p0-v1").hexdigest(),
         provider="fake",
         provider_model_version="fake-model-v1",
-        provider_request_id="fake-request-v1",
+        provider_request_fingerprint=hashlib.sha256(b"fake-request-v1").hexdigest(),
         request_fingerprint=hashlib.sha256(
             json.dumps(request.to_dict(), sort_keys=True).encode()
         ).hexdigest(),
@@ -261,7 +267,7 @@ def make_model_receipt(request: Any) -> Any:
         price_snapshot=contracts.ModelPriceReceipt(
             version="fake-model-price-v1",
             currency="CNY",
-            snapshot_digest=hashlib.sha256(b"fake-model-price-v1").hexdigest(),
+            snapshot_digest=price_digest,
             input_microunits_per_million_tokens=0,
             output_microunits_per_million_tokens=0,
         ),
@@ -270,7 +276,7 @@ def make_model_receipt(request: Any) -> Any:
             currency="CNY",
             microunits=0,
             price_snapshot_version="fake-model-price-v1",
-            price_snapshot_digest=hashlib.sha256(b"fake-model-price-v1").hexdigest(),
+            price_snapshot_digest=price_digest,
             input_microunits_per_million_tokens=0,
             output_microunits_per_million_tokens=0,
         ),

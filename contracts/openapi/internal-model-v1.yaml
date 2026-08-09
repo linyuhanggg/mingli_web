@@ -108,7 +108,7 @@ components:
         - usage
         - latency_ms
         - provider_model_version
-        - provider_request_id
+        - provider_request_fingerprint
         - request_fingerprint
         - model_profile_snapshot_digest
         - cost
@@ -123,10 +123,10 @@ components:
         provider_model_version:
           type: string
           enum: [deepseek-v4-flash]
-        provider_request_id:
+        provider_request_fingerprint:
           type: string
-          pattern: "^[A-Za-z0-9._:-]{1,128}$"
-          maxLength: 128
+          description: SHA-256 of the untrusted provider request identifier; the raw ID is never stored.
+          pattern: "^[0-9a-f]{64}$"
         request_fingerprint:
           type: string
           pattern: "^[0-9a-f]{64}$"

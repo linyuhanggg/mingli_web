@@ -132,7 +132,7 @@ def test_internal_model_contract_is_closed_and_agent_free() -> None:
         "usage",
         "latency_ms",
         "provider_model_version",
-        "provider_request_id",
+        "provider_request_fingerprint",
         "request_fingerprint",
         "model_profile_snapshot_digest",
         "cost",
@@ -146,10 +146,12 @@ def test_internal_model_contract_is_closed_and_agent_free() -> None:
     assert schemas["ModelGenerationResponse"]["properties"]["provider_model_version"]["enum"] == [
         "deepseek-v4-flash"
     ]
-    assert schemas["ModelGenerationResponse"]["properties"]["provider_request_id"] == {
+    assert schemas["ModelGenerationResponse"]["properties"]["provider_request_fingerprint"] == {
         "type": "string",
-        "pattern": "^[A-Za-z0-9._:-]{1,128}$",
-        "maxLength": 128,
+        "description": (
+            "SHA-256 of the untrusted provider request identifier; the raw ID is never stored."
+        ),
+        "pattern": "^[0-9a-f]{64}$",
     }
     assert schemas["ModelCost"]["properties"]["price_snapshot_version"] == {
         "type": "string",
@@ -180,6 +182,7 @@ def test_internal_model_contract_is_closed_and_agent_free() -> None:
         "entitlement_id",
         "reading_id",
         "job_id",
+        "provider_request_id",
     }
     assert _property_names(document).isdisjoint(forbidden)
 

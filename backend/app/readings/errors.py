@@ -1,3 +1,6 @@
+import asyncio
+
+
 class ReadingOrchestratorError(RuntimeError):
     """Base class for explicit reading state-machine failures."""
 
@@ -11,6 +14,14 @@ class NarrativeGenerationError(ReadingOrchestratorError):
 
     def __init__(self, code: str, *, receipt: object | None = None) -> None:
         super().__init__(code)
+        self.receipt = receipt
+
+
+class NarrativeGenerationCancelled(asyncio.CancelledError):
+    """External cancellation detached from sensitive model transport frames."""
+
+    def __init__(self, *, receipt: object) -> None:
+        super().__init__("model_cancelled")
         self.receipt = receipt
 
 

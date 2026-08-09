@@ -8,7 +8,7 @@ import re
 import time
 from collections.abc import Callable, Mapping
 from contextlib import suppress
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import ROUND_HALF_UP, Decimal
 from functools import lru_cache
 from pathlib import Path
@@ -18,13 +18,14 @@ import httpx
 from pydantic import SecretStr
 
 from app.config import Settings
-from app.readings.errors import NarrativeGenerationError
+from app.readings.errors import NarrativeGenerationCancelled, NarrativeGenerationError
 from app.readings.model_contracts import (
     ModelCallReceipt,
     ModelCost,
     ModelGenerationResult,
     ModelPriceReceipt,
     ModelTokenUsage,
+    model_price_snapshot_digest,
 )
 from app.readings.narrative_contracts import (
     CANDIDATE_SCHEMA,
@@ -80,19 +81,18 @@ class ModelPriceSnapshot:
 
     @property
     def snapshot_digest(self) -> str:
-        payload = {
-            "currency": self.currency,
-            "input_microunits_per_million_tokens": (self.input_microunits_per_million_tokens),
-            "output_microunits_per_million_tokens": (self.output_microunits_per_million_tokens),
-            "version": self.version,
-        }
-        return hashlib.sha256(_canonical_json(payload)).hexdigest()
+        return model_price_snapshot_digest(
+            version=self.version,
+            currency=self.currency,
+            input_microunits_per_million_tokens=(self.input_microunits_per_million_tokens),
+            output_microunits_per_million_tokens=(self.output_microunits_per_million_tokens),
+        )
 
 
 @dataclass(frozen=True, slots=True)
 class _ProviderObservation:
     model_version: str | None = None
-    request_id: str | None = None
+    request_fingerprint: str | None = None
     usage: ModelTokenUsage | None = None
 
 
@@ -101,6 +101,7 @@ class _ModelCallOutcome:
     result: ModelGenerationResult | None
     error_code: str | None
     receipt: ModelCallReceipt | None
+    cancelled: bool = False
 
 
 class ModelAuditSink(Protocol):
@@ -184,6 +185,10 @@ class DeepSeekStandaloneModelAdapter:
     async def generate(self, request: NarrativeRequest) -> ModelGenerationResult:
         outcome = await self._perform_call(request)
         del request
+        if outcome.cancelled:
+            receipt = outcome.receipt
+            del outcome
+            self._raise_cancelled_sanitized(receipt)
         if outcome.error_code is not None:
             self._raise_sanitized(outcome.error_code, outcome.receipt)
         if outcome.result is None:
@@ -210,6 +215,7 @@ class DeepSeekStandaloneModelAdapter:
         candidate: NarrativeCandidate | None = None
         observation = _ProviderObservation()
         error_code: str | None = None
+        cancelled = False
         try:
             async with asyncio.timeout(self._overall_timeout_seconds):
                 sent = True
@@ -240,15 +246,20 @@ class DeepSeekStandaloneModelAdapter:
                     raw = await self._read_bounded(response)
                     response_payload = json.loads(raw)
                     observation = self._observe_provider(response_payload, response.headers)
-                    candidate, model_version, provider_request_id, usage = self._parse_response(
-                        response_payload,
-                        response.headers,
+                    candidate, model_version, provider_request_fingerprint, usage = (
+                        self._parse_response(
+                            response_payload,
+                            response.headers,
+                        )
                     )
                     observation = _ProviderObservation(
                         model_version=model_version,
-                        request_id=provider_request_id,
+                        request_fingerprint=provider_request_fingerprint,
                         usage=usage,
                     )
+        except asyncio.CancelledError:
+            error_code = "model_cancelled"
+            cancelled = True
         except NarrativeGenerationError as error:
             error_code = str(error)
         except (TimeoutError, httpx.TimeoutException):
@@ -270,19 +281,35 @@ class DeepSeekStandaloneModelAdapter:
             model_profile_snapshot_digest=profile_digest,
             provider=DEEPSEEK_PROVIDER,
             provider_model_version=observation.model_version,
-            provider_request_id=observation.request_id,
+            provider_request_fingerprint=observation.request_fingerprint,
             request_fingerprint=request_fingerprint,
             latency_ms=latency_ms,
             narrative_policy_version=policy_version,
             output_contract_id=output_contract_id,
             price_snapshot=self._price_receipt(),
             usage=observation.usage,
-            cost=(None if observation.usage is None else self._cost(observation.usage)),
+            cost=(
+                self._cost(observation.usage)
+                if observation.usage is not None and observation.model_version == DEEPSEEK_MODEL_ID
+                else None
+            ),
         )
         try:
             await self._audit_sink.record(receipt)
+        except asyncio.CancelledError:
+            cancelled = True
+            error_code = "model_cancelled"
+            if receipt.outcome != "failed":
+                receipt = replace(receipt, outcome="failed", error_code=error_code)
         except Exception:
             _logger.error('{"event":"standalone_model_audit_sink_failed"}')
+        if cancelled:
+            return _ModelCallOutcome(
+                result=None,
+                error_code=error_code,
+                receipt=receipt,
+                cancelled=True,
+            )
         if error_code is not None or candidate is None:
             return _ModelCallOutcome(result=None, error_code=error_code, receipt=receipt)
         return _ModelCallOutcome(
@@ -294,6 +321,12 @@ class DeepSeekStandaloneModelAdapter:
     @staticmethod
     def _raise_sanitized(code: str, receipt: ModelCallReceipt | None) -> Never:
         raise NarrativeGenerationError(code, receipt=receipt) from None
+
+    @staticmethod
+    def _raise_cancelled_sanitized(receipt: ModelCallReceipt | None) -> Never:
+        if receipt is None:
+            raise asyncio.CancelledError from None
+        raise NarrativeGenerationCancelled(receipt=receipt) from None
 
     async def _read_bounded(self, response: httpx.Response) -> bytes:
         content_length = response.headers.get("content-length")
@@ -372,62 +405,59 @@ class DeepSeekStandaloneModelAdapter:
             raise NarrativeGenerationError("model_invalid_response")
         if model_version != DEEPSEEK_MODEL_ID:
             raise NarrativeGenerationError("model_unapproved_response")
-        provider_request_id = headers.get("x-request-id") or payload.get("id")
-        if not isinstance(provider_request_id, str) or not _SAFE_PROVIDER_METADATA.fullmatch(
-            provider_request_id
-        ):
+        provider_request_fingerprint = self._provider_request_fingerprint(
+            headers.get("x-request-id") or payload.get("id")
+        )
+        if provider_request_fingerprint is None:
             raise NarrativeGenerationError("model_invalid_response")
         raw_usage = payload.get("usage")
         if not isinstance(raw_usage, Mapping):
             raise NarrativeGenerationError("model_usage_invalid")
         usage = self._parse_usage(raw_usage)
-        return candidate, model_version, provider_request_id, usage
+        return candidate, model_version, provider_request_fingerprint, usage
 
     def _observe_provider(
         self,
         payload: object | None,
         headers: httpx.Headers,
     ) -> _ProviderObservation:
-        request_id_value = headers.get("x-request-id")
-        request_id = (
-            request_id_value
-            if isinstance(request_id_value, str)
-            and _SAFE_PROVIDER_METADATA.fullmatch(request_id_value)
-            else None
-        )
+        request_fingerprint = self._provider_request_fingerprint(headers.get("x-request-id"))
         if not isinstance(payload, Mapping):
-            return _ProviderObservation(request_id=request_id)
+            return _ProviderObservation(request_fingerprint=request_fingerprint)
         model_value = payload.get("model")
-        model_version = (
-            model_value
-            if isinstance(model_value, str) and _SAFE_PROVIDER_METADATA.fullmatch(model_value)
-            else None
-        )
-        if request_id is None:
-            body_request_id = payload.get("id")
-            if isinstance(body_request_id, str) and _SAFE_PROVIDER_METADATA.fullmatch(
-                body_request_id
-            ):
-                request_id = body_request_id
+        model_version = DEEPSEEK_MODEL_ID if model_value == DEEPSEEK_MODEL_ID else None
+        if request_fingerprint is None:
+            request_fingerprint = self._provider_request_fingerprint(payload.get("id"))
         usage: ModelTokenUsage | None = None
         raw_usage = payload.get("usage")
         if isinstance(raw_usage, Mapping):
             with suppress(NarrativeGenerationError):
-                usage = self._parse_usage(raw_usage)
+                usage = self._parse_observed_usage(raw_usage)
         return _ProviderObservation(
             model_version=model_version,
-            request_id=request_id,
+            request_fingerprint=request_fingerprint,
             usage=usage,
         )
 
+    @staticmethod
+    def _provider_request_fingerprint(value: object) -> str | None:
+        if not isinstance(value, str) or not _SAFE_PROVIDER_METADATA.fullmatch(value):
+            return None
+        return hashlib.sha256(value.encode()).hexdigest()
+
     def _parse_usage(self, raw_usage: Mapping[str, object]) -> ModelTokenUsage:
+        usage = self._parse_observed_usage(raw_usage)
+        if usage.output_tokens > self._max_output_tokens:
+            raise NarrativeGenerationError("model_usage_invalid")
+        return usage
+
+    def _parse_observed_usage(self, raw_usage: Mapping[str, object]) -> ModelTokenUsage:
         input_tokens = self._token_count(raw_usage.get("prompt_tokens"))
         output_tokens = self._token_count(raw_usage.get("completion_tokens"))
         total_tokens = self._token_count(raw_usage.get("total_tokens"))
         if (
             total_tokens != input_tokens + output_tokens
-            or output_tokens > self._max_output_tokens
-            or max(input_tokens, total_tokens) > _MAX_MODEL_USAGE_TOKENS
+            or max(input_tokens, output_tokens, total_tokens) > _MAX_MODEL_USAGE_TOKENS
         ):
             raise NarrativeGenerationError("model_usage_invalid")
         return ModelTokenUsage(
@@ -591,7 +621,7 @@ class FakeModelGateway:
             model_profile_snapshot_digest=hashlib.sha256(b"fake-model-p0-v1").hexdigest(),
             provider="fake",
             provider_model_version="fake-model-v1",
-            provider_request_id="fake-request-v1",
+            provider_request_fingerprint=hashlib.sha256(b"fake-request-v1").hexdigest(),
             request_fingerprint=hashlib.sha256(_canonical_json(request.to_dict())).hexdigest(),
             latency_ms=0,
             narrative_policy_version=request.narrative_policy_version,

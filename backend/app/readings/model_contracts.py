@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from dataclasses import dataclass
 from typing import Literal
@@ -9,6 +11,24 @@ from app.readings.narrative_contracts import NarrativeCandidate
 _SAFE_METADATA = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 _SAFE_ERROR_CODE = re.compile(r"^model_[a-z0-9_]{1,80}$")
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
+
+
+def model_price_snapshot_digest(
+    *,
+    version: str,
+    currency: str,
+    input_microunits_per_million_tokens: int,
+    output_microunits_per_million_tokens: int,
+) -> str:
+    payload = {
+        "currency": currency,
+        "input_microunits_per_million_tokens": input_microunits_per_million_tokens,
+        "output_microunits_per_million_tokens": output_microunits_per_million_tokens,
+        "version": version,
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,6 +93,14 @@ class ModelPriceReceipt:
             < 0
         ):
             raise ValueError("model price receipt rates cannot be negative")
+        expected_digest = model_price_snapshot_digest(
+            version=self.version,
+            currency=self.currency,
+            input_microunits_per_million_tokens=(self.input_microunits_per_million_tokens),
+            output_microunits_per_million_tokens=(self.output_microunits_per_million_tokens),
+        )
+        if self.snapshot_digest != expected_digest:
+            raise ValueError("model price receipt digest does not match its fields")
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -92,7 +120,7 @@ class ModelCallReceipt:
     model_profile_snapshot_digest: str
     provider: str
     provider_model_version: str | None
-    provider_request_id: str | None
+    provider_request_fingerprint: str | None
     request_fingerprint: str
     latency_ms: int
     narrative_policy_version: str
@@ -108,8 +136,8 @@ class ModelCallReceipt:
             self.error_code is None or not _SAFE_ERROR_CODE.fullmatch(self.error_code)
         ):
             raise ValueError("failed model audit requires a safe error code")
-        if (self.usage is None) != (self.cost is None):
-            raise ValueError("model usage and cost must be present together")
+        if self.cost is not None and self.usage is None:
+            raise ValueError("model cost requires known usage")
         if self.cost is not None and (
             self.cost.currency != self.price_snapshot.currency
             or self.cost.price_snapshot_version != self.price_snapshot.version
@@ -122,16 +150,22 @@ class ModelCallReceipt:
             raise ValueError("model cost must bind the exact price snapshot")
         if self.outcome == "succeeded" and (
             self.provider_model_version is None
-            or self.provider_request_id is None
+            or self.provider_request_fingerprint is None
             or self.usage is None
+            or self.cost is None
         ):
             raise ValueError("successful model audit requires complete provider metadata")
         for value in (self.model_profile_id, self.provider, self.narrative_policy_version):
             if not _SAFE_METADATA.fullmatch(value):
                 raise ValueError("model audit metadata must be a safe identifier")
-        for optional_value in (self.provider_model_version, self.provider_request_id):
-            if optional_value is not None and not _SAFE_METADATA.fullmatch(optional_value):
-                raise ValueError("provider audit metadata must be a safe identifier")
+        if self.provider_model_version is not None and not _SAFE_METADATA.fullmatch(
+            self.provider_model_version
+        ):
+            raise ValueError("provider audit metadata must be a safe identifier")
+        if self.provider_request_fingerprint is not None and not _SHA256.fullmatch(
+            self.provider_request_fingerprint
+        ):
+            raise ValueError("provider request fingerprint must be SHA-256")
         if not _SHA256.fullmatch(self.model_profile_snapshot_digest):
             raise ValueError("model profile snapshot digest must be SHA-256")
         if not _SHA256.fullmatch(self.request_fingerprint):
@@ -140,6 +174,14 @@ class ModelCallReceipt:
             raise ValueError("model latency cannot be negative")
         if not _SAFE_METADATA.fullmatch(self.output_contract_id):
             raise ValueError("output contract ID must be a safe identifier")
+        if self.cost is not None and self.usage is not None:
+            numerator = (
+                self.usage.input_tokens * self.cost.input_microunits_per_million_tokens
+                + self.usage.output_tokens * self.cost.output_microunits_per_million_tokens
+            )
+            expected_microunits = (numerator + 500_000) // 1_000_000
+            if self.cost.microunits != expected_microunits:
+                raise ValueError("computed model cost does not match usage and rates")
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -150,13 +192,15 @@ class ModelCallReceipt:
             "model_profile_snapshot_digest": self.model_profile_snapshot_digest,
             "provider": self.provider,
             "provider_model_version": self.provider_model_version,
-            "provider_request_id": self.provider_request_id,
+            "provider_request_fingerprint": self.provider_request_fingerprint,
             "request_fingerprint": self.request_fingerprint,
             "latency_ms": self.latency_ms,
             "narrative_policy_version": self.narrative_policy_version,
             "output_contract_id": self.output_contract_id,
             "price_snapshot": self.price_snapshot.to_dict(),
             "usage_known": self.usage_known,
+            "cost_known": self.cost_known,
+            "cost_unknown_reason": self.cost_unknown_reason,
             "usage": (
                 None
                 if self.usage is None
@@ -187,6 +231,18 @@ class ModelCallReceipt:
     @property
     def usage_known(self) -> bool:
         return self.usage is not None
+
+    @property
+    def cost_known(self) -> bool:
+        return self.cost is not None
+
+    @property
+    def cost_unknown_reason(self) -> str | None:
+        if self.cost is not None:
+            return None
+        if self.usage is None:
+            return "usage_unavailable"
+        return "price_snapshot_model_mismatch"
 
 
 @dataclass(frozen=True, slots=True)

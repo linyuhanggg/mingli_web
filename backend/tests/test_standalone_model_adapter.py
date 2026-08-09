@@ -21,6 +21,7 @@ from app.adapters.model import (
 )
 from app.config import Settings
 from app.readings.errors import NarrativeGenerationError
+from app.readings.model_contracts import ModelCost, ModelPriceReceipt, ModelTokenUsage
 from app.readings.narrative_contracts import NarrativeRequest, OutputContract
 from app.readings.runtime_contracts import ReadingBrief
 from pydantic import SecretStr, ValidationError
@@ -225,7 +226,10 @@ async def test_successful_call_returns_candidate_and_auditable_integer_cost() ->
     assert audit.model_profile_id == DEEPSEEK_MODEL_PROFILE_ID
     assert audit.provider == "deepseek"
     assert audit.provider_model_version == DEEPSEEK_MODEL_ID
-    assert audit.provider_request_id == "provider-request-fixture"
+    assert (
+        audit.provider_request_fingerprint
+        == hashlib.sha256(b"provider-request-fixture").hexdigest()
+    )
     assert audit.request_fingerprint == hashlib.sha256(requests[0].content).hexdigest()
     assert audit.usage.input_tokens == 3
     assert audit.usage.output_tokens == 7
@@ -264,8 +268,14 @@ async def test_two_concurrent_jobs_receive_their_own_explicit_receipts() -> None
     finally:
         await adapter.aclose()
 
-    assert first.receipt.provider_request_id == "provider-request-job-a"
-    assert second.receipt.provider_request_id == "provider-request-job-b"
+    assert (
+        first.receipt.provider_request_fingerprint
+        == hashlib.sha256(b"provider-request-job-a").hexdigest()
+    )
+    assert (
+        second.receipt.provider_request_fingerprint
+        == hashlib.sha256(b"provider-request-job-b").hexdigest()
+    )
     assert first.receipt.request_fingerprint != second.receipt.request_fingerprint
     assert first.receipt is not second.receipt
 
@@ -398,6 +408,11 @@ async def test_malformed_responses_fail_closed_after_exactly_one_request(
         assert audit.usage is not None
         assert audit.usage.total_tokens == 10
         assert audit.cost is not None
+    if case == "model_mismatch":
+        assert audit.usage is not None
+        assert audit.usage.total_tokens == 10
+        assert audit.cost is None
+        assert audit.to_dict()["cost_unknown_reason"] == "price_snapshot_model_mismatch"
 
 
 async def test_traceback_locals_never_retain_the_key_prompt_or_authorized_request() -> None:
@@ -424,6 +439,46 @@ async def test_traceback_locals_never_retain_the_key_prompt_or_authorized_reques
     assert api_key not in rendered_locals
     assert sensitive_prompt not in rendered_locals
     assert "authorization" not in rendered_locals.lower()
+
+
+async def test_external_cancellation_carries_a_safe_receipt_without_sensitive_frames() -> None:
+    sensitive_prompt = "事业上最该先抓住哪条主线？"
+    api_key = "test-only-obviously-not-a-real-key"
+    request_started = asyncio.Event()
+    never_complete = asyncio.Event()
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        del request
+        request_started.set()
+        await never_complete.wait()
+        raise AssertionError("unreachable")
+
+    audits = RecordingAuditSink()
+    adapter = _adapter(httpx.MockTransport(handler), audits=audits)
+    task = asyncio.create_task(adapter.generate(_narrative_request(sensitive_prompt)))
+    try:
+        await request_started.wait()
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError) as captured:
+            await task
+    finally:
+        await adapter.aclose()
+
+    receipt = getattr(captured.value, "receipt", None)
+    assert receipt is audits.records[0]
+    assert receipt.outcome == "failed"
+    assert receipt.error_code == "model_cancelled"
+    frames: list[str] = []
+    current = captured.value.__traceback__
+    while current is not None:
+        if current.tb_frame.f_code.co_filename.endswith("/app/adapters/model.py"):
+            frames.append(repr(current.tb_frame.f_locals))
+        current = current.tb_next
+    rendered_locals = "\n".join(frames)
+    assert api_key not in rendered_locals
+    assert sensitive_prompt not in rendered_locals
+    assert "authorization" not in rendered_locals.lower()
+    assert "body_bytes" not in rendered_locals
 
 
 class CountingByteStream(httpx.AsyncByteStream):
@@ -519,9 +574,11 @@ async def test_usage_is_bounded_by_the_frozen_profile() -> None:
         await adapter.aclose()
 
     assert len(audits.records) == 1
-    assert audits.records[0].usage is None
-    assert audits.records[0].cost is None
-    assert audits.records[0].to_dict()["usage_known"] is False
+    assert audits.records[0].usage is not None
+    assert audits.records[0].usage.output_tokens == 4097
+    assert audits.records[0].cost is not None
+    assert audits.records[0].to_dict()["usage_known"] is True
+    assert audits.records[0].to_dict()["cost_known"] is True
 
 
 @pytest.mark.parametrize("failure_kind", ["connect", "read", "overall"])
@@ -757,6 +814,58 @@ def test_price_snapshot_digest_binds_version_currency_and_integer_rates() -> Non
     assert len(first.snapshot_digest) == 64
 
 
+def test_receipt_recomputes_price_snapshot_digest_and_integer_cost() -> None:
+    snapshot = ModelPriceSnapshot(
+        version="fixture-price-v1",
+        currency="CNY",
+        input_microunits_per_million_tokens=2_000_000,
+        output_microunits_per_million_tokens=4_000_000,
+    )
+    with pytest.raises(ValueError, match="price receipt digest"):
+        ModelPriceReceipt(
+            version=snapshot.version,
+            currency=snapshot.currency,
+            snapshot_digest="0" * 64,
+            input_microunits_per_million_tokens=(snapshot.input_microunits_per_million_tokens),
+            output_microunits_per_million_tokens=(snapshot.output_microunits_per_million_tokens),
+        )
+
+    usage = ModelTokenUsage(input_tokens=3, output_tokens=7, total_tokens=10)
+    price_receipt = ModelPriceReceipt(
+        version=snapshot.version,
+        currency=snapshot.currency,
+        snapshot_digest=snapshot.snapshot_digest,
+        input_microunits_per_million_tokens=snapshot.input_microunits_per_million_tokens,
+        output_microunits_per_million_tokens=snapshot.output_microunits_per_million_tokens,
+    )
+    with pytest.raises(ValueError, match="computed model cost"):
+        ModelCallReceipt(
+            outcome="succeeded",
+            error_code=None,
+            model_profile_id=DEEPSEEK_MODEL_PROFILE_ID,
+            model_profile_snapshot_digest="a" * 64,
+            provider="deepseek",
+            provider_model_version=DEEPSEEK_MODEL_ID,
+            provider_request_fingerprint="b" * 64,
+            request_fingerprint="c" * 64,
+            latency_ms=1,
+            narrative_policy_version="policy-v1",
+            output_contract_id="preview-v1",
+            price_snapshot=price_receipt,
+            usage=usage,
+            cost=ModelCost(
+                currency="CNY",
+                microunits=35,
+                price_snapshot_version=snapshot.version,
+                price_snapshot_digest=snapshot.snapshot_digest,
+                input_microunits_per_million_tokens=(snapshot.input_microunits_per_million_tokens),
+                output_microunits_per_million_tokens=(
+                    snapshot.output_microunits_per_million_tokens
+                ),
+            ),
+        )
+
+
 async def test_safe_audit_log_excludes_api_key_prompt_and_candidate(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -793,7 +902,8 @@ async def test_safe_audit_log_excludes_api_key_prompt_and_candidate(
 
     rendered = "\n".join(messages)
     assert "standalone_model_call" in rendered
-    assert "provider-request-safe" in rendered
+    assert hashlib.sha256(b"provider-request-safe").hexdigest() in rendered
+    assert "provider-request-safe" not in rendered
     for forbidden in (
         "test-only-obviously-not-a-real-key",
         "事业上最该先抓住哪条主线",
@@ -827,8 +937,43 @@ async def test_untrusted_provider_request_id_cannot_inject_sensitive_audit_text(
 
     assert len(audits.records) == 1
     assert audits.records[0].outcome == "failed"
-    assert audits.records[0].provider_request_id == "provider-body-id"
+    assert (
+        audits.records[0].provider_request_fingerprint
+        == hashlib.sha256(b"provider-body-id").hexdigest()
+    )
     assert injected not in repr(audits.records[0])
+
+
+@pytest.mark.parametrize("echo_field", ["request_id", "model"])
+async def test_provider_metadata_can_never_echo_the_api_key_into_a_receipt(
+    echo_field: str,
+) -> None:
+    api_key = "test-only-obviously-not-a-real-key"
+    payload = _provider_response()
+    headers = {"X-Request-ID": "provider-request-safe"}
+    if echo_field == "request_id":
+        headers["X-Request-ID"] = api_key
+    else:
+        payload["model"] = api_key
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        del request
+        return httpx.Response(200, json=payload, headers=headers)
+
+    audits = RecordingAuditSink()
+    adapter = _adapter(httpx.MockTransport(handler), audits=audits)
+    try:
+        if echo_field == "model":
+            with pytest.raises(NarrativeGenerationError, match="model_unapproved_response"):
+                await adapter.generate(_narrative_request())
+        else:
+            await adapter.generate(_narrative_request())
+    finally:
+        await adapter.aclose()
+
+    assert len(audits.records) == 1
+    assert api_key not in repr(audits.records[0])
+    assert api_key not in json.dumps(audits.records[0].to_dict(), sort_keys=True)
 
 
 async def test_configured_worker_builds_and_closes_the_selected_model_adapter(

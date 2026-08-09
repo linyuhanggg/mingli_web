@@ -29,6 +29,12 @@ def modules() -> tuple[object, object, object]:
 def model_generation(candidate: object) -> tuple[object, object]:
     model = importlib.import_module("app.adapters.model")
     usage = model.ModelTokenUsage(input_tokens=3, output_tokens=7, total_tokens=10)
+    price_digest = model.model_price_snapshot_digest(
+        version="fixture-price-v1",
+        currency="CNY",
+        input_microunits_per_million_tokens=2_000_000,
+        output_microunits_per_million_tokens=4_000_000,
+    )
     audit = model.ModelCallReceipt(
         outcome="succeeded",
         error_code=None,
@@ -36,7 +42,7 @@ def model_generation(candidate: object) -> tuple[object, object]:
         model_profile_snapshot_digest="a" * 64,
         provider="deepseek",
         provider_model_version="deepseek-v4-flash",
-        provider_request_id="provider-request-fixture",
+        provider_request_fingerprint=hashlib.sha256(b"provider-request-fixture").hexdigest(),
         request_fingerprint="b" * 64,
         latency_ms=125,
         narrative_policy_version="policy-v1",
@@ -44,7 +50,7 @@ def model_generation(candidate: object) -> tuple[object, object]:
         price_snapshot=model.ModelPriceReceipt(
             version="fixture-price-v1",
             currency="CNY",
-            snapshot_digest="c" * 64,
+            snapshot_digest=price_digest,
             input_microunits_per_million_tokens=2_000_000,
             output_microunits_per_million_tokens=4_000_000,
         ),
@@ -53,7 +59,7 @@ def model_generation(candidate: object) -> tuple[object, object]:
             currency="CNY",
             microunits=34,
             price_snapshot_version="fixture-price-v1",
-            price_snapshot_digest="c" * 64,
+            price_snapshot_digest=price_digest,
             input_microunits_per_million_tokens=2_000_000,
             output_microunits_per_million_tokens=4_000_000,
         ),
@@ -156,7 +162,7 @@ async def test_two_concurrent_jobs_persist_their_own_receipts_without_cross_talk
                 candidate=candidate,
                 receipt=replace(
                     base_receipt,
-                    provider_request_id=request_id,
+                    provider_request_fingerprint=hashlib.sha256(request_id.encode()).hexdigest(),
                     request_fingerprint=hashlib.sha256(question.encode()).hexdigest(),
                 ),
             )
@@ -201,8 +207,14 @@ async def test_two_concurrent_jobs_persist_their_own_receipts_without_cross_talk
         orchestrator.ReadingStatus.COMPLETING,
         orchestrator.ReadingStatus.COMPLETING,
     ]
-    assert repositories[0].model_receipts[0].provider_request_id == "provider-request-job-a"
-    assert repositories[1].model_receipts[0].provider_request_id == "provider-request-job-b"
+    assert (
+        repositories[0].model_receipts[0].provider_request_fingerprint
+        == hashlib.sha256(b"provider-request-job-a").hexdigest()
+    )
+    assert (
+        repositories[1].model_receipts[0].provider_request_fingerprint
+        == hashlib.sha256(b"provider-request-job-b").hexdigest()
+    )
     assert (
         repositories[0].model_receipts[0].request_fingerprint
         != repositories[1].model_receipts[0].request_fingerprint

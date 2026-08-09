@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
@@ -223,6 +224,12 @@ async def test_generation_attempt_persists_the_safe_model_receipt(
     narrative = importlib.import_module("app.readings.narrative_contracts")
     now = datetime(2026, 8, 9, 12, 0, tzinfo=UTC)
     usage = model.ModelTokenUsage(input_tokens=3, output_tokens=7, total_tokens=10)
+    price_digest = model.model_price_snapshot_digest(
+        version="fixture-price-v1",
+        currency="CNY",
+        input_microunits_per_million_tokens=2_000_000,
+        output_microunits_per_million_tokens=4_000_000,
+    )
     audit = model.ModelCallReceipt(
         outcome="succeeded",
         error_code=None,
@@ -230,7 +237,7 @@ async def test_generation_attempt_persists_the_safe_model_receipt(
         model_profile_snapshot_digest="a" * 64,
         provider="deepseek",
         provider_model_version="deepseek-v4-flash",
-        provider_request_id="provider-request-fixture",
+        provider_request_fingerprint=hashlib.sha256(b"provider-request-fixture").hexdigest(),
         request_fingerprint="b" * 64,
         latency_ms=125,
         narrative_policy_version="policy-v1",
@@ -238,7 +245,7 @@ async def test_generation_attempt_persists_the_safe_model_receipt(
         price_snapshot=model.ModelPriceReceipt(
             version="fixture-price-v1",
             currency="CNY",
-            snapshot_digest="c" * 64,
+            snapshot_digest=price_digest,
             input_microunits_per_million_tokens=2_000_000,
             output_microunits_per_million_tokens=4_000_000,
         ),
@@ -247,7 +254,7 @@ async def test_generation_attempt_persists_the_safe_model_receipt(
             currency="CNY",
             microunits=34,
             price_snapshot_version="fixture-price-v1",
-            price_snapshot_digest="c" * 64,
+            price_snapshot_digest=price_digest,
             input_microunits_per_million_tokens=2_000_000,
             output_microunits_per_million_tokens=4_000_000,
         ),
