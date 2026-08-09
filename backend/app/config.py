@@ -115,6 +115,10 @@ class Settings(BaseSettings):
     otp_rate_window_seconds: int = Field(default=10 * 60, ge=1)
     otp_guest_window_limit: int = Field(default=5, ge=1)
     otp_network_window_limit: int = Field(default=30, ge=1)
+    reading_write_rate_limit: int = Field(default=10, ge=1)
+    reading_write_rate_window_seconds: int = Field(default=60, ge=1)
+    profile_write_rate_limit: int = Field(default=10, ge=1)
+    profile_write_rate_window_seconds: int = Field(default=60, ge=1)
     trusted_proxy_cidrs: str = ""
     device_session_days: int = 30
     log_level: str = "INFO"

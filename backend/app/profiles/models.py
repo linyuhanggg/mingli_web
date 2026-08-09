@@ -37,6 +37,7 @@ class SubjectProfile(Base):
         Uuid,
         ForeignKey("guest_sessions.id", ondelete="CASCADE"),
     )
+    label: Mapped[str | None] = mapped_column(String(80))
     status: Mapped[str] = mapped_column(String(24), default="active", nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

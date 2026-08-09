@@ -291,6 +291,82 @@ class ReadingJobRecord(Base):
     )
 
 
+class ReadingIdempotencyKey(Base):
+    """One persisted Idempotency-Key maps to one Reading Version per owner."""
+
+    __tablename__ = "reading_idempotency_keys"
+    __table_args__ = (
+        CheckConstraint(
+            "(owner_user_id IS NOT NULL AND owner_guest_session_id IS NULL) "
+            "OR (owner_user_id IS NULL AND owner_guest_session_id IS NOT NULL)",
+            name="owner_exactly_one",
+        ),
+        UniqueConstraint(
+            "key_hash",
+            "owner_user_id",
+            "owner_guest_session_id",
+            name="uq_reading_idempotency_keys_owner_key",
+        ),
+        Index(
+            "ix_reading_idempotency_keys_reading_version_id",
+            "reading_version_id",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    key_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    action: Mapped[str] = mapped_column(String(80), nullable=False)
+    request_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    owner_user_id: Mapped[UUID | None] = mapped_column(
+        Uuid,
+        ForeignKey("users.id", ondelete="SET NULL"),
+    )
+    owner_guest_session_id: Mapped[UUID | None] = mapped_column(
+        Uuid,
+        ForeignKey("guest_sessions.id", ondelete="SET NULL"),
+    )
+    reading_version_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("reading_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
+class ReadingVerification(Base):
+    """User feedback kept outside the model and runtime command path."""
+
+    __tablename__ = "reading_verifications"
+    __table_args__ = (
+        UniqueConstraint(
+            "reading_version_id",
+            name="uq_reading_verifications_reading_version_id",
+        ),
+        CheckConstraint(
+            "outcome IN ('accepted', 'partial', 'disagreed', 'unknown')",
+            name="outcome_allowed",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    reading_version_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("reading_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    outcome: Mapped[str] = mapped_column(String(16), nullable=False)
+    note: Mapped[str | None] = mapped_column(String(500))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
 for immutable_model in (RuntimeRelease, FactBrief, GenerationAttempt, AcceptedCopy):
     event.listen(
         immutable_model,

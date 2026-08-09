@@ -98,7 +98,7 @@ async def verify_otp(
     response: Response,
     payload: OtpVerifyRequest,
     session: AsyncSession = Depends(database_session),
-    _: None = Depends(require_guest_csrf),
+    guest_session: GuestSession = Depends(require_guest_csrf),
 ) -> AuthSessionResponse:
     try:
         created = await _auth_service(request, session).verify_otp(
@@ -109,6 +109,18 @@ async def verify_otp(
     except OtpRateLimited as error:
         raise ApiProblem(status=429, title="Too many verification attempts") from error
 
+    from app.profiles.service import GuestAlreadyClaimedError, ProfileService
+
+    try:
+        await ProfileService(session, request.app.state.settings).claim_guest_ownership(
+            guest_session,
+            created.user.id,
+        )
+    except GuestAlreadyClaimedError as error:
+        raise ApiProblem(
+            status=409,
+            title="Guest Session is already claimed",
+        ) from error
     await session.commit()
     settings: Settings = request.app.state.settings
     set_device_cookies(

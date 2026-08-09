@@ -6,6 +6,7 @@ from typing import cast
 from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
 
@@ -16,8 +17,10 @@ from app.readings.models import (
     AcceptedCopy,
     FactBrief,
     GenerationAttempt,
+    ReadingIdempotencyKey,
     ReadingJobRecord,
     ReadingRoot,
+    ReadingVerification,
     ReadingVersion,
     RuntimeRelease,
 )
@@ -161,6 +164,37 @@ class SqlReadingRepository:
         await self.session.flush()
         return version
 
+    async def replace_prepare(
+        self,
+        version_id: UUID,
+        prepare: Prepare,
+    ) -> None:
+        """Persist the resumed Prepare for a waiting_input Reading Version."""
+        version = await self.session.scalar(
+            select(ReadingVersion)
+            .where(ReadingVersion.id == version_id)
+            .with_for_update()
+        )
+        if version is None:
+            raise LookupError("Reading Version not found")
+        if version.status != ReadingStatus.WAITING_INPUT.value:
+            raise ValueError("Reading Version is not waiting for input")
+        encrypted = self.cipher.encrypt_json(
+            prepare.to_dict(),
+            context=f"reading-version:{version.id}:prepare",
+        )
+        version.prepare_key_id = encrypted.key_id
+        version.prepare_nonce = encrypted.nonce
+        version.prepare_ciphertext = encrypted.ciphertext
+        version.prepare_digest = encrypted.fingerprint
+        version.prepare_has_state_token = prepare.state_token is not None
+        version.status = ReadingStatus.INPUT_READY.value
+        version.last_result_key_id = None
+        version.last_result_nonce = None
+        version.last_result_ciphertext = None
+        version.last_result_digest = None
+        await self.session.flush()
+
     async def create_job(
         self,
         *,
@@ -186,6 +220,205 @@ class SqlReadingRepository:
         self.session.add(job)
         await self.session.flush()
         return job
+
+    async def resolve_runtime_release(self) -> RuntimeRelease:
+        release = await self.session.scalar(
+            select(RuntimeRelease)
+            .where(RuntimeRelease.production_ready.is_(True))
+            .order_by(
+                RuntimeRelease.created_at.desc(),
+                RuntimeRelease.id.desc(),
+            )
+        )
+        if release is None:
+            raise LookupError("no production-ready Runtime Release is registered")
+        return release
+
+    async def load_owned_version(
+        self,
+        version_id: UUID,
+        *,
+        owner_user_id: UUID | None,
+        owner_guest_session_id: UUID | None,
+    ) -> tuple[ReadingRoot, ReadingVersion]:
+        row = await self.session.execute(
+            select(ReadingRoot, ReadingVersion)
+            .join(ReadingVersion, ReadingVersion.reading_root_id == ReadingRoot.id)
+            .where(
+                ReadingVersion.id == version_id,
+                ReadingRoot.owner_user_id == owner_user_id,
+                ReadingRoot.owner_guest_session_id == owner_guest_session_id,
+            )
+        )
+        found = row.first()
+        if found is None:
+            raise LookupError("Reading Version not found")
+        return found[0], found[1]
+
+    async def load_prepare(self, version_id: UUID) -> Prepare:
+        version = await self.session.get(ReadingVersion, version_id)
+        if version is None:
+            raise LookupError("Reading Version not found")
+        payload = self.cipher.decrypt_json(
+            self._payload(
+                version.prepare_key_id,
+                version.prepare_nonce,
+                version.prepare_ciphertext,
+                version.prepare_digest,
+            ),
+            context=f"reading-version:{version.id}:prepare",
+        )
+        command = command_from_dict(payload)
+        if not isinstance(command, Prepare):
+            raise ImmutableRecordError("ReadingVersion does not contain Prepare")
+        return command
+
+    async def load_waiting_input(self, version_id: UUID) -> Stopped | None:
+        version = await self.session.get(ReadingVersion, version_id)
+        if version is None:
+            raise LookupError("Reading Version not found")
+        if version.last_result_ciphertext is None:
+            return None
+        payload = self.cipher.decrypt_json(
+            self._payload(
+                version.last_result_key_id,
+                version.last_result_nonce,
+                version.last_result_ciphertext,
+                version.last_result_digest,
+            ),
+            context=f"reading-version:{version.id}:last-result",
+        )
+        result = result_from_dict(payload)
+        if not isinstance(result, Stopped) or result.reason != "need_input":
+            return None
+        return result
+
+    async def load_state_token(self, version_id: UUID) -> str:
+        version = await self.session.get(ReadingVersion, version_id)
+        if version is None:
+            raise LookupError("Reading Version not found")
+        token = self._decrypt_optional_text(
+            version.state_token_key_id,
+            version.state_token_nonce,
+            version.state_token_ciphertext,
+            version.state_token_fingerprint,
+            context=f"reading-version:{version.id}:state-token",
+        )
+        if token is None:
+            raise ImmutableRecordError("Reading Version has no state token")
+        return token
+
+    async def load_fact_brief(self, version_id: UUID) -> ReadingBrief | None:
+        fact_brief = await self.get_fact_brief(version_id)
+        if fact_brief is None:
+            return None
+        payload = self.cipher.decrypt_json(
+            self._payload(
+                fact_brief.payload_key_id,
+                fact_brief.payload_nonce,
+                fact_brief.payload_ciphertext,
+                fact_brief.payload_digest,
+            ),
+            context=f"reading-version:{version_id}:brief",
+        )
+        return ReadingBrief.from_dict(payload)
+
+    async def load_accepted_copy(self, version_id: UUID) -> str | None:
+        accepted_copy = await self.get_accepted_copy(version_id)
+        if accepted_copy is None:
+            return None
+        return self.cipher.decrypt_text(
+            self._payload(
+                accepted_copy.payload_key_id,
+                accepted_copy.payload_nonce,
+                accepted_copy.payload_ciphertext,
+                accepted_copy.public_copy_digest,
+            ),
+            context=f"reading-version:{version_id}:accepted-copy",
+        )
+
+    async def load_verification(
+        self,
+        version_id: UUID,
+    ) -> ReadingVerification | None:
+        return cast(
+            ReadingVerification | None,
+            await self.session.scalar(
+                select(ReadingVerification).where(
+                    ReadingVerification.reading_version_id == version_id
+                )
+            )
+        )
+
+    async def save_verification(
+        self,
+        *,
+        version_id: UUID,
+        outcome: str,
+        note: str | None,
+    ) -> tuple[ReadingVerification, bool]:
+        existing = await self.load_verification(version_id)
+        if existing is not None:
+            return existing, False
+        verification = ReadingVerification(
+            id=uuid4(),
+            reading_version_id=version_id,
+            outcome=outcome,
+            note=note,
+        )
+        try:
+            async with self.session.begin_nested():
+                self.session.add(verification)
+                await self.session.flush()
+        except IntegrityError:
+            existing = await self.load_verification(version_id)
+            if existing is None:
+                raise
+            return existing, False
+        await self.session.refresh(verification)
+        return verification, True
+
+    async def find_idempotency(
+        self,
+        key_hash: str,
+        *,
+        owner_user_id: UUID | None,
+        owner_guest_session_id: UUID | None,
+    ) -> ReadingIdempotencyKey | None:
+        return cast(
+            ReadingIdempotencyKey | None,
+            await self.session.scalar(
+                select(ReadingIdempotencyKey).where(
+                    ReadingIdempotencyKey.key_hash == key_hash,
+                    ReadingIdempotencyKey.owner_user_id == owner_user_id,
+                    ReadingIdempotencyKey.owner_guest_session_id
+                    == owner_guest_session_id,
+                )
+            )
+        )
+
+    async def save_idempotency(
+        self,
+        *,
+        key_hash: str,
+        action: str,
+        request_fingerprint: str,
+        owner_user_id: UUID | None,
+        owner_guest_session_id: UUID | None,
+        reading_version_id: UUID,
+    ) -> ReadingIdempotencyKey:
+        record = ReadingIdempotencyKey(
+            id=uuid4(),
+            key_hash=key_hash,
+            action=action,
+            request_fingerprint=request_fingerprint,
+            owner_user_id=owner_user_id,
+            owner_guest_session_id=owner_guest_session_id,
+            reading_version_id=reading_version_id,
+        )
+        self.session.add(record)
+        await self.session.flush()
+        return record
 
     async def load_job(self, job_id: str) -> ReadingJob:
         job, version = await self._job_and_version(job_id)

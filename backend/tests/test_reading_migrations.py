@@ -45,6 +45,8 @@ def test_reading_migration_builds_immutable_phase_two_tables(
         "generation_attempts",
         "accepted_copies",
         "reading_jobs",
+        "reading_idempotency_keys",
+        "reading_verifications",
     }
     assert expected <= set(inspector.get_table_names())
 
@@ -61,6 +63,11 @@ def test_reading_migration_builds_immutable_phase_two_tables(
         ["reading_version_id", "attempt_number"],
     )
     assert has_unique("accepted_copies", ["reading_version_id"])
+    assert has_unique(
+        "reading_idempotency_keys",
+        ["key_hash", "owner_user_id", "owner_guest_session_id"],
+    )
+    assert has_unique("reading_verifications", ["reading_version_id"])
     assert any(
         index["name"] == "uq_reading_jobs_active_version" and index["unique"]
         for index in inspector.get_indexes("reading_jobs")
@@ -85,6 +92,12 @@ def test_reading_migration_builds_immutable_phase_two_tables(
     expected_checks = {
         "subject_profiles": {"ck_subject_profiles_owner_exactly_one"},
         "reading_roots": {"ck_reading_roots_owner_exactly_one"},
+        "reading_idempotency_keys": {
+            "ck_reading_idempotency_keys_owner_exactly_one",
+        },
+        "reading_verifications": {
+            "ck_reading_verifications_outcome_allowed",
+        },
         "reading_versions": {
             "ck_reading_versions_state_token_envelope_all_or_none",
             "ck_reading_versions_last_result_envelope_all_or_none",
@@ -107,6 +120,20 @@ def test_reading_migration_builds_immutable_phase_two_tables(
         "public_copy_digest",
     ):
         assert accepted_columns[name]["nullable"] is False
+    idempotency_columns = {
+        column["name"]: column for column in inspector.get_columns("reading_idempotency_keys")
+    }
+    for name in ("key_hash", "action", "request_fingerprint", "reading_version_id"):
+        assert idempotency_columns[name]["nullable"] is False
+    verification_columns = {
+        column["name"]: column for column in inspector.get_columns("reading_verifications")
+    }
+    assert verification_columns["outcome"]["nullable"] is False
+    assert verification_columns["note"]["nullable"] is True
+    subject_profile_columns = {
+        column["name"]: column for column in inspector.get_columns("subject_profiles")
+    }
+    assert subject_profile_columns["label"]["nullable"] is True
     engine.dispose()
 
 
@@ -141,6 +168,97 @@ def test_owner_xor_is_enforced_by_the_migrated_database(
                 "owner_guest_session_id": owner_guest_session_id,
             },
         )
+    engine.dispose()
+
+
+def test_idempotency_key_owner_xor_is_enforced_by_the_migrated_database(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:  # type: ignore[no-untyped-def]
+    engine = upgraded_engine(tmp_path, monkeypatch, "idempotency-owner.sqlite3")
+    user_id, root_id, release_id = _seed_reading_parent_rows(engine)
+    version_id = uuid4().hex
+    with engine.begin() as connection:
+        _insert_reading_version(
+            connection,
+            root_id=root_id,
+            release_id=release_id,
+            version_id=version_id,
+        )
+
+    with pytest.raises(IntegrityError), engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT INTO reading_idempotency_keys "
+                "(id, key_hash, action, request_fingerprint, owner_user_id, "
+                "owner_guest_session_id, reading_version_id) "
+                "VALUES (:id, 'hash', 'preview', 'fingerprint', :user_id, "
+                ":user_id, :version_id)"
+            ),
+            {"id": uuid4().hex, "user_id": user_id, "version_id": version_id},
+        )
+    engine.dispose()
+
+
+def test_verification_outcome_whitelist_is_enforced_by_the_migrated_database(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:  # type: ignore[no-untyped-def]
+    engine = upgraded_engine(tmp_path, monkeypatch, "verification-outcome.sqlite3")
+    _user_id, root_id, release_id = _seed_reading_parent_rows(engine)
+    version_id = uuid4().hex
+    with engine.begin() as connection:
+        _insert_reading_version(
+            connection,
+            root_id=root_id,
+            release_id=release_id,
+            version_id=version_id,
+        )
+
+    with pytest.raises(IntegrityError), engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT INTO reading_verifications "
+                "(id, reading_version_id, outcome) "
+                "VALUES (:id, :version_id, 'maybe')"
+            ),
+            {"id": uuid4().hex, "version_id": version_id},
+        )
+    engine.dispose()
+
+
+def test_0007_migration_round_trips_between_0006_and_head(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:  # type: ignore[no-untyped-def]
+    database_path = tmp_path / "reading-0007-roundtrip.sqlite3"
+    monkeypatch.setenv(
+        "MINGLI_DATABASE_URL",
+        f"sqlite+aiosqlite:///{database_path}",
+    )
+    config = Config(str(ROOT / "backend" / "alembic.ini"))
+
+    command.upgrade(config, "head")
+    command.downgrade(config, "0006_generation_attempt_model_receipt")
+    engine = create_engine(f"sqlite:///{database_path}")
+    inspector = inspect(engine)
+    assert "reading_idempotency_keys" not in inspector.get_table_names()
+    assert "reading_verifications" not in inspector.get_table_names()
+    subject_profile_columns = {
+        column["name"] for column in inspector.get_columns("subject_profiles")
+    }
+    assert "label" not in subject_profile_columns
+    engine.dispose()
+
+    command.upgrade(config, "head")
+    engine = create_engine(f"sqlite:///{database_path}")
+    inspector = inspect(engine)
+    assert "reading_idempotency_keys" in inspector.get_table_names()
+    assert "reading_verifications" in inspector.get_table_names()
+    subject_profile_columns = {
+        column["name"] for column in inspector.get_columns("subject_profiles")
+    }
+    assert "label" in subject_profile_columns
     engine.dispose()
 
 

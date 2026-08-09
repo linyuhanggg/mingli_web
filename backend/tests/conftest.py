@@ -10,6 +10,10 @@ from httpx import ASGITransport, AsyncClient
 async def database() -> AsyncIterator[Any]:
     database_module = importlib.import_module("app.database")
     models = importlib.import_module("app.identity.models")
+    # Register every domain model on the shared Base before create_all. API tests
+    # intentionally exercise the real repositories against one database.
+    importlib.import_module("app.profiles.models")
+    importlib.import_module("app.readings.models")
     database = database_module.Database("sqlite+aiosqlite:///:memory:")
 
     async with database.engine.begin() as connection:

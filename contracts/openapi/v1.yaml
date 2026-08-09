@@ -9,6 +9,8 @@ servers:
 tags:
   - name: Health
   - name: Identity
+  - name: Profiles
+  - name: Readings
 paths:
   /api/v1/health/live:
     get:
@@ -140,6 +142,397 @@ paths:
                 $ref: "#/components/schemas/AccountResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
+  /api/v1/profiles/drafts:
+    post:
+      operationId: createProfileDraft
+      tags: [Profiles]
+      summary: Create an owned Profile Draft that can be confirmed once
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileDraftRequest"
+      responses:
+        "201":
+          description: Draft created and bound to the current User or Guest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileDraftResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /api/v1/profiles/drafts/{draft_id}/confirm:
+    post:
+      operationId: confirmProfileDraft
+      tags: [Profiles]
+      summary: Confirm a Draft into the first immutable encrypted Profile Version
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - name: draft_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileConfirmRequest"
+      responses:
+        "201":
+          description: Immutable Profile Version created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /api/v1/profiles:
+    get:
+      operationId: listProfiles
+      tags: [Profiles]
+      summary: List immutable Profile Versions owned by the current session
+      responses:
+        "200":
+          description: Public profile metadata only; payloads stay encrypted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/v1/readings/preview:
+    post:
+      operationId: startPreviewReading
+      tags: [Readings]
+      summary: Enqueue a Bazi natal preview Reading Version
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PreviewStartRequest"
+      responses:
+        "201":
+          description: Reading Version created and queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "200":
+          description: Replayed Reading Version for the same Idempotency-Key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /api/v1/readings/today:
+    post:
+      operationId: startTodayReading
+      tags: [Readings]
+      summary: Enqueue a Fortune day Reading Version
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FortuneStartRequest"
+      responses:
+        "201":
+          description: Reading Version created and queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "200":
+          description: Replayed Reading Version for the same Idempotency-Key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /api/v1/readings/week:
+    post:
+      operationId: startWeekReading
+      tags: [Readings]
+      summary: Enqueue a Fortune seven-day Reading Version
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FortuneStartRequest"
+      responses:
+        "201":
+          description: Reading Version created and queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "200":
+          description: Replayed Reading Version for the same Idempotency-Key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /api/v1/readings/liuyao:
+    post:
+      operationId: startLiuyaoReading
+      tags: [Readings]
+      summary: Enqueue a Liuyao Reading Version from a cast
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LiuyaoStartRequest"
+      responses:
+        "201":
+          description: Reading Version created and queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "200":
+          description: Replayed Reading Version for the same Idempotency-Key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /api/v1/readings/{reading_version_id}:
+    get:
+      operationId: getReadingVersion
+      tags: [Readings]
+      summary: Poll the owner-scoped Reading Version state
+      parameters:
+        - name: reading_version_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Current Reading Version state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/readings/{reading_version_id}/input:
+    post:
+      operationId: supplyReadingInput
+      tags: [Readings]
+      summary: Supply values for a waiting Reading Version and requeue it
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - name: reading_version_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupplyInputRequest"
+      responses:
+        "201":
+          description: New tokenized Job queued for the same Reading Version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /api/v1/readings/{reading_version_id}/result:
+    get:
+      operationId: getReadingResult
+      tags: [Readings]
+      summary: Fetch public facts, evidence, limits and the Accepted Copy
+      parameters:
+        - name: reading_version_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Public Reading result without runtime or birth secrets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingResultResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/readings/{reading_version_id}/verification:
+    post:
+      operationId: submitReadingVerification
+      tags: [Readings]
+      summary: Save user feedback independently of the runtime/model path
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - name: reading_version_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerificationRequest"
+      responses:
+        "201":
+          description: Verification recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingVerificationSummary"
+        "200":
+          description: Existing Verification for this Reading Version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingVerificationSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /api/v1/readings/{reading_version_id}/follow-up:
+    post:
+      operationId: createReadingFollowUp
+      tags: [Readings]
+      summary: Create the next Reading Version with the prior answer projected
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - name: reading_version_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FollowUpRequest"
+      responses:
+        "201":
+          description: New immutable Reading Version created and queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "200":
+          description: Replayed Reading Version for the same Idempotency-Key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
 components:
   securitySchemes:
     deviceSession:
@@ -154,6 +547,15 @@ components:
       schema:
         type: string
         minLength: 32
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: Persisted per owner; the same key always returns the same Reading Version
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
   schemas:
     HealthResponse:
       type: object
@@ -265,6 +667,517 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LoginIdentitySummary"
+    ProfileDraftRequest:
+      type: object
+      additionalProperties: false
+      required: [label]
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 80
+    ProfileDraftResponse:
+      type: object
+      additionalProperties: false
+      required: [draft_id, status]
+      properties:
+        draft_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          const: draft
+    ProfileConfirmRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - birth_datetime
+        - timezone
+        - location
+        - gender
+        - time_basis_policy
+        - zi_hour_policy
+      properties:
+        birth_datetime:
+          type: string
+          pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+        timezone:
+          type: string
+          minLength: 1
+          maxLength: 64
+        location:
+          type: string
+          minLength: 1
+          maxLength: 120
+        gender:
+          type: string
+          enum: [male, female, other]
+        time_basis_policy:
+          type: string
+          enum: [civil, solar, lunar]
+        zi_hour_policy:
+          type: string
+          enum: [midnight, substitute, solar]
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        coordinate_source:
+          type: string
+          minLength: 1
+          maxLength: 40
+    ProfileSummary:
+      type: object
+      additionalProperties: false
+      required: [profile_id, profile_version_id, subject_ref, version, created_at]
+      properties:
+        profile_id:
+          type: string
+          format: uuid
+        profile_version_id:
+          type: string
+          format: uuid
+        subject_ref:
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+    ProfileListResponse:
+      type: object
+      additionalProperties: false
+      required: [profiles]
+      properties:
+        profiles:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProfileSummary"
+    PreviewStartRequest:
+      type: object
+      additionalProperties: false
+      required: [profile_version_id]
+      properties:
+        profile_version_id:
+          type: string
+          format: uuid
+        query:
+          type: string
+          minLength: 1
+          maxLength: 300
+        dimension_ids:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum: [overview, career]
+    FortuneStartRequest:
+      type: object
+      additionalProperties: false
+      required: [profile_version_id]
+      properties:
+        profile_version_id:
+          type: string
+          format: uuid
+        query:
+          type: string
+          minLength: 1
+          maxLength: 300
+    LiuyaoStartRequest:
+      type: object
+      additionalProperties: false
+      required: [cast, event_datetime, timezone, location]
+      properties:
+        cast:
+          oneOf:
+            - type: string
+              const: digital_coin
+            - type: array
+              minItems: 6
+              maxItems: 6
+              items:
+                type: integer
+                minimum: 6
+                maximum: 9
+        event_datetime:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+          minLength: 1
+          maxLength: 64
+        location:
+          type: string
+          minLength: 1
+          maxLength: 120
+        subject_ref:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 120
+        query:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 300
+        dimension_ids:
+          type: [array, "null"]
+          uniqueItems: true
+          items:
+            type: string
+            enum: [career, outcome, timing]
+    SupplyInputRequest:
+      type: object
+      additionalProperties: false
+      required: [values]
+      properties:
+        values:
+          type: object
+          minProperties: 1
+          additionalProperties: true
+    FollowUpRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        query:
+          type: string
+          minLength: 1
+          maxLength: 300
+    VerificationRequest:
+      type: object
+      additionalProperties: false
+      required: [outcome]
+      properties:
+        outcome:
+          type: string
+          enum: [accepted, partial, disagreed, unknown]
+        note:
+          type: [string, "null"]
+          maxLength: 500
+    ReadingVersionSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - reading_version_id
+        - reading_root_id
+        - profile_version_id
+        - capability_id
+        - version
+        - status
+        - object_id
+        - dimension_ids
+        - horizon
+        - created_at
+      properties:
+        reading_version_id:
+          type: string
+          format: uuid
+        reading_root_id:
+          type: string
+          format: uuid
+        profile_version_id:
+          type: [string, "null"]
+          format: uuid
+        capability_id:
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum:
+            - input_ready
+            - waiting_input
+            - terminal_stopped
+            - prepared
+            - completing
+            - accepted
+            - delayed
+            - runtime_unknown
+        object_id:
+          type: string
+        dimension_ids:
+          type: array
+          items:
+            type: string
+        horizon:
+          type: object
+          additionalProperties: false
+          required: [kind_id, start, end]
+          properties:
+            kind_id:
+              type: string
+            start:
+              type: [string, "null"]
+              format: date
+            end:
+              type: [string, "null"]
+              format: date
+        prior_answer:
+          type: [string, "null"]
+        input_request:
+          type: [object, "null"]
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+    ReadingStartResponse:
+      type: object
+      additionalProperties: false
+      allOf:
+        - $ref: "#/components/schemas/ReadingVersionSummary"
+    ReadingFact:
+      type: object
+      additionalProperties: false
+      required: [ref, subject_ref, kind_id, value, display_text]
+      properties:
+        ref:
+          type: string
+        subject_ref:
+          type: string
+        kind_id:
+          type: string
+        value:
+          type: object
+          additionalProperties: true
+        display_text:
+          type: string
+    ReadingEvidence:
+      type: object
+      additionalProperties: false
+      required: [ref, source_title, supports_fact_refs]
+      properties:
+        ref:
+          type: string
+        source_title:
+          type: string
+        locator:
+          type: string
+        excerpt:
+          type: string
+        supports_fact_refs:
+          type: array
+          items:
+            type: string
+    ReadingFinding:
+      type: object
+      additionalProperties: false
+      required:
+        - ref
+        - subject_ref
+        - dimension_ids
+        - kind_id
+        - data
+        - fact_refs
+        - evidence_refs
+        - limit_kind_ids
+        - support_mode
+      properties:
+        ref:
+          type: string
+        subject_ref:
+          type: string
+        dimension_ids:
+          type: array
+          items:
+            type: string
+        kind_id:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+        fact_refs:
+          type: array
+          items:
+            type: string
+        evidence_refs:
+          type: array
+          items:
+            type: string
+        limit_kind_ids:
+          type: array
+          items:
+            type: string
+        support_mode:
+          type: string
+          enum: [exact, shared_turn]
+    ReadingClaimScope:
+      type: object
+      additionalProperties: false
+      required:
+        - subject_ref
+        - dimension_id
+        - allowed_kind_ids
+        - certainty_ceiling_id
+        - fact_refs
+        - evidence_refs
+      properties:
+        subject_ref:
+          type: string
+        dimension_id:
+          type: string
+        allowed_kind_ids:
+          type: array
+          items:
+            type: string
+        certainty_ceiling_id:
+          type: string
+        fact_refs:
+          type: array
+          items:
+            type: string
+        evidence_refs:
+          type: array
+          items:
+            type: string
+    ReadingLimit:
+      type: object
+      additionalProperties: false
+      required: [kind_id, public_text, scope_refs, detail_ids]
+      properties:
+        kind_id:
+          type: string
+        public_text:
+          type: string
+        scope_refs:
+          type: array
+          items:
+            type: string
+        detail_ids:
+          type: array
+          items:
+            type: string
+    ReadingRequestView:
+      type: object
+      additionalProperties: false
+      required: [subject_refs, capability_ids, object_id, dimension_ids, horizon]
+      properties:
+        subject_refs:
+          type: array
+          items:
+            type: string
+        capability_ids:
+          type: array
+          items:
+            type: string
+        object_id:
+          type: string
+        dimension_ids:
+          type: array
+          items:
+            type: string
+        horizon:
+          type: object
+          additionalProperties: false
+          required: [kind_id, start, end]
+          properties:
+            kind_id:
+              type: string
+            start:
+              type: [string, "null"]
+              format: date
+            end:
+              type: [string, "null"]
+              format: date
+    ReadingFactPanel:
+      type: object
+      additionalProperties: false
+      required:
+        - question
+        - vocabulary
+        - facts
+        - evidence
+        - findings
+        - claim_scopes
+        - limits
+        - prior_answer
+        - request_view
+      properties:
+        question:
+          type: string
+        vocabulary:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        facts:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadingFact"
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadingEvidence"
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadingFinding"
+        claim_scopes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadingClaimScope"
+        limits:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadingLimit"
+        prior_answer:
+          type: [string, "null"]
+        request_view:
+          oneOf:
+            - $ref: "#/components/schemas/ReadingRequestView"
+            - type: "null"
+    ReadingVerificationSummary:
+      type: object
+      additionalProperties: false
+      required: [verification_id, reading_version_id, outcome, note, created_at]
+      properties:
+        verification_id:
+          type: string
+          format: uuid
+        reading_version_id:
+          type: string
+          format: uuid
+        outcome:
+          type: string
+          enum: [accepted, partial, disagreed, unknown]
+        note:
+          type: [string, "null"]
+          maxLength: 500
+        created_at:
+          type: string
+          format: date-time
+    ReadingResultResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - reading_version_id
+        - status
+        - accepted_copy
+        - fact_panel
+        - verification
+        - input_request
+      properties:
+        reading_version_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        accepted_copy:
+          type: [string, "null"]
+        fact_panel:
+          oneOf:
+            - $ref: "#/components/schemas/ReadingFactPanel"
+            - type: "null"
+        verification:
+          oneOf:
+            - $ref: "#/components/schemas/ReadingVerificationSummary"
+            - type: "null"
+        input_request:
+          type: [object, "null"]
+          additionalProperties: true
     Problem:
       type: object
       additionalProperties: false
@@ -300,8 +1213,25 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/Problem"
+    NotFound:
+      description: The resource does not exist or belongs to another owner
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Conflict:
+      description: The resource is in a state that does not allow this transition
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
     TooManyRequests:
       description: Rate or attempt limit reached
+      headers:
+        Retry-After:
+          description: Number of seconds the client should wait before retrying
+          schema:
+            type: string
       content:
         application/problem+json:
           schema:

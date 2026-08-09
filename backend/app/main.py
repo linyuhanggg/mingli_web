@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Any, cast
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -15,6 +16,7 @@ from app.database import Database
 from app.identity.otp import InMemoryOtpChallengeStore, InMemoryOtpRequestLimiter
 from app.network import parse_trusted_proxy_cidrs
 from app.observability import configure_logging, install_request_observability
+from app.readings.rate_limit import WindowRateLimiter
 
 
 def create_app(
@@ -30,6 +32,8 @@ def create_app(
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         yield
+        application.state.reading_write_rate_limiter.clear()
+        application.state.profile_write_rate_limiter.clear()
         if owns_database:
             await resolved_database.dispose()
 
@@ -55,6 +59,14 @@ def create_app(
         guest_limit=resolved_settings.otp_guest_window_limit,
         network_limit=resolved_settings.otp_network_window_limit,
     )
+    application.state.reading_write_rate_limiter = WindowRateLimiter(
+        limit=resolved_settings.reading_write_rate_limit,
+        window_seconds=resolved_settings.reading_write_rate_window_seconds,
+    )
+    application.state.profile_write_rate_limiter = WindowRateLimiter(
+        limit=resolved_settings.profile_write_rate_limit,
+        window_seconds=resolved_settings.profile_write_rate_window_seconds,
+    )
     application.state.trusted_proxy_networks = parse_trusted_proxy_cidrs(
         resolved_settings.trusted_proxy_cidrs
     )
@@ -72,6 +84,7 @@ def create_app(
             title=error.title,
             problem_type=error.problem_type,
             detail=error.detail,
+            headers=error.headers,
         )
 
     @application.exception_handler(RequestValidationError)
@@ -89,6 +102,17 @@ def create_app(
     configure_logging(resolved_settings.log_level)
     install_request_observability(application)
     application.include_router(build_api_router(readiness_probe or resolved_database.probe))
+
+    base_openapi = application.openapi
+
+    def openapi_without_validation_422() -> dict[str, Any]:
+        document = base_openapi()
+        for path in document.get("paths", {}).values():
+            for operation in path.values():
+                operation.get("responses", {}).pop("422", None)
+        return document
+
+    cast(Any, application).openapi = openapi_without_validation_422
     return application
 
 

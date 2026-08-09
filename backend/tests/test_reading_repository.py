@@ -411,3 +411,59 @@ async def test_reading_root_rejects_a_profile_version_owned_by_another_user(
                 profile_version_id=profile_version.id,
                 capability_id="bazi",
             )
+
+
+async def test_save_verification_handles_a_concurrent_duplicate_insert(
+    reading_database: Any,
+) -> None:
+    async with reading_database.sessions() as session, session.begin():
+        repository, _profile, version, _job, _contracts = await create_reading_graph(
+            session
+        )
+        first, created_first = await repository.save_verification(
+            version_id=version.id,
+            outcome="partial",
+            note="部分准确",
+        )
+        assert created_first is True
+
+        # Simulate the lost-update window: the racing transaction read no
+        # verification before the other transaction committed, so the pre-check
+        # misses and the INSERT must be absorbed by the unique constraint
+        # instead of surfacing as a 500.
+        real_load = repository.load_verification
+        pre_check = {"missed": True}
+
+        async def racing_load(target_version_id: Any) -> Any:
+            # Only the pre-check sees a stale "no verification" view; the
+            # post-IntegrityError reload must see the committed row.
+            if target_version_id == version.id and pre_check["missed"]:
+                pre_check["missed"] = False
+                return None
+            return await real_load(target_version_id)
+
+        repository.load_verification = racing_load  # type: ignore[method-assign]
+        try:
+            second, created_second = await repository.save_verification(
+                version_id=version.id,
+                outcome="disagreed",
+                note="另一并发请求",
+            )
+        finally:
+            repository.load_verification = real_load  # type: ignore[method-assign]
+
+        assert created_second is False
+        assert second.id == first.id
+        assert second.outcome == "partial"
+        assert second.note == "部分准确"
+
+        models = importlib.import_module("app.readings.models")
+        stored = list(
+            await session.scalars(
+                select(models.ReadingVerification).where(
+                    models.ReadingVerification.reading_version_id == version.id
+                )
+            )
+        )
+        assert len(stored) == 1
+        assert stored[0].outcome == "partial"

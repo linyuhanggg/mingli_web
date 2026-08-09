@@ -9,6 +9,7 @@ def problem_response(
     title: str,
     problem_type: str = "about:blank",
     detail: str | None = None,
+    headers: dict[str, str] | None = None,
 ) -> JSONResponse:
     body: dict[str, object] = {
         "type": problem_type,
@@ -22,4 +23,5 @@ def problem_response(
         status_code=status,
         content=body,
         media_type="application/problem+json",
+        headers=headers,
     )
