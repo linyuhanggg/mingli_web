@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from __future__ import annotations
 
 import copy
@@ -547,7 +545,7 @@ def test_command_evidence_records_elapsed_and_fixed_timeout_budget(
 def test_launcher_containers_use_ephemeral_writable_overlay(tmp_path: Path) -> None:
     gate = load_lima_gate()
     drill = gate.BackupRestoreDrill(
-        object(),
+        gate.LimaDocker("mingli-linux-gate-vz"),
         "sha256:" + "1" * 64,
         {"source": "runtime-state"},
         tmp_path,
@@ -579,6 +577,12 @@ def test_backup_drill_redacts_pending_token_and_replays_promoted_prepare(
     raw_token = "pending-token-must-never-enter-evidence"
 
     class FakeVM:
+        instance = "mingli-linux-gate-vz"
+
+        @classmethod
+        def normalize_docker_argv(cls, argv: list[str]) -> list[str]:
+            return gate.LimaDocker(cls.instance).normalize_docker_argv(argv)
+
         @staticmethod
         def docker(
             argv: list[str],
@@ -1115,10 +1119,79 @@ def test_audit_tar_extractor_handles_root_member_and_requires_empty_target(
         gate._extract_safe_tar(payload.getvalue(), tmp_path / "missing")
 
 
-def test_lima_docker_pins_every_container_run_to_linux_amd64() -> None:
+def test_lima_docker_pins_vz_runs_to_amd64_rosetta_and_qemu_to_amd64() -> None:
+    gate = load_lima_gate()
+    calls: dict[str, list[list[str]]] = {"qemu": [], "vz": []}
+
+    def attach_fake_run(vm: Any, lane: str) -> None:
+        def fake_run(
+            argv: list[str],
+            *,
+            input_bytes: bytes | bytearray | None = None,
+            capture: bool = True,
+            timeout: float | None = None,
+        ) -> subprocess.CompletedProcess[bytes]:
+            del input_bytes, capture, timeout
+            calls[lane].append(argv)
+            return subprocess.CompletedProcess(argv, 0, b"", b"")
+
+        vm.run = fake_run
+
+    vz = gate.LimaDocker("mingli-linux-gate-vz")
+    attach_fake_run(vz, "vz")
+    vz.docker(["run", "--rm", "sha256:" + "a" * 64, "/bin/true"])
+    vz.docker(
+        [
+            "run",
+            "--platform=linux/amd64",
+            "--device=lima-vm.io/rosetta=cached",
+            "--rm",
+            "sha256:" + "b" * 64,
+            "/bin/true",
+        ]
+    )
+    qemu = gate.LimaDocker("mingli-linux-gate")
+    attach_fake_run(qemu, "qemu")
+    qemu.docker(["run", "--rm", "sha256:" + "c" * 64, "/bin/true"])
+
+    assert calls["vz"] == [
+        [
+            "docker",
+            "run",
+            "--platform=linux/amd64",
+            "--device=lima-vm.io/rosetta=cached",
+            "--rm",
+            "sha256:" + "a" * 64,
+            "/bin/true",
+        ],
+        [
+            "docker",
+            "run",
+            "--platform=linux/amd64",
+            "--device=lima-vm.io/rosetta=cached",
+            "--rm",
+            "sha256:" + "b" * 64,
+            "/bin/true",
+        ],
+    ]
+    assert calls["qemu"] == [
+        [
+            "docker",
+            "run",
+            "--platform=linux/amd64",
+            "--rm",
+            "sha256:" + "c" * 64,
+            "/bin/true",
+        ]
+    ]
+
+
+def test_backup_evidence_records_the_normalized_executed_docker_argv(
+    tmp_path: Path,
+) -> None:
     gate = load_lima_gate()
     vm = gate.LimaDocker("mingli-linux-gate-vz")
-    calls: list[list[str]] = []
+    executed: list[list[str]] = []
 
     def fake_run(
         argv: list[str],
@@ -1128,39 +1201,65 @@ def test_lima_docker_pins_every_container_run_to_linux_amd64() -> None:
         timeout: float | None = None,
     ) -> subprocess.CompletedProcess[bytes]:
         del input_bytes, capture, timeout
-        calls.append(argv)
+        executed.append(argv)
         return subprocess.CompletedProcess(argv, 0, b"", b"")
 
     vm.run = fake_run
-    vm.docker(["run", "--rm", "sha256:" + "a" * 64, "/bin/true"])
-    vm.docker(
-        [
-            "run",
-            "--platform=linux/amd64",
-            "--rm",
-            "sha256:" + "b" * 64,
-            "/bin/true",
-        ]
+    drill = gate.BackupRestoreDrill(
+        vm,
+        "sha256:" + "a" * 64,
+        {
+            "source": "source-volume",
+            "prepared_restore_blank": "prepared-volume",
+            "accepted_restore_blank": "accepted-volume",
+        },
+        tmp_path,
     )
 
-    assert calls == [
-        [
-            "docker",
-            "run",
-            "--platform=linux/amd64",
-            "--rm",
-            "sha256:" + "a" * 64,
-            "/bin/true",
-        ],
-        [
-            "docker",
-            "run",
-            "--platform=linux/amd64",
-            "--rm",
-            "sha256:" + "b" * 64,
-            "/bin/true",
-        ],
+    drill.check_empty("prepared-restore-volume-empty", "prepared-volume")
+
+    assert drill.writer.commands[0]["argv"] == executed[0]
+    assert executed[0][:4] == [
+        "docker",
+        "run",
+        "--platform=linux/amd64",
+        "--device=lima-vm.io/rosetta=cached",
     ]
+
+
+@pytest.mark.parametrize(
+    ("prefix", "accepted"),
+    [
+        (["--platform=linux/amd64"], True),
+        (
+            [
+                "--platform=linux/amd64",
+                "--device=lima-vm.io/rosetta=cached",
+            ],
+            True,
+        ),
+        ([], False),
+        (["--platform=linux/arm64"], False),
+        (["--platform=linux/amd64", "--device=/dev/null"], False),
+    ],
+)
+def test_release_verifier_accepts_only_exact_recorded_linux_boundaries(
+    prefix: list[str],
+    accepted: bool,
+) -> None:
+    verifier = load_verifier()
+    commands = {
+        "source-describe": {"argv": ["docker", "run", *prefix, "--rm", "image"]}
+    }
+
+    if accepted:
+        assert verifier._backup_docker_run_boundary(commands) == prefix
+    else:
+        with pytest.raises(
+            verifier.ReleaseVerificationError,
+            match="container boundary",
+        ):
+            verifier._backup_docker_run_boundary(commands)
 
 
 def test_image_audit_entry_is_present_and_non_agentic() -> None:

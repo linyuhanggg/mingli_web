@@ -111,6 +111,12 @@ depends on `/Users` or `/Volumes` being mounted in Lima. Every temporary volume
 is initialized as root, then owned by `10001:10001`; all real runtime and audit
 commands execute as that non-root identity.
 
+Every container run records the same normalized argv that is actually sent to
+Docker. Both lanes require `--platform=linux/amd64`; the pinned VZ lane also
+requires `--device=lima-vm.io/rosetta=cached`, while the QEMU fallback forbids
+that device. Missing, duplicated, or different platform/device options are
+rejected before execution and by the independent release verifier.
+
 The signed V5.1 launcher opens
 `/opt/mingli-runtime/.venv.runtime.lock` with `O_RDWR|O_CREAT` on every
 invocation. Consequently, containers that call the launcher or

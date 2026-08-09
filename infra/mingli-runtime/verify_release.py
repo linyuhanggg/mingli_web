@@ -2480,6 +2480,26 @@ def _verify_native_linkage_identity(
         _fail("runtime inventory and native linkage command evidence differ")
 
 
+def _backup_docker_run_boundary(
+    commands: Mapping[str, Mapping[str, Any]],
+) -> list[str]:
+    command = commands.get("source-describe")
+    argv = command.get("argv") if isinstance(command, Mapping) else None
+    allowed = (
+        ["--platform=linux/amd64"],
+        [
+            "--platform=linux/amd64",
+            "--device=lima-vm.io/rosetta=cached",
+        ],
+    )
+    if isinstance(argv, list) and argv[:2] == ["docker", "run"]:
+        for boundary in allowed:
+            end = 2 + len(boundary)
+            if argv[2:end] == boundary and argv[end : end + 1] == ["--rm"]:
+                return list(boundary)
+    _fail("backup/restore container boundary is missing or unsafe")
+
+
 def _verify_backup_restore(
     section: object,
     evidence_path: Path,
@@ -2623,6 +2643,7 @@ def _verify_backup_restore(
         }
     if set(commands) != expected_command_ids:
         _fail("backup/restore command inventory is not exact")
+    docker_run_boundary = _backup_docker_run_boundary(commands)
     runtime_tmpfs = "/tmp:rw,noexec,nosuid,nodev,size=128m,mode=1777"
     command_volume_roles = {
         "accepted-complete-replay": "accepted_restore_blank",
@@ -2646,6 +2667,7 @@ def _verify_backup_restore(
         expected_argv = [
             "docker",
             "run",
+            *docker_run_boundary,
             "--rm",
             "-i",
             "--network=none",
@@ -2672,6 +2694,7 @@ def _verify_backup_restore(
         expected_argv = [
             "docker",
             "run",
+            *docker_run_boundary,
             "--rm",
             "-i",
             "--network=none",
@@ -2702,6 +2725,7 @@ def _verify_backup_restore(
         expected_argv = [
             "docker",
             "run",
+            *docker_run_boundary,
             "--rm",
             "--network=none",
             "--read-only",
@@ -2728,6 +2752,7 @@ def _verify_backup_restore(
         expected_argv = [
             "docker",
             "run",
+            *docker_run_boundary,
             "--rm",
             "--network=none",
             "--read-only",
@@ -2753,6 +2778,7 @@ def _verify_backup_restore(
         capture_argv = [
             "docker",
             "run",
+            *docker_run_boundary,
             "--rm",
             "--network=none",
             "--read-only",
@@ -2773,6 +2799,7 @@ def _verify_backup_restore(
         restore_argv = [
             "docker",
             "run",
+            *docker_run_boundary,
             "--rm",
             "-i",
             "--network=none",

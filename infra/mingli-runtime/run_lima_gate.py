@@ -37,6 +37,8 @@ RUNTIME_GID = 10001
 IMAGE_ID_RE = re.compile(r"sha256:[0-9a-f]{64}")
 VOLUME_RE = re.compile(r"[a-z0-9][a-z0-9_.-]{0,127}")
 RUNTIME_TMPFS = "/tmp:rw,noexec,nosuid,nodev,size=128m,mode=1777"
+VZ_ROSETTA_INSTANCE = "mingli-linux-gate-vz"
+ROSETTA_DEVICE = "lima-vm.io/rosetta=cached"
 PUBLIC_COPY = "Linux 恢复演练固定正文。"
 FOLLOWUP_PUBLIC_COPY = "Linux 恢复演练追问固定正文。"
 PROVIDER_MATRIX_TIMEOUT_SECONDS = 10_800
@@ -220,26 +222,54 @@ class LimaDocker:
         capture: bool = True,
         timeout: float | None = None,
     ) -> subprocess.CompletedProcess[bytes]:
-        docker_argv = list(argv)
-        if docker_argv and docker_argv[0] == "run":
-            platform_values: list[str] = []
-            for index, argument in enumerate(docker_argv):
-                if argument.startswith("--platform="):
-                    platform_values.append(argument.removeprefix("--platform="))
-                elif argument == "--platform":
-                    if index + 1 >= len(docker_argv):
-                        _fail("Docker run has an incomplete platform option")
-                    platform_values.append(docker_argv[index + 1])
-            if not platform_values:
-                docker_argv.insert(1, "--platform=linux/amd64")
-            elif platform_values != ["linux/amd64"]:
-                _fail("Docker run must target exactly linux/amd64")
+        docker_argv = self.normalize_docker_argv(argv)
         return self.run(
             ["docker", *docker_argv],
             input_bytes=input_bytes,
             capture=capture,
             timeout=timeout,
         )
+
+    def normalize_docker_argv(self, argv: Sequence[str]) -> list[str]:
+        """Return the exact Docker argv used at the Linux execution boundary."""
+
+        docker_argv = list(argv)
+        if docker_argv and docker_argv[0] == "run":
+            platform_values: list[str] = []
+            platform_end = 1
+            for index, argument in enumerate(docker_argv):
+                if argument.startswith("--platform="):
+                    platform_values.append(argument.removeprefix("--platform="))
+                    platform_end = index + 1
+                elif argument == "--platform":
+                    if index + 1 >= len(docker_argv):
+                        _fail("Docker run has an incomplete platform option")
+                    platform_values.append(docker_argv[index + 1])
+                    platform_end = index + 2
+            if not platform_values:
+                docker_argv.insert(1, "--platform=linux/amd64")
+                platform_end = 2
+            elif platform_values != ["linux/amd64"]:
+                _fail("Docker run must target exactly linux/amd64")
+            devices: list[str] = []
+            for index, argument in enumerate(docker_argv):
+                if argument.startswith("--device="):
+                    devices.append(argument.removeprefix("--device="))
+                elif argument == "--device":
+                    if index + 1 >= len(docker_argv):
+                        _fail("Docker run has an incomplete device option")
+                    devices.append(docker_argv[index + 1])
+            if self.instance == VZ_ROSETTA_INSTANCE:
+                if not devices:
+                    docker_argv.insert(
+                        platform_end,
+                        f"--device={ROSETTA_DEVICE}",
+                    )
+                elif devices != [ROSETTA_DEVICE]:
+                    _fail("VZ Docker run must use only the pinned Rosetta device")
+            elif devices:
+                _fail("non-VZ Docker run must not request a Rosetta device")
+        return docker_argv
 
     def create_volume(self, name: str, run_id: str) -> None:
         if VOLUME_RE.fullmatch(name) is None:
@@ -506,6 +536,11 @@ class BackupRestoreDrill:
         self.writer = EvidenceWriter(evidence_root)
         self.evidence_root = evidence_root
 
+    def _normalize_docker_argv(self, argv: Sequence[str]) -> list[str]:
+        if not argv or argv[0] != "docker":
+            _fail("backup/restore command is not a Docker command")
+        return ["docker", *self.vm.normalize_docker_argv(argv[1:])]
+
     def _runtime_argv(self, volume: str) -> list[str]:
         argv = [
             "docker",
@@ -519,6 +554,7 @@ class BackupRestoreDrill:
             f"source={volume},target=/var/lib/mingli",
             self.image_id,
         ]
+        argv = self._normalize_docker_argv(argv)
         _require_writable_runtime_overlay(argv, "Mingli launcher")
         return argv
 
@@ -668,6 +704,7 @@ class BackupRestoreDrill:
             "--state-root",
             "/var/lib/mingli",
         ]
+        argv = self._normalize_docker_argv(argv)
         completed = self.vm.docker(argv[1:], timeout=60)
         if completed.stderr or len(completed.stdout.splitlines()) != 1:
             _fail(f"state-root identity command failed: {command_id}")
@@ -726,6 +763,7 @@ class BackupRestoreDrill:
             "--state-root",
             "/var/lib/mingli",
         ]
+        argv = self._normalize_docker_argv(argv)
         completed = self.vm.docker(
             argv[1:],
             input_bytes=json_bytes({"token_fingerprint": fingerprint}),
@@ -772,6 +810,7 @@ class BackupRestoreDrill:
             "-print",
             "-quit",
         ]
+        argv = self._normalize_docker_argv(argv)
         completed = self.vm.docker(argv[1:], timeout=60)
         if completed.stderr or completed.stdout:
             _fail(f"restore volume did not start empty: {volume}")
@@ -805,6 +844,7 @@ class BackupRestoreDrill:
             "-",
             ".",
         ]
+        argv = self._normalize_docker_argv(argv)
         completed = self.vm.docker(argv[1:], timeout=900)
         if completed.stderr or not completed.stdout:
             _fail(f"state snapshot capture failed: {command_id}")
@@ -894,6 +934,7 @@ class BackupRestoreDrill:
             "-xf",
             "-",
         ]
+        argv = self._normalize_docker_argv(argv)
         completed = self.vm.docker(argv[1:], input_bytes=plaintext, timeout=900)
         if completed.stderr:
             _fail(f"snapshot restore emitted stderr: {command_id}")
