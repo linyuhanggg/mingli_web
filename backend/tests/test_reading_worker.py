@@ -14,7 +14,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 # isort: split
-from orchestrator_fakes import make_candidate
+from orchestrator_fakes import make_candidate, make_model_receipt
 from test_narrative_guard import build_brief
 from test_reading_repository import create_reading_graph
 
@@ -143,6 +143,13 @@ class CountingModel:
         result = self.script.pop(0)
         if isinstance(result, Exception):
             raise result
+        narrative = importlib.import_module("app.readings.narrative_contracts")
+        if isinstance(result, narrative.NarrativeCandidate):
+            contracts = importlib.import_module("app.readings.model_contracts")
+            return contracts.ModelGenerationResult(
+                candidate=result,
+                receipt=make_model_receipt(request),
+            )
         return result
 
 

@@ -7,7 +7,7 @@ from typing import Any
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import text
+from sqlalchemy import select, text
 from sqlalchemy.dialects import postgresql
 
 # isort: split
@@ -213,6 +213,72 @@ async def test_repository_round_trips_encrypted_orchestrator_checkpoints(
         accepted_copy = await repository.get_accepted_copy(version.id)
         assert fact_brief.payload_digest
         assert accepted_copy.public_copy_digest
+
+
+async def test_generation_attempt_persists_the_safe_model_receipt(
+    reading_database: Any,
+) -> None:
+    model = importlib.import_module("app.adapters.model")
+    models = importlib.import_module("app.readings.models")
+    narrative = importlib.import_module("app.readings.narrative_contracts")
+    now = datetime(2026, 8, 9, 12, 0, tzinfo=UTC)
+    usage = model.ModelTokenUsage(input_tokens=3, output_tokens=7, total_tokens=10)
+    audit = model.ModelCallReceipt(
+        outcome="succeeded",
+        error_code=None,
+        model_profile_id="deepseek-v4-flash-p0-v1",
+        model_profile_snapshot_digest="a" * 64,
+        provider="deepseek",
+        provider_model_version="deepseek-v4-flash",
+        provider_request_id="provider-request-fixture",
+        request_fingerprint="b" * 64,
+        latency_ms=125,
+        narrative_policy_version="policy-v1",
+        output_contract_id="repository-test-v1",
+        price_snapshot=model.ModelPriceReceipt(
+            version="fixture-price-v1",
+            currency="CNY",
+            snapshot_digest="c" * 64,
+            input_microunits_per_million_tokens=2_000_000,
+            output_microunits_per_million_tokens=4_000_000,
+        ),
+        usage=usage,
+        cost=model.ModelCost(
+            currency="CNY",
+            microunits=34,
+            price_snapshot_version="fixture-price-v1",
+            price_snapshot_digest="c" * 64,
+            input_microunits_per_million_tokens=2_000_000,
+            output_microunits_per_million_tokens=4_000_000,
+        ),
+    )
+
+    async with reading_database.sessions() as session, session.begin():
+        repository, _profile, _version, job, contracts = await create_reading_graph(session)
+        await repository.record_prepared(
+            str(job.id),
+            contracts.Prepared(state_token="runtime-secret-token", brief=build_brief()),
+            now,
+        )
+        await repository.record_generation_attempt(
+            str(job.id),
+            1,
+            make_candidate(narrative),
+            (),
+            now,
+            model_receipt=audit,
+        )
+        attempt = await session.scalar(
+            select(models.GenerationAttempt).where(
+                models.GenerationAttempt.reading_version_id == job.reading_version_id
+            )
+        )
+
+    assert attempt is not None
+    assert attempt.model_receipt == audit.to_dict()
+    serialized = repr(attempt.model_receipt)
+    assert "runtime-secret-token" not in serialized
+    assert "事业上最该先抓住哪条主线" not in serialized
 
 
 async def test_immutable_records_and_first_write_wins_are_enforced(

@@ -110,6 +110,7 @@ components:
         - provider_model_version
         - provider_request_id
         - request_fingerprint
+        - model_profile_snapshot_digest
         - cost
       properties:
         candidate:
@@ -127,6 +128,9 @@ components:
           pattern: "^[A-Za-z0-9._:-]{1,128}$"
           maxLength: 128
         request_fingerprint:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+        model_profile_snapshot_digest:
           type: string
           pattern: "^[0-9a-f]{64}$"
         cost:
@@ -148,7 +152,13 @@ components:
     ModelCost:
       type: object
       additionalProperties: false
-      required: [currency, microunits, price_snapshot_version]
+      required:
+        - currency
+        - microunits
+        - price_snapshot_version
+        - price_snapshot_digest
+        - input_microunits_per_million_tokens
+        - output_microunits_per_million_tokens
       properties:
         currency:
           type: string
@@ -160,3 +170,12 @@ components:
           type: string
           pattern: "^[A-Za-z0-9._:-]{1,128}$"
           maxLength: 128
+        price_snapshot_digest:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+        input_microunits_per_million_tokens:
+          type: integer
+          minimum: 0
+        output_microunits_per_million_tokens:
+          type: integer
+          minimum: 0

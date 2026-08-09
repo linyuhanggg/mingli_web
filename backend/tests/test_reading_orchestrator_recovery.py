@@ -29,6 +29,8 @@ class CrashAfterAtomicSuccessRepository(MemoryRepository):
         candidate: object,
         public_copy: str,
         at: object,
+        *,
+        model_receipt: object | None = None,
     ) -> None:
         await super().record_successful_attempt(
             job_id,
@@ -36,6 +38,7 @@ class CrashAfterAtomicSuccessRepository(MemoryRepository):
             candidate,
             public_copy,
             at,
+            model_receipt=model_receipt,
         )
         if not self.crashed:
             self.crashed = True

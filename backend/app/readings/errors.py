@@ -9,6 +9,10 @@ class RuntimeTransportError(ReadingOrchestratorError):
 class NarrativeGenerationError(ReadingOrchestratorError):
     """The standalone model did not return a valid candidate."""
 
+    def __init__(self, code: str, *, receipt: object | None = None) -> None:
+        super().__init__(code)
+        self.receipt = receipt
+
 
 class OrchestratorInvariantError(ReadingOrchestratorError):
     """A dependency returned a result that violates the frozen state machine."""

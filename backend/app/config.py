@@ -1,13 +1,16 @@
 import base64
 import binascii
 import math
+import os
 import re
+from collections.abc import Callable
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal, Self
+from typing import Any, Literal, Self
 
-from pydantic import AliasChoices, Field, SecretStr, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, SecretStr, model_validator
+from pydantic.fields import FieldInfo
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
 Environment = Literal["local", "test", "staging", "production"]
 OtpAdapterName = Literal["fake", "disabled"]
@@ -31,6 +34,23 @@ _P0_MODEL_THINKING_MODE = "not-sent-p0-v1"
 _SAFE_MODEL_METADATA = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 
 
+class _MappingSettingsSource(PydanticBaseSettingsSource):
+    def __init__(
+        self,
+        settings_cls: type[BaseSettings],
+        loader: Callable[[], dict[str, Any]],
+    ) -> None:
+        super().__init__(settings_cls)
+        self._loader = loader
+
+    def get_field_value(self, field: FieldInfo, field_name: str) -> tuple[Any, str, bool]:
+        del field
+        return self._loader().get(field_name), field_name, False
+
+    def __call__(self) -> dict[str, Any]:
+        return self._loader()
+
+
 class Settings(BaseSettings):
     """Runtime configuration loaded only from explicit environment variables."""
 
@@ -38,6 +58,7 @@ class Settings(BaseSettings):
         env_prefix="MINGLI_",
         case_sensitive=False,
         extra="ignore",
+        populate_by_name=True,
     )
 
     app_name: str = "FateRadar API"
@@ -72,7 +93,7 @@ class Settings(BaseSettings):
     model_thinking_mode: str = _P0_MODEL_THINKING_MODE
     deepseek_api_key: SecretStr | None = Field(
         default=None,
-        validation_alias=AliasChoices("DEEPSEEK_API_KEY", "deepseek_api_key"),
+        validation_alias="DEEPSEEK_API_KEY",
     )
     model_connect_timeout_seconds: float = 5.0
     model_read_timeout_seconds: float = 60.0
@@ -97,6 +118,44 @@ class Settings(BaseSettings):
     trusted_proxy_cidrs: str = ""
     device_session_days: int = 30
     log_level: str = "INFO"
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        def exact_deepseek_secret() -> dict[str, str]:
+            value = os.environ.get("DEEPSEEK_API_KEY")
+            return {} if value is None else {"DEEPSEEK_API_KEY": value}
+
+        def without_deepseek_secret(
+            source: PydanticBaseSettingsSource,
+        ) -> dict[str, object]:
+            values = dict(source())
+            values.pop("DEEPSEEK_API_KEY", None)
+            values.pop("deepseek_api_key", None)
+            return values
+
+        def filtered_environment() -> dict[str, object]:
+            return without_deepseek_secret(env_settings)
+
+        def filtered_dotenv() -> dict[str, object]:
+            return without_deepseek_secret(dotenv_settings)
+
+        def filtered_file_secrets() -> dict[str, object]:
+            return without_deepseek_secret(file_secret_settings)
+
+        return (
+            init_settings,
+            _MappingSettingsSource(settings_cls, exact_deepseek_secret),
+            _MappingSettingsSource(settings_cls, filtered_environment),
+            _MappingSettingsSource(settings_cls, filtered_dotenv),
+            _MappingSettingsSource(settings_cls, filtered_file_secrets),
+        )
 
     @model_validator(mode="after")
     def enforce_production_safety(self) -> Self:
@@ -163,6 +222,8 @@ class Settings(BaseSettings):
         if not 1 <= self.model_max_output_tokens <= 8192:
             raise ValueError("model output tokens must be bounded")
         if self.model_adapter == "deepseek":
+            if self.model_temperature != 0.2 or self.model_max_output_tokens != 4096:
+                raise ValueError("P0 model profile generation settings are frozen")
             if (
                 self.deepseek_api_key is None
                 or not self.deepseek_api_key.get_secret_value().strip()

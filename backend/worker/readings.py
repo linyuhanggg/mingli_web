@@ -17,6 +17,7 @@ from app.adapters.model import (
 from app.adapters.runtime import FakeMingliRuntimeAdapter, build_runtime_startup_gate
 from app.config import Settings, get_settings
 from app.database import Database
+from app.observability import configure_logging
 from app.readings.models import ReadingJobRecord, ReadingVersion
 from app.readings.narrative_guard import NarrativeGuard
 from app.readings.orchestrator import (
@@ -279,6 +280,7 @@ def build_reading_worker(
 @asynccontextmanager
 async def configured_reading_worker() -> AsyncIterator[Worker]:
     settings = get_settings()
+    configure_logging(settings.log_level)
     database = Database(settings.database_url)
     worker_id = f"{socket.gethostname()}:{os.getpid()}:{uuid4().hex}"
     model_adapter: DeepSeekStandaloneModelAdapter | None = None
@@ -300,6 +302,8 @@ async def configured_reading_worker() -> AsyncIterator[Worker]:
             model=model,
         )
     finally:
-        if model_adapter is not None:
-            await model_adapter.aclose()
-        await database.dispose()
+        try:
+            if model_adapter is not None:
+                await model_adapter.aclose()
+        finally:
+            await database.dispose()

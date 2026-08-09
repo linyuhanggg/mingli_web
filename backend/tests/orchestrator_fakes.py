@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
@@ -45,6 +47,19 @@ class ScriptedModel:
         item = self.script.pop(0)
         if isinstance(item, Exception):
             raise item
+        narrative = __import__(
+            "app.readings.narrative_contracts",
+            fromlist=["NarrativeCandidate"],
+        )
+        if isinstance(item, narrative.NarrativeCandidate):
+            model_contracts = __import__(
+                "app.readings.model_contracts",
+                fromlist=["ModelGenerationResult"],
+            )
+            return model_contracts.ModelGenerationResult(
+                candidate=item,
+                receipt=make_model_receipt(request),
+            )
         return item
 
 
@@ -70,6 +85,7 @@ class MemoryRepository:
         self.events = events if events is not None else []
         self.checkpoint = orchestrator.ReadingCheckpoint()
         self.attempts: list[tuple[int, tuple[str, ...]]] = []
+        self.model_receipts: list[Any] = []
 
     async def load_job(self, job_id: str) -> Any:
         assert job_id == self.job.id
@@ -116,11 +132,14 @@ class MemoryRepository:
         candidate: Any,
         guard_errors: tuple[str, ...],
         at: datetime,
+        *,
+        model_receipt: Any = None,
     ) -> None:
         del candidate, at
         assert job_id == self.job.id
         self.events.append(f"repo:attempt:{attempt_number}")
         self.attempts.append((attempt_number, guard_errors))
+        self.model_receipts.append(model_receipt)
         self.checkpoint = replace(self.checkpoint, attempt_count=attempt_number)
 
     async def record_completion_intent(
@@ -145,11 +164,14 @@ class MemoryRepository:
         candidate: Any,
         public_copy: str,
         at: datetime,
+        *,
+        model_receipt: Any = None,
     ) -> None:
         del candidate, at
         assert job_id == self.job.id
         self.events.append(f"repo:successful_attempt:{attempt_number}")
         self.attempts.append((attempt_number, ()))
+        self.model_receipts.append(model_receipt)
         self.checkpoint = replace(
             self.checkpoint,
             status=self.orchestrator.ReadingStatus.COMPLETING,
@@ -214,6 +236,45 @@ def make_prepared(contracts: Any) -> Any:
 
 def make_candidate(narrative: Any) -> Any:
     return narrative.NarrativeCandidate.from_dict(load_candidate())
+
+
+def make_model_receipt(request: Any) -> Any:
+    contracts = __import__(
+        "app.readings.model_contracts",
+        fromlist=["ModelCallReceipt"],
+    )
+    usage = contracts.ModelTokenUsage(input_tokens=0, output_tokens=0, total_tokens=0)
+    return contracts.ModelCallReceipt(
+        outcome="succeeded",
+        error_code=None,
+        model_profile_id="fake-model-p0-v1",
+        model_profile_snapshot_digest=hashlib.sha256(b"fake-model-p0-v1").hexdigest(),
+        provider="fake",
+        provider_model_version="fake-model-v1",
+        provider_request_id="fake-request-v1",
+        request_fingerprint=hashlib.sha256(
+            json.dumps(request.to_dict(), sort_keys=True).encode()
+        ).hexdigest(),
+        latency_ms=0,
+        narrative_policy_version=request.narrative_policy_version,
+        output_contract_id=request.output_contract.contract_id,
+        price_snapshot=contracts.ModelPriceReceipt(
+            version="fake-model-price-v1",
+            currency="CNY",
+            snapshot_digest=hashlib.sha256(b"fake-model-price-v1").hexdigest(),
+            input_microunits_per_million_tokens=0,
+            output_microunits_per_million_tokens=0,
+        ),
+        usage=usage,
+        cost=contracts.ModelCost(
+            currency="CNY",
+            microunits=0,
+            price_snapshot_version="fake-model-price-v1",
+            price_snapshot_digest=hashlib.sha256(b"fake-model-price-v1").hexdigest(),
+            input_microunits_per_million_tokens=0,
+            output_microunits_per_million_tokens=0,
+        ),
+    )
 
 
 def make_output_contract(narrative: Any) -> Any:

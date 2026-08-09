@@ -77,6 +77,10 @@ def test_reading_migration_builds_immutable_phase_two_tables(
         column["name"]: column for column in inspector.get_columns("reading_versions")
     }
     assert reading_version_columns["prepare_has_state_token"]["nullable"] is False
+    generation_attempt_columns = {
+        column["name"]: column for column in inspector.get_columns("generation_attempts")
+    }
+    assert generation_attempt_columns["model_receipt"]["nullable"] is True
 
     expected_checks = {
         "subject_profiles": {"ck_subject_profiles_owner_exactly_one"},

@@ -1,5 +1,11 @@
+import asyncio
+import hashlib
 import importlib
+from dataclasses import replace
 
+import pytest
+
+# isort: split
 from orchestrator_fakes import (
     FixedClock,
     MemoryRepository,
@@ -17,6 +23,189 @@ def modules() -> tuple[object, object, object]:
         importlib.import_module("app.readings.orchestrator"),
         importlib.import_module("app.readings.runtime_contracts"),
         importlib.import_module("app.readings.narrative_contracts"),
+    )
+
+
+def model_generation(candidate: object) -> tuple[object, object]:
+    model = importlib.import_module("app.adapters.model")
+    usage = model.ModelTokenUsage(input_tokens=3, output_tokens=7, total_tokens=10)
+    audit = model.ModelCallReceipt(
+        outcome="succeeded",
+        error_code=None,
+        model_profile_id="deepseek-v4-flash-p0-v1",
+        model_profile_snapshot_digest="a" * 64,
+        provider="deepseek",
+        provider_model_version="deepseek-v4-flash",
+        provider_request_id="provider-request-fixture",
+        request_fingerprint="b" * 64,
+        latency_ms=125,
+        narrative_policy_version="policy-v1",
+        output_contract_id="test-output-v1",
+        price_snapshot=model.ModelPriceReceipt(
+            version="fixture-price-v1",
+            currency="CNY",
+            snapshot_digest="c" * 64,
+            input_microunits_per_million_tokens=2_000_000,
+            output_microunits_per_million_tokens=4_000_000,
+        ),
+        usage=usage,
+        cost=model.ModelCost(
+            currency="CNY",
+            microunits=34,
+            price_snapshot_version="fixture-price-v1",
+            price_snapshot_digest="c" * 64,
+            input_microunits_per_million_tokens=2_000_000,
+            output_microunits_per_million_tokens=4_000_000,
+        ),
+    )
+    return model.ModelGenerationResult(candidate=candidate, receipt=audit), audit
+
+
+async def test_model_receipt_is_persisted_with_the_successful_generation_attempt() -> None:
+    orchestrator, contracts, narrative = modules()
+    prepared = make_prepared(contracts)
+    generation, audit = model_generation(make_candidate(narrative))
+    job = make_job(orchestrator, contracts, narrative)
+    repository = MemoryRepository(orchestrator, job)
+    machine = orchestrator.ReadingOrchestrator(
+        repository=repository,
+        runtime=ScriptedRuntime([prepared]),
+        model=ScriptedModel([generation]),
+        guard=orchestrator.NarrativeGuard(),
+        assembler=orchestrator.PublicCopyAssembler(),
+        clock=FixedClock(),
+    )
+
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.COMPLETING
+
+    assert repository.model_receipts == [audit]
+
+
+async def test_safe_failed_model_receipt_is_persisted_with_the_failed_attempt() -> None:
+    orchestrator, contracts, narrative = modules()
+    errors = importlib.import_module("app.readings.errors")
+    _generation, successful_receipt = model_generation(make_candidate(narrative))
+    failed_receipt = replace(
+        successful_receipt,
+        outcome="failed",
+        error_code="model_invalid_response",
+    )
+    job = make_job(orchestrator, contracts, narrative)
+    repository = MemoryRepository(orchestrator, job)
+    machine = orchestrator.ReadingOrchestrator(
+        repository=repository,
+        runtime=ScriptedRuntime([make_prepared(contracts)]),
+        model=ScriptedModel(
+            [errors.NarrativeGenerationError("model_invalid_response", receipt=failed_receipt)]
+        ),
+        guard=orchestrator.NarrativeGuard(),
+        assembler=orchestrator.PublicCopyAssembler(),
+        clock=FixedClock(),
+    )
+
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    assert repository.model_receipts == [failed_receipt]
+
+
+async def test_receipt_persistence_failure_never_advances_to_complete() -> None:
+    orchestrator, contracts, narrative = modules()
+    generation, _audit = model_generation(make_candidate(narrative))
+    job = make_job(orchestrator, contracts, narrative)
+
+    class RejectingRepository(MemoryRepository):
+        async def record_successful_attempt(self, *args: object, **kwargs: object) -> None:
+            del args, kwargs
+            raise RuntimeError("model receipt persistence failed")
+
+    repository = RejectingRepository(orchestrator, job)
+    runtime = ScriptedRuntime([make_prepared(contracts)])
+    machine = orchestrator.ReadingOrchestrator(
+        repository=repository,
+        runtime=runtime,
+        model=ScriptedModel([generation]),
+        guard=orchestrator.NarrativeGuard(),
+        assembler=orchestrator.PublicCopyAssembler(),
+        clock=FixedClock(),
+    )
+
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    with pytest.raises(RuntimeError, match="receipt persistence"):
+        await machine.run(job.id)
+
+    assert [command.kind for command in runtime.commands] == ["prepare"]
+    assert repository.checkpoint.completion_copy is None
+
+
+async def test_two_concurrent_jobs_persist_their_own_receipts_without_cross_talk() -> None:
+    orchestrator, contracts, narrative = modules()
+    candidate = make_candidate(narrative)
+    _base_generation, base_receipt = model_generation(candidate)
+
+    class ConcurrentModel:
+        async def generate(self, request: object) -> object:
+            question = request.brief["question"]  # type: ignore[attr-defined,index]
+            if question == "job-a-question":
+                await asyncio.sleep(0.01)
+                request_id = "provider-request-job-a"
+            else:
+                request_id = "provider-request-job-b"
+            model_contracts = importlib.import_module("app.readings.model_contracts")
+            return model_contracts.ModelGenerationResult(
+                candidate=candidate,
+                receipt=replace(
+                    base_receipt,
+                    provider_request_id=request_id,
+                    request_fingerprint=hashlib.sha256(question.encode()).hexdigest(),
+                ),
+            )
+
+    def prepared(question: str, token: str) -> object:
+        payload = make_prepared(contracts).brief.to_dict()
+        payload["question"] = question
+        return contracts.Prepared(
+            state_token=token,
+            brief=contracts.ReadingBrief.from_dict(payload),
+        )
+
+    model = ConcurrentModel()
+    machines: list[object] = []
+    repositories: list[MemoryRepository] = []
+    for suffix in ("a", "b"):
+        job = replace(make_job(orchestrator, contracts, narrative), id=f"job:{suffix}")
+        repository = MemoryRepository(orchestrator, job)
+        repository.checkpoint = replace(
+            repository.checkpoint,
+            status=orchestrator.ReadingStatus.PREPARED,
+            prepared=prepared(f"job-{suffix}-question", f"state-token-{suffix}"),
+        )
+        repositories.append(repository)
+        machines.append(
+            orchestrator.ReadingOrchestrator(
+                repository=repository,
+                runtime=ScriptedRuntime([]),
+                model=model,
+                guard=orchestrator.NarrativeGuard(),
+                assembler=orchestrator.PublicCopyAssembler(),
+                clock=FixedClock(),
+            )
+        )
+
+    outcomes = await asyncio.gather(
+        machines[0].run("job:a"),  # type: ignore[attr-defined]
+        machines[1].run("job:b"),  # type: ignore[attr-defined]
+    )
+
+    assert [outcome.status for outcome in outcomes] == [
+        orchestrator.ReadingStatus.COMPLETING,
+        orchestrator.ReadingStatus.COMPLETING,
+    ]
+    assert repositories[0].model_receipts[0].provider_request_id == "provider-request-job-a"
+    assert repositories[1].model_receipts[0].provider_request_id == "provider-request-job-b"
+    assert (
+        repositories[0].model_receipts[0].request_fingerprint
+        != repositories[1].model_receipts[0].request_fingerprint
     )
 
 

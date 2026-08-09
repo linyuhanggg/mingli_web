@@ -10,6 +10,7 @@ from app.readings.errors import (
     OrchestratorInvariantError,
     RuntimeTransportError,
 )
+from app.readings.model_contracts import ModelCallReceipt, ModelGenerationResult
 from app.readings.narrative_contracts import (
     NarrativeCandidate,
     NarrativeRequest,
@@ -82,7 +83,7 @@ class RuntimePort(Protocol):
 
 
 class NarrativeModelPort(Protocol):
-    async def generate(self, request: NarrativeRequest) -> NarrativeCandidate: ...
+    async def generate(self, request: NarrativeRequest) -> ModelGenerationResult: ...
 
 
 class NarrativeGuardPort(Protocol):
@@ -136,6 +137,8 @@ class ReadingRepository(Protocol):
         candidate: NarrativeCandidate | None,
         guard_errors: tuple[str, ...],
         at: datetime,
+        *,
+        model_receipt: ModelCallReceipt | None = None,
     ) -> None: ...
 
     async def record_completion_intent(
@@ -152,6 +155,8 @@ class ReadingRepository(Protocol):
         candidate: NarrativeCandidate,
         public_copy: str,
         at: datetime,
+        *,
+        model_receipt: ModelCallReceipt | None = None,
     ) -> None: ...
 
     async def record_accepted(
@@ -277,10 +282,13 @@ class ReadingOrchestrator:
 
         attempt_number = completed_attempts + 1
         candidate: NarrativeCandidate | None = None
+        model_receipt: ModelCallReceipt | None = None
         errors: tuple[str, ...]
         public_copy: str | None = None
         try:
-            candidate = await self.model.generate(request)
+            generation = await self.model.generate(request)
+            candidate = generation.candidate
+            model_receipt = generation.receipt
             guard_result = self.guard.validate(
                 candidate,
                 brief,
@@ -296,7 +304,9 @@ class ReadingOrchestrator:
                     )
                 except PublicCopyAssemblyError:
                     errors = ("public_copy_invalid",)
-        except NarrativeGenerationError:
+        except NarrativeGenerationError as error:
+            if isinstance(error.receipt, ModelCallReceipt):
+                model_receipt = error.receipt
             errors = ("model_generation_failed",)
 
         if public_copy is None:
@@ -306,6 +316,7 @@ class ReadingOrchestrator:
                 candidate,
                 errors,
                 self.clock.now(),
+                model_receipt=model_receipt,
             )
             if attempt_number >= job.max_attempts:
                 await self.repository.mark_delayed(job.id, self.clock.now())
@@ -319,6 +330,7 @@ class ReadingOrchestrator:
             candidate,
             public_copy,
             self.clock.now(),
+            model_receipt=model_receipt,
         )
         return ReadingOutcome(status=ReadingStatus.COMPLETING)
 

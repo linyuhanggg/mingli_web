@@ -134,6 +134,7 @@ def test_internal_model_contract_is_closed_and_agent_free() -> None:
         "provider_model_version",
         "provider_request_id",
         "request_fingerprint",
+        "model_profile_snapshot_digest",
         "cost",
     }
     schemas = document["components"]["schemas"]
@@ -154,6 +155,10 @@ def test_internal_model_contract_is_closed_and_agent_free() -> None:
         "type": "string",
         "pattern": "^[A-Za-z0-9._:-]{1,128}$",
         "maxLength": 128,
+    }
+    assert schemas["ModelCost"]["properties"]["price_snapshot_digest"] == {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$",
     }
     assert all(
         schema.get("additionalProperties") is False
@@ -203,7 +208,7 @@ async def test_real_outbound_request_contains_only_the_closed_narrative_boundary
         transport=httpx.MockTransport(handler),
     )
     try:
-        await adapter.generate(_boundary_request())
+        generation = await adapter.generate(_boundary_request())
     finally:
         await adapter.aclose()
 
@@ -213,7 +218,9 @@ async def test_real_outbound_request_contains_only_the_closed_narrative_boundary
     assert str(outbound.url) == "https://api.deepseek.com/chat/completions"
     assert outbound.headers["authorization"] == f"Bearer {api_key}"
     assert outbound.headers["accept"] == "application/json"
+    assert outbound.headers["accept-encoding"] == "identity"
     assert outbound.headers["content-type"] == "application/json"
+    assert outbound.headers["user-agent"] == "FateRadar-ModelPort/1"
     for forbidden_header in ("cookie", "x-api-key", "x-user-id", "x-reading-id"):
         assert forbidden_header not in outbound.headers
 
@@ -268,6 +275,26 @@ async def test_real_outbound_request_contains_only_the_closed_narrative_boundary
         '"agent_run_id"',
     ):
         assert forbidden not in serialized_body
+
+    serialized_receipt = json.dumps(
+        generation.receipt.to_dict(),
+        ensure_ascii=False,
+        sort_keys=True,
+    ).lower()
+    for forbidden in (
+        "事业上最该先抓住哪条主线",
+        "测试事实",
+        api_key.lower(),
+        "state_token",
+        "user_id",
+        "order_id",
+        "entitlement_id",
+        "reading_id",
+        "job_id",
+        "prepared_brief",
+        "messages",
+    ):
+        assert forbidden not in serialized_receipt
 
 
 def test_callers_cannot_supply_a_model_or_endpoint_to_the_adapter() -> None:

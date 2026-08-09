@@ -7,17 +7,25 @@ import logging
 import re
 import time
 from collections.abc import Callable, Mapping
+from contextlib import suppress
 from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Protocol, cast, runtime_checkable
+from typing import Any, Never, Protocol, cast, runtime_checkable
 
 import httpx
 from pydantic import SecretStr
 
 from app.config import Settings
 from app.readings.errors import NarrativeGenerationError
+from app.readings.model_contracts import (
+    ModelCallReceipt,
+    ModelCost,
+    ModelGenerationResult,
+    ModelPriceReceipt,
+    ModelTokenUsage,
+)
 from app.readings.narrative_contracts import (
     CANDIDATE_SCHEMA,
     NarrativeCandidate,
@@ -39,11 +47,14 @@ NARRATIVE_POLICY_INSTRUCTIONS = {
 _SCHEMA_ROOT = Path(__file__).resolve().parents[3] / "contracts" / "schemas"
 _logger = logging.getLogger("mingli.model")
 _SAFE_PROVIDER_METADATA = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
+_MAX_MODEL_USAGE_TOKENS = 10_000_000
+_FROZEN_TEMPERATURE = 0.2
+_FROZEN_MAX_OUTPUT_TOKENS = 4096
 
 
 @runtime_checkable
 class NarrativeModel(Protocol):
-    async def generate(self, request: NarrativeRequest) -> NarrativeCandidate: ...
+    async def generate(self, request: NarrativeRequest) -> ModelGenerationResult: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,63 +78,40 @@ class ModelPriceSnapshot:
         ):
             raise ValueError("model token prices must not be negative")
 
-
-@dataclass(frozen=True, slots=True)
-class ModelTokenUsage:
-    input_tokens: int
-    output_tokens: int
-    total_tokens: int
-
-
-@dataclass(frozen=True, slots=True)
-class ModelCost:
-    currency: str
-    microunits: int
-    price_snapshot_version: str
-
-
-@dataclass(frozen=True, slots=True)
-class ModelCallAudit:
-    model_profile_id: str
-    provider: str
-    provider_model_version: str
-    provider_request_id: str
-    request_fingerprint: str
-    latency_ms: int
-    usage: ModelTokenUsage
-    cost: ModelCost
-
-    def to_dict(self) -> dict[str, object]:
-        return {
-            "event": "standalone_model_call",
-            "model_profile_id": self.model_profile_id,
-            "provider": self.provider,
-            "provider_model_version": self.provider_model_version,
-            "provider_request_id": self.provider_request_id,
-            "request_fingerprint": self.request_fingerprint,
-            "latency_ms": self.latency_ms,
-            "usage": {
-                "input_tokens": self.usage.input_tokens,
-                "output_tokens": self.usage.output_tokens,
-                "total_tokens": self.usage.total_tokens,
-            },
-            "cost": {
-                "currency": self.cost.currency,
-                "microunits": self.cost.microunits,
-                "price_snapshot_version": self.cost.price_snapshot_version,
-            },
+    @property
+    def snapshot_digest(self) -> str:
+        payload = {
+            "currency": self.currency,
+            "input_microunits_per_million_tokens": (self.input_microunits_per_million_tokens),
+            "output_microunits_per_million_tokens": (self.output_microunits_per_million_tokens),
+            "version": self.version,
         }
+        return hashlib.sha256(_canonical_json(payload)).hexdigest()
+
+
+@dataclass(frozen=True, slots=True)
+class _ProviderObservation:
+    model_version: str | None = None
+    request_id: str | None = None
+    usage: ModelTokenUsage | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class _ModelCallOutcome:
+    result: ModelGenerationResult | None
+    error_code: str | None
+    receipt: ModelCallReceipt | None
 
 
 class ModelAuditSink(Protocol):
-    async def record(self, audit: ModelCallAudit) -> None: ...
+    async def record(self, receipt: ModelCallReceipt) -> None: ...
 
 
 class SafeModelAuditLogger:
     """Emits only bounded billing/transport metadata, never request or response bodies."""
 
-    async def record(self, audit: ModelCallAudit) -> None:
-        _logger.info(json.dumps(audit.to_dict(), sort_keys=True, separators=(",", ":")))
+    async def record(self, receipt: ModelCallReceipt) -> None:
+        _logger.info(json.dumps(receipt.to_dict(), sort_keys=True, separators=(",", ":")))
 
 
 @lru_cache(maxsize=1)
@@ -193,14 +181,38 @@ class DeepSeekStandaloneModelAdapter:
     async def aclose(self) -> None:
         await self._client.aclose()
 
-    async def generate(self, request: NarrativeRequest) -> NarrativeCandidate:
-        body = self._provider_request(request)
-        body_bytes = _canonical_json(body)
+    async def generate(self, request: NarrativeRequest) -> ModelGenerationResult:
+        outcome = await self._perform_call(request)
+        del request
+        if outcome.error_code is not None:
+            self._raise_sanitized(outcome.error_code, outcome.receipt)
+        if outcome.result is None:
+            self._raise_sanitized("model_invalid_response", outcome.receipt)
+        return outcome.result
+
+    async def _perform_call(self, request: NarrativeRequest) -> _ModelCallOutcome:
+        if not _SAFE_PROVIDER_METADATA.fullmatch(request.output_contract.contract_id):
+            return _ModelCallOutcome(
+                result=None,
+                error_code="model_output_contract_not_approved",
+                receipt=None,
+            )
+        try:
+            body_bytes = _canonical_json(self._provider_request(request))
+        except NarrativeGenerationError as error:
+            return _ModelCallOutcome(result=None, error_code=str(error), receipt=None)
         request_fingerprint = hashlib.sha256(body_bytes).hexdigest()
+        profile_digest = self._model_profile_snapshot_digest()
+        policy_version = request.narrative_policy_version
+        output_contract_id = request.output_contract.contract_id
         started = self._clock()
-        failure_code: str | None = None
+        sent = False
+        candidate: NarrativeCandidate | None = None
+        observation = _ProviderObservation()
+        error_code: str | None = None
         try:
             async with asyncio.timeout(self._overall_timeout_seconds):
+                sent = True
                 async with self._client.stream(
                     "POST",
                     DEEPSEEK_CHAT_COMPLETIONS_PATH,
@@ -208,9 +220,12 @@ class DeepSeekStandaloneModelAdapter:
                     headers={
                         "Authorization": f"Bearer {self._api_key.get_secret_value()}",
                         "Accept": "application/json",
+                        "Accept-Encoding": "identity",
                         "Content-Type": "application/json",
+                        "User-Agent": "FateRadar-ModelPort/1",
                     },
                 ) as response:
+                    observation = self._observe_provider(None, response.headers)
                     if 300 <= response.status_code < 400:
                         raise NarrativeGenerationError("model_redirect_forbidden")
                     if response.status_code == 429:
@@ -219,38 +234,66 @@ class DeepSeekStandaloneModelAdapter:
                         raise NarrativeGenerationError("model_upstream_error")
                     if response.status_code != 200:
                         raise NarrativeGenerationError("model_http_error")
+                    content_encoding = response.headers.get("content-encoding")
+                    if content_encoding not in {None, "", "identity"}:
+                        raise NarrativeGenerationError("model_encoding_forbidden")
                     raw = await self._read_bounded(response)
                     response_payload = json.loads(raw)
+                    observation = self._observe_provider(response_payload, response.headers)
                     candidate, model_version, provider_request_id, usage = self._parse_response(
                         response_payload,
                         response.headers,
                     )
-        except NarrativeGenerationError:
-            raise
+                    observation = _ProviderObservation(
+                        model_version=model_version,
+                        request_id=provider_request_id,
+                        usage=usage,
+                    )
+        except NarrativeGenerationError as error:
+            error_code = str(error)
         except (TimeoutError, httpx.TimeoutException):
-            failure_code = "model_timeout"
+            error_code = "model_timeout"
         except httpx.HTTPError:
-            failure_code = "model_transport_error"
+            error_code = "model_transport_error"
         except (UnicodeError, json.JSONDecodeError, TypeError, ValueError):
-            failure_code = "model_invalid_response"
-        if failure_code is not None:
-            # Raising after the provider exception scope is critical: no httpx
-            # Request (and therefore no Authorization header) survives as context.
-            raise NarrativeGenerationError(failure_code)
+            error_code = "model_invalid_response"
+        except Exception:
+            error_code = "model_transport_error"
 
+        if not sent:
+            return _ModelCallOutcome(result=None, error_code=error_code, receipt=None)
         latency_ms = max(0, round((self._clock() - started) * 1000))
-        audit = ModelCallAudit(
+        receipt = ModelCallReceipt(
+            outcome="succeeded" if error_code is None else "failed",
+            error_code=error_code,
             model_profile_id=DEEPSEEK_MODEL_PROFILE_ID,
+            model_profile_snapshot_digest=profile_digest,
             provider=DEEPSEEK_PROVIDER,
-            provider_model_version=model_version,
-            provider_request_id=provider_request_id,
+            provider_model_version=observation.model_version,
+            provider_request_id=observation.request_id,
             request_fingerprint=request_fingerprint,
             latency_ms=latency_ms,
-            usage=usage,
-            cost=self._cost(usage),
+            narrative_policy_version=policy_version,
+            output_contract_id=output_contract_id,
+            price_snapshot=self._price_receipt(),
+            usage=observation.usage,
+            cost=(None if observation.usage is None else self._cost(observation.usage)),
         )
-        await self._audit_sink.record(audit)
-        return candidate
+        try:
+            await self._audit_sink.record(receipt)
+        except Exception:
+            _logger.error('{"event":"standalone_model_audit_sink_failed"}')
+        if error_code is not None or candidate is None:
+            return _ModelCallOutcome(result=None, error_code=error_code, receipt=receipt)
+        return _ModelCallOutcome(
+            result=ModelGenerationResult(candidate=candidate, receipt=receipt),
+            error_code=None,
+            receipt=receipt,
+        )
+
+    @staticmethod
+    def _raise_sanitized(code: str, receipt: ModelCallReceipt | None) -> Never:
+        raise NarrativeGenerationError(code, receipt=receipt) from None
 
     async def _read_bounded(self, response: httpx.Response) -> bytes:
         content_length = response.headers.get("content-length")
@@ -304,8 +347,8 @@ class DeepSeekStandaloneModelAdapter:
             "stream": False,
         }
 
-    @staticmethod
     def _parse_response(
+        self,
         payload: object,
         headers: httpx.Headers,
     ) -> tuple[NarrativeCandidate, str, str, ModelTokenUsage]:
@@ -337,19 +380,61 @@ class DeepSeekStandaloneModelAdapter:
         raw_usage = payload.get("usage")
         if not isinstance(raw_usage, Mapping):
             raise NarrativeGenerationError("model_usage_invalid")
-        input_tokens = DeepSeekStandaloneModelAdapter._token_count(raw_usage.get("prompt_tokens"))
-        output_tokens = DeepSeekStandaloneModelAdapter._token_count(
-            raw_usage.get("completion_tokens")
+        usage = self._parse_usage(raw_usage)
+        return candidate, model_version, provider_request_id, usage
+
+    def _observe_provider(
+        self,
+        payload: object | None,
+        headers: httpx.Headers,
+    ) -> _ProviderObservation:
+        request_id_value = headers.get("x-request-id")
+        request_id = (
+            request_id_value
+            if isinstance(request_id_value, str)
+            and _SAFE_PROVIDER_METADATA.fullmatch(request_id_value)
+            else None
         )
-        total_tokens = DeepSeekStandaloneModelAdapter._token_count(raw_usage.get("total_tokens"))
-        usage = ModelTokenUsage(
+        if not isinstance(payload, Mapping):
+            return _ProviderObservation(request_id=request_id)
+        model_value = payload.get("model")
+        model_version = (
+            model_value
+            if isinstance(model_value, str) and _SAFE_PROVIDER_METADATA.fullmatch(model_value)
+            else None
+        )
+        if request_id is None:
+            body_request_id = payload.get("id")
+            if isinstance(body_request_id, str) and _SAFE_PROVIDER_METADATA.fullmatch(
+                body_request_id
+            ):
+                request_id = body_request_id
+        usage: ModelTokenUsage | None = None
+        raw_usage = payload.get("usage")
+        if isinstance(raw_usage, Mapping):
+            with suppress(NarrativeGenerationError):
+                usage = self._parse_usage(raw_usage)
+        return _ProviderObservation(
+            model_version=model_version,
+            request_id=request_id,
+            usage=usage,
+        )
+
+    def _parse_usage(self, raw_usage: Mapping[str, object]) -> ModelTokenUsage:
+        input_tokens = self._token_count(raw_usage.get("prompt_tokens"))
+        output_tokens = self._token_count(raw_usage.get("completion_tokens"))
+        total_tokens = self._token_count(raw_usage.get("total_tokens"))
+        if (
+            total_tokens != input_tokens + output_tokens
+            or output_tokens > self._max_output_tokens
+            or max(input_tokens, total_tokens) > _MAX_MODEL_USAGE_TOKENS
+        ):
+            raise NarrativeGenerationError("model_usage_invalid")
+        return ModelTokenUsage(
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             total_tokens=total_tokens,
         )
-        if usage.total_tokens != usage.input_tokens + usage.output_tokens:
-            raise NarrativeGenerationError("model_usage_invalid")
-        return candidate, model_version, provider_request_id, usage
 
     @staticmethod
     def _token_count(value: object) -> int:
@@ -367,7 +452,45 @@ class DeepSeekStandaloneModelAdapter:
             currency=self._price_snapshot.currency,
             microunits=microunits,
             price_snapshot_version=self._price_snapshot.version,
+            price_snapshot_digest=self._price_snapshot.snapshot_digest,
+            input_microunits_per_million_tokens=(
+                self._price_snapshot.input_microunits_per_million_tokens
+            ),
+            output_microunits_per_million_tokens=(
+                self._price_snapshot.output_microunits_per_million_tokens
+            ),
         )
+
+    def _price_receipt(self) -> ModelPriceReceipt:
+        return ModelPriceReceipt(
+            version=self._price_snapshot.version,
+            currency=self._price_snapshot.currency,
+            snapshot_digest=self._price_snapshot.snapshot_digest,
+            input_microunits_per_million_tokens=(
+                self._price_snapshot.input_microunits_per_million_tokens
+            ),
+            output_microunits_per_million_tokens=(
+                self._price_snapshot.output_microunits_per_million_tokens
+            ),
+        )
+
+    def _model_profile_snapshot_digest(self) -> str:
+        return hashlib.sha256(
+            _canonical_json(
+                {
+                    "base_url": DEEPSEEK_BASE_URL,
+                    "endpoint_path": DEEPSEEK_CHAT_COMPLETIONS_PATH,
+                    "max_output_tokens": self._max_output_tokens,
+                    "model_id": DEEPSEEK_MODEL_ID,
+                    "model_profile_id": DEEPSEEK_MODEL_PROFILE_ID,
+                    "provider": DEEPSEEK_PROVIDER,
+                    "response_format": {"type": "json_object"},
+                    "stream": False,
+                    "temperature": self._temperature,
+                    "thinking_mode": "not-sent-p0-v1",
+                }
+            )
+        ).hexdigest()
 
 
 def build_deepseek_model_adapter(
@@ -420,7 +543,7 @@ def _strings(value: object) -> tuple[str, ...]:
 class FakeModelGateway:
     """Deterministic schema Fake; it has no tools, memory, network or acceptance role."""
 
-    async def generate(self, request: NarrativeRequest) -> NarrativeCandidate:
+    async def generate(self, request: NarrativeRequest) -> ModelGenerationResult:
         scopes = _objects(request.brief.get("claim_scopes"))
         scope = scopes[0] if scopes else {}
         subject_ref = str(scope.get("subject_ref", "fixture:subject"))
@@ -429,7 +552,7 @@ class FakeModelGateway:
         findings = _objects(request.brief.get("findings"))
         limit_ids = tuple(item for item in request.output_contract.required_limit_kind_ids if item)
 
-        return NarrativeCandidate.from_dict(
+        candidate = NarrativeCandidate.from_dict(
             {
                 "schema_version": "mingli-narrative-candidate-v1",
                 "blocks": [
@@ -454,3 +577,40 @@ class FakeModelGateway:
                 ],
             }
         )
+        usage = ModelTokenUsage(input_tokens=0, output_tokens=0, total_tokens=0)
+        price_snapshot = ModelPriceSnapshot(
+            version="fake-model-price-v1",
+            currency="CNY",
+            input_microunits_per_million_tokens=0,
+            output_microunits_per_million_tokens=0,
+        )
+        receipt = ModelCallReceipt(
+            outcome="succeeded",
+            error_code=None,
+            model_profile_id="fake-model-p0-v1",
+            model_profile_snapshot_digest=hashlib.sha256(b"fake-model-p0-v1").hexdigest(),
+            provider="fake",
+            provider_model_version="fake-model-v1",
+            provider_request_id="fake-request-v1",
+            request_fingerprint=hashlib.sha256(_canonical_json(request.to_dict())).hexdigest(),
+            latency_ms=0,
+            narrative_policy_version=request.narrative_policy_version,
+            output_contract_id=request.output_contract.contract_id,
+            price_snapshot=ModelPriceReceipt(
+                version=price_snapshot.version,
+                currency=price_snapshot.currency,
+                snapshot_digest=price_snapshot.snapshot_digest,
+                input_microunits_per_million_tokens=0,
+                output_microunits_per_million_tokens=0,
+            ),
+            usage=usage,
+            cost=ModelCost(
+                currency="CNY",
+                microunits=0,
+                price_snapshot_version=price_snapshot.version,
+                price_snapshot_digest=price_snapshot.snapshot_digest,
+                input_microunits_per_million_tokens=0,
+                output_microunits_per_million_tokens=0,
+            ),
+        )
+        return ModelGenerationResult(candidate=candidate, receipt=receipt)

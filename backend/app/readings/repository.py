@@ -11,6 +11,7 @@ from sqlalchemy.sql import Select
 
 from app.persistence import ImmutableRecordError as ImmutableRecordError
 from app.profiles.models import ProfileVersion, SubjectProfile
+from app.readings.model_contracts import ModelCallReceipt
 from app.readings.models import (
     AcceptedCopy,
     FactBrief,
@@ -361,6 +362,8 @@ class SqlReadingRepository:
         candidate: NarrativeCandidate | None,
         guard_errors: tuple[str, ...],
         at: datetime,
+        *,
+        model_receipt: ModelCallReceipt | None = None,
     ) -> None:
         del at
         _job, version = await self._job_and_version(job_id)
@@ -369,6 +372,7 @@ class SqlReadingRepository:
             attempt_number,
             candidate,
             guard_errors,
+            model_receipt,
         )
         await self.session.flush()
 
@@ -379,10 +383,18 @@ class SqlReadingRepository:
         candidate: NarrativeCandidate,
         public_copy: str,
         at: datetime,
+        *,
+        model_receipt: ModelCallReceipt | None = None,
     ) -> None:
         del at
         job, version = await self._job_and_version(job_id)
-        await self._insert_attempt(version, attempt_number, candidate, ())
+        await self._insert_attempt(
+            version,
+            attempt_number,
+            candidate,
+            (),
+            model_receipt,
+        )
         self._set_completion(version, public_copy)
         version.status = ReadingStatus.COMPLETING.value
         job.status = "running"
@@ -489,6 +501,7 @@ class SqlReadingRepository:
         attempt_number: int,
         candidate: NarrativeCandidate | None,
         guard_errors: tuple[str, ...],
+        model_receipt: ModelCallReceipt | None,
     ) -> None:
         existing = await self.session.scalar(
             select(GenerationAttempt).where(
@@ -514,6 +527,7 @@ class SqlReadingRepository:
                 candidate_ciphertext=(None if encrypted is None else encrypted.ciphertext),
                 candidate_digest=(None if encrypted is None else encrypted.fingerprint),
                 guard_errors=list(guard_errors),
+                model_receipt=None if model_receipt is None else model_receipt.to_dict(),
             )
         )
 

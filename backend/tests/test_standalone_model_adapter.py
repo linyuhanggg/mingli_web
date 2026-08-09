@@ -15,7 +15,7 @@ from app.adapters.model import (
     DEEPSEEK_MODEL_ID,
     DEEPSEEK_MODEL_PROFILE_ID,
     DeepSeekStandaloneModelAdapter,
-    ModelCallAudit,
+    ModelCallReceipt,
     ModelPriceSnapshot,
     build_deepseek_model_adapter,
 )
@@ -26,10 +26,10 @@ from app.readings.runtime_contracts import ReadingBrief
 from pydantic import SecretStr, ValidationError
 
 
-def _brief() -> ReadingBrief:
+def _brief(question: str = "事业上最该先抓住哪条主线？") -> ReadingBrief:
     return ReadingBrief.from_dict(
         {
-            "question": "事业上最该先抓住哪条主线？",
+            "question": question,
             "vocabulary": [],
             "facts": [
                 {
@@ -59,9 +59,9 @@ def _brief() -> ReadingBrief:
     )
 
 
-def _narrative_request() -> NarrativeRequest:
+def _narrative_request(question: str = "事业上最该先抓住哪条主线？") -> NarrativeRequest:
     return NarrativeRequest(
-        brief=_brief(),
+        brief=_brief(question),
         narrative_policy_version="policy-v1",
         output_contract=OutputContract(
             contract_id="preview-v1",
@@ -131,9 +131,9 @@ def _provider_response(
 
 class RecordingAuditSink:
     def __init__(self) -> None:
-        self.records: list[ModelCallAudit] = []
+        self.records: list[ModelCallReceipt] = []
 
-    async def record(self, record: ModelCallAudit) -> None:
+    async def record(self, record: ModelCallReceipt) -> None:
         self.records.append(record)
 
 
@@ -213,11 +213,12 @@ async def test_successful_call_returns_candidate_and_auditable_integer_cost() ->
     )
 
     try:
-        candidate = await adapter.generate(_narrative_request())
+        generation = await adapter.generate(_narrative_request())
     finally:
         await adapter.aclose()
 
-    assert candidate.to_dict() == _candidate_payload()
+    assert generation.candidate.to_dict() == _candidate_payload()
+    assert generation.receipt is audits.records[0]
     assert len(requests) == 1
     assert len(audits.records) == 1
     audit = audits.records[0]
@@ -232,7 +233,41 @@ async def test_successful_call_returns_candidate_and_auditable_integer_cost() ->
     assert audit.cost.currency == "CNY"
     assert audit.cost.microunits == 34
     assert audit.cost.price_snapshot_version == "fixture-price-v1"
+    assert audit.cost.price_snapshot_digest == adapter._price_snapshot.snapshot_digest  # noqa: SLF001
+    assert audit.cost.input_microunits_per_million_tokens == 2_000_000
+    assert audit.cost.output_microunits_per_million_tokens == 4_000_000
     assert audit.latency_ms == 125
+
+
+async def test_two_concurrent_jobs_receive_their_own_explicit_receipts() -> None:
+    async def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        prompt = json.loads(body["messages"][1]["content"])
+        question = prompt["prepared_brief"]["question"]
+        if question == "job-a-question":
+            await asyncio.sleep(0.01)
+            request_id = "provider-request-job-a"
+        else:
+            request_id = "provider-request-job-b"
+        return httpx.Response(
+            200,
+            json=_provider_response(),
+            headers={"X-Request-ID": request_id},
+        )
+
+    adapter = _adapter(httpx.MockTransport(handler))
+    try:
+        first, second = await asyncio.gather(
+            adapter.generate(_narrative_request("job-a-question")),
+            adapter.generate(_narrative_request("job-b-question")),
+        )
+    finally:
+        await adapter.aclose()
+
+    assert first.receipt.provider_request_id == "provider-request-job-a"
+    assert second.receipt.provider_request_id == "provider-request-job-b"
+    assert first.receipt.request_fingerprint != second.receipt.request_fingerprint
+    assert first.receipt is not second.receipt
 
 
 @pytest.mark.parametrize(
@@ -261,7 +296,8 @@ async def test_http_failures_are_single_shot_and_do_not_expose_error_bodies(
             headers={"Location": "https://evil.invalid/capture"} if status_code == 302 else {},
         )
 
-    adapter = _adapter(httpx.MockTransport(handler))
+    audits = RecordingAuditSink()
+    adapter = _adapter(httpx.MockTransport(handler), audits=audits)
     try:
         with pytest.raises(NarrativeGenerationError) as captured:
             await adapter.generate(_narrative_request())
@@ -273,6 +309,12 @@ async def test_http_failures_are_single_shot_and_do_not_expose_error_bodies(
     assert sensitive_error not in repr(captured.value)
     assert "api.deepseek.com" not in repr(captured.value)
     assert "evil.invalid" not in repr(captured.value)
+    assert len(audits.records) == 1
+    assert audits.records[0].outcome == "failed"
+    assert audits.records[0].error_code == expected_code
+    assert audits.records[0].usage_known is False
+    assert audits.records[0].cost is None
+    assert audits.records[0].price_snapshot.version == "fixture-price-v1"
 
 
 @pytest.mark.parametrize(
@@ -348,7 +390,40 @@ async def test_malformed_responses_fail_closed_after_exactly_one_request(
     assert request_count == 1
     assert str(captured.value) == expected_code
     assert captured.value.__context__ is None
-    assert audits.records == []
+    assert len(audits.records) == 1
+    audit = audits.records[0]
+    assert audit.outcome == "failed"
+    assert audit.error_code == expected_code
+    if case == "schema_mismatch":
+        assert audit.usage is not None
+        assert audit.usage.total_tokens == 10
+        assert audit.cost is not None
+
+
+async def test_traceback_locals_never_retain_the_key_prompt_or_authorized_request() -> None:
+    sensitive_prompt = "事业上最该先抓住哪条主线？"
+    api_key = "test-only-obviously-not-a-real-key"
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("provider transport failed", request=request)
+
+    adapter = _adapter(httpx.MockTransport(handler))
+    try:
+        with pytest.raises(NarrativeGenerationError) as captured:
+            await adapter.generate(_narrative_request())
+    finally:
+        await adapter.aclose()
+
+    frames: list[str] = []
+    current = captured.value.__traceback__
+    while current is not None:
+        if current.tb_frame.f_code.co_filename.endswith("/app/adapters/model.py"):
+            frames.append(repr(current.tb_frame.f_locals))
+        current = current.tb_next
+    rendered_locals = "\n".join(frames)
+    assert api_key not in rendered_locals
+    assert sensitive_prompt not in rendered_locals
+    assert "authorization" not in rendered_locals.lower()
 
 
 class CountingByteStream(httpx.AsyncByteStream):
@@ -396,6 +471,57 @@ async def test_streaming_response_stops_reading_as_soon_as_the_cap_is_crossed() 
         await adapter.aclose()
 
     assert stream.yielded == 2
+
+
+async def test_compressed_provider_response_is_rejected_without_decompression() -> None:
+    requests: list[httpx.Request] = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            200,
+            stream=CountingByteStream([b"compressed-provider-bytes"]),
+            headers={"Content-Encoding": "gzip", "X-Request-ID": "fixture"},
+        )
+
+    adapter = _adapter(httpx.MockTransport(handler))
+    try:
+        with pytest.raises(NarrativeGenerationError, match="model_encoding_forbidden"):
+            await adapter.generate(_narrative_request())
+    finally:
+        await adapter.aclose()
+
+    assert len(requests) == 1
+    assert requests[0].headers["accept-encoding"] == "identity"
+
+
+async def test_usage_is_bounded_by_the_frozen_profile() -> None:
+    async def handler(request: httpx.Request) -> httpx.Response:
+        del request
+        return httpx.Response(
+            200,
+            json=_provider_response(
+                usage={
+                    "prompt_tokens": 3,
+                    "completion_tokens": 4097,
+                    "total_tokens": 4100,
+                }
+            ),
+            headers={"X-Request-ID": "fixture"},
+        )
+
+    audits = RecordingAuditSink()
+    adapter = _adapter(httpx.MockTransport(handler), audits=audits, max_output_tokens=4096)
+    try:
+        with pytest.raises(NarrativeGenerationError, match="model_usage_invalid"):
+            await adapter.generate(_narrative_request())
+    finally:
+        await adapter.aclose()
+
+    assert len(audits.records) == 1
+    assert audits.records[0].usage is None
+    assert audits.records[0].cost is None
+    assert audits.records[0].to_dict()["usage_known"] is False
 
 
 @pytest.mark.parametrize("failure_kind", ["connect", "read", "overall"])
@@ -490,6 +616,34 @@ async def test_unapproved_policy_is_rejected_before_transport_without_sensitive_
     assert sensitive_policy not in repr(captured.value)
 
 
+async def test_untrusted_output_contract_id_is_rejected_before_transport() -> None:
+    request_count = 0
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal request_count
+        request_count += 1
+        return httpx.Response(200, json=_provider_response())
+
+    request = replace(
+        _narrative_request(),
+        output_contract=replace(
+            _narrative_request().output_contract,
+            contract_id="customer@example.com secret contract",
+        ),
+    )
+    adapter = _adapter(httpx.MockTransport(handler))
+    try:
+        with pytest.raises(
+            NarrativeGenerationError,
+            match="model_output_contract_not_approved",
+        ):
+            await adapter.generate(request)
+    finally:
+        await adapter.aclose()
+
+    assert request_count == 0
+
+
 def test_exact_deployment_secret_name_is_loaded_without_prefixed_fallback(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -517,6 +671,23 @@ def test_exact_deployment_secret_name_is_loaded_without_prefixed_fallback(
     assert "test-only-obviously-not-a-real-key" not in repr(settings)
 
 
+@pytest.mark.parametrize("wrong_name", ["deepseek_api_key", "DeepSeek_Api_Key"])
+def test_deepseek_secret_environment_name_is_case_sensitive(
+    monkeypatch: pytest.MonkeyPatch,
+    wrong_name: str,
+) -> None:
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.setenv(wrong_name, "must-not-be-accepted")
+
+    with pytest.raises(ValidationError, match="DeepSeek API key"):
+        Settings(
+            model_adapter="deepseek",
+            model_price_snapshot_version="fixture-v1",
+            model_input_price_microunits_per_million_tokens=1,
+            model_output_price_microunits_per_million_tokens=1,
+        )
+
+
 @pytest.mark.parametrize(
     ("overrides", "message"),
     [
@@ -534,6 +705,8 @@ def test_exact_deployment_secret_name_is_loaded_without_prefixed_fallback(
         ({"model_read_timeout_seconds": 0}, "read timeout"),
         ({"model_overall_timeout_seconds": 1000}, "overall timeout"),
         ({"model_max_response_bytes": 0}, "response body"),
+        ({"model_temperature": 0.3}, "model profile"),
+        ({"model_max_output_tokens": 4095}, "model profile"),
         ({"model_max_output_tokens": 100_000}, "output tokens"),
     ],
 )
@@ -564,6 +737,24 @@ def test_price_snapshot_identifier_is_safe_to_emit_as_audit_metadata() -> None:
             input_microunits_per_million_tokens=1,
             output_microunits_per_million_tokens=1,
         )
+
+
+def test_price_snapshot_digest_binds_version_currency_and_integer_rates() -> None:
+    first = ModelPriceSnapshot(
+        version="fixture-price-v1",
+        currency="CNY",
+        input_microunits_per_million_tokens=1,
+        output_microunits_per_million_tokens=2,
+    )
+    changed_rate = ModelPriceSnapshot(
+        version="fixture-price-v1",
+        currency="CNY",
+        input_microunits_per_million_tokens=1,
+        output_microunits_per_million_tokens=3,
+    )
+
+    assert first.snapshot_digest != changed_rate.snapshot_digest
+    assert len(first.snapshot_digest) == 64
 
 
 async def test_safe_audit_log_excludes_api_key_prompt_and_candidate(
@@ -634,7 +825,10 @@ async def test_untrusted_provider_request_id_cannot_inject_sensitive_audit_text(
     finally:
         await adapter.aclose()
 
-    assert audits.records == []
+    assert len(audits.records) == 1
+    assert audits.records[0].outcome == "failed"
+    assert audits.records[0].provider_request_id == "provider-body-id"
+    assert injected not in repr(audits.records[0])
 
 
 async def test_configured_worker_builds_and_closes_the_selected_model_adapter(
@@ -674,6 +868,11 @@ async def test_configured_worker_builds_and_closes_the_selected_model_adapter(
         return built_worker
 
     monkeypatch.setattr(readings, "get_settings", lambda: settings)
+    monkeypatch.setattr(
+        readings,
+        "configure_logging",
+        lambda level: events.append(f"logging:{level}"),
+    )
     monkeypatch.setattr(readings, "Database", DatabaseFixture)
     monkeypatch.setattr(
         readings,
@@ -685,9 +884,50 @@ async def test_configured_worker_builds_and_closes_the_selected_model_adapter(
 
     async with readings.configured_reading_worker() as worker:
         assert worker is built_worker
-        assert events == ["worker-build"]
+        assert events == ["logging:INFO", "worker-build"]
 
-    assert events == ["worker-build", "model-close", "database-close"]
+    assert events == ["logging:INFO", "worker-build", "model-close", "database-close"]
+
+
+async def test_worker_disposes_database_even_when_model_close_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from worker import readings
+
+    events: list[str] = []
+
+    class DatabaseFixture:
+        sessions = object()
+
+        def __init__(self, database_url: str) -> None:
+            del database_url
+
+        async def dispose(self) -> None:
+            events.append("database-close")
+
+    class ModelFixture:
+        async def aclose(self) -> None:
+            events.append("model-close")
+            raise RuntimeError("close failed")
+
+    settings = Settings(
+        environment="test",
+        model_adapter="deepseek",
+        deepseek_api_key="test-only-obviously-not-a-real-key",
+        model_price_snapshot_version="fixture-v1",
+        model_input_price_microunits_per_million_tokens=1,
+        model_output_price_microunits_per_million_tokens=1,
+    )
+    monkeypatch.setattr(readings, "get_settings", lambda: settings)
+    monkeypatch.setattr(readings, "Database", DatabaseFixture)
+    monkeypatch.setattr(readings, "build_deepseek_model_adapter", lambda _settings: ModelFixture())
+    monkeypatch.setattr(readings, "build_reading_worker", lambda **kwargs: object())
+
+    with pytest.raises(RuntimeError, match="close failed"):
+        async with readings.configured_reading_worker():
+            pass
+
+    assert events == ["model-close", "database-close"]
 
 
 async def test_factory_maps_only_server_settings_into_the_adapter() -> None:

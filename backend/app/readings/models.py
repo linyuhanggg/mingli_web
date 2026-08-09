@@ -214,6 +214,7 @@ class GenerationAttempt(Base):
     candidate_ciphertext: Mapped[str | None] = mapped_column(Text)
     candidate_digest: Mapped[str | None] = mapped_column(String(64))
     guard_errors: Mapped[list[str]] = mapped_column(JSON_TYPE, default=list, nullable=False)
+    model_receipt: Mapped[dict[str, object] | None] = mapped_column(JSON_TYPE)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

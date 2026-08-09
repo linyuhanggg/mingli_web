@@ -108,7 +108,8 @@ async def test_fake_model_returns_traceable_candidate_without_acceptance_state()
         max_output_chars=1200,
     )
 
-    candidate = await gateway.generate(request)
+    generation = await gateway.generate(request)
+    candidate = generation.candidate
     payload = candidate.to_dict()
 
     assert payload["blocks"][0]["fact_refs"] == ["fact:fake-1"]
