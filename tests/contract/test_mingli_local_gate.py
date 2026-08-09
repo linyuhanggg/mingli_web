@@ -610,6 +610,37 @@ def assert_nothing_published(output_parent: Path) -> None:
     assert not output_parent.exists() or list(output_parent.iterdir()) == []
 
 
+def test_profile_clock_starts_after_initial_prepared_input_verification(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    gate_module = load_local_gate()
+    request, _ = native_request(gate_module, tmp_path)
+    events: list[str] = []
+    original_load = gate_module.prepared_inputs.load
+
+    def observed_load(path: Path, expected_sha256: str) -> Any:
+        events.append("load")
+        return original_load(path, expected_sha256)
+
+    def observed_monotonic() -> float:
+        events.append("clock")
+        return 0.0
+
+    monkeypatch.setattr(gate_module.prepared_inputs, "load", observed_load)
+
+    gate_module.LocalFullGate(
+        ScriptedExecution(
+            gate_module,
+            stdout=complete_summary(elapsed_seconds=1.0),
+            elapsed_seconds=1.0,
+        ),
+        monotonic=observed_monotonic,
+    ).run(request)
+
+    assert events[:2] == ["load", "clock"]
+
+
 def test_native_full_accepts_only_complete_suite_under_budget(tmp_path: Path) -> None:
     gate_module = load_local_gate()
     request, payload = native_request(gate_module, tmp_path)

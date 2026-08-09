@@ -521,7 +521,6 @@ class LocalFullGate:
             raise
 
     def run(self, request: LocalFullRequest) -> LocalFullResult:
-        profile_started = self._monotonic()
         if request.profile not in {"native-full", "linux-certify"}:
             _fail("unknown profile")
         if not 1 <= request.deadline_seconds <= MAX_DEADLINE_SECONDS:
@@ -548,6 +547,7 @@ class LocalFullGate:
         staging = output_parent / f".{run_id}.tmp"
         published = output_parent / run_id
         staging.mkdir(mode=0o700)
+        profile_started = self._monotonic()
 
         if request.profile == "linux-certify":
             return self._run_linux_identity(
