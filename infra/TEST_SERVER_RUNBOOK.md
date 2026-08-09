@@ -2,9 +2,10 @@
 
 ## 0. 定位与边界
 
-这台测试服务器（SSH 别名 `fateradar-prod`）只用于**代码联调与验收**，是纯回环环境：
+这台测试服务器（SSH 别名 `fateradar-prod`）只用于**代码联调与验收**。应用上游仍是纯回环环境，但在未备案期间临时增加了一个公网预览入口：
 
-- 唯一入口是 Nginx 的 `127.0.0.1:8080`，通过 SSH 隧道访问，不配公网域名、不做 TLS；
+- API 与 Web 仍只监听 `127.0.0.1:8000`、`127.0.0.1:3000`；Nginx 保留 `127.0.0.1:8080` 的 SSH 隧道入口；
+- 临时公网预览由 Nginx 监听 `0.0.0.0:18080`，阿里云安全组与 UFW 都允许 `0.0.0.0/0` 访问 TCP 18080，地址为 `http://106.14.10.235:18080`；它没有 TLS，也不受 ICP 域名入口保护；
 - 后端固定跑 `MINGLI_ENVIRONMENT=local`，otp / runtime / model 全部为 `fake`，`cookie_secure=false`，不配置任何真实模型 key，不发生任何外部模型调用；
 - 支付走项目自带 `FakePaymentGateway`（永远返回 unavailable，不产生真实支付事实），本服务器不验证真实支付/退款；
 - **local + Fake 只是代码测试环境，不是 staging，也不是 production**；这里的数据、占位稿、Fake 验证码都不代表真实事实，真实渠道必须等独立 Adapter + Gate 完成后另走正式环境；
@@ -14,6 +15,8 @@
   ssh -L 18080:127.0.0.1:8080 fateradar-prod
   # 本机打开 http://127.0.0.1:18080
   ```
+
+- 任何网络也可直接打开 `http://106.14.10.235:18080`。这是公开 HTTP 测试入口，只能使用虚构测试数据；完成预览后应按第 8.1 节关闭。
 
 ## 1. 固定目录布局
 
@@ -194,8 +197,42 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-- 只监听 `127.0.0.1:8080`；**绝不修改现有公网 fateradar 配置、域名、TLS/letsencrypt、UFW 规则**；
+- 本回环配置只监听 `127.0.0.1:8080`，自身不修改现有公网 fateradar 配置、域名、TLS/letsencrypt 或 UFW；临时公网入口单独按第 8.1 节管理；
 - `/api/` 反代 `127.0.0.1:8000`（no-store），其余反代 `127.0.0.1:3000`，`/healthz` 由 Nginx 自己返回。
+
+### 8.1 未备案期间的临时公网预览
+
+当前经操作人明确授权，临时公开 TCP 18080：
+
+```bash
+sudo install -m 0644 /opt/fateradar/current/infra/nginx/fateradar-test-public-preview.conf \
+  /etc/nginx/sites-available/fateradar-test-public-preview.conf
+sudo ln -sfn /etc/nginx/sites-available/fateradar-test-public-preview.conf \
+  /etc/nginx/sites-enabled/fateradar-test-public-preview.conf
+sudo ufw allow 18080/tcp comment 'FateRadar public test preview'
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+阿里云安全组 `sg-uf6askrnpezdd7reh6yl` 同步配置入方向 `0.0.0.0/0`、自定义 TCP、端口 `18080/18080`。上线验收：
+
+```bash
+curl -fsS http://106.14.10.235:18080/healthz
+curl -fsS http://106.14.10.235:18080/api/v1/health/live
+curl -fsS -o /dev/null -w '%{http_code}\n' http://106.14.10.235:18080/
+```
+
+关闭入口时，在阿里云控制台删除上述安全组规则，并执行：
+
+```bash
+sudo ufw --force delete allow 18080/tcp
+sudo rm -f /etc/nginx/sites-enabled/fateradar-test-public-preview.conf
+sudo rm -f /etc/nginx/sites-available/fateradar-test-public-preview.conf
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+关闭公网入口不会影响 `127.0.0.1:8080` 的 SSH 隧道方式。
 
 ## 9. 启动与健康检查
 
@@ -209,6 +246,8 @@ sudo systemctl enable --now fateradar-test-api fateradar-test-worker fateradar-t
 ```bash
 # Nginx 回环层
 curl -fsS http://127.0.0.1:8080/healthz
+# 临时公网层
+curl -fsS http://106.14.10.235:18080/healthz
 # API 存活 / 就绪（经回环入口）
 curl -fsS http://127.0.0.1:8080/api/v1/health/live
 curl -fsS http://127.0.0.1:8080/api/v1/health/ready
@@ -265,7 +304,8 @@ sudo systemctl start fateradar-test-api fateradar-test-worker fateradar-test-web
 
 ## 12. 红线清单
 
-- 只监听 `127.0.0.1:8080`，不改公网域名、不碰 TLS/letsencrypt、不改 UFW；
+- API 与 Web 只监听回环；临时公网只允许经 Nginx 的 18080 入口，绝不直接暴露 8000/3000；
+- 18080 是无 TLS 的全网公开测试入口，只放虚构测试数据，预览完成后按第 8.1 节关闭；
 - 不打印秘密，秘密不入库、不上传、不塞进命令行；
 - 不跳过归档 sha256 核对；
 - 用 uv 0.11.6 + Python 3.13，不用系统 Python 3.14；
