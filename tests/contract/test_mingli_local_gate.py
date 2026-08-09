@@ -1346,6 +1346,46 @@ def test_linux_certify_first_stage_accepts_only_exact_amd64_identity(
     assert result.timeline[0].command_id == "linux-amd64-identity-tracer"
 
 
+def test_linux_identity_timeout_reaps_the_whole_process_group(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    identity_module = load_linux_identity()
+    child_pid_path = tmp_path / "identity-child.pid"
+    program = (
+        "import pathlib, subprocess, sys, time; "
+        "child = subprocess.Popen([sys.executable, '-c', "
+        "'import time; time.sleep(30)'], stdin=subprocess.DEVNULL, "
+        "stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); "
+        f"pathlib.Path({str(child_pid_path)!r}).write_text(str(child.pid)); "
+        "time.sleep(30)"
+    )
+    monkeypatch.setattr(identity_module, "COMMAND_TIMEOUT_SECONDS", 0.1)
+    child_pid: int | None = None
+
+    try:
+        with pytest.raises(identity_module.IdentityError, match="timed out"):
+            identity_module.SubprocessRunner().run((sys.executable, "-c", program))
+        child_pid = int(child_pid_path.read_text(encoding="utf-8"))
+        deadline = time.monotonic() + 2.0
+        while time.monotonic() < deadline:
+            try:
+                os.kill(child_pid, 0)
+            except ProcessLookupError:
+                break
+            time.sleep(0.02)
+        else:
+            pytest.fail("Linux identity child survived timeout process-group cleanup")
+    finally:
+        if child_pid is None and child_pid_path.is_file():
+            child_pid = int(child_pid_path.read_text(encoding="utf-8"))
+        if child_pid is not None:
+            try:
+                os.kill(child_pid, 9)
+            except ProcessLookupError:
+                pass
+
+
 def test_linux_identity_input_rejection_removes_staging(tmp_path: Path) -> None:
     gate_module = load_local_gate()
     manifest_path, _, payload = write_linux_prepared_inputs(tmp_path)

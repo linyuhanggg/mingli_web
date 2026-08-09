@@ -7,7 +7,9 @@ import argparse
 import gzip
 import hashlib
 import json
+import os
 import re
+import signal
 import subprocess
 import sys
 import tarfile
@@ -451,23 +453,49 @@ class Runner(Protocol):
 
 
 class SubprocessRunner:
+    @staticmethod
+    def _terminate_group(process: subprocess.Popen[bytes]) -> None:
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            return
+        try:
+            process.communicate(timeout=0.5)
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            process.communicate(timeout=2)
+
     def run(self, argv: tuple[str, ...]) -> bytes:
-        completed = subprocess.run(
-            list(argv),
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
-            check=False,
-            shell=False,
-            timeout=COMMAND_TIMEOUT_SECONDS,
-        )
-        if len(completed.stdout) > MAX_OUTPUT_BYTES:
+        try:
+            process = subprocess.Popen(
+                list(argv),
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=False,
+                start_new_session=True,
+            )
+        except (OSError, ValueError, subprocess.SubprocessError) as exc:
+            raise IdentityError(f"identity command could not start: {argv[0]}") from exc
+        try:
+            stdout, stderr = process.communicate(timeout=COMMAND_TIMEOUT_SECONDS)
+        except subprocess.TimeoutExpired as exc:
+            self._terminate_group(process)
+            raise IdentityError(f"identity command timed out: {argv[0]}") from exc
+        except BaseException:
+            self._terminate_group(process)
+            raise
+        if len(stdout) > MAX_OUTPUT_BYTES:
             _fail("identity command stdout exceeded its byte limit")
-        if len(completed.stderr) > MAX_OUTPUT_BYTES:
+        if len(stderr) > MAX_OUTPUT_BYTES:
             _fail("identity command stderr exceeded its byte limit")
-        if completed.returncode != 0:
-            diagnostic = completed.stderr.decode("utf-8", errors="replace")[-4000:]
+        if process.returncode != 0:
+            diagnostic = stderr.decode("utf-8", errors="replace")[-4000:]
             _fail(f"identity command failed ({argv[0]}): {diagnostic}")
-        return completed.stdout
+        return stdout
 
 
 def _object(value: object, label: str) -> dict[str, Any]:
