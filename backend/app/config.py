@@ -1,15 +1,18 @@
 import base64
 import binascii
+import math
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal, Self
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import AliasChoices, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Environment = Literal["local", "test", "staging", "production"]
 OtpAdapterName = Literal["fake", "disabled"]
 RuntimeAdapterName = Literal["fake", "one-shot"]
+ModelAdapterName = Literal["fake", "deepseek"]
 _LOCAL_CONTENT_KEY_B64 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 _PRODUCTION_RUNTIME_LAUNCHER = Path("/opt/mingli-master/scripts/run_reading_transaction.sh")
 _PRODUCTION_RUNTIME_PYTHON = Path("/opt/mingli-runtime/venv/bin/python")
@@ -19,6 +22,13 @@ _FROZEN_DESCRIBE_MANIFEST_DIGEST = (
     "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"
 )
 _FROZEN_CAPABILITY_SHAPE_SHA256 = "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
+_P0_MODEL_PROVIDER = "deepseek"
+_P0_MODEL_PROFILE_ID = "deepseek-v4-flash-p0-v1"
+_P0_MODEL_ID = "deepseek-v4-flash"
+_P0_MODEL_BASE_URL = "https://api.deepseek.com"
+_P0_MODEL_ENDPOINT_PATH = "/chat/completions"
+_P0_MODEL_THINKING_MODE = "not-sent-p0-v1"
+_SAFE_MODEL_METADATA = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 
 
 class Settings(BaseSettings):
@@ -53,6 +63,27 @@ class Settings(BaseSettings):
     runtime_max_stdin_bytes: int = Field(default=2 * 1024 * 1024, ge=1)
     runtime_max_stdout_bytes: int = Field(default=2 * 1024 * 1024, ge=1)
     runtime_max_stderr_bytes: int = Field(default=64 * 1024, ge=1)
+    model_adapter: ModelAdapterName = "fake"
+    model_provider: str = _P0_MODEL_PROVIDER
+    model_profile_id: str = _P0_MODEL_PROFILE_ID
+    model_id: str = _P0_MODEL_ID
+    model_base_url: str = _P0_MODEL_BASE_URL
+    model_endpoint_path: str = _P0_MODEL_ENDPOINT_PATH
+    model_thinking_mode: str = _P0_MODEL_THINKING_MODE
+    deepseek_api_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices("DEEPSEEK_API_KEY", "deepseek_api_key"),
+    )
+    model_connect_timeout_seconds: float = 5.0
+    model_read_timeout_seconds: float = 60.0
+    model_overall_timeout_seconds: float = 75.0
+    model_max_response_bytes: int = 256 * 1024
+    model_temperature: float = 0.2
+    model_max_output_tokens: int = 4096
+    model_price_snapshot_version: str | None = None
+    model_price_currency: str = "CNY"
+    model_input_price_microunits_per_million_tokens: int | None = None
+    model_output_price_microunits_per_million_tokens: int | None = None
     fake_otp_code: str = "246810"
     identity_hash_key: SecretStr = SecretStr("local-only-identity-hash-key-change-in-production")
     content_encryption_key_b64: SecretStr = SecretStr(_LOCAL_CONTENT_KEY_B64)
@@ -98,6 +129,57 @@ class Settings(BaseSettings):
             raise ValueError("content encryption key must not reuse identity_hash_key")
         if self.environment == "production" and self.runtime_adapter == "fake":
             raise ValueError("Fake Runtime adapter is forbidden in production")
+        if self.environment == "production" and self.model_adapter == "fake":
+            raise ValueError("Fake Model adapter is forbidden in production")
+        if self.model_provider != _P0_MODEL_PROVIDER:
+            raise ValueError("P0 model provider is not approved")
+        if self.model_profile_id != _P0_MODEL_PROFILE_ID:
+            raise ValueError("P0 model profile is not approved")
+        if self.model_id != _P0_MODEL_ID:
+            raise ValueError("P0 model ID is not approved")
+        if self.model_base_url != _P0_MODEL_BASE_URL:
+            raise ValueError("P0 model base URL is not allowlisted")
+        if self.model_endpoint_path != _P0_MODEL_ENDPOINT_PATH:
+            raise ValueError("P0 model endpoint path is not allowlisted")
+        if self.model_thinking_mode != _P0_MODEL_THINKING_MODE:
+            raise ValueError("P0 model thinking mode is not approved")
+        model_timeout_limits = (
+            ("connect timeout", self.model_connect_timeout_seconds, 30.0),
+            ("read timeout", self.model_read_timeout_seconds, 120.0),
+            ("overall timeout", self.model_overall_timeout_seconds, 180.0),
+        )
+        for label, value, upper_bound in model_timeout_limits:
+            if not math.isfinite(value) or not 0 < value <= upper_bound:
+                raise ValueError(f"model {label} must be finite and bounded")
+        if self.model_overall_timeout_seconds < max(
+            self.model_connect_timeout_seconds,
+            self.model_read_timeout_seconds,
+        ):
+            raise ValueError("model overall timeout must cover connect and read timeouts")
+        if not 1 <= self.model_max_response_bytes <= 1024 * 1024:
+            raise ValueError("model response body limit must be bounded")
+        if not math.isfinite(self.model_temperature) or not 0 <= self.model_temperature <= 2:
+            raise ValueError("model temperature must be finite and bounded")
+        if not 1 <= self.model_max_output_tokens <= 8192:
+            raise ValueError("model output tokens must be bounded")
+        if self.model_adapter == "deepseek":
+            if (
+                self.deepseek_api_key is None
+                or not self.deepseek_api_key.get_secret_value().strip()
+            ):
+                raise ValueError("DeepSeek API key must be injected")
+            if self.model_price_snapshot_version is None or not _SAFE_MODEL_METADATA.fullmatch(
+                self.model_price_snapshot_version
+            ):
+                raise ValueError("model price snapshot version must be a safe injected identifier")
+            token_prices = (
+                self.model_input_price_microunits_per_million_tokens,
+                self.model_output_price_microunits_per_million_tokens,
+            )
+            if any(value is None or not 0 <= value <= 10**12 for value in token_prices):
+                raise ValueError("model token prices must be non-negative bounded integers")
+            if self.model_price_currency != "CNY":
+                raise ValueError("P0 model price currency must be CNY")
         runtime_paths = (
             self.runtime_launcher_path,
             self.runtime_python_path,

@@ -70,6 +70,11 @@ def test_production_requires_an_explicit_256_bit_content_key() -> None:
         runtime_expected_capability_shape_sha256=(
             "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
         ),
+        model_adapter="deepseek",
+        deepseek_api_key="test-only-obviously-not-a-real-key",
+        model_price_snapshot_version="fixture-price-v1",
+        model_input_price_microunits_per_million_tokens=1,
+        model_output_price_microunits_per_million_tokens=1,
     )
     assert settings.content_encryption_key_id == "kms-production-v1"
 

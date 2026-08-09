@@ -9,7 +9,11 @@ from datetime import UTC, datetime, timedelta
 from typing import Protocol
 from uuid import UUID, uuid4
 
-from app.adapters.model import FakeModelGateway
+from app.adapters.model import (
+    DeepSeekStandaloneModelAdapter,
+    FakeModelGateway,
+    build_deepseek_model_adapter,
+)
 from app.adapters.runtime import FakeMingliRuntimeAdapter, build_runtime_startup_gate
 from app.config import Settings, get_settings
 from app.database import Database
@@ -277,17 +281,25 @@ async def configured_reading_worker() -> AsyncIterator[Worker]:
     settings = get_settings()
     database = Database(settings.database_url)
     worker_id = f"{socket.gethostname()}:{os.getpid()}:{uuid4().hex}"
+    model_adapter: DeepSeekStandaloneModelAdapter | None = None
     try:
         runtime: RuntimePort | None = None
         if settings.runtime_adapter == "one-shot":
             runtime_gate = build_runtime_startup_gate(settings)
             await runtime_gate.startup()
             runtime = runtime_gate.runtime
+        model: NarrativeModelPort | None = None
+        if settings.model_adapter == "deepseek":
+            model_adapter = build_deepseek_model_adapter(settings)
+            model = model_adapter
         yield build_reading_worker(
             settings=settings,
             database=database,
             worker_id=worker_id,
             runtime=runtime,
+            model=model,
         )
     finally:
+        if model_adapter is not None:
+            await model_adapter.aclose()
         await database.dispose()
