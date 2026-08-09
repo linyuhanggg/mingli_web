@@ -1,0 +1,445 @@
+#!/usr/bin/env python3
+"""Run fail-closed local Mingli V5.1 test profiles."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+import os
+import re
+import secrets
+import selectors
+import shutil
+import signal
+import subprocess
+import sys
+import time
+from collections.abc import Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Literal, NoReturn, Protocol
+
+import prepared_inputs
+
+LocalProfile = Literal["native-full", "linux-certify"]
+NATIVE_SUMMARY_RE = re.compile(
+    r"^summary: targets=(\d+) modules=(\d+) tests=(\d+) "
+    r"failed_modules=(\d+) elapsed=(\d+(?:\.\d+)?)s$"
+)
+MAX_DEADLINE_SECONDS = 600
+MAX_SLOTS = 10
+MAX_STDOUT_BYTES = 8 * 1024 * 1024
+MAX_STDERR_BYTES = 8 * 1024 * 1024
+
+
+class GateRejected(RuntimeError):
+    """The local run cannot publish admissible evidence."""
+
+
+class ExecutionFailure(RuntimeError):
+    """A fixed local command could not complete within its boundary."""
+
+
+def _fail(message: str) -> NoReturn:
+    raise GateRejected(message)
+
+
+def _json_bytes(value: object) -> bytes:
+    return (
+        json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        + "\n"
+    ).encode()
+
+
+def _sha256_bytes(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+@dataclass(frozen=True)
+class PreparedInputsRef:
+    path: Path
+    sha256: str
+
+
+@dataclass(frozen=True)
+class LocalFullRequest:
+    profile: LocalProfile
+    prepared_inputs: PreparedInputsRef
+    output_parent: Path
+    deadline_seconds: int = MAX_DEADLINE_SECONDS
+    slots: int = MAX_SLOTS
+
+
+@dataclass(frozen=True)
+class GateCommand:
+    command_id: str
+    argv: tuple[str, ...]
+    cwd: Path
+    timeout_seconds: int
+    slots: int
+    stdout_limit_bytes: int = MAX_STDOUT_BYTES
+    stderr_limit_bytes: int = MAX_STDERR_BYTES
+    shell: bool = False
+
+
+@dataclass(frozen=True)
+class CommandResult:
+    stdout: bytes
+    stderr: bytes
+    returncode: int
+    started_monotonic: float
+    finished_monotonic: float
+
+
+@dataclass(frozen=True)
+class TimelineEntry:
+    command_id: str
+    slots: int
+    started_monotonic: float
+    finished_monotonic: float
+    exit_code: int
+
+
+@dataclass(frozen=True)
+class LocalFullResult:
+    profile: LocalProfile
+    profile_report: Path
+    local_summary: Path | None
+    timeline: tuple[TimelineEntry, ...]
+    elapsed_seconds: float
+
+
+class Execution(Protocol):
+    def run(self, command: GateCommand) -> CommandResult: ...
+
+
+class SubprocessExecution:
+    """Execute a fixed argv in a disposable process group."""
+
+    @staticmethod
+    def _terminate_group(process: subprocess.Popen[bytes]) -> None:
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            return
+        try:
+            process.wait(timeout=0.5)
+        except subprocess.TimeoutExpired:
+            pass
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        if process.poll() is None:
+            process.wait(timeout=2)
+
+    def run(self, command: GateCommand) -> CommandResult:
+        if command.shell:
+            raise ExecutionFailure("shell execution is forbidden")
+        started = time.monotonic()
+        process = subprocess.Popen(
+            list(command.argv),
+            cwd=command.cwd,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=False,
+            start_new_session=True,
+        )
+        assert process.stdout is not None
+        assert process.stderr is not None
+        streams = {
+            "stdout": process.stdout,
+            "stderr": process.stderr,
+        }
+        limits = {
+            "stdout": command.stdout_limit_bytes,
+            "stderr": command.stderr_limit_bytes,
+        }
+        buffers = {
+            "stdout": bytearray(),
+            "stderr": bytearray(),
+        }
+        selector = selectors.DefaultSelector()
+        try:
+            for name, stream in streams.items():
+                os.set_blocking(stream.fileno(), False)
+                selector.register(stream, selectors.EVENT_READ, data=name)
+            deadline = started + command.timeout_seconds
+            while selector.get_map():
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise ExecutionFailure(
+                        f"{command.command_id} exceeded {command.timeout_seconds}s"
+                    )
+                events = selector.select(timeout=min(remaining, 0.1))
+                for key, _ in events:
+                    name = key.data
+                    chunk = os.read(key.fileobj.fileno(), 64 * 1024)
+                    if not chunk:
+                        selector.unregister(key.fileobj)
+                        key.fileobj.close()
+                        continue
+                    buffers[name].extend(chunk)
+                    if len(buffers[name]) > limits[name]:
+                        raise ExecutionFailure(
+                            f"{command.command_id} {name} exceeded its byte limit"
+                        )
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise ExecutionFailure(
+                    f"{command.command_id} exceeded {command.timeout_seconds}s"
+                )
+            process.wait(timeout=remaining)
+        except (ExecutionFailure, subprocess.TimeoutExpired):
+            self._terminate_group(process)
+            raise
+        finally:
+            selector.close()
+            for stream in streams.values():
+                if not stream.closed:
+                    stream.close()
+        finished = time.monotonic()
+        return CommandResult(
+            stdout=bytes(buffers["stdout"]),
+            stderr=bytes(buffers["stderr"]),
+            returncode=process.returncode,
+            started_monotonic=started,
+            finished_monotonic=finished,
+        )
+
+
+@dataclass(frozen=True)
+class NativeSummary:
+    targets: int
+    modules: int
+    tests: int
+    failed_modules: int
+    elapsed_seconds: float
+
+
+def _parse_native_summary(stdout: bytes) -> NativeSummary:
+    try:
+        lines = stdout.decode("utf-8").splitlines()
+    except UnicodeDecodeError as exc:
+        raise GateRejected("native suite stdout is not UTF-8") from exc
+    matches = [match for line in lines if (match := NATIVE_SUMMARY_RE.fullmatch(line))]
+    if len(matches) != 1:
+        _fail("native suite must emit exactly one authoritative summary")
+    match = matches[0]
+    summary = NativeSummary(
+        targets=int(match.group(1)),
+        modules=int(match.group(2)),
+        tests=int(match.group(3)),
+        failed_modules=int(match.group(4)),
+        elapsed_seconds=float(match.group(5)),
+    )
+    if (
+        summary.targets != 126
+        or summary.modules != 93
+        or summary.tests != 1584
+        or summary.failed_modules != 0
+    ):
+        _fail("native suite summary is not 126/93/1584/0")
+    return summary
+
+
+class LocalFullGate:
+    def __init__(self, execution: Execution) -> None:
+        self._execution = execution
+
+    def run(self, request: LocalFullRequest) -> LocalFullResult:
+        if request.profile != "native-full":
+            _fail("profile_not_implemented")
+        if not 1 <= request.deadline_seconds <= MAX_DEADLINE_SECONDS:
+            _fail("deadline_seconds must be between 1 and 600")
+        if not 1 <= request.slots <= MAX_SLOTS:
+            _fail("slots must be between 1 and 10")
+        try:
+            inputs = prepared_inputs.load(
+                request.prepared_inputs.path,
+                request.prepared_inputs.sha256,
+            )
+        except prepared_inputs.PreparedInputsError as exc:
+            raise GateRejected(str(exc)) from exc
+
+        output_parent = request.output_parent
+        if output_parent.is_symlink() or (
+            output_parent.exists() and not output_parent.is_dir()
+        ):
+            _fail("output parent must be a non-symlink directory")
+        output_parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        run_id = secrets.token_hex(16)
+        staging = output_parent / f".{run_id}.tmp"
+        published = output_parent / run_id
+        staging.mkdir(mode=0o700)
+
+        command = GateCommand(
+            command_id="native-release-regression",
+            argv=(
+                str(inputs.native_python),
+                "-B",
+                str(inputs.runner_path),
+                "--jobs",
+                str(request.slots),
+                "--research-root",
+                str(inputs.research_root),
+            ),
+            cwd=inputs.source_root,
+            timeout_seconds=request.deadline_seconds,
+            slots=request.slots,
+        )
+        try:
+            try:
+                result = self._execution.run(command)
+            except ExecutionFailure as exc:
+                raise GateRejected(f"native execution failed: {exc}") from exc
+            if len(result.stdout) > command.stdout_limit_bytes:
+                _fail("native suite stdout exceeded its byte limit")
+            if len(result.stderr) > command.stderr_limit_bytes:
+                _fail("native suite stderr exceeded its byte limit")
+            if result.returncode != 0:
+                _fail("native suite exited nonzero")
+            elapsed_seconds = result.finished_monotonic - result.started_monotonic
+            if (
+                not math.isfinite(elapsed_seconds)
+                or elapsed_seconds < 0
+                or elapsed_seconds > request.deadline_seconds
+            ):
+                _fail("native suite exceeded its deadline")
+            summary = _parse_native_summary(result.stdout)
+            if summary.elapsed_seconds > request.deadline_seconds:
+                _fail("native suite summary exceeded its deadline")
+
+            try:
+                prepared_inputs.load(
+                    request.prepared_inputs.path,
+                    request.prepared_inputs.sha256,
+                )
+            except prepared_inputs.PreparedInputsError as exc:
+                raise GateRejected(
+                    f"prepared inputs changed during run: {exc}"
+                ) from exc
+
+            timeline = (
+                TimelineEntry(
+                    command_id=command.command_id,
+                    slots=command.slots,
+                    started_monotonic=result.started_monotonic,
+                    finished_monotonic=result.finished_monotonic,
+                    exit_code=result.returncode,
+                ),
+            )
+            report = {
+                "schema": "mingli-native-full-report-v1",
+                "profile": request.profile,
+                "status": "passed",
+                "run_id": run_id,
+                "prepared_inputs_sha256": inputs.manifest_sha256,
+                "summary": {
+                    "targets": summary.targets,
+                    "modules": summary.modules,
+                    "tests": summary.tests,
+                    "failed_modules": summary.failed_modules,
+                    "elapsed_seconds": summary.elapsed_seconds,
+                },
+                "command": {
+                    "command_id": command.command_id,
+                    "argv": list(command.argv),
+                    "cwd": str(command.cwd),
+                    "returncode": result.returncode,
+                    "elapsed_seconds": elapsed_seconds,
+                    "stdout_sha256": _sha256_bytes(result.stdout),
+                    "stderr_sha256": _sha256_bytes(result.stderr),
+                },
+            }
+            local_summary = {
+                "schema": "mingli-local-profile-sla-v1",
+                "profile": request.profile,
+                "run_id": run_id,
+                "limit_seconds": request.deadline_seconds,
+                "max_slots": request.slots,
+                "elapsed_seconds": elapsed_seconds,
+                "profile_report_sha256": _sha256_bytes(_json_bytes(report)),
+            }
+            (staging / "native-full-5.1.json").write_bytes(_json_bytes(report))
+            (staging / "local-native-full-5.1.json").write_bytes(
+                _json_bytes(local_summary)
+            )
+            os.replace(staging, published)
+            return LocalFullResult(
+                profile=request.profile,
+                profile_report=published / "native-full-5.1.json",
+                local_summary=published / "local-native-full-5.1.json",
+                timeline=timeline,
+                elapsed_seconds=elapsed_seconds,
+            )
+        except BaseException:
+            if staging.exists():
+                shutil.rmtree(staging)
+            raise
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Run a prepared-input Mingli V5.1 local test profile"
+    )
+    profiles = parser.add_subparsers(dest="profile", required=True)
+    for profile in ("native-full", "linux-certify"):
+        command = profiles.add_parser(profile)
+        command.add_argument("--prepared-inputs", type=Path, required=True)
+        command.add_argument("--prepared-inputs-sha256", required=True)
+        command.add_argument("--output-parent", type=Path, required=True)
+        command.add_argument(
+            "--deadline-seconds",
+            type=int,
+            default=MAX_DEADLINE_SECONDS,
+        )
+        command.add_argument("--slots", type=int, default=MAX_SLOTS)
+    return parser
+
+
+def main(
+    argv: Sequence[str] | None = None,
+    *,
+    execution: Execution | None = None,
+) -> int:
+    args = _build_parser().parse_args(argv)
+    request = LocalFullRequest(
+        profile=args.profile,
+        prepared_inputs=PreparedInputsRef(
+            path=args.prepared_inputs.expanduser().resolve(),
+            sha256=args.prepared_inputs_sha256,
+        ),
+        output_parent=args.output_parent.expanduser().resolve(),
+        deadline_seconds=args.deadline_seconds,
+        slots=args.slots,
+    )
+    try:
+        result = LocalFullGate(execution or SubprocessExecution()).run(request)
+    except GateRejected as exc:
+        print(f"local Gate rejected: {exc}", file=sys.stderr)
+        return 1
+    print(
+        json.dumps(
+            {
+                "profile": result.profile,
+                "profile_report": str(result.profile_report),
+                "local_summary": (
+                    str(result.local_summary)
+                    if result.local_summary is not None
+                    else None
+                ),
+                "elapsed_seconds": result.elapsed_seconds,
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
