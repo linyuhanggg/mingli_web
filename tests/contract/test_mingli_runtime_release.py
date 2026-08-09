@@ -1115,6 +1115,54 @@ def test_audit_tar_extractor_handles_root_member_and_requires_empty_target(
         gate._extract_safe_tar(payload.getvalue(), tmp_path / "missing")
 
 
+def test_lima_docker_pins_every_container_run_to_linux_amd64() -> None:
+    gate = load_lima_gate()
+    vm = gate.LimaDocker("mingli-linux-gate-vz")
+    calls: list[list[str]] = []
+
+    def fake_run(
+        argv: list[str],
+        *,
+        input_bytes: bytes | bytearray | None = None,
+        capture: bool = True,
+        timeout: float | None = None,
+    ) -> subprocess.CompletedProcess[bytes]:
+        del input_bytes, capture, timeout
+        calls.append(argv)
+        return subprocess.CompletedProcess(argv, 0, b"", b"")
+
+    vm.run = fake_run
+    vm.docker(["run", "--rm", "sha256:" + "a" * 64, "/bin/true"])
+    vm.docker(
+        [
+            "run",
+            "--platform=linux/amd64",
+            "--rm",
+            "sha256:" + "b" * 64,
+            "/bin/true",
+        ]
+    )
+
+    assert calls == [
+        [
+            "docker",
+            "run",
+            "--platform=linux/amd64",
+            "--rm",
+            "sha256:" + "a" * 64,
+            "/bin/true",
+        ],
+        [
+            "docker",
+            "run",
+            "--platform=linux/amd64",
+            "--rm",
+            "sha256:" + "b" * 64,
+            "/bin/true",
+        ],
+    ]
+
+
 def test_image_audit_entry_is_present_and_non_agentic() -> None:
     audit = AUDIT_PATH.read_text(encoding="utf-8")
     controller = LIMA_GATE_PATH.read_text(encoding="utf-8")

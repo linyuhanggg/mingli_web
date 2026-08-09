@@ -220,8 +220,22 @@ class LimaDocker:
         capture: bool = True,
         timeout: float | None = None,
     ) -> subprocess.CompletedProcess[bytes]:
+        docker_argv = list(argv)
+        if docker_argv and docker_argv[0] == "run":
+            platform_values: list[str] = []
+            for index, argument in enumerate(docker_argv):
+                if argument.startswith("--platform="):
+                    platform_values.append(argument.removeprefix("--platform="))
+                elif argument == "--platform":
+                    if index + 1 >= len(docker_argv):
+                        _fail("Docker run has an incomplete platform option")
+                    platform_values.append(docker_argv[index + 1])
+            if not platform_values:
+                docker_argv.insert(1, "--platform=linux/amd64")
+            elif platform_values != ["linux/amd64"]:
+                _fail("Docker run must target exactly linux/amd64")
         return self.run(
-            ["docker", *argv],
+            ["docker", *docker_argv],
             input_bytes=input_bytes,
             capture=capture,
             timeout=timeout,
