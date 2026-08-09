@@ -100,14 +100,36 @@ Node, Git, sxtwl, and PyYAML, plus real sxtwl execution and the required native
 linkage. Only a later full `linux-certify` run through the existing audit and
 release verifier may publish Linux release evidence.
 
+The timed certification path consumes the same immutable PreparedInputs file
+and never rebuilds the image inside its 600-second window. The OCI archive,
+top-level index, child manifests, config, layers, effective Lima configuration,
+clean source tree, and external research tree have already been hashed by that
+file. After the tracer has loaded and admitted the image, the full controller
+can bind it by immutable `repository@sha256:<index>` reference:
+
+```bash
+python infra/mingli-runtime/run_lima_gate.py \
+  --prepared-inputs /absolute/path/prepared-inputs.json \
+  --prepared-inputs-sha256 <sha256-of-prepared-inputs-json> \
+  --output /absolute/empty-parent/linux-release
+```
+
+Prepared mode rejects mutable `--release-source` and
+`--research-repository` arguments. It clones the bound clean source for Matrix
+A, overlays every bound and Git-ignored research file into a second checkout,
+aliases only the already-loaded exact OCI index, and revalidates both
+PreparedInputs and the immutable image identity immediately before atomic
+publication. The legacy cold-build form remains available for the slower QEMU
+release fallback, but its image build is not part of the prepared local SLA.
+
 ## Audit evidence
 
 `run_lima_gate.py` is the mountless host controller. It streams the projected
 build context over `limactl shell`, creates uniquely named Docker volumes, and
 streams two self-contained exact-commit checkouts into the VM. The first is the
 clean matrix source at `/audit-source`. The second is the
-fulltext research checkout at `/audit-research`, with the 54 Git-ignored
-fulltexts added. Keeping
+fulltext research checkout at `/audit-research`, with all bound Git-ignored
+research files added, including exactly 54 primary `fulltext.md` files. Keeping
 those roots separate preserves the signed Provider Matrix generator fingerprint
 while the complete regression still verifies all 55 reference packs. It never
 depends on `/Users` or `/Volumes` being mounted in Lima. Every temporary volume

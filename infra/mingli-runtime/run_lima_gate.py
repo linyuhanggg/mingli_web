@@ -28,6 +28,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, NoReturn
 
 import build_context
+import prepared_inputs
 import verify_release
 
 EXPECTED_COMMIT = "494ce0bba174a77800daf9b9c38ce9c9166d9a94"
@@ -377,6 +378,65 @@ def _prepare_research_source(
     ).stdout.decode()
     if status.strip():
         _fail("research source is not a clean exact-commit checkout")
+    return destination
+
+
+def _prepare_bound_research_source(
+    source_repository: Path,
+    research_root: Path,
+    destination: Path,
+) -> Path:
+    """Overlay only the immutable PreparedInputs research tree on clean source."""
+
+    research_root = research_root.resolve(strict=True)
+    _clone_exact_source(source_repository, destination)
+    entries = sorted(
+        research_root.rglob("*"),
+        key=lambda path: path.relative_to(research_root).as_posix(),
+    )
+    copied: list[str] = []
+    fulltext_count = 0
+    for source in entries:
+        if source.is_symlink():
+            _fail(f"prepared research tree contains a symlink: {source}")
+        if source.is_dir():
+            continue
+        if not source.is_file():
+            _fail(f"prepared research tree contains an unsafe entry: {source}")
+        relative = source.relative_to(research_root)
+        if ".git" in relative.parts:
+            _fail("prepared research tree may not contain Git administration data")
+        if relative.name == "fulltext.md":
+            fulltext_count += 1
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target, follow_symlinks=False)
+        target.chmod(0o644)
+        copied.append(relative.as_posix())
+    if fulltext_count != EXPECTED_FULLTEXT_COUNT:
+        _fail("prepared research tree does not contain exactly 54 fulltexts")
+    ignored = (
+        _run_local(
+            ["git", "-C", str(destination), "check-ignore", "--stdin"],
+            input_bytes=("\n".join(copied) + "\n").encode("utf-8"),
+        )
+        .stdout.decode("utf-8")
+        .splitlines()
+    )
+    if set(ignored) != set(copied):
+        _fail("prepared research files are not all covered by the source ignore policy")
+    status = _run_local(
+        [
+            "git",
+            "-C",
+            str(destination),
+            "status",
+            "--porcelain",
+            "--untracked-files=all",
+        ]
+    ).stdout.decode()
+    if status.strip():
+        _fail("prepared research source is not a clean exact-commit checkout")
     return destination
 
 
@@ -1353,6 +1413,36 @@ def _build_images(
     return production_tag, image_id, audit_tag, audit_image_id
 
 
+def _bind_prepared_image(
+    vm: LimaDocker,
+    *,
+    immutable_ref: str,
+    expected_index_digest: str,
+    run_id: str,
+) -> tuple[str, str, str, str]:
+    """Alias one already-loaded immutable OCI index without rebuilding it."""
+
+    _validate_image_id(expected_index_digest, "prepared OCI index digest")
+    if (
+        any(character.isspace() for character in immutable_ref)
+        or immutable_ref.count("@") != 1
+        or not immutable_ref.endswith("@" + expected_index_digest)
+    ):
+        _fail("prepared immutable image reference does not bind the OCI index")
+    resolved = _docker_image_id(vm, immutable_ref)
+    if resolved != expected_index_digest:
+        _fail("prepared OCI index does not match its immutable image reference")
+    production_tag = f"mingli-v51-production:{run_id}"
+    audit_tag = f"mingli-v51-audit:{run_id}"
+    vm.docker(["tag", immutable_ref, production_tag])
+    vm.docker(["tag", immutable_ref, audit_tag])
+    image_id = _docker_image_id(vm, production_tag)
+    audit_image_id = _docker_image_id(vm, audit_tag)
+    if image_id != expected_index_digest or audit_image_id != expected_index_digest:
+        _fail("prepared OCI index alias identity mismatch")
+    return production_tag, image_id, audit_tag, audit_image_id
+
+
 def _extract_volume(
     vm: LimaDocker,
     image_id: str,
@@ -1383,6 +1473,36 @@ def _extract_volume(
     return completed.stdout
 
 
+def _resolve_gate_inputs(
+    args: argparse.Namespace,
+) -> tuple[
+    str,
+    prepared_inputs.PreparedInputs | None,
+    prepared_inputs.LinuxRuntimeInputs | None,
+]:
+    manifest = getattr(args, "prepared_inputs", None)
+    manifest_sha256 = getattr(args, "prepared_inputs_sha256", None)
+    release_source = getattr(args, "release_source", None)
+    research_repository = getattr(args, "research_repository", None)
+    instance = getattr(args, "instance", None)
+    if (manifest is None) != (manifest_sha256 is None):
+        _fail("prepared inputs path and SHA-256 must be supplied together")
+    if manifest is not None:
+        if release_source is not None or research_repository is not None:
+            _fail("prepared mode cannot accept mutable release source arguments")
+        try:
+            inputs = prepared_inputs.load(manifest.absolute(), manifest_sha256)
+            linux = prepared_inputs.require_linux(inputs)
+        except prepared_inputs.PreparedInputsError as exc:
+            raise GateError(f"prepared inputs are invalid: {exc}") from exc
+        if instance is not None and instance != linux.instance:
+            _fail("requested Lima instance differs from PreparedInputs")
+        return linux.instance, inputs, linux
+    if release_source is None or research_repository is None:
+        _fail("legacy build mode requires release source and research repository")
+    return instance or "mingli-linux-gate", None, None
+
+
 def run_gate(args: argparse.Namespace) -> Path:
     output = args.output.absolute()
     if output.exists() or output.is_symlink():
@@ -1402,29 +1522,49 @@ def run_gate(args: argparse.Namespace) -> Path:
         "production_output": f"{prefix}-production-output",
         "production_state": f"{prefix}-production-state",
     }
-    vm = LimaDocker(args.instance)
+    instance, bound_inputs, bound_linux = _resolve_gate_inputs(args)
+    vm = LimaDocker(instance)
     created_volumes: list[str] = []
     final_temporary: Path | None = None
     with tempfile.TemporaryDirectory(prefix="mingli-v51-gate-") as temporary_text:
         temporary = Path(temporary_text)
         try:
             vm.run(["uname", "-m"])
-            context = build_context.build_context(
-                args.release_source,
-                temporary / "context",
-            )
-            clean_source = _prepare_clean_source(
-                args.research_repository,
-                temporary / "clean-source",
-            )
-            research_source = _prepare_research_source(
-                args.research_repository,
-                args.release_source,
-                temporary / "research-source",
-            )
-            production_tag, image_id, audit_tag, audit_image_id = _build_images(
-                vm, context, run_id
-            )
+            if bound_inputs is not None and bound_linux is not None:
+                clean_source = _prepare_clean_source(
+                    bound_inputs.source_root,
+                    temporary / "clean-source",
+                )
+                research_source = _prepare_bound_research_source(
+                    bound_inputs.source_root,
+                    bound_inputs.research_root,
+                    temporary / "research-source",
+                )
+                production_tag, image_id, audit_tag, audit_image_id = (
+                    _bind_prepared_image(
+                        vm,
+                        immutable_ref=bound_linux.immutable_image_ref,
+                        expected_index_digest=bound_linux.index_digest,
+                        run_id=run_id,
+                    )
+                )
+            else:
+                context = build_context.build_context(
+                    args.release_source,
+                    temporary / "context",
+                )
+                clean_source = _prepare_clean_source(
+                    args.research_repository,
+                    temporary / "clean-source",
+                )
+                research_source = _prepare_research_source(
+                    args.research_repository,
+                    args.release_source,
+                    temporary / "research-source",
+                )
+                production_tag, image_id, audit_tag, audit_image_id = _build_images(
+                    vm, context, run_id
+                )
             _validate_image_id(image_id, "production image ID")
             _validate_image_id(audit_image_id, "audit image ID")
             print(
@@ -1665,6 +1805,24 @@ def run_gate(args: argparse.Namespace) -> Path:
                 ],
                 timeout=900,
             )
+            if bound_inputs is not None and bound_linux is not None:
+                try:
+                    ending_inputs = prepared_inputs.load(
+                        bound_inputs.manifest_path,
+                        bound_inputs.manifest_sha256,
+                    )
+                    ending_linux = prepared_inputs.require_linux(ending_inputs)
+                except prepared_inputs.PreparedInputsError as exc:
+                    raise GateError(
+                        f"prepared inputs changed during Linux Gate: {exc}"
+                    ) from exc
+                if ending_inputs != bound_inputs or ending_linux != bound_linux:
+                    _fail("prepared inputs changed during Linux Gate")
+                if (
+                    _docker_image_id(vm, bound_linux.immutable_image_ref)
+                    != bound_linux.index_digest
+                ):
+                    _fail("prepared OCI index changed during Linux Gate")
             (final_temporary / "image-reference.json").write_bytes(
                 json_bytes(
                     {
@@ -1692,9 +1850,11 @@ def run_gate(args: argparse.Namespace) -> Path:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--instance", default="mingli-linux-gate")
-    parser.add_argument("--release-source", type=Path, required=True)
-    parser.add_argument("--research-repository", type=Path, required=True)
+    parser.add_argument("--instance")
+    parser.add_argument("--release-source", type=Path)
+    parser.add_argument("--research-repository", type=Path)
+    parser.add_argument("--prepared-inputs", type=Path)
+    parser.add_argument("--prepared-inputs-sha256")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
@@ -1702,6 +1862,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     except (
         GateError,
         build_context.ProjectionError,
+        prepared_inputs.PreparedInputsError,
         verify_release.ReleaseVerificationError,
     ) as exc:
         print(f"Linux Gate failed: {exc}", file=sys.stderr)

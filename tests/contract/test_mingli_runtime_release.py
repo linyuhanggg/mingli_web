@@ -14,7 +14,7 @@ import subprocess
 import sys
 import tarfile
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from typing import Any
 
 import pytest
@@ -1210,6 +1210,242 @@ def test_lima_docker_pins_vz_runs_to_amd64_rosetta_and_qemu_to_amd64() -> None:
             "/bin/true",
         ]
     ]
+
+
+def test_prepared_image_mode_never_builds_and_binds_the_exact_oci_index() -> None:
+    gate = load_lima_gate()
+    expected = "sha256:" + "a" * 64
+    immutable_ref = f"mingli-runtime@{expected}"
+
+    class FakeVM:
+        def __init__(self, resolved: str) -> None:
+            self.resolved = resolved
+            self.calls: list[list[str]] = []
+
+        def docker(
+            self,
+            argv: list[str],
+            *,
+            input_bytes: bytes | bytearray | None = None,
+            capture: bool = True,
+            timeout: float | None = None,
+        ) -> subprocess.CompletedProcess[bytes]:
+            del input_bytes, capture, timeout
+            self.calls.append(argv)
+            stdout = (
+                (self.resolved + "\n").encode()
+                if argv[:2] == ["image", "inspect"]
+                else b""
+            )
+            return subprocess.CompletedProcess(argv, 0, stdout, b"")
+
+    vm = FakeVM(expected)
+    production_tag, image_id, audit_tag, audit_image_id = gate._bind_prepared_image(
+        vm,
+        immutable_ref=immutable_ref,
+        expected_index_digest=expected,
+        run_id="prepared1234",
+    )
+
+    assert image_id == expected
+    assert audit_image_id == expected
+    assert production_tag == "mingli-v51-production:prepared1234"
+    assert audit_tag == "mingli-v51-audit:prepared1234"
+    assert ["tag", immutable_ref, production_tag] in vm.calls
+    assert ["tag", immutable_ref, audit_tag] in vm.calls
+    assert not any(call and call[0] == "build" for call in vm.calls)
+
+    with pytest.raises(gate.GateError, match="prepared OCI index"):
+        gate._bind_prepared_image(
+            FakeVM("sha256:" + "b" * 64),
+            immutable_ref=immutable_ref,
+            expected_index_digest=expected,
+            run_id="prepared1234",
+        )
+
+
+def test_prepared_research_overlay_uses_only_bound_source_and_research(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    gate = load_lima_gate()
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / ".gitignore").write_text("references/fulltext/\n", encoding="utf-8")
+    (source / "signed.txt").write_text("signed\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-q", str(source)], check=True)
+    subprocess.run(
+        ["git", "-C", str(source), "config", "user.name", "Test"], check=True
+    )
+    subprocess.run(
+        ["git", "-C", str(source), "config", "user.email", "test@example.com"],
+        check=True,
+    )
+    subprocess.run(["git", "-C", str(source), "add", "."], check=True)
+    subprocess.run(["git", "-C", str(source), "commit", "-qm", "fixture"], check=True)
+    commit = subprocess.run(
+        ["git", "-C", str(source), "rev-parse", "HEAD"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    monkeypatch.setattr(gate, "EXPECTED_COMMIT", commit)
+
+    research = tmp_path / "research"
+    for index in range(gate.EXPECTED_FULLTEXT_COUNT):
+        path = (
+            research
+            / "references"
+            / "fulltext"
+            / "system"
+            / f"book-{index}"
+            / "fulltext.md"
+        )
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"book {index}\n", encoding="utf-8")
+    supplemental = (
+        research / "references" / "fulltext" / "system" / "book-0" / "supplemental.md"
+    )
+    supplemental.write_text("supplemental\n", encoding="utf-8")
+
+    destination = gate._prepare_bound_research_source(
+        source,
+        research,
+        tmp_path / "prepared-research",
+    )
+
+    assert (destination / "signed.txt").read_text(encoding="utf-8") == "signed\n"
+    assert (destination / supplemental.relative_to(research)).read_text(
+        encoding="utf-8"
+    ) == "supplemental\n"
+    status = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(destination),
+            "status",
+            "--porcelain",
+            "--untracked-files=all",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert status.stdout == ""
+
+
+def test_run_gate_prepared_mode_skips_build_and_derives_all_bound_inputs(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    gate = load_lima_gate()
+    source = tmp_path / "source"
+    research = tmp_path / "research"
+    source.mkdir()
+    research.mkdir()
+    prepared_manifest = tmp_path / "prepared-inputs.json"
+    prepared_manifest.write_text("{}\n", encoding="utf-8")
+    prepared = SimpleNamespace(source_root=source, research_root=research)
+    expected_index = "sha256:" + "a" * 64
+    linux = SimpleNamespace(
+        instance="mingli-linux-gate-vz",
+        immutable_image_ref=f"mingli-runtime@{expected_index}",
+        index_digest=expected_index,
+    )
+    events: list[object] = []
+
+    monkeypatch.setattr(gate.prepared_inputs, "load", lambda path, digest: prepared)
+    monkeypatch.setattr(gate.prepared_inputs, "require_linux", lambda value: linux)
+    monkeypatch.setattr(
+        gate,
+        "_prepare_clean_source",
+        lambda root, destination: events.append(("clean", root)) or destination,
+    )
+    monkeypatch.setattr(
+        gate,
+        "_prepare_bound_research_source",
+        lambda root, research_root, destination: (
+            events.append(("research", root, research_root)) or destination
+        ),
+    )
+
+    def fail_build(*args: object, **kwargs: object) -> None:
+        del args, kwargs
+        pytest.fail("prepared mode rebuilt the image")
+
+    monkeypatch.setattr(gate, "_build_images", fail_build)
+
+    def bind_image(
+        vm: object,
+        *,
+        immutable_ref: str,
+        expected_index_digest: str,
+        run_id: str,
+    ) -> tuple[str, str, str, str]:
+        del vm, run_id
+        events.append(("image", immutable_ref, expected_index_digest))
+        return "production", expected_index_digest, "audit", expected_index_digest
+
+    monkeypatch.setattr(gate, "_bind_prepared_image", bind_image)
+
+    class StopAfterPreparedInputs(RuntimeError):
+        pass
+
+    class FakeVM:
+        def __init__(self, instance: str) -> None:
+            events.append(("instance", instance))
+
+        def run(self, argv: list[str]) -> subprocess.CompletedProcess[bytes]:
+            events.append(("vm-run", argv))
+            return subprocess.CompletedProcess(argv, 0, b"aarch64\n", b"")
+
+        def create_volume(self, volume: str, run_id: str) -> None:
+            del volume, run_id
+            raise StopAfterPreparedInputs
+
+    monkeypatch.setattr(gate, "LimaDocker", FakeVM)
+    args = SimpleNamespace(
+        instance=None,
+        release_source=None,
+        research_repository=None,
+        prepared_inputs=prepared_manifest,
+        prepared_inputs_sha256="f" * 64,
+        output=tmp_path / "output",
+    )
+
+    with pytest.raises(StopAfterPreparedInputs):
+        gate.run_gate(args)
+
+    assert ("instance", linux.instance) in events
+    assert ("clean", source) in events
+    assert ("research", source, research) in events
+    assert ("image", linux.immutable_image_ref, linux.index_digest) in events
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        {"prepared_inputs_sha256": None},
+        {"prepared_inputs": None},
+        {"release_source": Path("/mutable/release")},
+        {"research_repository": Path("/mutable/research")},
+    ],
+)
+def test_prepared_gate_mode_rejects_partial_or_mixed_inputs(
+    mutation: dict[str, object],
+) -> None:
+    gate = load_lima_gate()
+    values: dict[str, object] = {
+        "instance": None,
+        "release_source": None,
+        "research_repository": None,
+        "prepared_inputs": Path("/prepared-inputs.json"),
+        "prepared_inputs_sha256": "f" * 64,
+    }
+    values.update(mutation)
+
+    with pytest.raises(gate.GateError):
+        gate._resolve_gate_inputs(SimpleNamespace(**values))
 
 
 def test_backup_evidence_records_the_normalized_executed_docker_argv(
