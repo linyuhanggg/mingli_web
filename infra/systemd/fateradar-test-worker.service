@@ -1,0 +1,57 @@
+# FateRadar code-test worker (background task consumer).
+# Single Ubuntu host, user/group fateradar, release at /opt/fateradar/current.
+#
+# Deploy:
+#   install -o root -g root -m 0644 \
+#     infra/systemd/fateradar-test-worker.service /etc/systemd/system/
+#   systemctl daemon-reload
+#   systemctl enable --now fateradar-test-worker
+#
+# Requires /etc/fateradar/test.env; see infra/fateradar-test.env.example.
+#
+# Single replica by design: enable at most one instance of this unit. Reading
+# job claims use PostgreSQL row locks (SELECT ... FOR UPDATE SKIP LOCKED), so
+# the unit itself must never be scaled with template instances.
+
+[Unit]
+Description=FateRadar Test Worker (single replica)
+Wants=network-online.target
+After=network-online.target
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=fateradar
+Group=fateradar
+WorkingDirectory=/opt/fateradar/current/backend
+EnvironmentFile=/etc/fateradar/test.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/fateradar/current/backend/.venv/bin/python -m worker.main --poll-interval 2
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+UMask=0077
+
+# Same hardening set as the API unit: release stays readable, PostgreSQL on
+# 127.0.0.1 stays reachable.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+LockPersonality=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+# CPython 3.13 does not JIT, so MemoryDenyWriteExecute is safe here.
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=multi-user.target

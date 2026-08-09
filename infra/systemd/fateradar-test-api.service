@@ -1,0 +1,55 @@
+# FateRadar code-test API (FastAPI/uvicorn).
+# Single Ubuntu host, user/group fateradar, release at /opt/fateradar/current.
+#
+# Deploy:
+#   install -o root -g root -m 0644 \
+#     infra/systemd/fateradar-test-api.service /etc/systemd/system/
+#   systemctl daemon-reload
+#   systemctl enable --now fateradar-test-api
+#
+# Requires /etc/fateradar/test.env; see infra/fateradar-test.env.example.
+
+[Unit]
+Description=FateRadar Test API (FastAPI on 127.0.0.1:8000)
+Wants=network-online.target
+After=network-online.target
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=fateradar
+Group=fateradar
+WorkingDirectory=/opt/fateradar/current/backend
+EnvironmentFile=/etc/fateradar/test.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/fateradar/current/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+UMask=0077
+
+# Hardening must not block reading the release under /opt (read-only is fine)
+# or reaching PostgreSQL on 127.0.0.1:5432.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+LockPersonality=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+# CPython 3.13 plus this stack (uvicorn/asyncpg/SQLAlchemy/pydantic-core) does
+# not JIT, so MemoryDenyWriteExecute is safe here. It is deliberately NOT set on
+# the web unit because Node/V8 needs writable-then-executable mappings.
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=multi-user.target

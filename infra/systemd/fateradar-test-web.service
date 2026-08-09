@@ -1,0 +1,63 @@
+# FateRadar code-test web (Next.js standalone server on 127.0.0.1:3000).
+# Single Ubuntu host, user/group fateradar, release at /opt/fateradar/current.
+#
+# The standalone bundle is /opt/fateradar/current/web/.next/standalone with
+# .next/static and public copied next to server.js (mirrors
+# infra/docker/web.Dockerfile). BACKEND_INTERNAL_URL is inlined at build time by
+# web/next.config.ts; the value below documents the runtime proxy target.
+#
+# Deploy:
+#   install -o root -g root -m 0644 \
+#     infra/systemd/fateradar-test-web.service /etc/systemd/system/
+#   systemctl daemon-reload
+#   systemctl enable --now fateradar-test-web
+
+[Unit]
+Description=FateRadar Test Web (Next.js standalone on 127.0.0.1:3000)
+Wants=network-online.target fateradar-test-api.service
+After=network-online.target fateradar-test-api.service
+
+[Service]
+Type=simple
+User=fateradar
+Group=fateradar
+WorkingDirectory=/opt/fateradar/current/web/.next/standalone
+Environment=NODE_ENV=production
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3000
+Environment=BACKEND_INTERNAL_URL=http://127.0.0.1:8000
+Environment=NEXT_TELEMETRY_DISABLED=1
+ExecStart=/usr/bin/node server.js
+ExecStartPre=+/bin/mkdir -p /opt/fateradar/current/web/.next/standalone/.next/cache
+ExecStartPre=+/bin/chown fateradar:fateradar /opt/fateradar/current/web/.next/standalone/.next/cache
+ExecStartPre=+/bin/chmod 0700 /opt/fateradar/current/web/.next/standalone/.next/cache
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+UMask=0077
+
+# Hardening must not block reading the standalone bundle under /opt or proxying
+# to the API on 127.0.0.1:8000. Only .next/cache needs to stay writable.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+LockPersonality=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+# Next standalone keeps its render cache below the standalone root. ExecStartPre
+# guarantees the path exists before the mount namespace is set up.
+ReadWritePaths=/opt/fateradar/current/web/.next/standalone/.next/cache
+# MemoryDenyWriteExecute is intentionally omitted: Node/V8 JIT needs writable
+# and executable mappings.
+
+[Install]
+WantedBy=multi-user.target
