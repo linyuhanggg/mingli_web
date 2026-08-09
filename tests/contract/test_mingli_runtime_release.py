@@ -138,12 +138,362 @@ def test_full_regression_is_matrix_a_and_finalizer_does_not_repeat_it() -> None:
     assert "release-regression" not in audit.AUDIT_COMMAND_IDS
     assert audit.PRODUCTION_COMMAND_IDS == verifier.EXPECTED_PRODUCTION_COMMAND_IDS
     assert audit.AUDIT_COMMAND_IDS == verifier.EXPECTED_AUDIT_COMMAND_IDS
-    assert production.count('"release-regression"') == 1
+    assert production.count('recorder.run(\n        "release-regression"') == 1
     assert production.count('"provider-matrix-b"') >= 1
     assert '"provider-matrix-a"' not in production
     assert "run_test_suite.py" in production
     assert "run_test_suite.py" not in finalizer
     assert 'recorder.run(\n        "release-regression"' not in finalizer
+
+
+def _audit_command_record(
+    tmp_path: Path,
+    command_id: str,
+    stdout: str,
+) -> dict[str, Any]:
+    command_root = tmp_path / "evidence" / "commands"
+    command_root.mkdir(parents=True, exist_ok=True)
+    stdout_path = command_root / f"{command_id}.stdout"
+    stderr_path = command_root / f"{command_id}.stderr"
+    stdout_path.write_text(stdout, encoding="utf-8")
+    stderr_path.write_bytes(b"")
+    return {
+        "id": command_id,
+        "stdout_path": stdout_path.relative_to(tmp_path).as_posix(),
+        "stderr_path": stderr_path.relative_to(tmp_path).as_posix(),
+        "elapsed_seconds": 12.5,
+        "timeout_seconds": 10_800,
+    }
+
+
+def test_matrix_a_is_parsed_from_the_real_full_regression_target(
+    tmp_path: Path,
+) -> None:
+    audit = load_audit_runtime()
+    record = _audit_command_record(
+        tmp_path,
+        "release-regression",
+        "test plan: targets=126 modules=93 workers=10 parallel=100 serial=26\n"
+        "[PASS] test_v51_provider_completeness.py::CanonicalMatrixSnapshotTests "
+        "tests=2 elapsed=415.25s\n"
+        "summary: targets=126 modules=93 tests=1584 failed_modules=0 "
+        "elapsed=434.62s\n",
+    )
+
+    parsed = audit._parse_matrix_a_from_regression(record, tmp_path)
+
+    assert parsed == {
+        "elapsed_seconds": 415.25,
+        "target": ("test_v51_provider_completeness.py::CanonicalMatrixSnapshotTests"),
+        "test_count": 2,
+    }
+
+
+@pytest.mark.parametrize(
+    "target_line",
+    [
+        "",
+        (
+            "[FAIL] "
+            "test_v51_provider_completeness.py::CanonicalMatrixSnapshotTests "
+            "tests=2 elapsed=1.00s\n"
+        ),
+        (
+            "[PASS] "
+            "test_v51_provider_completeness.py::CanonicalMatrixSnapshotTests "
+            "tests=1 elapsed=1.00s\n"
+        ),
+        (
+            "[PASS] test_v51_provider_completeness.py::CanonicalMatrixSnapshotTests "
+            "tests=2 elapsed=1.00s\n"
+        )
+        * 2,
+    ],
+)
+def test_matrix_a_missing_failed_wrong_count_or_duplicate_is_rejected(
+    tmp_path: Path,
+    target_line: str,
+) -> None:
+    audit = load_audit_runtime()
+    record = _audit_command_record(
+        tmp_path,
+        "release-regression",
+        target_line + "summary: targets=126 modules=93 tests=1584 failed_modules=0 "
+        "elapsed=2.00s\n",
+    )
+
+    with pytest.raises(audit.AuditError, match="Canonical Matrix A"):
+        audit._parse_matrix_a_from_regression(record, tmp_path)
+
+
+@pytest.mark.parametrize(
+    "stdout",
+    [
+        (
+            "schema_version: mingli-provider-completeness-audit-v1\n"
+            "provider_ready: false\nprovider_count: 13\nfindings: []\n"
+        ),
+        (
+            "schema_version: mingli-provider-completeness-audit-v1\n"
+            "provider_ready: true\nprovider_count: 12\nfindings: []\n"
+        ),
+        (
+            "schema_version: mingli-provider-completeness-audit-v1\n"
+            "provider_ready: true\nprovider_count: 13\nfindings: [drift]\n"
+        ),
+        "not: valid: yaml\n",
+    ],
+)
+def test_matrix_b_machine_output_must_be_exactly_13_ready(
+    tmp_path: Path,
+    stdout: str,
+) -> None:
+    audit = load_audit_runtime()
+    record = _audit_command_record(tmp_path, "provider-matrix-b", stdout)
+
+    with pytest.raises(audit.AuditError, match="Matrix B"):
+        audit._parse_matrix_b_check(record, tmp_path)
+
+
+def test_matrix_input_binding_requires_read_only_identical_before_after() -> None:
+    audit = load_audit_runtime()
+    binding = {
+        "schema_version": "mingli-matrix-input-binding-v1",
+        "source_root": "/audit-source",
+        "matrix_path": ("/audit-source/references/matrices/provider-completeness.yaml"),
+        "matrix_sha256": "1" * 64,
+        "generator_input_fingerprint": "2" * 64,
+        "signed_generator_input_fingerprint": "2" * 64,
+        "provider_count": 13,
+        "source_filesystem_read_only": True,
+    }
+
+    assert audit._validate_matrix_binding_pair(binding, copy.deepcopy(binding)) == {
+        "generator_input_fingerprint": "2" * 64,
+        "matrix_sha256": "1" * 64,
+    }
+
+    for mutation in (
+        lambda value: value.__setitem__("matrix_sha256", "3" * 64),
+        lambda value: value.__setitem__("generator_input_fingerprint", "4" * 64),
+        lambda value: value.__setitem__("source_filesystem_read_only", False),
+        lambda value: value.__setitem__("provider_count", 12),
+    ):
+        drifted = copy.deepcopy(binding)
+        mutation(drifted)
+        with pytest.raises(audit.AuditError, match="matrix input binding"):
+            audit._validate_matrix_binding_pair(binding, drifted)
+
+
+def test_linux_controller_binds_one_run_id_across_both_audit_phases() -> None:
+    audit = inspect.getsource(load_audit_runtime())
+    controller = inspect.getsource(load_lima_gate().run_gate)
+
+    assert 'parser.add_argument("--run-id")' in audit
+    assert '"run_id": run_id' in audit
+    assert controller.count('"--run-id"') == 2
+
+
+def _matrix_verifier_fixture(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[ModuleType, dict[str, Any], dict[str, dict[str, Any]], dict[str, Any]]:
+    verifier = load_verifier()
+    fingerprint = "2" * 64
+    matrix_text = (
+        "inputs:\n"
+        f'  generator_input_fingerprint: "{fingerprint}"\n'
+        "providers:\n"
+        + "".join(f"  {provider}: {{}}\n" for provider in sorted(EXPECTED_PROVIDERS))
+        + "schema_version: mingli-provider-completeness-v1\n"
+    )
+    matrix_path = tmp_path / "evidence" / "provider-completeness.yaml"
+    matrix_path.parent.mkdir(parents=True)
+    matrix_path.write_text(matrix_text, encoding="utf-8")
+    matrix_sha256 = hashlib.sha256(matrix_text.encode()).hexdigest()
+    monkeypatch.setattr(
+        verifier,
+        "EXPECTED_GENERATOR_INPUT_FINGERPRINT",
+        fingerprint,
+    )
+    monkeypatch.setattr(verifier, "EXPECTED_PROVIDER_MATRIX_SHA256", matrix_sha256)
+
+    def command(
+        command_id: str,
+        stdout: str,
+        *,
+        elapsed: float,
+        timeout: int,
+    ) -> dict[str, Any]:
+        record = _audit_command_record(tmp_path, command_id, stdout)
+        record.update(
+            {
+                "elapsed_seconds": elapsed,
+                "stdout_file": tmp_path / record["stdout_path"],
+                "timeout_seconds": timeout,
+            }
+        )
+        return record
+
+    binding = {
+        "generator_input_fingerprint": fingerprint,
+        "matrix_path": ("/audit-source/references/matrices/provider-completeness.yaml"),
+        "matrix_sha256": matrix_sha256,
+        "provider_count": 13,
+        "schema_version": "mingli-matrix-input-binding-v1",
+        "signed_generator_input_fingerprint": fingerprint,
+        "source_filesystem_read_only": True,
+        "source_root": "/audit-source",
+    }
+    commands = {
+        "matrix-input-before": command(
+            "matrix-input-before",
+            json.dumps(binding),
+            elapsed=0.1,
+            timeout=300,
+        ),
+        "matrix-input-after": command(
+            "matrix-input-after",
+            json.dumps(binding),
+            elapsed=0.1,
+            timeout=300,
+        ),
+        "release-regression": command(
+            "release-regression",
+            "[PASS] "
+            "test_v51_provider_completeness.py::CanonicalMatrixSnapshotTests "
+            "tests=2 elapsed=415.25s\n",
+            elapsed=434.62,
+            timeout=10_800,
+        ),
+        "provider-matrix-b": command(
+            "provider-matrix-b",
+            "schema_version: mingli-provider-completeness-audit-v1\n"
+            "provider_ready: true\nprovider_count: 13\nfindings: []\n",
+            elapsed=421.0,
+            timeout=10_800,
+        ),
+    }
+    run_id = "20260809000000deadbeef"
+    image_id = "sha256:" + "1" * 64
+    section = {
+        "executed_in_image_id": image_id,
+        "generator_input_fingerprint": fingerprint,
+        "input_binding_command_ids": [
+            "matrix-input-before",
+            "matrix-input-after",
+        ],
+        "matrix_path": "evidence/provider-completeness.yaml",
+        "matrix_sha256": matrix_sha256,
+        "run_id": run_id,
+        "runs": [
+            {
+                "command_id": "release-regression",
+                "elapsed_seconds": 415.25,
+                "target": (
+                    "test_v51_provider_completeness.py::CanonicalMatrixSnapshotTests"
+                ),
+                "test_count": 2,
+                "timeout_seconds": 10_800,
+            },
+            {
+                "command_id": "provider-matrix-b",
+                "elapsed_seconds": 421.0,
+                "provider_count": 13,
+                "timeout_seconds": 10_800,
+            },
+        ],
+        "source_commit": EXPECTED_RELEASE["source_commit"],
+        "status": "passed",
+    }
+    evidence = {
+        "provider_matrix_path": "evidence/provider-completeness.yaml",
+        "provider_matrix_sha256": matrix_sha256,
+    }
+    return verifier, evidence, commands, section
+
+
+def test_verifier_recomputes_matrix_a_b_and_frozen_input_binding(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    verifier, evidence, commands, section = _matrix_verifier_fixture(
+        tmp_path,
+        monkeypatch,
+    )
+
+    verifier._verify_provider_matrix(
+        section,
+        evidence,
+        commands,
+        artifacts_root=tmp_path,
+        image_id="sha256:" + "1" * 64,
+        run_id="20260809000000deadbeef",
+    )
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "matrix-a-failed",
+        "matrix-b-not-ready",
+        "input-fingerprint-drift",
+        "matrix-byte-drift",
+        "source-commit-drift",
+        "image-id-drift",
+        "run-id-drift",
+    ],
+)
+def test_verifier_rejects_coordinated_matrix_evidence_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mutation: str,
+) -> None:
+    verifier, evidence, commands, section = _matrix_verifier_fixture(
+        tmp_path,
+        monkeypatch,
+    )
+    if mutation == "matrix-a-failed":
+        commands["release-regression"]["stdout_file"].write_text(
+            "[FAIL] "
+            "test_v51_provider_completeness.py::CanonicalMatrixSnapshotTests "
+            "tests=2 elapsed=1.00s\n",
+            encoding="utf-8",
+        )
+    elif mutation == "matrix-b-not-ready":
+        commands["provider-matrix-b"]["stdout_file"].write_text(
+            "schema_version: mingli-provider-completeness-audit-v1\n"
+            "provider_ready: false\nprovider_count: 13\nfindings: []\n",
+            encoding="utf-8",
+        )
+    elif mutation == "input-fingerprint-drift":
+        binding = json.loads(commands["matrix-input-after"]["stdout_file"].read_text())
+        binding["generator_input_fingerprint"] = "3" * 64
+        commands["matrix-input-after"]["stdout_file"].write_text(
+            json.dumps(binding),
+            encoding="utf-8",
+        )
+    elif mutation == "matrix-byte-drift":
+        (tmp_path / evidence["provider_matrix_path"]).write_text(
+            (tmp_path / evidence["provider_matrix_path"]).read_text() + "# drift\n",
+            encoding="utf-8",
+        )
+    elif mutation == "source-commit-drift":
+        section["source_commit"] = "0" * 40
+    elif mutation == "image-id-drift":
+        section["executed_in_image_id"] = "sha256:" + "4" * 64
+    else:
+        section["run_id"] = "20260809000000cafebabe"
+
+    with pytest.raises(verifier.ReleaseVerificationError):
+        verifier._verify_provider_matrix(
+            section,
+            evidence,
+            commands,
+            artifacts_root=tmp_path,
+            image_id="sha256:" + "1" * 64,
+            run_id="20260809000000deadbeef",
+        )
 
 
 def test_command_evidence_records_elapsed_and_fixed_timeout_budget(

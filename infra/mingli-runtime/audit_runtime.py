@@ -12,8 +12,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import platform
+import re
 import shutil
 import signal
 import stat
@@ -27,6 +29,7 @@ from pathlib import Path
 from typing import Any, NoReturn
 
 import verify_release
+import yaml
 
 RELEASE_ROOT = Path("/opt/mingli-master")
 RUNTIME_PYTHON = Path("/opt/mingli-runtime/venv/bin/python")
@@ -43,11 +46,21 @@ PRODUCTION_OUTPUT_ROOT = Path("/production-output")
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
 PROVIDER_MATRIX_TIMEOUT_SECONDS = 10_800
 RELEASE_REGRESSION_TIMEOUT_SECONDS = 10_800
+MATRIX_TARGET = "test_v51_provider_completeness.py::CanonicalMatrixSnapshotTests"
+MATRIX_TARGET_RE = re.compile(
+    r"^\[PASS\] "
+    + re.escape(MATRIX_TARGET)
+    + r" tests=(?P<tests>\d+) elapsed=(?P<elapsed>\d+(?:\.\d+)?)s$",
+    re.MULTILINE,
+)
+RUN_ID_RE = re.compile(r"\d{14}[0-9a-f]{8}")
 PRODUCTION_COMMAND_IDS = frozenset(
     {
         "characterization-a",
         "characterization-b",
         "git-smoke",
+        "matrix-input-after",
+        "matrix-input-before",
         "p0-trajectories",
         "production-native-linkage",
         "production-tree-identity",
@@ -74,6 +87,12 @@ class AuditError(RuntimeError):
 
 def _fail(message: str) -> NoReturn:
     raise AuditError(message)
+
+
+def _validate_run_id(value: str) -> str:
+    if RUN_ID_RE.fullmatch(value) is None:
+        _fail("Linux Gate run ID is malformed")
+    return value
 
 
 def _write_json(path: Path, value: Mapping[str, Any]) -> None:
@@ -795,6 +814,133 @@ def _parse_regression(record: Mapping[str, Any], output_root: Path) -> dict[str,
     return result
 
 
+def _command_stdout(record: Mapping[str, Any], output_root: Path) -> str:
+    relative = verify_release._safe_relative(record.get("stdout_path"), "command")
+    try:
+        return (output_root / relative).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise AuditError(f"command stdout is unreadable: {record.get('id')}") from exc
+
+
+def _parse_matrix_a_from_regression(
+    record: Mapping[str, Any],
+    output_root: Path,
+) -> dict[str, Any]:
+    matches = list(MATRIX_TARGET_RE.finditer(_command_stdout(record, output_root)))
+    if len(matches) != 1:
+        _fail("Canonical Matrix A target is missing, failed, or duplicated")
+    match = matches[0]
+    test_count = int(match.group("tests"))
+    elapsed_seconds = float(match.group("elapsed"))
+    timeout = record.get("timeout_seconds")
+    if (
+        test_count != 2
+        or not math.isfinite(elapsed_seconds)
+        or elapsed_seconds < 0
+        or not isinstance(timeout, (int, float))
+        or elapsed_seconds > timeout
+    ):
+        _fail("Canonical Matrix A target count or elapsed evidence is invalid")
+    return {
+        "elapsed_seconds": elapsed_seconds,
+        "target": MATRIX_TARGET,
+        "test_count": test_count,
+    }
+
+
+def _parse_matrix_b_check(
+    record: Mapping[str, Any],
+    output_root: Path,
+) -> dict[str, Any]:
+    try:
+        payload = yaml.safe_load(_command_stdout(record, output_root))
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        raise AuditError("Matrix B machine output is invalid YAML") from exc
+    expected = {
+        "findings": [],
+        "provider_count": 13,
+        "provider_ready": True,
+        "schema_version": "mingli-provider-completeness-audit-v1",
+    }
+    if payload != expected:
+        _fail("Matrix B machine output is not exactly 13/13 ready")
+    return expected
+
+
+def _validate_matrix_binding_pair(
+    before: Mapping[str, Any],
+    after: Mapping[str, Any],
+) -> dict[str, str]:
+    expected_keys = {
+        "generator_input_fingerprint",
+        "matrix_path",
+        "matrix_sha256",
+        "provider_count",
+        "schema_version",
+        "signed_generator_input_fingerprint",
+        "source_filesystem_read_only",
+        "source_root",
+    }
+    if set(before) != expected_keys or before != after:
+        _fail("matrix input binding changed between Matrix A and B")
+    matrix_sha256 = before.get("matrix_sha256")
+    fingerprint = before.get("generator_input_fingerprint")
+    if (
+        before.get("schema_version") != "mingli-matrix-input-binding-v1"
+        or before.get("source_root") != str(SOURCE_ROOT)
+        or before.get("matrix_path")
+        != str(SOURCE_ROOT / "references/matrices/provider-completeness.yaml")
+        or before.get("provider_count") != 13
+        or before.get("source_filesystem_read_only") is not True
+        or not isinstance(matrix_sha256, str)
+        or re.fullmatch(r"[0-9a-f]{64}", matrix_sha256) is None
+        or not isinstance(fingerprint, str)
+        or re.fullmatch(r"[0-9a-f]{64}", fingerprint) is None
+        or before.get("signed_generator_input_fingerprint") != fingerprint
+    ):
+        _fail("matrix input binding is incomplete or mutable")
+    return {
+        "generator_input_fingerprint": fingerprint,
+        "matrix_sha256": matrix_sha256,
+    }
+
+
+def emit_matrix_input_binding(source_root: Path) -> int:
+    _source_root_is_safe(source_root)
+    try:
+        import audit_provider_completeness as completeness
+
+        matrix_path = source_root / "references/matrices/provider-completeness.yaml"
+        if matrix_path.is_symlink() or not matrix_path.is_file():
+            _fail("signed provider matrix is missing or unsafe")
+        payload = yaml.safe_load(matrix_path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            _fail("signed provider matrix is not an object")
+        inputs = payload.get("inputs")
+        providers = payload.get("providers")
+        if not isinstance(inputs, dict) or not isinstance(providers, dict):
+            _fail("signed provider matrix inputs or providers are absent")
+        signed_fingerprint = inputs.get("generator_input_fingerprint")
+        computed_fingerprint = completeness._matrix_input_fingerprint(source_root)
+    except (ImportError, OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        raise AuditError("matrix input binding could not be recomputed") from exc
+    binding = {
+        "generator_input_fingerprint": computed_fingerprint,
+        "matrix_path": str(matrix_path),
+        "matrix_sha256": verify_release.sha256_file(matrix_path),
+        "provider_count": len(providers),
+        "schema_version": "mingli-matrix-input-binding-v1",
+        "signed_generator_input_fingerprint": signed_fingerprint,
+        "source_filesystem_read_only": bool(
+            os.statvfs(source_root).f_flag & os.ST_RDONLY
+        ),
+        "source_root": str(source_root),
+    }
+    _validate_matrix_binding_pair(binding, binding)
+    print(json.dumps(binding, sort_keys=True, separators=(",", ":")))
+    return 0
+
+
 def _combined_output(record: Mapping[str, Any], output_root: Path) -> str:
     return (output_root / str(record["stdout_path"])).read_text(encoding="utf-8") + (
         output_root / str(record["stderr_path"])
@@ -885,10 +1031,12 @@ def run_production_audit(
     source_root: Path,
     output_root: Path,
     image_id: str,
+    run_id: str,
 ) -> int:
     _assert_platform()
     _prepare_output_root(output_root, PRODUCTION_OUTPUT_ROOT)
     verify_release._require_image_digest(image_id, "production image ID")
+    _validate_run_id(run_id)
     _source_root_is_safe(source_root)
     environment = _audit_environment(source_root)
     environment["MINGLI_PRODUCTION_IMAGE_ID"] = image_id
@@ -934,6 +1082,21 @@ def run_production_audit(
         environment=environment,
         timeout=900,
     )
+    binding_argv = (
+        str(RUNTIME_PYTHON),
+        "-B",
+        str(AUDIT_SCRIPT),
+        "--emit-matrix-input-binding",
+        "--source-root",
+        str(source_root),
+    )
+    matrix_input_before = recorder.run(
+        "matrix-input-before",
+        binding_argv,
+        cwd=source_root,
+        environment=environment,
+        timeout=300,
+    )
     regression = recorder.run(
         "release-regression",
         (
@@ -949,7 +1112,8 @@ def run_production_audit(
         environment=environment,
         timeout=RELEASE_REGRESSION_TIMEOUT_SECONDS,
     )
-    _parse_regression(regression, output_root)
+    regression_summary = _parse_regression(regression, output_root)
+    matrix_a_evidence = _parse_matrix_a_from_regression(regression, output_root)
     matrix_argv = (
         str(RUNTIME_PYTHON),
         "-B",
@@ -965,6 +1129,23 @@ def run_production_audit(
         environment=environment,
         timeout=PROVIDER_MATRIX_TIMEOUT_SECONDS,
     )
+    matrix_b_evidence = _parse_matrix_b_check(matrix_b, output_root)
+    matrix_input_after = recorder.run(
+        "matrix-input-after",
+        binding_argv,
+        cwd=source_root,
+        environment=environment,
+        timeout=300,
+    )
+    before_binding = _read_json(
+        output_root / str(matrix_input_before["stdout_path"]),
+        "matrix input binding before runs",
+    )
+    after_binding = _read_json(
+        output_root / str(matrix_input_after["stdout_path"]),
+        "matrix input binding after runs",
+    )
+    matrix_binding = _validate_matrix_binding_pair(before_binding, after_binding)
     characterization_argv = (
         str(RUNTIME_PYTHON),
         "-B",
@@ -1132,6 +1313,10 @@ def run_production_audit(
         output_root / "evidence/release-manifest.json",
     )
     _copy_file(PROVENANCE, output_root / "evidence/dependency-provenance.json")
+    _copy_file(
+        source_root / "references/matrices/provider-completeness.yaml",
+        output_root / "evidence/provider-completeness.yaml",
+    )
 
     inventory = _read_json(inventory_path, "runtime inventory")
     production_evidence: dict[str, Any] = {
@@ -1143,6 +1328,7 @@ def run_production_audit(
         "commands": recorder.records,
         "generated_by": str(AUDIT_SCRIPT),
         "image_id": image_id,
+        "run_id": run_id,
         "git_smoke": {
             "command_id": "git-smoke",
             "output_sha256": git_smoke["stdout_sha256"],
@@ -1168,15 +1354,44 @@ def run_production_audit(
             "status": "passed",
         },
         "provider_matrix": {
+            "executed_in_image_id": image_id,
+            "generator_input_fingerprint": matrix_binding[
+                "generator_input_fingerprint"
+            ],
+            "input_binding_command_ids": [
+                "matrix-input-before",
+                "matrix-input-after",
+            ],
+            "matrix_path": "evidence/provider-completeness.yaml",
+            "matrix_sha256": matrix_binding["matrix_sha256"],
+            "run_id": run_id,
             "runs": [
                 {
-                    "command_id": command["id"],
-                    "elapsed_seconds": command["elapsed_seconds"],
-                    "timeout_seconds": command["timeout_seconds"],
-                }
-                for command in (regression, matrix_b)
+                    "command_id": "release-regression",
+                    "elapsed_seconds": matrix_a_evidence["elapsed_seconds"],
+                    "target": matrix_a_evidence["target"],
+                    "test_count": matrix_a_evidence["test_count"],
+                    "timeout_seconds": regression["timeout_seconds"],
+                },
+                {
+                    "command_id": "provider-matrix-b",
+                    "elapsed_seconds": matrix_b["elapsed_seconds"],
+                    "provider_count": matrix_b_evidence["provider_count"],
+                    "timeout_seconds": matrix_b["timeout_seconds"],
+                },
             ],
+            "source_commit": verify_release.EXPECTED_RELEASE["source_commit"],
             "status": "passed",
+        },
+        "release_regression": {
+            "command_id": "release-regression",
+            "elapsed_seconds": regression["elapsed_seconds"],
+            "executed_in_image_id": image_id,
+            "module_count": regression_summary["modules"],
+            "status": "passed",
+            "target_count": regression_summary["targets"],
+            "test_count": regression_summary["tests"],
+            "timeout_seconds": regression["timeout_seconds"],
         },
         "schema_version": "mingli-production-evidence-v1",
         "target": _target_record(),
@@ -1186,6 +1401,7 @@ def run_production_audit(
         _fail("production command inventory is incomplete")
     expected_files = {
         "evidence/dependency-provenance.json",
+        "evidence/provider-completeness.yaml",
         "evidence/release-manifest.json",
         "evidence/runtime-integrity.json",
         "evidence/runtime-inventory.json",
@@ -1206,12 +1422,15 @@ def _copy_production_evidence(
     source: Path,
     output_root: Path,
     image_id: str,
+    run_id: str,
 ) -> dict[str, Any]:
     evidence = _read_json(source, "production evidence")
     if evidence.get("schema_version") != "mingli-production-evidence-v1":
         _fail("production evidence schema mismatch")
     if evidence.get("image_id") != image_id:
         _fail("production evidence image identity mismatch")
+    if evidence.get("run_id") != run_id:
+        _fail("production evidence run identity mismatch")
     commands = evidence.get("commands")
     if (
         not isinstance(commands, list)
@@ -1229,6 +1448,7 @@ def _copy_production_evidence(
         _fail("production evidence file inventory is missing")
     expected_files = {
         "evidence/dependency-provenance.json",
+        "evidence/provider-completeness.yaml",
         "evidence/release-manifest.json",
         "evidence/runtime-integrity.json",
         "evidence/runtime-inventory.json",
@@ -1261,6 +1481,7 @@ def finalize_audit(
     image_id: str,
     image_digest: str,
     audit_image_id: str,
+    run_id: str,
 ) -> int:
     _assert_platform()
     _prepare_output_root(output_root, OUTPUT_ROOT)
@@ -1274,11 +1495,13 @@ def finalize_audit(
         _fail("local production image ID and OCI config digest must be identical")
     if audit_image_id != image_id:
         _fail("audit image must be an alias of the exact production OCI config")
+    _validate_run_id(run_id)
     _source_root_is_safe(source_root)
     production = _copy_production_evidence(
         production_evidence_path,
         output_root,
         image_id,
+        run_id,
     )
     environment = _audit_environment(source_root)
     environment["MINGLI_PRODUCTION_IMAGE_ID"] = image_id
@@ -1377,6 +1600,18 @@ def finalize_audit(
     }:
         _fail("authoritative source binding is incomplete")
     regression_summary = _parse_regression(regression, output_root)
+    expected_regression = {
+        "command_id": "release-regression",
+        "elapsed_seconds": regression["elapsed_seconds"],
+        "executed_in_image_id": image_id,
+        "module_count": regression_summary["modules"],
+        "status": "passed",
+        "target_count": regression_summary["targets"],
+        "test_count": regression_summary["tests"],
+        "timeout_seconds": regression["timeout_seconds"],
+    }
+    if production.get("release_regression") != expected_regression:
+        _fail("production regression evidence differs from its raw command output")
     backup_path = _copy_backup_evidence(backup_evidence, output_root)
     backup = _read_json(backup_path, "backup/restore evidence")
     provenance = _read_json(PROVENANCE, "dependency provenance")
@@ -1402,6 +1637,7 @@ def finalize_audit(
             "completed_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "generator": str(AUDIT_SCRIPT),
             "image_id": image_id,
+            "run_id": run_id,
         },
         "backup_restore": {
             **{
@@ -1436,6 +1672,10 @@ def finalize_audit(
             "production_evidence_sha256": verify_release.sha256_file(
                 output_root / "evidence/production-evidence.json"
             ),
+            "provider_matrix_path": "evidence/provider-completeness.yaml",
+            "provider_matrix_sha256": verify_release.sha256_file(
+                output_root / "evidence/provider-completeness.yaml"
+            ),
             "release_manifest_path": "evidence/release-manifest.json",
             "runtime_integrity_path": "evidence/runtime-integrity.json",
             "runtime_inventory_path": "evidence/runtime-inventory.json",
@@ -1453,16 +1693,7 @@ def finalize_audit(
             "p0_provider_ids": sorted(verify_release.EXPECTED_P0_PROVIDERS)
         },
         "release": dict(verify_release.EXPECTED_RELEASE),
-        "release_regression": {
-            "command_id": "release-regression",
-            "elapsed_seconds": regression["elapsed_seconds"],
-            "executed_in_image_id": image_id,
-            "module_count": regression_summary["modules"],
-            "status": "passed",
-            "target_count": regression_summary["targets"],
-            "test_count": regression_summary["tests"],
-            "timeout_seconds": regression["timeout_seconds"],
-        },
+        "release_regression": production["release_regression"],
         "runtime_tree_identity": {
             "audit_command_id": "audit-tree-identity",
             "production_command_id": "production-tree-identity",
@@ -1493,6 +1724,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--emit-characterization", action="store_true")
+    mode.add_argument("--emit-matrix-input-binding", action="store_true")
     mode.add_argument("--emit-runtime-probes", action="store_true")
     mode.add_argument("--emit-token-record", action="store_true")
     mode.add_argument("--emit-tree-identity", action="store_true")
@@ -1509,12 +1741,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--image-id")
     parser.add_argument("--image-digest")
     parser.add_argument("--audit-image-id")
+    parser.add_argument("--run-id")
     args = parser.parse_args(argv)
     try:
         if args.emit_characterization:
             if args.source_root is None:
                 parser.error("--emit-characterization requires --source-root")
             return emit_characterization(args.source_root)
+        if args.emit_matrix_input_binding:
+            if args.source_root is None:
+                parser.error("--emit-matrix-input-binding requires --source-root")
+            return emit_matrix_input_binding(args.source_root)
         if args.emit_runtime_probes:
             if args.state_root is None:
                 parser.error("--emit-runtime-probes requires --state-root")
@@ -1537,6 +1774,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             required = {
                 "image_id": args.image_id,
                 "output_root": args.output_root,
+                "run_id": args.run_id,
                 "source_root": args.source_root,
             }
             missing = sorted(name for name, value in required.items() if value is None)
@@ -1546,6 +1784,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 source_root=args.source_root,
                 output_root=args.output_root,
                 image_id=args.image_id,
+                run_id=args.run_id,
             )
         required = {
             "audit_image_id": args.audit_image_id,
@@ -1554,6 +1793,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "image_id": args.image_id,
             "output_root": args.output_root,
             "production_evidence": args.production_evidence,
+            "run_id": args.run_id,
             "source_root": args.source_root,
         }
         missing = sorted(name for name, value in required.items() if value is None)
@@ -1567,6 +1807,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             image_id=args.image_id,
             image_digest=args.image_digest,
             audit_image_id=args.audit_image_id,
+            run_id=args.run_id,
         )
     except (AuditError, verify_release.ReleaseVerificationError) as exc:
         print(f"runtime audit failed: {exc}", file=sys.stderr)

@@ -26,6 +26,8 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path, PurePosixPath
 from typing import Any, NoReturn
 
+import yaml
+
 MANIFEST_NAME = ".mingli-release-manifest.json"
 EXPECTED_RELEASE = {
     "name": "mingli-master-portable-core",
@@ -270,11 +272,21 @@ EXPECTED_TEST_TARGETS = 126
 EXPECTED_TEST_MODULES = 93
 EXPECTED_PROVIDER_MATRIX_TIMEOUT_SECONDS = 10_800
 EXPECTED_RELEASE_REGRESSION_TIMEOUT_SECONDS = 10_800
+EXPECTED_MATRIX_BINDING_TIMEOUT_SECONDS = 300
+EXPECTED_PROVIDER_MATRIX_SHA256 = (
+    "b0d9f9cad40a07d245d8e8b26407aef870da2b359042ebabcab4b1d3c9a9dd0e"
+)
+EXPECTED_GENERATOR_INPUT_FINGERPRINT = (
+    "62e4b9560b08784e0cad24366c71ea25bf0f7217c74052fae9314f86dffab6d6"
+)
+MATRIX_TARGET = "test_v51_provider_completeness.py::CanonicalMatrixSnapshotTests"
 EXPECTED_PRODUCTION_COMMAND_IDS = frozenset(
     {
         "characterization-a",
         "characterization-b",
         "git-smoke",
+        "matrix-input-after",
+        "matrix-input-before",
         "p0-trajectories",
         "production-native-linkage",
         "production-tree-identity",
@@ -340,6 +352,13 @@ SUMMARY_RE = re.compile(
     r"elapsed=(?P<elapsed>[0-9.]+)s$",
     re.MULTILINE,
 )
+MATRIX_TARGET_RE = re.compile(
+    r"^\[PASS\] "
+    + re.escape(MATRIX_TARGET)
+    + r" tests=(?P<tests>\d+) elapsed=(?P<elapsed>\d+(?:\.\d+)?)s$",
+    re.MULTILINE,
+)
+RUN_ID_RE = re.compile(r"\d{14}[0-9a-f]{8}")
 
 
 class ReleaseVerificationError(RuntimeError):
@@ -2101,11 +2120,161 @@ def _require_successful_command_ids(
         _fail(f"{label} references unknown command evidence")
 
 
+def _command_stdout_text(command: Mapping[str, Any], label: str) -> str:
+    path = command.get("stdout_file")
+    if not isinstance(path, Path):
+        _fail(f"{label} stdout artifact is not resolved")
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise ReleaseVerificationError(f"{label} stdout is unreadable") from exc
+
+
+def _verify_matrix_input_binding(
+    command: Mapping[str, Any],
+    label: str,
+) -> dict[str, Any]:
+    path = command.get("stdout_file")
+    if not isinstance(path, Path):
+        _fail(f"{label} stdout artifact is not resolved")
+    payload = _load_json(path, label)
+    expected = {
+        "generator_input_fingerprint": EXPECTED_GENERATOR_INPUT_FINGERPRINT,
+        "matrix_path": ("/audit-source/references/matrices/provider-completeness.yaml"),
+        "matrix_sha256": EXPECTED_PROVIDER_MATRIX_SHA256,
+        "provider_count": 13,
+        "schema_version": "mingli-matrix-input-binding-v1",
+        "signed_generator_input_fingerprint": (EXPECTED_GENERATOR_INPUT_FINGERPRINT),
+        "source_filesystem_read_only": True,
+        "source_root": "/audit-source",
+    }
+    if payload != expected:
+        _fail(f"{label} does not bind the frozen read-only matrix inputs")
+    return payload
+
+
+def _verify_provider_matrix(
+    section: object,
+    evidence: Mapping[str, Any],
+    commands: Mapping[str, Mapping[str, Any]],
+    *,
+    artifacts_root: Path,
+    image_id: str,
+    run_id: str,
+) -> None:
+    matrix_path = _verify_artifact_digest(
+        artifacts_root,
+        evidence.get("provider_matrix_path"),
+        evidence.get("provider_matrix_sha256"),
+        "frozen Provider matrix",
+    )
+    if (
+        evidence.get("provider_matrix_path") != "evidence/provider-completeness.yaml"
+        or evidence.get("provider_matrix_sha256") != EXPECTED_PROVIDER_MATRIX_SHA256
+    ):
+        _fail("Provider matrix artifact is not the frozen source-commit byte stream")
+    try:
+        matrix = yaml.safe_load(matrix_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        raise ReleaseVerificationError(
+            "frozen Provider matrix is invalid YAML"
+        ) from exc
+    if not isinstance(matrix, dict):
+        _fail("frozen Provider matrix must be an object")
+    inputs = matrix.get("inputs")
+    providers = matrix.get("providers")
+    if (
+        matrix.get("schema_version") != "mingli-provider-completeness-v1"
+        or not isinstance(inputs, dict)
+        or inputs.get("generator_input_fingerprint")
+        != EXPECTED_GENERATOR_INPUT_FINGERPRINT
+        or not isinstance(providers, dict)
+        or set(providers) != EXPECTED_PROVIDERS
+    ):
+        _fail("frozen Provider matrix semantics are incomplete")
+
+    before = _verify_matrix_input_binding(
+        commands["matrix-input-before"],
+        "matrix input binding before Matrix A/B",
+    )
+    after = _verify_matrix_input_binding(
+        commands["matrix-input-after"],
+        "matrix input binding after Matrix A/B",
+    )
+    if before != after:
+        _fail("matrix inputs changed between Matrix A and Matrix B")
+
+    regression = commands["release-regression"]
+    matrix_a_matches = list(
+        MATRIX_TARGET_RE.finditer(
+            _command_stdout_text(regression, "release regression")
+        )
+    )
+    if len(matrix_a_matches) != 1:
+        _fail("Canonical Matrix A target is missing, failed, or duplicated")
+    matrix_a = matrix_a_matches[0]
+    matrix_a_tests = int(matrix_a.group("tests"))
+    matrix_a_elapsed = float(matrix_a.group("elapsed"))
+    if (
+        matrix_a_tests != 2
+        or matrix_a_elapsed < 0
+        or matrix_a_elapsed > regression["timeout_seconds"]
+    ):
+        _fail("Canonical Matrix A target evidence is outside the frozen contract")
+
+    try:
+        matrix_b_payload = yaml.safe_load(
+            _command_stdout_text(commands["provider-matrix-b"], "Matrix B")
+        )
+    except yaml.YAMLError as exc:
+        raise ReleaseVerificationError("Matrix B stdout is invalid YAML") from exc
+    expected_matrix_b = {
+        "findings": [],
+        "provider_count": 13,
+        "provider_ready": True,
+        "schema_version": "mingli-provider-completeness-audit-v1",
+    }
+    if matrix_b_payload != expected_matrix_b:
+        _fail("Matrix B machine output is not exactly 13/13 ready")
+
+    expected_section = {
+        "executed_in_image_id": image_id,
+        "generator_input_fingerprint": EXPECTED_GENERATOR_INPUT_FINGERPRINT,
+        "input_binding_command_ids": [
+            "matrix-input-before",
+            "matrix-input-after",
+        ],
+        "matrix_path": "evidence/provider-completeness.yaml",
+        "matrix_sha256": EXPECTED_PROVIDER_MATRIX_SHA256,
+        "run_id": run_id,
+        "runs": [
+            {
+                "command_id": "release-regression",
+                "elapsed_seconds": matrix_a_elapsed,
+                "target": MATRIX_TARGET,
+                "test_count": 2,
+                "timeout_seconds": EXPECTED_RELEASE_REGRESSION_TIMEOUT_SECONDS,
+            },
+            {
+                "command_id": "provider-matrix-b",
+                "elapsed_seconds": commands["provider-matrix-b"]["elapsed_seconds"],
+                "provider_count": 13,
+                "timeout_seconds": EXPECTED_PROVIDER_MATRIX_TIMEOUT_SECONDS,
+            },
+        ],
+        "source_commit": EXPECTED_RELEASE["source_commit"],
+        "status": "passed",
+    }
+    if section != expected_section:
+        _fail("Provider Matrix A/B report binding is not exact")
+
+
 def _verify_production_evidence(
     evidence_path: Path,
     *,
     artifacts_root: Path,
     image_id: str,
+    run_id: str,
     commands: Mapping[str, Mapping[str, Any]],
     report: Mapping[str, Any],
 ) -> None:
@@ -2116,6 +2285,8 @@ def _verify_production_evidence(
         _fail("production image evidence generator mismatch")
     if production.get("image_id") != image_id:
         _fail("production image evidence image identity mismatch")
+    if production.get("run_id") != run_id:
+        _fail("production image evidence run identity mismatch")
     raw_commands = production.get("commands")
     if not isinstance(raw_commands, list):
         _fail("production image evidence command list is missing")
@@ -2147,6 +2318,7 @@ def _verify_production_evidence(
         _fail("production image evidence file inventory is missing")
     expected_files = {
         "evidence/dependency-provenance.json",
+        "evidence/provider-completeness.yaml",
         "evidence/release-manifest.json",
         "evidence/runtime-integrity.json",
         "evidence/runtime-inventory.json",
@@ -2171,6 +2343,7 @@ def _verify_production_evidence(
         "p0_trajectories",
         "probes",
         "provider_matrix",
+        "release_regression",
         "target",
     ):
         if production.get(field) != report.get(field):
@@ -3185,6 +3358,9 @@ def validate_audit_report(
         is None
     ):
         _fail("audit completion timestamp is invalid")
+    run_id = audit.get("run_id")
+    if not isinstance(run_id, str) or RUN_ID_RE.fullmatch(run_id) is None:
+        _fail("audit run identity is malformed or absent")
     commands = _command_map(
         audit.get("commands"),
         artifacts_root=artifacts_root,
@@ -3315,9 +3491,31 @@ def validate_audit_report(
         production_evidence_path,
         artifacts_root=artifacts_root,
         image_id=image_id,
+        run_id=run_id,
         commands=commands,
         report=report,
     )
+    matrix_binding_argv = (
+        runtime_path,
+        "-B",
+        audit_script,
+        "--emit-matrix-input-binding",
+        "--source-root",
+        source_root,
+    )
+    for command_id in ("matrix-input-before", "matrix-input-after"):
+        _require_command(
+            commands,
+            command_id,
+            argv=matrix_binding_argv,
+            cwd=source_root,
+            image_id=image_id,
+        )
+        _require_command_budget(
+            commands[command_id],
+            expected_timeout_seconds=EXPECTED_MATRIX_BINDING_TIMEOUT_SECONDS,
+            label=command_id,
+        )
     matrix_argv = (
         runtime_path,
         "-B",
@@ -3338,22 +3536,14 @@ def validate_audit_report(
         expected_timeout_seconds=EXPECTED_PROVIDER_MATRIX_TIMEOUT_SECONDS,
         label="provider-matrix-b",
     )
-    expected_matrix_runs = [
-        {
-            "command_id": command_id,
-            "elapsed_seconds": commands[command_id]["elapsed_seconds"],
-            "timeout_seconds": timeout_seconds,
-        }
-        for command_id, timeout_seconds in (
-            ("release-regression", EXPECTED_RELEASE_REGRESSION_TIMEOUT_SECONDS),
-            ("provider-matrix-b", EXPECTED_PROVIDER_MATRIX_TIMEOUT_SECONDS),
-        )
-    ]
-    if report.get("provider_matrix") != {
-        "runs": expected_matrix_runs,
-        "status": "passed",
-    }:
-        _fail("provider matrix elapsed/budget evidence is not exact")
+    _verify_provider_matrix(
+        report.get("provider_matrix"),
+        evidence,
+        commands,
+        artifacts_root=artifacts_root,
+        image_id=image_id,
+        run_id=run_id,
+    )
     characterization_argv = (
         runtime_path,
         "-B",

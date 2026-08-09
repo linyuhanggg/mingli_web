@@ -1464,6 +1464,8 @@ def run_gate(args: argparse.Namespace) -> Path:
                 "/production-output",
                 "--image-id",
                 image_id,
+                "--run-id",
+                run_id,
             ]
             _require_writable_runtime_overlay(
                 production_argv,
@@ -1528,6 +1530,8 @@ def run_gate(args: argparse.Namespace) -> Path:
                 image_id,
                 "--audit-image-id",
                 audit_image_id,
+                "--run-id",
+                run_id,
             ]
             _require_writable_runtime_overlay(
                 audit_argv,
