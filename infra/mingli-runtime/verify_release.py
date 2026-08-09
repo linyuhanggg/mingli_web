@@ -26,8 +26,6 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path, PurePosixPath
 from typing import Any, NoReturn
 
-import yaml
-
 MANIFEST_NAME = ".mingli-release-manifest.json"
 EXPECTED_RELEASE = {
     "name": "mingli-master-portable-core",
@@ -2162,6 +2160,12 @@ def _verify_provider_matrix(
     image_id: str,
     run_id: str,
 ) -> None:
+    try:
+        import yaml
+    except ImportError as exc:
+        raise ReleaseVerificationError(
+            "PyYAML is unavailable for Provider matrix verification"
+        ) from exc
     matrix_path = _verify_artifact_digest(
         artifacts_root,
         evidence.get("provider_matrix_path"),

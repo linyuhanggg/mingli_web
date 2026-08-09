@@ -74,6 +74,17 @@ def load_verifier() -> ModuleType:
     return module
 
 
+def test_release_only_verifier_bootstraps_before_third_party_packages() -> None:
+    completed = subprocess.run(
+        [sys.executable, "-I", "-S", str(VERIFY_PATH), "--help"],
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+
+
 def load_module(path: Path, name: str) -> ModuleType:
     assert path.is_file(), f"required Linux Runtime tool is absent: {path.name}"
     spec = importlib.util.spec_from_file_location(name, path)
