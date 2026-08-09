@@ -90,13 +90,12 @@ it("bootstraps through the shared API, defaults to email, and locks the phone en
   expect(emailInput).toBeVisible();
   expect(emailInput).toHaveAttribute("spellcheck", "false");
 
-  const group = screen.getByRole("group", { name: "验证码方式" });
-  expect(
-    within(group).getByRole("button", { name: "邮箱验证码" }),
-  ).toHaveAttribute("aria-pressed", "true");
-  expect(within(group).queryByRole("button", { name: /手机号/ })).not.toBeInTheDocument();
-  expect(within(group).getByText("手机号验证码")).toBeVisible();
-  expect(within(group).getByText("稍后开放")).toBeVisible();
+  const methods = screen.getByRole("list", { name: "登录方式" });
+  expect(within(methods).getByText("邮箱验证码")).toBeVisible();
+  expect(within(methods).getByText("当前开放")).toBeVisible();
+  expect(within(methods).getByText("手机号验证码")).toBeVisible();
+  expect(within(methods).getByText("稍后开放")).toBeVisible();
+  expect(within(methods).queryByRole("button")).not.toBeInTheDocument();
 });
 
 it("explains that the first verification creates the account and an existing email signs in", async () => {
@@ -170,6 +169,9 @@ it("resends a code to the same email without leaving the code entry", async () =
     channel: "email",
     destination: "user@example.com",
   });
+  expect(
+    screen.getByText("验证码已重新发送至 user@example.com。可以重新发送，或更换邮箱。"),
+  ).toHaveAttribute("role", "status");
   expect(screen.getByRole("textbox", { name: "六位验证码" })).toBeInTheDocument();
 });
 

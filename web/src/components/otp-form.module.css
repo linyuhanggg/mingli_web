@@ -28,11 +28,13 @@
   color: var(--ink-900);
 }
 
-.tabs {
+.methods {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
   margin: 1rem 0;
+  padding: 0;
+  list-style: none;
 }
 
 .intro {
@@ -42,30 +44,43 @@
   line-height: 1.55;
 }
 
-.tabLocked {
+.methodActive,
+.methodLocked {
   display: grid;
   gap: 0.15rem;
   place-items: center;
   align-content: center;
   min-height: 2.75rem;
   padding-inline: 0.75rem;
-  border: 1px dashed var(--border-control);
   border-radius: var(--radius-sm);
-  background: var(--ivory-100);
-  color: var(--ink-500);
-  cursor: not-allowed;
   text-align: center;
   font-size: 0.88rem;
-  font-weight: 700;
 }
 
-.comingSoon {
+.methodActive {
+  border: 1px solid var(--ink-900);
+  background: var(--ink-900);
+  color: var(--ivory-50);
+}
+
+.methodLocked {
+  border: 1px dashed var(--border-control);
+  background: var(--ivory-100);
+  color: var(--ink-500);
+}
+
+.methodActive strong,
+.methodLocked strong {
+  font-weight: 750;
+}
+
+.methodActive span,
+.methodLocked span {
   font-size: 0.72rem;
   font-weight: 650;
   letter-spacing: 0.08em;
 }
 
-.tabs button,
 .submit {
   min-height: 2.75rem;
   border: 1px solid var(--border-control);
@@ -74,12 +89,6 @@
   color: var(--ink-900);
   cursor: pointer;
   font-weight: 750;
-}
-
-.tabs button[aria-pressed="true"] {
-  border-color: var(--ink-900);
-  background: var(--ink-900);
-  color: var(--ivory-50);
 }
 
 .field {
@@ -156,26 +165,22 @@
 }
 
 .submit:disabled,
-.tabs button:disabled,
 .secondary:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
 
-.tabs button,
 .submit,
 .secondary {
   transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
 
-.tabs button:not(:disabled):hover,
 .submit:not(:disabled):hover,
 .secondary:not(:disabled):hover {
   transform: translateY(-2px);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tabs button,
   .submit,
   .secondary {
     transition: none;

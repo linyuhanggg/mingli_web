@@ -85,6 +85,7 @@ export function OtpForm() {
   const [csrfToken, setCsrfToken] = useState("");
   const [challenge, setChallenge] = useState<OtpChallenge | null>(null);
   const [submittedDestination, setSubmittedDestination] = useState("");
+  const [deliveryAttempt, setDeliveryAttempt] = useState(0);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [bootstrapAttempt, setBootstrapAttempt] = useState(0);
@@ -144,6 +145,7 @@ export function OtpForm() {
         }),
       });
       setSubmittedDestination(trimmedDestination);
+      setDeliveryAttempt((attempt) => attempt + 1);
       setChallenge(requested);
       codeForm.reset({ code: "" });
       setPhase("code");
@@ -166,6 +168,7 @@ export function OtpForm() {
   function changeDestination() {
     setChallenge(null);
     setSubmittedDestination("");
+    setDeliveryAttempt(0);
     codeForm.reset({ code: "" });
     setError("");
     setPhase("destination");
@@ -239,25 +242,20 @@ export function OtpForm() {
       <p className={styles.intro}>
         邮箱是默认登录方式：首次验证自动创建账户，已有邮箱直接登录。手机号入口稍后开放。
       </p>
-      <div
-        className={styles.tabs}
-        role="group"
-        aria-label="验证码方式"
+      <ul
+        className={styles.methods}
+        aria-label="登录方式"
         hidden={phase === "unavailable"}
       >
-        <button
-          type="button"
-          aria-pressed="true"
-          disabled={phase === "bootstrapping" || busy}
-          onClick={changeDestination}
-        >
-          邮箱验证码
-        </button>
-        <span className={styles.tabLocked} aria-disabled="true">
-          <span>手机号验证码</span>
-          <span className={styles.comingSoon}>稍后开放</span>
-        </span>
-      </div>
+        <li className={styles.methodActive}>
+          <strong>邮箱验证码</strong>
+          <span>当前开放</span>
+        </li>
+        <li className={styles.methodLocked}>
+          <strong>手机号验证码</strong>
+          <span>稍后开放</span>
+        </li>
+      </ul>
 
       {phase === "destination" || phase === "bootstrapping" ? (
         <form
@@ -308,8 +306,9 @@ export function OtpForm() {
           {challenge.development_code ? (
             <p className={styles.hint}>本地测试验证码：{challenge.development_code}</p>
           ) : null}
-          <p className={styles.codeMeta}>
-            验证码已发送至 {submittedDestination}。可以重新发送，或更换邮箱。
+          <p className={styles.codeMeta} role="status" aria-live="polite">
+            验证码{deliveryAttempt > 1 ? "已重新发送" : "已发送"}至{" "}
+            {submittedDestination}。可以重新发送，或更换邮箱。
           </p>
           <div className={styles.field}>
             <label htmlFor="otp-code">六位验证码</label>
