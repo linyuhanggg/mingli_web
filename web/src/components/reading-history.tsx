@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import {
+  ApiError,
   listReadings,
   type ReadingVersionSummary,
 } from "@/lib/api";
@@ -64,6 +65,7 @@ export function ReadingHistory() {
   const [loading, setLoading] = useState(true);
   const [readings, setReadings] = useState<ReadingVersionSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
@@ -77,7 +79,9 @@ export function ReadingHistory() {
         setReadings(next);
       })
       .catch((err: unknown) => {
-        if (!cancelled) {
+        if (!cancelled && err instanceof ApiError && err.status === 401) {
+          setSessionExpired(true);
+        } else if (!cancelled) {
           setError(errorMessage(err));
         }
       })
@@ -95,6 +99,7 @@ export function ReadingHistory() {
   function handleRetry() {
     setLoading(true);
     setError(null);
+    setSessionExpired(false);
     setReadings(null);
     setAttempt((value) => value + 1);
   }
@@ -117,6 +122,23 @@ export function ReadingHistory() {
           <button className={surface.secondaryButton} type="button" onClick={handleRetry}>
             重试
           </button>
+        </div>
+      </>
+    );
+  }
+
+  if (sessionExpired) {
+    return (
+      <>
+        <StatusPanel
+          state="error"
+          title="登录已过期"
+          description="登录状态已失效，历史暂时无法读取；重新登录后可回到这里。"
+        />
+        <div className={styles.retryRow}>
+          <Link className={surface.secondaryButton} href="/account">
+            重新登录
+          </Link>
         </div>
       </>
     );

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { listProfiles, type ProfileSummary } from "@/lib/api";
+import { ApiError, listProfiles, type ProfileSummary } from "@/lib/api";
 
 import surface from "./app-surface.module.css";
 import { StatusPanel } from "./status-panel";
@@ -32,6 +32,7 @@ export function ProfileArchive() {
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<ProfileSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
@@ -45,7 +46,9 @@ export function ProfileArchive() {
         setProfiles(next);
       })
       .catch((err: unknown) => {
-        if (!cancelled) {
+        if (!cancelled && err instanceof ApiError && err.status === 401) {
+          setSessionExpired(true);
+        } else if (!cancelled) {
           setError(errorMessage(err));
         }
       })
@@ -63,6 +66,7 @@ export function ProfileArchive() {
   function handleRetry() {
     setLoading(true);
     setError(null);
+    setSessionExpired(false);
     setProfiles(null);
     setAttempt((value) => value + 1);
   }
@@ -85,6 +89,23 @@ export function ProfileArchive() {
           <button className={surface.secondaryButton} type="button" onClick={handleRetry}>
             重试
           </button>
+        </div>
+      </>
+    );
+  }
+
+  if (sessionExpired) {
+    return (
+      <>
+        <StatusPanel
+          state="error"
+          title="登录已过期"
+          description="登录状态已失效，档案暂时无法读取；重新登录后可回到这里。"
+        />
+        <div className={styles.retryRow}>
+          <Link className={surface.secondaryButton} href="/account">
+            重新登录
+          </Link>
         </div>
       </>
     );

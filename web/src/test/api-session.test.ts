@@ -3,7 +3,9 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import {
   adoptCsrfToken,
   createProfileDraft,
+  getAccount,
   getCsrfToken,
+  logoutCurrentDevice,
   resetApiCache,
 } from "@/lib/api";
 
@@ -156,5 +158,97 @@ it("sends the adopted device CSRF on authenticated calls without a second Guest"
   });
   expect(new Headers(requestInit?.headers).get("X-CSRF-Token")).toBe(
     "device-csrf-token-with-at-least-32-characters",
+  );
+});
+
+it("fetches the account with the session cookie and returns the server identity summary", async () => {
+  const fetchMock = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(
+      jsonResponse({
+        user_id: "2ec4dc6c-3e6e-4aef-ae3b-c900b3f1d239",
+        identities: [
+          {
+            id: "11111111-1111-4111-8111-111111111111",
+            provider: "email",
+            masked_destination: "y***@example.com",
+            verified_at: "2026-08-09T00:00:00Z",
+          },
+        ],
+      }),
+    );
+  vi.stubGlobal("fetch", fetchMock);
+
+  const account = await getAccount();
+
+  expect(account.user_id).toBe("2ec4dc6c-3e6e-4aef-ae3b-c900b3f1d239");
+  expect(account.identities[0]?.masked_destination).toBe("y***@example.com");
+  expect(fetchMock).toHaveBeenCalledWith(
+    "/api/v1/account",
+    expect.objectContaining({ credentials: "include" }),
+  );
+});
+
+it("turns a missing device session into an ApiError with status 401", async () => {
+  const fetchMock = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(
+      jsonResponse({ title: "Authentication required" }, 401),
+    );
+  vi.stubGlobal("fetch", fetchMock);
+
+  await expect(getAccount()).rejects.toMatchObject({
+    name: "ApiError",
+    status: 401,
+  });
+});
+
+it("logs out the current device with the device CSRF and tolerates the empty 204 response", async () => {
+  const fetchMock = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(new Response(null, { status: 204 }));
+  vi.stubGlobal("fetch", fetchMock);
+  adoptCsrfToken("device-csrf-token-with-at-least-32-characters");
+
+  await expect(logoutCurrentDevice()).resolves.toBeUndefined();
+
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  const [url, requestInit] = fetchMock.mock.calls[0]!;
+  expect(url).toBe("/api/v1/auth/logout");
+  expect(requestInit).toMatchObject({
+    method: "POST",
+    credentials: "include",
+  });
+  expect(new Headers(requestInit?.headers).get("X-CSRF-Token")).toBe(
+    "device-csrf-token-with-at-least-32-characters",
+  );
+});
+
+it("clears the API cache after logout so the next call creates a fresh Guest", async () => {
+  const fetchMock = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(new Response(null, { status: 204 }))
+    .mockResolvedValueOnce(
+      jsonResponse(
+        {
+          status: "active",
+          expires_at: "2026-08-10T00:00:00Z",
+          csrf_token: "fresh-guest-csrf-token-after-logout",
+        },
+        201,
+      ),
+    );
+  vi.stubGlobal("fetch", fetchMock);
+  adoptCsrfToken("device-csrf-token-with-at-least-32-characters");
+
+  await logoutCurrentDevice();
+
+  await expect(getCsrfToken()).resolves.toBe(
+    "fresh-guest-csrf-token-after-logout",
+  );
+  expect(fetchMock).toHaveBeenNthCalledWith(
+    2,
+    "/api/v1/guest-sessions",
+    expect.objectContaining({ method: "POST" }),
   );
 });

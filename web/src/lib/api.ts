@@ -173,6 +173,18 @@ export type ReadingListResponse = {
   readings: ReadingVersionSummary[];
 };
 
+export type LoginIdentitySummary = {
+  id: string;
+  provider: "phone" | "email";
+  masked_destination: string;
+  verified_at: string;
+};
+
+export type AccountResponse = {
+  user_id: string;
+  identities: LoginIdentitySummary[];
+};
+
 type ProblemBody = {
   title?: string;
   detail?: string;
@@ -217,6 +229,10 @@ async function requestJson<T>(url: string, options: RequestInit = {}): Promise<T
       response.status,
       body?.detail,
     );
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
   }
 
   if (!body) {
@@ -360,6 +376,15 @@ export async function listProfiles(): Promise<{ profiles: ProfileSummary[] }> {
 export async function listReadings(): Promise<ReadingListResponse> {
   await getCsrfToken();
   return requestJson<ReadingListResponse>("/api/v1/readings");
+}
+
+export async function getAccount(): Promise<AccountResponse> {
+  return requestJson<AccountResponse>("/api/v1/account");
+}
+
+export async function logoutCurrentDevice(): Promise<void> {
+  await jsonPost<void>("/api/v1/auth/logout", {});
+  resetApiCache();
 }
 
 export async function startPreviewReading(

@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, vi } from "vitest";
@@ -169,10 +172,59 @@ it("resends a code to the same email without leaving the code entry", async () =
     channel: "email",
     destination: "user@example.com",
   });
-  expect(
-    screen.getByText("验证码已重新发送至 user@example.com。可以重新发送，或更换邮箱。"),
-  ).toHaveAttribute("role", "status");
+  const meta = screen.getByText(
+    "验证码已重新发送（第 2 次）至 user@example.com。可以重新发送，或更换邮箱。",
+  );
+  expect(meta).toHaveAttribute("role", "status");
+  expect(meta).not.toHaveAttribute("aria-live");
   expect(screen.getByRole("textbox", { name: "六位验证码" })).toBeInTheDocument();
+});
+
+it("changes the resend copy on every resend and keeps the live status announcement", async () => {
+  const fetchMock = guestWithRequestFlow()
+    .mockResolvedValueOnce(
+      jsonResponse(
+        {
+          challenge_id: "77cfa29c-4a51-4d3a-9c7e-8b4f6a3bf21d",
+          expires_at: "2026-08-09T00:06:00Z",
+          retry_after_seconds: 60,
+          development_code: "246810",
+        },
+        202,
+      ),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse(
+        {
+          challenge_id: "88d1b30d-6a62-4e4b-9d8f-9c5f7a4c3e22",
+          expires_at: "2026-08-09T00:07:00Z",
+          retry_after_seconds: 60,
+          development_code: "246810",
+        },
+        202,
+      ),
+    );
+  vi.stubGlobal("fetch", fetchMock);
+  const user = userEvent.setup();
+
+  render(<OtpForm />);
+  await reachCodePhase(fetchMock, user);
+
+  await user.click(screen.getByRole("button", { name: "重新发送验证码" }));
+  await screen.findByText(
+    "验证码已重新发送（第 2 次）至 user@example.com。可以重新发送，或更换邮箱。",
+  );
+  expect(
+    screen.queryByText(/验证码已发送至/),
+  ).not.toBeInTheDocument();
+
+  await user.click(screen.getByRole("button", { name: "重新发送验证码" }));
+  await screen.findByText(
+    "验证码已重新发送（第 3 次）至 user@example.com。可以重新发送，或更换邮箱。",
+  );
+  expect(
+    screen.queryByText(/第 2 次/),
+  ).not.toBeInTheDocument();
 });
 
 it("lets the user change the email and clears the pending challenge", async () => {
@@ -311,4 +363,39 @@ it("renders an OTP request failure next to the destination field", async () => {
 
   expect(await screen.findByText("请求过于频繁，请稍后重试")).toBeVisible();
   expect(input.getAttribute("aria-describedby")).toContain("otp-destination-error");
+});
+
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Returns the body of the first rule matching a selector outside other rules. */
+function ruleFor(css: string, selector: string): string {
+  const matcher = new RegExp(
+    `(?:^|[^\\w-])${escapeRegExp(selector)}\\s*\\{([^}]*)\\}`,
+    "m",
+  );
+  return matcher.exec(css)?.[1] ?? "";
+}
+
+describe("otp form a11y css contract", () => {
+  const css = readFileSync(
+    path.join(import.meta.dirname, "../components/otp-form.module.css"),
+    "utf8",
+  );
+
+  it("keeps the methods list truly hidden when the security session is unavailable", () => {
+    const hidden = ruleFor(css, ".methods[hidden]");
+    expect(hidden).toContain("display: none");
+  });
+
+  it("uses the readable ink-700 token for the locked phone entry instead of faded ink-500", () => {
+    const locked =
+      [...css.matchAll(/\.methodLocked\s*\{([^}]*)\}/g)]
+        .map((m) => m[1])
+        .find((body) => /(^|\n)\s*color\s*:/.test(body)) ?? "";
+    expect(locked).toContain("var(--ink-700)");
+    expect(locked).not.toContain("var(--ink-500)");
+  });
 });

@@ -1,4 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
+import { afterEach, beforeEach, vi } from "vitest";
 
 import AccountPage from "@/app/account/page";
 import MethodologyPage from "@/app/methodology/page";
@@ -6,6 +7,46 @@ import PricingPage from "@/app/pricing/page";
 import PrivacyPage from "@/app/privacy/page";
 import SupportPage from "@/app/support/page";
 import TermsPage from "@/app/terms/page";
+
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    replace: vi.fn(),
+    push: vi.fn(),
+    prefetch: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+  }),
+}));
+
+
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+beforeEach(() => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn<typeof fetch>(async (input) => {
+      const url = String(input);
+      if (url.includes("/api/v1/guest-sessions")) {
+        return jsonResponse({ csrf_token: "stub-csrf-token" });
+      }
+      if (url.includes("/api/v1/account")) {
+        return jsonResponse({ title: "Authentication required" }, 401);
+      }
+      return jsonResponse({ title: "Not Found" }, 404);
+    }),
+  );
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 
 describe("public contract pages", () => {

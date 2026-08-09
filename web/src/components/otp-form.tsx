@@ -306,9 +306,11 @@ export function OtpForm() {
           {challenge.development_code ? (
             <p className={styles.hint}>本地测试验证码：{challenge.development_code}</p>
           ) : null}
-          <p className={styles.codeMeta} role="status" aria-live="polite">
-            验证码{deliveryAttempt > 1 ? "已重新发送" : "已发送"}至{" "}
-            {submittedDestination}。可以重新发送，或更换邮箱。
+          <p className={styles.codeMeta} role="status">
+            {deliveryAttempt > 1
+              ? `验证码已重新发送（第 ${deliveryAttempt} 次）至 ${submittedDestination}。`
+              : `验证码已发送至 ${submittedDestination}。`}
+            可以重新发送，或更换邮箱。
           </p>
           <div className={styles.field}>
             <label htmlFor="otp-code">六位验证码</label>

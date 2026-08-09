@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import ReadingsPage from "@/app/app/readings/page";
 import ProfilesPage from "@/app/app/profiles/page";
+import { ApiError } from "@/lib/api";
 
 
 const api = vi.hoisted(() => ({
@@ -10,7 +11,14 @@ const api = vi.hoisted(() => ({
   listReadings: vi.fn(),
 }));
 
-vi.mock("@/lib/api", () => api);
+vi.mock("@/lib/api", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/api")>();
+  return {
+    ...actual,
+    listProfiles: api.listProfiles,
+    listReadings: api.listReadings,
+  };
+});
 
 
 const profileVersionId = "22222222-2222-4222-8222-222222222222";
@@ -125,6 +133,21 @@ describe("ProfilesPage", () => {
     );
     expect(api.listProfiles).toHaveBeenCalledTimes(2);
   });
+
+  it("treats a 401 as an expired session with a re-login link instead of only retry", async () => {
+    api.listProfiles.mockRejectedValue(
+      new ApiError("Authentication required", 401),
+    );
+
+    render(<ProfilesPage />);
+
+    expect(await screen.findByText("登录已过期")).toBeVisible();
+    expect(screen.getByRole("link", { name: "重新登录" })).toHaveAttribute(
+      "href",
+      "/account",
+    );
+    expect(screen.queryByRole("button", { name: "重试" })).not.toBeInTheDocument();
+  });
 });
 
 describe("ReadingsPage", () => {
@@ -203,6 +226,21 @@ describe("ReadingsPage", () => {
       expect(screen.getByRole("link", { name: /日运与周运/ })).toBeInTheDocument(),
     );
     expect(api.listReadings).toHaveBeenCalledTimes(2);
+  });
+
+  it("treats a 401 as an expired session with a re-login link instead of only retry", async () => {
+    api.listReadings.mockRejectedValue(
+      new ApiError("Authentication required", 401),
+    );
+
+    render(<ReadingsPage />);
+
+    expect(await screen.findByText("登录已过期")).toBeVisible();
+    expect(screen.getByRole("link", { name: "重新登录" })).toHaveAttribute(
+      "href",
+      "/account",
+    );
+    expect(screen.queryByRole("button", { name: "重试" })).not.toBeInTheDocument();
   });
 
   it("lists only public fields and never leaks prior_answer, input_request or tokens", async () => {

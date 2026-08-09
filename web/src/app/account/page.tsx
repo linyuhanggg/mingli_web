@@ -1,6 +1,7 @@
 import { Database, KeyRound, Mail, ReceiptText } from "lucide-react";
 
 import { AppPageHeader } from "@/components/app-page-header";
+import AccountSessionControl from "@/components/account-session-control";
 import styles from "@/components/app-surface.module.css";
 import { OtpForm } from "@/components/otp-form";
 import { StatusPanel } from "@/components/status-panel";
@@ -11,7 +12,7 @@ export default function AccountPage() {
     <main id="main-content" tabIndex={-1} className={styles.page}>
       <AppPageHeader
         title="邮箱是你的默认登录入口。"
-        description="首次邮箱验证自动注册账户，已有邮箱直接登录。当前是 Fake 环境，不会真的发送邮件；手机号登录稍后开放。"
+        description="首次邮箱验证自动注册账户，已有邮箱直接登录。当前公开测试预览显示测试码；真实邮件启用后不显示。手机号登录稍后开放。"
         meta={
           <>
             <span><Mail aria-hidden="true" size={15} /> 邮箱验证为主</span>
@@ -50,7 +51,7 @@ export default function AccountPage() {
           </div>
         </div>
         <div className={styles.accountGrid}>
-          <StatusPanel state="disabled" title="身份与设备" description="登录并取得当前账号状态后，才能查看已绑定身份与撤销其他设备会话。" />
+          <AccountSessionControl />
           <StatusPanel state="disabled" title="订单与退款" description="真实支付尚未开放；这里不会展示虚构订单、渠道或已付款状态。" />
           <StatusPanel state="disabled" title="导出数据" description="导出任务需服务端授权与短时下载地址，当前不可用。" />
           <StatusPanel state="disabled" title="删除与撤回" description="账号删除、档案删除与撤回非必要同意都需服务端审计流程。" />

@@ -37,6 +37,10 @@
   list-style: none;
 }
 
+.methods[hidden] {
+  display: none;
+}
+
 .intro {
   margin: 0.9rem 0 0;
   color: var(--ink-700);
@@ -66,7 +70,7 @@
 .methodLocked {
   border: 1px dashed var(--border-control);
   background: var(--ivory-100);
-  color: var(--ink-500);
+  color: var(--ink-700);
 }
 
 .methodActive strong,
