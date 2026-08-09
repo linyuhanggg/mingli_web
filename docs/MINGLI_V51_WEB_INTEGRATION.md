@@ -369,7 +369,11 @@ stateDiagram-v2
 
 这里存在一个不能靠网站事务消除的窗口：无 token `prepare` 已在 Runtime 成功创建 Root，但宿主在收到响应或把 Prepared token 提交到 PostgreSQL 前崩溃，可能留下无法关联的孤儿 Runtime Root。这个窗口不具备 exactly-once 语义，也不得给 5.1 私加请求幂等含义来掩盖。P0 通过调用超时、Runtime 单副本、禁止自动重放，以及孤儿 Root 审计和清理流程控制风险；只有 Prepared token 已提交后，后续阶段才能按持久化 checkpoint 安全恢复。
 
+领取层必须把这个边界真正 fail closed：首次 `INPUT_READY` claim 过期且仍没有 Prepared/Stopped checkpoint 时，领取事务直接把 Job 与 Reading Version 标成 `runtime_unknown`、清除租约并且不返回 work item。数据库无法区分“调用前已崩溃”和“Runtime 已建 Root、提交前崩溃”，所以 P0 保守地把两者都判为 unknown；人工审计前绝不再次发送无 token Prepare。
+
 `complete` 不同：同一 token、同一候选稿可安全重放，核心会返回第一次接纳的正文。
+
+Complete 传输结果未知时，本次阶段返回带非零 `retry_not_before` 的 `COMPLETING`。Worker 清租约后按该时间重新入队，不能立刻 claim/requeue 形成热循环；到时后仍只用已持久化的同一 token 和逐字节同一 copy 重放。
 
 ## 9. 单独大模型的调用合同
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Protocol, cast
 
 from app.readings.errors import (
@@ -70,6 +70,7 @@ class ReadingOutcome:
     public_copy: str | None = None
     input_request: Mapping[str, object] | None = None
     stopped_reason: str | None = None
+    retry_not_before: datetime | None = None
 
 
 class Clock(Protocol):
@@ -173,6 +174,11 @@ class ReadingOrchestrator:
     guard: NarrativeGuardPort
     assembler: PublicCopyAssemblerPort
     clock: Clock
+    complete_transport_backoff: timedelta = timedelta(seconds=5)
+
+    def __post_init__(self) -> None:
+        if self.complete_transport_backoff <= timedelta(0):
+            raise ValueError("Complete transport backoff must be positive")
 
     async def run(self, job_id: str) -> ReadingOutcome:
         job = await self.repository.load_job(job_id)
@@ -323,7 +329,10 @@ class ReadingOrchestrator:
         except RuntimeTransportError:
             # The completion intent is already durable. Requeue this stage so
             # the next transaction replays the exact token and copy once.
-            return ReadingOutcome(status=ReadingStatus.COMPLETING)
+            return ReadingOutcome(
+                status=ReadingStatus.COMPLETING,
+                retry_not_before=(self.clock.now() + self.complete_transport_backoff),
+            )
 
         if isinstance(result, Accepted):
             if result.state_token != prepared.state_token:

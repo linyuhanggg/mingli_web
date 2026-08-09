@@ -29,6 +29,6 @@
 
 ## Runtime 恢复边界
 
-Worker 每次事务只推进一个持久化阶段：Prepare 后提交 Prepared、一次模型尝试后提交 attempt（成功时与 exact completion intent 原子提交）、Complete 后提交 Accepted。已提交的 token、attempt 和 completion intent 可在租约重领后恢复。
+Worker 每次事务只推进一个持久化阶段：Prepare 后提交 Prepared、一次模型尝试后提交 attempt（成功时与 exact completion intent 原子提交）、Complete 后提交 Accepted。已提交的 token、attempt 和 completion intent 可在租约重领后恢复。Complete 传输未知必须携带非零 `retry_not_before`，不能立即重领形成热循环。
 
-无 token `prepare` 仍有不可消除的提交前窗口：Runtime 可能已经创建 Root，而宿主在响应到达或 Prepared 提交前崩溃，留下孤儿 Runtime Root。此处不宣称 exactly-once，也不自动重放无 token Prepare。上线前必须落实调用超时、Runtime 单副本、孤儿审计与清理手册；未知结果进入 `runtime_unknown`。
+无 token `prepare` 仍有不可消除的提交前窗口：Runtime 可能已经创建 Root，而宿主在响应到达或 Prepared 提交前崩溃，留下孤儿 Runtime Root。此处不宣称 exactly-once，也不自动重放无 token Prepare。首次 `INPUT_READY` claim 若过期且没有 checkpoint，领取层会保守地标记 `runtime_unknown` 并拒绝重领，即使实际崩溃发生在调用前。上线前必须落实调用超时、Runtime 单副本、孤儿审计与清理手册。

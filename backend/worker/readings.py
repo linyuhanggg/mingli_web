@@ -13,7 +13,7 @@ from app.adapters.model import FakeModelGateway
 from app.adapters.runtime import FakeMingliRuntimeAdapter
 from app.config import Settings, get_settings
 from app.database import Database
-from app.readings.models import ReadingJobRecord
+from app.readings.models import ReadingJobRecord, ReadingVersion
 from app.readings.narrative_guard import NarrativeGuard
 from app.readings.orchestrator import (
     NarrativeModelPort,
@@ -117,6 +117,26 @@ class ReadingJobWorkSource:
             job = await session.scalar(reading_job_claim_statement(now))
             if job is None:
                 return None
+            expired_claim = job.status == "claimed"
+            if expired_claim:
+                version = await session.get(
+                    ReadingVersion,
+                    job.reading_version_id,
+                    with_for_update=True,
+                )
+                if version is None:
+                    raise RuntimeError("Reading Job points to a missing Reading Version")
+                if version.status == ReadingStatus.INPUT_READY.value:
+                    # Once the first claim has expired, the database cannot
+                    # distinguish a pre-call crash from a Runtime-side Root
+                    # created before the Prepared checkpoint committed.
+                    version.status = ReadingStatus.RUNTIME_UNKNOWN.value
+                    job.status = "runtime_unknown"
+                    job.lease_owner = None
+                    job.lease_token = None
+                    job.lease_expires_at = None
+                    await session.flush()
+                    return None
             claim_token = uuid4().hex
             job.status = "claimed"
             job.lease_generation += 1
@@ -152,7 +172,19 @@ class ReadingJobProcessor:
                 raise LeaseLostError("Reading Job lease is expired or owned by another Worker")
             outcome = await self.orchestrator_factory(session).run(item.id)
             status = self._job_status(outcome.status)
-            available_at = self.clock.now() if status == "queued" else job.available_at
+            finished_at = self.clock.now()
+            if outcome.retry_not_before is not None:
+                if (
+                    outcome.status is not ReadingStatus.COMPLETING
+                    or status != "queued"
+                    or outcome.retry_not_before <= finished_at
+                ):
+                    raise ValueError(
+                        "retry_not_before must schedule a completing Job in the future"
+                    )
+                available_at = outcome.retry_not_before
+            else:
+                available_at = finished_at if status == "queued" else job.available_at
             finished_id = await session.scalar(
                 update(ReadingJobRecord)
                 .where(

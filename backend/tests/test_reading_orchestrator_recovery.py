@@ -79,6 +79,7 @@ async def test_complete_transport_unknown_replays_identical_token_and_copy() -> 
     assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.COMPLETING
     retry_outcome = await machine.run(job.id)
     assert retry_outcome.status is orchestrator.ReadingStatus.COMPLETING
+    assert retry_outcome.retry_not_before > FixedClock().now()
     assert [command.kind for command in runtime.commands] == ["prepare", "complete"]
 
     outcome = await machine.run(job.id)

@@ -447,6 +447,8 @@ Each Worker transaction advances exactly one durable orchestration stage. Prepar
 
 Do not claim exactly-once for an initial no-token Prepare: if the Runtime succeeds before the response or Prepared checkpoint commits, the Runtime may retain an orphan Root. Never retry that unknown call automatically or add an idempotency meaning that 5.1 does not define; control the residual risk with timeouts, a single Runtime replica, and orphan audit/cleanup.
 
+Fail closed at claim recovery: an expired first `INPUT_READY` claim with no committed checkpoint is quarantined as `runtime_unknown` and never returned for automatic processing. This deliberately treats even a pre-call crash as unknown because the database cannot prove that the Runtime did not receive the request. Separately, a Complete transport failure must schedule a non-zero retry delay/not-before signal; normal successful model-to-COMPLETING transitions remain immediately claimable.
+
 **Step 5: Run tests and commit**
 
 ```bash
