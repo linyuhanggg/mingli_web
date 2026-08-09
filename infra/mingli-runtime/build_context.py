@@ -21,7 +21,9 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 MANIFEST_NAME = ".mingli-release-manifest.json"
-EXPECTED_MANIFEST_SHA256 = "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
+EXPECTED_MANIFEST_SHA256 = (
+    "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
+)
 EXPECTED_SOURCE_COMMIT = "494ce0bba174a77800daf9b9c38ce9c9166d9a94"
 EXPECTED_RELEASE_NAME = "mingli-master-portable-core"
 EXPECTED_FILE_COUNT = 217
@@ -178,7 +180,9 @@ def build_context(
         expected_file_count=expected_file_count,
         reject_extras=False,
     )
-    temporary = Path(tempfile.mkdtemp(prefix=f".{destination.name}.", dir=destination.parent))
+    temporary = Path(
+        tempfile.mkdtemp(prefix=f".{destination.name}.", dir=destination.parent)
+    )
     try:
         projected = temporary / "release"
         projected.mkdir(mode=0o755)
@@ -204,7 +208,9 @@ def build_context(
         for filename in CONTEXT_FILES:
             source = infra_root / filename
             if source.is_symlink() or not source.is_file():
-                raise ProjectionError(f"build-context input is missing or unsafe: {filename}")
+                raise ProjectionError(
+                    f"build-context input is missing or unsafe: {filename}"
+                )
             shutil.copyfile(source, temporary / filename, follow_symlinks=False)
             (temporary / filename).chmod(0o644)
         provenance = {

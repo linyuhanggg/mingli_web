@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from __future__ import annotations
 
 import copy
@@ -44,7 +46,9 @@ EXPECTED_RELEASE = {
     "version": "5.1",
     "source_commit": "494ce0bba174a77800daf9b9c38ce9c9166d9a94",
     "release_manifest_file_count": 217,
-    "release_manifest_sha256": ("e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"),
+    "release_manifest_sha256": (
+        "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
+    ),
     "skill_sha256": "ee43ae256f2a39c7bf0fde6714d5ff87af2b654cae2283ee0b6d07566502c378",
     "protocol_version": "mingli-portable-interface-v2",
     "describe_digest": "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342",
@@ -53,7 +57,9 @@ EXPECTED_RELEASE = {
 
 def load_verifier() -> ModuleType:
     assert VERIFY_PATH.is_file(), "Linux Runtime verifier is absent; Gate stays RED"
-    spec = importlib.util.spec_from_file_location("mingli_runtime_verifier", VERIFY_PATH)
+    spec = importlib.util.spec_from_file_location(
+        "mingli_runtime_verifier", VERIFY_PATH
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -70,7 +76,9 @@ def load_module(path: Path, name: str) -> ModuleType:
 
 
 def load_report() -> dict[str, Any]:
-    assert REPORT_PATH.is_file(), "audited Linux release report is absent; Gate stays RED"
+    assert REPORT_PATH.is_file(), (
+        "audited Linux release report is absent; Gate stays RED"
+    )
     value = json.loads(REPORT_PATH.read_text(encoding="utf-8"))
     assert isinstance(value, dict)
     return value
@@ -104,7 +112,9 @@ def test_linux_release_evidence_is_complete_and_fail_closed() -> None:
 
     assert set(report["product_policy"]["p0_provider_ids"]) == P0_PROVIDERS
     assert set(report["characterization"]) == EXPECTED_PROVIDERS
-    assert all(item["status"] == "passed" for item in report["characterization"].values())
+    assert all(
+        item["status"] == "passed" for item in report["characterization"].values()
+    )
     assert all(
         re.fullmatch(r"[0-9a-f]{64}", item["output_sha256"])
         for item in report["characterization"].values()
@@ -148,7 +158,9 @@ def test_linux_release_evidence_is_complete_and_fail_closed() -> None:
     assert dependencies["sxtwl"]["sdist_sha256"] == (
         "38b24472389f7f6f3521c2c99e4b5e86c0184c7d6eb02e5409c239d21f0a6512"
     )
-    assert dependencies["sxtwl"]["wheel_filename"] == ("sxtwl-2.0.7-cp314-cp314-linux_x86_64.whl")
+    assert dependencies["sxtwl"]["wheel_filename"] == (
+        "sxtwl-2.0.7-cp314-cp314-linux_x86_64.whl"
+    )
     assert dependencies["sxtwl"]["wheel_sha256"] == (
         "bd03d0b56d81112d87ad340a3d65458059497dc33496b1938fb23056dfe8ba80"
     )
@@ -171,7 +183,10 @@ def test_three_provider_slim_report_is_rejected() -> None:
 @pytest.mark.parametrize(
     ("mutation", "message"),
     [
-        (lambda report: report["artifact"].__setitem__("sbom_sha256", "0" * 64), "SBOM"),
+        (
+            lambda report: report["artifact"].__setitem__("sbom_sha256", "0" * 64),
+            "SBOM",
+        ),
         (
             lambda report: report["inventory"].__setitem__("evidence_index_count", 1),
             "1328",
@@ -378,7 +393,9 @@ def test_sbom_covers_python_node_and_vendored_iztro() -> None:
     report = load_report()
     sbom = json.loads(SBOM_PATH.read_text(encoding="utf-8"))
     assert sbom["bomFormat"] == "CycloneDX"
-    components = {(item.get("name"), item.get("version")) for item in sbom.get("components", [])}
+    components = {
+        (item.get("name"), item.get("version")) for item in sbom.get("components", [])
+    }
     for expected in (
         ("cpython", "3.14.6"),
         ("node", report["target"]["node_version"]),

@@ -84,7 +84,10 @@ def _characterization_payload(source_root: Path) -> dict[str, Any]:
     ):
         _fail("provider completeness matrix schema mismatch")
     providers = matrix.get("providers")
-    if not isinstance(providers, dict) or set(providers) != verify_release.EXPECTED_PROVIDERS:
+    if (
+        not isinstance(providers, dict)
+        or set(providers) != verify_release.EXPECTED_PROVIDERS
+    ):
         _fail("provider completeness matrix does not contain the exact 13 Provider set")
     result: dict[str, Any] = {}
     for provider_id, entry in sorted(providers.items()):
@@ -96,7 +99,8 @@ def _characterization_payload(source_root: Path) -> dict[str, Any]:
         fixtures = entry.get("fixtures")
         dedicated = entry.get("dedicated_audit")
         if not all(
-            isinstance(value, dict) for value in (live, replay, source, fixtures, dedicated)
+            isinstance(value, dict)
+            for value in (live, replay, source, fixtures, dedicated)
         ):
             _fail(f"provider completeness sub-record is invalid: {provider_id}")
         deterministic_facts = (
@@ -244,7 +248,9 @@ def _probe_launcher_timeout(state_root: Path) -> bool:
                 process.communicate(timeout=2)
         if not timed_out or process.returncode is None:
             return False
-        if not pid_path.is_file() or pid_path.read_text(encoding="utf-8") != str(process.pid):
+        if not pid_path.is_file() or pid_path.read_text(encoding="utf-8") != str(
+            process.pid
+        ):
             return False
         try:
             os.killpg(process.pid, 0)
@@ -401,7 +407,9 @@ def _collect_backup_paths(evidence: Mapping[str, Any]) -> set[str]:
     for snapshot in snapshots.values():
         if not isinstance(snapshot, dict):
             _fail("backup snapshot evidence record is invalid")
-        paths.add(verify_release._safe_relative(snapshot.get("ciphertext_path"), "backup"))
+        paths.add(
+            verify_release._safe_relative(snapshot.get("ciphertext_path"), "backup")
+        )
     for transcript in transcripts.values():
         if not isinstance(transcript, dict):
             _fail("backup transcript evidence record is invalid")
@@ -495,7 +503,11 @@ def run_audit(
         verify_release._require_image_digest(value, label)
     if image_id != image_digest:
         _fail("local production image ID and OCI config digest must be identical")
-    if source_root != SOURCE_ROOT or source_root.is_symlink() or not source_root.is_dir():
+    if (
+        source_root != SOURCE_ROOT
+        or source_root.is_symlink()
+        or not source_root.is_dir()
+    ):
         _fail("authoritative source must be mounted read-only at /audit-source")
     environment = _audit_environment(source_root)
     recorder = CommandRecorder(output_root, audit_image_id)
@@ -638,7 +650,8 @@ def run_audit(
     )
     providers = machine_characterization.get("providers")
     if not isinstance(providers, dict) or not all(
-        isinstance(item, dict) and item.get("ready") is True for item in providers.values()
+        isinstance(item, dict) and item.get("ready") is True
+        for item in providers.values()
     ):
         _fail("characterization machine output is not 13/13 ready")
     regression_summary = _parse_regression(regression, output_root)
@@ -650,7 +663,9 @@ def run_audit(
         "liuyao_manual": "test_provider_calculates_supplied_cast_and_binds_shared_calendar",
     }
     p0_output = _combined_output(p0, output_root)
-    p0_assertions = {name: sentinel in p0_output for name, sentinel in p0_sentinels.items()}
+    p0_assertions = {
+        name: sentinel in p0_output for name, sentinel in p0_sentinels.items()
+    }
     if not all(p0_assertions.values()):
         _fail(f"P0 trajectory sentinel missing: {p0_assertions}")
     probe_machine_output = _read_json(
@@ -715,7 +730,9 @@ def run_audit(
     }
     report = {
         "artifact": {
-            "base_image_digest": verify_release.EXPECTED_BASE_IMAGE["linux_amd64_manifest_digest"],
+            "base_image_digest": verify_release.EXPECTED_BASE_IMAGE[
+                "linux_amd64_manifest_digest"
+            ],
             "image_digest": image_digest,
             "image_digest_kind": "oci_config",
             "runtime_integrity_sha256": verify_release.sha256_file(
@@ -733,7 +750,9 @@ def run_audit(
         },
         "backup_restore": {
             "accepted_token_replayed": backup.get("accepted_token_replayed"),
-            "command_ids": sorted(record["id"] for record in backup.get("commands", [])),
+            "command_ids": sorted(
+                record["id"] for record in backup.get("commands", [])
+            ),
             "prepared_token_restored": backup.get("prepared_token_restored"),
             "status": "passed",
         },
@@ -777,7 +796,9 @@ def run_audit(
             "command_ids": ["runtime-probe-machine", "runtime-probe-unittest"],
             "status": "passed",
         },
-        "product_policy": {"p0_provider_ids": sorted(verify_release.EXPECTED_P0_PROVIDERS)},
+        "product_policy": {
+            "p0_provider_ids": sorted(verify_release.EXPECTED_P0_PROVIDERS)
+        },
         "release": dict(verify_release.EXPECTED_RELEASE),
         "release_regression": {
             "command_id": "release-regression",
@@ -789,7 +810,9 @@ def run_audit(
         "schema_version": "mingli-linux-runtime-audit-v1",
         "target": {
             "architecture": platform.machine(),
-            "base_image_digest": verify_release.EXPECTED_BASE_IMAGE["linux_amd64_manifest_digest"],
+            "base_image_digest": verify_release.EXPECTED_BASE_IMAGE[
+                "linux_amd64_manifest_digest"
+            ],
             "node_version": verify_release.EXPECTED_NODE["version"],
             "os": platform.system().lower(),
             "python_path": str(RUNTIME_PYTHON),

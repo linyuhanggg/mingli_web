@@ -32,10 +32,16 @@ EXPECTED_RELEASE = {
     "version": "5.1",
     "source_commit": "494ce0bba174a77800daf9b9c38ce9c9166d9a94",
     "release_manifest_file_count": 217,
-    "release_manifest_sha256": ("e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"),
-    "skill_sha256": ("ee43ae256f2a39c7bf0fde6714d5ff87af2b654cae2283ee0b6d07566502c378"),
+    "release_manifest_sha256": (
+        "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
+    ),
+    "skill_sha256": (
+        "ee43ae256f2a39c7bf0fde6714d5ff87af2b654cae2283ee0b6d07566502c378"
+    ),
     "protocol_version": "mingli-portable-interface-v2",
-    "describe_digest": ("7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"),
+    "describe_digest": (
+        "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"
+    ),
 }
 EXPECTED_PROVIDERS = frozenset(
     {
@@ -96,13 +102,19 @@ EXPECTED_PYTHON_ARTIFACTS = {
     },
     "sxtwl": {
         "sdist_filename": "sxtwl-2.0.7.tar.gz",
-        "sdist_sha256": ("38b24472389f7f6f3521c2c99e4b5e86c0184c7d6eb02e5409c239d21f0a6512"),
+        "sdist_sha256": (
+            "38b24472389f7f6f3521c2c99e4b5e86c0184c7d6eb02e5409c239d21f0a6512"
+        ),
         "version": "2.0.7",
         "wheel_filename": "sxtwl-2.0.7-cp314-cp314-linux_x86_64.whl",
-        "wheel_sha256": ("bd03d0b56d81112d87ad340a3d65458059497dc33496b1938fb23056dfe8ba80"),
+        "wheel_sha256": (
+            "bd03d0b56d81112d87ad340a3d65458059497dc33496b1938fb23056dfe8ba80"
+        ),
     },
 }
-EXPECTED_IZTRO_SHA256 = "4b8eca323e5d4291471567c62255a2166471c55c77ebe8f0d2d38240e69d12b1"
+EXPECTED_IZTRO_SHA256 = (
+    "4b8eca323e5d4291471567c62255a2166471c55c77ebe8f0d2d38240e69d12b1"
+)
 EXPECTED_TEST_COUNT = 1584
 EXPECTED_TEST_TARGETS = 126
 EXPECTED_TEST_MODULES = 93
@@ -205,7 +217,11 @@ def _regular_file(root: Path, relative: object, label: str) -> Path:
         resolved = path.resolve(strict=True)
     except OSError as exc:
         raise ReleaseVerificationError(f"{label} is missing: {safe}") from exc
-    if not resolved.is_relative_to(root.resolve()) or path.is_symlink() or not path.is_file():
+    if (
+        not resolved.is_relative_to(root.resolve())
+        or path.is_symlink()
+        or not path.is_file()
+    ):
         _fail(f"{label} escapes its root or is unsafe: {safe}")
     return path
 
@@ -222,7 +238,9 @@ def _require_image_digest(value: object, label: str) -> str:
     return value
 
 
-def _require_exact_mapping(actual: object, expected: Mapping[str, object], label: str) -> None:
+def _require_exact_mapping(
+    actual: object, expected: Mapping[str, object], label: str
+) -> None:
     if actual != expected:
         _fail(f"{label} does not match the frozen contract")
 
@@ -321,9 +339,13 @@ def _verify_runtime_closure(
     for raw_pattern in raw_patterns:
         if not isinstance(raw_pattern, str) or not any(x in raw_pattern for x in "*?["):
             _fail("runtime closure pattern is invalid")
-        _safe_relative(raw_pattern.replace("*", "x").replace("?", "x"), "runtime closure")
+        _safe_relative(
+            raw_pattern.replace("*", "x").replace("?", "x"), "runtime closure"
+        )
         matches = {
-            relative for relative in manifest_paths if PurePosixPath(relative).match(raw_pattern)
+            relative
+            for relative in manifest_paths
+            if PurePosixPath(relative).match(raw_pattern)
         }
         if not matches:
             _fail(f"runtime closure pattern matched no signed files: {raw_pattern}")
@@ -367,7 +389,10 @@ def _verify_provider_catalog(release_root: Path) -> tuple[list[str], dict[str, b
         if runtime_capability.get("system") != provider_id:
             _fail(f"provider runtime system mismatch: {provider_id}")
         provider_ids.append(provider_id)
-    if len(provider_ids) != len(set(provider_ids)) or set(provider_ids) != EXPECTED_PROVIDERS:
+    if (
+        len(provider_ids) != len(set(provider_ids))
+        or set(provider_ids) != EXPECTED_PROVIDERS
+    ):
         _fail("13 Provider inventory does not match the frozen release")
     return sorted(provider_ids), {provider: True for provider in sorted(provider_ids)}
 
@@ -413,7 +438,11 @@ def _verify_reference_and_evidence(release_root: Path) -> dict[str, object]:
         "reference catalog",
     )
     packs = catalog.get("ready_reference_packs")
-    if catalog.get("ready_count") != 55 or not isinstance(packs, list) or len(packs) != 55:
+    if (
+        catalog.get("ready_count") != 55
+        or not isinstance(packs, list)
+        or len(packs) != 55
+    ):
         _fail("reference catalog must contain exactly 55/55 ready packs")
     validation = catalog.get("validation")
     if not isinstance(validation, dict) or set(validation.values()) != {"PASS 55/55"}:
@@ -488,7 +517,9 @@ def _verify_reference_and_evidence(release_root: Path) -> dict[str, object]:
             _fail(f"evidence source pack is unknown: {rule_id}")
         source_relative = _safe_relative(row.get("source_path"), "evidence source")
         source_path = _regular_file(release_root, source_relative, "evidence source")
-        source_digest = source_cache.setdefault(source_relative, sha256_file(source_path))
+        source_digest = source_cache.setdefault(
+            source_relative, sha256_file(source_path)
+        )
         if source_digest != row.get("source_sha256"):
             _fail(f"evidence source digest mismatch: {rule_id}")
         quote = row.get("quote")
@@ -499,7 +530,8 @@ def _verify_reference_and_evidence(release_root: Path) -> dict[str, object]:
         for field in ("depends_on_rule_ids", "exception_rule_ids"):
             references = row.get(field)
             if not isinstance(references, list) or any(
-                not isinstance(item, str) or item not in rule_id_set for item in references
+                not isinstance(item, str) or item not in rule_id_set
+                for item in references
             ):
                 _fail(f"evidence reference closure failed for {field}: {rule_id}")
         conflict_references = row.get("conflict_rule_ids")
@@ -607,7 +639,11 @@ def _verify_node(executable: Path) -> dict[str, str]:
 
 
 def _verify_state_root(state_root: Path) -> dict[str, int]:
-    if not state_root.is_absolute() or state_root.is_symlink() or not state_root.is_dir():
+    if (
+        not state_root.is_absolute()
+        or state_root.is_symlink()
+        or not state_root.is_dir()
+    ):
         _fail("state root is missing, relative, or unsafe")
     info = state_root.stat()
     mode = stat.S_IMODE(info.st_mode)
@@ -647,7 +683,9 @@ def _verify_research_source(
     head = _git(source_root, ["rev-parse", "HEAD"]).stdout.strip()
     if head != EXPECTED_RELEASE["source_commit"]:
         _fail("authoritative regression source commit mismatch")
-    status = _git(source_root, ["status", "--porcelain", "--untracked-files=all"]).stdout
+    status = _git(
+        source_root, ["status", "--porcelain", "--untracked-files=all"]
+    ).stdout
     if status.strip():
         _fail("authoritative regression source checkout is not clean")
     raw_tree = _git(
@@ -740,7 +778,9 @@ def _run_describe(
     try:
         result = json.loads(lines[0])
     except json.JSONDecodeError as exc:
-        raise ReleaseVerificationError("portable describe output is invalid JSON") from exc
+        raise ReleaseVerificationError(
+            "portable describe output is invalid JSON"
+        ) from exc
     if not isinstance(result, dict) or result.get("kind") != "described":
         _fail("portable describe did not return Described")
     if result.get("protocol_version") != EXPECTED_RELEASE["protocol_version"]:
@@ -854,7 +894,9 @@ def _verify_inventory_artifact(
     manifest_modes = release_manifest.get("modes")
     if not isinstance(manifest_files, dict) or not isinstance(manifest_modes, dict):
         _fail("release manifest evidence files/modes are invalid")
-    if set(release_files) != set(manifest_files) or set(release_files) != set(manifest_modes):
+    if set(release_files) != set(manifest_files) or set(release_files) != set(
+        manifest_modes
+    ):
         _fail("runtime inventory does not match the signed 217-file manifest")
     for relative, item in release_files.items():
         _safe_relative(relative, "runtime inventory evidence")
@@ -867,11 +909,17 @@ def _verify_inventory_artifact(
             _fail(f"runtime inventory digest differs from signed manifest: {relative}")
         if item.get("mode") != manifest_modes[relative]:
             _fail(f"runtime inventory mode differs from signed manifest: {relative}")
-    if release_files.get("SKILL.md", {}).get("sha256") != EXPECTED_RELEASE["skill_sha256"]:
+    if (
+        release_files.get("SKILL.md", {}).get("sha256")
+        != EXPECTED_RELEASE["skill_sha256"]
+    ):
         _fail("runtime inventory SKILL.md digest mismatch")
     provider_ids = inventory.get("provider_ids")
     readiness = inventory.get("readiness")
-    if set(provider_ids or ()) != EXPECTED_PROVIDERS or inventory.get("provider_count") != 13:
+    if (
+        set(provider_ids or ()) != EXPECTED_PROVIDERS
+        or inventory.get("provider_count") != 13
+    ):
         _fail("runtime inventory does not prove the exact 13 Provider set")
     if not isinstance(readiness, dict) or set(readiness) != EXPECTED_PROVIDERS:
         _fail("runtime inventory 13 Provider readiness is incomplete")
@@ -897,7 +945,8 @@ def _verify_inventory_artifact(
     capabilities = describe.get("capabilities")
     if (
         not isinstance(capabilities, list)
-        or {item.get("id") for item in capabilities if isinstance(item, dict)} != EXPECTED_PROVIDERS
+        or {item.get("id") for item in capabilities if isinstance(item, dict)}
+        != EXPECTED_PROVIDERS
     ):
         _fail("runtime inventory portable describe lacks the exact 13 Provider set")
     if inventory.get("describe_output_sha256") != canonical_sha256(describe):
@@ -1097,7 +1146,9 @@ def _verify_backup_restore(
         "source",
     }:
         _fail("backup/restore evidence does not name three volume roles")
-    if len(set(volume_ids.values())) != 3 or any(not value for value in volume_ids.values()):
+    if len(set(volume_ids.values())) != 3 or any(
+        not value for value in volume_ids.values()
+    ):
         _fail("backup/restore did not use distinct blank destination volumes")
     if evidence.get("blank_volume_checks") != {
         "accepted_restore_blank": True,
@@ -1181,7 +1232,9 @@ def _verify_backup_restore(
         if any("state_token" in item for item in argv):
             _fail(f"backup/restore command argv leaked a state token: {command_id}")
         if command_id in runtime_command_ids and image_digest not in argv:
-            _fail(f"backup/restore runtime command used a different image: {command_id}")
+            _fail(
+                f"backup/restore runtime command used a different image: {command_id}"
+            )
         _verify_artifact_digest(
             artifacts_root,
             command.get("stdout_path"),
@@ -1206,7 +1259,9 @@ def _verify_backup_restore(
         "source-prepared": "source-prepare",
     }
     transcript_records = evidence.get("transcripts")
-    if not isinstance(transcript_records, dict) or set(transcript_records) != set(transcript_ids):
+    if not isinstance(transcript_records, dict) or set(transcript_records) != set(
+        transcript_ids
+    ):
         _fail("backup/restore sanitized transcripts are incomplete")
     transcripts: dict[str, dict[str, Any]] = {}
     for transcript_id, command_id in transcript_ids.items():
@@ -1216,7 +1271,9 @@ def _verify_backup_restore(
         if record.get("path") != commands[command_id].get("stdout_path"):
             _fail(f"backup/restore transcript is not command stdout: {transcript_id}")
         if record.get("sha256") != commands[command_id].get("stdout_sha256"):
-            _fail(f"backup/restore transcript digest is not command stdout: {transcript_id}")
+            _fail(
+                f"backup/restore transcript digest is not command stdout: {transcript_id}"
+            )
         transcript_path = _verify_artifact_digest(
             artifacts_root,
             record.get("path"),
@@ -1255,15 +1312,25 @@ def _verify_backup_restore(
     accepted_replay = transcripts["accepted-replay"]
     if source_prepared.get("kind") != "prepared" or followup.get("kind") != "prepared":
         _fail("Prepared backup did not restore into a real tokened follow-up")
-    if followup.get("input_token_fingerprint") != source_prepared.get("token_fingerprint"):
+    if followup.get("input_token_fingerprint") != source_prepared.get(
+        "token_fingerprint"
+    ):
         _fail("Prepared follow-up did not use the restored source token")
-    if followup_accepted.get("input_token_fingerprint") != followup.get("token_fingerprint"):
+    if followup_accepted.get("input_token_fingerprint") != followup.get(
+        "token_fingerprint"
+    ):
         _fail("Prepared follow-up completion did not use the restored child token")
-    if source_accepted.get("kind") != "accepted" or accepted_replay.get("kind") != ("accepted"):
+    if source_accepted.get("kind") != "accepted" or accepted_replay.get("kind") != (
+        "accepted"
+    ):
         _fail("Accepted backup replay did not return Accepted")
-    if accepted_replay.get("input_token_fingerprint") != source_prepared.get("token_fingerprint"):
+    if accepted_replay.get("input_token_fingerprint") != source_prepared.get(
+        "token_fingerprint"
+    ):
         _fail("Accepted replay did not use the original Prepared token")
-    if accepted_replay.get("token_fingerprint") != source_accepted.get("token_fingerprint"):
+    if accepted_replay.get("token_fingerprint") != source_accepted.get(
+        "token_fingerprint"
+    ):
         _fail("Accepted replay did not return the original Accepted token")
     if accepted_replay.get("command_sha256") != source_accepted.get("command_sha256"):
         _fail("Accepted replay did not use the byte-identical Complete command")
@@ -1343,7 +1410,10 @@ def validate_audit_report(
         _fail("production image digest kind must be the local OCI config digest")
     if image_digest != image_id:
         _fail("production image digest and image ID must be the same OCI config digest")
-    if artifact.get("base_image_digest") != EXPECTED_BASE_IMAGE["linux_amd64_manifest_digest"]:
+    if (
+        artifact.get("base_image_digest")
+        != EXPECTED_BASE_IMAGE["linux_amd64_manifest_digest"]
+    ):
         _fail("production artifact base image amd64 digest mismatch")
     sbom_path = _verify_artifact_digest(
         artifacts_root,
@@ -1425,21 +1495,26 @@ def validate_audit_report(
     runtime_binding = runtime_inventory.get("runtime_integrity")
     if not isinstance(runtime_binding, dict):
         _fail("runtime inventory lacks runtime-integrity binding")
-    if runtime_binding.get("manifest_sha256") != artifact.get("runtime_integrity_sha256"):
+    if runtime_binding.get("manifest_sha256") != artifact.get(
+        "runtime_integrity_sha256"
+    ):
         _fail("runtime inventory and report runtime-integrity digest differ")
     if runtime_inventory.get("node") != EXPECTED_NODE:
         _fail("runtime inventory Node record differs from frozen provenance")
     state_root_record = runtime_inventory.get("state_root")
-    if not isinstance(state_root_record, dict) or state_root_record.get("uid") != target["uid"]:
+    if (
+        not isinstance(state_root_record, dict)
+        or state_root_record.get("uid") != target["uid"]
+    ):
         _fail("runtime inventory state UID differs from the release target")
     if runtime_inventory.get("release") != EXPECTED_RELEASE:
         _fail("runtime inventory release identity mismatch")
     _verify_sbom(sbom_path, report)
 
     product_policy = report.get("product_policy")
-    if not isinstance(product_policy, dict) or set(product_policy.get("p0_provider_ids", ())) != (
-        EXPECTED_P0_PROVIDERS
-    ):
+    if not isinstance(product_policy, dict) or set(
+        product_policy.get("p0_provider_ids", ())
+    ) != (EXPECTED_P0_PROVIDERS):
         _fail("P0 Product Capability Policy is not the frozen three-entry allowlist")
     if audit.get("generator") != "/opt/mingli-runtime/audit_runtime.py":
         _fail("audit report was not generated by the image entry point")
@@ -1557,13 +1632,16 @@ def validate_audit_report(
     if characterization_a.get("schema_version") != "mingli-characterization-v1":
         _fail("characterization machine output schema mismatch")
     characterization_outputs = characterization_a.get("providers")
-    if not isinstance(characterization_outputs, dict) or set(characterization_outputs) != (
-        EXPECTED_PROVIDERS
-    ):
+    if not isinstance(characterization_outputs, dict) or set(
+        characterization_outputs
+    ) != (EXPECTED_PROVIDERS):
         _fail("characterization machine output lacks the exact 13 Provider set")
 
     characterization = report.get("characterization")
-    if not isinstance(characterization, dict) or set(characterization) != EXPECTED_PROVIDERS:
+    if (
+        not isinstance(characterization, dict)
+        or set(characterization) != EXPECTED_PROVIDERS
+    ):
         _fail("characterization must cover the exact 13 Provider set")
     for provider_id, item in characterization.items():
         if not isinstance(item, dict) or item.get("status") != "passed":
@@ -1576,9 +1654,15 @@ def validate_audit_report(
         ]:
             _fail(f"characterization lacks the frozen command evidence: {provider_id}")
         if item.get("output_path") != commands["characterization-a"].get("stdout_path"):
-            _fail(f"characterization is not bound to first command stdout: {provider_id}")
-        if item.get("repeat_output_path") != commands["characterization-b"].get("stdout_path"):
-            _fail(f"characterization is not bound to second command stdout: {provider_id}")
+            _fail(
+                f"characterization is not bound to first command stdout: {provider_id}"
+            )
+        if item.get("repeat_output_path") != commands["characterization-b"].get(
+            "stdout_path"
+        ):
+            _fail(
+                f"characterization is not bound to second command stdout: {provider_id}"
+            )
         output_path = _verify_artifact_digest(
             artifacts_root,
             item.get("output_path"),
@@ -1597,14 +1681,20 @@ def validate_audit_report(
             _fail(f"{provider_id} repeat characterization output path drift")
         if item.get("output_sha256") != commands["characterization-a"]["stdout_sha256"]:
             _fail(f"{provider_id} output digest is not bound to command stdout")
-        if item.get("repeat_output_sha256") != commands["characterization-b"]["stdout_sha256"]:
+        if (
+            item.get("repeat_output_sha256")
+            != commands["characterization-b"]["stdout_sha256"]
+        ):
             _fail(f"{provider_id} repeat output digest is not bound to command stdout")
         output = characterization_outputs.get(provider_id)
         if not isinstance(output, dict) or output.get("provider_id") != provider_id:
             _fail(f"{provider_id} characterization machine record is invalid")
         if output.get("ready") is not True or item.get("status") != "passed":
             _fail(f"{provider_id} characterization output is not ready")
-        if output.get("provider_output_sha256") != EXPECTED_CHARACTERIZATION_DIGESTS[provider_id]:
+        if (
+            output.get("provider_output_sha256")
+            != EXPECTED_CHARACTERIZATION_DIGESTS[provider_id]
+        ):
             _fail(f"{provider_id} characterization golden digest mismatch")
         if item.get("provider_output_sha256") != output.get("provider_output_sha256"):
             _fail(f"{provider_id} report/provider output digest mismatch")
@@ -1758,9 +1848,9 @@ def validate_audit_report(
         cwd="/audit-source/scripts",
         image_id=audit_image_id,
     )
-    probe_output = unittest_probe["stdout_file"].read_text(encoding="utf-8") + unittest_probe[
-        "stderr_file"
-    ].read_text(encoding="utf-8")
+    probe_output = unittest_probe["stdout_file"].read_text(
+        encoding="utf-8"
+    ) + unittest_probe["stderr_file"].read_text(encoding="utf-8")
     for sentinel in (
         "test_concurrent_children_yield_exactly_one_winner",
         "test_one_prepared_token_completes_and_replay_is_idempotent",
