@@ -268,7 +268,7 @@ Next standalone 收到 systemd 的 SIGTERM 时会按其信号约定退出 `143`�
 
 - 环境固定 `MINGLI_ENVIRONMENT=local` + `MINGLI_OTP_ADAPTER=fake`，验证码 `246810`；
 - 执行前确认第 5 节的 Fake Runtime 测试记录已登记；
-- E2E 冒烟：登录页输入手机号 → 用 `246810` 完成验证 → 走一次完整阅读流程 → 确认结果落库、页面正常；
+- E2E 冒烟：登录页输入一个纯虚构测试邮箱 → 使用页面在 local + Fake 环境显示的 `246810` 完成首次注册/登录 → 建立虚构档案 → 走一次完整阅读流程 → 从解读历史重新打开结果 → 退出当前设备；
 - 支付只验证流程形状（FakePaymentGateway 返回 unavailable），不验证真实支付/退款；
 - 验收只证明代码路径可用，Fake 响应不代表真实渠道行为。
 
