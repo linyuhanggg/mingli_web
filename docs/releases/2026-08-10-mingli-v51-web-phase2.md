@@ -2,13 +2,13 @@
 
 记录日期：2026-08-10（Asia/Shanghai）
 
-状态：**第一版代码候选已冻结进 `main` / staging blocked / production blocked**
+状态：**第一版代码候选已在回环代码测试服务器验收 / real staging blocked / production blocked**
 
-结论：本记录不是上线批准。固定候选 `2fdb7b8` 已通过本地代码门禁并进入 `main`，但当前没有可审计的 staging 主机、隔离配置/数据库及备份回滚流程，因此本轮没有上传测试服务器。`real traffic` 保持 disabled，生产不可部署、不可放量。只有仓库内可定位的机制、提交和本轮实际执行结果计入证据，台账状态、计划文字、测试夹具及历史口头结论都不替代原始产物。
+结论：本记录不是上线批准。Task 11/12 固定候选 `2fdb7b8` 已进入 `main`；部署配置、真实 PostgreSQL 迁移修复和 Fake 全链路修复形成最终代码测试候选 `bb742b7`，并已通过 SSH 隧道后的回环服务器验收。该服务器固定使用 `local + Fake`，不接真实模型、短信、支付或公网业务流量，因此它不是 staging/production。`real traffic` 保持 disabled，生产不可部署、不可放量。只有仓库内可定位的机制、提交和本轮实际执行结果计入证据，台账状态、计划文字、测试夹具及历史口头结论都不替代原始产物。
 
 ## 1. 已有机制与可定位提交
 
-本轮审计所见的固定代码候选为 `main` 的 `2fdb7b8`。Task 11 API、Task 12 Web 真实 API 接入和 FateRadar UI 分支均已形成可定位提交；下表只说明机制已经存在，不说明生产 Gate 已通过。
+本轮 Task 11/12 功能基线为 `2fdb7b8`，服务器实际验收的固定应用候选为 `bb742b7`。Task 11 API、Task 12 Web 真实 API 接入和 FateRadar UI 分支均已形成可定位提交；下表只说明机制已经存在，不说明生产 Gate 已通过。
 
 | 机制 | 仓库位置 | 可定位提交 | 当前能证明的范围 |
 |---|---|---|---|
@@ -48,6 +48,8 @@
 
 分支收口结果：`codex/ui-fateradar-web` 以普通 merge 保留四个独有提交历史；四个 patch-equivalent `supervisor/*` 分支未重复合并；所有临时 worktree 与已吸收分支均已移除。当前只有 `main` 分支和 `/Volumes/Lexar/code/mingli_web` 一个 worktree。
 
+服务器首次迁移暴露 Alembic 默认 `version_num VARCHAR(32)` 无法写入 0003/0006/0007 长 revision ID；失败事务完整回滚，测试库保持 0 张表。修复提交 `c462934` 先以失败测试稳定复现，再缩短三个 ID，迁移聚焦回归 `29 passed`，完整门禁为后端/合同 `459 passed, 90 skipped`、Web `85 passed`。随后服务器 Fake E2E 暴露 Runtime brief 的 `limit:fake` 与 Preview 合同 `limit:traditional` 不闭合，固定产生 `unknown_limit_ref` 与 `scope_mismatch` 并落入 `delayed`；修复提交 `bb742b7` 同样先红后绿，最终完整门禁为后端/合同 `460 passed, 90 skipped`、Web `85 passed`，Ruff、mypy、ESLint、TypeScript 与 Next production build 全部通过。
+
 ## 4. 当前缺失或依赖外部环境的发布证据
 
 以下项目全部保持 Pending：
@@ -62,10 +64,24 @@
 - Runtime/Model 生产凭据的 Secret Manager 托管、最小权限、轮换和演练记录缺失；本轮没有进行凭据测试。
 - `runtime_unknown`、`delayed`、Narrative Guard rejection、model cost 四类生产告警的配置、路由和触发演练缺失。
 - Task 13 真实 staging trajectory 缺失，包括 13 Provider describe/依赖证据、八字 need-input 到 Accepted、fortune 日/周、六爻手动/数字、follow-up、Guard 连续拒绝后 delayed 且不 complete，以及 complete 提交后数据库故障的 byte-identical replay/单一 Accepted。
-- 测试服务器交付入口缺失：仓库未配置 Git remote，也没有明确 staging 主机、非交互部署脚本、staging 专用环境变量/数据库、`pg_dump` 备份恢复与回滚演练记录。现有 `infra/` 是 production edge 占位配置和本地 Compose，不得冒充 staging 运行手册。
+- 真实 staging 交付入口仍缺失：当前已建立的是 SSH 隧道后的 `local + Fake` 回环代码测试环境，虽有独立数据库、服务器端秘密、`pg_dump`、固定 release、原子 symlink 和回滚手册，但没有真实 Runtime/Model Adapter、真实渠道凭据或 staging trajectory，不得冒充 staging。
 
 ## 5. 发布决定与后续填写字段
 
-当前决定固定为：**本地代码候选通过；staging upload blocked；production blocked；real traffic disabled；不可放量。**
+当前决定固定为：**本地代码候选通过；回环代码测试服务器验收通过；real staging blocked；production blocked；real traffic disabled；不可放量。**
 
-Task 11/12 与 UI 合并候选已形成固定提交 `2fdb7b8` 并通过 `make check` 与 `make test`。允许的下一步是先建立隔离 staging 目标、凭据、数据库、备份恢复和回滚流程，再上传该固定提交跑 Fake 端到端；补齐上节生产原始证据前，不得接真实流量。不能直接把本记录改写成“已上线”，也不能用台账勾选代替原始证据。
+Task 11/12 与 UI 合并候选已形成固定提交 `2fdb7b8`；最终代码测试候选 `bb742b7` 通过本地完整门禁、服务器构建、真实 PostgreSQL 迁移、Fake 端到端和重启复验。允许的下一步是补齐真实 Runtime/Model、固定模型评测、原始 Gate 证据与隔离 staging trajectory；补齐上节生产原始证据前，不得接真实流量。不能直接把本记录改写成“已上线”，也不能用台账勾选代替原始证据。
+
+## 6. 回环代码测试服务器实跑证据
+
+- SSH 入口：`fateradar-prod`；仅通过 `ssh -L 18080:127.0.0.1:8080 fateradar-prod` 访问。Nginx、Web、API 分别监听 `127.0.0.1:8080/3000/8000`，没有新增公网端口或 UFW 规则。
+- 固定 release：`bb742b7f2acdeb47344c8f3d8c858e580d527011`；归档 SHA-256 为 `38217033c26422073e1b35e023e337d327b4ae752de03abae7820691ec08659c`，上传前后两端校验一致；`/opt/fateradar/current` 原子指向该目录。
+- 运行栈：uv `0.11.6`、CPython `3.13.13`、Node `22.22.1`、npm `9.2.0`、PostgreSQL `18.4`。backend 每版独立 `.venv`，Web 每版独立 `node_modules` 与 standalone 产物。
+- 数据库：`fateradar_test` 使用独立 role；真实秘密只在服务器生成并保存在 root:root `0600` 的 `/etc/fateradar/test.env`，没有进入仓库或命令输出。Alembic 到唯一 head `0007_api_idem_verify`，public schema 共 17 张表。
+- 备份：迁移前和最终切换前均生成非空 `pg_dump -Fc`、SHA-256 与 manifest，保存在 `/opt/fateradar/shared/backups/`；失败 release 与最终前一版均保留，未原地覆盖。
+- 服务：`fateradar-test-api`、`fateradar-test-worker`、`fateradar-test-web` 与 Nginx/PostgreSQL 均 active；三项应用服务均 enabled，最终进程 `NRestarts=0`。`/healthz`、API live/ready、Web 首页全部 200。
+- Fake E2E：Guest Session → OTP `246810` → 登录 → Profile 草稿/确认 → Preview → Worker → Accepted → Result → Verification → Idempotency replay 全部通过；最终阅读 `cf6627d9-34c4-4085-8864-5b40549b8b5c` 两次轮询到 `accepted`，数据库状态为 `accepted / complete`，一条模型尝试、一条 Verification，重放返回同一 reading version。
+- 浏览器：服务器页面经 SSH 隧道在 1440×900 与 360×800 实测无横向溢出，交互目标没有低于 44px；账户页能从“正在建立安全会话”进入“安全会话已建立”，浏览器控制台无 error/warn。
+- 既有公网 Nginx 配置未改：服务器本机验证根站仍为 200，`api.fateradar.cn` 仍保持原占位 503；域名、TLS/letsencrypt、UFW 和宝塔面板均未调整。
+- 重启：三项应用服务人工 restart 后健康复验通过。Next standalone 按自身约定在收到 SIGTERM 时退出 143，systemd 会留下 stop 阶段的失败噪音，但无 `Scheduled restart`、`NRestarts=0`，当前 `Result=success`；可后续用 `SuccessExitStatus=143` 消除噪音，不阻塞本次代码测试。
+- 回滚边界：最终版是第一份完整 Fake E2E 通过的 release，因此本轮未把 `current` 切回已知有 Fake Guard 缺陷的旧版。首次部署可按 `infra/TEST_SERVER_RUNBOOK.md` 停止三项服务并移除 `current`；数据库和各版备份足以恢复排障，但这不等于生产级恢复演练。

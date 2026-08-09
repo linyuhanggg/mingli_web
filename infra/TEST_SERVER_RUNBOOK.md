@@ -220,6 +220,11 @@ sudo systemctl is-active fateradar-test-api fateradar-test-worker fateradar-test
 
 任一失败即视为部署失败，进入回滚。**全部通过后重启一次所有单元，再复跑一遍上面的检查**，确认开机自启路径可靠。
 
+Next standalone 收到 systemd 的 SIGTERM 时会按其信号约定退出 `143`；人工
+`restart` 的停止阶段可能因此留下 `Failed with result 'exit-code'`，随后正常
+启动。只有出现 `Scheduled restart`、`NRestarts` 增长或健康检查失败才算崩溃；
+如需消除这条停止噪音，可在 Web 单元后续加入 `SuccessExitStatus=143`。
+
 ## 10. Fake OTP 与 E2E 验收
 
 - 环境固定 `MINGLI_ENVIRONMENT=local` + `MINGLI_OTP_ADAPTER=fake`，验证码 `246810`；
