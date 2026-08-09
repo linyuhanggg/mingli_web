@@ -245,7 +245,6 @@ def load(path: Path, expected_sha256: str) -> PreparedInputs:
     release_manifest = _absolute_path(
         source.get("release_manifest"), "source.release_manifest", directory=False
     )
-    _require_within(release_manifest, source_root, "source.release_manifest")
     if sha256_file(release_manifest) != EXPECTED_RELEASE_MANIFEST_SHA256:
         _fail("release manifest bytes do not match the signed SHA-256")
     source_fulltext = source_root / "references" / "fulltext"
@@ -297,22 +296,38 @@ def load(path: Path, expected_sha256: str) -> PreparedInputs:
         _fail("runtime lock SHA-256 mismatch")
     _require_within(lock, source_root, "native_runtime.requirements_lock")
 
+    runner_path = source_root / "scripts" / "run_test_suite.py"
+    if runner_path.is_symlink() or not runner_path.is_file():
+        _fail("signed native suite runner is absent")
+
     bindings = payload.get("bindings")
     if not isinstance(bindings, list) or not bindings:
         _fail("prepared inputs bindings must be a non-empty list")
+    bound_paths: set[Path] = set()
     for index, raw_binding in enumerate(bindings):
         binding = _mapping(raw_binding, f"bindings[{index}]")
+        if set(binding) != {"kind", "path", "sha256"}:
+            _fail(f"bindings[{index}] fields are not exact")
         if binding.get("kind") != "file":
             _fail(f"bindings[{index}].kind is unsupported")
         bound_path = _absolute_path(
             binding.get("path"), f"bindings[{index}].path", directory=False
         )
-        if sha256_file(bound_path) != binding.get("sha256"):
+        canonical_path = bound_path.resolve(strict=True)
+        if canonical_path in bound_paths:
+            _fail(f"duplicate binding path: {bound_path}")
+        bound_paths.add(canonical_path)
+        binding_sha256 = _sha256(binding.get("sha256"), f"bindings[{index}].sha256")
+        if sha256_file(bound_path) != binding_sha256:
             _fail(f"bindings[{index}] SHA-256 mismatch")
-
-    runner_path = source_root / "scripts" / "run_test_suite.py"
-    if runner_path.is_symlink() or not runner_path.is_file():
-        _fail("signed native suite runner is absent")
+    required_bindings = {
+        runner_path.resolve(strict=True),
+        lock.resolve(strict=True),
+        release_manifest.resolve(strict=True),
+        runtime_integrity.resolve(strict=True),
+    }
+    if not required_bindings.issubset(bound_paths):
+        _fail("prepared inputs required binding is absent")
     return PreparedInputs(
         manifest_path=path,
         manifest_sha256=actual_sha256,

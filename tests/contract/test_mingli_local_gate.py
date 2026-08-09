@@ -10,6 +10,7 @@ import io
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import tarfile
@@ -905,6 +906,53 @@ def test_subprocess_execution_wraps_spawn_failure(tmp_path: Path) -> None:
         gate_module.SubprocessExecution().run(command)
 
 
+def test_subprocess_execution_reaps_group_when_selector_setup_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    gate_module = load_local_gate()
+    parent_pid_path = tmp_path / "selector-parent.pid"
+    program = (
+        "import os, pathlib, time; "
+        f"pathlib.Path({str(parent_pid_path)!r}).write_text(str(os.getpid())); "
+        "time.sleep(30)"
+    )
+    command = gate_module.GateCommand(
+        command_id="selector-setup-failure-probe",
+        argv=(sys.executable, "-c", program),
+        cwd=tmp_path,
+        timeout_seconds=2,
+        slots=1,
+    )
+
+    class BrokenSelector:
+        def __init__(self) -> None:
+            deadline = time.monotonic() + 1.0
+            while not parent_pid_path.is_file() and time.monotonic() < deadline:
+                time.sleep(0.01)
+            raise OSError("scripted selector setup failure")
+
+    monkeypatch.setattr(gate_module.selectors, "DefaultSelector", BrokenSelector)
+    parent_pid: int | None = None
+    try:
+        with pytest.raises(
+            gate_module.ExecutionFailure,
+            match="execution infrastructure failed",
+        ):
+            gate_module.SubprocessExecution().run(command)
+        parent_pid = int(parent_pid_path.read_text(encoding="utf-8"))
+        with pytest.raises(ProcessLookupError):
+            os.kill(parent_pid, 0)
+    finally:
+        if parent_pid is None and parent_pid_path.is_file():
+            parent_pid = int(parent_pid_path.read_text(encoding="utf-8"))
+        if parent_pid is not None:
+            try:
+                os.kill(parent_pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+
+
 def test_native_full_wraps_execution_failure_and_removes_staging(
     tmp_path: Path,
 ) -> None:
@@ -992,6 +1040,34 @@ def test_native_reports_are_independently_revalidated(tmp_path: Path) -> None:
     assert verified["elapsed_seconds"] == 434.62
 
 
+def test_native_report_archives_prepared_inputs_for_later_verification(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    request, _ = native_request(gate_module, tmp_path)
+    original_manifest = request.prepared_inputs.path.read_bytes()
+    result = gate_module.LocalFullGate(
+        ScriptedExecution(
+            gate_module,
+            stdout=complete_summary(),
+            elapsed_seconds=434.62,
+        )
+    ).run(request)
+    archived_manifest = result.profile_report.parent / "prepared-inputs.json"
+
+    assert archived_manifest.read_bytes() == original_manifest
+    request.prepared_inputs.path.write_text("{}\n", encoding="utf-8")
+    verifier = load_local_verifier()
+
+    verified = verifier.validate_native_run(
+        result.profile_report,
+        result.local_summary,
+        expected_prepared_inputs_sha256=request.prepared_inputs.sha256,
+    )
+
+    assert verified["profile"] == "native-full"
+
+
 def test_native_report_publishes_raw_bytes_and_cli_revalidates_them(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
@@ -1007,7 +1083,7 @@ def test_native_report_publishes_raw_bytes_and_cli_revalidates_them(
     result = gate_module.LocalFullGate(execution).run(request)
     report = json.loads(result.profile_report.read_text(encoding="utf-8"))
 
-    assert report["prepared_inputs_path"] == str(request.prepared_inputs.path)
+    assert report["prepared_inputs_path"] == "prepared-inputs.json"
     assert report["command"]["slots"] == 10
     assert report["command"]["timeout_seconds"] <= 600
     assert report["command"]["shell"] is False
@@ -1157,6 +1233,38 @@ def test_native_full_rejects_total_profile_wall_clock_over_budget(
     assert_nothing_published(request.output_parent)
 
 
+def test_native_report_records_tail_verification_in_total_profile_elapsed(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    request, _ = native_request(gate_module, tmp_path)
+
+    class FakeMonotonic:
+        def __init__(self) -> None:
+            self.values = [0.0, 0.0, 2.0, 5.0, 5.0, 5.0, 5.0]
+            self.index = 0
+
+        def __call__(self) -> float:
+            value = self.values[min(self.index, len(self.values) - 1)]
+            self.index += 1
+            return value
+
+    result = gate_module.LocalFullGate(
+        ScriptedExecution(
+            gate_module,
+            stdout=complete_summary(elapsed_seconds=1.0),
+            elapsed_seconds=1.0,
+        ),
+        monotonic=FakeMonotonic(),
+    ).run(request)
+    report = json.loads(result.profile_report.read_text(encoding="utf-8"))
+    envelope = json.loads(result.local_summary.read_text(encoding="utf-8"))
+
+    assert result.elapsed_seconds == 5.0
+    assert report["profile_elapsed_seconds"] == 5.0
+    assert envelope["elapsed_seconds"] == 5.0
+
+
 @pytest.mark.parametrize("tree_name", ["source", "research", "native_runtime"])
 def test_prepared_inputs_rejects_unbound_tree_bytes(
     tmp_path: Path,
@@ -1200,7 +1308,7 @@ def test_prepared_inputs_rejects_release_manifest_bytes_mismatch(
     assert_nothing_published(request.output_parent)
 
 
-def test_prepared_inputs_requires_release_manifest_inside_source_projection(
+def test_prepared_inputs_accepts_external_signed_release_manifest(
     tmp_path: Path,
 ) -> None:
     gate_module = load_local_gate()
@@ -1208,6 +1316,34 @@ def test_prepared_inputs_requires_release_manifest_inside_source_projection(
     source_manifest = Path(payload["source"]["release_manifest"])
     external_manifest = tmp_path / "external-release-manifest.json"
     shutil.copy2(source_manifest, external_manifest)
+    source_root = Path(payload["source"]["root"])
+    subprocess.run(
+        ["git", "-C", str(source_root), "rm", "-q", str(source_manifest)],
+        check=True,
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(source_root),
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "--amend",
+            "--no-edit",
+            "-q",
+        ],
+        check=True,
+    )
+    source_commit = subprocess.check_output(
+        ["git", "-C", str(source_root), "rev-parse", "HEAD"], text=True
+    ).strip()
+    gate_module.prepared_inputs.EXPECTED_COMMIT = source_commit
+    payload["source"]["commit"] = source_commit
+    payload["research"]["commit"] = source_commit
+    payload["source"]["tree_sha256"] = tree_sha256(source_root)
     payload["source"]["release_manifest"] = str(external_manifest)
     for binding in payload["bindings"]:
         if binding["path"] == str(source_manifest):
@@ -1215,9 +1351,52 @@ def test_prepared_inputs_requires_release_manifest_inside_source_projection(
     raw = (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode()
     manifest_path.write_bytes(raw)
 
+    loaded = gate_module.prepared_inputs.load(manifest_path, sha256_bytes(raw))
+
+    assert loaded.source_root == source_root
+
+
+@pytest.mark.parametrize(
+    "required_path",
+    [
+        lambda payload: (
+            Path(payload["source"]["root"]) / "scripts" / "run_test_suite.py"
+        ),
+        lambda payload: Path(payload["native_runtime"]["requirements_lock"]),
+        lambda payload: Path(payload["source"]["release_manifest"]),
+        lambda payload: Path(payload["native_runtime"]["runtime_integrity"]),
+    ],
+)
+def test_prepared_inputs_requires_every_native_binding_once(
+    tmp_path: Path,
+    required_path: Callable[[dict[str, Any]], Path],
+) -> None:
+    gate_module = load_local_gate()
+    manifest_path, _, payload = write_prepared_inputs(tmp_path)
+    missing = str(required_path(payload))
+    payload["bindings"] = [
+        binding for binding in payload["bindings"] if binding["path"] != missing
+    ]
+    raw = (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    manifest_path.write_bytes(raw)
+
     with pytest.raises(
         gate_module.prepared_inputs.PreparedInputsError,
-        match=r"source\.release_manifest.*inside",
+        match="required binding",
+    ):
+        gate_module.prepared_inputs.load(manifest_path, sha256_bytes(raw))
+
+
+def test_prepared_inputs_rejects_duplicate_binding_paths(tmp_path: Path) -> None:
+    gate_module = load_local_gate()
+    manifest_path, _, payload = write_prepared_inputs(tmp_path)
+    payload["bindings"].append(copy.deepcopy(payload["bindings"][0]))
+    raw = (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    manifest_path.write_bytes(raw)
+
+    with pytest.raises(
+        gate_module.prepared_inputs.PreparedInputsError,
+        match="duplicate binding",
     ):
         gate_module.prepared_inputs.load(manifest_path, sha256_bytes(raw))
 

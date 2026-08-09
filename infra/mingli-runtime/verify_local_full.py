@@ -115,19 +115,34 @@ def validate_native_run(
         expected_prepared_inputs_sha256,
     ):
         _fail("prepared inputs binding mismatch")
-    prepared_path_raw = report.get("prepared_inputs_path")
-    if not isinstance(prepared_path_raw, str):
-        _fail("prepared inputs path is absent")
+    if report.get("prepared_inputs_path") != "prepared-inputs.json":
+        _fail("prepared inputs path mismatch")
+    artifacts = report.get("artifacts")
+    if not isinstance(artifacts, dict) or set(artifacts) != {
+        "prepared_inputs",
+        "stdout",
+        "stderr",
+    }:
+        _fail("native raw artifacts are incomplete")
+    prepared_raw = _artifact_bytes(
+        profile_report_path.parent,
+        artifacts["prepared_inputs"],
+        label="prepared inputs",
+        expected_name="prepared-inputs.json",
+    )
+    if not hmac.compare_digest(
+        hashlib.sha256(prepared_raw).hexdigest(),
+        expected_prepared_inputs_sha256,
+    ):
+        _fail("prepared inputs artifact binding mismatch")
     try:
         inputs = prepared_inputs.load(
-            Path(prepared_path_raw), expected_prepared_inputs_sha256
+            profile_report_path.parent / "prepared-inputs.json",
+            expected_prepared_inputs_sha256,
         )
     except prepared_inputs.PreparedInputsError as exc:
         raise LocalVerificationError(f"prepared inputs are invalid: {exc}") from exc
 
-    artifacts = report.get("artifacts")
-    if not isinstance(artifacts, dict) or set(artifacts) != {"stdout", "stderr"}:
-        _fail("native raw artifacts are incomplete")
     stdout = _artifact_bytes(
         profile_report_path.parent,
         artifacts["stdout"],

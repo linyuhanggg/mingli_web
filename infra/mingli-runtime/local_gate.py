@@ -17,6 +17,7 @@ import subprocess
 import sys
 import time
 from collections.abc import Callable, Sequence
+from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, NoReturn, Protocol
@@ -166,8 +167,9 @@ class SubprocessExecution:
             "stdout": bytearray(),
             "stderr": bytearray(),
         }
-        selector = selectors.DefaultSelector()
+        selector: selectors.BaseSelector | None = None
         try:
+            selector = selectors.DefaultSelector()
             for name, stream in streams.items():
                 os.set_blocking(stream.fileno(), False)
                 selector.register(stream, selectors.EVENT_READ, data=name)
@@ -211,7 +213,9 @@ class SubprocessExecution:
                 f"{command.command_id} execution infrastructure failed"
             ) from exc
         finally:
-            selector.close()
+            if selector is not None:
+                with suppress(OSError, ValueError):
+                    selector.close()
             for stream in streams.values():
                 if not stream.closed:
                     stream.close()
@@ -608,6 +612,20 @@ class LocalFullGate:
                     f"prepared inputs changed during run: {exc}"
                 ) from exc
 
+            archived_inputs_path = staging / "prepared-inputs.json"
+            try:
+                archived_inputs_path.write_bytes(
+                    request.prepared_inputs.path.read_bytes()
+                )
+                prepared_inputs.load(
+                    archived_inputs_path,
+                    request.prepared_inputs.sha256,
+                )
+            except (OSError, prepared_inputs.PreparedInputsError) as exc:
+                raise GateRejected(
+                    f"prepared inputs could not be archived exactly: {exc}"
+                ) from exc
+
             profile_elapsed_seconds = self._profile_elapsed(
                 profile_started,
                 elapsed_seconds,
@@ -629,7 +647,7 @@ class LocalFullGate:
                 "status": "passed",
                 "run_id": run_id,
                 "prepared_inputs_sha256": inputs.manifest_sha256,
-                "prepared_inputs_path": str(inputs.manifest_path),
+                "prepared_inputs_path": "prepared-inputs.json",
                 "profile_elapsed_seconds": profile_elapsed_seconds,
                 "summary": {
                     "targets": summary.targets,
@@ -651,6 +669,11 @@ class LocalFullGate:
                     "stderr_sha256": _sha256_bytes(result.stderr),
                 },
                 "artifacts": {
+                    "prepared_inputs": {
+                        "path": "prepared-inputs.json",
+                        "sha256": inputs.manifest_sha256,
+                        "size_bytes": archived_inputs_path.stat().st_size,
+                    },
                     "stdout": {
                         "path": "native-release-regression.stdout",
                         "sha256": _sha256_bytes(result.stdout),
@@ -689,6 +712,27 @@ class LocalFullGate:
                 raise GateRejected(
                     f"native independent verification failed: {exc}"
                 ) from exc
+
+            profile_elapsed_seconds = self._profile_elapsed(
+                profile_started,
+                elapsed_seconds,
+                request.deadline_seconds,
+            )
+            report["profile_elapsed_seconds"] = profile_elapsed_seconds
+            local_summary["elapsed_seconds"] = profile_elapsed_seconds
+            local_summary["profile_report_sha256"] = _sha256_bytes(_json_bytes(report))
+            (staging / "native-full-5.1.json").write_bytes(_json_bytes(report))
+            (staging / "local-native-full-5.1.json").write_bytes(
+                _json_bytes(local_summary)
+            )
+            try:
+                verify_local_full.validate_native_run(
+                    staging / "native-full-5.1.json",
+                    staging / "local-native-full-5.1.json",
+                    expected_prepared_inputs_sha256=inputs.manifest_sha256,
+                )
+            except Exception as exc:
+                raise GateRejected(f"native final verification failed: {exc}") from exc
             self._profile_elapsed(
                 profile_started,
                 elapsed_seconds,
