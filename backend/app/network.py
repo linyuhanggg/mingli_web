@@ -15,9 +15,7 @@ IpNetwork = IPv4Network | IPv6Network
 
 def parse_trusted_proxy_cidrs(value: str) -> tuple[IpNetwork, ...]:
     return tuple(
-        ip_network(item.strip(), strict=False)
-        for item in value.split(",")
-        if item.strip()
+        ip_network(item.strip(), strict=False) for item in value.split(",") if item.strip()
     )
 
 
@@ -64,10 +62,7 @@ def _parse_address(value: str) -> IpAddress | None:
 
 
 def _is_trusted(address: IpAddress, networks: tuple[IpNetwork, ...]) -> bool:
-    return any(
-        address.version == network.version and address in network
-        for network in networks
-    )
+    return any(address.version == network.version and address in network for network in networks)
 
 
 def _canonical(address: IpAddress) -> str:

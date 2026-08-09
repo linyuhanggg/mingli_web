@@ -96,11 +96,7 @@ class InMemoryOtpRequestLimiter:
         current.count += 1
 
     def _drop_expired(self, windows: dict[str, RateWindow], now: datetime) -> None:
-        expired = [
-            key
-            for key, value in windows.items()
-            if now - value.started_at >= self.window
-        ]
+        expired = [key for key, value in windows.items() if now - value.started_at >= self.window]
         for key in expired:
             windows.pop(key, None)
 

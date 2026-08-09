@@ -34,11 +34,7 @@ class FakeModelGateway:
         dimension_id = str(scope.get("dimension_id", "overview"))
         allowed_kinds = _strings(scope.get("allowed_kind_ids"))
         findings = _objects(request.brief.get("findings"))
-        limit_ids = tuple(
-            item
-            for item in request.output_contract.required_limit_kind_ids
-            if item
-        )
+        limit_ids = tuple(item for item in request.output_contract.required_limit_kind_ids if item)
 
         return NarrativeCandidate.from_dict(
             {
@@ -50,12 +46,8 @@ class FakeModelGateway:
                         "text": "这是合同测试候选稿，不是正式命理解读。",
                         "subject_ref": subject_ref,
                         "dimension_id": dimension_id,
-                        "claim_kind_id": (
-                            allowed_kinds[0] if allowed_kinds else "kind.fixture"
-                        ),
-                        "certainty_id": str(
-                            scope.get("certainty_ceiling_id", "certainty.fixture")
-                        ),
+                        "claim_kind_id": (allowed_kinds[0] if allowed_kinds else "kind.fixture"),
+                        "certainty_id": str(scope.get("certainty_ceiling_id", "certainty.fixture")),
                         "fact_refs": list(_strings(scope.get("fact_refs"))),
                         "finding_refs": [
                             str(item["ref"])

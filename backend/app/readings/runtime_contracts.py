@@ -36,16 +36,12 @@ def _validate_schema(schema_name: str, payload: Mapping[str, object]) -> None:
         _validator(schema_name).validate(dict(payload))
     except ValidationError as error:
         path = "$" + "".join(f"[{part!r}]" for part in error.absolute_path)
-        raise ContractValidationError(
-            f"{schema_name} validation failed at {path}"
-        ) from error
+        raise ContractValidationError(f"{schema_name} validation failed at {path}") from error
 
 
 def _freeze_json(value: object) -> JsonValue:
     if isinstance(value, Mapping):
-        return MappingProxyType(
-            {str(key): _freeze_json(item) for key, item in value.items()}
-        )
+        return MappingProxyType({str(key): _freeze_json(item) for key, item in value.items()})
     if isinstance(value, (list, tuple)):
         return tuple(_freeze_json(item) for item in value)
     if value is None or isinstance(value, (str, int, float, bool)):
@@ -247,9 +243,7 @@ class Stopped:
             "public_copy": self.public_copy,
             "state_token": self.state_token,
             "input_request": (
-                None
-                if self.input_request is None
-                else _thaw_object(self.input_request)
+                None if self.input_request is None else _thaw_object(self.input_request)
             ),
         }
 
@@ -294,9 +288,7 @@ def result_from_dict(payload: Mapping[str, object]) -> MingliResult:
     if kind == "prepared":
         return Prepared(
             state_token=cast(str, payload["state_token"]),
-            brief=ReadingBrief(
-                cast(Mapping[str, object], payload["brief"])
-            ),
+            brief=ReadingBrief(cast(Mapping[str, object], payload["brief"])),
         )
     if kind == "accepted":
         return Accepted(

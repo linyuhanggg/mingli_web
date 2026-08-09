@@ -62,9 +62,7 @@ class NarrativeBlock:
 @dataclass(frozen=True, slots=True)
 class NarrativeCandidate:
     blocks: tuple[NarrativeBlock, ...]
-    schema_version: Literal["mingli-narrative-candidate-v1"] = (
-        "mingli-narrative-candidate-v1"
-    )
+    schema_version: Literal["mingli-narrative-candidate-v1"] = "mingli-narrative-candidate-v1"
 
     def __post_init__(self) -> None:
         _validate_schema(CANDIDATE_SCHEMA, self.to_dict())
@@ -100,9 +98,7 @@ class OutputContract:
     required_dimension_ids: tuple[str, ...]
     required_limit_kind_ids: tuple[str, ...]
     disclosure_text: str
-    schema_version: Literal["mingli-output-contract-v1"] = (
-        "mingli-output-contract-v1"
-    )
+    schema_version: Literal["mingli-output-contract-v1"] = "mingli-output-contract-v1"
 
     def __post_init__(self) -> None:
         _validate_schema(OUTPUT_CONTRACT_SCHEMA, self.to_dict())
@@ -122,12 +118,8 @@ class OutputContract:
             min_blocks=cast(int, payload["min_blocks"]),
             max_blocks=cast(int, payload["max_blocks"]),
             max_output_chars=cast(int, payload["max_output_chars"]),
-            required_dimension_ids=tuple(
-                cast(list[str], payload["required_dimension_ids"])
-            ),
-            required_limit_kind_ids=tuple(
-                cast(list[str], payload["required_limit_kind_ids"])
-            ),
+            required_dimension_ids=tuple(cast(list[str], payload["required_dimension_ids"])),
+            required_limit_kind_ids=tuple(cast(list[str], payload["required_limit_kind_ids"])),
             disclosure_text=cast(str, payload["disclosure_text"]),
         )
 

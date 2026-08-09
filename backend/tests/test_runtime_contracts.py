@@ -18,9 +18,7 @@ def prepare_payload() -> dict[str, Any]:
             "comparisons": [],
         },
         "facts": {
-            "profile-version:test": {
-                "birth_datetime_or_four_pillars": "1994-04-30T05:55:00+08:00"
-            }
+            "profile-version:test": {"birth_datetime_or_four_pillars": "1994-04-30T05:55:00+08:00"}
         },
         "state_token": None,
         "transition": None,

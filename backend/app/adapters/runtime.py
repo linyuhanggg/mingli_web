@@ -33,9 +33,7 @@ _FAKE_RELEASE_CAPABILITY_SPECS = (
 )
 _FAKE_RELEASE_CAPABILITY_IDS = frozenset(
     capability_id
-    for capability_id, _label, _object_id, _horizons in (
-        _FAKE_RELEASE_CAPABILITY_SPECS
-    )
+    for capability_id, _label, _object_id, _horizons in (_FAKE_RELEASE_CAPABILITY_SPECS)
 )
 
 
@@ -111,9 +109,7 @@ class FakeMingliRuntimeAdapter:
                     object_id=object_id,
                     horizons=horizons,
                 )
-                for capability_id, label, object_id, horizons in (
-                    _FAKE_RELEASE_CAPABILITY_SPECS
-                )
+                for capability_id, label, object_id, horizons in (_FAKE_RELEASE_CAPABILITY_SPECS)
             ),
         )
 

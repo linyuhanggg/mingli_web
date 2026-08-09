@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib
 
 import pytest
+
+# isort: split
 from test_narrative_guard import build_brief, load_candidate
 
 
