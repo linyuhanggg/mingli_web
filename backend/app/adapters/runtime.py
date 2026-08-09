@@ -1,6 +1,19 @@
+import asyncio
+import hashlib
+import json
+import os
+import re
+import signal
+import stat
 from collections.abc import Mapping
-from typing import Protocol, runtime_checkable
+from contextlib import suppress
+from dataclasses import dataclass, field
+from pathlib import Path, PurePosixPath
+from typing import Any, Protocol, runtime_checkable
 
+from app.config import Settings
+from app.readings.capability_policy import V51_RELEASE_CAPABILITY_IDS
+from app.readings.errors import RuntimeTransportError
 from app.readings.runtime_contracts import (
     Accepted,
     Complete,
@@ -12,6 +25,7 @@ from app.readings.runtime_contracts import (
     Prepared,
     ReadingBrief,
     Stopped,
+    result_from_dict,
 )
 
 FAKE_STATE_TOKEN = "fake-opaque-state"
@@ -40,6 +54,670 @@ _FAKE_RELEASE_CAPABILITY_IDS = frozenset(
 @runtime_checkable
 class MingliRuntime(Protocol):
     async def execute(self, command: MingliCommand) -> MingliResult: ...
+
+
+EXPECTED_RUNTIME_PROTOCOL = "mingli-portable-interface-v2"
+EXPECTED_RELEASE_FILE_COUNT = 217
+EXPECTED_REFERENCE_PACK_COUNT = 55
+EXPECTED_EVIDENCE_RECORD_COUNT = 1328
+FROZEN_RELEASE_MANIFEST_SHA256 = "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
+FROZEN_RELEASE_NAME = "mingli-master-portable-core"
+FROZEN_SOURCE_COMMIT = "494ce0bba174a77800daf9b9c38ce9c9166d9a94"
+
+
+class RuntimeStartupError(RuntimeError):
+    """The configured Runtime Release is not safe to admit."""
+
+
+@dataclass(frozen=True, slots=True)
+class RuntimeReleaseInventory:
+    release_manifest_sha256: str
+    release_file_count: int
+    provider_ids: tuple[str, ...]
+    ready_provider_ids: tuple[str, ...]
+    reference_pack_count: int
+    evidence_record_count: int
+    runtime_closure_file_count: int
+
+
+class RuntimeReleaseInspector(Protocol):
+    def inspect(self) -> RuntimeReleaseInventory: ...
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _safe_relative(value: object, label: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise RuntimeStartupError(f"{label} path is invalid")
+    relative = PurePosixPath(value)
+    if relative.is_absolute() or ".." in relative.parts or value != relative.as_posix():
+        raise RuntimeStartupError(f"{label} path is unsafe")
+    return value
+
+
+def _regular_file(root: Path, relative: object, label: str) -> Path:
+    safe_relative = _safe_relative(relative, label)
+    candidate = root / safe_relative
+    try:
+        metadata = candidate.lstat()
+    except OSError as error:
+        raise RuntimeStartupError(f"{label} is missing") from error
+    if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISREG(metadata.st_mode):
+        raise RuntimeStartupError(f"{label} must be a regular file")
+    try:
+        candidate.resolve(strict=True).relative_to(root.resolve(strict=True))
+    except (OSError, ValueError) as error:
+        raise RuntimeStartupError(f"{label} escapes the release root") from error
+    return candidate
+
+
+def _load_json(path: Path, label: str) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise RuntimeStartupError(f"{label} is not valid JSON") from error
+    if not isinstance(payload, dict):
+        raise RuntimeStartupError(f"{label} must be a JSON object")
+    return payload
+
+
+def _require_private_directory(path: Path, label: str, *, writable: bool) -> None:
+    try:
+        metadata = path.lstat()
+    except OSError as error:
+        raise RuntimeStartupError(f"{label} is missing") from error
+    if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
+        raise RuntimeStartupError(f"{label} must be a real directory")
+    if stat.S_IMODE(metadata.st_mode) & (stat.S_IWGRP | stat.S_IWOTH):
+        raise RuntimeStartupError(f"{label} must not be group/world writable")
+    if writable and not os.access(path, os.R_OK | os.W_OK | os.X_OK):
+        raise RuntimeStartupError(f"{label} must be readable and writable")
+
+
+def _require_secure_release_parents(root: Path, relative: str) -> None:
+    current = root
+    for part in PurePosixPath(relative).parts[:-1]:
+        current /= part
+        _require_private_directory(current, "Runtime release directory", writable=False)
+
+
+def _heading_ids(path: Path) -> set[str]:
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError) as error:
+        raise RuntimeStartupError("reference index is unreadable") from error
+    local_id_pattern = re.compile(r"[A-Za-z0-9][A-Za-z0-9._~:-]*[-_:][A-Za-z0-9._~:-]*")
+    ids: list[str] = []
+    for line in lines:
+        heading = re.match(r"^#{2,6}\s+(\S+)(?:\s|$)", line)
+        index_row = re.match(r"^\|\s*([^|\s]+)\s*\|", line)
+        match = heading or index_row
+        if match is not None and local_id_pattern.fullmatch(match.group(1)):
+            ids.append(match.group(1))
+    if len(ids) != len(set(ids)):
+        raise RuntimeStartupError("reference index contains duplicate local ids")
+    return set(ids)
+
+
+@dataclass(frozen=True, slots=True)
+class FileSystemRuntimeReleaseInspector:
+    release_root: Path
+    expected_release_manifest_sha256: str
+    expected_release_name: str
+    expected_source_commit: str
+
+    def inspect(self) -> RuntimeReleaseInventory:
+        _require_private_directory(self.release_root, "Runtime release root", writable=False)
+        manifest_path = _regular_file(
+            self.release_root,
+            ".mingli-release-manifest.json",
+            "Runtime release manifest",
+        )
+        manifest_sha256 = _sha256_file(manifest_path)
+        if manifest_sha256 != self.expected_release_manifest_sha256:
+            raise RuntimeStartupError("Runtime release manifest digest mismatch")
+        manifest = _load_json(manifest_path, "Runtime release manifest")
+        if (
+            set(manifest) != {"schema_version", "release", "source_commit", "files", "modes"}
+            or manifest.get("schema_version") != 3
+            or manifest.get("release") != self.expected_release_name
+            or manifest.get("source_commit") != self.expected_source_commit
+        ):
+            raise RuntimeStartupError("Runtime release identity mismatch")
+        raw_files = manifest.get("files")
+        raw_modes = manifest.get("modes")
+        if not isinstance(raw_files, dict) or not isinstance(raw_modes, dict):
+            raise RuntimeStartupError("Runtime release manifest inventory is invalid")
+        if len(raw_files) != EXPECTED_RELEASE_FILE_COUNT or set(raw_files) != set(raw_modes):
+            raise RuntimeStartupError("Runtime release manifest must contain 217 files")
+        manifest_paths: set[str] = set()
+        for raw_relative, expected_digest in raw_files.items():
+            relative = _safe_relative(raw_relative, "signed file")
+            if not isinstance(expected_digest, str) or not re.fullmatch(
+                r"[0-9a-f]{64}", expected_digest
+            ):
+                raise RuntimeStartupError("signed file digest is invalid")
+            _require_secure_release_parents(self.release_root, relative)
+            path = _regular_file(self.release_root, relative, "signed file")
+            if _sha256_file(path) != expected_digest:
+                raise RuntimeStartupError("signed file digest mismatch")
+            expected_mode = raw_modes[relative]
+            if (
+                not isinstance(expected_mode, int)
+                or stat.S_IMODE(path.stat().st_mode) != expected_mode
+            ):
+                raise RuntimeStartupError(f"signed file mode mismatch: {relative}")
+            manifest_paths.add(relative)
+
+        closure_count = self._verify_closure(manifest_paths)
+        provider_ids, ready_provider_ids = self._verify_providers(manifest_paths)
+        pack_ids, local_ids = self._verify_reference_packs(manifest_paths)
+        evidence_count = self._verify_evidence(manifest_paths, pack_ids, local_ids)
+        return RuntimeReleaseInventory(
+            release_manifest_sha256=manifest_sha256,
+            release_file_count=len(manifest_paths),
+            provider_ids=provider_ids,
+            ready_provider_ids=ready_provider_ids,
+            reference_pack_count=len(pack_ids),
+            evidence_record_count=evidence_count,
+            runtime_closure_file_count=closure_count,
+        )
+
+    def _verify_closure(self, manifest_paths: set[str]) -> int:
+        closure = _load_json(
+            _regular_file(
+                self.release_root,
+                "release/runtime-closure-v1.json",
+                "Runtime closure",
+            ),
+            "Runtime closure",
+        )
+        if closure.get("schema_version") != "mingli-runtime-closure-v1":
+            raise RuntimeStartupError("Runtime closure schema mismatch")
+        explicit = closure.get("files")
+        patterns = closure.get("patterns")
+        if not isinstance(explicit, list) or not isinstance(patterns, list):
+            raise RuntimeStartupError("Runtime closure inventory is invalid")
+        selected = {_safe_relative(item, "Runtime closure") for item in explicit}
+        for raw_pattern in patterns:
+            if not isinstance(raw_pattern, str) or not raw_pattern:
+                raise RuntimeStartupError("Runtime closure pattern is invalid")
+            matches = {
+                relative
+                for relative in manifest_paths
+                if PurePosixPath(relative).match(raw_pattern)
+            }
+            if not matches:
+                raise RuntimeStartupError("Runtime closure pattern matched no signed files")
+            selected.update(matches)
+        if selected != manifest_paths:
+            raise RuntimeStartupError("Runtime closure does not cover all 217 signed files")
+        return len(selected)
+
+    def _verify_providers(
+        self, manifest_paths: set[str]
+    ) -> tuple[tuple[str, ...], tuple[str, ...]]:
+        catalog_path = _regular_file(
+            self.release_root,
+            "resources/runtime/catalog-v1.json",
+            "Provider catalog",
+        )
+        catalog = _load_json(catalog_path, "Provider catalog")
+        entries = catalog.get("providers")
+        if (
+            set(catalog) != {"providers", "schema_version"}
+            or catalog.get("schema_version") != "catalog-v1"
+            or not isinstance(entries, list)
+            or len(entries) != len(V51_RELEASE_CAPABILITY_IDS)
+        ):
+            raise RuntimeStartupError("13 Provider catalog is incomplete")
+        provider_ids: list[str] = []
+        for entry in entries:
+            relative = _safe_relative(entry, "Provider manifest")
+            release_relative = f"resources/runtime/{relative}"
+            if release_relative not in manifest_paths:
+                raise RuntimeStartupError("Provider manifest is not signed")
+            provider = _load_json(
+                _regular_file(
+                    self.release_root / "resources" / "runtime",
+                    relative,
+                    "Provider manifest",
+                ),
+                "Provider manifest",
+            )
+            provider_id = provider.get("id")
+            runtime_capability = provider.get("runtime_capability")
+            if (
+                provider.get("schema_version") != "provider-manifest-v1"
+                or not isinstance(provider_id, str)
+                or not isinstance(provider.get("entrypoint"), str)
+                or not isinstance(provider.get("capability"), dict)
+                or not isinstance(runtime_capability, dict)
+                or runtime_capability.get("system") != provider_id
+            ):
+                raise RuntimeStartupError("Provider manifest is not ready")
+            provider_ids.append(provider_id)
+        ordered = tuple(sorted(provider_ids))
+        if len(set(provider_ids)) != len(provider_ids) or ordered != V51_RELEASE_CAPABILITY_IDS:
+            raise RuntimeStartupError("13 Provider inventory does not match the frozen release")
+        return ordered, ordered
+
+    def _verify_reference_packs(
+        self,
+        manifest_paths: set[str],
+    ) -> tuple[set[str], dict[str, set[str]]]:
+        catalog = _load_json(
+            _regular_file(
+                self.release_root,
+                "references/catalog/catalog.json",
+                "reference catalog",
+            ),
+            "reference catalog",
+        )
+        packs = catalog.get("ready_reference_packs")
+        validation = catalog.get("validation")
+        if (
+            catalog.get("ready_count") != EXPECTED_REFERENCE_PACK_COUNT
+            or not isinstance(packs, list)
+            or len(packs) != EXPECTED_REFERENCE_PACK_COUNT
+            or not isinstance(validation, dict)
+            or set(validation.values()) != {"PASS 55/55"}
+        ):
+            raise RuntimeStartupError("reference catalog is not 55/55 ready")
+        pack_ids: set[str] = set()
+        local_ids: dict[str, set[str]] = {}
+        for item in packs:
+            if not isinstance(item, dict):
+                raise RuntimeStartupError("reference pack record is invalid")
+            system = item.get("system")
+            slug = item.get("slug")
+            if not isinstance(system, str) or not isinstance(slug, str):
+                raise RuntimeStartupError("reference pack identity is invalid")
+            pack_id = f"{system}/{slug}"
+            if pack_id in pack_ids or item.get("d2_status") != "ready":
+                raise RuntimeStartupError("reference pack readiness is invalid")
+            pack_ids.add(pack_id)
+            rules_relative = f"references/books/{pack_id}/rules.md"
+            quotes_relative = f"references/books/{pack_id}/quote-index.md"
+            if rules_relative not in manifest_paths or quotes_relative not in manifest_paths:
+                raise RuntimeStartupError("reference pack files are not signed")
+            rules = _regular_file(self.release_root, rules_relative, "reference rules")
+            quotes = _regular_file(self.release_root, quotes_relative, "reference quote index")
+            local_ids[pack_id] = _heading_ids(rules) | _heading_ids(quotes)
+            if item.get("local_fulltext_required_for_runtime") not in {True, False}:
+                raise RuntimeStartupError("reference pack runtime policy is invalid")
+            if item.get("local_fulltext_required_for_runtime") is True:
+                fulltext = _safe_relative(item.get("local_fulltext_path"), "reference excerpt")
+                if fulltext not in manifest_paths:
+                    raise RuntimeStartupError("required reference excerpt is not signed")
+                if _sha256_file(
+                    _regular_file(self.release_root, fulltext, "reference excerpt")
+                ) != item.get("local_fulltext_sha256"):
+                    raise RuntimeStartupError("reference excerpt digest mismatch")
+        return pack_ids, local_ids
+
+    def _verify_evidence(
+        self,
+        manifest_paths: set[str],
+        pack_ids: set[str],
+        local_ids: Mapping[str, set[str]],
+    ) -> int:
+        relative = "references/index/evidence-rules.jsonl"
+        if relative not in manifest_paths:
+            raise RuntimeStartupError("evidence index is not signed")
+        path = _regular_file(self.release_root, relative, "evidence index")
+        try:
+            rows = [
+                json.loads(line)
+                for line in path.read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise RuntimeStartupError("evidence index is not valid JSONL") from error
+        if len(rows) != EXPECTED_EVIDENCE_RECORD_COUNT or any(
+            not isinstance(row, dict) for row in rows
+        ):
+            raise RuntimeStartupError("evidence index must contain 1328 records")
+        rule_ids = [row.get("rule_id") for row in rows]
+        if any(not isinstance(rule_id, str) or not rule_id for rule_id in rule_ids):
+            raise RuntimeStartupError("evidence rule id is invalid")
+        rule_id_set = set(rule_ids)
+        if len(rule_id_set) != EXPECTED_EVIDENCE_RECORD_COUNT:
+            raise RuntimeStartupError("evidence rule ids are not unique")
+        source_digests: dict[str, str] = {}
+        for row in rows:
+            rule_id = str(row["rule_id"])
+            source_pack = row.get("source_pack")
+            if (
+                row.get("schema_version") != "mingli-evidence-rule-v1"
+                or row.get("record_kind") != "substantive_rule"
+                or source_pack not in pack_ids
+            ):
+                raise RuntimeStartupError("evidence record identity is invalid")
+            source_relative = _safe_relative(row.get("source_path"), "evidence source")
+            if source_relative not in manifest_paths:
+                raise RuntimeStartupError("evidence source is not signed")
+            source_digest = source_digests.setdefault(
+                source_relative,
+                _sha256_file(_regular_file(self.release_root, source_relative, "evidence source")),
+            )
+            quote = row.get("quote")
+            if source_digest != row.get("source_sha256"):
+                raise RuntimeStartupError("evidence source digest mismatch")
+            if (
+                not isinstance(quote, str)
+                or not quote.strip()
+                or hashlib.sha256(quote.encode("utf-8")).hexdigest() != row.get("quote_hash")
+            ):
+                raise RuntimeStartupError("evidence quote digest mismatch")
+            for field_name in ("depends_on_rule_ids", "exception_rule_ids"):
+                refs = row.get(field_name)
+                if not isinstance(refs, list) or any(ref not in rule_id_set for ref in refs):
+                    raise RuntimeStartupError("evidence rule dependency is not closed")
+            conflicts = row.get("conflict_rule_ids")
+            if not isinstance(conflicts, list):
+                raise RuntimeStartupError("evidence conflict references are invalid")
+            for conflict in conflicts:
+                if conflict in rule_id_set:
+                    continue
+                if not isinstance(conflict, str) or conflict.count("#") != 1:
+                    raise RuntimeStartupError("evidence conflict reference is not closed")
+                pack_id, local_id = conflict.split("#", 1)
+                if local_id not in local_ids.get(pack_id, set()):
+                    raise RuntimeStartupError("evidence conflict reference is not closed")
+            del rule_id
+        return len(rows)
+
+
+def _json_compatible(value: object) -> object:
+    if isinstance(value, Mapping):
+        return {str(key): _json_compatible(item) for key, item in value.items()}
+    if isinstance(value, (tuple, list)):
+        return [_json_compatible(item) for item in value]
+    return value
+
+
+def runtime_capability_shape_sha256(capabilities: object) -> str:
+    payload = json.dumps(
+        _json_compatible(capabilities),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+@dataclass(slots=True)
+class RuntimeStartupGate:
+    runtime: MingliRuntime
+    release_inspector: RuntimeReleaseInspector
+    expected_manifest_digest: str
+    expected_release_manifest_sha256: str
+    expected_capability_shape_sha256: str
+    _ready: bool = field(default=False, init=False)
+
+    async def startup(self) -> Described:
+        self._ready = False
+        try:
+            if getattr(self.runtime, "adapter_kind", None) != "one-shot-process":
+                raise RuntimeStartupError("Fake Runtime is forbidden by the startup gate")
+            inventory = self.release_inspector.inspect()
+            result = await self.runtime.execute(Describe())
+            if not isinstance(result, Described):
+                raise RuntimeStartupError("Runtime describe did not return Described")
+            self._validate(result, inventory)
+        except RuntimeStartupError:
+            raise
+        except Exception as error:
+            raise RuntimeStartupError("runtime_startup_failed") from error
+        self._ready = True
+        return result
+
+    async def readiness_probe(self) -> None:
+        if not self._ready:
+            raise RuntimeStartupError("Runtime startup admission is not ready")
+
+    def _validate(self, description: Described, inventory: RuntimeReleaseInventory) -> None:
+        if description.protocol_version != EXPECTED_RUNTIME_PROTOCOL:
+            raise RuntimeStartupError("Runtime protocol mismatch")
+        if description.manifest_digest != self.expected_manifest_digest:
+            raise RuntimeStartupError("Runtime manifest digest mismatch")
+        described_ids = tuple(str(item["id"]) for item in description.capabilities)
+        if described_ids != V51_RELEASE_CAPABILITY_IDS:
+            raise RuntimeStartupError("Runtime must describe the exact 13 Provider set")
+        if (
+            runtime_capability_shape_sha256(description.capabilities)
+            != self.expected_capability_shape_sha256
+        ):
+            raise RuntimeStartupError("Runtime capability shape mismatch")
+        if inventory.release_manifest_sha256 != self.expected_release_manifest_sha256:
+            raise RuntimeStartupError("Runtime release manifest digest mismatch")
+        expected_providers = V51_RELEASE_CAPABILITY_IDS
+        if inventory.provider_ids != expected_providers:
+            raise RuntimeStartupError("Runtime release Provider inventory mismatch")
+        if inventory.ready_provider_ids != expected_providers:
+            raise RuntimeStartupError("Runtime release is not 13/13 ready")
+        if inventory.release_file_count != EXPECTED_RELEASE_FILE_COUNT:
+            raise RuntimeStartupError("Runtime release manifest is incomplete")
+        if inventory.runtime_closure_file_count != EXPECTED_RELEASE_FILE_COUNT:
+            raise RuntimeStartupError("Runtime closure is incomplete")
+        if inventory.reference_pack_count != EXPECTED_REFERENCE_PACK_COUNT:
+            raise RuntimeStartupError("Runtime reference inventory is not 55/55")
+        if inventory.evidence_record_count != EXPECTED_EVIDENCE_RECORD_COUNT:
+            raise RuntimeStartupError("Runtime evidence inventory is not 1328")
+
+
+async def _read_capped_stream(
+    stream: asyncio.StreamReader,
+    *,
+    limit: int,
+    error_code: str,
+) -> bytes:
+    data = bytearray()
+    while chunk := await stream.read(min(64 * 1024, limit + 1 - len(data))):
+        data.extend(chunk)
+        if len(data) > limit:
+            raise RuntimeTransportError(error_code)
+    return bytes(data)
+
+
+async def _exchange(
+    process: asyncio.subprocess.Process,
+    stdin: bytes,
+    *,
+    max_stdout_bytes: int,
+    max_stderr_bytes: int,
+) -> tuple[bytes, bytes]:
+    if process.stdin is None or process.stdout is None or process.stderr is None:
+        raise RuntimeTransportError("runtime_pipe_unavailable")
+    stdout_task = asyncio.create_task(
+        _read_capped_stream(
+            process.stdout,
+            limit=max_stdout_bytes,
+            error_code="runtime_stdout_too_large",
+        )
+    )
+    stderr_task = asyncio.create_task(
+        _read_capped_stream(
+            process.stderr,
+            limit=max_stderr_bytes,
+            error_code="runtime_stderr_too_large",
+        )
+    )
+    try:
+        with suppress(BrokenPipeError, ConnectionResetError):
+            process.stdin.write(stdin)
+            await process.stdin.drain()
+            process.stdin.close()
+            await process.stdin.wait_closed()
+        stdout, stderr = await asyncio.gather(stdout_task, stderr_task)
+        await process.wait()
+        return stdout, stderr
+    finally:
+        for task in (stdout_task, stderr_task):
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(stdout_task, stderr_task, return_exceptions=True)
+
+
+async def _kill_process_group(process: asyncio.subprocess.Process) -> None:
+    with suppress(ProcessLookupError):
+        os.killpg(process.pid, signal.SIGKILL)
+    await process.wait()
+
+
+class OneShotMingliRuntimeAdapter:
+    """Call the fixed portable JSON Runtime exactly once per command."""
+
+    adapter_kind = "one-shot-process"
+    production_ready = False
+
+    def __init__(
+        self,
+        *,
+        launcher_path: Path,
+        runtime_python_path: Path,
+        state_root: Path,
+        timeout_seconds: float,
+        max_stdin_bytes: int = 2 * 1024 * 1024,
+        max_stdout_bytes: int = 2 * 1024 * 1024,
+        max_stderr_bytes: int = 64 * 1024,
+    ) -> None:
+        if not launcher_path.is_absolute():
+            raise ValueError("Runtime launcher path must be absolute")
+        if not runtime_python_path.is_absolute():
+            raise ValueError("Runtime Python path must be absolute")
+        if not state_root.is_absolute():
+            raise ValueError("Runtime state root must be absolute")
+        if timeout_seconds <= 0:
+            raise ValueError("Runtime timeout must be positive")
+        if max_stdin_bytes < 1 or max_stdout_bytes < 1 or max_stderr_bytes < 1:
+            raise ValueError("Runtime I/O limits must be positive")
+        _require_private_directory(state_root, "Runtime state root", writable=True)
+        self._launcher_path = launcher_path
+        self._runtime_python_path = runtime_python_path
+        self._state_root = state_root
+        self._timeout_seconds = timeout_seconds
+        self._max_stdin_bytes = max_stdin_bytes
+        self._max_stdout_bytes = max_stdout_bytes
+        self._max_stderr_bytes = max_stderr_bytes
+
+    async def execute(self, command: MingliCommand) -> MingliResult:
+        stdin = (
+            json.dumps(
+                command.to_dict(),
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ).encode("utf-8")
+            + b"\n"
+        )
+        if len(stdin) > self._max_stdin_bytes:
+            raise RuntimeTransportError("runtime_stdin_too_large")
+        environment = {
+            "HOME": "/nonexistent",
+            "LANG": "C.UTF-8",
+            "LC_ALL": "C.UTF-8",
+            "MINGLI_PYTHON": str(self._runtime_python_path),
+            "MINGLI_STORE_ROOT": str(self._state_root),
+            "PATH": os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin"),
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "TZ": "UTC",
+        }
+        try:
+            process = await asyncio.create_subprocess_exec(
+                str(self._launcher_path),
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=environment,
+                start_new_session=True,
+            )
+        except OSError as error:
+            raise RuntimeTransportError("runtime_spawn_failed") from error
+        try:
+            async with asyncio.timeout(self._timeout_seconds):
+                stdout, _stderr = await _exchange(
+                    process,
+                    stdin,
+                    max_stdout_bytes=self._max_stdout_bytes,
+                    max_stderr_bytes=self._max_stderr_bytes,
+                )
+        except TimeoutError as error:
+            await _kill_process_group(process)
+            raise RuntimeTransportError("runtime_timed_out") from error
+        except RuntimeTransportError:
+            await _kill_process_group(process)
+            raise
+        except BaseException:
+            await _kill_process_group(process)
+            raise
+        if process.returncode != 0:
+            raise RuntimeTransportError("runtime_nonzero_exit")
+        try:
+            decoded = json.loads(stdout.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            raise RuntimeTransportError("runtime_invalid_output") from None
+        if not isinstance(decoded, Mapping):
+            raise RuntimeTransportError("runtime_invalid_output")
+        try:
+            return result_from_dict(decoded)
+        except (KeyError, TypeError, ValueError):
+            raise RuntimeTransportError("runtime_invalid_result") from None
+
+
+def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:
+    """Build the real Runtime boundary exclusively from server settings."""
+
+    if settings.runtime_adapter != "one-shot":
+        raise RuntimeStartupError("a real one-shot Runtime adapter is required")
+    required_paths = {
+        "launcher": settings.runtime_launcher_path,
+        "Python": settings.runtime_python_path,
+        "release root": settings.runtime_release_root,
+        "state root": settings.runtime_state_root,
+    }
+    if any(path is None for path in required_paths.values()):
+        raise RuntimeStartupError("Runtime process paths are incomplete")
+    if settings.runtime_expected_manifest_digest is None:
+        raise RuntimeStartupError("Runtime expected manifest digest is missing")
+    if settings.runtime_expected_capability_shape_sha256 is None:
+        raise RuntimeStartupError("Runtime expected capability shape digest is missing")
+    launcher_path = required_paths["launcher"]
+    runtime_python_path = required_paths["Python"]
+    release_root = required_paths["release root"]
+    state_root = required_paths["state root"]
+    assert launcher_path is not None
+    assert runtime_python_path is not None
+    assert release_root is not None
+    assert state_root is not None
+    runtime = OneShotMingliRuntimeAdapter(
+        launcher_path=launcher_path,
+        runtime_python_path=runtime_python_path,
+        state_root=state_root,
+        timeout_seconds=settings.runtime_timeout_seconds,
+        max_stdin_bytes=settings.runtime_max_stdin_bytes,
+        max_stdout_bytes=settings.runtime_max_stdout_bytes,
+        max_stderr_bytes=settings.runtime_max_stderr_bytes,
+    )
+    inspector = FileSystemRuntimeReleaseInspector(
+        release_root=release_root,
+        expected_release_manifest_sha256=FROZEN_RELEASE_MANIFEST_SHA256,
+        expected_release_name=FROZEN_RELEASE_NAME,
+        expected_source_commit=FROZEN_SOURCE_COMMIT,
+    )
+    return RuntimeStartupGate(
+        runtime=runtime,
+        release_inspector=inspector,
+        expected_manifest_digest=settings.runtime_expected_manifest_digest,
+        expected_release_manifest_sha256=FROZEN_RELEASE_MANIFEST_SHA256,
+        expected_capability_shape_sha256=(settings.runtime_expected_capability_shape_sha256),
+    )
 
 
 def _term(term_id: str, label: str) -> dict[str, object]:
@@ -77,6 +755,7 @@ def _capability(
 class FakeMingliRuntimeAdapter:
     """Deterministic contract Fake; it never performs命理 calculation."""
 
+    adapter_kind = "fake"
     production_ready = False
 
     def __init__(self) -> None:

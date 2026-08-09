@@ -59,6 +59,17 @@ def test_production_requires_an_explicit_256_bit_content_key() -> None:
         identity_hash_key="injected-identity-hash-key",
         content_encryption_key_b64=injected_key,
         content_encryption_key_id="kms-production-v1",
+        runtime_adapter="one-shot",
+        runtime_launcher_path="/opt/mingli-master/scripts/run_reading_transaction.sh",
+        runtime_python_path="/opt/mingli-runtime/venv/bin/python",
+        runtime_release_root="/opt/mingli-master",
+        runtime_state_root="/var/lib/mingli",
+        runtime_expected_manifest_digest=(
+            "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"
+        ),
+        runtime_expected_capability_shape_sha256=(
+            "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
+        ),
     )
     assert settings.content_encryption_key_id == "kms-production-v1"
 

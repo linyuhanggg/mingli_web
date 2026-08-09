@@ -540,7 +540,12 @@ Execute only the configured fixed path `/opt/mingli-master/scripts/run_reading_t
 
 Production must reject Fake Runtime, relative paths, missing expected manifest digest, missing state root and world/group-writable release/state paths.
 
-**Step 6: Run Fake and real-image tests, then commit**
+**Step 6: Run Fake-executable tests and Mac-native signed Runtime smoke, then commit**
+
+The real smoke lane calls the read-only, signed Mac mini Runtime installation with a
+temporary private state root and proves `describe → prepare → complete → identical
+Accepted replay`. It must not start or depend on a Linux image, Docker, VZ, Rosetta,
+QEMU, `linux-certify`, or `release-5.1.json`.
 
 ```bash
 uv run --project backend pytest backend/tests/test_runtime_process_adapter.py backend/tests/test_runtime_startup_gate.py backend/tests/test_fake_adapters.py -q

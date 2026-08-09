@@ -1,6 +1,7 @@
 import base64
 import binascii
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal, Self
 
 from pydantic import Field, SecretStr, model_validator
@@ -8,7 +9,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Environment = Literal["local", "test", "staging", "production"]
 OtpAdapterName = Literal["fake", "disabled"]
+RuntimeAdapterName = Literal["fake", "one-shot"]
 _LOCAL_CONTENT_KEY_B64 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+_PRODUCTION_RUNTIME_LAUNCHER = Path("/opt/mingli-master/scripts/run_reading_transaction.sh")
+_PRODUCTION_RUNTIME_PYTHON = Path("/opt/mingli-runtime/venv/bin/python")
+_PRODUCTION_RUNTIME_RELEASE_ROOT = Path("/opt/mingli-master")
+_PRODUCTION_RUNTIME_STATE_ROOT = Path("/var/lib/mingli")
+_FROZEN_DESCRIBE_MANIFEST_DIGEST = (
+    "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"
+)
+_FROZEN_CAPABILITY_SHAPE_SHA256 = "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
 
 
 class Settings(BaseSettings):
@@ -26,6 +36,23 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
     cookie_domain: str | None = None
     otp_adapter: OtpAdapterName = "fake"
+    runtime_adapter: RuntimeAdapterName = "fake"
+    runtime_launcher_path: Path | None = None
+    runtime_python_path: Path | None = None
+    runtime_release_root: Path | None = None
+    runtime_state_root: Path | None = None
+    runtime_expected_manifest_digest: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+    runtime_expected_capability_shape_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+    runtime_timeout_seconds: float = Field(default=30.0, gt=0)
+    runtime_max_stdin_bytes: int = Field(default=2 * 1024 * 1024, ge=1)
+    runtime_max_stdout_bytes: int = Field(default=2 * 1024 * 1024, ge=1)
+    runtime_max_stderr_bytes: int = Field(default=64 * 1024, ge=1)
     fake_otp_code: str = "246810"
     identity_hash_key: SecretStr = SecretStr("local-only-identity-hash-key-change-in-production")
     content_encryption_key_b64: SecretStr = SecretStr(_LOCAL_CONTENT_KEY_B64)
@@ -69,6 +96,37 @@ class Settings(BaseSettings):
             raise ValueError("production content encryption key must be injected")
         if encoded_content_key == self.identity_hash_key.get_secret_value():
             raise ValueError("content encryption key must not reuse identity_hash_key")
+        if self.environment == "production" and self.runtime_adapter == "fake":
+            raise ValueError("Fake Runtime adapter is forbidden in production")
+        runtime_paths = (
+            self.runtime_launcher_path,
+            self.runtime_python_path,
+            self.runtime_release_root,
+            self.runtime_state_root,
+        )
+        if any(path is not None and not path.is_absolute() for path in runtime_paths):
+            raise ValueError("Runtime launcher, Python, release and state paths must be absolute")
+        if self.environment == "production":
+            if self.runtime_launcher_path is None:
+                raise ValueError("production Runtime launcher is required")
+            if self.runtime_launcher_path != _PRODUCTION_RUNTIME_LAUNCHER:
+                raise ValueError("production requires the fixed launcher path")
+            if self.runtime_python_path != _PRODUCTION_RUNTIME_PYTHON:
+                raise ValueError("production requires the fixed Runtime Python path")
+            if self.runtime_release_root != _PRODUCTION_RUNTIME_RELEASE_ROOT:
+                raise ValueError("production requires the fixed Runtime release root")
+            if self.runtime_state_root is None:
+                raise ValueError("production Runtime state root is required")
+            if self.runtime_state_root != _PRODUCTION_RUNTIME_STATE_ROOT:
+                raise ValueError("production requires the fixed Runtime state root")
+            if self.runtime_expected_manifest_digest is None:
+                raise ValueError("production expected Runtime manifest digest is required")
+            if self.runtime_expected_manifest_digest != _FROZEN_DESCRIBE_MANIFEST_DIGEST:
+                raise ValueError("production Runtime manifest digest is not the frozen release")
+            if self.runtime_expected_capability_shape_sha256 is None:
+                raise ValueError("production expected capability shape digest is required")
+            if self.runtime_expected_capability_shape_sha256 != _FROZEN_CAPABILITY_SHAPE_SHA256:
+                raise ValueError("production requires the frozen capability shape digest")
         return self
 
 
