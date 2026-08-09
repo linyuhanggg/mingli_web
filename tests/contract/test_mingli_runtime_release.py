@@ -1450,6 +1450,35 @@ def test_prepared_gate_mode_rejects_partial_or_mixed_inputs(
         gate._resolve_gate_inputs(SimpleNamespace(**values))
 
 
+def test_gate_volume_cleanup_is_fail_closed_and_attempts_every_volume() -> None:
+    gate = load_lima_gate()
+
+    class FakeVM:
+        def __init__(self) -> None:
+            self.removed: list[str] = []
+
+        def remove_volume(self, volume: str) -> None:
+            self.removed.append(volume)
+            if volume == "volume-b":
+                raise gate.GateError("scripted cleanup failure")
+
+    vm = FakeVM()
+    with pytest.raises(gate.GateError, match="cleanup failed"):
+        gate._remove_gate_volumes(vm, ["volume-a", "volume-b", "volume-c"])
+
+    assert vm.removed == ["volume-c", "volume-b", "volume-a"]
+
+
+def test_gate_publishes_only_after_cleanup_contract() -> None:
+    gate = load_lima_gate()
+    source = inspect.getsource(gate.run_gate)
+
+    assert source.index("_remove_gate_volumes") < source.index(
+        "os.replace(final_temporary, output)"
+    )
+    assert "gate cleanup warning" not in source
+
+
 def test_backup_evidence_records_the_normalized_executed_docker_argv(
     tmp_path: Path,
 ) -> None:

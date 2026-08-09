@@ -245,6 +245,7 @@ def load(path: Path, expected_sha256: str) -> PreparedInputs:
     release_manifest = _absolute_path(
         source.get("release_manifest"), "source.release_manifest", directory=False
     )
+    _require_within(release_manifest, source_root, "source.release_manifest")
     if sha256_file(release_manifest) != EXPECTED_RELEASE_MANIFEST_SHA256:
         _fail("release manifest bytes do not match the signed SHA-256")
     source_fulltext = source_root / "references" / "fulltext"

@@ -1169,6 +1169,28 @@ def test_prepared_inputs_rejects_release_manifest_bytes_mismatch(
     assert_nothing_published(request.output_parent)
 
 
+def test_prepared_inputs_requires_release_manifest_inside_source_projection(
+    tmp_path: Path,
+) -> None:
+    gate_module = load_local_gate()
+    manifest_path, _, payload = write_prepared_inputs(tmp_path)
+    source_manifest = Path(payload["source"]["release_manifest"])
+    external_manifest = tmp_path / "external-release-manifest.json"
+    shutil.copy2(source_manifest, external_manifest)
+    payload["source"]["release_manifest"] = str(external_manifest)
+    for binding in payload["bindings"]:
+        if binding["path"] == str(source_manifest):
+            binding["path"] = str(external_manifest)
+    raw = (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    manifest_path.write_bytes(raw)
+
+    with pytest.raises(
+        gate_module.prepared_inputs.PreparedInputsError,
+        match=r"source\.release_manifest.*inside",
+    ):
+        gate_module.prepared_inputs.load(manifest_path, sha256_bytes(raw))
+
+
 def test_prepared_inputs_verifies_real_source_git_head(tmp_path: Path) -> None:
     gate_module = load_local_gate()
     request, payload = native_request(gate_module, tmp_path)

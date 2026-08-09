@@ -1503,6 +1503,17 @@ def _resolve_gate_inputs(
     return instance or "mingli-linux-gate", None, None
 
 
+def _remove_gate_volumes(vm: LimaDocker, volumes: Sequence[str]) -> None:
+    failures: list[str] = []
+    for volume in reversed(volumes):
+        try:
+            vm.remove_volume(volume)
+        except (GateError, OSError, subprocess.SubprocessError):
+            failures.append(volume)
+    if failures:
+        _fail("Gate cleanup failed for volumes: " + ", ".join(failures))
+
+
 def run_gate(args: argparse.Namespace) -> Path:
     output = args.output.absolute()
     if output.exists() or output.is_symlink():
@@ -1526,6 +1537,7 @@ def run_gate(args: argparse.Namespace) -> Path:
     vm = LimaDocker(instance)
     created_volumes: list[str] = []
     final_temporary: Path | None = None
+    gate_ready = False
     with tempfile.TemporaryDirectory(prefix="mingli-v51-gate-") as temporary_text:
         temporary = Path(temporary_text)
         try:
@@ -1834,18 +1846,30 @@ def run_gate(args: argparse.Namespace) -> Path:
                     }
                 )
             )
-            os.replace(final_temporary, output)
-            final_temporary = None
-            print(f"gate: admitted evidence written to {output}", flush=True)
-            return output
+            gate_ready = True
         finally:
-            if final_temporary is not None:
+            cleanup_error: GateError | None = None
+            try:
+                _remove_gate_volumes(vm, created_volumes)
+            except GateError as exc:
+                cleanup_error = exc
+            if not gate_ready or cleanup_error is not None:
+                gate_ready = False
+            if not gate_ready and final_temporary is not None:
                 shutil.rmtree(final_temporary, ignore_errors=True)
-            for volume in reversed(created_volumes):
-                try:
-                    vm.remove_volume(volume)
-                except GateError as exc:
-                    print(f"gate cleanup warning: {exc}", file=sys.stderr)
+                final_temporary = None
+            if cleanup_error is not None:
+                raise cleanup_error
+    if not gate_ready or final_temporary is None:
+        _fail("Linux Gate did not produce a publishable staging bundle")
+    try:
+        os.replace(final_temporary, output)
+    except OSError as exc:
+        shutil.rmtree(final_temporary, ignore_errors=True)
+        raise GateError("Linux Gate could not atomically publish evidence") from exc
+    final_temporary = None
+    print(f"gate: admitted evidence written to {output}", flush=True)
+    return output
 
 
 def main(argv: Sequence[str] | None = None) -> int:
