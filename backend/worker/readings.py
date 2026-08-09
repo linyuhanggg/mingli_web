@@ -126,10 +126,13 @@ class ReadingJobWorkSource:
                 )
                 if version is None:
                     raise RuntimeError("Reading Job points to a missing Reading Version")
-                if version.status == ReadingStatus.INPUT_READY.value:
-                    # Once the first claim has expired, the database cannot
-                    # distinguish a pre-call crash from a Runtime-side Root
-                    # created before the Prepared checkpoint committed.
+                if (
+                    version.status == ReadingStatus.INPUT_READY.value
+                    and not version.prepare_has_state_token
+                ):
+                    # An expired no-token Prepare cannot distinguish a pre-call
+                    # crash from a Runtime-side Root created before COMMIT.
+                    # Tokened Prepare is replay-safe under the V5.1 protocol.
                     version.status = ReadingStatus.RUNTIME_UNKNOWN.value
                     job.status = "runtime_unknown"
                     job.lease_owner = None
@@ -175,13 +178,11 @@ class ReadingJobProcessor:
             finished_at = self.clock.now()
             if outcome.retry_not_before is not None:
                 if (
-                    outcome.status is not ReadingStatus.COMPLETING
+                    outcome.status not in {ReadingStatus.INPUT_READY, ReadingStatus.COMPLETING}
                     or status != "queued"
                     or outcome.retry_not_before <= finished_at
                 ):
-                    raise ValueError(
-                        "retry_not_before must schedule a completing Job in the future"
-                    )
+                    raise ValueError("retry_not_before must schedule a retryable Job in the future")
                 available_at = outcome.retry_not_before
             else:
                 available_at = finished_at if status == "queued" else job.available_at

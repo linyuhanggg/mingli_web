@@ -7,9 +7,11 @@ from typing import Any
 from uuid import uuid4
 
 import pytest
-from orchestrator_fakes import make_candidate
 from sqlalchemy import text
 from sqlalchemy.dialects import postgresql
+
+# isort: split
+from orchestrator_fakes import make_candidate
 from test_narrative_guard import build_brief
 
 
@@ -26,7 +28,11 @@ async def reading_database() -> AsyncIterator[Any]:
     await database.dispose()
 
 
-async def create_reading_graph(session: Any) -> tuple[Any, Any, Any, Any, Any]:
+async def create_reading_graph(
+    session: Any,
+    *,
+    prepare_state_token: str | None = None,
+) -> tuple[Any, Any, Any, Any, Any]:
     identity_models = importlib.import_module("app.identity.models")
     profiles = importlib.import_module("app.profiles.repository")
     readings = importlib.import_module("app.readings.repository")
@@ -81,6 +87,7 @@ async def create_reading_graph(session: Any) -> tuple[Any, Any, Any, Any, Any]:
                 "location": "福建省福州市",
             }
         },
+        state_token=prepare_state_token,
     )
     version = await repository.create_version(
         reading_root_id=root.id,
@@ -106,6 +113,36 @@ async def create_reading_graph(session: Any) -> tuple[Any, Any, Any, Any, Any]:
         max_attempts=2,
     )
     return repository, profile_version, version, job, runtime_contracts
+
+
+@pytest.mark.parametrize(
+    ("prepare_state_token", "expected"),
+    [(None, False), ("accepted-parent-token", True)],
+)
+async def test_repository_persists_prepare_token_presence_without_exposing_it(
+    reading_database: Any,
+    prepare_state_token: str | None,
+    expected: bool,
+) -> None:
+    models = importlib.import_module("app.readings.models")
+    async with reading_database.sessions() as session, session.begin():
+        _repository, _profile, version, _job, _contracts = await create_reading_graph(
+            session,
+            prepare_state_token=prepare_state_token,
+        )
+        version_id = version.id
+
+    async with reading_database.sessions() as session:
+        persisted = await session.get(models.ReadingVersion, version_id)
+        assert persisted is not None
+        assert persisted.prepare_has_state_token is expected
+        raw_rows = (
+            await session.execute(
+                text("SELECT prepare_has_state_token, prepare_ciphertext FROM reading_versions")
+            )
+        ).all()
+        if prepare_state_token is not None:
+            assert prepare_state_token not in repr(raw_rows)
 
 
 async def test_repository_round_trips_encrypted_orchestrator_checkpoints(

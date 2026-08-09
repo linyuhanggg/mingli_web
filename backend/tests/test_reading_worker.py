@@ -114,6 +114,21 @@ class FirstWriteRuntime:
         raise AssertionError(f"unexpected Runtime command: {command.kind}")
 
 
+class ReplaySafeTokenRuntime:
+    def __init__(self, contracts: Any) -> None:
+        self.contracts = contracts
+        self.commands: list[Any] = []
+
+    async def execute(self, command: Any) -> Any:
+        self.commands.append(command)
+        if not isinstance(command, self.contracts.Prepare):
+            raise AssertionError(f"unexpected Runtime command: {command.kind}")
+        return self.contracts.Prepared(
+            state_token="stable-replayed-prepared-token",
+            brief=build_brief(),
+        )
+
+
 class CountingModel:
     def __init__(self, script: list[object]) -> None:
         self.script = list(script)
@@ -161,9 +176,16 @@ async def process_one_stage(
     return item
 
 
-async def seed_job(database: Any) -> Any:
+async def seed_job(
+    database: Any,
+    *,
+    prepare_state_token: str | None = None,
+) -> Any:
     async with database.sessions() as session, session.begin():
-        _repository, _profile, _version, job, _contracts = await create_reading_graph(session)
+        _repository, _profile, _version, job, _contracts = await create_reading_graph(
+            session,
+            prepare_state_token=prepare_state_token,
+        )
         return job
 
 
@@ -401,6 +423,58 @@ async def test_processor_passes_only_job_id_and_records_outcome(
     assert item.claim_token not in caplog.text
 
 
+async def test_processor_schedules_tokened_prepare_transport_retry(
+    worker_database: Any,
+) -> None:
+    readings = importlib.import_module("worker.readings")
+    orchestrator = importlib.import_module("app.readings.orchestrator")
+    models = importlib.import_module("app.readings.models")
+    job = await seed_job(
+        worker_database,
+        prepare_state_token="accepted-parent-token",
+    )
+    clock = MutableClock(datetime(2026, 8, 9, 12, 0, tzinfo=UTC))
+    retry_at = clock.now() + timedelta(seconds=5)
+    source = readings.ReadingJobWorkSource(
+        sessions=worker_database.sessions,
+        worker_id="worker-tokened-transport-unknown",
+        clock=clock,
+        lease_seconds=30,
+    )
+    item = await source.claim_one()
+    assert item is not None
+
+    class RetryRunner:
+        async def run(self, job_id: str) -> Any:
+            assert job_id == str(job.id)
+            return orchestrator.ReadingOutcome(
+                status=orchestrator.ReadingStatus.INPUT_READY,
+                retry_not_before=retry_at,
+            )
+
+    processor = readings.ReadingJobProcessor(
+        sessions=worker_database.sessions,
+        orchestrator_factory=lambda _session: RetryRunner(),
+        worker_id="worker-tokened-transport-unknown",
+        clock=clock,
+    )
+    await processor.process(item)
+
+    async with worker_database.sessions() as session:
+        persisted = await session.get(models.ReadingJobRecord, job.id)
+        assert persisted.status == "queued"
+        assert persisted.available_at == retry_at.replace(tzinfo=None)
+        assert persisted.lease_owner is None
+        assert persisted.lease_token is None
+        assert persisted.lease_expires_at is None
+    assert await source.claim_one() is None
+
+    clock.current = retry_at
+    recovered = await source.claim_one()
+    assert recovered is not None
+    assert recovered.lease_generation == item.lease_generation + 1
+
+
 async def test_postgresql_prepared_checkpoint_commits_before_model_restart(
     postgres_worker_database: Any,
 ) -> None:
@@ -539,6 +613,92 @@ async def test_expired_initial_prepare_claim_is_quarantined_without_runtime_repl
         assert persisted_job.lease_owner is None
         assert persisted_job.lease_token is None
         assert persisted_job.lease_expires_at is None
+
+
+async def test_expired_tokened_prepare_rotates_fence_and_replays_original_token(
+    postgres_worker_database: Any,
+) -> None:
+    readings = importlib.import_module("worker.readings")
+    repository_module = importlib.import_module("app.readings.repository")
+    orchestrator = importlib.import_module("app.readings.orchestrator")
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    original_state_token = "accepted-parent-token"
+    runtime = ReplaySafeTokenRuntime(contracts)
+    model = CountingModel([])
+    cipher = make_test_cipher()
+    clock = MutableClock(datetime(2026, 8, 9, 12, 0, tzinfo=UTC))
+    base_factory = readings.SqlReadingOrchestratorFactory(
+        cipher=cipher,
+        runtime=runtime,
+        model=model,
+        clock=clock,
+    )
+    job = await seed_job(
+        postgres_worker_database,
+        prepare_state_token=original_state_token,
+    )
+
+    def failing_commit_factory(session: Any) -> Any:
+        def fail_before_commit(_session: Any) -> None:
+            raise InjectedCommitFailure("tokened Prepared checkpoint commit failed")
+
+        event.listen(session.sync_session, "before_commit", fail_before_commit, once=True)
+        return base_factory(session)
+
+    first_source = readings.ReadingJobWorkSource(
+        sessions=postgres_worker_database.sessions,
+        worker_id="worker-tokened-prepare-crashed",
+        clock=clock,
+        lease_seconds=30,
+    )
+    first_item = await first_source.claim_one()
+    assert first_item is not None
+    first_processor = readings.ReadingJobProcessor(
+        sessions=postgres_worker_database.sessions,
+        orchestrator_factory=failing_commit_factory,
+        worker_id="worker-tokened-prepare-crashed",
+        clock=clock,
+    )
+    with pytest.raises(InjectedCommitFailure, match="tokened Prepared"):
+        await first_processor.process(first_item)
+
+    clock.current += timedelta(seconds=31)
+    recovering_source = readings.ReadingJobWorkSource(
+        sessions=postgres_worker_database.sessions,
+        worker_id="worker-tokened-prepare-recovery",
+        clock=clock,
+        lease_seconds=30,
+    )
+    recovered_item = await recovering_source.claim_one()
+    assert recovered_item is not None
+    assert recovered_item.id == first_item.id
+    assert recovered_item.claim_token != first_item.claim_token
+    assert recovered_item.lease_generation == first_item.lease_generation + 1
+
+    recovering_processor = readings.ReadingJobProcessor(
+        sessions=postgres_worker_database.sessions,
+        orchestrator_factory=base_factory,
+        worker_id="worker-tokened-prepare-recovery",
+        clock=clock,
+    )
+    await recovering_processor.process(recovered_item)
+
+    prepare_commands = [
+        command for command in runtime.commands if isinstance(command, contracts.Prepare)
+    ]
+    assert len(prepare_commands) == 2
+    assert [command.state_token for command in prepare_commands] == [
+        original_state_token,
+        original_state_token,
+    ]
+    async with postgres_worker_database.sessions() as session:
+        checkpoint = await repository_module.SqlReadingRepository(
+            session,
+            cipher,
+        ).load_checkpoint(str(job.id))
+        assert checkpoint.status is orchestrator.ReadingStatus.PREPARED
+        assert checkpoint.prepared is not None
+        assert checkpoint.prepared.state_token == "stable-replayed-prepared-token"
 
 
 async def test_postgresql_complete_commit_failure_replays_exact_intent(

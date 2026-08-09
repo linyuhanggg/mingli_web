@@ -369,7 +369,11 @@ stateDiagram-v2
 
 这里存在一个不能靠网站事务消除的窗口：无 token `prepare` 已在 Runtime 成功创建 Root，但宿主在收到响应或把 Prepared token 提交到 PostgreSQL 前崩溃，可能留下无法关联的孤儿 Runtime Root。这个窗口不具备 exactly-once 语义，也不得给 5.1 私加请求幂等含义来掩盖。P0 通过调用超时、Runtime 单副本、禁止自动重放，以及孤儿 Root 审计和清理流程控制风险；只有 Prepared token 已提交后，后续阶段才能按持久化 checkpoint 安全恢复。
 
-领取层必须把这个边界真正 fail closed：首次 `INPUT_READY` claim 过期且仍没有 Prepared/Stopped checkpoint 时，领取事务直接把 Job 与 Reading Version 标成 `runtime_unknown`、清除租约并且不返回 work item。数据库无法区分“调用前已崩溃”和“Runtime 已建 Root、提交前崩溃”，所以 P0 保守地把两者都判为 unknown；人工审计前绝不再次发送无 token Prepare。
+领取层必须把这个边界真正 fail closed：无 token 的 `INPUT_READY` claim 过期且仍没有 Prepared/Stopped checkpoint 时，领取事务直接把 Job 与 Reading Version 标成 `runtime_unknown`、清除租约并且不返回 work item。数据库无法区分“调用前已崩溃”和“Runtime 已建 Root、提交前崩溃”，所以 P0 保守地把两者都判为 unknown；人工审计前绝不再次发送无 token Prepare。
+
+带 token 的 `INPUT_READY` 不属于这个隔离边界。5.1 对相同 token 与相同请求提供确定性收敛：pending token 的相同补充会原地 promote/replay，prepared token 的相同 digest 会重放同一 staged brief，accepted parent 的同一 `request_digest` 会通过 lineage claim 重放。因此 Reading Version 在创建时必须持久化非敏感派生字段 `prepare_has_state_token`；领取层只能读取该布尔值来决定能否重领，不得为此解密、比较或记录 token。带 token claim 过期后必须轮换 fencing token，再把原始加密 Prepare 交给 Orchestrator 原样重放。
+
+若带 token 的 Prepare 直接返回传输结果未知，Orchestrator 同样不得标成 `runtime_unknown`；它返回带非零 `retry_not_before` 的 `INPUT_READY`，由 Worker 清除本次租约并在到时后原样重放。只有无 token Prepare 的结果未知才进入人工隔离。
 
 `complete` 不同：同一 token、同一候选稿可安全重放，核心会返回第一次接纳的正文。
 

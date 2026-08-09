@@ -1,6 +1,8 @@
 import importlib
 
 import pytest
+
+# isort: split
 from orchestrator_fakes import (
     FixedClock,
     MemoryRepository,
@@ -154,3 +156,36 @@ async def test_unknown_no_token_prepare_is_not_retried() -> None:
     assert outcome.status is orchestrator.ReadingStatus.RUNTIME_UNKNOWN
     assert len(runtime.commands) == 1
     assert repository.events == ["repo:runtime_unknown"]
+
+
+async def test_unknown_tokened_prepare_is_requeued_with_backoff() -> None:
+    orchestrator, contracts, narrative = modules()
+    errors = importlib.import_module("app.readings.errors")
+    runtime = ScriptedRuntime([errors.RuntimeTransportError("lost tokened result")])
+    job = make_job(
+        orchestrator,
+        contracts,
+        narrative,
+        prepare=make_prepare(
+            contracts,
+            state_token="accepted-parent-token",
+            facts=True,
+        ),
+    )
+    repository = MemoryRepository(orchestrator, job)
+    clock = FixedClock()
+
+    outcome = await orchestrator.ReadingOrchestrator(
+        repository=repository,
+        runtime=runtime,
+        model=ScriptedModel([]),
+        guard=orchestrator.NarrativeGuard(),
+        assembler=orchestrator.PublicCopyAssembler(),
+        clock=clock,
+    ).run(job.id)
+
+    assert outcome.status is orchestrator.ReadingStatus.INPUT_READY
+    assert outcome.retry_not_before is not None
+    assert outcome.retry_not_before > clock.now()
+    assert runtime.commands[0].state_token == "accepted-parent-token"
+    assert repository.events == []

@@ -174,9 +174,12 @@ class ReadingOrchestrator:
     guard: NarrativeGuardPort
     assembler: PublicCopyAssemblerPort
     clock: Clock
+    prepare_transport_backoff: timedelta = timedelta(seconds=5)
     complete_transport_backoff: timedelta = timedelta(seconds=5)
 
     def __post_init__(self) -> None:
+        if self.prepare_transport_backoff <= timedelta(0):
+            raise ValueError("Prepare transport backoff must be positive")
         if self.complete_transport_backoff <= timedelta(0):
             raise ValueError("Complete transport backoff must be positive")
 
@@ -228,6 +231,11 @@ class ReadingOrchestrator:
         try:
             result = await self.runtime.execute(job.prepare_command)
         except RuntimeTransportError:
+            if job.prepare_command.state_token is not None:
+                return ReadingOutcome(
+                    status=ReadingStatus.INPUT_READY,
+                    retry_not_before=(self.clock.now() + self.prepare_transport_backoff),
+                )
             await self.repository.mark_runtime_unknown(job.id, self.clock.now())
             return ReadingOutcome(status=ReadingStatus.RUNTIME_UNKNOWN)
         if isinstance(result, Prepared):

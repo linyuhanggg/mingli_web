@@ -154,6 +154,7 @@ class SqlReadingRepository:
             prepare_nonce=encrypted.nonce,
             prepare_ciphertext=encrypted.ciphertext,
             prepare_digest=encrypted.fingerprint,
+            prepare_has_state_token=prepare_command.state_token is not None,
         )
         self.session.add(version)
         await self.session.flush()

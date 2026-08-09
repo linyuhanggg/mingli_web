@@ -3,6 +3,7 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     DateTime,
     ForeignKey,
@@ -133,6 +134,12 @@ class ReadingVersion(Base):
     prepare_nonce: Mapped[str] = mapped_column(String(64), nullable=False)
     prepare_ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
     prepare_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    prepare_has_state_token: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default=text("false"),
+        nullable=False,
+    )
     state_token_key_id: Mapped[str | None] = mapped_column(String(120))
     state_token_nonce: Mapped[str | None] = mapped_column(String(64))
     state_token_ciphertext: Mapped[str | None] = mapped_column(Text)

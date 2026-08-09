@@ -73,6 +73,10 @@ def test_reading_migration_builds_immutable_phase_two_tables(
     assert {"ck_reading_jobs_lease_envelope_all_or_none"} <= {
         constraint["name"] for constraint in inspector.get_check_constraints("reading_jobs")
     }
+    reading_version_columns = {
+        column["name"]: column for column in inspector.get_columns("reading_versions")
+    }
+    assert reading_version_columns["prepare_has_state_token"]["nullable"] is False
 
     expected_checks = {
         "subject_profiles": {"ck_subject_profiles_owner_exactly_one"},
@@ -194,6 +198,28 @@ def _insert_reading_version(
         text(f"INSERT INTO reading_versions ({columns}) VALUES ({values})"),
         {"id": version_id, "root_id": root_id, "release_id": release_id},
     )
+
+
+def test_prepare_token_presence_cannot_be_null_in_the_migrated_database(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:  # type: ignore[no-untyped-def]
+    engine = upgraded_engine(tmp_path, monkeypatch, "prepare-token-presence.sqlite3")
+    _user_id, root_id, release_id = _seed_reading_parent_rows(engine)
+
+    with pytest.raises(IntegrityError), engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT INTO reading_versions "
+                "(id, reading_root_id, runtime_release_id, version, status, capability_id, "
+                "object_id, dimension_ids, horizon, prepare_key_id, prepare_nonce, "
+                "prepare_ciphertext, prepare_digest, prepare_has_state_token) "
+                "VALUES (:id, :root_id, :release_id, 1, 'input_ready', 'bazi', "
+                "'natal', '[]', '{}', 'key', 'nonce', 'ciphertext', 'digest', NULL)"
+            ),
+            {"id": uuid4().hex, "root_id": root_id, "release_id": release_id},
+        )
+    engine.dispose()
 
 
 @pytest.mark.parametrize(
