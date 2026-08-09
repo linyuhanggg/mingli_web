@@ -267,6 +267,8 @@ def test_linux_lock_and_image_are_immutable_and_arch_specific() -> None:
         "FROM production AS audit", 1
     )[0]
     assert "apt-get install" not in production_stage
+    assert "/usr/sbin/groupadd --gid ${RUNTIME_GID} mingli" in production_stage
+    assert "/usr/sbin/useradd --uid ${RUNTIME_UID}" in production_stage
     assert "apt-get install -y --no-install-recommends git" in dockerfile
     assert dockerfile.index("COPY verify_release.py") < dockerfile.index(
         "COPY release/ /opt/mingli-master/"

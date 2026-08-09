@@ -99,8 +99,8 @@ ENV HOME=/nonexistent \
     PYTHONDONTWRITEBYTECODE=1 \
     TZ=UTC
 
-RUN groupadd --gid ${RUNTIME_GID} mingli \
-    && useradd --uid ${RUNTIME_UID} --gid ${RUNTIME_GID} \
+RUN /usr/sbin/groupadd --gid ${RUNTIME_GID} mingli \
+    && /usr/sbin/useradd --uid ${RUNTIME_UID} --gid ${RUNTIME_GID} \
         --home-dir /nonexistent --shell /usr/sbin/nologin mingli \
     && install -d -o ${RUNTIME_UID} -g ${RUNTIME_GID} -m 0700 /var/lib/mingli \
     && install -d -o root -g root -m 0755 /opt/mingli-runtime
