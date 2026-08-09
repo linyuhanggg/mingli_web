@@ -188,7 +188,14 @@ class LinuxRuntimeInputs:
     effective_config: Path
     effective_config_sha256: str
     image_ref: str
-    image_config_id: str
+    image_repository: str
+    immutable_image_ref: str
+    index_digest: str
+    platform_manifest_digest: str
+    config_digest: str
+    attestation_manifest_digest: str
+    layer_digests: tuple[str, ...]
+    rootfs_diff_ids: tuple[str, ...]
     oci_archive: Path
     oci_archive_sha256: str
     docker: dict[str, Any]
@@ -338,11 +345,74 @@ def require_linux(inputs: PreparedInputs) -> LinuxRuntimeInputs:
     image_ref = _string(linux.get("image_ref"), "linux_runtime.image_ref")
     if any(character.isspace() for character in image_ref):
         _fail("linux runtime image ref is malformed")
-    image_config_id = _string(
-        linux.get("image_config_id"), "linux_runtime.image_config_id"
+    image_repository = _string(
+        linux.get("image_repository"), "linux_runtime.image_repository"
     )
-    if IMAGE_ID_RE.fullmatch(image_config_id) is None:
-        _fail("linux runtime image config ID is malformed")
+    if any(character.isspace() for character in image_repository):
+        _fail("linux runtime image repository is malformed")
+    oci = _mapping(linux.get("oci"), "linux_runtime.oci")
+    if set(oci) != {
+        "index_digest",
+        "platform_manifest_digest",
+        "config_digest",
+        "attestation_manifest_digest",
+        "layer_digests",
+        "rootfs_diff_ids",
+    }:
+        _fail("linux OCI identity fields are not exact")
+    index_digest = _string(oci.get("index_digest"), "linux_runtime.oci.index")
+    platform_manifest_digest = _string(
+        oci.get("platform_manifest_digest"), "linux_runtime.oci.platform_manifest"
+    )
+    config_digest = _string(oci.get("config_digest"), "linux_runtime.oci.config")
+    attestation_manifest_digest = _string(
+        oci.get("attestation_manifest_digest"),
+        "linux_runtime.oci.attestation_manifest",
+    )
+    for label, digest in (
+        ("index", index_digest),
+        ("platform manifest", platform_manifest_digest),
+        ("config", config_digest),
+        ("attestation manifest", attestation_manifest_digest),
+    ):
+        if IMAGE_ID_RE.fullmatch(digest) is None:
+            _fail(f"linux runtime OCI {label} digest is malformed")
+    if (
+        len(
+            {
+                index_digest,
+                platform_manifest_digest,
+                config_digest,
+                attestation_manifest_digest,
+            }
+        )
+        != 4
+    ):
+        _fail("linux runtime OCI identities must be distinct")
+
+    def digest_list(key: str) -> tuple[str, ...]:
+        value = oci.get(key)
+        if (
+            not isinstance(value, list)
+            or not value
+            or not all(
+                isinstance(item, str) and IMAGE_ID_RE.fullmatch(item) is not None
+                for item in value
+            )
+            or len(set(value)) != len(value)
+        ):
+            _fail(f"linux_runtime.oci.{key} is malformed")
+        return tuple(value)
+
+    layer_digests = digest_list("layer_digests")
+    rootfs_diff_ids = digest_list("rootfs_diff_ids")
+    if len(layer_digests) != len(rootfs_diff_ids):
+        _fail("linux OCI layer and RootFS identities differ in length")
+    immutable_image_ref = _string(
+        linux.get("immutable_image_ref"), "linux_runtime.immutable_image_ref"
+    )
+    if immutable_image_ref != f"{image_repository}@{index_digest}":
+        _fail("linux immutable image ref does not bind the OCI index")
     oci_archive = _absolute_path(
         linux.get("oci_archive"),
         "linux_runtime.oci_archive",
@@ -368,7 +438,14 @@ def require_linux(inputs: PreparedInputs) -> LinuxRuntimeInputs:
         effective_config=effective_config,
         effective_config_sha256=effective_config_sha256,
         image_ref=image_ref,
-        image_config_id=image_config_id,
+        image_repository=image_repository,
+        immutable_image_ref=immutable_image_ref,
+        index_digest=index_digest,
+        platform_manifest_digest=platform_manifest_digest,
+        config_digest=config_digest,
+        attestation_manifest_digest=attestation_manifest_digest,
+        layer_digests=layer_digests,
+        rootfs_diff_ids=rootfs_diff_ids,
         oci_archive=oci_archive,
         oci_archive_sha256=oci_archive_sha256,
         docker=docker,

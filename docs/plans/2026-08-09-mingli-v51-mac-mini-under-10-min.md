@@ -140,7 +140,9 @@ manifest 自身的 SHA-256 由 `PreparedInputsRef.sha256` 外部固定，避免�
 - macOS runtime tree、CPython 3.14.6 executable digest、`runtime-integrity.json`；
 - 同一个跨平台签名锁 `requirements-runtime.lock` 的 SHA；不存在另一个“macOS lock”；
 - macOS sxtwl 由现有 `provision_runtime.py` 在隔离 venv 中按锁定 sdist、`--no-binary` 路径构建并验签；
-- exact Linux OCI config ID、OCI archive SHA、image platform；
+- exact Linux OCI index、`linux/amd64` manifest、config、attestation manifest、
+  ordered compressed layers、RootFS diff IDs、OCI archive SHA 与 immutable
+  `repository@sha256:<index>` reference；
 - `limactl template copy --fill` 生成的 effective VZ config SHA；
 - Lima 版本以及 Docker Engine/CLI、containerd、rootlesskit 的固定版本/identity。
 
@@ -367,7 +369,11 @@ limactl template copy --fill infra/mingli-runtime/lima-vz-rosetta.yaml <temp-eff
 
 **Step 2: RED 锁 exact linux/amd64 identity**
 
-逐项 mutation：OCI config ID、image `.Os/.Architecture`、container platform、`uname -m`、`platform.machine()`、Python/Node/Git/sxtwl/YAML ELF、ldd、Node libatomic、sxtwl import+最小调用。任一不精确即 RED。
+逐项 mutation：OCI index、amd64 manifest、config、attestation subject、
+compressed layers、RootFS diff IDs、image descriptor/`.Os/.Architecture`、
+container platform、`uname -m`、`platform.machine()`、
+Python/Node/Git/sxtwl/YAML ELF、ldd、Node libatomic、sxtwl import+最小调用。
+任一不精确即 RED；同 tag 不构成 identity。
 
 **Step 3: 最小 tracer GREEN**
 

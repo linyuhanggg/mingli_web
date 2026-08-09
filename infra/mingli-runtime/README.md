@@ -78,11 +78,18 @@ limactl template copy --fill infra/mingli-runtime/lima-vz-rosetta.yaml \
 ```
 
 The tracer requires the full OCI index whose digest is the final artifact ID,
-including its amd64 manifest and attestation manifest. A platform-filtered
-`docker save` can flatten that index and change the loaded local ID to the
-child manifest digest; such an archive is rejected. The controller must export
-and import the complete OCI index, bind the archive SHA-256 in PreparedInputs,
-and then re-inspect the loaded ID. The probe container uses fixed argv, the
+including its amd64 manifest and attestation manifest. The identity contract
+keeps four distinct digests: the top-level index, the `linux/amd64` child
+manifest, that manifest's config, and the attestation manifest. It also binds
+the ordered compressed-layer digests and the config's ordered RootFS diff IDs.
+A platform-filtered `docker save` can flatten the index and discard the
+attestation; such an archive is rejected even if its tag and filesystem look
+right. The controller must export and import the complete OCI layout. The
+tracer re-hashes every blob, verifies the index-to-child-to-config chain and
+attestation subject, decompresses every layer to prove its diff ID, then
+requires Docker's descriptor/ID and RootFS to match that closure. The probe is
+started by the immutable `repository@sha256:<index>` reference, never by the
+mutable tag. The probe container uses fixed argv, the
 label `io.fateradar.mingli.gate=linux-amd64-identity-tracer`, no network,
 Rosetta AOT caching, a read-only root, non-root execution, and strict resource
 limits. It verifies x86_64 platform/uname and ELF identity for runtime Python,

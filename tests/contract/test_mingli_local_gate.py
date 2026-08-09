@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import copy
+import gzip
 import hashlib
 import importlib
+import io
 import json
 import os
 import shutil
 import subprocess
 import sys
+import tarfile
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -26,6 +29,15 @@ EXPECTED_RELEASE_MANIFEST_SHA256 = (
 VZ_PROFILE_PATH = RUNTIME_DIR / "lima-vz-rosetta.yaml"
 EXPECTED_LINUX_IMAGE_ID = (
     "sha256:608401536f5c0a84efbbaf17e9e6e5c76ef3e2991562ae38a01b79a0232df0fd"
+)
+EXPECTED_LINUX_PLATFORM_MANIFEST = (
+    "sha256:7678978220e07bf84514c6d15dbbdb4f289ca601302c38985b94292c135ed32f"
+)
+EXPECTED_LINUX_CONFIG = (
+    "sha256:e89014940e10ebeab2352ecbaae6de58b5b7c3df8851f9c873223f1e9b064e27"
+)
+EXPECTED_LINUX_ATTESTATION = (
+    "sha256:0bbf16052a906a714789109ae3947454059f40a5c902d5a0595177d9a1051e04"
 )
 EXPECTED_VZ_IMAGE = {
     "location": (
@@ -220,18 +232,185 @@ def tree_sha256(root: Path) -> str:
     return digest.hexdigest()
 
 
+def canonical_json_bytes(value: object) -> bytes:
+    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+
+
+def digest_ref(raw: bytes) -> str:
+    return f"sha256:{sha256_bytes(raw)}"
+
+
+def write_oci_archive(path: Path, image_ref: str) -> dict[str, Any]:
+    layer_uncompressed = b"fixture-linux-amd64-layer"
+    layer = gzip.compress(layer_uncompressed, mtime=0)
+    layer_digest = digest_ref(layer)
+    diff_id = digest_ref(layer_uncompressed)
+    runtime_config = {
+        "User": "10001:10001",
+        "Env": ["PATH=/usr/bin:/bin", "PYTHONDONTWRITEBYTECODE=1"],
+        "Entrypoint": ["/opt/mingli-master/scripts/run_reading_transaction.sh"],
+        "WorkingDir": "/opt/mingli-master",
+    }
+    config_raw = canonical_json_bytes(
+        {
+            "architecture": "amd64",
+            "config": runtime_config,
+            "os": "linux",
+            "rootfs": {"type": "layers", "diff_ids": [diff_id]},
+        }
+    )
+    config_digest = digest_ref(config_raw)
+    platform_raw = canonical_json_bytes(
+        {
+            "schemaVersion": 2,
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "config": {
+                "mediaType": "application/vnd.oci.image.config.v1+json",
+                "digest": config_digest,
+                "size": len(config_raw),
+            },
+            "layers": [
+                {
+                    "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+                    "digest": layer_digest,
+                    "size": len(layer),
+                }
+            ],
+        }
+    )
+    platform_digest = digest_ref(platform_raw)
+    empty_raw = b"{}"
+    statement_raw = canonical_json_bytes({"fixture": "provenance"})
+    statement_digest = digest_ref(statement_raw)
+    attestation_raw = canonical_json_bytes(
+        {
+            "schemaVersion": 2,
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "artifactType": "application/vnd.docker.attestation.manifest.v1+json",
+            "config": {
+                "mediaType": "application/vnd.oci.empty.v1+json",
+                "digest": digest_ref(empty_raw),
+                "size": len(empty_raw),
+            },
+            "layers": [
+                {
+                    "mediaType": "application/vnd.in-toto+json",
+                    "digest": statement_digest,
+                    "size": len(statement_raw),
+                }
+            ],
+            "subject": {
+                "mediaType": "application/vnd.oci.image.manifest.v1+json",
+                "digest": platform_digest,
+                "size": len(platform_raw),
+            },
+        }
+    )
+    attestation_digest = digest_ref(attestation_raw)
+    index_raw = canonical_json_bytes(
+        {
+            "schemaVersion": 2,
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "manifests": [
+                {
+                    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+                    "digest": platform_digest,
+                    "size": len(platform_raw),
+                    "platform": {"architecture": "amd64", "os": "linux"},
+                },
+                {
+                    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+                    "digest": attestation_digest,
+                    "size": len(attestation_raw),
+                    "annotations": {
+                        "vnd.docker.reference.digest": platform_digest,
+                        "vnd.docker.reference.type": "attestation-manifest",
+                    },
+                    "platform": {"architecture": "unknown", "os": "unknown"},
+                },
+            ],
+        }
+    )
+    index_digest = digest_ref(index_raw)
+    outer_index = canonical_json_bytes(
+        {
+            "schemaVersion": 2,
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "manifests": [
+                {
+                    "mediaType": "application/vnd.oci.image.index.v1+json",
+                    "digest": index_digest,
+                    "size": len(index_raw),
+                    "annotations": {
+                        "io.containerd.image.name": f"docker.io/library/{image_ref}",
+                        "org.opencontainers.image.ref.name": image_ref.rsplit(":", 1)[
+                            -1
+                        ],
+                    },
+                }
+            ],
+        }
+    )
+    docker_manifest = canonical_json_bytes(
+        [
+            {
+                "Config": f"blobs/sha256/{config_digest.removeprefix('sha256:')}",
+                "RepoTags": [image_ref],
+                "Layers": [f"blobs/sha256/{layer_digest.removeprefix('sha256:')}"],
+            }
+        ]
+    )
+    blobs = {
+        index_digest: index_raw,
+        platform_digest: platform_raw,
+        config_digest: config_raw,
+        attestation_digest: attestation_raw,
+        digest_ref(empty_raw): empty_raw,
+        statement_digest: statement_raw,
+        layer_digest: layer,
+    }
+    members = {
+        "oci-layout": canonical_json_bytes({"imageLayoutVersion": "1.0.0"}),
+        "index.json": outer_index,
+        "manifest.json": docker_manifest,
+        **{
+            f"blobs/sha256/{digest.removeprefix('sha256:')}": raw
+            for digest, raw in blobs.items()
+        },
+    }
+    with tarfile.open(path, "w") as archive:
+        for name, raw in sorted(members.items()):
+            info = tarfile.TarInfo(name)
+            info.size = len(raw)
+            info.mode = 0o644
+            info.mtime = 0
+            archive.addfile(info, io.BytesIO(raw))
+    return {
+        "index_digest": index_digest,
+        "platform_manifest_digest": platform_digest,
+        "config_digest": config_digest,
+        "attestation_manifest_digest": attestation_digest,
+        "layer_digests": [layer_digest],
+        "rootfs_diff_ids": [diff_id],
+        "runtime_config": runtime_config,
+    }
+
+
 def write_linux_prepared_inputs(tmp_path: Path) -> tuple[Path, str, dict[str, Any]]:
     path, _, payload = write_prepared_inputs(tmp_path)
     effective_config = tmp_path / "effective-vz.yaml"
     effective_config.write_text("vmType: vz\narch: aarch64\n", encoding="utf-8")
     oci_archive = tmp_path / "mingli-runtime.oci"
-    oci_archive.write_bytes(b"scripted OCI archive")
+    image_ref = "mingli-runtime:task8-final"
+    oci = write_oci_archive(oci_archive, image_ref)
     payload["linux_runtime"] = {
         "instance": "mingli-linux-gate-vz",
         "effective_config": str(effective_config),
         "effective_config_sha256": sha256_file(effective_config),
-        "image_ref": "mingli-runtime:task8-final",
-        "image_config_id": EXPECTED_LINUX_IMAGE_ID,
+        "image_ref": image_ref,
+        "image_repository": "mingli-runtime",
+        "immutable_image_ref": f"mingli-runtime@{oci['index_digest']}",
+        "oci": {key: value for key, value in oci.items() if key != "runtime_config"},
         "oci_archive": str(oci_archive),
         "oci_archive_sha256": sha256_file(oci_archive),
         "docker": {
@@ -261,7 +440,33 @@ def write_linux_prepared_inputs(tmp_path: Path) -> tuple[Path, str, dict[str, An
     return path, sha256_bytes(raw), payload
 
 
-def complete_linux_identity() -> dict[str, Any]:
+def docker_image_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    linux = payload["linux_runtime"]
+    oci = linux["oci"]
+    archive_path = Path(linux["oci_archive"])
+    with tarfile.open(archive_path, "r") as archive:
+        config_member = archive.extractfile(
+            f"blobs/sha256/{oci['config_digest'].removeprefix('sha256:')}"
+        )
+        assert config_member is not None
+        runtime_config = json.loads(config_member.read())["config"]
+    return {
+        "id": oci["index_digest"],
+        "repo_digests": [linux["immutable_image_ref"]],
+        "descriptor": {
+            "digest": oci["index_digest"],
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+        },
+        "os": "linux",
+        "architecture": "amd64",
+        "rootfs": {"Type": "layers", "Layers": oci["rootfs_diff_ids"]},
+        "config": runtime_config,
+    }
+
+
+def complete_linux_identity(payload: dict[str, Any]) -> dict[str, Any]:
+    linux = payload["linux_runtime"]
+    oci = linux["oci"]
     return {
         "schema": "mingli-vz-amd64-identity-v1",
         "instance": {
@@ -278,9 +483,22 @@ def complete_linux_identity() -> dict[str, Any]:
             "rootlesskit_version": "3.0.2",
         },
         "image": {
-            "id": EXPECTED_LINUX_IMAGE_ID,
-            "os": "linux",
-            "architecture": "amd64",
+            "archive_sha256": linux["oci_archive_sha256"],
+            "index_digest": oci["index_digest"],
+            "platform_manifest_digest": oci["platform_manifest_digest"],
+            "config_digest": oci["config_digest"],
+            "attestation_manifest_digest": oci["attestation_manifest_digest"],
+            "layer_digests": oci["layer_digests"],
+            "rootfs_diff_ids": oci["rootfs_diff_ids"],
+            "docker": {
+                "id": oci["index_digest"],
+                "descriptor_digest": oci["index_digest"],
+                "descriptor_media_type": "application/vnd.oci.image.index.v1+json",
+                "immutable_ref": linux["immutable_image_ref"],
+                "os": "linux",
+                "architecture": "amd64",
+                "rootfs_diff_ids": oci["rootfs_diff_ids"],
+            },
         },
         "container": {
             "platform_system": "Linux",
@@ -1100,10 +1318,10 @@ def test_linux_certify_first_stage_accepts_only_exact_amd64_identity(
     tmp_path: Path,
 ) -> None:
     gate_module = load_local_gate()
-    manifest_path, manifest_sha256, _ = write_linux_prepared_inputs(tmp_path)
+    manifest_path, manifest_sha256, payload = write_linux_prepared_inputs(tmp_path)
     execution = ScriptedExecution(
         gate_module,
-        stdout=json.dumps(complete_linux_identity(), sort_keys=True) + "\n",
+        stdout=json.dumps(complete_linux_identity(payload), sort_keys=True) + "\n",
         elapsed_seconds=3.5,
     )
     request = gate_module.LocalFullRequest(
@@ -1144,7 +1362,7 @@ def test_linux_identity_input_rejection_removes_staging(tmp_path: Path) -> None:
     )
     execution = ScriptedExecution(
         gate_module,
-        stdout=json.dumps(complete_linux_identity(), sort_keys=True) + "\n",
+        stdout=json.dumps(complete_linux_identity(payload), sort_keys=True) + "\n",
         elapsed_seconds=1.0,
     )
 
@@ -1161,8 +1379,18 @@ def test_linux_identity_input_rejection_removes_staging(tmp_path: Path) -> None:
         lambda value: value["instance"].__setitem__("vm_type", "qemu"),
         lambda value: value["instance"].__setitem__("rosetta_binfmt", False),
         lambda value: value["docker"].__setitem__("server_arch", "amd64"),
-        lambda value: value["image"].__setitem__("id", "sha256:" + "0" * 64),
-        lambda value: value["image"].__setitem__("architecture", "arm64"),
+        lambda value: value["image"].__setitem__("index_digest", "sha256:" + "0" * 64),
+        lambda value: value["image"].__setitem__(
+            "platform_manifest_digest", "sha256:" + "0" * 64
+        ),
+        lambda value: value["image"].__setitem__("config_digest", "sha256:" + "0" * 64),
+        lambda value: value["image"].__setitem__(
+            "attestation_manifest_digest", "sha256:" + "0" * 64
+        ),
+        lambda value: value["image"].__setitem__("layer_digests", []),
+        lambda value: value["image"].__setitem__("rootfs_diff_ids", []),
+        lambda value: value["image"]["docker"].__setitem__("id", "sha256:" + "0" * 64),
+        lambda value: value["image"]["docker"].__setitem__("architecture", "arm64"),
         lambda value: value["container"].__setitem__("platform_machine", "aarch64"),
         lambda value: value["container"].__setitem__("uname_machine", "aarch64"),
         lambda value: value["container"]["elf_machine"].__setitem__("sxtwl", 183),
@@ -1176,8 +1404,8 @@ def test_linux_identity_mutations_fail_closed(
     mutation: Callable[[dict[str, Any]], None],
 ) -> None:
     gate_module = load_local_gate()
-    manifest_path, manifest_sha256, _ = write_linux_prepared_inputs(tmp_path)
-    identity = copy.deepcopy(complete_linux_identity())
+    manifest_path, manifest_sha256, payload = write_linux_prepared_inputs(tmp_path)
+    identity = copy.deepcopy(complete_linux_identity(payload))
     mutation(identity)
     execution = ScriptedExecution(
         gate_module,
@@ -1205,6 +1433,7 @@ def test_linux_identity_collector_uses_exact_rosetta_container_boundary(
     tmp_path: Path,
 ) -> None:
     identity_module = load_linux_identity()
+    _, _, payload = write_linux_prepared_inputs(tmp_path)
     effective_config = tmp_path / "effective.yaml"
     effective_config.write_text("vmType: vz\narch: aarch64\n", encoding="utf-8")
     instance_payload = complete_lima_instance()
@@ -1219,7 +1448,7 @@ def test_linux_identity_collector_uses_exact_rosetta_container_boundary(
             ],
         },
     }
-    container_payload = complete_linux_identity()["container"]
+    container_payload = complete_linux_identity(payload)["container"]
 
     class ScriptedHostRunner:
         def __init__(self) -> None:
@@ -1227,16 +1456,7 @@ def test_linux_identity_collector_uses_exact_rosetta_container_boundary(
             self.outputs = [
                 (json.dumps(instance_payload) + "\n").encode(),
                 (json.dumps(docker_payload) + "\n").encode(),
-                (
-                    json.dumps(
-                        {
-                            "id": EXPECTED_LINUX_IMAGE_ID,
-                            "os": "linux",
-                            "architecture": "amd64",
-                        }
-                    )
-                    + "\n"
-                ).encode(),
+                (json.dumps(docker_image_payload(payload)) + "\n").encode(),
                 (json.dumps(container_payload) + "\n").encode(),
             ]
 
@@ -1248,14 +1468,17 @@ def test_linux_identity_collector_uses_exact_rosetta_container_boundary(
 
     identity = identity_module.collect_identity(
         instance="mingli-linux-gate-vz",
-        image_ref="mingli-runtime:task8-final",
-        expected_image_id=EXPECTED_LINUX_IMAGE_ID,
+        image_ref=payload["linux_runtime"]["image_ref"],
+        immutable_image_ref=payload["linux_runtime"]["immutable_image_ref"],
+        oci_archive=Path(payload["linux_runtime"]["oci_archive"]),
+        expected_oci_archive_sha256=payload["linux_runtime"]["oci_archive_sha256"],
+        expected_oci=payload["linux_runtime"]["oci"],
         effective_config=effective_config,
         expected_effective_config_sha256=sha256_file(effective_config),
         runner=runner,
     )
 
-    assert identity == complete_linux_identity()
+    assert identity == complete_linux_identity(payload)
     assert runner.outputs == []
     container_argv = runner.commands[-1]
     assert "--platform=linux/amd64" in container_argv
@@ -1268,6 +1491,71 @@ def test_linux_identity_collector_uses_exact_rosetta_container_boundary(
     )
     assert "--entrypoint" in container_argv
     assert "/opt/mingli-runtime/venv/bin/python" in container_argv
+    assert payload["linux_runtime"]["immutable_image_ref"] in container_argv
+    assert payload["linux_runtime"]["image_ref"] not in container_argv
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda value: value.__setitem__("index_digest", "sha256:" + "0" * 64),
+        lambda value: value.__setitem__(
+            "platform_manifest_digest", "sha256:" + "0" * 64
+        ),
+        lambda value: value.__setitem__("config_digest", "sha256:" + "0" * 64),
+        lambda value: value.__setitem__(
+            "attestation_manifest_digest", "sha256:" + "0" * 64
+        ),
+        lambda value: value.__setitem__("layer_digests", ["sha256:" + "0" * 64]),
+        lambda value: value.__setitem__("rootfs_diff_ids", ["sha256:" + "0" * 64]),
+    ],
+)
+def test_oci_archive_verifier_rejects_every_identity_link_mutation(
+    tmp_path: Path,
+    mutation: Callable[[dict[str, Any]], None],
+) -> None:
+    identity_module = load_linux_identity()
+    archive = tmp_path / "runtime.oci.tar"
+    image_ref = "mingli-runtime:task8-final"
+    expected = write_oci_archive(archive, image_ref)
+    expected.pop("runtime_config")
+    mutation(expected)
+
+    with pytest.raises(identity_module.IdentityError):
+        identity_module.verify_oci_archive(
+            archive,
+            expected_archive_sha256=sha256_file(archive),
+            image_ref=image_ref,
+            expected=expected,
+        )
+
+
+def test_oci_archive_verifier_rejects_missing_attestation_blob(
+    tmp_path: Path,
+) -> None:
+    identity_module = load_linux_identity()
+    original = tmp_path / "runtime.oci.tar"
+    image_ref = "mingli-runtime:task8-final"
+    expected = write_oci_archive(original, image_ref)
+    expected.pop("runtime_config")
+    missing_name = "blobs/sha256/" + expected[
+        "attestation_manifest_digest"
+    ].removeprefix("sha256:")
+    broken = tmp_path / "missing-attestation.oci.tar"
+    with tarfile.open(original, "r") as source, tarfile.open(broken, "w") as target:
+        for member in source.getmembers():
+            if member.name == missing_name:
+                continue
+            stream = source.extractfile(member)
+            target.addfile(member, stream)
+
+    with pytest.raises(identity_module.IdentityError, match="attestation"):
+        identity_module.verify_oci_archive(
+            broken,
+            expected_archive_sha256=sha256_file(broken),
+            image_ref=image_ref,
+            expected=expected,
+        )
 
 
 @pytest.mark.parametrize(

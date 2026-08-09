@@ -289,11 +289,24 @@ def _parse_linux_identity(
         _fail("Linux Docker identity mismatch")
     image = _identity_object(identity.get("image"), "image")
     if image != {
-        "id": linux.image_config_id,
-        "os": "linux",
-        "architecture": "amd64",
+        "archive_sha256": linux.oci_archive_sha256,
+        "index_digest": linux.index_digest,
+        "platform_manifest_digest": linux.platform_manifest_digest,
+        "config_digest": linux.config_digest,
+        "attestation_manifest_digest": linux.attestation_manifest_digest,
+        "layer_digests": list(linux.layer_digests),
+        "rootfs_diff_ids": list(linux.rootfs_diff_ids),
+        "docker": {
+            "id": linux.index_digest,
+            "descriptor_digest": linux.index_digest,
+            "descriptor_media_type": "application/vnd.oci.image.index.v1+json",
+            "immutable_ref": linux.immutable_image_ref,
+            "os": "linux",
+            "architecture": "amd64",
+            "rootfs_diff_ids": list(linux.rootfs_diff_ids),
+        },
     }:
-        _fail("Linux image is not the exact amd64 OCI config")
+        _fail("Linux image is not the exact OCI index/amd64/config closure")
     container = _identity_object(identity.get("container"), "container")
     expected_scalars = {
         "platform_system": "Linux",
@@ -379,8 +392,30 @@ class LocalFullGate:
                 linux.instance,
                 "--image-ref",
                 linux.image_ref,
-                "--expected-image-id",
-                linux.image_config_id,
+                "--immutable-image-ref",
+                linux.immutable_image_ref,
+                "--oci-archive",
+                str(linux.oci_archive),
+                "--oci-archive-sha256",
+                linux.oci_archive_sha256,
+                "--oci-index-digest",
+                linux.index_digest,
+                "--oci-platform-manifest-digest",
+                linux.platform_manifest_digest,
+                "--oci-config-digest",
+                linux.config_digest,
+                "--oci-attestation-manifest-digest",
+                linux.attestation_manifest_digest,
+                *(
+                    item
+                    for digest in linux.layer_digests
+                    for item in ("--oci-layer-digest", digest)
+                ),
+                *(
+                    item
+                    for digest in linux.rootfs_diff_ids
+                    for item in ("--oci-rootfs-diff-id", digest)
+                ),
                 "--effective-config",
                 str(linux.effective_config),
                 "--effective-config-sha256",
