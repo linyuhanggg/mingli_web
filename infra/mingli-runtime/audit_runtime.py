@@ -16,6 +16,7 @@ import os
 import platform
 import shutil
 import signal
+import stat
 import subprocess
 import sys
 import tempfile
@@ -31,12 +32,31 @@ RELEASE_ROOT = Path("/opt/mingli-master")
 RUNTIME_PYTHON = Path("/opt/mingli-runtime/venv/bin/python")
 NODE = Path("/opt/node/bin/node")
 AUDIT_SCRIPT = Path("/opt/mingli-runtime/audit_runtime.py")
+SBOM_SCRIPT = Path("/opt/mingli-runtime/emit_sbom.py")
 VERIFIER = Path("/opt/mingli-runtime/verify_release.py")
 PROVENANCE = Path("/opt/mingli-runtime/dependency-provenance.json")
 STATE_ROOT = Path("/var/lib/mingli")
 SOURCE_ROOT = Path("/audit-source")
 OUTPUT_ROOT = Path("/audit-output")
+PRODUCTION_OUTPUT_ROOT = Path("/production-output")
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
+PRODUCTION_COMMAND_IDS = frozenset(
+    {
+        "characterization-a",
+        "characterization-b",
+        "p0-trajectories",
+        "production-tree-identity",
+        "provider-matrix-a",
+        "provider-matrix-b",
+        "runtime-inventory",
+        "runtime-probe-machine",
+        "runtime-probe-unittest",
+        "sbom-regeneration",
+    }
+)
+AUDIT_COMMAND_IDS = frozenset(
+    {"audit-tree-identity", "release-regression", "source-binding"}
+)
 
 
 class AuditError(RuntimeError):
@@ -306,6 +326,122 @@ def emit_runtime_probes(state_root: Path) -> int:
     return 0
 
 
+def _tree_digest(root: Path) -> dict[str, Any]:
+    root = root.resolve(strict=True)
+    if root.is_symlink() or not root.is_dir():
+        _fail(f"runtime identity root is missing or unsafe: {root}")
+    entries: list[dict[str, object]] = []
+    for path in sorted(
+        root.rglob("*"), key=lambda item: item.relative_to(root).as_posix()
+    ):
+        relative = path.relative_to(root).as_posix()
+        info = path.lstat()
+        mode = stat.S_IMODE(info.st_mode)
+        if stat.S_ISDIR(info.st_mode):
+            record: dict[str, object] = {
+                "mode": mode,
+                "path": relative,
+                "type": "directory",
+            }
+        elif stat.S_ISREG(info.st_mode):
+            record = {
+                "mode": mode,
+                "path": relative,
+                "sha256": verify_release.sha256_file(path),
+                "size": info.st_size,
+                "type": "file",
+            }
+        elif stat.S_ISLNK(info.st_mode):
+            try:
+                resolved = path.resolve(strict=True)
+            except OSError as exc:
+                raise AuditError(
+                    f"runtime identity contains a broken symlink: {path}"
+                ) from exc
+            if not resolved.is_relative_to(root):
+                _fail(f"runtime identity symlink escapes its root: {path}")
+            record = {
+                "mode": mode,
+                "path": relative,
+                "target": os.readlink(path),
+                "type": "symlink",
+            }
+        else:
+            _fail(f"runtime identity contains an unsupported object: {path}")
+        entries.append(record)
+    return {
+        "entry_count": len(entries),
+        "path": str(root),
+        "sha256": verify_release.canonical_sha256(entries),
+    }
+
+
+def emit_tree_identity() -> int:
+    payload = {
+        "schema_version": "mingli-runtime-tree-identity-v1",
+        "trees": {
+            "node": _tree_digest(Path("/opt/node")),
+            "release": _tree_digest(RELEASE_ROOT),
+            "runtime_venv": _tree_digest(RUNTIME_PYTHON.parent.parent),
+        },
+    }
+    print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+    return 0
+
+
+def emit_token_record(state_root: Path) -> int:
+    try:
+        request = json.loads(sys.stdin.read())
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise AuditError("token record request is invalid JSON") from exc
+    fingerprint = (
+        request.get("token_fingerprint") if isinstance(request, dict) else None
+    )
+    verify_release._require_sha256(fingerprint, "token record fingerprint")
+    logs = sorted(state_root.rglob("state-tokens/token-log.jsonl"))
+    if len(logs) != 1 or logs[0].is_symlink() or not logs[0].is_file():
+        _fail("token record audit did not find one safe authoritative log")
+    selected: dict[str, Any] | None = None
+    for raw_line in logs[0].read_text(encoding="utf-8").splitlines():
+        try:
+            item = json.loads(raw_line)
+        except (json.JSONDecodeError, TypeError) as exc:
+            raise AuditError("authoritative token log contains invalid JSON") from exc
+        if isinstance(item, dict) and item.get("token_hash") == fingerprint:
+            selected = item
+    if selected is None:
+        _fail("requested token fingerprint is absent from the authoritative log")
+    version = selected.get("version")
+    phase = selected.get("phase")
+    if (
+        not isinstance(version, int)
+        or version <= 0
+        or phase
+        not in {
+            "pending_input",
+            "prepared",
+            "accepted",
+        }
+    ):
+        _fail("authoritative token record is invalid")
+    reading_id = selected.get("reading_id")
+    if not isinstance(reading_id, str) or not reading_id:
+        _fail("authoritative token record has no reading identity")
+    parent = selected.get("parent_token_hash")
+    if parent is not None:
+        verify_release._require_sha256(parent, "parent token fingerprint")
+    payload = {
+        "parent_token_fingerprint": parent,
+        "phase": phase,
+        "reading_id_sha256": hashlib.sha256(reading_id.encode("utf-8")).hexdigest(),
+        "schema_version": "mingli-token-record-audit-v1",
+        "token_fingerprint": fingerprint,
+        "version": version,
+    }
+    print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+    return 0
+
+
 def _audit_environment(source_root: Path) -> dict[str, str]:
     home = Path("/tmp/mingli-linux-audit-home")
     home.mkdir(mode=0o700, exist_ok=True)
@@ -398,9 +534,14 @@ def _copy_file(source: Path, destination: Path) -> None:
 def _collect_backup_paths(evidence: Mapping[str, Any]) -> set[str]:
     paths: set[str] = set()
     snapshots = evidence.get("snapshots")
+    token_records = evidence.get("token_records")
     transcripts = evidence.get("transcripts")
     commands = evidence.get("commands")
-    if not isinstance(snapshots, dict) or not isinstance(transcripts, dict):
+    if (
+        not isinstance(snapshots, dict)
+        or not isinstance(token_records, dict)
+        or not isinstance(transcripts, dict)
+    ):
         _fail("backup evidence file inventory is invalid")
     if not isinstance(commands, list):
         _fail("backup evidence command inventory is invalid")
@@ -414,6 +555,10 @@ def _collect_backup_paths(evidence: Mapping[str, Any]) -> set[str]:
         if not isinstance(transcript, dict):
             _fail("backup transcript evidence record is invalid")
         paths.add(verify_release._safe_relative(transcript.get("path"), "backup"))
+    for token_record in token_records.values():
+        if not isinstance(token_record, dict):
+            _fail("backup token record evidence is invalid")
+        paths.add(verify_release._safe_relative(token_record.get("path"), "backup"))
     for command in commands:
         if not isinstance(command, dict):
             _fail("backup command evidence record is invalid")
@@ -444,9 +589,9 @@ def _assert_platform() -> None:
         _fail("audit must run as the fixed non-root runtime UID/GID")
 
 
-def _prepare_output_root(output_root: Path) -> None:
-    if output_root != OUTPUT_ROOT:
-        _fail("audit output root must be /audit-output")
+def _prepare_output_root(output_root: Path, expected: Path) -> None:
+    if output_root != expected:
+        _fail(f"audit output root must be {expected}")
     if output_root.is_symlink() or not output_root.is_dir():
         _fail("audit output root is missing or unsafe")
     if any(output_root.iterdir()):
@@ -483,34 +628,113 @@ def _combined_output(record: Mapping[str, Any], output_root: Path) -> str:
     ).read_text(encoding="utf-8")
 
 
-def run_audit(
-    *,
-    source_root: Path,
-    output_root: Path,
-    sbom: Path,
-    backup_evidence: Path,
-    image_id: str,
-    image_digest: str,
-    audit_image_id: str,
-) -> int:
-    _assert_platform()
-    _prepare_output_root(output_root)
-    for label, value in (
-        ("production image ID", image_id),
-        ("production image digest", image_digest),
-        ("audit image ID", audit_image_id),
+def _output_file_inventory(root: Path) -> dict[str, str]:
+    files: dict[str, str] = {}
+    for path in sorted(
+        root.rglob("*"), key=lambda item: item.relative_to(root).as_posix()
     ):
-        verify_release._require_image_digest(value, label)
-    if image_id != image_digest:
-        _fail("local production image ID and OCI config digest must be identical")
+        relative = path.relative_to(root).as_posix()
+        if path.is_symlink():
+            _fail(f"audit evidence contains a symlink: {relative}")
+        if path.is_file():
+            files[verify_release._safe_relative(relative, "audit evidence")] = (
+                verify_release.sha256_file(path)
+            )
+        elif not path.is_dir():
+            _fail(f"audit evidence contains an unsupported object: {relative}")
+    return files
+
+
+def _expected_command_files(records: Sequence[Mapping[str, Any]]) -> set[str]:
+    paths: set[str] = set()
+    for record in records:
+        paths.add(verify_release._safe_relative(record.get("stdout_path"), "command"))
+        paths.add(verify_release._safe_relative(record.get("stderr_path"), "command"))
+    return paths
+
+
+def _source_root_is_safe(source_root: Path) -> None:
     if (
         source_root != SOURCE_ROOT
         or source_root.is_symlink()
         or not source_root.is_dir()
     ):
         _fail("authoritative source must be mounted read-only at /audit-source")
+
+
+def _characterization_report(
+    providers: Mapping[str, Any],
+    first: Mapping[str, Any],
+    second: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {
+        provider_id: {
+            "assertions": item["assertions"],
+            "command_ids": [
+                "provider-matrix-a",
+                "provider-matrix-b",
+                "characterization-a",
+                "characterization-b",
+            ],
+            "deterministic_facts_sha256": item["deterministic_facts_sha256"],
+            "evidence_mapping_sha256": item["evidence_mapping_sha256"],
+            "fixture_input_sha256": item["fixture_input_sha256"],
+            "output_path": first["stdout_path"],
+            "output_sha256": first["stdout_sha256"],
+            "provider_output_sha256": item["provider_output_sha256"],
+            "repeat_output_path": second["stdout_path"],
+            "repeat_output_sha256": second["stdout_sha256"],
+            "status": "passed",
+        }
+        for provider_id, item in sorted(providers.items())
+    }
+
+
+def _target_record() -> dict[str, Any]:
+    return {
+        "architecture": platform.machine(),
+        "base_image_digest": verify_release.EXPECTED_BASE_IMAGE[
+            "linux_amd64_manifest_digest"
+        ],
+        "node_version": verify_release.EXPECTED_NODE["version"],
+        "os": platform.system().lower(),
+        "python_path": str(RUNTIME_PYTHON),
+        "python_version": platform.python_version(),
+        "release_root": str(RELEASE_ROOT),
+        "state_root": str(STATE_ROOT),
+        "uid": os.getuid(),
+    }
+
+
+def run_production_audit(
+    *,
+    source_root: Path,
+    output_root: Path,
+    image_id: str,
+) -> int:
+    _assert_platform()
+    _prepare_output_root(output_root, PRODUCTION_OUTPUT_ROOT)
+    verify_release._require_image_digest(image_id, "production image ID")
+    _source_root_is_safe(source_root)
     environment = _audit_environment(source_root)
-    recorder = CommandRecorder(output_root, audit_image_id)
+    environment["MINGLI_PRODUCTION_IMAGE_ID"] = image_id
+    recorder = CommandRecorder(output_root, image_id)
+
+    sbom_regeneration = recorder.run(
+        "sbom-regeneration",
+        (
+            str(RUNTIME_PYTHON),
+            "-B",
+            str(SBOM_SCRIPT),
+        ),
+        cwd=RELEASE_ROOT,
+        environment=environment,
+        timeout=300,
+    )
+    _copy_file(
+        output_root / str(sbom_regeneration["stdout_path"]),
+        output_root / "sbom.cdx.json",
+    )
 
     inventory_path = output_root / "evidence/runtime-inventory.json"
     recorder.run(
@@ -527,8 +751,6 @@ def run_audit(
             str(NODE),
             "--state-root",
             str(STATE_ROOT),
-            "--research-source",
-            str(source_root),
             "--inventory-output",
             str(inventory_path),
         ),
@@ -580,21 +802,6 @@ def run_audit(
         environment=environment,
         timeout=60,
     )
-    regression = recorder.run(
-        "release-regression",
-        (
-            str(RUNTIME_PYTHON),
-            "-B",
-            str(source_root / "scripts/run_test_suite.py"),
-            "--jobs",
-            "5",
-            "--research-root",
-            str(source_root),
-        ),
-        cwd=source_root,
-        environment=environment,
-        timeout=10800,
-    )
     p0 = recorder.run(
         "p0-trajectories",
         (
@@ -641,6 +848,18 @@ def run_audit(
         environment=environment,
         timeout=3600,
     )
+    recorder.run(
+        "production-tree-identity",
+        (
+            str(RUNTIME_PYTHON),
+            "-B",
+            str(AUDIT_SCRIPT),
+            "--emit-tree-identity",
+        ),
+        cwd=RELEASE_ROOT,
+        environment=environment,
+        timeout=900,
+    )
 
     if characterization_a["stdout_sha256"] != characterization_b["stdout_sha256"]:
         _fail("characterization child output changed across two runs")
@@ -654,7 +873,6 @@ def run_audit(
         for item in providers.values()
     ):
         _fail("characterization machine output is not 13/13 ready")
-    regression_summary = _parse_regression(regression, output_root)
     p0_sentinels = {
         "bazi": "test_full_structured_chart_prepares_with_clean_brief",
         "fortune_day": "test_fortune_is_one_day_view_over_the_same_natal_fact_identity",
@@ -691,7 +909,6 @@ def run_audit(
     if not all(probe_assertions.values()):
         _fail(f"runtime probe sentinel missing: {probe_assertions}")
 
-    _copy_file(sbom, output_root / "sbom.cdx.json")
     _copy_file(
         RUNTIME_PYTHON.parent.parent / "runtime-integrity.json",
         output_root / "evidence/runtime-integrity.json",
@@ -701,82 +918,17 @@ def run_audit(
         output_root / "evidence/release-manifest.json",
     )
     _copy_file(PROVENANCE, output_root / "evidence/dependency-provenance.json")
-    backup_path = _copy_backup_evidence(backup_evidence, output_root)
 
     inventory = _read_json(inventory_path, "runtime inventory")
-    provenance = _read_json(PROVENANCE, "dependency provenance")
-    backup = _read_json(backup_path, "backup/restore evidence")
-    python_distributions = provenance["python_distributions"]
-    characterization_report = {
-        provider_id: {
-            "assertions": item["assertions"],
-            "command_ids": [
-                "provider-matrix-a",
-                "provider-matrix-b",
-                "characterization-a",
-                "characterization-b",
-            ],
-            "deterministic_facts_sha256": item["deterministic_facts_sha256"],
-            "evidence_mapping_sha256": item["evidence_mapping_sha256"],
-            "fixture_input_sha256": item["fixture_input_sha256"],
-            "output_path": characterization_a["stdout_path"],
-            "output_sha256": characterization_a["stdout_sha256"],
-            "provider_output_sha256": item["provider_output_sha256"],
-            "repeat_output_path": characterization_b["stdout_path"],
-            "repeat_output_sha256": characterization_b["stdout_sha256"],
-            "status": "passed",
-        }
-        for provider_id, item in sorted(providers.items())
-    }
-    report = {
-        "artifact": {
-            "base_image_digest": verify_release.EXPECTED_BASE_IMAGE[
-                "linux_amd64_manifest_digest"
-            ],
-            "image_digest": image_digest,
-            "image_digest_kind": "oci_config",
-            "runtime_integrity_sha256": verify_release.sha256_file(
-                output_root / "evidence/runtime-integrity.json"
-            ),
-            "sbom_path": "sbom.cdx.json",
-            "sbom_sha256": verify_release.sha256_file(output_root / "sbom.cdx.json"),
-        },
-        "audit": {
-            "audit_image_id": audit_image_id,
-            "commands": recorder.records,
-            "completed_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "generator": str(AUDIT_SCRIPT),
-            "image_id": image_id,
-        },
-        "backup_restore": {
-            "accepted_token_replayed": backup.get("accepted_token_replayed"),
-            "command_ids": sorted(
-                record["id"] for record in backup.get("commands", [])
-            ),
-            "prepared_token_restored": backup.get("prepared_token_restored"),
-            "status": "passed",
-        },
-        "characterization": characterization_report,
-        "dependencies": {
-            "astronomy-engine": python_distributions["astronomy-engine"],
-            "cnlunar": python_distributions["cnlunar"],
-            "iztro": provenance["vendored"]["iztro"],
-            "node": provenance["node"],
-            "pyyaml": python_distributions["PyYAML"],
-            "sxtwl": python_distributions["sxtwl"],
-        },
-        "evidence": {
-            "backup_restore_path": backup_path.relative_to(output_root).as_posix(),
-            "backup_restore_sha256": verify_release.sha256_file(backup_path),
-            "dependency_provenance_path": "evidence/dependency-provenance.json",
-            "dependency_provenance_sha256": verify_release.sha256_file(
-                output_root / "evidence/dependency-provenance.json"
-            ),
-            "release_manifest_path": "evidence/release-manifest.json",
-            "runtime_integrity_path": "evidence/runtime-integrity.json",
-            "runtime_inventory_path": "evidence/runtime-inventory.json",
-            "runtime_inventory_sha256": verify_release.sha256_file(inventory_path),
-        },
+    production_evidence: dict[str, Any] = {
+        "characterization": _characterization_report(
+            providers,
+            characterization_a,
+            characterization_b,
+        ),
+        "commands": recorder.records,
+        "generated_by": str(AUDIT_SCRIPT),
+        "image_id": image_id,
         "inventory": {
             "evidence_index_count": inventory["evidence_index_count"],
             "evidence_rule_ids_unique": inventory["evidence_rule_ids_unique"],
@@ -796,6 +948,255 @@ def run_audit(
             "command_ids": ["runtime-probe-machine", "runtime-probe-unittest"],
             "status": "passed",
         },
+        "schema_version": "mingli-production-evidence-v1",
+        "target": _target_record(),
+    }
+    observed_ids = {record["id"] for record in recorder.records}
+    if observed_ids != PRODUCTION_COMMAND_IDS:
+        _fail("production command inventory is incomplete")
+    expected_files = {
+        "evidence/dependency-provenance.json",
+        "evidence/release-manifest.json",
+        "evidence/runtime-integrity.json",
+        "evidence/runtime-inventory.json",
+        "sbom.cdx.json",
+        *_expected_command_files(recorder.records),
+    }
+    files = _output_file_inventory(output_root)
+    if set(files) != expected_files:
+        _fail("production evidence file inventory is not exact")
+    production_evidence["files"] = files
+    path = output_root / "production-evidence.json"
+    _write_json(path, production_evidence)
+    print(path)
+    return 0
+
+
+def _copy_production_evidence(
+    source: Path,
+    output_root: Path,
+    image_id: str,
+) -> dict[str, Any]:
+    evidence = _read_json(source, "production evidence")
+    if evidence.get("schema_version") != "mingli-production-evidence-v1":
+        _fail("production evidence schema mismatch")
+    if evidence.get("image_id") != image_id:
+        _fail("production evidence image identity mismatch")
+    commands = evidence.get("commands")
+    if (
+        not isinstance(commands, list)
+        or {item.get("id") for item in commands if isinstance(item, dict)}
+        != PRODUCTION_COMMAND_IDS
+    ):
+        _fail("production evidence command inventory mismatch")
+    if any(
+        not isinstance(item, dict) or item.get("executed_in_image_id") != image_id
+        for item in commands
+    ):
+        _fail("production evidence contains a command from another image")
+    files = evidence.get("files")
+    if not isinstance(files, dict):
+        _fail("production evidence file inventory is missing")
+    expected_files = {
+        "evidence/dependency-provenance.json",
+        "evidence/release-manifest.json",
+        "evidence/runtime-integrity.json",
+        "evidence/runtime-inventory.json",
+        "sbom.cdx.json",
+        *_expected_command_files(commands),
+    }
+    if set(files) != expected_files:
+        _fail("production evidence file inventory differs from its command evidence")
+    source_root = source.parent
+    observed = _output_file_inventory(source_root)
+    if set(observed) != expected_files | {"production-evidence.json"}:
+        _fail("production evidence bundle contains extras or omissions")
+    for relative, expected_digest in files.items():
+        verify_release._require_sha256(
+            expected_digest, f"production evidence {relative}"
+        )
+        if observed.get(relative) != expected_digest:
+            _fail(f"production evidence digest mismatch: {relative}")
+        _copy_file(source_root / relative, output_root / relative)
+    _copy_file(source, output_root / "evidence/production-evidence.json")
+    return evidence
+
+
+def finalize_audit(
+    *,
+    source_root: Path,
+    output_root: Path,
+    production_evidence_path: Path,
+    backup_evidence: Path,
+    image_id: str,
+    image_digest: str,
+    audit_image_id: str,
+) -> int:
+    _assert_platform()
+    _prepare_output_root(output_root, OUTPUT_ROOT)
+    for label, value in (
+        ("production image ID", image_id),
+        ("production image digest", image_digest),
+        ("audit image ID", audit_image_id),
+    ):
+        verify_release._require_image_digest(value, label)
+    if image_id != image_digest:
+        _fail("local production image ID and OCI config digest must be identical")
+    _source_root_is_safe(source_root)
+    production = _copy_production_evidence(
+        production_evidence_path,
+        output_root,
+        image_id,
+    )
+    environment = _audit_environment(source_root)
+    environment["MINGLI_PRODUCTION_IMAGE_ID"] = image_id
+    recorder = CommandRecorder(output_root, audit_image_id)
+
+    source_binding_path = output_root / "evidence/source-binding.json"
+    recorder.run(
+        "source-binding",
+        (
+            str(RUNTIME_PYTHON),
+            "-B",
+            str(VERIFIER),
+            "--release-root",
+            str(RELEASE_ROOT),
+            "--research-source",
+            str(source_root),
+            "--release-only",
+            "--inventory-output",
+            str(source_binding_path),
+        ),
+        cwd=RELEASE_ROOT,
+        environment=environment,
+        timeout=1800,
+    )
+    audit_tree = recorder.run(
+        "audit-tree-identity",
+        (
+            str(RUNTIME_PYTHON),
+            "-B",
+            str(AUDIT_SCRIPT),
+            "--emit-tree-identity",
+        ),
+        cwd=RELEASE_ROOT,
+        environment=environment,
+        timeout=900,
+    )
+    regression = recorder.run(
+        "release-regression",
+        (
+            str(RUNTIME_PYTHON),
+            "-B",
+            str(source_root / "scripts/run_test_suite.py"),
+            "--jobs",
+            "5",
+            "--research-root",
+            str(source_root),
+        ),
+        cwd=source_root,
+        environment=environment,
+        timeout=10800,
+    )
+    if {record["id"] for record in recorder.records} != AUDIT_COMMAND_IDS:
+        _fail("derived audit command inventory is incomplete")
+    production_commands = {
+        str(record["id"]): record for record in production["commands"]
+    }
+    production_tree = production_commands["production-tree-identity"]
+    if production_tree["stdout_sha256"] != audit_tree["stdout_sha256"]:
+        _fail("derived audit image changed an admitted runtime tree")
+    production_tree_payload = _read_json(
+        output_root / str(production_tree["stdout_path"]),
+        "production runtime tree identity",
+    )
+    audit_tree_payload = _read_json(
+        output_root / str(audit_tree["stdout_path"]),
+        "audit runtime tree identity",
+    )
+    if production_tree_payload != audit_tree_payload:
+        _fail("production and audit runtime tree identities differ")
+    source_binding = _read_json(source_binding_path, "source binding")
+    if source_binding.get("authoritative_source") != {
+        "clean": True,
+        "fulltext_count": 55,
+        "signed_release_files_matched": 217,
+        "source_commit": verify_release.EXPECTED_RELEASE["source_commit"],
+    }:
+        _fail("authoritative source binding is incomplete")
+    regression_summary = _parse_regression(regression, output_root)
+    backup_path = _copy_backup_evidence(backup_evidence, output_root)
+    backup = _read_json(backup_path, "backup/restore evidence")
+    provenance = _read_json(PROVENANCE, "dependency provenance")
+    python_distributions = provenance["python_distributions"]
+    all_commands = [*production["commands"], *recorder.records]
+    report = {
+        "artifact": {
+            "base_image_digest": verify_release.EXPECTED_BASE_IMAGE[
+                "linux_amd64_manifest_digest"
+            ],
+            "image_digest": image_digest,
+            "image_digest_kind": "oci_config",
+            "runtime_integrity_sha256": verify_release.sha256_file(
+                output_root / "evidence/runtime-integrity.json"
+            ),
+            "sbom_command_id": "sbom-regeneration",
+            "sbom_path": "sbom.cdx.json",
+            "sbom_sha256": verify_release.sha256_file(output_root / "sbom.cdx.json"),
+        },
+        "audit": {
+            "audit_image_id": audit_image_id,
+            "commands": all_commands,
+            "completed_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "generator": str(AUDIT_SCRIPT),
+            "image_id": image_id,
+        },
+        "backup_restore": {
+            "accepted_followup_created": backup.get("accepted_followup_created"),
+            "accepted_token_replayed": backup.get("accepted_token_replayed"),
+            "command_ids": sorted(
+                record["id"] for record in backup.get("commands", [])
+            ),
+            "followup_version_advanced": backup.get("followup_version_advanced"),
+            "prepared_replay_byte_identical": backup.get(
+                "prepared_replay_byte_identical"
+            ),
+            "prepared_restored_completed": backup.get("prepared_restored_completed"),
+            "prepared_token_restored": backup.get("prepared_token_restored"),
+            "status": "passed",
+        },
+        "characterization": production["characterization"],
+        "dependencies": {
+            "astronomy-engine": python_distributions["astronomy-engine"],
+            "cnlunar": python_distributions["cnlunar"],
+            "iztro": provenance["vendored"]["iztro"],
+            "node": provenance["node"],
+            "pyyaml": python_distributions["PyYAML"],
+            "sxtwl": python_distributions["sxtwl"],
+        },
+        "evidence": {
+            "backup_restore_path": backup_path.relative_to(output_root).as_posix(),
+            "backup_restore_sha256": verify_release.sha256_file(backup_path),
+            "dependency_provenance_path": "evidence/dependency-provenance.json",
+            "dependency_provenance_sha256": verify_release.sha256_file(
+                output_root / "evidence/dependency-provenance.json"
+            ),
+            "production_evidence_path": "evidence/production-evidence.json",
+            "production_evidence_sha256": verify_release.sha256_file(
+                output_root / "evidence/production-evidence.json"
+            ),
+            "release_manifest_path": "evidence/release-manifest.json",
+            "runtime_integrity_path": "evidence/runtime-integrity.json",
+            "runtime_inventory_path": "evidence/runtime-inventory.json",
+            "runtime_inventory_sha256": verify_release.sha256_file(
+                output_root / "evidence/runtime-inventory.json"
+            ),
+            "source_binding_path": "evidence/source-binding.json",
+            "source_binding_sha256": verify_release.sha256_file(source_binding_path),
+        },
+        "inventory": production["inventory"],
+        "p0_trajectories": production["p0_trajectories"],
+        "probes": production["probes"],
         "product_policy": {
             "p0_provider_ids": sorted(verify_release.EXPECTED_P0_PROVIDERS)
         },
@@ -807,20 +1208,15 @@ def run_audit(
             "target_count": regression_summary["targets"],
             "test_count": regression_summary["tests"],
         },
-        "schema_version": "mingli-linux-runtime-audit-v1",
-        "target": {
-            "architecture": platform.machine(),
-            "base_image_digest": verify_release.EXPECTED_BASE_IMAGE[
-                "linux_amd64_manifest_digest"
-            ],
-            "node_version": verify_release.EXPECTED_NODE["version"],
-            "os": platform.system().lower(),
-            "python_path": str(RUNTIME_PYTHON),
-            "python_version": platform.python_version(),
-            "release_root": str(RELEASE_ROOT),
-            "state_root": str(STATE_ROOT),
-            "uid": os.getuid(),
+        "runtime_tree_identity": {
+            "audit_command_id": "audit-tree-identity",
+            "production_command_id": "production-tree-identity",
+            "sha256": production_tree["stdout_sha256"],
+            "status": "passed",
         },
+        "schema_version": "mingli-linux-runtime-audit-v1",
+        "source_binding": {"command_id": "source-binding", "status": "passed"},
+        "target": production["target"],
     }
     verify_release.validate_audit_report(report, artifacts_root=output_root)
     _write_json(output_root / "release-5.1.json", report)
@@ -830,14 +1226,18 @@ def run_audit(
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    mode = parser.add_mutually_exclusive_group()
+    mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--emit-characterization", action="store_true")
     mode.add_argument("--emit-runtime-probes", action="store_true")
+    mode.add_argument("--emit-token-record", action="store_true")
+    mode.add_argument("--emit-tree-identity", action="store_true")
+    mode.add_argument("--production-audit", action="store_true")
+    mode.add_argument("--finalize-audit", action="store_true")
     parser.add_argument("--source-root", type=Path)
     parser.add_argument("--state-root", type=Path)
     parser.add_argument("--output-root", type=Path)
-    parser.add_argument("--sbom", type=Path)
     parser.add_argument("--backup-evidence", type=Path)
+    parser.add_argument("--production-evidence", type=Path)
     parser.add_argument("--image-id")
     parser.add_argument("--image-digest")
     parser.add_argument("--audit-image-id")
@@ -851,22 +1251,42 @@ def main(argv: Sequence[str] | None = None) -> int:
             if args.state_root is None:
                 parser.error("--emit-runtime-probes requires --state-root")
             return emit_runtime_probes(args.state_root)
+        if args.emit_token_record:
+            if args.state_root is None:
+                parser.error("--emit-token-record requires --state-root")
+            return emit_token_record(args.state_root)
+        if args.emit_tree_identity:
+            return emit_tree_identity()
+        if args.production_audit:
+            required = {
+                "image_id": args.image_id,
+                "output_root": args.output_root,
+                "source_root": args.source_root,
+            }
+            missing = sorted(name for name, value in required.items() if value is None)
+            if missing:
+                parser.error("production audit is missing: " + ", ".join(missing))
+            return run_production_audit(
+                source_root=args.source_root,
+                output_root=args.output_root,
+                image_id=args.image_id,
+            )
         required = {
             "audit_image_id": args.audit_image_id,
             "backup_evidence": args.backup_evidence,
             "image_digest": args.image_digest,
             "image_id": args.image_id,
             "output_root": args.output_root,
-            "sbom": args.sbom,
+            "production_evidence": args.production_evidence,
             "source_root": args.source_root,
         }
         missing = sorted(name for name, value in required.items() if value is None)
         if missing:
-            parser.error("full audit is missing: " + ", ".join(missing))
-        return run_audit(
+            parser.error("audit finalization is missing: " + ", ".join(missing))
+        return finalize_audit(
             source_root=args.source_root,
             output_root=args.output_root,
-            sbom=args.sbom,
+            production_evidence_path=args.production_evidence,
             backup_evidence=args.backup_evidence,
             image_id=args.image_id,
             image_digest=args.image_digest,

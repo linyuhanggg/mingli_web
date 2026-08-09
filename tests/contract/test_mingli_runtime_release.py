@@ -5,9 +5,12 @@ from __future__ import annotations
 import copy
 import hashlib
 import importlib.util
+import io
 import json
 import re
 import stat
+import sys
+import tarfile
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -23,6 +26,7 @@ VERIFY_PATH = RUNTIME_DIR / "verify_release.py"
 DOCKERFILE_PATH = RUNTIME_DIR / "Dockerfile"
 BUILD_CONTEXT_PATH = RUNTIME_DIR / "build_context.py"
 AUDIT_PATH = RUNTIME_DIR / "audit_runtime.py"
+LIMA_GATE_PATH = RUNTIME_DIR / "run_lima_gate.py"
 PROVENANCE_PATH = RUNTIME_DIR / "dependency-provenance.json"
 
 EXPECTED_PROVIDERS = {
@@ -73,6 +77,14 @@ def load_module(path: Path, name: str) -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def load_lima_gate() -> ModuleType:
+    sys.path.insert(0, str(RUNTIME_DIR))
+    try:
+        return load_module(RUNTIME_DIR / "run_lima_gate.py", "mingli_lima_gate")
+    finally:
+        sys.path.remove(str(RUNTIME_DIR))
 
 
 def load_report() -> dict[str, Any]:
@@ -247,6 +259,10 @@ def test_linux_lock_and_image_are_immutable_and_arch_specific() -> None:
     )
     assert "FROM production AS audit" in dockerfile
     assert "FROM production AS final" in dockerfile
+    assert "python -m venv --copies /opt/mingli-runtime/build-venv" in dockerfile
+    assert "python -m venv --copies /opt/mingli-runtime/venv" in dockerfile
+    assert "python -m venv /opt/mingli-runtime/venv" not in dockerfile
+    assert "test ! -L /opt/mingli-runtime/venv/bin/python" in dockerfile
     production_stage = dockerfile.split(" AS production", 1)[1].split(
         "FROM production AS audit", 1
     )[0]
@@ -378,15 +394,66 @@ def test_evidence_conflict_reference_requires_a_signed_index_entry(
     )
 
 
+def test_audit_tar_extractor_handles_root_member_and_requires_empty_target(
+    tmp_path: Path,
+) -> None:
+    gate = load_lima_gate()
+    payload = io.BytesIO()
+    with tarfile.open(fileobj=payload, mode="w") as archive:
+        root = tarfile.TarInfo(".")
+        root.type = tarfile.DIRTYPE
+        archive.addfile(root)
+        content = b"verified evidence\n"
+        item = tarfile.TarInfo("./evidence/result.txt")
+        item.size = len(content)
+        archive.addfile(item, io.BytesIO(content))
+
+    destination = tmp_path / "output"
+    destination.mkdir()
+    gate._extract_safe_tar(payload.getvalue(), destination)
+    assert (destination / "evidence/result.txt").read_bytes() == content
+
+    with pytest.raises(gate.GateError, match="start empty"):
+        gate._extract_safe_tar(payload.getvalue(), destination)
+    with pytest.raises(gate.GateError, match="start empty"):
+        gate._extract_safe_tar(payload.getvalue(), tmp_path / "missing")
+
+
 def test_image_audit_entry_is_present_and_non_agentic() -> None:
     audit = AUDIT_PATH.read_text(encoding="utf-8")
+    controller = LIMA_GATE_PATH.read_text(encoding="utf-8")
     assert "/audit-source/scripts/run_test_suite.py" not in audit
     assert "run_test_suite.py" in audit
     assert "EXPECTED_TEST_COUNT" in audit
     assert "--emit-characterization" in audit
     assert "--emit-runtime-probes" in audit
+    assert "--production-audit" in audit
+    assert "--finalize-audit" in audit
+    assert "production-tree-identity" in audit
+    assert "audit-tree-identity" in audit
+    assert "--production-audit" in controller
+    assert "--finalize-audit" in controller
+    assert "production_output" in controller
+    assert "production_state" in controller
     for forbidden in ("langchain", "agent.run", "tools=", "function_call"):
         assert forbidden not in audit.lower()
+
+
+def test_backup_drill_distinguishes_replay_from_true_followup() -> None:
+    controller = LIMA_GATE_PATH.read_text(encoding="utf-8")
+    verifier = VERIFY_PATH.read_text(encoding="utf-8")
+
+    for required in (
+        "prepared-token-replay",
+        "prepared-restored-complete",
+        "accepted-followup-prepare",
+        "accepted-followup-complete",
+        "accepted-followup-token-record",
+    ):
+        assert required in controller
+        assert required in verifier
+    assert '"prepared-followup"' not in controller
+    assert '"prepared-followup"' not in verifier
 
 
 def test_sbom_covers_python_node_and_vendored_iztro() -> None:

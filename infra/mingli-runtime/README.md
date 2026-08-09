@@ -42,7 +42,29 @@ the frozen hashes in `dependency-provenance.json` and the generated SBOM.
 
 ## Audit evidence
 
-`audit_runtime.py` is the single in-image report generator. It requires:
+`run_lima_gate.py` is the mountless host controller. It streams the projected
+build context over `limactl shell`, creates uniquely named Docker volumes, and
+streams a self-contained clean Git checkout plus the 54 ignored fulltexts into
+the VM. It never depends on `/Users` or `/Volumes` being mounted in Lima. Every
+temporary volume is initialized as root, then owned by `10001:10001`; all real
+runtime and audit commands execute as that non-root identity.
+
+`audit_runtime.py` uses two explicit evidence phases:
+
+1. `--production-audit` runs directly in the Git-free production image. It
+   recomputes the SBOM and runtime inventory, runs the live 13-Provider matrix
+   twice, characterization twice, P0 trajectories, and the malformed/tamper/
+   launcher-timeout/concurrency/token-replay probes. Every command record is
+   bound to the production OCI config digest.
+2. `--finalize-audit` runs in the derived audit image. It verifies and copies
+   the production evidence bundle, binds the clean source commit to all 217
+   signed files, runs only the Git-dependent 126-target/93-module/1584-test
+   suite, and produces the final report.
+
+Both phases independently hash `/opt/mingli-master`,
+`/opt/mingli-runtime/venv`, and `/opt/node`; the Gate requires byte-for-byte
+identical machine output before admitting the derived audit result. The audit
+phase requires:
 
 - a clean, read-only checkout of source commit `494ce0...` at `/audit-source`;
 - a blank writable output mount at `/audit-output`;
@@ -50,12 +72,9 @@ the frozen hashes in `dependency-provenance.json` and the generated SBOM.
 - sanitized backup/restore evidence produced with the production image;
 - the production OCI config digest and the derived audit image ID.
 
-It re-runs runtime inventory verification, the live 13-Provider matrix twice,
-machine characterization twice, the exact 126-target/93-module/1584-test
-release suite, fixed P0 trajectories, and malformed/tamper/timeout/concurrency/
-token-replay probes. It writes command argv, exit code, stdout/stderr bytes and
-hashes. `verify_release.py` then independently rehashes every referenced file
-before `release-5.1.json` is written.
+Both phases write exact command argv, executing image ID, exit code,
+stdout/stderr bytes, and hashes. `verify_release.py` independently rehashes
+every referenced file before `release-5.1.json` is written.
 
 The Gate intentionally remains RED while `release-5.1.json`, `sbom.cdx.json`,
 or referenced audit evidence is absent. Do not hand-create those files.
@@ -67,11 +86,19 @@ with mode `0700`. Backup must be taken from a quiesced single Runtime replica.
 The drill uses one source volume and two separately created, proven-empty
 destination volumes:
 
-1. capture a Prepared snapshot, restore it into the first blank volume, issue a
-   tokened follow-up, and complete that follow-up;
-2. complete the source Prepared token, capture the Accepted snapshot, restore
-   it into the second blank volume, and replay the byte-identical Complete;
-3. compare token fingerprints, command digests, and public-copy byte digests.
+1. capture a Prepared snapshot and restore it into the first blank volume;
+2. replay the same Prepare plus the restored token and prove the Prepared
+   bytes, brief, and token are identical;
+3. Complete that restored Prepared, then use its Accepted token with a new
+   query to create and Complete a real version-2 follow-up; the child token
+   record must bind version 2, its parent fingerprint, and the original
+   `prior_answer` byte digest;
+4. independently Complete the source Prepared, capture the Accepted snapshot,
+   restore it into the second blank volume, and replay the original
+   byte-identical Complete;
+5. compare only the original/restored/replayed Accepted public-copy and command
+   digests. The child follow-up copy is deliberately excluded from this
+   byte-identity assertion.
 
 Raw state tokens never enter committed logs. Runtime results are sanitized to
 SHA-256 token fingerprints. Snapshot archives used during the drill are sealed

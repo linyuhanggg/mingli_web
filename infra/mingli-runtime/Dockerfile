@@ -25,7 +25,7 @@ RUN python /opt/mingli-runtime/verify_release.py \
         --release-only \
         --release-root /opt/mingli-master
 
-RUN python -m venv /opt/mingli-runtime/build-venv \
+RUN python -m venv --copies /opt/mingli-runtime/build-venv \
     && /opt/mingli-runtime/build-venv/bin/python -m pip install \
         --require-hashes \
         --no-compile \
@@ -61,7 +61,7 @@ RUN python -m venv /opt/mingli-runtime/build-venv \
         = "bd03d0b56d81112d87ad340a3d65458059497dc33496b1938fb23056dfe8ba80" \
     && cp /opt/mingli-runtime/downloads/*.whl /opt/mingli-runtime/wheelhouse/ \
     && cp /opt/mingli-runtime/wheel-a/*.whl /opt/mingli-runtime/wheelhouse/ \
-    && python -m venv /opt/mingli-runtime/venv \
+    && python -m venv --copies /opt/mingli-runtime/venv \
     && /opt/mingli-runtime/venv/bin/python -m pip install \
         --require-hashes \
         --no-index \
@@ -73,6 +73,8 @@ RUN python -m venv /opt/mingli-runtime/build-venv \
         pip setuptools wheel packaging \
     && find /opt/mingli-runtime/venv -type d -name __pycache__ -prune -exec rm -rf {} + \
     && find /opt/mingli-runtime/venv -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete \
+    && test -x /opt/mingli-runtime/venv/bin/python \
+    && test ! -L /opt/mingli-runtime/venv/bin/python \
     && PYTHONPATH=/opt/mingli-master/scripts python -B -c \
         "import runtime_python; runtime_python.write_installed_runtime_manifest('/opt/mingli-runtime/venv/bin/python'); runtime_python.probe_runtime_identity('/opt/mingli-runtime/venv/bin/python')" \
     && chmod 0444 /opt/mingli-runtime/venv/runtime-integrity.json
@@ -107,12 +109,13 @@ COPY --from=dependency-builder /opt/mingli-master/ /opt/mingli-master/
 COPY --from=dependency-builder /opt/mingli-runtime/venv/ /opt/mingli-runtime/venv/
 COPY --from=dependency-builder /opt/mingli-runtime/.venv.runtime.lock /opt/mingli-runtime/.venv.runtime.lock
 COPY --from=node-bundle /opt/node/ /opt/node/
-COPY audit_runtime.py verify_release.py dependency-provenance.json \
+COPY audit_runtime.py emit_sbom.py verify_release.py dependency-provenance.json \
     context-provenance.json /opt/mingli-runtime/
 
 RUN chown ${RUNTIME_UID}:${RUNTIME_GID} /opt/mingli-runtime/.venv.runtime.lock \
     && chmod 0600 /opt/mingli-runtime/.venv.runtime.lock \
     && chmod 0555 /opt/mingli-runtime/audit_runtime.py \
+        /opt/mingli-runtime/emit_sbom.py \
         /opt/mingli-runtime/verify_release.py \
     && find /opt/mingli-master -type d -exec chmod 0555 {} + \
     && python /opt/mingli-runtime/verify_release.py \

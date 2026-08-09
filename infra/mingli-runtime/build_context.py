@@ -31,6 +31,7 @@ CONTEXT_FILES = (
     "Dockerfile",
     "audit_runtime.py",
     "dependency-provenance.json",
+    "emit_sbom.py",
     "requirements-linux-x86_64.lock",
     "verify_release.py",
 )

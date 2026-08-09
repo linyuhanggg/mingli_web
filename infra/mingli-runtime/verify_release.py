@@ -118,6 +118,23 @@ EXPECTED_IZTRO_SHA256 = (
 EXPECTED_TEST_COUNT = 1584
 EXPECTED_TEST_TARGETS = 126
 EXPECTED_TEST_MODULES = 93
+EXPECTED_PRODUCTION_COMMAND_IDS = frozenset(
+    {
+        "characterization-a",
+        "characterization-b",
+        "p0-trajectories",
+        "production-tree-identity",
+        "provider-matrix-a",
+        "provider-matrix-b",
+        "runtime-inventory",
+        "runtime-probe-machine",
+        "runtime-probe-unittest",
+        "sbom-regeneration",
+    }
+)
+EXPECTED_AUDIT_COMMAND_IDS = frozenset(
+    {"audit-tree-identity", "release-regression", "source-binding"}
+)
 EXPECTED_CHARACTERIZATION_DIGESTS = {
     "bazi": "8414c2fed081d148fd47a7472ebe70669eae673b6510627097485dd25a5cbc4c",
     "fengshui": "f20065947fc8eaa277bdcc6ea41cc5406eab389d6132662cba30b265683453ee",
@@ -975,13 +992,96 @@ def _verify_inventory_artifact(
     return inventory
 
 
+def _verify_source_binding_artifact(
+    inventory_path: Path,
+    release_manifest: Mapping[str, Any],
+) -> dict[str, Any]:
+    inventory = _load_json(inventory_path, "authoritative source binding evidence")
+    if inventory.get("schema_version") != "mingli-runtime-inventory-v1":
+        _fail("authoritative source binding schema mismatch")
+    if inventory.get("release") != EXPECTED_RELEASE:
+        _fail("authoritative source binding release identity mismatch")
+    if (
+        inventory.get("release_manifest_sha256")
+        != EXPECTED_RELEASE["release_manifest_sha256"]
+    ):
+        _fail("authoritative source binding manifest digest mismatch")
+    files = inventory.get("release_files")
+    manifest_files = release_manifest.get("files")
+    manifest_modes = release_manifest.get("modes")
+    if (
+        not isinstance(files, dict)
+        or not isinstance(manifest_files, dict)
+        or not isinstance(manifest_modes, dict)
+        or set(files) != set(manifest_files)
+        or set(files) != set(manifest_modes)
+        or len(files) != 217
+    ):
+        _fail("authoritative source binding does not cover the signed 217 files")
+    for relative, record in files.items():
+        _safe_relative(relative, "authoritative source binding")
+        if not isinstance(record, dict) or record != {
+            "mode": manifest_modes[relative],
+            "sha256": manifest_files[relative],
+        }:
+            _fail(f"authoritative source binding file mismatch: {relative}")
+    closure = inventory.get("runtime_closure_paths")
+    if not isinstance(closure, list) or set(closure) != set(files):
+        _fail("authoritative source binding runtime closure mismatch")
+    if inventory.get("runtime_closure_verified") is not True:
+        _fail("authoritative source binding runtime closure is unverified")
+    if (
+        inventory.get("provider_count") != 13
+        or set(inventory.get("provider_ids") or ()) != EXPECTED_PROVIDERS
+        or inventory.get("readiness")
+        != {provider: True for provider in sorted(EXPECTED_PROVIDERS)}
+    ):
+        _fail("authoritative source binding does not prove all 13 Providers")
+    if (
+        inventory.get("reference_pack_count") != 55
+        or inventory.get("evidence_index_count") != 1328
+        or inventory.get("evidence_rule_ids_unique") is not True
+    ):
+        _fail("authoritative source binding does not close 55/1328 assets")
+    expected_source = {
+        "clean": True,
+        "fulltext_count": 55,
+        "signed_release_files_matched": 217,
+        "source_commit": EXPECTED_RELEASE["source_commit"],
+    }
+    if inventory.get("authoritative_source") != expected_source:
+        _fail("authoritative source binding is not a clean exact commit")
+    forbidden_runtime_fields = {"describe", "node", "runtime_integrity", "state_root"}
+    if forbidden_runtime_fields & set(inventory):
+        _fail("source binding must remain a release-only audit artifact")
+    return inventory
+
+
 def _verify_sbom(path: Path, report: Mapping[str, Any]) -> None:
     sbom = _load_json(path, "SBOM")
-    if sbom.get("bomFormat") != "CycloneDX":
+    if (
+        sbom.get("bomFormat") != "CycloneDX"
+        or sbom.get("specVersion") != "1.6"
+        or sbom.get("version") != 1
+    ):
         _fail("SBOM is not CycloneDX")
     components = sbom.get("components")
     if not isinstance(components, list):
         _fail("SBOM components are missing")
+    component_refs = [
+        item.get("bom-ref") for item in components if isinstance(item, dict)
+    ]
+    if len(component_refs) != len(components) or len(set(component_refs)) != len(
+        component_refs
+    ):
+        _fail("SBOM component references are missing or duplicated")
+    identities = [
+        (item.get("name"), item.get("version"))
+        for item in components
+        if isinstance(item, dict)
+    ]
+    if len(set(identities)) != len(identities):
+        _fail("SBOM component identities are duplicated")
     by_identity = {
         (item.get("name"), item.get("version")): item
         for item in components
@@ -1000,6 +1100,52 @@ def _verify_sbom(path: Path, report: Mapping[str, Any]) -> None:
     if not required <= set(by_identity):
         _fail("SBOM omits a required Python, Node, or vendored component")
 
+    artifact = report.get("artifact")
+    if not isinstance(artifact, dict):
+        _fail("release report artifact is missing for SBOM binding")
+    metadata = sbom.get("metadata")
+    if not isinstance(metadata, dict):
+        _fail("SBOM metadata is missing")
+    root_component = metadata.get("component")
+    if not isinstance(root_component, dict) or {
+        "name": root_component.get("name"),
+        "type": root_component.get("type"),
+        "version": root_component.get("version"),
+    } != {"name": "mingli-v51-runtime", "type": "container", "version": "5.1"}:
+        _fail("SBOM root component identity mismatch")
+    expected_root_ref = f"mingli:runtime-image@{artifact.get('image_digest')}"
+    if root_component.get("bom-ref") != expected_root_ref:
+        _fail("SBOM root component is not bound to the production image")
+    root_properties = {
+        item.get("name"): item.get("value")
+        for item in root_component.get("properties") or ()
+        if isinstance(item, dict)
+    }
+    if root_properties != {
+        "mingli:base-image-manifest-digest": EXPECTED_BASE_IMAGE[
+            "linux_amd64_manifest_digest"
+        ],
+        "mingli:oci-config-digest": artifact.get("image_digest"),
+        "mingli:release-manifest-sha256": EXPECTED_RELEASE["release_manifest_sha256"],
+        "mingli:runtime-integrity-sha256": artifact.get("runtime_integrity_sha256"),
+    }:
+        _fail("SBOM root properties are not bound to admitted image artifacts")
+    tools = metadata.get("tools")
+    if tools != {
+        "components": [
+            {
+                "name": "mingli-emit-sbom",
+                "type": "application",
+                "version": "1",
+            }
+        ]
+    }:
+        _fail("SBOM generator identity mismatch")
+    if sbom.get("dependencies") != [
+        {"dependsOn": sorted(component_refs), "ref": expected_root_ref}
+    ]:
+        _fail("SBOM dependency graph is not bound to every component")
+
     def component_hashes(identity: tuple[str, str]) -> set[object]:
         hashes = by_identity[identity].get("hashes")
         if not isinstance(hashes, list):
@@ -1015,11 +1161,37 @@ def _verify_sbom(path: Path, report: Mapping[str, Any]) -> None:
         str(base_digest).removeprefix("sha256:")
     }:
         _fail("SBOM base image amd64 digest mismatch")
+    cpython_hashes = component_hashes(("cpython", "3.14.6"))
+    if len(cpython_hashes) != 1:
+        _fail("SBOM CPython installed binary digest is not exact")
+    _require_sha256(next(iter(cpython_hashes)), "SBOM CPython installed binary")
+    cpython_properties = {
+        item.get("name"): item.get("value")
+        for item in by_identity[("cpython", "3.14.6")].get("properties") or ()
+        if isinstance(item, dict)
+    }
+    if cpython_properties != {
+        "mingli:installed-path": "/opt/mingli-runtime/venv/bin/python"
+    }:
+        _fail("SBOM CPython installed path mismatch")
     for component_name, expected in EXPECTED_PYTHON_ARTIFACTS.items():
         version = str(expected["version"])
         expected_hash = expected.get("wheel_sha256", expected.get("sha256"))
         if component_hashes((component_name, version)) != {expected_hash}:
             _fail(f"SBOM Python artifact SHA-256 mismatch: {component_name}")
+        properties = by_identity[(component_name, version)].get("properties")
+        property_map = {
+            item.get("name"): item.get("value")
+            for item in properties or ()
+            if isinstance(item, dict)
+        }
+        _require_sha256(
+            property_map.get("mingli:installed-files-sha256"),
+            f"SBOM {component_name} installed tree",
+        )
+        expected_filename = expected.get("wheel_filename", expected.get("filename"))
+        if property_map.get("mingli:artifact-filename") != expected_filename:
+            _fail(f"SBOM Python artifact filename mismatch: {component_name}")
     node_hashes = by_identity[("node", EXPECTED_NODE["version"])].get("hashes")
     if not isinstance(node_hashes, list) or {
         item.get("content")
@@ -1027,11 +1199,42 @@ def _verify_sbom(path: Path, report: Mapping[str, Any]) -> None:
         if isinstance(item, dict) and item.get("alg") == "SHA-256"
     } != {EXPECTED_NODE["sha256"]}:
         _fail("SBOM Node tarball SHA-256 provenance mismatch")
+    node_properties = {
+        item.get("name"): item.get("value")
+        for item in by_identity[("node", EXPECTED_NODE["version"])].get("properties")
+        or ()
+        if isinstance(item, dict)
+    }
+    _require_sha256(
+        node_properties.get("mingli:installed-binary-sha256"),
+        "SBOM Node installed binary",
+    )
+    if {
+        key: value
+        for key, value in node_properties.items()
+        if key != "mingli:installed-binary-sha256"
+    } != {
+        "mingli:artifact-filename": EXPECTED_NODE["filename"],
+        "mingli:source-url": "https://nodejs.org/dist/v26.3.0/node-v26.3.0-linux-x64.tar.gz",
+    }:
+        _fail("SBOM Node provenance properties mismatch")
     iztro_hashes = by_identity[("iztro", "2.5.8")].get("hashes")
     if EXPECTED_IZTRO_SHA256 not in {
         item.get("content") for item in iztro_hashes or () if isinstance(item, dict)
     }:
         _fail("SBOM vendored iztro SHA-256 provenance mismatch")
+    iztro_properties = {
+        item.get("name"): item.get("value")
+        for item in by_identity[("iztro", "2.5.8")].get("properties") or ()
+        if isinstance(item, dict)
+    }
+    if iztro_properties != {
+        "mingli:npm-tarball-sha256": (
+            "8293c6a587de521b0713e45826745ba4b7482fc507bd2da43fc820cadf06deca"
+        ),
+        "mingli:release-path": "vendor/iztro-2.5.8/iztro.min.js",
+    }:
+        _fail("SBOM iztro provenance properties mismatch")
     sxtwl_properties = by_identity[("sxtwl", "2.0.7")].get("properties")
     property_map = {
         item.get("name"): item.get("value")
@@ -1128,6 +1331,127 @@ def _require_successful_command_ids(
         _fail(f"{label} references unknown command evidence")
 
 
+def _verify_production_evidence(
+    evidence_path: Path,
+    *,
+    artifacts_root: Path,
+    image_id: str,
+    commands: Mapping[str, Mapping[str, Any]],
+    report: Mapping[str, Any],
+) -> None:
+    production = _load_json(evidence_path, "production image evidence")
+    if production.get("schema_version") != "mingli-production-evidence-v1":
+        _fail("production image evidence schema mismatch")
+    if production.get("generated_by") != "/opt/mingli-runtime/audit_runtime.py":
+        _fail("production image evidence generator mismatch")
+    if production.get("image_id") != image_id:
+        _fail("production image evidence image identity mismatch")
+    raw_commands = production.get("commands")
+    if not isinstance(raw_commands, list):
+        _fail("production image evidence command list is missing")
+    indexed: dict[str, dict[str, Any]] = {}
+    for record in raw_commands:
+        if not isinstance(record, dict):
+            _fail("production image command record is invalid")
+        command_id = record.get("id")
+        if not isinstance(command_id, str) or command_id in indexed:
+            _fail("production image command identity is invalid")
+        indexed[command_id] = record
+    if set(indexed) != EXPECTED_PRODUCTION_COMMAND_IDS:
+        _fail("production image command inventory is not exact")
+    for command_id, production_record in indexed.items():
+        final_record = commands.get(command_id)
+        if final_record is None:
+            _fail(f"production image command absent from final report: {command_id}")
+        normalized = {
+            key: value
+            for key, value in final_record.items()
+            if key not in {"stdout_file", "stderr_file"}
+        }
+        if production_record != normalized:
+            _fail(f"production command changed during audit finalization: {command_id}")
+        if production_record.get("executed_in_image_id") != image_id:
+            _fail(f"core Gate did not execute in production: {command_id}")
+    files = production.get("files")
+    if not isinstance(files, dict):
+        _fail("production image evidence file inventory is missing")
+    expected_files = {
+        "evidence/dependency-provenance.json",
+        "evidence/release-manifest.json",
+        "evidence/runtime-integrity.json",
+        "evidence/runtime-inventory.json",
+        "sbom.cdx.json",
+    }
+    for command in indexed.values():
+        expected_files.add(_safe_relative(command.get("stdout_path"), "production"))
+        expected_files.add(_safe_relative(command.get("stderr_path"), "production"))
+    if set(files) != expected_files:
+        _fail("production image evidence file inventory is not exact")
+    for relative, digest in files.items():
+        _verify_artifact_digest(
+            artifacts_root,
+            relative,
+            digest,
+            f"production image evidence {relative}",
+        )
+    for field in (
+        "characterization",
+        "inventory",
+        "p0_trajectories",
+        "probes",
+        "target",
+    ):
+        if production.get(field) != report.get(field):
+            _fail(f"final report changed production image evidence: {field}")
+
+
+def _verify_tree_identity(
+    section: object,
+    commands: Mapping[str, Mapping[str, Any]],
+) -> None:
+    if not isinstance(section, dict) or section.get("status") != "passed":
+        _fail("production/audit runtime tree identity did not pass")
+    production_id = section.get("production_command_id")
+    audit_id = section.get("audit_command_id")
+    if (production_id, audit_id) != (
+        "production-tree-identity",
+        "audit-tree-identity",
+    ):
+        _fail("runtime tree identity command binding mismatch")
+    production = commands["production-tree-identity"]
+    audit = commands["audit-tree-identity"]
+    digest = _require_sha256(section.get("sha256"), "runtime tree identity")
+    if (
+        production.get("stdout_sha256") != digest
+        or audit.get("stdout_sha256") != digest
+    ):
+        _fail("production and audit runtime tree stdout digests differ")
+    first = _load_json(production["stdout_file"], "production runtime tree identity")
+    second = _load_json(audit["stdout_file"], "audit runtime tree identity")
+    if first != second:
+        _fail("derived audit stage changed the admitted runtime trees")
+    if first.get("schema_version") != "mingli-runtime-tree-identity-v1":
+        _fail("runtime tree identity schema mismatch")
+    trees = first.get("trees")
+    expected_paths = {
+        "node": "/opt/node",
+        "release": "/opt/mingli-master",
+        "runtime_venv": "/opt/mingli-runtime/venv",
+    }
+    if not isinstance(trees, dict) or set(trees) != set(expected_paths):
+        _fail("runtime tree identity does not cover the three admitted trees")
+    for name, expected_path in expected_paths.items():
+        record = trees[name]
+        if (
+            not isinstance(record, dict)
+            or record.get("path") != expected_path
+            or not isinstance(record.get("entry_count"), int)
+            or record["entry_count"] <= 0
+        ):
+            _fail(f"runtime tree identity record is invalid: {name}")
+        _require_sha256(record.get("sha256"), f"runtime tree identity {name}")
+
+
 def _verify_backup_restore(
     section: object,
     evidence_path: Path,
@@ -1190,18 +1514,22 @@ def _verify_backup_restore(
 
     expected_command_ids = {
         "accepted-complete-replay",
+        "accepted-followup-complete",
+        "accepted-followup-prepare",
+        "accepted-followup-token-record",
         "accepted-restore",
         "accepted-restore-volume-empty",
         "accepted-snapshot-capture",
         "accepted-snapshot-seal",
-        "prepared-followup",
-        "prepared-followup-complete",
         "prepared-restore",
         "prepared-restore-volume-empty",
+        "prepared-restored-complete",
         "prepared-snapshot-capture",
         "prepared-snapshot-seal",
+        "prepared-token-replay",
         "source-complete",
         "source-prepare",
+        "source-prepared-token-record",
     }
     command_records = evidence.get("commands")
     if not isinstance(command_records, list):
@@ -1209,8 +1537,10 @@ def _verify_backup_restore(
     commands: dict[str, dict[str, Any]] = {}
     runtime_command_ids = {
         "accepted-complete-replay",
-        "prepared-followup",
-        "prepared-followup-complete",
+        "accepted-followup-complete",
+        "accepted-followup-prepare",
+        "prepared-restored-complete",
+        "prepared-token-replay",
         "source-complete",
         "source-prepare",
     }
@@ -1235,26 +1565,201 @@ def _verify_backup_restore(
             _fail(
                 f"backup/restore runtime command used a different image: {command_id}"
             )
-        _verify_artifact_digest(
+        stdout_file = _verify_artifact_digest(
             artifacts_root,
             command.get("stdout_path"),
             command.get("stdout_sha256"),
             f"backup/restore command {command_id} stdout",
         )
-        _verify_artifact_digest(
+        stderr_file = _verify_artifact_digest(
             artifacts_root,
             command.get("stderr_path"),
             command.get("stderr_sha256"),
             f"backup/restore command {command_id} stderr",
         )
-        commands[command_id] = command
+        commands[command_id] = {
+            **command,
+            "stderr_file": stderr_file,
+            "stdout_file": stdout_file,
+        }
     if set(commands) != expected_command_ids:
         _fail("backup/restore command inventory is not exact")
+    runtime_tmpfs = "/tmp:rw,noexec,nosuid,nodev,size=128m,mode=1777"
+    command_volume_roles = {
+        "accepted-complete-replay": "accepted_restore_blank",
+        "accepted-followup-complete": "prepared_restore_blank",
+        "accepted-followup-prepare": "prepared_restore_blank",
+        "prepared-restored-complete": "prepared_restore_blank",
+        "prepared-token-replay": "prepared_restore_blank",
+        "source-complete": "source",
+        "source-prepare": "source",
+    }
+    for command_id, role in command_volume_roles.items():
+        expected_argv = [
+            "docker",
+            "run",
+            "--rm",
+            "-i",
+            "--network=none",
+            "--read-only",
+            "--tmpfs",
+            runtime_tmpfs,
+            "--mount",
+            f"source={volume_ids[role]},target=/var/lib/mingli",
+            image_digest,
+        ]
+        if commands[command_id].get("argv") != expected_argv:
+            _fail(f"backup runtime command argv drift: {command_id}")
+        if commands[command_id].get("stdout_capture") != (
+            "sanitized-runtime-result-v1"
+        ):
+            _fail(f"backup runtime command was not sanitized: {command_id}")
+    token_record_roles = {
+        "accepted-followup-token-record": "prepared_restore_blank",
+        "source-prepared-token-record": "source",
+    }
+    for command_id, role in token_record_roles.items():
+        expected_argv = [
+            "docker",
+            "run",
+            "--rm",
+            "-i",
+            "--network=none",
+            "--read-only",
+            "--tmpfs",
+            runtime_tmpfs,
+            "--mount",
+            f"source={volume_ids[role]},target=/var/lib/mingli,readonly",
+            "--entrypoint",
+            "/opt/mingli-runtime/venv/bin/python",
+            image_digest,
+            "-B",
+            "/opt/mingli-runtime/audit_runtime.py",
+            "--emit-token-record",
+            "--state-root",
+            "/var/lib/mingli",
+        ]
+        if commands[command_id].get("argv") != expected_argv:
+            _fail(f"backup token-record command argv drift: {command_id}")
+        if commands[command_id].get("stdout_capture") != "token-record-audit-v1":
+            _fail(f"backup token-record command capture drift: {command_id}")
+    empty_roles = {
+        "accepted-restore-volume-empty": "accepted_restore_blank",
+        "prepared-restore-volume-empty": "prepared_restore_blank",
+    }
+    for command_id, role in empty_roles.items():
+        expected_argv = [
+            "docker",
+            "run",
+            "--rm",
+            "--network=none",
+            "--read-only",
+            "--mount",
+            f"source={volume_ids[role]},target=/var/lib/mingli,readonly",
+            "--entrypoint",
+            "/usr/bin/find",
+            image_digest,
+            "/var/lib/mingli",
+            "-mindepth",
+            "1",
+            "-print",
+            "-quit",
+        ]
+        if commands[command_id].get("argv") != expected_argv:
+            _fail(f"blank volume command argv drift: {command_id}")
+    snapshot_roles = {
+        "accepted": ("source", "accepted_restore_blank"),
+        "prepared": ("source", "prepared_restore_blank"),
+    }
+    for name, (capture_role, restore_role) in snapshot_roles.items():
+        capture_id = f"{name}-snapshot-capture"
+        capture_argv = [
+            "docker",
+            "run",
+            "--rm",
+            "--network=none",
+            "--read-only",
+            "--mount",
+            f"source={volume_ids[capture_role]},target=/var/lib/mingli,readonly",
+            "--entrypoint",
+            "/bin/tar",
+            image_digest,
+            "-C",
+            "/var/lib/mingli",
+            "-cf",
+            "-",
+            ".",
+        ]
+        if commands[capture_id].get("argv") != capture_argv:
+            _fail(f"snapshot capture command argv drift: {name}")
+        restore_id = f"{name}-restore"
+        restore_argv = [
+            "docker",
+            "run",
+            "--rm",
+            "-i",
+            "--network=none",
+            "--read-only",
+            "--mount",
+            f"source={volume_ids[restore_role]},target=/var/lib/mingli",
+            "--entrypoint",
+            "/bin/tar",
+            image_digest,
+            "-C",
+            "/var/lib/mingli",
+            "-xf",
+            "-",
+        ]
+        if commands[restore_id].get("argv") != restore_argv:
+            _fail(f"snapshot restore command argv drift: {name}")
+        seal_id = f"{name}-snapshot-seal"
+        ciphertext_path = snapshots[name]["ciphertext_path"]
+        if commands[seal_id].get("argv") != [
+            "in-process:xor-one-time-pad",
+            name,
+            ciphertext_path,
+        ]:
+            _fail(f"snapshot seal command argv drift: {name}")
+        capture_receipt = _load_json(
+            commands[capture_id]["stdout_file"],
+            f"{name} snapshot capture receipt",
+        )
+        seal_receipt = _load_json(
+            commands[seal_id]["stdout_file"],
+            f"{name} snapshot seal receipt",
+        )
+        restore_receipt = _load_json(
+            commands[restore_id]["stdout_file"],
+            f"{name} snapshot restore receipt",
+        )
+        expected_capture = {
+            "byte_count": snapshots[name]["byte_count"],
+            "plaintext_sha256": snapshots[name]["plaintext_sha256"],
+            "schema_version": "mingli-snapshot-capture-v1",
+        }
+        if capture_receipt != expected_capture:
+            _fail(f"snapshot capture receipt binding failed: {name}")
+        expected_seal = {
+            "byte_count": snapshots[name]["byte_count"],
+            "ciphertext_sha256": snapshots[name]["ciphertext_sha256"],
+            "plaintext_sha256": snapshots[name]["plaintext_sha256"],
+            "schema_version": "mingli-snapshot-seal-v1",
+        }
+        if seal_receipt != expected_seal:
+            _fail(f"snapshot seal receipt binding failed: {name}")
+        if restore_receipt != {
+            "key_destroyed": True,
+            "plaintext_buffer_destroyed": True,
+            "schema_version": "mingli-snapshot-restore-v1",
+        }:
+            _fail(f"snapshot restore receipt binding failed: {name}")
 
     transcript_ids = {
         "accepted-replay": "accepted-complete-replay",
-        "prepared-followup": "prepared-followup",
-        "prepared-followup-accepted": "prepared-followup-complete",
+        "accepted-followup-accepted": "accepted-followup-complete",
+        "accepted-followup-prepared": "accepted-followup-prepare",
+        "prepared-replay": "prepared-token-replay",
+        "prepared-restored-accepted": "prepared-restored-complete",
         "source-accepted": "source-complete",
         "source-prepared": "source-prepare",
     }
@@ -1290,6 +1795,7 @@ def _verify_backup_restore(
             _fail(f"backup/restore transcript redaction mismatch: {transcript_id}")
         for field in (
             "command_sha256",
+            "result_bytes_sha256",
             "token_fingerprint",
         ):
             _require_sha256(transcript.get(field), f"{transcript_id} {field}")
@@ -1303,19 +1809,93 @@ def _verify_backup_restore(
                 transcript.get("public_copy_sha256"),
                 f"{transcript_id} public copy",
             )
+        elif transcript.get("kind") == "prepared":
+            for field in ("brief_sha256", "question_sha256"):
+                _require_sha256(transcript.get(field), f"{transcript_id} {field}")
+            if transcript.get("prior_answer_sha256") is not None:
+                _require_sha256(
+                    transcript.get("prior_answer_sha256"),
+                    f"{transcript_id} prior answer",
+                )
+        else:
+            _fail(f"backup/restore transcript kind mismatch: {transcript_id}")
         transcripts[transcript_id] = transcript
 
+    token_record_ids = {
+        "accepted-followup": "accepted-followup-token-record",
+        "source-prepared": "source-prepared-token-record",
+    }
+    raw_token_records = evidence.get("token_records")
+    if not isinstance(raw_token_records, dict) or set(raw_token_records) != set(
+        token_record_ids
+    ):
+        _fail("backup/restore token-record evidence is incomplete")
+    token_records: dict[str, dict[str, Any]] = {}
+    for record_id, command_id in token_record_ids.items():
+        binding = raw_token_records[record_id]
+        if not isinstance(binding, dict) or binding.get("command_id") != command_id:
+            _fail(f"backup token-record command binding failed: {record_id}")
+        if binding.get("path") != commands[command_id].get("stdout_path"):
+            _fail(f"backup token-record is not command stdout: {record_id}")
+        if binding.get("sha256") != commands[command_id].get("stdout_sha256"):
+            _fail(f"backup token-record digest is not command stdout: {record_id}")
+        token_record_path = _verify_artifact_digest(
+            artifacts_root,
+            binding.get("path"),
+            binding.get("sha256"),
+            f"backup token-record {record_id}",
+        )
+        token_record = _load_json(token_record_path, f"backup token-record {record_id}")
+        if token_record.get("schema_version") != "mingli-token-record-audit-v1":
+            _fail(f"backup token-record schema mismatch: {record_id}")
+        for field in (
+            "reading_id_sha256",
+            "token_fingerprint",
+        ):
+            _require_sha256(token_record.get(field), f"{record_id} {field}")
+        if token_record.get("parent_token_fingerprint") is not None:
+            _require_sha256(
+                token_record.get("parent_token_fingerprint"),
+                f"{record_id} parent token",
+            )
+        if not isinstance(token_record.get("version"), int):
+            _fail(f"backup token-record version is invalid: {record_id}")
+        token_records[record_id] = token_record
+
     source_prepared = transcripts["source-prepared"]
-    followup = transcripts["prepared-followup"]
-    followup_accepted = transcripts["prepared-followup-accepted"]
+    prepared_replay = transcripts["prepared-replay"]
+    prepared_restored_accepted = transcripts["prepared-restored-accepted"]
+    followup = transcripts["accepted-followup-prepared"]
+    followup_accepted = transcripts["accepted-followup-accepted"]
     source_accepted = transcripts["source-accepted"]
     accepted_replay = transcripts["accepted-replay"]
-    if source_prepared.get("kind") != "prepared" or followup.get("kind") != "prepared":
-        _fail("Prepared backup did not restore into a real tokened follow-up")
-    if followup.get("input_token_fingerprint") != source_prepared.get(
-        "token_fingerprint"
+    source_fingerprint = source_prepared.get("token_fingerprint")
+    if (
+        source_prepared.get("kind") != "prepared"
+        or prepared_replay.get("kind") != "prepared"
     ):
-        _fail("Prepared follow-up did not use the restored source token")
+        _fail("Prepared backup did not restore into a Prepared replay")
+    if prepared_replay.get("input_token_fingerprint") != source_fingerprint:
+        _fail("Prepared replay did not use the restored source token")
+    if prepared_replay.get("token_fingerprint") != source_fingerprint:
+        _fail("Prepared replay did not preserve the state token")
+    for field in ("brief_sha256", "result_bytes_sha256"):
+        if prepared_replay.get(field) != source_prepared.get(field):
+            _fail(f"Prepared replay was not byte-identical: {field}")
+    if prepared_restored_accepted.get("kind") != "accepted" or (
+        prepared_restored_accepted.get("input_token_fingerprint") != source_fingerprint
+    ):
+        _fail("restored Prepared token was not completed")
+    if followup.get("kind") != "prepared":
+        _fail("Accepted parent did not create a real follow-up Prepared")
+    if followup.get("input_token_fingerprint") != source_fingerprint:
+        _fail("Accepted follow-up did not use the restored accepted token")
+    if followup.get("token_fingerprint") == source_fingerprint:
+        _fail("Accepted follow-up did not create a child token")
+    if followup.get("prior_answer_sha256") != source_accepted.get("public_copy_sha256"):
+        _fail("Accepted follow-up prior_answer is not bound to the original copy")
+    if followup.get("question_sha256") == source_prepared.get("question_sha256"):
+        _fail("Accepted follow-up did not use a new query")
     if followup_accepted.get("input_token_fingerprint") != followup.get(
         "token_fingerprint"
     ):
@@ -1324,34 +1904,61 @@ def _verify_backup_restore(
         "accepted"
     ):
         _fail("Accepted backup replay did not return Accepted")
-    if accepted_replay.get("input_token_fingerprint") != source_prepared.get(
-        "token_fingerprint"
-    ):
+    if accepted_replay.get("input_token_fingerprint") != source_fingerprint:
         _fail("Accepted replay did not use the original Prepared token")
     if accepted_replay.get("token_fingerprint") != source_accepted.get(
         "token_fingerprint"
     ):
         _fail("Accepted replay did not return the original Accepted token")
-    if accepted_replay.get("command_sha256") != source_accepted.get("command_sha256"):
-        _fail("Accepted replay did not use the byte-identical Complete command")
-    copy_digests = {
-        followup_accepted.get("public_copy_sha256"),
-        source_accepted.get("public_copy_sha256"),
-        accepted_replay.get("public_copy_sha256"),
-    }
+    original_completions = (
+        source_accepted,
+        prepared_restored_accepted,
+        accepted_replay,
+    )
+    if len({item.get("command_sha256") for item in original_completions}) != 1:
+        _fail("restored Accepted paths did not use the byte-identical Complete command")
+    if len({item.get("result_bytes_sha256") for item in original_completions}) != 1:
+        _fail("restored Accepted paths did not return byte-identical Accepted")
+    copy_digests = {item.get("public_copy_sha256") for item in original_completions}
     if len(copy_digests) != 1 or None in copy_digests:
         _fail("backup/restore public_copy bytes were not identical")
-    if evidence.get("prepared_token_restored") is not True:
-        _fail("Prepared token was not restored across a blank state volume")
-    if evidence.get("accepted_token_replayed") is not True:
-        _fail("Accepted token was not replayed across a blank state volume")
-    if evidence.get("complete_public_copy_byte_identical") is not True:
-        _fail("restored Complete did not preserve the exact public copy bytes")
+    source_token_record = token_records["source-prepared"]
+    child_token_record = token_records["accepted-followup"]
+    if source_token_record != {
+        "parent_token_fingerprint": None,
+        "phase": "prepared",
+        "reading_id_sha256": source_token_record.get("reading_id_sha256"),
+        "schema_version": "mingli-token-record-audit-v1",
+        "token_fingerprint": source_fingerprint,
+        "version": 1,
+    }:
+        _fail("source Prepared token record does not prove version 1")
+    if (
+        child_token_record.get("phase") != "prepared"
+        or child_token_record.get("version") != 2
+        or child_token_record.get("token_fingerprint")
+        != followup.get("token_fingerprint")
+        or child_token_record.get("parent_token_fingerprint") != source_fingerprint
+        or child_token_record.get("reading_id_sha256")
+        == source_token_record.get("reading_id_sha256")
+    ):
+        _fail("Accepted follow-up token record does not prove child version 2")
+    expected_flags = (
+        "accepted_followup_created",
+        "accepted_token_replayed",
+        "complete_public_copy_byte_identical",
+        "followup_version_advanced",
+        "prepared_replay_byte_identical",
+        "prepared_restored_completed",
+        "prepared_token_restored",
+    )
+    if any(evidence.get(field) is not True for field in expected_flags):
+        _fail("backup/restore semantic evidence flags are incomplete")
     if "state_token" in json.dumps(evidence, sort_keys=True):
         _fail("backup/restore evidence must not contain a plaintext state token")
     if not isinstance(section, dict) or section.get("status") != "passed":
         _fail("backup/restore report section did not pass")
-    for field in ("accepted_token_replayed", "prepared_token_restored"):
+    for field in expected_flags:
         if section.get(field) is not evidence.get(field):
             _fail(f"backup/restore report differs from evidence: {field}")
     if section.get("command_ids") != sorted(expected_command_ids):
@@ -1439,6 +2046,19 @@ def validate_audit_report(
     manifest = _load_json(manifest_path, "release manifest evidence")
     if len(manifest.get("files", {})) != 217:
         _fail("release manifest evidence does not contain exactly 217 files")
+    production_evidence_path = _verify_artifact_digest(
+        artifacts_root,
+        evidence.get("production_evidence_path"),
+        evidence.get("production_evidence_sha256"),
+        "production image evidence",
+    )
+    source_binding_path = _verify_artifact_digest(
+        artifacts_root,
+        evidence.get("source_binding_path"),
+        evidence.get("source_binding_sha256"),
+        "authoritative source binding",
+    )
+    _verify_source_binding_artifact(source_binding_path, manifest)
     inventory_path = _verify_artifact_digest(
         artifacts_root,
         evidence.get("runtime_inventory_path"),
@@ -1534,24 +2154,26 @@ def validate_audit_report(
         image_id=image_id,
         audit_image_id=audit_image_id,
     )
-    expected_command_ids = {
-        "characterization-a",
-        "characterization-b",
-        "p0-trajectories",
-        "provider-matrix-a",
-        "provider-matrix-b",
-        "release-regression",
-        "runtime-inventory",
-        "runtime-probe-machine",
-        "runtime-probe-unittest",
-    }
+    expected_command_ids = EXPECTED_PRODUCTION_COMMAND_IDS | EXPECTED_AUDIT_COMMAND_IDS
     if set(commands) != expected_command_ids:
         _fail("audit command inventory differs from the frozen Linux Gate")
     runtime_path = "/opt/mingli-runtime/venv/bin/python"
     audit_script = "/opt/mingli-runtime/audit_runtime.py"
     source_root = "/audit-source"
     output_root = "/audit-output"
+    production_output_root = "/production-output"
     matrix_path = "/audit-source/references/matrices/provider-completeness.yaml"
+    sbom_command = _require_command(
+        commands,
+        "sbom-regeneration",
+        argv=(runtime_path, "-B", "/opt/mingli-runtime/emit_sbom.py"),
+        cwd="/opt/mingli-master",
+        image_id=image_id,
+    )
+    if artifact.get("sbom_command_id") != "sbom-regeneration":
+        _fail("SBOM artifact is not bound to its in-image generator command")
+    if sbom_command.get("stdout_sha256") != artifact.get("sbom_sha256"):
+        _fail("SBOM bytes differ from the in-image generator stdout")
     inventory_command = _require_command(
         commands,
         "runtime-inventory",
@@ -1567,16 +2189,63 @@ def validate_audit_report(
             "/opt/node/bin/node",
             "--state-root",
             "/var/lib/mingli",
+            "--inventory-output",
+            f"{production_output_root}/evidence/runtime-inventory.json",
+        ),
+        cwd="/opt/mingli-master",
+        image_id=image_id,
+    )
+    if inventory_command.get("stdout_sha256") != hashlib.sha256(b"").hexdigest():
+        _fail("runtime inventory command emitted unexpected stdout")
+    source_binding_command = _require_command(
+        commands,
+        "source-binding",
+        argv=(
+            runtime_path,
+            "-B",
+            "/opt/mingli-runtime/verify_release.py",
+            "--release-root",
+            "/opt/mingli-master",
             "--research-source",
             source_root,
+            "--release-only",
             "--inventory-output",
-            f"{output_root}/evidence/runtime-inventory.json",
+            f"{output_root}/evidence/source-binding.json",
         ),
         cwd="/opt/mingli-master",
         image_id=audit_image_id,
     )
-    if inventory_command.get("stdout_sha256") != hashlib.sha256(b"").hexdigest():
-        _fail("runtime inventory command emitted unexpected stdout")
+    if source_binding_command.get("stdout_sha256") != hashlib.sha256(b"").hexdigest():
+        _fail("authoritative source binding command emitted unexpected stdout")
+    source_binding_section = report.get("source_binding")
+    if source_binding_section != {
+        "command_id": "source-binding",
+        "status": "passed",
+    }:
+        _fail("authoritative source binding report section mismatch")
+    tree_argv = (runtime_path, "-B", audit_script, "--emit-tree-identity")
+    _require_command(
+        commands,
+        "production-tree-identity",
+        argv=tree_argv,
+        cwd="/opt/mingli-master",
+        image_id=image_id,
+    )
+    _require_command(
+        commands,
+        "audit-tree-identity",
+        argv=tree_argv,
+        cwd="/opt/mingli-master",
+        image_id=audit_image_id,
+    )
+    _verify_tree_identity(report.get("runtime_tree_identity"), commands)
+    _verify_production_evidence(
+        production_evidence_path,
+        artifacts_root=artifacts_root,
+        image_id=image_id,
+        commands=commands,
+        report=report,
+    )
     matrix_argv = (
         runtime_path,
         "-B",
@@ -1591,7 +2260,7 @@ def validate_audit_report(
             command_id,
             argv=matrix_argv,
             cwd=source_root,
-            image_id=audit_image_id,
+            image_id=image_id,
         )
     if (
         commands["provider-matrix-a"]["stdout_sha256"]
@@ -1612,7 +2281,7 @@ def validate_audit_report(
             command_id,
             argv=characterization_argv,
             cwd=source_root,
-            image_id=audit_image_id,
+            image_id=image_id,
         )
     if (
         commands["characterization-a"]["stdout_sha256"]
@@ -1771,7 +2440,7 @@ def validate_audit_report(
             "test_v51_portable_interface",
         ),
         cwd="/audit-source/scripts",
-        image_id=audit_image_id,
+        image_id=image_id,
     )
     p0_output = p0_command["stdout_file"].read_text(encoding="utf-8") + p0_command[
         "stderr_file"
@@ -1808,7 +2477,7 @@ def validate_audit_report(
             "/var/lib/mingli",
         ),
         cwd="/opt/mingli-master",
-        image_id=audit_image_id,
+        image_id=image_id,
     )
     machine_output = _load_json(
         machine_probe["stdout_file"],
@@ -1846,7 +2515,7 @@ def validate_audit_report(
             "test_runtime_launcher",
         ),
         cwd="/audit-source/scripts",
-        image_id=audit_image_id,
+        image_id=image_id,
     )
     probe_output = unittest_probe["stdout_file"].read_text(
         encoding="utf-8"
