@@ -55,7 +55,7 @@ _避免_：覆盖答案、消息轮次
 _避免_：提示词、原始盘 JSON、模型上下文
 
 **算法运行时发布物（Runtime Release）**：
-一份经过逐文件验签、依赖审计和黄金回归的 mingli-master 可部署制品；协议、manifest、镜像和安装路径共同确定它的身份。
+一份经过逐文件验签、依赖审计和 Mac mini 原生黄金回归的 mingli-master 可部署制品；协议、manifest、运行时目录和安装路径共同确定它的身份。Mac mini `native-full` 是唯一强制 Runtime Gate。
 _避免_：当前 Skill 目录、随手复制的算法、最新版
 
 **解读编排器（Reading Orchestrator）**：

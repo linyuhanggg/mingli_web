@@ -1,5 +1,9 @@
 # Mingli V5.1 Mac mini 双测试通道实施计划
 
+> **状态：已废止。** 2026-08-09 所有者决定取消第二条 Linux 模拟通道。本文件以下双通道、VZ、Rosetta、QEMU 与 `linux-certify` 内容只保留为历史记录，不得继续执行，也不得作为任何后续任务的前置条件。
+>
+> Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。
+
 > **For Claude:** REQUIRED SUB-SKILL: Use `executing-plans` task by task. Use `codebase-design` for the public seam and `tdd` for every RED→GREEN slice.
 
 **Goal:** 只用这台 M4 Mac mini 建立两个互不冒充的标准命令：`native-full` 是日常开发/合并门禁，完整 1584 项且硬限 600 秒；`linux-certify` 是最终 `linux/amd64` 制品的独立发布认证，也在同一台 Mac mini 上运行，但先通过 VZ+Rosetta tracer 和真实基线决定如何达到 600 秒，未达到就保持 RED。

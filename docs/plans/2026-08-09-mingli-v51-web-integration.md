@@ -457,72 +457,47 @@ git add backend/worker backend/tests/test_worker.py backend/tests/test_reading_w
 git commit -m "feat: process reading jobs through the worker"
 ```
 
-### Task 8: Build and audit the Linux Runtime Release — hard Gate
+### Task 8: Admit the Mac mini native Runtime Release — hard Gate
+
+Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。
 
 **Files:**
 
-- Create: `infra/mingli-runtime/README.md`
-- Create: `infra/mingli-runtime/Dockerfile`
-- Create: `infra/mingli-runtime/verify_release.py`
-- Create after audit: `infra/mingli-runtime/requirements-linux-x86_64.lock`
-- Create after audit: `infra/mingli-runtime/release-5.1.json`
-- Create: `tests/contract/test_mingli_runtime_release.py`
+- Modify: `infra/mingli-runtime/local_gate.py`
+- Modify: `infra/mingli-runtime/README.md`
+- Modify: `tests/contract/test_mingli_local_gate.py`
 - Modify: `docs/PHASE_0_GATES.md`
 
-**Step 1: Write a fail-closed release test**
+**Step 1: Keep one fail-closed public profile**
 
-Require exact values from the authority document: version 5.1, source commit `494ce0...`, 217-file release manifest, protocol v2, expected describe digest, the exact 13-Provider inventory/readiness snapshot, 55/55 reference packs, 1328 evidence-index records and runtime closure. Keep deeper bazi/fortune/liuyao product snapshots as an additional P0 layer. The test must fail if the Linux lock or complete audited artifact is absent; a three-Provider slim artifact must fail.
+`local_gate.py` 只公开 `native-full`。CLI、普通测试、合并检查和发布检查都不能发现或启动 `linux-certify`。已有 Linux/VZ/Rosetta/QEMU 文件仅作为历史实现保留，不得进入后续任务依赖。
 
-**Step 2: Verify the Gate is RED**
+**Step 2: Run the complete native release regression**
 
-```bash
-uv run --project backend pytest tests/contract/test_mingli_runtime_release.py -q
-```
+使用冻结的 PreparedInputs 和原生 CPython 3.14.6，在最多 10 个进程槽、总墙钟不超过 600 秒的条件下运行完整签名回归。唯一可接受的权威摘要是：
 
-Expected: FAIL until an audited Linux artifact is supplied. Do not weaken or skip this test to continue.
-
-**Step 3: Audit Linux dependencies outside the signed release**
-
-For Linux x86_64 and pinned CPython 3.14.6:
-
-- download/build PyYAML 6.0.3, sxtwl 2.0.7, astronomy-engine 2.1.19 and cnlunar 0.2.4 in a controlled builder;
-- pin and audit the Node.js runtime used by the Ziwei provider, and verify the provenance/hash of the release's vendored iztro 2.5.8 artifact;
-- review provenance/licenses and store wheel SHA-256 values;
-- keep the host lock outside `/opt/mingli-master` so the signed 5.1 files remain unchanged;
-- create the runtime integrity manifest expected by 5.1;
-- generate an SBOM and immutable image digest.
-
-If any dependency cannot be reproduced and audited, stop here. Fake Runtime work can continue; real production integration cannot.
-
-**Step 4: Build the fixed-layout image**
-
-Image paths:
+`slots` 和 `max_slots` 表示 signed runner 的加权调度额度，不是操作系统 PID 数量上限。运行期间可以只读采样进程树验证活跃计算负载，但不能把 multiprocessing 管理进程和休眠 PID 算成额外调度槽。
 
 ```text
-/opt/mingli-master
-/opt/mingli-runtime/venv/bin/python
-/var/lib/mingli
+targets=126 modules=93 tests=1584 failed_modules=0
 ```
 
-Run as a fixed non-root UID. Set `MINGLI_PYTHON` and `MINGLI_STORE_ROOT`; do not use a home-directory lookup.
+**Step 3: Verify evidence independently**
 
-**Step 5: Run in-image golden tests**
+发布 `native-full-5.1.json`、`local-native-full-5.1.json`、原始 stdout/stderr 和归档 PreparedInputs。独立 verifier 必须校验输入摘要、命令、完整摘要、原始输出和 600 秒边界；任一缺失即 RED。
 
-Run the complete release regression suite in the final image. Run a fixed characterization/smoke fixture for every one of the 13 Providers, including dependency loading, deterministic facts, evidence mapping and repeatable digest. Verify 55/55 reference packs and 1328 evidence-index records for presence, hash, parseability and reference closure. Then run deeper prepare/complete trajectories for bazi, fortune day/week and liuyao manual/digital, plus malformed input, tamper, timeout, concurrency and token replay probes. Record exact commands/output digests in `release-5.1.json`.
+**Step 4: Record the accepted baseline**
 
-**Step 6: Perform state backup/restore drill**
+2026-08-09 的最新 Mac mini M4 结果为 1584/0，完整门禁总墙钟 `439.64s`，满足 `<=600s`。该结果通过后 Task 9–13 可以继续，不等待任何 Linux 报告、镜像 digest 或 `release-5.1.json`。
 
-Test one Prepared token and one Accepted token across a consistent snapshot restore. Verify follow-up and complete replay. Record required path, UID, filesystem and restore constraints in `infra/mingli-runtime/README.md`.
-
-**Step 7: Verify GREEN and commit only non-secret evidence**
+**Step 5: Run focused checks and commit**
 
 ```bash
-uv run --project backend pytest tests/contract/test_mingli_runtime_release.py -q
-git add infra/mingli-runtime tests/contract/test_mingli_runtime_release.py docs/PHASE_0_GATES.md
-git commit -m "build: admit audited mingli v51 linux runtime"
+uv run --project backend pytest tests/contract/test_mingli_local_gate.py -k native -q
+uv run --project backend ruff check infra/mingli-runtime/local_gate.py tests/contract/test_mingli_local_gate.py
+git add infra/mingli-runtime/local_gate.py infra/mingli-runtime/README.md tests/contract/test_mingli_local_gate.py docs/PHASE_0_GATES.md
+git commit -m "build: make mac mini native gate authoritative"
 ```
-
-Do not commit the private Skill archive if repository policy forbids it; commit its immutable digests, SBOM and secure artifact reference.
 
 ### Task 9: Implement the real one-shot Runtime Adapter
 
@@ -754,8 +729,8 @@ Search API bodies, browser storage, structured logs, error tracking and database
 
 Do not enable production if any of these remain pending:
 
-- Linux Runtime release audit;
-- complete 13-Provider characterization matrix and release regression;
+- Mac mini `native-full` 1584/0 原生报告及独立 verifier；
+- complete 13-Provider characterization matrix and native release regression;
 - 55/55 reference-pack and 1328-entry evidence-index integrity checks;
 - state-volume backup/restore;
 - model DPA/data retention and fixed evaluation;
@@ -774,6 +749,6 @@ git commit -m "docs: record mingli v51 phase two release evidence"
 
 - After Task 5: the whole algorithm and narrative state machine works with Fakes; review architecture before adding persistence.
 - After Task 7: Phase 2 is locally complete with Fake Runtime/Model; website work can continue while external Gates remain closed.
-- Task 8 is a real release Gate, not documentation theatre. It may block real runtime work without blocking UI/Fake development.
+- Task 8 只认 Mac mini `native-full`；不得等待或启动 Linux 模拟认证。
 - After Task 10: run fixed model quality evaluation before allowing complete.
 - After Task 13: open real traffic only through a small allowlisted rollout.

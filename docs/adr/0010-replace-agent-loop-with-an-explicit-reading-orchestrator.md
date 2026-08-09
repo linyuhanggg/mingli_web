@@ -9,7 +9,9 @@ date: 2026-08-09
 
 Candidate 必须先通过网站自己的确定性 Narrative Guard，合格后才调用 `complete`。因为 5.1 的公开 complete 只验证 token、非空正文和首次原子提交，Guard 是网站责任；一旦返回 Accepted，正文按原字节保存和交付，不再二次改写。
 
-P0 的 Runtime 采用一个持久化、单副本 Worker，在固定安装路径和私有状态卷上调用 JSON Adapter。当前 5.1 状态存储是本地文件模型，且现有依赖锁只验过 macOS arm64；Linux 制品、备份恢复和多进程测试通过前，不得把 Runtime 放进无状态 API 多副本或宣称可水平扩展。
+P0 的 Runtime 采用一个持久化、单副本 Worker，在固定安装路径和私有状态卷上调用 JSON Adapter。当前 5.1 状态存储是本地文件模型；备份恢复和多进程测试通过前，不得把 Runtime 放进无状态 API 多副本或宣称可水平扩展。
+
+Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。
 
 ## Consequences
 
@@ -20,5 +22,5 @@ P0 的 Runtime 采用一个持久化、单副本 Worker，在固定安装路径�
 - 模型层可以替换，但 Narrative Policy、Output Contract、模型版本与 Candidate digest 必须留档。
 - `state_token` 只在服务端加密保存，不能进入客户端、URL、日志或埋点。
 - 无 token 的 `prepare` 不可在结果不明时盲重放；同 token 的 `complete` 可以用完全相同正文恢复重放。
-- Linux Runtime Gate、状态盘恢复演练和 Guard 反例测试是上线硬门槛。
+- Mac mini 原生全量回归、状态盘恢复演练和 Guard 反例测试是上线硬门槛；Linux 模拟认证不再属于实施顺序或发布判定。
 - 详细合同以 [MINGLI_V51_WEB_INTEGRATION.md](../MINGLI_V51_WEB_INTEGRATION.md) 为准。

@@ -21,6 +21,10 @@ from typing import Any
 
 import pytest
 
+pytestmark = pytest.mark.skip(
+    reason="Linux Runtime certification is retired; native-full is the only Gate"
+)
+
 ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_DIR = ROOT / "infra" / "mingli-runtime"
 REPORT_PATH = RUNTIME_DIR / "release-5.1.json"

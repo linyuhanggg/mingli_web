@@ -55,6 +55,9 @@ EXPECTED_VZ_IMAGE = {
     ),
     "variant": "server",
 }
+LINUX_RUNTIME_RETIRED = pytest.mark.skip(
+    reason="Linux Runtime certification is retired; native-full is the only Gate"
+)
 
 
 def sha256_bytes(value: bytes) -> str:
@@ -1278,6 +1281,28 @@ def test_native_full_cli_is_the_standard_command(
     assert Path(output["profile_report"]).is_file()
 
 
+def test_native_full_is_the_only_public_local_profile(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    gate_module = load_local_gate()
+
+    with pytest.raises(SystemExit) as rejected:
+        gate_module.main(["linux-certify"])
+
+    assert rejected.value.code == 2
+    stderr = capsys.readouterr().err
+    assert "invalid choice" in stderr
+    assert "native-full" in stderr
+
+    with pytest.raises(SystemExit) as help_exit:
+        gate_module.main(["--help"])
+
+    assert help_exit.value.code == 0
+    help_text = capsys.readouterr().out
+    assert "native-full" in help_text
+    assert "linux-certify" not in help_text
+
+
 def test_native_reports_are_independently_revalidated(tmp_path: Path) -> None:
     gate_module = load_local_gate()
     request, _ = native_request(gate_module, tmp_path)
@@ -1833,6 +1858,7 @@ def test_prepared_inputs_rejects_fulltext_inside_source_projection(
     assert execution.commands == []
 
 
+@LINUX_RUNTIME_RETIRED
 def test_vz_profile_fills_to_pinned_mountless_rosetta_contract() -> None:
     assert VZ_PROFILE_PATH.is_file(), "VZ+Rosetta profile is absent"
     validate = subprocess.run(
@@ -1878,6 +1904,7 @@ def test_vz_profile_fills_to_pinned_mountless_rosetta_contract() -> None:
         assert version in provision
 
 
+@LINUX_RUNTIME_RETIRED
 def test_formal_linux_preparation_requires_persisted_build_provenance() -> None:
     preparer = load_linux_preparer()
 
@@ -1895,6 +1922,7 @@ def test_formal_linux_preparation_requires_persisted_build_provenance() -> None:
     assert preparer.PREPARATION_RECORD_NAME == "linux-preparation.json"
 
 
+@LINUX_RUNTIME_RETIRED
 def test_identity_only_linux_inputs_cannot_enter_formal_release_gate(
     tmp_path: Path,
 ) -> None:
@@ -1909,6 +1937,7 @@ def test_identity_only_linux_inputs_cannot_enter_formal_release_gate(
         gate_module.prepared_inputs.require_certifiable_linux(loaded)
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_runtime_inputs_require_actual_lima_version(tmp_path: Path) -> None:
     gate_module = load_local_gate()
     manifest_path, _, payload = write_linux_prepared_inputs(tmp_path)
@@ -1925,6 +1954,7 @@ def test_linux_runtime_inputs_require_actual_lima_version(tmp_path: Path) -> Non
         gate_module.prepared_inputs.require_linux(loaded)
 
 
+@LINUX_RUNTIME_RETIRED
 def test_run_lima_gate_rejects_identity_only_prepared_inputs(
     tmp_path: Path,
 ) -> None:
@@ -1942,6 +1972,7 @@ def test_run_lima_gate_rejects_identity_only_prepared_inputs(
         controller._resolve_gate_inputs(args)
 
 
+@LINUX_RUNTIME_RETIRED
 def test_formal_linux_inputs_recompute_controller_and_build_context(
     tmp_path: Path,
 ) -> None:
@@ -1972,6 +2003,7 @@ def test_formal_linux_inputs_recompute_controller_and_build_context(
         ("image_index", "OCI outer index digest mismatch"),
     ],
 )
+@LINUX_RUNTIME_RETIRED
 def test_formal_linux_inputs_reject_consistently_resealed_false_provenance(
     tmp_path: Path,
     mutation: str,
@@ -2009,6 +2041,7 @@ def test_formal_linux_inputs_reject_consistently_resealed_false_provenance(
         gate_module.prepared_inputs.require_certifiable_linux(loaded)
 
 
+@LINUX_RUNTIME_RETIRED
 def test_formal_linux_inputs_reject_resealed_dirty_controller_file(
     tmp_path: Path,
 ) -> None:
@@ -2050,6 +2083,7 @@ def test_formal_linux_inputs_reject_resealed_dirty_controller_file(
         ("docker", "preparation runtime identity mismatch"),
     ],
 )
+@LINUX_RUNTIME_RETIRED
 def test_formal_linux_inputs_reject_resealed_command_and_runtime_drift(
     tmp_path: Path,
     mutation: str,
@@ -2176,6 +2210,7 @@ class FakeLinuxImageBuilder:
         )
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_preparer_builds_from_the_persisted_post_commit_context(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -2224,6 +2259,7 @@ def test_linux_preparer_builds_from_the_persisted_post_commit_context(
     assert not (result.output_directory / "release-5.1.json").exists()
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_preparer_reads_the_exact_lima_version_command(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -2263,6 +2299,7 @@ def assert_path_absent(path: Path) -> None:
     assert not path.exists()
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_preparer_rejects_existing_output_before_builder(
     tmp_path: Path,
 ) -> None:
@@ -2284,6 +2321,7 @@ def test_linux_preparer_rejects_existing_output_before_builder(
         )
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_preparer_builder_failure_leaves_no_output(
     tmp_path: Path,
 ) -> None:
@@ -2302,6 +2340,7 @@ def test_linux_preparer_builder_failure_leaves_no_output(
     assert not case.request.output_directory.exists()
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_preparer_validation_failure_never_publishes_manifest(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -2336,6 +2375,7 @@ def test_linux_preparer_validation_failure_never_publishes_manifest(
     assert not case.request.output_directory.exists()
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_preparer_base_exception_before_admission_removes_output(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -2366,6 +2406,7 @@ def test_linux_preparer_base_exception_before_admission_removes_output(
     assert not case.request.output_directory.exists()
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_preparer_manifest_is_the_final_atomic_publication(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -2406,6 +2447,7 @@ def test_linux_preparer_manifest_is_the_final_atomic_publication(
     assert final_manifest.is_file()
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_preparer_revalidates_base_and_controller_before_admission(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -2443,6 +2485,7 @@ def test_linux_preparer_revalidates_base_and_controller_before_admission(
     assert not case.request.output_directory.exists()
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_preparer_revalidates_effective_config_before_admission(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -2477,6 +2520,7 @@ def test_linux_preparer_revalidates_effective_config_before_admission(
     assert not case.request.output_directory.exists()
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_certify_first_stage_accepts_only_exact_amd64_identity(
     tmp_path: Path,
 ) -> None:
@@ -2510,6 +2554,7 @@ def test_linux_certify_first_stage_accepts_only_exact_amd64_identity(
     assert command.argv[lima_version_index + 1] == "2.2.0"
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_identity_timeout_reaps_the_whole_process_group(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -2548,6 +2593,7 @@ def test_linux_identity_timeout_reaps_the_whole_process_group(
                 os.kill(child_pid, 9)
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_identity_input_rejection_removes_staging(tmp_path: Path) -> None:
     gate_module = load_local_gate()
     manifest_path, _, payload = write_linux_prepared_inputs(tmp_path)
@@ -2604,6 +2650,7 @@ def test_linux_identity_input_rejection_removes_staging(tmp_path: Path) -> None:
         lambda value: value["container"].__setitem__("sxtwl_ldd_libraries", []),
     ],
 )
+@LINUX_RUNTIME_RETIRED
 def test_linux_identity_mutations_fail_closed(
     tmp_path: Path,
     mutation: Callable[[dict[str, Any]], None],
@@ -2634,6 +2681,7 @@ def test_linux_identity_mutations_fail_closed(
     assert_nothing_published(request.output_parent)
 
 
+@LINUX_RUNTIME_RETIRED
 def test_linux_identity_collector_uses_exact_rosetta_container_boundary(
     tmp_path: Path,
 ) -> None:
@@ -2736,6 +2784,7 @@ def test_linux_identity_collector_uses_exact_rosetta_container_boundary(
         lambda value: value.__setitem__("rootfs_diff_ids", ["sha256:" + "0" * 64]),
     ],
 )
+@LINUX_RUNTIME_RETIRED
 def test_oci_archive_verifier_rejects_every_identity_link_mutation(
     tmp_path: Path,
     mutation: Callable[[dict[str, Any]], None],
@@ -2756,6 +2805,7 @@ def test_oci_archive_verifier_rejects_every_identity_link_mutation(
         )
 
 
+@LINUX_RUNTIME_RETIRED
 def test_oci_archive_verifier_rejects_missing_attestation_blob(
     tmp_path: Path,
 ) -> None:
@@ -2801,6 +2851,7 @@ def test_oci_archive_verifier_rejects_missing_attestation_blob(
         ),
     ],
 )
+@LINUX_RUNTIME_RETIRED
 def test_linux_identity_rejects_running_instance_profile_drift(
     mutation: Callable[[dict[str, Any]], None],
 ) -> None:

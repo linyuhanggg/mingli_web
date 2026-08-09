@@ -22,6 +22,8 @@
 
 一句话概括：**核心负责算，代码负责走流程，单模型负责写，Guard 负责在提交前守合同。**
 
+Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。
+
 ## 2. 已审计的 5.1 制品身份
 
 当前接入设计依据的本地安装制品已经逐文件核对：
@@ -569,26 +571,17 @@ P0 只启用一个通过评测的模型配置。Model Gateway 只是 HTTP/SDK �
 
 `state_token` 是 bearer capability。它只在服务端解密使用，禁止进入浏览器、移动端、URL、埋点、日志和客服后台。
 
-## 14. 服务器 Runtime 制品
+## 14. Runtime 制品与唯一原生门禁
 
-### 14.1 当前 Linux 阻塞项
+### 14.1 Mac mini `native-full`
 
-现有 `requirements-runtime.lock` 明确只审计了 CPython 3.11/3.14 的 macOS arm64 制品，并写明其他架构 fail closed。阿里云 Linux 不能直接拿该锁宣称可运行。
+Runtime 准入只认 Mac mini 原生通道。标准命令必须使用冻结的 PreparedInputs、原生 CPython 3.14.6、最多 10 个进程槽，并在 600 秒内完成完整 `126 targets / 93 modules / 1584 tests / 0 failed`；报告、原始 stdout/stderr、输入摘要和独立 verifier 必须一起通过。该门禁通过后，真实 Runtime Adapter 和后续网站任务即可继续。
 
-上线前必须完成独立的 Linux Runtime Gate：
+`slots` 和 `max_slots` 表示 signed runner 的加权调度额度，不是操作系统 PID 数量上限。multiprocessing 的父进程、资源跟踪器和休眠 worker 可以让可见 PID 超过 10；验收看调度器分配的总槽位，同时把真实进程树作为只读观测记录，不能把 PID 数量冒充槽位。
 
-1. 选定生产架构，P0 建议 Linux x86_64；
-2. 为固定 CPython 版本建立私有 wheelhouse；
-3. 对 PyYAML、sxtwl、astronomy-engine、cnlunar 的 Linux wheel 或受控构建产物逐个验来源、许可证和 SHA-256；
-4. 固定并验收完整 13 Provider 需要的其他宿主依赖；其中紫微链必须包含可审计的 Node.js runtime，并校验 release 内 vendored `iztro 2.5.8` 的来源和哈希；
-5. 生成宿主侧 Linux 锁文件，不改写 5.1 release 内的已签文件；
-6. 生成并验证 5.1 所要求的 `runtime-integrity.json`；
-7. 在最终镜像中运行完整 release 回归、13 Provider characterization/smoke matrix、三类 P0 prepare/complete 端到端黄金样例、并发与篡改探针；
-8. 保存 SBOM、镜像 digest 和验收报告。
+Linux/VZ/Rosetta/QEMU 路径不再是开发、合并、发布或验收门禁，也不得由普通命令、计划任务或后续 Codex 任务自动启动。仓库中已有 Linux 构建与诊断文件仅作为历史资料保留；没有 `release-5.1.json` 不构成阻塞。
 
-该 Gate 未通过前只能使用 Fake Runtime 开发网站，不能把 macOS Skill 目录挂到 Linux 生产机凑合运行。
-
-### 14.2 固定文件布局
+### 14.2 目标部署文件布局
 
 首个生产制品固定：
 
@@ -680,7 +673,7 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 
 ### 16.2 全量 Runtime 与三类 P0 黄金样例
 
-- 完整 release 自带回归在目标 Linux 镜像中通过；
+- 完整 release 自带回归在 Mac mini 原生 `native-full` 中以 1584/0 通过；
 - 13 个 Provider 各自至少有一个固定输入的 characterization/smoke fixture，覆盖依赖加载、事实层、证据映射与可重现 digest；
 - 55/55 reference pack 和 1328 条 evidence index 通过存在性、哈希、可解析性和引用闭合检查；
 - P0 三类产品再做以下更深的 API/Orchestrator 端到端黄金样例：
@@ -729,13 +722,13 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 
 ## 17. 分阶段实施
 
-### Gate 0：服务器可运行性
+### Gate 0：Mac mini 原生可运行性
 
 - 归档精确 5.1 release、manifest 与完整测试源码；
-- 建 Linux x86_64 私有 wheelhouse 和不可变镜像；
-- 固定安装路径、UID 与状态卷；
-- 验收完整 13 Provider、全部运行时依赖、55/55 reference pack、1328 条 evidence index 和 release 全量回归；
-- 另跑三类 P0 端到端黄金测试、篡改测试、备份恢复演练。
+- 固定原生 CPython 3.14.6、运行目录和 PreparedInputs；
+- 在 600 秒和 10 槽内验收完整 13 Provider、全部运行时依赖、55/55 reference pack、1328 条 evidence index 和 1584/0 全量回归；
+- 另跑三类 P0 端到端黄金测试、篡改测试、备份恢复演练；
+- 不启动 Linux 模拟或把 Linux 报告作为后续任务前置条件。
 
 ### Phase A：端口与 Fake
 
@@ -779,15 +772,15 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 - 不在 Accepted 后改写、截断或“二次润色”；
 - 不因为 describe 出现 13 个能力就把 13 个入口全量开放；
 - 不因为 P0 只开放三个入口就裁剪其余十个 Provider、算法、古籍、证据或测试；
-- 不修改 5.1 release 文件来迁就 Linux 打包；
-- 不用 macOS 依赖锁冒充 Linux 已验收；
+- 不修改 5.1 release 文件来迁就任何部署环境；
+- 不自动启动或恢复 VZ、Rosetta、QEMU、`linux-certify` 和 `run_lima_gate.py`；
 - 不复制命理算法到业务代码做第二套结果。
 
 ## 19. 首版 Definition of Done
 
 以下全部满足，才算“5.1 已经真正迁到网站”：
 
-1. Linux Runtime Release 原样包含 13 Provider、完整算法/古籍/证据资产，并有镜像 digest、SBOM、逐文件验签和全量回归；
+1. Mac mini `native-full` 对原样包含 13 Provider、完整算法/古籍/证据资产的 Runtime Release 完成逐文件验签和 1584/0 全量回归，总墙钟不超过 600 秒；
 2. 启动 describe 严格匹配协议、manifest、13/13 Provider 冻结快照；Product Capability Policy 另行把 P0 曝光限制为三项；
 3. 三类 Request Compiler 通过真实 fixture，不再手拼错误 facts；
 4. Runtime 单副本状态卷通过备份恢复与旧 token 重放；

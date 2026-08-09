@@ -25,7 +25,7 @@ from typing import Literal, NoReturn, Protocol
 import prepared_inputs
 import verify_local_full
 
-LocalProfile = Literal["native-full", "linux-certify"]
+LocalProfile = Literal["native-full"]
 NATIVE_SUMMARY_RE = re.compile(
     r"^summary: targets=(\d+) modules=(\d+) tests=(\d+) "
     r"failed_modules=(\d+) elapsed=(\d+(?:\.\d+)?)s$"
@@ -126,14 +126,10 @@ class SubprocessExecution:
             os.killpg(process.pid, signal.SIGTERM)
         except ProcessLookupError:
             return
-        try:
+        with suppress(subprocess.TimeoutExpired):
             process.wait(timeout=0.5)
-        except subprocess.TimeoutExpired:
-            pass
-        try:
+        with suppress(ProcessLookupError):
             os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
         if process.poll() is None:
             process.wait(timeout=2)
 
@@ -529,8 +525,8 @@ class LocalFullGate:
             raise
 
     def run(self, request: LocalFullRequest) -> LocalFullResult:
-        if request.profile not in {"native-full", "linux-certify"}:
-            _fail("unknown profile")
+        if request.profile != "native-full":
+            _fail("native-full is the only supported local profile")
         if not 1 <= request.deadline_seconds <= MAX_DEADLINE_SECONDS:
             _fail("deadline_seconds must be between 1 and 600")
         if not 1 <= request.slots <= MAX_SLOTS:
@@ -556,16 +552,6 @@ class LocalFullGate:
         published = output_parent / run_id
         staging.mkdir(mode=0o700)
         profile_started = self._monotonic()
-
-        if request.profile == "linux-certify":
-            return self._run_linux_identity(
-                request,
-                inputs,
-                run_id=run_id,
-                staging=staging,
-                published=published,
-                profile_started=profile_started,
-            )
 
         command = GateCommand(
             command_id="native-release-regression",
@@ -772,7 +758,7 @@ def _build_parser() -> argparse.ArgumentParser:
         description="Run a prepared-input Mingli V5.1 local test profile"
     )
     profiles = parser.add_subparsers(dest="profile", required=True)
-    for profile in ("native-full", "linux-certify"):
+    for profile in ("native-full",):
         command = profiles.add_parser(profile)
         command.add_argument("--prepared-inputs", type=Path, required=True)
         command.add_argument("--prepared-inputs-sha256", required=True)

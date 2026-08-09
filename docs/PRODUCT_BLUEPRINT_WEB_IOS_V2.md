@@ -657,6 +657,8 @@ PENDING → PROCESSING → DELIVERED
 
 Runtime 制品与准入范围固定为完整 13 项：`bazi`、`fengshui`、`fortune`、`liuren`、`liuyao`、`luming-nayin`、`meihua`、`physiognomy`、`qimen`、`selection`、`taiyi`、`xingming`、`ziwei`。部署必须同时验证 13/13 Provider readiness、完整 manifest、55/55 古籍 reference pack、1328 条 evidence index 和 release 全量回归；未开放的十项也不得从镜像或验收中移除。
 
+Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。
+
 P0 产品 allowlist 另行固定为 `bazi`、`fortune`、`liuyao`：本命与深度解读走 bazi，今日/近七日走 fortune，一事一问走 liuyao。术法由页面和 Product 映射决定，不增加模型路由调用。其余十项是“已安装并通过 Runtime 准入、尚未建立产品入口”，后续补齐表单、输出合同、合规与产品回归即可灰度开启，不需要重做核心迁移。
 
 ### 13.3 Prepare
@@ -932,7 +934,7 @@ OpenAPI 以 /api/v1 开始。下面冻结资源语义，具体字段在实现前
 - 历法、时区、真太阳时、闰月和未知时辰黄金样例；
 - 同一输入、同一核心版本产生同一 Fact Brief digest；
 - 完整 13-Provider describe/readiness 冻结快照与 Product allowlist 分层回归；
-- Linux x86_64 Python wheel/hash、Node.js/iztro 依赖、Runtime Release 验签和启动 describe；
+- Mac mini 原生 CPython 3.14.6、Node.js/iztro 依赖、Runtime Release 验签和启动 describe；
 - 13 个 Provider characterization/smoke matrix 与 release 全量回归；
 - 55/55 古籍 reference pack、1328 条 evidence index 的完整性与引用闭合；
 - bazi/fortune/liuyao 准确 Request Compiler 夹具；
@@ -986,7 +988,7 @@ OpenAPI 以 /api/v1 开始。下面冻结资源语义，具体字段在实现前
 - 确认运营主体、域名、备案路线和支付申请；
 - 确认模型供应商、数据位置和预算；
 - 归档精确 mingli-master 5.1 release、source commit、manifest 和测试源码；
-- 建立并审计 Linux Runtime wheelhouse、镜像、固定状态路径和恢复手册；
+- 建立并审计 Mac mini 原生 Runtime、固定状态路径和恢复手册；
 - 建立版本控制，给旧小程序骨架做历史提交；
 - 冻结 OpenAPI/JSON Schema 的第一版命名。
 
@@ -1054,7 +1056,7 @@ OpenAPI 以 /api/v1 开始。下面冻结资源语义，具体字段在实现前
 10. 数据导出、删除、撤销设备和人工支持可用；
 11. 备案、支付、隐私、条款、AI 标识和经营许可检查有书面证据；
 12. 备份恢复、日志脱敏、密钥轮换和告警演练通过；
-13. Linux Runtime Release 逐文件验签，13/13 Provider、全部依赖、55/55 古籍 reference pack、1328 条 evidence index 和 release 全量回归通过；P0 三能力端到端黄金回归另行通过；
+13. Mac mini `native-full` 完成 Runtime Release 逐文件验签，13/13 Provider、全部依赖、55/55 古籍 reference pack、1328 条 evidence index 和 1584/0 全量回归；P0 三能力端到端黄金回归另行通过；
 14. `state_token` 未进入客户端或日志，状态卷恢复后旧 token 可继续/重放；
 15. 正常路径只有一次模型调用，Guard 前不 complete，Accepted 后字节不变。
 

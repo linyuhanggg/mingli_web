@@ -80,4 +80,6 @@ Metis 紫薇及其开源仓库只作为信息层级和交互参考，不复制�
 
 ## 下一阶段入口
 
-Phase 2 先冻结 Command/Result、Candidate 与 Output Contract 四组 JSON Schema，再深化 Runtime/Model Fake Ports、三类 Request Compiler、Narrative Guard 和显式 Reading Orchestrator。真实 Runtime 必须等 Linux Runtime Gate 通过后才启用。当前 `/app/profile/new` 和 `/app/ask/liuyao` 只明确说明下一阶段，不伪造排盘结果。
+Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。
+
+Phase 2 先冻结 Command/Result、Candidate 与 Output Contract 四组 JSON Schema，再深化 Runtime/Model Fake Ports、三类 Request Compiler、Narrative Guard 和显式 Reading Orchestrator。真实 Runtime 在 Mac mini 原生全量回归通过后即可接入，不再等待 Linux 模拟认证。当前 `/app/profile/new` 和 `/app/ask/liuyao` 只明确说明下一阶段，不伪造排盘结果。
