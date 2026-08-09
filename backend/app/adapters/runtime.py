@@ -63,6 +63,7 @@ EXPECTED_EVIDENCE_RECORD_COUNT = 1328
 FROZEN_RELEASE_MANIFEST_SHA256 = "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
 FROZEN_RELEASE_NAME = "mingli-master-portable-core"
 FROZEN_SOURCE_COMMIT = "494ce0bba174a77800daf9b9c38ce9c9166d9a94"
+RUNTIME_PROCESS_PATH = "/opt/node/bin:/usr/local/bin:/usr/bin:/bin"
 
 
 class RuntimeStartupError(RuntimeError):
@@ -215,6 +216,7 @@ class FileSystemRuntimeReleaseInspector:
                 raise RuntimeStartupError(f"signed file mode mismatch: {relative}")
             manifest_paths.add(relative)
 
+        self._verify_filesystem_inventory(manifest_paths)
         closure_count = self._verify_closure(manifest_paths)
         provider_ids, ready_provider_ids = self._verify_providers(manifest_paths)
         pack_ids, local_ids = self._verify_reference_packs(manifest_paths)
@@ -228,6 +230,34 @@ class FileSystemRuntimeReleaseInspector:
             evidence_record_count=evidence_count,
             runtime_closure_file_count=closure_count,
         )
+
+    def _verify_filesystem_inventory(self, manifest_paths: set[str]) -> None:
+        actual_paths: set[str] = set()
+        actual_directories: set[str] = set()
+        for path in self.release_root.rglob("*"):
+            try:
+                metadata = path.lstat()
+            except OSError as error:
+                raise RuntimeStartupError("Runtime release inventory is unreadable") from error
+            relative = path.relative_to(self.release_root).as_posix()
+            if stat.S_ISLNK(metadata.st_mode):
+                raise RuntimeStartupError("Runtime release contains an unsigned filesystem entry")
+            if stat.S_ISDIR(metadata.st_mode):
+                _require_private_directory(path, "Runtime release directory", writable=False)
+                actual_directories.add(relative)
+                continue
+            if not stat.S_ISREG(metadata.st_mode):
+                raise RuntimeStartupError("Runtime release contains an unsigned filesystem entry")
+            actual_paths.add(relative)
+        expected_paths = manifest_paths | {".mingli-release-manifest.json"}
+        expected_directories: set[str] = set()
+        for relative in expected_paths:
+            parent = PurePosixPath(relative).parent
+            while parent != PurePosixPath("."):
+                expected_directories.add(parent.as_posix())
+                parent = parent.parent
+        if actual_paths != expected_paths or actual_directories != expected_directories:
+            raise RuntimeStartupError("Runtime release contains an unsigned filesystem entry")
 
     def _verify_closure(self, manifest_paths: set[str]) -> int:
         closure = _load_json(
@@ -625,7 +655,7 @@ class OneShotMingliRuntimeAdapter:
             "LC_ALL": "C.UTF-8",
             "MINGLI_PYTHON": str(self._runtime_python_path),
             "MINGLI_STORE_ROOT": str(self._state_root),
-            "PATH": os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin"),
+            "PATH": RUNTIME_PROCESS_PATH,
             "PYTHONDONTWRITEBYTECODE": "1",
             "TZ": "UTC",
         }
@@ -660,15 +690,21 @@ class OneShotMingliRuntimeAdapter:
         if process.returncode != 0:
             raise RuntimeTransportError("runtime_nonzero_exit")
         try:
-            decoded = json.loads(stdout.decode("utf-8"))
+            decoded: object = json.loads(stdout.decode("utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError):
-            raise RuntimeTransportError("runtime_invalid_output") from None
+            decoded = None
         if not isinstance(decoded, Mapping):
+            stdout = b""
             raise RuntimeTransportError("runtime_invalid_output")
         try:
-            return result_from_dict(decoded)
+            result: MingliResult | None = result_from_dict(decoded)
         except (KeyError, TypeError, ValueError):
-            raise RuntimeTransportError("runtime_invalid_result") from None
+            result = None
+        if result is None:
+            decoded = None
+            stdout = b""
+            raise RuntimeTransportError("runtime_invalid_result")
+        return result
 
 
 def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:

@@ -10,7 +10,7 @@ from typing import Protocol
 from uuid import UUID, uuid4
 
 from app.adapters.model import FakeModelGateway
-from app.adapters.runtime import FakeMingliRuntimeAdapter
+from app.adapters.runtime import FakeMingliRuntimeAdapter, build_runtime_startup_gate
 from app.config import Settings, get_settings
 from app.database import Database
 from app.readings.models import ReadingJobRecord, ReadingVersion
@@ -278,10 +278,16 @@ async def configured_reading_worker() -> AsyncIterator[Worker]:
     database = Database(settings.database_url)
     worker_id = f"{socket.gethostname()}:{os.getpid()}:{uuid4().hex}"
     try:
+        runtime: RuntimePort | None = None
+        if settings.runtime_adapter == "one-shot":
+            runtime_gate = build_runtime_startup_gate(settings)
+            await runtime_gate.startup()
+            runtime = runtime_gate.runtime
         yield build_reading_worker(
             settings=settings,
             database=database,
             worker_id=worker_id,
+            runtime=runtime,
         )
     finally:
         await database.dispose()

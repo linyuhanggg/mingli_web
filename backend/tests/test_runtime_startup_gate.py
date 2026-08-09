@@ -1,8 +1,11 @@
 import hashlib
+import importlib
 import json
 import stat
+import sys
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 import pytest
 from app.adapters.runtime import (
@@ -67,7 +70,7 @@ class FailingReleaseInspector:
 def _write_executable(path: Path, payload: dict[str, object]) -> Path:
     encoded = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     path.write_text(
-        f"""#!/usr/bin/env python3
+        f"""#!{sys.executable}
 import sys
 assert sys.stdin.read() == '{{"kind":"describe"}}\\n'
 sys.stdout.write({encoded!r} + "\\n")
@@ -476,6 +479,43 @@ def test_filesystem_release_inspector_rejects_a_tampered_signed_file(
         ).inspect()
 
 
+def test_filesystem_release_inspector_rejects_unsigned_extra_files(
+    tmp_path: Path,
+) -> None:
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    manifest_sha256 = _build_signed_release_fixture(release_root)
+    (release_root / "unsigned-runtime-hook.py").write_text(
+        "raise RuntimeError('unsigned')\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeStartupError, match="unsigned filesystem entry"):
+        FileSystemRuntimeReleaseInspector(
+            release_root=release_root,
+            expected_release_manifest_sha256=manifest_sha256,
+            expected_release_name="fixture-release",
+            expected_source_commit="fixture-commit",
+        ).inspect()
+
+
+def test_filesystem_release_inspector_rejects_unsigned_empty_directories(
+    tmp_path: Path,
+) -> None:
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    manifest_sha256 = _build_signed_release_fixture(release_root)
+    (release_root / "unsigned-empty-directory").mkdir()
+
+    with pytest.raises(RuntimeStartupError, match="unsigned filesystem entry"):
+        FileSystemRuntimeReleaseInspector(
+            release_root=release_root,
+            expected_release_manifest_sha256=manifest_sha256,
+            expected_release_name="fixture-release",
+            expected_source_commit="fixture-commit",
+        ).inspect()
+
+
 @pytest.mark.parametrize(
     ("mutation", "message"),
     (
@@ -636,3 +676,75 @@ async def test_runtime_startup_gate_factory_requires_one_shot_settings_and_start
 
     with pytest.raises(RuntimeStartupError, match="not ready"):
         await gate.readiness_probe()
+
+
+async def test_configured_worker_admits_the_real_runtime_before_processing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    readings = importlib.import_module("worker.readings")
+    config = importlib.import_module("app.config")
+    events: list[str] = []
+    admitted_runtime = object()
+    built_worker = object()
+
+    class DatabaseFixture:
+        def __init__(self) -> None:
+            self.sessions = object()
+
+        async def dispose(self) -> None:
+            events.append("database-dispose")
+
+    class GateFixture:
+        runtime = admitted_runtime
+
+        async def startup(self) -> None:
+            events.append("runtime-startup")
+
+    database = DatabaseFixture()
+    settings = config.Settings(environment="test", runtime_adapter="one-shot")
+
+    def build_worker_fixture(**kwargs: Any) -> object:
+        events.append("worker-build")
+        assert kwargs["runtime"] is admitted_runtime
+        return built_worker
+
+    monkeypatch.setattr(readings, "get_settings", lambda: settings)
+    monkeypatch.setattr(readings, "Database", lambda _url: database)
+    monkeypatch.setattr(readings, "build_runtime_startup_gate", lambda _settings: GateFixture())
+    monkeypatch.setattr(readings, "build_reading_worker", build_worker_fixture)
+
+    async with readings.configured_reading_worker() as worker:
+        assert worker is built_worker
+        assert events == ["runtime-startup", "worker-build"]
+
+    assert events == ["runtime-startup", "worker-build", "database-dispose"]
+
+
+async def test_configured_worker_fails_closed_when_runtime_startup_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    readings = importlib.import_module("worker.readings")
+    config = importlib.import_module("app.config")
+    events: list[str] = []
+
+    class DatabaseFixture:
+        async def dispose(self) -> None:
+            events.append("database-dispose")
+
+    class GateFixture:
+        runtime = object()
+
+        async def startup(self) -> None:
+            events.append("runtime-startup")
+            raise RuntimeStartupError("describe admission failed")
+
+    settings = config.Settings(environment="test", runtime_adapter="one-shot")
+    monkeypatch.setattr(readings, "get_settings", lambda: settings)
+    monkeypatch.setattr(readings, "Database", lambda _url: DatabaseFixture())
+    monkeypatch.setattr(readings, "build_runtime_startup_gate", lambda _settings: GateFixture())
+
+    with pytest.raises(RuntimeStartupError, match="describe admission failed"):
+        async with readings.configured_reading_worker():
+            pytest.fail("Worker must not start after failed Runtime admission")
+
+    assert events == ["runtime-startup", "database-dispose"]

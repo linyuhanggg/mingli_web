@@ -1,4 +1,5 @@
 import json
+import sys
 import traceback
 from pathlib import Path
 
@@ -17,7 +18,10 @@ from app.readings.runtime_contracts import (
 
 
 def _write_executable(path: Path, source: str) -> Path:
-    path.write_text(source, encoding="utf-8")
+    path.write_text(
+        source.replace("#!/usr/bin/env python3", f"#!{sys.executable}", 1),
+        encoding="utf-8",
+    )
     path.chmod(0o700)
     return path
 
@@ -295,6 +299,58 @@ print(json.dumps({
     assert "secret-token-from-runtime" not in rendered
     assert "private-user-copy" not in rendered
     assert "schema-error-canary" not in rendered
+    assert caught.value.__context__ is None
+
+
+async def test_process_adapter_drops_malformed_json_from_the_exception_context(
+    tmp_path: Path,
+) -> None:
+    launcher = _write_executable(
+        tmp_path / "runtime-fixture",
+        """#!/usr/bin/env python3
+import sys
+sys.stdin.buffer.read()
+sys.stdout.write('{"state_token":"malformed-secret-token"')
+""",
+    )
+    state_root = tmp_path / "state"
+    state_root.mkdir()
+
+    with pytest.raises(RuntimeTransportError) as caught:
+        await _adapter(launcher, state_root).execute(Describe())
+
+    assert caught.value.__context__ is None
+    assert "malformed-secret-token" not in repr(caught.value)
+
+
+async def test_process_adapter_uses_a_fixed_path_not_the_host_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    launcher = _write_executable(
+        tmp_path / "runtime-fixture",
+        """#!/usr/bin/env python3
+import json
+import os
+from pathlib import Path
+import sys
+sys.stdin.buffer.read()
+Path(__file__).with_suffix('.path').write_text(os.environ['PATH'])
+print(json.dumps({
+    "kind": "described",
+    "protocol_version": "mingli-portable-interface-v2",
+    "manifest_digest": "0" * 64,
+    "capabilities": [],
+}))
+""",
+    )
+    state_root = tmp_path / "state"
+    state_root.mkdir()
+    monkeypatch.setenv("PATH", str(tmp_path / "attacker-controlled-bin"))
+
+    await _adapter(launcher, state_root).execute(Describe())
+
+    assert launcher.with_suffix(".path").read_text() == "/opt/node/bin:/usr/local/bin:/usr/bin:/bin"
 
 
 async def test_process_adapter_passes_user_content_only_through_json_stdin(
