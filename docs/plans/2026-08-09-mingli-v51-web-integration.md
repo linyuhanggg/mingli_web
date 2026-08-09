@@ -474,7 +474,7 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 
 **Step 2: Run the complete native release regression**
 
-使用冻结的 PreparedInputs 和原生 CPython 3.14.6，在最多 10 个进程槽、总墙钟不超过 600 秒的条件下运行完整签名回归。唯一可接受的权威摘要是：
+使用冻结的 PreparedInputs，以路径和 SHA-256 绑定原生 Python（当前验收基线为 CPython 3.14.6），在最多 10 个进程槽、总墙钟不超过 600 秒的条件下运行完整签名回归。唯一可接受的权威摘要是：
 
 `slots` 和 `max_slots` 表示 signed runner 的加权调度额度，不是操作系统 PID 数量上限。运行期间可以只读采样进程树验证活跃计算负载，但不能把 multiprocessing 管理进程和休眠 PID 算成额外调度槽。
 
@@ -488,7 +488,7 @@ targets=126 modules=93 tests=1584 failed_modules=0
 
 **Step 4: Record the accepted baseline**
 
-2026-08-09 的最新 Mac mini M4 结果为 1584/0，完整门禁总墙钟 `439.64s`，满足 `<=600s`。该结果通过后 Task 9–13 可以继续，不等待任何 Linux 报告、镜像 digest 或 `release-5.1.json`。
+2026-08-09 的 Mac mini M4 已取得 1584/0，完整门禁约 7 分多钟并满足 `<=600s`；每次正式验收以当次报告的精确计时和独立 verifier 结果为准。该结果通过后 Task 9–13 可以继续，不等待任何 Linux 报告、镜像 digest 或 `release-5.1.json`。
 
 **Step 5: Run focused checks and commit**
 

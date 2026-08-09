@@ -17,7 +17,7 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | 邮件通道与模板 | 待确认 | 发信域名、供应商、退信和数据处理评审 | 邮箱 OTP 使用 Fake Adapter；真实发送在共享限流与渠道 Gate 前保持关闭 |
 | 模型供应商和数据位置 | 待确认 | DPA、保存期限、训练退出、预算、固定 Model Profile 和故障策略 | `ModelGateway` 使用结构化 Fake；不运行 Agent |
 | mingli-master 5.1 完整发布物 | 待确认 | source commit、217 文件 manifest、协议版本、describe digest、13/13 Provider readiness、55/55 古籍 reference pack、1328 条 evidence index 与 runtime closure | Fake Runtime 描述完整 13 项；Product Policy 另行只开放 P0 三项 |
-| Mac mini Runtime 原生门禁 | 已通过 | M4 Mac mini、CPython 3.14.6、10 槽；126 targets、93 modules、1584 tests、0 failed，最新 `native-full` 总墙钟 439.64 秒 | 该结果是唯一 Runtime 准入证据；不再要求 Linux 模拟报告 |
+| Mac mini Runtime 原生门禁 | 已通过 | M4 Mac mini、CPython 3.14.6、10 槽；126 targets、93 modules、1584 tests、0 failed，完整 `native-full` 约 7 分多钟且低于 600 秒 | 每次以当次报告的精确计时和独立 verifier 为准；不再要求 Linux 模拟报告 |
 | Runtime 状态与恢复 | 待确认 | 固定安装路径/UID/状态卷、Prepared 与 Accepted token 的备份恢复实测 | 真实 Runtime 可在原生门禁后接入；生产流量仍等待恢复演练 |
 | 单模型成稿合同 | 待确认 | Narrative Policy、Candidate Schema、Narrative Guard 反例集和固定盲测通过 | Fake Model 输出不能进入 complete 或成为 Accepted |
 | 生产密钥托管与轮换 | 待确认 | Secret Manager、最小权限、轮换和演练记录 | 只接受运行时注入；示例值均为非密钥 |

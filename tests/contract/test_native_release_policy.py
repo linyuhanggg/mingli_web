@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-import tomllib
+import re
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -47,19 +49,39 @@ def test_authoritative_documents_make_native_full_the_only_runtime_gate() -> Non
     assert missing == []
 
 
-def test_default_pytest_policy_skips_retired_linux_contracts() -> None:
-    tomllib.loads(
-        (ROOT / "backend" / "pyproject.toml").read_text(encoding="utf-8")
+def run_contract_pytest(*args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", *args],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+        text=True,
     )
-    release_contract = (
-        ROOT / "tests" / "contract" / "test_mingli_runtime_release.py"
-    ).read_text(encoding="utf-8")
-    local_contract = (
-        ROOT / "tests" / "contract" / "test_mingli_local_gate.py"
-    ).read_text(encoding="utf-8")
 
-    assert "pytestmark = pytest.mark.skip" in release_contract
-    assert "LINUX_RUNTIME_RETIRED = pytest.mark.skip" in local_contract
+
+def test_pure_release_contracts_stay_active_without_starting_linux() -> None:
+    completed = run_contract_pytest(
+        "tests/contract/test_mingli_runtime_release.py"
+    )
+    output = completed.stdout + completed.stderr
+
+    assert completed.returncode == 0, output
+    summary = re.search(r"(\d+) passed, (\d+) skipped", output)
+    assert summary is not None, output
+    assert tuple(map(int, summary.groups())) == (53, 17)
+
+
+def test_retired_linux_execution_contracts_are_skipped_by_pytest() -> None:
+    completed = run_contract_pytest(
+        "tests/contract/test_mingli_local_gate.py",
+        "-k",
+        "linux or vz or lima or oci",
+    )
+    output = completed.stdout + completed.stderr
+
+    assert completed.returncode == 0, output
+    assert " skipped" in output
+    assert " passed" not in output
 
 
 def test_native_slot_fields_are_not_documented_as_a_pid_ceiling() -> None:

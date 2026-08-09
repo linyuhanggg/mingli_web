@@ -21,8 +21,8 @@ from typing import Any
 
 import pytest
 
-pytestmark = pytest.mark.skip(
-    reason="Linux Runtime certification is retired; native-full is the only Gate"
+LINUX_ARTIFACT_RETIRED = pytest.mark.skip(
+    reason="Linux artifact/report acceptance is retired; native-full is the only Gate"
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -675,6 +675,7 @@ def load_report() -> dict[str, Any]:
     return value
 
 
+@LINUX_ARTIFACT_RETIRED
 def test_linux_release_evidence_is_complete_and_fail_closed() -> None:
     verifier = load_verifier()
     report = load_report()
@@ -758,6 +759,7 @@ def test_linux_release_evidence_is_complete_and_fail_closed() -> None:
     )
 
 
+@LINUX_ARTIFACT_RETIRED
 def test_three_provider_slim_report_is_rejected() -> None:
     verifier = load_verifier()
     slim = copy.deepcopy(load_report())
@@ -772,6 +774,7 @@ def test_three_provider_slim_report_is_rejected() -> None:
         verifier.validate_audit_report(slim, artifacts_root=RUNTIME_DIR)
 
 
+@LINUX_ARTIFACT_RETIRED
 @pytest.mark.parametrize(
     ("mutation", "message"),
     [
@@ -819,6 +822,7 @@ def test_verifier_recomputes_evidence_instead_of_trusting_passed_status(
         verifier.validate_audit_report(tampered, artifacts_root=RUNTIME_DIR)
 
 
+@LINUX_ARTIFACT_RETIRED
 def test_release_regression_is_executed_in_the_final_artifact() -> None:
     verifier = load_verifier()
     baseline = copy.deepcopy(load_report())
@@ -1634,6 +1638,7 @@ def test_image_audit_entry_is_present_and_non_agentic() -> None:
         assert forbidden not in audit.lower()
 
 
+@LINUX_ARTIFACT_RETIRED
 def test_linux_gate_separates_matrix_source_from_fulltext_research(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1735,6 +1740,7 @@ def test_backup_drill_distinguishes_replay_from_true_followup() -> None:
     )
 
 
+@LINUX_ARTIFACT_RETIRED
 def test_backup_restore_validates_describe_and_state_root_identity(
     tmp_path: Path,
 ) -> None:
@@ -1777,6 +1783,7 @@ def test_backup_restore_validates_describe_and_state_root_identity(
     assert "device and inode values may change" in readme
 
 
+@LINUX_ARTIFACT_RETIRED
 @pytest.mark.parametrize(
     ("mutation", "message"),
     [
@@ -1929,6 +1936,7 @@ def test_git_smoke_golden_is_recomputed_and_tamper_rejected() -> None:
         verifier.validate_git_smoke_payload(tampered)
 
 
+@LINUX_ARTIFACT_RETIRED
 def test_git_smoke_bundle_consistent_tamper_is_semantically_rejected(
     tmp_path: Path,
 ) -> None:
@@ -1973,6 +1981,7 @@ def test_git_smoke_bundle_consistent_tamper_is_semantically_rejected(
         verifier.validate_audit_report(report, artifacts_root=artifacts)
 
 
+@LINUX_ARTIFACT_RETIRED
 def test_sbom_covers_python_node_and_vendored_iztro() -> None:
     report = load_report()
     sbom = json.loads(SBOM_PATH.read_text(encoding="utf-8"))

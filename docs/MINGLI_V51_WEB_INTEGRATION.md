@@ -575,7 +575,7 @@ P0 只启用一个通过评测的模型配置。Model Gateway 只是 HTTP/SDK �
 
 ### 14.1 Mac mini `native-full`
 
-Runtime 准入只认 Mac mini 原生通道。标准命令必须使用冻结的 PreparedInputs、原生 CPython 3.14.6、最多 10 个进程槽，并在 600 秒内完成完整 `126 targets / 93 modules / 1584 tests / 0 failed`；报告、原始 stdout/stderr、输入摘要和独立 verifier 必须一起通过。该门禁通过后，真实 Runtime Adapter 和后续网站任务即可继续。
+Runtime 准入只认 Mac mini 原生通道。标准命令必须使用冻结的 PreparedInputs，以路径和 SHA-256 绑定原生 Python（当前验收基线为 CPython 3.14.6），使用最多 10 个进程槽，并在 600 秒内完成完整 `126 targets / 93 modules / 1584 tests / 0 failed`；报告、原始 stdout/stderr、输入摘要和独立 verifier 必须一起通过。该门禁通过后，真实 Runtime Adapter 和后续网站任务即可继续。
 
 `slots` 和 `max_slots` 表示 signed runner 的加权调度额度，不是操作系统 PID 数量上限。multiprocessing 的父进程、资源跟踪器和休眠 worker 可以让可见 PID 超过 10；验收看调度器分配的总槽位，同时把真实进程树作为只读观测记录，不能把 PID 数量冒充槽位。
 
@@ -725,7 +725,7 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 ### Gate 0：Mac mini 原生可运行性
 
 - 归档精确 5.1 release、manifest 与完整测试源码；
-- 固定原生 CPython 3.14.6、运行目录和 PreparedInputs；
+- 用 PreparedInputs 固定原生 Python 的路径和 SHA-256；当前验收基线为 CPython 3.14.6；
 - 在 600 秒和 10 槽内验收完整 13 Provider、全部运行时依赖、55/55 reference pack、1328 条 evidence index 和 1584/0 全量回归；
 - 另跑三类 P0 端到端黄金测试、篡改测试、备份恢复演练；
 - 不启动 Linux 模拟或把 Linux 报告作为后续任务前置条件。

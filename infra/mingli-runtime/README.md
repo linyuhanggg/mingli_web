@@ -13,7 +13,7 @@ uv run --project backend python infra/mingli-runtime/local_gate.py native-full \
   --output-parent /absolute/new/empty/output-directory
 ```
 
-公开命令只支持 `native-full`。它使用原生 CPython 3.14.6 和最多 10 个进程槽，在 600 秒硬上限内运行签名 release 的完整测试套件。通过条件固定为：
+公开命令只支持 `native-full`。它使用 PreparedInputs 按路径和 SHA-256 绑定的原生 Python（当前验收基线为 CPython 3.14.6）和最多 10 个进程槽，在 600 秒硬上限内运行签名 release 的完整测试套件。通过条件固定为：
 
 `slots` 和 `max_slots` 表示 signed runner 的加权调度额度，不是操作系统 PID 数量上限。Canonical 等测试可创建父进程、资源跟踪器和休眠 worker，因此进程树中的 PID 总数可能超过 10；这不改变 runner 的 10 槽调度合同。
 
@@ -36,7 +36,7 @@ failed_modules=0
 
 ## 当前已接受基线
 
-2026-08-09 在 M4 Mac mini、原生 CPython 3.14.6、10 槽上取得最新结果：126 targets、93 modules、1584 tests、0 failed；完整门禁总墙钟约 439.64 秒。该结果满足开发、合并、真实 Runtime 接入和发布验收的 Runtime Gate。
+2026-08-09 在 M4 Mac mini、原生 CPython 3.14.6、10 槽上已取得 126 targets、93 modules、1584 tests、0 failed，完整门禁约 7 分多钟并低于 600 秒。每次正式验收以当次报告的精确计时和独立 verifier 结果为准。
 
 ## 历史 Linux 文件
 
