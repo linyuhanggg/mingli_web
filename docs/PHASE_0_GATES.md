@@ -1,10 +1,12 @@
 # Phase 0 外部 Gate 台账
 
-更新日期：2026-08-09
+更新日期：2026-08-10
 
 本台账只记录上线前需要外部确认的事项。`待确认` 不代表失败，但绝不能在没有书面证据时改成已通过。仓库内不得保存密码、私钥、API Key、商户证书或真实 OTP。
 
 Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。
+
+当前第一版代码候选及缺口见 [2026-08-10 Phase 2 发布证据记录](./releases/2026-08-10-mingli-v51-web-phase2.md)。该记录为 `production blocked`，不构成上线批准；原始证据补齐前所有生产相关 Gate 均保持待确认，`real traffic` 保持 disabled。
 
 | Gate | 当前状态 | 通过证据 | 代码期处理 |
 |---|---|---|---|
@@ -17,10 +19,11 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | 邮件通道与模板 | 待确认 | 发信域名、供应商、退信和数据处理评审 | 邮箱 OTP 使用 Fake Adapter；真实发送在共享限流与渠道 Gate 前保持关闭 |
 | 模型供应商和数据位置 | 待确认 | DPA、保存期限、训练退出、预算、固定 Model Profile 和故障策略 | `ModelGateway` 使用结构化 Fake；不运行 Agent |
 | mingli-master 5.1 完整发布物 | 待确认 | source commit、217 文件 manifest、协议版本、describe digest、13/13 Provider readiness、55/55 古籍 reference pack、1328 条 evidence index 与 runtime closure | Fake Runtime 描述完整 13 项；Product Policy 另行只开放 P0 三项 |
-| Mac mini Runtime 原生门禁 | 已通过 | M4 Mac mini、CPython 3.14.6、10 槽；126 targets、93 modules、1584 tests、0 failed，完整 `native-full` 约 7 分多钟且低于 600 秒 | 每次以当次报告的精确计时和独立 verifier 为准；不再要求 Linux 模拟报告 |
+| Mac mini Runtime 原生门禁 | 待确认 | 当次 `native-full` 报告、原始 stdout/stderr、PreparedInputs 摘要及独立 verifier；要求 126 targets、93 modules、1584 tests、0 failed 且低于 600 秒 | 门禁机制已存在，但当前仓库缺少可独立复验的原始归档；不再要求 Linux 模拟报告 |
 | Runtime 状态与恢复 | 待确认 | 固定安装路径/UID/状态卷、Prepared 与 Accepted token 的备份恢复实测 | 真实 Runtime 可在原生门禁后接入；生产流量仍等待恢复演练 |
 | 单模型成稿合同 | 待确认 | Narrative Policy、Candidate Schema、Narrative Guard 反例集和固定盲测通过 | Fake Model 输出不能进入 complete 或成为 Accepted |
 | 生产密钥托管与轮换 | 待确认 | Secret Manager、最小权限、轮换和演练记录 | 只接受运行时注入；示例值均为非密钥 |
+| 生产监控与告警 | 待确认 | `runtime_unknown`、`delayed`、Narrative Guard rejection、model cost 四类告警配置、路由和触发演练 | 状态与成本记录不能替代生产告警；未通过前不得开放流量 |
 
 ## Phase 1 可以继续的前提
 

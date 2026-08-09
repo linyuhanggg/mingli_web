@@ -9,6 +9,7 @@
 - 共同语言：[CONTEXT.md](./CONTEXT.md)
 - 架构决策：[docs/adr](./docs/adr)
 - Phase 0 外部 Gate：[docs/PHASE_0_GATES.md](./docs/PHASE_0_GATES.md)
+- Phase 2 第一版代码候选证据：[docs/releases/2026-08-10-mingli-v51-web-phase2.md](./docs/releases/2026-08-10-mingli-v51-web-phase2.md)
 - 当前实施计划：[docs/plans/2026-08-09-phase-0-1-web-foundation.md](./docs/plans/2026-08-09-phase-0-1-web-foundation.md)
 
 ## 目录边界
@@ -82,4 +83,6 @@ Metis 紫薇及其开源仓库只作为信息层级和交互参考，不复制�
 
 Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。
 
-Phase 2 先冻结 Command/Result、Candidate 与 Output Contract 四组 JSON Schema，再深化 Runtime/Model Fake Ports、三类 Request Compiler、Narrative Guard 和显式 Reading Orchestrator。真实 Runtime 在 Mac mini 原生全量回归通过后即可接入，不再等待 Linux 模拟认证。当前 `/app/profile/new` 和 `/app/ask/liuyao` 只明确说明下一阶段，不伪造排盘结果。
+2026-08-10 的 Phase 2 记录当前仅为“第一版代码候选 / production blocked”：Task 11/12 当前工作树的 `make check`、`make test` 已通过，但候选尚未形成不可变提交，生产原始证据和外部门禁仍为 Pending。`real traffic` 保持 disabled，不可部署或放量。
+
+Phase 2 先冻结 Command/Result、Candidate 与 Output Contract 四组 JSON Schema，再深化 Runtime/Model Ports、三类 Request Compiler、Narrative Guard 和显式 Reading Orchestrator。真实 Runtime 在 Mac mini 原生全量回归通过后才可接入，不再等待 Linux 模拟认证。当前建档、今日、近七日、六爻与结果页均调用同源 API；浏览器只展示服务端返回的 Accepted Copy，不在客户端伪造排盘结果。
