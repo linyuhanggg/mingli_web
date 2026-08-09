@@ -26,7 +26,7 @@
 .textarea {
   width: 100%;
   box-sizing: border-box;
-  min-height: 2.75rem;
+  min-height: 3rem;
   padding: 0.7rem 0.85rem;
   font-size: 1rem;
   border: 1px solid var(--border-emphasis);
@@ -45,7 +45,7 @@
   justify-self: start;
   padding: 0.65rem 1.3rem;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--ink-900);
   color: var(--ivory-50);
   box-shadow: var(--shadow-action);
@@ -84,7 +84,7 @@
   align-items: center;
   padding: 0.6rem 1rem;
   border: 1px solid var(--border-subtle);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: var(--ink-900);
   font-weight: 700;
   text-decoration: none;
@@ -108,4 +108,13 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* 尊重系统减弱动效设置：关闭过渡与位移 */
+@media (prefers-reduced-motion: reduce) {
+  .submit,
+  .recastLink {
+    transition: none;
+    transform: none;
+  }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -16,6 +17,7 @@ import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
 import { isIanaTimeZone } from "@/lib/iana-timezones";
 
 import styles from "./liuyao-form.module.css";
+import formControls from "./form-controls.module.css";
 import { IanaTimeZoneOptions } from "./iana-timezone-options";
 
 const tossKeys = [
@@ -212,7 +214,11 @@ export function LiuyaoForm() {
       {bootstrapError ? (
         <div className={styles.state} role="alert">
           <p className={styles.error}>{bootstrapError}</p>
-          <button className={styles.secondary} type="button" onClick={retryBootstrap}>
+          <button
+            className={clsx(formControls.action, formControls.actionSecondary)}
+            type="button"
+            onClick={retryBootstrap}
+          >
             重新连接
           </button>
         </div>
@@ -226,10 +232,11 @@ export function LiuyaoForm() {
           noValidate
           aria-busy={busy}
         >
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="liuyao-question">想清楚问什么</label>
             <textarea
               id="liuyao-question"
+              className={formControls.input}
               autoComplete="off"
               disabled={busy}
               required
@@ -241,19 +248,20 @@ export function LiuyaoForm() {
               {...register("question")}
             />
             {errors.question ? (
-              <p className={styles.fieldError} id="liuyao-question-error" role="alert">
+              <p className={formControls.error} id="liuyao-question-error" role="alert">
                 {errors.question.message}
               </p>
             ) : null}
-            <p className={styles.hint} id="liuyao-question-hint">
+            <p className={formControls.hint} id="liuyao-question-hint">
               只问一件事，尽量具体，不夹带多个问题。
             </p>
           </div>
 
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="liuyao-event-datetime">起卦时刻</label>
             <input
               id="liuyao-event-datetime"
+              className={formControls.input}
               type="datetime-local"
               step="1"
               autoComplete="off"
@@ -270,22 +278,23 @@ export function LiuyaoForm() {
             />
             {errors.event_datetime ? (
               <p
-                className={styles.fieldError}
+                className={formControls.error}
                 id="liuyao-event-datetime-error"
                 role="alert"
               >
                 {errors.event_datetime.message}
               </p>
             ) : null}
-            <p className={styles.hint} id="liuyao-event-datetime-help">
+            <p className={formControls.hint} id="liuyao-event-datetime-help">
               不自动回填设备时间；此处记录当地钟表时间，并与所选时区配对。
             </p>
           </div>
 
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="liuyao-timezone">起卦时区</label>
             <input
               id="liuyao-timezone"
+              className={formControls.input}
               type="text"
               inputMode="text"
               autoComplete="off"
@@ -303,19 +312,20 @@ export function LiuyaoForm() {
             />
             <IanaTimeZoneOptions id="liuyao-timezone-options" />
             {errors.timezone ? (
-              <p className={styles.fieldError} id="liuyao-timezone-error" role="alert">
+              <p className={formControls.error} id="liuyao-timezone-error" role="alert">
                 {errors.timezone.message}
               </p>
             ) : null}
-            <p className={styles.hint} id="liuyao-timezone-help">
+            <p className={formControls.hint} id="liuyao-timezone-help">
               按起卦城市主动确认；输入地区或城市可筛选完整 IANA 列表，界面不会读取设备时区。
             </p>
           </div>
 
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="liuyao-location">起卦地点</label>
             <input
               id="liuyao-location"
+              className={formControls.input}
               type="text"
               autoComplete="address-level2"
               placeholder="例如：上海市…"
@@ -329,11 +339,11 @@ export function LiuyaoForm() {
               {...register("location")}
             />
             {errors.location ? (
-              <p className={styles.fieldError} id="liuyao-location-error" role="alert">
+              <p className={formControls.error} id="liuyao-location-error" role="alert">
                 {errors.location.message}
               </p>
             ) : null}
-            <p className={styles.hint} id="liuyao-location-help">
+            <p className={formControls.hint} id="liuyao-location-help">
               城市级即可，不索取或伪造经纬度。
             </p>
           </div>
@@ -369,12 +379,13 @@ export function LiuyaoForm() {
               <legend>六次投掷（自下而上）</legend>
               <ol className={styles.tossGrid}>
                 {tossKeys.map((key, index) => (
-                  <li className={styles.field} key={key}>
+                  <li className={formControls.field} key={key}>
                     <label htmlFor={`liuyao-toss-${index + 1}`}>
                       {tossNames[index]}
                     </label>
                     <select
                       id={`liuyao-toss-${index + 1}`}
+                      className={formControls.input}
                       disabled={busy}
                       required
                       aria-required="true"
@@ -392,7 +403,7 @@ export function LiuyaoForm() {
                     </select>
                     {errors[key] ? (
                       <p
-                        className={styles.fieldError}
+                        className={formControls.error}
                         id={`liuyao-toss-${index + 1}-error`}
                         role="alert"
                       >
@@ -402,7 +413,7 @@ export function LiuyaoForm() {
                   </li>
                 ))}
               </ol>
-              <p className={styles.hint}>
+              <p className={formControls.hint}>
                 初爻在下方，上爻在上方；6 老阴，7 少阳，8 少阴，9 老阳。
               </p>
             </fieldset>
@@ -414,14 +425,21 @@ export function LiuyaoForm() {
             </p>
           ) : null}
 
-          <button
-            className={styles.submit}
-            type="submit"
-            disabled={busy}
-            aria-busy={busy}
-          >
-            开始解读{busy ? " · 正在启动…" : ""}
-          </button>
+          {busy ? (
+            <p className={formControls.disabledReason} role="status">
+              正在提交解读，输入与操作已暂时锁定。
+            </p>
+          ) : null}
+          <div className={formControls.actions}>
+            <button
+              className={clsx(formControls.action, formControls.actionPrimary)}
+              type="submit"
+              disabled={busy}
+              aria-busy={busy}
+            >
+              开始解读{busy ? " · 正在启动…" : ""}
+            </button>
+          </div>
         </form>
       ) : null}
     </div>

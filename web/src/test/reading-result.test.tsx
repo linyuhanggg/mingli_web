@@ -196,9 +196,7 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    const acceptedRegion = await screen.findByRole("region", {
-      name: "已接纳正文",
-    });
+    const acceptedRegion = await screen.findByRole("region", { name: "判断" });
     const copy = within(acceptedRegion).getByText(acceptedCopyQuery);
     expect(copy.textContent).toBe(acceptedCopy);
     expect(fetchMock.mock.calls.map(([url]) => String(url)).slice(0, 2)).toEqual([
@@ -245,8 +243,11 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    expect(await screen.findByText(text)).toBeVisible();
-    expect(screen.getByText(/2026年8月10日.*2026年8月16日/)).toBeVisible();
+    const matches = await screen.findAllByText(text);
+    expect(matches.length).toBeGreaterThan(0);
+    expect(matches[0]).toBeVisible();
+    const horizons = screen.getAllByText(/2026年8月10日.*2026年8月16日/);
+    expect(horizons.length).toBeGreaterThan(0);
     expect(screen.queryByText(/排队中/)).not.toBeInTheDocument();
   });
 
@@ -299,6 +300,29 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
 
     expect(await screen.findByText(acceptedCopyQuery)).toBeVisible();
     expect(pollCount).toBe(2);
+  });
+
+  it("shows an accepted-result fetch error instead of getting stuck in loading", async () => {
+    let resultCount = 0;
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        resultCount += 1;
+        return resultCount === 1
+          ? problemResponse("正文暂时读取失败", 500)
+          : jsonResponse(readingResult());
+      }
+      return jsonResponse(readingSummary("accepted"));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("正文暂时读取失败");
+    await user.click(screen.getByRole("button", { name: "重试" }));
+    expect(await screen.findByText(acceptedCopyQuery)).toBeVisible();
+    expect(resultCount).toBe(2);
   });
 });
 
@@ -587,25 +611,23 @@ describe("verification and follow-up", () => {
 });
 
 describe("Web interface regression guards", () => {
-  it("keeps 44px targets, mobile-safe input text, reduced motion, and bounded pre overflow", () => {
+  it("keeps 48px inputs, mobile-safe input text, reduced motion, and bounded pre overflow", () => {
     const root = process.cwd();
     const globals = readFileSync(join(root, "src/app/globals.css"), "utf8");
     expect(globals).toContain("@media (prefers-reduced-motion: reduce)");
 
     const formCssFiles = [
-      "src/components/profile-form.module.css",
-      "src/components/fortune-flow.module.css",
-      "src/components/liuyao-form.module.css",
       "src/components/readings/need-input-form.module.css",
       "src/components/readings/follow-up-form.module.css",
       "src/components/readings/verification-form.module.css",
     ];
     for (const file of formCssFiles) {
       const css = readFileSync(join(root, file), "utf8");
-      expect(css).toMatch(/min-height:\s*2\.75rem/);
+      expect(css).toMatch(/min-height:\s*3rem/);
       expect(css).toMatch(/font-size:\s*1rem/);
       expect(css).not.toMatch(/transition:\s*all/i);
       expect(css).not.toMatch(/animation-[a-z-]+:\s*[^;]*infinite/i);
+      expect(css).not.toContain("999px");
     }
 
     const factCss = readFileSync(

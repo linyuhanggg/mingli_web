@@ -1,14 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { adoptCsrfToken, getCsrfToken } from "@/lib/api";
+
 import styles from "./otp-form.module.css";
 
 
-type Channel = "phone" | "email";
 type Phase =
   | "bootstrapping"
   | "unavailable"
@@ -16,17 +18,12 @@ type Phase =
   | "code"
   | "authenticated";
 
-type GuestSession = {
-  csrf_token: string;
-};
-
 type OtpChallenge = {
   challenge_id: string;
   development_code?: string;
 };
 
 type DeviceSession = {
-  user_id: string;
   csrf_token: string;
 };
 
@@ -41,16 +38,6 @@ type DestinationFormValues = {
 type CodeFormValues = {
   code: string;
 };
-
-const mainlandPhoneSchema = z.object({
-  destination: z.string().refine((value) => {
-    const digits = value.replace(/\D/g, "");
-    const localDigits = digits.startsWith("86") && digits.length === 13
-      ? digits.slice(2)
-      : digits;
-    return /^1[3-9]\d{9}$/.test(localDigits);
-  }, "请输入有效的中国大陆手机号"),
-});
 
 const emailAddress = z.email();
 const emailSchema = z.object({
@@ -85,17 +72,24 @@ async function requestJson<T>(url: string, options: RequestInit): Promise<T> {
   return body as T;
 }
 
+function AppRedirect() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/app");
+  }, [router]);
+  return null;
+}
+
 export function OtpForm() {
   const [phase, setPhase] = useState<Phase>("bootstrapping");
-  const [channel, setChannel] = useState<Channel>("phone");
   const [csrfToken, setCsrfToken] = useState("");
   const [challenge, setChallenge] = useState<OtpChallenge | null>(null);
-  const [session, setSession] = useState<DeviceSession | null>(null);
+  const [submittedDestination, setSubmittedDestination] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [bootstrapAttempt, setBootstrapAttempt] = useState(0);
   const destinationForm = useForm<DestinationFormValues>({
-    resolver: zodResolver(channel === "phone" ? mainlandPhoneSchema : emailSchema),
+    resolver: zodResolver(emailSchema),
     defaultValues: { destination: "" },
   });
   const codeForm = useForm<CodeFormValues>({
@@ -111,10 +105,10 @@ export function OtpForm() {
 
   useEffect(() => {
     let active = true;
-    requestJson<GuestSession>("/api/v1/guest-sessions", { method: "POST" })
-      .then((guest) => {
+    getCsrfToken()
+      .then((token) => {
         if (!active) return;
-        setCsrfToken(guest.csrf_token);
+        setCsrfToken(token);
         setPhase("destination");
       })
       .catch(() => {
@@ -133,16 +127,8 @@ export function OtpForm() {
     setBootstrapAttempt((attempt) => attempt + 1);
   }
 
-  function chooseChannel(nextChannel: Channel) {
-    setChannel(nextChannel);
-    destinationForm.reset({ destination: "" });
-    codeForm.reset({ code: "" });
-    setChallenge(null);
-    setError("");
-    setPhase("destination");
-  }
-
-  async function sendCode({ destination }: DestinationFormValues) {
+  async function sendCodeTo(destination: string) {
+    const trimmedDestination = destination.trim();
     setBusy(true);
     setError("");
     try {
@@ -152,23 +138,40 @@ export function OtpForm() {
           "Content-Type": "application/json",
           "X-CSRF-Token": csrfToken,
         },
-        body: JSON.stringify({ channel, destination }),
+        body: JSON.stringify({
+          channel: "email",
+          destination: trimmedDestination,
+        }),
       });
+      setSubmittedDestination(trimmedDestination);
       setChallenge(requested);
       codeForm.reset({ code: "" });
       setPhase("code");
     } catch (reason) {
-      destinationForm.setError(
-        "destination",
-        {
-          type: "server",
-          message: reason instanceof Error ? reason.message : "验证码发送失败",
-        },
-        { shouldFocus: true },
-      );
+      const message = reason instanceof Error ? reason.message : "验证码发送失败";
+      if (phase === "code") {
+        setError(message);
+      } else {
+        destinationForm.setError(
+          "destination",
+          { type: "server", message },
+          { shouldFocus: true },
+        );
+      }
     } finally {
       setBusy(false);
     }
+  }
+
+  function changeDestination() {
+    setChallenge(null);
+    setSubmittedDestination("");
+    codeForm.reset({ code: "" });
+    setError("");
+    setPhase("destination");
+    setTimeout(() => {
+      destinationForm.setFocus("destination");
+    }, 0);
   }
 
   async function verifyCode({ code }: CodeFormValues) {
@@ -184,8 +187,7 @@ export function OtpForm() {
         },
         body: JSON.stringify({ challenge_id: challenge.challenge_id, code }),
       });
-      setCsrfToken(verified.csrf_token);
-      setSession(verified);
+      adoptCsrfToken(verified.csrf_token);
       setPhase("authenticated");
     } catch (reason) {
       codeForm.setError(
@@ -201,13 +203,17 @@ export function OtpForm() {
     }
   }
 
-  if (phase === "authenticated" && session) {
+  if (phase === "authenticated") {
     return (
-      <section className={styles.form} aria-live="polite">
-        <p className={styles.success}>登录成功</p>
-        <p>内部 User 是账户根，手机号或邮箱只是可绑定的登录身份。</p>
-        <p className={styles.accountRoot}>User ID：{session.user_id}</p>
-      </section>
+      <>
+        <AppRedirect />
+        <section className={styles.form} aria-live="polite">
+          <p className={styles.success}>登录成功</p>
+          <p className={styles.transition}>
+            正在进入 /app…设备会话已建立，不会再创建游客身份。
+          </p>
+        </section>
+      </>
     );
   }
 
@@ -230,6 +236,9 @@ export function OtpForm() {
           重新连接
         </button>
       ) : null}
+      <p className={styles.intro}>
+        邮箱是默认登录方式：首次验证自动创建账户，已有邮箱直接登录。手机号入口稍后开放。
+      </p>
       <div
         className={styles.tabs}
         role="group"
@@ -238,32 +247,33 @@ export function OtpForm() {
       >
         <button
           type="button"
-          aria-pressed={channel === "phone"}
+          aria-pressed="true"
           disabled={phase === "bootstrapping" || busy}
-          onClick={() => chooseChannel("phone")}
-        >
-          手机号验证码
-        </button>
-        <button
-          type="button"
-          aria-pressed={channel === "email"}
-          disabled={phase === "bootstrapping" || busy}
-          onClick={() => chooseChannel("email")}
+          onClick={changeDestination}
         >
           邮箱验证码
         </button>
+        <span className={styles.tabLocked} aria-disabled="true">
+          <span>手机号验证码</span>
+          <span className={styles.comingSoon}>稍后开放</span>
+        </span>
       </div>
 
       {phase === "destination" || phase === "bootstrapping" ? (
-        <form onSubmit={destinationForm.handleSubmit(sendCode)} noValidate aria-label="发送验证码">
+        <form
+          onSubmit={destinationForm.handleSubmit(({ destination }) =>
+            sendCodeTo(destination)
+          )}
+          noValidate
+          aria-label="发送邮箱验证码"
+        >
           <div className={styles.field}>
-            <label htmlFor="otp-destination">
-              {channel === "phone" ? "中国大陆手机号" : "邮箱地址"}
-            </label>
+            <label htmlFor="otp-destination">邮箱地址</label>
             <input
               id="otp-destination"
-              type={channel === "phone" ? "tel" : "email"}
-              autoComplete={channel === "phone" ? "tel" : "email"}
+              type="email"
+              autoComplete="email"
+              spellCheck={false}
               disabled={phase === "bootstrapping" || busy}
               aria-invalid={Boolean(destinationForm.formState.errors.destination)}
               aria-describedby={
@@ -275,7 +285,7 @@ export function OtpForm() {
               {...destinationForm.register("destination")}
             />
             <p className={styles.hint} id="otp-destination-help">
-              {channel === "phone" ? "仅支持中国大陆手机号；正式短信通道尚未接入。" : "邮箱只作为可验证登录入口，不是内部 User ID。"}
+              验证码将发送到该邮箱，不会对外公开。
             </p>
             {destinationForm.formState.errors.destination ? (
               <p
@@ -298,6 +308,9 @@ export function OtpForm() {
           {challenge.development_code ? (
             <p className={styles.hint}>本地测试验证码：{challenge.development_code}</p>
           ) : null}
+          <p className={styles.codeMeta}>
+            验证码已发送至 {submittedDestination}。可以重新发送，或更换邮箱。
+          </p>
           <div className={styles.field}>
             <label htmlFor="otp-code">六位验证码</label>
             <input
@@ -305,6 +318,7 @@ export function OtpForm() {
               type="text"
               inputMode="numeric"
               autoComplete="one-time-code"
+              spellCheck={false}
               pattern="[0-9]{6}"
               maxLength={6}
               aria-invalid={Boolean(codeForm.formState.errors.code)}
@@ -314,7 +328,9 @@ export function OtpForm() {
               required
               {...codeForm.register("code")}
             />
-            <p className={styles.hint} id="otp-code-help">验证码为六位数字，验证成功后建立当前设备会话。</p>
+            <p className={styles.hint} id="otp-code-help">
+              验证码为六位数字；验证成功即建立当前设备会话。
+            </p>
             {codeForm.formState.errors.code ? (
               <p className={styles.fieldError} id="otp-code-error" role="alert">
                 {codeForm.formState.errors.code.message}
@@ -324,6 +340,24 @@ export function OtpForm() {
           <button className={styles.submit} type="submit" disabled={busy}>
             {busy ? "正在验证…" : "验证并登录"}
           </button>
+          <div className={styles.actionRow}>
+            <button
+              className={styles.secondary}
+              type="button"
+              disabled={busy}
+              onClick={() => sendCodeTo(submittedDestination)}
+            >
+              {busy ? "正在发送…" : "重新发送验证码"}
+            </button>
+            <button
+              className={styles.secondary}
+              type="button"
+              disabled={busy}
+              onClick={changeDestination}
+            >
+              更换邮箱
+            </button>
+          </div>
         </form>
       ) : null}
     </section>

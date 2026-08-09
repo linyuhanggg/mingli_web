@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, vi } from "vitest";
 
 import AppPage from "@/app/app/page";
@@ -22,6 +22,8 @@ vi.mock("next/navigation", () => ({
 
 const api = vi.hoisted(() => ({
   getCsrfToken: vi.fn(),
+  listProfiles: vi.fn(),
+  listReadings: vi.fn(),
 }));
 
 vi.mock("@/lib/api", () => api);
@@ -32,6 +34,10 @@ beforeEach(() => {
   api.getCsrfToken.mockResolvedValue(
     "csrf-token-with-at-least-thirty-two-characters",
   );
+  api.listProfiles.mockReset();
+  api.listProfiles.mockResolvedValue({ profiles: [] });
+  api.listReadings.mockReset();
+  api.listReadings.mockResolvedValue({ readings: [] });
 });
 
 
@@ -44,31 +50,68 @@ describe("private P0 surfaces", () => {
     expect(screen.getByText(/不会用示例运势占据真实结果的位置/)).toBeVisible();
   });
 
-  it("explains immutable profile versions and offers a real next step", () => {
+  it("explains immutable profile versions and offers a real next step", async () => {
     render(<ProfilesPage />);
 
-    expect(screen.getByRole("heading", { name: "还没有已保存的受测档案" })).toBeVisible();
-    expect(screen.getByRole("link", { name: "开始建立档案" })).toHaveAttribute("href", "/app/profile/new");
-    expect(screen.getByText(/不可变档案版本/)).toBeVisible();
+    expect(
+      screen.getByText(/每次修改都会形成新的不可变档案版本/),
+    ).toBeVisible();
+    await waitFor(() => {
+      expect(
+        screen.getByRole("status", { name: "还没有已保存的档案" }),
+      ).toBeVisible();
+      expect(
+        screen.getByRole("link", { name: "开始建立档案" }),
+      ).toHaveAttribute("href", "/app/profile/new");
+    });
   });
 
-  it("shows the real server-driven reading status legend without fabricated states", () => {
+  it("shows only server-returned reading statuses on the history list", async () => {
+    api.listReadings.mockResolvedValue({
+      readings: [
+        {
+          reading_version_id: "33333333-3333-4333-8333-333333333333",
+          reading_root_id: "44444444-4444-4444-8444-444444444444",
+          profile_version_id: "22222222-2222-4222-8222-222222222222",
+          capability_id: "fortune",
+          version: 1,
+          status: "accepted",
+          object_id: "near_time_personal",
+          dimension_ids: ["overview"],
+          horizon: { kind_id: "day", start: "2026-08-10", end: "2026-08-10" },
+          prior_answer: null,
+          input_request: null,
+          created_at: "2026-08-10T01:00:00Z",
+        },
+      ],
+    });
     render(<ReadingsPage />);
 
-    for (const label of ["等待输入", "准备解读", "事实已准备", "正在接纳正文", "已交付", "已停止"]) {
-      expect(screen.getByText(label)).toBeVisible();
-    }
-    expect(screen.getByRole("heading", { name: "状态由服务端返回，本页不代为生成" })).toBeVisible();
+    await waitFor(() => {
+      expect(
+        screen.getByRole("link", { name: /日运与周运/ }),
+      ).toHaveAttribute(
+        "href",
+        "/app/readings/33333333-3333-4333-8333-333333333333",
+      );
+    });
+    expect(screen.getByText("已交付")).toBeVisible();
+    expect(screen.queryByText("准备解读")).not.toBeInTheDocument();
   });
 
-  it("keeps the readings list as an explicit placeholder with a real next step", () => {
+  it("keeps the empty readings list honest with a real next step", async () => {
     render(<ReadingsPage />);
 
-    expect(screen.getByRole("heading", { name: "目前没有可显示的真实解读" })).toBeVisible();
-    expect(screen.getByText(/暂无可列举的解读历史接口/)).toBeVisible();
-    expect(screen.getByText(/reading_version_id/)).toBeVisible();
-    expect(screen.getByText(/不会伪造任何报告/)).toBeVisible();
-    expect(screen.getByRole("link", { name: "发起解读" })).toHaveAttribute("href", "/app");
+    await waitFor(() => {
+      expect(
+        screen.getByRole("status", { name: "还没有可显示的解读" }),
+      ).toBeVisible();
+    });
+    expect(screen.getByText(/最近 50 条解读版本/)).toBeVisible();
+    expect(screen.getByRole("link", { name: "发起解读" })).toHaveAttribute(
+      "href",
+      "/app",
+    );
   });
 
   it("provides five-item desktop and mobile application navigation", () => {

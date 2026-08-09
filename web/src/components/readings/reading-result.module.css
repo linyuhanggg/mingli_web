@@ -1,20 +1,8 @@
-.result {
-  display: grid;
-  gap: 2rem;
-  margin-top: 1.75rem;
-}
-
-.loading {
-  margin-top: 1.75rem;
-  color: var(--ink-700);
-}
-
 .statusCard {
-  margin-top: 1.75rem;
-  padding: 1.25rem 1.4rem;
+  padding: clamp(1.2rem, 3vw, 1.6rem) clamp(1.2rem, 4vw, 2rem);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: var(--ivory-50);
+  background: var(--ivory-100);
 }
 
 .statusLabel {
@@ -26,12 +14,13 @@
 }
 
 .statusText {
-  margin: 0.4rem 0 0;
+  margin: 0.5rem 0 0;
   color: var(--ink-700);
+  line-height: 1.75;
 }
 
 .horizon {
-  margin: 0.75rem 0 0;
+  margin: 0.9rem 0 0;
   color: var(--ink-900);
   font-weight: 700;
 }
@@ -40,7 +29,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin: 1rem 0 0;
+  margin: 1.1rem 0 0;
 }
 
 .retryText {
@@ -50,8 +39,7 @@
 }
 
 .error {
-  margin-top: 1.75rem;
-  padding: 1rem 1.2rem;
+  padding: clamp(1.2rem, 3vw, 1.6rem) clamp(1.2rem, 4vw, 2rem);
   border: 1px solid var(--terracotta-500);
   border-radius: var(--radius-md);
   background: var(--ivory-100);
@@ -62,29 +50,7 @@
   color: var(--ink-950);
 }
 
-.retryButton {
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  justify-content: center;
-  padding: 0.65rem 1.1rem;
-  border: 1px solid var(--border-emphasis);
-  border-radius: 999px;
-  background: var(--ivory-50);
-  color: var(--ink-900);
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    border-color 180ms ease,
-    background-color 180ms ease;
-}
-
-.retryButton:hover {
-  border-color: var(--gold-500);
-  background: var(--white);
-}
-
+.retryButton,
 .restartLink {
   display: inline-flex;
   min-height: 2.75rem;
@@ -92,18 +58,30 @@
   justify-content: center;
   padding: 0.65rem 1.1rem;
   border: 1px solid var(--border-emphasis);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--ivory-50);
   color: var(--ink-900);
   font-size: 0.95rem;
   font-weight: 700;
+  cursor: pointer;
   text-decoration: none;
   transition:
     border-color 180ms ease,
-    background-color 180ms ease;
+    background-color 180ms ease,
+    transform 180ms ease;
 }
 
+.retryButton:hover,
 .restartLink:hover {
   border-color: var(--gold-500);
   background: var(--white);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .retryButton,
+  .restartLink {
+    transition: none;
+    transform: none;
+  }
 }

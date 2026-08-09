@@ -169,6 +169,10 @@ export type ReadingResultResponse = {
   input_request: NeedInputRequest | null;
 };
 
+export type ReadingListResponse = {
+  readings: ReadingVersionSummary[];
+};
+
 type ProblemBody = {
   title?: string;
   detail?: string;
@@ -180,6 +184,8 @@ type PostOptions = {
 
 let csrfToken = "";
 let csrfPromise: Promise<string> | null = null;
+
+const CSRF_COOKIE = "mingli_csrf";
 
 export class ApiError extends Error {
   status: number;
@@ -265,12 +271,40 @@ async function jsonPost<T>(
   }
 }
 
+function readCsrfCookie(): string {
+  if (typeof document === "undefined") {
+    return "";
+  }
+  const pair = document.cookie
+    .split("; ")
+    .find((entry) => entry.startsWith(`${CSRF_COOKIE}=`));
+  if (!pair) {
+    return "";
+  }
+  return pair.slice(pair.indexOf("=") + 1);
+}
+
 function clearCsrfCache(): void {
   csrfToken = "";
   csrfPromise = null;
 }
 
+/** Adopt the device CSRF returned by a successful OTP verification. */
+export function adoptCsrfToken(token: string): void {
+  if (!token) {
+    return;
+  }
+  csrfToken = token;
+  csrfPromise = null;
+}
+
 export async function getCsrfToken(): Promise<string> {
+  const cookieToken = readCsrfCookie();
+  if (cookieToken) {
+    csrfToken = cookieToken;
+    csrfPromise = null;
+    return cookieToken;
+  }
   if (csrfToken) {
     return csrfToken;
   }
@@ -321,6 +355,11 @@ export async function confirmProfileDraft(
 export async function listProfiles(): Promise<{ profiles: ProfileSummary[] }> {
   await getCsrfToken();
   return requestJson<{ profiles: ProfileSummary[] }>("/api/v1/profiles");
+}
+
+export async function listReadings(): Promise<ReadingListResponse> {
+  await getCsrfToken();
+  return requestJson<ReadingListResponse>("/api/v1/readings");
 }
 
 export async function startPreviewReading(

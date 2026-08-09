@@ -1,20 +1,9 @@
-.section {
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.heading {
-  margin: 0 0 1rem;
-  font-family: var(--font-serif);
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--ink-950);
-}
-
 .copy {
   margin: 0;
   font-family: var(--font-serif);
+  color: var(--ink-950);
   line-height: 1.9;
+  overflow-wrap: anywhere;
   white-space: pre-line;
 }
 

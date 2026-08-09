@@ -53,10 +53,7 @@ export function FollowUpForm({
   }
 
   return (
-    <section className={styles.section}>
-      <h2 id="follow-up-heading" className={styles.heading}>
-        同盘追问
-      </h2>
+    <div className={styles.section}>
       <p className={styles.hint}>
         基于当前已接纳结论继续追问，不改变原盘面。
       </p>
@@ -106,6 +103,6 @@ export function FollowUpForm({
           重新起卦或重新起盘
         </Link>
       </p>
-    </section>
+    </div>
   );
 }

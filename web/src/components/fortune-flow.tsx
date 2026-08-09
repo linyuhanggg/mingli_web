@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -17,6 +18,7 @@ import {
 import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
 
 import styles from "./fortune-flow.module.css";
+import formControls from "./form-controls.module.css";
 
 type FortuneFlowProps = {
   mode: "today" | "week";
@@ -108,8 +110,10 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
 
   return (
     <div className={styles.wrap}>
-      <h1>{mode === "today" ? "今日解读" : "近七日解读"}</h1>
-      <p className={styles.lead}>目标日期由服务端确认。</p>
+      <h2>开始解读</h2>
+      <p className={styles.lead}>
+        目标日期由服务端确认；选择已确认档案版本后启动解读，不在此处生成结果。
+      </p>
 
       {loading ? (
         <p className={styles.status} role="status">
@@ -120,7 +124,11 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
       {!loading && error ? (
         <div className={styles.state} role="alert">
           <p className={styles.error}>{error}</p>
-          <button className={styles.secondary} type="button" onClick={retryLoad}>
+          <button
+            className={clsx(formControls.action, formControls.actionSecondary)}
+            type="button"
+            onClick={retryLoad}
+          >
             重新加载
           </button>
         </div>
@@ -141,16 +149,19 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
           noValidate
           aria-busy={busy}
         >
-          <div className={styles.field}>
-            <label htmlFor="fortune-profile">选择档案</label>
+          <div className={formControls.field}>
+            <label htmlFor="fortune-profile">档案版本</label>
             <select
               id="fortune-profile"
+              className={formControls.input}
               disabled={busy}
               required
               aria-required="true"
               aria-invalid={Boolean(errors.profile_version_id)}
               aria-describedby={
-                errors.profile_version_id ? "fortune-profile-error" : undefined
+                errors.profile_version_id
+                  ? "fortune-profile-error"
+                  : "fortune-profile-help"
               }
               {...register("profile_version_id")}
             >
@@ -165,10 +176,13 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
               ))}
             </select>
             {errors.profile_version_id ? (
-              <p className={styles.error} id="fortune-profile-error" role="alert">
+              <p className={formControls.error} id="fortune-profile-error" role="alert">
                 {errors.profile_version_id.message}
               </p>
             ) : null}
+            <p className={formControls.hint} id="fortune-profile-help">
+              解读从该档案版本出发，结果按版本留痕。
+            </p>
           </div>
 
           {submitError ? (
@@ -177,15 +191,22 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
             </p>
           ) : null}
 
-          <button
-            className={styles.submit}
-            type="submit"
-            disabled={busy}
-            aria-busy={busy}
-          >
-            {mode === "today" ? "开始今日解读" : "开始近七日解读"}
-            {busy ? " · 正在启动…" : ""}
-          </button>
+          {busy ? (
+            <p className={formControls.disabledReason} role="status">
+              正在启动解读，选择与操作已暂时锁定。
+            </p>
+          ) : null}
+          <div className={formControls.actions}>
+            <button
+              className={clsx(formControls.action, formControls.actionPrimary)}
+              type="submit"
+              disabled={busy}
+              aria-busy={busy}
+            >
+              {mode === "today" ? "开始今日解读" : "开始近七日解读"}
+              {busy ? " · 正在启动…" : ""}
+            </button>
+          </div>
         </form>
       ) : null}
     </div>

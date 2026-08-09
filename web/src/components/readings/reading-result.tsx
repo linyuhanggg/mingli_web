@@ -9,7 +9,13 @@ import {
   type ReadingResultResponse,
   type ReadingVersionSummary,
 } from "@/lib/api";
-import { formatHorizon } from "@/lib/reading-display";
+import {
+  formatCapabilityIds,
+  formatDimensionIds,
+  formatHorizon,
+  formatObjectId,
+} from "@/lib/reading-display";
+import surface from "@/components/app-surface.module.css";
 
 import { AcceptedCopy } from "./accepted-copy";
 import { EvidenceList } from "./evidence-list";
@@ -23,25 +29,66 @@ import styles from "./reading-result.module.css";
 
 const DEFAULT_POLL_MS = 2000;
 
+type StatusTone = "processing" | "success" | "error";
+
 function statusMeta(
   status: ReadingVersionSummary["status"],
-): { label: string; text: string } {
+): { label: string; text: string; tone: StatusTone } {
   switch (status) {
     case "input_ready":
-      return { label: "准备解读", text: "事实已就绪，正在准备解读。" };
+      return {
+        label: "准备解读",
+        text: "事实已就绪，正在准备解读。",
+        tone: "processing",
+      };
     case "prepared":
-      return { label: "事实已准备", text: "确定性事实已就绪，正在生成正文。" };
+      return {
+        label: "事实已准备",
+        text: "确定性事实已就绪，正在生成正文。",
+        tone: "processing",
+      };
     case "completing":
-      return { label: "正在接纳正文", text: "服务端正在接纳并固定正文。" };
+      return {
+        label: "正在接纳正文",
+        text: "服务端正在接纳并固定正文。",
+        tone: "processing",
+      };
     case "delayed":
-      return { label: "交付延迟", text: "服务繁忙，正在继续处理。" };
+      return {
+        label: "交付延迟",
+        text: "服务繁忙，正在继续处理。",
+        tone: "error",
+      };
+    case "waiting_input":
+      return {
+        label: "等待输入",
+        text: "需要补充结构化资料后才能继续。",
+        tone: "processing",
+      };
+    case "terminal_stopped":
+      return {
+        label: "已停止",
+        text: "服务端已停止本次解读，请重新发起。",
+        tone: "error",
+      };
+    case "accepted":
+      return {
+        label: "已交付",
+        text: "正文已接纳并固定，可随时回看。",
+        tone: "success",
+      };
     case "runtime_unknown":
       return {
         label: "等待确认",
         text: "运行状态暂时未知，正在等待确认。",
+        tone: "processing",
       };
     default:
-      return { label: "处理中", text: "解读正在生成，请稍候。" };
+      return {
+        label: "处理中",
+        text: "解读正在生成，请稍候。",
+        tone: "processing",
+      };
   }
 }
 
@@ -50,6 +97,67 @@ function errorMessage(error: unknown): string {
     return error.message;
   }
   return "读取结果失败，请稍后重试。";
+}
+
+function ArchiveRail({
+  summary,
+  result,
+}: Readonly<{
+  summary: ReadingVersionSummary;
+  result: ReadingResultResponse | null;
+}>) {
+  const scope = result?.fact_panel?.request_view ?? null;
+  const meta = statusMeta(summary.status);
+
+  return (
+    <aside className={surface.evidenceRail} aria-labelledby="reading-summary-title">
+      <div className={surface.rail}>
+        <h2 id="reading-summary-title">阅读档案</h2>
+        <dl className={surface.railMeta}>
+          <div>
+            <dt>术法</dt>
+            <dd>
+              {scope
+                ? formatCapabilityIds(scope.capability_ids)
+                : formatCapabilityIds([summary.capability_id])}
+            </dd>
+          </div>
+          <div>
+            <dt>对象</dt>
+            <dd>
+              {scope
+                ? formatObjectId(scope.object_id)
+                : formatObjectId(summary.object_id)}
+            </dd>
+          </div>
+          <div>
+            <dt>主题</dt>
+            <dd>
+              {scope
+                ? formatDimensionIds(scope.dimension_ids)
+                : formatDimensionIds(summary.dimension_ids)}
+            </dd>
+          </div>
+          <div>
+            <dt>目标日期</dt>
+            <dd>{formatHorizon(summary.horizon)}</dd>
+          </div>
+          <div>
+            <dt>版本</dt>
+            <dd>v{summary.version}</dd>
+          </div>
+        </dl>
+        <p className={surface.railTagRow}>
+          <span className={surface.stateTag} data-state={meta.tone}>
+            {meta.label}
+          </span>
+        </p>
+        <p className={surface.railNote}>
+          只展示服务端公开摘要；状态与正文分开保存，现实反馈独立记录，不会回写盘面。
+        </p>
+      </div>
+    </aside>
+  );
 }
 
 export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
@@ -131,22 +239,33 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     setRetryKey((value) => value + 1);
   }
 
-  if (loading || (summary?.status === "accepted" && !result)) {
+  if (error) {
     return (
-      <p className={styles.loading} role="status">
-        正在读取结果…
-      </p>
+      <article className={surface.readingBody}>
+        <div className={styles.error} role="alert">
+          <p className={styles.errorMessage}>{error}</p>
+          <button
+            type="button"
+            className={styles.retryButton}
+            onClick={handleRetry}
+          >
+            重试
+          </button>
+        </div>
+      </article>
     );
   }
 
-  if (error) {
+  if (loading || (summary?.status === "accepted" && !result)) {
     return (
-      <div className={styles.error} role="alert">
-        <p className={styles.errorMessage}>{error}</p>
-        <button type="button" className={styles.retryButton} onClick={handleRetry}>
-          重试
-        </button>
-      </div>
+      <article className={surface.readingBody}>
+        <div className={styles.statusCard} role="status">
+          <h2 className={styles.statusLabel}>正在读取结果…</h2>
+          <p className={styles.statusText}>
+            页面只展示服务端公开摘要；状态与正文分开保存。
+          </p>
+        </div>
+      </article>
     );
   }
 
@@ -156,63 +275,138 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
 
   if (summary.status === "accepted" && result) {
     return (
-      <article className={styles.result}>
-        <AcceptedCopy text={result.accepted_copy} />
-        <FactPanel panel={result.fact_panel} />
-        <EvidenceList evidence={result.fact_panel?.evidence ?? null} />
-        <LimitNotice limits={result.fact_panel?.limits ?? null} />
-        <VerificationForm
-          readingId={readingId}
-          initialVerification={result.verification}
-        />
-        <FollowUpForm readingId={readingId} />
-      </article>
+      <div className={surface.readingLayout}>
+        <article className={surface.readingBody} aria-label="解读正文">
+          <header className={surface.readingHeader}>
+            <h2>{result.fact_panel?.question ?? "本次解读"}</h2>
+            <p>
+              {formatCapabilityIds([summary.capability_id])} · 目标日期{" "}
+              {formatHorizon(summary.horizon)} · 版本 v{summary.version}
+            </p>
+          </header>
+
+          <section
+            className={surface.readingSection}
+            aria-labelledby="reading-fact-title"
+          >
+            <span className={surface.sectionIndex} aria-hidden="true">
+              01
+            </span>
+            <div>
+              <h2 id="reading-fact-title">事实</h2>
+              <FactPanel panel={result.fact_panel} />
+            </div>
+          </section>
+
+          <section
+            className={surface.readingSection}
+            aria-labelledby="reading-judgment-title"
+          >
+            <span className={surface.sectionIndex} aria-hidden="true">
+              02
+            </span>
+            <div>
+              <h2 id="reading-judgment-title">判断</h2>
+              <AcceptedCopy text={result.accepted_copy} />
+            </div>
+          </section>
+
+          <section
+            className={surface.readingSection}
+            aria-labelledby="reading-evidence-title"
+          >
+            <span className={surface.sectionIndex} aria-hidden="true">
+              03
+            </span>
+            <div>
+              <h2 id="reading-evidence-title">依据与边界</h2>
+              <EvidenceList evidence={result.fact_panel?.evidence ?? null} />
+              <LimitNotice limits={result.fact_panel?.limits ?? null} />
+            </div>
+          </section>
+
+          <section
+            className={surface.readingSection}
+            aria-labelledby="reading-review-title"
+          >
+            <span className={surface.sectionIndex} aria-hidden="true">
+              04
+            </span>
+            <div>
+              <h2 id="reading-review-title">复核与追问</h2>
+              <VerificationForm
+                readingId={readingId}
+                initialVerification={result.verification}
+              />
+              <FollowUpForm readingId={readingId} />
+            </div>
+          </section>
+        </article>
+        <ArchiveRail summary={summary} result={result} />
+      </div>
     );
   }
 
   if (summary.status === "waiting_input") {
     return (
-      <NeedInputForm
-        readingId={readingId}
-        request={summary.input_request}
-        onSubmitted={handleInputSubmitted}
-      />
+      <div className={surface.readingLayout}>
+        <article className={surface.readingBody}>
+          <NeedInputForm
+            readingId={readingId}
+            request={summary.input_request}
+            onSubmitted={handleInputSubmitted}
+          />
+        </article>
+        <ArchiveRail summary={summary} result={null} />
+      </div>
     );
   }
 
   if (summary.status === "terminal_stopped") {
     return (
-      <div className={styles.statusCard} role="status">
-        <h2 className={styles.statusLabel}>本次解读已停止</h2>
-        <p className={styles.statusText}>
-          服务端已停止本次解读，请重新发起。
-        </p>
-        <p className={styles.actions}>
-          <Link className={styles.restartLink} href="/app">
-            重新发起
-          </Link>
-        </p>
+      <div className={surface.readingLayout}>
+        <article className={surface.readingBody}>
+          <div className={styles.statusCard} role="status">
+            <h2 className={styles.statusLabel}>本次解读已停止</h2>
+            <p className={styles.statusText}>
+              服务端已停止本次解读，请重新发起。
+            </p>
+            <p className={styles.actions}>
+              <Link className={styles.restartLink} href="/app">
+                重新发起
+              </Link>
+            </p>
+          </div>
+        </article>
+        <ArchiveRail summary={summary} result={null} />
       </div>
     );
   }
 
   const meta = statusMeta(summary.status);
   return (
-    <div className={styles.statusCard} role="status">
-      <h2 className={styles.statusLabel}>{meta.label}</h2>
-      <p className={styles.statusText}>{meta.text}</p>
-      <p className={styles.horizon}>目标日期：{formatHorizon(summary.horizon)}</p>
-      {summary.status === "runtime_unknown" ? (
-        <p className={styles.actions}>
-          <button
-            type="button"
-            className={styles.retryButton}
-            onClick={handleRetry}
-          >
-            重新检查状态
-          </button>
-        </p>
-      ) : null}
+    <div className={surface.readingLayout}>
+      <article className={surface.readingBody}>
+        <div className={styles.statusCard} role="status">
+          <h2 className={styles.statusLabel}>{meta.label}</h2>
+          <p className={styles.statusText}>{meta.text}</p>
+          <p className={styles.horizon}>
+            目标日期：{formatHorizon(summary.horizon)}
+          </p>
+          {summary.status === "runtime_unknown" ? (
+            <p className={styles.actions}>
+              <button
+                type="button"
+                className={styles.retryButton}
+                onClick={handleRetry}
+              >
+                重新检查状态
+              </button>
+            </p>
+          ) : null}
+        </div>
+      </article>
+      <ArchiveRail summary={summary} result={null} />
     </div>
   );
 }

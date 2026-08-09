@@ -23,8 +23,10 @@
   display: grid;
   gap: 0.3rem;
   padding: 0.9rem 1rem;
-  border-left: 3px solid var(--gold-400);
+  border: 1px solid var(--border-subtle);
+  border-top-color: var(--gold-400);
   background: var(--ivory-100);
+  overflow-wrap: anywhere;
 }
 
 .source {

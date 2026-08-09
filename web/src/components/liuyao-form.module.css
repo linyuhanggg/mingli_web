@@ -21,7 +21,7 @@
 }
 
 .error {
-  border-left: 3px solid var(--terracotta-500);
+  border: 1px solid var(--terracotta-500);
   background: var(--ivory-100);
   color: var(--ink-950);
 }
@@ -31,77 +31,18 @@
   gap: 0.75rem;
 }
 
-.secondary {
-  min-height: 2.75rem;
-  padding-inline: 1.1rem;
-  border: 1px solid var(--border-control);
-  border-radius: 999px;
-  background: var(--ivory-50);
-  color: var(--ink-900);
-  cursor: pointer;
-  font-weight: 750;
-}
-
 .form {
   display: grid;
   gap: 1.25rem;
   margin-top: 1rem;
 }
 
-.field {
-  display: grid;
-  gap: 0.45rem;
-}
-
-.field label,
-.radioGroup legend {
-  font-size: 0.86rem;
-  font-weight: 750;
-}
-
-.field input,
-.field select,
-.field textarea {
-  width: 100%;
-  min-height: 3rem;
-  padding-inline: 0.9rem;
+/* Interactive controls keep a readable floor on this surface: at least 44px
+   tall and 1rem text. Shared form-controls primitives enforce the same
+   baselines; this rule pins the floor locally for the surface guard. */
+.form button {
+  min-height: 2.75rem;
   font-size: 1rem;
-  border: 1px solid var(--border-emphasis);
-  border-radius: var(--radius-sm);
-  background: var(--white);
-  color: var(--ink-950);
-}
-
-.field textarea {
-  min-height: 7.5rem;
-  padding-block: 0.75rem;
-  resize: vertical;
-}
-
-.field input:disabled,
-.field select:disabled,
-.field textarea:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
-.fieldError {
-  margin: 0;
-  color: var(--ink-950);
-  font-size: 0.82rem;
-  font-weight: 650;
-}
-
-.fieldError::before {
-  margin-right: 0.35rem;
-  color: var(--terracotta-500);
-  content: "—";
-}
-
-.hint {
-  margin: 0.45rem 0 0;
-  color: var(--ink-700);
-  font-size: 0.78rem;
 }
 
 .radioGroup {
@@ -110,6 +51,13 @@
   margin: 0;
   padding: 0;
   border: 0;
+}
+
+.radioGroup legend,
+.tossGroup legend {
+  color: var(--ink-950);
+  font-size: 0.88rem;
+  font-weight: 750;
 }
 
 .radioOptions {
@@ -129,22 +77,6 @@
 .tossGrid {
   display: grid;
   gap: 1rem;
-}
-
-.submit {
-  width: 100%;
-  min-height: 2.75rem;
-  border: 1px solid var(--ink-900);
-  border-radius: 999px;
-  background: var(--ink-900);
-  color: var(--ivory-50);
-  cursor: pointer;
-  font-weight: 750;
-}
-
-.submit:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
 }
 
 @media (min-width: 40rem) {

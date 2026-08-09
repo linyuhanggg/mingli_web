@@ -1,0 +1,172 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import {
+  listReadings,
+  type ReadingVersionSummary,
+} from "@/lib/api";
+import {
+  formatCapabilityIds,
+  formatHorizon,
+} from "@/lib/reading-display";
+
+import surface from "./app-surface.module.css";
+import { StatusPanel } from "./status-panel";
+
+import styles from "./reading-history.module.css";
+
+
+const dateTimeFormatter = new Intl.DateTimeFormat("zh-CN", {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+
+type StatusTone = "processing" | "success" | "error";
+
+function formatReadingTime(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : dateTimeFormatter.format(date);
+}
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return "读取历史失败，请稍后重试。";
+}
+
+function statusMeta(
+  status: ReadingVersionSummary["status"],
+): { label: string; tone: StatusTone } {
+  switch (status) {
+    case "accepted":
+      return { label: "已交付", tone: "success" };
+    case "terminal_stopped":
+      return { label: "已停止", tone: "error" };
+    case "delayed":
+      return { label: "交付延迟", tone: "error" };
+    case "waiting_input":
+      return { label: "等待输入", tone: "processing" };
+    case "runtime_unknown":
+      return { label: "等待确认", tone: "processing" };
+    case "input_ready":
+      return { label: "准备解读", tone: "processing" };
+    case "prepared":
+      return { label: "事实已准备", tone: "processing" };
+    case "completing":
+      return { label: "正在接纳正文", tone: "processing" };
+  }
+}
+
+export function ReadingHistory() {
+  const [loading, setLoading] = useState(true);
+  const [readings, setReadings] = useState<ReadingVersionSummary[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    listReadings()
+      .then(({ readings: next }) => {
+        if (cancelled) {
+          return;
+        }
+        setReadings(next);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(errorMessage(err));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [attempt]);
+
+  function handleRetry() {
+    setLoading(true);
+    setError(null);
+    setReadings(null);
+    setAttempt((value) => value + 1);
+  }
+
+  if (loading) {
+    return (
+      <StatusPanel
+        state="loading"
+        title="正在读取历史…"
+        description="最近解读版本正在抵达，请稍候。"
+      />
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <StatusPanel state="error" title="无法读取历史" description={error} />
+        <div className={styles.retryRow}>
+          <button className={surface.secondaryButton} type="button" onClick={handleRetry}>
+            重试
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  if (readings === null || readings.length === 0) {
+    return (
+      <StatusPanel
+        state="empty"
+        title="还没有可显示的解读"
+        description="服务端最多返回最近 50 条解读版本；先发起一次，真实结果才会出现在这里。"
+        actionHref="/app"
+        actionLabel="发起解读"
+      />
+    );
+  }
+
+  return (
+    <section className={surface.paper} aria-labelledby="reading-history-title">
+      <div className={surface.sectionHeader}>
+        <div>
+          <h2 id="reading-history-title">最近解读版本</h2>
+          <p>每条只展示解读种类、状态与创建时间，字段全部来自服务端公开摘要。</p>
+        </div>
+      </div>
+      <ul className={styles.historyList}>
+        {readings.map((entry) => {
+          const status = statusMeta(entry.status);
+          return (
+            <li key={entry.reading_version_id} className={styles.historyItem}>
+              <Link
+                className={styles.historyLink}
+                href={`/app/readings/${encodeURIComponent(entry.reading_version_id)}`}
+              >
+                <span className={styles.historyTitle}>
+                  <strong>{formatCapabilityIds([entry.capability_id])}</strong>
+                  <span className={surface.stateTag} data-state={status.tone}>
+                    {status.label}
+                  </span>
+                </span>
+                <span className={styles.historyMeta}>
+                  <span>{formatReadingTime(entry.created_at)}</span>
+                  <span>版本 v{entry.version}</span>
+                  <span>{formatHorizon(entry.horizon)}</span>
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}

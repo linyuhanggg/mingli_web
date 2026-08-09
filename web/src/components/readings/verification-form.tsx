@@ -62,10 +62,7 @@ export function VerificationForm({
   }
 
   return (
-    <section className={styles.section} aria-labelledby="verification-heading">
-      <h2 id="verification-heading" className={styles.heading}>
-        现实核对
-      </h2>
+    <div className={styles.section}>
       {saved ? (
         <div className={styles.success} role="status" aria-live="polite">
           <p className={styles.successTitle}>已保存核对结果</p>
@@ -127,6 +124,6 @@ export function VerificationForm({
           ) : null}
         </form>
       )}
-    </section>
+    </div>
   );
 }

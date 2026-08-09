@@ -1,5 +1,6 @@
 import { Clock3, LockKeyhole } from "lucide-react";
 
+import { AppPageHeader } from "@/components/app-page-header";
 import { ButtonLink } from "@/components/button-link";
 import { privateShellStyles as privateStyles } from "@/components/private-shell";
 import styles from "@/components/app-surface.module.css";
@@ -10,16 +11,16 @@ import { StatusPanel } from "@/components/status-panel";
 export default function AppPage() {
   return (
     <div className={styles.page}>
-      <header className={styles.pageHeader}>
-        <h1>今天，从自己的档案继续。</h1>
-        <div>
-          <p>今日、近七日、上次解读与待核对项都从已确认资料出发；这里不会先用虚构结果填满首页。</p>
-          <div className={styles.metaLine}>
+      <AppPageHeader
+        title="今天，从自己的档案继续。"
+        description="今日、近七日、上次解读与待核对项都从已确认资料出发；这里不会先用虚构结果填满首页。"
+        meta={
+          <>
             <span><LockKeyhole aria-hidden="true" size={15} /> 私人页面 · no-store</span>
             <span><Clock3 aria-hidden="true" size={15} /> 状态与正文分开保存</span>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <div className={styles.dashboard}>
         <RhythmPanel />

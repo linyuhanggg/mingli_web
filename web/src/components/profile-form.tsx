@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -17,6 +18,7 @@ import { localDateTimeWithOffset } from "@/lib/date-time";
 import { isIanaTimeZone } from "@/lib/iana-timezones";
 
 import styles from "./profile-form.module.css";
+import formControls from "./form-controls.module.css";
 import { IanaTimeZoneOptions } from "./iana-timezone-options";
 
 const GENDERS: { value: Gender; label: string }[] = [
@@ -180,10 +182,11 @@ export function ProfileForm() {
         aria-busy={busy}
       >
         <div className={styles.grid}>
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="profile-birth-datetime">出生时间</label>
             <input
               id="profile-birth-datetime"
+              className={formControls.input}
               type="datetime-local"
               step="1"
               autoComplete="off"
@@ -200,22 +203,23 @@ export function ProfileForm() {
             />
             {errors.birth_datetime ? (
               <p
-                className={styles.fieldError}
+                className={formControls.error}
                 id="profile-birth-datetime-error"
                 role="alert"
               >
                 {errors.birth_datetime.message}
               </p>
             ) : null}
-            <p className={styles.hint} id="profile-birth-datetime-help">
+            <p className={formControls.hint} id="profile-birth-datetime-help">
               只记录出生地钟表时间；与所选时区配对后，由服务端规范化。
             </p>
           </div>
 
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="profile-timezone">出生时区</label>
             <input
               id="profile-timezone"
+              className={formControls.input}
               type="text"
               inputMode="text"
               autoComplete="off"
@@ -234,22 +238,23 @@ export function ProfileForm() {
             <IanaTimeZoneOptions id="profile-timezone-options" />
             {errors.timezone ? (
               <p
-                className={styles.fieldError}
+                className={formControls.error}
                 id="profile-timezone-error"
                 role="alert"
               >
                 {errors.timezone.message}
               </p>
             ) : null}
-            <p className={styles.hint} id="profile-timezone-help">
+            <p className={formControls.hint} id="profile-timezone-help">
               按出生城市主动确认；输入地区或城市可筛选完整 IANA 列表，界面不会读取设备时区。
             </p>
           </div>
 
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="profile-location">出生地点</label>
             <input
               id="profile-location"
+              className={formControls.input}
               type="text"
               autoComplete="address-level2"
               placeholder="例如：浙江省杭州市…"
@@ -263,19 +268,20 @@ export function ProfileForm() {
               {...register("location")}
             />
             {errors.location ? (
-              <p className={styles.fieldError} id="profile-location-error" role="alert">
+              <p className={formControls.error} id="profile-location-error" role="alert">
                 {errors.location.message}
               </p>
             ) : null}
-            <p className={styles.hint} id="profile-location-help">
+            <p className={formControls.hint} id="profile-location-help">
               城市级信息用于确认时区与口径，不自动索取精确定位。
             </p>
           </div>
 
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="profile-gender">性别</label>
             <select
               id="profile-gender"
+              className={formControls.input}
               disabled={busy}
               required
               aria-required="true"
@@ -292,16 +298,17 @@ export function ProfileForm() {
               ))}
             </select>
             {errors.gender ? (
-              <p className={styles.fieldError} id="profile-gender-error" role="alert">
+              <p className={formControls.error} id="profile-gender-error" role="alert">
                 {errors.gender.message}
               </p>
             ) : null}
           </div>
 
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="profile-time-basis-policy">时间口径</label>
             <select
               id="profile-time-basis-policy"
+              className={formControls.input}
               disabled={busy}
               required
               aria-required="true"
@@ -321,7 +328,7 @@ export function ProfileForm() {
             </select>
             {errors.time_basis_policy ? (
               <p
-                className={styles.fieldError}
+                className={formControls.error}
                 id="profile-time-basis-policy-error"
                 role="alert"
               >
@@ -330,10 +337,11 @@ export function ProfileForm() {
             ) : null}
           </div>
 
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="profile-zi-hour-policy">子时口径</label>
             <select
               id="profile-zi-hour-policy"
+              className={formControls.input}
               disabled={busy}
               required
               aria-required="true"
@@ -353,22 +361,23 @@ export function ProfileForm() {
             </select>
             {errors.zi_hour_policy ? (
               <p
-                className={styles.fieldError}
+                className={formControls.error}
                 id="profile-zi-hour-policy-error"
                 role="alert"
               >
                 {errors.zi_hour_policy.message}
               </p>
             ) : null}
-            <p className={styles.hint} id="profile-zi-hour-policy-help">
+            <p className={formControls.hint} id="profile-zi-hour-policy-help">
               换日策略决定 23:00–23:59 的日柱归属与子时起算口径，请按原始资料确认。
             </p>
           </div>
 
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="profile-longitude">经度（可选）</label>
             <input
               id="profile-longitude"
+              className={formControls.input}
               type="number"
               step="any"
               inputMode="decimal"
@@ -381,16 +390,17 @@ export function ProfileForm() {
               {...register("longitude")}
             />
             {errors.longitude ? (
-              <p className={styles.fieldError} id="profile-longitude-error" role="alert">
+              <p className={formControls.error} id="profile-longitude-error" role="alert">
                 {errors.longitude.message}
               </p>
             ) : null}
           </div>
 
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="profile-latitude">纬度（可选）</label>
             <input
               id="profile-latitude"
+              className={formControls.input}
               type="number"
               step="any"
               inputMode="decimal"
@@ -403,16 +413,17 @@ export function ProfileForm() {
               {...register("latitude")}
             />
             {errors.latitude ? (
-              <p className={styles.fieldError} id="profile-latitude-error" role="alert">
+              <p className={formControls.error} id="profile-latitude-error" role="alert">
                 {errors.latitude.message}
               </p>
             ) : null}
           </div>
 
-          <div className={styles.field}>
+          <div className={formControls.field}>
             <label htmlFor="profile-coordinate-source">坐标来源（可选）</label>
             <input
               id="profile-coordinate-source"
+              className={formControls.input}
               type="text"
               autoComplete="off"
               disabled={busy}
@@ -426,7 +437,7 @@ export function ProfileForm() {
             />
             {errors.coordinate_source ? (
               <p
-                className={styles.fieldError}
+                className={formControls.error}
                 id="profile-coordinate-source-error"
                 role="alert"
               >
@@ -436,14 +447,21 @@ export function ProfileForm() {
           </div>
         </div>
 
-        <button
-          className={styles.submit}
-          type="submit"
-          disabled={busy}
-          aria-busy={busy}
-        >
-          保存档案{busy ? " · 正在保存…" : ""}
-        </button>
+        {busy ? (
+          <p className={formControls.disabledReason} role="status">
+            正在保存，输入与操作已暂时锁定，避免重复提交。
+          </p>
+        ) : null}
+        <div className={formControls.actions}>
+          <button
+            className={clsx(formControls.action, formControls.actionPrimary)}
+            type="submit"
+            disabled={busy}
+            aria-busy={busy}
+          >
+            保存档案{busy ? " · 正在保存…" : ""}
+          </button>
+        </div>
       </form>
     </div>
   );

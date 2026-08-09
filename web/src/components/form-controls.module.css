@@ -1,0 +1,131 @@
+.field {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.field > label {
+  color: var(--ink-950);
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border-emphasis);
+  border-radius: var(--radius-sm);
+  background: var(--ivory-50);
+  color: var(--ink-950);
+  font-size: 1rem;
+}
+
+textarea.input {
+  min-height: 7.5rem;
+  padding-block: 0.75rem;
+  resize: vertical;
+}
+
+.input[disabled] {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--terracotta-500);
+}
+
+.error {
+  margin: 0;
+  color: var(--terracotta-600);
+  font-size: 0.82rem;
+  font-weight: 680;
+}
+
+.hint {
+  margin: 0;
+  color: var(--ink-700);
+  font-size: 0.78rem;
+}
+
+.disabledReason {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px dashed var(--border-emphasis);
+  border-radius: var(--radius-sm);
+  background: var(--ivory-100);
+  color: var(--ink-700);
+  font-size: 0.82rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  padding-top: 0.5rem;
+}
+
+.action {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.72rem 1.15rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 750;
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+.action:hover {
+  transform: translateY(-2px);
+}
+
+.action:active {
+  transform: translateY(0);
+}
+
+.actionPrimary {
+  width: 100%;
+  border: 1px solid var(--ink-900);
+  border-radius: var(--radius-sm);
+  background: var(--ink-900);
+  color: var(--ivory-50);
+}
+
+.actionPrimary:hover {
+  background: var(--ink-800);
+}
+
+.actionSecondary {
+  border: 1px solid var(--border-emphasis);
+  background: var(--ivory-50);
+  color: var(--ink-900);
+}
+
+.action[disabled] {
+  border-color: var(--border-control);
+  background: var(--ivory-200);
+  color: var(--ink-700);
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (min-width: 40rem) {
+  .actionPrimary {
+    width: auto;
+    min-width: 14rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action {
+    transition: none;
+  }
+}

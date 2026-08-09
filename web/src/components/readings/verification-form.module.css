@@ -39,7 +39,7 @@
   gap: 0.5rem;
   padding: 0 0.95rem;
   border: 1px solid var(--border-subtle);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--ivory-50);
   color: var(--ink-900);
   font-weight: 700;
@@ -67,7 +67,7 @@
 .note {
   width: 100%;
   box-sizing: border-box;
-  min-height: 2.75rem;
+  min-height: 3rem;
   padding: 0.7rem 0.85rem;
   font-size: 1rem;
   border: 1px solid var(--border-emphasis);
@@ -86,7 +86,7 @@
   gap: 0.55rem;
   padding: 0.65rem 1.1rem;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--ink-900);
   color: var(--ivory-50);
   box-shadow: var(--shadow-action);
@@ -111,12 +111,22 @@
 
 .success {
   margin: 0;
-  padding-left: 0.75rem;
-  border-left: 3px solid var(--gold-500);
+  padding: 0.75rem;
+  border: 1px solid var(--gold-500);
+  border-radius: var(--radius-sm);
   color: var(--ink-900);
 }
 
 .error {
   margin: 0.9rem 0 0;
   color: var(--terracotta-500);
+}
+
+/* 尊重系统减弱动效设置：关闭过渡与位移 */
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .optionLabel {
+    transition: none;
+    transform: none;
+  }
 }

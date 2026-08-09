@@ -12,29 +12,18 @@ export function FactPanel({
   panel,
 }: Readonly<{ panel?: ReadingFactPanel | null }>) {
   if (!panel) {
-    return (
-      <section className={styles.section} aria-labelledby="fact-panel-heading">
-        <h2 id="fact-panel-heading" className={styles.heading}>
-          事实简报
-        </h2>
-        <p className={styles.empty}>服务端暂未返回公开事实简报。</p>
-      </section>
-    );
+    return <p className={styles.empty}>服务端暂未返回公开事实简报。</p>;
   }
 
   return (
-    <section className={styles.section} aria-labelledby="fact-panel-heading">
-      <h2 id="fact-panel-heading" className={styles.heading}>
-        事实简报
-      </h2>
-
-      <div className={styles.question}>
-        <h3 className={styles.subheading}>本次问题</h3>
-        <p>{panel.question}</p>
+    <div className={styles.content}>
+      <div className={styles.block}>
+        <h3 className={styles.heading}>本次问题</h3>
+        <p className={styles.question}>{panel.question}</p>
       </div>
 
-      <div>
-        <h3 className={styles.subheading}>确定性事实</h3>
+      <div className={styles.block}>
+        <h3 className={styles.heading}>确定性事实</h3>
         {panel.facts.length > 0 ? (
           <ul className={styles.factList}>
             {panel.facts.map((fact, index) => (
@@ -49,15 +38,15 @@ export function FactPanel({
       </div>
 
       {panel.prior_answer ? (
-        <div>
-          <h3 className={styles.subheading}>上一版已接纳正文</h3>
+        <div className={styles.block}>
+          <h3 className={styles.heading}>上一版已接纳正文</h3>
           <p className={styles.priorAnswer}>{panel.prior_answer}</p>
         </div>
       ) : null}
 
       {panel.request_view ? (
-        <div>
-          <h3 className={styles.subheading}>解读范围</h3>
+        <div className={styles.block}>
+          <h3 className={styles.heading}>解读范围</h3>
           <dl className={styles.requestList}>
             <div className={styles.row}>
               <dt className={styles.term}>术法</dt>
@@ -86,6 +75,6 @@ export function FactPanel({
           </dl>
         </div>
       ) : null}
-    </section>
+    </div>
   );
 }

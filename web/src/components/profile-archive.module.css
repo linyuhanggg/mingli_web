@@ -1,0 +1,63 @@
+.retryRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.profileList,
+.flowList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.profileList {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.profileItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+  padding-block: 1.05rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.profileName {
+  font-size: 1.02rem;
+  font-weight: 750;
+}
+
+.profileMeta {
+  color: var(--ink-700);
+  font-size: 0.84rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.flowList {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.flowList li {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+}
+
+.flowList a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding-inline: 0.25rem;
+  color: var(--ink-900);
+  font-weight: 700;
+  text-decoration-color: var(--gold-500);
+  text-underline-offset: 0.3rem;
+}
+
+.flowList a:hover {
+  color: var(--terracotta-600);
+}

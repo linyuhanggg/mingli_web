@@ -104,6 +104,29 @@
   line-height: 1.6;
 }
 
+.aside .archiveLabel {
+  color: var(--gold-400);
+}
+
+.aside .sideNav a {
+  color: var(--text-on-dark-secondary);
+}
+
+.aside .sideNav a:hover {
+  background: rgb(255 253 247 / 8%);
+  color: var(--ivory-50);
+}
+
+.aside .sideNav a[aria-current="page"] {
+  background: rgb(255 253 247 / 9%);
+  box-shadow: inset 3px 0 0 var(--gold-400);
+  color: var(--ivory-50);
+}
+
+.aside .asideNote {
+  color: var(--text-on-dark-muted);
+}
+
 .main {
   min-width: 0;
   padding-block: clamp(2rem, 6vw, 4.5rem);
@@ -148,13 +171,13 @@
 }
 
 .panel h1 {
-  max-width: 13ch;
+  max-width: 24ch;
   margin: 0;
   font-family: var(--font-serif);
-  font-size: clamp(2.25rem, 8vw, 4.4rem);
+  font-size: clamp(1.45rem, 4vw, 2.15rem);
   font-weight: 600;
-  letter-spacing: -0.035em;
-  line-height: 1.04;
+  letter-spacing: -0.025em;
+  line-height: 1.16;
 }
 
 .panel > p {
@@ -212,7 +235,9 @@
     height: calc(100vh - 4.75rem);
     flex-direction: column;
     padding-block: 2.5rem;
-    border-right: 1px solid var(--border-subtle);
+    border-right: 1px solid var(--border-hero-orbit);
+    background: var(--ink-900);
+    color: var(--ivory-50);
   }
 
   .main {
