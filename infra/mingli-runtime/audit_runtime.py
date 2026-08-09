@@ -31,6 +31,7 @@ import verify_release
 RELEASE_ROOT = Path("/opt/mingli-master")
 RUNTIME_PYTHON = Path("/opt/mingli-runtime/venv/bin/python")
 NODE = Path("/opt/node/bin/node")
+GIT = Path("/opt/git/bin/git")
 AUDIT_SCRIPT = Path("/opt/mingli-runtime/audit_runtime.py")
 SBOM_SCRIPT = Path("/opt/mingli-runtime/emit_sbom.py")
 VERIFIER = Path("/opt/mingli-runtime/verify_release.py")
@@ -40,10 +41,13 @@ SOURCE_ROOT = Path("/audit-source")
 OUTPUT_ROOT = Path("/audit-output")
 PRODUCTION_OUTPUT_ROOT = Path("/production-output")
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
+PROVIDER_MATRIX_TIMEOUT_SECONDS = 10_800
+RELEASE_REGRESSION_TIMEOUT_SECONDS = 10_800
 PRODUCTION_COMMAND_IDS = frozenset(
     {
         "characterization-a",
         "characterization-b",
+        "git-smoke",
         "p0-trajectories",
         "production-native-linkage",
         "production-tree-identity",
@@ -371,59 +375,14 @@ def emit_runtime_probes(state_root: Path) -> int:
 
 
 def _tree_digest(root: Path) -> dict[str, Any]:
-    root = root.resolve(strict=True)
-    if root.is_symlink() or not root.is_dir():
-        _fail(f"runtime identity root is missing or unsafe: {root}")
-    entries: list[dict[str, object]] = []
-    for path in sorted(
-        root.rglob("*"), key=lambda item: item.relative_to(root).as_posix()
-    ):
-        relative = path.relative_to(root).as_posix()
-        info = path.lstat()
-        mode = stat.S_IMODE(info.st_mode)
-        if stat.S_ISDIR(info.st_mode):
-            record: dict[str, object] = {
-                "mode": mode,
-                "path": relative,
-                "type": "directory",
-            }
-        elif stat.S_ISREG(info.st_mode):
-            record = {
-                "mode": mode,
-                "path": relative,
-                "sha256": verify_release.sha256_file(path),
-                "size": info.st_size,
-                "type": "file",
-            }
-        elif stat.S_ISLNK(info.st_mode):
-            try:
-                resolved = path.resolve(strict=True)
-            except OSError as exc:
-                raise AuditError(
-                    f"runtime identity contains a broken symlink: {path}"
-                ) from exc
-            if not resolved.is_relative_to(root):
-                _fail(f"runtime identity symlink escapes its root: {path}")
-            record = {
-                "mode": mode,
-                "path": relative,
-                "target": os.readlink(path),
-                "type": "symlink",
-            }
-        else:
-            _fail(f"runtime identity contains an unsupported object: {path}")
-        entries.append(record)
-    return {
-        "entry_count": len(entries),
-        "path": str(root),
-        "sha256": verify_release.canonical_sha256(entries),
-    }
+    return verify_release.runtime_tree_digest(root)
 
 
 def emit_tree_identity() -> int:
     payload = {
         "schema_version": "mingli-runtime-tree-identity-v1",
         "trees": {
+            "git": _tree_digest(Path("/opt/git")),
             "node": _tree_digest(Path("/opt/node")),
             "release": _tree_digest(RELEASE_ROOT),
             "runtime_venv": _tree_digest(RUNTIME_PYTHON.parent.parent),
@@ -434,7 +393,138 @@ def emit_tree_identity() -> int:
 
 
 def emit_native_linkage() -> int:
-    payload = verify_release.inspect_native_linkage(RUNTIME_PYTHON, NODE)
+    payload = verify_release.inspect_native_linkage(RUNTIME_PYTHON, NODE, GIT)
+    print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+    return 0
+
+
+def emit_git_smoke() -> int:
+    fixture_bytes = b"Mingli V5.1 Git runtime smoke fixture.\n"
+    fixed_date = "2000-01-01T00:00:00Z"
+    environment = {
+        "GIT_AUTHOR_DATE": fixed_date,
+        "GIT_AUTHOR_EMAIL": "gate@mingli.invalid",
+        "GIT_AUTHOR_NAME": "Mingli Linux Gate",
+        "GIT_COMMITTER_DATE": fixed_date,
+        "GIT_COMMITTER_EMAIL": "gate@mingli.invalid",
+        "GIT_COMMITTER_NAME": "Mingli Linux Gate",
+        "GIT_CONFIG_GLOBAL": "/dev/null",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "HOME": "/nonexistent",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/opt/git/bin:/usr/bin:/bin",
+        "TZ": "UTC",
+    }
+    operations: list[str] = []
+
+    def run(
+        operation: str,
+        arguments: Sequence[str],
+        *,
+        cwd: Path | None = None,
+        binary: bool = False,
+    ) -> bytes | str:
+        completed = subprocess.run(
+            [str(GIT), *arguments],
+            check=False,
+            capture_output=True,
+            cwd=cwd,
+            env=environment,
+            text=not binary,
+            timeout=30,
+        )
+        stderr = (
+            completed.stderr
+            if isinstance(completed.stderr, str)
+            else bytes(completed.stderr).decode("utf-8", errors="replace")
+        )
+        if completed.returncode != 0 or stderr:
+            _fail(f"Git smoke operation failed: {operation}")
+        operations.append(operation)
+        return completed.stdout
+
+    version = str(run("version", ("--version",))).strip()
+    with tempfile.TemporaryDirectory(prefix="mingli-git-smoke-") as temporary:
+        repository = Path(temporary) / "repository"
+        run("init", ("init", "--quiet", "--initial-branch=main", str(repository)))
+        run(
+            "config-user-name",
+            ("config", "user.name", "Mingli Linux Gate"),
+            cwd=repository,
+        )
+        run(
+            "config-user-email",
+            ("config", "user.email", "gate@mingli.invalid"),
+            cwd=repository,
+        )
+        run("config-gc-auto", ("config", "gc.auto", "0"), cwd=repository)
+        run(
+            "config-maintenance-auto",
+            ("config", "maintenance.auto", "false"),
+            cwd=repository,
+        )
+        (repository / "tracked.txt").write_bytes(fixture_bytes)
+        run("add", ("add", "--", "tracked.txt"), cwd=repository)
+        run(
+            "commit",
+            ("commit", "--quiet", "-m", "Mingli V5.1 Git smoke fixture"),
+            cwd=repository,
+        )
+        status = str(
+            run(
+                "status",
+                ("status", "--porcelain=v1", "--untracked-files=all"),
+                cwd=repository,
+            )
+        ).rstrip("\n")
+        ls_files = str(run("ls-files", ("ls-files", "--stage"), cwd=repository)).rstrip(
+            "\n"
+        )
+        ls_tree = str(
+            run("ls-tree", ("ls-tree", "HEAD", "--", "tracked.txt"), cwd=repository)
+        ).rstrip("\n")
+        commit = str(
+            run("rev-parse-commit", ("rev-parse", "--verify", "HEAD"), cwd=repository)
+        ).strip()
+        tree = str(
+            run(
+                "rev-parse-tree",
+                ("rev-parse", "--verify", "HEAD^{tree}"),
+                cwd=repository,
+            )
+        ).strip()
+        archive = run(
+            "archive",
+            ("archive", "--format=tar", "HEAD"),
+            cwd=repository,
+            binary=True,
+        )
+        if not isinstance(archive, bytes):
+            _fail("Git smoke archive output was not binary")
+        exec_path = str(run("exec-path", ("--exec-path",))).strip()
+    payload = {
+        "archive_sha256": hashlib.sha256(archive).hexdigest(),
+        "commit_sha1": commit,
+        "exec_path": exec_path,
+        "fixture": {
+            "author_date": fixed_date,
+            "author_email": "gate@mingli.invalid",
+            "author_name": "Mingli Linux Gate",
+            "commit_message": "Mingli V5.1 Git smoke fixture",
+            "content_sha256": hashlib.sha256(fixture_bytes).hexdigest(),
+            "filename": "tracked.txt",
+        },
+        "ls_files_row": ls_files,
+        "ls_tree_row": ls_tree,
+        "operations": operations,
+        "schema_version": "mingli-git-smoke-v1",
+        "status_porcelain": status,
+        "templates_exists": Path("/opt/git/share/git-core/templates").is_dir(),
+        "templates_path": "/opt/git/share/git-core/templates",
+        "tree_sha1": tree,
+        "version": version,
+    }
     print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
     return 0
 
@@ -531,13 +621,14 @@ def _audit_environment(source_root: Path) -> dict[str, str]:
     environment = os.environ.copy()
     environment.update(
         {
+            "GIT_CONFIG_NOSYSTEM": "1",
             "HOME": str(home),
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
             "MINGLI_PYTHON": str(RUNTIME_PYTHON),
             "MINGLI_RESEARCH_ROOT": str(source_root),
             "MINGLI_STORE_ROOT": str(STATE_ROOT),
-            "PATH": "/opt/node/bin:/opt/mingli-runtime/venv/bin:/usr/local/bin:/usr/bin:/bin",
+            "PATH": "/opt/git/bin:/opt/node/bin:/opt/mingli-runtime/venv/bin:/usr/local/bin:/usr/bin:/bin",
             "PYTHONDONTWRITEBYTECODE": "1",
             "PYTHONPATH": str(source_root / "scripts"),
             "TZ": "UTC",
@@ -594,6 +685,7 @@ class CommandRecorder:
             "stderr_sha256": verify_release.sha256_file(stderr_path),
             "stdout_path": stdout_path.relative_to(self.output_root).as_posix(),
             "stdout_sha256": verify_release.sha256_file(stdout_path),
+            "timeout_seconds": timeout,
         }
         self.records.append(record)
         print(
@@ -778,6 +870,7 @@ def _target_record() -> dict[str, Any]:
         "base_image_digest": verify_release.EXPECTED_BASE_IMAGE[
             "linux_amd64_manifest_digest"
         ],
+        "git_version": verify_release.EXPECTED_GIT["version"],
         "node_version": verify_release.EXPECTED_NODE["version"],
         "os": platform.system().lower(),
         "python_path": str(RUNTIME_PYTHON),
@@ -831,6 +924,8 @@ def run_production_audit(
             str(RUNTIME_PYTHON),
             "--node",
             str(NODE),
+            "--git",
+            str(GIT),
             "--state-root",
             str(STATE_ROOT),
             "--inventory-output",
@@ -848,19 +943,19 @@ def run_production_audit(
         "--matrix",
         str(source_root / "references/matrices/provider-completeness.yaml"),
     )
-    recorder.run(
+    matrix_a = recorder.run(
         "provider-matrix-a",
         matrix_argv,
         cwd=source_root,
         environment=environment,
-        timeout=3600,
+        timeout=PROVIDER_MATRIX_TIMEOUT_SECONDS,
     )
-    recorder.run(
+    matrix_b = recorder.run(
         "provider-matrix-b",
         matrix_argv,
         cwd=source_root,
         environment=environment,
-        timeout=3600,
+        timeout=PROVIDER_MATRIX_TIMEOUT_SECONDS,
     )
     characterization_argv = (
         str(RUNTIME_PYTHON),
@@ -929,6 +1024,18 @@ def run_production_audit(
         cwd=source_root / "scripts",
         environment=environment,
         timeout=3600,
+    )
+    git_smoke = recorder.run(
+        "git-smoke",
+        (
+            str(RUNTIME_PYTHON),
+            "-B",
+            str(AUDIT_SCRIPT),
+            "--emit-git-smoke",
+        ),
+        cwd=RELEASE_ROOT,
+        environment=environment,
+        timeout=300,
     )
     recorder.run(
         "production-native-linkage",
@@ -1002,6 +1109,11 @@ def run_production_audit(
     )
     if not all(probe_assertions.values()):
         _fail(f"runtime probe sentinel missing: {probe_assertions}")
+    git_smoke_payload = _read_json(
+        output_root / str(git_smoke["stdout_path"]),
+        "Git smoke machine output",
+    )
+    verify_release.validate_git_smoke_payload(git_smoke_payload)
 
     _copy_file(
         RUNTIME_PYTHON.parent.parent / "runtime-integrity.json",
@@ -1023,6 +1135,11 @@ def run_production_audit(
         "commands": recorder.records,
         "generated_by": str(AUDIT_SCRIPT),
         "image_id": image_id,
+        "git_smoke": {
+            "command_id": "git-smoke",
+            "output_sha256": git_smoke["stdout_sha256"],
+            "status": "passed",
+        },
         "inventory": {
             "evidence_index_count": inventory["evidence_index_count"],
             "evidence_rule_ids_unique": inventory["evidence_rule_ids_unique"],
@@ -1040,6 +1157,17 @@ def run_production_audit(
         "probes": {
             "assertions": probe_assertions,
             "command_ids": ["runtime-probe-machine", "runtime-probe-unittest"],
+            "status": "passed",
+        },
+        "provider_matrix": {
+            "runs": [
+                {
+                    "command_id": command["id"],
+                    "elapsed_seconds": command["elapsed_seconds"],
+                    "timeout_seconds": command["timeout_seconds"],
+                }
+                for command in (matrix_a, matrix_b)
+            ],
             "status": "passed",
         },
         "schema_version": "mingli-production-evidence-v1",
@@ -1136,6 +1264,8 @@ def finalize_audit(
         verify_release._require_image_digest(value, label)
     if image_id != image_digest:
         _fail("local production image ID and OCI config digest must be identical")
+    if audit_image_id != image_id:
+        _fail("audit image must be an alias of the exact production OCI config")
     _source_root_is_safe(source_root)
     production = _copy_production_evidence(
         production_evidence_path,
@@ -1202,7 +1332,7 @@ def finalize_audit(
         ),
         cwd=source_root,
         environment=environment,
-        timeout=10800,
+        timeout=RELEASE_REGRESSION_TIMEOUT_SECONDS,
     )
     if {record["id"] for record in recorder.records} != AUDIT_COMMAND_IDS:
         _fail("derived audit command inventory is incomplete")
@@ -1290,9 +1420,11 @@ def finalize_audit(
             "status": "passed",
         },
         "characterization": production["characterization"],
+        "git_smoke": production["git_smoke"],
         "dependencies": {
             "astronomy-engine": python_distributions["astronomy-engine"],
             "cnlunar": python_distributions["cnlunar"],
+            "git": provenance["git"],
             "iztro": provenance["vendored"]["iztro"],
             "libatomic1": provenance["system_runtime"]["libatomic1"],
             "node": provenance["node"],
@@ -1322,16 +1454,20 @@ def finalize_audit(
         "inventory": production["inventory"],
         "p0_trajectories": production["p0_trajectories"],
         "probes": production["probes"],
+        "provider_matrix": production["provider_matrix"],
         "product_policy": {
             "p0_provider_ids": sorted(verify_release.EXPECTED_P0_PROVIDERS)
         },
         "release": dict(verify_release.EXPECTED_RELEASE),
         "release_regression": {
             "command_id": "release-regression",
+            "elapsed_seconds": regression["elapsed_seconds"],
+            "executed_in_image_id": image_id,
             "module_count": regression_summary["modules"],
             "status": "passed",
             "target_count": regression_summary["targets"],
             "test_count": regression_summary["tests"],
+            "timeout_seconds": regression["timeout_seconds"],
         },
         "runtime_tree_identity": {
             "audit_command_id": "audit-tree-identity",
@@ -1347,7 +1483,7 @@ def finalize_audit(
             "production_command_id": "production-native-linkage",
             "sha256": production_native_linkage["stdout_sha256"],
             "status": "passed",
-            "targets": ["node", "python", "sxtwl", "yaml_c_extension"],
+            "targets": ["git", "node", "python", "sxtwl", "yaml_c_extension"],
         },
         "schema_version": "mingli-linux-runtime-audit-v1",
         "source_binding": {"command_id": "source-binding", "status": "passed"},
@@ -1367,6 +1503,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     mode.add_argument("--emit-token-record", action="store_true")
     mode.add_argument("--emit-tree-identity", action="store_true")
     mode.add_argument("--emit-native-linkage", action="store_true")
+    mode.add_argument("--emit-git-smoke", action="store_true")
     mode.add_argument("--emit-state-root-identity", action="store_true")
     mode.add_argument("--production-audit", action="store_true")
     mode.add_argument("--finalize-audit", action="store_true")
@@ -1396,6 +1533,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return emit_tree_identity()
         if args.emit_native_linkage:
             return emit_native_linkage()
+        if args.emit_git_smoke:
+            return emit_git_smoke()
         if args.emit_state_root_identity:
             if args.state_root is None:
                 parser.error("--emit-state-root-identity requires --state-root")

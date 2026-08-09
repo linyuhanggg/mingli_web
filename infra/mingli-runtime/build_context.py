@@ -32,6 +32,7 @@ CONTEXT_FILES = (
     "audit_runtime.py",
     "dependency-provenance.json",
     "emit_sbom.py",
+    "git-build-config.json",
     "requirements-linux-x86_64.lock",
     "verify_release.py",
 )

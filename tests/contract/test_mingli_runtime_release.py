@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import stat
+import subprocess
 import sys
 import tarfile
 from pathlib import Path
@@ -98,6 +99,156 @@ def load_audit_runtime() -> ModuleType:
         sys.path.remove(str(RUNTIME_DIR))
 
 
+def test_linux_watchdogs_cover_qemu_matrix_and_regression_budgets() -> None:
+    audit = load_audit_runtime()
+    gate = load_lima_gate()
+
+    assert audit.PROVIDER_MATRIX_TIMEOUT_SECONDS == 10_800
+    assert audit.RELEASE_REGRESSION_TIMEOUT_SECONDS == 10_800
+    assert gate.PROVIDER_MATRIX_TIMEOUT_SECONDS == (
+        audit.PROVIDER_MATRIX_TIMEOUT_SECONDS
+    )
+    assert gate.PRODUCTION_AUDIT_TIMEOUT_SECONDS == 32_400
+    assert gate.PRODUCTION_AUDIT_TIMEOUT_SECONDS > (
+        2 * gate.PROVIDER_MATRIX_TIMEOUT_SECONDS
+    )
+    assert gate.FINALIZER_TIMEOUT_SECONDS == 21_600
+    assert gate.FINALIZER_TIMEOUT_SECONDS > (
+        audit.RELEASE_REGRESSION_TIMEOUT_SECONDS + 3_000
+    )
+    source = inspect.getsource(audit.run_production_audit)
+    assert source.count("timeout=PROVIDER_MATRIX_TIMEOUT_SECONDS") == 2
+    assert "timeout=RELEASE_REGRESSION_TIMEOUT_SECONDS" in inspect.getsource(
+        audit.finalize_audit
+    )
+    controller = inspect.getsource(gate.run_gate)
+    assert "timeout=PRODUCTION_AUDIT_TIMEOUT_SECONDS" in controller
+    assert "timeout=FINALIZER_TIMEOUT_SECONDS" in controller
+
+
+def test_command_evidence_records_elapsed_and_fixed_timeout_budget(
+    tmp_path: Path,
+) -> None:
+    audit = load_audit_runtime()
+    recorder = audit.CommandRecorder(tmp_path, "sha256:" + "1" * 64)
+
+    record = recorder.run(
+        "budget-proof",
+        (sys.executable, "-c", "pass"),
+        cwd=tmp_path,
+        environment=os.environ,
+        timeout=7,
+    )
+
+    assert record["timeout_seconds"] == 7
+    assert isinstance(record["elapsed_seconds"], float)
+    assert 0 <= record["elapsed_seconds"] <= record["timeout_seconds"]
+
+    verifier = load_verifier()
+    verifier._require_command_budget(
+        record,
+        expected_timeout_seconds=7,
+        label="budget proof",
+    )
+    for field, value in (
+        ("timeout_seconds", 6),
+        ("elapsed_seconds", 8.0),
+    ):
+        tampered = {**record, field: value}
+        with pytest.raises(verifier.ReleaseVerificationError):
+            verifier._require_command_budget(
+                tampered,
+                expected_timeout_seconds=7,
+                label="budget proof",
+            )
+
+
+def test_launcher_containers_use_ephemeral_writable_overlay(tmp_path: Path) -> None:
+    gate = load_lima_gate()
+    drill = gate.BackupRestoreDrill(
+        object(),
+        "sha256:" + "1" * 64,
+        {"source": "runtime-state"},
+        tmp_path,
+    )
+
+    runtime_argv = drill._runtime_argv("runtime-state")
+    assert "--rm" in runtime_argv
+    assert "--network=none" in runtime_argv
+    assert "--read-only" not in runtime_argv
+    gate._require_writable_runtime_overlay(runtime_argv, "runtime")
+
+    with pytest.raises(
+        gate.GateError,
+        match="requires a writable ephemeral container overlay",
+    ):
+        gate._require_writable_runtime_overlay(
+            ["run", "--rm", "--network=none", "--read-only"],
+            "runtime",
+        )
+
+    controller = LIMA_GATE_PATH.read_text(encoding="utf-8")
+    assert controller.count("_require_writable_runtime_overlay(") >= 4
+
+
+def test_backup_drill_redacts_pending_token_and_replays_promoted_prepare(
+    tmp_path: Path,
+) -> None:
+    gate = load_lima_gate()
+    raw_token = "pending-token-must-never-enter-evidence"
+
+    class FakeVM:
+        @staticmethod
+        def docker(
+            argv: list[str],
+            *,
+            input_bytes: bytes,
+            timeout: int,
+        ) -> subprocess.CompletedProcess[bytes]:
+            del input_bytes, timeout
+            return subprocess.CompletedProcess(
+                argv,
+                0,
+                stdout=gate.json_bytes(
+                    {
+                        "kind": "stopped",
+                        "public_copy": "请补充出生资料。",
+                        "reason": "need_input",
+                        "state_token": raw_token,
+                    }
+                ),
+                stderr=b"",
+            )
+
+    drill = gate.BackupRestoreDrill(
+        FakeVM(),
+        "sha256:" + "1" * 64,
+        {"source": "runtime-state"},
+        tmp_path,
+    )
+    _, sanitized = drill.runtime(
+        "source-pending-prepare",
+        "runtime-state",
+        {"kind": "prepare"},
+        expected_kind="stopped",
+    )
+
+    assert sanitized["kind"] == "stopped"
+    assert sanitized["reason"] == "need_input"
+    assert (
+        sanitized["token_fingerprint"]
+        == hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
+    )
+    assert raw_token not in "".join(
+        path.read_text(encoding="utf-8") for path in tmp_path.rglob("*.json")
+    )
+
+    controller = LIMA_GATE_PATH.read_text(encoding="utf-8")
+    assert '"source-pending-prepare"' in controller
+    assert '"prepared-token-replay"' in controller
+    assert "replay_command = dict(source_prepare_command)" in controller
+
+
 def load_report() -> dict[str, Any]:
     assert REPORT_PATH.is_file(), (
         "audited Linux release report is absent; Gate stays RED"
@@ -122,6 +273,7 @@ def test_linux_release_evidence_is_complete_and_fail_closed() -> None:
     assert target["python_path"] == "/opt/mingli-runtime/venv/bin/python"
     assert target["state_root"] == "/var/lib/mingli"
     assert target["uid"] > 0
+    assert target["git_version"] == "2.39.5"
 
     inventory = report["inventory"]
     assert set(inventory["provider_ids"]) == EXPECTED_PROVIDERS
@@ -185,7 +337,7 @@ def test_linux_release_evidence_is_complete_and_fail_closed() -> None:
         "sxtwl-2.0.7-cp314-cp314-linux_x86_64.whl"
     )
     assert dependencies["sxtwl"]["wheel_sha256"] == (
-        "bd03d0b56d81112d87ad340a3d65458059497dc33496b1938fb23056dfe8ba80"
+        "90595ae5a5e311ae019170784c56bff52c176942347836c904e7c8af8d7b5c22"
     )
 
 
@@ -230,6 +382,12 @@ def test_three_provider_slim_report_is_rejected() -> None:
             ),
             "libatomic",
         ),
+        (
+            lambda report: report["dependencies"]["git"]["build_config"].__setitem__(
+                "sha1_backend", "unsafe"
+            ),
+            "dependencies",
+        ),
     ],
 )
 def test_verifier_recomputes_evidence_instead_of_trusting_passed_status(
@@ -244,6 +402,46 @@ def test_verifier_recomputes_evidence_instead_of_trusting_passed_status(
         verifier.validate_audit_report(tampered, artifacts_root=RUNTIME_DIR)
 
 
+def test_release_regression_is_executed_in_the_final_artifact() -> None:
+    verifier = load_verifier()
+    baseline = copy.deepcopy(load_report())
+    artifact_digest = baseline["artifact"]["image_digest"]
+    commands = {item["id"]: item for item in baseline["audit"]["commands"]}
+
+    assert baseline["audit"]["image_id"] == artifact_digest
+    assert baseline["audit"]["audit_image_id"] == artifact_digest
+    assert baseline["release_regression"]["executed_in_image_id"] == artifact_digest
+    assert commands["release-regression"]["executed_in_image_id"] == artifact_digest
+
+    report = copy.deepcopy(baseline)
+    report["release_regression"]["executed_in_image_id"] = "sha256:" + "0" * 64
+    with pytest.raises(
+        verifier.ReleaseVerificationError,
+        match="final production image",
+    ):
+        verifier.validate_audit_report(report, artifacts_root=RUNTIME_DIR)
+
+    report = copy.deepcopy(baseline)
+    report["audit"]["audit_image_id"] = "sha256:" + "1" * 64
+    with pytest.raises(
+        verifier.ReleaseVerificationError,
+        match="same OCI config digest",
+    ):
+        verifier.validate_audit_report(report, artifacts_root=RUNTIME_DIR)
+
+    report = copy.deepcopy(baseline)
+    next(
+        item
+        for item in report["audit"]["commands"]
+        if item["id"] == "release-regression"
+    )["executed_in_image_id"] = "sha256:" + "2" * 64
+    with pytest.raises(
+        verifier.ReleaseVerificationError,
+        match="command image identity mismatch",
+    ):
+        verifier.validate_audit_report(report, artifacts_root=RUNTIME_DIR)
+
+
 def test_linux_lock_and_image_are_immutable_and_arch_specific() -> None:
     assert LOCK_PATH.is_file(), "Linux x86_64 dependency lock is absent; Gate stays RED"
     lock = LOCK_PATH.read_text(encoding="utf-8")
@@ -256,7 +454,7 @@ def test_linux_lock_and_image_are_immutable_and_arch_specific() -> None:
         assert requirement in lock
     assert lock.count("--hash=sha256:") >= 4
     assert "c458b6d084f9b935061bc36216e8a69a7e293a2f1e68bf956dcd9e6cbcd143f5" in lock
-    assert "bd03d0b56d81112d87ad340a3d65458059497dc33496b1938fb23056dfe8ba80" in lock
+    assert "90595ae5a5e311ae019170784c56bff52c176942347836c904e7c8af8d7b5c22" in lock
     assert "cp314-cp314-manylinux2014_x86_64" in lock
     assert "cp314-cp314-linux_x86_64" in lock
     assert "macosx" not in lock.lower()
@@ -269,7 +467,7 @@ def test_linux_lock_and_image_are_immutable_and_arch_specific() -> None:
         dockerfile,
         re.MULTILINE,
     )
-    assert len(external_bases) == 3
+    assert len(external_bases) == 4
     assert len(set(external_bases)) == 1
     assert external_bases[0].endswith(
         "ff83a535339812dd72e69c93b3c48ddf7c85a324d6330af5797c82a255dbeef4"
@@ -301,7 +499,29 @@ def test_linux_lock_and_image_are_immutable_and_arch_specific() -> None:
     assert "107ab9f7661a1c47cddfb5cd1def99ec537a50a9a537fbe38cdde1b34b8ba280" in (
         production_stage
     )
-    assert "apt-get install -y --no-install-recommends git" in dockerfile
+    assert "apt-get install -y --no-install-recommends git" not in dockerfile
+    assert "for lane in a b; do" in dockerfile
+    assert "sxtwl-source-${lane}" in dockerfile
+    assert "sxtwl-source /opt/mingli-runtime/sxtwl-source" not in dockerfile
+    assert "&& rm -rf build" not in dockerfile
+    assert "CC=g++ CXX=g++" in dockerfile
+    assert "import _sxtwl,sxtwl" in dockerfile
+    assert "sxtwl.fromSolar(2000,1,1)" in dockerfile
+    assert "BLK_SHA1" not in dockerfile
+    assert dockerfile.count("BLK_SHA256=YesPlease") == 2
+    assert "SHA1DCInit" in dockerfile
+    assert "blk_SHA256_Init" in dockerfile
+    assert "NO_OPENSSL=YesPlease" in dockerfile
+    assert "git-2.39.5.tar.gz" in dockerfile
+    assert "ca0ec03fb2696f552f37135a56a0242fa062bd350cb243dc4a15c86f1cafbc99" in (
+        dockerfile
+    )
+    assert "/opt/git/bin/git" in dockerfile
+    audit_stage = dockerfile.split("FROM production AS audit", 1)[1].split(
+        "FROM production AS final", 1
+    )[0]
+    assert "apt-get" not in audit_stage
+    assert "RUN" not in audit_stage
     assert dockerfile.index("COPY verify_release.py") < dockerfile.index(
         "COPY release/ /opt/mingli-master/"
     )
@@ -348,6 +568,32 @@ def test_linux_lock_and_image_are_immutable_and_arch_specific() -> None:
         "snapshot_timestamp": "20250501T000000Z",
         "version": "12.2.0-14+deb12u1",
     }
+    git = provenance["git"]
+    assert git["version"] == "2.39.5"
+    assert git["source_url"] == (
+        "https://www.kernel.org/pub/software/scm/git/git-2.39.5.tar.gz"
+    )
+    assert git["source_sha256"] == (
+        "ca0ec03fb2696f552f37135a56a0242fa062bd350cb243dc4a15c86f1cafbc99"
+    )
+    assert git["license"] == "GPL-2.0-only"
+    assert git["license_sha256"] == (
+        "5b2198d1645f767585e8a88ac0499b04472164c0d2da22e75ecf97ef443ab32e"
+    )
+    assert git["build_config"]["sha1_backend"] == "sha1dc-built-in"
+    assert git["build_config"]["sha256_backend"] == "block-built-in"
+    assert git["build_config"]["install_link_strategy"] == "relative-symlinks"
+    assert "BLK_SHA256=YesPlease" in git["build_config"]["make_flags"]
+    assert "INSTALL_SYMLINKS=YesPlease" in git["build_config"]["make_flags"]
+    assert "NO_INSTALL_HARDLINKS=YesPlease" not in dockerfile
+    assert re.fullmatch(r"[0-9a-f]{64}", git["installed_binary_sha256"])
+    assert re.fullmatch(r"[0-9a-f]{64}", git["installed_tree_sha256"])
+    assert git["installed_tree_entry_count"] == 224
+    assert git["installed_tree_regular_file_count"] == 70
+    assert git["installed_tree_regular_file_bytes"] == 17_677_827
+    assert git["installed_tree_symlink_count"] == 144
+    assert git["installed_tree_symlink_target_bytes"] == 1_861
+    assert git["installed_tree_content_bytes"] == 17_679_688
 
 
 def test_build_context_projects_only_the_signed_manifest(tmp_path: Path) -> None:
@@ -404,6 +650,18 @@ def test_build_context_projects_only_the_signed_manifest(tmp_path: Path) -> None
             expected_file_count=1,
             reject_extras=True,
         )
+
+
+def test_runtime_tree_digest_rejects_a_symlink_root(tmp_path: Path) -> None:
+    verifier = load_verifier()
+    target = tmp_path / "target"
+    target.mkdir()
+    (target / "payload").write_text("admitted bytes\n", encoding="utf-8")
+    link = tmp_path / "root-link"
+    link.symlink_to(target, target_is_directory=True)
+
+    with pytest.raises(verifier.ReleaseVerificationError, match="root is a symlink"):
+        verifier.runtime_tree_digest(link)
 
 
 def test_evidence_conflict_reference_requires_a_signed_index_entry(
@@ -495,6 +753,9 @@ def test_image_audit_entry_is_present_and_non_agentic() -> None:
     assert "--finalize-audit" in controller
     assert "production_output" in controller
     assert "production_state" in controller
+    assert 'vm.docker(["tag", production_tag, audit_tag])' in controller
+    assert "audit_image_id != image_id" in controller
+    assert "audit_image_id != image_id" in audit
     for forbidden in ("langchain", "agent.run", "tools=", "function_call"):
         assert forbidden not in audit.lower()
 
@@ -535,6 +796,7 @@ def test_backup_drill_distinguishes_replay_from_true_followup() -> None:
     verifier = VERIFY_PATH.read_text(encoding="utf-8")
 
     for required in (
+        "source-pending-prepare",
         "prepared-token-replay",
         "prepared-restored-complete",
         "accepted-followup-prepare",
@@ -679,14 +941,124 @@ def test_native_linkage_identity_covers_all_runtime_entrypoints() -> None:
     verifier = VERIFY_PATH.read_text(encoding="utf-8")
     audit = AUDIT_PATH.read_text(encoding="utf-8")
 
-    for target in ("node", "python", "sxtwl", "yaml_c_extension"):
+    for target in ("git", "node", "python", "sxtwl", "yaml_c_extension"):
         assert f'"{target}"' in verifier
     for command_id in ("production-native-linkage", "audit-native-linkage"):
         assert command_id in verifier
         assert command_id in audit
     assert "inspect_native_linkage" in verifier
+    assert "EXPECTED_SXTWL_LINKAGE" in verifier
+    assert '"libstdc++.so.6"' in verifier
+    assert "sxtwl.fromSolar(2000,1,1)" in verifier
+    assert "importlib.util.find_spec" not in verifier
     assert "runtime_native_linkage_identity" in verifier
     assert "runtime_native_linkage_identity" in audit
+    assert '"git"' in verifier
+    assert "git-smoke" in verifier
+    assert "git-smoke" in audit
+
+
+def test_git_smoke_golden_is_recomputed_and_tamper_rejected() -> None:
+    verifier = load_module(VERIFY_PATH, "mingli_runtime_git_smoke_verifier")
+    payload = {
+        "archive_sha256": (
+            "f063d200b64075f2386bfb49351ce97a124b678b550dea39e3949778c446318d"
+        ),
+        "commit_sha1": "1962116c06237409f15a709948202c12845a446c",
+        "exec_path": "/opt/git/libexec/git-core",
+        "fixture": {
+            "author_date": "2000-01-01T00:00:00Z",
+            "author_email": "gate@mingli.invalid",
+            "author_name": "Mingli Linux Gate",
+            "commit_message": "Mingli V5.1 Git smoke fixture",
+            "content_sha256": (
+                "571e15a900174642b58c030370d12fff0558d8354ebc7a3ac4fefb90e4671086"
+            ),
+            "filename": "tracked.txt",
+        },
+        "ls_files_row": (
+            "100644 72556c76839cfdc4f5bd71b141f985a3423e3e3d 0\ttracked.txt"
+        ),
+        "ls_tree_row": (
+            "100644 blob 72556c76839cfdc4f5bd71b141f985a3423e3e3d\ttracked.txt"
+        ),
+        "operations": [
+            "version",
+            "init",
+            "config-user-name",
+            "config-user-email",
+            "config-gc-auto",
+            "config-maintenance-auto",
+            "add",
+            "commit",
+            "status",
+            "ls-files",
+            "ls-tree",
+            "rev-parse-commit",
+            "rev-parse-tree",
+            "archive",
+            "exec-path",
+        ],
+        "schema_version": "mingli-git-smoke-v1",
+        "status_porcelain": "",
+        "templates_exists": True,
+        "templates_path": "/opt/git/share/git-core/templates",
+        "tree_sha1": "bc699a237960421da8b1ae4197e3475403b515a8",
+        "version": "git version 2.39.5",
+    }
+    assert verifier.validate_git_smoke_payload(payload) == payload
+
+    tampered = copy.deepcopy(payload)
+    tampered["tree_sha1"] = "0" * 40
+    with pytest.raises(
+        verifier.ReleaseVerificationError,
+        match="frozen fixture and golden values",
+    ):
+        verifier.validate_git_smoke_payload(tampered)
+
+
+def test_git_smoke_bundle_consistent_tamper_is_semantically_rejected(
+    tmp_path: Path,
+) -> None:
+    verifier = load_verifier()
+    report = copy.deepcopy(load_report())
+    artifacts = tmp_path / "artifacts"
+    shutil.copytree(RUNTIME_DIR, artifacts)
+    smoke_command = next(
+        item for item in report["audit"]["commands"] if item["id"] == "git-smoke"
+    )
+    smoke_path = artifacts / smoke_command["stdout_path"]
+    payload = json.loads(smoke_path.read_text(encoding="utf-8"))
+    payload["tree_sha1"] = "0" * 40
+    encoded = (
+        json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n"
+    ).encode()
+    smoke_path.write_bytes(encoded)
+    digest = hashlib.sha256(encoded).hexdigest()
+    smoke_command["stdout_sha256"] = digest
+    report["git_smoke"]["output_sha256"] = digest
+
+    production_path = artifacts / report["evidence"]["production_evidence_path"]
+    production = json.loads(production_path.read_text(encoding="utf-8"))
+    production_command = next(
+        item for item in production["commands"] if item["id"] == "git-smoke"
+    )
+    production_command["stdout_sha256"] = digest
+    production["git_smoke"]["output_sha256"] = digest
+    production["files"][smoke_command["stdout_path"]] = digest
+    production_bytes = (
+        json.dumps(production, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+    ).encode()
+    production_path.write_bytes(production_bytes)
+    report["evidence"]["production_evidence_sha256"] = hashlib.sha256(
+        production_bytes
+    ).hexdigest()
+
+    with pytest.raises(
+        verifier.ReleaseVerificationError,
+        match="frozen fixture and golden values",
+    ):
+        verifier.validate_audit_report(report, artifacts_root=artifacts)
 
 
 def test_sbom_covers_python_node_and_vendored_iztro() -> None:
@@ -705,5 +1077,6 @@ def test_sbom_covers_python_node_and_vendored_iztro() -> None:
         ("astronomy-engine", "2.1.19"),
         ("cnlunar", "0.2.4"),
         ("libatomic1", "12.2.0-14+deb12u1"),
+        ("git", "2.39.5"),
     ):
         assert expected in components

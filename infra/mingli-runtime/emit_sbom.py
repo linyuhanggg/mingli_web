@@ -23,6 +23,7 @@ RELEASE_ROOT = Path("/opt/mingli-master")
 RUNTIME_PYTHON = Path("/opt/mingli-runtime/venv/bin/python")
 RUNTIME_INTEGRITY = Path("/opt/mingli-runtime/venv/runtime-integrity.json")
 NODE = Path("/opt/node/bin/node")
+GIT = Path("/opt/git/bin/git")
 PROVENANCE = RUNTIME_ROOT / "dependency-provenance.json"
 IMAGE_ID_RE = re.compile(r"sha256:[0-9a-f]{64}")
 
@@ -136,7 +137,7 @@ def build_sbom(image_id: str) -> dict[str, Any]:
     )
     if node.returncode != 0 or node.stdout.strip() != "v26.3.0":
         _fail("installed Node runtime identity mismatch")
-    native_linkage = verify_release.inspect_native_linkage(RUNTIME_PYTHON, NODE)
+    native_linkage = verify_release.inspect_native_linkage(RUNTIME_PYTHON, NODE, GIT)
 
     provenance = _load_json(PROVENANCE, "dependency provenance")
     runtime_integrity = _load_json(RUNTIME_INTEGRITY, "runtime integrity")
@@ -210,6 +211,49 @@ def build_sbom(image_id: str) -> dict[str, Any]:
                 properties=properties,
             )
         )
+
+    git_provenance = provenance.get("git")
+    if git_provenance != verify_release.EXPECTED_GIT:
+        _fail("Git dependency provenance mismatch")
+    components.append(
+        _component(
+            name="git",
+            version=str(git_provenance["version"]),
+            component_type="application",
+            digest=str(git_provenance["source_sha256"]),
+            license_id=str(git_provenance["license"]),
+            properties={
+                "mingli:artifact-filename": git_provenance["source_filename"],
+                "mingli:build-config-json": json.dumps(
+                    git_provenance["build_config"],
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
+                "mingli:build-config-path": git_provenance["build_config_path"],
+                "mingli:build-config-sha256": git_provenance["build_config_sha256"],
+                "mingli:installed-binary-sha256": git_provenance[
+                    "installed_binary_sha256"
+                ],
+                "mingli:installed-path": git_provenance["installed_binary_path"],
+                "mingli:installed-tree-content-bytes": git_provenance[
+                    "installed_tree_content_bytes"
+                ],
+                "mingli:installed-tree-entry-count": git_provenance[
+                    "installed_tree_entry_count"
+                ],
+                "mingli:installed-tree-regular-file-count": git_provenance[
+                    "installed_tree_regular_file_count"
+                ],
+                "mingli:installed-tree-sha256": git_provenance["installed_tree_sha256"],
+                "mingli:installed-tree-symlink-count": git_provenance[
+                    "installed_tree_symlink_count"
+                ],
+                "mingli:license-path": git_provenance["license_path"],
+                "mingli:license-sha256": git_provenance["license_sha256"],
+                "mingli:source-url": git_provenance["source_url"],
+            },
+        )
+    )
 
     node_provenance = provenance.get("node")
     if node_provenance != verify_release.EXPECTED_NODE | {

@@ -95,6 +95,102 @@ EXPECTED_LIBATOMIC = {
     "snapshot_timestamp": "20250501T000000Z",
     "version": "12.2.0-14+deb12u1",
 }
+EXPECTED_GIT_BUILD_CONFIG = {
+    "build_jobs": 6,
+    "cflags": (
+        "-O2 -g0 -ffile-prefix-map=/opt/git-build/source-{lane}=. "
+        "-fdebug-prefix-map=/opt/git-build/source-{lane}=."
+    ),
+    "compiler": "gcc",
+    "features": {
+        "curl": False,
+        "expat": False,
+        "gettext": False,
+        "openssl": False,
+        "perl": False,
+        "python": False,
+        "tcltk": False,
+    },
+    "install_link_strategy": "relative-symlinks",
+    "ldflags": "-Wl,--build-id=none",
+    "license": "GPL-2.0-only",
+    "make_flags": [
+        "BLK_SHA256=YesPlease",
+        "NO_CURL=YesPlease",
+        "NO_EXPAT=YesPlease",
+        "NO_GETTEXT=YesPlease",
+        "INSTALL_SYMLINKS=YesPlease",
+        "NO_OPENSSL=YesPlease",
+        "NO_PERL=YesPlease",
+        "NO_PYTHON=YesPlease",
+        "NO_TCLTK=YesPlease",
+    ],
+    "prefix": "/opt/git",
+    "schema_version": "mingli-git-build-config-v1",
+    "sha1_backend": "sha1dc-built-in",
+    "sha256_backend": "block-built-in",
+    "source_sha256": (
+        "ca0ec03fb2696f552f37135a56a0242fa062bd350cb243dc4a15c86f1cafbc99"
+    ),
+    "source_url": "https://www.kernel.org/pub/software/scm/git/git-2.39.5.tar.gz",
+    "version": "2.39.5",
+}
+EXPECTED_GIT = {
+    "build_config": EXPECTED_GIT_BUILD_CONFIG,
+    "build_config_path": "/opt/git/build-config.json",
+    "build_config_sha256": (
+        "268f9c8479e24f29c3856b077d419e4dab2b13dfa7f732351c22f4e56926f92e"
+    ),
+    "checksum_manifest_url": (
+        "https://www.kernel.org/pub/software/scm/git/sha256sums.asc"
+    ),
+    "installed_binary_path": "/opt/git/bin/git",
+    "installed_binary_sha256": (
+        "dab43c441c45a75efaa8db3f7c69507d803a642c275efb087d3eaa96d7c0efbe"
+    ),
+    "installed_tree_content_bytes": 17_679_688,
+    "installed_tree_entry_count": 224,
+    "installed_tree_path": "/opt/git",
+    "installed_tree_regular_file_bytes": 17_677_827,
+    "installed_tree_regular_file_count": 70,
+    "installed_tree_sha256": (
+        "44c998a56d933e9e6b637cb5ca23a9938b843f2fa66a54de2e28c38fc3a59486"
+    ),
+    "installed_tree_symlink_count": 144,
+    "installed_tree_symlink_target_bytes": 1_861,
+    "license": "GPL-2.0-only",
+    "license_path": "/opt/git/COPYING",
+    "license_sha256": (
+        "5b2198d1645f767585e8a88ac0499b04472164c0d2da22e75ecf97ef443ab32e"
+    ),
+    "source_filename": "git-2.39.5.tar.gz",
+    "source_sha256": (
+        "ca0ec03fb2696f552f37135a56a0242fa062bd350cb243dc4a15c86f1cafbc99"
+    ),
+    "source_url": "https://www.kernel.org/pub/software/scm/git/git-2.39.5.tar.gz",
+    "version": "2.39.5",
+}
+GIT_SMOKE_FIXTURE_BYTES = b"Mingli V5.1 Git runtime smoke fixture.\n"
+GIT_SMOKE_OPERATIONS = (
+    "version",
+    "init",
+    "config-user-name",
+    "config-user-email",
+    "config-gc-auto",
+    "config-maintenance-auto",
+    "add",
+    "commit",
+    "status",
+    "ls-files",
+    "ls-tree",
+    "rev-parse-commit",
+    "rev-parse-tree",
+    "archive",
+    "exec-path",
+)
+EXPECTED_GIT_SMOKE_ARCHIVE_SHA256 = (
+    "f063d200b64075f2386bfb49351ce97a124b678b550dea39e3949778c446318d"
+)
 EXPECTED_NODE_LINKAGE = frozenset(
     {
         "ld-linux-x86-64.so.2",
@@ -106,6 +202,25 @@ EXPECTED_NODE_LINKAGE = frozenset(
         "libpthread.so.0",
         "libstdc++.so.6",
     }
+)
+EXPECTED_GIT_LINKAGE = frozenset(
+    {
+        "ld-linux-x86-64.so.2",
+        "libc.so.6",
+        "libz.so.1",
+    }
+)
+EXPECTED_SXTWL_LINKAGE = frozenset(
+    {
+        "ld-linux-x86-64.so.2",
+        "libc.so.6",
+        "libgcc_s.so.1",
+        "libm.so.6",
+        "libstdc++.so.6",
+    }
+)
+EXPECTED_SXTWL_EXTENSION_SHA256 = (
+    "1619ccedd2f03cdad9dfdcc7fb39be0c65b8603a913058e5099d54c3462f9b85"
 )
 EXPECTED_BASE_IMAGE = {
     "linux_amd64_manifest_digest": (
@@ -143,7 +258,7 @@ EXPECTED_PYTHON_ARTIFACTS = {
         "version": "2.0.7",
         "wheel_filename": "sxtwl-2.0.7-cp314-cp314-linux_x86_64.whl",
         "wheel_sha256": (
-            "bd03d0b56d81112d87ad340a3d65458059497dc33496b1938fb23056dfe8ba80"
+            "90595ae5a5e311ae019170784c56bff52c176942347836c904e7c8af8d7b5c22"
         ),
     },
 }
@@ -153,10 +268,13 @@ EXPECTED_IZTRO_SHA256 = (
 EXPECTED_TEST_COUNT = 1584
 EXPECTED_TEST_TARGETS = 126
 EXPECTED_TEST_MODULES = 93
+EXPECTED_PROVIDER_MATRIX_TIMEOUT_SECONDS = 10_800
+EXPECTED_RELEASE_REGRESSION_TIMEOUT_SECONDS = 10_800
 EXPECTED_PRODUCTION_COMMAND_IDS = frozenset(
     {
         "characterization-a",
         "characterization-b",
+        "git-smoke",
         "p0-trajectories",
         "production-native-linkage",
         "production-tree-identity",
@@ -252,6 +370,78 @@ def canonical_sha256(value: object) -> str:
         separators=(",", ":"),
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def runtime_tree_digest(root: Path) -> dict[str, Any]:
+    """Hash every byte, mode, directory, and in-root symlink deterministically."""
+
+    raw_root = root
+    if raw_root.is_symlink():
+        _fail(f"runtime tree root is a symlink: {raw_root}")
+    try:
+        root = raw_root.resolve(strict=True)
+    except OSError as exc:
+        raise ReleaseVerificationError(f"runtime tree is missing: {raw_root}") from exc
+    if not root.is_dir():
+        _fail(f"runtime tree is missing or unsafe: {root}")
+    entries: list[dict[str, object]] = []
+    regular_file_bytes = 0
+    regular_file_count = 0
+    symlink_count = 0
+    symlink_target_bytes = 0
+    for path in sorted(
+        root.rglob("*"), key=lambda item: item.relative_to(root).as_posix()
+    ):
+        relative = path.relative_to(root).as_posix()
+        info = path.lstat()
+        mode = stat.S_IMODE(info.st_mode)
+        if stat.S_ISDIR(info.st_mode):
+            record: dict[str, object] = {
+                "mode": mode,
+                "path": relative,
+                "type": "directory",
+            }
+        elif stat.S_ISREG(info.st_mode):
+            regular_file_count += 1
+            regular_file_bytes += info.st_size
+            record = {
+                "mode": mode,
+                "path": relative,
+                "sha256": sha256_file(path),
+                "size": info.st_size,
+                "type": "file",
+            }
+        elif stat.S_ISLNK(info.st_mode):
+            symlink_count += 1
+            try:
+                resolved = path.resolve(strict=True)
+            except OSError as exc:
+                raise ReleaseVerificationError(
+                    f"runtime tree contains a broken symlink: {path}"
+                ) from exc
+            if not resolved.is_relative_to(root):
+                _fail(f"runtime tree symlink escapes its root: {path}")
+            target = os.readlink(path)
+            symlink_target_bytes += len(target.encode("utf-8"))
+            record = {
+                "mode": mode,
+                "path": relative,
+                "target": target,
+                "type": "symlink",
+            }
+        else:
+            _fail(f"runtime tree contains an unsupported object: {path}")
+        entries.append(record)
+    return {
+        "content_bytes": regular_file_bytes + symlink_target_bytes,
+        "entry_count": len(entries),
+        "path": str(root),
+        "regular_file_bytes": regular_file_bytes,
+        "regular_file_count": regular_file_count,
+        "sha256": canonical_sha256(entries),
+        "symlink_count": symlink_count,
+        "symlink_target_bytes": symlink_target_bytes,
+    }
 
 
 def _load_json(path: Path, label: str) -> dict[str, Any]:
@@ -705,6 +895,133 @@ def _verify_node(executable: Path) -> dict[str, str]:
     return dict(EXPECTED_NODE)
 
 
+def _verify_git(executable: Path) -> dict[str, Any]:
+    expected_executable = Path(EXPECTED_GIT["installed_binary_path"])
+    if (
+        executable != expected_executable
+        or not executable.is_absolute()
+        or executable.is_symlink()
+        or not os.access(executable, os.X_OK)
+    ):
+        _fail("Git runtime path is missing, relative, symlinked, or unexpected")
+    root = Path(EXPECTED_GIT["installed_tree_path"])
+    tree = runtime_tree_digest(root)
+    expected_tree = {
+        "content_bytes": EXPECTED_GIT["installed_tree_content_bytes"],
+        "entry_count": EXPECTED_GIT["installed_tree_entry_count"],
+        "path": EXPECTED_GIT["installed_tree_path"],
+        "regular_file_bytes": EXPECTED_GIT["installed_tree_regular_file_bytes"],
+        "regular_file_count": EXPECTED_GIT["installed_tree_regular_file_count"],
+        "sha256": EXPECTED_GIT["installed_tree_sha256"],
+        "symlink_count": EXPECTED_GIT["installed_tree_symlink_count"],
+        "symlink_target_bytes": EXPECTED_GIT["installed_tree_symlink_target_bytes"],
+    }
+    if tree != expected_tree:
+        _fail("installed Git tree differs from the frozen deterministic build")
+    if sha256_file(executable) != EXPECTED_GIT["installed_binary_sha256"]:
+        _fail("installed Git executable SHA-256 mismatch")
+    config_path = Path(EXPECTED_GIT["build_config_path"])
+    config = _load_json(config_path, "Git build configuration")
+    if config != EXPECTED_GIT_BUILD_CONFIG:
+        _fail("installed Git build configuration differs from frozen flags")
+    if sha256_file(config_path) != EXPECTED_GIT["build_config_sha256"]:
+        _fail("installed Git build configuration SHA-256 mismatch")
+    license_path = Path(EXPECTED_GIT["license_path"])
+    if sha256_file(license_path) != EXPECTED_GIT["license_sha256"]:
+        _fail("installed Git license bytes mismatch")
+    source_path = Path("/opt/mingli-runtime/artifacts") / str(
+        EXPECTED_GIT["source_filename"]
+    )
+    if source_path.is_symlink() or not source_path.is_file():
+        _fail("Git frozen source artifact is missing or unsafe")
+    if sha256_file(source_path) != EXPECTED_GIT["source_sha256"]:
+        _fail("Git frozen source artifact SHA-256 mismatch")
+    provenance = _load_json(
+        Path("/opt/mingli-runtime/dependency-provenance.json"),
+        "dependency provenance",
+    )
+    if provenance.get("git") != EXPECTED_GIT:
+        _fail("Git dependency provenance differs from the frozen build")
+    environment = {
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "HOME": "/nonexistent",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/opt/git/bin:/usr/bin:/bin",
+        "TZ": "UTC",
+    }
+    completed = subprocess.run(
+        [str(executable), "--version"],
+        check=False,
+        capture_output=True,
+        env=environment,
+        text=True,
+        timeout=15,
+    )
+    if completed.returncode != 0 or completed.stdout.strip() != "git version 2.39.5":
+        _fail("Git runtime must be exactly 2.39.5")
+    return {
+        "binary_path": str(executable),
+        "binary_sha256": EXPECTED_GIT["installed_binary_sha256"],
+        "build_config_sha256": EXPECTED_GIT["build_config_sha256"],
+        "license_sha256": EXPECTED_GIT["license_sha256"],
+        "source_sha256": EXPECTED_GIT["source_sha256"],
+        "tree": tree,
+        "version": EXPECTED_GIT["version"],
+    }
+
+
+def validate_git_smoke_payload(value: object) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        _fail("Git smoke output must be a JSON object")
+    blob_header = f"blob {len(GIT_SMOKE_FIXTURE_BYTES)}\0".encode("ascii")
+    blob_sha1 = hashlib.sha1(
+        blob_header + GIT_SMOKE_FIXTURE_BYTES,
+        usedforsecurity=False,
+    ).hexdigest()
+    tree_body = b"100644 tracked.txt\0" + bytes.fromhex(blob_sha1)
+    tree_sha1 = hashlib.sha1(
+        f"tree {len(tree_body)}\0".encode("ascii") + tree_body,
+        usedforsecurity=False,
+    ).hexdigest()
+    commit_body = (
+        f"tree {tree_sha1}\n"
+        "author Mingli Linux Gate <gate@mingli.invalid> 946684800 +0000\n"
+        "committer Mingli Linux Gate <gate@mingli.invalid> 946684800 +0000\n"
+        "\n"
+        "Mingli V5.1 Git smoke fixture\n"
+    ).encode()
+    commit_sha1 = hashlib.sha1(
+        f"commit {len(commit_body)}\0".encode("ascii") + commit_body,
+        usedforsecurity=False,
+    ).hexdigest()
+    expected = {
+        "archive_sha256": EXPECTED_GIT_SMOKE_ARCHIVE_SHA256,
+        "commit_sha1": commit_sha1,
+        "exec_path": "/opt/git/libexec/git-core",
+        "fixture": {
+            "author_date": "2000-01-01T00:00:00Z",
+            "author_email": "gate@mingli.invalid",
+            "author_name": "Mingli Linux Gate",
+            "commit_message": "Mingli V5.1 Git smoke fixture",
+            "content_sha256": hashlib.sha256(GIT_SMOKE_FIXTURE_BYTES).hexdigest(),
+            "filename": "tracked.txt",
+        },
+        "ls_files_row": f"100644 {blob_sha1} 0\ttracked.txt",
+        "ls_tree_row": f"100644 blob {blob_sha1}\ttracked.txt",
+        "operations": list(GIT_SMOKE_OPERATIONS),
+        "schema_version": "mingli-git-smoke-v1",
+        "status_porcelain": "",
+        "templates_exists": True,
+        "templates_path": "/opt/git/share/git-core/templates",
+        "tree_sha1": tree_sha1,
+        "version": "git version 2.39.5",
+    }
+    if value != expected:
+        _fail("Git smoke output differs from the frozen fixture and golden values")
+    return value
+
+
 def _verify_libatomic() -> dict[str, str]:
     artifact = Path("/opt/mingli-runtime/artifacts") / EXPECTED_LIBATOMIC["filename"]
     if artifact.is_symlink() or not artifact.is_file():
@@ -813,12 +1130,11 @@ def _inspect_dynamic_target(executable: Path, label: str) -> dict[str, Any]:
 
 def _runtime_extension_paths(runtime_python: Path) -> dict[str, Path]:
     script = (
-        "import importlib.util,json\n"
-        "modules={'sxtwl':'_sxtwl','yaml_c_extension':'yaml._yaml'}\n"
-        "result={}\n"
-        "for label,module in modules.items():\n"
-        "    spec=importlib.util.find_spec(module)\n"
-        "    result[label]=None if spec is None else spec.origin\n"
+        "import _sxtwl,json,sxtwl,yaml._yaml\n"
+        "day=sxtwl.fromSolar(2000,1,1)\n"
+        "assert (day.getSolarYear(),day.getSolarMonth(),day.getSolarDay()) == (2000,1,1)\n"
+        "modules={'sxtwl':_sxtwl,'yaml_c_extension':yaml._yaml}\n"
+        "result={label:module.__file__ for label,module in modules.items()}\n"
         "print(json.dumps(result,sort_keys=True,separators=(',',':')))\n"
     )
     completed = subprocess.run(
@@ -861,11 +1177,17 @@ def _runtime_extension_paths(runtime_python: Path) -> dict[str, Path]:
     return result
 
 
-def inspect_native_linkage(runtime_python: Path, node: Path) -> dict[str, Any]:
+def inspect_native_linkage(
+    runtime_python: Path,
+    node: Path,
+    git: Path,
+) -> dict[str, Any]:
     node_record = _verify_node(node)
+    git_record = _verify_git(git)
     libatomic = _verify_libatomic()
     extensions = _runtime_extension_paths(runtime_python)
     targets = {
+        "git": _inspect_dynamic_target(git, "Git"),
         "node": _inspect_dynamic_target(node, "Node"),
         "python": _inspect_dynamic_target(runtime_python, "CPython"),
         "sxtwl": _inspect_dynamic_target(extensions["sxtwl"], "sxtwl"),
@@ -883,7 +1205,18 @@ def inspect_native_linkage(runtime_python: Path, node: Path) -> dict[str, Any]:
         or atomic.get("sha256") != libatomic["installed_sha256"]
     ):
         _fail("Node linkage is not bound to the admitted libatomic1 bytes")
+    git_dependencies = targets["git"]["dependencies"]
+    if set(git_dependencies) != EXPECTED_GIT_LINKAGE:
+        _fail("Git dynamic dependency inventory is not exact")
+    if targets["git"].get("sha256") != git_record["binary_sha256"]:
+        _fail("Git linkage target differs from the admitted binary")
+    sxtwl_dependencies = targets["sxtwl"]["dependencies"]
+    if set(sxtwl_dependencies) != EXPECTED_SXTWL_LINKAGE:
+        _fail("sxtwl dynamic dependency inventory is not exact")
+    if targets["sxtwl"].get("sha256") != EXPECTED_SXTWL_EXTENSION_SHA256:
+        _fail("sxtwl native extension differs from the admitted wheel bytes")
     return {
+        "git_version": git_record["version"],
         "libatomic1": libatomic,
         "node_version": node_record["version"],
         "schema_version": "mingli-native-linkage-v1",
@@ -931,7 +1264,9 @@ def _validate_native_linkage_record(record: object, label: str) -> dict[str, Any
     if record.get("libatomic1") != EXPECTED_LIBATOMIC:
         _fail(f"{label} libatomic1 provenance mismatch")
     targets = record.get("targets")
-    expected_targets = {"node", "python", "sxtwl", "yaml_c_extension"}
+    if record.get("git_version") != EXPECTED_GIT["version"]:
+        _fail(f"{label} Git version mismatch")
+    expected_targets = {"git", "node", "python", "sxtwl", "yaml_c_extension"}
     if not isinstance(targets, dict) or set(targets) != expected_targets:
         _fail(f"{label} native target inventory mismatch")
     validated = {
@@ -940,6 +1275,10 @@ def _validate_native_linkage_record(record: object, label: str) -> dict[str, Any
     }
     if validated["node"].get("path") != "/opt/node/bin/node":
         _fail(f"{label} Node path mismatch")
+    if validated["git"].get("path") != EXPECTED_GIT["installed_binary_path"]:
+        _fail(f"{label} Git path mismatch")
+    if validated["git"].get("sha256") != EXPECTED_GIT["installed_binary_sha256"]:
+        _fail(f"{label} Git executable digest mismatch")
     if validated["python"].get("path") != "/opt/mingli-runtime/venv/bin/python":
         _fail(f"{label} CPython path mismatch")
     for name in ("sxtwl", "yaml_c_extension"):
@@ -950,6 +1289,8 @@ def _validate_native_linkage_record(record: object, label: str) -> dict[str, Any
             _fail(f"{label} extension path mismatch: {name}")
     if not Path(str(validated["sxtwl"]["path"])).name.startswith("_sxtwl."):
         _fail(f"{label} sxtwl native extension identity mismatch")
+    if validated["sxtwl"].get("sha256") != EXPECTED_SXTWL_EXTENSION_SHA256:
+        _fail(f"{label} sxtwl native extension digest mismatch")
     if not Path(str(validated["yaml_c_extension"]["path"])).name.startswith("_yaml."):
         _fail(f"{label} PyYAML C extension identity mismatch")
     node_dependencies = validated["node"]["dependencies"]
@@ -961,6 +1302,12 @@ def _validate_native_linkage_record(record: object, label: str) -> dict[str, Any
         or atomic.get("sha256") != EXPECTED_LIBATOMIC["installed_sha256"]
     ):
         _fail(f"{label} is not bound to admitted libatomic1 bytes")
+    if set(validated["git"]["dependencies"]) != EXPECTED_GIT_LINKAGE:
+        _fail(f"{label} Git dynamic dependency inventory mismatch")
+    if set(validated["sxtwl"]["dependencies"]) != EXPECTED_SXTWL_LINKAGE:
+        _fail(f"{label} sxtwl dynamic dependency inventory mismatch")
+    if "libstdc++.so.6" not in validated["sxtwl"]["dependencies"]:
+        _fail(f"{label} sxtwl is not linked to the C++ runtime")
     return record
 
 
@@ -1131,6 +1478,7 @@ def inspect_runtime(
     release_root: Path,
     runtime_python: Path | None = None,
     node: Path | None = None,
+    git: Path | None = None,
     state_root: Path | None = None,
     research_source: Path | None = None,
     release_only: bool = False,
@@ -1168,11 +1516,12 @@ def inspect_runtime(
         )
     if release_only:
         return inventory
-    if runtime_python is None or node is None or state_root is None:
-        _fail("full runtime inspection requires Python, Node, and state root")
+    if runtime_python is None or node is None or git is None or state_root is None:
+        _fail("full runtime inspection requires Python, Node, Git, and state root")
     runtime = _verify_runtime_python(release_root, runtime_python)
     node_record = _verify_node(node)
-    native_linkage = inspect_native_linkage(runtime_python, node)
+    git_record = _verify_git(git)
+    native_linkage = inspect_native_linkage(runtime_python, node, git)
     state = _verify_state_root(state_root)
     first_describe = _run_describe(release_root, runtime_python, state_root)
     second_describe = _run_describe(release_root, runtime_python, state_root)
@@ -1182,6 +1531,7 @@ def inspect_runtime(
         {
             "describe": first_describe,
             "describe_output_sha256": canonical_sha256(first_describe),
+            "git": git_record,
             "node": node_record,
             "native_linkage": native_linkage,
             "runtime_integrity": runtime,
@@ -1373,6 +1723,7 @@ def _verify_source_binding_artifact(
     forbidden_runtime_fields = {
         "describe",
         "native_linkage",
+        "git",
         "node",
         "runtime_integrity",
         "state_root",
@@ -1415,6 +1766,7 @@ def _verify_sbom(path: Path, report: Mapping[str, Any]) -> None:
     required = {
         ("cpython", "3.14.6"),
         ("python-base-image", "3.14.6-slim-bookworm"),
+        ("git", EXPECTED_GIT["version"]),
         ("node", EXPECTED_NODE["version"]),
         ("iztro", "2.5.8"),
         ("PyYAML", "6.0.3"),
@@ -1424,7 +1776,7 @@ def _verify_sbom(path: Path, report: Mapping[str, Any]) -> None:
         ("libatomic1", EXPECTED_LIBATOMIC["version"]),
     }
     if not required <= set(by_identity):
-        _fail("SBOM omits a required Python, Node, or vendored component")
+        _fail("SBOM omits a required Python, Git, Node, or vendored component")
 
     artifact = report.get("artifact")
     if not isinstance(artifact, dict):
@@ -1521,6 +1873,47 @@ def _verify_sbom(path: Path, report: Mapping[str, Any]) -> None:
         expected_filename = expected.get("wheel_filename", expected.get("filename"))
         if property_map.get("mingli:artifact-filename") != expected_filename:
             _fail(f"SBOM Python artifact filename mismatch: {component_name}")
+    git_identity = ("git", EXPECTED_GIT["version"])
+    if component_hashes(git_identity) != {EXPECTED_GIT["source_sha256"]}:
+        _fail("SBOM Git source archive SHA-256 mismatch")
+    git_component = by_identity[git_identity]
+    if git_component.get("licenses") != [{"license": {"id": EXPECTED_GIT["license"]}}]:
+        _fail("SBOM Git license identity mismatch")
+    git_properties = {
+        item.get("name"): item.get("value")
+        for item in git_component.get("properties") or ()
+        if isinstance(item, dict)
+    }
+    expected_git_properties = {
+        "mingli:artifact-filename": str(EXPECTED_GIT["source_filename"]),
+        "mingli:build-config-json": json.dumps(
+            EXPECTED_GIT_BUILD_CONFIG,
+            sort_keys=True,
+            separators=(",", ":"),
+        ),
+        "mingli:build-config-path": str(EXPECTED_GIT["build_config_path"]),
+        "mingli:build-config-sha256": str(EXPECTED_GIT["build_config_sha256"]),
+        "mingli:installed-binary-sha256": str(EXPECTED_GIT["installed_binary_sha256"]),
+        "mingli:installed-path": str(EXPECTED_GIT["installed_binary_path"]),
+        "mingli:installed-tree-content-bytes": str(
+            EXPECTED_GIT["installed_tree_content_bytes"]
+        ),
+        "mingli:installed-tree-entry-count": str(
+            EXPECTED_GIT["installed_tree_entry_count"]
+        ),
+        "mingli:installed-tree-regular-file-count": str(
+            EXPECTED_GIT["installed_tree_regular_file_count"]
+        ),
+        "mingli:installed-tree-sha256": str(EXPECTED_GIT["installed_tree_sha256"]),
+        "mingli:installed-tree-symlink-count": str(
+            EXPECTED_GIT["installed_tree_symlink_count"]
+        ),
+        "mingli:license-path": str(EXPECTED_GIT["license_path"]),
+        "mingli:license-sha256": str(EXPECTED_GIT["license_sha256"]),
+        "mingli:source-url": str(EXPECTED_GIT["source_url"]),
+    }
+    if git_properties != expected_git_properties:
+        _fail("SBOM Git build/provenance properties mismatch")
     node_hashes = by_identity[("node", EXPECTED_NODE["version"])].get("hashes")
     if not isinstance(node_hashes, list) or {
         item.get("content")
@@ -1611,6 +2004,8 @@ def _command_map(
     image_id: str,
     audit_image_id: str,
 ) -> dict[str, dict[str, Any]]:
+    if audit_image_id != image_id:
+        _fail("audit command map spans different OCI image identities")
     if not isinstance(commands, list) or not commands:
         _fail("audit contains no executed commands")
     indexed: dict[str, dict[str, Any]] = {}
@@ -1633,8 +2028,9 @@ def _command_map(
         if command.get("exit_code") != 0:
             _fail(f"audit command did not exit zero: {command_id}")
         executed_in = command.get("executed_in_image_id")
-        if executed_in not in {image_id, audit_image_id}:
+        if executed_in != image_id:
             _fail(f"audit command image identity mismatch: {command_id}")
+        _require_command_budget(command, label=f"audit command {command_id}")
         stdout = _verify_artifact_digest(
             artifacts_root,
             command.get("stdout_path"),
@@ -1649,6 +2045,27 @@ def _command_map(
         )
         indexed[command_id] = {**command, "stdout_file": stdout, "stderr_file": stderr}
     return indexed
+
+
+def _require_command_budget(
+    command: Mapping[str, Any],
+    *,
+    expected_timeout_seconds: int | None = None,
+    label: str,
+) -> None:
+    timeout = command.get("timeout_seconds")
+    elapsed = command.get("elapsed_seconds")
+    if isinstance(timeout, bool) or not isinstance(timeout, int) or timeout <= 0:
+        _fail(f"{label} timeout budget is invalid")
+    if (
+        isinstance(elapsed, bool)
+        or not isinstance(elapsed, (int, float))
+        or elapsed < 0
+        or elapsed > timeout
+    ):
+        _fail(f"{label} elapsed time is outside its timeout budget")
+    if expected_timeout_seconds is not None and timeout != expected_timeout_seconds:
+        _fail(f"{label} timeout budget differs from the frozen Gate budget")
 
 
 def _require_command(
@@ -1750,9 +2167,11 @@ def _verify_production_evidence(
         )
     for field in (
         "characterization",
+        "git_smoke",
         "inventory",
         "p0_trajectories",
         "probes",
+        "provider_matrix",
         "target",
     ):
         if production.get(field) != report.get(field):
@@ -1788,22 +2207,62 @@ def _verify_tree_identity(
         _fail("runtime tree identity schema mismatch")
     trees = first.get("trees")
     expected_paths = {
+        "git": "/opt/git",
         "node": "/opt/node",
         "release": "/opt/mingli-master",
         "runtime_venv": "/opt/mingli-runtime/venv",
     }
     if not isinstance(trees, dict) or set(trees) != set(expected_paths):
-        _fail("runtime tree identity does not cover the three admitted trees")
+        _fail("runtime tree identity does not cover the four admitted trees")
     for name, expected_path in expected_paths.items():
         record = trees[name]
         if (
             not isinstance(record, dict)
             or record.get("path") != expected_path
+            or not isinstance(record.get("content_bytes"), int)
+            or record["content_bytes"] <= 0
             or not isinstance(record.get("entry_count"), int)
             or record["entry_count"] <= 0
+            or not isinstance(record.get("regular_file_count"), int)
+            or record["regular_file_count"] <= 0
+            or not isinstance(record.get("regular_file_bytes"), int)
+            or record["regular_file_bytes"] <= 0
+            or not isinstance(record.get("symlink_count"), int)
+            or record["symlink_count"] < 0
+            or not isinstance(record.get("symlink_target_bytes"), int)
+            or record["symlink_target_bytes"] < 0
         ):
             _fail(f"runtime tree identity record is invalid: {name}")
         _require_sha256(record.get("sha256"), f"runtime tree identity {name}")
+    expected_git_tree = {
+        "content_bytes": EXPECTED_GIT["installed_tree_content_bytes"],
+        "entry_count": EXPECTED_GIT["installed_tree_entry_count"],
+        "path": EXPECTED_GIT["installed_tree_path"],
+        "regular_file_bytes": EXPECTED_GIT["installed_tree_regular_file_bytes"],
+        "regular_file_count": EXPECTED_GIT["installed_tree_regular_file_count"],
+        "sha256": EXPECTED_GIT["installed_tree_sha256"],
+        "symlink_count": EXPECTED_GIT["installed_tree_symlink_count"],
+        "symlink_target_bytes": EXPECTED_GIT["installed_tree_symlink_target_bytes"],
+    }
+    if trees["git"] != expected_git_tree:
+        _fail("Git runtime tree does not match the admitted deterministic install")
+
+
+def _verify_git_smoke(
+    section: object,
+    commands: Mapping[str, Mapping[str, Any]],
+) -> None:
+    if section != {
+        "command_id": "git-smoke",
+        "output_sha256": commands["git-smoke"].get("stdout_sha256"),
+        "status": "passed",
+    }:
+        _fail("Git smoke report binding mismatch")
+    command = commands["git-smoke"]
+    if command.get("stderr_sha256") != hashlib.sha256(b"").hexdigest():
+        _fail("Git smoke emitted stderr")
+    payload = _load_json(command["stdout_file"], "Git smoke machine output")
+    validate_git_smoke_payload(payload)
 
 
 def _verify_native_linkage_identity(
@@ -1819,6 +2278,7 @@ def _verify_native_linkage_identity(
     ) != ("production-native-linkage", "audit-native-linkage"):
         _fail("native linkage identity command binding mismatch")
     if section.get("targets") != [
+        "git",
         "node",
         "python",
         "sxtwl",
@@ -1925,6 +2385,7 @@ def _verify_backup_restore(
         "prepared-token-replay",
         "source-complete",
         "source-describe",
+        "source-pending-prepare",
         "source-prepare",
         "source-prepared-token-record",
         "source-state-root-identity",
@@ -1943,6 +2404,7 @@ def _verify_backup_restore(
         "prepared-token-replay",
         "source-complete",
         "source-describe",
+        "source-pending-prepare",
         "source-prepare",
     }
     for command in command_records:
@@ -1996,6 +2458,7 @@ def _verify_backup_restore(
         "prepared-token-replay": "prepared_restore_blank",
         "source-complete": "source",
         "source-describe": "source",
+        "source-pending-prepare": "source",
         "source-prepare": "source",
     }
     describe_command_ids = {
@@ -2010,7 +2473,6 @@ def _verify_backup_restore(
             "--rm",
             "-i",
             "--network=none",
-            "--read-only",
             "--tmpfs",
             runtime_tmpfs,
             "--mount",
@@ -2308,6 +2770,7 @@ def _verify_backup_restore(
         "prepared-replay": "prepared-token-replay",
         "prepared-restored-accepted": "prepared-restored-complete",
         "source-accepted": "source-complete",
+        "source-pending": "source-pending-prepare",
         "source-prepared": "source-prepare",
     }
     transcript_records = evidence.get("transcripts")
@@ -2364,6 +2827,13 @@ def _verify_backup_restore(
                     transcript.get("prior_answer_sha256"),
                     f"{transcript_id} prior answer",
                 )
+        elif transcript.get("kind") == "stopped":
+            if transcript.get("reason") != "need_input":
+                _fail(f"backup/restore Stopped reason mismatch: {transcript_id}")
+            _require_sha256(
+                transcript.get("public_copy_sha256"),
+                f"{transcript_id} public copy",
+            )
         else:
             _fail(f"backup/restore transcript kind mismatch: {transcript_id}")
         transcripts[transcript_id] = transcript
@@ -2409,6 +2879,7 @@ def _verify_backup_restore(
             _fail(f"backup token-record version is invalid: {record_id}")
         token_records[record_id] = token_record
 
+    source_pending = transcripts["source-pending"]
     source_prepared = transcripts["source-prepared"]
     prepared_replay = transcripts["prepared-replay"]
     prepared_restored_accepted = transcripts["prepared-restored-accepted"]
@@ -2417,6 +2888,15 @@ def _verify_backup_restore(
     source_accepted = transcripts["source-accepted"]
     accepted_replay = transcripts["accepted-replay"]
     source_fingerprint = source_prepared.get("token_fingerprint")
+    if (
+        source_pending.get("kind") != "stopped"
+        or source_pending.get("reason") != "need_input"
+        or source_pending.get("input_token_fingerprint") is not None
+        or source_prepared.get("input_token_fingerprint")
+        != source_pending.get("token_fingerprint")
+        or source_fingerprint != source_pending.get("token_fingerprint")
+    ):
+        _fail("pending token did not promote atomically into Prepared")
     if (
         source_prepared.get("kind") != "prepared"
         or prepared_replay.get("kind") != "prepared"
@@ -2535,6 +3015,8 @@ def validate_audit_report(
         _fail("release target UID must be non-root")
     if target.get("node_version") != EXPECTED_NODE["version"]:
         _fail("release target Node version mismatch")
+    if target.get("git_version") != EXPECTED_GIT["version"]:
+        _fail("release target Git version mismatch")
 
     artifact = report.get("artifact")
     evidence = report.get("evidence")
@@ -2553,8 +3035,10 @@ def validate_audit_report(
     )
     if artifact.get("image_digest_kind") != "oci_config":
         _fail("production image digest kind must be the local OCI config digest")
-    if image_digest != image_id:
-        _fail("production image digest and image ID must be the same OCI config digest")
+    if not (image_digest == image_id == audit_image_id):
+        _fail(
+            "artifact, production, and audit image IDs must be the same OCI config digest"
+        )
     if (
         artifact.get("base_image_digest")
         != EXPECTED_BASE_IMAGE["linux_amd64_manifest_digest"]
@@ -2625,6 +3109,8 @@ def validate_audit_report(
         _fail("Node 26.3.0 tarball provenance mismatch")
     if provenance.get("system_runtime") != {"libatomic1": EXPECTED_LIBATOMIC}:
         _fail("libatomic1 frozen system-runtime provenance mismatch")
+    if provenance.get("git") != EXPECTED_GIT:
+        _fail("Git frozen dependency provenance mismatch")
     dependencies = report.get("dependencies")
     if not isinstance(dependencies, dict):
         _fail("release dependency projection is missing")
@@ -2645,6 +3131,7 @@ def validate_audit_report(
     expected_dependency_projection = {
         "astronomy-engine": python_distributions.get("astronomy-engine"),
         "cnlunar": python_distributions.get("cnlunar"),
+        "git": provenance.get("git"),
         "node": provenance.get("node"),
         "pyyaml": python_distributions.get("PyYAML"),
         "sxtwl": python_distributions.get("sxtwl"),
@@ -2662,6 +3149,16 @@ def validate_audit_report(
         _fail("runtime inventory and report runtime-integrity digest differ")
     if runtime_inventory.get("node") != EXPECTED_NODE:
         _fail("runtime inventory Node record differs from frozen provenance")
+    git_inventory = runtime_inventory.get("git")
+    if (
+        not isinstance(git_inventory, dict)
+        or git_inventory.get("binary_sha256") != EXPECTED_GIT["installed_binary_sha256"]
+        or git_inventory.get("build_config_sha256")
+        != EXPECTED_GIT["build_config_sha256"]
+        or git_inventory.get("tree", {}).get("sha256")
+        != EXPECTED_GIT["installed_tree_sha256"]
+    ):
+        _fail("runtime inventory Git record differs from frozen provenance")
     state_root_record = runtime_inventory.get("state_root")
     if (
         not isinstance(state_root_record, dict)
@@ -2728,6 +3225,8 @@ def validate_audit_report(
             runtime_path,
             "--node",
             "/opt/node/bin/node",
+            "--git",
+            "/opt/git/bin/git",
             "--state-root",
             "/var/lib/mingli",
             "--inventory-output",
@@ -2754,7 +3253,7 @@ def validate_audit_report(
             f"{output_root}/evidence/source-binding.json",
         ),
         cwd="/opt/mingli-master",
-        image_id=audit_image_id,
+        image_id=image_id,
     )
     if source_binding_command.get("stdout_sha256") != hashlib.sha256(b"").hexdigest():
         _fail("authoritative source binding command emitted unexpected stdout")
@@ -2764,6 +3263,14 @@ def validate_audit_report(
         "status": "passed",
     }:
         _fail("authoritative source binding report section mismatch")
+    _require_command(
+        commands,
+        "git-smoke",
+        argv=(runtime_path, "-B", audit_script, "--emit-git-smoke"),
+        cwd="/opt/mingli-master",
+        image_id=image_id,
+    )
+    _verify_git_smoke(report.get("git_smoke"), commands)
     tree_argv = (runtime_path, "-B", audit_script, "--emit-tree-identity")
     _require_command(
         commands,
@@ -2777,7 +3284,7 @@ def validate_audit_report(
         "audit-tree-identity",
         argv=tree_argv,
         cwd="/opt/mingli-master",
-        image_id=audit_image_id,
+        image_id=image_id,
     )
     _verify_tree_identity(report.get("runtime_tree_identity"), commands)
     native_linkage_argv = (
@@ -2798,7 +3305,7 @@ def validate_audit_report(
         "audit-native-linkage",
         argv=native_linkage_argv,
         cwd="/opt/mingli-master",
-        image_id=audit_image_id,
+        image_id=image_id,
     )
     _verify_native_linkage_identity(
         report.get("runtime_native_linkage_identity"),
@@ -2828,6 +3335,24 @@ def validate_audit_report(
             cwd=source_root,
             image_id=image_id,
         )
+        _require_command_budget(
+            commands[command_id],
+            expected_timeout_seconds=EXPECTED_PROVIDER_MATRIX_TIMEOUT_SECONDS,
+            label=command_id,
+        )
+    expected_matrix_runs = [
+        {
+            "command_id": command_id,
+            "elapsed_seconds": commands[command_id]["elapsed_seconds"],
+            "timeout_seconds": EXPECTED_PROVIDER_MATRIX_TIMEOUT_SECONDS,
+        }
+        for command_id in ("provider-matrix-a", "provider-matrix-b")
+    ]
+    if report.get("provider_matrix") != {
+        "runs": expected_matrix_runs,
+        "status": "passed",
+    }:
+        _fail("provider matrix elapsed/budget evidence is not exact")
     if (
         commands["provider-matrix-a"]["stdout_sha256"]
         != commands["provider-matrix-b"]["stdout_sha256"]
@@ -2956,6 +3481,8 @@ def validate_audit_report(
         _fail("release regression did not pass")
     if regression.get("test_count") != EXPECTED_TEST_COUNT:
         _fail("release regression must contain exactly 1584 tests")
+    if regression.get("executed_in_image_id") != image_digest:
+        _fail("release regression did not execute in the final production image")
     regression_command = commands.get(regression.get("command_id"))
     if regression_command is None:
         _fail("release regression command evidence is missing")
@@ -2972,8 +3499,25 @@ def validate_audit_report(
             source_root,
         ),
         cwd=source_root,
-        image_id=audit_image_id,
+        image_id=image_id,
     )
+    _require_command_budget(
+        regression_command,
+        expected_timeout_seconds=EXPECTED_RELEASE_REGRESSION_TIMEOUT_SECONDS,
+        label="release regression",
+    )
+    if (
+        regression.get("elapsed_seconds") != regression_command.get("elapsed_seconds")
+        or regression.get("timeout_seconds")
+        != EXPECTED_RELEASE_REGRESSION_TIMEOUT_SECONDS
+        or regression.get("timeout_seconds")
+        != regression_command.get("timeout_seconds")
+    ):
+        _fail("release regression elapsed/budget evidence is not exact")
+    if regression_command.get("executed_in_image_id") != regression.get(
+        "executed_in_image_id"
+    ):
+        _fail("release regression report and command image identity differ")
     regression_stdout = regression_command["stdout_file"].read_text(encoding="utf-8")
     summaries = list(SUMMARY_RE.finditer(regression_stdout))
     if len(summaries) != 1:
@@ -3122,6 +3666,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--release-root", type=Path)
     parser.add_argument("--runtime-python", type=Path)
     parser.add_argument("--node", type=Path)
+    parser.add_argument("--git", type=Path)
     parser.add_argument("--state-root", type=Path)
     parser.add_argument("--research-source", type=Path)
     parser.add_argument("--release-only", action="store_true")
@@ -3142,6 +3687,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             release_root=args.release_root,
             runtime_python=args.runtime_python,
             node=args.node,
+            git=args.git,
             state_root=args.state_root,
             research_source=args.research_source,
             release_only=args.release_only,

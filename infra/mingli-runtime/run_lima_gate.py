@@ -39,6 +39,9 @@ VOLUME_RE = re.compile(r"[a-z0-9][a-z0-9_.-]{0,127}")
 RUNTIME_TMPFS = "/tmp:rw,noexec,nosuid,nodev,size=128m,mode=1777"
 PUBLIC_COPY = "Linux 恢复演练固定正文。"
 FOLLOWUP_PUBLIC_COPY = "Linux 恢复演练追问固定正文。"
+PROVIDER_MATRIX_TIMEOUT_SECONDS = 10_800
+PRODUCTION_AUDIT_TIMEOUT_SECONDS = 32_400
+FINALIZER_TIMEOUT_SECONDS = 21_600
 
 
 class GateError(RuntimeError):
@@ -47,6 +50,26 @@ class GateError(RuntimeError):
 
 def _fail(message: str) -> NoReturn:
     raise GateError(message)
+
+
+def _require_writable_runtime_overlay(argv: Sequence[str], label: str) -> None:
+    """Reject launcher containers that cannot open the signed runtime lock.
+
+    Mingli V5.1 opens ``/opt/mingli-runtime/.venv.runtime.lock`` with
+    ``O_RDWR|O_CREAT`` before every launcher call. Docker's ``--read-only``
+    root filesystem therefore makes readiness fail even when the lock file
+    already exists. These containers are disposable (``--rm``), isolated
+    from the network, and run as the image's fixed non-root user; their
+    temporary overlay must remain writable until the release provides a
+    different lock topology.
+    """
+
+    if "--read-only" in argv:
+        _fail(f"{label} requires a writable ephemeral container overlay")
+    if "--rm" not in argv or "--network=none" not in argv:
+        _fail(f"{label} lacks disposable offline container isolation")
+    if "--privileged" in argv or "--user" in argv:
+        _fail(f"{label} must use the image's fixed non-root identity")
 
 
 def sha256_bytes(value: bytes | bytearray) -> str:
@@ -449,19 +472,20 @@ class BackupRestoreDrill:
         self.evidence_root = evidence_root
 
     def _runtime_argv(self, volume: str) -> list[str]:
-        return [
+        argv = [
             "docker",
             "run",
             "--rm",
             "-i",
             "--network=none",
-            "--read-only",
             "--tmpfs",
             RUNTIME_TMPFS,
             "--mount",
             f"source={volume},target=/var/lib/mingli",
             self.image_id,
         ]
+        _require_writable_runtime_overlay(argv, "Mingli launcher")
+        return argv
 
     def runtime(
         self,
@@ -485,7 +509,13 @@ class BackupRestoreDrill:
         except (UnicodeDecodeError, json.JSONDecodeError, TypeError) as exc:
             raise GateError(f"runtime result is invalid JSON: {command_id}") from exc
         if not isinstance(result, dict) or result.get("kind") != expected_kind:
-            _fail(f"runtime result kind mismatch: {command_id}")
+            actual_kind = result.get("kind") if isinstance(result, dict) else None
+            reason = result.get("reason") if isinstance(result, dict) else None
+            _fail(
+                "runtime result kind mismatch: "
+                f"{command_id} expected={expected_kind!r} "
+                f"actual={actual_kind!r} reason={reason!r}"
+            )
         token = result.get("state_token")
         if not isinstance(token, str) or not token:
             _fail(f"runtime result contains no state capability: {command_id}")
@@ -536,6 +566,19 @@ class BackupRestoreDrill:
             if not isinstance(public_copy, str) or not public_copy:
                 _fail(f"Accepted result has no public copy: {command_id}")
             sanitized["public_copy_sha256"] = sha256_bytes(public_copy.encode("utf-8"))
+        if expected_kind == "stopped":
+            reason = result.get("reason")
+            public_copy = result.get("public_copy")
+            if reason not in {"need_input", "unsupported", "conflict", "error"}:
+                _fail(f"Stopped result has an invalid reason: {command_id}")
+            if not isinstance(public_copy, str) or not public_copy:
+                _fail(f"Stopped result has no public copy: {command_id}")
+            sanitized.update(
+                {
+                    "public_copy_sha256": sha256_bytes(public_copy.encode("utf-8")),
+                    "reason": reason,
+                }
+            )
         sanitized_payload = json_bytes(sanitized)
         record = self.writer.record(
             command_id,
@@ -863,13 +906,30 @@ class BackupRestoreDrill:
             "kind": "prepare",
             "query": "Linux 状态恢复演练",
         }
+        pending_command = {**base_prepare, "facts": {}}
+        source_pending_raw, source_pending = self.runtime(
+            "source-pending-prepare",
+            source_volume,
+            pending_command,
+            expected_kind="stopped",
+        )
+        if source_pending_raw.get("reason") != "need_input":
+            _fail("restore drill did not create the required pending intake")
+        pending_token = str(source_pending_raw["state_token"])
+        source_prepare_command = {**base_prepare, "state_token": pending_token}
         source_prepared_raw, source_prepared = self.runtime(
             "source-prepare",
             source_volume,
-            base_prepare,
+            source_prepare_command,
             expected_kind="prepared",
         )
         source_token = str(source_prepared_raw["state_token"])
+        if (
+            source_token != pending_token
+            or source_prepared["input_token_fingerprint"]
+            != source_pending["token_fingerprint"]
+        ):
+            _fail("pending token did not promote atomically into Prepared")
         source_token_record = self.token_record(
             "source-prepared-token-record",
             source_volume,
@@ -901,7 +961,7 @@ class BackupRestoreDrill:
             prepared_volume,
         )
 
-        replay_command = {**base_prepare, "state_token": source_token}
+        replay_command = dict(source_prepare_command)
         prepared_replay_raw, prepared_replay = self.runtime(
             "prepared-token-replay",
             prepared_volume,
@@ -1000,6 +1060,7 @@ class BackupRestoreDrill:
                 prepared_restored_accepted,
             ),
             "source-accepted": ("source-complete", source_accepted),
+            "source-pending": ("source-pending-prepare", source_pending),
             "source-prepared": ("source-prepare", source_prepared),
         }
         indexed_commands = {record["id"]: record for record in self.writer.commands}
@@ -1207,28 +1268,13 @@ def _build_images(
         input_bytes=context_tar,
         capture=False,
     )
-    print("gate: building audit image", flush=True)
-    vm.docker(
-        [
-            "build",
-            "--platform",
-            "linux/amd64",
-            "--progress=plain",
-            "--target",
-            "audit",
-            "--tag",
-            audit_tag,
-            "-",
-        ],
-        input_bytes=context_tar,
-        capture=False,
-    )
-    return (
-        production_tag,
-        _docker_image_id(vm, production_tag),
-        audit_tag,
-        _docker_image_id(vm, audit_tag),
-    )
+    image_id = _docker_image_id(vm, production_tag)
+    print("gate: aliasing exact production image for audit", flush=True)
+    vm.docker(["tag", production_tag, audit_tag])
+    audit_image_id = _docker_image_id(vm, audit_tag)
+    if audit_image_id != image_id:
+        _fail("audit tag does not resolve to the exact production OCI config")
+    return production_tag, image_id, audit_tag, audit_image_id
 
 
 def _extract_volume(
@@ -1366,7 +1412,7 @@ def run_gate(args: argparse.Namespace) -> Path:
                     "--mount",
                     f"source={volumes['audit_source']},target=/audit-source,readonly",
                     "--entrypoint",
-                    "/usr/bin/git",
+                    "/opt/git/bin/git",
                     audit_image_id,
                     "-C",
                     "/audit-source",
@@ -1398,7 +1444,6 @@ def run_gate(args: argparse.Namespace) -> Path:
                 "run",
                 "--rm",
                 "--network=none",
-                "--read-only",
                 "--tmpfs",
                 RUNTIME_TMPFS,
                 "--mount",
@@ -1420,8 +1465,16 @@ def run_gate(args: argparse.Namespace) -> Path:
                 "--image-id",
                 image_id,
             ]
+            _require_writable_runtime_overlay(
+                production_argv,
+                "production runtime audit",
+            )
             print("gate: running core Gate directly in production", flush=True)
-            vm.docker(production_argv, capture=False, timeout=10800)
+            vm.docker(
+                production_argv,
+                capture=False,
+                timeout=PRODUCTION_AUDIT_TIMEOUT_SECONDS,
+            )
             production_tar = _extract_volume(
                 vm,
                 image_id,
@@ -1445,7 +1498,6 @@ def run_gate(args: argparse.Namespace) -> Path:
                 "run",
                 "--rm",
                 "--network=none",
-                "--read-only",
                 "--tmpfs",
                 RUNTIME_TMPFS,
                 "--mount",
@@ -1477,8 +1529,16 @@ def run_gate(args: argparse.Namespace) -> Path:
                 "--audit-image-id",
                 audit_image_id,
             ]
+            _require_writable_runtime_overlay(
+                audit_argv,
+                "final release regression",
+            )
             print("gate: running Git-only audit finalizer", flush=True)
-            vm.docker(audit_argv, capture=False, timeout=14400)
+            vm.docker(
+                audit_argv,
+                capture=False,
+                timeout=FINALIZER_TIMEOUT_SECONDS,
+            )
 
             output_tar = _extract_volume(
                 vm,

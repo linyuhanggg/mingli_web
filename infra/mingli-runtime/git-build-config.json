@@ -1,0 +1,35 @@
+{
+  "build_jobs": 6,
+  "cflags": "-O2 -g0 -ffile-prefix-map=/opt/git-build/source-{lane}=. -fdebug-prefix-map=/opt/git-build/source-{lane}=.",
+  "compiler": "gcc",
+  "features": {
+    "curl": false,
+    "expat": false,
+    "gettext": false,
+    "openssl": false,
+    "perl": false,
+    "python": false,
+    "tcltk": false
+  },
+  "ldflags": "-Wl,--build-id=none",
+  "license": "GPL-2.0-only",
+  "make_flags": [
+    "BLK_SHA256=YesPlease",
+    "NO_CURL=YesPlease",
+    "NO_EXPAT=YesPlease",
+    "NO_GETTEXT=YesPlease",
+    "INSTALL_SYMLINKS=YesPlease",
+    "NO_OPENSSL=YesPlease",
+    "NO_PERL=YesPlease",
+    "NO_PYTHON=YesPlease",
+    "NO_TCLTK=YesPlease"
+  ],
+  "install_link_strategy": "relative-symlinks",
+  "prefix": "/opt/git",
+  "schema_version": "mingli-git-build-config-v1",
+  "sha1_backend": "sha1dc-built-in",
+  "sha256_backend": "block-built-in",
+  "source_sha256": "ca0ec03fb2696f552f37135a56a0242fa062bd350cb243dc4a15c86f1cafbc99",
+  "source_url": "https://www.kernel.org/pub/software/scm/git/git-2.39.5.tar.gz",
+  "version": "2.39.5"
+}

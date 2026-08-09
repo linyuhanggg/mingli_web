@@ -23,22 +23,31 @@ files with their signed modes, copies the manifest, rejects cache/symlink/path
 escape artifacts, and verifies the completed projection again. It refuses to
 replace an existing destination.
 
-The production image is the default `final` target and contains no Git client.
-The authoritative 1584-test suite includes repository privacy, archive, release
-deployment, and version tests which invoke `git(1)`. Build the derived `audit`
-target only for the Gate. It inherits the production runtime trees, adds Git,
-and is never the deployable image.
+The production image is the default `final` target. It includes the narrowly
+built, frozen Git 2.39.5 runtime required by the authoritative release tests;
+the Gate never substitutes a mutable distribution Git package. The `audit`
+stage adds no bytes. The controller gives the exact production OCI config a
+second audit tag and rejects the run before starting any container unless the
+production, audit, and artifact config digests are identical.
 
 ```bash
 docker build --target final -t mingli-v51:production /tmp/mingli-v51-linux-context
-docker build --target audit -t mingli-v51:audit /tmp/mingli-v51-linux-context
+docker tag mingli-v51:production mingli-v51:audit
 ```
 
 Both external stages pin the same Python 3.14.6 slim-bookworm Linux amd64
 manifest directly in the Dockerfile; no build argument can override it. Node
 26.3.0, the manylinux x86_64 PyYAML wheel, the sxtwl source archive and rebuilt
-CPython 3.14 wheel, astronomy-engine, cnlunar, and vendored iztro are bound to
-the frozen hashes in `dependency-provenance.json` and the generated SBOM.
+CPython 3.14 wheel, astronomy-engine, cnlunar, vendored iztro, and Git are bound
+to the frozen hashes in `dependency-provenance.json` and the generated SBOM.
+Git is built twice from the official 2.39.5 source archive with fixed paths,
+timestamps, compiler flags, SHA1DC collision detection, the built-in SHA-256
+backend, and explicit relative-symlink installation. The two installation
+trees must match before one is copied into production. Production then
+recomputes the executable, build configuration, license, source archive,
+224-entry tree, 144 safe in-tree symlinks, and complete tree digest. A fixed
+Git fixture exercises version, init, config, add, commit, status, ls-files,
+ls-tree, rev-parse, archive, exec-path, and template discovery.
 Node's `libatomic1` dependency is fetched from the timestamped Debian Snapshot
 `20250501T000000Z`, not from the mutable mirror pool. Provenance records both
 the original Debian pool URL and the pinned snapshot fetch URL; Docker also
@@ -57,37 +66,58 @@ the VM. It never depends on `/Users` or `/Volumes` being mounted in Lima. Every
 temporary volume is initialized as root, then owned by `10001:10001`; all real
 runtime and audit commands execute as that non-root identity.
 
+The signed V5.1 launcher opens
+`/opt/mingli-runtime/.venv.runtime.lock` with `O_RDWR|O_CREAT` on every
+invocation. Consequently, containers that call the launcher or
+`probe_runtime_identity` require Docker's writable, disposable container
+overlay and must not use `--read-only`. They remain offline, run as fixed UID
+and GID `10001:10001`, keep the `/opt` image contents root-owned, and use
+`--rm`, so overlay changes are discarded when each command exits. Pure
+state-root, token-record, source, and archive inspection commands remain
+read-only. A production platform that enforces `readOnlyRootFilesystem` must
+instead provide a safe writable single-file mount at the exact lock path;
+without that mount V5.1 readiness fails closed before `describe`.
+
 `audit_runtime.py` uses two explicit evidence phases:
 
-1. `--production-audit` runs directly in the Git-free production image. It
+1. `--production-audit` runs directly in the final deployable production image. It
    recomputes the SBOM and runtime inventory, runs the live 13-Provider matrix
-   twice, characterization twice, P0 trajectories, and the malformed/tamper/
-   launcher-timeout/concurrency/token-replay probes. Every command record is
-   bound to the production OCI config digest.
-2. `--finalize-audit` runs in the derived audit image. It verifies and copies
-   the production evidence bundle, binds the clean source commit to all 217
-   signed files, runs only the Git-dependent 126-target/93-module/1584-test
-   suite, and produces the final report.
+   twice, characterization twice, P0 trajectories, the fixed Git fixture, and
+   the malformed/tamper/launcher-timeout/concurrency/token-replay probes. Every
+   command record is bound to the production OCI config digest.
+2. `--finalize-audit` runs under the audit tag for that exact same OCI config.
+   It verifies and copies the production evidence bundle, binds the clean
+   source commit to all 217 signed files, runs the Git-dependent
+   126-target/93-module/1584-test suite in the final artifact itself, and
+   produces the report.
 
-Both phases independently hash `/opt/mingli-master`,
-`/opt/mingli-runtime/venv`, and `/opt/node`. They also run normalized dynamic
-linkage inspection for the runtime CPython executable, the sxtwl native
-extension, the installed PyYAML C extension, and Node. Every resolved system
-library path and file SHA-256 must be identical between production and the
-derived audit image. The Gate therefore admits the Git-dependent 1584-test
-result only when the code trees, native entry points, and all of their resolved
-system-library bytes are the same bytes present in the deployable Git-free
-production image. The audit phase requires:
+Both phases independently hash four trees: `/opt/mingli-master`,
+`/opt/mingli-runtime/venv`, `/opt/node`, and `/opt/git`. They also run
+normalized dynamic-linkage inspection for five native targets: Git, runtime
+CPython, the sxtwl native extension, the installed PyYAML C extension, and
+Node. Every resolved system-library path and file SHA-256 must be identical.
+The 1584-test result is admitted only when its command record is bound directly
+to the final artifact digest. The audit phase requires:
 
 - a clean, read-only checkout of source commit `494ce0...` at `/audit-source`;
 - a blank writable output mount at `/audit-output`;
 - a CycloneDX SBOM generated for the production image;
 - sanitized backup/restore evidence produced with the production image;
-- the production OCI config digest and the derived audit image ID.
+- one OCI config digest shared by the production tag, audit tag, command
+  records, release-regression section, and final artifact.
 
 Both phases write exact command argv, executing image ID, exit code,
-stdout/stderr bytes, and hashes. `verify_release.py` independently rehashes
-every referenced file before `release-5.1.json` is written.
+stdout/stderr bytes, hashes, elapsed seconds, and the fixed timeout budget.
+The QEMU Linux calibration gives each complete Provider-matrix run 10,800
+seconds. The production-audit watchdog is 32,400 seconds, strictly longer than
+both matrix budgets together plus inventory, P0, probe, SBOM, Git, and identity
+work. The 1,584-test regression keeps its own 10,800-second budget, while its
+finalizer watchdog is 21,600 seconds so source/tree/native verification cannot
+consume the regression window. A command timeout remains a RED capacity result
+and is never reported as an algorithm pass; a non-zero command exit remains an
+algorithm/Gate failure. `verify_release.py` independently rehashes every
+referenced file and validates the recorded elapsed/budget pairs before
+`release-5.1.json` is written.
 
 The Gate intentionally remains RED while `release-5.1.json`, `sbom.cdx.json`,
 or referenced audit evidence is absent. Do not hand-create those files.
@@ -99,13 +129,15 @@ with mode `0700`. Backup must be taken from a quiesced single Runtime replica.
 The drill uses one source volume and two separately created, proven-empty
 destination volumes:
 
-1. run a source `describe`, capture a Prepared snapshot, and restore it into
+1. run a source `describe`, obtain a `Stopped.need_input` token from an
+   intentionally incomplete root Prepare, promote it with one fixed
+   supplemental Prepare, capture that Prepared snapshot, and restore it into
    the first blank volume;
 2. run `describe` in that restored environment and require the protocol,
    manifest digest, all 13 capability records, and raw output bytes to match
    the source result;
-3. replay the same Prepare plus the restored token and prove the Prepared
-   bytes, brief, and token are identical;
+3. replay the exact same supplemental Prepare plus the restored token and
+   prove the Prepared bytes, brief, and token are identical;
 4. Complete that restored Prepared, then use its Accepted token with a new
    query to create and Complete a real version-2 follow-up; the child token
    record must bind version 2, its parent fingerprint, and the original
