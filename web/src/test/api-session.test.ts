@@ -252,3 +252,28 @@ it("clears the API cache after logout so the next call creates a fresh Guest", a
     expect.objectContaining({ method: "POST" }),
   );
 });
+
+it("bounds a stale-CSRF logout retry to one attempt and surfaces the second 403", async () => {
+  const csrfProblem = { title: "CSRF validation failed" };
+  const fetchMock = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(jsonResponse(csrfProblem, 403))
+    .mockResolvedValueOnce(jsonResponse(csrfProblem, 403));
+  vi.stubGlobal("fetch", fetchMock);
+  adoptCsrfToken("device-csrf-token-with-at-least-32-characters");
+  document.cookie = "mingli_csrf=stale-cross-tab-token; path=/";
+
+  await expect(logoutCurrentDevice()).rejects.toMatchObject({
+    name: "ApiError",
+    status: 403,
+    message: "CSRF validation failed",
+  });
+
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(new Headers(fetchMock.mock.calls[0]?.[1]?.headers).get("X-CSRF-Token")).toBe(
+    "stale-cross-tab-token",
+  );
+  expect(new Headers(fetchMock.mock.calls[1]?.[1]?.headers).get("X-CSRF-Token")).toBe(
+    "stale-cross-tab-token",
+  );
+});
