@@ -44,6 +44,21 @@ uv run --directory backend python -m worker.main --poll-interval 2
 npm --prefix web run dev
 ~~~
 
+如果本机持久 SQLite 开发库曾在 `2026-08-10` 的迁移 ID 修复前跑到旧的
+`0003`、`0006` 或 `0007`，先保留数据库备份，再把 `alembic_version`
+中的旧 ID 映射为同一份 schema 的短 ID；这一步只用于旧 SQLite 开发库，
+不要对 PostgreSQL 执行：
+
+~~~sql
+UPDATE alembic_version
+SET version_num = CASE version_num
+  WHEN '0003_reading_integrity_constraints' THEN '0003_reading_integrity'
+  WHEN '0006_generation_attempt_model_receipt' THEN '0006_model_receipt'
+  WHEN '0007_reading_api_idempotency_and_verification' THEN '0007_api_idem_verify'
+  ELSE version_num
+END;
+~~~
+
 浏览器访问 `http://127.0.0.1:3000`。Next.js 把相对 `/api/*` 转发到 `BACKEND_INTERNAL_URL`，默认是 `http://127.0.0.1:8000`；正式浏览器不会看到跨域 API 地址。
 
 如果本机有 Docker Compose，可按 [infra/PHASE_1_RUNBOOK.md](./infra/PHASE_1_RUNBOOK.md) 从 `http://127.0.0.1:8080` 启动完整同源入口。

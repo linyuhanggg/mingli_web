@@ -239,7 +239,7 @@ def test_0007_migration_round_trips_between_0006_and_head(
     config = Config(str(ROOT / "backend" / "alembic.ini"))
 
     command.upgrade(config, "head")
-    command.downgrade(config, "0006_generation_attempt_model_receipt")
+    command.downgrade(config, "0006_model_receipt")
     engine = create_engine(f"sqlite:///{database_path}")
     inspector = inspect(engine)
     assert "reading_idempotency_keys" not in inspector.get_table_names()

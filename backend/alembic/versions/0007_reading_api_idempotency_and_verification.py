@@ -5,8 +5,8 @@ Verification to live outside the runtime/model command path. These two tables
 are additive: the reading job queue keeps working unchanged, and Verification
 never feeds the Prepare/Complete command stream.
 
-Revision ID: 0007_reading_api_idempotency_and_verification
-Revises: 0006_generation_attempt_model_receipt
+Revision ID: 0007_api_idem_verify
+Revises: 0006_model_receipt
 Create Date: 2026-08-10
 """
 
@@ -15,8 +15,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0007_reading_api_idempotency_and_verification"
-down_revision: str | None = "0006_generation_attempt_model_receipt"
+revision: str = "0007_api_idem_verify"
+down_revision: str | None = "0006_model_receipt"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

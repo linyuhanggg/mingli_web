@@ -1,6 +1,6 @@
 """Enforce owner and encrypted-envelope integrity in the database.
 
-Revision ID: 0003_reading_integrity_constraints
+Revision ID: 0003_reading_integrity
 Revises: 0002_profiles_and_readings
 Create Date: 2026-08-09
 """
@@ -9,7 +9,7 @@ from collections.abc import Sequence
 
 from alembic import op
 
-revision: str = "0003_reading_integrity_constraints"
+revision: str = "0003_reading_integrity"
 down_revision: str | None = "0002_profiles_and_readings"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None

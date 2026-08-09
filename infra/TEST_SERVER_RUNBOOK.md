@@ -105,7 +105,18 @@ sudo -u postgres psql -c "CREATE DATABASE fateradar_test OWNER fateradar_test;"
     > /opt/fateradar/shared/backups/<sha>-pre-migration.dump.sha256
   ```
 
-- 备份非空且 hash 已记录才允许 `alembic upgrade head`。
+- 备份非空且 hash 已记录后，必须从该 release 的 backend 目录加载受保护环境，
+  再调用 release 自带的 Alembic；不能用全局命令，也不能让它回退到默认数据库：
+
+  ```bash
+  cd /opt/fateradar/releases/<sha>/backend
+  set -a
+  . /etc/fateradar/test.env
+  set +a
+  test -n "${MINGLI_DATABASE_URL:-}"
+  test "${MINGLI_DATABASE_URL##*/}" = "fateradar_test"
+  .venv/bin/alembic -c alembic.ini upgrade head
+  ```
 
 迁移完成后，local + Fake 环境还要登记一条仅供合同测试使用的 Runtime
 Release，否则发起阅读会按设计返回 503。下面这条记录只允许出现在代码测试库：
