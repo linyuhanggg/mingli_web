@@ -155,8 +155,8 @@ describe("reading detail route shell", () => {
     const level2 = within(article).getAllByRole("heading", { level: 2 });
     expect(level2.map((node) => node.textContent)).toEqual([
       "近七日最值得关注什么？",
-      "事实",
       "判断",
+      "事实",
       "依据与边界",
       "复核与追问",
     ]);

@@ -297,27 +297,27 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
 
             <section
               className={surface.readingSection}
-              aria-labelledby="reading-fact-title"
+              aria-labelledby="reading-judgment-title"
             >
               <span className={surface.sectionIndex} aria-hidden="true">
                 01
               </span>
               <div>
-                <h2 id="reading-fact-title">事实</h2>
-                <FactPanel panel={result.fact_panel} />
+                <h2 id="reading-judgment-title">判断</h2>
+                <AcceptedCopy text={result.accepted_copy} />
               </div>
             </section>
 
             <section
               className={surface.readingSection}
-              aria-labelledby="reading-judgment-title"
+              aria-labelledby="reading-fact-title"
             >
               <span className={surface.sectionIndex} aria-hidden="true">
                 02
               </span>
               <div>
-                <h2 id="reading-judgment-title">判断</h2>
-                <AcceptedCopy text={result.accepted_copy} />
+                <h2 id="reading-fact-title">事实</h2>
+                <FactPanel panel={result.fact_panel} />
               </div>
             </section>
 
@@ -358,44 +358,14 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     }
 
     return (
-      <div className={surface.chartReadingLayout}>
-        <div className={surface.chartToolbar} aria-label="解读范围">
-          <div className={surface.chartTabs}>
-            <span className={surface.chartTab} data-active="true">
-              本命
-            </span>
-            {summary.horizon.start || summary.horizon.end ? (
-              <span className={surface.chartTab}>
-                {formatHorizon(summary.horizon)}
-              </span>
-            ) : (
-              <span className={surface.chartTab}>长期范围</span>
-            )}
-            {chart.activeLuck ? (
-              <span className={surface.chartTab}>大运 {chart.activeLuck}</span>
-            ) : null}
-          </div>
-          <div className={surface.chartToolbarMeta}>
-            <span>{formatDimensionIds(summary.dimension_ids)}</span>
-            <span>版本 v{summary.version}</span>
-          </div>
-        </div>
-
-        <article className={surface.analysisPane} aria-label="解读正文">
-          <header className={surface.analysisHeader}>
-            <div className={surface.analysisTabs} aria-label="分析视图">
-              <span className={surface.analysisTab} data-active="true">
-                结论优先
-              </span>
-              <span className={surface.analysisTabMuted}>盘面作证据</span>
-            </div>
-            <p className={surface.analysisEyebrow}>
-              八字本命
-              {chart.dayMaster ? ` · 日主 ${chart.dayMaster}` : ""}
-              {chart.monthCommand ? ` · ${chart.monthCommand}` : ""}
-            </p>
+      <div className={surface.readingLayout}>
+        <article className={surface.readingBody} aria-label="解读正文">
+          <header className={surface.readingHeader}>
             <h2>{copyParts.headline ?? question}</h2>
-            <p className={surface.analysisLead}>{question}</p>
+            <p>
+              {scopeLabel} · 目标日期 {formatHorizon(summary.horizon)} · 版本 v
+              {summary.version}
+            </p>
           </header>
 
           <section
@@ -423,9 +393,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               <p className={surface.inlineNote}>
                 先看结论，再点开盘面核对服务端公开事实；前端不本地排盘。
               </p>
-              <div className={surface.chartPane} aria-label="命盘区">
-                <BaziChart chart={chart} title="八字命盘" />
-              </div>
+              <BaziChart chart={chart} title="八字命盘" />
             </div>
           </section>
 

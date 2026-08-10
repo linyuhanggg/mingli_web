@@ -727,7 +727,9 @@ describe("bazi chart workspace", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    expect(await screen.findByLabelText("命盘区")).toBeVisible();
+    expect(
+      await screen.findByRole("region", { name: "排盘工作台" }),
+    ).toBeVisible();
     expect(screen.getByRole("article", { name: "解读正文" })).toBeVisible();
     expect(screen.getByText("八字命盘")).toBeVisible();
     expect(screen.getByText("年柱")).toBeVisible();
@@ -875,4 +877,3 @@ describe("bazi chart workspace", () => {
   });
 
 });
-
