@@ -33,7 +33,7 @@
 
 ## 三、下一步（严格顺序，跳过备案支付）
 
-1. 在 `fateradar-prod` 跑 Task 13 真实 HTTP 轨迹并归档证据。
+1. 服务器真实轨迹已 partial 归档（多数 delayed=scope_mismatch）；下一步修模型/prompt/评测以稳住 accepted，并补 follow-up/replay 证据。
 2. 补固定模型质量评测脚手架与 Guard 红队最小集。
 3. 密钥托管/告警/恢复演练。
 4. 以上齐前不放真实业务流量。

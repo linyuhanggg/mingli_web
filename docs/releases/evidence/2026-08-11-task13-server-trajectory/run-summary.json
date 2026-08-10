@@ -1,0 +1,202 @@
+{
+  "adapters": {
+    "MINGLI_ENVIRONMENT": "local",
+    "MINGLI_MODEL_ADAPTER": "deepseek",
+    "MINGLI_MODEL_ID": "deepseek-v4-flash",
+    "MINGLI_MODEL_PROFILE_ID": "deepseek-v4-flash-p0-v1",
+    "MINGLI_OTP_ADAPTER": "fake",
+    "MINGLI_RUNTIME_ADAPTER": "one-shot"
+  },
+  "api_base": "http://127.0.0.1:8080/api/v1",
+  "delayed_backlog": {
+    "after": {
+      "available": true,
+      "counts": {
+        "accepted": 7,
+        "delayed": 13,
+        "terminal_stopped": 1
+      },
+      "total": 21
+    },
+    "before": {
+      "available": true,
+      "counts": {
+        "accepted": 6,
+        "delayed": 10
+      },
+      "total": 16
+    }
+  },
+  "duration_s": 94.1,
+  "exit_code": 2,
+  "generated_at": "2026-08-10T21:53:07+00:00",
+  "hard_failure": true,
+  "identity": {
+    "birth_datetime_marker_scanned": "1994-04-30T05:55:00+08:00",
+    "email_masked": "t***@example.com",
+    "profile": "fictional (not recorded raw)"
+  },
+  "partial_reasons": [
+    "S7-today today fortune: delayed",
+    "S8-week week fortune: delayed",
+    "S9-liuyao-digital-coin liuyao digital_coin: delayed",
+    "S10-follow-up follow-up (new version): terminal_stopped",
+    "sensitive markers found: raw_birth_datetime@S6-preview-bazi-result"
+  ],
+  "raw_log_dir": "/tmp/mingli-task13-run-o7E2iP",
+  "schema": "mingli-task13-server-trajectory-v1",
+  "sensitive_scan": {
+    "found": [
+      {
+        "marker": "raw_birth_datetime",
+        "path": "/readings/68ce155a-14f2-4215-9d6d-709b04f43b56/result",
+        "step_id": "S6-preview-bazi-result"
+      }
+    ],
+    "markers": [
+      "state_token",
+      "prompt_key",
+      "api_key",
+      "raw_birth_datetime",
+      "cookie_token_echo"
+    ]
+  },
+  "server_hostname": "iZuf67fkafnm3w0abdmz3mZ",
+  "steps": [
+    {
+      "detail": {
+        "csrf_matches_cookie": true,
+        "expires_at": "2026-08-11T21:51:32.980604Z"
+      },
+      "http_status": 201,
+      "id": "S1-guest-session",
+      "name": "guest session",
+      "ok": true
+    },
+    {
+      "detail": {
+        "development_code_matches": true,
+        "retry_after_seconds": 60
+      },
+      "http_status": 202,
+      "id": "S2-email-otp",
+      "name": "email OTP request",
+      "ok": true
+    },
+    {
+      "detail": {
+        "csrf_rotated": true,
+        "device_session_set": true
+      },
+      "http_status": 200,
+      "id": "S3-otp-verify",
+      "name": "email OTP verify",
+      "ok": true
+    },
+    {
+      "detail": {
+        "confirm_http_status": 201,
+        "draft_http_status": 201,
+        "private_headers": true,
+        "profile_version_id": "30252024-661b-49e5-b31d-62bd3ca0891c",
+        "subject_ref": "profile-version:30252024-661b-49e5-b31d-62bd3ca0891c"
+      },
+      "http_status": 201,
+      "id": "S4-S5-profile",
+      "name": "profile draft + confirm (fictional)",
+      "ok": true
+    },
+    {
+      "detail": {
+        "accepted_copy_chars": 218,
+        "accepted_copy_sha256": "d66f9636a169b690c138ac34eb0edd0417bc7598f0498bad67d0752966ab165b",
+        "poll_seconds": 15.1,
+        "reading_version_id": "68ce155a-14f2-4215-9d6d-709b04f43b56",
+        "result_http_status": 200,
+        "start_status": "input_ready",
+        "status_path": [
+          "input_ready",
+          "prepared",
+          "accepted"
+        ],
+        "terminal_status": "accepted",
+        "verification": null
+      },
+      "http_status": 201,
+      "id": "S6-preview-bazi",
+      "name": "preview bazi (career)",
+      "ok": true
+    },
+    {
+      "detail": {
+        "poll_seconds": 15.1,
+        "reading_version_id": "218f65e4-6fe5-4c3d-85ef-05ecd3a5c7a9",
+        "start_status": "input_ready",
+        "status_path": [
+          "input_ready",
+          "prepared",
+          "delayed"
+        ],
+        "terminal_status": "delayed"
+      },
+      "http_status": 201,
+      "id": "S7-today",
+      "name": "today fortune",
+      "ok": false
+    },
+    {
+      "detail": {
+        "poll_seconds": 36.3,
+        "reading_version_id": "36bc94bd-7a5b-4ede-b8f4-4fd57753e2b2",
+        "start_status": "input_ready",
+        "status_path": [
+          "input_ready",
+          "prepared",
+          "delayed"
+        ],
+        "terminal_status": "delayed"
+      },
+      "http_status": 201,
+      "id": "S8-week",
+      "name": "week fortune",
+      "ok": false
+    },
+    {
+      "detail": {
+        "input_field_ids": [],
+        "poll_seconds": 24.2,
+        "reading_version_id": "9105f280-7673-493f-8620-47cd5528a8ab",
+        "start_status": "input_ready",
+        "status_path": [
+          "input_ready",
+          "prepared",
+          "delayed"
+        ],
+        "supplied_six_cast_values": false,
+        "terminal_status": "delayed",
+        "waiting_input": false
+      },
+      "http_status": 201,
+      "id": "S9-liuyao-digital-coin",
+      "name": "liuyao digital_coin",
+      "ok": false
+    },
+    {
+      "detail": {
+        "base_reading_version_id": "68ce155a-14f2-4215-9d6d-709b04f43b56",
+        "poll_seconds": 3.0,
+        "reading_version_id": "3fdc73bb-7c77-4bc1-a663-b130c04355ff",
+        "status_path": [
+          "input_ready",
+          "terminal_stopped"
+        ],
+        "terminal_status": "terminal_stopped"
+      },
+      "http_status": 201,
+      "id": "S10-follow-up",
+      "name": "follow-up (new version)",
+      "ok": false
+    }
+  ],
+  "transcript_count": 47
+}

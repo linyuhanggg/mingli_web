@@ -1,0 +1,125 @@
+{
+  "schema": "task13-server-trajectory-analysis-v1",
+  "server_current_at_run": "1c26f0924ce22171b32f0c75a781f7599eec6ed5",
+  "environment": {
+    "MINGLI_ENVIRONMENT": "local",
+    "MINGLI_OTP_ADAPTER": "fake",
+    "MINGLI_RUNTIME_ADAPTER": "one-shot",
+    "MINGLI_MODEL_ADAPTER": "deepseek",
+    "MINGLI_MODEL_ID": "deepseek-v4-flash",
+    "MINGLI_MODEL_PROFILE_ID": "deepseek-v4-flash-p0-v1"
+  },
+  "run_summary": {
+    "schema": "task13-server-trajectory-v1",
+    "api": "http://127.0.0.1:8000/api/v1",
+    "tracks": {
+      "guest": {
+        "status": "ok",
+        "detail": "",
+        "version_id": null
+      },
+      "login": {
+        "status": "ok",
+        "detail": "user_id=89cbed44-d2a2-4a4d-8dc2-ad20c647acde",
+        "version_id": null
+      },
+      "profile": {
+        "status": "ok",
+        "detail": "profile_version_id=04d888ec-c432-408e-965e-3a9e753626f5",
+        "version_id": null
+      },
+      "preview": {
+        "status": "delayed",
+        "detail": "did_not_accept",
+        "version_id": "edf9541b-753f-4c13-8e0f-3b7435aa94f7"
+      },
+      "today": {
+        "status": "delayed",
+        "detail": "did_not_accept",
+        "version_id": "13701fbe-17c4-4980-a4ca-10e14aa03907"
+      },
+      "week": {
+        "status": "delayed",
+        "detail": "did_not_accept",
+        "version_id": "910ebb48-36e9-47a5-b727-f1f54ba64bf4"
+      },
+      "liuyao": {
+        "status": "delayed",
+        "detail": "did_not_accept",
+        "version_id": "18d7f73f-9e44-4e02-83e8-505c9df9ad8a"
+      },
+      "followup": {
+        "status": "skipped",
+        "detail": "base_not_accepted",
+        "version_id": null
+      },
+      "list_scan": {
+        "status": "ok",
+        "detail": "http=200",
+        "version_id": null
+      }
+    },
+    "totals": {
+      "tracks": 9,
+      "accepted": 0,
+      "failed": 0
+    },
+    "note": "OTP fake + real runtime/model on test server; not production; ICP/payment skipped"
+  },
+  "observed_guard_errors_on_delayed": {
+    "dominant": [
+      "scope_mismatch"
+    ],
+    "also_seen": [
+      "invented_specific",
+      "required_dimension_missing",
+      "unknown_dimension",
+      "unknown_limit_ref"
+    ],
+    "interpretation": "Model generate succeeds (receipt outcome=succeeded) but Narrative Guard rejects candidate because blocks reference facts/evidence outside claim_scopes or invent specifics. After two failed attempts the orchestrator marks delayed."
+  },
+  "prior_accepted_with_real_model": [
+    {
+      "id": "68ce155a-14f2-4215-9d6d-709b04f43b56",
+      "capability": "bazi",
+      "dimensions": [
+        "career"
+      ],
+      "model": "deepseek-v4-flash",
+      "guard": []
+    },
+    {
+      "id": "70606d08-71ae-4cec-b13b-803a61d5f99e",
+      "capability": "fortune",
+      "dimensions": [
+        "career"
+      ],
+      "model": "deepseek-v4-flash",
+      "guard": []
+    },
+    {
+      "id": "d4005477-a283-485f-8a9b-1c4be3149e7a",
+      "capability": "bazi",
+      "dimensions": [
+        "overview",
+        "career"
+      ],
+      "model": "deepseek-v4-flash",
+      "guard": []
+    }
+  ],
+  "this_run_product_tracks": {
+    "preview": "delayed after 2x scope_mismatch",
+    "today": "delayed after 2x scope_mismatch",
+    "week": "delayed after 2x scope_mismatch",
+    "liuyao": "waiting_input path exercised then delayed after 2x scope_mismatch",
+    "followup": "skipped because no accepted base in this run"
+  },
+  "sensitive_scan": "runner did not package raw result bodies into repo; list endpoint scanned without key/token hits",
+  "not_in_scope_this_run": [
+    "ICP",
+    "payment",
+    "Secret Manager production",
+    "Guard red-team corpus expansion"
+  ]
+}

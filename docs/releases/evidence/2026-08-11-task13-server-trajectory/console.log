@@ -1,0 +1,71 @@
+05:49:06 START api=http://127.0.0.1:8000/api/v1 email=task13.trajectory.d9da2eb9b1@example.com
+05:49:06 guest ok
+05:49:06 login ok user=89cbed44-d2a2-4a4d-8dc2-ad20c647acde
+05:49:06 profile ok 04d888ec-c432-408e-965e-3a9e753626f5
+05:49:07 preview started edf9541b-753f-4c13-8e0f-3b7435aa94f7
+05:49:07 poll edf9541b-753f-4c13-8e0f-3b7435aa94f7 #1 http=200 status=input_ready
+05:49:09 poll edf9541b-753f-4c13-8e0f-3b7435aa94f7 #2 http=200 status=input_ready
+05:49:11 poll edf9541b-753f-4c13-8e0f-3b7435aa94f7 #3 http=200 status=prepared
+05:49:13 poll edf9541b-753f-4c13-8e0f-3b7435aa94f7 #4 http=200 status=prepared
+05:49:15 poll edf9541b-753f-4c13-8e0f-3b7435aa94f7 #5 http=200 status=prepared
+05:49:17 poll edf9541b-753f-4c13-8e0f-3b7435aa94f7 #6 http=200 status=prepared
+05:49:19 poll edf9541b-753f-4c13-8e0f-3b7435aa94f7 #7 http=200 status=prepared
+05:49:21 poll edf9541b-753f-4c13-8e0f-3b7435aa94f7 #8 http=200 status=prepared
+05:49:23 poll edf9541b-753f-4c13-8e0f-3b7435aa94f7 #9 http=200 status=prepared
+05:49:25 poll edf9541b-753f-4c13-8e0f-3b7435aa94f7 #10 http=200 status=prepared
+05:49:27 poll edf9541b-753f-4c13-8e0f-3b7435aa94f7 #11 http=200 status=prepared
+05:49:29 poll edf9541b-753f-4c13-8e0f-3b7435aa94f7 #12 http=200 status=delayed
+05:49:29 preview ended status=delayed
+05:49:29 today started 13701fbe-17c4-4980-a4ca-10e14aa03907
+05:49:29 poll 13701fbe-17c4-4980-a4ca-10e14aa03907 #1 http=200 status=input_ready
+05:49:31 poll 13701fbe-17c4-4980-a4ca-10e14aa03907 #2 http=200 status=input_ready
+05:49:33 poll 13701fbe-17c4-4980-a4ca-10e14aa03907 #3 http=200 status=input_ready
+05:49:35 poll 13701fbe-17c4-4980-a4ca-10e14aa03907 #4 http=200 status=prepared
+05:49:37 poll 13701fbe-17c4-4980-a4ca-10e14aa03907 #5 http=200 status=prepared
+05:49:39 poll 13701fbe-17c4-4980-a4ca-10e14aa03907 #6 http=200 status=prepared
+05:49:41 poll 13701fbe-17c4-4980-a4ca-10e14aa03907 #7 http=200 status=prepared
+05:49:43 poll 13701fbe-17c4-4980-a4ca-10e14aa03907 #8 http=200 status=delayed
+05:49:43 today ended status=delayed
+05:49:43 week started 910ebb48-36e9-47a5-b727-f1f54ba64bf4
+05:49:43 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #1 http=200 status=input_ready
+05:49:45 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #2 http=200 status=input_ready
+05:49:47 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #3 http=200 status=input_ready
+05:49:49 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #4 http=200 status=input_ready
+05:49:51 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #5 http=200 status=prepared
+05:49:53 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #6 http=200 status=prepared
+05:49:55 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #7 http=200 status=prepared
+05:49:57 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #8 http=200 status=prepared
+05:49:59 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #9 http=200 status=prepared
+05:50:01 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #10 http=200 status=prepared
+05:50:03 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #11 http=200 status=prepared
+05:50:05 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #12 http=200 status=prepared
+05:50:07 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #13 http=200 status=prepared
+05:50:09 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #14 http=200 status=prepared
+05:50:11 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #15 http=200 status=prepared
+05:50:13 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #16 http=200 status=prepared
+05:50:15 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #17 http=200 status=prepared
+05:50:17 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #18 http=200 status=prepared
+05:50:19 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #19 http=200 status=prepared
+05:50:21 poll 910ebb48-36e9-47a5-b727-f1f54ba64bf4 #20 http=200 status=delayed
+05:50:21 week ended status=delayed
+05:50:22 liuyao started 18d7f73f-9e44-4e02-83e8-505c9df9ad8a
+05:50:22 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #1 http=200 status=input_ready
+05:50:24 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #2 http=200 status=input_ready
+05:50:26 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #3 http=200 status=prepared
+05:50:28 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #4 http=200 status=prepared
+05:50:30 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #5 http=200 status=prepared
+05:50:32 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #6 http=200 status=prepared
+05:50:34 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #7 http=200 status=prepared
+05:50:36 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #8 http=200 status=prepared
+05:50:38 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #9 http=200 status=prepared
+05:50:40 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #10 http=200 status=prepared
+05:50:42 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #11 http=200 status=prepared
+05:50:44 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #12 http=200 status=prepared
+05:50:46 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #13 http=200 status=prepared
+05:50:48 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #14 http=200 status=prepared
+05:50:50 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #15 http=200 status=prepared
+05:50:52 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #16 http=200 status=prepared
+05:50:54 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #17 http=200 status=prepared
+05:50:56 poll 18d7f73f-9e44-4e02-83e8-505c9df9ad8a #18 http=200 status=delayed
+05:50:56 liuyao ended status=delayed
+05:50:56 DONE totals={'tracks': 9, 'accepted': 0, 'failed': 0}
