@@ -1,0 +1,12 @@
+runtime launcher : /Users/yuhanglin/.local/share/mingli-web-v51/release/scripts/run_reading_transaction.sh
+release root     : /Users/yuhanglin/.local/share/mingli-web-v51/release
+state root       : /Users/yuhanglin/.local/share/mingli-web-v51/state
+model mode       : auto
+SMOKE FAIL-CLOSED (unexpected): 'ModelCost' object has no attribute 'total_microunits'
+runtime startup   : OK (one-shot-process / 13/13 describe)
+protocol          : mingli-portable-interface-v2
+manifest digest   : 7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342
+capability shape  : 8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60
+inventory         : 217 files / 13 providers / 55 reference packs / 1328 evidence
+capabilities      : bazi, fengshui, fortune, liuren, liuyao, luming-nayin, meihua, physiognomy, qimen, selection, taiyi, xingming, ziwei
+SMOKE_EXIT_CODE=1

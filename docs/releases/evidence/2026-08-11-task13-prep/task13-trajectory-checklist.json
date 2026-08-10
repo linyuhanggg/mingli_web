@@ -1,0 +1,350 @@
+{
+  "checkpoints": [
+    {
+      "auto": true,
+      "id": "T13-01",
+      "name": "Runtime startup gate：13/13 describe + 冻结 manifest digest / capability shape",
+      "notes": "真实启动用 run_local_real_runtime_smoke.sh（需本机 0600 env）",
+      "pending_reason": null,
+      "pytest": [
+        "backend/tests/test_runtime_startup_gate.py"
+      ],
+      "real_command": "scripts/run_local_real_runtime_smoke.sh --skip-model",
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 36,
+          "skipped": 0
+        },
+        "duration_s": 2.0,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_01.log",
+        "status": "passed"
+      }
+    },
+    {
+      "auto": true,
+      "id": "T13-02",
+      "name": "Release inventory 完整性：217 签名文件 / 55 古籍 / 1328 evidence / 13 Provider",
+      "notes": "真实 inventory 数字见 smoke-summary.json（inventory 段）",
+      "pending_reason": null,
+      "pytest": [
+        "backend/tests/test_runtime_startup_gate.py::test_filesystem_release_inspector_recomputes_the_complete_signed_inventory",
+        "backend/tests/test_runtime_startup_gate.py::test_filesystem_release_inspector_rejects_a_tampered_signed_file",
+        "backend/tests/test_runtime_startup_gate.py::test_filesystem_release_inspector_rejects_unsigned_extra_files",
+        "backend/tests/test_runtime_startup_gate.py::test_filesystem_release_inspector_rejects_resigned_but_incomplete_inventories"
+      ],
+      "real_command": "scripts/run_local_real_runtime_smoke.sh --skip-model",
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 7,
+          "skipped": 0
+        },
+        "duration_s": 1.2,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_02.log",
+        "status": "passed"
+      }
+    },
+    {
+      "auto": true,
+      "id": "T13-03",
+      "name": "bazi need_input：新单 → Stopped(need_input) → 续单 → Prepared",
+      "notes": "真实 prepare 冒烟随 smoke 脚本执行",
+      "pending_reason": null,
+      "pytest": [
+        "backend/tests/test_reading_orchestrator_prepare.py"
+      ],
+      "real_command": "scripts/run_local_real_runtime_smoke.sh --model",
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 7,
+          "skipped": 0
+        },
+        "duration_s": 0.2,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_03.log",
+        "status": "passed"
+      }
+    },
+    {
+      "auto": true,
+      "id": "T13-04",
+      "name": "bazi accepted：prepare → 一次模型调用 → guard → accepted（receipt 持久化）",
+      "notes": "真实单次 generate 随 smoke 脚本执行（有密钥时）",
+      "pending_reason": null,
+      "pytest": [
+        "backend/tests/test_reading_orchestrator_complete.py",
+        "backend/tests/test_email_user_journey.py"
+      ],
+      "real_command": "scripts/run_local_real_runtime_smoke.sh --model",
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 12,
+          "skipped": 0
+        },
+        "duration_s": 0.8,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_04.log",
+        "status": "passed"
+      }
+    },
+    {
+      "auto": true,
+      "id": "T13-05",
+      "name": "fortune day：today 精确目标区间 → accepted",
+      "notes": "本地 Fake 全链路已绿；真实区间证据留在 staging 跑",
+      "pending_reason": "隔离 staging 真实 fortune 轨迹需服务端密钥/部署，未配置",
+      "pytest": [
+        "backend/tests/test_readings_api.py::test_today_and_week_jobs_reach_accepted_under_default_local_fake_stack",
+        "backend/tests/test_readings_api.py::test_today_and_week_project_server_horizons",
+        "backend/tests/test_request_compiler.py::test_fortune_compiler_uses_server_normalized_profile_time"
+      ],
+      "real_command": null,
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 4,
+          "skipped": 0
+        },
+        "duration_s": 0.7,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_05.log",
+        "status": "passed"
+      }
+    },
+    {
+      "auto": true,
+      "id": "T13-06",
+      "name": "fortune week：near_seven → accepted",
+      "notes": "同 T13-05；day/week 由同一组本地用例覆盖",
+      "pending_reason": "隔离 staging 真实 fortune 轨迹需服务端密钥/部署，未配置",
+      "pytest": [
+        "backend/tests/test_readings_api.py::test_today_and_week_jobs_reach_accepted_under_default_local_fake_stack",
+        "backend/tests/test_readings_api.py::test_today_and_week_project_server_horizons",
+        "backend/tests/test_request_compiler.py::test_fortune_compiler_uses_server_normalized_profile_time"
+      ],
+      "real_command": null,
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 4,
+          "skipped": 0
+        },
+        "duration_s": 0.7,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_06.log",
+        "status": "passed"
+      }
+    },
+    {
+      "auto": true,
+      "id": "T13-07",
+      "name": "liuyao manual：手动六爻（6..9 自下而上）→ accepted",
+      "notes": "本地 compiler + API 假链路已覆盖",
+      "pending_reason": "隔离 staging 真实 liuyao 轨迹需服务端密钥/部署，未配置",
+      "pytest": [
+        "backend/tests/test_request_compiler.py::test_liuyao_compiler_preserves_manual_order_or_explicit_digital_coin",
+        "backend/tests/test_readings_api.py::test_liuyao_need_input_supply_enqueues_a_tokenized_job"
+      ],
+      "real_command": null,
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 3,
+          "skipped": 0
+        },
+        "duration_s": 0.6,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_07.log",
+        "status": "passed"
+      }
+    },
+    {
+      "auto": true,
+      "id": "T13-08",
+      "name": "liuyao digital：digital_coin 数字卦 → accepted",
+      "notes": "同 T13-07；manual/digital 由同一组本地用例覆盖",
+      "pending_reason": "隔离 staging 真实 liuyao 轨迹需服务端密钥/部署，未配置",
+      "pytest": [
+        "backend/tests/test_request_compiler.py::test_liuyao_compiler_preserves_manual_order_or_explicit_digital_coin",
+        "backend/tests/test_readings_api.py::test_liuyao_need_input_supply_enqueues_a_tokenized_job"
+      ],
+      "real_command": null,
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 3,
+          "skipped": 0
+        },
+        "duration_s": 0.6,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_08.log",
+        "status": "passed"
+      }
+    },
+    {
+      "auto": true,
+      "id": "T13-09",
+      "name": "follow-up：prior_answer 注入新 brief → accepted 新版本",
+      "notes": "本地 API 假链路已覆盖 prior_answer 投影",
+      "pending_reason": "隔离 staging 真实 follow-up 需已 accepted 的真实成稿，未配置",
+      "pytest": [
+        "backend/tests/test_readings_api.py::test_follow_up_creates_a_new_version_with_projected_prior_answer"
+      ],
+      "real_command": null,
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 1,
+          "skipped": 0
+        },
+        "duration_s": 0.6,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_09.log",
+        "status": "passed"
+      }
+    },
+    {
+      "auto": true,
+      "id": "T13-10",
+      "name": "Guard 连续拒绝 → delayed，永不到 complete",
+      "notes": "本地 orchestrator 用例已覆盖 delayed 状态机",
+      "pending_reason": "真实模型 Guard 拒绝轨迹需 staging 真实模型，未配置",
+      "pytest": [
+        "backend/tests/test_reading_orchestrator_complete.py::test_guard_failure_retries_the_same_model_once_then_succeeds",
+        "backend/tests/test_reading_orchestrator_complete.py::test_exhausted_guard_failures_never_call_complete",
+        "backend/tests/test_reading_orchestrator_complete.py::test_safe_failed_model_receipt_is_persisted_with_the_failed_attempt"
+      ],
+      "real_command": null,
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 3,
+          "skipped": 0
+        },
+        "duration_s": 0.3,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_10.log",
+        "status": "passed"
+      }
+    },
+    {
+      "auto": true,
+      "id": "T13-11",
+      "name": "complete 落库后 crash → byte-identical replay → 单 Accepted",
+      "notes": "worker 并发用例需要 MINGLI_TEST_POSTGRES_URL，本地无则 skip",
+      "pending_reason": null,
+      "pytest": [
+        "backend/tests/test_reading_orchestrator_recovery.py",
+        "backend/tests/test_reading_worker.py::test_postgresql_complete_transport_retry_is_delayed_and_exact"
+      ],
+      "real_command": null,
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 5,
+          "skipped": 1
+        },
+        "duration_s": 0.3,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_11.log",
+        "status": "passed"
+      }
+    },
+    {
+      "auto": true,
+      "id": "T13-12",
+      "name": "敏感数据边界：state_token / 出生资料 / Prompt / 密钥不泄漏",
+      "notes": "仓库级边界扫描；staging 侧浏览器/日志/DB 检查仍 pending",
+      "pending_reason": null,
+      "pytest": [
+        "backend/tests/test_sensitive_payloads.py",
+        "backend/tests/test_model_data_boundary.py",
+        "tests/contract/test_openapi_contract.py::test_phase_two_contracts_never_expose_runtime_or_birth_secrets",
+        "backend/tests/test_standalone_model_adapter.py::test_safe_audit_log_excludes_api_key_prompt_and_candidate",
+        "backend/tests/test_standalone_model_adapter.py::test_provider_metadata_can_never_echo_the_api_key_into_a_receipt",
+        "backend/tests/test_standalone_model_adapter.py::test_traceback_locals_never_retain_the_key_prompt_or_authorized_request"
+      ],
+      "real_command": null,
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 12,
+          "skipped": 0
+        },
+        "duration_s": 0.4,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_12.log",
+        "status": "passed"
+      }
+    },
+    {
+      "auto": true,
+      "id": "T13-13",
+      "name": "运维 Gate：Guard 红队 / state volume backup-restore / 告警演练 / Secret Manager",
+      "notes": "契约级 backup-drill 与 local gate 已自动覆盖；实战演练 pending",
+      "pending_reason": "Guard 红队用例集、生产告警演练（runtime_unknown/delayed/guard/model cost）、Secret Manager 密钥托管与轮换、真实 state volume backup/restore 均需隔离 staging/生产凭据，仓库内不可自动跑",
+      "pytest": [
+        "tests/contract/test_mingli_runtime_release.py::test_backup_drill_redacts_pending_token_and_replays_promoted_prepare",
+        "tests/contract/test_mingli_local_gate.py"
+      ],
+      "real_command": null,
+      "result": {
+        "counts": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 50,
+          "skipped": 65
+        },
+        "duration_s": 4.3,
+        "exit_code": 0,
+        "log": "/Volumes/Lexar/code/mingli_web/docs/releases/evidence/2026-08-11-task13-prep/logs/t13_13.log",
+        "status": "passed"
+      }
+    }
+  ],
+  "dry_run": false,
+  "generated_at": "2026-08-10T21:01:20+00:00",
+  "real_smoke": {
+    "exit_code": 0,
+    "status": "passed",
+    "stdout_tail": [
+      "runtime launcher : /Users/yuhanglin/.local/share/mingli-web-v51/release/scripts/run_reading_transaction.sh",
+      "release root     : /Users/yuhanglin/.local/share/mingli-web-v51/release",
+      "state root       : /Users/yuhanglin/.local/share/mingli-web-v51/state",
+      "model mode       : skip",
+      "runtime startup   : OK (one-shot-process / 13/13 describe)",
+      "protocol          : mingli-portable-interface-v2",
+      "manifest digest   : 7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342",
+      "capability shape  : 8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60",
+      "inventory         : 217 files / 13 providers / 55 reference packs / 1328 evidence",
+      "capabilities      : bazi, fengshui, fortune, liuren, liuyao, luming-nayin, meihua, physiognomy, qimen, selection, taiyi, xingming, ziwei",
+      "model smoke       : SKIPPED (explicit --skip-model; Runtime gate only)",
+      "SMOKE_EXIT_CODE=0"
+    ]
+  },
+  "schema": "mingli-task13-trajectory-checklist-v1",
+  "totals": {
+    "auto": 13,
+    "failed": 0,
+    "passed": 13,
+    "pending": 7,
+    "skipped": 0
+  }
+}

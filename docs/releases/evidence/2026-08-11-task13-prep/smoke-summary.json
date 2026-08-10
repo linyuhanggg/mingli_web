@@ -1,0 +1,40 @@
+{
+  "error": null,
+  "exit_code": 0,
+  "finished_at": "2026-08-10T21:01:20+00:00",
+  "model": null,
+  "model_mode": "skip",
+  "runtime": {
+    "adapter_kind": "one-shot-process",
+    "capability_count": 13,
+    "capability_ids": [
+      "bazi",
+      "fengshui",
+      "fortune",
+      "liuren",
+      "liuyao",
+      "luming-nayin",
+      "meihua",
+      "physiognomy",
+      "qimen",
+      "selection",
+      "taiyi",
+      "xingming",
+      "ziwei"
+    ],
+    "capability_shape_sha256": "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60",
+    "inventory": {
+      "evidence_record_count": 1328,
+      "provider_count": 13,
+      "reference_pack_count": 55,
+      "release_file_count": 217,
+      "release_manifest_sha256": "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68",
+      "runtime_closure_file_count": 217
+    },
+    "manifest_digest": "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342",
+    "protocol_version": "mingli-portable-interface-v2"
+  },
+  "schema": "mingli-local-real-smoke-v1",
+  "started_at": "2026-08-10T21:01:19+00:00",
+  "status": "passed"
+}
