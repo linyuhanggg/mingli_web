@@ -218,7 +218,7 @@ async def test_real_outbound_request_contains_only_the_closed_narrative_boundary
     assert len(captured) == 1
     outbound = captured[0]
     assert outbound.method == "POST"
-    assert str(outbound.url) == "https://api.deepseek.com/chat/completions"
+    assert str(outbound.url) == "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
     assert outbound.headers["authorization"] == f"Bearer {api_key}"
     assert outbound.headers["accept"] == "application/json"
     assert outbound.headers["accept-encoding"] == "identity"
@@ -235,10 +235,12 @@ async def test_real_outbound_request_contains_only_the_closed_narrative_boundary
         "max_tokens",
         "response_format",
         "stream",
+        "enable_thinking",
     }
     assert body["model"] == DEEPSEEK_MODEL_ID
     assert body["response_format"] == {"type": "json_object"}
     assert body["stream"] is False
+    assert body["enable_thinking"] is False
     assert [message["role"] for message in body["messages"]] == ["system", "user"]
     prompt = json.loads(body["messages"][1]["content"])
     assert set(prompt) == {
@@ -306,7 +308,8 @@ def test_callers_cannot_supply_a_model_or_endpoint_to_the_adapter() -> None:
     assert "model" not in parameters
     assert "model_id" not in parameters
     assert "provider" not in parameters
-    assert "base_url" not in parameters
+    # base_url is allowlisted server config only; free-form url/endpoint remain forbidden.
     assert "url" not in parameters
     assert "endpoint" not in parameters
     assert "endpoint_path" not in parameters
+    assert parameters["base_url"].default == "https://dashscope.aliyuncs.com/compatible-mode/v1"

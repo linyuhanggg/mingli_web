@@ -11,7 +11,6 @@ from typing import Any
 import httpx
 import pytest
 from app.adapters.model import (
-    DEEPSEEK_BASE_URL,
     DEEPSEEK_CHAT_COMPLETIONS_PATH,
     DEEPSEEK_MODEL_ID,
     DEEPSEEK_MODEL_PROFILE_ID,
@@ -783,7 +782,7 @@ def test_production_model_configuration_freezes_one_deepseek_profile() -> None:
     assert settings.model_adapter == "deepseek"
     assert settings.model_profile_id == DEEPSEEK_MODEL_PROFILE_ID
     assert settings.model_id == DEEPSEEK_MODEL_ID
-    assert settings.model_base_url == DEEPSEEK_BASE_URL
+    assert settings.model_base_url == "https://dashscope.aliyuncs.com/compatible-mode/v1"
     assert settings.model_endpoint_path == DEEPSEEK_CHAT_COMPLETIONS_PATH
     assert settings.model_thinking_mode == "not-sent-p0-v1"
 
@@ -1112,7 +1111,7 @@ async def test_factory_maps_only_server_settings_into_the_adapter() -> None:
     )
 
     assert isinstance(adapter, DeepSeekStandaloneModelAdapter)
-    assert str(adapter._client.base_url) == "https://api.deepseek.com"  # noqa: SLF001
+    assert str(adapter._client.base_url).rstrip("/") == "https://dashscope.aliyuncs.com/compatible-mode/v1"  # noqa: SLF001
     assert adapter._client.follow_redirects is False  # noqa: SLF001
     assert adapter._client._trust_env is False  # noqa: SLF001
     await adapter.aclose()

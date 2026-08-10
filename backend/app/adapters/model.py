@@ -37,6 +37,13 @@ DEEPSEEK_PROVIDER = "deepseek"
 DEEPSEEK_MODEL_ID = "deepseek-v4-flash"
 DEEPSEEK_MODEL_PROFILE_ID = "deepseek-v4-flash-p0-v1"
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
+DASHSCOPE_DEEPSEEK_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+DEEPSEEK_BASE_URL_ALLOWLIST = frozenset(
+    {
+        DEEPSEEK_BASE_URL,
+        DASHSCOPE_DEEPSEEK_BASE_URL,
+    }
+)
 DEEPSEEK_CHAT_COMPLETIONS_PATH = "/chat/completions"
 NARRATIVE_POLICY_INSTRUCTIONS = {
     "policy-v1": (
@@ -142,6 +149,7 @@ class DeepSeekStandaloneModelAdapter:
         price_snapshot: ModelPriceSnapshot,
         audit_sink: ModelAuditSink | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
+        base_url: str = DASHSCOPE_DEEPSEEK_BASE_URL,
         connect_timeout_seconds: float = 5.0,
         read_timeout_seconds: float = 60.0,
         overall_timeout_seconds: float = 75.0,
@@ -152,6 +160,8 @@ class DeepSeekStandaloneModelAdapter:
     ) -> None:
         if not api_key.get_secret_value().strip():
             raise ValueError("DeepSeek API key is required")
+        if base_url not in DEEPSEEK_BASE_URL_ALLOWLIST:
+            raise ValueError("DeepSeek base URL is not allowlisted")
         if min(connect_timeout_seconds, read_timeout_seconds, overall_timeout_seconds) <= 0:
             raise ValueError("model timeouts must be positive")
         if max_response_bytes < 1 or max_output_tokens < 1:
@@ -161,13 +171,14 @@ class DeepSeekStandaloneModelAdapter:
         self._api_key = api_key
         self._price_snapshot = price_snapshot
         self._audit_sink = audit_sink or SafeModelAuditLogger()
+        self._base_url = base_url
         self._overall_timeout_seconds = overall_timeout_seconds
         self._max_response_bytes = max_response_bytes
         self._temperature = temperature
         self._max_output_tokens = max_output_tokens
         self._clock = clock
         self._client = httpx.AsyncClient(
-            base_url=DEEPSEEK_BASE_URL,
+            base_url=base_url,
             transport=transport,
             timeout=httpx.Timeout(
                 connect=connect_timeout_seconds,
@@ -362,7 +373,7 @@ class DeepSeekStandaloneModelAdapter:
                 "max_output_chars": request.max_output_chars,
             },
         }
-        return {
+        body: dict[str, object] = {
             "model": DEEPSEEK_MODEL_ID,
             "messages": [
                 {
@@ -379,6 +390,11 @@ class DeepSeekStandaloneModelAdapter:
             "response_format": {"type": "json_object"},
             "stream": False,
         }
+        # DashScope DeepSeek defaults to thinking mode; thinking tokens can exhaust
+        # max_tokens and return empty content. P0 freezes non-thinking generation.
+        if self._base_url == DASHSCOPE_DEEPSEEK_BASE_URL:
+            body["enable_thinking"] = False
+        return body
 
     def _parse_response(
         self,
@@ -508,7 +524,7 @@ class DeepSeekStandaloneModelAdapter:
         return hashlib.sha256(
             _canonical_json(
                 {
-                    "base_url": DEEPSEEK_BASE_URL,
+                    "base_url": self._base_url,
                     "endpoint_path": DEEPSEEK_CHAT_COMPLETIONS_PATH,
                     "max_output_tokens": self._max_output_tokens,
                     "model_id": DEEPSEEK_MODEL_ID,
@@ -517,7 +533,14 @@ class DeepSeekStandaloneModelAdapter:
                     "response_format": {"type": "json_object"},
                     "stream": False,
                     "temperature": self._temperature,
-                    "thinking_mode": "not-sent-p0-v1",
+                    "thinking_mode": (
+                        "disabled-dashscope-p0-v1"
+                        if self._base_url == DASHSCOPE_DEEPSEEK_BASE_URL
+                        else "not-sent-p0-v1"
+                    ),
+                    "enable_thinking": (
+                        False if self._base_url == DASHSCOPE_DEEPSEEK_BASE_URL else None
+                    ),
                 }
             )
         ).hexdigest()
@@ -549,6 +572,7 @@ def build_deepseek_model_adapter(
         ),
         audit_sink=audit_sink,
         transport=transport,
+        base_url=settings.model_base_url,
         connect_timeout_seconds=settings.model_connect_timeout_seconds,
         read_timeout_seconds=settings.model_read_timeout_seconds,
         overall_timeout_seconds=settings.model_overall_timeout_seconds,

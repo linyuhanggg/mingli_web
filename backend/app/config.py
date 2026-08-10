@@ -30,7 +30,13 @@ _FROZEN_CAPABILITY_SHAPE_SHA256 = "8ce44f539004405dc174236612e7185547057b241d9e5
 _P0_MODEL_PROVIDER = "deepseek"
 _P0_MODEL_PROFILE_ID = "deepseek-v4-flash-p0-v1"
 _P0_MODEL_ID = "deepseek-v4-flash"
-_P0_MODEL_BASE_URL = "https://api.deepseek.com"
+_P0_MODEL_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+_P0_MODEL_BASE_URL_ALLOWLIST = frozenset(
+    {
+        "https://api.deepseek.com",
+        "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    }
+)
 _P0_MODEL_ENDPOINT_PATH = "/chat/completions"
 _P0_MODEL_THINKING_MODE = "not-sent-p0-v1"
 _SAFE_MODEL_METADATA = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
@@ -227,7 +233,7 @@ class Settings(BaseSettings):
             raise ValueError("P0 model profile is not approved")
         if self.model_id != _P0_MODEL_ID:
             raise ValueError("P0 model ID is not approved")
-        if self.model_base_url != _P0_MODEL_BASE_URL:
+        if self.model_base_url not in _P0_MODEL_BASE_URL_ALLOWLIST:
             raise ValueError("P0 model base URL is not allowlisted")
         if self.model_endpoint_path != _P0_MODEL_ENDPOINT_PATH:
             raise ValueError("P0 model endpoint path is not allowlisted")
