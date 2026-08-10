@@ -8,7 +8,7 @@
 
 ## 环境
 
-- 服务器：`fateradar-prod` current `/opt/fateradar/releases/3cd39ed88fe642efa8b0a0eb3e543d189f0db538`（与本地提交 `3cd39ed` 同名，05:54:57 部署）
+- 服务器：`fateradar-prod` current `/opt/fateradar/releases/6ec15786ac8ce110bbf698b1c8578518123b1a2a`（代码提交 `6ec1578`；文档收口 `255ee73`）
 - `MINGLI_ENVIRONMENT=local`
 - OTP：`fake`（development_code `246810`）
 - Runtime：`one-shot`（`/opt/fateradar/shared/mingli-master`）
