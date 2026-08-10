@@ -52,6 +52,8 @@ RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 SystemCallArchitectures=native
 # CPython 3.13 does not JIT, so MemoryDenyWriteExecute is safe here.
 MemoryDenyWriteExecute=true
+# one-shot runtime state lives outside the frozen release tree
+ReadWritePaths=/opt/fateradar/shared/mingli-state /opt/fateradar/shared/mingli-runtime
 
 [Install]
 WantedBy=multi-user.target
