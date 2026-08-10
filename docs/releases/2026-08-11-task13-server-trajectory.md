@@ -2,48 +2,71 @@
 
 记录日期：2026-08-11（Asia/Shanghai）
 
-状态：**测试服真实 HTTP + Worker + 真 Runtime/真模型轨迹已复跑 / 本轮产品轨多数 delayed / production blocked / real traffic disabled**
+状态：**partial（三轮证据已归档）/ production blocked / real traffic disabled**
 
 用户本轮明确：**暂时不管备案和支付**。本记录不评估 ICP/支付 Gate。
 
 ## 环境
 
-- 服务器：`fateradar-prod` current `1c26f09`
+- 服务器：`fateradar-prod` current `/opt/fateradar/releases/3cd39ed88fe642efa8b0a0eb3e543d189f0db538`（与本地提交 `3cd39ed` 同名，05:54:57 部署）
 - `MINGLI_ENVIRONMENT=local`
 - OTP：`fake`（development_code `246810`）
 - Runtime：`one-shot`（`/opt/fateradar/shared/mingli-master`）
 - Model：`deepseek` / `deepseek-v4-flash` / profile `deepseek-v4-flash-p0-v1`
 - 入口：回环 `127.0.0.1:8000/3000/8080`，公网预览 `http://106.14.10.235:18080`
+- Worker：systemd `fateradar-test-worker.service`（active，轮询间隔 2s，只轮询 reading status）
+- 本轮 API 入口用 `http://127.0.0.1:8080/api/v1`（nginx 回环同源，浏览器同路径）
+- 身份：`t***@example.com`（虚构邮箱）/ 虚构出生资料（1994-04-30T05:55:00+08:00，福建省福州市），原文不落库不落仓
 
-## 本轮做了什么
+## 证据文件
 
-1. 固化服务器轨迹脚本：
-   - `scripts/run_server_task13_trajectory.py`
-   - `scripts/run_server_task13_trajectory.sh`
-   - （并行会话另有）`scripts/server_task13_trajectory_payload.py`
-2. 在服务器上以虚构邮箱/出生资料走：
-   guest → OTP 登录 → 建档 → preview / today / week / liuyao
-3. Worker 日志显示模型调用 `outcome=succeeded`（真实 deepseek）
-4. 证据目录：`docs/releases/evidence/2026-08-11-task13-server-trajectory/`
+- `docs/releases/evidence/2026-08-11-task13-server-trajectory/`（第一轮 curl 版 summary/console/analysis + 第二轮 .py 版 run-summary）
+- `docs/releases/evidence/2026-08-11-task13-server-trajectory/run-3-constrained/`（第三轮约束重跑 run-summary）
+- 脚本：`scripts/run_server_task13_trajectory.py`（本机 SSH 编排）、`scripts/server_task13_trajectory_payload.py`（服务器执行）、`scripts/run_server_task13_trajectory.sh`（旧版 curl，保留）
+- 原始 HTTP 响应只保留在服务器 0700 工作目录，未复制回仓库
 
-## 结果（脱敏）
+## 三轮结果（脱敏）
 
-本轮自动化 summary（见 evidence/summary.json）：
+### 第一轮（旧版 curl，8000 入口）
 
-| 轨迹 | 结果 |
-|---|---|
-| guest / login / profile | ok |
-| preview | delayed（2 次 attempt，`guard_errors=["scope_mismatch"]`） |
-| today | delayed（`scope_mismatch`） |
-| week | delayed（`scope_mismatch`） |
-| liuyao | 走过 waiting_input 供 cast 后 delayed（`scope_mismatch`） |
-| follow-up | skipped（本轮无 accepted 基线） |
-| list 敏感扫描 | ok |
+9 条轨迹全 ok/delayed，0 accepted。作为联调通路验证。
 
-同服务器历史里已有真模型 accepted 样本（不构成本轮全量 Task 13 完成）：
+### 第二轮（.py payload，8080 入口）
 
-- bazi accepted + deepseek-v4-flash，guard 空
-- fortune accepted + deepseek-v4-flash，guard 空
+| 步骤 | 内容 | 结果 | 细节 |
+|---|---|---|---|
+| S1 | guest session | ok | 201 |
+| S2 | email OTP request | ok | 202，development_code 匹配 |
+| S3 | email OTP verify | ok | 200，csrf 轮换，device session 建立 |
+| S4-S5 | profile draft + confirm（虚构） | ok | 201/201 |
+| S6 | preview bazi (career) | **accepted** | 218 chars，poll 15s，version `68ce155a-…`，guard 空 |
+| S7 | today fortune | delayed | `scope_mismatch` |
+| S8 | week fortune | delayed | `scope_mismatch` |
+| S9 | liuyao digital_coin | delayed | 无 waiting_input，直接 delayed |
+| S10 | follow-up（新 version） | terminal_stopped | job.status=stopped，prepare 阶段被 Runtime 返回 Stopped，非 need_input |
+
+敏感扫描：1 处命中——`raw_birth_datetime`（字符串 `1994-04-30T05:55:00+08:00`）出现在 preview 那条的 `GET /readings/{id}/result` 的 **fact_panel** 里。
+
+DB 存量：跑前 accepted=6/delayed=10/total=16 → 跑后 accepted=7/delayed=13/terminal_stopped=1/total=21。
+
+### 第三轮（约束重跑，8080 入口）
+
+用 `TASK13_QUERY_PREVIEW/TODAY/WEEK/LIUYAO/FOLLOWUP` 环境变量覆盖 query 文案，约束为"只讲趋势，不写具体公历日期/年份/数字应期"——这是产品级尽力，不是伪造。
+
+| 步骤 | 内容 | 结果 |
+|---|---|---|
+| S1-S5 | guest / OTP / profile | ok |
+| S6 | preview bazi (career) | delayed（version `8debb933-…`） |
+| S7 | today | delayed（`4d46a3dc-…`） |
+| S8 | week | delayed（`2493f10e-…`） |
+| S9 | liuyao digital_coin | delayed（`5f2a6b26-…`，无 waiting_input） |
+| S10 | follow-up | skipped（无 accepted 基线） |
+
+敏感扫描：0 处命中。
+
+DB 存量：跑前 accepted=7/delayed=13/total=21 → 跑后 accepted=7/delayed=17/terminal_stopped=1/total=25（增量 = 4 delayed）。
+
+DB guard 证据（只读）：这 4 个版本 guard_errors 全部 `scope_mismatch`（部分含 `required_dimension_missing`），model_receipt 全部 `succeeded`（deepseek-v4-flash-p0-v1，真实模型调用，latency 4-17s，有 token 用量）。
 
 ## 根因判断
 
@@ -53,22 +76,35 @@
 - 少数伴随 `invented_specific` / `required_dimension_missing`
 - 两次失败后状态机正确进入 `delayed`，未 complete
 
+两个关键负证据：
+
+1. **prompt 约束不解决 Guard 拒绝**：第二轮同 query 的 preview 一次 accepted、一次 delayed，第三轮约束文案反而全 delayed——模型固定质量不稳是主因，不是 query 措辞。
+2. **follow-up 无 accepted 基线即 terminal_stopped**：两条 follow-up 轨迹都未产出新 accepted version（第二轮 baseline 是 terminal_stopped，第三轮 skipped），Task 13 的 follow-up 真轨迹仍未达成。
+
+`fact_panel` 泄漏根因（如实记录，不擅改代码）：`backend/app/readings/service.py:334` 把 Runtime 生成的 `prepare.brief` 直接透传成 `fact_panel`；runtime 侧 `_public_facts()`（`/opt/fateradar/shared/mingli-master/scripts/reading_engine/providers.py` 约 1336 行）把 input fields（含 `birth_datetime`）投影为公开 fact `fact:{subject}/input/{field_id}`，`display_text` 为 `{label}：{value}`。按验收标准算泄漏（原始出生 datetime 出现在 result 响应里），需后续修复。
+
 这证明：
 
 1. 真链路可复跑（登录、建档、起单、prepare、model、guard、delayed/accepted）
 2. 固定模型质量仍不稳，不能放量
+3. Guard 拒绝路径是真实的、可留证的（guard_errors + model_receipt 双证据）
 
 ## 仍 blocked（跳过备案/支付后）
 
-- Task 13 完整真轨迹：fortune/liuyao/follow-up 稳定 accepted 证据不足
-- Guard 红队集与模型质量评测未齐
-- Secret Manager / 告警 / state volume 恢复演练未齐
+- Task 13 完整真轨迹：today/week/liuyao/follow-up 稳定 accepted 证据不足（仅 preview 出现过一次 accepted）
+- Guard 红队集（人为构造的越界/幻觉样本）未做
+- Secret Manager 迁移、告警、state volume 恢复演练未齐
+- fact_panel 泄漏原始 birth datetime，需修
 - 因此：`production blocked / real traffic disabled`
 
 ## 结论
 
 代码与测试服已能跑真 Runtime + 真模型产品链路；**本轮 Task 13 记为 partial**：
 
-- 联调通路成立
-- delayed 路径被真实触发并留证
-- 但因模型 scope 合规不稳，不能宣称 Task 13 完成，更不能上正式流量
+- 联调通路成立（guest/OTP/profile 全 PASS，起单/轮询/状态机正确）
+- delayed 路径被真实触发并留证（guard_errors + model_receipt 双证据）
+- preview accepted 有一次真样本，但 today/week/liuyao/follow-up 均未稳定 accepted
+- 发现 fact_panel 泄漏原始出生 datetime 的缺陷
+- 因模型 scope 合规不稳，不能宣称 Task 13 完成，更不能上正式流量
+
+下一轮重点：Guard 红队集、固定模型评测、fact_panel 泄漏修复、Secret Manager。

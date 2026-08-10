@@ -45,6 +45,22 @@ FAKE_OTP_CODE = "246810"
 POLL_INTERVAL_S = 3.0
 POLL_TIMEOUT_S = 480.0
 
+
+def _env_query(*names: str, default: str) -> str:
+    """Allow constrained re-runs without editing the script defaults.
+
+    Each name is tried in order; the first environment variable that is set
+    (even to the empty string) wins. Defaults keep the script reproducible
+    with its original wording when no override is supplied.
+    """
+
+    import os
+
+    for name in names:
+        if name in os.environ:
+            return os.environ[name]
+    return default
+
 # Fictional identity, deliberately not real personal data (same convention as
 # backend/tests/test_email_user_journey.py).
 FICTIONAL_PROFILE = {
@@ -418,7 +434,10 @@ class TrajectoryRunner:
             "timezone": "Asia/Shanghai",
             "location": "福建省福州市",
             "subject_ref": "t13",
-            "query": "请用数字卦看最近一次合作的结果走向",
+            "query": _env_query(
+                "TASK13_QUERY_LIUYAO",
+                default="请用数字卦看最近一次合作的结果走向",
+            ),
             "dimension_ids": ["outcome"],
         }
         response, body = self.request(
@@ -499,7 +518,12 @@ class TrajectoryRunner:
             "POST",
             f"/readings/{base_version_id}/follow-up",
             step_id=step_id,
-            json_body={"query": "针对刚才的事业预览，请再解读接下来三个月的关键节点"},
+            json_body={
+                "query": _env_query(
+                    "TASK13_QUERY_FOLLOWUP",
+                    default="针对刚才的事业预览，请再解读接下来三个月的关键节点",
+                )
+            },
             headers={**self._csrf(), "Idempotency-Key": f"t13-{step_id}-{uuid4().hex[:20]}"},
         )
         version_id = (body or {}).get("reading_version_id")
@@ -619,7 +643,10 @@ class TrajectoryRunner:
             path="/readings/preview",
             payload={
                 "profile_version_id": profile_version_id,
-                "query": "请从事业维度预览我的整体运势走向",
+                "query": _env_query(
+                    "TASK13_QUERY_PREVIEW",
+                    default="请从事业维度预览我的整体运势走向",
+                ),
                 "dimension_ids": ["career"],
             },
         ) if profile_version_id else {
@@ -632,7 +659,13 @@ class TrajectoryRunner:
             step_id="S7-today",
             name="today fortune",
             path="/readings/today",
-            payload={"profile_version_id": profile_version_id, "query": "请解读今天的运势"},
+            payload={
+                "profile_version_id": profile_version_id,
+                "query": _env_query(
+                    "TASK13_QUERY_TODAY",
+                    default="请解读今天的运势",
+                ),
+            },
         ) if profile_version_id else {
             "id": "S7-today", "name": "today fortune", "ok": False,
             "http_status": None, "detail": {"skipped": True},
@@ -643,7 +676,13 @@ class TrajectoryRunner:
             step_id="S8-week",
             name="week fortune",
             path="/readings/week",
-            payload={"profile_version_id": profile_version_id, "query": "请解读未来七天的运势"},
+            payload={
+                "profile_version_id": profile_version_id,
+                "query": _env_query(
+                    "TASK13_QUERY_WEEK",
+                    default="请解读未来七天的运势",
+                ),
+            },
         ) if profile_version_id else {
             "id": "S8-week", "name": "week fortune", "ok": False,
             "http_status": None, "detail": {"skipped": True},

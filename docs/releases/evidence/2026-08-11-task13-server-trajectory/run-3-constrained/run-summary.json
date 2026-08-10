@@ -1,0 +1,187 @@
+{
+  "adapters": {
+    "MINGLI_ENVIRONMENT": "local",
+    "MINGLI_MODEL_ADAPTER": "deepseek",
+    "MINGLI_MODEL_ID": "deepseek-v4-flash",
+    "MINGLI_MODEL_PROFILE_ID": "deepseek-v4-flash-p0-v1",
+    "MINGLI_OTP_ADAPTER": "fake",
+    "MINGLI_RUNTIME_ADAPTER": "one-shot"
+  },
+  "api_base": "http://127.0.0.1:8080/api/v1",
+  "delayed_backlog": {
+    "after": {
+      "available": true,
+      "counts": {
+        "accepted": 7,
+        "delayed": 17,
+        "terminal_stopped": 1
+      },
+      "total": 25
+    },
+    "before": {
+      "available": true,
+      "counts": {
+        "accepted": 7,
+        "delayed": 13,
+        "terminal_stopped": 1
+      },
+      "total": 21
+    }
+  },
+  "duration_s": 112.5,
+  "exit_code": 1,
+  "generated_at": "2026-08-10T22:04:45+00:00",
+  "hard_failure": true,
+  "identity": {
+    "birth_datetime_marker_scanned": "1994-04-30T05:55:00+08:00",
+    "email_masked": "t***@example.com",
+    "profile": "fictional (not recorded raw)"
+  },
+  "partial_reasons": [
+    "S6-preview-bazi preview bazi (career): delayed",
+    "S7-today today fortune: delayed",
+    "S8-week week fortune: delayed",
+    "S9-liuyao-digital-coin liuyao digital_coin: delayed",
+    "S10-follow-up follow-up (new version): True"
+  ],
+  "raw_log_dir": "/tmp/mingli-task13-run-TqQcSh",
+  "schema": "mingli-task13-server-trajectory-v1",
+  "sensitive_scan": {
+    "found": [],
+    "markers": [
+      "state_token",
+      "prompt_key",
+      "api_key",
+      "raw_birth_datetime",
+      "cookie_token_echo"
+    ]
+  },
+  "server_hostname": "iZuf67fkafnm3w0abdmz3mZ",
+  "steps": [
+    {
+      "detail": {
+        "csrf_matches_cookie": true,
+        "expires_at": "2026-08-11T22:02:53.245716Z"
+      },
+      "http_status": 201,
+      "id": "S1-guest-session",
+      "name": "guest session",
+      "ok": true
+    },
+    {
+      "detail": {
+        "development_code_matches": true,
+        "retry_after_seconds": 60
+      },
+      "http_status": 202,
+      "id": "S2-email-otp",
+      "name": "email OTP request",
+      "ok": true
+    },
+    {
+      "detail": {
+        "csrf_rotated": true,
+        "device_session_set": true
+      },
+      "http_status": 200,
+      "id": "S3-otp-verify",
+      "name": "email OTP verify",
+      "ok": true
+    },
+    {
+      "detail": {
+        "confirm_http_status": 201,
+        "draft_http_status": 201,
+        "private_headers": true,
+        "profile_version_id": "f07ed6b9-109c-46a9-ab24-699121b09a17",
+        "subject_ref": "profile-version:f07ed6b9-109c-46a9-ab24-699121b09a17"
+      },
+      "http_status": 201,
+      "id": "S4-S5-profile",
+      "name": "profile draft + confirm (fictional)",
+      "ok": true
+    },
+    {
+      "detail": {
+        "poll_seconds": 36.3,
+        "reading_version_id": "8debb933-ffea-4bf1-802b-b4817bf22508",
+        "start_status": "input_ready",
+        "status_path": [
+          "input_ready",
+          "prepared",
+          "delayed"
+        ],
+        "terminal_status": "delayed"
+      },
+      "http_status": 201,
+      "id": "S6-preview-bazi",
+      "name": "preview bazi (career)",
+      "ok": false
+    },
+    {
+      "detail": {
+        "poll_seconds": 15.2,
+        "reading_version_id": "4d46a3dc-fe83-418b-afc6-192a11bba118",
+        "start_status": "input_ready",
+        "status_path": [
+          "input_ready",
+          "prepared",
+          "delayed"
+        ],
+        "terminal_status": "delayed"
+      },
+      "http_status": 201,
+      "id": "S7-today",
+      "name": "today fortune",
+      "ok": false
+    },
+    {
+      "detail": {
+        "poll_seconds": 36.3,
+        "reading_version_id": "2493f10e-9561-47ac-9beb-9f2a71296ec5",
+        "start_status": "input_ready",
+        "status_path": [
+          "input_ready",
+          "prepared",
+          "delayed"
+        ],
+        "terminal_status": "delayed"
+      },
+      "http_status": 201,
+      "id": "S8-week",
+      "name": "week fortune",
+      "ok": false
+    },
+    {
+      "detail": {
+        "input_field_ids": [],
+        "poll_seconds": 24.3,
+        "reading_version_id": "5f2a6b26-0c64-44cc-84bc-f4652b1a1922",
+        "start_status": "input_ready",
+        "status_path": [
+          "input_ready",
+          "prepared",
+          "delayed"
+        ],
+        "supplied_six_cast_values": false,
+        "terminal_status": "delayed",
+        "waiting_input": false
+      },
+      "http_status": 201,
+      "id": "S9-liuyao-digital-coin",
+      "name": "liuyao digital_coin",
+      "ok": false
+    },
+    {
+      "detail": {
+        "reason": "no accepted base reading",
+        "skipped": true
+      },
+      "http_status": null,
+      "id": "S10-follow-up",
+      "name": "follow-up (new version)",
+      "ok": false
+    }
+  ],
+  "transcript_count": 50
+}

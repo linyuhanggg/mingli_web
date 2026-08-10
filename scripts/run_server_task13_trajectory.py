@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shlex
 import subprocess
 import sys
@@ -216,12 +217,20 @@ def main() -> int:
         return 2
 
     summary_json = f"{work_dir}/summary.json"
+    query_env = " ".join(
+        f"{key}={shlex.quote(value)}"
+        for key, value in sorted(os.environ.items())
+        if key.startswith("TASK13_QUERY_")
+    )
+    query_prefix = f"{query_env} " if query_env else ""
     command = (
-        f"{_SERVER_BACKEND_PYTHON} {shlex.quote(remote_payload)} "
+        f"{query_prefix}{_SERVER_BACKEND_PYTHON} {shlex.quote(remote_payload)} "
         f"--work-dir {shlex.quote(work_dir)} "
         f"--summary-json {shlex.quote(summary_json)} "
         f"--env-file {shlex.quote(_SERVER_ENV_FILE)}"
     )
+    if query_env:
+        print(f"query overrides: {', '.join(sorted(k for k in os.environ if k.startswith('TASK13_QUERY_')))}")
     print("running trajectory payload on server (may take minutes)...")
     completed = _ssh(args.ssh_host, command, timeout=3600)
     print(completed.stdout)
