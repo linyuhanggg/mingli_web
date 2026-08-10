@@ -30,3 +30,13 @@
 
 - 固定模型质量评测、Guard 红队、Task 13 staging 全轨迹、生产告警与外部合规 Gate 未完成。
 - 未开放公网真实业务流量。
+
+
+## 服务器真实链路（2026-08-11 后续）
+
+- 测试服务器 `fateradar-prod` 已切到 release `cb01d65`，并热修后续 policy/limit 修复。
+- Worker 使用真实 Runtime（`/opt/fateradar/shared/mingli-master` + Linux dedicated venv）与真实 DashScope DeepSeek。
+- 服务器 E2E 已出现 `accepted` 记录，且 generation_attempt 无 guard_errors。
+- 验收期间 OTP 暂回 `fake`（`development_code=246810`），避免邮件通道干扰真模型联调。
+- 仍非 production 放量：备案、支付、正式密钥托管、Task 13 全轨迹与告警未闭环。
+- API Key 仅注入 `/etc/fateradar/test.env`（0600），不进仓库。
