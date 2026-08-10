@@ -144,4 +144,30 @@ describe("ProfileForm", () => {
       }),
     );
   });
+
+  it("restates birth basis choices live before submit", async () => {
+    const user = userEvent.setup();
+    render(<ProfileForm />);
+
+    const summary = screen.getByRole("region", {
+      name: "提交前确认出生口径",
+    });
+    expect(summary).toHaveTextContent("最终以服务端口径为准");
+    expect(summary).toHaveTextContent("未填写出生时间");
+    expect(summary).toHaveTextContent("时辰无法确认");
+
+    await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
+    await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "solar");
+
+    expect(summary).toHaveTextContent("1994-04-30T05:55");
+    expect(summary).toHaveTextContent("Asia/Shanghai");
+    expect(summary).toHaveTextContent("真太阳时");
+    expect(summary).toHaveTextContent("前端只预览这一选择");
+    expect(summary).toHaveTextContent("尚未填写经度");
+    expect(summary).not.toHaveTextContent(/已填写经度/);
+
+    await user.type(screen.getByLabelText("经度（可选）"), "120.1");
+    expect(summary).toHaveTextContent(/已填写经度 120\.1°/);
+  });
 });

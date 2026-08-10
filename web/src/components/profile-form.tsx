@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import {
@@ -17,6 +17,10 @@ import {
 import { localDateTimeWithOffset } from "@/lib/date-time";
 import { isIanaTimeZone } from "@/lib/iana-timezones";
 
+import {
+  BirthBasisSummary,
+  type BirthBasisSummaryValues,
+} from "./birth-basis-summary";
 import styles from "./profile-form.module.css";
 import formControls from "./form-controls.module.css";
 import { IanaTimeZoneOptions } from "./iana-timezone-options";
@@ -107,6 +111,7 @@ export function ProfileForm() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -122,6 +127,35 @@ export function ProfileForm() {
       coordinate_source: "",
     },
   });
+  const [
+    birth_datetime,
+    timezone,
+    location,
+    time_basis_policy,
+    zi_hour_policy,
+    longitude,
+    latitude,
+  ] = useWatch({
+    control,
+    name: [
+      "birth_datetime",
+      "timezone",
+      "location",
+      "time_basis_policy",
+      "zi_hour_policy",
+      "longitude",
+      "latitude",
+    ],
+  });
+  const watchedValues: BirthBasisSummaryValues = {
+    birth_datetime,
+    timezone,
+    location,
+    time_basis_policy,
+    zi_hour_policy,
+    longitude,
+    latitude,
+  };
 
   const handleSave = useCallback(
     async (values: ProfileFormValues) => {
@@ -446,6 +480,8 @@ export function ProfileForm() {
             ) : null}
           </div>
         </div>
+
+        <BirthBasisSummary values={watchedValues} />
 
         {busy ? (
           <p className={formControls.disabledReason} role="status">
