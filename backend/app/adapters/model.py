@@ -49,6 +49,10 @@ NARRATIVE_POLICY_INSTRUCTIONS = {
     "policy-v1": (
         "只使用 Prepared Brief 中的事实、发现、证据、范围和限制来撰写自然中文；"
         "不得补造事实、提高确定性、暴露内部结构或改写引用；"
+        "block.limit_kind_ids 只能使用 brief.limits 已有的 kind_id；"
+        "若 brief.limits 为空，则每个 block 的 limit_kind_ids 必须是空数组；"
+        "fact_refs 与 evidence_refs 只能使用对应 claim_scope 允许的引用；"
+        "必须覆盖 output_contract.required_dimension_ids 中的维度；"
         "只返回一个符合 Candidate JSON Schema 的 JSON object。"
     )
 }
@@ -604,7 +608,19 @@ class FakeModelGateway:
         dimension_id = str(scope.get("dimension_id", "overview"))
         allowed_kinds = _strings(scope.get("allowed_kind_ids"))
         findings = _objects(request.brief.get("findings"))
-        limit_ids = tuple(item for item in request.output_contract.required_limit_kind_ids if item)
+        brief_limit_ids = {
+            str(item.get("kind_id"))
+            for item in _objects(request.brief.get("limits"))
+            if item.get("kind_id")
+        }
+        limit_ids = tuple(
+            item
+            for item in request.output_contract.required_limit_kind_ids
+            if item and item in brief_limit_ids
+        )
+        if not limit_ids and brief_limit_ids:
+            # Keep Fake closed-world when the contract does not require a limit.
+            limit_ids = (sorted(brief_limit_ids)[0],)
 
         candidate = NarrativeCandidate.from_dict(
             {

@@ -14,7 +14,7 @@ PREVIEW_V1 = OutputContract(
     max_blocks=4,
     max_output_chars=1200,
     required_dimension_ids=("career",),
-    required_limit_kind_ids=("limit:traditional",),
+    required_limit_kind_ids=(),
     disclosure_text="AI 辅助生成，仅供传统文化参考。",
 )
 

@@ -215,7 +215,9 @@ def test_evidence_must_support_a_fact_used_by_the_same_claim() -> None:
 def test_required_output_dimensions_and_limits_must_be_covered() -> None:
     guard_module = importlib.import_module("app.readings.narrative_guard")
     candidate = load_candidate()
-    candidate["blocks"][0]["limit_kind_ids"] = []
+    # preview-v1 no longer hard-requires a limit id, because real runtime briefs
+    # may emit an empty limits array; still require the contract dimension.
+    candidate["blocks"][0]["dimension_id"] = "relationship"
 
     result = guard_module.NarrativeGuard().validate(
         candidate,
@@ -223,7 +225,7 @@ def test_required_output_dimensions_and_limits_must_be_covered() -> None:
         output_contract="preview-v1",
     )
 
-    assert "required_limit_missing" in result.errors
+    assert "required_dimension_missing" in result.errors
 
 
 def test_guard_proves_reference_closure_not_general_semantic_entailment() -> None:
