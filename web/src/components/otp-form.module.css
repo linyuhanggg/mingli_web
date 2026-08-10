@@ -41,13 +41,6 @@
   display: none;
 }
 
-.intro {
-  margin: 0.9rem 0 0;
-  color: var(--ink-700);
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-
 .methodActive,
 .methodLocked {
   display: grid;
@@ -127,6 +120,13 @@
   border-radius: var(--radius-sm);
   background: var(--ivory-50);
   color: var(--ink-950);
+}
+
+.field input:focus-visible,
+.submit:focus-visible,
+.secondary:focus-visible {
+  outline: 3px solid var(--terracotta-500);
+  outline-offset: 3px;
 }
 
 .hint {

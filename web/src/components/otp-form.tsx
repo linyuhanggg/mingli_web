@@ -239,9 +239,6 @@ export function OtpForm() {
           重新连接
         </button>
       ) : null}
-      <p className={styles.intro}>
-        邮箱是默认登录方式：首次验证自动创建账户，已有邮箱直接登录。手机号入口稍后开放。
-      </p>
       <ul
         className={styles.methods}
         aria-label="登录方式"
@@ -304,7 +301,7 @@ export function OtpForm() {
       {phase === "code" && challenge ? (
         <form onSubmit={codeForm.handleSubmit(verifyCode)} noValidate aria-label="验证登录">
           {challenge.development_code ? (
-            <p className={styles.hint}>本地测试验证码：{challenge.development_code}</p>
+            <p className={styles.hint}>调试码（仅开发/测试环境）：{challenge.development_code}</p>
           ) : null}
           <p className={styles.codeMeta} role="status">
             {deliveryAttempt > 1

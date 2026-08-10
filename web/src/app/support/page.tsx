@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function SupportPage() {
   return (
     <EditorialPage
-      eyebrow="Support"
+      eyebrow="FateRadar · Support"
       title="事情卡住时，先看状态，再找对应入口。"
       intro="Phase 1 先提供清楚的帮助边界。真实工单渠道和服务时段会在运营主体确认后补充，不展示虚构联系方式。"
     >
@@ -34,13 +34,10 @@ export default function SupportPage() {
           <p>正式账户区将提供数据导出、档案删除、设备撤销与账号删除申请。</p>
         </article>
       </section>
-      <p className={styles.notice}>
-        人工支持入口将在客服主体、服务时间与隐私处理流程确认后启用。紧急医疗、法律或人身安全问题请直接联系相应专业机构。
-      </p>
       <StatusPanel
         state="disabled"
-        title="人工工单入口尚未启用"
-        description="真实客服主体、服务时间与隐私处理流程确认前，不展示虚构电话、邮箱或即时在线状态。"
+        title="人工支持入口尚未启用"
+        description="真实客服主体、服务时间与隐私处理流程确认前，不展示虚构电话、邮箱或即时在线状态。紧急医疗、法律或人身安全问题请直接联系相应专业机构。"
       />
     </EditorialPage>
   );

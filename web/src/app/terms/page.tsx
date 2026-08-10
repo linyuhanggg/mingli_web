@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <EditorialPage
-      eyebrow="Terms · Development notice"
+      eyebrow="FateRadar · Terms"
       title="说清楚能交付什么，也说清楚不能承诺什么。"
       intro="本页是进入正式法律审阅前的产品合同草案。运营主体、争议处理、退款细则与生效日期必须在上线 Gate 中由真实资料替换。"
     >

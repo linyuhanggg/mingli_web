@@ -11,8 +11,8 @@ export default function NewProfilePage() {
   return (
     <div className={styles.page}>
       <AppPageHeader
-        title="建立一份可复现的受测档案。"
-        description="先确认原始资料和时间口径，再由服务端规范化。修改资料会产生新版本，不覆盖已经用于解读的历史快照。"
+        title="先确认出生事实，再进入可复现的推算。"
+        description="原始资料与时间口径由你最后确认，再由服务端规范化。修改资料会产生新版本，不覆盖已经用于解读的历史快照。"
         meta={
           <>
             <span><ScanLine aria-hidden="true" size={15} /> 游客可先核对输入</span>

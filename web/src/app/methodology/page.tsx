@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function MethodologyPage() {
   return (
     <EditorialPage
-      eyebrow="Methodology"
+      eyebrow="FateRadar · Methodology"
       title="先算再讲，证据和边界都能回看。"
       intro="命理核心、模型表达与产品交付各管一件事。换模型不会改盘，用户反馈也不会覆盖历史事实。"
     >

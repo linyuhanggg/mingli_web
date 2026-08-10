@@ -18,11 +18,11 @@ export function EditorialPage({ eyebrow, title, intro, children }: EditorialPage
       <main className={styles.main} id="main-content" tabIndex={-1}>
         <Container>
           <header className={styles.hero}>
-            <h1>{title}</h1>
-            <div className={styles.heroAside}>
-              <p className={styles.intro}>{intro}</p>
+            <div className={styles.heroCopy}>
+              <h1>{title}</h1>
               <p className={styles.folio}>{eyebrow}</p>
             </div>
+            <p className={styles.intro}>{intro}</p>
           </header>
           <div className={styles.content}>{children}</div>
         </Container>

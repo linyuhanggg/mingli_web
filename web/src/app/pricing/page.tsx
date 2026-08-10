@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function PricingPage() {
   return (
     <EditorialPage
-      eyebrow="Pricing · P0 catalog"
+      eyebrow="FateRadar · Pricing"
       title="每一次付款，都绑定一份明确结果。"
       intro="先免费建立信任，需要更完整的主题报告时再单次购买。当前在线支付尚未开放，不会产生真实扣款。"
     >
@@ -59,13 +59,10 @@ export default function PricingPage() {
           </p>
         </article>
       </section>
-      <p className={styles.notice}>
-        当前不开放自动续费、代币余额、充值钱包或永久无限 AI。真实微信与支付宝支付须在商户能力获批并完成小额验收后另行启用。
-      </p>
       <StatusPanel
         state="disabled"
         title="在线购买暂未开放"
-        description="支付方式必须由服务端 Payment Capability 决定。当前不展示微信、支付宝或二维码入口，也不会把按钮点击写成已付款。"
+        description="当前不开放自动续费、代币余额、充值钱包或永久无限 AI。真实微信与支付宝支付须在商户能力获批并完成小额验收后另行启用，按钮点击不会被写成已付款。"
       />
     </EditorialPage>
   );

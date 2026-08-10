@@ -193,6 +193,45 @@
   margin-top: 1.25rem;
 }
 
+.flowList {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border-emphasis);
+  list-style: none;
+}
+
+.flowItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding-block: 1.35rem;
+  border-bottom: 1px solid var(--border-emphasis);
+}
+
+.flowItem h3 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.22rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+.flowItem p {
+  max-width: 56ch;
+  margin: 0.35rem 0 0;
+  color: var(--ink-700);
+  font-size: 0.9rem;
+}
+
+.flowItem .actionRow {
+  margin-top: 0;
+}
+
 .button,
 .secondaryButton,
 .quietButton {

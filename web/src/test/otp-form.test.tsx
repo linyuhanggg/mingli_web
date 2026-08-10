@@ -63,7 +63,7 @@ async function reachCodePhase(
   await screen.findByText("安全会话已建立");
   await user.type(screen.getByRole("textbox", { name: "邮箱地址" }), email);
   await user.click(screen.getByRole("button", { name: "发送验证码" }));
-  await screen.findByText("本地测试验证码：246810");
+  await screen.findByText("调试码（仅开发/测试环境）：246810");
   expect(fetchMock).toHaveBeenCalledTimes(2);
 }
 
@@ -101,15 +101,17 @@ it("bootstraps through the shared API, defaults to email, and locks the phone en
   expect(within(methods).queryByRole("button")).not.toBeInTheDocument();
 });
 
-it("explains that the first verification creates the account and an existing email signs in", async () => {
+it("keeps account-creation copy on the page header instead of inside the form", async () => {
   const fetchMock = guestWithRequestFlow();
   vi.stubGlobal("fetch", fetchMock);
 
   render(<OtpForm />);
 
   await screen.findByText("安全会话已建立");
-  expect(screen.getByText(/首次验证自动创建账户/)).toBeVisible();
-  expect(screen.getByText(/已有邮箱直接登录/)).toBeVisible();
+  expect(screen.getByText(/验证码将发送到该邮箱/)).toBeVisible();
+  expect(screen.getByText(/邮箱验证码/)).toBeVisible();
+  expect(screen.queryByText(/首次验证自动创建账户/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/已有邮箱直接登录/)).not.toBeInTheDocument();
 });
 
 it("requests an email OTP and moves focus to the code input", async () => {
@@ -397,5 +399,19 @@ describe("otp form a11y css contract", () => {
         .find((body) => /(^|\n)\s*color\s*:/.test(body)) ?? "";
     expect(locked).toContain("var(--ink-700)");
     expect(locked).not.toContain("var(--ink-500)");
+  });
+
+  it("keeps 44px+ controls: 48px inputs and 44px buttons", () => {
+    expect(ruleFor(css, ".field input")).toContain("min-height: 3rem");
+    expect(ruleFor(css, ".submit")).toContain("min-height: 2.75rem");
+    expect(ruleFor(css, ".secondary")).toContain("min-height: 2.75rem");
+  });
+
+  it("keeps a visible keyboard focus outline on inputs and actions", () => {
+    expect(css).toContain(".field input:focus-visible");
+    expect(css).toContain(".submit:focus-visible");
+    expect(css).toContain(".secondary:focus-visible");
+    expect(css).toContain("outline: 3px solid var(--terracotta-500)");
+    expect(css).toContain("outline-offset: 3px");
   });
 });

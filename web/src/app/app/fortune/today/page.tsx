@@ -10,8 +10,8 @@ export default function FortuneTodayPage() {
   return (
     <div className={styles.page}>
       <AppPageHeader
-        title="今日解读"
-        description="从已确认档案出发，查看服务端确定日期范围内的轻量提示；这一天不会在这里凭空生成。"
+        title="今日阶段解读"
+        description="从已确认档案出发，发起今日的阶段解读；本页是阶段解读页，不是私人首页的当日总览，日期范围由服务端确认，结果不会凭空生成。"
         meta={
           <>
             <span><CalendarDays aria-hidden="true" size={15} /> 日期范围由服务端确认</span>

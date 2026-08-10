@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <EditorialPage
-      eyebrow="Privacy · Development notice"
+      eyebrow="FateRadar · Privacy"
       title="个人资料只为这次明确任务服务。"
       intro="本页是 Phase 1 的产品与工程边界说明，不冒充已经过法律审阅的最终隐私政策。上线前会补齐真实主体、第三方清单、保存期限和联系渠道。"
     >

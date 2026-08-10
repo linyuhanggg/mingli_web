@@ -17,7 +17,7 @@ import styles from "./private-shell.module.css";
 
 
 const navigation = [
-  { href: "/app", label: "今日", icon: CalendarDays },
+  { href: "/app", label: "首页", icon: CalendarDays },
   { href: "/app/profiles", label: "档案", icon: FolderLock },
   { href: "/app/ask/liuyao", label: "问事", icon: BookOpenText },
   { href: "/app/readings", label: "解读", icon: FileClock },

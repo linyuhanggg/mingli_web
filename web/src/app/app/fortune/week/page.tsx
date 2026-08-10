@@ -10,8 +10,8 @@ export default function FortuneWeekPage() {
   return (
     <div className={styles.page}>
       <AppPageHeader
-        title="近七日解读"
-        description="从已确认档案出发，查看服务端确定日期范围内的轻量提示；这段日期不会在浏览器里推算。"
+        title="近七日阶段解读"
+        description="从已确认档案出发，发起近七日的阶段解读；日期范围由服务端确认，不在浏览器里推算。"
         meta={
           <>
             <span><CalendarDays aria-hidden="true" size={15} /> 日期范围由服务端确认</span>

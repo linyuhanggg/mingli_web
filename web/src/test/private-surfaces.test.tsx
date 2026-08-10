@@ -126,7 +126,7 @@ describe("private P0 surfaces", () => {
     expect(within(mobileNavigation).getByRole("link", { name: "解读" })).toHaveAttribute("href", "/app/readings");
     expect(within(desktopNavigation).getByRole("link", { name: "解读", hidden: true })).toHaveAttribute("aria-current", "page");
     expect(within(mobileNavigation).getByRole("link", { name: "解读" })).toHaveAttribute("aria-current", "page");
-    expect(within(mobileNavigation).getByRole("link", { name: "今日" })).not.toHaveAttribute("aria-current");
+    expect(within(mobileNavigation).getByRole("link", { name: "首页" })).not.toHaveAttribute("aria-current");
   });
 
   it("keeps a single page title on the new profile surface and exposes the form title as h2", () => {

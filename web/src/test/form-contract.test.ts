@@ -138,8 +138,9 @@ describe("private title scale and shell surface contract", () => {
     const shell = read("private-shell.module.css");
     const desktopShell = shell.slice(shell.indexOf("@media (min-width: 64rem)"));
     const aside = ruleFor(desktopShell, ".aside");
-    expect(aside).toContain("background: var(--ink-900)");
-    expect(aside).toMatch(/border-right: 1px solid var\(--border-hero-orbit\)/);
+    expect(aside).toContain("var(--ink-900)");
+    expect(aside).toMatch(/border-right: 1px solid rgb\(248 243 231 \/ 12%\)/);
+    expect(aside).toMatch(/rgb\(169 133 63/);
   });
 
   it("keeps the five-item mobile bottom bar and its safe-area padding", () => {

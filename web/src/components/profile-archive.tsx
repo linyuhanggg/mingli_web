@@ -121,14 +121,9 @@ export function ProfileArchive() {
           actionHref="/app/profile/new"
           actionLabel="开始建立档案"
         />
-        <section className={surface.paper} aria-labelledby="profile-flows-title">
-          <div className={surface.sectionHeader}>
-            <div>
-              <h2 id="profile-flows-title">从这里进入可用流程</h2>
-              <p>今日与近七日解读都从已保存的档案版本出发。</p>
-            </div>
-          </div>
-          <ul className={styles.flowList}>
+        <nav className={styles.emptyFlows} aria-label="可用入口">
+          <span>在没有保存档案前，也可以先看这里：</span>
+          <ul>
             <li>
               <Link href="/app/fortune/today">发起今日解读</Link>
             </li>
@@ -139,7 +134,7 @@ export function ProfileArchive() {
               <Link href="/app/profile/new">修改并保存新版本</Link>
             </li>
           </ul>
-        </section>
+        </nav>
       </>
     );
   }
