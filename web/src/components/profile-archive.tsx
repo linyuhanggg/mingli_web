@@ -1,9 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-import { ApiError, listProfiles, type ProfileSummary } from "@/lib/api";
+import {
+  ApiError,
+  formatProfileOption,
+  listProfiles,
+  startPreviewReading,
+  type ProfileSummary,
+} from "@/lib/api";
+import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
 
 import surface from "./app-surface.module.css";
 import { StatusPanel } from "./status-panel";
@@ -29,11 +37,17 @@ function errorMessage(error: unknown): string {
 }
 
 export function ProfileArchive() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const justCreated = searchParams.get("created") === "1";
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<ProfileSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [startingId, setStartingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const intentKeyRef = useRef<IntentKey | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,7 +82,28 @@ export function ProfileArchive() {
     setError(null);
     setSessionExpired(false);
     setProfiles(null);
+    setActionError(null);
     setAttempt((value) => value + 1);
+  }
+
+  async function handleStartBazi(profileVersionId: string) {
+    if (startingId) return;
+    setStartingId(profileVersionId);
+    setActionError(null);
+    const payload = {
+      profile_version_id: profileVersionId,
+      query: "看一下这个八字",
+      dimension_ids: ["overview"] as ("overview" | "career")[],
+    };
+    const intent = stableKeyForIntent(intentKeyRef.current, payload);
+    intentKeyRef.current = intent;
+    try {
+      const response = await startPreviewReading(payload, intent.key);
+      router.push(`/app/readings/${response.reading_version_id}`);
+    } catch (err) {
+      setActionError(errorMessage(err));
+      setStartingId(null);
+    }
   }
 
   if (loading) {
@@ -139,35 +174,84 @@ export function ProfileArchive() {
     );
   }
 
+  const latest = profiles[0];
+
   return (
-    <section className={surface.paper} aria-labelledby="profile-archive-title">
-      <div className={surface.sectionHeader}>
-        <div>
-          <h2 id="profile-archive-title">已保存的档案版本</h2>
-          <p>这里只展示服务端返回的安全字段，不包含加密载荷或设备内草稿。</p>
+    <>
+      {justCreated ? (
+        <StatusPanel
+          state="success"
+          title="档案已保存"
+          description="新的不可变档案版本已经落库。下一步可以直接看八字概览，或发起今日/近七日。"
+          actionHref={`/app/bazi?profile=${encodeURIComponent(latest.profile_version_id)}`}
+          actionLabel="查看八字概览"
+        />
+      ) : null}
+
+      {actionError ? (
+        <StatusPanel state="error" title="无法启动八字概览" description={actionError} />
+      ) : null}
+
+      <section className={surface.paper} aria-labelledby="profile-archive-title">
+        <div className={surface.sectionHeader}>
+          <div>
+            <h2 id="profile-archive-title">已保存的档案版本</h2>
+            <p>
+              这里只展示服务端返回的安全字段。建档后先从这里看八字，或继续今日/近七日。
+            </p>
+          </div>
         </div>
-      </div>
-      <ul className={styles.profileList}>
-        {profiles.map((entry) => (
-          <li key={entry.profile_version_id} className={styles.profileItem}>
-            <strong className={styles.profileName}>档案 v{entry.version}</strong>
-            <span className={styles.profileMeta}>
-              {formatProfileTime(entry.created_at)}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <div className={surface.actionRow}>
-        <Link className={surface.secondaryButton} href="/app/profile/new">
-          新建档案版本
-        </Link>
-        <Link className={surface.secondaryButton} href="/app/fortune/today">
-          发起今日解读
-        </Link>
-        <Link className={surface.secondaryButton} href="/app/fortune/week">
-          发起近七日解读
-        </Link>
-      </div>
-    </section>
+        <ul className={styles.profileList}>
+          {profiles.map((entry) => (
+            <li key={entry.profile_version_id} className={styles.profileItem}>
+              <div className={styles.profileMain}>
+                <strong className={styles.profileName}>
+                  {formatProfileOption(entry)}
+                </strong>
+                <span className={styles.profileMeta}>
+                  确认于 {formatProfileTime(entry.created_at)}
+                </span>
+              </div>
+              <div className={styles.profileActions}>
+                <button
+                  type="button"
+                  className={surface.secondaryButton}
+                  disabled={startingId === entry.profile_version_id}
+                  aria-busy={startingId === entry.profile_version_id}
+                  onClick={() => handleStartBazi(entry.profile_version_id)}
+                >
+                  {startingId === entry.profile_version_id
+                    ? "正在启动八字…"
+                    : "查看八字概览"}
+                </button>
+                <Link
+                  className={surface.secondaryButton}
+                  href={`/app/fortune/today?profile=${encodeURIComponent(entry.profile_version_id)}`}
+                >
+                  今日
+                </Link>
+                <Link
+                  className={surface.secondaryButton}
+                  href={`/app/fortune/week?profile=${encodeURIComponent(entry.profile_version_id)}`}
+                >
+                  近七日
+                </Link>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <div className={surface.actionRow}>
+          <Link className={surface.secondaryButton} href="/app/profile/new">
+            新建档案版本
+          </Link>
+          <Link className={surface.secondaryButton} href="/app/bazi">
+            直接发起八字概览
+          </Link>
+          <Link className={surface.secondaryButton} href="/app/readings">
+            查看解读历史
+          </Link>
+        </div>
+      </section>
+    </>
   );
 }

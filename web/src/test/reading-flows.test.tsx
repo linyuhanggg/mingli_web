@@ -18,6 +18,7 @@ vi.mock("next/navigation", () => ({
     refresh: vi.fn(),
     prefetch: vi.fn(),
   }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 function jsonResponse(body: unknown, status = 200) {
@@ -123,7 +124,9 @@ describe("Profile contract", () => {
     await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
 
-    await waitFor(() => expect(routerPush).toHaveBeenCalledWith("/app"));
+    await waitFor(() =>
+      expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
+    );
     const draftCall = callsTo(fetchMock, "/api/v1/profiles/drafts")[0];
     expect(JSON.parse(String(draftCall[1]?.body))).toEqual({ label: "本人" });
 
@@ -210,7 +213,9 @@ describe("Profile contract", () => {
     await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
 
-    await waitFor(() => expect(routerPush).toHaveBeenCalledWith("/app"));
+    await waitFor(() =>
+      expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
+    );
     expect(guestCalls).toBe(2);
     expect(draftCalls).toBe(2);
   });

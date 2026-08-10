@@ -18,12 +18,16 @@ vi.mock("next/navigation", () => ({
     refresh: vi.fn(),
     prefetch: vi.fn(),
   }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 const api = vi.hoisted(() => ({
   getCsrfToken: vi.fn(),
   listProfiles: vi.fn(),
   listReadings: vi.fn(),
+  startPreviewReading: vi.fn(),
+  formatProfileOption: (profile: { version: number; created_at: string }) =>
+    `档案 ${profile.version}`,
 }));
 
 vi.mock("@/lib/api", () => api);

@@ -129,7 +129,9 @@ describe("ProfileForm", () => {
     await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
 
-    await waitFor(() => expect(routerPush).toHaveBeenCalledWith("/app"));
+    await waitFor(() =>
+      expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
+    );
     expect(api.createProfileDraft).toHaveBeenCalledWith("本人");
     expect(api.confirmProfileDraft).toHaveBeenCalledWith(
       "55555555-5555-4555-8555-555555555555",

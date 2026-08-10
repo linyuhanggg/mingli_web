@@ -763,3 +763,173 @@ textarea.control {
     transition: none;
   }
 }
+
+
+/* Metis-style chart workspace for bazi readings */
+.chartReadingLayout {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.chartToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  box-shadow: var(--shadow-card);
+}
+
+.chartTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.chartTab {
+  display: inline-flex;
+  min-height: 2.2rem;
+  align-items: center;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: var(--ivory-100);
+  color: var(--ink-700);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.chartTab[data-active="true"] {
+  background: var(--ink-900);
+  color: var(--ivory-50);
+}
+
+.chartToolbarMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  color: var(--ink-700);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.chartStage {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.chartPane,
+.analysisPane {
+  min-width: 0;
+}
+
+.analysisPane {
+  padding: clamp(1.2rem, 4vw, 2.2rem);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  box-shadow: var(--shadow-card);
+}
+
+.analysisHeader {
+  display: grid;
+  gap: 0.55rem;
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid var(--border-emphasis);
+  margin-bottom: 0.4rem;
+}
+
+.analysisTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.analysisTab,
+.analysisTabMuted {
+  display: inline-flex;
+  min-height: 2.2rem;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 740;
+}
+
+.analysisTab {
+  background: var(--ink-900);
+  color: var(--ivory-50);
+}
+
+.analysisTabMuted {
+  background: var(--ivory-100);
+  color: var(--ink-700);
+}
+
+.analysisEyebrow {
+  margin: 0.35rem 0 0;
+  color: var(--gold-500);
+  font-size: 0.78rem;
+  font-weight: 760;
+  letter-spacing: 0.04em;
+}
+
+.analysisHeader h2 {
+  margin: 0;
+  max-width: 18ch;
+  font-family: var(--font-serif);
+  font-size: clamp(1.55rem, 4vw, 2.3rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.18;
+  color: var(--ink-950);
+}
+
+.analysisLead {
+  margin: 0;
+  color: var(--ink-700);
+  line-height: 1.7;
+}
+
+.inlineNote {
+  margin: 0 0 0.9rem;
+  color: var(--ink-700);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+@media (min-width: 68rem) {
+  .chartStage {
+    grid-template-columns: minmax(20rem, 0.92fr) minmax(0, 1.2fr);
+    align-items: start;
+  }
+
+  .chartPane {
+    position: sticky;
+    top: 1rem;
+  }
+
+  .chartReadingLayout {
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 17rem);
+    align-items: start;
+  }
+
+  .chartReadingLayout > .chartToolbar {
+    grid-column: 1 / -1;
+  }
+
+  .chartReadingLayout > .chartStage {
+    grid-column: 1;
+  }
+
+  .chartReadingLayout > .evidenceRail {
+    grid-column: 2;
+    position: sticky;
+    top: 1rem;
+  }
+}
+

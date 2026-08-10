@@ -9,6 +9,24 @@ import { ApiError } from "@/lib/api";
 const api = vi.hoisted(() => ({
   listProfiles: vi.fn(),
   listReadings: vi.fn(),
+  startPreviewReading: vi.fn(),
+}));
+
+const navigation = vi.hoisted(() => ({
+  routerPush: vi.fn(),
+  searchParams: new URLSearchParams(),
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: navigation.routerPush,
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  useSearchParams: () => navigation.searchParams,
 }));
 
 vi.mock("@/lib/api", async (importOriginal) => {
@@ -17,6 +35,7 @@ vi.mock("@/lib/api", async (importOriginal) => {
     ...actual,
     listProfiles: api.listProfiles,
     listReadings: api.listReadings,
+    startPreviewReading: api.startPreviewReading,
   };
 });
 
@@ -56,6 +75,9 @@ function reading(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   api.listProfiles.mockReset();
   api.listReadings.mockReset();
+  api.startPreviewReading.mockReset();
+  navigation.routerPush.mockReset();
+  navigation.searchParams = new URLSearchParams();
 });
 
 afterEach(() => {
@@ -87,8 +109,13 @@ describe("ProfilesPage", () => {
     await waitFor(() =>
       expect(screen.getByRole("heading", { name: "已保存的档案版本" })).toBeInTheDocument(),
     );
-    expect(screen.getByText("档案 v1")).toBeInTheDocument();
-    expect(screen.getByText("档案 v2")).toBeInTheDocument();
+    expect(screen.getAllByText(/档案 1/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/档案 2/).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: "查看八字概览" }).length).toBe(2);
+    expect(screen.getByRole("link", { name: "直接发起八字概览" })).toHaveAttribute(
+      "href",
+      "/app/bazi",
+    );
     expect(api.listProfiles).toHaveBeenCalledTimes(1);
   });
 
@@ -129,7 +156,7 @@ describe("ProfilesPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "重试" }));
 
     await waitFor(() =>
-      expect(screen.getByText("档案 v1")).toBeInTheDocument(),
+      expect(screen.getAllByText(/档案 1/).length).toBeGreaterThan(0),
     );
     expect(api.listProfiles).toHaveBeenCalledTimes(2);
   });

@@ -28,6 +28,7 @@ vi.mock("next/navigation", () => ({
     refresh: vi.fn(),
     prefetch: vi.fn(),
   }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 const api = vi.hoisted(() => ({

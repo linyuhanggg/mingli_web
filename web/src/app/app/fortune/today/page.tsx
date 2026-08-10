@@ -1,12 +1,13 @@
 "use client";
 
 import { CalendarDays, LockKeyhole } from "lucide-react";
+import { Suspense } from "react";
 
 import { AppPageHeader } from "@/components/app-page-header";
 import styles from "@/components/app-surface.module.css";
 import { FortuneFlow } from "@/components/fortune-flow";
 
-export default function FortuneTodayPage() {
+export default function FortunePage() {
   return (
     <div className={styles.page}>
       <AppPageHeader
@@ -19,7 +20,9 @@ export default function FortuneTodayPage() {
           </>
         }
       />
-      <FortuneFlow mode="today" />
+      <Suspense fallback={<p role="status">正在准备解读入口…</p>}>
+        <FortuneFlow mode="today" />
+      </Suspense>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -11,8 +11,7 @@ import { ButtonLink } from "@/components/button-link";
 import {
   formatProfileOption,
   listProfiles,
-  startTodayReading,
-  startWeekReading,
+  startPreviewReading,
   type ProfileSummary,
 } from "@/lib/api";
 import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
@@ -20,20 +19,16 @@ import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
 import styles from "./fortune-flow.module.css";
 import formControls from "./form-controls.module.css";
 
-type FortuneFlowProps = {
-  mode: "today" | "week";
-};
-
-const fortuneSchema = z.object({
+const baziSchema = z.object({
   profile_version_id: z.string().min(1, "请选择档案"),
 });
 
-type FortuneFormValues = z.infer<typeof fortuneSchema>;
+type BaziFormValues = z.infer<typeof baziSchema>;
 
-export function FortuneFlow({ mode }: FortuneFlowProps) {
+export function BaziFlow({
+  initialProfileVersionId = "",
+}: Readonly<{ initialProfileVersionId?: string }>) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const preselectedProfile = searchParams.get("profile");
   const [profiles, setProfiles] = useState<ProfileSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -47,23 +42,10 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<FortuneFormValues>({
-    resolver: zodResolver(fortuneSchema),
-    defaultValues: { profile_version_id: preselectedProfile ?? "" },
+  } = useForm<BaziFormValues>({
+    resolver: zodResolver(baziSchema),
+    defaultValues: { profile_version_id: initialProfileVersionId },
   });
-
-  // 档案异步载入后，若入口带了 ?profile= 则预选对应版本。
-  useEffect(() => {
-    if (
-      !loading &&
-      !error &&
-      profiles.length > 0 &&
-      preselectedProfile &&
-      profiles.some((profile) => profile.profile_version_id === preselectedProfile)
-    ) {
-      setValue("profile_version_id", preselectedProfile);
-    }
-  }, [loading, error, profiles, preselectedProfile, setValue]);
 
   useEffect(() => {
     let active = true;
@@ -71,6 +53,16 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
       .then((data) => {
         if (!active) return;
         setProfiles(data.profiles);
+        if (
+          initialProfileVersionId &&
+          data.profiles.some(
+            (profile) => profile.profile_version_id === initialProfileVersionId,
+          )
+        ) {
+          setValue("profile_version_id", initialProfileVersionId);
+        } else if (data.profiles.length === 1) {
+          setValue("profile_version_id", data.profiles[0].profile_version_id);
+        }
         setLoading(false);
       })
       .catch((reason) => {
@@ -83,7 +75,7 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
     return () => {
       active = false;
     };
-  }, [loadAttempt]);
+  }, [initialProfileVersionId, loadAttempt, setValue]);
 
   function retryLoad() {
     setLoading(true);
@@ -92,43 +84,38 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
   }
 
   const handleStart = useCallback(
-    async (values: FortuneFormValues) => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    setBusy(true);
-    setSubmitError("");
-    const payload = {
-      profile_version_id: values.profile_version_id,
-      query:
-        mode === "today"
-          ? "看看今天值得关注什么"
-          : "看看近七日值得关注什么",
-    };
-    const intent = stableKeyForIntent(intentKeyRef.current, payload);
-    intentKeyRef.current = intent;
-    try {
-      const response =
-        mode === "today"
-          ? await startTodayReading(payload, intent.key)
-          : await startWeekReading(payload, intent.key);
-      router.push(`/app/readings/${response.reading_version_id}`);
-    } catch (reason) {
-      setSubmitError(
-        reason instanceof Error ? reason.message : "解读启动失败，请稍后重试。",
-      );
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-    }
+    async (values: BaziFormValues) => {
+      if (busyRef.current) return;
+      busyRef.current = true;
+      setBusy(true);
+      setSubmitError("");
+      const payload = {
+        profile_version_id: values.profile_version_id,
+        query: "看一下这个八字",
+        dimension_ids: ["overview"] as ("overview" | "career")[],
+      };
+      const intent = stableKeyForIntent(intentKeyRef.current, payload);
+      intentKeyRef.current = intent;
+      try {
+        const response = await startPreviewReading(payload, intent.key);
+        router.push(`/app/readings/${response.reading_version_id}`);
+      } catch (reason) {
+        setSubmitError(
+          reason instanceof Error ? reason.message : "八字概览启动失败，请稍后重试。",
+        );
+      } finally {
+        busyRef.current = false;
+        setBusy(false);
+      }
     },
-    [mode, router],
+    [router],
   );
 
   return (
     <div className={styles.wrap}>
-      <h2>开始解读</h2>
+      <h2>查看八字概览</h2>
       <p className={styles.lead}>
-        目标日期由服务端确认；选择已确认档案版本后启动解读，不在此处生成结果。
+        从已确认档案版本出发，发起确定性八字概览。结果由服务端计算与交付，不在本页本地推算。
       </p>
 
       {loading ? (
@@ -166,9 +153,9 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
           aria-busy={busy}
         >
           <div className={formControls.field}>
-            <label htmlFor="fortune-profile">档案版本</label>
+            <label htmlFor="bazi-profile">档案版本</label>
             <select
-              id="fortune-profile"
+              id="bazi-profile"
               className={formControls.input}
               disabled={busy}
               required
@@ -176,8 +163,8 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
               aria-invalid={Boolean(errors.profile_version_id)}
               aria-describedby={
                 errors.profile_version_id
-                  ? "fortune-profile-error"
-                  : "fortune-profile-help"
+                  ? "bazi-profile-error"
+                  : "bazi-profile-help"
               }
               {...register("profile_version_id")}
             >
@@ -192,12 +179,12 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
               ))}
             </select>
             {errors.profile_version_id ? (
-              <p className={formControls.error} id="fortune-profile-error" role="alert">
+              <p className={formControls.error} id="bazi-profile-error" role="alert">
                 {errors.profile_version_id.message}
               </p>
             ) : null}
-            <p className={formControls.hint} id="fortune-profile-help">
-              解读从该档案版本出发，结果按版本留痕。
+            <p className={formControls.hint} id="bazi-profile-help">
+              八字概览绑定该档案版本；修改资料会生成新版本，旧解读仍可回看。
             </p>
           </div>
 
@@ -209,7 +196,7 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
 
           {busy ? (
             <p className={formControls.disabledReason} role="status">
-              正在启动解读，选择与操作已暂时锁定。
+              正在启动八字概览，选择与操作已暂时锁定。
             </p>
           ) : null}
           <div className={formControls.actions}>
@@ -219,8 +206,7 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
               disabled={busy}
               aria-busy={busy}
             >
-              {mode === "today" ? "开始今日解读" : "开始近七日解读"}
-              {busy ? " · 正在启动…" : ""}
+              开始八字概览{busy ? " · 正在启动…" : ""}
             </button>
           </div>
         </form>

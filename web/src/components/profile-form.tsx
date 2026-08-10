@@ -150,7 +150,7 @@ export function ProfileForm() {
               ? undefined
               : values.coordinate_source?.trim(),
         });
-        router.push("/app");
+        router.push("/app/profiles?created=1");
       } catch (reason) {
         setSubmitError(
           reason instanceof Error ? reason.message : "档案保存失败，请稍后重试。",

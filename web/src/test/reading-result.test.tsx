@@ -656,3 +656,87 @@ describe("Web interface regression guards", () => {
     expect(sources).not.toMatch(/user-scalable\s*=\s*no|maximum-scale\s*=\s*1/i);
   });
 });
+
+describe("bazi chart workspace", () => {
+  it("renders a left chart / right analysis layout for bazi readings", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            fact_panel: {
+              ...factPanel(),
+              question: "看一下这个八字",
+              facts: [
+                {
+                  ref: "fact:pillars",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:natal_pillars",
+                  value: null,
+                  display_text:
+                    'natal_pillars: {"day":"己酉","hour":"丁卯","month":"丙戌","year":"庚辰"}',
+                },
+                {
+                  ref: "fact:day-master",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:day_master",
+                  value: null,
+                  display_text:
+                    'day_master: {"element":"土","polarity":"阴","stem":"己"}',
+                },
+                {
+                  ref: "fact:luck",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:active_luck_cycle",
+                  value: null,
+                  display_text: "active_luck_cycle: 戊子",
+                },
+                {
+                  ref: "fact:opaque-1",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:career-structure",
+                  value: { state_token: "opaque-runtime-token" },
+                  display_text: "当前结构更支持持续积累。",
+                },
+              ],
+              request_view: {
+                subject_refs: ["profile-version:secret-profile-id"],
+                capability_ids: ["bazi"],
+                object_id: "natal",
+                dimension_ids: ["overview"],
+                horizon: {
+                  kind_id: "life",
+                  start: null,
+                  end: null,
+                },
+              },
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          object_id: "natal",
+          dimension_ids: ["overview"],
+          horizon: { kind_id: "life", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByRole("complementary", { name: "命盘区" })).toBeVisible();
+    expect(screen.getByRole("article", { name: "解读正文" })).toBeVisible();
+    expect(screen.getByText("八字命盘")).toBeVisible();
+    expect(screen.getByText("年柱")).toBeVisible();
+    expect(screen.getAllByText("庚辰").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/日主.*己/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/当前大运|大运 戊子|戊子/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("当前结构更支持持续积累。").length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: "判断" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "事实" })).toBeVisible();
+  });
+});
+

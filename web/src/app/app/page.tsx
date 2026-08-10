@@ -48,7 +48,7 @@ export default function AppPage() {
           <div>
             <h2 id="start-title">选择一项，开始你的解读。</h2>
             <p>
-              先建立可复现的命理档案，再查看今日与近七日提示；也可以不建档，直接就一件具体的事起卦。
+              先建立可复现的命理档案，再直接看八字概览或今日/近七日；也可以不建档，直接就一件具体的事起卦。
             </p>
           </div>
         </div>
@@ -56,10 +56,24 @@ export default function AppPage() {
           <li className={styles.flowItem}>
             <div>
               <h3>命理档案</h3>
-              <p>确认出生资料与时间口径，保存不可变的档案版本。</p>
+              <p>确认出生资料与时间口径，保存不可变的档案版本；建档后可从档案区回看。</p>
             </div>
-            <ButtonLink href="/app/profile/new" variant="text">
-              建立命理档案
+            <div className={styles.actionRow}>
+              <ButtonLink href="/app/profile/new" variant="text">
+                建立命理档案
+              </ButtonLink>
+              <ButtonLink href="/app/profiles" variant="text">
+                查看已保存档案
+              </ButtonLink>
+            </div>
+          </li>
+          <li className={styles.flowItem}>
+            <div>
+              <h3>八字概览</h3>
+              <p>从已确认档案出发，发起确定性八字排盘与有限概览。</p>
+            </div>
+            <ButtonLink href="/app/bazi" variant="text">
+              查看八字概览
             </ButtonLink>
           </li>
           <li className={styles.flowItem}>

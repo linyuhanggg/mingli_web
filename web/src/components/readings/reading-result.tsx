@@ -10,14 +10,17 @@ import {
   type ReadingVersionSummary,
 } from "@/lib/api";
 import {
+  buildBaziChartView,
   formatCapabilityIds,
   formatDimensionIds,
   formatHorizon,
   formatObjectId,
+  splitAcceptedCopy,
 } from "@/lib/reading-display";
 import surface from "@/components/app-surface.module.css";
 
 import { AcceptedCopy } from "./accepted-copy";
+import { BaziChart } from "./bazi-chart";
 import { EvidenceList } from "./evidence-list";
 import { FactPanel } from "./fact-panel";
 import { FollowUpForm } from "./follow-up-form";
@@ -274,74 +277,194 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
   }
 
   if (summary.status === "accepted" && result) {
+    const isBazi = summary.capability_id === "bazi";
+    const chart = buildBaziChartView(result.fact_panel?.facts ?? []);
+    const copyParts = splitAcceptedCopy(result.accepted_copy);
+    const question = result.fact_panel?.question ?? "本次解读";
+    const scopeLabel = formatCapabilityIds([summary.capability_id]);
+
+    if (!isBazi) {
+      return (
+        <div className={surface.readingLayout}>
+          <article className={surface.readingBody} aria-label="解读正文">
+            <header className={surface.readingHeader}>
+              <h2>{question}</h2>
+              <p>
+                {scopeLabel} · 目标日期 {formatHorizon(summary.horizon)} · 版本 v
+                {summary.version}
+              </p>
+            </header>
+
+            <section
+              className={surface.readingSection}
+              aria-labelledby="reading-fact-title"
+            >
+              <span className={surface.sectionIndex} aria-hidden="true">
+                01
+              </span>
+              <div>
+                <h2 id="reading-fact-title">事实</h2>
+                <FactPanel panel={result.fact_panel} />
+              </div>
+            </section>
+
+            <section
+              className={surface.readingSection}
+              aria-labelledby="reading-judgment-title"
+            >
+              <span className={surface.sectionIndex} aria-hidden="true">
+                02
+              </span>
+              <div>
+                <h2 id="reading-judgment-title">判断</h2>
+                <AcceptedCopy text={result.accepted_copy} />
+              </div>
+            </section>
+
+            <section
+              className={surface.readingSection}
+              aria-labelledby="reading-evidence-title"
+            >
+              <span className={surface.sectionIndex} aria-hidden="true">
+                03
+              </span>
+              <div>
+                <h2 id="reading-evidence-title">依据与边界</h2>
+                <EvidenceList evidence={result.fact_panel?.evidence ?? null} />
+                <LimitNotice limits={result.fact_panel?.limits ?? null} />
+              </div>
+            </section>
+
+            <section
+              className={surface.readingSection}
+              aria-labelledby="reading-review-title"
+            >
+              <span className={surface.sectionIndex} aria-hidden="true">
+                04
+              </span>
+              <div>
+                <h2 id="reading-review-title">复核与追问</h2>
+                <VerificationForm
+                  readingId={readingId}
+                  initialVerification={result.verification}
+                />
+                <FollowUpForm readingId={readingId} />
+              </div>
+            </section>
+          </article>
+          <ArchiveRail summary={summary} result={result} />
+        </div>
+      );
+    }
+
     return (
-      <div className={surface.readingLayout}>
-        <article className={surface.readingBody} aria-label="解读正文">
-          <header className={surface.readingHeader}>
-            <h2>{result.fact_panel?.question ?? "本次解读"}</h2>
-            <p>
-              {formatCapabilityIds([summary.capability_id])} · 目标日期{" "}
-              {formatHorizon(summary.horizon)} · 版本 v{summary.version}
-            </p>
-          </header>
-
-          <section
-            className={surface.readingSection}
-            aria-labelledby="reading-fact-title"
-          >
-            <span className={surface.sectionIndex} aria-hidden="true">
-              01
+      <div className={surface.chartReadingLayout}>
+        <div className={surface.chartToolbar} aria-label="解读范围">
+          <div className={surface.chartTabs}>
+            <span className={surface.chartTab} data-active="true">
+              本命
             </span>
-            <div>
-              <h2 id="reading-fact-title">事实</h2>
-              <FactPanel panel={result.fact_panel} />
-            </div>
-          </section>
+            {summary.horizon.start || summary.horizon.end ? (
+              <span className={surface.chartTab}>
+                {formatHorizon(summary.horizon)}
+              </span>
+            ) : (
+              <span className={surface.chartTab}>长期范围</span>
+            )}
+            {chart.activeLuck ? (
+              <span className={surface.chartTab}>大运 {chart.activeLuck}</span>
+            ) : null}
+          </div>
+          <div className={surface.chartToolbarMeta}>
+            <span>{formatDimensionIds(summary.dimension_ids)}</span>
+            <span>版本 v{summary.version}</span>
+          </div>
+        </div>
 
-          <section
-            className={surface.readingSection}
-            aria-labelledby="reading-judgment-title"
-          >
-            <span className={surface.sectionIndex} aria-hidden="true">
-              02
-            </span>
-            <div>
-              <h2 id="reading-judgment-title">判断</h2>
-              <AcceptedCopy text={result.accepted_copy} />
-            </div>
-          </section>
+        <div className={surface.chartStage}>
+          <aside className={surface.chartPane} aria-label="命盘区">
+            <BaziChart chart={chart} title="八字命盘" />
+          </aside>
 
-          <section
-            className={surface.readingSection}
-            aria-labelledby="reading-evidence-title"
-          >
-            <span className={surface.sectionIndex} aria-hidden="true">
-              03
-            </span>
-            <div>
-              <h2 id="reading-evidence-title">依据与边界</h2>
-              <EvidenceList evidence={result.fact_panel?.evidence ?? null} />
-              <LimitNotice limits={result.fact_panel?.limits ?? null} />
-            </div>
-          </section>
+          <article className={surface.analysisPane} aria-label="解读正文">
+            <header className={surface.analysisHeader}>
+              <div className={surface.analysisTabs} aria-label="分析视图">
+                <span className={surface.analysisTab} data-active="true">
+                  命盘分析
+                </span>
+                <span className={surface.analysisTabMuted}>依据与核对</span>
+              </div>
+              <p className={surface.analysisEyebrow}>
+                八字本命
+                {chart.dayMaster ? ` · 日主 ${chart.dayMaster}` : ""}
+                {chart.monthCommand ? ` · ${chart.monthCommand}` : ""}
+              </p>
+              <h2>{copyParts.headline ?? question}</h2>
+              <p className={surface.analysisLead}>{question}</p>
+            </header>
 
-          <section
-            className={surface.readingSection}
-            aria-labelledby="reading-review-title"
-          >
-            <span className={surface.sectionIndex} aria-hidden="true">
-              04
-            </span>
-            <div>
-              <h2 id="reading-review-title">复核与追问</h2>
-              <VerificationForm
-                readingId={readingId}
-                initialVerification={result.verification}
-              />
-              <FollowUpForm readingId={readingId} />
-            </div>
-          </section>
-        </article>
+            <section
+              className={surface.readingSection}
+              aria-labelledby="reading-judgment-title"
+            >
+              <span className={surface.sectionIndex} aria-hidden="true">
+                01
+              </span>
+              <div>
+                <h2 id="reading-judgment-title">判断</h2>
+                <AcceptedCopy text={copyParts.body ?? result.accepted_copy} />
+              </div>
+            </section>
+
+            <section
+              className={surface.readingSection}
+              aria-labelledby="reading-fact-title"
+            >
+              <span className={surface.sectionIndex} aria-hidden="true">
+                02
+              </span>
+              <div>
+                <h2 id="reading-fact-title">事实</h2>
+                <p className={surface.inlineNote}>
+                  左侧是排盘主视图；这里保留同一份公开事实简报，方便逐条核对。
+                </p>
+                <FactPanel panel={result.fact_panel} />
+              </div>
+            </section>
+
+            <section
+              className={surface.readingSection}
+              aria-labelledby="reading-evidence-title"
+            >
+              <span className={surface.sectionIndex} aria-hidden="true">
+                03
+              </span>
+              <div>
+                <h2 id="reading-evidence-title">依据与边界</h2>
+                <EvidenceList evidence={result.fact_panel?.evidence ?? null} />
+                <LimitNotice limits={result.fact_panel?.limits ?? null} />
+              </div>
+            </section>
+
+            <section
+              className={surface.readingSection}
+              aria-labelledby="reading-review-title"
+            >
+              <span className={surface.sectionIndex} aria-hidden="true">
+                04
+              </span>
+              <div>
+                <h2 id="reading-review-title">复核与追问</h2>
+                <VerificationForm
+                  readingId={readingId}
+                  initialVerification={result.verification}
+                />
+                <FollowUpForm readingId={readingId} />
+              </div>
+            </section>
+          </article>
+        </div>
+
         <ArchiveRail summary={summary} result={result} />
       </div>
     );

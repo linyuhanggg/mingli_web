@@ -75,6 +75,14 @@ describe("private app home", () => {
       "href",
       "/app/fortune/week",
     );
+    expect(screen.getByRole("link", { name: "查看八字概览" })).toHaveAttribute(
+      "href",
+      "/app/bazi",
+    );
+    expect(screen.getByRole("link", { name: "查看已保存档案" })).toHaveAttribute(
+      "href",
+      "/app/profiles",
+    );
     expect(screen.getByRole("link", { name: "开始六爻起卦" })).toHaveAttribute(
       "href",
       "/app/ask/liuyao",
