@@ -31,3 +31,6 @@ tmp/
 # IDEs
 .idea/
 .vscode/
+
+# Local signed runtime install for real adapter smoke
+.runtime/

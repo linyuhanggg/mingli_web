@@ -1,8 +1,8 @@
 # Phase 0 外部 Gate 台账
 
-更新日期：2026-08-10
+更新日期：2026-08-11
 
-进度说明：域名 ICP 备案已于 2026-08-10 正式提交，处于审核中；其余外部 Gate 仍为待确认。Linux 模拟通道已整体废止并清理完毕（Lima 实例、容器、卷均已删除），Mac mini `native-full` 是唯一 Runtime Gate。
+进度说明：域名 ICP 备案已于 2026-08-10 正式提交，处于审核中。Mac mini `native-full` 原始五件套已归档并通过独立 verifier；真实 one-shot Runtime startup describe 已在本机私有安装上通过。真实模型密钥、staging 全轨迹、支付/短信/邮件渠道与生产告警仍未闭环。Linux 模拟通道已废止，Mac mini `native-full` 仍是唯一 Runtime Gate。
 
 本台账只记录上线前需要外部确认的事项。`待确认` 不代表失败，但绝不能在没有书面证据时改成已通过。仓库内不得保存密码、私钥、API Key、商户证书或真实 OTP。
 
@@ -20,8 +20,8 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | 短信通道与模板 | 待确认 | 供应商、签名、模板、数据位置与防轰炸评审 | 手机 OTP 使用 Fake Adapter；本地目标/游客/网络多层限流不能替代生产 Redis 限流 |
 | 邮件通道与模板 | 待确认 | 发信域名、供应商、退信和数据处理评审 | 邮箱 OTP 使用 Fake Adapter；真实发送在共享限流与渠道 Gate 前保持关闭 |
 | 模型供应商和数据位置 | 待确认 | DPA、保存期限、训练退出、预算、固定 Model Profile 和故障策略 | `ModelGateway` 使用结构化 Fake；不运行 Agent |
-| mingli-master 5.1 完整发布物 | 待确认 | source commit、217 文件 manifest、协议版本、describe digest、13/13 Provider readiness、55/55 古籍 reference pack、1328 条 evidence index 与 runtime closure | Fake Runtime 描述完整 13 项；Product Policy 另行只开放 P0 三项 |
-| Mac mini Runtime 原生门禁 | 待确认 | 当次 `native-full` 报告、原始 stdout/stderr、PreparedInputs 摘要及独立 verifier；要求 126 targets、93 modules、1584 tests、0 failed 且低于 600 秒 | 门禁机制已存在，但当前仓库缺少可独立复验的原始归档；不再要求 Linux 模拟报告 |
+| mingli-master 5.1 完整发布物 | 本机已核验 / 生产安装待确认 | source commit `494ce0bba174a77800daf9b9c38ce9c9166d9a94`；217 文件 manifest SHA-256 `e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68`；describe digest `7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342`；capability shape SHA-256 `8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60`；本机 one-shot startup 验过 13/13 Provider readiness、55/55 reference pack、1328 evidence index 与 runtime closure | 仅使用签名 217 文件私有 release root；P0 Product Policy 只开放 `bazi`/`fortune`/`liuyao`，不裁剪 Runtime 制品 |
+| Mac mini Runtime 原生门禁 | 已通过 | 归档 [docs/releases/evidence/2026-08-09-native-full](./releases/evidence/2026-08-09-native-full/)：`native-full-5.1.json`、`local-native-full-5.1.json`、`native-release-regression.stdout`、`native-release-regression.stderr`、`prepared-inputs.json`；`prepared_inputs_sha256=a4e83f3c225b928a9d9ea8b9ffc56448cb283ed23dd8b4e9f0b7e3831fa77807`；summary `targets=126 modules=93 tests=1584 failed_modules=0 elapsed=434.13s`；独立 `verify_local_full.py` 已通过 | 后续开发、合并、发布只认 Mac mini `native-full`；不得启动 VZ/Rosetta/QEMU/`linux-certify` |
 | Runtime 状态与恢复 | 待确认 | 固定安装路径/UID/状态卷、Prepared 与 Accepted token 的备份恢复实测 | 真实 Runtime 可在原生门禁后接入；生产流量仍等待恢复演练 |
 | 单模型成稿合同 | 待确认 | Narrative Policy、Candidate Schema、Narrative Guard 反例集和固定盲测通过 | Fake Model 输出不能进入 complete 或成为 Accepted |
 | 生产密钥托管与轮换 | 待确认 | Secret Manager、最小权限、轮换和演练记录 | 只接受运行时注入；示例值均为非密钥 |

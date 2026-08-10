@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-> **进度快照（2026-08-10）：** Task 1–7、9–12 的代码与测试已全部进入 `main`（基线 `bb742b7`，后端/合同 460 passed、Web 85 passed），但 Runtime/Model 仍以 Fake 模式运行。**Task 8 未闭环**：门禁脚本与 fail-closed 规则已存在（`4899607`、`a91ecbb`），但仓库内缺少可独立复验的当次原始证据（`native-full-5.1.json`、`local-native-full-5.1.json`、原始 stdout/stderr、`prepared-inputs.json` 五件套均缺失），2026-08-09 的 1584/0 结果不能直接沿用。**Task 13 未开始。** 施工会话的准确起点：重跑 Task 8 Step 2–4（重新构建并归档 `prepared-inputs.json`，运行 `native-full`，独立 verifier 核验五件套），通过后进入 Task 9–10 的真实适配器接线（`MINGLI_RUNTIME_ADAPTER=real`、`MINGLI_MODEL_ADAPTER=deepseek`）和 Task 13 staging trajectory。详见 [HANDOFF_SNAPSHOT_2026-08-10.md](../HANDOFF_SNAPSHOT_2026-08-10.md)。
+> **进度快照（2026-08-11）：** Task 1–7、9–12 的代码与测试已在 `main`。**Task 8 已闭环**：`docs/releases/evidence/2026-08-09-native-full/` 五件套齐备，`verify_local_full.py` 独立通过，`targets=126 modules=93 tests=1584 failed_modules=0 elapsed=434.13s`，`prepared_inputs_sha256=a4e83f3c225b928a9d9ea8b9ffc56448cb283ed23dd8b4e9f0b7e3831fa77807`。本机真实 one-shot Runtime startup describe 已通过（13/13、冻结 digest/shape）；bazi prepare 冒烟可到 `Prepared`。默认仍是 Fake；**真实模型未接**（当前环境无 `DEEPSEEK_API_KEY`）。**Task 13 未完成**，staging/production/`real traffic` 仍 blocked。下一步：注入模型密钥与价格字段 → 真实 model/guard/complete 轨迹 → staging 证据。详见 [HANDOFF_SNAPSHOT_2026-08-11.md](../HANDOFF_SNAPSHOT_2026-08-11.md)。
 
 **Goal:** Add the deterministic mingli-master 5.1 `describe → prepare → single-model candidate → guard → complete → Accepted` path to the existing web foundation without importing the core or adding an Agent loop.
 
