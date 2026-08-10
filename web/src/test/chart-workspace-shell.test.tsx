@@ -1,0 +1,238 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { useRef, useState, type KeyboardEvent } from "react";
+import { describe, expect, it } from "vitest";
+
+import { ChartWorkspaceShell } from "@/components/readings/chart-workspace-shell";
+import {
+  buildBaziWorkspaceView,
+  resolveBaziFocusDetail,
+  type ChartWorkspaceView,
+  type WorkspaceCell,
+} from "@/lib/chart-workspace";
+
+const FOUR_PILLARS = {
+  year: "甲子",
+  month: "丙寅",
+  day: "戊午",
+  hour: "丁卯",
+};
+
+/**
+ * Minimal board harness mirroring the pillar board interaction grammar:
+ * focusable cells with roving tabindex, arrow-key movement, Enter activation.
+ */
+function PillarBoard({
+  cells,
+  selected,
+  onSelect,
+}: Readonly<{
+  cells: WorkspaceCell[];
+  selected: string | null;
+  onSelect: (cellId: string) => void;
+}>) {
+  const refs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  function focusAt(index: number) {
+    if (index >= 0 && index < refs.current.length) {
+      refs.current[index]?.focus();
+    }
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      focusAt((index + 1) % cells.length);
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      focusAt((index - 1 + cells.length) % cells.length);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      focusAt(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      focusAt(cells.length - 1);
+    }
+  }
+
+  return (
+    <div role="group" aria-label="四柱">
+      {cells.map((cell, index) => (
+        <button
+          key={cell.id}
+          type="button"
+          ref={(element) => {
+            refs.current[index] = element;
+          }}
+          tabIndex={index === 0 ? 0 : -1}
+          aria-pressed={cell.id === selected}
+          onClick={() => onSelect(cell.id)}
+          onKeyDown={(event) => handleKeyDown(event, index)}
+        >
+          <span>{cell.label}</span>
+          <span>{cell.value}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function WorkspaceFixture({ view }: Readonly<{ view: ChartWorkspaceView }>) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const detail = selected ? resolveBaziFocusDetail(view, selected) : null;
+  return (
+    <ChartWorkspaceShell
+      view={view}
+      renderBoard={() => (
+        <PillarBoard
+          cells={view.cells}
+          selected={selected}
+          onSelect={setSelected}
+        />
+      )}
+      detail={detail}
+      onCloseDetail={() => setSelected(null)}
+    />
+  );
+}
+
+describe("ChartWorkspaceShell", () => {
+  it("renders layer tabs from the view model with the natal layer active", () => {
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      activeLuck: "丙午大运",
+    });
+    render(<WorkspaceFixture view={view} />);
+
+    const tabs = screen.getAllByRole("tab");
+    expect(tabs).toHaveLength(3);
+    expect(tabs[0]).toHaveTextContent("本命");
+    expect(tabs[1]).toHaveTextContent("大运");
+    expect(tabs[1]).toHaveTextContent("当前大运 丙午大运");
+    expect(tabs[2]).toHaveTextContent("流年");
+    expect(screen.getByRole("tab", { name: /^本命/ })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByRole("tab", { name: /^大运/ })).not.toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
+
+  it("keeps unavailable layers visible but never fake-ready", () => {
+    const view = buildBaziWorkspaceView({ pillars: FOUR_PILLARS });
+    render(<WorkspaceFixture view={view} />);
+
+    const yearly = screen.getByRole("tab", { name: /流年/ });
+    expect(yearly).toBeVisible();
+    expect(yearly).toBeDisabled();
+    expect(yearly).toHaveAttribute("aria-disabled", "true");
+    expect(yearly).not.toHaveAttribute("aria-selected", "true");
+    expect(within(yearly).getByText("未生成")).toBeVisible();
+    expect(screen.getByRole("tab", { name: /^大运/ })).toBeDisabled();
+  });
+
+  it("opens the focus detail drawer with title and server facts on cell click", async () => {
+    const user = userEvent.setup();
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      timezone: "Asia/Shanghai",
+      timeBasis: "民用时",
+    });
+    render(<WorkspaceFixture view={view} />);
+
+    const drawer = screen.getByRole("region", { name: "聚焦详情" });
+    expect(
+      within(drawer).getByText("选择一个柱位后，这里只显示服务端已公开的聚焦事实。"),
+    ).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: /年柱/ }));
+
+    expect(within(drawer).getByText("年柱 · 甲子")).toBeVisible();
+    expect(within(drawer).getByText("Asia/Shanghai")).toBeVisible();
+    expect(within(drawer).getByText("民用时")).toBeVisible();
+    expect(within(drawer).getByText("服务端公开事实")).toBeVisible();
+    expect(
+      within(drawer).getByText(/前端不进行本地排盘或星曜推算/),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "关闭聚焦详情" }),
+    ).toBeVisible();
+  });
+
+  it("moves focus with arrow keys and activates a cell with Enter", async () => {
+    const user = userEvent.setup();
+    const view = buildBaziWorkspaceView({ pillars: FOUR_PILLARS });
+    render(<WorkspaceFixture view={view} />);
+
+    const year = screen.getByRole("button", { name: /年柱/ });
+    year.focus();
+    expect(year).toHaveFocus();
+
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByRole("button", { name: /月柱/ })).toHaveFocus();
+
+    await user.keyboard("{Enter}");
+    const drawer = screen.getByRole("region", { name: "聚焦详情" });
+    expect(within(drawer).getByText("月柱 · 丙寅")).toBeVisible();
+  });
+
+  it("closes the focus detail drawer and clears the selection", async () => {
+    const user = userEvent.setup();
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      timezone: "Asia/Shanghai",
+    });
+    render(<WorkspaceFixture view={view} />);
+
+    await user.click(screen.getByRole("button", { name: /时柱/ }));
+    const drawer = screen.getByRole("region", { name: "聚焦详情" });
+    expect(within(drawer).getByText("时柱 · 丁卯")).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "关闭聚焦详情" }));
+    expect(
+      within(drawer).getByText("选择一个柱位后，这里只显示服务端已公开的聚焦事实。"),
+    ).toBeVisible();
+    expect(within(drawer).queryByText("时柱 · 丁卯")).not.toBeInTheDocument();
+  });
+
+  it("renders an honest empty workspace with no fabricated cells", () => {
+    const view = buildBaziWorkspaceView({});
+    render(<WorkspaceFixture view={view} />);
+
+    expect(screen.getByText("服务端尚未返回可展示的公开事实")).toBeVisible();
+    expect(
+      screen.getByText("服务端尚未返回可展示的四柱结构"),
+    ).toBeVisible();
+    expect(screen.queryByRole("button", { name: /年柱/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /^本命/ })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
+
+  it("keeps the reduced-motion path showing the final focus state", async () => {
+    const user = userEvent.setup();
+    const css = readFileSync(
+      join(
+        process.cwd(),
+        "src/components/readings/focus-detail-drawer.module.css",
+      ),
+      "utf8",
+    );
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)/);
+
+    const view = buildBaziWorkspaceView({ pillars: FOUR_PILLARS });
+    render(<WorkspaceFixture view={view} />);
+    await user.click(screen.getByRole("button", { name: /年柱/ }));
+    expect(
+      within(screen.getByRole("region", { name: "聚焦详情" })).getByText(
+        "年柱 · 甲子",
+      ),
+    ).toBeVisible();
+  });
+});
