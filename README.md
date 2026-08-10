@@ -10,7 +10,8 @@
 - 架构决策：[docs/adr](./docs/adr)
 - Phase 0 外部 Gate：[docs/PHASE_0_GATES.md](./docs/PHASE_0_GATES.md)
 - Phase 2 第一版代码候选证据：[docs/releases/2026-08-10-mingli-v51-web-phase2.md](./docs/releases/2026-08-10-mingli-v51-web-phase2.md)
-- 当前实施计划：[docs/plans/2026-08-09-phase-0-1-web-foundation.md](./docs/plans/2026-08-09-phase-0-1-web-foundation.md)
+- 施工交接快照：[docs/HANDOFF_SNAPSHOT_2026-08-10.md](./docs/HANDOFF_SNAPSHOT_2026-08-10.md)
+- 当前实施计划：[docs/plans/2026-08-09-mingli-v51-web-integration.md](./docs/plans/2026-08-09-mingli-v51-web-integration.md)（Phase 0/1 地基计划与分支收口计划已全部完成，仅 5.1 集成计划的 Task 8/13 未闭环）
 
 ## 目录边界
 
