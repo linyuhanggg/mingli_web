@@ -381,90 +381,98 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
           </div>
         </div>
 
-        <div className={surface.chartStage}>
-          <aside className={surface.chartPane} aria-label="命盘区">
-            <BaziChart chart={chart} title="八字命盘" />
-          </aside>
+        <article className={surface.analysisPane} aria-label="解读正文">
+          <header className={surface.analysisHeader}>
+            <div className={surface.analysisTabs} aria-label="分析视图">
+              <span className={surface.analysisTab} data-active="true">
+                结论优先
+              </span>
+              <span className={surface.analysisTabMuted}>盘面作证据</span>
+            </div>
+            <p className={surface.analysisEyebrow}>
+              八字本命
+              {chart.dayMaster ? ` · 日主 ${chart.dayMaster}` : ""}
+              {chart.monthCommand ? ` · ${chart.monthCommand}` : ""}
+            </p>
+            <h2>{copyParts.headline ?? question}</h2>
+            <p className={surface.analysisLead}>{question}</p>
+          </header>
 
-          <article className={surface.analysisPane} aria-label="解读正文">
-            <header className={surface.analysisHeader}>
-              <div className={surface.analysisTabs} aria-label="分析视图">
-                <span className={surface.analysisTab} data-active="true">
-                  命盘分析
-                </span>
-                <span className={surface.analysisTabMuted}>依据与核对</span>
-              </div>
-              <p className={surface.analysisEyebrow}>
-                八字本命
-                {chart.dayMaster ? ` · 日主 ${chart.dayMaster}` : ""}
-                {chart.monthCommand ? ` · ${chart.monthCommand}` : ""}
+          <section
+            className={surface.readingSection}
+            aria-labelledby="reading-judgment-title"
+          >
+            <span className={surface.sectionIndex} aria-hidden="true">
+              01
+            </span>
+            <div>
+              <h2 id="reading-judgment-title">判断</h2>
+              <AcceptedCopy text={result.accepted_copy} />
+            </div>
+          </section>
+
+          <section
+            className={surface.readingSection}
+            aria-labelledby="reading-workspace-title"
+          >
+            <span className={surface.sectionIndex} aria-hidden="true">
+              02
+            </span>
+            <div>
+              <h2 id="reading-workspace-title">盘面证据</h2>
+              <p className={surface.inlineNote}>
+                先看结论，再点开盘面核对服务端公开事实；前端不本地排盘。
               </p>
-              <h2>{copyParts.headline ?? question}</h2>
-              <p className={surface.analysisLead}>{question}</p>
-            </header>
-
-            <section
-              className={surface.readingSection}
-              aria-labelledby="reading-judgment-title"
-            >
-              <span className={surface.sectionIndex} aria-hidden="true">
-                01
-              </span>
-              <div>
-                <h2 id="reading-judgment-title">判断</h2>
-                <AcceptedCopy text={copyParts.body ?? result.accepted_copy} />
+              <div className={surface.chartPane} aria-label="命盘区">
+                <BaziChart chart={chart} title="八字命盘" />
               </div>
-            </section>
+            </div>
+          </section>
 
-            <section
-              className={surface.readingSection}
-              aria-labelledby="reading-fact-title"
-            >
-              <span className={surface.sectionIndex} aria-hidden="true">
-                02
-              </span>
-              <div>
-                <h2 id="reading-fact-title">事实</h2>
-                <p className={surface.inlineNote}>
-                  左侧是排盘主视图；这里保留同一份公开事实简报，方便逐条核对。
-                </p>
-                <FactPanel panel={result.fact_panel} />
-              </div>
-            </section>
+          <section
+            className={surface.readingSection}
+            aria-labelledby="reading-fact-title"
+          >
+            <span className={surface.sectionIndex} aria-hidden="true">
+              03
+            </span>
+            <div>
+              <h2 id="reading-fact-title">事实</h2>
+              <FactPanel panel={result.fact_panel} />
+            </div>
+          </section>
 
-            <section
-              className={surface.readingSection}
-              aria-labelledby="reading-evidence-title"
-            >
-              <span className={surface.sectionIndex} aria-hidden="true">
-                03
-              </span>
-              <div>
-                <h2 id="reading-evidence-title">依据与边界</h2>
-                <EvidenceList evidence={result.fact_panel?.evidence ?? null} />
-                <LimitNotice limits={result.fact_panel?.limits ?? null} />
-              </div>
-            </section>
+          <section
+            className={surface.readingSection}
+            aria-labelledby="reading-evidence-title"
+          >
+            <span className={surface.sectionIndex} aria-hidden="true">
+              04
+            </span>
+            <div>
+              <h2 id="reading-evidence-title">依据与边界</h2>
+              <EvidenceList evidence={result.fact_panel?.evidence ?? null} />
+              <LimitNotice limits={result.fact_panel?.limits ?? null} />
+            </div>
+          </section>
 
-            <section
-              className={surface.readingSection}
-              aria-labelledby="reading-review-title"
-            >
-              <span className={surface.sectionIndex} aria-hidden="true">
-                04
-              </span>
-              <div>
-                <h2 id="reading-review-title">复核与追问</h2>
-                <VerificationForm
-                  readingId={readingId}
-                  initialVerification={result.verification}
-                />
-                <FollowUpForm readingId={readingId} />
-              </div>
-            </section>
-          </article>
-        </div>
-
+          <section
+            className={surface.readingSection}
+            aria-labelledby="reading-review-title"
+          >
+            <span className={surface.sectionIndex} aria-hidden="true">
+              05
+            </span>
+            <div>
+              <h2 id="reading-review-title">复核与追问</h2>
+              <VerificationForm
+                readingId={readingId}
+                initialVerification={result.verification}
+              />
+              <FollowUpForm readingId={readingId} />
+            </div>
+          </section>
+        </article>
         <ArchiveRail summary={summary} result={result} />
       </div>
     );

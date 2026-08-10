@@ -693,5 +693,6 @@ Forbidden:
 ## Status
 
 - Plan accepted for implementation: 2026-08-11
-- Code implementation: not started
+- Code implementation: Task 0–5 and Task 7 complete on 2026-08-11
+- Task 6 ziwei board adapter: **blocked / skipped** — web public reading facts and product capability surface only expose `bazi` / `fortune` / `liuyao`; no honest public ziwei palace/star structure is available for rendering without inventing a board from prose. No public ziwei route added.
 - Public ziwei productization: blocked by product policy and backend exposure, intentionally out of this plan

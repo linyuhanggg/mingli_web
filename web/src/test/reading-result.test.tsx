@@ -727,7 +727,7 @@ describe("bazi chart workspace", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    expect(await screen.findByRole("complementary", { name: "命盘区" })).toBeVisible();
+    expect(await screen.findByLabelText("命盘区")).toBeVisible();
     expect(screen.getByRole("article", { name: "解读正文" })).toBeVisible();
     expect(screen.getByText("八字命盘")).toBeVisible();
     expect(screen.getByText("年柱")).toBeVisible();
@@ -738,5 +738,141 @@ describe("bazi chart workspace", () => {
     expect(screen.getByRole("heading", { name: "判断" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "事实" })).toBeVisible();
   });
+
+  it("opens focus detail from a pillar click using server-backed facts only", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            fact_panel: {
+              ...factPanel(),
+              question: "看一下这个八字",
+              facts: [
+                {
+                  ref: "fact:pillars",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:natal_pillars",
+                  value: null,
+                  display_text:
+                    'natal_pillars: {"day":"己酉","hour":"丁卯","month":"丙戌","year":"庚辰"}',
+                },
+                {
+                  ref: "fact:timezone",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:timezone",
+                  value: null,
+                  display_text: "timezone: Asia/Shanghai",
+                },
+                {
+                  ref: "fact:time-basis",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:time_basis",
+                  value: null,
+                  display_text: "time_basis: civil",
+                },
+              ],
+              request_view: {
+                subject_refs: ["profile-version:secret-profile-id"],
+                capability_ids: ["bazi"],
+                object_id: "natal",
+                dimension_ids: ["career"],
+                horizon: {
+                  kind_id: "life",
+                  start: null,
+                  end: null,
+                },
+              },
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          object_id: "natal",
+          dimension_ids: ["career"],
+          horizon: { kind_id: "life", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByRole("heading", { name: "判断" })).toBeVisible();
+    await user.click(screen.getByRole("button", { name: /年柱/ }));
+
+    const drawer = screen.getByRole("region", { name: "聚焦详情" });
+    expect(within(drawer).getByText(/年柱/)).toBeVisible();
+    expect(within(drawer).getByText("Asia/Shanghai")).toBeVisible();
+    expect(within(drawer).getByText(/民用时|civil/)).toBeVisible();
+    expect(within(drawer).getByText(/前端不进行本地排盘/)).toBeVisible();
+    expect(screen.getByText(acceptedCopyQuery)).toBeVisible();
+  });
+
+  it("keeps conclusion summary before the chart workspace in document order", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            fact_panel: {
+              ...factPanel(),
+              question: "看一下这个八字",
+              facts: [
+                {
+                  ref: "fact:pillars",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:natal_pillars",
+                  value: null,
+                  display_text:
+                    'natal_pillars: {"day":"己酉","hour":"丁卯","month":"丙戌","year":"庚辰"}',
+                },
+              ],
+              request_view: {
+                subject_refs: ["profile-version:secret-profile-id"],
+                capability_ids: ["bazi"],
+                object_id: "natal",
+                dimension_ids: ["career"],
+                horizon: {
+                  kind_id: "life",
+                  start: null,
+                  end: null,
+                },
+              },
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          object_id: "natal",
+          dimension_ids: ["career"],
+          horizon: { kind_id: "life", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const judgment = await screen.findByRole("heading", { name: "判断" });
+    const workspaceNode = screen.getByLabelText("排盘工作台");
+    const facts = screen.getByRole("heading", { name: "事实" });
+
+    expect(
+      judgment.compareDocumentPosition(workspaceNode) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      workspaceNode.compareDocumentPosition(facts) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(screen.getByText(acceptedCopyQuery)).toBeVisible();
+  });
+
 });
 
