@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-> **进度快照（2026-08-11）：** Task 1–7、9–12 的代码与测试已在 `main`。**Task 8 已闭环**：`docs/releases/evidence/2026-08-09-native-full/` 五件套齐备，`verify_local_full.py` 独立通过，`targets=126 modules=93 tests=1584 failed_modules=0 elapsed=434.13s`，`prepared_inputs_sha256=a4e83f3c225b928a9d9ea8b9ffc56448cb283ed23dd8b4e9f0b7e3831fa77807`。本机真实 one-shot Runtime startup describe 已通过（13/13、冻结 digest/shape）；bazi prepare 冒烟可到 `Prepared`。默认仍是 Fake；**真实模型未接**（当前环境无 `DEEPSEEK_API_KEY`）。**Task 13 未完成**，staging/production/`real traffic` 仍 blocked。下一步：注入模型密钥与价格字段 → 真实 model/guard/complete 轨迹 → staging 证据。详见 [HANDOFF_SNAPSHOT_2026-08-11.md](../HANDOFF_SNAPSHOT_2026-08-11.md)。
+> **进度快照（2026-08-11 晚）：** Task 1–12 代码与测试已在 `main`；**Task 8 已闭环**（`docs/releases/evidence/2026-08-09-native-full/`，1584/0，verifier 通过）。真实 Runtime startup 已通过；真实模型已通过本机冒烟，并在测试服务器经 DashScope DeepSeek 跑出 `accepted`（基线 `cb01d65` + policy/limit/worker 热修；当前 HEAD `3446061`）。八字盘面工作区与档案入口已合入。**Task 13 未完成**：固定模型质量评测、Guard 红队、staging 全轨迹、告警/恢复与外部合规 Gate 仍缺；`production blocked / real traffic disabled`。下一步：固化真实链路复跑脚本 → Task 13 staging 证据 → 密钥托管/告警/备案支付。详见 [HANDOFF_SNAPSHOT_2026-08-11.md](../HANDOFF_SNAPSHOT_2026-08-11.md)。
 
 **Goal:** Add the deterministic mingli-master 5.1 `describe → prepare → single-model candidate → guard → complete → Accepted` path to the existing web foundation without importing the core or adding an Agent loop.
 

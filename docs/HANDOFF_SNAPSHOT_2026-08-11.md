@@ -1,6 +1,8 @@
 # 施工交接快照（2026-08-11）
 
 > 本文是给后续施工会话的准确断点说明。只描述已验证的现状与下一步，不替代任何权威合同。与合同冲突时，以下列合同为准：`docs/MINGLI_V51_WEB_INTEGRATION.md`、`docs/plans/2026-08-09-mingli-v51-web-integration.md`、`docs/adr/`、`docs/PHASE_0_GATES.md`。
+>
+> 最新代码断点：`main @ 3446061`（`fix(web): send career dimension for free bazi preview`）。
 
 ## 一、已完成（代码在 `main`）
 
@@ -11,34 +13,45 @@
   - source commit `494ce0bba174a77800daf9b9c38ce9c9166d9a94`
   - release manifest SHA-256 `e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68`
 - **真实 Runtime startup 已通过**：本机私有 217 文件 release root + CPython 3.14.6 venv 上，`build_runtime_startup_gate(...).startup()` 返回 `OneShotMingliRuntimeAdapter`；describe 为 13/13，digest 与 capability shape 匹配冻结值。
-- 真实 Runtime prepare 冒烟：bazi 缺输入返回 `Stopped(need_input)`；补齐出生时刻/地点/性别后返回 `Prepared` 且持有 `state_token`。fortune 需更严格输入字段，当前 smoke 未强行扩成全链路。
-- 测试服务器 `bb742b7` 仍是 `local + Fake` 回环环境，不等于 staging/production。
+- **真实模型冒烟已通过（本机 + 测试服务器）**：
+  - P0 模型默认走阿里云百炼兼容模式：`https://dashscope.aliyuncs.com/compatible-mode/v1`
+  - 冻结模型 `deepseek-v4-flash` / profile `deepseek-v4-flash-p0-v1`
+  - 本机：Runtime prepare + 真实 generate 返回 Candidate blocks
+  - 测试服务器 `fateradar-prod`：Worker 接真实 Runtime + 真实 DashScope DeepSeek；E2E 已出现 `accepted` 且 generation_attempt 无 guard_errors
+  - 相关提交：`cb01d65`、`aff23aa`、`5b5ceb7`、`3d065b4`、`9623ee3`
+  - 证据记录：`docs/releases/2026-08-11-dashscope-deepseek-real-model.md`
+- **产品侧后续增量已合入**：
+  - 邮箱优先 onboarding、设备会话控制、解读历史
+  - 除首页外 UI 修正
+  - 八字盘面工作区 / 档案入口：`6f77658`
+  - 免费八字 preview 默认 `career` 维度，避免 Guard 必需维度缺失：`3446061`
+- 密钥边界：`DEEPSEEK_API_KEY` 只注入本机 `~/.config/mingli/local-real-model.env`（600）或服务器 `/etc/fateradar/test.env`（0600）；仓库不存密钥。
 
 ## 二、未闭环
 
-### 2.1 Task 9–10：默认仍 Fake；真实模型密钥缺失
+### 2.1 Task 9–10：代码与联调已通，但还不是正式准入
 
-- Runtime/Model 代码与测试已在；默认配置仍是 `MINGLI_RUNTIME_ADAPTER=fake`、`MINGLI_MODEL_ADAPTER=fake`。
-- 本机已具备真实 Runtime 路径，但 **当前环境没有 `DEEPSEEK_API_KEY`**，不能切 `MINGLI_MODEL_ADAPTER=deepseek`，也不能跑真实模型成稿、固定模型评测或 complete 后 Accepted 全链路。
-- 生产路径仍要求 `/opt/mingli-master`、`/opt/mingli-runtime`、`/var/lib/mingli` 与 Secret Manager，尚未建立。
+- Runtime / Model Adapter 代码已在；本机与测试服务器都能跑真实路径。
+- 仍缺固定 Model Profile 质量评测、正式模型盲测、密钥托管/轮换演练。
+- 默认仓库配置仍可回退 Fake；测试服务器联调时 OTP 可暂回 `fake`，不能把这当成 production 口径。
+- 生产路径 `/opt/mingli-master`、`/opt/mingli-runtime`、`/var/lib/mingli` 与 Secret Manager 仍未作为 production Gate 通过。
 
 ### 2.2 Task 13：staging trajectory + 上线前证据
 
 仍缺：
 
-- 真实模型与固定 Model Profile 质量评测；
-- Guard 红队、backup/restore、生产告警四类演练；
-- 隔离 staging 全轨迹（13 describe → bazi need-input → prepared → model → guard → accepted；fortune 日/周；六爻；follow-up；Guard 连续拒绝 delayed；complete 后 byte-identical replay）；
-- 支付/短信/邮件/ICP/公安联网等外部 Gate。
+- 隔离 staging 全轨迹证据（13 describe → bazi need-input → prepared → model → guard → accepted；fortune 日/周；六爻手动/数字；follow-up；Guard 连续拒绝 delayed；complete 后 byte-identical replay）；
+- Guard 红队、state volume backup/restore、生产告警四类演练；
+- 支付 / 短信 / 邮件 / ICP / 公安联网等外部 Gate。
 
-`real traffic` 保持 disabled；production blocked。
+`real staging blocked / production blocked / real traffic disabled`。
 
 ## 三、下一步（严格顺序）
 
-1. 注入并轮换 `DEEPSEEK_API_KEY`，补齐三个价格字段后切 `MINGLI_MODEL_ADAPTER=deepseek`。
-2. 用真实 Runtime + 真实模型跑最小 prepare → candidate → guard → complete → Accepted 冒烟，再补 fortune/liuyao。
-3. 在隔离环境写 Task 13 staging trajectory 证据，更新 `docs/releases/` 与 `PHASE_0_GATES.md`。
-4. 外部 Gate 与备案未齐前，不接公网业务流量、不开放真实支付。
+1. 把当前真实 Runtime + 真实模型路径固化成可复跑脚本，补齐固定 Model Profile 质量评测。
+2. 跑 Task 13 staging trajectory，把 fortune / liuyao / follow-up / delayed / replay 证据写进 `docs/releases/`。
+3. 同步推进密钥托管、告警、恢复演练与外部合规 Gate。
+4. 备案与支付未齐前，不接公网业务流量、不开放真实支付。
 
 ## 四、关键事实与禁止项
 
@@ -48,3 +61,4 @@
 - `state_token`、出生资料、Prompt、支付密钥不得进客户端或日志。
 - 仓库不得保存密码/私钥/API Key/商户证书/真实 OTP。
 - 本地真实 Runtime 安装目录使用 `~/.local/share/mingli-web-v51/` 或仓库忽略的 `.runtime/`，不提交。
+- 测试服务器出现 `accepted` 只证明联调通路，不等于 Task 13 完成，更不等于可放量。

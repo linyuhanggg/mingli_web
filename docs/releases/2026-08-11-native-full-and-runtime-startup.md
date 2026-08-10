@@ -2,7 +2,7 @@
 
 记录日期：2026-08-11（Asia/Shanghai）
 
-状态：**Task 8 已闭环 / 真实 Runtime startup 本机通过 / 真实模型与 staging 仍 blocked / production blocked / real traffic disabled**
+状态：**Task 8 已闭环 / 真实 Runtime startup 本机通过 / 后续真实模型联调见 dashscope 记录 / Task 13 仍 blocked / production blocked / real traffic disabled**
 
 结论：本记录不是上线批准。它把此前缺失的 Mac mini `native-full` 原始证据固定进仓库，并确认本机可用的签名 Runtime 安装能通过 one-shot startup gate。默认业务路径仍是 Fake；没有注入的 DeepSeek 密钥前，不得宣称真实成稿链路已通。
 
@@ -67,15 +67,14 @@ fortune 因输入合同更严（`birth_datetime`/`timezone`/`reference_datetime`
 
 ## 3. 明确仍未完成
 
-- 当前 shell 无 `DEEPSEEK_API_KEY`，不能切真实模型 adapter。
-- 未跑真实 model → Narrative Guard → complete → Accepted。
+- 本记录只覆盖 Task 8 与 Runtime startup。真实模型联调已在后续完成，见 [2026-08-11-dashscope-deepseek-real-model.md](./2026-08-11-dashscope-deepseek-real-model.md)。
 - 未跑 Task 13 staging trajectory、固定模型评测、Guard 红队、state volume backup/restore、生产告警演练。
 - 支付、短信、邮件、ICP/公安联网等外部 Gate 仍待确认。
-- 回环测试服务器仍是 `local + Fake`，不能冒充 staging。
+- 测试服务器真实链路不等于正式 staging 合同完成。
 
 ## 4. 发布决定
 
 - 允许：把 Task 8 记为已通过；允许后续在本机/测试机接真实 Runtime。
-- 不允许：开放真实公网流量；把 Fake 服务器叫 staging；在无密钥、无模型评测、无 staging 轨迹时宣称“正式版已上线”。
+- 不允许：开放真实公网流量；把联调环境直接叫 production；在无 Task 13 证据时宣称“正式版已上线”。
 
 下一断点见 [HANDOFF_SNAPSHOT_2026-08-11.md](../HANDOFF_SNAPSHOT_2026-08-11.md)。

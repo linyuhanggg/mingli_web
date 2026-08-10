@@ -12,7 +12,9 @@
 - Phase 2 第一版代码候选证据：[docs/releases/2026-08-10-mingli-v51-web-phase2.md](./docs/releases/2026-08-10-mingli-v51-web-phase2.md)
 - 施工交接快照：[docs/HANDOFF_SNAPSHOT_2026-08-11.md](./docs/HANDOFF_SNAPSHOT_2026-08-11.md)
 - Task 8 原生门禁证据：[docs/releases/2026-08-11-native-full-and-runtime-startup.md](./docs/releases/2026-08-11-native-full-and-runtime-startup.md)
-- 当前实施计划：[docs/plans/2026-08-09-mingli-v51-web-integration.md](./docs/plans/2026-08-09-mingli-v51-web-integration.md)（Phase 0/1 与 Task 8 已闭环；真实模型与 Task 13 staging 仍未闭环）
+- 当前实施计划：[docs/plans/2026-08-09-mingli-v51-web-integration.md](./docs/plans/2026-08-09-mingli-v51-web-integration.md)（Phase 0/1 与 Task 1–12 已闭环；真实 Runtime/模型联调已通；Task 13 staging 仍未闭环）
+- 真实模型联调证据：[docs/releases/2026-08-11-dashscope-deepseek-real-model.md](./docs/releases/2026-08-11-dashscope-deepseek-real-model.md)
+- 八字工作区记录：[docs/releases/2026-08-11-bazi-workspace.md](./docs/releases/2026-08-11-bazi-workspace.md)
 
 ## 目录边界
 
@@ -100,6 +102,6 @@ Metis 紫薇及其开源仓库只作为信息层级和交互参考，不复制�
 
 Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。
 
-2026-08-11 起：Task 8 `native-full` 原始证据已归档且独立 verifier 通过；本机真实 Runtime startup 已通过。默认业务路径仍是 Fake；真实模型密钥与 Task 13 staging 轨迹仍缺，`real staging blocked / production blocked / real traffic disabled`，不可放量。回环测试服务器固定使用 `local + Fake`，不等于 staging。
+2026-08-11 晚断点：Task 8 已闭环；本机真实 Runtime startup 已通过；本机与测试服务器已接百炼 DeepSeek 真模型并跑出 `accepted`。当前 `main` HEAD 为 `3446061`，含八字盘面工作区与 preview `career` 维度修复。仍缺 Task 13 staging 全轨迹、固定模型质量评测、Guard 红队、密钥托管/告警与外部合规 Gate；`production blocked / real traffic disabled`，不可放量。测试服务器真实链路属于联调环境，不等于正式 staging 合同完成。
 
 Phase 2 先冻结 Command/Result、Candidate 与 Output Contract 四组 JSON Schema，再深化 Runtime/Model Ports、三类 Request Compiler、Narrative Guard 和显式 Reading Orchestrator。真实 Runtime 在 Mac mini 原生全量回归通过后才可接入，不再等待 Linux 模拟认证。当前建档、今日、近七日、六爻与结果页均调用同源 API；浏览器只展示服务端返回的 Accepted Copy，不在客户端伪造排盘结果。
