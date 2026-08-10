@@ -398,12 +398,15 @@ class ReadingService:
             )
             subject_facts["prior_answer"] = accepted_copy
             facts[ref] = subject_facts
+        # Follow-up continues the same lineage with the latest Accepted token.
+        # transition stays null; only explicit fact correction uses "correct".
+        state_token = await self.repository.load_state_token(version.id)
         new_prepare = Prepare(
             query=query or prepare.query,
             intent=prepare.intent,
             facts=facts,
-            state_token=None,
-            transition="correct",
+            state_token=state_token,
+            transition=None,
         )
         new_version = await self._create_version_and_job(
             root,

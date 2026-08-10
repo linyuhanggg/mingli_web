@@ -1305,6 +1305,8 @@ async def test_follow_up_creates_a_new_version_with_projected_prior_answer(
         )
         loaded = await repository.load_job(str(job.id))
         assert loaded.prepare_command.facts[subject_ref]["prior_answer"] == ACCEPTED_COPY
+        assert loaded.prepare_command.state_token == "api-test-token"
+        assert loaded.prepare_command.transition is None
 
 
 async def test_reading_writes_require_matching_csrf(client: AsyncClient) -> None:
