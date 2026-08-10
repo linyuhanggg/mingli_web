@@ -17,6 +17,7 @@ from app.readings.narrative_contracts import (
     NarrativeRequest,
     OutputContract,
 )
+from app.readings.candidate_reference_closer import close_candidate_references
 from app.readings.narrative_guard import GuardResult
 from app.readings.narrative_guard import NarrativeGuard as NarrativeGuard
 from app.readings.public_copy import (
@@ -290,7 +291,7 @@ class ReadingOrchestrator:
         cancel_after_commit = False
         try:
             generation = await self.model.generate(request)
-            candidate = generation.candidate
+            candidate = close_candidate_references(generation.candidate, brief)
             model_receipt = generation.receipt
             guard_result = self.guard.validate(
                 candidate,
