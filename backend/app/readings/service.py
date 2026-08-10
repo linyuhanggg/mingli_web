@@ -32,7 +32,7 @@ from app.readings.runtime_contracts import Prepare
 from app.readings.status import ReadingStatus
 from app.security.envelope import EnvelopeCipher
 
-NARRATIVE_POLICY_VERSION = "narrative-policy-v1"
+NARRATIVE_POLICY_VERSION = "policy-v1"
 DEFAULT_QUERIES = {
     "profile_preview": "请预览我的本命格局。",
     "today": "请看看我今天的运势。",

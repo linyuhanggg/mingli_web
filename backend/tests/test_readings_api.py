@@ -1099,7 +1099,7 @@ async def test_supply_input_active_job_collision_returns_conflict_not_500(
         repository = readings.SqlReadingRepository(session, cipher)
         await repository.create_job(
             reading_version_id=UUID(version_id),
-            narrative_policy_version="narrative-policy-v1",
+            narrative_policy_version="policy-v1",
             output_contract=contracts.PREVIEW_V1,
             language="zh-CN",
             max_output_chars=1200,
