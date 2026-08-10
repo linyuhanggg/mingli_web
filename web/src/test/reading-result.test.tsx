@@ -703,7 +703,7 @@ describe("bazi chart workspace", () => {
                 subject_refs: ["profile-version:secret-profile-id"],
                 capability_ids: ["bazi"],
                 object_id: "natal",
-                dimension_ids: ["overview"],
+                dimension_ids: ["career"],
                 horizon: {
                   kind_id: "life",
                   start: null,
@@ -718,7 +718,7 @@ describe("bazi chart workspace", () => {
         readingSummary("accepted", {
           capability_id: "bazi",
           object_id: "natal",
-          dimension_ids: ["overview"],
+          dimension_ids: ["career"],
           horizon: { kind_id: "life", start: null, end: null },
         }),
       );

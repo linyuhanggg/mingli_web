@@ -92,7 +92,7 @@ export function BaziFlow({
       const payload = {
         profile_version_id: values.profile_version_id,
         query: "看一下这个八字",
-        dimension_ids: ["overview"] as ("overview" | "career")[],
+        dimension_ids: ["career"] as ("overview" | "career")[],
       };
       const intent = stableKeyForIntent(intentKeyRef.current, payload);
       intentKeyRef.current = intent;

@@ -93,7 +93,7 @@ export function ProfileArchive() {
     const payload = {
       profile_version_id: profileVersionId,
       query: "看一下这个八字",
-      dimension_ids: ["overview"] as ("overview" | "career")[],
+      dimension_ids: ["career"] as ("overview" | "career")[],
     };
     const intent = stableKeyForIntent(intentKeyRef.current, payload);
     intentKeyRef.current = intent;
