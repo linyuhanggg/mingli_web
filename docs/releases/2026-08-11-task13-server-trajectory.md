@@ -2,7 +2,7 @@
 
 记录日期：2026-08-11（Asia/Shanghai）
 
-状态：**partial（三轮证据已归档）/ production blocked / real traffic disabled**
+状态：**round-4 product 5/5 accepted（测试服）/ production blocked / real traffic disabled**
 
 用户本轮明确：**暂时不管备案和支付**。本记录不评估 ICP/支付 Gate。
 
@@ -108,3 +108,36 @@ DB guard 证据（只读）：这 4 个版本 guard_errors 全部 `scope_mismatc
 - 因模型 scope 合规不稳，不能宣称 Task 13 完成，更不能上正式流量
 
 下一轮重点：Guard 红队集、固定模型评测、fact_panel 泄漏修复、Secret Manager。
+
+## Round 4（b104245 reference closer + 6ec1578 follow-up token 修复）
+
+部署：
+
+1. `b104245` 上线 `candidate_reference_closer` 后，真实 Runtime+模型路径上 preview/today/week/liuyao 已能 accepted。
+2. follow-up 仍 `terminal_stopped`：prepare 使用了错误的 `transition=correct` 且未带 Accepted token。
+3. `6ec1578` 修复 follow-up 合同并部署到测试服；新轨迹目录 `/tmp/task13-server-trajectory-v3/`，本地证据目录 `docs/releases/evidence/2026-08-11-task13-server-trajectory/run-4-followup-fix/`。
+
+验收目标：
+
+- guest/login/profile ok
+- preview / today / week / liuyao / followup 全部 accepted
+- 敏感扫描不落密钥/cookie
+- 仍不宣称 production ready
+
+
+### Round 4 结果（`/tmp/task13-server-trajectory-v3` → `run-4-followup-fix`）
+
+| 步骤 | 内容 | 结果 |
+|---|---|---|
+| S1-S5 | guest / OTP / profile | ok |
+| S6 | preview bazi (career) | **accepted** |
+| S7 | today fortune | **accepted** |
+| S8 | week fortune | **accepted** |
+| S9 | liuyao digital_coin | **accepted** |
+| S10 | follow-up | **accepted** |
+| list | readings list | ok |
+
+证据：`docs/releases/evidence/2026-08-11-task13-server-trajectory/run-4-followup-fix/`
+
+说明：这是测试服 `local + fake OTP + one-shot Runtime + deepseek` 的真实路径通过，不是 production 放量批准。
+

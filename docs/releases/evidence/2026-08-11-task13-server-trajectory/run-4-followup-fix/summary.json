@@ -1,0 +1,48 @@
+{
+  "schema": "task13-server-trajectory-v2",
+  "api": "http://127.0.0.1:8000/api/v1",
+  "tracks": {
+    "guest": {
+      "status": "ok"
+    },
+    "login": {
+      "status": "ok",
+      "user_id": "674a22bf-a3a0-4a2e-90ba-229092901f39"
+    },
+    "profile": {
+      "status": "ok",
+      "profile_version_id": "966af692-ed05-4021-b914-6ed82f75d7c2"
+    },
+    "preview": {
+      "status": "accepted",
+      "version_id": "30c7dd5a-8e77-4def-a549-4e7bffaf819d"
+    },
+    "today": {
+      "status": "accepted",
+      "version_id": "297af6d8-7fe3-44b0-97c0-96ac7cb32e93"
+    },
+    "week": {
+      "status": "accepted",
+      "version_id": "1214aad7-e7a8-4062-81ea-5d0d9fddea01"
+    },
+    "liuyao": {
+      "status": "accepted",
+      "version_id": "23440f53-cbd5-409e-ad53-792dc0c0f801"
+    },
+    "followup": {
+      "status": "accepted",
+      "version_id": "51cbe7cb-4c66-4be2-b0bd-7c8369a58f44",
+      "from": "30c7dd5a-8e77-4def-a549-4e7bffaf819d"
+    },
+    "list_scan": {
+      "status": "ok",
+      "http": 200
+    }
+  },
+  "totals": {
+    "tracks": 9,
+    "accepted": 5
+  },
+  "fix": "candidate_reference_closer + followup accepted-token prepare",
+  "deploy": "6ec15786ac8ce110bbf698b1c8578518123b1a2a"
+}

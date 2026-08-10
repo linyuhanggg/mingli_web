@@ -1,0 +1,62 @@
+START http://127.0.0.1:8000/api/v1 task13.fix.1fb4fd2ad9@example.com
+preview started 30c7dd5a-8e77-4def-a549-4e7bffaf819d
+poll 30c7dd5a-8e77-4def-a549-4e7bffaf819d #1 http=200 status=input_ready
+poll 30c7dd5a-8e77-4def-a549-4e7bffaf819d #2 http=200 status=input_ready
+poll 30c7dd5a-8e77-4def-a549-4e7bffaf819d #3 http=200 status=input_ready
+poll 30c7dd5a-8e77-4def-a549-4e7bffaf819d #4 http=200 status=prepared
+poll 30c7dd5a-8e77-4def-a549-4e7bffaf819d #5 http=200 status=prepared
+poll 30c7dd5a-8e77-4def-a549-4e7bffaf819d #6 http=200 status=prepared
+poll 30c7dd5a-8e77-4def-a549-4e7bffaf819d #7 http=200 status=prepared
+poll 30c7dd5a-8e77-4def-a549-4e7bffaf819d #8 http=200 status=prepared
+poll 30c7dd5a-8e77-4def-a549-4e7bffaf819d #9 http=200 status=prepared
+poll 30c7dd5a-8e77-4def-a549-4e7bffaf819d #10 http=200 status=prepared
+poll 30c7dd5a-8e77-4def-a549-4e7bffaf819d #11 http=200 status=accepted
+preview accepted
+today started 297af6d8-7fe3-44b0-97c0-96ac7cb32e93
+poll 297af6d8-7fe3-44b0-97c0-96ac7cb32e93 #1 http=200 status=input_ready
+poll 297af6d8-7fe3-44b0-97c0-96ac7cb32e93 #2 http=200 status=input_ready
+poll 297af6d8-7fe3-44b0-97c0-96ac7cb32e93 #3 http=200 status=input_ready
+poll 297af6d8-7fe3-44b0-97c0-96ac7cb32e93 #4 http=200 status=prepared
+poll 297af6d8-7fe3-44b0-97c0-96ac7cb32e93 #5 http=200 status=prepared
+poll 297af6d8-7fe3-44b0-97c0-96ac7cb32e93 #6 http=200 status=completing
+poll 297af6d8-7fe3-44b0-97c0-96ac7cb32e93 #7 http=200 status=accepted
+today accepted
+week started 1214aad7-e7a8-4062-81ea-5d0d9fddea01
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #1 http=200 status=input_ready
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #2 http=200 status=input_ready
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #3 http=200 status=input_ready
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #4 http=200 status=input_ready
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #5 http=200 status=prepared
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #6 http=200 status=prepared
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #7 http=200 status=prepared
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #8 http=200 status=prepared
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #9 http=200 status=prepared
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #10 http=200 status=prepared
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #11 http=200 status=prepared
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #12 http=200 status=prepared
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #13 http=200 status=completing
+poll 1214aad7-e7a8-4062-81ea-5d0d9fddea01 #14 http=200 status=accepted
+week accepted
+liuyao started 23440f53-cbd5-409e-ad53-792dc0c0f801
+poll 23440f53-cbd5-409e-ad53-792dc0c0f801 #1 http=200 status=input_ready
+poll 23440f53-cbd5-409e-ad53-792dc0c0f801 #2 http=200 status=input_ready
+poll 23440f53-cbd5-409e-ad53-792dc0c0f801 #3 http=200 status=prepared
+poll 23440f53-cbd5-409e-ad53-792dc0c0f801 #4 http=200 status=prepared
+poll 23440f53-cbd5-409e-ad53-792dc0c0f801 #5 http=200 status=prepared
+poll 23440f53-cbd5-409e-ad53-792dc0c0f801 #6 http=200 status=prepared
+poll 23440f53-cbd5-409e-ad53-792dc0c0f801 #7 http=200 status=prepared
+poll 23440f53-cbd5-409e-ad53-792dc0c0f801 #8 http=200 status=prepared
+poll 23440f53-cbd5-409e-ad53-792dc0c0f801 #9 http=200 status=completing
+poll 23440f53-cbd5-409e-ad53-792dc0c0f801 #10 http=200 status=accepted
+liuyao accepted
+poll 51cbe7cb-4c66-4be2-b0bd-7c8369a58f44 #1 http=200 status=input_ready
+poll 51cbe7cb-4c66-4be2-b0bd-7c8369a58f44 #2 http=200 status=input_ready
+poll 51cbe7cb-4c66-4be2-b0bd-7c8369a58f44 #3 http=200 status=prepared
+poll 51cbe7cb-4c66-4be2-b0bd-7c8369a58f44 #4 http=200 status=prepared
+poll 51cbe7cb-4c66-4be2-b0bd-7c8369a58f44 #5 http=200 status=prepared
+poll 51cbe7cb-4c66-4be2-b0bd-7c8369a58f44 #6 http=200 status=prepared
+poll 51cbe7cb-4c66-4be2-b0bd-7c8369a58f44 #7 http=200 status=prepared
+poll 51cbe7cb-4c66-4be2-b0bd-7c8369a58f44 #8 http=200 status=prepared
+poll 51cbe7cb-4c66-4be2-b0bd-7c8369a58f44 #9 http=200 status=completing
+poll 51cbe7cb-4c66-4be2-b0bd-7c8369a58f44 #10 http=200 status=accepted
+DONE {'tracks': 9, 'accepted': 5}
