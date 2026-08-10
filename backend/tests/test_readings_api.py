@@ -405,6 +405,76 @@ async def test_preview_job_reaches_accepted_under_default_local_fake_stack(
     assert len(attempts) == 1
 
 
+async def test_today_and_week_jobs_reach_accepted_under_default_local_fake_stack(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+
+    today = await client.post(
+        "/api/v1/readings/today",
+        headers=headers,
+        json={"profile_version_id": confirmed["profile_version_id"]},
+    )
+    week = await client.post(
+        "/api/v1/readings/week",
+        headers=headers,
+        json={"profile_version_id": confirmed["profile_version_id"]},
+    )
+    assert today.status_code == 201, today.text
+    assert week.status_code == 201, week.text
+    version_ids = [
+        today.json()["reading_version_id"],
+        week.json()["reading_version_id"],
+    ]
+
+    # run_worker_once builds the default local fake stack: the real
+    # FakeMingliRuntimeAdapter + FakeModelGateway wiring driving the real
+    # PREVIEW_V1 OutputContract through the real ReadingOrchestrator.
+    processed = await run_worker_once(database, test_settings)
+    assert processed is True
+
+    # Drive the state machine until no job is claimable, with a hard bound so a
+    # future requeue-without-progress regression fails instead of hanging tests.
+    for _ in range(7):
+        if not await run_worker_once(database, test_settings):
+            break
+    else:
+        pytest.fail("fortune jobs did not quiesce within eight worker iterations")
+
+    async with database.sessions() as session:
+        for version_id in version_ids:
+            version = await session.get(ReadingVersion, UUID(version_id))
+            assert version is not None
+            job = await session.scalar(
+                select(ReadingJobRecord).where(
+                    ReadingJobRecord.reading_version_id == version.id
+                )
+            )
+            assert job is not None
+            attempts = list(
+                await session.scalars(
+                    select(GenerationAttempt)
+                    .where(GenerationAttempt.reading_version_id == version.id)
+                    .order_by(GenerationAttempt.attempt_number)
+                )
+            )
+            attempt_summary = [
+                (attempt.attempt_number, tuple(attempt.guard_errors))
+                for attempt in attempts
+            ]
+            assert job.status == "complete", (
+                "fortune job must reach accepted under the default local fake stack; "
+                f"actual job status={job.status!r}, version status={version.status!r}, "
+                f"persisted attempts={attempt_summary!r}"
+            )
+            assert version.status == "accepted"
+            assert len(attempts) == 1
+
+
 async def test_reading_start_fails_closed_without_an_admitted_runtime_release(
     client: AsyncClient,
     database: Any,

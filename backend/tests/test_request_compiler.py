@@ -157,7 +157,7 @@ def test_fortune_compiler_uses_server_normalized_profile_time(
         query=query,
         profile=confirmed_profile(compiler),
         server_reference_datetime=reference_datetime,
-        dimension_ids=(),
+        dimension_ids=("career",),
     )
 
     assert canonical_json(command.to_dict()) == canonical_json(load_fixture(fixture_name))
@@ -271,7 +271,7 @@ def test_liuyao_rejects_time_cast_and_invalid_bottom_up_tosses(
                 "action": "today",
                 "query": "看一下今天运势",
                 "server_reference_datetime": datetime.fromisoformat("2026-08-09T01:15:00+00:00"),
-                "dimension_ids": ("career",),
+                "dimension_ids": ("timing",),
             },
         ),
     ],

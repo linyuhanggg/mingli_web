@@ -4,7 +4,7 @@
   "intent": {
     "subject_refs": ["profile-version:test"],
     "object_id": "near_time_personal",
-    "dimension_ids": [],
+    "dimension_ids": ["career"],
     "horizon": {
       "kind_id": "day",
       "start": "2026-08-09",

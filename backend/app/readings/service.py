@@ -192,7 +192,7 @@ class ReadingService:
             query=resolved_query,
             profile=profile,
             server_reference_datetime=datetime.now(UTC),
-            dimension_ids=(),
+            dimension_ids=("career",),
         )
         return await self._persist_start(
             owner,

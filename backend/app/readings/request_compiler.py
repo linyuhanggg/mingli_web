@@ -8,7 +8,7 @@ from app.readings.capability_policy import ProductRoute, route_for_action
 from app.readings.runtime_contracts import Prepare
 
 _BAZI_DIMENSION_IDS = frozenset({"overview", "career"})
-_FORTUNE_DIMENSION_IDS: frozenset[str] = frozenset()
+_FORTUNE_DIMENSION_IDS = frozenset({"career"})
 _LIUYAO_DIMENSION_IDS = frozenset({"career", "outcome", "timing"})
 _LIUYAO_CAST_VALUES = frozenset({6, 7, 8, 9})
 
