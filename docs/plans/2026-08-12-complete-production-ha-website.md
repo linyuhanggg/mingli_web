@@ -10,7 +10,7 @@
 |---|---|---|
 | Task 0 固定可信基线 | ✅ 实现完成，待审查合并（分支 `worktree-production-ha-task0` @ d894704） | `make check` 全绿（backend 528 passed/82 skipped 全为已退役 Linux 门禁；web 250；admin 8）；PG 并发门禁实测通过；Alembic 0001→0008 与 0007→head 升级通过。证据 `docs/releases/2026-08-12-production-readiness-baseline.md`。`.qoder/**` 已裁决为生成物，迁移计划 `docs/plans/2026-08-12-qoder-generated-assets-migration.md` 待用户批准后执行 |
 | Task 1 完成定义/SLO 合同 | ✅ 实现完成，待审查（同分支） | 新增 `docs/PRODUCTION_READINESS.md`（五状态机+用户可见状态映射）、`docs/operations/SLO.md`（每项含数据来源）、`docs/operations/ERROR_BUDGET.md`、`docs/adr/0011-production-ha-and-degraded-reading.md`；PHASE_0_GATES 增加 owner/证据/复核/回滚表；Blueprint 第 21 节绑定 Feature Complete 语义 |
-| Task 2 数据正确性 | 🔶 Step 1–4 完成（幂等 @ d72c302，Profile 语义 @ 064f45a，三条核对 @ 49bee46），Step 5 进行中 | 幂等并发 bug 已修复：RED 复现 → 迁移 `0009_idempotency_owner_uniqueness` 两个 partial unique index → GREEN。Profile 编辑=同 Root 追加不可变版本（`POST /profiles/{id}/versions`），出生合同补齐历法/闰月/时辰准确度/坐标来源精度，真太阳时强制显式坐标。Step 4：核对改为三条 fact_ref 级独立结果（迁移 `0010_verification_results`，服务端按公开事实面板校验 ref，未知/重复→400，未 accepted→409；Web 逐条核对，不足三条不收集；答案不回灌 Prompt）。backend 413 passed（含 PG 门禁）+ web 254 passed + ruff/tsc/eslint/build 全绿；0010 在真 PG 上 upgrade/downgrade/upgrade 往返通过。mypy 有 3 个 HEAD 遗留 error（admin role×2、service horizon×1），与本步无关 |
+| Task 2 数据正确性 | ✅ Step 1–5 全部完成（幂等 @ d72c302，Profile 语义 @ 064f45a，三条核对 @ 49bee46，范围文案 @ 6d9943f），待审查 | 幂等并发 bug 已修复：RED 复现 → 迁移 `0009_idempotency_owner_uniqueness` 两个 partial unique index → GREEN。Profile 编辑=同 Root 追加不可变版本（`POST /profiles/{id}/versions`），出生合同补齐历法/闰月/时辰准确度/坐标来源精度，真太阳时强制显式坐标。Step 4：核对改为三条 fact_ref 级独立结果（迁移 `0010_verification_results`，服务端按公开事实面板校验 ref，未知/重复→400，未 accepted→409；Web 逐条核对，不足三条不收集；答案不回灌 Prompt）。Step 5：全站统一「事业概览」（页面标题「八字 · 事业概览」），`DEFAULT_QUERIES["profile_preview"]` 事业范围化，默认查询范围已被合同测试冻结。backend 404 passed + PG/迁移 29 passed + web 254 passed + ruff/tsc/eslint/build 全绿。mypy 有 3 个 HEAD 遗留 error（admin role×2、service horizon×1），与本步无关 |
 | Task 3 认证/限流/账户权利 | ⬜ 未开始 | |
 | Task 4 商业事实链 | ⬜ 未开始 | |
 | Task 5 购买体验/Admin | ⬜ 未开始 | |
@@ -289,7 +289,7 @@ WHERE owner_guest_session_id IS NOT NULL;
 
 把当前一次整体反馈改为三个 `fact_ref` 级独立结果；仍然禁止把用户核对答案倒灌到原解读 Prompt。修正后若要生成新正文，必须走同 Root 的明确 `correct` 流程和新 Brief。
 
-**Step 5: 冻结免费解读范围**
+**Step 5: 冻结免费解读范围** ✅（@ 6d9943f；方向经用户批准：文案对齐为事业概览；全站统一产品名词为「事业概览」（页面标题用「八字 · 事业概览」），替换全部「八字概览/事业主题概览」漂移措辞——`product-capabilities.ts`、`profile-archive.tsx`、`bazi-flow.tsx`、`dashboard-hub.tsx`、`app/app/page.tsx`、`app/app/bazi/page.tsx`；后端 `DEFAULT_QUERIES["profile_preview"]` 由「请预览我的本命格局。」改为「请预览我的事业与工作主题。」；TDD：home/archive-pages/bazi-flow 三测试先 RED（5 处失败），`test_request_compiler.py` 新增 `test_profile_preview_default_query_is_career_scoped` 冻结默认查询范围；门禁：backend 404 passed + PG/迁移 29 passed + ruff 绿（mypy 仅 3 个既有遗留）、web 254 passed + lint/tsc/build 全绿；真正的多维概览留待 Task 6 模型评测体系就绪后再扩展）
 
 解决页面承诺“八字概览”而正文固定“事业/工作”的漂移：要么产品文案明确为事业概览，要么扩展并通过对应模型评测；不能两边各说一套。
 
