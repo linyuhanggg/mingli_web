@@ -1309,6 +1309,83 @@ async def test_follow_up_creates_a_new_version_with_projected_prior_answer(
         assert loaded.prepare_command.transition is None
 
 
+async def test_result_fact_panel_strips_raw_inputs_and_dependent_refs(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    started = await start_preview(
+        client,
+        headers,
+        confirmed["profile_version_id"],
+        idempotency_key="input-leak-base",
+    )
+    version_id = started["reading_version_id"]
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    leak_brief = brief_payload(subject_ref, {"kind_id": "life", "start": None, "end": None})
+    raw_location_ref = f"fact:{subject_ref}/input/location"
+    chart_ref = "fact:career-structure"
+    leak_brief["facts"] = [
+        {
+            "ref": raw_location_ref,
+            "subject_ref": subject_ref,
+            "kind_id": "kind.structure",
+            "value": "上海市",
+            "display_text": "出生地点：上海市",
+        },
+        {
+            "ref": chart_ref,
+            "subject_ref": subject_ref,
+            "kind_id": "kind.structure",
+            "value": {"fixture": "stable"},
+            "display_text": "当前结构更支持持续积累。",
+        },
+    ]
+    leak_brief["evidence"][0]["supports_fact_refs"] = [raw_location_ref, chart_ref]
+    leak_brief["findings"][0]["fact_refs"] = [raw_location_ref, chart_ref]
+    leak_brief["claim_scopes"][0]["fact_refs"] = [raw_location_ref, chart_ref]
+    readings = __import__("app.readings.repository", fromlist=["SqlReadingRepository"])
+    cipher = EnvelopeCipher.from_settings(test_settings)
+    async with database.sessions() as session:
+        repository = readings.SqlReadingRepository(session, cipher)
+        version = await session.get(ReadingVersion, UUID(version_id))
+        assert version is not None
+        job = await session.scalar(
+            select(ReadingJobRecord).where(
+                ReadingJobRecord.reading_version_id == version.id,
+                ReadingJobRecord.status == "queued",
+            )
+        )
+        assert job is not None
+        now = datetime.now(UTC)
+        await repository.record_prepared(
+            str(job.id),
+            Prepared(state_token="api-test-token", brief=ReadingBrief.from_dict(leak_brief)),
+            now,
+        )
+        await repository.record_accepted(
+            str(job.id),
+            Accepted(state_token="api-test-token", public_copy=ACCEPTED_COPY),
+            now,
+        )
+        await session.commit()
+
+    result = await client.get(f"/api/v1/readings/{version_id}/result")
+    assert result.status_code == 200
+    body = result.json()
+    assert body["status"] == "accepted"
+    panel = body["fact_panel"]
+    assert "上海市" not in result.text
+    assert "/input/" not in result.text
+    assert [fact["ref"] for fact in panel["facts"]] == [chart_ref]
+    assert panel["evidence"][0]["supports_fact_refs"] == [chart_ref]
+    assert panel["findings"][0]["fact_refs"] == [chart_ref]
+    assert panel["claim_scopes"][0]["fact_refs"] == [chart_ref]
+
+
 async def test_reading_writes_require_matching_csrf(client: AsyncClient) -> None:
     await create_guest(client)
     response = await client.post(

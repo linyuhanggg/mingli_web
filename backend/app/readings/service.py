@@ -21,6 +21,7 @@ from app.readings.api_schemas import (
     ReadingVersionSummary,
 )
 from app.readings.output_contracts import PREVIEW_V1
+from app.readings.public_fact_panel import project_public_fact_panel
 from app.readings.repository import READING_HISTORY_LIMIT, SqlReadingRepository
 from app.readings.request_compiler import (
     ConfirmedProfileVersion,
@@ -331,7 +332,7 @@ class ReadingService:
             reading_version_id=version.id,
             status=version.status,
             accepted_copy=accepted_copy,
-            fact_panel=None if brief is None else brief.to_dict(),
+            fact_panel=project_public_fact_panel(brief),
             verification=(
                 None
                 if verification is None
