@@ -10,6 +10,10 @@ const chromeCss = readFileSync(
   resolve(process.cwd(), "src/components/site-chrome.module.css"),
   "utf8",
 );
+const globalCss = readFileSync(
+  resolve(process.cwd(), "src/app/globals.css"),
+  "utf8",
+);
 
 function ruleFor(source: string, selector: string) {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -19,6 +23,10 @@ function ruleFor(source: string, selector: string) {
 }
 
 describe("public visual contract", () => {
+  it("keeps cross-route navigation from inheriting a smooth scroll position", () => {
+    expect(ruleFor(globalCss, "html")).not.toMatch(/scroll-behavior:\s*smooth/);
+  });
+
   it("uses warm paper by default and distinct paper, ink, and clay task tones", () => {
     expect(ruleFor(homeCss, ".main")).toMatch(/background:\s*var\(--ivory-50\)/);
     expect(homeCss).toMatch(/\.taskCardPaper\s*\{/);

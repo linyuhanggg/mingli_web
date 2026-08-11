@@ -59,7 +59,6 @@
 
 html {
   min-width: 20rem;
-  scroll-behavior: smooth;
   background: var(--ivory-50);
 }
 
