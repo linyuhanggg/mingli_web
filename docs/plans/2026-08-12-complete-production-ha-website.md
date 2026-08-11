@@ -10,7 +10,7 @@
 |---|---|---|
 | Task 0 固定可信基线 | ✅ 实现完成，待审查合并（分支 `worktree-production-ha-task0` @ d894704） | `make check` 全绿（backend 528 passed/82 skipped 全为已退役 Linux 门禁；web 250；admin 8）；PG 并发门禁实测通过；Alembic 0001→0008 与 0007→head 升级通过。证据 `docs/releases/2026-08-12-production-readiness-baseline.md`。`.qoder/**` 已裁决为生成物，迁移计划 `docs/plans/2026-08-12-qoder-generated-assets-migration.md` 待用户批准后执行 |
 | Task 1 完成定义/SLO 合同 | ✅ 实现完成，待审查（同分支） | 新增 `docs/PRODUCTION_READINESS.md`（五状态机+用户可见状态映射）、`docs/operations/SLO.md`（每项含数据来源）、`docs/operations/ERROR_BUDGET.md`、`docs/adr/0011-production-ha-and-degraded-reading.md`；PHASE_0_GATES 增加 owner/证据/复核/回滚表；Blueprint 第 21 节绑定 Feature Complete 语义 |
-| Task 2 数据正确性 | 🔶 Step 1–2 完成（@ d72c302），Step 3–5 进行中 | 幂等并发 bug 已修复：RED 复现（两个并发同 Key 产生两个 Reading Version）→ 迁移 `0009_idempotency_owner_uniqueness` 建两个 partial unique index（PG 实测 `\di` 确认 WHERE 子句生效）→ GREEN。390 passed + PG 并发 2 passed + Alembic upgrade/downgrade 往返通过 + ruff/mypy 全绿 |
+| Task 2 数据正确性 | 🔶 Step 1–3 完成（幂等 @ d72c302，Profile 语义 @ 064f45a），Step 4–5 进行中 | 幂等并发 bug 已修复：RED 复现 → 迁移 `0009_idempotency_owner_uniqueness` 两个 partial unique index → GREEN。Profile 编辑=同 Root 追加不可变版本（`POST /profiles/{id}/versions`），出生合同补齐历法/闰月/时辰准确度/坐标来源精度，真太阳时强制显式坐标。backend 398 passed + PG 并发 2 passed + web 253 passed + ruff/mypy/tsc/eslint 全绿 |
 | Task 3 认证/限流/账户权利 | ⬜ 未开始 | |
 | Task 4 商业事实链 | ⬜ 未开始 | |
 | Task 5 购买体验/Admin | ⬜ 未开始 | |
@@ -281,7 +281,7 @@ WHERE owner_guest_session_id IS NOT NULL;
 
 模型元数据必须与迁移一致。并发测试最终断言：一个 mapping、一个 Reading Version、两个响应 ID 相同。
 
-**Step 3: 修正 Profile Root/Version 语义**
+**Step 3: 修正 Profile Root/Version 语义** ✅（@ 064f45a，新增 `POST /profiles/{profile_id}/versions` 编辑=同 Root 追加不可变版本；出生合同补齐历法/闰月/时辰准确度/坐标来源/精度；真太阳时必须显式坐标不静默估算；Web 表单编辑模式 + 档案页“修改资料”入口；backend 398 + web 253 全绿）
 
 “编辑档案”必须在同一 Profile Root 下追加不可变 Profile Version；“新增档案”才创建新 Root。补齐公历/农历、闰月、不确定时辰、出生地坐标来源/精度和真太阳时确认合同。经纬度解析失败必须显式要求用户修正，不能静默估算。
 
