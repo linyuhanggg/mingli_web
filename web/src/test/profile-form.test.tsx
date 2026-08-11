@@ -45,6 +45,30 @@ beforeEach(() => {
 });
 
 describe("ProfileForm", () => {
+  it("does not silently choose values that change the algorithm", () => {
+    render(<ProfileForm />);
+
+    expect(screen.getByRole("heading", { name: "1. 出生事实" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "2. 计算口径" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "3. 提交前核对" })).toBeVisible();
+    expect(screen.getByLabelText("性别")).toHaveValue("");
+    expect(screen.getByLabelText("时间口径")).toHaveValue("");
+    expect(screen.getByLabelText("子时口径")).toHaveValue("");
+  });
+
+  it("reveals coordinate calibration only for true solar time", async () => {
+    const user = userEvent.setup();
+    render(<ProfileForm />);
+
+    expect(screen.queryByLabelText("经度（可选）")).not.toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText("时间口径"), "solar");
+    expect(screen.getByLabelText("经度（可选）")).toBeVisible();
+    expect(screen.getByLabelText("纬度（可选）")).toBeVisible();
+
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    expect(screen.queryByLabelText("经度（可选）")).not.toBeInTheDocument();
+  });
+
   it("uses modern canonical IANA names instead of deprecated aliases", () => {
     for (const canonical of [
       "Asia/Kolkata",
@@ -127,6 +151,9 @@ describe("ProfileForm", () => {
 
     await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
     await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
 
     await waitFor(() =>

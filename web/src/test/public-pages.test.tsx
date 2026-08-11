@@ -10,6 +10,7 @@ import TermsPage from "@/app/terms/page";
 
 
 vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
   useRouter: () => ({
     replace: vi.fn(),
     push: vi.fn(),

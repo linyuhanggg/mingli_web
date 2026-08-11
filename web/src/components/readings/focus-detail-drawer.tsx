@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useId, useRef } from "react";
 
 import type { WorkspaceFocusDetail } from "@/lib/chart-workspace";
 
 import styles from "./focus-detail-drawer.module.css";
-
-const HEADING_ID = "focus-detail-heading";
 
 /**
  * Focus detail surface for the chart workspace. Renders only server-backed
@@ -14,17 +12,36 @@ const HEADING_ID = "focus-detail-heading";
  * ready panel. Labeled and escapable (close button + Escape).
  */
 export function FocusDetailDrawer({
+  id,
   detail,
   onClose,
 }: Readonly<{
+  id?: string;
   detail: WorkspaceFocusDetail | null;
   onClose: () => void;
 }>) {
+  const headingId = useId();
   const closeRef = useRef<HTMLButtonElement | null>(null);
+  const detailTitleRef = useRef<HTMLParagraphElement | null>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+
+  const handleClose = useCallback(() => {
+    const returnTarget = returnFocusRef.current;
+    onClose();
+    queueMicrotask(() => returnTarget?.focus());
+  }, [onClose]);
 
   useEffect(() => {
     if (detail) {
-      closeRef.current?.focus();
+      const activeElement = document.activeElement;
+      if (
+        activeElement instanceof HTMLElement &&
+        activeElement !== closeRef.current &&
+        activeElement !== detailTitleRef.current
+      ) {
+        returnFocusRef.current = activeElement;
+      }
+      detailTitleRef.current?.focus();
     }
   }, [detail]);
 
@@ -33,22 +50,23 @@ export function FocusDetailDrawer({
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        onClose();
+        handleClose();
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [detail, onClose]);
+  }, [detail, handleClose]);
 
   return (
     <section
+      id={id}
       className={styles.drawer}
-      aria-labelledby={HEADING_ID}
+      aria-labelledby={headingId}
       data-open={Boolean(detail)}
     >
       <header className={styles.header}>
-        <h4 className={styles.heading} id={HEADING_ID}>
+        <h4 className={styles.heading} id={headingId}>
           聚焦详情
         </h4>
         {detail ? (
@@ -57,7 +75,7 @@ export function FocusDetailDrawer({
             type="button"
             className={styles.closeButton}
             aria-label="关闭聚焦详情"
-            onClick={onClose}
+            onClick={handleClose}
           >
             关闭
           </button>
@@ -66,7 +84,13 @@ export function FocusDetailDrawer({
 
       {detail ? (
         <div className={styles.body}>
-          <p className={styles.detailTitle}>{detail.title}</p>
+          <p
+            ref={detailTitleRef}
+            className={styles.detailTitle}
+            tabIndex={-1}
+          >
+            {detail.title}
+          </p>
 
           {detail.facts.length > 0 ? (
             <dl className={styles.factList}>

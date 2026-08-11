@@ -46,6 +46,15 @@
   line-height: 1.7;
 }
 
+.supportedFacts {
+  margin: 0.35rem 0 0;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--ink-800);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
 .empty {
   margin: 0;
   color: var(--ink-700);

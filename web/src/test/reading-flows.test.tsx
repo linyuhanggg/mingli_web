@@ -157,23 +157,26 @@ describe("Profile contract", () => {
       Array.from(screen.getByLabelText("性别").querySelectorAll("option")).map(
         (option) => option.value,
       ),
-    ).toEqual(["female", "male", "other"]);
+    ).toEqual(["", "female", "male", "other"]);
     expect(
       Array.from(screen.getByLabelText("时间口径").querySelectorAll("option")).map(
         (option) => option.value,
       ),
-    ).toEqual(["civil", "solar", "lunar"]);
+    ).toEqual(["", "civil", "solar", "lunar"]);
     expect(
       Array.from(screen.getByLabelText("子时口径").querySelectorAll("option")).map(
         (option) => option.value,
       ),
-    ).toEqual(["midnight", "substitute", "solar"]);
+    ).toEqual(["", "midnight", "substitute", "solar"]);
 
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
     const birthInput = screen.getByLabelText("出生时间");
     await waitFor(() => expect(birthInput).toHaveFocus());
     expect(birthInput).toHaveAttribute("aria-required", "true");
     expect(birthInput).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByText("请选择性别", { selector: "p" })).toBeVisible();
+    expect(screen.getByText("请选择时间口径", { selector: "p" })).toBeVisible();
+    expect(screen.getByText("请选择子时口径", { selector: "p" })).toBeVisible();
   });
 
   it("clears a stale CSRF token after 403, bootstraps once, and retries once", async () => {
@@ -211,6 +214,9 @@ describe("Profile contract", () => {
     render(<ProfileForm />);
     await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
     await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
 
     await waitFor(() =>
@@ -241,6 +247,9 @@ describe("Profile contract", () => {
     render(<ProfileForm />);
     await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
     await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
@@ -271,6 +280,9 @@ describe("Profile contract", () => {
     render(<ProfileForm />);
     await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
     await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
@@ -302,6 +314,7 @@ describe("split fortune start endpoints", () => {
       "/api/v1/profiles",
     ]);
     expect(screen.getByText(/目标日期由服务端确认/)).toBeVisible();
+    expect(screen.getByText(/当前算法范围：事业与工作/)).toBeVisible();
     await user.selectOptions(select, profiles.profiles[0].profile_version_id);
     await user.click(screen.getByRole("button", { name: /开始今日解读/ }));
 
@@ -313,7 +326,7 @@ describe("split fortune start endpoints", () => {
     const startCall = callsTo(fetchMock, "/api/v1/readings/today")[0];
     expect(JSON.parse(String(startCall[1]?.body))).toEqual({
       profile_version_id: profiles.profiles[0].profile_version_id,
-      query: "看看今天值得关注什么",
+      query: "看看今天的事业与工作节奏",
     });
     const key = getHeader(startCall[1], "Idempotency-Key");
     expect(key).toMatch(/^.{8,128}$/);
@@ -349,7 +362,7 @@ describe("split fortune start endpoints", () => {
     const startCall = callsTo(fetchMock, "/api/v1/readings/week")[0];
     expect(JSON.parse(String(startCall[1]?.body))).toEqual({
       profile_version_id: profiles.profiles[0].profile_version_id,
-      query: "看看近七日值得关注什么",
+      query: "看看近七日的事业与工作节奏",
     });
     expect(getHeader(startCall[1], "Idempotency-Key")).toMatch(/^.{8,128}$/);
   });
@@ -484,6 +497,7 @@ describe("Liuyao contract", () => {
       timezone: "Asia/Shanghai",
       location: "上海市",
       query: "今年适合换工作吗？",
+      dimension_ids: ["career"],
     });
     expect(getHeader(startCall[1], "Idempotency-Key")).toMatch(/^.{8,128}$/);
     expect(JSON.stringify(startCall[1]?.body)).not.toMatch(
@@ -525,6 +539,7 @@ describe("Liuyao contract", () => {
       timezone: "Asia/Shanghai",
       location: "杭州市",
       query: "近期适合做决定吗？",
+      dimension_ids: ["career"],
     });
     expect(body).not.toHaveProperty("profile_version_id");
   });

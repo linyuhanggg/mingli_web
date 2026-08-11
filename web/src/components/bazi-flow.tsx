@@ -44,7 +44,9 @@ export function BaziFlow({
     formState: { errors },
   } = useForm<BaziFormValues>({
     resolver: zodResolver(baziSchema),
-    defaultValues: { profile_version_id: initialProfileVersionId },
+    defaultValues: {
+      profile_version_id: initialProfileVersionId,
+    },
   });
 
   useEffect(() => {
@@ -91,8 +93,8 @@ export function BaziFlow({
       setSubmitError("");
       const payload = {
         profile_version_id: values.profile_version_id,
-        query: "看一下这个八字",
-        dimension_ids: ["career"] as ("overview" | "career")[],
+        query: "查看这个档案的事业与工作主题",
+        dimension_ids: ["career" as const],
       };
       const intent = stableKeyForIntent(intentKeyRef.current, payload);
       intentKeyRef.current = intent;
@@ -116,6 +118,10 @@ export function BaziFlow({
       <h2>查看八字概览</h2>
       <p className={styles.lead}>
         从已确认档案版本出发，发起确定性八字概览。结果由服务端计算与交付，不在本页本地推算。
+      </p>
+      <p className={styles.scopeNotice}>
+        <strong>当前白话解读范围：事业与工作。</strong>
+        盘面仍展示服务端返回的四柱事实；其他白话主题要等对应成稿合同开放后再提供。
       </p>
 
       {loading ? (
@@ -206,7 +212,7 @@ export function BaziFlow({
               disabled={busy}
               aria-busy={busy}
             >
-              开始八字概览{busy ? " · 正在启动…" : ""}
+              开始事业主题概览{busy ? " · 正在启动…" : ""}
             </button>
           </div>
         </form>

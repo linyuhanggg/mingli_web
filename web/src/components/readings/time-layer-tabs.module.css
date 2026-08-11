@@ -18,9 +18,14 @@
   font-weight: 700;
   cursor: pointer;
   transition:
-    border-color 180ms ease,
-    background-color 180ms ease,
-    color 180ms ease;
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease,
+    color var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out-expo);
+}
+
+.tab:active:not(:disabled) {
+  transform: scale(0.985);
 }
 
 .tab:hover:not(:disabled) {
@@ -62,5 +67,9 @@
 @media (prefers-reduced-motion: reduce) {
   .tab {
     transition: none;
+  }
+
+  .tab:active:not(:disabled) {
+    transform: none;
   }
 }

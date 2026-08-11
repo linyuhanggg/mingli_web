@@ -5,6 +5,25 @@
   border: 1px solid var(--border-control);
   border-radius: var(--radius-sm);
   background: var(--ivory-100);
+  animation: form-shell-enter var(--duration-state) var(--ease-out-expo) both;
+}
+
+@keyframes form-shell-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap {
+    animation: none;
+  }
 }
 
 .title {

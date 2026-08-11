@@ -92,7 +92,7 @@ export function ProfileArchive() {
     setActionError(null);
     const payload = {
       profile_version_id: profileVersionId,
-      query: "看一下这个八字",
+      query: "查看这个档案的事业与工作主题",
       dimension_ids: ["career"] as ("overview" | "career")[],
     };
     const intent = stableKeyForIntent(intentKeyRef.current, payload);
@@ -157,16 +157,10 @@ export function ProfileArchive() {
           actionLabel="开始建立档案"
         />
         <nav className={styles.emptyFlows} aria-label="可用入口">
-          <span>在没有保存档案前，也可以先看这里：</span>
+          <span>没有档案时，仅一事一问可以直接开始：</span>
           <ul>
             <li>
-              <Link href="/app/fortune/today">发起今日解读</Link>
-            </li>
-            <li>
-              <Link href="/app/fortune/week">发起近七日解读</Link>
-            </li>
-            <li>
-              <Link href="/app/profile/new">修改并保存新版本</Link>
+              <Link href="/app/ask/liuyao">直接一事一问 · 六爻</Link>
             </li>
           </ul>
         </nav>
@@ -189,7 +183,11 @@ export function ProfileArchive() {
       ) : null}
 
       {actionError ? (
-        <StatusPanel state="error" title="无法启动八字概览" description={actionError} />
+        <StatusPanel
+          state="error"
+          title="无法启动事业主题概览"
+          description={actionError}
+        />
       ) : null}
 
       <section className={surface.paper} aria-labelledby="profile-archive-title">
@@ -221,8 +219,8 @@ export function ProfileArchive() {
                   onClick={() => handleStartBazi(entry.profile_version_id)}
                 >
                   {startingId === entry.profile_version_id
-                    ? "正在启动八字…"
-                    : "查看八字概览"}
+                    ? "正在启动事业主题…"
+                    : "查看事业主题概览"}
                 </button>
                 <Link
                   className={surface.secondaryButton}
@@ -245,7 +243,7 @@ export function ProfileArchive() {
             新建档案版本
           </Link>
           <Link className={surface.secondaryButton} href="/app/bazi">
-            直接发起八字概览
+            选择档案并查看事业主题
           </Link>
           <Link className={surface.secondaryButton} href="/app/readings">
             查看解读历史

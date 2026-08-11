@@ -52,6 +52,23 @@
   border-radius: var(--radius-sm);
   background: var(--ivory-50);
   color: var(--ink-950);
+  transition:
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease;
+}
+
+.input:hover,
+.textarea:hover,
+.select:hover {
+  border-color: var(--border-control);
+  background: var(--white);
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: var(--gold-500);
+  background: var(--white);
 }
 
 .textarea {
@@ -77,6 +94,26 @@
   color: var(--ink-900);
   font-weight: 700;
   cursor: pointer;
+  transition:
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out-expo),
+    color var(--duration-feedback) ease;
+}
+
+.radioLabel:hover {
+  border-color: var(--gold-500);
+  background: var(--white);
+}
+
+.radioLabel:has(.radio:checked) {
+  border-color: var(--moss-700);
+  background: var(--moss-100);
+  color: var(--ink-950);
+}
+
+.radioLabel:active {
+  transform: scale(0.985);
 }
 
 .radio {
@@ -123,9 +160,9 @@
   font-weight: 700;
   cursor: pointer;
   transition:
-    transform 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease;
+    transform var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease,
+    border-color var(--duration-feedback) ease;
 }
 
 .submit:hover:not(:disabled) {
@@ -150,7 +187,10 @@
 /* 尊重系统减弱动效设置：关闭过渡与位移 */
 @media (prefers-reduced-motion: reduce) {
   .submit,
-  .radioLabel {
+  .radioLabel,
+  .input,
+  .textarea,
+  .select {
     transition: none;
     transform: none;
   }

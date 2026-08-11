@@ -51,6 +51,24 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   background: var(--ivory-100);
+  transition:
+    border-color var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out-expo);
+}
+
+.factCard:hover {
+  border-color: var(--gold-500);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .factCard {
+    transition: none;
+  }
+
+  .factCard:hover {
+    transform: none;
+  }
 }
 
 .factLabel {

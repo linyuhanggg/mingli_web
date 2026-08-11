@@ -1,28 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpenText, GitCompareArrows, Home, Sparkles, Users } from "lucide-react";
+import { Archive, CalendarRange, MessageCircleQuestion } from "lucide-react";
 import { usePathname } from "next/navigation";
+
+import {
+  isPublicNavigationItemActive,
+  PUBLIC_PRIMARY_NAVIGATION,
+  PUBLIC_UTILITY_NAVIGATION,
+  type PublicNavigationIcon,
+} from "@/lib/product-capabilities";
 
 import { BrandMark } from "./brand-mark";
 import { Container } from "./container";
 import styles from "./site-chrome.module.css";
 
 
-const navigation = [
-  { href: "/", label: "首页", icon: Home },
-  { href: "/app/profile/new", label: "在线起盘", icon: Sparkles },
-  { href: "/app/bazi", label: "合盘分析", icon: GitCompareArrows },
-  { href: "/app/profiles", label: "命理双子", icon: Users },
-  { href: "/methodology", label: "学术与古籍库", icon: BookOpenText },
-] as const;
-
-function isActive(pathname: string, href: string) {
-  if (href === "/") {
-    return pathname === "/";
-  }
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
+const navigationIcons = {
+  archive: Archive,
+  calendar: CalendarRange,
+  question: MessageCircleQuestion,
+} satisfies Record<PublicNavigationIcon, typeof Archive>;
 
 export function SiteHeader() {
   const pathname = usePathname() || "/";
@@ -36,29 +34,36 @@ export function SiteHeader() {
         <Container className={styles.headerInner}>
           <BrandMark />
           <nav className={styles.nav} aria-label="主导航">
-            {navigation.map((item) => (
+            {PUBLIC_PRIMARY_NAVIGATION.map((item) => {
+              const Icon = navigationIcons[item.icon];
+
+              return (
+                <Link
+                  aria-current={
+                    isPublicNavigationItemActive(pathname, item) ? "page" : undefined
+                  }
+                  className={styles.navItem}
+                  href={item.href}
+                  key={item.href}
+                >
+                  <Icon aria-hidden="true" size={14} strokeWidth={1.9} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+          <nav className={styles.headerActions} aria-label="辅助导航">
+            {PUBLIC_UTILITY_NAVIGATION.map((item) => (
               <Link
-                aria-current={isActive(pathname, item.href) ? "page" : undefined}
-                className={styles.navItem}
+                aria-current={pathname === item.href ? "page" : undefined}
+                className={styles.utilityLink}
                 href={item.href}
                 key={item.href}
               >
-                <item.icon aria-hidden="true" size={14} strokeWidth={1.9} />
-                <span>{item.label}</span>
+                {item.label}
               </Link>
             ))}
           </nav>
-          <div className={styles.headerActions}>
-            <span className={styles.langChip} aria-hidden="true">
-              EN
-            </span>
-            <Link className={styles.proLink} href="/pricing">
-              专业版
-            </Link>
-            <Link className={styles.accountLink} href="/account">
-              账户
-            </Link>
-          </div>
         </Container>
       </header>
     </>

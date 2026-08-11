@@ -173,6 +173,48 @@ export type ReadingListResponse = {
   readings: ReadingVersionSummary[];
 };
 
+const RAW_INPUT_FACT_REF = /\/input\/[^/]+$/;
+
+function removePrivateFactRefs(items: unknown[], removedRefs: Set<string>): unknown[] {
+  return items.map((item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return item;
+    const record = item as Record<string, unknown>;
+    if (!Array.isArray(record.fact_refs)) return item;
+    return {
+      ...record,
+      fact_refs: record.fact_refs.filter(
+        (ref): ref is string => typeof ref === "string" && !removedRefs.has(ref),
+      ),
+    };
+  });
+}
+
+/**
+ * Defense in depth for the result UI: raw caller inputs are never retained in
+ * React state. The browser only keeps derived, publicly presentable facts.
+ */
+function projectClientSafeFactPanel(panel: ReadingFactPanel): ReadingFactPanel {
+  const removedRefs = new Set(
+    panel.facts
+      .filter((fact) => RAW_INPUT_FACT_REF.test(fact.ref))
+      .map((fact) => fact.ref),
+  );
+  if (removedRefs.size === 0) return panel;
+
+  return {
+    ...panel,
+    facts: panel.facts.filter((fact) => !removedRefs.has(fact.ref)),
+    evidence: panel.evidence.map((item) => ({
+      ...item,
+      supports_fact_refs: item.supports_fact_refs.filter(
+        (ref) => !removedRefs.has(ref),
+      ),
+    })),
+    findings: removePrivateFactRefs(panel.findings, removedRefs),
+    claim_scopes: removePrivateFactRefs(panel.claim_scopes, removedRefs),
+  };
+}
+
 export type LoginIdentitySummary = {
   id: string;
   provider: "phone" | "email";
@@ -434,9 +476,15 @@ export async function pollReading(
 export async function getReadingResult(
   readingVersionId: string,
 ): Promise<ReadingResultResponse> {
-  return requestJson<ReadingResultResponse>(
+  const result = await requestJson<ReadingResultResponse>(
     `/api/v1/readings/${encodeURIComponent(readingVersionId)}/result`,
   );
+  return {
+    ...result,
+    fact_panel: result.fact_panel
+      ? projectClientSafeFactPanel(result.fact_panel)
+      : null,
+  };
 }
 
 export async function submitReadingInput(

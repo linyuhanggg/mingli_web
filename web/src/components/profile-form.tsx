@@ -74,9 +74,15 @@ const profileSchema = z
       .trim()
       .min(1, "请填写出生地点")
       .max(80, "地点最多 80 个字"),
-    gender: z.enum(["female", "male", "other"]),
-    time_basis_policy: z.enum(["civil", "solar", "lunar"]),
-    zi_hour_policy: z.enum(["midnight", "substitute", "solar"]),
+    gender: z
+      .enum(["", "female", "male", "other"])
+      .refine((value) => value !== "", "请选择性别"),
+    time_basis_policy: z
+      .enum(["", "civil", "solar", "lunar"])
+      .refine((value) => value !== "", "请选择时间口径"),
+    zi_hour_policy: z
+      .enum(["", "midnight", "substitute", "solar"])
+      .refine((value) => value !== "", "请选择子时口径"),
     longitude: longitudeField.default(""),
     latitude: latitudeField.default(""),
     coordinate_source: z
@@ -119,9 +125,9 @@ export function ProfileForm() {
       birth_datetime: "",
       timezone: "Asia/Shanghai",
       location: "",
-      gender: "female",
-      time_basis_policy: "civil",
-      zi_hour_policy: "midnight",
+      gender: "",
+      time_basis_policy: "",
+      zi_hour_policy: "",
       longitude: "",
       latitude: "",
       coordinate_source: "",
@@ -160,6 +166,13 @@ export function ProfileForm() {
   const handleSave = useCallback(
     async (values: ProfileFormValues) => {
       if (busyRef.current) return;
+      if (
+        !values.gender ||
+        !values.time_basis_policy ||
+        !values.zi_hour_policy
+      ) {
+        return;
+      }
       busyRef.current = true;
       setBusy(true);
       setSubmitError("");
@@ -176,10 +189,17 @@ export function ProfileForm() {
           time_basis_policy: values.time_basis_policy,
           zi_hour_policy: values.zi_hour_policy,
           longitude:
-            values.longitude?.trim() === "" ? undefined : Number(values.longitude),
+            values.time_basis_policy !== "solar" ||
+            values.longitude?.trim() === ""
+              ? undefined
+              : Number(values.longitude),
           latitude:
-            values.latitude?.trim() === "" ? undefined : Number(values.latitude),
+            values.time_basis_policy !== "solar" ||
+            values.latitude?.trim() === ""
+              ? undefined
+              : Number(values.latitude),
           coordinate_source:
+            values.time_basis_policy !== "solar" ||
             values.coordinate_source?.trim() === ""
               ? undefined
               : values.coordinate_source?.trim(),
@@ -215,7 +235,15 @@ export function ProfileForm() {
         noValidate
         aria-busy={busy}
       >
-        <div className={styles.grid}>
+        <section className={styles.step} aria-labelledby="profile-step-facts">
+          <div className={styles.stepHeader}>
+            <span className={styles.stepIndex} aria-hidden="true">01</span>
+            <div>
+              <h3 id="profile-step-facts">1. 出生事实</h3>
+              <p>先填写原始资料。这里不做换算，也不会读取设备定位。</p>
+            </div>
+          </div>
+          <div className={styles.grid}>
           <div className={formControls.field}>
             <label htmlFor="profile-birth-datetime">出生时间</label>
             <input
@@ -325,6 +353,9 @@ export function ProfileForm() {
               }
               {...register("gender")}
             >
+              <option value="" disabled>
+                请选择性别
+              </option>
               {GENDERS.map((gender) => (
                 <option key={gender.value} value={gender.value}>
                   {gender.label}
@@ -337,7 +368,18 @@ export function ProfileForm() {
               </p>
             ) : null}
           </div>
+          </div>
+        </section>
 
+        <section className={styles.step} aria-labelledby="profile-step-policy">
+          <div className={styles.stepHeader}>
+            <span className={styles.stepIndex} aria-hidden="true">02</span>
+            <div>
+              <h3 id="profile-step-policy">2. 计算口径</h3>
+              <p>这些选择会改变服务端算法输入，因此需要你逐项确认。</p>
+            </div>
+          </div>
+          <div className={styles.grid}>
           <div className={formControls.field}>
             <label htmlFor="profile-time-basis-policy">时间口径</label>
             <select
@@ -354,6 +396,9 @@ export function ProfileForm() {
               }
               {...register("time_basis_policy")}
             >
+              <option value="" disabled>
+                请选择时间口径
+              </option>
               {TIME_BASIS_POLICIES.map((policy) => (
                 <option key={policy.value} value={policy.value}>
                   {policy.label}
@@ -387,6 +432,9 @@ export function ProfileForm() {
               }
               {...register("zi_hour_policy")}
             >
+              <option value="" disabled>
+                请选择子时口径
+              </option>
               {ZI_HOUR_POLICIES.map((policy) => (
                 <option key={policy.value} value={policy.value}>
                   {policy.label}
@@ -407,6 +455,8 @@ export function ProfileForm() {
             </p>
           </div>
 
+          {time_basis_policy === "solar" ? (
+            <>
           <div className={formControls.field}>
             <label htmlFor="profile-longitude">经度（可选）</label>
             <input
@@ -479,9 +529,24 @@ export function ProfileForm() {
               </p>
             ) : null}
           </div>
-        </div>
+            </>
+          ) : null}
+          </div>
+          <p className={styles.policyNote}>
+            只有选择真太阳时，才需要展开经纬度校准；其他口径不会提交这些高级字段。
+          </p>
+        </section>
 
-        <BirthBasisSummary values={watchedValues} />
+        <section className={styles.step} aria-labelledby="profile-step-review">
+          <div className={styles.stepHeader}>
+            <span className={styles.stepIndex} aria-hidden="true">03</span>
+            <div>
+              <h3 id="profile-step-review">3. 提交前核对</h3>
+              <p>保存后形成不可变档案版本；以后修改会保留旧版本。</p>
+            </div>
+          </div>
+          <BirthBasisSummary values={watchedValues} />
+        </section>
 
         {busy ? (
           <p className={formControls.disabledReason} role="status">

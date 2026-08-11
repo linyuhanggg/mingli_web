@@ -11,8 +11,8 @@ export default function LiuyaoPage() {
   return (
     <div className={styles.page}>
       <AppPageHeader
-        title="一件事，一次起卦，一个明确范围。"
-        description="先把问题、时间范围和起卦方式确认清楚。换问题、换卦或重新起卦会形成新的解读根，不会偷算成同盘追问。"
+        title="一件事业或工作问题，一次起卦。"
+        description="当前成稿范围是事业与工作。先把问题、时间范围和起卦方式确认清楚；换问题、换卦或重新起卦会形成新的解读根。"
         meta={
           <>
             <span><Clock3 aria-hidden="true" size={15} /> 起卦时刻需确认</span>

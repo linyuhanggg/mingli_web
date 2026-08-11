@@ -7,6 +7,19 @@
   border-radius: var(--radius-md);
   background: var(--white);
   box-shadow: var(--shadow-card);
+  transition:
+    border-color var(--duration-feedback) ease,
+    opacity var(--duration-state) ease,
+    transform var(--duration-state) var(--ease-out-expo);
+}
+
+.drawer[data-open="false"] {
+  opacity: 0.92;
+}
+
+.drawer[data-open="true"] {
+  border-color: rgb(169 133 63 / 35%);
+  transform: translateY(0);
 }
 
 .header {
@@ -39,8 +52,13 @@
   font-weight: 720;
   cursor: pointer;
   transition:
-    border-color 180ms ease,
-    background-color 180ms ease;
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out-expo);
+}
+
+.closeButton:active {
+  transform: scale(0.985);
 }
 
 .closeButton:hover {
@@ -51,7 +69,7 @@
 .body {
   display: grid;
   gap: 0.85rem;
-  transition: opacity 180ms ease;
+  transition: opacity var(--duration-feedback) ease;
 }
 
 .detailTitle {
@@ -60,6 +78,10 @@
   font-size: 1.15rem;
   font-weight: 600;
   color: var(--ink-950);
+}
+
+.detailTitle:focus-visible {
+  outline-offset: 0.25rem;
 }
 
 .factList {
@@ -148,11 +170,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .body {
+  .drawer,
+  .body,
+  .closeButton {
     transition: none;
   }
 
-  .closeButton {
-    transition: none;
+  .drawer[data-open="true"],
+  .closeButton:active {
+    transform: none;
   }
 }

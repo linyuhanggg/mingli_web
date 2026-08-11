@@ -35,6 +35,21 @@
   color: var(--ink-950);
   line-height: 1.6;
   resize: vertical;
+  transition:
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease;
+}
+
+.input:hover,
+.textarea:hover {
+  border-color: var(--border-control);
+  background: var(--white);
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: var(--gold-500);
+  background: var(--white);
 }
 
 .submit {
@@ -53,9 +68,9 @@
   font-weight: 700;
   cursor: pointer;
   transition:
-    transform 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease;
+    transform var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease,
+    border-color var(--duration-feedback) ease;
 }
 
 .submit:hover:not(:disabled) {
@@ -89,8 +104,8 @@
   font-weight: 700;
   text-decoration: none;
   transition:
-    border-color 180ms ease,
-    background-color 180ms ease;
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease;
 }
 
 .recastLink:hover {
@@ -113,7 +128,9 @@
 /* 尊重系统减弱动效设置：关闭过渡与位移 */
 @media (prefers-reduced-motion: reduce) {
   .submit,
-  .recastLink {
+  .recastLink,
+  .input,
+  .textarea {
     transition: none;
     transform: none;
   }

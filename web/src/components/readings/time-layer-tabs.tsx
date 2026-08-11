@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef, type KeyboardEvent } from "react";
+
 import type {
   WorkspaceLayer,
   WorkspaceLayerId,
@@ -16,11 +18,48 @@ export function TimeLayerTabs({
   layers,
   activeLayerId,
   onSelect,
+  idPrefix,
 }: Readonly<{
   layers: WorkspaceLayer[];
   activeLayerId: WorkspaceLayerId;
   onSelect: (layerId: WorkspaceLayerId) => void;
+  idPrefix: string;
 }>) {
+  const tabRefs = useRef<
+    Partial<Record<WorkspaceLayerId, HTMLButtonElement | null>>
+  >({});
+
+  function handleKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    currentLayerId: WorkspaceLayerId,
+  ) {
+    const availableLayers = layers.filter(
+      (layer) => layer.status !== "unavailable",
+    );
+    const currentIndex = availableLayers.findIndex(
+      (layer) => layer.id === currentLayerId,
+    );
+    if (currentIndex < 0 || availableLayers.length === 0) return;
+
+    let targetIndex: number | null = null;
+    if (event.key === "ArrowRight") {
+      targetIndex = (currentIndex + 1) % availableLayers.length;
+    } else if (event.key === "ArrowLeft") {
+      targetIndex =
+        (currentIndex - 1 + availableLayers.length) % availableLayers.length;
+    } else if (event.key === "Home") {
+      targetIndex = 0;
+    } else if (event.key === "End") {
+      targetIndex = availableLayers.length - 1;
+    }
+
+    if (targetIndex === null) return;
+    event.preventDefault();
+    const targetLayer = availableLayers[targetIndex];
+    tabRefs.current[targetLayer.id]?.focus();
+    onSelect(targetLayer.id);
+  }
+
   return (
     <div className={styles.tabs} role="tablist" aria-label="时间层">
       {layers.map((layer) => {
@@ -31,14 +70,20 @@ export function TimeLayerTabs({
             key={layer.id}
             type="button"
             role="tab"
-            id={`time-layer-tab-${layer.id}`}
+            ref={(element) => {
+              tabRefs.current[layer.id] = element;
+            }}
+            id={`${idPrefix}-tab-${layer.id}`}
+            aria-controls={`${idPrefix}-panel-${layer.id}`}
             aria-selected={active}
             aria-disabled={unavailable}
             disabled={unavailable}
+            tabIndex={active ? 0 : -1}
             className={styles.tab}
             data-active={active}
             data-status={layer.status}
             onClick={() => onSelect(layer.id)}
+            onKeyDown={(event) => handleKeyDown(event, layer.id)}
           >
             <span className={styles.tabLabel}>{layer.label}</span>
             {layer.status === "ready" && layer.summary ? (

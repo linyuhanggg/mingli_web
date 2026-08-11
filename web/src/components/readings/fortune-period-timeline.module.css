@@ -1,0 +1,131 @@
+.frame {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.note {
+  max-width: 58ch;
+  margin: 0;
+  color: var(--ink-700);
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+
+.timeline {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+  margin-left: 0.45rem;
+  padding: 1rem 1rem 1rem 1.45rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(90deg, rgb(169 133 63 / 9%), transparent 38%),
+    var(--ivory-100);
+  animation: marker-enter var(--duration-state) var(--ease-out-expo) both;
+}
+
+.item::before {
+  position: absolute;
+  top: 1.25rem;
+  left: -0.5rem;
+  width: 0.72rem;
+  height: 0.72rem;
+  border: 3px solid var(--ivory-50);
+  border-radius: 50%;
+  background: var(--gold-500);
+  box-shadow: 0 0 0 1px var(--gold-500);
+  content: "";
+}
+
+.item:not(:last-child)::after {
+  position: absolute;
+  top: 2rem;
+  bottom: -1.05rem;
+  left: -0.17rem;
+  width: 1px;
+  background: var(--gold-400);
+  content: "";
+}
+
+.date {
+  width: fit-content;
+  color: var(--ink-950);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.details div {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: calc(var(--radius-sm) - 0.15rem);
+  background: var(--surface-card-translucent);
+}
+
+.details dt {
+  color: var(--ink-700);
+  font-size: 0.72rem;
+  font-weight: 740;
+  letter-spacing: 0.04em;
+}
+
+.details dd {
+  margin: 0;
+  color: var(--ink-950);
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 620;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+@keyframes marker-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.3rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 34rem) {
+  .details {
+    grid-template-columns: 1fr;
+  }
+
+  .item {
+    padding-inline: 1.15rem 0.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    animation: none;
+  }
+}

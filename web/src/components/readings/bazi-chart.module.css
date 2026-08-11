@@ -1,5 +1,6 @@
 .board {
   display: grid;
+  container-type: inline-size;
   gap: 1rem;
   min-width: 0;
   padding: 1rem;
@@ -39,7 +40,7 @@
 
 .pillarGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem;
 }
 
@@ -58,14 +59,19 @@
   text-align: center;
   cursor: pointer;
   transition:
-    border-color 180ms ease,
-    background-color 180ms ease,
-    transform 180ms ease;
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease,
+    transform var(--duration-feedback) ease;
 }
 
 .pillarCard:hover {
   border-color: var(--gold-500);
   background: var(--ivory-50);
+  transform: translateY(-1px);
+}
+
+.pillarCard:active {
+  transform: translateY(0) scale(0.985);
 }
 
 .pillarCard:focus-visible {
@@ -149,17 +155,17 @@
   gap: 0.15rem;
   padding: 0.7rem 0.8rem;
   border: 1px solid var(--border-subtle);
-  border-left: 3px solid var(--gold-400);
+  border-color: var(--gold-400);
   border-radius: var(--radius-sm);
   background: var(--white);
 }
 
 .highlights li[data-tone="emphasis"] {
-  border-left-color: var(--ink-800);
+  border-color: var(--ink-800);
 }
 
 .highlights li[data-tone="caution"] {
-  border-left-color: var(--terracotta-500);
+  border-color: var(--terracotta-500);
 }
 
 .highlights strong {
@@ -174,9 +180,9 @@
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 640px) {
+@container (min-width: 34rem) {
   .pillarGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

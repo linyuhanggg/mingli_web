@@ -1,9 +1,10 @@
 import {
+  Archive,
   BookOpenText,
+  CalendarRange,
   CheckCircle2,
-  FileText,
+  MessageCircleQuestion,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 
 import { ButtonLink } from "@/components/button-link";
@@ -20,42 +21,26 @@ import {
 } from "@/components/home-motion";
 import { PublicPageShell } from "@/components/public-page-shell";
 import { TimeArchive } from "@/components/time-archive";
+import {
+  PRODUCT_CAPABILITIES,
+  type ProductCapabilityId,
+  type ProductTaskTone,
+} from "@/lib/product-capabilities";
 
 import styles from "./home.module.css";
 
 
-const tasks = [
-  {
-    label: "TASK 01",
-    title: "八字命盘起盘",
-    description:
-      "输入生辰，即时形成可复现的四柱干支与十神格局概览，并由确定性核心给出有边界的白话解读。",
-    href: "/app/profile/new",
-    action: "立即进入排盘",
-    meta: "输入生辰 · 盘出四柱与格局",
-    icon: Sparkles,
-  },
-  {
-    label: "TASK 02",
-    title: "今日与近七日",
-    description:
-      "从已确认档案出发查看阶段节奏，把时间拆成可核对的短周期提示，而不是制造每天重算的焦虑。",
-    href: "/app/fortune/today",
-    action: "开启阶段推算",
-    meta: "阶段节奏 · 今日与近七日",
-    icon: FileText,
-  },
-  {
-    label: "TASK 03",
-    title: "学术中心与古籍库",
-    description:
-      "查看方法、边界与可核对依据。正式解读会把结论、条件与来源分开，拒绝神秘包装。",
-    href: "/methodology",
-    action: "进入学术典籍库",
-    meta: "方法边界 × 可核对依据",
-    icon: BookOpenText,
-  },
-] as const;
+const taskIcons = {
+  bazi: Archive,
+  fortune: CalendarRange,
+  liuyao: MessageCircleQuestion,
+} satisfies Record<ProductCapabilityId, typeof Archive>;
+
+const taskToneStyles = {
+  paper: styles.taskCardPaper,
+  ink: styles.taskCardInk,
+  clay: styles.taskCardClay,
+} satisfies Record<ProductTaskTone, string>;
 
 const methods = [
   {
@@ -75,18 +60,43 @@ const methods = [
   },
 ] as const;
 
-const freeFeatures = [
-  "完整建档与有限八字概览",
-  "基础命格与阶段节奏提示",
-  "3 条现实核对位",
-  "方法与边界公开查阅",
-] as const;
-
-const proFeatures = [
-  "包含免费版所有功能",
-  "个人命盘深度解读与同盘追问",
-  "流年、大限与今日近七日分析",
-  "永久查看已购解读档案",
+const pricingOffers = [
+  {
+    label: "FREE / 基础能力",
+    title: "免费基础能力",
+    price: "¥0",
+    suffix: "/ 当前免费",
+    features: [
+      "一个本人档案与确定性八字排盘",
+      "有限白话概览与 3 条现实核对",
+      "今日 / 近七日摘要与六爻基础卦象",
+    ],
+    action: "查看免费能力边界",
+  },
+  {
+    label: "ONE-OFF / 单次报告",
+    title: "个人命盘深度解读",
+    price: "¥29.90",
+    suffix: "/ 单次",
+    features: [
+      "绑定一个已经确认的档案版本",
+      "已接纳报告永久查看",
+      "7 天内 3 次同盘追问",
+    ],
+    action: "查看八字报告交付",
+  },
+  {
+    label: "ONE-OFF / 单次报告",
+    title: "一事一问 · 六爻事件报告",
+    price: "¥9.90",
+    suffix: "/ 单次",
+    features: [
+      "当前绑定一个事业或工作问题",
+      "事件报告永久查看",
+      "72 小时内 2 次同盘追问",
+    ],
+    action: "查看六爻报告交付",
+  },
 ] as const;
 
 export default function HomePage() {
@@ -104,7 +114,7 @@ export default function HomePage() {
                     <span>可核对的个人档案。</span>
                   </h1>
                   <p className={styles.heroIntro}>
-                    融合确定性命理计算与现代化大语言模型，拒绝套路化鸡汤与迷信泛论。提供可验证的原典依据、盘面事实与清晰的命运格局推演。
+                    先由确定性核心形成盘面事实，再由 AI 在事实范围内组织白话。原典命中时才展示可定位来源；没有命中时明确留空。
                   </p>
                   <div className={styles.actions}>
                     <ButtonLink className={styles.primaryAction} href="/app/profile/new">
@@ -112,24 +122,24 @@ export default function HomePage() {
                     </ButtonLink>
                     <ButtonLink
                       className={styles.secondaryAction}
-                      href="/methodology"
+                      href="/app/ask/liuyao"
                       variant="secondary"
                     >
-                      查阅学术典籍库
+                      问一件工作上的事
                     </ButtonLink>
                   </div>
                   <ul className={styles.trustline} aria-label="核心承诺">
                     <li>
                       <CheckCircle2 aria-hidden="true" size={15} />
-                      <span>100% 逻辑可溯源</span>
+                      <span>盘面事实可核对</span>
                     </li>
                     <li>
                       <ShieldCheck aria-hidden="true" size={15} />
-                      <span>端到端数据私密</span>
+                      <span>出生资料按隐私政策处理</span>
                     </li>
                     <li>
                       <BookOpenText aria-hidden="true" size={15} />
-                      <span>附带原典注解</span>
+                      <span>证据与结论分开呈现</span>
                     </li>
                   </ul>
                 </div>
@@ -143,30 +153,52 @@ export default function HomePage() {
               <div className={styles.sectionHeader}>
                 <div>
                   <p className={styles.sectionEyebrow}>核心应用档案 / P0 TASKS</p>
-                  <h2 id="tasks-title">选择您的建档研究入口</h2>
+                  <h2 id="tasks-title">从当下最想解决的事开始</h2>
                 </div>
                 <p>
-                  三大核心功能均支持完整免费试用。正式资料登录后才承诺长期保存；盘面始终由确定性核心计算。
+                  三条路径都对应当前已经实现的功能入口。建档看长期结构，看今日近七日处理时间节奏，事业或工作问题则进入六爻。
                 </p>
               </div>
             </HomeSectionMotion>
             <HomeTaskGridMotion className={styles.taskGrid}>
-              {tasks.map((task) => (
-                <HomeTaskItemMotion key={task.href}>
-                  <article className={styles.taskCard}>
-                    <div className={styles.taskTop}>
-                      <span>{task.label}</span>
-                      <task.icon aria-hidden="true" size={18} strokeWidth={1.7} />
-                    </div>
-                    <h3>{task.title}</h3>
-                    <p className={styles.taskMeta}>{task.meta}</p>
-                    <p>{task.description}</p>
-                    <ButtonLink className={styles.taskAction} href={task.href} variant="text">
-                      {task.action}
-                    </ButtonLink>
-                  </article>
-                </HomeTaskItemMotion>
-              ))}
+              {PRODUCT_CAPABILITIES.map((capability) => {
+                const Icon = taskIcons[capability.id];
+
+                return (
+                  <HomeTaskItemMotion key={capability.href}>
+                    <article
+                      className={`${styles.taskCard} ${taskToneStyles[capability.home.tone]}`}
+                      data-tone={capability.home.tone}
+                    >
+                      <div className={styles.taskTop}>
+                        <span>{capability.home.eyebrow}</span>
+                        <Icon aria-hidden="true" size={18} strokeWidth={1.7} />
+                      </div>
+                      <h3>{capability.home.title}</h3>
+                      <p className={styles.taskMeta}>{capability.home.meta}</p>
+                      <p>{capability.home.description}</p>
+                      <div className={styles.taskActions}>
+                        <ButtonLink
+                          className={styles.taskAction}
+                          href={capability.href}
+                          variant="text"
+                        >
+                          {capability.home.action}
+                        </ButtonLink>
+                        {capability.home.secondaryAction ? (
+                          <ButtonLink
+                            className={styles.taskAction}
+                            href={capability.home.secondaryAction.href}
+                            variant="text"
+                          >
+                            {capability.home.secondaryAction.label}
+                          </ButtonLink>
+                        ) : null}
+                      </div>
+                    </article>
+                  </HomeTaskItemMotion>
+                );
+              })}
             </HomeTaskGridMotion>
           </section>
 
@@ -200,56 +232,43 @@ export default function HomePage() {
             <HomeSectionMotion>
               <div className={styles.sectionHeader}>
                 <div>
-                  <p className={styles.sectionEyebrow}>透明权益 / ARCHIVE TIERS</p>
-                  <h2 id="pricing-title">体验版与学术专业版对比</h2>
+                  <p className={styles.sectionEyebrow}>透明权益 / DELIVERY CATALOG</p>
+                  <h2 id="pricing-title">免费能力与两种单次报告</h2>
                 </div>
                 <p>
-                  首版不卖自动续费、充值币或永久无限 AI。真实支付通道尚未接入时，只展示已冻结商品目录。
+                  当前在线支付尚未开放；这里仅展示已经冻结的商品、追问期限与交付边界，不会把点击写成已付款。
                 </p>
               </div>
             </HomeSectionMotion>
             <HomeLedgerMotion className={styles.priceGrid}>
-              <HomeLedgerItemMotion>
-                <div className={styles.priceCard}>
-                  <p className={styles.priceLabel}>基础研习</p>
-                  <h3>免费体验档案</h3>
-                  <p className={styles.priceValue}>
-                    ¥0 <span>/ 永久免费</span>
-                  </p>
-                  <ul>
-                    {freeFeatures.map((item) => (
-                      <li key={item}>
-                        <CheckCircle2 aria-hidden="true" size={15} />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <ButtonLink className={styles.priceSecondary} href="/app/profile/new" variant="secondary">
-                    直接开始起盘
-                  </ButtonLink>
-                </div>
-              </HomeLedgerItemMotion>
-              <HomeLedgerItemMotion>
-                <div className={`${styles.priceCard} ${styles.priceCardFeatured}`}>
-                  <span className={styles.recommended}>RECOMMENDED</span>
-                  <p className={styles.priceLabel}>学术与深度研究</p>
-                  <h3>专业学术版</h3>
-                  <p className={styles.priceValue}>
-                    ¥29.90 <span>/ 按次深度解读</span>
-                  </p>
-                  <ul>
-                    {proFeatures.map((item) => (
-                      <li key={item}>
-                        <CheckCircle2 aria-hidden="true" size={15} />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <ButtonLink className={styles.pricePrimary} href="/pricing">
-                    解锁专业排盘报告
-                  </ButtonLink>
-                </div>
-              </HomeLedgerItemMotion>
+              {pricingOffers.map((offer, index) => (
+                <HomeLedgerItemMotion key={offer.title}>
+                  <article
+                    className={`${styles.priceCard} ${index === 0 ? styles.priceCardFree : styles.priceCardPaid}`}
+                  >
+                    <p className={styles.priceLabel}>{offer.label}</p>
+                    <h3>{offer.title}</h3>
+                    <p className={styles.priceValue}>
+                      <strong>{offer.price}</strong> <span>{offer.suffix}</span>
+                    </p>
+                    <ul>
+                      {offer.features.map((item) => (
+                        <li key={item}>
+                          <CheckCircle2 aria-hidden="true" size={15} />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <ButtonLink
+                      className={styles.priceAction}
+                      href="/pricing"
+                      variant={index === 0 ? "secondary" : "primary"}
+                    >
+                      {offer.action}
+                    </ButtonLink>
+                  </article>
+                </HomeLedgerItemMotion>
+              ))}
             </HomeLedgerMotion>
           </section>
         </Container>

@@ -7,6 +7,33 @@
   border-radius: var(--radius-md);
   background: var(--white);
   box-shadow: var(--shadow-card);
+  animation: form-shell-enter var(--duration-entrance) var(--ease-out-expo) both;
+}
+
+@keyframes form-shell-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap {
+    animation: none;
+  }
+
+  .radioOption {
+    transition: none;
+  }
+
+  .radioOption:active {
+    transform: none;
+  }
 }
 
 .wrap h2 {
@@ -86,7 +113,28 @@
   min-height: 2.75rem;
   align-items: center;
   gap: 0.45rem;
+  padding: 0 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   color: var(--ink-900);
+  transition:
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out-expo);
+}
+
+.radioOption:hover {
+  border-color: var(--border-subtle);
+  background: var(--ivory-100);
+}
+
+.radioOption:has(input:checked) {
+  border-color: var(--moss-700);
+  background: var(--moss-100);
+}
+
+.radioOption:active {
+  transform: scale(0.985);
 }
 
 .tossGrid {

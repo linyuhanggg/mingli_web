@@ -138,6 +138,29 @@ describe("buildBaziWorkspaceView", () => {
 });
 
 describe("resolveBaziFocusDetail", () => {
+  it("shows facts related to the selected pillar instead of repeating one global drawer", () => {
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      dayMaster: "戊土",
+      monthCommand: "寅月",
+      timezone: "Asia/Shanghai",
+      timeBasis: "民用时",
+      ziHour: "按午夜换日",
+    });
+
+    const month = resolveBaziFocusDetail(view, "month");
+    const day = resolveBaziFocusDetail(view, "day");
+    const hour = resolveBaziFocusDetail(view, "hour");
+
+    expect(month?.facts).toContainEqual({ label: "月令", text: "寅月" });
+    expect(month?.facts.some((fact) => fact.label === "日主")).toBe(false);
+    expect(day?.facts).toContainEqual({ label: "日主", text: "戊土" });
+    expect(day?.facts.some((fact) => fact.label === "月令")).toBe(false);
+    expect(hour?.facts).toContainEqual({ label: "子时策略", text: "按午夜换日" });
+    expect(hour?.title).toBe("时柱 · 丁卯");
+    expect(hour?.facts.some((fact) => fact.label === "时柱")).toBe(false);
+  });
+
   it("resolves label, facts, and limits from public facts without inventing stars", () => {
     const view = buildBaziWorkspaceView({
       pillars: FOUR_PILLARS,
@@ -153,7 +176,10 @@ describe("resolveBaziFocusDetail", () => {
     expect(detail?.facts.some((fact) => fact.text === "Asia/Shanghai")).toBe(
       true,
     );
-    expect(detail?.sources).toContain("服务端公开事实");
+    expect(detail?.sources).toEqual([]);
+    expect(detail?.limits).toContain(
+      "暂无与该柱直接关联的公开依据；请以下方依据卡标注的“支持事实”为准。",
+    );
     expect(detail?.limits.length).toBeGreaterThan(0);
     expect(JSON.stringify(detail)).not.toMatch(
       /iztro|lunar-javascript|ziwei-doushu|generateChart|astro\.bySolar/,

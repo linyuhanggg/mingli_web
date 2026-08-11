@@ -75,6 +75,7 @@ const fieldLabels: Record<string, string> = {
   calendar_normalization: "历法口径",
   day_master: "日主",
   month_command: "月令",
+  four_pillars: "四柱",
   natal_pillars: "四柱",
   target_day: "目标日期",
   target_period: "目标周期",
@@ -89,6 +90,16 @@ const SENSITIVE_KEY =
 const ISO_DATE_TIME =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+const STRUCTURED_VALUE_KEYS = new Set([
+  "four_pillars",
+  "natal_pillars",
+  "day_master",
+  "month_command",
+  "calendar_normalization",
+  "target_period",
+  "period_markers",
+]);
 
 export type FactPillars = {
   year: string;
@@ -170,6 +181,14 @@ function labelForKey(key: string): string {
   return fieldLabels[key] ?? key.replaceAll("_", " ");
 }
 
+function structuredValueKey(fact: ReadingFact): string | null {
+  const refKey = fact.ref.split("/").at(-1)?.trim() ?? "";
+  if (STRUCTURED_VALUE_KEYS.has(refKey)) return refKey;
+
+  const kindKey = fact.kind_id.replace(/^fact:/, "").split("/").at(-1) ?? "";
+  return STRUCTURED_VALUE_KEYS.has(kindKey) ? kindKey : null;
+}
+
 function formatGender(value: string): string {
   return genderLabels[value.toLowerCase()] ?? value;
 }
@@ -248,19 +267,34 @@ function formatTargetPeriod(value: Record<string, unknown>): string {
 
 function formatPeriodMarkers(value: unknown): string {
   if (!Array.isArray(value) || value.length === 0) return "暂无额外周期标记";
-  const first = value[0];
-  if (!isPlainObject(first)) return `共 ${value.length} 条周期标记`;
-  const dayRole = typeof first.day_role === "string" ? first.day_role : "";
-  const dayPillar = typeof first.day_pillar === "string" ? first.day_pillar : "";
-  const luck =
-    typeof first.active_luck_cycle === "string" ? first.active_luck_cycle : "";
-  const parts = [
-    dayPillar ? `日柱 ${dayPillar}` : "",
-    dayRole ? `日主关系 ${dayRole}` : "",
-    luck ? `大运 ${luck}` : "",
-  ].filter(Boolean);
-  if (parts.length === 0) return `共 ${value.length} 条周期标记`;
-  return parts.join(" · ");
+  return value
+    .map((marker, index) => {
+      if (!isPlainObject(marker)) {
+        return `第 ${index + 1} 项：${formatScalar(marker)}`;
+      }
+      const date =
+        typeof marker.date === "string" && marker.date.trim()
+          ? formatDateTimeLike(marker.date)
+          : "";
+      const dayRole =
+        typeof marker.day_role === "string" ? marker.day_role.trim() : "";
+      const dayPillar =
+        typeof marker.day_pillar === "string" ? marker.day_pillar.trim() : "";
+      const luck =
+        typeof marker.active_luck_cycle === "string"
+          ? marker.active_luck_cycle.trim()
+          : "";
+      const details = [
+        dayPillar ? `日柱 ${dayPillar}` : "",
+        dayRole ? `日主关系 ${dayRole}` : "",
+        luck ? `大运 ${luck}` : "",
+      ].filter(Boolean);
+      const label = date || `第 ${index + 1} 日`;
+      return details.length > 0
+        ? `${label} · ${details.join(" · ")}`
+        : `${label} · 公开标记已就绪`;
+    })
+    .join("；");
 }
 
 function formatScalar(value: unknown): string {
@@ -337,7 +371,10 @@ function formatKnownStructured(
     };
   }
 
-  if (key === "natal_pillars" && isPlainObject(value)) {
+  if (
+    (key === "natal_pillars" || key === "four_pillars") &&
+    isPlainObject(value)
+  ) {
     const pillars = formatNatalPillars(value);
     if (!pillars) return null;
     return {
@@ -431,6 +468,30 @@ export function formatReadingFact(fact: ReadingFact, index = 0): FactPresentatio
   const display = (fact.display_text ?? "").trim();
   const kindKey = fact.kind_id?.replace(/^fact:/, "") ?? "";
   const fallbackKey = `fact-${index}`;
+  const valueKey = structuredValueKey(fact);
+
+  if (valueKey && fact.value != null) {
+    const structured = formatKnownStructured(valueKey, fact.value);
+    if (structured) {
+      return { key: `${valueKey}-${index}`, ...structured };
+    }
+  }
+
+  const displayKey = display ? splitDisplayText(display)?.key : null;
+  if (
+    Array.isArray(fact.value) &&
+    (kindKey === "period_markers" ||
+      displayKey === "period_markers" ||
+      displayKey === "周期确定性标记" ||
+      displayKey === "周期标记")
+  ) {
+    return {
+      key: `period_markers-${index}`,
+      label: "周期标记",
+      text: formatPeriodMarkers(fact.value),
+      emphasis: "secondary",
+    };
+  }
 
   if (display) {
     const split = splitDisplayText(display);

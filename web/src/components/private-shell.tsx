@@ -13,6 +13,7 @@ import type { ReactNode } from "react";
 
 import { BrandMark } from "./brand-mark";
 import { Container } from "./container";
+import { RouteEnter } from "./motion-primitives";
 import styles from "./private-shell.module.css";
 
 
@@ -53,6 +54,8 @@ function PrivateNavigation({ mobile = false }: { mobile?: boolean }) {
 }
 
 export function PrivateShell({ children }: Readonly<{ children: ReactNode }>) {
+  const pathname = usePathname() ?? "/app";
+
   return (
     <div className={styles.shell}>
       <a className={styles.skipLink} href="#private-main">
@@ -73,7 +76,7 @@ export function PrivateShell({ children }: Readonly<{ children: ReactNode }>) {
           <p className={styles.asideNote}>资料默认不进入公共缓存；正式保存需登录。</p>
         </aside>
         <main className={styles.main} id="private-main" tabIndex={-1}>
-          {children}
+          <RouteEnter routeKey={pathname}>{children}</RouteEnter>
         </main>
       </Container>
       <PrivateNavigation mobile />

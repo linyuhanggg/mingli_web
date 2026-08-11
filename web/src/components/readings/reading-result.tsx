@@ -17,6 +17,10 @@ import {
   formatObjectId,
   splitAcceptedCopy,
 } from "@/lib/reading-display";
+import {
+  extractFortunePeriodMarkers,
+  isFortunePeriodMarkerFact,
+} from "@/lib/fortune-period-markers";
 import surface from "@/components/app-surface.module.css";
 
 import { AcceptedCopy } from "./accepted-copy";
@@ -24,7 +28,9 @@ import { BaziChart } from "./bazi-chart";
 import { EvidenceList } from "./evidence-list";
 import { FactPanel } from "./fact-panel";
 import { FollowUpForm } from "./follow-up-form";
+import { FortunePeriodTimeline } from "./fortune-period-timeline";
 import { LimitNotice } from "./limit-notice";
+import { LiuyaoHexagram } from "./liuyao-hexagram";
 import { NeedInputForm } from "./need-input-form";
 import { VerificationForm } from "./verification-form";
 
@@ -278,7 +284,23 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
 
   if (summary.status === "accepted" && result) {
     const isBazi = summary.capability_id === "bazi";
-    const chart = buildBaziChartView(result.fact_panel?.facts ?? []);
+    const isFortune = summary.capability_id === "fortune";
+    const isLiuyao = summary.capability_id === "liuyao";
+    const publicFacts = result.fact_panel?.facts ?? [];
+    const chart = buildBaziChartView(publicFacts);
+    const fortuneMarkers = isFortune
+      ? extractFortunePeriodMarkers(publicFacts)
+      : [];
+    const hasFortuneTimeline = fortuneMarkers.length > 0;
+    const generalFactPanel =
+      isFortune && result.fact_panel
+        ? {
+            ...result.fact_panel,
+            facts: result.fact_panel.facts.filter(
+              (fact) => !isFortunePeriodMarkerFact(fact),
+            ),
+          }
+        : result.fact_panel;
     const copyParts = splitAcceptedCopy(result.accepted_copy);
     const question = result.fact_panel?.question ?? "本次解读";
     const scopeLabel = formatCapabilityIds([summary.capability_id]);
@@ -308,16 +330,54 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               </div>
             </section>
 
+            {hasFortuneTimeline ? (
+              <section
+                className={surface.readingSection}
+                aria-labelledby="reading-fortune-period-title"
+              >
+                <span className={surface.sectionIndex} aria-hidden="true">
+                  02
+                </span>
+                <div>
+                  <h2 id="reading-fortune-period-title">
+                    {summary.horizon.kind_id === "week" ? "近七日周期" : "周期标记"}
+                  </h2>
+                  <FortunePeriodTimeline markers={fortuneMarkers} />
+                </div>
+              </section>
+            ) : null}
+
+            {isLiuyao ? (
+              <section
+                className={surface.readingSection}
+                aria-labelledby="reading-liuyao-title"
+              >
+                <span className={surface.sectionIndex} aria-hidden="true">
+                  02
+                </span>
+                <div>
+                  <h2 id="reading-liuyao-title">盘面事实</h2>
+                  <p className={surface.inlineNote}>
+                    本卦、变卦与六个爻位只复述服务端公开事实，浏览器不重新起卦。
+                  </p>
+                  <LiuyaoHexagram
+                    facts={result.fact_panel?.facts ?? []}
+                    evidence={result.fact_panel?.evidence ?? []}
+                  />
+                </div>
+              </section>
+            ) : null}
+
             <section
               className={surface.readingSection}
               aria-labelledby="reading-fact-title"
             >
               <span className={surface.sectionIndex} aria-hidden="true">
-                02
+                {isLiuyao || hasFortuneTimeline ? "03" : "02"}
               </span>
               <div>
                 <h2 id="reading-fact-title">事实</h2>
-                <FactPanel panel={result.fact_panel} />
+                <FactPanel panel={generalFactPanel} />
               </div>
             </section>
 
@@ -326,11 +386,14 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               aria-labelledby="reading-evidence-title"
             >
               <span className={surface.sectionIndex} aria-hidden="true">
-                03
+                {isLiuyao || hasFortuneTimeline ? "04" : "03"}
               </span>
               <div>
                 <h2 id="reading-evidence-title">依据与边界</h2>
-                <EvidenceList evidence={result.fact_panel?.evidence ?? null} />
+                <EvidenceList
+                  evidence={result.fact_panel?.evidence ?? null}
+                  facts={result.fact_panel?.facts ?? []}
+                />
                 <LimitNotice limits={result.fact_panel?.limits ?? null} />
               </div>
             </section>
@@ -340,7 +403,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               aria-labelledby="reading-review-title"
             >
               <span className={surface.sectionIndex} aria-hidden="true">
-                04
+                {isLiuyao || hasFortuneTimeline ? "05" : "04"}
               </span>
               <div>
                 <h2 id="reading-review-title">复核与追问</h2>
@@ -419,7 +482,10 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
             </span>
             <div>
               <h2 id="reading-evidence-title">依据与边界</h2>
-              <EvidenceList evidence={result.fact_panel?.evidence ?? null} />
+              <EvidenceList
+                evidence={result.fact_panel?.evidence ?? null}
+                facts={result.fact_panel?.facts ?? []}
+              />
               <LimitNotice limits={result.fact_panel?.limits ?? null} />
             </div>
           </section>

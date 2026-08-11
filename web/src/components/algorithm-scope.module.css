@@ -1,0 +1,119 @@
+.group {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.group legend {
+  margin-bottom: 0.15rem;
+  color: var(--ink-950);
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.options {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.option {
+  display: grid;
+  min-height: 4.25rem;
+  grid-template-columns: 1.15rem minmax(0, 1fr);
+  gap: 0.2rem 0.7rem;
+  align-items: center;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-sm);
+  background: var(--ivory-50);
+  color: var(--ink-950);
+  cursor: pointer;
+  transition:
+    transform var(--duration-feedback) var(--ease-out-expo),
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease;
+}
+
+.option:hover {
+  border-color: var(--moss-700);
+  background: var(--white);
+  transform: translateY(-1px);
+}
+
+.option:has(input:checked) {
+  border-color: var(--moss-700);
+  background: var(--moss-100);
+}
+
+.option input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  accent-color: var(--ink-900);
+}
+
+.title {
+  font-weight: 750;
+}
+
+.description {
+  grid-column: 2;
+  color: var(--ink-700);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.hint {
+  margin: 0;
+  color: var(--ink-700);
+  font-size: 0.78rem;
+}
+
+.notice {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-sm);
+  background: var(--moss-100);
+}
+
+.noticeTitle,
+.noticeText {
+  margin: 0;
+}
+
+.noticeTitle {
+  color: var(--ink-950);
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.noticeText {
+  color: var(--ink-700);
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+@media (min-width: 40rem) {
+  .options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .optionsThree {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .option {
+    transition: none;
+  }
+
+  .option:hover {
+    transform: none;
+  }
+}

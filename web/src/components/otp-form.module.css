@@ -1,5 +1,6 @@
 .form {
   margin-top: 1.5rem;
+  animation: otp-shell-enter var(--duration-entrance) var(--ease-out-expo) both;
 }
 
 .status,
@@ -9,6 +10,7 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   font-size: 0.88rem;
+  animation: otp-status-enter var(--duration-state) var(--ease-out-expo) both;
 }
 
 .status {
@@ -23,9 +25,9 @@
 }
 
 .success {
-  border-color: var(--ink-900);
-  background: var(--ivory-100);
-  color: var(--ink-900);
+  border-color: var(--moss-700);
+  background: var(--moss-100);
+  color: var(--ink-950);
 }
 
 .methods {
@@ -52,6 +54,11 @@
   border-radius: var(--radius-sm);
   text-align: center;
   font-size: 0.88rem;
+  transition:
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out-expo),
+    color var(--duration-feedback) ease;
 }
 
 .methodActive {
@@ -104,6 +111,7 @@
   color: var(--ink-950);
   font-size: 0.82rem;
   font-weight: 650;
+  animation: otp-status-enter var(--duration-state) var(--ease-out-expo) both;
 }
 
 .fieldError::before {
@@ -120,6 +128,19 @@
   border-radius: var(--radius-sm);
   background: var(--ivory-50);
   color: var(--ink-950);
+  transition:
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease;
+}
+
+.field input:hover:not(:disabled) {
+  border-color: var(--border-control);
+  background: var(--white);
+}
+
+.field input:focus {
+  border-color: var(--gold-500);
+  background: var(--white);
 }
 
 .field input:focus-visible,
@@ -149,6 +170,7 @@
   border-color: var(--ink-900);
   background: var(--ink-900);
   color: var(--ivory-50);
+  box-shadow: var(--shadow-action);
 }
 
 .actionRow {
@@ -172,11 +194,16 @@
 .secondary:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+  box-shadow: none;
 }
 
 .submit,
 .secondary {
-  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+  transition:
+    background-color var(--duration-feedback) ease,
+    border-color var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out-expo),
+    color var(--duration-feedback) ease;
 }
 
 .submit:not(:disabled):hover,
@@ -184,11 +211,18 @@
   transform: translateY(-2px);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .submit,
-  .secondary {
-    transition: none;
-  }
+.submit:not(:disabled):hover {
+  background: var(--ink-800);
+}
+
+.secondary:not(:disabled):hover {
+  border-color: var(--gold-500);
+  background: var(--white);
+}
+
+.submit:not(:disabled):active,
+.secondary:not(:disabled):active {
+  transform: translateY(0) scale(0.985);
 }
 
 .transition {
@@ -196,4 +230,55 @@
   color: var(--ink-700);
   font-size: 0.88rem;
   line-height: 1.55;
+  animation: otp-status-enter var(--duration-state) var(--ease-out-expo) both;
+}
+
+@keyframes otp-shell-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes otp-status-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form,
+  .status,
+  .error,
+  .success,
+  .fieldError,
+  .transition {
+    animation: none;
+  }
+
+  .submit,
+  .secondary,
+  .field input,
+  .methodActive,
+  .methodLocked {
+    transition: none;
+  }
+
+  .submit:not(:disabled):hover,
+  .secondary:not(:disabled):hover,
+  .submit:not(:disabled):active,
+  .secondary:not(:disabled):active {
+    transform: none;
+  }
 }

@@ -53,7 +53,7 @@ export interface ChartWorkspaceView {
   activeLayerId: WorkspaceLayerId;
   cells: WorkspaceCell[];
   highlights: WorkspaceHighlight[];
-  basis?: Array<{ label: string; text: string }>;
+  basis?: Array<{ key: string; label: string; text: string }>;
 }
 
 export interface BaziWorkspacePillarFacts {
@@ -93,6 +93,16 @@ const PILLAR_ORDER = [
   { key: "day" as const, label: "日柱" },
   { key: "hour" as const, label: "时柱" },
 ];
+
+const PILLAR_RELATED_FACT_KEYS: Record<
+  keyof BaziWorkspacePillarFacts,
+  Array<keyof BaziWorkspaceFacts>
+> = {
+  year: ["birthTime", "timezone", "timeBasis", "location", "gender"],
+  month: ["monthCommand", "calendarSummary"],
+  day: ["dayMaster", "calendarSummary"],
+  hour: ["birthTime", "timezone", "timeBasis", "ziHour", "location"],
+};
 
 const BASIS_ROWS: Array<{ label: string; key: keyof BaziWorkspaceFacts }> = [
   { label: "出生时间", key: "birthTime" },
@@ -184,14 +194,17 @@ function buildCells(facts: BaziWorkspaceFacts): WorkspaceCell[] {
       value,
       kind: "pillar" as const,
       badges: value ? undefined : key === "hour" ? ["时辰未知"] : ["未提供"],
-      relatedFactKeys: [key],
+      relatedFactKeys: PILLAR_RELATED_FACT_KEYS[key],
     };
   });
 }
 
-function buildBasis(facts: BaziWorkspaceFacts): Array<{ label: string; text: string }> {
+function buildBasis(
+  facts: BaziWorkspaceFacts,
+): Array<{ key: string; label: string; text: string }> {
   return BASIS_ROWS.filter(({ key }) => hasText(facts[key] as string))
     .map(({ label, key }) => ({
+      key,
       label,
       text: (facts[key] as string).trim(),
     }));
@@ -235,14 +248,20 @@ export function resolveBaziFocusDetail(
   const cell = view.cells.find((candidate) => candidate.id === cellId);
   if (!cell) return null;
 
+  const relatedKeys = new Set(cell.relatedFactKeys ?? []);
+  const relatedFacts = (view.basis ?? [])
+    .filter((row) => relatedKeys.has(row.key))
+    .map((row) => ({ label: row.label, text: row.text }));
+
   return {
     id: cell.id,
     title: cell.value ? `${cell.label} · ${cell.value}` : cell.label,
-    facts: (view.basis ?? []).map((row) => ({ label: row.label, text: row.text })),
+    facts: relatedFacts,
     limits: [
       "此处仅重述服务端已公开的四柱与口径事实，前端不进行本地排盘或星曜推算。",
+      "暂无与该柱直接关联的公开依据；请以下方依据卡标注的“支持事实”为准。",
     ],
-    sources: ["服务端公开事实"],
+    sources: [],
     proseExcerpt: null,
   };
 }
