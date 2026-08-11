@@ -56,3 +56,27 @@ Worker 每次事务只推进一个持久化阶段：Prepare 后提交 Prepared�
 - 密钥注入检查：`scripts/check_production_secrets.py`（不打印密钥，不假装 Secret Manager 已接通）。
 - `MINGLI_REAL_TRAFFIC_ENABLED` 默认 false；生产即使打开也会被 Settings 拒绝，直到本台账外部 Gate 关闭后另开变更。
 
+## Gate 责任、证据路径、复核与回滚（2026-08-12 冻结）
+
+每个外部 Gate 必须同时具备 owner、证据路径、复核日期和失败回滚行为；缺任一字段即视为未冻结，不得据此放行。复核日期到期未复核的 Gate 自动回到「待确认」。
+
+| Gate | Owner | 证据路径 | 复核日期 | 失败/超期回滚行为 |
+|---|---|---|---|---|
+| 运营主体与经营范围 | 用户（林宇航） | 主体证照扫描件存放位置 + 许可复核记录（仓库外，路径获批后登记于此） | 2026-08-26 | 保持收费能力关闭；站点只提供免费闭环 |
+| 域名与 ICP 备案 | 用户 | 备案订单号 + 管局通过记录（获批后登记） | 2026-08-26（审核期间每周核） | 维持现状：生产域名不接流量，仅临时预览入口 |
+| 公安联网备案 | 用户 | 公安备案号与页脚链接截图 | 网站开通后 30 日内，首次复核 2026-09-12 | 不开通公网正式入口 |
+| 微信支付商户 | 用户 | 商户平台产品获批截图 + 沙箱/小额实测记录 `docs/releases/` | 2026-08-26 | `PaymentGateway` 保持 Fake；价格页不下单 |
+| 支付宝商户 | 用户 | 同上 | 2026-08-26 | 同上 |
+| 短信通道与模板 | 用户 | 供应商合同/签名/模板审批记录 | 2026-08-26；未获批时走 Task 3 的 ADR 降级流程 | 手机 OTP 保持 Fake；降级结论必须写 ADR，不得只在 UI 灰掉 |
+| 邮件通道与模板 | 用户 | 发信域名/DNS/供应商评审记录 | 2026-08-26 | 邮箱 OTP 保持 Fake |
+| 模型供应商与数据位置 | 工程提供评测证据，用户批准预算 | DPA/保存期限/训练退出书面条款 + 固定盲测报告（Task 6 `evals/`） | 每次模型/Prompt 变更必须重评；例行 2026-09-12 | 模型故障走 delayed/熔断，禁止自动切未评测模型 |
+| mingli-master 5.1 发布物 | 工程 | `docs/releases/evidence/2026-08-09-native-full/` + `scripts/verify_frozen_runtime_release.py` | 每次 Runtime 升级 | 拒绝升级，回退到已验签 release |
+| Mac mini Runtime 原生门禁 | 工程 | 同上归档 | 每次 Runtime/依赖变更 | 合并/发布阻塞 |
+| Runtime 状态与恢复 | 工程 | `docs/operations/RUNTIME_STATE_RECOVERY.md` + 演练记录（Task 6/11） | 每季度，首次上线前 | real traffic 保持 disabled |
+| 单模型成稿合同（盲测+红队） | 工程 | Task 6 `evals/` 结果与 release note | 每次模型/Prompt/contract digest 变更 | 不放量；回退到上一通过 profile |
+| 生产密钥托管与轮换 | 工程实施，用户授权云资源配置 | `docs/operations/SECRET_ROTATION.md` + 轮换演练记录（Task 8） | 每季度；泄露事件后立即 | 相关凭据立即失效并审计；服务宁可中断不用泄露密钥 |
+| 生产监控与告警 | 工程 | `docs/operations/ON_CALL.md` + 四类业务告警送达演练记录（Task 8） | 每月演练一次 | 未演练通过前不得开放流量 |
+| Git remote 与 CI/CD | 用户授权创建，工程实施 | `.github/workflows/` + 分支保护截图/导出 | 2026-08-26 | 无 remote 期间不得声称 CI 存在 |
+| 双可用区基础设施（ALB/RDS/Tair/OSS） | 用户批准成本，工程实施 | `docs/operations/EXISTING_CLOUD_INVENTORY.md` + Terraform plan + 增量成本估算（Task 10） | 每次增购前 | 不创建未批准资源；现有 ECS 角色由 ADR 0012 固定 |
+| 凭据泄露闭环（P0 安全事件） | 工程执行，用户确认账号操作 | 轮换/失效/审计记录（Task 8） | 立即；未闭环前每周核 | 未闭环前任何放量评审一票否决 |
+

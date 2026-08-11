@@ -1042,6 +1042,8 @@ OpenAPI 以 /api/v1 开始。下面冻结资源语义，具体字段在实现前
 
 ## 21. P0 发布验收
 
+> 状态映射（2026-08-12 起生效，见 `docs/PRODUCTION_READINESS.md`）：本节 15 条全部通过 = **Feature Complete**，只代表功能完整；对外上线另需 Production Ready（全部 Gate 绿）、Canary 与 General Availability 三个阶段。任何材料不得用「第一版完成」暗示已上线或已达 99.9%。
+
 以下全部通过才算第一版完成：
 
 1. 手机和桌面均可完成建档、登录、免费解读、支付、查看和追问；

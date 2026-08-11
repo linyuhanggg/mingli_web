@@ -8,8 +8,8 @@
 
 | Task | 状态 | 证据 / 备注 |
 |---|---|---|
-| Task 0 固定可信基线 | ✅ 实现完成，待审查合并（分支 `worktree-production-ha-task0`） | `make check` 全绿（backend 528 passed/82 skipped 全为已退役 Linux 门禁；web 250；admin 8）；PG 并发门禁实测通过；Alembic 0001→0008 与 0007→head 升级通过。证据 `docs/releases/2026-08-12-production-readiness-baseline.md`。遗留：`.qoder/**` 资产性质待用户裁决 |
-| Task 1 完成定义/SLO 合同 | ⬜ 未开始 | |
+| Task 0 固定可信基线 | ✅ 实现完成，待审查合并（分支 `worktree-production-ha-task0` @ d894704） | `make check` 全绿（backend 528 passed/82 skipped 全为已退役 Linux 门禁；web 250；admin 8）；PG 并发门禁实测通过；Alembic 0001→0008 与 0007→head 升级通过。证据 `docs/releases/2026-08-12-production-readiness-baseline.md`。`.qoder/**` 已裁决为生成物，迁移计划 `docs/plans/2026-08-12-qoder-generated-assets-migration.md` 待用户批准后执行 |
+| Task 1 完成定义/SLO 合同 | ✅ 实现完成，待审查（同分支） | 新增 `docs/PRODUCTION_READINESS.md`（五状态机+用户可见状态映射）、`docs/operations/SLO.md`（每项含数据来源）、`docs/operations/ERROR_BUDGET.md`、`docs/adr/0011-production-ha-and-degraded-reading.md`；PHASE_0_GATES 增加 owner/证据/复核/回滚表；Blueprint 第 21 节绑定 Feature Complete 语义 |
 | Task 2 数据正确性 | ⬜ 未开始 | |
 | Task 3 认证/限流/账户权利 | ⬜ 未开始 | |
 | Task 4 商业事实链 | ⬜ 未开始 | |
@@ -643,7 +643,7 @@ Expected: 在 Prepare、Model、Complete 三个断点杀进程均可收敛；无
 **Files:**
 
 - Create: `docs/operations/EXISTING_CLOUD_INVENTORY.md`
-- Create: `docs/adr/0010-existing-ecs-role.md`
+- Create: `docs/adr/0012-existing-ecs-role.md`（原计划的 0010 已被占用，改为 0012）
 - Create: `infra/terraform/production/versions.tf`
 - Create: `infra/terraform/production/network.tf`
 - Create: `infra/terraform/production/alb.tf`
