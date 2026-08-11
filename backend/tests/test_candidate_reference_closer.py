@@ -3,7 +3,7 @@ from __future__ import annotations
 from app.readings.candidate_reference_closer import close_candidate_references
 from app.readings.narrative_contracts import NarrativeCandidate
 from app.readings.narrative_guard import NarrativeGuard
-from app.readings.output_contracts import PREVIEW_V1
+from app.readings.output_contracts import SCOPED_PREVIEW_V1
 from app.readings.runtime_contracts import ReadingBrief
 
 
@@ -110,12 +110,12 @@ def test_close_candidate_pulls_finding_and_evidence_dependencies() -> None:
     )
     brief = _brief()
     guard = NarrativeGuard()
-    before = guard.validate(open_candidate, brief, PREVIEW_V1)
+    before = guard.validate(open_candidate, brief, SCOPED_PREVIEW_V1)
     assert before.passed is False
     assert "scope_mismatch" in before.errors
 
     closed = close_candidate_references(open_candidate, brief)
-    after = guard.validate(closed, brief, PREVIEW_V1)
+    after = guard.validate(closed, brief, SCOPED_PREVIEW_V1)
     assert after.passed is True, after.errors
     block = closed.blocks[0]
     assert "fact:career-structure" in block.fact_refs
@@ -149,4 +149,4 @@ def test_close_candidate_drops_out_of_scope_refs() -> None:
     assert block.fact_refs == ("fact:career-structure",)
     assert block.evidence_refs == ("evidence:classic-1",)
     assert block.limit_kind_ids == ()
-    assert NarrativeGuard().validate(closed, _brief(), PREVIEW_V1).passed is True
+    assert NarrativeGuard().validate(closed, _brief(), SCOPED_PREVIEW_V1).passed is True

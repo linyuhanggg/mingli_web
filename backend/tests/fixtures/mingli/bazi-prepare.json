@@ -1,10 +1,10 @@
 {
   "kind": "prepare",
-  "query": "看一下这个八字，事业上最该先抓住哪条主线？",
+  "query": "请预览我的本命八字概览。",
   "intent": {
     "subject_refs": ["profile-version:test"],
     "object_id": "natal",
-    "dimension_ids": ["career"],
+    "dimension_ids": ["overview", "state"],
     "horizon": {"kind_id": "life", "start": null, "end": null},
     "capability_id": "bazi",
     "comparisons": []

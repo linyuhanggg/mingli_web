@@ -843,7 +843,7 @@ components:
           uniqueItems: true
           items:
             type: string
-            enum: [overview, career]
+            enum: [overview, state]
     FortuneStartRequest:
       type: object
       additionalProperties: false

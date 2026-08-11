@@ -21,7 +21,7 @@ from app.readings.api_schemas import (
     ReadingVersionSummary,
     VerificationResultItem,
 )
-from app.readings.output_contracts import PREVIEW_V1
+from app.readings.output_contracts import PREVIEW_V1, SCOPED_PREVIEW_V1
 from app.readings.public_fact_panel import project_public_fact_panel
 from app.readings.repository import READING_HISTORY_LIMIT, SqlReadingRepository
 from app.readings.request_compiler import (
@@ -36,7 +36,7 @@ from app.security.envelope import EnvelopeCipher
 
 NARRATIVE_POLICY_VERSION = "policy-v1"
 DEFAULT_QUERIES = {
-    "profile_preview": "请预览我的事业与工作主题。",
+    "profile_preview": "请预览我的本命八字概览。",
     "today": "请看看我今天的运势。",
     "near_seven": "请看看我这一周的运势。",
     "liuyao_one_question": "请为这个问题起一卦。",
@@ -141,7 +141,7 @@ class ReadingService:
         idempotency_key: str | None,
     ) -> tuple[ReadingStartResponse, bool]:
         resolved_query = query or DEFAULT_QUERIES["profile_preview"]
-        resolved_dimensions = list(dimension_ids or ("career",))
+        resolved_dimensions = list(dimension_ids or ("overview", "state"))
         idempotency = self._idempotency_context(
             idempotency_key,
             action="profile_preview",
@@ -291,7 +291,10 @@ class ReadingService:
                 "Reading is not waiting for input"
             ) from error
         try:
-            await self._create_job(version_id)
+            await self._create_job(
+                version_id,
+                capability_id=str(prepare.intent["capability_id"]),
+            )
         except IntegrityError as error:
             raise ReadingAlreadyQueuedError("Reading is already queued") from error
         return await self.get_summary(owner, version_id)
@@ -498,7 +501,7 @@ class ReadingService:
             prepare_command=prepare,
         )
         await self.session.refresh(version)
-        await self._create_job(version.id)
+        await self._create_job(version.id, capability_id=capability_id)
         if idempotency is not None:
             replayed = await self._save_idempotency_or_replay(
                 idempotency,
@@ -522,16 +525,20 @@ class ReadingService:
             prepare_command=prepare,
         )
         await self.session.refresh(version)
-        await self._create_job(version.id)
+        await self._create_job(
+            version.id,
+            capability_id=str(prepare.intent["capability_id"]),
+        )
         return version
 
-    async def _create_job(self, version_id: UUID) -> None:
+    async def _create_job(self, version_id: UUID, *, capability_id: str) -> None:
+        contract = PREVIEW_V1 if capability_id == "bazi" else SCOPED_PREVIEW_V1
         await self.repository.create_job(
             reading_version_id=version_id,
             narrative_policy_version=NARRATIVE_POLICY_VERSION,
-            output_contract=PREVIEW_V1,
+            output_contract=contract,
             language="zh-CN",
-            max_output_chars=PREVIEW_V1.max_output_chars,
+            max_output_chars=contract.max_output_chars,
             max_attempts=2,
         )
 

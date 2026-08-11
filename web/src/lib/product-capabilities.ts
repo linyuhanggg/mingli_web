@@ -41,11 +41,11 @@ export const PRODUCT_CAPABILITIES = [
     activePrefixes: ["/app/profile", "/app/bazi"],
     home: {
       eyebrow: "TASK 01 · 先建档",
-      title: "建立档案 · 事业概览",
+      title: "建立档案 · 八字概览",
       description:
-        "输入出生资料，先形成可复现的四柱事实，再查看限定在事业与工作主题的白话概览。",
+        "输入出生资料，先形成可复现的四柱事实，再查看覆盖整体格局与状态主线的白话概览。",
       action: "建立档案并查看八字",
-      meta: "出生资料 → 四柱事实 → 事业概览",
+      meta: "出生资料 → 四柱事实 → 八字概览",
       tone: "paper",
       secondaryAction: undefined,
     },

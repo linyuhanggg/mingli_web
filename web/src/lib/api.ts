@@ -93,7 +93,7 @@ export type ReadingVersionSummary = {
 export type PreviewStartRequest = {
   profile_version_id: string;
   query?: string;
-  dimension_ids?: ("overview" | "career")[];
+  dimension_ids?: ("overview" | "state" | "career" | "relationship" | "timing")[];
 };
 
 export type FortuneStartRequest = {

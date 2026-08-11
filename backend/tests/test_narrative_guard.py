@@ -114,7 +114,7 @@ def test_candidate_refs_close_over_the_current_brief() -> None:
     candidate = load_candidate()
     original = copy.deepcopy(candidate)
 
-    result = guard.validate(candidate, build_brief(), output_contract="preview-v1")
+    result = guard.validate(candidate, build_brief(), output_contract="scoped-preview-v1")
 
     assert result.passed is True
     assert result.errors == ()
@@ -126,7 +126,7 @@ def test_frozen_invalid_reference_fixture_is_rejected() -> None:
     result = guard_module.NarrativeGuard().validate(
         load_candidate("invalid-reference-candidate.json"),
         build_brief(),
-        output_contract="preview-v1",
+        output_contract="scoped-preview-v1",
     )
 
     assert result.passed is False
@@ -193,7 +193,7 @@ def test_guard_rejects_closed_world_counterexamples(
     result = guard_module.NarrativeGuard().validate(
         candidate,
         build_brief(),
-        output_contract="preview-v1",
+        output_contract="scoped-preview-v1",
     )
 
     assert result.passed is False
@@ -208,7 +208,7 @@ def test_evidence_must_support_a_fact_used_by_the_same_claim() -> None:
     result = guard_module.NarrativeGuard().validate(
         load_candidate(),
         build_brief(payload),
-        output_contract="preview-v1",
+        output_contract="scoped-preview-v1",
     )
 
     assert "scope_mismatch" in result.errors
@@ -217,17 +217,52 @@ def test_evidence_must_support_a_fact_used_by_the_same_claim() -> None:
 def test_required_output_dimensions_and_limits_must_be_covered() -> None:
     guard_module = importlib.import_module("app.readings.narrative_guard")
     candidate = load_candidate()
-    # preview-v1 no longer hard-requires a limit id, because real runtime briefs
-    # may emit an empty limits array; still require the contract dimension.
+    # scoped-preview-v1 no longer hard-requires a limit id, because real runtime
+    # briefs may emit an empty limits array; still require the contract dimension.
     candidate["blocks"][0]["dimension_id"] = "relationship"
 
     result = guard_module.NarrativeGuard().validate(
         candidate,
         build_brief(),
-        output_contract="preview-v1",
+        output_contract="scoped-preview-v1",
     )
 
     assert "required_dimension_missing" in result.errors
+
+
+def test_preview_contract_requires_the_overview_dimension() -> None:
+    guard_module = importlib.import_module("app.readings.narrative_guard")
+    payload = brief_payload()
+    payload["findings"][0]["dimension_ids"] = ["overview"]
+    payload["claim_scopes"] = [
+        {
+            "subject_ref": "profile-version:test",
+            "dimension_id": "overview",
+            "allowed_kind_ids": ["kind.tendency"],
+            "certainty_ceiling_id": "certainty.tendency",
+            "fact_refs": ["fact:career-structure"],
+            "evidence_refs": ["evidence:classic-1"],
+        }
+    ]
+    payload["request_view"]["dimension_ids"] = ["overview", "state"]
+    candidate = load_candidate()
+    candidate["blocks"][0]["dimension_id"] = "overview"
+
+    accepted = guard_module.NarrativeGuard().validate(
+        candidate,
+        build_brief(payload),
+        output_contract="preview-v1",
+    )
+    assert accepted.passed is True
+
+    candidate["blocks"][0]["dimension_id"] = "career"
+    rejected = guard_module.NarrativeGuard().validate(
+        candidate,
+        build_brief(payload),
+        output_contract="preview-v1",
+    )
+    assert rejected.passed is False
+    assert "required_dimension_missing" in rejected.errors
 
 
 def test_guard_proves_reference_closure_not_general_semantic_entailment() -> None:
@@ -238,7 +273,7 @@ def test_guard_proves_reference_closure_not_general_semantic_entailment() -> Non
     result = guard_module.NarrativeGuard().validate(
         candidate,
         build_brief(),
-        output_contract="preview-v1",
+        output_contract="scoped-preview-v1",
     )
 
     assert result.passed is True

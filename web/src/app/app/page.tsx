@@ -48,11 +48,11 @@ export default function AppPage() {
           </li>
           <li className={styles.flowItem}>
             <div>
-              <h3>八字 · 事业概览</h3>
-              <p>从已确认档案出发，发起确定性八字排盘，白话解读限定在事业与工作主题。</p>
+              <h3>八字概览</h3>
+              <p>从已确认档案出发，发起确定性八字排盘与覆盖整体格局、状态主线的白话概览。</p>
             </div>
             <ButtonLink href="/app/bazi" variant="text">
-              查看事业概览
+              查看八字概览
             </ButtonLink>
           </li>
           <li className={styles.flowItem}>

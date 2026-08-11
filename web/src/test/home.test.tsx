@@ -110,7 +110,7 @@ describe("responsive public home", () => {
     expect(
       within(taskSection).getByRole("heading", {
         level: 3,
-        name: "建立档案 · 事业概览",
+        name: "建立档案 · 八字概览",
       }),
     ).toBeVisible();
     expect(
@@ -242,7 +242,7 @@ describe("private app home", () => {
       "href",
       "/app/fortune/week",
     );
-    expect(screen.getByRole("link", { name: "查看事业概览" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "查看八字概览" })).toHaveAttribute(
       "href",
       "/app/bazi",
     );

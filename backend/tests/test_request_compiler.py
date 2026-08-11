@@ -114,22 +114,63 @@ def test_product_actions_have_explicit_capability_routes(
     assert not hasattr(policy, "choose_capability")
 
 
-def test_profile_preview_default_query_is_career_scoped() -> None:
+def test_profile_preview_default_query_promises_full_chart_overview() -> None:
     service = importlib.import_module("app.readings.service")
 
     default_query = service.DEFAULT_QUERIES["profile_preview"]
 
-    assert "事业" in default_query
-    assert "本命格局" not in default_query
+    assert "本命" in default_query
+    assert "事业" not in default_query
+
+
+def test_bazi_dimensions_cover_the_blueprint_vocabulary() -> None:
+    compiler = importlib.import_module("app.readings.request_compiler")
+
+    for dimension_ids in (("overview", "state"), ("career", "relationship", "timing")):
+        command = compiler.compile_bazi_prepare(
+            action="bazi_deep",
+            query="请解读我的本命八字。",
+            profile=confirmed_profile(compiler),
+            dimension_ids=dimension_ids,
+        )
+        assert command.intent["dimension_ids"] == dimension_ids
+
+    with pytest.raises(compiler.RequestCompilationError):
+        compiler.compile_bazi_prepare(
+            action="bazi_deep",
+            query="请解读我的本命八字。",
+            profile=confirmed_profile(compiler),
+            dimension_ids=("wealth",),
+        )
+
+
+def test_free_preview_dimensions_are_pinned_to_overview_and_state() -> None:
+    compiler = importlib.import_module("app.readings.request_compiler")
+
+    command = compiler.compile_bazi_prepare(
+        action="profile_preview",
+        query="请预览我的本命八字概览。",
+        profile=confirmed_profile(compiler),
+        dimension_ids=("overview", "state"),
+    )
+    assert command.intent["dimension_ids"] == ("overview", "state")
+
+    with pytest.raises(compiler.RequestCompilationError):
+        compiler.compile_bazi_prepare(
+            action="profile_preview",
+            query="请预览我的本命八字概览。",
+            profile=confirmed_profile(compiler),
+            dimension_ids=("career",),
+        )
 
 
 def test_bazi_compiler_matches_the_frozen_fixture() -> None:
     compiler = importlib.import_module("app.readings.request_compiler")
     command = compiler.compile_bazi_prepare(
         action="profile_preview",
-        query="看一下这个八字，事业上最该先抓住哪条主线？",
+        query="请预览我的本命八字概览。",
         profile=confirmed_profile(compiler),
-        dimension_ids=("career",),
+        dimension_ids=("overview", "state"),
     )
     expected = load_fixture("bazi-prepare.json")
 

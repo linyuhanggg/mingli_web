@@ -211,7 +211,7 @@ async def test_email_registration_login_full_journey(
         headers=device_headers,
         json={
             "profile_version_id": confirmed["profile_version_id"],
-            "dimension_ids": ["career"],
+            "dimension_ids": ["overview", "state"],
         },
     )
     assert started.status_code == 201, started.text
@@ -366,7 +366,7 @@ async def test_cross_account_cannot_read_another_users_data(
         headers=device_a,
         json={
             "profile_version_id": confirmed_a.json()["profile_version_id"],
-            "dimension_ids": ["career"],
+            "dimension_ids": ["overview", "state"],
         },
     )
     assert started_a.status_code == 201, started_a.text
@@ -412,7 +412,7 @@ async def test_cross_account_cannot_read_another_users_data(
             headers=device_b,
             json={
                 "profile_version_id": confirmed_a.json()["profile_version_id"],
-                "dimension_ids": ["career"],
+                "dimension_ids": ["overview", "state"],
             },
         )
         assert foreign_preview.status_code == 404

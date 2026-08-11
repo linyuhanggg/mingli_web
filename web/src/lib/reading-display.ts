@@ -30,7 +30,9 @@ const objectLabels: Record<string, string> = {
 
 const dimensionLabels: Record<string, string> = {
   overview: "概览",
+  state: "状态",
   career: "事业",
+  relationship: "关系",
   outcome: "结果",
   timing: "时机",
 };

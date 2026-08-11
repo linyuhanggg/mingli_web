@@ -93,8 +93,8 @@ export function ProfileArchive() {
     setActionError(null);
     const payload = {
       profile_version_id: profileVersionId,
-      query: "查看这个档案的事业与工作主题",
-      dimension_ids: ["career"] as ("overview" | "career")[],
+      query: "查看这个档案的整体格局与状态主线",
+      dimension_ids: ["overview", "state"] as ("overview" | "state")[],
     };
     const intent = stableKeyForIntent(intentKeyRef.current, payload);
     intentKeyRef.current = intent;
@@ -177,9 +177,9 @@ export function ProfileArchive() {
         <StatusPanel
           state="success"
           title="档案已保存"
-          description="新的不可变档案版本已经落库。下一步可以直接查看事业概览，或发起今日/近七日。"
+          description="新的不可变档案版本已经落库。下一步可以直接查看八字概览，或发起今日/近七日。"
           actionHref={`/app/bazi?profile=${encodeURIComponent(latest.profile_version_id)}`}
-          actionLabel="查看事业概览"
+          actionLabel="查看八字概览"
         />
       ) : null}
 
@@ -194,7 +194,7 @@ export function ProfileArchive() {
       {actionError ? (
         <StatusPanel
           state="error"
-          title="无法启动事业概览"
+          title="无法启动八字概览"
           description={actionError}
         />
       ) : null}
@@ -234,8 +234,8 @@ export function ProfileArchive() {
                   onClick={() => handleStartBazi(entry.profile_version_id)}
                 >
                   {startingId === entry.profile_version_id
-                    ? "正在启动事业概览…"
-                    : "查看事业概览"}
+                    ? "正在启动八字概览…"
+                    : "查看八字概览"}
                 </button>
                 <Link
                   className={surface.secondaryButton}
@@ -258,7 +258,7 @@ export function ProfileArchive() {
             新建档案
           </Link>
           <Link className={surface.secondaryButton} href="/app/bazi">
-            选择档案并查看事业概览
+            选择档案并查看八字概览
           </Link>
           <Link className={surface.secondaryButton} href="/app/readings">
             查看解读历史

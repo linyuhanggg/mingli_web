@@ -93,8 +93,8 @@ export function BaziFlow({
       setSubmitError("");
       const payload = {
         profile_version_id: values.profile_version_id,
-        query: "查看这个档案的事业与工作主题",
-        dimension_ids: ["career" as const],
+        query: "查看这个档案的整体格局与状态主线",
+        dimension_ids: ["overview", "state"] as ("overview" | "state")[],
       };
       const intent = stableKeyForIntent(intentKeyRef.current, payload);
       intentKeyRef.current = intent;
@@ -103,7 +103,7 @@ export function BaziFlow({
         router.push(`/app/readings/${response.reading_version_id}`);
       } catch (reason) {
         setSubmitError(
-          reason instanceof Error ? reason.message : "事业概览启动失败，请稍后重试。",
+          reason instanceof Error ? reason.message : "八字概览启动失败，请稍后重试。",
         );
       } finally {
         busyRef.current = false;
@@ -115,13 +115,13 @@ export function BaziFlow({
 
   return (
     <div className={styles.wrap}>
-      <h2>查看事业概览</h2>
+      <h2>查看八字概览</h2>
       <p className={styles.lead}>
-        从已确认档案版本出发，发起限定在事业与工作主题的确定性概览。结果由服务端计算与交付，不在本页本地推算。
+        从已确认档案版本出发，发起覆盖整体格局与状态主线的确定性八字概览。结果由服务端计算与交付，不在本页本地推算。
       </p>
       <p className={styles.scopeNotice}>
-        <strong>当前白话解读范围：事业与工作。</strong>
-        盘面仍展示服务端返回的四柱事实；其他白话主题要等对应成稿合同开放后再提供。
+        <strong>免费概览覆盖本命整体格局与状态主线。</strong>
+        不承诺覆盖所有人生领域；盘面仍展示服务端返回的四柱事实。
       </p>
 
       {loading ? (
@@ -190,7 +190,7 @@ export function BaziFlow({
               </p>
             ) : null}
             <p className={formControls.hint} id="bazi-profile-help">
-              事业概览绑定该档案版本；修改资料会生成新版本，旧解读仍可回看。
+              八字概览绑定该档案版本；修改资料会生成新版本，旧解读仍可回看。
             </p>
           </div>
 
@@ -202,7 +202,7 @@ export function BaziFlow({
 
           {busy ? (
             <p className={formControls.disabledReason} role="status">
-              正在启动事业概览，选择与操作已暂时锁定。
+              正在启动八字概览，选择与操作已暂时锁定。
             </p>
           ) : null}
           <div className={formControls.actions}>
@@ -212,7 +212,7 @@ export function BaziFlow({
               disabled={busy}
               aria-busy={busy}
             >
-              开始事业概览{busy ? " · 正在启动…" : ""}
+              开始八字概览{busy ? " · 正在启动…" : ""}
             </button>
           </div>
         </form>

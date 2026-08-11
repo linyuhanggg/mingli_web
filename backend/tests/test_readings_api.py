@@ -90,7 +90,7 @@ async def run_worker_once(
 
 def brief_payload(subject_ref: str, horizon: dict[str, Any]) -> dict[str, Any]:
     return {
-        "question": "事业上最该先抓住哪条主线？",
+        "question": "请预览我的本命八字概览。",
         "vocabulary": [],
         "facts": [
             {
@@ -128,7 +128,7 @@ def brief_payload(subject_ref: str, horizon: dict[str, Any]) -> dict[str, Any]:
             {
                 "ref": "finding:career-main",
                 "subject_ref": subject_ref,
-                "dimension_ids": ["career"],
+                "dimension_ids": ["overview"],
                 "kind_id": "kind.tendency",
                 "data": {"fixture": True},
                 "fact_refs": ["fact:career-structure"],
@@ -140,7 +140,7 @@ def brief_payload(subject_ref: str, horizon: dict[str, Any]) -> dict[str, Any]:
         "claim_scopes": [
             {
                 "subject_ref": subject_ref,
-                "dimension_id": "career",
+                "dimension_id": "overview",
                 "allowed_kind_ids": ["kind.tendency"],
                 "certainty_ceiling_id": "certainty.tendency",
                 "fact_refs": ["fact:career-structure"],
@@ -160,7 +160,7 @@ def brief_payload(subject_ref: str, horizon: dict[str, Any]) -> dict[str, Any]:
             "subject_refs": [subject_ref],
             "capability_ids": ["bazi"],
             "object_id": "natal",
-            "dimension_ids": ["career"],
+            "dimension_ids": ["overview", "state"],
             "horizon": {
                 "kind_id": str(horizon.get("kind_id")),
                 "start": horizon.get("start"),
@@ -294,7 +294,7 @@ async def start_preview(
         headers=request_headers,
         json={
             "profile_version_id": profile_version_id,
-            "dimension_ids": ["career"],
+            "dimension_ids": ["overview", "state"],
         },
     )
     assert response.status_code in {200, 201}, response.text
@@ -315,7 +315,6 @@ async def test_guest_starts_preview_reading_and_polls_a_queued_job(
         headers=headers,
         json={
             "profile_version_id": confirmed["profile_version_id"],
-            "dimension_ids": ["career"],
         },
     )
 
@@ -328,6 +327,7 @@ async def test_guest_starts_preview_reading_and_polls_a_queued_job(
     assert body["version"] == 1
     assert body["status"] == "input_ready"
     assert body["object_id"] == "natal"
+    assert body["dimension_ids"] == ["overview", "state"]
     assert body["horizon"]["kind_id"] == "life"
     assert body["prior_answer"] is None
     assert_private_headers(started)
@@ -358,6 +358,28 @@ async def test_guest_starts_preview_reading_and_polls_a_queued_job(
         assert jobs[0].output_contract["contract_id"] == "preview-v1"
 
 
+async def test_preview_rejects_out_of_scope_dimensions(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+
+    response = await client.post(
+        "/api/v1/readings/preview",
+        headers=headers,
+        json={
+            "profile_version_id": confirmed["profile_version_id"],
+            "dimension_ids": ["career"],
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["title"] == "Invalid request"
+
+
 async def test_preview_job_reaches_accepted_under_default_local_fake_stack(
     client: AsyncClient,
     database: Any,
@@ -372,7 +394,7 @@ async def test_preview_job_reaches_accepted_under_default_local_fake_stack(
         headers=headers,
         json={
             "profile_version_id": confirmed["profile_version_id"],
-            "dimension_ids": ["career"],
+            "dimension_ids": ["overview", "state"],
         },
     )
     assert started.status_code == 201, started.text
@@ -562,7 +584,7 @@ async def test_same_idempotency_key_with_different_payload_returns_conflict(
         headers={**headers, "Idempotency-Key": "payload-conflict-v1"},
         json={
             "profile_version_id": confirmed["profile_version_id"],
-            "dimension_ids": ["career"],
+            "dimension_ids": ["overview", "state"],
         },
     )
     assert first.status_code == 201, first.text
@@ -616,7 +638,7 @@ async def test_idempotency_replay_happens_before_profile_payload_decryption(
     await seed_runtime_release(database, test_settings)
     request = {
         "profile_version_id": confirmed["profile_version_id"],
-        "dimension_ids": ["career"],
+        "dimension_ids": ["overview", "state"],
     }
     first = await client.post(
         "/api/v1/readings/preview",
@@ -658,7 +680,7 @@ async def test_guest_idempotency_key_replays_the_same_version_after_login_claim(
     await seed_runtime_release(database, test_settings)
     payload = {
         "profile_version_id": confirmed["profile_version_id"],
-        "dimension_ids": ["career"],
+        "dimension_ids": ["overview", "state"],
     }
     first = await client.post(
         "/api/v1/readings/preview",
@@ -699,7 +721,7 @@ async def test_guest_claim_resolves_user_idempotency_key_collision_in_favor_of_g
         headers={**guest_headers, "Idempotency-Key": "claim-collision-v1"},
         json={
             "profile_version_id": confirmed["profile_version_id"],
-            "dimension_ids": ["career"],
+            "dimension_ids": ["overview", "state"],
         },
     )
     assert started.status_code == 201, started.text
@@ -774,7 +796,7 @@ async def test_reading_resources_are_owner_scoped_with_cross_owner_404(
             headers=first_headers,
             json={
                 "profile_version_id": confirmed["profile_version_id"],
-                "dimension_ids": ["career"],
+                "dimension_ids": ["overview", "state"],
             },
         )
         assert started.status_code == 201
@@ -1171,7 +1193,7 @@ async def test_accepted_result_verification_and_idempotent_verification(
         headers=headers,
         json={
             "profile_version_id": confirmed["profile_version_id"],
-            "dimension_ids": ["career"],
+            "dimension_ids": ["overview", "state"],
         },
     )
     version_id = started.json()["reading_version_id"]
@@ -1607,7 +1629,7 @@ async def test_reading_start_writes_are_rate_limited(
             headers=headers,
             json={
                 "profile_version_id": confirmed["profile_version_id"],
-                "dimension_ids": ["career"],
+                "dimension_ids": ["overview", "state"],
             },
         )
         responses.append(response.status_code)
@@ -1616,7 +1638,7 @@ async def test_reading_start_writes_are_rate_limited(
         headers=headers,
         json={
             "profile_version_id": confirmed["profile_version_id"],
-            "dimension_ids": ["career"],
+            "dimension_ids": ["overview", "state"],
         },
     )
 
@@ -1642,7 +1664,7 @@ async def test_user_owner_can_start_a_reading_after_login_claim(
         headers=user_headers,
         json={
             "profile_version_id": confirmed["profile_version_id"],
-            "dimension_ids": ["career"],
+            "dimension_ids": ["overview", "state"],
         },
     )
 

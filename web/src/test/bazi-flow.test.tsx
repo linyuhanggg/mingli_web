@@ -59,24 +59,22 @@ describe("BaziFlow", () => {
 
     await user.selectOptions(await screen.findByLabelText("档案版本"), profileVersionId);
     expect(
-      screen.getByRole("heading", { name: "查看事业概览" }),
+      screen.getByRole("heading", { name: "查看八字概览" }),
     ).toBeVisible();
-    expect(screen.getByText("当前白话解读范围：事业与工作。")).toBeVisible();
+    expect(screen.getByText("免费概览覆盖本命整体格局与状态主线。")).toBeVisible();
+    expect(screen.getByText(/不承诺覆盖所有人生领域/)).toBeVisible();
     expect(screen.getByText(/盘面仍展示服务端返回的四柱事实/)).toBeVisible();
-    expect(
-      screen.queryByRole("radio", { name: "整体概览" }),
-    ).not.toBeInTheDocument();
 
     await user.click(
-      screen.getByRole("button", { name: /开始事业概览/ }),
+      screen.getByRole("button", { name: /开始八字概览/ }),
     );
 
     await waitFor(() => expect(api.startPreviewReading).toHaveBeenCalledTimes(1));
     expect(api.startPreviewReading).toHaveBeenCalledWith(
       expect.objectContaining({
         profile_version_id: profileVersionId,
-        dimension_ids: ["career"],
-        query: "查看这个档案的事业与工作主题",
+        dimension_ids: ["overview", "state"],
+        query: "查看这个档案的整体格局与状态主线",
       }),
       expect.any(String),
     );

@@ -112,10 +112,10 @@ describe("ProfilesPage", () => {
     expect(screen.getAllByText(/档案 1/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/档案 2/).length).toBeGreaterThan(0);
     expect(
-      screen.getAllByRole("button", { name: "查看事业概览" }).length,
+      screen.getAllByRole("button", { name: "查看八字概览" }).length,
     ).toBe(2);
     expect(
-      screen.getByRole("link", { name: "选择档案并查看事业概览" }),
+      screen.getByRole("link", { name: "选择档案并查看八字概览" }),
     ).toHaveAttribute(
       "href",
       "/app/bazi",
@@ -123,7 +123,7 @@ describe("ProfilesPage", () => {
     expect(api.listProfiles).toHaveBeenCalledTimes(1);
   });
 
-  it("names the career scope before starting the supported archive preview", async () => {
+  it("names the full-chart overview scope before starting the supported archive preview", async () => {
     api.listProfiles.mockResolvedValue({ profiles: [profile()] });
     api.startPreviewReading.mockResolvedValue({
       reading_version_id: readingVersionId,
@@ -131,15 +131,15 @@ describe("ProfilesPage", () => {
 
     render(<ProfilesPage />);
     fireEvent.click(
-      await screen.findByRole("button", { name: "查看事业概览" }),
+      await screen.findByRole("button", { name: "查看八字概览" }),
     );
 
     await waitFor(() => expect(api.startPreviewReading).toHaveBeenCalledTimes(1));
     expect(api.startPreviewReading).toHaveBeenCalledWith(
       expect.objectContaining({
         profile_version_id: profileVersionId,
-        query: "查看这个档案的事业与工作主题",
-        dimension_ids: ["career"],
+        query: "查看这个档案的整体格局与状态主线",
+        dimension_ids: ["overview", "state"],
       }),
       expect.any(String),
     );

@@ -7,7 +7,10 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from app.readings.capability_policy import ProductRoute, route_for_action
 from app.readings.runtime_contracts import Prepare
 
-_BAZI_DIMENSION_IDS = frozenset({"overview", "career"})
+_BAZI_DIMENSION_IDS = frozenset(
+    {"overview", "state", "career", "relationship", "timing"}
+)
+_BAZI_PREVIEW_DIMENSION_IDS = frozenset({"overview", "state"})
 _FORTUNE_DIMENSION_IDS = frozenset({"career"})
 _LIUYAO_DIMENSION_IDS = frozenset({"career", "outcome", "timing"})
 _LIUYAO_CAST_VALUES = frozenset({6, 7, 8, 9})
@@ -101,7 +104,12 @@ def compile_bazi_prepare(
     dimension_ids: tuple[str, ...],
 ) -> Prepare:
     route = _route_for_compiler(action, expected_capability_id="bazi")
-    _validate_dimensions(dimension_ids, allowed=_BAZI_DIMENSION_IDS)
+    allowed = (
+        _BAZI_PREVIEW_DIMENSION_IDS
+        if action == "profile_preview"
+        else _BAZI_DIMENSION_IDS
+    )
+    _validate_dimensions(dimension_ids, allowed=allowed)
     facts: dict[str, object] = {
         "birth_datetime_or_four_pillars": (profile.birth_datetime_or_four_pillars),
         "timezone": profile.timezone,
