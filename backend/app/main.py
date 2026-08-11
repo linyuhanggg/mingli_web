@@ -20,6 +20,7 @@ from app.api.problems import problem_response
 from app.api.router import build_api_router
 from app.config import Settings, get_settings
 from app.database import Database
+from app.identity.cookies import clear_device_cookies
 from app.identity.otp import InMemoryOtpChallengeStore, InMemoryOtpRequestLimiter
 from app.identity.service import random_six_digit_otp_code
 from app.network import parse_trusted_proxy_cidrs
@@ -43,6 +44,7 @@ def create_app(
         application.state.reading_write_rate_limiter.clear()
         application.state.profile_write_rate_limiter.clear()
         application.state.guest_session_create_rate_limiter.clear()
+        application.state.admin_login_rate_limiter.clear()
         if owns_database:
             await resolved_database.dispose()
 
@@ -81,6 +83,10 @@ def create_app(
         limit=resolved_settings.profile_write_rate_limit,
         window_seconds=resolved_settings.profile_write_rate_window_seconds,
     )
+    application.state.admin_login_rate_limiter = WindowRateLimiter(
+        limit=resolved_settings.admin_login_rate_limit,
+        window_seconds=resolved_settings.admin_login_rate_window_seconds,
+    )
     application.state.trusted_proxy_networks = parse_trusted_proxy_cidrs(
         resolved_settings.trusted_proxy_cidrs
     )
@@ -109,7 +115,7 @@ def create_app(
 
     @application.exception_handler(ApiProblem)
     async def api_problem_handler(request: Request, error: ApiProblem) -> JSONResponse:
-        return problem_response(
+        response = problem_response(
             request,
             status=error.status,
             title=error.title,
@@ -117,6 +123,9 @@ def create_app(
             detail=error.detail,
             headers=error.headers,
         )
+        if error.clear_device_cookies:
+            clear_device_cookies(response, settings=request.app.state.settings)
+        return response
 
     @application.exception_handler(RequestValidationError)
     async def validation_problem_handler(

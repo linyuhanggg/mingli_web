@@ -1,0 +1,10 @@
+schema_version: 1
+module_path: backend/identity_auth
+title: 身份认证与会话管理
+scope:
+    - backend/app/identity/
+    - backend/app/security/
+source_files: []
+depends_on: []
+related_to:
+    - path: backend/api_routes

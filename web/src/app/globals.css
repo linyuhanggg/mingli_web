@@ -39,6 +39,18 @@
     "Microsoft YaHei", sans-serif;
   --font-serif: "Noto Serif SC Variable", ui-serif, "Songti SC", "STSong",
     "Noto Serif CJK SC", serif;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-feedback: 180ms;
+  --duration-state: 260ms;
+  --duration-entrance: 450ms;
+  --duration-focal: 720ms;
 }
 
 * {
@@ -47,7 +59,6 @@
 
 html {
   min-width: 20rem;
-  scroll-behavior: smooth;
   background: var(--ivory-50);
 }
 

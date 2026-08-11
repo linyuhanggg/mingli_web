@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
@@ -187,6 +188,60 @@ async def test_logout_revokes_the_current_device_session(
     assert logout.status_code == 204
     assert "Max-Age=0" in "\n".join(logout.headers.get_list("set-cookie"))
     assert account.status_code == 401
+
+
+async def test_invalid_device_session_clears_stale_cookies_and_allows_otp_recovery(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    await login_with_phone(client)
+
+    models = __import__("app.identity.models", fromlist=["DeviceSession"])
+    async with database.sessions() as session:
+        device_session = (await session.scalars(select(models.DeviceSession))).one()
+        device_session.revoked_at = datetime.now(UTC)
+        await session.commit()
+
+    account = await client.get("/api/v1/account")
+
+    assert account.status_code == 401
+    cleared = "\n".join(account.headers.get_list("set-cookie"))
+    assert "mingli_session=" in cleared
+    assert "mingli_csrf=" in cleared
+    assert cleared.count("Max-Age=0") == 2
+    assert "mingli_session" not in client.cookies
+    assert "mingli_csrf" not in client.cookies
+
+    fresh_headers = await create_guest(client)
+    recovered = await client.post(
+        "/api/v1/auth/otp/request",
+        headers=fresh_headers,
+        json={"channel": "phone", "destination": "13800138000"},
+    )
+
+    assert recovered.status_code == 202
+
+
+async def test_guest_account_401_preserves_the_active_guest_session(
+    client: AsyncClient,
+) -> None:
+    headers = await create_guest(client)
+    guest_cookie = client.cookies["mingli_guest"]
+    csrf_cookie = client.cookies["mingli_csrf"]
+
+    account = await client.get("/api/v1/account")
+
+    assert account.status_code == 401
+    assert account.headers.get_list("set-cookie") == []
+    assert client.cookies["mingli_guest"] == guest_cookie
+    assert client.cookies["mingli_csrf"] == csrf_cookie
+
+    requested = await client.post(
+        "/api/v1/auth/otp/request",
+        headers=headers,
+        json={"channel": "phone", "destination": "13800138000"},
+    )
+    assert requested.status_code == 202
 
 
 async def test_account_requires_a_device_session(client: AsyncClient) -> None:

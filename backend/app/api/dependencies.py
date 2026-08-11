@@ -80,7 +80,11 @@ async def require_device_session(
         hash_token(session_token), datetime.now(UTC)
     )
     if device_session is None:
-        raise ApiProblem(status=401, title="Authentication required")
+        raise ApiProblem(
+            status=401,
+            title="Authentication required",
+            clear_device_cookies=True,
+        )
     return device_session
 
 

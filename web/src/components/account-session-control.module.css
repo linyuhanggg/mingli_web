@@ -1,6 +1,7 @@
 .cardStack {
   display: grid;
   gap: 0.75rem;
+  animation: account-stack-enter var(--duration-entrance) var(--ease-out-expo) both;
 }
 
 .retryRow,
@@ -30,4 +31,31 @@
   color: var(--ink-950);
   font-size: 0.88rem;
   line-height: 1.55;
+  animation: account-stack-enter var(--duration-state) var(--ease-out-expo) both;
+}
+
+.busyReason {
+  margin: 0;
+  color: var(--ink-700);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+@keyframes account-stack-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardStack,
+  .logoutError {
+    animation: none;
+  }
 }

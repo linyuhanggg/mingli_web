@@ -1,0 +1,230 @@
+openapi: 3.1.0
+info:
+  title: FateRadar Admin API
+  version: 0.1.0
+  description: >
+    Staff-only operations console contract. Independent of the public user API.
+    Cookie names: mingli_admin_session (HttpOnly) and mingli_admin_csrf (readable).
+servers:
+  - url: /
+    description: Same-origin admin entry
+tags:
+  - name: Admin Auth
+  - name: Admin Ops
+paths:
+  /api/v1/admin/auth/login:
+    post:
+      operationId: adminLogin
+      tags: [Admin Auth]
+      summary: Create a staff session with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginRequest"
+      responses:
+        "200":
+          description: Staff session created; opaque cookies set
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSessionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /api/v1/admin/auth/logout:
+    post:
+      operationId: adminLogout
+      tags: [Admin Auth]
+      summary: Revoke the current staff session and clear admin cookies
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+      responses:
+        "204":
+          description: Logged out
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/me:
+    get:
+      operationId: adminMe
+      tags: [Admin Auth]
+      summary: Return the authenticated staff principal
+      responses:
+        "200":
+          description: Current staff user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminMeResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/v1/admin/overview:
+    get:
+      operationId: adminOverview
+      tags: [Admin Ops]
+      summary: Ops desk KPI stubs and work queues (Phase A placeholders)
+      responses:
+        "200":
+          description: Overview payload; KPI values may be stubs until domain wiring
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOverviewResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+components:
+  parameters:
+    AdminCsrfToken:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Double-submit token matching the mingli_admin_csrf cookie
+  schemas:
+    AdminLoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        password:
+          type: string
+          minLength: 8
+          maxLength: 200
+    AdminSessionResponse:
+      type: object
+      additionalProperties: false
+      required: [staff_id, session_id, role, display_name, expires_at, csrf_token]
+      properties:
+        staff_id:
+          type: string
+          format: uuid
+        session_id:
+          type: string
+          format: uuid
+        role:
+          $ref: "#/components/schemas/StaffRole"
+        display_name:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        csrf_token:
+          type: string
+    AdminMeResponse:
+      type: object
+      additionalProperties: false
+      required: [staff_id, role, email, display_name, session_id, expires_at]
+      properties:
+        staff_id:
+          type: string
+          format: uuid
+        role:
+          $ref: "#/components/schemas/StaffRole"
+        email:
+          type: string
+          format: email
+        display_name:
+          type: string
+        session_id:
+          type: string
+          format: uuid
+        expires_at:
+          type: string
+          format: date-time
+    AdminOverviewResponse:
+      type: object
+      additionalProperties: false
+      required: [generated_at, is_stub, kpis, queues]
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+        is_stub:
+          type: boolean
+          description: True while domain counters are not yet wired
+        kpis:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminKpi"
+        queues:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminQueueSummary"
+    AdminKpi:
+      type: object
+      additionalProperties: false
+      required: [id, label, value, is_stub]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        value:
+          type: integer
+          minimum: 0
+        is_stub:
+          type: boolean
+    AdminQueueSummary:
+      type: object
+      additionalProperties: false
+      required: [id, label, count, is_stub]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        count:
+          type: integer
+          minimum: 0
+        is_stub:
+          type: boolean
+    StaffRole:
+      type: string
+      enum: [support, finance, ops, superadmin]
+    Problem:
+      type: object
+      additionalProperties: false
+      required: [type, title, status, request_id]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: [string, "null"]
+        request_id:
+          type: string
+  responses:
+    Unauthorized:
+      description: Authentication required or credentials rejected
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Forbidden:
+      description: CSRF or permission failure
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    TooManyRequests:
+      description: Login rate limited
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"

@@ -19,6 +19,7 @@ import { isIanaTimeZone } from "@/lib/iana-timezones";
 import styles from "./liuyao-form.module.css";
 import formControls from "./form-controls.module.css";
 import { IanaTimeZoneOptions } from "./iana-timezone-options";
+import scopeStyles from "./algorithm-scope.module.css";
 
 const tossKeys = [
   "toss_1",
@@ -173,6 +174,7 @@ export function LiuyaoForm() {
         timezone: values.timezone,
         location: values.location.trim(),
         query: values.question.trim(),
+        dimension_ids: ["career"],
       };
       const intent = stableKeyForIntent(intentKeyRef.current, payload);
       intentKeyRef.current = intent;
@@ -253,9 +255,22 @@ export function LiuyaoForm() {
               </p>
             ) : null}
             <p className={formControls.hint} id="liuyao-question-hint">
-              只问一件事，尽量具体，不夹带多个问题。
+              当前成稿只支持事业与工作主题。只问一件事，尽量具体，不夹带多个问题。
             </p>
           </div>
+
+          <section
+            className={scopeStyles.notice}
+            aria-labelledby="liuyao-scope-title"
+          >
+            <h3 className={scopeStyles.noticeTitle} id="liuyao-scope-title">
+              当前可交付范围：事业与工作
+            </h3>
+            <p className={scopeStyles.noticeText}>
+              岗位、合作、面试、工作选择与推进。其他主题尚未开放白话成稿；
+              问题正文会按原话保存，请只问上述范围内的一件事。
+            </p>
+          </section>
 
           <div className={formControls.field}>
             <label htmlFor="liuyao-event-datetime">起卦时刻</label>
@@ -437,7 +452,7 @@ export function LiuyaoForm() {
               disabled={busy}
               aria-busy={busy}
             >
-              开始解读{busy ? " · 正在启动…" : ""}
+              开始解读 · 事业主题{busy ? " · 正在启动…" : ""}
             </button>
           </div>
         </form>

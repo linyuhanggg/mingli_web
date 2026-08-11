@@ -6,6 +6,7 @@ from app.config import Settings
 from app.identity.models import Base
 from app.profiles import models as profile_models  # noqa: F401
 from app.readings import models as reading_models  # noqa: F401
+from app.admin import models as admin_models  # noqa: F401
 from sqlalchemy import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 

@@ -16,10 +16,10 @@
   font-weight: 700;
   letter-spacing: 0.01em;
   transition:
-    transform 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease,
-    color 180ms ease;
+    transform var(--duration-feedback) var(--ease-out-expo),
+    background-color var(--duration-feedback) ease,
+    border-color var(--duration-feedback) ease,
+    color var(--duration-feedback) ease;
 }
 
 .button:hover {
@@ -32,7 +32,7 @@
 
 .button svg {
   flex: 0 0 auto;
-  transition: transform 180ms ease;
+  transition: transform var(--duration-feedback) var(--ease-out-expo);
 }
 
 .button:hover svg {
@@ -73,5 +73,19 @@
 @media (min-width: 48rem) {
   .container {
     width: min(var(--content), calc(100% - 4rem));
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .button svg {
+    transition: none;
+  }
+
+  .button:hover,
+  .button:active,
+  .button:hover svg {
+    transform: none;
   }
 }

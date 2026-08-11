@@ -101,8 +101,8 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
       profile_version_id: values.profile_version_id,
       query:
         mode === "today"
-          ? "看看今天值得关注什么"
-          : "看看近七日值得关注什么",
+          ? "看看今天的事业与工作节奏"
+          : "看看近七日的事业与工作节奏",
     };
     const intent = stableKeyForIntent(intentKeyRef.current, payload);
     intentKeyRef.current = intent;
@@ -129,6 +129,10 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
       <h2>开始解读</h2>
       <p className={styles.lead}>
         目标日期由服务端确认；选择已确认档案版本后启动解读，不在此处生成结果。
+      </p>
+      <p className={styles.scopeNotice}>
+        <strong>当前算法范围：事业与工作。</strong>
+        其他主题还未在今日 / 近七日入口开放，界面不会暗中换范围。
       </p>
 
       {loading ? (

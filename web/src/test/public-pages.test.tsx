@@ -7,9 +7,11 @@ import PricingPage from "@/app/pricing/page";
 import PrivacyPage from "@/app/privacy/page";
 import SupportPage from "@/app/support/page";
 import TermsPage from "@/app/terms/page";
+import { PrivateShell } from "@/components/private-shell";
 
 
 vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
   useRouter: () => ({
     replace: vi.fn(),
     push: vi.fn(),
@@ -50,11 +52,16 @@ afterEach(() => {
 
 
 describe("public contract pages", () => {
-  it("exposes a skip-target main landmark on the account page", () => {
-    render(<AccountPage />);
+  it("keeps one skip-target main landmark around the account page", () => {
+    render(
+      <PrivateShell>
+        <AccountPage />
+      </PrivateShell>,
+    );
     const main = screen.getByRole("main");
 
-    expect(main).toHaveAttribute("id", "main-content");
+    expect(screen.getAllByRole("main")).toHaveLength(1);
+    expect(main).toHaveAttribute("id", "private-main");
     expect(main).toHaveAttribute("tabindex", "-1");
   });
 

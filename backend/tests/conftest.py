@@ -14,6 +14,7 @@ async def database() -> AsyncIterator[Any]:
     # intentionally exercise the real repositories against one database.
     importlib.import_module("app.profiles.models")
     importlib.import_module("app.readings.models")
+    importlib.import_module("app.admin.models")
     database = database_module.Database("sqlite+aiosqlite:///:memory:")
 
     async with database.engine.begin() as connection:
@@ -31,6 +32,8 @@ def test_settings():  # type: ignore[no-untyped-def]
         database_url="sqlite+aiosqlite:///:memory:",
         cookie_secure=True,
         otp_adapter="fake",
+        admin_bootstrap_email="ops@example.com",
+        admin_bootstrap_password="correct-horse",
     )
 
 

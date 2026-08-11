@@ -19,6 +19,7 @@ from app.adapters.runtime import FakeMingliRuntimeAdapter, build_runtime_startup
 from app.config import Settings, get_settings
 from app.database import Database
 from app.observability import configure_logging
+from app.readings.alerts import AlertSink, build_alert_sink
 from app.readings.models import ReadingJobRecord, ReadingVersion
 from app.readings.narrative_guard import NarrativeGuard
 from app.readings.orchestrator import (
@@ -236,6 +237,7 @@ class SqlReadingOrchestratorFactory:
     runtime: RuntimePort
     model: NarrativeModelPort
     clock: Clock
+    alert_sink: AlertSink
 
     def __call__(self, session: AsyncSession) -> ReadingOrchestrator:
         return ReadingOrchestrator(
@@ -245,6 +247,7 @@ class SqlReadingOrchestratorFactory:
             guard=NarrativeGuard(),
             assembler=PublicCopyAssembler(),
             clock=self.clock,
+            alert_sink=self.alert_sink,
         )
 
 
@@ -267,6 +270,7 @@ def build_reading_worker(
         runtime=resolved_runtime,
         model=resolved_model,
         clock=resolved_clock,
+        alert_sink=build_alert_sink(enabled=settings.alert_sink_enabled),
     )
     source = ReadingJobWorkSource(
         sessions=database.sessions,

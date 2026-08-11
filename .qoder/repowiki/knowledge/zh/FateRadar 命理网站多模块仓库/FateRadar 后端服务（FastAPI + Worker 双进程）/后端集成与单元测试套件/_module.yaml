@@ -1,0 +1,10 @@
+schema_version: 1
+module_path: backend/tests
+title: 后端集成与单元测试套件
+scope:
+    - backend/tests/
+source_files: []
+depends_on: []
+related_to:
+    - path: backend/api_routes
+    - path: backend/readings_orchestrator

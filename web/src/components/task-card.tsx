@@ -25,7 +25,12 @@ export function TaskCard({
       <h3>{title}</h3>
       <p>{description}</p>
       <span className={styles.label}>{label}</span>
-      <Link href={href}>{action}</Link>
+      <Link className={styles.action} href={href}>
+        <span>{action}</span>
+        <span aria-hidden="true" className={styles.arrow}>
+          →
+        </span>
+      </Link>
     </article>
   );
 }

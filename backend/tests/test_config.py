@@ -112,3 +112,79 @@ def test_guest_session_creation_rate_limit_defaults() -> None:
 
     assert settings.guest_session_create_rate_limit == 10
     assert settings.guest_session_create_rate_window_seconds == 600
+
+
+def test_real_traffic_defaults_disabled() -> None:
+    Settings = settings_type()
+    settings = Settings()
+    assert settings.real_traffic_enabled is False
+    assert settings.alert_sink_enabled is False
+
+
+def test_production_rejects_real_traffic_until_phase0_gates_close() -> None:
+    Settings = settings_type()
+    import base64
+
+    injected_key = base64.b64encode(b"p" * 32).decode()
+    common = dict(
+        environment="production",
+        cookie_secure=True,
+        otp_adapter="disabled",
+        identity_hash_key="injected-identity-hash-key",
+        content_encryption_key_b64=injected_key,
+        content_encryption_key_id="kms-production-v1",
+        runtime_adapter="one-shot",
+        runtime_launcher_path="/opt/mingli-master/scripts/run_reading_transaction.sh",
+        runtime_python_path="/opt/mingli-runtime/venv/bin/python",
+        runtime_release_root="/opt/mingli-master",
+        runtime_state_root="/var/lib/mingli",
+        runtime_expected_manifest_digest=(
+            "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"
+        ),
+        runtime_expected_capability_shape_sha256=(
+            "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
+        ),
+        model_adapter="deepseek",
+        deepseek_api_key="test-only-obviously-not-a-real-key",
+        model_price_snapshot_version="fixture-price-v1",
+        model_input_price_microunits_per_million_tokens=1,
+        model_output_price_microunits_per_million_tokens=1,
+        alert_sink_enabled=True,
+        real_traffic_enabled=True,
+    )
+    with pytest.raises(ValidationError, match="real traffic remains disabled"):
+        Settings(**common)
+
+
+def test_production_real_traffic_requires_alert_sink() -> None:
+    Settings = settings_type()
+    import base64
+
+    injected_key = base64.b64encode(b"p" * 32).decode()
+    with pytest.raises(ValidationError, match="alert_sink_enabled"):
+        Settings(
+            environment="production",
+            cookie_secure=True,
+            otp_adapter="disabled",
+            identity_hash_key="injected-identity-hash-key",
+            content_encryption_key_b64=injected_key,
+            content_encryption_key_id="kms-production-v1",
+            runtime_adapter="one-shot",
+            runtime_launcher_path="/opt/mingli-master/scripts/run_reading_transaction.sh",
+            runtime_python_path="/opt/mingli-runtime/venv/bin/python",
+            runtime_release_root="/opt/mingli-master",
+            runtime_state_root="/var/lib/mingli",
+            runtime_expected_manifest_digest=(
+                "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"
+            ),
+            runtime_expected_capability_shape_sha256=(
+                "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
+            ),
+            model_adapter="deepseek",
+            deepseek_api_key="test-only-obviously-not-a-real-key",
+            model_price_snapshot_version="fixture-price-v1",
+            model_input_price_microunits_per_million_tokens=1,
+            model_output_price_microunits_per_million_tokens=1,
+            alert_sink_enabled=False,
+            real_traffic_enabled=True,
+        )

@@ -25,8 +25,13 @@
 }
 
 .header {
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--ivory-50);
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  border-bottom: 1px solid rgb(169 133 63 / 14%);
+  background: var(--surface-header-translucent);
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
 }
 
 .headerInner {
@@ -35,6 +40,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
 }
 
 .back {
@@ -47,6 +59,75 @@
   text-decoration: underline;
   text-decoration-color: var(--gold-400);
   text-underline-offset: 0.3rem;
+}
+
+.identityLink {
+  display: inline-grid;
+  min-height: 3rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.62rem;
+  padding: 0.35rem 0.65rem 0.35rem 0.4rem;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-sm);
+  background: var(--surface-ivory-translucent);
+  color: var(--ink-950);
+  transition:
+    background-color var(--duration-feedback) ease,
+    border-color var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out-expo);
+}
+
+.identityLink:hover {
+  border-color: var(--gold-500);
+  background: var(--white);
+  transform: translateY(-1px);
+}
+
+.identityAvatar {
+  display: grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ivory-200);
+  color: var(--ink-700);
+}
+
+.identityLink[data-state="signed-in"] .identityAvatar {
+  background: var(--moss-100);
+  color: var(--moss-700);
+}
+
+.identityLink[data-state="error"] .identityAvatar {
+  background: var(--ivory-100);
+  color: var(--terracotta-600);
+}
+
+.identityCopy {
+  display: grid;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.identityCopy small,
+.identityCopy strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identityCopy small {
+  color: var(--ink-700);
+  font-size: 0.66rem;
+  font-weight: 720;
+}
+
+.identityCopy strong {
+  max-width: 15rem;
+  margin-top: 0.12rem;
+  font-size: 0.78rem;
+  font-weight: 760;
 }
 
 .frame {
@@ -152,11 +233,20 @@
   flex-direction: column;
   justify-content: center;
   gap: 0.15rem;
+  border-radius: 0.7rem;
   font-size: 0.68rem;
+  transition:
+    transform var(--duration-feedback) var(--ease-out-expo),
+    background-color var(--duration-feedback) ease,
+    color var(--duration-feedback) ease;
+}
+
+.mobileNav a:active {
+  transform: scale(0.98);
 }
 
 .mobileNav a[aria-current="page"] {
-  background: rgb(169 133 63 / 12%);
+  background: linear-gradient(180deg, rgb(169 133 63 / 16%), rgb(223 233 223 / 55%));
   box-shadow: inset 0 2px 0 var(--gold-400);
   color: var(--ink-950);
 }
@@ -230,7 +320,7 @@
 
   .aside {
     position: sticky;
-    top: 0;
+    top: 4.75rem;
     display: flex;
     /* 向左溢出填满容器外的整条左页边，墨绿贴住视口左缘，像书脊而不是漂浮色块；
        内边距同步补偿，内容仍与页头品牌列的左缘对齐。 */
@@ -297,8 +387,47 @@
   }
 }
 
+@media (max-width: 35rem) {
+  .headerInner {
+    gap: 0.55rem;
+  }
+
+  .headerActions {
+    min-width: 0;
+  }
+
+  .back {
+    display: none;
+  }
+
+  .identityLink {
+    max-width: 9.5rem;
+  }
+
+  .identityCopy strong {
+    max-width: 6.7rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .skipLink {
+  .skipLink,
+  .identityLink,
+  .mobileNav a,
+  .sideNav a {
     transition: none;
+  }
+
+  .mobileNav a:active {
+    transform: none;
+  }
+
+  .identityLink:hover {
+    transform: none;
+  }
+
+  .header {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--ivory-50);
   }
 }

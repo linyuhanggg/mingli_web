@@ -39,7 +39,7 @@ export default function PricingPage() {
           <h2>一事一问 · 六爻</h2>
           <p className={styles.price}>¥9.90</p>
           <ul>
-            <li>绑定具体问题、卦象、方式与起卦时刻</li>
+            <li>当前绑定一个事业或工作问题、卦象、方式与起卦时刻</li>
             <li>事件报告永久查看</li>
             <li>72 小时内 2 次同盘追问</li>
           </ul>

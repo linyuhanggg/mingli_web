@@ -1,5 +1,7 @@
 # Borrow Ziwei UI Only Implementation Plan
 
+> Scope update (2026-08-11): this plan is intentionally limited to birth-confirmation and chart-workspace interaction. It does **not** deliver authentication-aware navigation, a personal home, or an account center. Those product-shell requirements are tracked separately in [2026-08-11-auth-aware-app-shell-rebuild.md](./2026-08-11-auth-aware-app-shell-rebuild.md).
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Borrow only interaction patterns from `Renhuai123/ziwei-doushu` to make FateRadar's existing archive/reading surfaces feel like a calm chart workspace, without adopting its algorithm, brand, Tailwind stack, prompts, or sample data.

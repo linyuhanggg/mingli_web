@@ -1,13 +1,13 @@
 .main {
   overflow: clip;
-  color: var(--ivory-50);
-  background: var(--ink-950);
+  color: var(--ink-950);
+  background: var(--ivory-50);
 }
 
 .stack {
   display: grid;
   gap: clamp(3rem, 7vw, 5.5rem);
-  padding-block: 7.5rem 4rem;
+  padding-block: clamp(1rem, 3vw, 2rem) 4rem;
 }
 
 .hero {
@@ -40,14 +40,21 @@
 .sectionEyebrow {
   width: fit-content;
   margin: 0;
-  padding: 0.35rem 0.75rem;
-  border: 1px solid rgb(193 162 99 / 28%);
-  border-radius: 999px;
-  background: rgb(18 58 50 / 55%);
-  color: var(--gold-400);
   font-size: 0.72rem;
   font-weight: 730;
   letter-spacing: 0.08em;
+}
+
+.kicker {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid rgb(193 162 99 / 28%);
+  border-radius: var(--radius-sm);
+  background: rgb(18 58 50 / 55%);
+  color: var(--gold-400);
+}
+
+.sectionEyebrow {
+  color: var(--terracotta-600);
 }
 
 .hero h1,
@@ -57,6 +64,10 @@
   font-weight: 500;
   letter-spacing: -0.03em;
   line-height: 1.1;
+}
+
+.sectionHeader h2 {
+  color: var(--ink-950);
 }
 
 .hero h1 {
@@ -70,17 +81,17 @@
   color: var(--gold-400);
 }
 
-.heroIntro,
 .sectionHeader p,
 .taskCard p,
-.methodCard p,
-.priceCard li {
+.methodCard p {
   margin: 0;
-  color: rgb(248 243 231 / 74%);
+  color: var(--ink-700);
 }
 
 .heroIntro {
+  margin: 0;
   max-width: 40rem;
+  color: var(--text-on-dark-secondary);
   font-size: clamp(0.98rem, 2vw, 1.08rem);
   line-height: 1.75;
 }
@@ -142,7 +153,7 @@
   gap: 1rem;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgb(248 243 231 / 10%);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .sectionHeader h2 {
@@ -170,15 +181,35 @@
   gap: 0.75rem;
   min-height: 100%;
   padding: 1.35rem;
-  border: 1px solid rgb(248 243 231 / 10%);
   border-radius: 1rem;
-  background: rgb(18 58 50 / 42%);
+}
+
+.taskCard {
+  grid-template-rows: auto auto auto minmax(4.75rem, 1fr) auto;
   transition: transform var(--duration-feedback) var(--ease-out-expo);
 }
 
+.taskCardPaper {
+  border: 1px solid var(--border-subtle);
+  background: var(--white);
+  box-shadow: var(--shadow-card);
+}
+
+.taskCardInk {
+  border: 1px solid rgb(248 243 231 / 12%);
+  background: var(--ink-900);
+  color: var(--ivory-50);
+}
+
+.taskCardClay {
+  border: 1px solid rgb(168 94 70 / 28%);
+  background:
+    linear-gradient(145deg, rgb(168 94 70 / 10%), transparent 62%),
+    var(--ivory-100);
+}
+
 .taskCard:hover,
-.methodCard:hover,
-.priceCard:hover {
+.taskCard:focus-within {
   transform: translateY(-2px);
 }
 
@@ -186,10 +217,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: var(--gold-400);
+  color: var(--ink-700);
   font-size: 0.72rem;
   font-weight: 740;
   letter-spacing: 0.08em;
+}
+
+.taskTop svg {
+  color: var(--gold-500);
+}
+
+.taskCardInk .taskTop,
+.taskCardInk .taskTop svg {
+  color: var(--gold-400);
+}
+
+.taskCardClay .taskTop,
+.taskCardClay .taskTop svg {
+  color: var(--terracotta-600);
 }
 
 .taskCard h3,
@@ -199,22 +244,58 @@
   font-family: var(--font-serif);
   font-size: clamp(1.35rem, 3vw, 1.7rem);
   font-weight: 560;
-  color: var(--ivory-50);
+  color: var(--ink-950);
 }
 
 .taskMeta {
-  color: var(--gold-400) !important;
+  color: var(--ink-700) !important;
   font-size: 0.8rem !important;
 }
 
-.taskAction {
+.taskCardInk h3 {
+  color: var(--ivory-50);
+}
+
+.taskCardInk p {
+  color: var(--text-on-dark-secondary);
+}
+
+.taskCardInk .taskMeta {
+  color: var(--gold-400) !important;
+}
+
+.taskCardClay .taskMeta {
+  color: var(--terracotta-600) !important;
+}
+
+.taskActions {
+  display: grid;
+  gap: 0.25rem;
   margin-top: 0.5rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.taskCardInk .taskActions {
+  border-top-color: var(--border-on-dark);
+}
+
+.taskAction {
   justify-content: space-between;
   width: 100%;
+  min-height: 2.75rem;
   padding-inline: 0 !important;
-  border-top: 1px solid rgb(248 243 231 / 12%);
   border-radius: 0 !important;
+  color: var(--ink-800) !important;
+}
+
+.taskCardInk .taskAction {
   color: var(--ivory-50) !important;
+}
+
+.methodCard {
+  align-content: start;
+  border: 1px solid var(--border-subtle);
+  background: var(--ivory-100);
 }
 
 .methodCard span {
@@ -223,40 +304,71 @@
   aspect-ratio: 1;
   place-items: center;
   border-radius: 999px;
-  background: rgb(193 162 99 / 16%);
-  color: var(--gold-400);
+  background: rgb(168 94 70 / 10%);
+  color: var(--terracotta-600);
   font-family: var(--font-serif);
 }
 
+.pricing {
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid var(--border-on-dark);
+  border-radius: var(--radius-md);
+  background: var(--ink-950);
+  color: var(--ivory-50);
+}
+
+.pricing .sectionHeader {
+  border-bottom-color: var(--border-on-dark);
+}
+
+.pricing .sectionHeader h2 {
+  color: var(--ivory-50);
+}
+
+.pricing .sectionHeader p {
+  color: var(--text-on-dark-secondary);
+}
+
+.pricing .sectionEyebrow {
+  color: var(--gold-400);
+}
+
 .priceCard {
+  grid-template-rows: auto auto auto 1fr auto;
   gap: 0.9rem;
+  border: 1px solid var(--border-on-dark);
+  background: rgb(18 58 50 / 54%);
 }
 
-.priceCardFeatured {
-  border-color: rgb(193 162 99 / 40%);
-  background:
-    linear-gradient(180deg, rgb(193 162 99 / 10%), transparent 40%),
-    rgb(18 58 50 / 58%);
+.priceCard h3 {
+  color: var(--ivory-50);
 }
 
-.recommended {
-  position: absolute;
-  top: 0.9rem;
-  right: 0.9rem;
-  padding: 0.25rem 0.55rem;
-  border-radius: 999px;
-  background: var(--gold-400);
+.priceCardFree {
+  border-color: var(--border-subtle);
+  background: var(--ivory-100);
   color: var(--ink-950);
-  font-size: 0.62rem;
-  font-weight: 780;
-  letter-spacing: 0.08em;
+}
+
+.priceCardFree h3 {
+  color: var(--ink-950);
+}
+
+.priceCardPaid {
+  background:
+    linear-gradient(180deg, rgb(193 162 99 / 8%), transparent 42%),
+    rgb(18 58 50 / 58%);
 }
 
 .priceLabel {
   margin: 0;
-  color: rgb(248 243 231 / 68%);
+  color: var(--gold-400);
   font-size: 0.78rem;
   letter-spacing: 0.06em;
+}
+
+.priceCardFree .priceLabel {
+  color: var(--terracotta-600);
 }
 
 .priceValue {
@@ -268,6 +380,10 @@
   line-height: 1;
 }
 
+.priceValue strong {
+  font: inherit;
+}
+
 .priceValue span {
   color: rgb(248 243 231 / 62%);
   font-family: var(--font-sans);
@@ -275,13 +391,25 @@
   font-weight: 500;
 }
 
+.priceCardFree .priceValue {
+  color: var(--ink-900);
+}
+
+.priceCardFree .priceValue span {
+  color: var(--ink-700);
+}
+
 .priceCard ul {
   display: grid;
   gap: 0.65rem;
   margin: 0.4rem 0 0;
   padding: 0.9rem 0 0;
-  border-top: 1px solid rgb(248 243 231 / 12%);
+  border-top: 1px solid var(--border-on-dark);
   list-style: none;
+}
+
+.priceCardFree ul {
+  border-top-color: var(--border-subtle);
 }
 
 .priceCard li {
@@ -290,6 +418,11 @@
   gap: 0.55rem;
   align-items: start;
   font-size: 0.88rem;
+  color: var(--text-on-dark-secondary);
+}
+
+.priceCardFree li {
+  color: var(--ink-700);
 }
 
 .priceCard li svg {
@@ -297,24 +430,19 @@
   color: var(--gold-400);
 }
 
-.pricePrimary {
+.priceAction {
   margin-top: 0.4rem;
+  box-shadow: none !important;
+}
+
+.priceCardPaid .priceAction {
   border-color: transparent !important;
   background: var(--gold-400) !important;
   color: var(--ink-950) !important;
-  box-shadow: none !important;
 }
 
-.pricePrimary:hover {
+.priceCardPaid .priceAction:hover {
   background: var(--gold-500) !important;
-}
-
-.priceSecondary {
-  margin-top: 0.4rem;
-  border-color: rgb(248 243 231 / 18%) !important;
-  background: var(--ink-900) !important;
-  color: var(--ivory-50) !important;
-  box-shadow: none !important;
 }
 
 @media (min-width: 48rem) {
@@ -330,8 +458,16 @@
 
   .priceGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-width: 54rem;
-    margin-inline: auto;
+  }
+}
+
+@media (max-width: 35rem) {
+  .actions {
+    display: grid;
+  }
+
+  .actions > a {
+    width: 100%;
   }
 }
 
@@ -339,18 +475,19 @@
   .heroGrid {
     grid-template-columns: minmax(0, 1.2fr) minmax(20rem, 0.8fr);
   }
+
+  .priceGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .taskCard,
-  .methodCard,
-  .priceCard {
+  .taskCard {
     transition: none;
   }
 
   .taskCard:hover,
-  .methodCard:hover,
-  .priceCard:hover {
+  .taskCard:focus-within {
     transform: none;
   }
 }

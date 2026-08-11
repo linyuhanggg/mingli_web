@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
+import { AccountSessionProvider } from "@/components/account-session-context";
+import { RouteScrollPolicy } from "@/components/route-scroll-policy";
+
 import "@fontsource-variable/noto-sans-sc";
 import "@fontsource-variable/noto-serif-sc";
 import "./globals.css";
@@ -26,7 +29,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body>
+        <AccountSessionProvider>
+          <RouteScrollPolicy />
+          {children}
+        </AccountSessionProvider>
+      </body>
     </html>
   );
 }

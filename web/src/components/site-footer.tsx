@@ -1,22 +1,13 @@
 import Link from "next/link";
 
+import {
+  PUBLIC_FOOTER_APPLICATIONS,
+  PUBLIC_INFORMATION_LINKS,
+} from "@/lib/product-capabilities";
+
 import { Container } from "./container";
 import styles from "./site-chrome.module.css";
 
-
-const coreLinks = [
-  { href: "/app/profile/new", label: "在线八字排盘" },
-  { href: "/app/bazi", label: "双人合盘分析" },
-  { href: "/app/profiles", label: "命理双子数据库" },
-  { href: "/methodology", label: "学术中心与古籍库" },
-] as const;
-
-const stanceLinks = [
-  { href: "/methodology", label: "倪海厦天纪体系" },
-  { href: "/methodology", label: "《紫微斗数全书》考据" },
-  { href: "/privacy", label: "无恐吓与破灾营销" },
-  { href: "/privacy", label: "数据端到端加密" },
-] as const;
 
 export function SiteFooter() {
   return (
@@ -37,15 +28,15 @@ export function SiteFooter() {
           <div className={styles.footerColumns}>
             <nav className={styles.footerColumn} aria-label="核心应用">
               <h2>核心应用</h2>
-              {coreLinks.map((item) => (
+              {PUBLIC_FOOTER_APPLICATIONS.map((item) => (
                 <Link href={item.href} key={`${item.href}-${item.label}`}>
                   {item.label}
                 </Link>
               ))}
             </nav>
-            <nav className={styles.footerColumn} aria-label="学术与立场">
-              <h2>学术与立场</h2>
-              {stanceLinks.map((item) => (
+            <nav className={styles.footerColumn} aria-label="方法与说明">
+              <h2>方法与说明</h2>
+              {PUBLIC_INFORMATION_LINKS.map((item) => (
                 <Link href={item.href} key={`${item.href}-${item.label}`}>
                   {item.label}
                 </Link>
@@ -62,9 +53,9 @@ export function SiteFooter() {
         <div className={styles.legal}>
           <span>© 2026 FateRadar（命盘 AI）. 保留所有权利</span>
           <nav className={styles.legalLinks} aria-label="法律链接">
-            <Link href="/terms">免责声明</Link>
+            <Link href="/terms">使用条款与免责声明</Link>
             <Link href="/privacy">隐私政策</Link>
-            <Link href="/support">学术安全</Link>
+            <Link href="/support">支持中心</Link>
           </nav>
         </div>
       </Container>

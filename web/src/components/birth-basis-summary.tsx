@@ -8,8 +8,8 @@ export type BirthBasisSummaryValues = {
   birth_datetime: string;
   timezone: string;
   location: string;
-  time_basis_policy: TimeBasisPolicy;
-  zi_hour_policy: ZiHourPolicy;
+  time_basis_policy: TimeBasisPolicy | "";
+  zi_hour_policy: ZiHourPolicy | "";
   longitude?: string;
   latitude?: string;
 };
@@ -45,8 +45,13 @@ export function BirthBasisSummary({
 }: Readonly<{ values: BirthBasisSummaryValues }>) {
   const hasBirthTime = values.birth_datetime.trim().length > 0;
   const timeBasisLabel =
-    TIME_BASIS_LABELS[values.time_basis_policy] ?? "未选择";
-  const ziHourLabel = ZI_HOUR_LABELS[values.zi_hour_policy] ?? "未选择";
+    values.time_basis_policy === ""
+      ? "未选择"
+      : TIME_BASIS_LABELS[values.time_basis_policy];
+  const ziHourLabel =
+    values.zi_hour_policy === ""
+      ? "未选择"
+      : ZI_HOUR_LABELS[values.zi_hour_policy];
   const longitude = values.longitude?.trim() ?? "";
   const isSolar = values.time_basis_policy === "solar";
   const isLunar = values.time_basis_policy === "lunar";

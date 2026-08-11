@@ -44,6 +44,26 @@
   color: var(--ink-900);
   font-weight: 700;
   cursor: pointer;
+  transition:
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out-expo),
+    color var(--duration-feedback) ease;
+}
+
+.optionLabel:hover {
+  border-color: var(--gold-500);
+  background: var(--white);
+}
+
+.optionLabel:has(.optionInput:checked) {
+  border-color: var(--moss-700);
+  background: var(--moss-100);
+  color: var(--ink-950);
+}
+
+.optionLabel:active {
+  transform: scale(0.985);
 }
 
 .optionInput {
@@ -76,6 +96,19 @@
   color: var(--ink-950);
   line-height: 1.6;
   resize: vertical;
+  transition:
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease;
+}
+
+.note:hover {
+  border-color: var(--border-control);
+  background: var(--white);
+}
+
+.note:focus {
+  border-color: var(--gold-500);
+  background: var(--white);
 }
 
 .button {
@@ -94,9 +127,9 @@
   font-weight: 700;
   cursor: pointer;
   transition:
-    transform 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease;
+    transform var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease,
+    border-color var(--duration-feedback) ease;
 }
 
 .button:hover:not(:disabled) {
@@ -115,6 +148,19 @@
   border: 1px solid var(--gold-500);
   border-radius: var(--radius-sm);
   color: var(--ink-900);
+  animation: verification-success-enter var(--duration-state) var(--ease-out-expo) both;
+}
+
+@keyframes verification-success-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .error {
@@ -125,8 +171,13 @@
 /* 尊重系统减弱动效设置：关闭过渡与位移 */
 @media (prefers-reduced-motion: reduce) {
   .button,
-  .optionLabel {
+  .optionLabel,
+  .note {
     transition: none;
     transform: none;
+  }
+
+  .success {
+    animation: none;
   }
 }

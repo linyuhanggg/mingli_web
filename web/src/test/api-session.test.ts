@@ -203,6 +203,39 @@ it("turns a missing device session into an ApiError with status 401", async () =
   });
 });
 
+it("drops stale in-memory device CSRF after account 401 so cleared cookies can bootstrap a Guest", async () => {
+  const fetchMock = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(
+      jsonResponse({ title: "Authentication required" }, 401),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse(
+        {
+          status: "active",
+          expires_at: "2026-08-10T00:00:00Z",
+          csrf_token: "fresh-guest-csrf-after-expired-device",
+        },
+        201,
+      ),
+    );
+  vi.stubGlobal("fetch", fetchMock);
+  adoptCsrfToken("stale-device-csrf-in-memory");
+  document.cookie = "mingli_csrf=stale-device-csrf-cookie; path=/";
+
+  await expect(getAccount()).rejects.toMatchObject({ status: 401 });
+  clearCsrfCookie(); // Browser applies the backend's Set-Cookie deletion.
+
+  await expect(getCsrfToken()).resolves.toBe(
+    "fresh-guest-csrf-after-expired-device",
+  );
+  expect(fetchMock).toHaveBeenNthCalledWith(
+    2,
+    "/api/v1/guest-sessions",
+    expect.objectContaining({ method: "POST", credentials: "include" }),
+  );
+});
+
 it("logs out the current device with the device CSRF and tolerates the empty 204 response", async () => {
   const fetchMock = vi
     .fn<typeof fetch>()

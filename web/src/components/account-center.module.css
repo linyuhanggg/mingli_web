@@ -1,0 +1,173 @@
+.statusStack {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+}
+
+.sessionBanner {
+  display: flex;
+  min-height: 4.5rem;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--border-emphasis);
+  border-radius: var(--radius-sm);
+  background: var(--ivory-100);
+  color: var(--ink-950);
+}
+
+.sessionBanner svg {
+  flex: 0 0 auto;
+  color: var(--gold-500);
+}
+
+.sessionBanner strong,
+.sessionBanner span {
+  display: block;
+}
+
+.sessionBanner strong {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+}
+
+.sessionBanner span {
+  margin-top: 0.16rem;
+  color: var(--ink-700);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.identityHero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border-radius: var(--radius-md);
+  background: var(--ink-900);
+  color: var(--ivory-50);
+  box-shadow: var(--shadow-soft);
+}
+
+.identityIcon {
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  place-items: center;
+  border: 1px solid var(--border-on-dark);
+  border-radius: 50%;
+  background: rgb(255 253 247 / 8%);
+  color: var(--gold-400);
+}
+
+.identityHero h2,
+.identityHero p {
+  margin: 0;
+}
+
+.identityHero h2 {
+  margin-top: 0.18rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.35rem, 4vw, 2rem);
+  font-weight: 620;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.identityHero > div > p:last-child {
+  max-width: 58ch;
+  margin-top: 0.55rem;
+  color: var(--text-on-dark-secondary);
+  font-size: 0.88rem;
+}
+
+.sessionState {
+  color: var(--gold-400);
+  font-size: 0.74rem;
+  font-weight: 760;
+}
+
+.personalLinks {
+  display: grid;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.personalLinks a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  min-height: 4.75rem;
+  align-items: center;
+  padding: 0.8rem 0.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--ink-950);
+  transition:
+    color var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out-expo);
+}
+
+.personalLinks a > svg:first-child {
+  color: var(--gold-500);
+}
+
+.personalLinks strong,
+.personalLinks small {
+  display: block;
+}
+
+.personalLinks strong {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+}
+
+.personalLinks small {
+  margin-top: 0.16rem;
+  color: var(--ink-700);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.personalLinks a:hover {
+  color: var(--ink-800);
+  transform: translateX(2px);
+}
+
+.rightsGrid {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.rightsGrid p {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.7rem;
+  margin: 0;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--ink-700);
+  font-size: 0.88rem;
+}
+
+.rightsGrid svg {
+  margin-top: 0.15rem;
+  color: var(--gold-500);
+}
+
+@media (max-width: 30rem) {
+  .identityHero {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .personalLinks a {
+    transition: none;
+  }
+
+  .personalLinks a:hover {
+    transform: none;
+  }
+}

@@ -39,3 +39,20 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 Worker 每次事务只推进一个持久化阶段：Prepare 后提交 Prepared、一次模型尝试后提交 attempt（成功时与 exact completion intent 原子提交）、Complete 后提交 Accepted。已提交的 token、attempt 和 completion intent 可在租约重领后恢复。Complete 传输未知必须携带非零 `retry_not_before`，不能立即重领形成热循环。
 
 无 token `prepare` 仍有不可消除的提交前窗口：Runtime 可能已经创建 Root，而宿主在响应到达或 Prepared 提交前崩溃，留下孤儿 Runtime Root。此处不宣称 exactly-once，也不自动重放无 token Prepare。无 token 的 `INPUT_READY` claim 若过期且没有 checkpoint，领取层会保守地标记 `runtime_unknown` 并拒绝重领，即使实际崩溃发生在调用前。带 token 的 `INPUT_READY` 按 5.1 收敛协议轮换 fencing token 后可安全重领，并原样重放加密 Prepare；WorkSource 只读取持久化的 `prepare_has_state_token`，不解密 token。上线前必须落实调用超时、Runtime 单副本、孤儿审计与清理手册。
+
+
+## Runtime 完整 vs P0 产品曝光
+
+- Runtime 发布物始终完整：13 Provider、55/55 古籍 pack、1328 evidence、217 文件 manifest。
+- P0 产品白名单只曝光 `bazi` / `fortune` / `liuyao`（见 `backend/app/readings/capability_policy.py`）。
+- 产品裁剪不得改 Runtime 制品；Fake describe 也必须返回 13 项再由 Product Policy 过滤。
+
+## 代码已落地、但仍不算外部 Gate 通过
+
+- `fact_panel` 出站脱敏：`backend/app/readings/public_fact_panel.py`（原始 `birth_datetime` 不得出现在 GET result）。
+- follow-up 合同：同盘追问使用 Accepted `state_token` 且 `transition=null`。
+- 告警骨架：`backend/app/readings/alerts.py` + Orchestrator emit（`runtime_unknown` / `delayed` / `guard_rejection` / `model_cost`）；默认关闭，生产 real traffic 仍 fail-closed。
+- 冻结 release 验签：`scripts/verify_frozen_runtime_release.py`。永远用签名 release root，禁止脏 skill 工作树当生产源。
+- 密钥注入检查：`scripts/check_production_secrets.py`（不打印密钥，不假装 Secret Manager 已接通）。
+- `MINGLI_REAL_TRAFFIC_ENABLED` 默认 false；生产即使打开也会被 Settings 拒绝，直到本台账外部 Gate 关闭后另开变更。
+

@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-> **进度快照（2026-08-11 晚）：** Task 1–12 代码与测试已在 `main`；**Task 8 已闭环**（`docs/releases/evidence/2026-08-09-native-full/`，1584/0，verifier 通过）。真实 Runtime startup 已通过；真实模型已通过本机冒烟，并在测试服务器经 DashScope DeepSeek 跑出 `accepted`（基线 `cb01d65` + policy/limit/worker 热修；当前 HEAD `3446061`）。八字盘面工作区与档案入口已合入。**Task 13 未完成**：固定模型质量评测、Guard 红队、staging 全轨迹、告警/恢复与外部合规 Gate 仍缺；`production blocked / real traffic disabled`。下一步：固化真实链路复跑脚本 → Task 13 staging 证据 → 密钥托管/告警/备案支付。详见 [HANDOFF_SNAPSHOT_2026-08-11.md](../HANDOFF_SNAPSHOT_2026-08-11.md)。
+> **进度快照（2026-08-11 最新）：** Task 1–12 代码与测试已在 `main`；**Task 8 已闭环**（`docs/releases/evidence/2026-08-09-native-full/`，1584/0，verifier 通过）。真实 Runtime startup 与真实模型联调已通。本地 `main` HEAD `0525eb1`；测试服 current `6ec1578`（`local` + fake OTP + one-shot Runtime + deepseek）。紫微 UI-only Task 0–5/7 完成（Task 6 跳过）。**Task 13 产品真轨迹 partial→round-4 5/5 accepted**（preview/today/week/liuyao/followup；修复 `b104245` reference closer + `6ec1578` follow-up token）。证据：`docs/releases/2026-08-11-task13-server-trajectory.md`、`docs/releases/2026-08-11-test-server-deploy-6ec1578.md`。**Task 13 合同仍未全闭环**：固定模型质量评测、Guard 红队、byte-identical replay、告警/恢复与外部合规 Gate 仍缺；`production blocked / real traffic disabled`。下一步：评测/红队 → 密钥托管/告警/恢复 → 再谈放量。详见 [HANDOFF_SNAPSHOT_2026-08-11.md](../HANDOFF_SNAPSHOT_2026-08-11.md)。
 
 **Goal:** Add the deterministic mingli-master 5.1 `describe → prepare → single-model candidate → guard → complete → Accepted` path to the existing web foundation without importing the core or adding an Agent loop.
 

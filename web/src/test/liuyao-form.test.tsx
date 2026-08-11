@@ -67,6 +67,13 @@ describe("LiuyaoForm", () => {
     });
     await user.type(screen.getByLabelText("起卦地点"), "上海市");
 
+    const scopeNotice = screen.getByRole("region", {
+      name: "当前可交付范围：事业与工作",
+    });
+    expect(scopeNotice).toHaveTextContent("岗位、合作、面试、工作选择与推进");
+    expect(screen.queryByRole("radio", { name: "结果走向" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("radio", { name: "时机与进展" })).not.toBeInTheDocument();
+
     const tossGroup = screen.getByRole("group", {
       name: /六次投掷.*自下而上/,
     });
@@ -80,7 +87,7 @@ describe("LiuyaoForm", () => {
     }
     expect(tossGroup).toHaveTextContent("6 老阴");
 
-    await user.click(screen.getByRole("button", { name: /开始解读/ }));
+    await user.click(screen.getByRole("button", { name: /开始解读 · 事业主题/ }));
 
     await waitFor(() =>
       expect(routerPush).toHaveBeenCalledWith(
@@ -94,6 +101,7 @@ describe("LiuyaoForm", () => {
         query: "我是否应该在三个月内接受已经拿到的工作邀请？",
         location: "上海市",
         timezone: "Asia/Shanghai",
+        dimension_ids: ["career"],
       }),
       "liuyao-intent-0001",
     );

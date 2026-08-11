@@ -89,25 +89,25 @@ DB guard 证据（只读）：这 4 个版本 guard_errors 全部 `scope_mismatc
 2. 固定模型质量仍不稳，不能放量
 3. Guard 拒绝路径是真实的、可留证的（guard_errors + model_receipt 双证据）
 
-## 仍 blocked（跳过备案/支付后）
+## 仍 blocked（跳过备案/支付后；以 Round 4 为准）
 
-- Task 13 完整真轨迹：today/week/liuyao/follow-up 稳定 accepted 证据不足（仅 preview 出现过一次 accepted）
+- Round 1–3 的 partial 结论已被 Round 4 覆盖：产品 5 轨 accepted 证据已齐（见下方 Round 4）
 - Guard 红队集（人为构造的越界/幻觉样本）未做
-- Secret Manager 迁移、告警、state volume 恢复演练未齐
-- fact_panel 泄漏原始 birth datetime，需修
+- complete 后 byte-identical replay、state volume 恢复演练未齐
+- Secret Manager 迁移、生产告警未齐
+- 早期轨迹曾记录 fact_panel 泄漏原始 birth datetime，需单独修与复验
 - 因此：`production blocked / real traffic disabled`
 
-## 结论
+## Round 1–3 结论（历史，已被 Round 4 覆盖）
 
-代码与测试服已能跑真 Runtime + 真模型产品链路；**本轮 Task 13 记为 partial**：
+代码与测试服已能跑真 Runtime + 真模型产品链路；**Round 1–3 记为 partial**：
 
 - 联调通路成立（guest/OTP/profile 全 PASS，起单/轮询/状态机正确）
 - delayed 路径被真实触发并留证（guard_errors + model_receipt 双证据）
-- preview accepted 有一次真样本，但 today/week/liuyao/follow-up 均未稳定 accepted
+- 当时仅 preview 出现过 accepted，today/week/liuyao/follow-up 未稳
 - 发现 fact_panel 泄漏原始出生 datetime 的缺陷
-- 因模型 scope 合规不稳，不能宣称 Task 13 完成，更不能上正式流量
 
-下一轮重点：Guard 红队集、固定模型评测、fact_panel 泄漏修复、Secret Manager。
+Round 4 之后产品 5 轨已 accepted，但放量 Gate 仍未齐。下一轮重点：Guard 红队集、固定模型评测、fact_panel 泄漏修复、Secret Manager。
 
 ## Round 4（b104245 reference closer + 6ec1578 follow-up token 修复）
 
@@ -140,4 +140,11 @@ DB guard 证据（只读）：这 4 个版本 guard_errors 全部 `scope_mismatc
 证据：`docs/releases/evidence/2026-08-11-task13-server-trajectory/run-4-followup-fix/`
 
 说明：这是测试服 `local + fake OTP + one-shot Runtime + deepseek` 的真实路径通过，不是 production 放量批准。
+
+## Round 4 结论
+
+- 测试服 current `6ec1578` 上，preview / today / week / liuyao / followup **5/5 accepted**
+- 关键修复：`b104245` candidate reference closer；`6ec1578` follow-up accepted token prepare
+- 这是联调环境真实路径通过，**不是** production 放量批准
+- Task 13 合同剩余：固定评测、Guard 红队、replay/恢复/告警、敏感边界复验
 

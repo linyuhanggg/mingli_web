@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Protocol, cast
 
+from app.readings.alerts import AlertEvent, AlertSink, NoopAlertSink
+from app.readings.candidate_reference_closer import close_candidate_references
 from app.readings.errors import (
     NarrativeGenerationCancelled,
     NarrativeGenerationError,
@@ -17,7 +19,6 @@ from app.readings.narrative_contracts import (
     NarrativeRequest,
     OutputContract,
 )
-from app.readings.candidate_reference_closer import close_candidate_references
 from app.readings.narrative_guard import GuardResult
 from app.readings.narrative_guard import NarrativeGuard as NarrativeGuard
 from app.readings.public_copy import (
@@ -182,6 +183,7 @@ class ReadingOrchestrator:
     guard: NarrativeGuardPort
     assembler: PublicCopyAssemblerPort
     clock: Clock
+    alert_sink: AlertSink = NoopAlertSink()
     prepare_transport_backoff: timedelta = timedelta(seconds=5)
     complete_transport_backoff: timedelta = timedelta(seconds=5)
 
@@ -190,6 +192,22 @@ class ReadingOrchestrator:
             raise ValueError("Prepare transport backoff must be positive")
         if self.complete_transport_backoff <= timedelta(0):
             raise ValueError("Complete transport backoff must be positive")
+
+    def _emit_alert(
+        self,
+        kind: str,
+        *,
+        job_id: str | None = None,
+        details: dict[str, object] | None = None,
+    ) -> None:
+        self.alert_sink.emit(
+            AlertEvent(
+                kind=kind,
+                at=self.clock.now(),
+                job_id=job_id,
+                details=details,
+            )
+        )
 
     async def run(self, job_id: str) -> ReadingOutcome:
         job = await self.repository.load_job(job_id)
@@ -245,6 +263,7 @@ class ReadingOrchestrator:
                     retry_not_before=(self.clock.now() + self.prepare_transport_backoff),
                 )
             await self.repository.mark_runtime_unknown(job.id, self.clock.now())
+            self._emit_alert("runtime_unknown", job_id=job.id)
             return ReadingOutcome(status=ReadingStatus.RUNTIME_UNKNOWN)
         if isinstance(result, Prepared):
             await self.repository.record_prepared(job.id, result, self.clock.now())
@@ -281,6 +300,7 @@ class ReadingOrchestrator:
         )
         if completed_attempts >= job.max_attempts:
             await self.repository.mark_delayed(job.id, self.clock.now())
+            self._emit_alert("delayed", job_id=job.id, details={"reason": "max_attempts"})
             return ReadingOutcome(status=ReadingStatus.DELAYED)
 
         attempt_number = completed_attempts + 1
@@ -299,6 +319,12 @@ class ReadingOrchestrator:
                 job.output_contract,
             )
             errors = guard_result.errors
+            if not guard_result.passed:
+                self._emit_alert(
+                    "guard_rejection",
+                    job_id=job.id,
+                    details={"errors": list(errors), "attempt": attempt_number},
+                )
             if guard_result.passed:
                 try:
                     public_copy = self.assembler.assemble(
@@ -332,6 +358,11 @@ class ReadingOrchestrator:
             )
             if attempt_number >= job.max_attempts:
                 await self.repository.mark_delayed(job.id, self.clock.now())
+                self._emit_alert(
+                    "delayed",
+                    job_id=job.id,
+                    details={"reason": "generation_exhausted", "errors": list(errors)},
+                )
                 return ReadingOutcome(
                     status=ReadingStatus.DELAYED,
                     cancel_after_commit=cancel_after_commit,
@@ -350,6 +381,16 @@ class ReadingOrchestrator:
             self.clock.now(),
             model_receipt=model_receipt,
         )
+        if model_receipt is not None:
+            self._emit_alert(
+                "model_cost",
+                job_id=job.id,
+                details={
+                    "outcome": model_receipt.outcome,
+                    "provider": model_receipt.provider,
+                    "model_profile_id": model_receipt.model_profile_id,
+                },
+            )
         return ReadingOutcome(status=ReadingStatus.COMPLETING)
 
     async def _complete(

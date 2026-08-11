@@ -218,6 +218,9 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     expect(await screen.findByText("当前结构更支持持续积累。")).toBeVisible();
     expect(screen.getByText("滴天髓")).toBeVisible();
     expect(screen.getByText("顺势而为，先定其基。")).toBeVisible();
+    expect(
+      screen.getByText("支持事实：当前结构更支持持续积累。"),
+    ).toBeVisible();
     expect(screen.getByText("仅供传统文化参考，不构成现实决策保证。")).toBeVisible();
     expect(screen.getByText("上一版已接纳正文。")).toBeVisible();
     expect(screen.getAllByText(/2026年8月10日/).length).toBeGreaterThan(0);
@@ -323,6 +326,401 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     await user.click(screen.getByRole("button", { name: "重试" }));
     expect(await screen.findByText(acceptedCopyQuery)).toBeVisible();
     expect(resultCount).toBe(2);
+  });
+
+  it("renders the returned Liuyao plate as six accessible lines with moving and shi-ying labels", async () => {
+    const liuyaoFacts = [
+      {
+        ref: "fact:cast/calculated/liuyao/primary_hexagram",
+        subject_ref: "liuyao:public-cast",
+        kind_id: "kind.liuyao-structure",
+        value: { name: "水山蹇", shi_line: 4, ying_line: 1 },
+        display_text: "本卦：水山蹇",
+      },
+      {
+        ref: "fact:cast/calculated/liuyao/changed_hexagram",
+        subject_ref: "liuyao:public-cast",
+        kind_id: "kind.liuyao-structure",
+        value: { name: "水风井" },
+        display_text: "变卦：水风井",
+      },
+      {
+        ref: "fact:cast/calculated/liuyao/moving_lines",
+        subject_ref: "liuyao:public-cast",
+        kind_id: "kind.liuyao-structure",
+        value: [2],
+        display_text: "动爻：[2]",
+      },
+      {
+        ref: "fact:cast/calculated/liuyao/shi_ying",
+        subject_ref: "liuyao:public-cast",
+        kind_id: "kind.liuyao-structure",
+        value: { shi: 4, ying: 1 },
+        display_text: "世应：世四应一",
+      },
+      {
+        ref: "fact:cast/calculated/liuyao/lines",
+        subject_ref: "liuyao:public-cast",
+        kind_id: "kind.liuyao-structure",
+        value: [
+          {
+            line: 1,
+            state: "少阴",
+            yin_yang: "阴",
+            moving: false,
+            najia: { ganzhi: "戊辰" },
+            six_relative: "父母",
+            six_spirit: "青龙",
+            roles: ["应"],
+          },
+          {
+            line: 2,
+            state: "老阳",
+            yin_yang: "阳",
+            moving: true,
+            najia: { ganzhi: "戊午" },
+            six_relative: "官鬼",
+            six_spirit: "朱雀",
+            roles: [],
+            changed_line: {
+              yin_yang: "阴",
+              najia: { ganzhi: "辛亥" },
+              six_relative: "子孙",
+            },
+          },
+          {
+            line: 3,
+            state: "少阳",
+            yin_yang: "阳",
+            moving: false,
+            najia: { ganzhi: "戊申" },
+            six_relative: "兄弟",
+            six_spirit: "勾陈",
+            roles: [],
+          },
+          {
+            line: 4,
+            state: "少阴",
+            yin_yang: "阴",
+            moving: false,
+            najia: { ganzhi: "戊戌" },
+            six_relative: "兄弟",
+            six_spirit: "螣蛇",
+            roles: ["世"],
+          },
+          {
+            line: 5,
+            state: "少阳",
+            yin_yang: "阳",
+            moving: false,
+            najia: { ganzhi: "戊子" },
+            six_relative: "子孙",
+            six_spirit: "白虎",
+            roles: [],
+          },
+          {
+            line: 6,
+            state: "少阴",
+            yin_yang: "阴",
+            moving: false,
+            najia: { ganzhi: "戊寅" },
+            six_relative: "妻财",
+            six_spirit: "玄武",
+            roles: [],
+          },
+        ],
+        display_text: "六爻：服务端公开盘面",
+      },
+    ];
+    const liuyaoEvidence = [
+      {
+        ref: "evidence:liuyao-plate",
+        source_title: "卜筮正宗",
+        locator: "世应章",
+        excerpt: "世为己，应为彼。",
+        supports_fact_refs: [
+          "fact:cast/calculated/liuyao/primary_hexagram",
+          "fact:cast/calculated/liuyao/lines",
+        ],
+      },
+    ];
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            fact_panel: {
+              ...factPanel(),
+              question: "这次岗位面试能否进入下一轮？",
+              facts: liuyaoFacts,
+              evidence: liuyaoEvidence,
+              request_view: {
+                subject_refs: ["liuyao:public-cast"],
+                capability_ids: ["liuyao"],
+                object_id: "concrete_event",
+                dimension_ids: ["career", "outcome"],
+                horizon: {
+                  kind_id: "instant",
+                  start: null,
+                  end: null,
+                },
+              },
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "liuyao",
+          object_id: "concrete_event",
+          dimension_ids: ["career", "outcome"],
+          horizon: { kind_id: "instant", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const plate = await screen.findByRole("region", { name: "六爻卦象" });
+    expect(within(plate).getByText("水山蹇")).toBeVisible();
+    expect(within(plate).getByText("水风井")).toBeVisible();
+    const lines = within(plate).getAllByRole("listitem");
+    expect(lines).toHaveLength(6);
+    expect(within(lines[0]).getByText("上爻")).toBeVisible();
+    expect(within(lines[4]).getByText("二爻")).toBeVisible();
+    expect(within(lines[4]).getByText("动爻")).toBeVisible();
+    expect(within(lines[2]).getByText("世")).toBeVisible();
+    expect(within(lines[5]).getByText("应")).toBeVisible();
+    expect(within(plate).getByText(/1 条依据与卦象事实相连/)).toBeVisible();
+    expect(within(plate).getByRole("link", { name: "查看依据" })).toHaveAttribute(
+      "href",
+      "#reading-evidence-title",
+    );
+  });
+
+  it("keeps a dedicated Liuyao surface but refuses to invent a plate from unknown facts", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            fact_panel: {
+              ...factPanel(),
+              facts: [
+                {
+                  ref: "fact:opaque-1",
+                  subject_ref: "liuyao:public-cast",
+                  kind_id: "kind.unknown",
+                  value: { internal_shape: true },
+                  display_text: "服务端返回了一项暂未识别的公开事实。",
+                },
+              ],
+              evidence: [],
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "liuyao",
+          object_id: "concrete_event",
+          horizon: { kind_id: "instant", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const plate = await screen.findByRole("region", { name: "六爻卦象" });
+    expect(within(plate).getByText(/服务端未返回可解析的公开卦象结构/)).toBeVisible();
+    expect(within(plate).getByText(/不会自行补算/)).toBeVisible();
+    expect(within(plate).getAllByRole("listitem")).toHaveLength(6);
+  });
+
+  it("warns when the server names a hexagram but returns an incomplete line set", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            fact_panel: {
+              ...factPanel(),
+              facts: [
+                {
+                  ref: "fact:cast/calculated/liuyao/primary_hexagram",
+                  subject_ref: "liuyao:public-cast",
+                  kind_id: "fact:calculation",
+                  value: { name: "水山蹇" },
+                  display_text: "本卦：水山蹇",
+                },
+                {
+                  ref: "fact:cast/calculated/liuyao/lines",
+                  subject_ref: "liuyao:public-cast",
+                  kind_id: "fact:calculation",
+                  value: [
+                    { line: 1, yin_yang: "阳" },
+                    { line: 2, yin_yang: "阴" },
+                  ],
+                  display_text: "六爻：仅返回部分爻位",
+                },
+              ],
+              evidence: [],
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "liuyao",
+          object_id: "concrete_event",
+          horizon: { kind_id: "instant", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const plate = await screen.findByRole("region", { name: "六爻卦象" });
+    expect(within(plate).getByText("水山蹇")).toBeVisible();
+    expect(within(plate).getByText(/仅返回 2\/6 个可解析爻位/)).toBeVisible();
+    expect(within(plate).getAllByRole("listitem")).toHaveLength(6);
+  });
+});
+
+describe("fortune period timeline", () => {
+  it("renders every server period marker as an ordered timeline before general facts", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            fact_panel: {
+              ...factPanel(),
+              facts: [
+                {
+                  ref: "fact:weekly-markers-1",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:period_markers",
+                  display_text: "周期确定性标记：已由服务端计算",
+                  value: [
+                    {
+                      date: "2026-08-10",
+                      day_pillar: "甲子",
+                      day_role: "正财",
+                      active_luck_cycle: "戊子",
+                    },
+                    {
+                      date: "2026-08-11",
+                      day_pillar: "乙丑",
+                      day_role: "偏财",
+                    },
+                  ],
+                },
+                {
+                  ref: "fact:weekly-markers-2",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:runtime-display",
+                  display_text: "period_markers: 已由服务端计算",
+                  value: [
+                    {
+                      date: "2026-08-12",
+                      day_pillar: "丙寅",
+                      active_luck_cycle: "戊子",
+                    },
+                  ],
+                },
+                {
+                  ref: "fact:general",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:career-structure",
+                  display_text: "这一周宜先稳住手头节奏。",
+                  value: null,
+                },
+              ],
+            },
+          }),
+        );
+      }
+      return jsonResponse(readingSummary("accepted"));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const timeline = await screen.findByRole("region", { name: "近七日周期" });
+    const list = within(timeline).getByRole("list");
+    const items = within(list).getAllByRole("listitem");
+    expect(items).toHaveLength(3);
+
+    expect(within(items[0]).getByText("2026年8月10日")).toBeVisible();
+    expect(within(items[0]).getByText("甲子")).toBeVisible();
+    expect(within(items[0]).getByText("正财")).toBeVisible();
+    expect(within(items[0]).getByText("戊子")).toBeVisible();
+    expect(within(items[1]).getByText("2026年8月11日")).toBeVisible();
+    expect(within(items[1]).getByText("乙丑")).toBeVisible();
+    expect(within(items[1]).getByText("偏财")).toBeVisible();
+    expect(within(items[1]).queryByText("当前大运")).not.toBeInTheDocument();
+    expect(within(items[2]).getByText("2026年8月12日")).toBeVisible();
+    expect(within(items[2]).getByText("丙寅")).toBeVisible();
+    expect(within(items[2]).queryByText("日主关系")).not.toBeInTheDocument();
+
+    const judgment = screen.getByRole("heading", { name: "判断" });
+    const timelineHeading = within(timeline).getByRole("heading", {
+      name: "近七日周期",
+    });
+    const facts = screen.getByRole("heading", { name: "事实" });
+    expect(
+      judgment.compareDocumentPosition(timelineHeading) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      timelineHeading.compareDocumentPosition(facts) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(within(timeline).getByText("02")).toBeInTheDocument();
+    expect(within(facts.closest("section")!).getByText("03")).toBeInTheDocument();
+    const evidence = screen.getByRole("heading", { name: "依据与边界" });
+    const review = screen.getByRole("heading", { name: "复核与追问" });
+    expect(within(evidence.closest("section")!).getByText("04")).toBeInTheDocument();
+    expect(within(review.closest("section")!).getByText("05")).toBeInTheDocument();
+    expect(screen.getByText("这一周宜先稳住手头节奏。")).toBeVisible();
+    expect(screen.getAllByText("甲子")).toHaveLength(1);
+  });
+
+  it("omits an empty or unparseable marker payload without inventing dates", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            fact_panel: {
+              ...factPanel(),
+              facts: [
+                {
+                  ref: "fact:empty-markers",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:period_markers",
+                  display_text: "周期确定性标记：已由服务端计算",
+                  value: [null, 12, {}, { date: " ", day_pillar: "" }],
+                },
+              ],
+            },
+          }),
+        );
+      }
+      return jsonResponse(readingSummary("accepted"));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const facts = await screen.findByRole("region", { name: "事实" });
+    expect(screen.queryByRole("region", { name: "近七日周期" })).not.toBeInTheDocument();
+    expect(within(facts).getByText("02")).toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/第 1 日|第 1 项|公开标记已就绪/);
   });
 });
 
@@ -659,6 +1057,7 @@ describe("Web interface regression guards", () => {
 
 describe("bazi chart workspace", () => {
   it("renders a left chart / right analysis layout for bazi readings", async () => {
+    const user = userEvent.setup();
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
       if (path.endsWith("/result")) {
@@ -683,6 +1082,27 @@ describe("bazi chart workspace", () => {
                   value: null,
                   display_text:
                     'day_master: {"element":"土","polarity":"阴","stem":"己"}',
+                },
+                {
+                  ref: "fact:profile-version/input/location",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:location",
+                  value: "杭州市西湖区",
+                  display_text: "location: 杭州市西湖区",
+                },
+                {
+                  ref: "fact:profile-version/input/timezone",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:timezone",
+                  value: "Asia/Shanghai",
+                  display_text: "timezone: Asia/Shanghai",
+                },
+                {
+                  ref: "fact:profile-version/input/gender",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:gender",
+                  value: "female",
+                  display_text: "gender: female",
                 },
                 {
                   ref: "fact:luck",
@@ -737,8 +1157,31 @@ describe("bazi chart workspace", () => {
     expect(screen.getAllByText(/日主.*己/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/当前大运|大运 戊子|戊子/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("当前结构更支持持续积累。").length).toBeGreaterThan(0);
+    expect(screen.queryByText("杭州市西湖区")).not.toBeInTheDocument();
+    expect(screen.queryByText("Asia/Shanghai")).not.toBeInTheDocument();
+    expect(screen.queryByText("女")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "判断" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "事实" })).toBeVisible();
+
+    const year = screen.getByRole("button", { name: /年柱/ });
+    const month = screen.getByRole("button", { name: /月柱/ });
+    expect(year).toHaveAttribute("tabindex", "0");
+    expect(month).toHaveAttribute("tabindex", "-1");
+
+    year.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(month).toHaveFocus();
+    expect(month).toHaveAttribute("tabindex", "0");
+    expect(year).toHaveAttribute("tabindex", "-1");
+    expect(month).toHaveAttribute("aria-expanded", "false");
+
+    await user.keyboard("{Enter}");
+    expect(month).toHaveAttribute("aria-expanded", "true");
+    expect(month).toHaveAttribute("aria-controls");
+    expect(screen.getByRole("region", { name: "聚焦详情" })).toHaveAttribute(
+      "id",
+      month.getAttribute("aria-controls"),
+    );
   });
 
   it("opens focus detail from a pillar click using server-backed facts only", async () => {

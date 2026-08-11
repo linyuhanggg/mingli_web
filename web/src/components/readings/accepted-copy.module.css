@@ -5,9 +5,28 @@
   line-height: 1.9;
   overflow-wrap: anywhere;
   white-space: pre-line;
+  animation: accepted-copy-enter var(--duration-state) var(--ease-out-expo) both;
 }
 
 .empty {
   margin: 0;
   color: var(--ink-700);
+}
+
+@keyframes accepted-copy-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy {
+    animation: none;
+  }
 }

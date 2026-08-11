@@ -19,6 +19,20 @@
   background: var(--ivory-50);
   color: var(--ink-950);
   font-size: 1rem;
+  transition:
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease,
+    color var(--duration-feedback) ease;
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--border-control);
+  background: var(--white);
+}
+
+.input:focus {
+  border-color: var(--gold-500);
+  background: var(--white);
 }
 
 textarea.input {
@@ -41,6 +55,7 @@ textarea.input {
   color: var(--terracotta-600);
   font-size: 0.82rem;
   font-weight: 680;
+  animation: form-error-enter var(--duration-state) var(--ease-out-expo) both;
 }
 
 .hint {
@@ -78,9 +93,9 @@ textarea.input {
   cursor: pointer;
   font-weight: 750;
   transition:
-    transform 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease;
+    transform var(--duration-feedback) var(--ease-out-expo),
+    background-color var(--duration-feedback) ease,
+    border-color var(--duration-feedback) ease;
 }
 
 .action:hover {
@@ -88,7 +103,7 @@ textarea.input {
 }
 
 .action:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.985);
 }
 
 .actionPrimary {
@@ -97,6 +112,7 @@ textarea.input {
   border-radius: var(--radius-sm);
   background: var(--ink-900);
   color: var(--ivory-50);
+  box-shadow: var(--shadow-action);
 }
 
 .actionPrimary:hover {
@@ -109,12 +125,30 @@ textarea.input {
   color: var(--ink-900);
 }
 
+.actionSecondary:hover {
+  border-color: var(--gold-500);
+  background: var(--white);
+}
+
 .action[disabled] {
   border-color: var(--border-control);
   background: var(--ivory-200);
   color: var(--ink-700);
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
+}
+
+@keyframes form-error-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (min-width: 40rem) {
@@ -125,7 +159,17 @@ textarea.input {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .input,
   .action {
     transition: none;
+  }
+
+  .error {
+    animation: none;
+  }
+
+  .action:hover,
+  .action:active {
+    transform: none;
   }
 }

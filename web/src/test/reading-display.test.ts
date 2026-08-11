@@ -79,10 +79,68 @@ describe("formatReadingFact", () => {
       /state_token|opaque-runtime-token|内部提示词|模型草稿/,
     );
   });
+
+  it("renders every weekly period marker instead of dropping days after the first", () => {
+    const presentation = formatReadingFact(
+      fact("周期确定性标记：已由服务端计算", {
+        kind_id: "fact:period_markers",
+        value: [
+          {
+            date: "2026-08-10",
+            day_pillar: "甲子",
+            day_role: "正财",
+            active_luck_cycle: "戊子",
+          },
+          {
+            date: "2026-08-11",
+            day_pillar: "乙丑",
+            day_role: "偏财",
+            active_luck_cycle: "戊子",
+          },
+          {
+            date: "2026-08-12",
+            day_pillar: "丙寅",
+            day_role: "正官",
+            active_luck_cycle: "戊子",
+          },
+        ],
+      }),
+    );
+
+    expect(presentation.label).toBe("周期标记");
+    expect(presentation.text).toContain("2026年8月10日");
+    expect(presentation.text).toContain("甲子");
+    expect(presentation.text).toContain("2026年8月11日");
+    expect(presentation.text).toContain("乙丑");
+    expect(presentation.text).toContain("2026年8月12日");
+    expect(presentation.text).toContain("丙寅");
+  });
 });
 
 
 describe("buildBaziChartView", () => {
+  it("uses the real Runtime four_pillars value even when display text is truncated", () => {
+    const chart = buildBaziChartView([
+      fact('four_pillars：{"day":"己酉","hour":"丁卯"…', {
+        ref: "fact:profile-version:secret/calculated/bazi/four_pillars",
+        kind_id: "fact:calculation",
+        value: {
+          year: "庚辰",
+          month: "丙戌",
+          day: "己酉",
+          hour: "丁卯",
+        },
+      }),
+    ]);
+
+    expect(chart.pillars).toEqual({
+      year: "庚辰",
+      month: "丙戌",
+      day: "己酉",
+      hour: "丁卯",
+    });
+  });
+
   it("extracts pillars and day master for the chart board", () => {
     const chart = buildBaziChartView([
       fact('natal_pillars: {"day":"己酉","hour":"丁卯","month":"丙戌","year":"庚辰"}'),

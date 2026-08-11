@@ -138,7 +138,14 @@ class Settings(BaseSettings):
     profile_write_rate_window_seconds: int = Field(default=60, ge=1)
     trusted_proxy_cidrs: str = ""
     device_session_days: int = 30
+    admin_session_hours: int = Field(default=8, ge=1, le=24)
+    admin_bootstrap_email: str | None = None
+    admin_bootstrap_password: SecretStr | None = None
+    admin_login_rate_limit: int = Field(default=10, ge=1)
+    admin_login_rate_window_seconds: float = Field(default=600, gt=0)
     log_level: str = "INFO"
+    real_traffic_enabled: bool = False
+    alert_sink_enabled: bool = False
 
     @classmethod
     def settings_customise_sources(
@@ -203,6 +210,10 @@ class Settings(BaseSettings):
         uses_local_hash_key = self.identity_hash_key.get_secret_value().startswith("local-only-")
         if self.environment == "production" and uses_local_hash_key:
             raise ValueError("production identity hash key must be injected")
+        if self.environment == "production" and (
+            self.admin_bootstrap_email or self.admin_bootstrap_password is not None
+        ):
+            raise ValueError("production forbids admin bootstrap credentials")
         encoded_content_key = self.content_encryption_key_b64.get_secret_value()
         try:
             decoded_content_key = base64.b64decode(
@@ -307,6 +318,14 @@ class Settings(BaseSettings):
                 raise ValueError("production expected capability shape digest is required")
             if self.runtime_expected_capability_shape_sha256 != _FROZEN_CAPABILITY_SHAPE_SHA256:
                 raise ValueError("production requires the frozen capability shape digest")
+            if self.real_traffic_enabled and not self.alert_sink_enabled:
+                raise ValueError(
+                    "production real traffic requires alert_sink_enabled"
+                )
+            if self.real_traffic_enabled:
+                raise ValueError(
+                    "production real traffic remains disabled until Phase 0 gates are closed"
+                )
         return self
 
 

@@ -6,6 +6,8 @@
   overflow: hidden;
   padding: clamp(1.45rem, 4vw, 2.2rem);
   border-radius: var(--radius-md);
+  transition:
+    transform var(--duration-feedback) var(--ease-out-expo);
 }
 
 .card::before {
@@ -18,6 +20,7 @@
   border-radius: 50%;
   content: "";
   opacity: 0.16;
+  transition: transform var(--duration-entrance) var(--ease-out-expo);
 }
 
 .card::after {
@@ -32,11 +35,27 @@
   transform: rotate(-28deg);
 }
 
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card:hover::before {
+  transform: rotate(12deg);
+}
+
+.card:active {
+  transform: translateY(0) scale(0.99);
+}
+
 .card[data-tone="paper"] {
   border: 1px solid var(--border-subtle);
   background: var(--white);
   color: var(--ink-950);
   box-shadow: var(--shadow-card);
+}
+
+.card[data-tone="paper"]:hover {
+  box-shadow: 0 18px 42px 2px rgb(16 52 45 / 12%);
 }
 
 .card[data-tone="ink"] {
@@ -45,9 +64,17 @@
   box-shadow: 0 22px 54px 4px rgb(10 40 35 / 22%);
 }
 
+.card[data-tone="ink"]:hover {
+  box-shadow: 0 26px 60px 4px rgb(10 40 35 / 28%);
+}
+
 .card[data-tone="clay"] {
   background: var(--ivory-200);
   color: var(--ink-950);
+}
+
+.card[data-tone="clay"]:hover {
+  box-shadow: 0 16px 36px 2px rgb(16 52 45 / 10%);
 }
 
 .card h3 {
@@ -79,7 +106,7 @@
   opacity: 0.72;
 }
 
-.card a {
+.action {
   display: inline-flex;
   min-height: 2.75rem;
   align-items: center;
@@ -90,33 +117,44 @@
   font-size: 0.9rem;
   font-weight: 750;
   opacity: 0.9;
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition:
+    opacity var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out-expo);
 }
 
-.card a::after {
-  content: "→";
+.arrow {
+  transition: transform var(--duration-feedback) var(--ease-out-expo);
 }
 
-.card a:hover {
+.action:hover {
   opacity: 1;
   transform: translateX(2px);
 }
 
+.action:hover .arrow {
+  transform: translateX(3px);
+}
+
 @media (min-width: 48rem) {
   .card {
-    min-height: 24rem;
-  }
-
-  .card:first-child {
-    grid-row: 1 / span 2;
-    min-height: 34rem;
-  }
-
-  .card:not(:first-child) {
     min-height: 16.5rem;
+    height: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card::before,
+  .action,
+  .arrow {
+    transition: none;
   }
 
-  .card:not(:first-child) h3 {
-    font-size: clamp(1.9rem, 4vw, 2.8rem);
+  .card:hover,
+  .card:active,
+  .card:hover::before,
+  .action:hover,
+  .action:hover .arrow {
+    transform: none;
   }
 }

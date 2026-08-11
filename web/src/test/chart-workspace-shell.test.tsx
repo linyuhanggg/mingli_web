@@ -123,6 +123,68 @@ describe("ChartWorkspaceShell", () => {
     );
   });
 
+  it("connects every tab to its panel and keeps only the active tab in the tab order", () => {
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      activeLuck: "丙午大运",
+    });
+    render(<WorkspaceFixture view={view} />);
+
+    const tabs = screen.getAllByRole("tab");
+    const panels = screen.getAllByRole("tabpanel", { hidden: true });
+
+    expect(panels).toHaveLength(tabs.length);
+    tabs.forEach((tab, index) => {
+      const panelId = tab.getAttribute("aria-controls");
+      expect(panelId).toBeTruthy();
+      expect(panels[index]).toHaveAttribute("id", panelId);
+      expect(panels[index]).toHaveAttribute("aria-labelledby", tab.id);
+    });
+    expect(tabs[0]).toHaveAttribute("tabindex", "0");
+    expect(tabs[1]).toHaveAttribute("tabindex", "-1");
+    expect(tabs[2]).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("moves and activates tabs with arrows, Home, and End while skipping disabled layers", async () => {
+    const user = userEvent.setup();
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      activeLuck: "丙午大运",
+    });
+    render(<WorkspaceFixture view={view} />);
+
+    const natal = screen.getByRole("tab", { name: /^本命/ });
+    const decadal = screen.getByRole("tab", { name: /^大运/ });
+    const yearly = screen.getByRole("tab", { name: /^流年/ });
+
+    natal.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(decadal).toHaveFocus();
+    expect(decadal).toHaveAttribute("aria-selected", "true");
+    expect(decadal).toHaveAttribute("tabindex", "0");
+    expect(natal).toHaveAttribute("tabindex", "-1");
+    expect(screen.getByRole("tabpanel", { name: /^大运/ })).toBeVisible();
+
+    await user.keyboard("{ArrowRight}");
+    expect(natal).toHaveFocus();
+    expect(natal).toHaveAttribute("aria-selected", "true");
+    expect(yearly).not.toHaveFocus();
+
+    await user.keyboard("{ArrowLeft}");
+    expect(decadal).toHaveFocus();
+    expect(decadal).toHaveAttribute("aria-selected", "true");
+    expect(yearly).not.toHaveFocus();
+
+    await user.keyboard("{Home}");
+    expect(natal).toHaveFocus();
+    expect(natal).toHaveAttribute("aria-selected", "true");
+
+    await user.keyboard("{End}");
+    expect(decadal).toHaveFocus();
+    expect(decadal).toHaveAttribute("aria-selected", "true");
+    expect(yearly).toBeDisabled();
+  });
+
   it("keeps unavailable layers visible but never fake-ready", () => {
     const view = buildBaziWorkspaceView({ pillars: FOUR_PILLARS });
     render(<WorkspaceFixture view={view} />);
@@ -155,7 +217,9 @@ describe("ChartWorkspaceShell", () => {
     expect(within(drawer).getByText("年柱 · 甲子")).toBeVisible();
     expect(within(drawer).getByText("Asia/Shanghai")).toBeVisible();
     expect(within(drawer).getByText("民用时")).toBeVisible();
-    expect(within(drawer).getByText("服务端公开事实")).toBeVisible();
+    expect(
+      within(drawer).getByText(/暂无与该柱直接关联的公开依据/),
+    ).toBeVisible();
     expect(
       within(drawer).getByText(/前端不进行本地排盘或星曜推算/),
     ).toBeVisible();
@@ -198,6 +262,20 @@ describe("ChartWorkspaceShell", () => {
       within(drawer).getByText("选择一个柱位后，这里只显示服务端已公开的聚焦事实。"),
     ).toBeVisible();
     expect(within(drawer).queryByText("时柱 · 丁卯")).not.toBeInTheDocument();
+  });
+
+  it("restores focus to the pillar that opened the detail", async () => {
+    const user = userEvent.setup();
+    const view = buildBaziWorkspaceView({ pillars: FOUR_PILLARS });
+    render(<WorkspaceFixture view={view} />);
+
+    const month = screen.getByRole("button", { name: /月柱/ });
+    await user.click(month);
+    expect(screen.getByText("月柱 · 丙寅")).toHaveFocus();
+    const close = screen.getByRole("button", { name: "关闭聚焦详情" });
+
+    await user.click(close);
+    expect(month).toHaveFocus();
   });
 
   it("renders an honest empty workspace with no fabricated cells", () => {

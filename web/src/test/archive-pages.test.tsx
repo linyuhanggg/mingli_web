@@ -111,15 +111,41 @@ describe("ProfilesPage", () => {
     );
     expect(screen.getAllByText(/档案 1/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/档案 2/).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("button", { name: "查看八字概览" }).length).toBe(2);
-    expect(screen.getByRole("link", { name: "直接发起八字概览" })).toHaveAttribute(
+    expect(
+      screen.getAllByRole("button", { name: "查看事业主题概览" }).length,
+    ).toBe(2);
+    expect(
+      screen.getByRole("link", { name: "选择档案并查看事业主题" }),
+    ).toHaveAttribute(
       "href",
       "/app/bazi",
     );
     expect(api.listProfiles).toHaveBeenCalledTimes(1);
   });
 
-  it("offers the empty state with the create-profile and usable flow links", async () => {
+  it("names the career scope before starting the supported archive preview", async () => {
+    api.listProfiles.mockResolvedValue({ profiles: [profile()] });
+    api.startPreviewReading.mockResolvedValue({
+      reading_version_id: readingVersionId,
+    });
+
+    render(<ProfilesPage />);
+    fireEvent.click(
+      await screen.findByRole("button", { name: "查看事业主题概览" }),
+    );
+
+    await waitFor(() => expect(api.startPreviewReading).toHaveBeenCalledTimes(1));
+    expect(api.startPreviewReading).toHaveBeenCalledWith(
+      expect.objectContaining({
+        profile_version_id: profileVersionId,
+        query: "查看这个档案的事业与工作主题",
+        dimension_ids: ["career"],
+      }),
+      expect.any(String),
+    );
+  });
+
+  it("keeps profile-dependent flows out of the empty archive state", async () => {
     api.listProfiles.mockResolvedValue({ profiles: [] });
 
     render(<ProfilesPage />);
@@ -132,12 +158,11 @@ describe("ProfilesPage", () => {
     expect(
       screen.getByRole("link", { name: "开始建立档案" }),
     ).toHaveAttribute("href", "/app/profile/new");
+    expect(screen.queryByRole("link", { name: "发起今日解读" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "发起近七日解读" })).not.toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "发起今日解读" }),
-    ).toHaveAttribute("href", "/app/fortune/today");
-    expect(
-      screen.getByRole("link", { name: "发起近七日解读" }),
-    ).toHaveAttribute("href", "/app/fortune/week");
+      screen.getByRole("link", { name: "直接一事一问 · 六爻" }),
+    ).toHaveAttribute("href", "/app/ask/liuyao");
   });
 
   it("surfaces load failures and recovers after retry", async () => {

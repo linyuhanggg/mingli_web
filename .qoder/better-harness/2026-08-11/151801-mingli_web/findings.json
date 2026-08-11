@@ -1,0 +1,225 @@
+{
+  "summary": {
+    "projectName": "mingli_web",
+    "locale": "zh-CN",
+    "modelId": "agent-work-loop-v4",
+    "reportContractVersion": 26,
+    "overview": "本地验证栈（mypy strict、严格 pytest、合同测试、gate 脚本）与文档化接受证据链（releases、PHASE_0_GATES、README Gate 断点）是该项目最成熟的 Harness 资产，核心路径有聚焦测试映射。但这些机制尚未接入日常变更流：仓库内不存在任何机械化强制门禁，整套安全敏感 admin 面处于未版本化状态，请求关联标识在异步段中断。另注：本次评审窗口内会话证据源不可用（Unobserved，保留在证据边界内），重复工作与学习机会的判断因此被阻塞，不构成发现。最优先的一步是把既有 make check 接入强制执行的提交门禁，让 Present 的验证机制变成 Wired。",
+    "aiAgentPractice": {
+      "inspectedSurfaces": [
+        "Rules"
+      ],
+      "coverageRows": [
+        {
+          "surface": "Rules",
+          "scopes": [
+            "Project",
+            "Global"
+          ],
+          "count": 2,
+          "paths": [
+            "DESIGN.md",
+            "~/.qoder/rules/nowledge-mem.md"
+          ]
+        },
+        {
+          "surface": "Skills",
+          "scopes": [
+            "Global",
+            "Plugin"
+          ],
+          "count": 91,
+          "paths": [
+            "~/.qoder/skills/agent-browser/SKILL.md",
+            "~/.agents/skills/agent-reach/SKILL.md",
+            "~/.agents/skills/apikey-image-gen/SKILL.md",
+            "~/.agents/skills/ask-matt/SKILL.md",
+            "~/.agents/skills/cangjie-skill/SKILL.md",
+            "~/.agents/skills/cavecrew/SKILL.md",
+            "~/.agents/skills/caveman/SKILL.md",
+            "~/.agents/skills/caveman-commit/SKILL.md",
+            "~/.agents/skills/caveman-compress/SKILL.md",
+            "~/.agents/skills/caveman-help/SKILL.md",
+            "~/.agents/skills/caveman-review/SKILL.md",
+            "~/.agents/skills/caveman-stats/SKILL.md"
+          ]
+        },
+        {
+          "surface": "Hooks",
+          "scopes": [
+            "Global",
+            "Plugin"
+          ],
+          "count": 6,
+          "paths": [
+            "~/.qoder/settings.json",
+            "~/.qoder/plugins/cache/qoder-bundler/security-scan/.qoder-plugin/qoder-hooks.json",
+            "~/.qoder/plugins/cache/qoder-marketplace/superpowers/5.1.0/hooks/hooks.json"
+          ]
+        },
+        {
+          "surface": "Commands",
+          "scopes": [
+            "Global"
+          ],
+          "count": 1,
+          "paths": [
+            "~/.qoder/commands/create-command.md"
+          ]
+        },
+        {
+          "surface": "Custom Agents",
+          "scopes": [
+            "Global"
+          ],
+          "count": 2,
+          "paths": [
+            "~/.qoder/agents/lin-yuhang.md",
+            "~/.qoder/agents/mingli-v41.md"
+          ]
+        },
+        {
+          "surface": "MCP",
+          "scopes": [
+            "Global"
+          ],
+          "count": 1,
+          "paths": [
+            "~/Library/Application Support/Qoder/SharedClientCache/mcp.json"
+          ]
+        },
+        {
+          "surface": "Plugins",
+          "scopes": [
+            "Plugin"
+          ],
+          "count": 4,
+          "paths": [
+            "~/.qoder/plugins/cache/qoder-bundler/better-harness/.qoder-plugin/plugin.json",
+            "~/.qoder/plugins/cache/qoder-bundler/qoder-create-plugin",
+            "~/.qoder/plugins/cache/qoder-bundler/security-scan/.qoder-plugin/plugin.json",
+            "~/.qoder/plugins/cache/qoder-marketplace/superpowers/5.1.0/.qoder-plugin/plugin.json"
+          ]
+        },
+        {
+          "surface": "Memories",
+          "scopes": [
+            "Global"
+          ],
+          "count": 4
+        },
+        {
+          "surface": "Workflows",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        }
+      ],
+      "repositorySourceRows": []
+    },
+    "assignmentSummaries": [],
+    "dimensions": [
+      {
+        "id": "task-understanding",
+        "label": "任务理解",
+        "score": 60,
+        "summary": "README 提供权威合同清单、目录边界与 Gate 断点，web/AGENTS.md 覆盖 46% 源文件；backend 半区依赖 README 推断，入口可达但无会话行为证据。",
+        "findingRefs": []
+      },
+      {
+        "id": "controlled-execution",
+        "label": "可控执行",
+        "score": 55,
+        "summary": "README 与 Makefile 给出可执行基线（install/test/check/migrate，含运行时版本固定与 .env.example）；无 doctor/重置路由，记忆写入链路经非 TLS 远程传输。",
+        "findingRefs": [
+          "memory-transport-without-tls"
+        ]
+      },
+      {
+        "id": "change-validation",
+        "label": "改动验证",
+        "score": 58,
+        "summary": "检查体系完整且与核心路径一一映射（orchestrator/repository/worker 均有聚焦测试），但本次静态评审未保留任何执行结果，失败诊断的关联标识在 worker 异步段中断。",
+        "findingRefs": [
+          "request-correlation-stops-at-api"
+        ]
+      },
+      {
+        "id": "reliable-delivery",
+        "label": "可靠交付",
+        "score": 42,
+        "summary": "接受证据文化存在（releases 证据、PHASE_0_GATES），但无机械化接受边界（无 CI/hook），安全敏感面未版本化导致无回滚与审计边界。",
+        "findingRefs": [
+          "no-enforced-check-gate",
+          "security-surface-unversioned"
+        ]
+      },
+      {
+        "id": "learning-capture",
+        "label": "经验沉淀",
+        "score": 35,
+        "summary": "有界评审已完成；会话证据源不可用（disabled-source-root）作为 Unobserved 保留在证据边界内，重复工作与学习机会的判断被阻塞，无任何已演练的可复用回路。",
+        "findingRefs": []
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "no-enforced-check-gate",
+      "title": "任何提交都可以绕过全部质量检查进入仓库",
+      "severity": "Medium",
+      "reason": "事实：仓库定义了完整检查栈（Makefile 的 install/test/check 聚合 ruff、mypy strict、pytest --strict-config、vitest、eslint、typecheck 与生产 build，另有 tests/contract 合同测试与 infra gate 脚本），但 Glob/Grep 未发现任何 CI 配置（无 .github/workflows、.gitlab-ci.yml、Jenkinsfile、pre-commit hook），make check 需人工运行。推断：提交与检查之间不存在强制卡点，变更可未经任何验证进入历史，当前 120 文件的大批量变更放大了该暴露面。Owner：仓库级工程流程（Makefile 所有者）。证据边界：static-local-git-and-file-analysis，未执行任何命令。不确定性：不排除仓库外存在 CI；测试是否通过未验证。",
+      "expectedOutput": [
+        "Update the existing Config owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Config",
+      "aiFixPrompt": "/better-harness fix this issue\n\n先确认是否已有仓库外的 CI 强制执行检查；若没有，把既有的 make check（或其最小代表性子集）接入强制执行的提交门禁（例如 git pre-commit hook 或仓库 CI 工作流）。只复用已发现的 Makefile 目标，不新增检查规则。\n\n## Validation\n\n- 故意引入一个会失败的改动，确认被门禁阻止\n- 移除该改动，确认正常提交通过",
+      "dimensionRefs": [
+        "reliable-delivery"
+      ]
+    },
+    {
+      "id": "security-surface-unversioned",
+      "title": "安全敏感面没有版本边界，无法回滚或审计",
+      "severity": "Medium",
+      "reason": "事实：当前工作树有 120 个未提交文件 / 13,364 行变更（lane 分级 critical / score 100），其中整套 admin 认证面——backend/app/admin 的密码、Cookie、服务模块、Alembic 迁移 0008、contracts/openapi/admin-v1.yaml，乃至发布校验脚本 scripts/verify_frozen_runtime_release.py——全部处于 untracked 状态。推断：这些安全敏感代码没有回滚、评审与审计边界，也从未进入任何历史 gate 覆盖；工作树受损或被清理时将无法恢复。Owner：仓库版本控制流程。证据边界：diffImpact 冻结快照，静态分析。不确定性：这可能只是尚未提交的正常工作流，属临时状态而非长期实践。",
+      "expectedOutput": [
+        "Update the existing Code owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Code",
+      "aiFixPrompt": "/better-harness fix this issue\n\n圈定安全敏感面（backend/app/admin、Alembic 迁移 0008、contracts/openapi/admin-v1.yaml 及相关测试），先运行覆盖这些模块的既有聚焦测试与 make check；全部通过后，在用户明确授权下按可评审的小单元提交，建立版本与回滚边界。未经用户授权不得提交。\n\n## Validation\n\n- 聚焦测试与 make check 通过\n- git log 中存在覆盖该面的提交，且可从该提交回滚",
+      "dimensionRefs": [
+        "reliable-delivery"
+      ]
+    },
+    {
+      "id": "request-correlation-stops-at-api",
+      "title": "reading 生成失败时无法关联回发起的 API 请求",
+      "severity": "Low",
+      "reason": "事实：backend/app/observability.py 在 API 层注入 request-id（接受可信 x-request-id 或生成 uuid4，结构化日志与响应头回传，tests/test_health.py 有断言）；grep 显示 request_id 只出现在 API 层，worker → orchestrator → model adapter 异步链上未见同一关联标识（provider_request_id 是提供方回执，非端到端关联键）。推断：reading 异步生成失败时，API 请求与 worker 轨迹无法用一个标识串联，故障定位依赖人工按时间戳匹配。Owner：backend/app/observability.py 与 worker 调度代码。证据边界：grep 级分布证据，未逐文件确认 orchestrator/worker 实现，置信度中。不确定性：异步段可能存在未命名的自有关联机制。",
+      "expectedOutput": [
+        "Update the existing Code owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Code",
+      "aiFixPrompt": "/better-harness fix this issue\n\n先做有界发现：打开 worker/readings.py 与 readings orchestrator 的调度与日志代码，确认异步段是否缺失请求关联标识。若确认缺失，把 API 层已注入的 request-id 沿任务派发链路透传到 worker 日志，不新增并行日志系统。\n\n## Validation\n\n- 用一个失败的 reading 请求演示：凭单一关联标识可从 API 日志检索到 worker/orchestrator 对应轨迹",
+      "dimensionRefs": [
+        "change-validation"
+      ]
+    },
+    {
+      "id": "memory-transport-without-tls",
+      "title": "记忆读写内容以明文在网络上传输",
+      "severity": "Low",
+      "reason": "事实：qoder 资产 lint（mcp-remote-without-tls，warning）确定性记录 nowledge-mem MCP 使用非 TLS 远程地址；该 MCP 同时被用户层 Rules 与拦截 memory_add/memory_update 的 Pre-Tool-Use Hook 引用，是记忆写入链路的活跃组件。推断：非 TLS 意味着记忆读写负载明文经过网络传输。Owner：用户层 MCP 配置。证据边界：lint 确定性结果 + 路由引用；地址呈私网段形态，实际暴露面未验证。不确定性：服务端是否提供 TLS/本地传输替代方案未知。这是用户层资产发现，非项目仓库缺陷。",
+      "expectedOutput": [
+        "Update the existing Config owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Config",
+      "aiFixPrompt": "/better-harness fix this issue\n\n先做有界发现：确认该记忆服务端是否提供 TLS 或本地传输的替代接入方式。若存在，在用户授权下更新用户层 MCP 配置并验证记忆读写仍可用；不预设任何配置语法，不做其他变更。\n\n## Validation\n\n- 记忆读写经新传输方式成功往返\n- lint 复查不再报告非 TLS 远程地址，或留下基于已验证暴露面的风险接受记录",
+      "dimensionRefs": [
+        "controlled-execution"
+      ]
+    }
+  ]
+}

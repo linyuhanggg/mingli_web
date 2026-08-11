@@ -1,4 +1,5 @@
 from __future__ import annotations
+from app.readings.alerts import NoopAlertSink
 
 import asyncio
 import importlib
@@ -465,6 +466,7 @@ async def test_model_cancellation_commits_attempt_before_worker_propagates(
         runtime=FirstWriteRuntime(contracts),
         model=model,
         clock=clock,
+            alert_sink=NoopAlertSink(),
     )
     source = readings.ReadingJobWorkSource(
         sessions=worker_database.sessions,
@@ -574,6 +576,7 @@ async def test_postgresql_prepared_checkpoint_commits_before_model_restart(
         runtime=runtime,
         model=model,
         clock=MutableClock(datetime(2026, 8, 9, 12, 0, tzinfo=UTC)),
+            alert_sink=NoopAlertSink(),
     )
     clock = factory.clock
     job = await seed_job(postgres_worker_database)
@@ -634,6 +637,7 @@ async def test_expired_initial_prepare_claim_is_quarantined_without_runtime_repl
         runtime=runtime,
         model=model,
         clock=clock,
+            alert_sink=NoopAlertSink(),
     )
     job = await seed_job(postgres_worker_database)
 
@@ -715,6 +719,7 @@ async def test_expired_tokened_prepare_rotates_fence_and_replays_original_token(
         runtime=runtime,
         model=model,
         clock=clock,
+            alert_sink=NoopAlertSink(),
     )
     job = await seed_job(
         postgres_worker_database,
@@ -802,6 +807,7 @@ async def test_postgresql_complete_commit_failure_replays_exact_intent(
         runtime=runtime,
         model=model,
         clock=clock,
+            alert_sink=NoopAlertSink(),
     )
     job = await seed_job(postgres_worker_database)
 
@@ -910,6 +916,7 @@ async def test_postgresql_complete_transport_retry_is_delayed_and_exact(
         runtime=runtime,
         model=model,
         clock=clock,
+            alert_sink=NoopAlertSink(),
     )
     job = await seed_job(postgres_worker_database)
 
@@ -1008,6 +1015,7 @@ async def test_postgresql_failed_model_attempt_commits_before_restart(
         runtime=runtime,
         model=model,
         clock=clock,
+            alert_sink=NoopAlertSink(),
     )
     job = await seed_job(postgres_worker_database)
 

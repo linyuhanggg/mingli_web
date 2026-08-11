@@ -7,6 +7,7 @@ class ApiProblem(Exception):
         problem_type: str = "about:blank",
         detail: str | None = None,
         headers: dict[str, str] | None = None,
+        clear_device_cookies: bool = False,
     ) -> None:
         super().__init__(title)
         self.status = status
@@ -14,3 +15,4 @@ class ApiProblem(Exception):
         self.problem_type = problem_type
         self.detail = detail
         self.headers = headers
+        self.clear_device_cookies = clear_device_cookies

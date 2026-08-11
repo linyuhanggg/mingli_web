@@ -1,0 +1,1 @@
+"""Staff admin console domain."""

@@ -8,6 +8,7 @@ import { z } from "zod";
 
 import { adoptCsrfToken, getCsrfToken } from "@/lib/api";
 
+import { useOptionalAccountSession } from "./account-session-context";
 import styles from "./otp-form.module.css";
 
 
@@ -72,15 +73,9 @@ async function requestJson<T>(url: string, options: RequestInit): Promise<T> {
   return body as T;
 }
 
-function AppRedirect() {
-  const router = useRouter();
-  useEffect(() => {
-    router.replace("/app");
-  }, [router]);
-  return null;
-}
-
 export function OtpForm() {
+  const router = useRouter();
+  const accountSession = useOptionalAccountSession();
   const [phase, setPhase] = useState<Phase>("bootstrapping");
   const [csrfToken, setCsrfToken] = useState("");
   const [challenge, setChallenge] = useState<OtpChallenge | null>(null);
@@ -192,6 +187,10 @@ export function OtpForm() {
       });
       adoptCsrfToken(verified.csrf_token);
       setPhase("authenticated");
+      if (accountSession) {
+        await accountSession.refresh();
+      }
+      router.replace("/app");
     } catch (reason) {
       codeForm.setError(
         "code",
@@ -208,15 +207,12 @@ export function OtpForm() {
 
   if (phase === "authenticated") {
     return (
-      <>
-        <AppRedirect />
-        <section className={styles.form} aria-live="polite">
-          <p className={styles.success}>登录成功</p>
-          <p className={styles.transition}>
-            正在进入 /app…设备会话已建立，不会再创建游客身份。
-          </p>
-        </section>
-      </>
+      <section className={styles.form} aria-live="polite">
+        <p className={styles.success}>登录成功</p>
+        <p className={styles.transition}>
+          正在进入 /app…设备会话已建立，不会再创建游客身份。
+        </p>
+      </section>
     );
   }
 

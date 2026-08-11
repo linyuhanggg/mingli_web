@@ -1,6 +1,12 @@
 "use client";
 
-import { useMemo, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 
 import type { BaziChartView } from "@/lib/reading-display";
 import {
@@ -22,16 +28,25 @@ import styles from "./bazi-chart.module.css";
 function PillarGrid({
   cells,
   selectedId,
+  detailId,
   onSelect,
 }: Readonly<{
   cells: WorkspaceCell[];
   selectedId: string | null;
+  detailId: string;
   onSelect: (cellId: string) => void;
 }>) {
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
+  const [tabStopId, setTabStopId] = useState<string | null>(
+    cells[0]?.id ?? null,
+  );
+  const activeTabStopId = cells.some((cell) => cell.id === tabStopId)
+    ? tabStopId
+    : (cells[0]?.id ?? null);
 
   function focusAt(index: number) {
     if (index >= 0 && index < refs.current.length) {
+      setTabStopId(cells[index].id);
       refs.current[index]?.focus();
     }
   }
@@ -70,8 +85,11 @@ function PillarGrid({
             className={styles.pillarCard}
             data-selected={cell.id === selectedId}
             aria-pressed={cell.id === selectedId}
-            tabIndex={index === 0 ? 0 : -1}
+            aria-controls={detailId}
+            aria-expanded={cell.id === selectedId}
+            tabIndex={cell.id === activeTabStopId ? 0 : -1}
             onClick={() => onSelect(cell.id)}
+            onFocus={() => setTabStopId(cell.id)}
             onKeyDown={(event) => handleKeyDown(event, index)}
           >
             <span className={styles.pillarLabel}>{cell.label}</span>
@@ -112,6 +130,7 @@ export function BaziChart({
   chart,
   title = "八字命盘",
 }: Readonly<{ chart: BaziChartView; title?: string }>) {
+  const detailId = `bazi-focus-${useId()}`;
   const view = useMemo(
     () => buildBaziWorkspaceView(baziWorkspaceFactsFromChart(chart)),
     [chart],
@@ -149,6 +168,7 @@ export function BaziChart({
         <PillarGrid
           cells={workspaceView.cells}
           selectedId={selectedCellId}
+          detailId={detailId}
           onSelect={setSelectedCellId}
         />
 
@@ -174,6 +194,7 @@ export function BaziChart({
       view={workspaceView}
       renderBoard={renderBoard}
       detail={detail}
+      detailId={detailId}
       onCloseDetail={() => setSelectedCellId(null)}
       boardLabel="八字盘面"
     />

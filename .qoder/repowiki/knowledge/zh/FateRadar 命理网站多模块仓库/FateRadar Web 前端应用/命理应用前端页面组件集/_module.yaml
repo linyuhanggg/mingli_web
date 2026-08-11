@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: web_app/components
+title: 命理应用前端页面组件集
+scope:
+    - web/src/components/
+source_files: []
+depends_on: []
+related_to:
+    - path: web_app/lib

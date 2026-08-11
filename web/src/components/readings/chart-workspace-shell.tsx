@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 
 import type {
   ChartWorkspaceView,
@@ -16,23 +16,25 @@ import styles from "./chart-workspace-shell.module.css";
 
 /**
  * Reusable chart workspace shell: layer tabs on top, a board slot in the
- * middle, and a focus detail drawer beside (desktop) or below (mobile) the
- * board. The shell never fetches data and never calculates; the board and the
- * focus detail come from parent-provided public facts.
+ * middle, and an inline focus detail below it. The shell never fetches data or
+ * calculates; the board and detail come from parent-provided public facts.
  */
 export function ChartWorkspaceShell({
   view,
   renderBoard,
   detail,
+  detailId,
   onCloseDetail,
   boardLabel = "盘面",
 }: Readonly<{
   view: ChartWorkspaceView;
   renderBoard: (activeLayer: WorkspaceLayer) => ReactNode;
   detail: WorkspaceFocusDetail | null;
+  detailId?: string;
   onCloseDetail: () => void;
   boardLabel?: string;
 }>) {
+  const layerIdPrefix = useId();
   const [activeLayerId, setActiveLayerId] = useState<WorkspaceLayerId>(
     view.activeLayerId,
   );
@@ -62,19 +64,36 @@ export function ChartWorkspaceShell({
         layers={view.layers}
         activeLayerId={activeLayer.id}
         onSelect={handleSelectLayer}
+        idPrefix={layerIdPrefix}
       />
 
       <div className={styles.body}>
-        <div className={styles.board} role="group" aria-label={boardLabel}>
-          {activeLayer.status === "empty" ? (
-            <p className={styles.emptyState}>
-              {activeLayer.summary ?? "服务端尚未返回可展示的结构"}
-            </p>
-          ) : (
-            renderBoard(activeLayer)
-          )}
-        </div>
-        <FocusDetailDrawer detail={detail} onClose={onCloseDetail} />
+        {view.layers.map((layer) => {
+          const active = layer.id === activeLayer.id;
+          return (
+            <div
+              key={layer.id}
+              id={`${layerIdPrefix}-panel-${layer.id}`}
+              role="tabpanel"
+              aria-labelledby={`${layerIdPrefix}-tab-${layer.id}`}
+              hidden={!active}
+              tabIndex={active ? 0 : -1}
+            >
+              {active ? (
+                <div className={styles.board} role="group" aria-label={boardLabel}>
+                  {layer.status === "empty" ? (
+                    <p className={styles.emptyState}>
+                      {layer.summary ?? "服务端尚未返回可展示的结构"}
+                    </p>
+                  ) : (
+                    renderBoard(layer)
+                  )}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+        <FocusDetailDrawer id={detailId} detail={detail} onClose={onCloseDetail} />
       </div>
     </section>
   );

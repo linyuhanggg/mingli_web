@@ -1225,7 +1225,12 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
     Unauthorized:
-      description: A valid Device Session is required
+      description: The operation's required Device or Guest owner session is missing or invalid; an invalid submitted Device Session expires stale device and CSRF cookies
+      headers:
+        Set-Cookie:
+          description: May expire stale mingli_session and mingli_csrf cookies before re-authentication
+          schema:
+            type: string
       content:
         application/problem+json:
           schema:

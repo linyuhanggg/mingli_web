@@ -1,5 +1,7 @@
 # mingli_web
 
+> Runtime 永远装完整 5.1（13 Provider / 55 古籍 / 1328 evidence）；P0 产品只曝光 bazi、fortune、liuyao。生产源只用签名 release + `scripts/verify_frozen_runtime_release.py`，不要拿脏 skill 工作树当源。
+
 当前权威方向是：**先做响应式网站，后做原生 iOS App，共用同一套账户、商品、权益和命理解读后端。** Phase 0 与 Phase 1 已建立可运行基础：Next.js 公共/私人网站壳、FastAPI、PostgreSQL 首版迁移、独立 Worker、Guest Session、手机号/邮箱 Fake OTP、Cookie Device Session、CSRF 和同源 `/api`。
 
 ## 权威合同
@@ -12,9 +14,12 @@
 - Phase 2 第一版代码候选证据：[docs/releases/2026-08-10-mingli-v51-web-phase2.md](./docs/releases/2026-08-10-mingli-v51-web-phase2.md)
 - 施工交接快照：[docs/HANDOFF_SNAPSHOT_2026-08-11.md](./docs/HANDOFF_SNAPSHOT_2026-08-11.md)
 - Task 8 原生门禁证据：[docs/releases/2026-08-11-native-full-and-runtime-startup.md](./docs/releases/2026-08-11-native-full-and-runtime-startup.md)
-- 当前实施计划：[docs/plans/2026-08-09-mingli-v51-web-integration.md](./docs/plans/2026-08-09-mingli-v51-web-integration.md)（Phase 0/1 与 Task 1–12 已闭环；真实 Runtime/模型联调已通；Task 13 staging 仍未闭环）
+- 当前实施计划：[docs/plans/2026-08-09-mingli-v51-web-integration.md](./docs/plans/2026-08-09-mingli-v51-web-integration.md)（Phase 0/1 与 Task 1–12 已闭环；测试服 Task13 产品 5 轨 accepted；放量 Gate 仍未闭环）
 - 真实模型联调证据：[docs/releases/2026-08-11-dashscope-deepseek-real-model.md](./docs/releases/2026-08-11-dashscope-deepseek-real-model.md)
 - 八字工作区记录：[docs/releases/2026-08-11-bazi-workspace.md](./docs/releases/2026-08-11-bazi-workspace.md)
+- 紫微 UI-only 记录：[docs/releases/2026-08-11-borrow-ziwei-ui-only.md](./docs/releases/2026-08-11-borrow-ziwei-ui-only.md)
+- 测试服 current 部署：[docs/releases/2026-08-11-test-server-deploy-6ec1578.md](./docs/releases/2026-08-11-test-server-deploy-6ec1578.md)
+- Task13 测试服真轨迹：[docs/releases/2026-08-11-task13-server-trajectory.md](./docs/releases/2026-08-11-task13-server-trajectory.md)
 
 ## 目录边界
 
@@ -102,6 +107,6 @@ Metis 紫薇及其开源仓库只作为信息层级和交互参考，不复制�
 
 Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。
 
-2026-08-11 晚断点：Task 8 已闭环；本机真实 Runtime startup 已通过；本机与测试服务器已接百炼 DeepSeek 真模型并跑出 `accepted`。当前 `main` HEAD 为 `3446061`，含八字盘面工作区与 preview `career` 维度修复。仍缺 Task 13 staging 全轨迹、固定模型质量评测、Guard 红队、密钥托管/告警与外部合规 Gate；`production blocked / real traffic disabled`，不可放量。测试服务器真实链路属于联调环境，不等于正式 staging 合同完成。
+2026-08-11 最新断点：Task 1–12 + Task 8 已闭环；真实 Runtime + 真模型联调已通。本地 `main` HEAD 为 `0525eb1`，测试服 current 为 `6ec1578`（`local` + fake OTP + one-shot Runtime + deepseek）。紫微 UI-only Task 0–5/7 完成（Task 6 跳过）；结果页结论优先、八字可点选工作台已上线，首页未动。Task13 产品真轨迹 round-4 已 5/5 accepted（preview/today/week/liuyao/followup），证据见 `docs/releases/2026-08-11-task13-server-trajectory.md`。仍缺固定模型质量评测、Guard 红队、密钥托管/告警/恢复与外部合规 Gate；`production blocked / real traffic disabled`，不可放量。测试服真实链路属于联调环境，不等于正式 production 放量批准。
 
 Phase 2 先冻结 Command/Result、Candidate 与 Output Contract 四组 JSON Schema，再深化 Runtime/Model Ports、三类 Request Compiler、Narrative Guard 和显式 Reading Orchestrator。真实 Runtime 在 Mac mini 原生全量回归通过后才可接入，不再等待 Linux 模拟认证。当前建档、今日、近七日、六爻与结果页均调用同源 API；浏览器只展示服务端返回的 Accepted Copy，不在客户端伪造排盘结果。

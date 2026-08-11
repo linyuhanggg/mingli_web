@@ -1,0 +1,230 @@
+.button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.72rem 1.15rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    transform var(--duration-feedback) var(--ease-out-expo),
+    background-color var(--duration-feedback) ease,
+    border-color var(--duration-feedback) ease,
+    color var(--duration-feedback) ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.button:active {
+  transform: translateY(0) scale(0.985);
+}
+
+.button:disabled {
+  opacity: 0.55;
+  transform: none;
+}
+
+.primary {
+  background: var(--ink-900);
+  color: var(--ivory-50);
+  box-shadow: var(--shadow-action);
+}
+
+.primary:hover {
+  background: var(--ink-800);
+}
+
+.secondary {
+  border-color: var(--border-emphasis);
+  background: var(--surface-ivory-translucent);
+  color: var(--ink-900);
+}
+
+.secondary:hover {
+  border-color: var(--gold-500);
+  background: var(--white);
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field label {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--ink-800);
+}
+
+.field input,
+.field select {
+  min-height: 2.75rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-sm);
+  background: var(--ivory-50);
+  color: var(--ink-950);
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: var(--terracotta-500);
+}
+
+.alert {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--ivory-100);
+  color: var(--terracotta-600);
+  border: 1px solid rgb(136 69 50 / 20%);
+}
+
+.muted {
+  color: var(--ink-700);
+}
+
+.paper {
+  background: var(--white);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 1rem;
+}
+
+.kpiGrid {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  margin-bottom: 1rem;
+}
+
+.kpi {
+  background: var(--white);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+}
+
+.kpi strong {
+  display: block;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.55rem;
+  line-height: 1.1;
+  color: var(--ink-950);
+}
+
+.kpi span {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--ink-700);
+  font-size: 0.9rem;
+}
+
+.kpi em {
+  display: inline-block;
+  margin-top: 0.45rem;
+  font-style: normal;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.6rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.tagPending {
+  background: var(--amber-100);
+  color: var(--ink-950);
+}
+
+.tagSuccess {
+  background: var(--moss-100);
+  color: var(--ink-950);
+}
+
+.tagError {
+  background: var(--ivory-100);
+  color: var(--terracotta-600);
+}
+
+.tagNeutral {
+  background: var(--ivory-100);
+  color: var(--ink-700);
+}
+
+.env {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-control);
+  background: var(--ivory-100);
+  color: var(--ink-800);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.envProd {
+  border-color: rgb(136 69 50 / 35%);
+  background: var(--ivory-100);
+  color: var(--terracotta-600);
+}
+
+.empty {
+  margin: 0;
+  color: var(--ink-700);
+}
+
+.stack {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.loginCard {
+  width: min(26rem, 100%);
+  margin: 0 auto;
+}
+
+.loginWrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at top, rgb(18 58 50 / 6%), transparent 45%),
+    var(--ivory-50);
+}
+
+.loginHead {
+  margin-bottom: 1rem;
+}
+
+.loginHead h1 {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-serif);
+  font-size: 1.7rem;
+}
+
+.form {
+  display: grid;
+  gap: 0.9rem;
+}

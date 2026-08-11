@@ -173,6 +173,8 @@ def test_frozen_invalid_reference_fixture_is_rejected() -> None:
             "internal_identifier_visible",
         ),
         (lambda block: block.update(text="成功概率是 80%"), "uncalibrated_probability"),
+        (lambda block: block.update(text="这件事一定会成功"), "unsupported_guarantee"),
+        (lambda block: block.update(text="保证你明年升职"), "unsupported_guarantee"),
         (lambda block: block.update(text="成功概率是百分之八十"), "uncalibrated_probability"),
         (lambda block: block.update(text="会在 2027-05-01 得到 50000 元"), "invented_specific"),
         (lambda block: block.update(text="太长" * 700), "output_too_long"),

@@ -51,6 +51,9 @@ def test_identity_migration_builds_the_phase_one_tables(
         "device_sessions",
         "guest_sessions",
         "audit_events",
+        "staff_users",
+        "staff_sessions",
+        "admin_audit_events",
     }
 
     assert expected <= set(inspector.get_table_names())

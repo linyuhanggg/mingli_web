@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: backend/adapters
+title: 外部能力适配器（模型/OTP/支付/运行时沙箱）
+scope:
+    - backend/app/adapters/
+source_files: []
+depends_on: []
+related_to:
+    - path: backend/worker

@@ -35,6 +35,14 @@ def test_cookie_session_security_scheme_is_explicit() -> None:
     }
 
 
+def test_unauthorized_contract_documents_stale_device_cookie_recovery() -> None:
+    unauthorized = load_openapi_document()["components"]["responses"]["Unauthorized"]
+
+    assert "Device or Guest owner session" in unauthorized["description"]
+    assert "expires stale device and CSRF cookies" in unauthorized["description"]
+    assert "Set-Cookie" in unauthorized["headers"]
+
+
 def test_contract_does_not_expose_future_payment_or_model_routes() -> None:
     paths = load_openapi_document()["paths"]
 
