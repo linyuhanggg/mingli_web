@@ -15,8 +15,8 @@ function BaziPageBody() {
   return (
     <div className={styles.page}>
       <AppPageHeader
-        title="八字概览"
-        description="从已确认档案出发，发起确定性八字排盘与有限概览。这里不本地推算，结果由服务端计算并按解读版本保存。"
+        title="八字 · 事业概览"
+        description="从已确认档案出发，发起确定性八字排盘，白话解读限定在事业与工作主题。这里不本地推算，结果由服务端计算并按解读版本保存。"
         meta={
           <>
             <span>
@@ -39,8 +39,8 @@ export default function BaziPage() {
       fallback={
         <div className={styles.page}>
           <AppPageHeader
-            title="八字概览"
-            description="正在准备八字概览入口…"
+            title="八字 · 事业概览"
+            description="正在准备事业概览入口…"
           />
         </div>
       }

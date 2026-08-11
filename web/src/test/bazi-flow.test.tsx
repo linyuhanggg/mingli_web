@@ -58,6 +58,9 @@ describe("BaziFlow", () => {
     render(<BaziFlow />);
 
     await user.selectOptions(await screen.findByLabelText("档案版本"), profileVersionId);
+    expect(
+      screen.getByRole("heading", { name: "查看事业概览" }),
+    ).toBeVisible();
     expect(screen.getByText("当前白话解读范围：事业与工作。")).toBeVisible();
     expect(screen.getByText(/盘面仍展示服务端返回的四柱事实/)).toBeVisible();
     expect(
@@ -65,7 +68,7 @@ describe("BaziFlow", () => {
     ).not.toBeInTheDocument();
 
     await user.click(
-      screen.getByRole("button", { name: /开始事业主题概览/ }),
+      screen.getByRole("button", { name: /开始事业概览/ }),
     );
 
     await waitFor(() => expect(api.startPreviewReading).toHaveBeenCalledTimes(1));

@@ -86,8 +86,8 @@ function ContinueCard({ readings, latestAcceptedVerification }: ContinueCardProp
     newestByCreatedAt(accepted);
 
   let title = "档案已就绪，可以开始第一次解读";
-  let description = "从八字概览、今日与近七日里选一项；也可以独立发起一事一问。";
-  let actionLabel = "查看八字概览";
+  let description = "从事业概览、今日与近七日里选一项；也可以独立发起一事一问。";
+  let actionLabel = "查看事业概览";
   let actionHref = "/app/bazi";
   let Icon = FileCheck2;
   let tone = "ready";
@@ -270,7 +270,7 @@ export function DashboardHub() {
               <StatusPanel
                 state="empty"
                 title="先建立第一份命理档案"
-                description="八字概览与阶段节奏都需要已确认的档案版本；不想建档时，也可以直接就一件事起卦。"
+                description="事业概览与阶段节奏都需要已确认的档案版本；不想建档时，也可以直接就一件事起卦。"
                 actionHref="/app/profile/new"
                 actionLabel="建立第一份档案"
               />

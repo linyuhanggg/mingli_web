@@ -36,7 +36,7 @@ from app.security.envelope import EnvelopeCipher
 
 NARRATIVE_POLICY_VERSION = "policy-v1"
 DEFAULT_QUERIES = {
-    "profile_preview": "请预览我的本命格局。",
+    "profile_preview": "请预览我的事业与工作主题。",
     "today": "请看看我今天的运势。",
     "near_seven": "请看看我这一周的运势。",
     "liuyao_one_question": "请为这个问题起一卦。",

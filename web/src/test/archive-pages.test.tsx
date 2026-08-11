@@ -112,10 +112,10 @@ describe("ProfilesPage", () => {
     expect(screen.getAllByText(/档案 1/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/档案 2/).length).toBeGreaterThan(0);
     expect(
-      screen.getAllByRole("button", { name: "查看事业主题概览" }).length,
+      screen.getAllByRole("button", { name: "查看事业概览" }).length,
     ).toBe(2);
     expect(
-      screen.getByRole("link", { name: "选择档案并查看事业主题" }),
+      screen.getByRole("link", { name: "选择档案并查看事业概览" }),
     ).toHaveAttribute(
       "href",
       "/app/bazi",
@@ -131,7 +131,7 @@ describe("ProfilesPage", () => {
 
     render(<ProfilesPage />);
     fireEvent.click(
-      await screen.findByRole("button", { name: "查看事业主题概览" }),
+      await screen.findByRole("button", { name: "查看事业概览" }),
     );
 
     await waitFor(() => expect(api.startPreviewReading).toHaveBeenCalledTimes(1));

@@ -114,6 +114,15 @@ def test_product_actions_have_explicit_capability_routes(
     assert not hasattr(policy, "choose_capability")
 
 
+def test_profile_preview_default_query_is_career_scoped() -> None:
+    service = importlib.import_module("app.readings.service")
+
+    default_query = service.DEFAULT_QUERIES["profile_preview"]
+
+    assert "事业" in default_query
+    assert "本命格局" not in default_query
+
+
 def test_bazi_compiler_matches_the_frozen_fixture() -> None:
     compiler = importlib.import_module("app.readings.request_compiler")
     command = compiler.compile_bazi_prepare(

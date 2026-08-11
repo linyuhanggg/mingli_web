@@ -103,7 +103,7 @@ export function BaziFlow({
         router.push(`/app/readings/${response.reading_version_id}`);
       } catch (reason) {
         setSubmitError(
-          reason instanceof Error ? reason.message : "八字概览启动失败，请稍后重试。",
+          reason instanceof Error ? reason.message : "事业概览启动失败，请稍后重试。",
         );
       } finally {
         busyRef.current = false;
@@ -115,9 +115,9 @@ export function BaziFlow({
 
   return (
     <div className={styles.wrap}>
-      <h2>查看八字概览</h2>
+      <h2>查看事业概览</h2>
       <p className={styles.lead}>
-        从已确认档案版本出发，发起确定性八字概览。结果由服务端计算与交付，不在本页本地推算。
+        从已确认档案版本出发，发起限定在事业与工作主题的确定性概览。结果由服务端计算与交付，不在本页本地推算。
       </p>
       <p className={styles.scopeNotice}>
         <strong>当前白话解读范围：事业与工作。</strong>
@@ -190,7 +190,7 @@ export function BaziFlow({
               </p>
             ) : null}
             <p className={formControls.hint} id="bazi-profile-help">
-              八字概览绑定该档案版本；修改资料会生成新版本，旧解读仍可回看。
+              事业概览绑定该档案版本；修改资料会生成新版本，旧解读仍可回看。
             </p>
           </div>
 
@@ -202,7 +202,7 @@ export function BaziFlow({
 
           {busy ? (
             <p className={formControls.disabledReason} role="status">
-              正在启动八字概览，选择与操作已暂时锁定。
+              正在启动事业概览，选择与操作已暂时锁定。
             </p>
           ) : null}
           <div className={formControls.actions}>
@@ -212,7 +212,7 @@ export function BaziFlow({
               disabled={busy}
               aria-busy={busy}
             >
-              开始事业主题概览{busy ? " · 正在启动…" : ""}
+              开始事业概览{busy ? " · 正在启动…" : ""}
             </button>
           </div>
         </form>
