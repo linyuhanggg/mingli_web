@@ -10,7 +10,7 @@
 |---|---|---|
 | Task 0 固定可信基线 | ✅ 实现完成，待审查合并（分支 `worktree-production-ha-task0` @ d894704） | `make check` 全绿（backend 528 passed/82 skipped 全为已退役 Linux 门禁；web 250；admin 8）；PG 并发门禁实测通过；Alembic 0001→0008 与 0007→head 升级通过。证据 `docs/releases/2026-08-12-production-readiness-baseline.md`。`.qoder/**` 已裁决为生成物，迁移计划 `docs/plans/2026-08-12-qoder-generated-assets-migration.md` 待用户批准后执行 |
 | Task 1 完成定义/SLO 合同 | ✅ 实现完成，待审查（同分支） | 新增 `docs/PRODUCTION_READINESS.md`（五状态机+用户可见状态映射）、`docs/operations/SLO.md`（每项含数据来源）、`docs/operations/ERROR_BUDGET.md`、`docs/adr/0011-production-ha-and-degraded-reading.md`；PHASE_0_GATES 增加 owner/证据/复核/回滚表；Blueprint 第 21 节绑定 Feature Complete 语义 |
-| Task 2 数据正确性 | ⬜ 未开始 | |
+| Task 2 数据正确性 | 🔶 Step 1–2 完成（@ d72c302），Step 3–5 进行中 | 幂等并发 bug 已修复：RED 复现（两个并发同 Key 产生两个 Reading Version）→ 迁移 `0009_idempotency_owner_uniqueness` 建两个 partial unique index（PG 实测 `\di` 确认 WHERE 子句生效）→ GREEN。390 passed + PG 并发 2 passed + Alembic upgrade/downgrade 往返通过 + ruff/mypy 全绿 |
 | Task 3 认证/限流/账户权利 | ⬜ 未开始 | |
 | Task 4 商业事实链 | ⬜ 未开始 | |
 | Task 5 购买体验/Admin | ⬜ 未开始 | |
@@ -261,11 +261,11 @@ Expected: 根门禁全绿；关键 PG 测试不再因缺 URL 跳过；文档只�
 - Modify: `backend/tests/test_readings_api.py`
 - Modify: `web/src/test/reading-result.test.tsx`
 
-**Step 1: 先写 PostgreSQL 并发失败测试**
+**Step 1: 先写 PostgreSQL 并发失败测试** ✅（@ d72c302，`backend/tests/test_reading_idempotency_postgres.py`，user/guest 两例均按预期 RED）
 
 用两个独立 API/数据库会话同时提交同一 owner、同一 `Idempotency-Key`。当前预期应 FAIL：PostgreSQL 的三列 UNIQUE 含一个必然为 NULL 的 owner 列，不能阻止并发重复插入。
 
-**Step 2: 用两个 partial unique index 修复**
+**Step 2: 用两个 partial unique index 修复** ✅（@ d72c302，迁移 0009 + 模型元数据同步；GREEN：一个 mapping、一个 Reading Version、两响应 ID 相同；`test_reading_migrations.py` 断言同步更新）
 
 迁移删除旧约束，建立：
 
