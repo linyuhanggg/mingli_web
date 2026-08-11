@@ -10,7 +10,7 @@
 |---|---|---|
 | Task 0 固定可信基线 | ✅ 实现完成，待审查合并（分支 `worktree-production-ha-task0` @ d894704） | `make check` 全绿（backend 528 passed/82 skipped 全为已退役 Linux 门禁；web 250；admin 8）；PG 并发门禁实测通过；Alembic 0001→0008 与 0007→head 升级通过。证据 `docs/releases/2026-08-12-production-readiness-baseline.md`。`.qoder/**` 已裁决为生成物，迁移计划 `docs/plans/2026-08-12-qoder-generated-assets-migration.md` 待用户批准后执行 |
 | Task 1 完成定义/SLO 合同 | ✅ 实现完成，待审查（同分支） | 新增 `docs/PRODUCTION_READINESS.md`（五状态机+用户可见状态映射）、`docs/operations/SLO.md`（每项含数据来源）、`docs/operations/ERROR_BUDGET.md`、`docs/adr/0011-production-ha-and-degraded-reading.md`；PHASE_0_GATES 增加 owner/证据/复核/回滚表；Blueprint 第 21 节绑定 Feature Complete 语义 |
-| Task 2 数据正确性 | 🔶 Step 1–4 完成（幂等 @ d72c302，Profile 语义 @ 064f45a，三条核对本提交），Step 5 进行中 | 幂等并发 bug 已修复：RED 复现 → 迁移 `0009_idempotency_owner_uniqueness` 两个 partial unique index → GREEN。Profile 编辑=同 Root 追加不可变版本（`POST /profiles/{id}/versions`），出生合同补齐历法/闰月/时辰准确度/坐标来源精度，真太阳时强制显式坐标。Step 4：核对改为三条 fact_ref 级独立结果（迁移 `0010_verification_results`，服务端按公开事实面板校验 ref，未知/重复→400，未 accepted→409；Web 逐条核对，不足三条不收集；答案不回灌 Prompt）。backend 413 passed（含 PG 门禁）+ web 254 passed + ruff/tsc/eslint/build 全绿；0010 在真 PG 上 upgrade/downgrade/upgrade 往返通过。mypy 有 3 个 HEAD 遗留 error（admin role×2、service horizon×1），与本步无关 |
+| Task 2 数据正确性 | 🔶 Step 1–4 完成（幂等 @ d72c302，Profile 语义 @ 064f45a，三条核对 @ 49bee46），Step 5 进行中 | 幂等并发 bug 已修复：RED 复现 → 迁移 `0009_idempotency_owner_uniqueness` 两个 partial unique index → GREEN。Profile 编辑=同 Root 追加不可变版本（`POST /profiles/{id}/versions`），出生合同补齐历法/闰月/时辰准确度/坐标来源精度，真太阳时强制显式坐标。Step 4：核对改为三条 fact_ref 级独立结果（迁移 `0010_verification_results`，服务端按公开事实面板校验 ref，未知/重复→400，未 accepted→409；Web 逐条核对，不足三条不收集；答案不回灌 Prompt）。backend 413 passed（含 PG 门禁）+ web 254 passed + ruff/tsc/eslint/build 全绿；0010 在真 PG 上 upgrade/downgrade/upgrade 往返通过。mypy 有 3 个 HEAD 遗留 error（admin role×2、service horizon×1），与本步无关 |
 | Task 3 认证/限流/账户权利 | ⬜ 未开始 | |
 | Task 4 商业事实链 | ⬜ 未开始 | |
 | Task 5 购买体验/Admin | ⬜ 未开始 | |
@@ -285,7 +285,7 @@ WHERE owner_guest_session_id IS NOT NULL;
 
 “编辑档案”必须在同一 Profile Root 下追加不可变 Profile Version；“新增档案”才创建新 Root。补齐公历/农历、闰月、不确定时辰、出生地坐标来源/精度和真太阳时确认合同。经纬度解析失败必须显式要求用户修正，不能静默估算。
 
-**Step 4: 落地三条独立现实核对** ✅（本提交；`VerificationRequest.results` 恰好三条 `{fact_ref, outcome}`；服务端按公开事实面板校验（未知/重复 ref→400 "Invalid verification request"，未 accepted→409）；迁移 `0010_verification_results` 将 `outcome` 列改为 `results` JSON，whitelist 上移到 API 合同；openapi 对齐测试冻结新形状；Web 按事实逐条核对、不足三条明示不收集；核对答案不回灌 Prompt，修正仍走同 Root 的 correct/追问新 Brief）
+**Step 4: 落地三条独立现实核对** ✅（@ 49bee46；`VerificationRequest.results` 恰好三条 `{fact_ref, outcome}`；服务端按公开事实面板校验（未知/重复 ref→400 "Invalid verification request"，未 accepted→409）；迁移 `0010_verification_results` 将 `outcome` 列改为 `results` JSON，whitelist 上移到 API 合同；openapi 对齐测试冻结新形状；Web 按事实逐条核对、不足三条明示不收集；核对答案不回灌 Prompt，修正仍走同 Root 的 correct/追问新 Brief）
 
 把当前一次整体反馈改为三个 `fact_ref` 级独立结果；仍然禁止把用户核对答案倒灌到原解读 Prompt。修正后若要生成新正文，必须走同 Root 的明确 `correct` 流程和新 Brief。
 
