@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hmac
 from datetime import UTC, datetime
+from typing import cast
 
 from fastapi import APIRouter, Depends, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,7 +35,7 @@ router = APIRouter(prefix="/admin", tags=["Admin Auth"])
 
 
 def _settings(request: Request) -> Settings:
-    return request.app.state.settings
+    return cast(Settings, request.app.state.settings)
 
 
 def _auth_service(request: Request, session: AsyncSession) -> AdminAuthService:
@@ -138,7 +139,7 @@ async def admin_login(
     return AdminSessionResponse(
         staff_id=created.staff.id,
         session_id=created.session_id,
-        role=created.staff.role,  # type: ignore[arg-type]
+        role=created.staff.role,
         display_name=created.staff.display_name,
         expires_at=created.expires_at,
         csrf_token=created.csrf_token,
@@ -177,8 +178,8 @@ async def admin_me(
     mark_private(response)
     return AdminMeResponse(
         staff_id=staff.id,
-        role=staff.role,  # type: ignore[arg-type]
-        email=staff.email,  # type: ignore[arg-type]
+        role=staff.role,
+        email=staff.email,
         display_name=staff.display_name,
         session_id=staff_session.id,
         expires_at=staff_session.expires_at,

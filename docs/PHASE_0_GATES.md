@@ -1,6 +1,6 @@
 # Phase 0 外部 Gate 台账
 
-更新日期：2026-08-11
+更新日期：2026-08-12
 
 进度说明：域名 ICP 备案已于 2026-08-10 正式提交，处于审核中。Mac mini `native-full` 原始五件套已归档并通过独立 verifier；真实 one-shot Runtime startup 已在本机通过；测试服务器已接真实 Runtime + 百炼 DeepSeek 并出现 `accepted`。仍未闭环的是：固定模型质量评测、Task 13 staging 全轨迹、支付/短信/邮件渠道、密钥托管与生产告警。Linux 模拟通道已废止，Mac mini `native-full` 仍是唯一 Runtime Gate。
 
@@ -8,7 +8,7 @@
 
 Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。
 
-当前代码断点见 [HANDOFF_SNAPSHOT_2026-08-11.md](./HANDOFF_SNAPSHOT_2026-08-11.md) 与 [2026-08-11 真实模型记录](./releases/2026-08-11-dashscope-deepseek-real-model.md)。Phase 2 旧记录 [2026-08-10](./releases/2026-08-10-mingli-v51-web-phase2.md) 仍保留为历史证据。整体仍是 `production blocked`，不构成上线批准；Task 13 与外部 Gate 完成前，`real traffic` 保持 disabled。
+当前代码断点见 [HANDOFF_SNAPSHOT_2026-08-12.md](./HANDOFF_SNAPSHOT_2026-08-12.md) 与 [2026-08-12 生产就绪基线](./releases/2026-08-12-production-readiness-baseline.md)。历史断点 [2026-08-11](./HANDOFF_SNAPSHOT_2026-08-11.md)、Phase 2 旧记录 [2026-08-10](./releases/2026-08-10-mingli-v51-web-phase2.md) 仍保留为历史证据。整体仍是 `production blocked`，不构成上线批准；Task 13 与外部 Gate 完成前，`real traffic` 保持 disabled。
 
 | Gate | 当前状态 | 通过证据 | 代码期处理 |
 |---|---|---|---|

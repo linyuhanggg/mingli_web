@@ -1,5 +1,4 @@
 from __future__ import annotations
-from app.readings.alerts import NoopAlertSink
 
 import asyncio
 import importlib
@@ -11,6 +10,7 @@ from typing import Any
 from uuid import uuid4
 
 import pytest
+from app.readings.alerts import NoopAlertSink
 from sqlalchemy import event, func, select, text
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine

@@ -20,12 +20,13 @@ class AdminRepository:
         return int(result or 0)
 
     async def get_staff_by_email(self, email: str) -> StaffUser | None:
-        return await self.session.scalar(
+        result: StaffUser | None = await self.session.scalar(
             select(StaffUser).where(
                 StaffUser.email == email,
                 StaffUser.status == "active",
             )
         )
+        return result
 
     async def get_staff(self, staff_id: UUID) -> StaffUser | None:
         return await self.session.get(StaffUser, staff_id)
@@ -44,13 +45,14 @@ class AdminRepository:
         token_hash: str,
         now: datetime,
     ) -> StaffSession | None:
-        return await self.session.scalar(
+        result: StaffSession | None = await self.session.scalar(
             select(StaffSession).where(
                 StaffSession.token_hash == token_hash,
                 StaffSession.revoked_at.is_(None),
                 StaffSession.expires_at > now,
             )
         )
+        return result
 
     async def revoke_session(self, session: StaffSession, revoked_at: datetime) -> None:
         session.revoked_at = revoked_at

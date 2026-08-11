@@ -12,9 +12,10 @@
 - 架构决策：[docs/adr](./docs/adr)
 - Phase 0 外部 Gate：[docs/PHASE_0_GATES.md](./docs/PHASE_0_GATES.md)
 - Phase 2 第一版代码候选证据：[docs/releases/2026-08-10-mingli-v51-web-phase2.md](./docs/releases/2026-08-10-mingli-v51-web-phase2.md)
-- 施工交接快照：[docs/HANDOFF_SNAPSHOT_2026-08-11.md](./docs/HANDOFF_SNAPSHOT_2026-08-11.md)
+- 施工交接快照：[docs/HANDOFF_SNAPSHOT_2026-08-12.md](./docs/HANDOFF_SNAPSHOT_2026-08-12.md)（[2026-08-11](./docs/HANDOFF_SNAPSHOT_2026-08-11.md) 保留为历史）
+- 生产就绪基线证据：[docs/releases/2026-08-12-production-readiness-baseline.md](./docs/releases/2026-08-12-production-readiness-baseline.md)
 - Task 8 原生门禁证据：[docs/releases/2026-08-11-native-full-and-runtime-startup.md](./docs/releases/2026-08-11-native-full-and-runtime-startup.md)
-- 当前实施计划：[docs/plans/2026-08-09-mingli-v51-web-integration.md](./docs/plans/2026-08-09-mingli-v51-web-integration.md)（Phase 0/1 与 Task 1–12 已闭环；测试服 Task13 产品 5 轨 accepted；放量 Gate 仍未闭环）
+- 当前实施计划：[docs/plans/2026-08-12-complete-production-ha-website.md](./docs/plans/2026-08-12-complete-production-ha-website.md)（完整生产网站与高可用，Task 0–13 / M0–M5；旧计划 [2026-08-09](./docs/plans/2026-08-09-mingli-v51-web-integration.md) Phase 0/1 与 Task 1–12 已闭环，作历史保留）
 - 真实模型联调证据：[docs/releases/2026-08-11-dashscope-deepseek-real-model.md](./docs/releases/2026-08-11-dashscope-deepseek-real-model.md)
 - 八字工作区记录：[docs/releases/2026-08-11-bazi-workspace.md](./docs/releases/2026-08-11-bazi-workspace.md)
 - 紫微 UI-only 记录：[docs/releases/2026-08-11-borrow-ziwei-ui-only.md](./docs/releases/2026-08-11-borrow-ziwei-ui-only.md)
