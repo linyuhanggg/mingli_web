@@ -8,8 +8,13 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import {
+  appendProfileVersion,
   confirmProfileDraft,
   createProfileDraft,
+  type BirthTimeCertainty,
+  type Calendar,
+  type CoordinatePrecision,
+  type CoordinateSource,
   type Gender,
   type TimeBasisPolicy,
   type ZiHourPolicy,
@@ -29,6 +34,27 @@ const GENDERS: { value: Gender; label: string }[] = [
   { value: "female", label: "女" },
   { value: "male", label: "男" },
   { value: "other", label: "其他" },
+];
+
+const CALENDARS: { value: Calendar; label: string }[] = [
+  { value: "gregorian", label: "公历（阳历）" },
+  { value: "lunar", label: "农历（阴历）" },
+];
+
+const BIRTH_TIME_CERTAINTIES: { value: BirthTimeCertainty; label: string }[] = [
+  { value: "exact", label: "时辰准确" },
+  { value: "approximate", label: "大概时段" },
+  { value: "unknown", label: "无法确定时辰" },
+];
+
+const COORDINATE_SOURCES: { value: CoordinateSource; label: string }[] = [
+  { value: "user_confirmed", label: "本人按资料逐项确认" },
+  { value: "gazetteer", label: "地图或地名库查询" },
+];
+
+const COORDINATE_PRECISIONS: { value: CoordinatePrecision; label: string }[] = [
+  { value: "exact", label: "精确坐标" },
+  { value: "city", label: "城市级" },
 ];
 
 const TIME_BASIS_POLICIES: { value: TimeBasisPolicy; label: string }[] = [
@@ -77,6 +103,13 @@ const profileSchema = z
     gender: z
       .enum(["", "female", "male", "other"])
       .refine((value) => value !== "", "请选择性别"),
+    calendar: z
+      .enum(["", "gregorian", "lunar"])
+      .refine((value) => value !== "", "请选择历法"),
+    lunar_leap_month: z.boolean().default(false),
+    birth_time_certainty: z
+      .enum(["", "exact", "approximate", "unknown"])
+      .refine((value) => value !== "", "请选择时辰准确度"),
     time_basis_policy: z
       .enum(["", "civil", "solar", "lunar"])
       .refine((value) => value !== "", "请选择时间口径"),
@@ -86,10 +119,9 @@ const profileSchema = z
     longitude: longitudeField.default(""),
     latitude: latitudeField.default(""),
     coordinate_source: z
-      .string()
-      .trim()
-      .max(40, "坐标来源最多 40 个字")
+      .enum(["", "user_confirmed", "gazetteer"])
       .default(""),
+    coordinate_precision: z.enum(["", "exact", "city"]).default(""),
   })
   .superRefine((data, context) => {
     if (!data.timezone) {
@@ -105,11 +137,36 @@ const profileSchema = z
         path: ["timezone"],
       });
     }
+    if (data.time_basis_policy !== "solar") {
+      return;
+    }
+    if (data.longitude.trim() === "" || data.latitude.trim() === "") {
+      context.addIssue({
+        code: "custom",
+        message:
+          "真太阳时需要逐项确认经纬度、坐标来源与精度；无法确认时请改用其他口径，系统不会静默估算。",
+        path: ["longitude"],
+      });
+    }
+    if (data.coordinate_source === "") {
+      context.addIssue({
+        code: "custom",
+        message: "请确认坐标来源",
+        path: ["coordinate_source"],
+      });
+    }
+    if (data.coordinate_precision === "") {
+      context.addIssue({
+        code: "custom",
+        message: "请确认坐标精度",
+        path: ["coordinate_precision"],
+      });
+    }
   });
 
 type ProfileFormValues = z.input<typeof profileSchema>;
 
-export function ProfileForm() {
+export function ProfileForm({ editProfileId }: { editProfileId?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -126,17 +183,22 @@ export function ProfileForm() {
       timezone: "Asia/Shanghai",
       location: "",
       gender: "",
+      calendar: "",
+      lunar_leap_month: false,
+      birth_time_certainty: "",
       time_basis_policy: "",
       zi_hour_policy: "",
       longitude: "",
       latitude: "",
       coordinate_source: "",
+      coordinate_precision: "",
     },
   });
   const [
     birth_datetime,
     timezone,
     location,
+    calendar,
     time_basis_policy,
     zi_hour_policy,
     longitude,
@@ -147,6 +209,7 @@ export function ProfileForm() {
       "birth_datetime",
       "timezone",
       "location",
+      "calendar",
       "time_basis_policy",
       "zi_hour_policy",
       "longitude",
@@ -168,6 +231,8 @@ export function ProfileForm() {
       if (busyRef.current) return;
       if (
         !values.gender ||
+        !values.calendar ||
+        !values.birth_time_certainty ||
         !values.time_basis_policy ||
         !values.zi_hour_policy
       ) {
@@ -177,8 +242,8 @@ export function ProfileForm() {
       setBusy(true);
       setSubmitError("");
       try {
-        const draft = await createProfileDraft("本人");
-        await confirmProfileDraft(draft.draft_id, {
+        const solar = values.time_basis_policy === "solar";
+        const body = {
           birth_datetime: localDateTimeWithOffset(
             values.birth_datetime,
             values.timezone,
@@ -186,25 +251,39 @@ export function ProfileForm() {
           timezone: values.timezone,
           location: values.location.trim(),
           gender: values.gender,
+          calendar: values.calendar,
+          lunar_leap_month:
+            values.calendar === "lunar"
+              ? (values.lunar_leap_month ?? false)
+              : false,
+          birth_time_certainty: values.birth_time_certainty,
           time_basis_policy: values.time_basis_policy,
           zi_hour_policy: values.zi_hour_policy,
           longitude:
-            values.time_basis_policy !== "solar" ||
-            values.longitude?.trim() === ""
-              ? undefined
-              : Number(values.longitude),
+            solar && values.longitude?.trim() !== ""
+              ? Number(values.longitude)
+              : undefined,
           latitude:
-            values.time_basis_policy !== "solar" ||
-            values.latitude?.trim() === ""
-              ? undefined
-              : Number(values.latitude),
+            solar && values.latitude?.trim() !== ""
+              ? Number(values.latitude)
+              : undefined,
           coordinate_source:
-            values.time_basis_policy !== "solar" ||
-            values.coordinate_source?.trim() === ""
-              ? undefined
-              : values.coordinate_source?.trim(),
-        });
-        router.push("/app/profiles?created=1");
+            solar && values.coordinate_source !== ""
+              ? values.coordinate_source
+              : undefined,
+          coordinate_precision:
+            solar && values.coordinate_precision !== ""
+              ? values.coordinate_precision
+              : undefined,
+        };
+        if (editProfileId) {
+          await appendProfileVersion(editProfileId, body);
+          router.push("/app/profiles?updated=1");
+        } else {
+          const draft = await createProfileDraft("本人");
+          await confirmProfileDraft(draft.draft_id, body);
+          router.push("/app/profiles?created=1");
+        }
       } catch (reason) {
         setSubmitError(
           reason instanceof Error ? reason.message : "档案保存失败，请稍后重试。",
@@ -214,13 +293,17 @@ export function ProfileForm() {
         setBusy(false);
       }
     },
-    [router],
+    [editProfileId, router],
   );
 
   return (
     <div className={styles.wrap}>
-      <h2>建立命理档案</h2>
-      <p className={styles.lead}>这里只记录出生事实，不进行任何本地推算。</p>
+      <h2>{editProfileId ? "修改档案资料" : "建立命理档案"}</h2>
+      <p className={styles.lead}>
+        {editProfileId
+          ? "重新核对出生事实并提交；本次修改会保存为同一档案下的新不可变版本，历史版本与既有解读不受影响。"
+          : "这里只记录出生事实，不进行任何本地推算。"}
+      </p>
 
       {submitError ? (
         <p className={styles.errorBox} role="alert" aria-live="polite">
@@ -368,6 +451,100 @@ export function ProfileForm() {
               </p>
             ) : null}
           </div>
+
+          <div className={formControls.field}>
+            <label htmlFor="profile-calendar">历法</label>
+            <select
+              id="profile-calendar"
+              className={formControls.input}
+              disabled={busy}
+              required
+              aria-required="true"
+              aria-invalid={Boolean(errors.calendar)}
+              aria-describedby={
+                errors.calendar
+                  ? "profile-calendar-error"
+                  : "profile-calendar-help"
+              }
+              {...register("calendar")}
+            >
+              <option value="" disabled>
+                请选择历法
+              </option>
+              {CALENDARS.map((calendar) => (
+                <option key={calendar.value} value={calendar.value}>
+                  {calendar.label}
+                </option>
+              ))}
+            </select>
+            {errors.calendar ? (
+              <p
+                className={formControls.error}
+                id="profile-calendar-error"
+                role="alert"
+              >
+                {errors.calendar.message}
+              </p>
+            ) : null}
+            <p className={formControls.hint} id="profile-calendar-help">
+              上方出生时间按所选历法记录；农历由服务端换算，不做本地推算。
+            </p>
+          </div>
+
+          {calendar === "lunar" ? (
+            <div className={formControls.field}>
+              <label htmlFor="profile-lunar-leap-month">闰月</label>
+              <input
+                id="profile-lunar-leap-month"
+                type="checkbox"
+                disabled={busy}
+                aria-describedby="profile-lunar-leap-month-help"
+                {...register("lunar_leap_month")}
+              />
+              <p className={formControls.hint} id="profile-lunar-leap-month-help">
+                仅当出生月份是农历闰月时勾选；不确定请不要勾选，并在时辰准确度中说明。
+              </p>
+            </div>
+          ) : null}
+
+          <div className={formControls.field}>
+            <label htmlFor="profile-birth-time-certainty">时辰准确度</label>
+            <select
+              id="profile-birth-time-certainty"
+              className={formControls.input}
+              disabled={busy}
+              required
+              aria-required="true"
+              aria-invalid={Boolean(errors.birth_time_certainty)}
+              aria-describedby={
+                errors.birth_time_certainty
+                  ? "profile-birth-time-certainty-error"
+                  : "profile-birth-time-certainty-help"
+              }
+              {...register("birth_time_certainty")}
+            >
+              <option value="" disabled>
+                请选择时辰准确度
+              </option>
+              {BIRTH_TIME_CERTAINTIES.map((certainty) => (
+                <option key={certainty.value} value={certainty.value}>
+                  {certainty.label}
+                </option>
+              ))}
+            </select>
+            {errors.birth_time_certainty ? (
+              <p
+                className={formControls.error}
+                id="profile-birth-time-certainty-error"
+                role="alert"
+              >
+                {errors.birth_time_certainty.message}
+              </p>
+            ) : null}
+            <p className={formControls.hint} id="profile-birth-time-certainty-help">
+              无法确定时辰时，解读会明确标注这一不确定性，而不是假装精确。
+            </p>
+          </div>
           </div>
         </section>
 
@@ -458,7 +635,7 @@ export function ProfileForm() {
           {time_basis_policy === "solar" ? (
             <>
           <div className={formControls.field}>
-            <label htmlFor="profile-longitude">经度（可选）</label>
+            <label htmlFor="profile-longitude">经度</label>
             <input
               id="profile-longitude"
               className={formControls.input}
@@ -467,6 +644,8 @@ export function ProfileForm() {
               inputMode="decimal"
               autoComplete="off"
               disabled={busy}
+              required
+              aria-required="true"
               aria-invalid={Boolean(errors.longitude)}
               aria-describedby={
                 errors.longitude ? "profile-longitude-error" : undefined
@@ -481,7 +660,7 @@ export function ProfileForm() {
           </div>
 
           <div className={formControls.field}>
-            <label htmlFor="profile-latitude">纬度（可选）</label>
+            <label htmlFor="profile-latitude">纬度</label>
             <input
               id="profile-latitude"
               className={formControls.input}
@@ -490,6 +669,8 @@ export function ProfileForm() {
               inputMode="decimal"
               autoComplete="off"
               disabled={busy}
+              required
+              aria-required="true"
               aria-invalid={Boolean(errors.latitude)}
               aria-describedby={
                 errors.latitude ? "profile-latitude-error" : undefined
@@ -504,13 +685,13 @@ export function ProfileForm() {
           </div>
 
           <div className={formControls.field}>
-            <label htmlFor="profile-coordinate-source">坐标来源（可选）</label>
-            <input
+            <label htmlFor="profile-coordinate-source">坐标来源</label>
+            <select
               id="profile-coordinate-source"
               className={formControls.input}
-              type="text"
-              autoComplete="off"
               disabled={busy}
+              required
+              aria-required="true"
               aria-invalid={Boolean(errors.coordinate_source)}
               aria-describedby={
                 errors.coordinate_source
@@ -518,7 +699,16 @@ export function ProfileForm() {
                   : undefined
               }
               {...register("coordinate_source")}
-            />
+            >
+              <option value="" disabled>
+                请选择坐标来源
+              </option>
+              {COORDINATE_SOURCES.map((source) => (
+                <option key={source.value} value={source.value}>
+                  {source.label}
+                </option>
+              ))}
+            </select>
             {errors.coordinate_source ? (
               <p
                 className={formControls.error}
@@ -529,11 +719,47 @@ export function ProfileForm() {
               </p>
             ) : null}
           </div>
+
+          <div className={formControls.field}>
+            <label htmlFor="profile-coordinate-precision">坐标精度</label>
+            <select
+              id="profile-coordinate-precision"
+              className={formControls.input}
+              disabled={busy}
+              required
+              aria-required="true"
+              aria-invalid={Boolean(errors.coordinate_precision)}
+              aria-describedby={
+                errors.coordinate_precision
+                  ? "profile-coordinate-precision-error"
+                  : undefined
+              }
+              {...register("coordinate_precision")}
+            >
+              <option value="" disabled>
+                请选择坐标精度
+              </option>
+              {COORDINATE_PRECISIONS.map((precision) => (
+                <option key={precision.value} value={precision.value}>
+                  {precision.label}
+                </option>
+              ))}
+            </select>
+            {errors.coordinate_precision ? (
+              <p
+                className={formControls.error}
+                id="profile-coordinate-precision-error"
+                role="alert"
+              >
+                {errors.coordinate_precision.message}
+              </p>
+            ) : null}
+          </div>
             </>
           ) : null}
           </div>
           <p className={styles.policyNote}>
-            只有选择真太阳时，才需要展开经纬度校准；其他口径不会提交这些高级字段。
+            只有选择真太阳时，才需要逐项确认经纬度、坐标来源与精度；其他口径不会提交这些高级字段。坐标无法确认时请改用其他口径，系统不会静默估算。
           </p>
         </section>
 

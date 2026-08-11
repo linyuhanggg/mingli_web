@@ -22,6 +22,7 @@ vi.mock("next/navigation", () => ({
 const api = vi.hoisted(() => ({
   createProfileDraft: vi.fn(),
   confirmProfileDraft: vi.fn(),
+  appendProfileVersion: vi.fn(),
 }));
 
 vi.mock("@/lib/api", () => api);
@@ -31,6 +32,7 @@ beforeEach(() => {
   routerPush.mockReset();
   api.createProfileDraft.mockReset();
   api.confirmProfileDraft.mockReset();
+  api.appendProfileVersion.mockReset();
   api.createProfileDraft.mockResolvedValue({
     draft_id: "55555555-5555-4555-8555-555555555555",
     status: "draft",
@@ -42,6 +44,13 @@ beforeEach(() => {
     version: 1,
     created_at: "2026-08-09T12:00:00Z",
   });
+  api.appendProfileVersion.mockResolvedValue({
+    profile_id: "11111111-1111-4111-8111-111111111111",
+    profile_version_id: "33333333-3333-4333-8333-333333333333",
+    subject_ref: "profile-version:33333333-3333-4333-8333-333333333333",
+    version: 2,
+    created_at: "2026-08-12T12:00:00Z",
+  });
 });
 
 describe("ProfileForm", () => {
@@ -52,6 +61,8 @@ describe("ProfileForm", () => {
     expect(screen.getByRole("heading", { name: "2. 计算口径" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "3. 提交前核对" })).toBeVisible();
     expect(screen.getByLabelText("性别")).toHaveValue("");
+    expect(screen.getByLabelText("历法")).toHaveValue("");
+    expect(screen.getByLabelText("时辰准确度")).toHaveValue("");
     expect(screen.getByLabelText("时间口径")).toHaveValue("");
     expect(screen.getByLabelText("子时口径")).toHaveValue("");
   });
@@ -60,13 +71,106 @@ describe("ProfileForm", () => {
     const user = userEvent.setup();
     render(<ProfileForm />);
 
-    expect(screen.queryByLabelText("经度（可选）")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^经度/)).not.toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText("时间口径"), "solar");
-    expect(screen.getByLabelText("经度（可选）")).toBeVisible();
-    expect(screen.getByLabelText("纬度（可选）")).toBeVisible();
+    expect(screen.getByLabelText(/^经度/)).toBeVisible();
+    expect(screen.getByLabelText(/^纬度/)).toBeVisible();
+    expect(screen.getByLabelText(/^坐标来源/)).toBeVisible();
+    expect(screen.getByLabelText("坐标精度")).toBeVisible();
 
     await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
-    expect(screen.queryByLabelText("经度（可选）")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^经度/)).not.toBeInTheDocument();
+  });
+
+  it("blocks true solar time without explicit confirmed coordinates", async () => {
+    const user = userEvent.setup();
+    render(<ProfileForm />);
+
+    await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
+    await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("历法"), "lunar");
+    await user.selectOptions(screen.getByLabelText("时辰准确度"), "exact");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "solar");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+
+    expect(
+      await screen.findByText(/真太阳时需要逐项确认经纬度/),
+    ).toBeVisible();
+    expect(api.createProfileDraft).not.toHaveBeenCalled();
+
+    await user.type(screen.getByLabelText(/^经度/), "116.4074");
+    await user.type(screen.getByLabelText(/^纬度/), "39.9042");
+    await user.selectOptions(screen.getByLabelText("坐标来源"), "user_confirmed");
+    await user.selectOptions(screen.getByLabelText("坐标精度"), "city");
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+
+    await waitFor(() => expect(api.confirmProfileDraft).toHaveBeenCalled());
+    expect(api.confirmProfileDraft).toHaveBeenCalledWith(
+      "55555555-5555-4555-8555-555555555555",
+      expect.objectContaining({
+        time_basis_policy: "solar",
+        longitude: 116.4074,
+        latitude: 39.9042,
+        coordinate_source: "user_confirmed",
+        coordinate_precision: "city",
+      }),
+    );
+  });
+
+  it("records lunar calendar, leap month, and birth time certainty", async () => {
+    const user = userEvent.setup();
+    render(<ProfileForm />);
+
+    expect(screen.queryByLabelText("闰月")).not.toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText("历法"), "lunar");
+    const leapMonth = screen.getByLabelText("闰月");
+    expect(leapMonth).toBeVisible();
+    await user.click(leapMonth);
+
+    await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
+    await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("时辰准确度"), "unknown");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+
+    await waitFor(() => expect(api.confirmProfileDraft).toHaveBeenCalled());
+    expect(api.confirmProfileDraft).toHaveBeenCalledWith(
+      "55555555-5555-4555-8555-555555555555",
+      expect.objectContaining({
+        calendar: "lunar",
+        lunar_leap_month: true,
+        birth_time_certainty: "unknown",
+      }),
+    );
+  });
+
+  it("appends a new immutable version under the same root when editing", async () => {
+    const user = userEvent.setup();
+    render(<ProfileForm editProfileId="11111111-1111-4111-8111-111111111111" />);
+
+    expect(screen.getByRole("heading", { name: "修改档案资料" })).toBeVisible();
+    await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
+    await user.type(screen.getByLabelText("出生地点"), "上海市黄浦区");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("历法"), "gregorian");
+    await user.selectOptions(screen.getByLabelText("时辰准确度"), "exact");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+
+    await waitFor(() =>
+      expect(routerPush).toHaveBeenCalledWith("/app/profiles?updated=1"),
+    );
+    expect(api.createProfileDraft).not.toHaveBeenCalled();
+    expect(api.confirmProfileDraft).not.toHaveBeenCalled();
+    expect(api.appendProfileVersion).toHaveBeenCalledWith(
+      "11111111-1111-4111-8111-111111111111",
+      expect.objectContaining({ location: "上海市黄浦区" }),
+    );
   });
 
   it("uses modern canonical IANA names instead of deprecated aliases", () => {
@@ -152,6 +256,8 @@ describe("ProfileForm", () => {
     await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
     await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
     await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("历法"), "gregorian");
+    await user.selectOptions(screen.getByLabelText("时辰准确度"), "exact");
     await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
     await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
@@ -166,6 +272,9 @@ describe("ProfileForm", () => {
         timezone: "Asia/Shanghai",
         location: "北京市朝阳区",
         gender: "female",
+        calendar: "gregorian",
+        lunar_leap_month: false,
+        birth_time_certainty: "exact",
         time_basis_policy: "civil",
         zi_hour_policy: "midnight",
       }),
@@ -194,7 +303,7 @@ describe("ProfileForm", () => {
     expect(summary).toHaveTextContent("尚未填写经度");
     expect(summary).not.toHaveTextContent(/已填写经度/);
 
-    await user.type(screen.getByLabelText("经度（可选）"), "120.1");
+    await user.type(screen.getByLabelText(/^经度/), "120.1");
     expect(summary).toHaveTextContent(/已填写经度 120\.1°/);
   });
 });

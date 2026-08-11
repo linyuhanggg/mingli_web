@@ -137,6 +137,8 @@ describe("disabled controls must explain why", () => {
     await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
     await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
     await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("历法"), "gregorian");
+    await user.selectOptions(screen.getByLabelText("时辰准确度"), "exact");
     await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
     await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
     await user.click(screen.getByRole("button", { name: /保存档案/ }));

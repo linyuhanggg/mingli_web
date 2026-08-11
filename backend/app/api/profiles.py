@@ -93,6 +93,34 @@ async def confirm_profile_draft(
     return summary
 
 
+@router.post(
+    "/{profile_id}/versions",
+    operation_id="appendProfileVersion",
+    response_model=ProfileSummary,
+    status_code=status.HTTP_201_CREATED,
+)
+async def append_profile_version(
+    request: Request,
+    response: Response,
+    profile_id: UUID,
+    payload: ProfileConfirmRequest,
+    session: AsyncSession = Depends(database_session),
+    owner: Owner = Depends(require_owner_csrf),
+) -> ProfileSummary:
+    _check_rate(owner, request)
+    try:
+        summary = await _service(request, session).append_version(
+            owner,
+            profile_id,
+            payload,
+        )
+    except ProfileNotFoundError as error:
+        raise ApiProblem(status=404, title="Subject Profile not found") from error
+    await session.commit()
+    mark_private(response)
+    return summary
+
+
 @router.get(
     "",
     operation_id="listProfiles",

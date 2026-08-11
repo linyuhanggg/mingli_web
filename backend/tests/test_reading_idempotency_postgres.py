@@ -106,6 +106,7 @@ async def _seed_user_with_confirmed_profile(
                 longitude=116.4074,
                 latitude=39.9042,
                 coordinate_source="user_confirmed",
+                    coordinate_precision="city",
             ),
         )
         await session.commit()
@@ -204,6 +205,7 @@ async def test_concurrent_guest_same_key_maps_to_one_reading_version(
                 longitude=116.4074,
                 latitude=39.9042,
                 coordinate_source="user_confirmed",
+                    coordinate_precision="city",
             ),
         )
         await session.commit()

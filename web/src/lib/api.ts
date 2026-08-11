@@ -1,8 +1,12 @@
 "use client";
 
 export type Gender = "male" | "female" | "other";
+export type Calendar = "gregorian" | "lunar";
+export type BirthTimeCertainty = "exact" | "approximate" | "unknown";
 export type TimeBasisPolicy = "civil" | "solar" | "lunar";
 export type ZiHourPolicy = "midnight" | "substitute" | "solar";
+export type CoordinateSource = "user_confirmed" | "gazetteer";
+export type CoordinatePrecision = "exact" | "city";
 
 export type ProfileSummary = {
   profile_id: string;
@@ -22,11 +26,15 @@ export type ProfileConfirmRequest = {
   timezone: string;
   location: string;
   gender: Gender;
+  calendar: Calendar;
+  lunar_leap_month: boolean;
+  birth_time_certainty: BirthTimeCertainty;
   time_basis_policy: TimeBasisPolicy;
   zi_hour_policy: ZiHourPolicy;
   longitude?: number | null;
   latitude?: number | null;
-  coordinate_source?: string | null;
+  coordinate_source?: CoordinateSource | null;
+  coordinate_precision?: CoordinatePrecision | null;
 };
 
 export type ReadingStatus =
@@ -424,6 +432,16 @@ export async function confirmProfileDraft(
 ): Promise<ProfileSummary> {
   return jsonPost<ProfileSummary>(
     `/api/v1/profiles/drafts/${encodeURIComponent(draftId)}/confirm`,
+    body,
+  );
+}
+
+export async function appendProfileVersion(
+  profileId: string,
+  body: ProfileConfirmRequest,
+): Promise<ProfileSummary> {
+  return jsonPost<ProfileSummary>(
+    `/api/v1/profiles/${encodeURIComponent(profileId)}/versions`,
     body,
   );
 }

@@ -37,6 +37,7 @@ FICTIONAL_PROFILE = {
     "longitude": 119.2965,
     "latitude": 26.0745,
     "coordinate_source": "user_confirmed",
+    "coordinate_precision": "city",
 }
 
 

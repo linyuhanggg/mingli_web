@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any
+from uuid import UUID
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -37,6 +38,7 @@ async def create_confirmed_profile(
             "longitude": 116.4074,
             "latitude": 39.9042,
             "coordinate_source": "user_confirmed",
+            "coordinate_precision": "city",
         },
     )
     assert confirmed.status_code == 201, confirmed.text
@@ -372,3 +374,246 @@ async def test_guest_claim_rejects_an_already_claimed_session(
         with pytest.raises(GuestAlreadyClaimedError):
             await service.claim_guest_ownership(guest, user.id)
         await session.commit()
+
+
+def _confirm_payload(**overrides: Any) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "birth_datetime": "1994-04-30T05:55:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "location": "北京市朝阳区",
+        "gender": "female",
+        "time_basis_policy": "civil",
+        "zi_hour_policy": "midnight",
+    }
+    payload.update(overrides)
+    return payload
+
+
+async def test_append_version_keeps_one_root_with_two_immutable_versions(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+
+    appended = await client.post(
+        f"/api/v1/profiles/{confirmed['profile_id']}/versions",
+        headers=headers,
+        json=_confirm_payload(location="上海市黄浦区"),
+    )
+
+    assert appended.status_code == 201, appended.text
+    body = appended.json()
+    assert body["profile_id"] == confirmed["profile_id"]
+    assert body["profile_version_id"] != confirmed["profile_version_id"]
+    assert body["version"] == 2
+    assert_private_headers(appended)
+
+    listed = await client.get("/api/v1/profiles")
+    assert listed.status_code == 200
+    assert [entry["version"] for entry in listed.json()["profiles"]] == [2]
+    assert listed.json()["profiles"][0]["profile_id"] == confirmed["profile_id"]
+
+    from app.profiles.models import ProfileVersion
+
+    async with database.sessions() as session:
+        versions = (
+            await session.scalars(
+                select(ProfileVersion).where(
+                    ProfileVersion.profile_id == UUID(confirmed["profile_id"])
+                )
+            )
+        ).all()
+    assert len(versions) == 2
+
+
+async def test_append_version_of_unknown_profile_returns_404(
+    client: AsyncClient,
+) -> None:
+    headers = await create_guest(client)
+
+    response = await client.post(
+        "/api/v1/profiles/00000000-0000-0000-0000-000000000000/versions",
+        headers=headers,
+        json=_confirm_payload(),
+    )
+
+    assert response.status_code == 404
+
+
+async def test_append_version_is_owner_scoped_with_cross_owner_404(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    transport = ASGITransport(app=application)
+    async with (
+        AsyncClient(transport=transport, base_url="https://testserver") as first,
+        AsyncClient(transport=transport, base_url="https://testserver") as second,
+    ):
+        first_headers = await create_guest(first)
+        confirmed = await create_confirmed_profile(first, first_headers)
+        second_headers = await create_guest(second)
+
+        response = await second.post(
+            f"/api/v1/profiles/{confirmed['profile_id']}/versions",
+            headers=second_headers,
+            json=_confirm_payload(),
+        )
+
+    assert response.status_code == 404
+
+
+async def test_solar_time_basis_requires_explicit_confirmed_coordinates(
+    client: AsyncClient,
+) -> None:
+    headers = await create_guest(client)
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "本人"},
+    )
+    assert draft.status_code == 201, draft.text
+    confirm_url = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm"
+
+    missing_all = await client.post(
+        confirm_url,
+        headers=headers,
+        json=_confirm_payload(time_basis_policy="solar"),
+    )
+    assert missing_all.status_code == 400
+
+    missing_precision = await client.post(
+        confirm_url,
+        headers=headers,
+        json=_confirm_payload(
+            time_basis_policy="solar",
+            longitude=116.4074,
+            latitude=39.9042,
+            coordinate_source="user_confirmed",
+        ),
+    )
+    assert missing_precision.status_code == 400
+
+    complete = await client.post(
+        confirm_url,
+        headers=headers,
+        json=_confirm_payload(
+            time_basis_policy="solar",
+            longitude=116.4074,
+            latitude=39.9042,
+            coordinate_source="user_confirmed",
+            coordinate_precision="city",
+        ),
+    )
+    assert complete.status_code == 201, complete.text
+
+
+async def test_coordinates_require_source_and_precision(client: AsyncClient) -> None:
+    headers = await create_guest(client)
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "本人"},
+    )
+    assert draft.status_code == 201, draft.text
+    confirm_url = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm"
+
+    missing_source = await client.post(
+        confirm_url,
+        headers=headers,
+        json=_confirm_payload(longitude=116.4074, latitude=39.9042),
+    )
+    assert missing_source.status_code == 400
+
+    missing_precision = await client.post(
+        confirm_url,
+        headers=headers,
+        json=_confirm_payload(
+            longitude=116.4074,
+            latitude=39.9042,
+            coordinate_source="user_confirmed",
+        ),
+    )
+    assert missing_precision.status_code == 400
+
+
+async def test_longitude_and_latitude_must_come_as_a_pair(
+    client: AsyncClient,
+) -> None:
+    headers = await create_guest(client)
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "本人"},
+    )
+    assert draft.status_code == 201, draft.text
+
+    response = await client.post(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm",
+        headers=headers,
+        json=_confirm_payload(longitude=116.4074),
+    )
+
+    assert response.status_code == 400
+
+
+async def test_lunar_leap_month_requires_lunar_calendar(client: AsyncClient) -> None:
+    headers = await create_guest(client)
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "本人"},
+    )
+    assert draft.status_code == 201, draft.text
+
+    response = await client.post(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm",
+        headers=headers,
+        json=_confirm_payload(calendar="gregorian", lunar_leap_month=True),
+    )
+
+    assert response.status_code == 400
+
+
+async def test_birth_contract_fields_persist_in_the_version_payload(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "本人"},
+    )
+    assert draft.status_code == 201, draft.text
+
+    confirmed = await client.post(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm",
+        headers=headers,
+        json=_confirm_payload(
+            calendar="lunar",
+            lunar_leap_month=True,
+            birth_time_certainty="unknown",
+        ),
+    )
+    assert confirmed.status_code == 201, confirmed.text
+
+    from app.profiles.repository import ProfileRepository
+    from app.security.envelope import EnvelopeCipher
+
+    async with database.sessions() as session:
+        repository = ProfileRepository(
+            session,
+            EnvelopeCipher.from_settings(test_settings),
+        )
+        payload = await repository.load_version_payload(
+            UUID(confirmed.json()["profile_version_id"])
+        )
+
+    assert payload["calendar"] == "lunar"
+    assert payload["lunar_leap_month"] is True
+    assert payload["birth_time_certainty"] == "unknown"
+    assert payload["time_basis_policy"] == "civil"

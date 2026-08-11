@@ -79,17 +79,7 @@ class ProfileService:
         try:
             version = await self.repository.create_version_if_unconfirmed(
                 profile_id=draft.id,
-                payload={
-                    "birth_datetime": payload.birth_datetime,
-                    "timezone": payload.timezone,
-                    "location": payload.location,
-                    "gender": payload.gender,
-                    "time_basis_policy": payload.time_basis_policy,
-                    "zi_hour_policy": payload.zi_hour_policy,
-                    "longitude": payload.longitude,
-                    "latitude": payload.latitude,
-                    "coordinate_source": payload.coordinate_source,
-                },
+                payload=_version_payload(payload),
             )
         except LookupError as error:
             raise ProfileNotFoundError("Profile Draft not found") from error
@@ -103,6 +93,31 @@ class ProfileService:
             ) from error
         await self.session.refresh(version)
         return _summary(draft.id, version)
+
+    async def append_version(
+        self,
+        owner: OwnerProtocol,
+        profile_id: UUID,
+        payload: ProfileConfirmRequest,
+    ) -> ProfileSummary:
+        """Edit a Profile: append a new immutable Version under the same Root."""
+        user_id, guest_id = owner_ids(owner)
+        profile = await self.repository.get_owned_draft(
+            profile_id,
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+        )
+        if profile is None:
+            raise ProfileNotFoundError("Subject Profile not found")
+        try:
+            version = await self.repository.create_version(
+                profile_id=profile.id,
+                payload=_version_payload(payload),
+            )
+        except LookupError as error:
+            raise ProfileNotFoundError("Subject Profile not found") from error
+        await self.session.refresh(version)
+        return _summary(profile.id, version)
 
     async def list_profiles(self, owner: OwnerProtocol) -> list[ProfileSummary]:
         user_id, guest_id = owner_ids(owner)
@@ -176,6 +191,24 @@ class ProfileService:
                 owner_guest_session_id=None,
             )
         )
+
+
+def _version_payload(payload: ProfileConfirmRequest) -> dict[str, object]:
+    return {
+        "birth_datetime": payload.birth_datetime,
+        "timezone": payload.timezone,
+        "location": payload.location,
+        "gender": payload.gender,
+        "calendar": payload.calendar,
+        "lunar_leap_month": payload.lunar_leap_month,
+        "birth_time_certainty": payload.birth_time_certainty,
+        "time_basis_policy": payload.time_basis_policy,
+        "zi_hour_policy": payload.zi_hour_policy,
+        "longitude": payload.longitude,
+        "latitude": payload.latitude,
+        "coordinate_source": payload.coordinate_source,
+        "coordinate_precision": payload.coordinate_precision,
+    }
 
 
 def _summary(profile_id: UUID, version: ProfileVersion) -> ProfileSummary:

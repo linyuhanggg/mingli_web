@@ -204,6 +204,40 @@ paths:
           $ref: "#/components/responses/Conflict"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+  /api/v1/profiles/{profile_id}/versions:
+    post:
+      operationId: appendProfileVersion
+      tags: [Profiles]
+      summary: Edit a Profile by appending a new immutable Version under the same Root
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - name: profile_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileConfirmRequest"
+      responses:
+        "201":
+          description: New immutable Profile Version appended under the same Profile Root
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
   /api/v1/profiles:
     get:
       operationId: listProfiles
@@ -704,6 +738,12 @@ components:
     ProfileConfirmRequest:
       type: object
       additionalProperties: false
+      description: >-
+        Birth facts as explicitly confirmed by the user. longitude/latitude
+        must be provided together and then require coordinate_source and
+        coordinate_precision; time_basis_policy=solar requires explicit
+        user-confirmed coordinates (the service never estimates them
+        silently); lunar_leap_month is only meaningful with calendar=lunar.
       required:
         - birth_datetime
         - timezone
@@ -726,6 +766,17 @@ components:
         gender:
           type: string
           enum: [male, female, other]
+        calendar:
+          type: string
+          enum: [gregorian, lunar]
+          default: gregorian
+        lunar_leap_month:
+          type: boolean
+          default: false
+        birth_time_certainty:
+          type: string
+          enum: [exact, approximate, unknown]
+          default: exact
         time_basis_policy:
           type: string
           enum: [civil, solar, lunar]
@@ -744,6 +795,9 @@ components:
           type: string
           minLength: 1
           maxLength: 40
+        coordinate_precision:
+          type: string
+          enum: [exact, city]
     ProfileSummary:
       type: object
       additionalProperties: false

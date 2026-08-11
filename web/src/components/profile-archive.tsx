@@ -40,6 +40,7 @@ export function ProfileArchive() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const justCreated = searchParams.get("created") === "1";
+  const justUpdated = searchParams.get("updated") === "1";
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<ProfileSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -182,6 +183,14 @@ export function ProfileArchive() {
         />
       ) : null}
 
+      {justUpdated ? (
+        <StatusPanel
+          state="success"
+          title="修改已保存为新版本"
+          description="同一档案下追加了一个不可变版本；历史版本与基于它们的解读仍然可回看。"
+        />
+      ) : null}
+
       {actionError ? (
         <StatusPanel
           state="error"
@@ -211,6 +220,12 @@ export function ProfileArchive() {
                 </span>
               </div>
               <div className={styles.profileActions}>
+                <Link
+                  className={surface.secondaryButton}
+                  href={`/app/profile/new?edit=${encodeURIComponent(entry.profile_id)}`}
+                >
+                  修改资料
+                </Link>
                 <button
                   type="button"
                   className={surface.secondaryButton}
@@ -240,7 +255,7 @@ export function ProfileArchive() {
         </ul>
         <div className={surface.actionRow}>
           <Link className={surface.secondaryButton} href="/app/profile/new">
-            新建档案版本
+            新建档案
           </Link>
           <Link className={surface.secondaryButton} href="/app/bazi">
             选择档案并查看事业主题
