@@ -10,8 +10,11 @@ export function BrandMark() {
         <span>命</span>
       </span>
       <span>
-        <strong>FateRadar</strong>
-        <small>个人命理档案</small>
+        <span className={styles.brandTitleRow}>
+          <strong>FateRadar</strong>
+          <span className={styles.versionPill}>v2.4</span>
+        </span>
+        <small>命盘 AI · 东方编辑档案</small>
       </span>
     </Link>
   );

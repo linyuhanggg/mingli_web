@@ -1,0 +1,5 @@
+.shell {
+  min-height: 100vh;
+  background: var(--ink-950);
+  color: var(--ivory-50);
+}

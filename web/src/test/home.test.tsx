@@ -9,15 +9,15 @@ describe("responsive public home", () => {
     render(<HomePage />);
 
     expect(
-      screen.getByRole("link", { name: "免费建立命理档案" }),
+      screen.getByRole("link", { name: /免费体验起盘档案/ }),
     ).toHaveAttribute("href", "/app/profile/new");
     expect(screen.getByText("今日与近七日")).toBeVisible();
     expect(
-      screen.getByRole("link", { name: "查看今日提示" }),
+      screen.getByRole("link", { name: /开启阶段推算/ }),
     ).toHaveAttribute("href", "/app/fortune/today");
     expect(
-      screen.getByRole("link", { name: "问一件具体的事" }),
-    ).toHaveAttribute("href", "/app/ask/liuyao");
+      screen.getByRole("link", { name: /进入学术典籍库/ }),
+    ).toHaveAttribute("href", "/methodology");
   });
 
   it("uses an editorial page hierarchy instead of a blank chat box", () => {
@@ -28,7 +28,7 @@ describe("responsive public home", () => {
     expect(
       within(main).getByRole("heading", {
         level: 1,
-        name: /把时间读成一份.*可核对的个人档案/,
+        name: /把时间变成私密、.*可核对的个人档案/,
       }),
     ).toBeVisible();
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
@@ -37,20 +37,24 @@ describe("responsive public home", () => {
   it("explains deterministic calculation, AI boundaries, and verification", () => {
     render(<HomePage />);
 
-    expect(screen.getByText(/确定性命理核心/)).toBeVisible();
-    expect(screen.getByText(/AI 只负责白话表达/)).toBeVisible();
-    expect(screen.getByText(/三条现实核对/)).toBeVisible();
+    expect(screen.getAllByText(/确定性命理核心/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/AI 只在允许事实内组织白话/)).toBeVisible();
+    expect(screen.getByText(/3 条现实核对位/)).toBeVisible();
   });
 
   it("provides public navigation and a contentinfo landmark", () => {
     render(<HomePage />);
 
     const navigation = screen.getByRole("navigation", { name: "主导航" });
-    expect(within(navigation).getByRole("link", { name: "价格" })).toHaveAttribute(
+    expect(within(navigation).getByRole("link", { name: /首页/ })).toHaveAttribute(
       "href",
-      "/pricing",
+      "/",
     );
-    expect(within(navigation).getByRole("link", { name: "方法" })).toHaveAttribute(
+    expect(within(navigation).getByRole("link", { name: /在线起盘/ })).toHaveAttribute(
+      "href",
+      "/app/profile/new",
+    );
+    expect(within(navigation).getByRole("link", { name: /学术与古籍库/ })).toHaveAttribute(
       "href",
       "/methodology",
     );
