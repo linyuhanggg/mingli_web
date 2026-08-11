@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Protocol, cast
 
+from app.readings.candidate_reference_closer import close_candidate_references
 from app.readings.errors import (
     NarrativeGenerationCancelled,
     NarrativeGenerationError,
@@ -17,7 +18,6 @@ from app.readings.narrative_contracts import (
     NarrativeRequest,
     OutputContract,
 )
-from app.readings.candidate_reference_closer import close_candidate_references
 from app.readings.narrative_guard import GuardResult
 from app.readings.narrative_guard import NarrativeGuard as NarrativeGuard
 from app.readings.public_copy import (

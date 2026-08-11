@@ -9,7 +9,7 @@ Guard's closed-world checks honest without inventing new prose or new claims.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, cast
+from typing import cast
 
 from app.readings.narrative_contracts import NarrativeBlock, NarrativeCandidate
 from app.readings.runtime_contracts import ReadingBrief
