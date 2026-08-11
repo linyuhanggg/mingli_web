@@ -63,11 +63,21 @@ def test_reading_migration_builds_immutable_phase_two_tables(
         ["reading_version_id", "attempt_number"],
     )
     assert has_unique("accepted_copies", ["reading_version_id"])
-    assert has_unique(
-        "reading_idempotency_keys",
-        ["key_hash", "owner_user_id", "owner_guest_session_id"],
-    )
     assert has_unique("reading_verifications", ["reading_version_id"])
+    idempotency_indexes = {
+        index["name"]: index
+        for index in inspector.get_indexes("reading_idempotency_keys")
+    }
+    assert idempotency_indexes["uq_reading_idem_user_key"]["unique"]
+    assert idempotency_indexes["uq_reading_idem_user_key"]["column_names"] == [
+        "key_hash",
+        "owner_user_id",
+    ]
+    assert idempotency_indexes["uq_reading_idem_guest_key"]["unique"]
+    assert idempotency_indexes["uq_reading_idem_guest_key"]["column_names"] == [
+        "key_hash",
+        "owner_guest_session_id",
+    ]
     assert any(
         index["name"] == "uq_reading_jobs_active_version" and index["unique"]
         for index in inspector.get_indexes("reading_jobs")

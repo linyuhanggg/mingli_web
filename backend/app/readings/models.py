@@ -301,11 +301,21 @@ class ReadingIdempotencyKey(Base):
             "OR (owner_user_id IS NULL AND owner_guest_session_id IS NOT NULL)",
             name="owner_exactly_one",
         ),
-        UniqueConstraint(
+        Index(
+            "uq_reading_idem_user_key",
             "key_hash",
             "owner_user_id",
+            unique=True,
+            sqlite_where=text("owner_user_id IS NOT NULL"),
+            postgresql_where=text("owner_user_id IS NOT NULL"),
+        ),
+        Index(
+            "uq_reading_idem_guest_key",
+            "key_hash",
             "owner_guest_session_id",
-            name="uq_reading_idempotency_keys_owner_key",
+            unique=True,
+            sqlite_where=text("owner_guest_session_id IS NOT NULL"),
+            postgresql_where=text("owner_guest_session_id IS NOT NULL"),
         ),
         Index(
             "ix_reading_idempotency_keys_reading_version_id",
