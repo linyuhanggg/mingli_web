@@ -1,9 +1,0 @@
-schema_version: 1
-module_path: contracts
-title: FateRadar API 契约定义（OpenAPI + JSON Schema）
-scope:
-    - contracts/
-source_files: []
-depends_on: []
-related_to:
-    - path: backend/readings_orchestrator

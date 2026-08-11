@@ -34,3 +34,6 @@ tmp/
 
 # Local signed runtime install for real adapter smoke
 .runtime/
+
+# Qoder generated artifacts (repowiki, better-harness); see docs/plans/2026-08-12-qoder-generated-assets-migration.md
+.qoder/
