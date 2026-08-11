@@ -914,14 +914,29 @@ components:
           type: string
           minLength: 1
           maxLength: 300
-    VerificationRequest:
+    VerificationResultItem:
       type: object
       additionalProperties: false
-      required: [outcome]
+      required: [fact_ref, outcome]
       properties:
+        fact_ref:
+          type: string
+          minLength: 1
+          maxLength: 200
         outcome:
           type: string
           enum: [accepted, partial, disagreed, unknown]
+    VerificationRequest:
+      type: object
+      additionalProperties: false
+      required: [results]
+      properties:
+        results:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            $ref: "#/components/schemas/VerificationResultItem"
         note:
           type: [string, "null"]
           maxLength: 500
@@ -1209,7 +1224,7 @@ components:
     ReadingVerificationSummary:
       type: object
       additionalProperties: false
-      required: [verification_id, reading_version_id, outcome, note, created_at]
+      required: [verification_id, reading_version_id, results, note, created_at]
       properties:
         verification_id:
           type: string
@@ -1217,9 +1232,10 @@ components:
         reading_version_id:
           type: string
           format: uuid
-        outcome:
-          type: string
-          enum: [accepted, partial, disagreed, unknown]
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/VerificationResultItem"
         note:
           type: [string, "null"]
           maxLength: 500

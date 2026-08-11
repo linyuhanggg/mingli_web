@@ -93,6 +93,20 @@ function factPanel() {
         },
         display_text: "当前结构更支持持续积累。",
       },
+      {
+        ref: "fact:opaque-2",
+        subject_ref: "profile-version:secret-profile-id",
+        kind_id: "fact:career-rhythm",
+        value: { fixture: "steady" },
+        display_text: "近期节奏适合稳步收尾。",
+      },
+      {
+        ref: "fact:opaque-3",
+        subject_ref: "profile-version:secret-profile-id",
+        kind_id: "fact:career-support",
+        value: { fixture: "long-term" },
+        display_text: "资源支持来自长期协作。",
+      },
     ],
     evidence: [
       {
@@ -215,7 +229,9 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    expect(await screen.findByText("当前结构更支持持续积累。")).toBeVisible();
+    expect(
+      (await screen.findAllByText("当前结构更支持持续积累。")).length,
+    ).toBeGreaterThan(0);
     expect(screen.getByText("滴天髓")).toBeVisible();
     expect(screen.getByText("顺势而为，先定其基。")).toBeVisible();
     expect(
@@ -896,7 +912,7 @@ describe("waiting_input requirements[].any_of[]", () => {
 });
 
 describe("verification and follow-up", () => {
-  it("submits the product-authoritative four-outcome verification with optional note", async () => {
+  it("submits three independent per-fact verification results with optional note", async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(guestSession())
@@ -905,7 +921,11 @@ describe("verification and follow-up", () => {
           {
             verification_id: "66666666-6666-4666-8666-666666666666",
             reading_version_id: VERSION_ID,
-            outcome: "partial",
+            results: [
+              { fact_ref: "fact:opaque-1", outcome: "partial" },
+              { fact_ref: "fact:opaque-2", outcome: "accepted" },
+              { fact_ref: "fact:opaque-3", outcome: "unknown" },
+            ],
             note: "出生地点有出入",
             created_at: "2026-08-10T02:00:00Z",
           },
@@ -915,9 +935,23 @@ describe("verification and follow-up", () => {
     vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();
 
-    render(<VerificationForm readingId={VERSION_ID} />);
-    expect(screen.getAllByRole("radio")).toHaveLength(4);
-    await user.click(screen.getByRole("radio", { name: "部分符合" }));
+    render(<VerificationForm readingId={VERSION_ID} facts={factPanel().facts} />);
+    expect(screen.getAllByRole("radio")).toHaveLength(12);
+    const groups = screen.getAllByRole("group");
+    expect(groups).toHaveLength(3);
+    expect(groups[0]).toHaveTextContent("当前结构更支持持续积累。");
+    expect(groups[1]).toHaveTextContent("近期节奏适合稳步收尾。");
+    expect(groups[2]).toHaveTextContent("资源支持来自长期协作。");
+
+    await user.click(
+      within(groups[0]).getByRole("radio", { name: "部分符合" }),
+    );
+    await user.click(
+      within(groups[1]).getByRole("radio", { name: "符合" }),
+    );
+    await user.click(
+      within(groups[2]).getByRole("radio", { name: "暂时不知道" }),
+    );
     await user.type(screen.getByLabelText(/补充说明/), "出生地点有出入");
     await user.click(screen.getByRole("button", { name: /提交核对结果/ }));
 
@@ -927,9 +961,34 @@ describe("verification and follow-up", () => {
       `/api/v1/readings/${VERSION_ID}/verification`,
     );
     expect(JSON.parse(String(verificationCall[1]?.body))).toEqual({
-      outcome: "partial",
+      results: [
+        { fact_ref: "fact:opaque-1", outcome: "partial" },
+        { fact_ref: "fact:opaque-2", outcome: "accepted" },
+        { fact_ref: "fact:opaque-3", outcome: "unknown" },
+      ],
       note: "出生地点有出入",
     });
+    expect(await screen.findByText(/当前结构更支持持续积累。：部分符合/)).toBeVisible();
+  });
+
+  it("declines to collect verification when fewer than three public facts exist", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(guestSession());
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <VerificationForm
+        readingId={VERSION_ID}
+        facts={[factPanel().facts[0]]}
+      />,
+    );
+
+    expect(
+      screen.getByText(/可用于核对的公开事实不足三条/),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: /提交核对结果/ }),
+    ).not.toBeInTheDocument();
+    expect(callsTo(fetchMock, "/verification")).toHaveLength(0);
   });
 
   it("renders an existing verification from the result instead of asking again", async () => {
@@ -940,7 +999,11 @@ describe("verification and follow-up", () => {
             verification: {
               verification_id: "66666666-6666-4666-8666-666666666666",
               reading_version_id: VERSION_ID,
-              outcome: "partial",
+              results: [
+                { fact_ref: "fact:opaque-1", outcome: "partial" },
+                { fact_ref: "fact:opaque-2", outcome: "accepted" },
+                { fact_ref: "fact:opaque-3", outcome: "disagreed" },
+              ],
               note: "部分时间不确定",
               created_at: "2026-08-10T02:00:00Z",
             },
@@ -953,7 +1016,9 @@ describe("verification and follow-up", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    expect(await screen.findByText(/已保存：部分符合/)).toBeVisible();
+    expect(await screen.findByText(/已保存核对结果/)).toBeVisible();
+    expect(screen.getByText(/当前结构更支持持续积累。：部分符合/)).toBeVisible();
+    expect(screen.getByText(/资源支持来自长期协作。：不符合/)).toBeVisible();
     expect(screen.getByText("部分时间不确定")).toBeVisible();
     expect(screen.queryByRole("button", { name: /提交核对结果/ })).not.toBeInTheDocument();
   });

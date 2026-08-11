@@ -29,6 +29,7 @@ from app.readings.request_compiler import RequestCompilationError
 from app.readings.service import (
     IdempotencyConflictError,
     InvalidReadingInputError,
+    InvalidVerificationError,
     ProfileVersionNotOwnedError,
     ReadingAlreadyQueuedError,
     ReadingNotAcceptedError,
@@ -79,6 +80,8 @@ def _reading_problem(error: ReadingServiceError) -> ApiProblem:
         return ApiProblem(status=409, title="Reading is already queued")
     if isinstance(error, ReadingNotAcceptedError):
         return ApiProblem(status=409, title="Reading is not accepted")
+    if isinstance(error, InvalidVerificationError):
+        return ApiProblem(status=400, title="Invalid verification request")
     if isinstance(error, RuntimeReleaseUnavailableError):
         return ApiProblem(status=503, title="Runtime release unavailable")
     return ApiProblem(status=400, title="Invalid request")
@@ -349,7 +352,7 @@ async def submit_reading_verification(
         summary, created = await _service(request, session).submit_verification(
             owner,
             version_id=reading_version_id,
-            outcome=payload.outcome,
+            results=payload.results,
             note=payload.note,
         )
     except ReadingServiceError as error:

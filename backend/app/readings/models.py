@@ -356,10 +356,6 @@ class ReadingVerification(Base):
             "reading_version_id",
             name="uq_reading_verifications_reading_version_id",
         ),
-        CheckConstraint(
-            "outcome IN ('accepted', 'partial', 'disagreed', 'unknown')",
-            name="outcome_allowed",
-        ),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
@@ -368,7 +364,7 @@ class ReadingVerification(Base):
         ForeignKey("reading_versions.id", ondelete="CASCADE"),
         nullable=False,
     )
-    outcome: Mapped[str] = mapped_column(String(16), nullable=False)
+    results: Mapped[list[dict[str, Any]]] = mapped_column(JSON_TYPE, nullable=False)
     note: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

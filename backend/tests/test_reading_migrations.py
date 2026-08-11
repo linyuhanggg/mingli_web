@@ -105,9 +105,6 @@ def test_reading_migration_builds_immutable_phase_two_tables(
         "reading_idempotency_keys": {
             "ck_reading_idempotency_keys_owner_exactly_one",
         },
-        "reading_verifications": {
-            "ck_reading_verifications_outcome_allowed",
-        },
         "reading_versions": {
             "ck_reading_versions_state_token_envelope_all_or_none",
             "ck_reading_versions_last_result_envelope_all_or_none",
@@ -119,6 +116,9 @@ def test_reading_migration_builds_immutable_phase_two_tables(
         assert names <= {
             constraint["name"] for constraint in inspector.get_check_constraints(table)
         }
+    assert (
+        inspector.get_check_constraints("reading_verifications") == []
+    ), "outcome whitelist moves to the API contract with fact_ref-level results"
 
     accepted_columns = {
         column["name"]: column for column in inspector.get_columns("accepted_copies")
@@ -138,7 +138,8 @@ def test_reading_migration_builds_immutable_phase_two_tables(
     verification_columns = {
         column["name"]: column for column in inspector.get_columns("reading_verifications")
     }
-    assert verification_columns["outcome"]["nullable"] is False
+    assert "outcome" not in verification_columns
+    assert verification_columns["results"]["nullable"] is False
     assert verification_columns["note"]["nullable"] is True
     subject_profile_columns = {
         column["name"]: column for column in inspector.get_columns("subject_profiles")
@@ -210,11 +211,11 @@ def test_idempotency_key_owner_xor_is_enforced_by_the_migrated_database(
     engine.dispose()
 
 
-def test_verification_outcome_whitelist_is_enforced_by_the_migrated_database(
+def test_verification_results_are_required_by_the_migrated_database(
     tmp_path: Path,
     monkeypatch,
 ) -> None:  # type: ignore[no-untyped-def]
-    engine = upgraded_engine(tmp_path, monkeypatch, "verification-outcome.sqlite3")
+    engine = upgraded_engine(tmp_path, monkeypatch, "verification-results.sqlite3")
     _user_id, root_id, release_id = _seed_reading_parent_rows(engine)
     version_id = uuid4().hex
     with engine.begin() as connection:
@@ -229,8 +230,8 @@ def test_verification_outcome_whitelist_is_enforced_by_the_migrated_database(
         connection.execute(
             text(
                 "INSERT INTO reading_verifications "
-                "(id, reading_version_id, outcome) "
-                "VALUES (:id, :version_id, 'maybe')"
+                "(id, reading_version_id, results) "
+                "VALUES (:id, :version_id, NULL)"
             ),
             {"id": uuid4().hex, "version_id": version_id},
         )

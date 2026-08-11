@@ -19,6 +19,7 @@ from app.readings.api_schemas import (
     ReadingStartResponse,
     ReadingVerificationSummary,
     ReadingVersionSummary,
+    VerificationResultItem,
 )
 from app.readings.output_contracts import PREVIEW_V1
 from app.readings.public_fact_panel import project_public_fact_panel
@@ -60,6 +61,10 @@ class ReadingAlreadyQueuedError(ReadingServiceError):
 
 class ReadingNotAcceptedError(ReadingServiceError):
     """The Reading Version has no Accepted Copy to follow up or verify."""
+
+
+class InvalidVerificationError(ReadingServiceError):
+    """Verification results must reference distinct public fact refs."""
 
 
 class RuntimeReleaseUnavailableError(ReadingServiceError):
@@ -348,7 +353,7 @@ class ReadingService:
         owner: OwnerProtocol,
         *,
         version_id: UUID,
-        outcome: str,
+        results: list[VerificationResultItem],
         note: str | None,
     ) -> tuple[ReadingVerificationSummary, bool]:
         _root, version = await self._load_owned_version(
@@ -357,9 +362,27 @@ class ReadingService:
         )
         if version.status != ReadingStatus.ACCEPTED.value:
             raise ReadingNotAcceptedError("Reading is not accepted")
+        brief = await self.repository.load_fact_brief(version_id)
+        panel = project_public_fact_panel(brief) or {}
+        public_refs = {
+            fact.get("ref")
+            for fact in panel.get("facts") or []
+            if isinstance(fact, Mapping)
+        }
+        seen: set[str] = set()
+        for item in results:
+            if item.fact_ref in seen:
+                raise InvalidVerificationError(
+                    "verification results must reference distinct facts"
+                )
+            seen.add(item.fact_ref)
+            if item.fact_ref not in public_refs:
+                raise InvalidVerificationError(
+                    "verification results must reference public facts"
+                )
         saved, created = await self.repository.save_verification(
             version_id=version_id,
-            outcome=outcome,
+            results=[item.model_dump(mode="json") for item in results],
             note=note,
         )
         return _verification_summary(saved), created
@@ -802,7 +825,7 @@ def _verification_summary(record: Any) -> ReadingVerificationSummary:
     return ReadingVerificationSummary(
         verification_id=record.id,
         reading_version_id=record.reading_version_id,
-        outcome=record.outcome,
+        results=[VerificationResultItem.model_validate(item) for item in record.results],
         note=record.note,
         created_at=record.created_at,
     )

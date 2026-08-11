@@ -160,10 +160,15 @@ export type VerificationOutcome =
   | "disagreed"
   | "unknown";
 
+export type ReadingVerificationResult = {
+  fact_ref: string;
+  outcome: VerificationOutcome;
+};
+
 export type ReadingVerificationSummary = {
   verification_id: string;
   reading_version_id: string;
-  outcome: VerificationOutcome;
+  results: ReadingVerificationResult[];
   note: string | null;
   created_at: string;
 };
@@ -535,10 +540,10 @@ export async function submitReadingInput(
 
 export async function verifyReading(
   readingVersionId: string,
-  outcome: VerificationOutcome,
+  results: ReadingVerificationResult[],
   note?: string,
 ): Promise<ReadingVerificationSummary> {
-  const payload: { outcome: VerificationOutcome; note?: string } = { outcome };
+  const payload: { results: ReadingVerificationResult[]; note?: string } = { results };
   if (note?.trim()) {
     payload.note = note.trim();
   }

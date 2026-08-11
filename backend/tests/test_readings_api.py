@@ -99,7 +99,21 @@ def brief_payload(subject_ref: str, horizon: dict[str, Any]) -> dict[str, Any]:
                 "kind_id": "kind.structure",
                 "value": {"fixture": "stable"},
                 "display_text": "当前结构更支持持续积累。",
-            }
+            },
+            {
+                "ref": "fact:career-rhythm",
+                "subject_ref": subject_ref,
+                "kind_id": "kind.rhythm",
+                "value": {"fixture": "steady"},
+                "display_text": "近期节奏适合稳步收尾。",
+            },
+            {
+                "ref": "fact:career-support",
+                "subject_ref": subject_ref,
+                "kind_id": "kind.support",
+                "value": {"fixture": "long-term"},
+                "display_text": "资源支持来自长期协作。",
+            },
         ],
         "evidence": [
             {
@@ -776,7 +790,13 @@ async def test_reading_resources_are_owner_scoped_with_cross_owner_404(
         verified = await second.post(
             f"/api/v1/readings/{version_id}/verification",
             headers=second_headers,
-            json={"outcome": "unknown"},
+            json={
+                "results": [
+                    {"fact_ref": "fact:a", "outcome": "unknown"},
+                    {"fact_ref": "fact:b", "outcome": "unknown"},
+                    {"fact_ref": "fact:c", "outcome": "unknown"},
+                ]
+            },
         )
         followed = await second.post(
             f"/api/v1/readings/{version_id}/follow-up",
@@ -1131,6 +1151,13 @@ async def test_supply_input_active_job_collision_returns_conflict_not_500(
     assert polled.json()["input_request"] is not None
 
 
+VERIFICATION_RESULTS = [
+    {"fact_ref": "fact:career-structure", "outcome": "partial"},
+    {"fact_ref": "fact:career-rhythm", "outcome": "accepted"},
+    {"fact_ref": "fact:career-support", "outcome": "unknown"},
+]
+
+
 async def test_accepted_result_verification_and_idempotent_verification(
     client: AsyncClient,
     database: Any,
@@ -1174,13 +1201,13 @@ async def test_accepted_result_verification_and_idempotent_verification(
     first_verification = await client.post(
         f"/api/v1/readings/{version_id}/verification",
         headers=headers,
-        json={"outcome": "partial", "note": "部分准确"},
+        json={"results": VERIFICATION_RESULTS, "note": "部分准确"},
     )
 
     assert first_verification.status_code == 201
     verification_id = first_verification.json()["verification_id"]
     UUID(verification_id)
-    assert first_verification.json()["outcome"] == "partial"
+    assert first_verification.json()["results"] == VERIFICATION_RESULTS
     assert first_verification.json()["note"] == "部分准确"
 
     # A verification is saved independently: it must not enqueue a new job,
@@ -1201,13 +1228,13 @@ async def test_accepted_result_verification_and_idempotent_verification(
     rechecked = await client.get(f"/api/v1/readings/{version_id}/result")
     assert rechecked.status_code == 200
     assert rechecked.json()["verification"]["verification_id"] == verification_id
-    assert rechecked.json()["verification"]["outcome"] == "partial"
+    assert rechecked.json()["verification"]["results"] == VERIFICATION_RESULTS
     assert rechecked.json()["status"] == "accepted"
 
     second_verification = await client.post(
         f"/api/v1/readings/{version_id}/verification",
         headers=headers,
-        json={"outcome": "partial", "note": "部分准确"},
+        json={"results": VERIFICATION_RESULTS, "note": "部分准确"},
     )
 
     assert second_verification.status_code == 200
@@ -1216,8 +1243,135 @@ async def test_accepted_result_verification_and_idempotent_verification(
     async with database.sessions() as session:
         stored = list(await session.scalars(select(ReadingVerification)))
         assert len(stored) == 1
-        assert stored[0].outcome == "partial"
+        assert stored[0].results == VERIFICATION_RESULTS
         assert stored[0].note == "部分准确"
+
+
+async def _accepted_reading(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> tuple[dict[str, str], str]:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    started = await start_preview(
+        client,
+        headers,
+        confirmed["profile_version_id"],
+    )
+    version_id = started["reading_version_id"]
+    await advance_to_accepted(
+        database,
+        test_settings,
+        version_id=version_id,
+        subject_ref=f"profile-version:{confirmed['profile_version_id']}",
+    )
+    return headers, version_id
+
+
+async def test_verification_rejects_a_fact_ref_outside_the_public_panel(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers, version_id = await _accepted_reading(client, database, test_settings)
+
+    response = await client.post(
+        f"/api/v1/readings/{version_id}/verification",
+        headers=headers,
+        json={
+            "results": [
+                {"fact_ref": "fact:career-structure", "outcome": "accepted"},
+                {"fact_ref": "fact:career-rhythm", "outcome": "accepted"},
+                {"fact_ref": "fact:not-in-the-brief", "outcome": "partial"},
+            ]
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["title"] == "Invalid verification request"
+
+
+async def test_verification_rejects_duplicate_fact_refs(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers, version_id = await _accepted_reading(client, database, test_settings)
+
+    response = await client.post(
+        f"/api/v1/readings/{version_id}/verification",
+        headers=headers,
+        json={
+            "results": [
+                {"fact_ref": "fact:career-structure", "outcome": "accepted"},
+                {"fact_ref": "fact:career-structure", "outcome": "partial"},
+                {"fact_ref": "fact:career-support", "outcome": "unknown"},
+            ]
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["title"] == "Invalid verification request"
+
+
+async def test_verification_requires_exactly_three_results(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers, version_id = await _accepted_reading(client, database, test_settings)
+
+    too_few = await client.post(
+        f"/api/v1/readings/{version_id}/verification",
+        headers=headers,
+        json={
+            "results": [
+                {"fact_ref": "fact:career-structure", "outcome": "accepted"},
+                {"fact_ref": "fact:career-rhythm", "outcome": "accepted"},
+            ]
+        },
+    )
+    assert too_few.status_code == 400
+
+    too_many = await client.post(
+        f"/api/v1/readings/{version_id}/verification",
+        headers=headers,
+        json={
+            "results": [
+                *VERIFICATION_RESULTS,
+                {"fact_ref": "fact:career-structure", "outcome": "disagreed"},
+            ]
+        },
+    )
+    assert too_many.status_code == 400
+
+
+async def test_verification_requires_an_accepted_reading(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    started = await start_preview(
+        client,
+        headers,
+        confirmed["profile_version_id"],
+        idempotency_key="verification-not-ready",
+    )
+    version_id = started["reading_version_id"]
+
+    response = await client.post(
+        f"/api/v1/readings/{version_id}/verification",
+        headers=headers,
+        json={"results": VERIFICATION_RESULTS},
+    )
+
+    assert response.status_code == 409
+    assert response.json()["title"] == "Reading is not accepted"
 
 
 def test_verification_request_accepts_only_the_four_authoritative_outcomes() -> None:
@@ -1226,12 +1380,28 @@ def test_verification_request_accepts_only_the_four_authoritative_outcomes() -> 
         fromlist=["VerificationRequest"],
     )
     for outcome in ("accepted", "partial", "disagreed", "unknown"):
-        parsed = schemas.VerificationRequest.model_validate({"outcome": outcome})
-        assert parsed.outcome == outcome
+        parsed = schemas.VerificationRequest.model_validate(
+            {
+                "results": [
+                    {"fact_ref": "fact:a", "outcome": outcome},
+                    {"fact_ref": "fact:b", "outcome": "partial"},
+                    {"fact_ref": "fact:c", "outcome": "unknown"},
+                ]
+            }
+        )
+        assert parsed.results[0].outcome == outcome
         assert parsed.note is None
 
     with pytest.raises(ValidationError):
-        schemas.VerificationRequest.model_validate({"outcome": "accurate"})
+        schemas.VerificationRequest.model_validate(
+            {
+                "results": [
+                    {"fact_ref": "fact:a", "outcome": "accurate"},
+                    {"fact_ref": "fact:b", "outcome": "partial"},
+                    {"fact_ref": "fact:c", "outcome": "unknown"},
+                ]
+            }
+        )
 
 
 async def test_follow_up_creates_a_new_version_with_projected_prior_answer(

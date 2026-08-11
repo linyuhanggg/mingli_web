@@ -422,7 +422,11 @@ async def test_save_verification_handles_a_concurrent_duplicate_insert(
         )
         first, created_first = await repository.save_verification(
             version_id=version.id,
-            outcome="partial",
+            results=[
+                {"fact_ref": "fact:career-structure", "outcome": "partial"},
+                {"fact_ref": "fact:career-rhythm", "outcome": "accepted"},
+                {"fact_ref": "fact:career-support", "outcome": "unknown"},
+            ],
             note="部分准确",
         )
         assert created_first is True
@@ -446,7 +450,11 @@ async def test_save_verification_handles_a_concurrent_duplicate_insert(
         try:
             second, created_second = await repository.save_verification(
                 version_id=version.id,
-                outcome="disagreed",
+                results=[
+                    {"fact_ref": "fact:career-structure", "outcome": "disagreed"},
+                    {"fact_ref": "fact:career-rhythm", "outcome": "disagreed"},
+                    {"fact_ref": "fact:career-support", "outcome": "disagreed"},
+                ],
                 note="另一并发请求",
             )
         finally:
@@ -454,7 +462,7 @@ async def test_save_verification_handles_a_concurrent_duplicate_insert(
 
         assert created_second is False
         assert second.id == first.id
-        assert second.outcome == "partial"
+        assert second.results[0]["outcome"] == "partial"
         assert second.note == "部分准确"
 
         models = importlib.import_module("app.readings.models")
@@ -466,4 +474,4 @@ async def test_save_verification_handles_a_concurrent_duplicate_insert(
             )
         )
         assert len(stored) == 1
-        assert stored[0].outcome == "partial"
+        assert stored[0].results[0]["outcome"] == "partial"

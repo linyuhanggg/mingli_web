@@ -66,10 +66,17 @@ class FollowUpRequest(BaseModel):
     query: str | None = Field(default=None, min_length=1, max_length=300)
 
 
+class VerificationResultItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    fact_ref: str = Field(min_length=1, max_length=200)
+    outcome: Literal["accepted", "partial", "disagreed", "unknown"]
+
+
 class VerificationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    outcome: Literal["accepted", "partial", "disagreed", "unknown"]
+    results: list[VerificationResultItem] = Field(min_length=3, max_length=3)
     note: str | None = Field(default=None, max_length=500)
 
 
@@ -113,7 +120,7 @@ class ReadingVerificationSummary(BaseModel):
 
     verification_id: UUID
     reading_version_id: UUID
-    outcome: Literal["accepted", "partial", "disagreed", "unknown"]
+    results: list[VerificationResultItem]
     note: str | None
     created_at: datetime
 

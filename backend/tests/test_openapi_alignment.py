@@ -73,24 +73,42 @@ def test_neither_contract_declares_a_422_response() -> None:
                 assert "422" not in operation.get("responses", {})
 
 
-def test_verification_request_contract_is_four_value_and_aligned() -> None:
+def test_verification_request_contract_is_three_result_and_aligned() -> None:
     frozen_schemas = _frozen_schemas()
     runtime_schemas = _runtime_spec()["components"]["schemas"]
 
     frozen = frozen_schemas["VerificationRequest"]
     runtime = runtime_schemas["VerificationRequest"]
 
-    assert set(frozen["required"]) == set(runtime["required"]) == {"outcome"}
-    assert set(frozen["properties"]["outcome"]["enum"]) == set(
-        runtime["properties"]["outcome"]["enum"]
-    ) == {"accepted", "partial", "disagreed", "unknown"}
-    assert _is_nullable(frozen["properties"]["note"])
-    assert _is_nullable(runtime["properties"]["note"])
+    assert set(frozen["required"]) == set(runtime["required"]) == {"results"}
+    for schema in (frozen, runtime):
+        results = schema["properties"]["results"]
+        assert results["minItems"] == 3
+        assert results["maxItems"] == 3
+        assert results["items"] == {"$ref": "#/components/schemas/VerificationResultItem"}
+        assert _is_nullable(schema["properties"]["note"])
     assert frozen["properties"]["note"]["maxLength"] == 500
     assert runtime["properties"]["note"]["anyOf"][0]["maxLength"] == 500
 
 
-def test_verification_summary_contract_is_four_value_and_aligned() -> None:
+def test_verification_result_item_contract_is_aligned() -> None:
+    frozen_schemas = _frozen_schemas()
+    runtime_schemas = _runtime_spec()["components"]["schemas"]
+
+    frozen = frozen_schemas["VerificationResultItem"]
+    runtime = runtime_schemas["VerificationResultItem"]
+
+    assert set(frozen["required"]) == set(runtime["required"]) == {"fact_ref", "outcome"}
+    assert set(frozen["properties"]["outcome"]["enum"]) == set(
+        runtime["properties"]["outcome"]["enum"]
+    ) == {"accepted", "partial", "disagreed", "unknown"}
+    assert frozen["properties"]["fact_ref"]["type"] == "string"
+    assert runtime["properties"]["fact_ref"]["type"] == "string"
+    assert frozen["properties"]["fact_ref"]["maxLength"] == 200
+    assert runtime["properties"]["fact_ref"]["maxLength"] == 200
+
+
+def test_verification_summary_contract_is_three_result_and_aligned() -> None:
     frozen_schemas = _frozen_schemas()
     runtime_schemas = _runtime_spec()["components"]["schemas"]
 
@@ -100,11 +118,11 @@ def test_verification_summary_contract_is_four_value_and_aligned() -> None:
     assert set(frozen["required"]) == set(runtime["required"]) == {
         "verification_id",
         "reading_version_id",
-        "outcome",
+        "results",
         "note",
         "created_at",
     }
-    assert set(frozen["properties"]["outcome"]["enum"]) == set(
-        runtime["properties"]["outcome"]["enum"]
-    )
-    assert _is_nullable(frozen["properties"]["note"])
+    for schema in (frozen, runtime):
+        results = schema["properties"]["results"]
+        assert results["items"] == {"$ref": "#/components/schemas/VerificationResultItem"}
+        assert _is_nullable(schema["properties"]["note"])

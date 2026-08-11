@@ -409,6 +409,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
                 <h2 id="reading-review-title">复核与追问</h2>
                 <VerificationForm
                   readingId={readingId}
+                  facts={generalFactPanel?.facts ?? []}
                   initialVerification={result.verification}
                 />
                 <FollowUpForm readingId={readingId} />
@@ -501,6 +502,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               <h2 id="reading-review-title">复核与追问</h2>
               <VerificationForm
                 readingId={readingId}
+                facts={result.fact_panel?.facts ?? []}
                 initialVerification={result.verification}
               />
               <FollowUpForm readingId={readingId} />

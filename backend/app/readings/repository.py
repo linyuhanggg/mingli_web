@@ -379,7 +379,7 @@ class SqlReadingRepository:
         self,
         *,
         version_id: UUID,
-        outcome: str,
+        results: list[dict[str, str]],
         note: str | None,
     ) -> tuple[ReadingVerification, bool]:
         existing = await self.load_verification(version_id)
@@ -388,7 +388,7 @@ class SqlReadingRepository:
         verification = ReadingVerification(
             id=uuid4(),
             reading_version_id=version_id,
-            outcome=outcome,
+            results=results,
             note=note,
         )
         try:
