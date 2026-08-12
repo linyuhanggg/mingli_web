@@ -101,7 +101,7 @@
 
 ### A. 可信基线（先做）
 
-- [x] 指明**权威 Git 仓库**位置：Mac mini `/Volumes/Lexar/code/mingli_web`（`main`，无 remote）；MacBook `~/sync/code/mingli_web` 仅为文件同步副本，禁止在此 `git init`
+- [x] 指明**权威 Git 仓库**位置：Mac mini `/Volumes/Lexar/code/mingli_web`（`main`，private `origin` → `https://github.com/1960697431/mingli_web.git`）；MacBook `~/sync/code/mingli_web` 仅为文件同步副本，禁止在此 `git init`
 - [x] 根门禁全绿：`make check` 在 Lexar 权威仓通过（2026-08-12；backend ruff/mypy/pytest + web test/lint/typecheck/build）
 - [ ] PostgreSQL 上跑通当前因缺 `MINGLI_TEST_POSTGRES_URL` 而 skip 的并发/恢复测试
 - [ ] 确认 `0001→0008` 空库升级与旧库升级；应用可启动
