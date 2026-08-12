@@ -42,7 +42,10 @@ def create_app(
     resolved_chart_runtime_factory = (
         chart_runtime_factory or IsolatedChartRuntimeFactory(resolved_settings)
     )
-    resolved_chart_sessions = ChartSessionManager(resolved_chart_runtime_factory)
+    resolved_chart_sessions = ChartSessionManager(
+        resolved_chart_runtime_factory,
+        ttl_seconds=resolved_settings.chart_sync_session_ttl_seconds,
+    )
     owns_database = database is None
 
     @asynccontextmanager

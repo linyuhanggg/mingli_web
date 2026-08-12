@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Mapping
 from typing import Any
 
@@ -273,6 +274,97 @@ async def test_need_input_resumes_with_the_same_private_runtime_token(
     assert await _row_count(database, ReadingRoot) == 0
     assert await _row_count(database, ReadingJobRecord) == 0
     assert await _row_count(database, GenerationAttempt) == 0
+
+
+async def test_abandoned_need_input_and_idempotency_entries_expire(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    from app.main import create_app
+
+    executions = 0
+    closed = asyncio.Event()
+
+    class WaitingRuntime:
+        async def execute(self, command: MingliCommand) -> Prepared | Stopped:
+            nonlocal executions
+            executions += 1
+            assert isinstance(command, Prepare)
+            return Stopped(
+                reason="need_input",
+                public_copy="请选择夜子时口径。",
+                state_token="private-expiring-state-token",
+                input_request={
+                    "requirements": [
+                        {
+                            "any_of": [
+                                {
+                                    "id": "zi_policy",
+                                    "label": "夜子时口径",
+                                    "type_id": "choice",
+                                    "description": None,
+                                    "choices": [],
+                                }
+                            ]
+                        }
+                    ]
+                },
+            )
+
+    class WaitingFactory:
+        async def startup(self) -> None:
+            return None
+
+        async def open(self) -> ChartRuntimeLease:
+            return ChartRuntimeLease(WaitingRuntime(), cleanup=closed.set)
+
+        async def aclose(self) -> None:
+            return None
+
+    settings = test_settings.model_copy(
+        update={"chart_sync_session_ttl_seconds": 0.02}
+    )
+    application = create_app(
+        settings=settings,
+        database=database,
+        chart_runtime_factory=WaitingFactory(),
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as http_client:
+        headers = await create_guest(http_client)
+        confirmed = await create_confirmed_profile(http_client, headers)
+        request = {
+            "headers": {**headers, "Idempotency-Key": "chart-expiry-fixture-0001"},
+            "json": {"profile_version_id": confirmed["profile_version_id"]},
+        }
+        started = await http_client.post("/api/v1/charts/bazi/sync", **request)
+        handle = started.json()["chart_handle"]
+
+        await asyncio.wait_for(closed.wait(), timeout=0.5)
+        expired = await http_client.post(
+            f"/api/v1/charts/bazi/sync/{handle}/input",
+            headers={**headers, "Idempotency-Key": "chart-expiry-fixture-0002"},
+            json={"values": {"zi_policy": "midnight"}},
+        )
+        await asyncio.sleep(0.05)
+        forgotten = await http_client.post(
+            f"/api/v1/charts/bazi/sync/{handle}/input",
+            headers={**headers, "Idempotency-Key": "chart-expiry-fixture-0003"},
+            json={"values": {"zi_policy": "midnight"}},
+        )
+        replay_after_expiry = await http_client.post(
+            "/api/v1/charts/bazi/sync",
+            **request,
+        )
+
+    assert started.status_code == 200, started.text
+    assert expired.status_code == 410, expired.text
+    assert forgotten.status_code == 404, forgotten.text
+    assert replay_after_expiry.status_code == 200, replay_after_expiry.text
+    assert replay_after_expiry.json()["chart_handle"] != handle
+    assert executions == 2
 
 
 async def test_sync_chart_replays_same_idempotency_key_without_runtime_reexecution(

@@ -136,6 +136,7 @@ class Settings(BaseSettings):
     reading_write_rate_window_seconds: int = Field(default=60, ge=1)
     chart_sync_rate_limit: int = Field(default=6, ge=1)
     chart_sync_rate_window_seconds: int = Field(default=60, ge=1)
+    chart_sync_session_ttl_seconds: float = Field(default=10 * 60, gt=0)
     profile_write_rate_limit: int = Field(default=10, ge=1)
     profile_write_rate_window_seconds: int = Field(default=60, ge=1)
     # Dogfood gates (off by default so unit tests and local fake stacks stay open).

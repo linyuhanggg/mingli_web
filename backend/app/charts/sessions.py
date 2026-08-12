@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 from collections.abc import Callable, Coroutine, Mapping
 from dataclasses import dataclass, field
 from typing import Any
@@ -63,6 +64,7 @@ class ChartRuntimeUnavailableError(ChartSessionError):
 class _Operation:
     fingerprint: str
     task: asyncio.Task[BaziChartSyncResponse]
+    expiry: asyncio.TimerHandle | None = None
 
 
 @dataclass(slots=True)
@@ -75,34 +77,63 @@ class _PendingChart:
     input_request: dict[str, Any]
     lease: ChartRuntimeLease
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    expiry: asyncio.TimerHandle | None = None
+
+
+logger = logging.getLogger(__name__)
 
 
 class ChartSessionManager:
     """Keep only the opaque continuity needed to finish synchronous prepare."""
 
-    def __init__(self, runtime_factory: ChartRuntimeFactory) -> None:
+    def __init__(
+        self,
+        runtime_factory: ChartRuntimeFactory,
+        *,
+        ttl_seconds: float = 10 * 60,
+    ) -> None:
+        if ttl_seconds <= 0:
+            raise ValueError("chart session TTL must be positive")
         self._runtime_factory = runtime_factory
+        self._ttl_seconds = ttl_seconds
         self._operations: dict[tuple[str, str], _Operation] = {}
         self._pending: dict[str, _PendingChart] = {}
         self._gone: set[tuple[str, str]] = set()
+        self._gone_expiry: dict[tuple[str, str], asyncio.TimerHandle] = {}
+        self._expiry_tasks: set[asyncio.Task[None]] = set()
         self._operation_lock = asyncio.Lock()
+        self._closed = False
 
     async def startup(self) -> None:
         await self._runtime_factory.startup()
 
     async def aclose(self) -> None:
-        tasks = [operation.task for operation in self._operations.values()]
-        for task in tasks:
-            if not task.done():
-                task.cancel()
-        if tasks:
-            await asyncio.gather(*tasks, return_exceptions=True)
+        self._closed = True
+        for operation in self._operations.values():
+            if operation.expiry is not None:
+                operation.expiry.cancel()
+        for timer in self._gone_expiry.values():
+            timer.cancel()
+        operation_tasks = [operation.task for operation in self._operations.values()]
+        for operation_task in operation_tasks:
+            if not operation_task.done():
+                operation_task.cancel()
+        if operation_tasks:
+            await asyncio.gather(*operation_tasks, return_exceptions=True)
         pending = list(self._pending.values())
         self._pending.clear()
         for chart in pending:
+            if chart.expiry is not None:
+                chart.expiry.cancel()
             await chart.lease.aclose()
+        expiry_tasks = list(self._expiry_tasks)
+        for expiry_task in expiry_tasks:
+            expiry_task.cancel()
+        if expiry_tasks:
+            await asyncio.gather(*expiry_tasks, return_exceptions=True)
         self._operations.clear()
         self._gone.clear()
+        self._gone_expiry.clear()
         await self._runtime_factory.aclose()
 
     async def start(
@@ -177,6 +208,13 @@ class ChartSessionManager:
             else:
                 task = asyncio.create_task(operation())
                 self._operations[key] = _Operation(fingerprint=fingerprint, task=task)
+
+                def schedule_expiry(
+                    done: asyncio.Future[BaziChartSyncResponse],
+                ) -> None:
+                    self._schedule_operation_expiry(key, done)
+
+                task.add_done_callback(schedule_expiry)
         return await asyncio.shield(task)
 
     async def _start_once(
@@ -204,6 +242,7 @@ class ChartSessionManager:
                     stopped=result,
                 )
                 self._pending[pending.handle] = pending
+                self._refresh_pending_expiry(pending)
                 keep_lease = True
                 return response
             if isinstance(result, Stopped):
@@ -264,6 +303,7 @@ class ChartSessionManager:
                 pending.prepare = prepare
                 pending.state_token = state_token
                 pending.input_request = input_request.model_dump(mode="json")
+                self._refresh_pending_expiry(pending)
                 return BaziChartNeedInputResponse(
                     profile_version_id=pending.profile_version_id,
                     status="need_input",
@@ -306,8 +346,82 @@ class ChartSessionManager:
 
     async def _retire(self, pending: _PendingChart) -> None:
         self._pending.pop(pending.handle, None)
-        self._gone.add((pending.owner_key, pending.handle))
+        if pending.expiry is not None:
+            pending.expiry.cancel()
+            pending.expiry = None
+        self._remember_gone((pending.owner_key, pending.handle))
         await pending.lease.aclose()
+
+    def _schedule_operation_expiry(
+        self,
+        key: tuple[str, str],
+        task: asyncio.Future[BaziChartSyncResponse],
+    ) -> None:
+        if self._closed:
+            return
+        operation = self._operations.get(key)
+        if operation is None or operation.task is not task:
+            return
+        operation.expiry = asyncio.get_running_loop().call_later(
+            self._ttl_seconds,
+            self._expire_operation,
+            key,
+            task,
+        )
+
+    def _expire_operation(
+        self,
+        key: tuple[str, str],
+        task: asyncio.Future[BaziChartSyncResponse],
+    ) -> None:
+        operation = self._operations.get(key)
+        if operation is not None and operation.task is task:
+            self._operations.pop(key, None)
+
+    def _refresh_pending_expiry(self, pending: _PendingChart) -> None:
+        if pending.expiry is not None:
+            pending.expiry.cancel()
+        pending.expiry = asyncio.get_running_loop().call_later(
+            self._ttl_seconds,
+            self._schedule_pending_expiry,
+            pending,
+        )
+
+    def _schedule_pending_expiry(self, pending: _PendingChart) -> None:
+        if self._closed:
+            return
+        task = asyncio.create_task(self._expire_pending(pending))
+        self._expiry_tasks.add(task)
+        task.add_done_callback(self._expiry_task_done)
+
+    async def _expire_pending(self, pending: _PendingChart) -> None:
+        async with pending.lock:
+            if self._pending.get(pending.handle) is pending:
+                await self._retire(pending)
+
+    def _expiry_task_done(self, task: asyncio.Task[None]) -> None:
+        self._expiry_tasks.discard(task)
+        if task.cancelled():
+            return
+        try:
+            task.result()
+        except Exception:
+            logger.exception("chart_session_expiry_failed")
+
+    def _remember_gone(self, key: tuple[str, str]) -> None:
+        self._gone.add(key)
+        previous = self._gone_expiry.pop(key, None)
+        if previous is not None:
+            previous.cancel()
+        self._gone_expiry[key] = asyncio.get_running_loop().call_later(
+            self._ttl_seconds,
+            self._forget_gone,
+            key,
+        )
+
+    def _forget_gone(self, key: tuple[str, str]) -> None:
+        self._gone.discard(key)
+        self._gone_expiry.pop(key, None)
 
 
 def _ready_response(
