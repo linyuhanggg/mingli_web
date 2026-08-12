@@ -105,4 +105,31 @@ describe("BaziFlow", () => {
     expect(await screen.findByText("命盘已就绪")).toBeVisible();
     expect(screen.getByText("甲子")).toBeVisible();
   });
+
+  it("keeps the existing career preview as an explicit deep-reading CTA", async () => {
+    const user = userEvent.setup();
+    render(<BaziFlow />);
+
+    await user.selectOptions(await screen.findByLabelText("档案版本"), profileVersionId);
+    await user.click(screen.getByRole("button", { name: "同步排盘" }));
+    await screen.findByText("命盘已就绪");
+
+    await user.click(
+      screen.getByRole("button", { name: "进入事业深度解读" }),
+    );
+
+    await waitFor(() =>
+      expect(api.startPreviewReading).toHaveBeenCalledWith(
+        {
+          profile_version_id: profileVersionId,
+          dimension_ids: ["career"],
+          query: "查看这个档案的事业与工作主题",
+        },
+        expect.any(String),
+      ),
+    );
+    expect(navigation.push).toHaveBeenCalledWith(
+      "/app/readings/33333333-3333-4333-8333-333333333333",
+    );
+  });
 });

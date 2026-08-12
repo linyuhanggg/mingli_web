@@ -109,6 +109,40 @@
   letter-spacing: 0.12em;
 }
 
+.deepReading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.15rem 0.2rem 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.deepReading h3,
+.deepReading p {
+  margin: 0;
+}
+
+.deepReading h3 {
+  font-family: var(--font-serif);
+  font-size: 1.08rem;
+  font-weight: 600;
+}
+
+.deepReading p {
+  max-width: 40rem;
+  margin-top: 0.3rem;
+  color: var(--ink-700);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.deepReading button {
+  min-height: 2.75rem;
+  flex: 0 0 auto;
+  font-size: 0.95rem;
+}
+
 @media (max-width: 42rem) {
   .resultHeader {
     align-items: start;
@@ -118,5 +152,10 @@
 
   .resultHeader > p {
     text-align: left;
+  }
+
+  .deepReading {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

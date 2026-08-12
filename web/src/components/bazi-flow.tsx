@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -11,6 +12,7 @@ import { BaziChart } from "@/components/readings/bazi-chart";
 import {
   formatProfileOption,
   listProfiles,
+  startPreviewReading,
   syncBaziChart,
   type BaziChartNeedInputResponse,
   type BaziChartReadyResponse,
@@ -31,6 +33,7 @@ type BaziFormValues = z.infer<typeof baziSchema>;
 export function BaziFlow({
   initialProfileVersionId = "",
 }: Readonly<{ initialProfileVersionId?: string }>) {
+  const router = useRouter();
   const [profiles, setProfiles] = useState<ProfileSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -42,8 +45,12 @@ export function BaziFlow({
   );
   const [pendingInput, setPendingInput] =
     useState<BaziChartNeedInputResponse | null>(null);
+  const [deepBusy, setDeepBusy] = useState(false);
+  const [deepError, setDeepError] = useState("");
   const busyRef = useRef(false);
+  const deepBusyRef = useRef(false);
   const intentKeyRef = useRef<IntentKey | null>(null);
+  const deepIntentKeyRef = useRef<IntentKey | null>(null);
   const {
     register,
     handleSubmit,
@@ -102,14 +109,16 @@ export function BaziFlow({
 
   function resetChart() {
     intentKeyRef.current = null;
+    deepIntentKeyRef.current = null;
     setChartResult(null);
     setPendingInput(null);
     setSubmitError("");
+    setDeepError("");
   }
 
   const handleStart = useCallback(
     async (values: BaziFormValues) => {
-      if (busyRef.current) return;
+      if (busyRef.current || deepBusyRef.current) return;
       busyRef.current = true;
       setBusy(true);
       setSubmitError("");
@@ -138,6 +147,33 @@ export function BaziFlow({
     },
     [],
   );
+
+  const handleDeepReading = useCallback(async () => {
+    if (!chartResult || busyRef.current || deepBusyRef.current) return;
+    deepBusyRef.current = true;
+    setDeepBusy(true);
+    setDeepError("");
+    const payload = {
+      profile_version_id: chartResult.profile_version_id,
+      query: "查看这个档案的事业与工作主题",
+      dimension_ids: ["career" as const],
+    };
+    const intent = stableKeyForIntent(deepIntentKeyRef.current, payload);
+    deepIntentKeyRef.current = intent;
+    try {
+      const response = await startPreviewReading(payload, intent.key);
+      router.push(`/app/readings/${response.reading_version_id}`);
+    } catch (reason) {
+      setDeepError(
+        reason instanceof Error
+          ? reason.message
+          : "深度解读启动失败，请稍后重试。",
+      );
+    } finally {
+      deepBusyRef.current = false;
+      setDeepBusy(false);
+    }
+  }, [chartResult, router]);
 
   return (
     <div className={styles.flow}>
@@ -190,7 +226,7 @@ export function BaziFlow({
               <select
                 id="bazi-profile"
                 className={formControls.input}
-                disabled={busy}
+                disabled={busy || deepBusy}
                 required
                 aria-required="true"
                 aria-invalid={Boolean(errors.profile_version_id)}
@@ -244,7 +280,7 @@ export function BaziFlow({
               <button
                 className={clsx(formControls.action, formControls.actionPrimary)}
                 type="submit"
-                disabled={busy}
+                disabled={busy || deepBusy}
                 aria-busy={busy}
               >
                 {busy ? "正在排盘…" : "同步排盘"}
@@ -270,6 +306,28 @@ export function BaziFlow({
             <p>未创建解读任务 · 未调用模型 · 未核销权益</p>
           </header>
           <BaziChart chart={chartView} title="本命细盘" />
+          <div className={styles.deepReading}>
+            <div>
+              <h3>想看白话判断？</h3>
+              <p>
+                进入现有事业深度解读流程后，才会创建解读任务；权益与交付规则沿用原链路。
+              </p>
+            </div>
+            <button
+              className={clsx(formControls.action, formControls.actionPrimary)}
+              type="button"
+              disabled={deepBusy}
+              aria-busy={deepBusy}
+              onClick={() => void handleDeepReading()}
+            >
+              {deepBusy ? "正在进入深度解读…" : "进入事业深度解读"}
+            </button>
+          </div>
+          {deepError ? (
+            <p className={styles.error} role="alert" aria-live="polite">
+              {deepError}
+            </p>
+          ) : null}
         </section>
       ) : null}
     </div>
