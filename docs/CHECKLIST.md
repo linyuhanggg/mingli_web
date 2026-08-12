@@ -34,7 +34,7 @@
 |----|--------|------|
 | 代码权威 | Mac mini `/Volumes/Lexar/code/mingli_web` | **唯一带完整 `.git` 的工作树**；无 remote |
 | MacBook 同步副本 | `~/sync/code/mingli_web` | Syncthing 文件镜像，**不要**在此 `git init`；提交请在 Lexar 上做 |
-| 基线 HEAD | `44a7ac5` | dogfood 功能 `47e18f8` + checklist sha 注记；其上为平台壳 `8c0c66e` |
+| 基线 HEAD | `47e18f8` | dogfood 功能提交；其后为 checklist 断点注记 |
 | Alembic head | `0009_owner_grants` | 含 admin staff + dogfood capability grants |
 | 测试服主机 | `fateradar-prod` / `106.14.10.235:18080` | SSH 别名；**联调机不是 production** |
 | 测试服 current（已记录） | `6ec1578` | `local` + fake OTP + one-shot Runtime + deepseek |
