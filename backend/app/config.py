@@ -136,6 +136,12 @@ class Settings(BaseSettings):
     reading_write_rate_window_seconds: int = Field(default=60, ge=1)
     profile_write_rate_limit: int = Field(default=10, ge=1)
     profile_write_rate_window_seconds: int = Field(default=60, ge=1)
+    # Dogfood gates (off by default so unit tests and local fake stacks stay open).
+    # Test server dogfood enables entitlement grants + daily ceilings via env.
+    dogfood_entitlement_gates_enabled: bool = False
+    dogfood_daily_reading_limit: int = Field(default=10, ge=1)
+    dogfood_daily_paid_reading_limit: int = Field(default=6, ge=1)
+    dogfood_daily_limit_window_seconds: float = Field(default=86_400.0, gt=0)
     trusted_proxy_cidrs: str = ""
     device_session_days: int = 30
     admin_session_hours: int = Field(default=8, ge=1, le=24)
@@ -238,6 +244,14 @@ class Settings(BaseSettings):
             raise ValueError("Fake Runtime adapter is forbidden in production")
         if self.environment == "production" and self.model_adapter == "fake":
             raise ValueError("Fake Model adapter is forbidden in production")
+        if self.environment == "production" and self.dogfood_entitlement_gates_enabled:
+            raise ValueError("dogfood entitlement gates are forbidden in production")
+        if (
+            self.dogfood_daily_paid_reading_limit > self.dogfood_daily_reading_limit
+        ):
+            raise ValueError(
+                "dogfood_daily_paid_reading_limit cannot exceed dogfood_daily_reading_limit"
+            )
         if self.model_provider != _P0_MODEL_PROVIDER:
             raise ValueError("P0 model provider is not approved")
         if self.model_profile_id != _P0_MODEL_PROFILE_ID:

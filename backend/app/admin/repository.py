@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import cast
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -20,11 +21,14 @@ class AdminRepository:
         return int(result or 0)
 
     async def get_staff_by_email(self, email: str) -> StaffUser | None:
-        return await self.session.scalar(
-            select(StaffUser).where(
-                StaffUser.email == email,
-                StaffUser.status == "active",
-            )
+        return cast(
+            StaffUser | None,
+            await self.session.scalar(
+                select(StaffUser).where(
+                    StaffUser.email == email,
+                    StaffUser.status == "active",
+                )
+            ),
         )
 
     async def get_staff(self, staff_id: UUID) -> StaffUser | None:
@@ -44,12 +48,15 @@ class AdminRepository:
         token_hash: str,
         now: datetime,
     ) -> StaffSession | None:
-        return await self.session.scalar(
-            select(StaffSession).where(
-                StaffSession.token_hash == token_hash,
-                StaffSession.revoked_at.is_(None),
-                StaffSession.expires_at > now,
-            )
+        return cast(
+            StaffSession | None,
+            await self.session.scalar(
+                select(StaffSession).where(
+                    StaffSession.token_hash == token_hash,
+                    StaffSession.revoked_at.is_(None),
+                    StaffSession.expires_at > now,
+                )
+            ),
         )
 
     async def revoke_session(self, session: StaffSession, revoked_at: datetime) -> None:

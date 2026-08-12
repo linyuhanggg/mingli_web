@@ -42,7 +42,8 @@ export default function PrivacyPage() {
         </article>
       </section>
       <p className={styles.notice}>
-        当前仅使用 Fake 外部适配器，不会把测试输入发送给真实短信、邮件、支付或模型供应商。
+        测试期/联调预览：入口可能无 TLS；允许使用真实邮箱 OTP 与模型供应商，但支付仍为 Fake/未接入。
+        你可请求按邮箱删除账户相关档案与解读；测试窗口结束默认清空测试库敏感数据。勿把本环境当作生产。
       </p>
     </EditorialPage>
   );

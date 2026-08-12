@@ -29,6 +29,7 @@ from app.readings.request_compiler import RequestCompilationError
 from app.readings.service import (
     IdempotencyConflictError,
     InvalidReadingInputError,
+    PaidReadingNotGrantedError,
     ProfileVersionNotOwnedError,
     ReadingAlreadyQueuedError,
     ReadingNotAcceptedError,
@@ -52,6 +53,30 @@ def _check_rate(owner: Owner, request: Request) -> None:
         key=f"{owner.kind}:{owner.id}",
         title="Too many reading requests",
     )
+
+
+def _check_dogfood_daily_limits(
+    owner: Owner,
+    request: Request,
+    *,
+    paid: bool,
+) -> None:
+    """Apply dogfood day ceilings only when entitlement gates are on."""
+    settings = request.app.state.settings
+    if not settings.dogfood_entitlement_gates_enabled:
+        return
+    owner_key = f"{owner.kind}:{owner.id}"
+    check_rate_limiter(
+        limiter=request.app.state.dogfood_daily_reading_limiter,
+        key=owner_key,
+        title="Daily reading limit reached",
+    )
+    if paid:
+        check_rate_limiter(
+            limiter=request.app.state.dogfood_daily_paid_reading_limiter,
+            key=owner_key,
+            title="Daily paid reading limit reached",
+        )
 
 
 def _start_response(
@@ -81,6 +106,8 @@ def _reading_problem(error: ReadingServiceError) -> ApiProblem:
         return ApiProblem(status=409, title="Reading is not accepted")
     if isinstance(error, RuntimeReleaseUnavailableError):
         return ApiProblem(status=503, title="Runtime release unavailable")
+    if isinstance(error, PaidReadingNotGrantedError):
+        return ApiProblem(status=403, title=error.title, detail=error.detail)
     return ApiProblem(status=400, title="Invalid request")
 
 
@@ -104,6 +131,7 @@ async def start_preview_reading(
     ),
 ) -> ReadingStartResponse:
     _check_rate(owner, request)
+    _check_dogfood_daily_limits(owner, request, paid=False)
     try:
         result = await _service(request, session).start_preview(
             owner,
@@ -141,6 +169,7 @@ async def start_today_reading(
     ),
 ) -> ReadingStartResponse:
     _check_rate(owner, request)
+    _check_dogfood_daily_limits(owner, request, paid=True)
     try:
         result = await _service(request, session).start_fortune(
             owner,
@@ -178,6 +207,7 @@ async def start_week_reading(
     ),
 ) -> ReadingStartResponse:
     _check_rate(owner, request)
+    _check_dogfood_daily_limits(owner, request, paid=True)
     try:
         result = await _service(request, session).start_fortune(
             owner,
@@ -215,6 +245,7 @@ async def start_liuyao_reading(
     ),
 ) -> ReadingStartResponse:
     _check_rate(owner, request)
+    _check_dogfood_daily_limits(owner, request, paid=True)
     cast_value = tuple(payload.cast) if isinstance(payload.cast, list) else payload.cast
     try:
         result = await _service(request, session).start_liuyao(

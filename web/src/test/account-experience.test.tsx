@@ -128,6 +128,7 @@ describe("identity-first application shell", () => {
     );
 
     expect(await screen.findByTestId("session-state")).toHaveTextContent("signedIn");
+    const accountCallsAtSignedIn = api.getAccount.mock.calls.length;
     const expiredRequests = await Promise.allSettled([
       getReadingResult("55555555-5555-4555-8555-555555555555"),
       getReadingResult("66666666-6666-4666-8666-666666666666"),
@@ -138,7 +139,7 @@ describe("identity-first application shell", () => {
     await waitFor(() => {
       expect(screen.getByTestId("session-state")).toHaveTextContent("signedOut");
     });
-    expect(api.getAccount).toHaveBeenCalledTimes(2);
+    expect(api.getAccount.mock.calls.length - accountCallsAtSignedIn).toBe(1);
   });
 
   it("revalidates a persistent signed-in shell when another browser tab may have logged out", async () => {

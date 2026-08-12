@@ -14,7 +14,7 @@ export default function PricingPage() {
     <EditorialPage
       eyebrow="FateRadar · Pricing"
       title="每一次付款，都绑定一份明确结果。"
-      intro="先免费建立信任，需要更完整的主题报告时再单次购买。当前在线支付尚未开放，不会产生真实扣款。"
+      intro="测试期说明：公网预览入口无 TLS、无真实支付。付费向解读（今日/本周/六爻）仅运营开通，不会产生扣款；正式商户接入前价格只作展示。"
     >
       <section className={styles.grid3} aria-label="商品列表">
         <article className={styles.card}>
@@ -23,7 +23,7 @@ export default function PricingPage() {
           <ul>
             <li>一个本人受测档案与确定性八字排盘</li>
             <li>有限白话概览与 3 条现实核对</li>
-            <li>今日/近七日摘要与六爻基础卦象</li>
+            <li>测试期可自助使用 Preview；付费向能力需运营开通</li>
           </ul>
         </article>
         <article className={styles.card}>
@@ -61,8 +61,8 @@ export default function PricingPage() {
       </section>
       <StatusPanel
         state="disabled"
-        title="在线购买暂未开放"
-        description="当前不开放自动续费、代币余额、充值钱包或永久无限 AI。真实微信与支付宝支付须在商户能力获批并完成小额验收后另行启用，按钮点击不会被写成已付款。"
+        title="测试期：无在线购买，付费轨仅运营开通"
+        description="当前不开放自动续费、代币余额、充值钱包或永久无限 AI。联调/dogfood 环境可能使用真实邮箱 OTP 与模型，但仍无微信支付/支付宝；数据可能被按人删除或在测试窗口结束后清空。按钮点击不会被写成已付款。"
       />
     </EditorialPage>
   );

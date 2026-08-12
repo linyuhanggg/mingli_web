@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import Settings
+from app.entitlements.service import EntitlementDeniedError, EntitlementService
 from app.profiles.service import OwnerProtocol, ProfileService, owner_ids
 from app.readings.api_schemas import (
     ReadingResultResponse,
@@ -78,6 +79,15 @@ class IdempotencyConflictError(ReadingServiceError):
     """An Idempotency-Key was reused for a different action or payload."""
 
 
+class PaidReadingNotGrantedError(ReadingServiceError):
+    """Dogfood paid capability is closed for this owner."""
+
+    def __init__(self, title: str, *, detail: str | None = None) -> None:
+        super().__init__(title)
+        self.title = title
+        self.detail = detail
+
+
 @dataclass(frozen=True, slots=True)
 class IdempotencyContext:
     key_hash: str
@@ -117,14 +127,22 @@ _INPUT_FIELD_POLICIES: dict[str, InputFieldPolicy] = {
 class ReadingService:
     def __init__(self, session: AsyncSession, settings: Settings) -> None:
         self.session = session
+        self.settings = settings
         self.repository = SqlReadingRepository(
             session,
             EnvelopeCipher.from_settings(settings),
         )
         self.profiles = ProfileService(session, settings)
+        self.entitlements = EntitlementService(session, settings)
         self._idempotency_secret = settings.identity_hash_key.get_secret_value().encode(
             "utf-8"
         )
+
+    async def _require_paid_action(self, owner: OwnerProtocol, *, action: str) -> None:
+        try:
+            await self.entitlements.require_paid_action(owner, action=action)
+        except EntitlementDeniedError as error:
+            raise PaidReadingNotGrantedError(error.title, detail=error.detail) from error
 
     async def start_preview(
         self,
@@ -187,6 +205,7 @@ class ReadingService:
         replayed = await self._replay_idempotency(owner, idempotency)
         if replayed is not None:
             return replayed, False
+        await self._require_paid_action(owner, action=action)
         profile = await self._owned_confirmed_profile(owner, profile_version_id)
         prepare = compile_fortune_prepare(
             action=action,
@@ -234,6 +253,7 @@ class ReadingService:
         replayed = await self._replay_idempotency(owner, idempotency)
         if replayed is not None:
             return replayed, False
+        await self._require_paid_action(owner, action="liuyao_one_question")
         resolved_subject_ref = subject_ref or f"liuyao:{uuid4().hex}"
         prepare = compile_liuyao_prepare(
             action="liuyao_one_question",

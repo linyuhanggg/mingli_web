@@ -238,19 +238,40 @@ type PostOptions = {
 
 let csrfToken = "";
 let csrfPromise: Promise<string> | null = null;
-const accountSessionInvalidationListeners = new Set<() => void>();
+type AccountSessionInvalidationListener = () => void | Promise<void>;
+const accountSessionInvalidationListeners = new Set<AccountSessionInvalidationListener>();
+/**
+ * Single-flight for private API 401 storms: concurrent/back-to-back notifies
+ * share one listener flush that stays open until every listener settles.
+ */
+let accountSessionInvalidationFlush: Promise<void> | null = null;
 
 const CSRF_COOKIE = "mingli_csrf";
 
-export function subscribeAccountSessionInvalidation(listener: () => void): () => void {
+export function subscribeAccountSessionInvalidation(
+  listener: AccountSessionInvalidationListener,
+): () => void {
   accountSessionInvalidationListeners.add(listener);
   return () => accountSessionInvalidationListeners.delete(listener);
 }
 
 function notifyAccountSessionInvalidated(): void {
-  for (const listener of accountSessionInvalidationListeners) {
-    listener();
+  if (accountSessionInvalidationListeners.size === 0) {
+    return;
   }
+  if (accountSessionInvalidationFlush) {
+    return;
+  }
+  const listeners = [...accountSessionInvalidationListeners];
+  accountSessionInvalidationFlush = (async () => {
+    await Promise.all(
+      listeners.map(async (listener) => {
+        await listener();
+      }),
+    );
+  })().finally(() => {
+    accountSessionInvalidationFlush = null;
+  });
 }
 
 export class ApiError extends Error {

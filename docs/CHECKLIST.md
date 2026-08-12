@@ -35,7 +35,7 @@
 | 代码权威 | Mac mini `/Volumes/Lexar/code/mingli_web` | **唯一带完整 `.git` 的工作树**；无 remote |
 | MacBook 同步副本 | `~/sync/code/mingli_web` | Syncthing 文件镜像，**不要**在此 `git init`；提交请在 Lexar 上做 |
 | 基线 HEAD | `8c0c66e` | `feat(platform): 增加管理后台与认证感知命理解读体验` |
-| Alembic head | `0008_admin_staff` | 含 admin staff 地基 |
+| Alembic head | `0009_owner_grants` | 含 admin staff + dogfood capability grants |
 | 测试服主机 | `fateradar-prod` / `106.14.10.235:18080` | SSH 别名；**联调机不是 production** |
 | 测试服 current（已记录） | `6ec1578` | `local` + fake OTP + one-shot Runtime + deepseek |
 | 测试服环境 | 非隔离 staging | 不可当生产放量证据 |
@@ -230,16 +230,16 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 
 ### 7.2 Dogfood 工程勾选
 
-- [ ] 文档收口提交（本文 + 删旧叙事 md + README 指向）
+- [x] 文档收口提交（本文 + 删旧叙事 md + README 指向）— `cbe95d9`
 - [ ] private GitHub remote + 基线 push（**需授权**）
-- [ ] migration：`entitlement` 最小表（owner user + capability 开关）
-- [ ] Reading：`start_today` / `week` / `liuyao` 前校验 grant；Preview 不拦
-- [ ] 日熔断：`MINGLI_DOGFOOD_DAILY_READING_LIMIT`（默认 10）、`MINGLI_DOGFOOD_DAILY_PAID_READING_LIMIT`（默认 6）
-- [ ] `scripts/dogfood_grant.py` / `scripts/dogfood_delete_user.py`（audit 日志）
-- [ ] 测试期文案（首页/定价/隐私：无 TLS、无真支付、数据可删将清）
-- [ ] 功能提交 + `make check` 绿
+- [x] migration：`owner_capability_grants`（owner user + capability 开关）— `0009_owner_grants`
+- [x] Reading：`start_today` / `week` / `liuyao` 前校验 grant；Preview 不拦（`MINGLI_DOGFOOD_ENTITLEMENT_GATES_ENABLED`）
+- [x] 日熔断：`MINGLI_DOGFOOD_DAILY_READING_LIMIT`（默认 10）、`MINGLI_DOGFOOD_DAILY_PAID_READING_LIMIT`（默认 6）
+- [x] `scripts/dogfood_grant.py` / `scripts/dogfood_delete_user.py`（audit 日志）
+- [x] 测试期文案（首页/定价/隐私：无 TLS、无真支付、数据可删将清）
+- [x] 功能实现本地 `make check` 绿（提交后回写 sha）
 - [ ] tag → 按 `infra/TEST_SERVER_RUNBOOK.md` 打 tar 部署（**需授权**）
-- [ ] `test.env`：`smtp` + `one-shot` + `deepseek` + 日限额
+- [ ] `test.env`：`smtp` + `one-shot` + `deepseek` + 日限额 + entitlement gates on
 - [ ] 服务器 grant 你的邮箱
 - [ ] 三条轨迹脚本 accepted
 - [ ] 浏览器三条手点 accepted

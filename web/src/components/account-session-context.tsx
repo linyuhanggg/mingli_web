@@ -100,7 +100,9 @@ export function AccountSessionProvider({ children }: Readonly<{ children: ReactN
       }
     }
     const unsubscribe = subscribeAccountSessionInvalidation(() => {
-      if (invalidationRefreshRef.current) return;
+      if (invalidationRefreshRef.current) {
+        return invalidationRefreshRef.current;
+      }
 
       const invalidationRefresh = (async () => {
         const currentRefresh = inFlightRefreshRef.current;
@@ -116,6 +118,7 @@ export function AccountSessionProvider({ children }: Readonly<{ children: ReactN
           invalidationRefreshRef.current = null;
         }
       });
+      return invalidationRefresh;
     });
     window.addEventListener("focus", refreshVisibleSession);
     document.addEventListener("visibilitychange", refreshVisibleSession);

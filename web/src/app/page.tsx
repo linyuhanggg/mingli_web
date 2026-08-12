@@ -236,7 +236,7 @@ export default function HomePage() {
                   <h2 id="pricing-title">免费能力与两种单次报告</h2>
                 </div>
                 <p>
-                  当前在线支付尚未开放；这里仅展示已经冻结的商品、追问期限与交付边界，不会把点击写成已付款。
+                  测试期无真实支付、预览入口可能无 TLS；付费向解读仅运营开通。这里只展示商品边界，不会把点击写成已付款。
                 </p>
               </div>
             </HomeSectionMotion>

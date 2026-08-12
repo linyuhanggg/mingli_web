@@ -43,6 +43,8 @@ def create_app(
         yield
         application.state.reading_write_rate_limiter.clear()
         application.state.profile_write_rate_limiter.clear()
+        application.state.dogfood_daily_reading_limiter.clear()
+        application.state.dogfood_daily_paid_reading_limiter.clear()
         application.state.guest_session_create_rate_limiter.clear()
         application.state.admin_login_rate_limiter.clear()
         if owns_database:
@@ -82,6 +84,14 @@ def create_app(
     application.state.profile_write_rate_limiter = WindowRateLimiter(
         limit=resolved_settings.profile_write_rate_limit,
         window_seconds=resolved_settings.profile_write_rate_window_seconds,
+    )
+    application.state.dogfood_daily_reading_limiter = WindowRateLimiter(
+        limit=resolved_settings.dogfood_daily_reading_limit,
+        window_seconds=resolved_settings.dogfood_daily_limit_window_seconds,
+    )
+    application.state.dogfood_daily_paid_reading_limiter = WindowRateLimiter(
+        limit=resolved_settings.dogfood_daily_paid_reading_limit,
+        window_seconds=resolved_settings.dogfood_daily_limit_window_seconds,
     )
     application.state.admin_login_rate_limiter = WindowRateLimiter(
         limit=resolved_settings.admin_login_rate_limit,

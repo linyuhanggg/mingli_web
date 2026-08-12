@@ -172,7 +172,7 @@ describe("responsive public home", () => {
     expect(within(pricing).getByText("¥9.90")).toBeVisible();
     expect(within(pricing).getByText(/7 天内 3 次同盘追问/)).toBeVisible();
     expect(within(pricing).getByText(/72 小时内 2 次同盘追问/)).toBeVisible();
-    expect(within(pricing).getByText(/当前在线支付尚未开放/)).toBeVisible();
+    expect(within(pricing).getByText(/测试期无真实支付/)).toBeVisible();
     for (const link of within(pricing).getAllByRole("link")) {
       expect(link).toHaveAttribute("href", "/pricing");
     }
