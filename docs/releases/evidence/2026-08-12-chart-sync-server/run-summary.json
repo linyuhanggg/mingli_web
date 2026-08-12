@@ -1,0 +1,85 @@
+{
+  "schema": "chart-sync-server-deploy-v1",
+  "date": "2026-08-12",
+  "environment": "local-code-test",
+  "host_alias": "fateradar-prod",
+  "public_entry": "http://106.14.10.235:18080",
+  "previous_release": "0586730052fc2c178b5e6725f37340274c830f8f",
+  "deployed_release": "ba4c8f68dbee2d3b8cc656e5ae55cf22bf307d4e",
+  "archive_sha256": "42282730e17a5e8781613ceb248138cd2c15b898222b11c096e9f20f3b27654e",
+  "archive_policy": "git-archive-excluding-.qoder",
+  "runtime": {
+    "adapter": "one-shot",
+    "startup_admission": "passed",
+    "api_state_root_scope": "private-temporary",
+    "shared_runtime_write_scope": "/opt/fateradar/shared/mingli-runtime/.venv.runtime.lock"
+  },
+  "cutover": {
+    "first_candidate": "bfdbb0ff8d37b057699237021bbdfb198469a5a9",
+    "first_candidate_result": "rolled-back",
+    "first_candidate_failure": "api systemd sandbox denied the pre-provisioned Runtime lock",
+    "rollback_health": "passed",
+    "final_cutover": "passed",
+    "second_restart": "passed"
+  },
+  "services": {
+    "api": "active",
+    "worker": "active",
+    "web": "active",
+    "nginx": "active",
+    "api_restarts": 0,
+    "worker_restarts": 0,
+    "web_restarts": 0
+  },
+  "public_smoke": {
+    "health": 200,
+    "api_live": 200,
+    "api_ready": 200,
+    "bazi_page": 200,
+    "chart_openapi_operations": 2,
+    "static_assets_checked": 8,
+    "static_assets_passed": 8,
+    "private_no_store": true,
+    "noindex": true
+  },
+  "synthetic_chart_sync": {
+    "http_status": 200,
+    "status": "ready",
+    "public_fact_count": 14,
+    "elapsed_ms": 3005.09,
+    "chart_handle_is_null": true,
+    "input_request_is_null": true,
+    "state_token_exposed": false,
+    "accepted_copy_exposed": false,
+    "reading_roots": 0,
+    "reading_jobs": 0,
+    "generation_attempts": 0,
+    "accepted_copies": 0,
+    "contains_real_profile_data": false
+  },
+  "quality_gates": {
+    "backend_passed": 541,
+    "backend_skipped": 90,
+    "web_passed": 262,
+    "ruff": "passed",
+    "mypy": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "production_build": "passed"
+  },
+  "acceptance_boundary": {
+    "manual_browser_qa": "pending-user-review",
+    "two_second_experience": "not-met-by-machine-sample",
+    "p95_evaluated": false,
+    "staging_ready": false,
+    "production_ready": false,
+    "phase_2_to_4_started": false
+  },
+  "untouched": [
+    "deep-reading-entitlement-path",
+    "nginx-public-preview-config",
+    "ufw",
+    "cloud-security-group",
+    "production-config"
+  ]
+}

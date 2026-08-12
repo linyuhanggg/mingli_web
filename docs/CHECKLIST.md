@@ -37,7 +37,7 @@
 | 基线 HEAD | `47e18f8` | dogfood 功能提交；其后为 checklist 断点注记 |
 | Alembic head | `0009_owner_grants` | 含 admin staff + dogfood capability grants |
 | 测试服主机 | `fateradar-prod` / `106.14.10.235:18080` | SSH 别名；**联调机不是 production** |
-| 测试服 current（已记录） | `0586730` | `local` + **smtp OTP** + one-shot Runtime + deepseek + dogfood gates on；旧 `7444601` 保留可回滚 |
+| 测试服 current（已记录） | `ba4c8f6` | Chart-first Phase 1；`local` + **smtp OTP** + one-shot Runtime + deepseek + dogfood gates on；旧 `0586730` 保留可回滚 |
 | 测试服环境 | 非隔离 staging | 不可当生产放量证据 |
 | Runtime 制品 | mingli-master **5.1 完整** | 13 Provider / 55 古籍 / 1328 evidence / 217 文件 manifest |
 | Runtime Gate | Mac mini `native-full` **已通过** | 证据见 §6 |
@@ -202,6 +202,7 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | Dogfood 三轨 accepted | `docs/releases/evidence/2026-08-12-dogfood-three-track/` |
 | Chart-first Phase 0 fact inventory | `docs/releases/evidence/2026-08-12-chart-fact-inventory/` |
 | Chart-first Phase 1 本地同步链路 | `docs/releases/evidence/2026-08-12-chart-sync-local/` |
+| Chart-first Phase 1 测试服同步链路 | `docs/releases/evidence/2026-08-12-chart-sync-server/` |
 
 验签脚本：`scripts/verify_frozen_runtime_release.py`  
 密钥检查（不打印密钥）：`scripts/check_production_secrets.py`
@@ -272,7 +273,7 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 5. **Phase 3**：判读层（旺衰/格局/用神/大运流年）按 fact 增量展示 + 分层解锁  
 6. 档案语义（真太阳时/农历等）与 §10 表单高级项并联，不另开大叙事  
 
-当前停在 **Phase 1 本地代码验收完成、测试服手验未授权**；Phase 2–4 未获追加授权，不施工。
+当前停在 **Phase 1 测试服已部署并通过机器验收，用户浏览器手点与 2 秒级体感仍待验收**；Phase 2–4 未获追加授权，不施工。
 
 ### 8.3 其后（原路线）
 
@@ -295,6 +296,7 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | 2026-08-12 | 授权部署 dogfood：`0586730` current；smtp/one-shot/deepseek/gates；三轨 API accepted |
 | 2026-08-12 | **产品转向 Chart-first / 青囊对齐（§10）**：主路径改为同步细盘工作台；异步解读为副路径；禁止新开 plans 叙事文件，进度只改本文 |
 | 2026-08-12 | §10 Phase 0 库存冻结、Phase 1 本地代码验收完成：同步 API + 同页细盘 + 现有 preview CTA；`make check` 绿；测试服手验、生产单写者接线与 p95 验收仍未完成 |
+| 2026-08-12 | 授权部署 Chart-first Phase 1：测试服 current=`ba4c8f6`；公网/二次重启/真实同步机器验收通过；单样本 `3005.09ms`，2 秒级手点与 p95 仍未通过 |
 
 ---
 
@@ -337,7 +339,7 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 4. 深度解读继续走现有 Orchestrator；从细盘页 CTA 带上 `profile_version_id` / chart handle。  
 5. OpenAPI + JSON Schema + 后端测试 + web 合同测试同步改。
 6. **窄例外只限 local/test Phase 1**：API 可为每次 sync 使用独立、可销毁、`0700` 临时 state root；不得写 Worker 的持久 state root。`need_input` handle / 幂等结果 TTL 为 10 分钟，过期清理 lease 与 token；进程重启须用户显式重排，不宣称 HA。
-7. `production` 对上述临时-root 工厂 fail closed；接入单活 Runtime / fenced hot standby 与 Brief 缓存并完成性能决策前，不部署本功能。当前本地单样本 `933.77ms` 只证明 2 秒级可行，不等于 p95≤500ms 验收。
+7. `production` 对上述临时-root 工厂 fail closed；接入单活 Runtime / fenced hot standby 与 Brief 缓存并完成性能决策前，不部署本功能。本地单样本 `933.77ms`、测试服单样本 `3005.09ms` 均不等于 p95≤500ms 验收；测试服样本也未达到 2 秒级目标。
 
 ### 10.4 分期与勾选
 
@@ -369,10 +371,10 @@ MVP 另展示已投影的 `day_master` / `month_command` 摘要并复用可点�
 - [x] 服务：复用 `compile_bazi_prepare` + Runtime adapter；**禁止**入队 Worker
 - [x] Web：`/app/bazi` 已改为「选档案 → 同步看盘」；同页展示抬头 + 四柱卡 + 明细矩阵 + 现有 `BaziChart` workspace
 - [x] CTA：「进入事业深度解读」→ 现有 `startPreviewReading` 异步链路
-- [x] 测试：API 合同（无 Web Reading/Job、Model 与 entitlement 调用即失败）；web 组件测；`make check`（backend 540 passed / 90 skipped；web 262 passed；ruff/mypy/lint/typecheck/build 绿）
-- [ ] 测试服部署后手点：2 秒级出盘体感  
+- [x] 测试：API 合同（无 Web Reading/Job、Model 与 entitlement 调用即失败）；web 组件测；`make check`（backend 541 passed / 90 skipped；web 262 passed；ruff/mypy/lint/typecheck/build 绿）
+- [ ] 测试服部署后手点：2 秒级出盘体感（已部署并完成机器同步；单样本 `3005.09ms`，待用户浏览器手点且当前未达 2 秒）
 
-Phase 1 当前结论：**本地代码验收完成，环境验收未完成**。真实 one-shot 单次同步为 `200/ready`、14 类 public facts、`933.77ms`，Web Reading Root / Job / GenerationAttempt / AcceptedCopy 均为 0；证据见 `docs/releases/evidence/2026-08-12-chart-sync-local/`。因未获测试服部署授权，且 production 单写者接线与 p95 仍待决，本阶段不宣布 Staging / Production Ready，也不进入 Phase 2–4。
+Phase 1 当前结论：**本地代码验收与测试服机器验收完成，用户浏览器体感验收未完成**。本地单样本为 `933.77ms`；测试服真实 one-shot 单次同步为 `200/ready`、14 类 public facts、`3005.09ms`，Web Reading Root / Job / GenerationAttempt / AcceptedCopy 均为 0；证据见 `docs/releases/evidence/2026-08-12-chart-sync-local/` 与 `docs/releases/evidence/2026-08-12-chart-sync-server/`。production 单写者接线与 p95 仍待决，本阶段不宣布 Staging / Production Ready，也不进入 Phase 2–4。
 
 **Phase 2 — 信息架构（盘主文辅）**
 
@@ -421,6 +423,6 @@ Phase 1 当前结论：**本地代码验收完成，环境验收未完成**。�
 - 从细盘一键进入现有 preview 深读仍可用  
 - `make check` 绿；CHECKLIST §10.4 Phase 1 勾完  
 
-当前前三项已在本地满足，`make check` 已绿；最后一项仍受测试服手验未授权约束，因此只宣布 Phase 1 **本地代码验收**，不宣布完整环境验收。
+机器验收已证明同步接口不建 Reading/Job；深读副路径仍由既有合同与回归覆盖，`make check` 已绿。测试服浏览器手点与 2 秒级体感仍未通过，因此只宣布 Phase 1 **测试服机器验收**，不宣布完整环境验收。
 
 ---
