@@ -3,8 +3,9 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.adapters.runtime import MingliRuntime
 from app.charts.api_schemas import BaziChartSyncResponse
+from app.charts.runtime import ChartRuntimeFactory
+from app.config import Settings
 from app.profiles.service import OwnerProtocol, ProfileService
 from app.readings.public_fact_panel import project_public_fact_panel
 from app.readings.request_compiler import (
@@ -30,11 +31,11 @@ class ChartService:
     def __init__(
         self,
         session: AsyncSession,
-        settings: object,
-        runtime: MingliRuntime,
+        settings: Settings,
+        runtime_factory: ChartRuntimeFactory,
     ) -> None:
-        self.profiles = ProfileService(session, settings)  # type: ignore[arg-type]
-        self.runtime = runtime
+        self.profiles = ProfileService(session, settings)
+        self.runtime_factory = runtime_factory
 
     async def sync_bazi(
         self,
@@ -49,7 +50,11 @@ class ChartService:
             profile=profile,
             dimension_ids=("overview",),
         )
-        result = await self.runtime.execute(command)
+        lease = await self.runtime_factory.open()
+        try:
+            result = await lease.runtime.execute(command)
+        finally:
+            await lease.aclose()
         if not isinstance(result, Prepared):
             raise ChartPrepareStoppedError("Runtime did not prepare the chart")
         fact_panel = project_public_fact_panel(result.brief)

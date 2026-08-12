@@ -14,11 +14,11 @@ from app.adapters.otp import (
     ProductionFailClosedOtpDeliveryAdapter,
     SmtpOtpDeliveryAdapter,
 )
-from app.adapters.runtime import FakeMingliRuntimeAdapter, MingliRuntime
 from app.api.errors import ApiProblem
 from app.api.health import ReadinessProbe
 from app.api.problems import problem_response
 from app.api.router import build_api_router
+from app.charts.runtime import ChartRuntimeFactory, IsolatedChartRuntimeFactory
 from app.config import Settings, get_settings
 from app.database import Database
 from app.identity.cookies import clear_device_cookies
@@ -34,14 +34,18 @@ def create_app(
     settings: Settings | None = None,
     readiness_probe: ReadinessProbe | None = None,
     database: Database | None = None,
-    chart_runtime: MingliRuntime | None = None,
+    chart_runtime_factory: ChartRuntimeFactory | None = None,
 ) -> FastAPI:
     resolved_settings = settings or get_settings()
     resolved_database = database or Database(resolved_settings.database_url)
+    resolved_chart_runtime_factory = (
+        chart_runtime_factory or IsolatedChartRuntimeFactory(resolved_settings)
+    )
     owns_database = database is None
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        await resolved_chart_runtime_factory.startup()
         yield
         application.state.reading_write_rate_limiter.clear()
         application.state.profile_write_rate_limiter.clear()
@@ -49,6 +53,7 @@ def create_app(
         application.state.dogfood_daily_paid_reading_limiter.clear()
         application.state.guest_session_create_rate_limiter.clear()
         application.state.admin_login_rate_limiter.clear()
+        await resolved_chart_runtime_factory.aclose()
         if owns_database:
             await resolved_database.dispose()
 
@@ -62,7 +67,7 @@ def create_app(
     application.state.settings = resolved_settings
     application.state.database = resolved_database
     application.state.session_factory = resolved_database.sessions
-    application.state.chart_runtime = chart_runtime or FakeMingliRuntimeAdapter()
+    application.state.chart_runtime_factory = resolved_chart_runtime_factory
     identity_hash_key = resolved_settings.identity_hash_key.get_secret_value()
     application.state.otp_challenge_store = InMemoryOtpChallengeStore(
         secret=identity_hash_key,

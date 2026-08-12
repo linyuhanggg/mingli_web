@@ -1,8 +1,11 @@
 from typing import Any
 
+from app.adapters.runtime import FakeMingliRuntimeAdapter
+from app.charts.runtime import ChartRuntimeLease
 from app.readings.models import GenerationAttempt, ReadingJobRecord, ReadingRoot
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import func, select
+
 from test_profiles_api import (
     assert_private_headers,
     create_confirmed_profile,
@@ -95,3 +98,54 @@ async def test_guest_syncs_public_bazi_chart_without_creating_a_reading_job(
     assert await _row_count(database, ReadingRoot) == 0
     assert await _row_count(database, ReadingJobRecord) == 0
     assert await _row_count(database, GenerationAttempt) == 0
+
+
+async def test_sync_chart_closes_its_runtime_lease(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    from app.main import create_app
+
+    opened = 0
+    closed = 0
+
+    class RecordingFactory:
+        async def startup(self) -> None:
+            return None
+
+        async def open(self) -> ChartRuntimeLease:
+            nonlocal opened, closed
+            opened += 1
+
+            def record_close() -> None:
+                nonlocal closed
+                closed += 1
+
+            return ChartRuntimeLease(
+                FakeMingliRuntimeAdapter(),
+                cleanup=record_close,
+            )
+
+        async def aclose(self) -> None:
+            return None
+
+    application = create_app(
+        settings=test_settings,
+        database=database,
+        chart_runtime_factory=RecordingFactory(),
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as http_client:
+        headers = await create_guest(http_client)
+        confirmed = await create_confirmed_profile(http_client, headers)
+        response = await http_client.post(
+            "/api/v1/charts/bazi/sync",
+            headers={**headers, "Idempotency-Key": "chart-sync-fixture-0002"},
+            json={"profile_version_id": confirmed["profile_version_id"]},
+        )
+
+    assert response.status_code == 200, response.text
+    assert opened == 1
+    assert closed == 1

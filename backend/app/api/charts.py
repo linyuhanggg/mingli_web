@@ -34,7 +34,7 @@ async def sync_bazi_chart(
     service = ChartService(
         session,
         request.app.state.settings,
-        request.app.state.chart_runtime,
+        request.app.state.chart_runtime_factory,
     )
     try:
         result = await service.sync_bazi(
