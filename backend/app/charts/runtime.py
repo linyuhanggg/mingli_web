@@ -15,6 +15,10 @@ from app.adapters.runtime import (
 from app.config import Settings
 
 
+class ChartRuntimeTopologyError(RuntimeError):
+    """The requested chart Runtime topology is not admitted in this environment."""
+
+
 class ChartRuntimeLease:
     """Own one chart Runtime and, for one-shot mode, its isolated state root."""
 
@@ -71,6 +75,10 @@ class IsolatedChartRuntimeFactory:
         self._ready = False
 
     async def startup(self) -> None:
+        if self._settings.environment == "production":
+            raise ChartRuntimeTopologyError(
+                "production sync charts require the single-writer Runtime topology"
+            )
         if self._ready:
             return
         async with self._startup_lock:

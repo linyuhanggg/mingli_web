@@ -17,7 +17,11 @@ from app.charts.api_schemas import (
     ReadingFactPanel,
     RuntimeInputRequest,
 )
-from app.charts.runtime import ChartRuntimeFactory, ChartRuntimeLease
+from app.charts.runtime import (
+    ChartRuntimeFactory,
+    ChartRuntimeLease,
+    ChartRuntimeTopologyError,
+)
 from app.readings.errors import RuntimeTransportError
 from app.readings.public_fact_panel import project_public_fact_panel
 from app.readings.runtime_contracts import Prepare, Prepared, Stopped
@@ -224,7 +228,12 @@ class ChartSessionManager:
         profile_version_id: UUID,
         prepare: Prepare,
     ) -> BaziChartSyncResponse:
-        lease = await self._runtime_factory.open()
+        try:
+            lease = await self._runtime_factory.open()
+        except ChartRuntimeTopologyError as error:
+            raise ChartRuntimeUnavailableError(
+                "Chart Runtime topology is unavailable"
+            ) from error
         keep_lease = False
         try:
             try:
