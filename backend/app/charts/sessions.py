@@ -264,6 +264,7 @@ class ChartSessionManager:
                     profile_version_id=pending.profile_version_id,
                     status="need_input",
                     chart_handle=pending.handle,
+                    fact_panel=None,
                     input_request=input_request,
                 )
             await self._retire(pending)
@@ -295,6 +296,7 @@ class ChartSessionManager:
             profile_version_id=profile_version_id,
             status="need_input",
             chart_handle=handle,
+            fact_panel=None,
             input_request=input_request,
         )
 
@@ -314,7 +316,9 @@ def _ready_response(
     return BaziChartReadyResponse(
         profile_version_id=profile_version_id,
         status="ready",
+        chart_handle=None,
         fact_panel=fact_panel,
+        input_request=None,
     )
 
 

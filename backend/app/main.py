@@ -50,6 +50,7 @@ def create_app(
         await resolved_chart_sessions.startup()
         yield
         application.state.reading_write_rate_limiter.clear()
+        application.state.chart_sync_rate_limiter.clear()
         application.state.profile_write_rate_limiter.clear()
         application.state.dogfood_daily_reading_limiter.clear()
         application.state.dogfood_daily_paid_reading_limiter.clear()
@@ -90,6 +91,10 @@ def create_app(
     application.state.reading_write_rate_limiter = WindowRateLimiter(
         limit=resolved_settings.reading_write_rate_limit,
         window_seconds=resolved_settings.reading_write_rate_window_seconds,
+    )
+    application.state.chart_sync_rate_limiter = WindowRateLimiter(
+        limit=resolved_settings.chart_sync_rate_limit,
+        window_seconds=resolved_settings.chart_sync_rate_window_seconds,
     )
     application.state.profile_write_rate_limiter = WindowRateLimiter(
         limit=resolved_settings.profile_write_rate_limit,

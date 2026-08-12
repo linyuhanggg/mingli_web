@@ -10,6 +10,7 @@ tags:
   - name: Health
   - name: Identity
   - name: Profiles
+  - name: Charts
   - name: Readings
 paths:
   /api/v1/health/live:
@@ -218,6 +219,80 @@ paths:
                 $ref: "#/components/schemas/ProfileListResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
+  /api/v1/charts/bazi/sync:
+    post:
+      operationId: syncBaziChart
+      tags: [Charts]
+      summary: Prepare and return a deterministic public Bazi chart synchronously
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - $ref: "#/components/parameters/RequiredIdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BaziChartSyncRequest"
+      responses:
+        "200":
+          description: Public fact panel is ready or structured input is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaziChartSyncResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /api/v1/charts/bazi/sync/{chart_handle}/input:
+    post:
+      operationId: supplyBaziChartInput
+      tags: [Charts]
+      summary: Resume the same private chart Runtime state with structured input
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - $ref: "#/components/parameters/RequiredIdempotencyKey"
+        - name: chart_handle
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BaziChartSupplyInputRequest"
+      responses:
+        "200":
+          description: Public fact panel is ready or more structured input is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaziChartSyncResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "410":
+          $ref: "#/components/responses/Gone"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/v1/readings/preview:
     post:
       operationId: startPreviewReading
@@ -570,6 +645,15 @@ components:
         type: string
         minLength: 8
         maxLength: 128
+    RequiredIdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Process-local replay key; reuse with another payload is a conflict
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
   schemas:
     HealthResponse:
       type: object
@@ -772,6 +856,125 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ProfileSummary"
+    BaziChartSyncRequest:
+      type: object
+      additionalProperties: false
+      required: [profile_version_id]
+      properties:
+        profile_version_id:
+          type: string
+          format: uuid
+    BaziChartSupplyInputRequest:
+      type: object
+      additionalProperties: false
+      required: [values]
+      properties:
+        values:
+          type: object
+          minProperties: 1
+          additionalProperties: true
+    RuntimeInputChoice:
+      type: object
+      additionalProperties: false
+      required: [id, label, description]
+      properties:
+        id:
+          type: string
+          minLength: 1
+        label:
+          type: string
+          minLength: 1
+        description:
+          type: [string, "null"]
+    RuntimeInputField:
+      type: object
+      additionalProperties: false
+      required: [id, label, type_id, description, choices]
+      properties:
+        id:
+          type: string
+          minLength: 1
+        label:
+          type: string
+          minLength: 1
+        type_id:
+          type: string
+          enum: [integer, text, textarea, choice]
+        description:
+          type: [string, "null"]
+        choices:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeInputChoice"
+    RuntimeInputRequirement:
+      type: object
+      additionalProperties: false
+      required: [any_of]
+      properties:
+        any_of:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/RuntimeInputField"
+    RuntimeInputRequest:
+      type: object
+      additionalProperties: false
+      required: [requirements]
+      properties:
+        requirements:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/RuntimeInputRequirement"
+    BaziChartReadyResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - profile_version_id
+        - status
+        - chart_handle
+        - fact_panel
+        - input_request
+      properties:
+        profile_version_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          const: ready
+        chart_handle:
+          type: "null"
+        fact_panel:
+          $ref: "#/components/schemas/ReadingFactPanel"
+        input_request:
+          type: "null"
+    BaziChartNeedInputResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - profile_version_id
+        - status
+        - chart_handle
+        - fact_panel
+        - input_request
+      properties:
+        profile_version_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          const: need_input
+        chart_handle:
+          type: string
+          minLength: 1
+        fact_panel:
+          type: "null"
+        input_request:
+          $ref: "#/components/schemas/RuntimeInputRequest"
+    BaziChartSyncResponse:
+      oneOf:
+        - $ref: "#/components/schemas/BaziChartReadyResponse"
+        - $ref: "#/components/schemas/BaziChartNeedInputResponse"
     PreviewStartRequest:
       type: object
       additionalProperties: false
@@ -964,8 +1167,7 @@ components:
         kind_id:
           type: string
         value:
-          type: object
-          additionalProperties: true
+          {}
         display_text:
           type: string
     ReadingEvidence:
@@ -1249,6 +1451,12 @@ components:
             $ref: "#/components/schemas/Problem"
     Conflict:
       description: The resource is in a state that does not allow this transition
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Gone:
+      description: The process-local chart handle is no longer active
       content:
         application/problem+json:
           schema:

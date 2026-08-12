@@ -66,6 +66,11 @@ PHASE_TWO_PATHS = {
     "/api/v1/readings/{reading_version_id}/follow-up": "post",
 }
 
+CHART_PATHS = {
+    "/api/v1/charts/bazi/sync": "syncBaziChart",
+    "/api/v1/charts/bazi/sync/{chart_handle}/input": "supplyBaziChartInput",
+}
+
 
 def test_phase_two_paths_are_frozen() -> None:
     paths = load_openapi_document()["paths"]
@@ -73,6 +78,30 @@ def test_phase_two_paths_are_frozen() -> None:
     for path, method in PHASE_TWO_PATHS.items():
         assert path in paths
         assert method in paths[path]
+
+
+def test_sync_chart_paths_and_public_response_are_frozen() -> None:
+    document = load_openapi_document()
+    paths = document["paths"]
+    for path, operation_id in CHART_PATHS.items():
+        operation = paths[path]["post"]
+        assert operation["operationId"] == operation_id
+        assert operation["tags"] == ["Charts"]
+        parameter_refs = {item.get("$ref") for item in operation["parameters"]}
+        assert "#/components/parameters/CsrfToken" in parameter_refs
+        assert "#/components/parameters/RequiredIdempotencyKey" in parameter_refs
+        response_schema = operation["responses"]["200"]["content"][
+            "application/json"
+        ]["schema"]
+        assert response_schema == {"$ref": "#/components/schemas/BaziChartSyncResponse"}
+        assert "422" not in operation["responses"]
+
+    schemas = document["components"]["schemas"]
+    assert schemas["BaziChartSyncResponse"]["oneOf"] == [
+        {"$ref": "#/components/schemas/BaziChartReadyResponse"},
+        {"$ref": "#/components/schemas/BaziChartNeedInputResponse"},
+    ]
+    assert schemas["ReadingFact"]["properties"]["value"] == {}
 
 
 def test_phase_two_contracts_never_expose_runtime_or_birth_secrets() -> None:

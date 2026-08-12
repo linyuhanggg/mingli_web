@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/bazi-chart-sync-v1.schema.json",
+  "title": "Bazi Chart Sync Response v1",
+  "oneOf": [
+    { "$ref": "#/$defs/ready" },
+    { "$ref": "#/$defs/needInput" }
+  ],
+  "$defs": {
+    "profileVersionId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "factPanel": {
+      "type": "object",
+      "required": ["facts"],
+      "properties": {
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ref", "value"],
+            "properties": {
+              "ref": { "type": "string", "minLength": 1 },
+              "value": {}
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "inputRequest": {
+      "type": "object",
+      "required": ["requirements"],
+      "properties": {
+        "requirements": {
+          "type": "array"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ready": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_version_id",
+        "status",
+        "chart_handle",
+        "fact_panel",
+        "input_request"
+      ],
+      "properties": {
+        "profile_version_id": { "$ref": "#/$defs/profileVersionId" },
+        "status": { "const": "ready" },
+        "chart_handle": { "type": "null" },
+        "fact_panel": { "$ref": "#/$defs/factPanel" },
+        "input_request": { "type": "null" }
+      }
+    },
+    "needInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_version_id",
+        "status",
+        "chart_handle",
+        "fact_panel",
+        "input_request"
+      ],
+      "properties": {
+        "profile_version_id": { "$ref": "#/$defs/profileVersionId" },
+        "status": { "const": "need_input" },
+        "chart_handle": { "type": "string", "minLength": 1 },
+        "fact_panel": { "type": "null" },
+        "input_request": { "$ref": "#/$defs/inputRequest" }
+      }
+    }
+  }
+}

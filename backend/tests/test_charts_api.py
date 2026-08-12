@@ -7,7 +7,6 @@ from app.readings.models import GenerationAttempt, ReadingJobRecord, ReadingRoot
 from app.readings.runtime_contracts import MingliCommand, Prepare, Prepared, Stopped
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import func, select
-
 from test_profiles_api import (
     assert_private_headers,
     create_confirmed_profile,
@@ -273,3 +272,116 @@ async def test_need_input_resumes_with_the_same_private_runtime_token(
     assert await _row_count(database, ReadingRoot) == 0
     assert await _row_count(database, ReadingJobRecord) == 0
     assert await _row_count(database, GenerationAttempt) == 0
+
+
+async def test_sync_chart_replays_same_idempotency_key_without_runtime_reexecution(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    from app.main import create_app
+
+    executions = 0
+    fake = FakeMingliRuntimeAdapter()
+
+    class CountingRuntime:
+        async def execute(self, command: MingliCommand) -> Prepared | Stopped:
+            nonlocal executions
+            executions += 1
+            result = await fake.execute(command)
+            assert isinstance(result, (Prepared, Stopped))
+            return result
+
+    class CountingFactory:
+        async def startup(self) -> None:
+            return None
+
+        async def open(self) -> ChartRuntimeLease:
+            return ChartRuntimeLease(CountingRuntime())
+
+        async def aclose(self) -> None:
+            return None
+
+    application = create_app(
+        settings=test_settings,
+        database=database,
+        chart_runtime_factory=CountingFactory(),
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as http_client:
+        headers = await create_guest(http_client)
+        confirmed = await create_confirmed_profile(http_client, headers)
+        request = {
+            "headers": {**headers, "Idempotency-Key": "chart-replay-fixture-0001"},
+            "json": {"profile_version_id": confirmed["profile_version_id"]},
+        }
+        first = await http_client.post("/api/v1/charts/bazi/sync", **request)
+        replay = await http_client.post("/api/v1/charts/bazi/sync", **request)
+
+    assert first.status_code == 200, first.text
+    assert replay.status_code == 200, replay.text
+    assert replay.json() == first.json()
+    assert executions == 1
+
+
+async def test_sync_chart_uses_an_independent_runtime_write_limiter(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    from app.main import create_app
+
+    settings = test_settings.model_copy(
+        update={
+            "chart_sync_rate_limit": 1,
+            "chart_sync_rate_window_seconds": 60,
+            "reading_write_rate_limit": 50,
+        }
+    )
+    application = create_app(settings=settings, database=database)
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as http_client:
+        headers = await create_guest(http_client)
+        confirmed = await create_confirmed_profile(http_client, headers)
+        first = await http_client.post(
+            "/api/v1/charts/bazi/sync",
+            headers={**headers, "Idempotency-Key": "chart-limit-fixture-0001"},
+            json={"profile_version_id": confirmed["profile_version_id"]},
+        )
+        limited = await http_client.post(
+            "/api/v1/charts/bazi/sync",
+            headers={**headers, "Idempotency-Key": "chart-limit-fixture-0002"},
+            json={"profile_version_id": confirmed["profile_version_id"]},
+        )
+
+    assert first.status_code == 200, first.text
+    assert limited.status_code == 429, limited.text
+    assert limited.json()["title"] == "Too many chart requests"
+    assert limited.headers["retry-after"] == "60"
+
+
+def test_runtime_openapi_exposes_closed_chart_response_union(test_settings: Any) -> None:
+    from app.main import create_app
+
+    document = create_app(settings=test_settings).openapi()
+    schemas = document["components"]["schemas"]
+    assert schemas["BaziChartSyncResponse"]["oneOf"] == [
+        {"$ref": "#/components/schemas/BaziChartReadyResponse"},
+        {"$ref": "#/components/schemas/BaziChartNeedInputResponse"},
+    ]
+    expected_fields = {
+        "profile_version_id",
+        "status",
+        "chart_handle",
+        "fact_panel",
+        "input_request",
+    }
+    assert set(schemas["BaziChartReadyResponse"]["required"]) == expected_fields
+    assert set(schemas["BaziChartNeedInputResponse"]["required"]) == expected_fields
+    for path in (
+        "/api/v1/charts/bazi/sync",
+        "/api/v1/charts/bazi/sync/{chart_handle}/input",
+    ):
+        assert "422" not in document["paths"][path]["post"]["responses"]

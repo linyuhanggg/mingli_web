@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import Owner, database_session, mark_private, require_owner_csrf
 from app.api.errors import ApiProblem
+from app.api.rate_guard import check_rate_limiter
 from app.charts.api_schemas import (
     BaziChartSupplyInputRequest,
     BaziChartSyncRequest,
@@ -30,6 +31,14 @@ def _service(request: Request, session: AsyncSession) -> ChartService:
         session,
         request.app.state.settings,
         request.app.state.chart_sessions,
+    )
+
+
+def _check_rate(owner: Owner, request: Request) -> None:
+    check_rate_limiter(
+        limiter=request.app.state.chart_sync_rate_limiter,
+        key=f"{owner.kind}:{owner.id}",
+        title="Too many chart requests",
     )
 
 
@@ -67,6 +76,7 @@ async def sync_bazi_chart(
         max_length=128,
     ),
 ) -> BaziChartSyncResponse:
+    _check_rate(owner, request)
     service = _service(request, session)
     try:
         result = await service.sync_bazi(
@@ -101,6 +111,7 @@ async def supply_bazi_chart_input(
         max_length=128,
     ),
 ) -> BaziChartSyncResponse:
+    _check_rate(owner, request)
     service = _service(request, session)
     try:
         result = await service.supply_input(
