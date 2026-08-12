@@ -1,0 +1,30 @@
+{
+  "schema": "dogfood-three-track-v1",
+  "email_masked": "1***@qq.com",
+  "user_id": "5a7c6b5b-37dd-4206-9c33-bb7d9d9f76d9",
+  "current_release": "0586730",
+  "tracks": {
+    "today": {
+      "status": "accepted",
+      "version_id": "2b4a4e6d-8d2a-41d3-bf4c-58cd91431d1b",
+      "accepted_copy_len": 71
+    },
+    "week": {
+      "status": "accepted",
+      "version_id": "2972f9ba-50bc-469f-868f-28c918760343",
+      "accepted_copy_len": 574
+    },
+    "liuyao": {
+      "status": "accepted",
+      "version_id": "30ac5c16-0ad9-4489-b68d-cc11cfcb2d40",
+      "accepted_copy_len": 288
+    }
+  },
+  "accepted": [
+    "today",
+    "week",
+    "liuyao"
+  ],
+  "ok": true,
+  "finished_at": "2026-08-12T06:54:33.320249+00:00"
+}

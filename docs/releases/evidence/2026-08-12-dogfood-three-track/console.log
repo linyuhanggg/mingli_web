@@ -1,0 +1,29 @@
+account http=200 user=5a7c6b5b-37dd-4206-9c33-bb7d9d9f76d9
+reuse profile via profile_version_id
+profile_version_id=9be62216-5944-491f-b0e8-15507845f803
+start today http=201 version=2b4a4e6d-8d2a-41d3-bf4c-58cd91431d1b
+poll 2b4a4e6d-8d2a-41d3-bf4c-58cd91431d1b #1 http=200 status=input_ready
+poll 2b4a4e6d-8d2a-41d3-bf4c-58cd91431d1b #2 http=200 status=input_ready
+poll 2b4a4e6d-8d2a-41d3-bf4c-58cd91431d1b #3 http=200 status=prepared
+poll 2b4a4e6d-8d2a-41d3-bf4c-58cd91431d1b #4 http=200 status=completing
+poll 2b4a4e6d-8d2a-41d3-bf4c-58cd91431d1b #5 http=200 status=accepted
+start week http=201 version=2972f9ba-50bc-469f-868f-28c918760343
+poll 2972f9ba-50bc-469f-868f-28c918760343 #1 http=200 status=input_ready
+poll 2972f9ba-50bc-469f-868f-28c918760343 #2 http=200 status=input_ready
+poll 2972f9ba-50bc-469f-868f-28c918760343 #3 http=200 status=input_ready
+poll 2972f9ba-50bc-469f-868f-28c918760343 #4 http=200 status=prepared
+poll 2972f9ba-50bc-469f-868f-28c918760343 #5 http=200 status=prepared
+poll 2972f9ba-50bc-469f-868f-28c918760343 #6 http=200 status=prepared
+poll 2972f9ba-50bc-469f-868f-28c918760343 #7 http=200 status=prepared
+poll 2972f9ba-50bc-469f-868f-28c918760343 #8 http=200 status=prepared
+poll 2972f9ba-50bc-469f-868f-28c918760343 #9 http=200 status=completing
+poll 2972f9ba-50bc-469f-868f-28c918760343 #10 http=200 status=accepted
+start liuyao http=201 version=30ac5c16-0ad9-4489-b68d-cc11cfcb2d40
+poll 30ac5c16-0ad9-4489-b68d-cc11cfcb2d40 #1 http=200 status=input_ready
+poll 30ac5c16-0ad9-4489-b68d-cc11cfcb2d40 #2 http=200 status=prepared
+poll 30ac5c16-0ad9-4489-b68d-cc11cfcb2d40 #3 http=200 status=prepared
+poll 30ac5c16-0ad9-4489-b68d-cc11cfcb2d40 #4 http=200 status=prepared
+poll 30ac5c16-0ad9-4489-b68d-cc11cfcb2d40 #5 http=200 status=prepared
+poll 30ac5c16-0ad9-4489-b68d-cc11cfcb2d40 #6 http=200 status=completing
+poll 30ac5c16-0ad9-4489-b68d-cc11cfcb2d40 #7 http=200 status=accepted
+SUMMARY accepted=['today', 'week', 'liuyao'] ok=True

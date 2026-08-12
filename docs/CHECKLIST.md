@@ -199,6 +199,7 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | Task13 本地 prep | `docs/releases/evidence/2026-08-11-task13-prep/` |
 | Task13 测试服轨迹 | `docs/releases/evidence/2026-08-11-task13-server-trajectory/` |
 | Task13 round-4（5/5） | `.../run-4-followup-fix/` |
+| Dogfood 三轨 accepted | `docs/releases/evidence/2026-08-12-dogfood-three-track/` |
 
 验签脚本：`scripts/verify_frozen_runtime_release.py`  
 密钥检查（不打印密钥）：`scripts/check_production_secrets.py`
@@ -240,9 +241,9 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 - [x] 功能提交 + 本地 `make check` 绿 — `47e18f8`
 - [x] tag → 按 `infra/TEST_SERVER_RUNBOOK.md` 打 tar 部署 — tag `dogfood-20260812-0586730`，current=`0586730`，旧 `7444601` 保留
 - [x] `test.env`：`smtp` + `one-shot` + `deepseek` + 日限额 + entitlement gates on
-- [ ] 服务器 grant 你的邮箱（需先在站点用该邮箱登录一次）
-- [ ] 三条轨迹脚本 accepted
-- [ ] 浏览器三条手点 accepted
+- [x] 服务器 grant `1960697431@qq.com` → today/week/liuyao
+- [x] 三条轨迹脚本 accepted（API+Worker）— 证据 `docs/releases/evidence/2026-08-12-dogfood-three-track/`
+- [ ] 浏览器三条手点 accepted（UI 手验仍建议补一次）
 - [ ] 按邮箱删除脚本演练
 - [ ] current 回滚演练（至少指回旧 release 一次）
 
@@ -282,3 +283,4 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | 2026-08-12 | dogfood 最小集落地：`0009_owner_grants`、付费向 grant 闸、日熔断、ops 脚本、测试期文案；`make check` 绿；HEAD `44a7ac5` |
 | 2026-08-12 | 授权后创建 private GitHub `1960697431/mingli_web` 并 push `main@9ab5736` |
 | 2026-08-12 | 授权部署 dogfood：`0586730` current；smtp/one-shot/deepseek/gates；迁移 `0009_owner_grants`；健康检查双轮通过 |
+| 2026-08-12 | grant + 三轨 API accepted（today/week/liuyao）；未 grant 403；证据 2026-08-12-dogfood-three-track |
