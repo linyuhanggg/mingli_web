@@ -237,7 +237,7 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 - [x] 日熔断：`MINGLI_DOGFOOD_DAILY_READING_LIMIT`（默认 10）、`MINGLI_DOGFOOD_DAILY_PAID_READING_LIMIT`（默认 6）
 - [x] `scripts/dogfood_grant.py` / `scripts/dogfood_delete_user.py`（audit 日志）
 - [x] 测试期文案（首页/定价/隐私：无 TLS、无真支付、数据可删将清）
-- [x] 功能实现本地 `make check` 绿（提交后回写 sha）
+- [x] 功能提交 + 本地 `make check` 绿 — `47e18f8`
 - [ ] tag → 按 `infra/TEST_SERVER_RUNBOOK.md` 打 tar 部署（**需授权**）
 - [ ] `test.env`：`smtp` + `one-shot` + `deepseek` + 日限额 + entitlement gates on
 - [ ] 服务器 grant 你的邮箱
