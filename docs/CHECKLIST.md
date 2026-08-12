@@ -37,7 +37,7 @@
 | 基线 HEAD | `47e18f8` | dogfood 功能提交；其后为 checklist 断点注记 |
 | Alembic head | `0009_owner_grants` | 含 admin staff + dogfood capability grants |
 | 测试服主机 | `fateradar-prod` / `106.14.10.235:18080` | SSH 别名；**联调机不是 production** |
-| 测试服 current（已记录） | `6ec1578` | `local` + fake OTP + one-shot Runtime + deepseek |
+| 测试服 current（已记录） | `0586730` | `local` + **smtp OTP** + one-shot Runtime + deepseek + dogfood gates on；旧 `7444601` 保留可回滚 |
 | 测试服环境 | 非隔离 staging | 不可当生产放量证据 |
 | Runtime 制品 | mingli-master **5.1 完整** | 13 Provider / 55 古籍 / 1328 evidence / 217 文件 manifest |
 | Runtime Gate | Mac mini `native-full` **已通过** | 证据见 §6 |
@@ -238,9 +238,9 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 - [x] `scripts/dogfood_grant.py` / `scripts/dogfood_delete_user.py`（audit 日志）
 - [x] 测试期文案（首页/定价/隐私：无 TLS、无真支付、数据可删将清）
 - [x] 功能提交 + 本地 `make check` 绿 — `47e18f8`
-- [ ] tag → 按 `infra/TEST_SERVER_RUNBOOK.md` 打 tar 部署（**需授权**）
-- [ ] `test.env`：`smtp` + `one-shot` + `deepseek` + 日限额 + entitlement gates on
-- [ ] 服务器 grant 你的邮箱
+- [x] tag → 按 `infra/TEST_SERVER_RUNBOOK.md` 打 tar 部署 — tag `dogfood-20260812-0586730`，current=`0586730`，旧 `7444601` 保留
+- [x] `test.env`：`smtp` + `one-shot` + `deepseek` + 日限额 + entitlement gates on
+- [ ] 服务器 grant 你的邮箱（需先在站点用该邮箱登录一次）
 - [ ] 三条轨迹脚本 accepted
 - [ ] 浏览器三条手点 accepted
 - [ ] 按邮箱删除脚本演练
@@ -281,3 +281,4 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | 2026-08-12 | 锁定内部 dogfood 窗口合同（§7）；推荐顺序改为 dogfood 优先（§8） |
 | 2026-08-12 | dogfood 最小集落地：`0009_owner_grants`、付费向 grant 闸、日熔断、ops 脚本、测试期文案；`make check` 绿；HEAD `44a7ac5` |
 | 2026-08-12 | 授权后创建 private GitHub `1960697431/mingli_web` 并 push `main@9ab5736` |
+| 2026-08-12 | 授权部署 dogfood：`0586730` current；smtp/one-shot/deepseek/gates；迁移 `0009_owner_grants`；健康检查双轮通过 |
