@@ -3,8 +3,8 @@
 > **本文是仓库里唯一的进度与门禁清单。**  
 > 更新日期：2026-08-12  
 > 状态总判：`联调主链路已通` · `production blocked` · `real traffic disabled`  
-> 当前施工窗口：**内部 Dogfood（§7）** — 仅你自己；三轨 browser accepted 前不宣布 ready  
-> 用户本轮明确：备案与支付暂不推进，但不等于这些 Gate 已通过。
+> 当前施工窗口：**Chart-first / 青囊对齐（§10）** — 先盘后断；Dogfood 深读链路（§7）保留为副路径  
+> 用户本轮明确：备案与支付暂不推进，但不等于这些 Gate 已通过；产品主路径要对齐「青囊式细盘工作台」而非仅 Accepted 长文。
 
 冲突时以**冻结合同**为准，不以本文措辞覆盖合同。本文只回答三件事：现在做到哪、还差什么、证据在哪。
 
@@ -110,7 +110,7 @@
 
 ### B. 核心算法与产品正确性
 
-- [ ] **同步确定性排盘 API**（只 `prepare` + public fact 投影；不建 Job、不调模型、不核销权益）
+- [ ] **同步确定性排盘 API**（只 `prepare` + public fact 投影；不建 Job、不调模型、不核销权益）— **主承载见 §10 Chart-first**
 - [ ] Brief 缓存（键：Profile Version + capability + dimension + horizon + Runtime digest）
 - [ ] 档案语义闭合：农历/闰月/不确定时辰；经纬度失败强制修正；真太阳时用户确认；禁止静默估算
 - [ ] 免费 Preview **文案 vs dimension** 对齐（概览 vs 事业）
@@ -249,27 +249,33 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 
 ### 7.3 本窗口明确不做
 
-真微信/支付宝、用户兑码页、Admin 权益 UI、Redis 挑战存储生产化、Guard 红队全套、质量盲测全套、同步排盘 API、Brief 缓存、系统化档案语义、`MINGLI_REAL_TRAFFIC_ENABLED=true`。
+真微信/支付宝、用户兑码页、Admin 权益 UI、Redis 挑战存储生产化、Guard 红队全套、质量盲测全套、Brief 缓存、系统化档案语义全量、`MINGLI_REAL_TRAFFIC_ENABLED=true`。  
+（**同步排盘 API** 已从 dogfood「不做」中移出，改由 §10 Chart-first 窗口承接。）
 
 ---
 
 ## 8. 推荐施工顺序
 
-### 8.1 当前窗口（Dogfood，优先）
+### 8.1 已基本完成：Dogfood 深读链路（§7）
 
-1. 文档收口提交  
-2. entitlement + 校验 + 日熔断 + dogfood 脚本 + 文案  
-3. 测试与 `make check`  
-4. （授权后）GitHub → 部署 → grant → 三轨验收  
+文档收口 → entitlement/gates → GitHub → 部署 `0586730` → grant → 三轨 API accepted。  
+剩余：浏览器手点、delete 演练、回滚演练（不阻塞 §10）。
 
-### 8.2 Dogfood 全绿之后（原路线，仍有效）
+### 8.2 当前优先：Chart-first / 青囊对齐（§10）
 
-1. **A 可信基线**（PG 并发测试、迁移升级确认、admin 进 check）  
-2. **B 同步排盘 + 档案语义 + 文案/核对/idempotency**  
-3. **B 评测 + Guard 红队 + fact_panel 复验**  
-4. **C Redis OTP/限流 + Runtime 恢复演练 + 告警**  
-5. 外部 Gate / 支付授权后再做 **D**  
-6. 再决策是否拉 1–3 名熟人 dogfood（新闸，不默认打开）
+1. **产品合同锁定**（先盘后断；不抄品牌资产）  
+2. **Phase 0 探测**：Runtime prepare 实际投影出哪些 public facts（密度上限）  
+3. **Phase 1 MVP**：同步排盘 API + 免费细盘页（四柱+明细+已有 workspace）  
+4. **Phase 2**：结果页信息架构改为盘主文辅；深度解读降为 CTA  
+5. **Phase 3**：判读层（旺衰/格局/用神/大运流年）按 fact 增量展示 + 分层解锁  
+6. 档案语义（真太阳时/农历等）与 §10 表单高级项并联，不另开大叙事  
+
+### 8.3 其后（原路线）
+
+1. A 可信基线剩余项  
+2. B 评测 / Guard 红队 / fact_panel 复验  
+3. C Redis / 恢复 / 告警  
+4. 外部 Gate / 支付后再 D  
 
 ---
 
@@ -280,7 +286,119 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | 2026-08-12 | 初版：合并原 HANDOFF、PHASE_0_GATES、plans/releases 叙事日志中的有效断点与门禁；删除工作日志类 md，证据目录保留 |
 | 2026-08-12 | 权威 Git 定位到 Mac mini Lexar；`make check` 全绿；修 401 身份刷新单飞；MacBook 误 init 的空 `.git` 已删 |
 | 2026-08-12 | 锁定内部 dogfood 窗口合同（§7）；推荐顺序改为 dogfood 优先（§8） |
-| 2026-08-12 | dogfood 最小集落地：`0009_owner_grants`、付费向 grant 闸、日熔断、ops 脚本、测试期文案；`make check` 绿；HEAD `44a7ac5` |
-| 2026-08-12 | 授权后创建 private GitHub `1960697431/mingli_web` 并 push `main@9ab5736` |
-| 2026-08-12 | 授权部署 dogfood：`0586730` current；smtp/one-shot/deepseek/gates；迁移 `0009_owner_grants`；健康检查双轮通过 |
-| 2026-08-12 | grant + 三轨 API accepted（today/week/liuyao）；未 grant 403；证据 2026-08-12-dogfood-three-track |
+| 2026-08-12 | dogfood 最小集落地：`0009_owner_grants`、付费向 grant 闸、日熔断、ops 脚本、测试期文案；`make check` 绿 |
+| 2026-08-12 | 授权后创建 private GitHub `1960697431/mingli_web` 并 push |
+| 2026-08-12 | 授权部署 dogfood：`0586730` current；smtp/one-shot/deepseek/gates；三轨 API accepted |
+| 2026-08-12 | **产品转向 Chart-first / 青囊对齐（§10）**：主路径改为同步细盘工作台；异步解读为副路径；禁止新开 plans 叙事文件，进度只改本文 |
+
+---
+
+## 10. Chart-first / 青囊对齐窗口（2026-08-12 锁定方案）
+
+> **目标体验（对标青囊信息架构，不抄资产）：**  
+> 录入 → **即时细盘工作台** →（可选）登录/权益解锁判读 →（可选）异步 AI/Accepted 深读。  
+> **不是** Staging/Production Ready。  
+> 冻结合同仍有效：Runtime 完整 5.1；浏览器不排盘；Fake 不冒充生产；进度只改本文。
+
+### 10.1 产品合同（已定）
+
+| 项 | 决定 |
+|----|------|
+| 主路径 | **先盘后断**：同步确定性细盘为默认成功体验 |
+| 副路径 | 现有 dogfood 异步 Reading（preview/today/week/liuyao）保留为「深度解读」 |
+| 对标对象 | 青囊 `/bazi` 信息架构与交互层级（细盘密度、分层解锁） |
+| 禁止 | 抄青囊品牌/文案/皮肤/插画；客户端 JS 排盘；裁剪 5.1；为像而先做同盘灯/积分皮肤 |
+| 与 §7 关系 | Dogfood 不回滚；§10 不依赖浏览器手点三轨完成 |
+| 文档 | **不**新增 `docs/plans/*`；勾选与断点只改本文；证据进 `docs/releases/evidence/` |
+
+### 10.2 现状差距（相对青囊免费层）
+
+| 能力 | 青囊（观察） | 本仓现状 | 差距 |
+|------|--------------|----------|------|
+| 入口 CTA | 开启推演（免费）即时出盘 | `/app/bazi` → 选档案 → `startPreview` 异步 Job | 路径反了 |
+| 同步排盘 API | 前端算/或登录 engine | **无**独立 sync prepare 出口 | §3-B 第一项未做 |
+| 四柱主舞台 | 四列干支+十神 | 有 `BaziChart` 可点选，挂在解读结果下 | 有组件、无独立页 |
+| 明细矩阵 | 藏干/纳音/空亡/地势/自坐/神煞 | `chart-workspace` 仅 pillars+meta；靠 public facts | **密度取决于 prepare 投影** |
+| 图示 Tab | 命局/干支/宫位/六亲/五行 | 无关系图；五行/三宫未产品化 | Phase 2–3 |
+| 高级起盘 | 真太阳时、夜子时 | Profile 有字段；表单未当主路径 | 与档案语义并联 |
+| 分层解锁 | 细盘免费 / 判读登录 / AI 积分 | grant 只挡 today/week/liuyao | 可复用 entitlement |
+| 深读 | 积分 AI | Accepted 文稿 + Guard | 已有，改挂 CTA |
+
+### 10.3 架构原则（实现时不得违反）
+
+1. **Sync Chart** = 一次 Runtime `prepare` + `project_public_fact_panel`；**不**建 Reading Root/Job（或建了也不得进入 model）；**不**调 Model；**不**核销权益。  
+2. 若 prepare 返回 `need_input`，产品必须收集结构化字段再带 token 续 prepare（禁止无 token 自动重放）。  
+3. 浏览器只渲染服务端 public facts；缺字段显示「暂无/未投影」，**禁止**前端发明十神/大运。  
+4. 深度解读继续走现有 Orchestrator；从细盘页 CTA 带上 `profile_version_id` / chart handle。  
+5. OpenAPI + JSON Schema + 后端测试 + web 合同测试同步改。
+
+### 10.4 分期与勾选
+
+**Phase 0 — 探测（先于产品 UI 大改）**
+
+- [ ] 用 one-shot Runtime 对标准档案跑 `compile_bazi_prepare` + prepare，导出 **脱敏** fact 种类清单（ref/kind/display 形态）  
+- [ ] 对照青囊免费层字段：四柱、十神、藏干、纳音、空亡、地势、自坐、神煞、三宫、五行 — 标记 **已有 / 可映射 / 5.1 未投影**  
+- [ ] 结论写入证据目录 `docs/releases/evidence/<date>-chart-fact-inventory/`（无 token、无生日原文）  
+- [ ] 据此冻结 MVP 展示范围（只承诺「已有投影」，不承诺青囊全字段 Day1）
+
+**Phase 1 — MVP（可给熟人看盘）**
+
+- [ ] API：`POST /api/v1/charts/bazi/sync`（名称以实现为准）  
+  - 输入：已确认 `profile_version_id` **或** 一次性 birth payload（二选一策略在实现前用 Phase 0 后敲定；推荐先 **仅 profile_version_id** 降风险）  
+  - 输出：`fact_panel`（public）+ 可选 `chart_view` 摘要；无 `accepted_copy`  
+  - 鉴权：Guest 或 User + CSRF；**不**走 paid grant  
+  - 限流：独立 write limiter（防刷 Runtime）  
+- [ ] 服务：复用 `compile_bazi_prepare` + Runtime adapter；**禁止**入队 Worker  
+- [ ] Web：`/app/bazi` 改为「选档案 → 同步看盘」；提交后同页/子路由展示：抬头 + 四柱卡 + 明细（facts 列表/矩阵）+ 现有 `BaziChart` workspace  
+- [ ] CTA：「生成深度解读」→ 现有 `startPreviewReading`（或 bazi_deep）异步链路  
+- [ ] 测试：API 合同（无 Job、无 model mock 调用）；web 组件测；`make check`  
+- [ ] 测试服部署后手点：2 秒级出盘体感  
+
+**Phase 2 — 信息架构（盘主文辅）**
+
+- [ ] `reading-result`：首屏盘面工作台，Accepted 文稿下沉  
+- [ ] 细盘页与解读结果页共享盘面组件（DRY）  
+- [ ] Preview 文案 vs dimension 对齐（挂钩 §3-B）  
+
+**Phase 3 — 判读层（登录/权益）**
+
+- [ ] 按 Phase 0 库存展示旺衰/格局/用神等（有则显、无则诚实空）  
+- [ ] 大运/流年层：仅当 public facts 含时间层数据；`chart-workspace` 已有 decadal/yearly 位  
+- [ ] 解锁：复用 `owner_capability_grants` 或新 capability（如 `bazi_judgment`）；未解锁 CTA 登录/申请开通  
+- [ ] AI 深读继续走 Reading + grant，不与 sync chart 混事务  
+
+**Phase 4 — 档案语义并联（不挡 MVP）**
+
+- [ ] 真太阳时：用户确认，禁止静默估算（§3-B）  
+- [ ] 农历/闰月/不确定时辰  
+- [ ] 表单高级项与 Profile confirm 字段对齐  
+
+### 10.5 建议任务切片（给执行会话）
+
+> 执行时用 TDD：红 → 绿 → 提交；每切片可独立 revert。
+
+1. **Fact inventory 脚本**（只读 Runtime，写 evidence）  
+2. **Sync API 失败测试** → 最小 handler → 绿 → commit  
+3. **OpenAPI/Schema** 对齐 → contract test  
+4. **Web API client + `/app/bazi` 同步流** → 组件测 → commit  
+5. **盘面展示增强**（在 inventory 允许范围内加行列）→ commit  
+6. **深度解读 CTA 接线** → 手动/ e2e 冒烟  
+7. **Reading 结果页改序**（Phase 2）  
+8. **部署测试服 + 手验清单**  
+
+### 10.6 明确不做（本窗口）
+
+- 青囊同盘灯、三色皮肤体系、积分商城  
+- 合盘页完整对标（可列 P1 以后）  
+- 客户端排盘库  
+- 为细盘引入第二套命理核心  
+- 未完成 Phase 0 就承诺「十神神煞全有」  
+
+### 10.7 成功标准（MVP 可宣布）
+
+- 选已确认档案 → 同步 API → 页面展示至少：**四柱 + 日主/月令类摘要 + 可点选工作台**（字段以 inventory 为准）  
+- 网络面板确认：**无** model 调用、**无** reading job 或 job 不进入 generating  
+- 从细盘一键进入现有 preview 深读仍可用  
+- `make check` 绿；CHECKLIST §10.4 Phase 1 勾完  
+
+---
