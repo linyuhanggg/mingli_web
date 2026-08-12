@@ -19,6 +19,7 @@ from app.api.health import ReadinessProbe
 from app.api.problems import problem_response
 from app.api.router import build_api_router
 from app.charts.runtime import ChartRuntimeFactory, IsolatedChartRuntimeFactory
+from app.charts.sessions import ChartSessionManager
 from app.config import Settings, get_settings
 from app.database import Database
 from app.identity.cookies import clear_device_cookies
@@ -41,11 +42,12 @@ def create_app(
     resolved_chart_runtime_factory = (
         chart_runtime_factory or IsolatedChartRuntimeFactory(resolved_settings)
     )
+    resolved_chart_sessions = ChartSessionManager(resolved_chart_runtime_factory)
     owns_database = database is None
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-        await resolved_chart_runtime_factory.startup()
+        await resolved_chart_sessions.startup()
         yield
         application.state.reading_write_rate_limiter.clear()
         application.state.profile_write_rate_limiter.clear()
@@ -53,7 +55,7 @@ def create_app(
         application.state.dogfood_daily_paid_reading_limiter.clear()
         application.state.guest_session_create_rate_limiter.clear()
         application.state.admin_login_rate_limiter.clear()
-        await resolved_chart_runtime_factory.aclose()
+        await resolved_chart_sessions.aclose()
         if owns_database:
             await resolved_database.dispose()
 
@@ -67,7 +69,7 @@ def create_app(
     application.state.settings = resolved_settings
     application.state.database = resolved_database
     application.state.session_factory = resolved_database.sessions
-    application.state.chart_runtime_factory = resolved_chart_runtime_factory
+    application.state.chart_sessions = resolved_chart_sessions
     identity_hash_key = resolved_settings.identity_hash_key.get_secret_value()
     application.state.otp_challenge_store = InMemoryOtpChallengeStore(
         secret=identity_hash_key,

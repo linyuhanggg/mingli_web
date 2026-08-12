@@ -4,15 +4,13 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.charts.api_schemas import BaziChartSyncResponse
-from app.charts.runtime import ChartRuntimeFactory
+from app.charts.sessions import ChartSessionManager
 from app.config import Settings
 from app.profiles.service import OwnerProtocol, ProfileService
-from app.readings.public_fact_panel import project_public_fact_panel
 from app.readings.request_compiler import (
     ConfirmedProfileVersion,
     compile_bazi_prepare,
 )
-from app.readings.runtime_contracts import Prepared
 
 
 class ChartServiceError(RuntimeError):
@@ -23,25 +21,22 @@ class ChartProfileNotFoundError(ChartServiceError):
     """The requested Profile Version is absent or belongs to another owner."""
 
 
-class ChartPrepareStoppedError(ChartServiceError):
-    """Runtime did not prepare a chart from the confirmed profile."""
-
-
 class ChartService:
     def __init__(
         self,
         session: AsyncSession,
         settings: Settings,
-        runtime_factory: ChartRuntimeFactory,
+        sessions: ChartSessionManager,
     ) -> None:
         self.profiles = ProfileService(session, settings)
-        self.runtime_factory = runtime_factory
+        self.sessions = sessions
 
     async def sync_bazi(
         self,
         owner: OwnerProtocol,
         *,
         profile_version_id: UUID,
+        idempotency_key: str,
     ) -> BaziChartSyncResponse:
         profile = await self._owned_confirmed_profile(owner, profile_version_id)
         command = compile_bazi_prepare(
@@ -50,20 +45,26 @@ class ChartService:
             profile=profile,
             dimension_ids=("overview",),
         )
-        lease = await self.runtime_factory.open()
-        try:
-            result = await lease.runtime.execute(command)
-        finally:
-            await lease.aclose()
-        if not isinstance(result, Prepared):
-            raise ChartPrepareStoppedError("Runtime did not prepare the chart")
-        fact_panel = project_public_fact_panel(result.brief)
-        if fact_panel is None:
-            raise ChartPrepareStoppedError("Runtime prepared no public fact panel")
-        return BaziChartSyncResponse(
+        return await self.sessions.start(
+            owner_key=f"{owner.kind}:{owner.id}",
             profile_version_id=profile_version_id,
-            status="ready",
-            fact_panel=fact_panel,
+            prepare=command,
+            idempotency_key=idempotency_key,
+        )
+
+    async def supply_input(
+        self,
+        owner: OwnerProtocol,
+        *,
+        chart_handle: str,
+        values: dict[str, object],
+        idempotency_key: str,
+    ) -> BaziChartSyncResponse:
+        return await self.sessions.supply_input(
+            owner_key=f"{owner.kind}:{owner.id}",
+            chart_handle=chart_handle,
+            values=values,
+            idempotency_key=idempotency_key,
         )
 
     async def _owned_confirmed_profile(
