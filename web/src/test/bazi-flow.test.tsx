@@ -7,6 +7,7 @@ import { BaziFlow } from "@/components/bazi-flow";
 const navigation = vi.hoisted(() => ({ push: vi.fn() }));
 const api = vi.hoisted(() => ({
   listProfiles: vi.fn(),
+  syncBaziChart: vi.fn(),
   startPreviewReading: vi.fn(),
 }));
 
@@ -26,6 +27,7 @@ vi.mock("@/lib/api", async (importOriginal) => {
   return {
     ...actual,
     listProfiles: api.listProfiles,
+    syncBaziChart: api.syncBaziChart,
     startPreviewReading: api.startPreviewReading,
   };
 });
@@ -35,6 +37,7 @@ const profileVersionId = "22222222-2222-4222-8222-222222222222";
 beforeEach(() => {
   navigation.push.mockReset();
   api.listProfiles.mockReset();
+  api.syncBaziChart.mockReset();
   api.startPreviewReading.mockReset();
   api.listProfiles.mockResolvedValue({
     profiles: [
@@ -50,32 +53,56 @@ beforeEach(() => {
   api.startPreviewReading.mockResolvedValue({
     reading_version_id: "33333333-3333-4333-8333-333333333333",
   });
+  api.syncBaziChart.mockResolvedValue({
+    profile_version_id: profileVersionId,
+    status: "ready",
+    chart_handle: null,
+    fact_panel: {
+      question: "查看这个档案的确定性八字盘。",
+      vocabulary: [],
+      facts: [
+        {
+          ref: "fact:profile/calculated/bazi/four_pillars",
+          subject_ref: `profile-version:${profileVersionId}`,
+          kind_id: "kind.fact",
+          value: {
+            year: "甲子",
+            month: "乙丑",
+            day: "丙寅",
+            hour: "丁卯",
+          },
+          display_text: "four_pillars：{}",
+        },
+      ],
+      evidence: [],
+      findings: [],
+      claim_scopes: [],
+      limits: [],
+      prior_answer: null,
+      request_view: null,
+    },
+    input_request: null,
+  });
 });
 
 describe("BaziFlow", () => {
-  it("states the currently supported narrative scope before submitting", async () => {
+  it("syncs a server chart in place without starting a reading", async () => {
     const user = userEvent.setup();
     render(<BaziFlow />);
 
     await user.selectOptions(await screen.findByLabelText("档案版本"), profileVersionId);
-    expect(screen.getByText("当前白话解读范围：事业与工作。")).toBeVisible();
-    expect(screen.getByText(/盘面仍展示服务端返回的四柱事实/)).toBeVisible();
-    expect(
-      screen.queryByRole("radio", { name: "整体概览" }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByText(/本页只展示 Runtime 返回的结构化事实/)).toBeVisible();
 
-    await user.click(
-      screen.getByRole("button", { name: /开始事业主题概览/ }),
-    );
+    await user.click(screen.getByRole("button", { name: "同步排盘" }));
 
-    await waitFor(() => expect(api.startPreviewReading).toHaveBeenCalledTimes(1));
-    expect(api.startPreviewReading).toHaveBeenCalledWith(
-      expect.objectContaining({
-        profile_version_id: profileVersionId,
-        dimension_ids: ["career"],
-        query: "查看这个档案的事业与工作主题",
-      }),
+    await waitFor(() => expect(api.syncBaziChart).toHaveBeenCalledTimes(1));
+    expect(api.syncBaziChart).toHaveBeenCalledWith(
+      { profile_version_id: profileVersionId },
       expect.any(String),
     );
+    expect(api.startPreviewReading).not.toHaveBeenCalled();
+    expect(navigation.push).not.toHaveBeenCalled();
+    expect(await screen.findByText("命盘已就绪")).toBeVisible();
+    expect(screen.getByText("甲子")).toBeVisible();
   });
 });
