@@ -369,7 +369,7 @@ MVP 另展示已投影的 `day_master` / `month_command` 摘要并复用可点�
 - [x] 服务：复用 `compile_bazi_prepare` + Runtime adapter；**禁止**入队 Worker
 - [x] Web：`/app/bazi` 已改为「选档案 → 同步看盘」；同页展示抬头 + 四柱卡 + 明细矩阵 + 现有 `BaziChart` workspace
 - [x] CTA：「进入事业深度解读」→ 现有 `startPreviewReading` 异步链路
-- [x] 测试：API 合同（无 Web Reading/Job、Model 与 entitlement 调用即失败）；web 组件测；`make check`（backend 539 passed / 90 skipped；web 262 passed；ruff/mypy/lint/typecheck/build 绿）
+- [x] 测试：API 合同（无 Web Reading/Job、Model 与 entitlement 调用即失败）；web 组件测；`make check`（backend 540 passed / 90 skipped；web 262 passed；ruff/mypy/lint/typecheck/build 绿）
 - [ ] 测试服部署后手点：2 秒级出盘体感  
 
 Phase 1 当前结论：**本地代码验收完成，环境验收未完成**。真实 one-shot 单次同步为 `200/ready`、14 类 public facts、`933.77ms`，Web Reading Root / Job / GenerationAttempt / AcceptedCopy 均为 0；证据见 `docs/releases/evidence/2026-08-12-chart-sync-local/`。因未获测试服部署授权，且 production 单写者接线与 p95 仍待决，本阶段不宣布 Staging / Production Ready，也不进入 Phase 2–4。
