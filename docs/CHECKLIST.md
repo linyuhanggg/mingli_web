@@ -32,7 +32,7 @@
 
 | 项 | 当前值 | 备注 |
 |----|--------|------|
-| 代码权威 | Mac mini `/Volumes/Lexar/code/mingli_web` | **唯一带完整 `.git` 的工作树**；无 remote |
+| 代码权威 | Mac mini `/Volumes/Lexar/code/mingli_web` | **唯一带完整 `.git` 的工作树**；private remote `origin` → `https://github.com/1960697431/mingli_web.git` |
 | MacBook 同步副本 | `~/sync/code/mingli_web` | Syncthing 文件镜像，**不要**在此 `git init`；提交请在 Lexar 上做 |
 | 基线 HEAD | `47e18f8` | dogfood 功能提交；其后为 checklist 断点注记 |
 | Alembic head | `0009_owner_grants` | 含 admin staff + dogfood capability grants |
@@ -231,7 +231,7 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 ### 7.2 Dogfood 工程勾选
 
 - [x] 文档收口提交（本文 + 删旧叙事 md + README 指向）— `cbe95d9`
-- [ ] private GitHub remote + 基线 push（**需授权**）
+- [x] private GitHub remote + 基线 push — `origin` `https://github.com/1960697431/mingli_web.git`，`main@9ab5736`
 - [x] migration：`owner_capability_grants`（owner user + capability 开关）— `0009_owner_grants`
 - [x] Reading：`start_today` / `week` / `liuyao` 前校验 grant；Preview 不拦（`MINGLI_DOGFOOD_ENTITLEMENT_GATES_ENABLED`）
 - [x] 日熔断：`MINGLI_DOGFOOD_DAILY_READING_LIMIT`（默认 10）、`MINGLI_DOGFOOD_DAILY_PAID_READING_LIMIT`（默认 6）
@@ -280,3 +280,4 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | 2026-08-12 | 权威 Git 定位到 Mac mini Lexar；`make check` 全绿；修 401 身份刷新单飞；MacBook 误 init 的空 `.git` 已删 |
 | 2026-08-12 | 锁定内部 dogfood 窗口合同（§7）；推荐顺序改为 dogfood 优先（§8） |
 | 2026-08-12 | dogfood 最小集落地：`0009_owner_grants`、付费向 grant 闸、日熔断、ops 脚本、测试期文案；`make check` 绿；HEAD `44a7ac5` |
+| 2026-08-12 | 授权后创建 private GitHub `1960697431/mingli_web` 并 push `main@9ab5736` |
