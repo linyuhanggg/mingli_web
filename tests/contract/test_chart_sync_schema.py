@@ -40,7 +40,27 @@ def test_chart_sync_json_schema_accepts_ready_and_need_input_without_token() -> 
             "status": "need_input",
             "chart_handle": "opaque-server-handle",
             "fact_panel": None,
-            "input_request": {"requirements": [{"any_of": []}]},
+            "input_request": {
+                "requirements": [
+                    {
+                        "any_of": [
+                            {
+                                "id": "zi_policy",
+                                "label": "夜子时口径",
+                                "type_id": "choice",
+                                "description": None,
+                                "choices": [
+                                    {
+                                        "id": "midnight",
+                                        "label": "零点换日",
+                                        "description": None,
+                                    }
+                                ],
+                            }
+                        ]
+                    }
+                ]
+            },
         }
     )
 
@@ -55,5 +75,43 @@ def test_chart_sync_json_schema_rejects_runtime_state_token() -> None:
                 "fact_panel": None,
                 "input_request": {"requirements": []},
                 "state_token": "must-never-cross-http",
+            }
+        )
+
+
+@pytest.mark.parametrize(
+    "input_request",
+    [
+        {"requirements": []},
+        {"requirements": [{"any_of": []}]},
+        {
+            "requirements": [
+                {
+                    "any_of": [
+                        {
+                            "id": "zi_policy",
+                            "label": "夜子时口径",
+                            "type_id": "choice",
+                            "description": None,
+                            "choices": [],
+                            "state_token": "must-never-cross-http",
+                        }
+                    ]
+                }
+            ]
+        },
+    ],
+)
+def test_chart_sync_json_schema_rejects_unfulfillable_input_requests(
+    input_request: dict[str, Any],
+) -> None:
+    with pytest.raises(ValidationError):
+        _validator().validate(
+            {
+                "profile_version_id": "b2f785df-8ac8-4f80-bddd-a76e30438972",
+                "status": "need_input",
+                "chart_handle": "opaque-server-handle",
+                "fact_panel": None,
+                "input_request": input_request,
             }
         )

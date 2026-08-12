@@ -30,15 +30,57 @@
       },
       "additionalProperties": true
     },
+    "inputChoice": {
+      "type": "object",
+      "required": ["id", "label", "description"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "inputField": {
+      "type": "object",
+      "required": ["id", "label", "type_id", "description", "choices"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "type_id": {
+          "type": "string",
+          "enum": ["integer", "text", "textarea", "choice"]
+        },
+        "description": { "type": ["string", "null"] },
+        "choices": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/inputChoice" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "inputRequirement": {
+      "type": "object",
+      "required": ["any_of"],
+      "properties": {
+        "any_of": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/inputField" }
+        }
+      },
+      "additionalProperties": false
+    },
     "inputRequest": {
       "type": "object",
       "required": ["requirements"],
       "properties": {
         "requirements": {
-          "type": "array"
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/inputRequirement" }
         }
       },
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "ready": {
       "type": "object",

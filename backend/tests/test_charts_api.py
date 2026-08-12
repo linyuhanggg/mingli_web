@@ -7,6 +7,7 @@ from app.readings.models import GenerationAttempt, ReadingJobRecord, ReadingRoot
 from app.readings.runtime_contracts import MingliCommand, Prepare, Prepared, Stopped
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import func, select
+
 from test_profiles_api import (
     assert_private_headers,
     create_confirmed_profile,
@@ -380,6 +381,21 @@ def test_runtime_openapi_exposes_closed_chart_response_union(test_settings: Any)
     }
     assert set(schemas["BaziChartReadyResponse"]["required"]) == expected_fields
     assert set(schemas["BaziChartNeedInputResponse"]["required"]) == expected_fields
+    assert schemas["BaziChartReadyResponse"]["properties"]["fact_panel"] == {
+        "$ref": "#/components/schemas/ReadingFactPanel"
+    }
+    assert schemas["BaziChartNeedInputResponse"]["properties"]["input_request"] == {
+        "$ref": "#/components/schemas/RuntimeInputRequest"
+    }
+    for schema_name in (
+        "ReadingFact",
+        "ReadingFactPanel",
+        "RuntimeInputChoice",
+        "RuntimeInputField",
+        "RuntimeInputRequirement",
+        "RuntimeInputRequest",
+    ):
+        assert schema_name in schemas
     for path in (
         "/api/v1/charts/bazi/sync",
         "/api/v1/charts/bazi/sync/{chart_handle}/input",

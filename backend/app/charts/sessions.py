@@ -7,10 +7,14 @@ from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID, uuid4
 
+from pydantic import ValidationError
+
 from app.charts.api_schemas import (
     BaziChartNeedInputResponse,
     BaziChartReadyResponse,
     BaziChartSyncResponse,
+    ReadingFactPanel,
+    RuntimeInputRequest,
 )
 from app.charts.runtime import ChartRuntimeFactory, ChartRuntimeLease
 from app.readings.errors import RuntimeTransportError
@@ -259,7 +263,7 @@ class ChartSessionManager:
                     raise
                 pending.prepare = prepare
                 pending.state_token = state_token
-                pending.input_request = input_request
+                pending.input_request = input_request.model_dump(mode="json")
                 return BaziChartNeedInputResponse(
                     profile_version_id=pending.profile_version_id,
                     status="need_input",
@@ -289,7 +293,7 @@ class ChartSessionManager:
             handle=handle,
             prepare=prepare,
             state_token=state_token,
-            input_request=input_request,
+            input_request=input_request.model_dump(mode="json"),
             lease=lease,
         )
         return pending, BaziChartNeedInputResponse(
@@ -313,22 +317,34 @@ def _ready_response(
     fact_panel = project_public_fact_panel(result.brief)
     if fact_panel is None:
         raise ChartRuntimeUnavailableError("Runtime prepared no public fact panel")
+    try:
+        public_panel = ReadingFactPanel.model_validate(fact_panel)
+    except ValidationError as error:
+        raise ChartRuntimeUnavailableError(
+            "Runtime prepared malformed public facts"
+        ) from error
     return BaziChartReadyResponse(
         profile_version_id=profile_version_id,
         status="ready",
         chart_handle=None,
-        fact_panel=fact_panel,
+        fact_panel=public_panel,
         input_request=None,
     )
 
 
-def _waiting_payload(stopped: Stopped) -> tuple[str, dict[str, Any]]:
+def _waiting_payload(stopped: Stopped) -> tuple[str, RuntimeInputRequest]:
     payload = stopped.to_dict()
     state_token = payload.get("state_token")
     input_request = payload.get("input_request")
     if not isinstance(state_token, str) or not isinstance(input_request, dict):
         raise ChartRuntimeUnavailableError("Runtime need_input payload is malformed")
-    return state_token, input_request
+    try:
+        public_request = RuntimeInputRequest.model_validate(input_request)
+    except ValidationError as error:
+        raise ChartRuntimeUnavailableError(
+            "Runtime need_input payload is malformed"
+        ) from error
+    return state_token, public_request
 
 
 def _canonical_json(payload: Mapping[str, object]) -> str:
