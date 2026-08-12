@@ -23,7 +23,7 @@
     "runtime_result_kind": "prepared",
     "public_fact_count": 14,
     "model_step_present": false,
-    "reading_root_created": false,
+    "web_reading_root_created": false,
     "reading_job_created": false,
     "entitlement_checked_or_consumed": false
   },
@@ -32,6 +32,6 @@
     "state_token_written": false,
     "raw_birth_literal_written": false,
     "public_input_fact_refs": 0,
-    "subject_ref": "profile-version:chart-fact-inventory"
+    "subject_ref_written": false
   }
 }

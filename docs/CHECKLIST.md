@@ -200,6 +200,8 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | Task13 测试服轨迹 | `docs/releases/evidence/2026-08-11-task13-server-trajectory/` |
 | Task13 round-4（5/5） | `.../run-4-followup-fix/` |
 | Dogfood 三轨 accepted | `docs/releases/evidence/2026-08-12-dogfood-three-track/` |
+| Chart-first Phase 0 fact inventory | `docs/releases/evidence/2026-08-12-chart-fact-inventory/` |
+| Chart-first Phase 1 本地同步链路 | `docs/releases/evidence/2026-08-12-chart-sync-local/` |
 
 验签脚本：`scripts/verify_frozen_runtime_release.py`  
 密钥检查（不打印密钥）：`scripts/check_production_secrets.py`
@@ -270,6 +272,8 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 5. **Phase 3**：判读层（旺衰/格局/用神/大运流年）按 fact 增量展示 + 分层解锁  
 6. 档案语义（真太阳时/农历等）与 §10 表单高级项并联，不另开大叙事  
 
+当前停在 **Phase 1 本地代码验收完成、测试服手验未授权**；Phase 2–4 未获追加授权，不施工。
+
 ### 8.3 其后（原路线）
 
 1. A 可信基线剩余项  
@@ -290,6 +294,7 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | 2026-08-12 | 授权后创建 private GitHub `1960697431/mingli_web` 并 push |
 | 2026-08-12 | 授权部署 dogfood：`0586730` current；smtp/one-shot/deepseek/gates；三轨 API accepted |
 | 2026-08-12 | **产品转向 Chart-first / 青囊对齐（§10）**：主路径改为同步细盘工作台；异步解读为副路径；禁止新开 plans 叙事文件，进度只改本文 |
+| 2026-08-12 | §10 Phase 0 库存冻结、Phase 1 本地代码验收完成：同步 API + 同页细盘 + 现有 preview CTA；`make check` 绿；测试服手验、生产单写者接线与 p95 验收仍未完成 |
 
 ---
 
@@ -315,22 +320,24 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 
 | 能力 | 青囊（观察） | 本仓现状 | 差距 |
 |------|--------------|----------|------|
-| 入口 CTA | 开启推演（免费）即时出盘 | `/app/bazi` → 选档案 → `startPreview` 异步 Job | 路径反了 |
-| 同步排盘 API | 前端算/或登录 engine | **无**独立 sync prepare 出口 | §3-B 第一项未做 |
-| 四柱主舞台 | 四列干支+十神 | 有 `BaziChart` 可点选，挂在解读结果下 | 有组件、无独立页 |
-| 明细矩阵 | 藏干/纳音/空亡/地势/自坐/神煞 | `chart-workspace` 仅 pillars+meta；靠 public facts | **密度取决于 prepare 投影** |
-| 图示 Tab | 命局/干支/宫位/六亲/五行 | 无关系图；五行/三宫未产品化 | Phase 2–3 |
+| 入口 CTA | 开启推演（免费）即时出盘 | `/app/bazi` → 选已确认档案 → 同步出盘 | 本地 MVP 已改正；测试服手验未做 |
+| 同步排盘 API | 前端算/或登录 engine | 已有 `POST /api/v1/charts/bazi/sync` + 结构化 input 续排 | 生产单写者接线、缓存与 p95 验收未做 |
+| 四柱主舞台 | 四列干支+十神 | `/app/bazi` 同页复用可点选 `BaziChart` / workspace | Phase 1 已闭合 |
+| 明细矩阵 | 藏干/纳音/空亡/地势/自坐/神煞 | 已展示藏干、十神、纳音、五行库存、局部神煞；四项诚实标未投影 | 空亡/地势/自坐/三宫等待 Runtime 新投影 |
+| 图示 Tab | 命局/干支/宫位/六亲/五行 | 五行计数已产品化；无关系图，三宫未投影 | Phase 2–3 |
 | 高级起盘 | 真太阳时、夜子时 | Profile 有字段；表单未当主路径 | 与档案语义并联 |
 | 分层解锁 | 细盘免费 / 判读登录 / AI 积分 | grant 只挡 today/week/liuyao | 可复用 entitlement |
-| 深读 | 积分 AI | Accepted 文稿 + Guard | 已有，改挂 CTA |
+| 深读 | 积分 AI | 细盘 CTA 已接现有事业 preview → Accepted/Guard 链路 | Phase 1 已闭合；原 entitlement 不拆 |
 
 ### 10.3 架构原则（实现时不得违反）
 
-1. **Sync Chart** = 一次 Runtime `prepare` + `project_public_fact_panel`；**不**建 Reading Root/Job（或建了也不得进入 model）；**不**调 Model；**不**核销权益。  
-2. 若 prepare 返回 `need_input`，产品必须收集结构化字段再带 token 续 prepare（禁止无 token 自动重放）。  
+1. **Sync Chart** = 一次 Runtime `prepare` + `project_public_fact_panel`；**不**建 Web Reading Root/Job；**不**调 Model；**不**核销权益。Runtime 自身按 5.1 协议建立的隔离 prepare 状态不属于 Web Reading。
+2. 若 prepare 返回 `need_input`，产品必须收集结构化字段，由服务端在同一隔离 state root 内带私有 token 续 prepare（浏览器只持 opaque handle；禁止无 token 自动重放）。
 3. 浏览器只渲染服务端 public facts；缺字段显示「暂无/未投影」，**禁止**前端发明十神/大运。  
 4. 深度解读继续走现有 Orchestrator；从细盘页 CTA 带上 `profile_version_id` / chart handle。  
 5. OpenAPI + JSON Schema + 后端测试 + web 合同测试同步改。
+6. **窄例外只限 local/test Phase 1**：API 可为每次 sync 使用独立、可销毁、`0700` 临时 state root；不得写 Worker 的持久 state root。`need_input` handle / 幂等结果 TTL 为 10 分钟，过期清理 lease 与 token；进程重启须用户显式重排，不宣称 HA。
+7. `production` 对上述临时-root 工厂 fail closed；接入单活 Runtime / fenced hot standby 与 Brief 缓存并完成性能决策前，不部署本功能。当前本地单样本 `933.77ms` 只证明 2 秒级可行，不等于 p95≤500ms 验收。
 
 ### 10.4 分期与勾选
 
@@ -354,16 +361,18 @@ MVP 另展示已投影的 `day_master` / `month_command` 摘要并复用可点�
 
 **Phase 1 — MVP（可给熟人看盘）**
 
-- [ ] API：`POST /api/v1/charts/bazi/sync`（名称以实现为准）  
-  - 输入：已确认 `profile_version_id` **或** 一次性 birth payload（二选一策略在实现前用 Phase 0 后敲定；推荐先 **仅 profile_version_id** 降风险）  
+- [x] API：`POST /api/v1/charts/bazi/sync` + `POST /api/v1/charts/bazi/sync/{chart_handle}/input`
+  - 输入：已冻结为仅已确认 `profile_version_id`；不接受一次性 birth payload
   - 输出：`fact_panel`（public）+ 可选 `chart_view` 摘要；无 `accepted_copy`  
   - 鉴权：Guest 或 User + CSRF；**不**走 paid grant  
   - 限流：独立 write limiter（防刷 Runtime）  
-- [ ] 服务：复用 `compile_bazi_prepare` + Runtime adapter；**禁止**入队 Worker  
-- [ ] Web：`/app/bazi` 改为「选档案 → 同步看盘」；提交后同页/子路由展示：抬头 + 四柱卡 + 明细（facts 列表/矩阵）+ 现有 `BaziChart` workspace  
-- [ ] CTA：「生成深度解读」→ 现有 `startPreviewReading`（或 bazi_deep）异步链路  
-- [ ] 测试：API 合同（无 Job、无 model mock 调用）；web 组件测；`make check`  
+- [x] 服务：复用 `compile_bazi_prepare` + Runtime adapter；**禁止**入队 Worker
+- [x] Web：`/app/bazi` 已改为「选档案 → 同步看盘」；同页展示抬头 + 四柱卡 + 明细矩阵 + 现有 `BaziChart` workspace
+- [x] CTA：「进入事业深度解读」→ 现有 `startPreviewReading` 异步链路
+- [x] 测试：API 合同（无 Web Reading/Job、Model 与 entitlement 调用即失败）；web 组件测；`make check`（backend 539 passed / 90 skipped；web 262 passed；ruff/mypy/lint/typecheck/build 绿）
 - [ ] 测试服部署后手点：2 秒级出盘体感  
+
+Phase 1 当前结论：**本地代码验收完成，环境验收未完成**。真实 one-shot 单次同步为 `200/ready`、14 类 public facts、`933.77ms`，Web Reading Root / Job / GenerationAttempt / AcceptedCopy 均为 0；证据见 `docs/releases/evidence/2026-08-12-chart-sync-local/`。因未获测试服部署授权，且 production 单写者接线与 p95 仍待决，本阶段不宣布 Staging / Production Ready，也不进入 Phase 2–4。
 
 **Phase 2 — 信息架构（盘主文辅）**
 
@@ -411,5 +420,7 @@ MVP 另展示已投影的 `day_master` / `month_command` 摘要并复用可点�
 - 网络面板确认：**无** model 调用、**无** reading job 或 job 不进入 generating  
 - 从细盘一键进入现有 preview 深读仍可用  
 - `make check` 绿；CHECKLIST §10.4 Phase 1 勾完  
+
+当前前三项已在本地满足，`make check` 已绿；最后一项仍受测试服手验未授权约束，因此只宣布 Phase 1 **本地代码验收**，不宣布完整环境验收。
 
 ---

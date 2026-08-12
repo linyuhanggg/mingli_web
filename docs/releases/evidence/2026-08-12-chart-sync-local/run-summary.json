@@ -1,0 +1,41 @@
+{
+  "schema": "fateradar-bazi-chart-sync-local-run-v1",
+  "recorded_at": "2026-08-12T18:23:59+08:00",
+  "repository_commit": "b27bf96",
+  "status": "passed",
+  "environment": {
+    "kind": "local",
+    "api_transport": "loopback",
+    "database": "ephemeral-sqlite",
+    "runtime_adapter": "one-shot-process",
+    "runtime_release": "full-5.1",
+    "runtime_state_root": "isolated-ephemeral-0700"
+  },
+  "request": {
+    "endpoint": "POST /api/v1/charts/bazi/sync",
+    "input_strategy": "confirmed-profile-version-id-only",
+    "profile_identifiers_written": false,
+    "birth_payload_written": false
+  },
+  "result": {
+    "http_status": 200,
+    "chart_status": "ready",
+    "duration_ms": 933.77,
+    "sample_count": 1,
+    "public_fact_count": 14,
+    "web_reading_root_count": 0,
+    "reading_job_count": 0,
+    "generation_attempt_count": 0,
+    "accepted_copy_count": 0,
+    "state_token_exposed": false,
+    "accepted_copy_exposed": false
+  },
+  "qualification": {
+    "model_called": false,
+    "entitlement_checked_or_consumed": false,
+    "deployment_performed": false,
+    "production_or_18080_config_changed": false,
+    "p95_evaluated": false,
+    "production_ready": false
+  }
+}
