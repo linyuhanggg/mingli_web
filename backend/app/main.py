@@ -14,6 +14,7 @@ from app.adapters.otp import (
     ProductionFailClosedOtpDeliveryAdapter,
     SmtpOtpDeliveryAdapter,
 )
+from app.adapters.runtime import FakeMingliRuntimeAdapter, MingliRuntime
 from app.api.errors import ApiProblem
 from app.api.health import ReadinessProbe
 from app.api.problems import problem_response
@@ -33,6 +34,7 @@ def create_app(
     settings: Settings | None = None,
     readiness_probe: ReadinessProbe | None = None,
     database: Database | None = None,
+    chart_runtime: MingliRuntime | None = None,
 ) -> FastAPI:
     resolved_settings = settings or get_settings()
     resolved_database = database or Database(resolved_settings.database_url)
@@ -60,6 +62,7 @@ def create_app(
     application.state.settings = resolved_settings
     application.state.database = resolved_database
     application.state.session_factory = resolved_database.sessions
+    application.state.chart_runtime = chart_runtime or FakeMingliRuntimeAdapter()
     identity_hash_key = resolved_settings.identity_hash_key.get_secret_value()
     application.state.otp_challenge_store = InMemoryOtpChallengeStore(
         secret=identity_hash_key,

@@ -1,0 +1,1 @@
+"""Synchronous deterministic chart projection."""
