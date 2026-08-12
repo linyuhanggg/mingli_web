@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
@@ -85,6 +88,10 @@ describe("BaziFactMatrix", () => {
     const pillarTable = screen.getByRole("table", {
       name: "四柱藏干、十神与纳音",
     });
+    const pillarScroller = screen.getByRole("region", {
+      name: "四柱藏干、十神与纳音横向滚动区",
+    });
+    expect(pillarScroller).toHaveAttribute("tabindex", "0");
     expect(
       within(pillarTable).getByRole("columnheader", { name: "年柱 庚辰" }),
     ).toBeInTheDocument();
@@ -94,6 +101,10 @@ describe("BaziFactMatrix", () => {
     const elementTable = screen.getByRole("table", {
       name: "五行盘面计数",
     });
+    const elementScroller = screen.getByRole("region", {
+      name: "五行盘面计数横向滚动区",
+    });
+    expect(elementScroller).toHaveAttribute("tabindex", "0");
     expect(
       within(elementTable).getByRole("row", {
         name: "显干支 2 1 4 1 0",
@@ -114,6 +125,21 @@ describe("BaziFactMatrix", () => {
     expect(screen.getByText("三宫")).toBeInTheDocument();
     expect(screen.getAllByText("5.1 未投影")).toHaveLength(4);
     expect(screen.queryByText(/不应显示的原始文本/)).not.toBeInTheDocument();
+  });
+
+  it("keeps focus feedback and result metadata on defined design tokens", () => {
+    const matrixCss = readFileSync(
+      resolve(process.cwd(), "src/components/bazi-fact-matrix.module.css"),
+      "utf8",
+    );
+    const flowCss = readFileSync(
+      resolve(process.cwd(), "src/components/bazi-flow.module.css"),
+      "utf8",
+    );
+
+    expect(matrixCss).toMatch(/\.tableScroll:focus-visible\s*\{/);
+    expect(flowCss).not.toContain("var(--ink-600)");
+    expect(flowCss).toContain("color: var(--ink-700)");
   });
 
   it("renders honest empty states when optional public facts are absent", () => {

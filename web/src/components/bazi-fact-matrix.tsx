@@ -35,7 +35,12 @@ export function BaziFactMatrix({
         <p>仅展示服务端已投影的盘面事实，不在浏览器内补算。</p>
       </header>
 
-      <div className={styles.tableScroll}>
+      <div
+        className={styles.tableScroll}
+        role="region"
+        aria-label="四柱藏干、十神与纳音横向滚动区"
+        tabIndex={0}
+      >
         <table className={styles.table}>
           <caption>四柱藏干、十神与纳音</caption>
           <thead>
@@ -102,7 +107,12 @@ export function BaziFactMatrix({
 
       <div className={styles.block}>
         {view.elements ? (
-          <div className={styles.tableScroll}>
+          <div
+            className={styles.tableScroll}
+            role="region"
+            aria-label="五行盘面计数横向滚动区"
+            tabIndex={0}
+          >
             <table className={`${styles.table} ${styles.elementTable}`}>
               <caption>五行盘面计数</caption>
               <thead>

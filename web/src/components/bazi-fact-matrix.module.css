@@ -65,6 +65,11 @@
   background: var(--white);
 }
 
+.tableScroll:focus-visible {
+  outline: 3px solid var(--terracotta-500);
+  outline-offset: 2px;
+}
+
 .table {
   width: 100%;
   min-width: 42rem;
