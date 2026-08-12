@@ -336,6 +336,9 @@ export function BaziFlow({
 
       {chartResult && chartView ? (
         <section className={styles.result} aria-labelledby="bazi-result-heading">
+          <p className={styles.srOnly} role="status" aria-label="排盘完成">
+            命盘已就绪，可以查看四柱与细盘明细。
+          </p>
           <header className={styles.resultHeader}>
             <div>
               <p className={styles.eyebrow}>同步事实盘</p>

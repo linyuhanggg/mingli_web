@@ -114,6 +114,9 @@ describe("BaziFlow", () => {
     expect(
       screen.getByRole("region", { name: "八字细盘明细" }),
     ).toBeVisible();
+    expect(screen.getByRole("status", { name: "排盘完成" })).toHaveTextContent(
+      "命盘已就绪，可以查看四柱与细盘明细。",
+    );
   });
 
   it("keeps the existing career preview as an explicit deep-reading CTA", async () => {
