@@ -75,9 +75,9 @@ class IsolatedChartRuntimeFactory:
         self._ready = False
 
     async def startup(self) -> None:
-        if self._settings.environment == "production":
+        if self._settings.environment not in {"local", "test"}:
             raise ChartRuntimeTopologyError(
-                "production sync charts require the single-writer Runtime topology"
+                "deployed sync charts require the single-writer Runtime topology"
             )
         if self._ready:
             return

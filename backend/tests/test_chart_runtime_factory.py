@@ -71,9 +71,11 @@ async def test_one_shot_chart_runtime_uses_private_ephemeral_roots(
 
 
 @pytest.mark.asyncio
-async def test_production_refuses_disposable_api_runtime_roots(
+@pytest.mark.parametrize("environment", ["staging", "production"])
+async def test_deployed_environments_refuse_disposable_api_runtime_roots(
     test_settings: Any,
     monkeypatch: pytest.MonkeyPatch,
+    environment: str,
 ) -> None:
     from app.charts import runtime as chart_runtime
 
@@ -82,12 +84,12 @@ async def test_production_refuses_disposable_api_runtime_roots(
     def unexpected_gate(_settings: Any) -> object:
         nonlocal gate_calls
         gate_calls += 1
-        raise AssertionError("production must reject the disposable-root topology first")
+        raise AssertionError("deployed environments must reject this topology first")
 
     monkeypatch.setattr(chart_runtime, "build_runtime_startup_gate", unexpected_gate)
     factory = chart_runtime.IsolatedChartRuntimeFactory(
         test_settings.model_copy(
-            update={"environment": "production", "runtime_adapter": "one-shot"}
+            update={"environment": environment, "runtime_adapter": "one-shot"}
         )
     )
 
