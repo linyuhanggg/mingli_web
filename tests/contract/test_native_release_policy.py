@@ -12,13 +12,9 @@ POLICY = (
 )
 POLICY_DOCUMENTS = (
     ROOT / "README.md",
+    ROOT / "docs" / "CHECKLIST.md",
     ROOT / "docs" / "MINGLI_V51_WEB_INTEGRATION.md",
-    ROOT / "docs" / "PHASE_0_GATES.md",
     ROOT / "docs" / "PRODUCT_BLUEPRINT_WEB_IOS_V2.md",
-    ROOT
-    / "docs"
-    / "plans"
-    / "2026-08-09-mingli-v51-web-integration.md",
     ROOT
     / "docs"
     / "adr"
@@ -30,11 +26,8 @@ SLOT_POLICY = (
     "PID 数量上限。"
 )
 SLOT_POLICY_DOCUMENTS = (
+    ROOT / "docs" / "CHECKLIST.md",
     ROOT / "docs" / "MINGLI_V51_WEB_INTEGRATION.md",
-    ROOT
-    / "docs"
-    / "plans"
-    / "2026-08-09-mingli-v51-web-integration.md",
     ROOT / "infra" / "mingli-runtime" / "README.md",
 )
 

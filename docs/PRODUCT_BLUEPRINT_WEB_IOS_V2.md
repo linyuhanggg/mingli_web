@@ -3,7 +3,7 @@
 > 决策日期：2026-08-09  
 > 状态：Accepted，当前权威合同  
 > 适用范围：响应式网站 P0、连续服务 P1、原生 iOS P2  
-> 取代：[PRODUCT_BLUEPRINT_V1.md](./PRODUCT_BLUEPRINT_V1.md) 中的小程序平台、登录和支付实现  
+> 取代：已删除的 v1 小程序蓝图中的平台、登录和支付实现；进度见 [CHECKLIST.md](./CHECKLIST.md)
 > 保留：V1 的命理核心、不可变版本、Accepted、权益账本与模型账务边界  
 > 上位方向：[PRODUCT_DIRECTION.md](./PRODUCT_DIRECTION.md)  
 > 共同语言：[CONTEXT.md](../CONTEXT.md)

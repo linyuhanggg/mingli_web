@@ -26,4 +26,4 @@
   - `logs/T13-XX.log`：每个自动检查点的 pytest 原始输出
   - `smoke-summary.json`：真实 Runtime smoke 摘要（无密钥/无 token）
 - `pending` 不代表失败：表示该检查点需要隔离 staging/生产凭据，仓库内不可自动跑。
-- Task 13 未完成；production blocked / real traffic disabled（见 docs/releases/2026-08-11-task13-prep-real-path-replay.md）。
+- Task 13 产品 5 轨联调后仍非全合同闭环；production blocked / real traffic disabled（见 docs/CHECKLIST.md）。

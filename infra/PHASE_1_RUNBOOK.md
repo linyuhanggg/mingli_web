@@ -37,7 +37,7 @@ API 只在直接连接来源命中 `MINGLI_TRUSTED_PROXY_CIDRS` 时解析
 - Fake Model 只返回 schema 形状，占位稿永远不是 Accepted Copy；
 - Fake Runtime 只用于能力合同测试，不执行真实命理计算。
 
-任何真实渠道接入都必须先完成 `docs/PHASE_0_GATES.md` 对应 Gate，并通过独立 Adapter、验签、幂等和脱敏测试。
+任何真实渠道接入都必须先完成 `docs/CHECKLIST.md` 中外部 Gate，并通过独立 Adapter、验签、幂等和脱敏测试。
 
 ## 停止
 

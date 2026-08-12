@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Task 13 trajectory checklist runner - local/fake auto coverage + pending map.
 
-Task 13 (docs/plans/2026-08-09-mingli-v51-web-integration.md) requires the full
+Task 13 (docs/CHECKLIST.md + MINGLI_V51_WEB_INTEGRATION) requires the full
 staging trajectory suite plus operational drills before real traffic. Most of
 the state-machine trajectories are already covered by local Fake/contract
 tests; the isolated-staging runs and drills are not. This runner:
@@ -397,7 +397,7 @@ def _write_summary(
             "  - `smoke-summary.json`：真实 Runtime smoke 摘要（无密钥/无 token）",
             "- `pending` 不代表失败：表示该检查点需要隔离 staging/生产凭据，仓库内不可自动跑。",
             ("- Task 13 未完成；production blocked / real traffic disabled（见 "
-            "docs/releases/2026-08-11-task13-prep-real-path-replay.md）。"),
+            "docs/CHECKLIST.md §6）。"),
         ]
     )
     (out_dir / "task13-trajectory-checklist.md").write_text(
