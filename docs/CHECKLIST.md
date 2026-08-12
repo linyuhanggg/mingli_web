@@ -336,10 +336,21 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 
 **Phase 0 — 探测（先于产品 UI 大改）**
 
-- [ ] 用 one-shot Runtime 对标准档案跑 `compile_bazi_prepare` + prepare，导出 **脱敏** fact 种类清单（ref/kind/display 形态）  
-- [ ] 对照青囊免费层字段：四柱、十神、藏干、纳音、空亡、地势、自坐、神煞、三宫、五行 — 标记 **已有 / 可映射 / 5.1 未投影**  
-- [ ] 结论写入证据目录 `docs/releases/evidence/<date>-chart-fact-inventory/`（无 token、无生日原文）  
-- [ ] 据此冻结 MVP 展示范围（只承诺「已有投影」，不承诺青囊全字段 Day1）
+- [x] 用 one-shot Runtime 对标准档案跑 `compile_bazi_prepare` + prepare，导出 **脱敏** fact 种类清单（ref/kind/display 形态）
+- [x] 对照青囊免费层字段：四柱、十神、藏干、纳音、空亡、地势、自坐、神煞、三宫、五行 — 标记 **已有 / 可映射 / 5.1 未投影**
+- [x] 结论写入证据目录 `docs/releases/evidence/2026-08-12-chart-fact-inventory/`（无 token、无生日原文）
+- [x] 据此冻结 MVP 展示范围（只承诺「已有投影」，不承诺青囊全字段 Day1）
+
+Phase 0 冻结结论（机器清单与字段依据见上述 evidence）：
+
+| 青囊字段 | 5.1 状态 | Phase 1 决定 |
+|----------|----------|--------------|
+| 四柱、十神、藏干、纳音 | **已有** | 进入四柱主舞台 / 明细矩阵 |
+| 神煞 | **可映射**：`shensha_auxiliary.calculated_items` | 只显 Runtime 已匹配项，不扩写断语 |
+| 五行 | **可映射**：`element_inventory` | 只显出现次数与原 scope，不据此断旺衰 / 用神 |
+| 空亡、地势、自坐、三宫 | **5.1 未投影** | 诚实显示未投影；浏览器不推导 |
+
+MVP 另展示已投影的 `day_master` / `month_command` 摘要并复用可点选 `BaziChart`；`luck_cycles` 与 `interpretive_candidates` 虽已投影，分别留给 Phase 3 时间层 / 判读层，本阶段不抢跑。
 
 **Phase 1 — MVP（可给熟人看盘）**
 

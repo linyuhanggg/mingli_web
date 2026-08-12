@@ -1,0 +1,92 @@
+{
+  "schema": "fateradar-bazi-public-fact-inventory-v1",
+  "fact_count": 14,
+  "projection": "project_public_fact_panel",
+  "display_contract": "<fact_key>：<JSON value>; long values may be truncated in display_text, so UI must read value",
+  "facts": [
+    {
+      "ref_suffix": "/calculated/bazi/branch_relations",
+      "kind_id": "kind.fact",
+      "display_shape": "branch_relations：<array>",
+      "value_shape": "array<{branches,positions,type}>"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/day_master",
+      "kind_id": "kind.fact",
+      "display_shape": "day_master：<object>",
+      "value_shape": "{element,polarity,stem}"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/dimension_fact_scope",
+      "kind_id": "kind.fact",
+      "display_shape": "dimension_fact_scope：<object>",
+      "value_shape": "{<dimension>:{base_calculation_digest,scope}}"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/element_inventory",
+      "kind_id": "kind.fact",
+      "display_shape": "element_inventory：<object>",
+      "value_shape": "{hidden_stem_occurrence_counts,scope,visible_stem_branch_counts}"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/four_pillars",
+      "kind_id": "kind.fact",
+      "display_shape": "four_pillars：<object>",
+      "value_shape": "{year,month,day,hour}"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/hidden_stems",
+      "kind_id": "kind.fact",
+      "display_shape": "hidden_stems：<object>",
+      "value_shape": "{year,month,day,hour:{branch,stems}}"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/interpretive_candidates",
+      "kind_id": "kind.fact",
+      "display_shape": "interpretive_candidates：<object>",
+      "value_shape": "{following_and_transformation,salience_signals,strength,structure}"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/luck_cycles",
+      "kind_id": "kind.fact",
+      "display_shape": "luck_cycles：<object>",
+      "value_shape": "{approximate_start_datetime,boundary_term,cycles,direction,start_age_*}"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/month_command",
+      "kind_id": "kind.fact",
+      "display_shape": "month_command：<object>",
+      "value_shape": "{branch,label,main_qi,main_qi_element}"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/nayin",
+      "kind_id": "kind.fact",
+      "display_shape": "nayin：<object>",
+      "value_shape": "{year,month,day,hour}"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/seasonal_profile",
+      "kind_id": "kind.fact",
+      "display_shape": "seasonal_profile：<object>",
+      "value_shape": "{moisture,month_qi,season,temperature}"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/shensha_auxiliary",
+      "kind_id": "kind.fact",
+      "display_shape": "shensha_auxiliary：<object>",
+      "value_shape": "{boundary,calculated_items,cannot_override,evaluated_rules,precedence,status,temporal_scope}"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/ten_gods",
+      "kind_id": "kind.fact",
+      "display_shape": "ten_gods：<object>",
+      "value_shape": "{heavenly_stems,hidden_stems}"
+    },
+    {
+      "ref_suffix": "/calculated/bazi/tiaohou_markers",
+      "kind_id": "kind.fact",
+      "display_shape": "tiaohou_markers：<object>",
+      "value_shape": "{applicability_identity,markers,moisture,scope,temperature}"
+    }
+  ]
+}

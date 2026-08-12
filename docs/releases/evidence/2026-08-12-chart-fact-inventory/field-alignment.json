@@ -1,0 +1,98 @@
+{
+  "schema": "fateradar-qingnang-field-alignment-v1",
+  "status_meaning": {
+    "已有": "5.1 public facts 有同语义的直接字段",
+    "可映射": "5.1 public facts 有确定性来源，前端只需映射，不做命理计算",
+    "5.1 未投影": "本次 public fact panel 没有足够字段；浏览器不得推导补齐"
+  },
+  "fields": [
+    {
+      "field": "四柱",
+      "status": "已有",
+      "fact": "four_pillars",
+      "mvp": true
+    },
+    {
+      "field": "十神",
+      "status": "已有",
+      "fact": "ten_gods",
+      "mvp": true
+    },
+    {
+      "field": "藏干",
+      "status": "已有",
+      "fact": "hidden_stems",
+      "mvp": true
+    },
+    {
+      "field": "纳音",
+      "status": "已有",
+      "fact": "nayin",
+      "mvp": true
+    },
+    {
+      "field": "空亡",
+      "status": "5.1 未投影",
+      "fact": null,
+      "mvp": false
+    },
+    {
+      "field": "地势",
+      "status": "5.1 未投影",
+      "fact": null,
+      "mvp": false
+    },
+    {
+      "field": "自坐",
+      "status": "5.1 未投影",
+      "fact": null,
+      "mvp": false
+    },
+    {
+      "field": "神煞",
+      "status": "可映射",
+      "fact": "shensha_auxiliary.calculated_items",
+      "mvp": true,
+      "boundary": "只展示 Runtime 已匹配项目；不得让神煞覆盖月令、格局、旺衰、调候、十神或运限事实"
+    },
+    {
+      "field": "三宫",
+      "status": "5.1 未投影",
+      "fact": null,
+      "mvp": false
+    },
+    {
+      "field": "五行",
+      "status": "可映射",
+      "fact": "element_inventory",
+      "mvp": true,
+      "boundary": "仅展示可见干支与藏干出现次数；不得据此下旺衰或用神结论"
+    }
+  ],
+  "mvp_summary": {
+    "core": [
+      "four_pillars",
+      "day_master",
+      "month_command"
+    ],
+    "detail_matrix": [
+      "ten_gods",
+      "hidden_stems",
+      "nayin",
+      "shensha_auxiliary.calculated_items"
+    ],
+    "summary": [
+      "element_inventory"
+    ],
+    "honest_unavailable": [
+      "空亡",
+      "地势",
+      "自坐",
+      "三宫"
+    ],
+    "deferred_even_if_projected": [
+      "luck_cycles",
+      "interpretive_candidates"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "schema": "fateradar-bazi-chart-fact-inventory-run-v1",
+  "run_at": "2026-08-12T16:58:39+08:00",
+  "repository_commit": "f488fa4d6eaa989b708b14d87b747ee931468829",
+  "status": "passed",
+  "profile_fixture": "scripts/smoke_local_real_runtime.py standard confirmed profile",
+  "pipeline": [
+    "compile_bazi_prepare",
+    "one-shot runtime prepare",
+    "project_public_fact_panel"
+  ],
+  "runtime": {
+    "adapter_kind": "one-shot-process",
+    "protocol_version": "mingli-portable-interface-v2",
+    "describe_manifest_digest": "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342",
+    "release_manifest_sha256": "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68",
+    "capability_count": 13,
+    "release_file_count": 217,
+    "reference_pack_count": 55,
+    "evidence_record_count": 1328
+  },
+  "result": {
+    "runtime_result_kind": "prepared",
+    "public_fact_count": 14,
+    "model_step_present": false,
+    "reading_root_created": false,
+    "reading_job_created": false,
+    "entitlement_checked_or_consumed": false
+  },
+  "redaction": {
+    "prepare_payload_written": false,
+    "state_token_written": false,
+    "raw_birth_literal_written": false,
+    "public_input_fact_refs": 0,
+    "subject_ref": "profile-version:chart-fact-inventory"
+  }
+}
