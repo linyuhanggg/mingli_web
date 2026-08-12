@@ -110,7 +110,10 @@ describe("BaziFlow", () => {
     expect(api.startPreviewReading).not.toHaveBeenCalled();
     expect(navigation.push).not.toHaveBeenCalled();
     expect(await screen.findByText("命盘已就绪")).toBeVisible();
-    expect(screen.getByText("甲子")).toBeVisible();
+    expect(screen.getAllByText("甲子")).toHaveLength(2);
+    expect(
+      screen.getByRole("region", { name: "八字细盘明细" }),
+    ).toBeVisible();
   });
 
   it("keeps the existing career preview as an explicit deep-reading CTA", async () => {

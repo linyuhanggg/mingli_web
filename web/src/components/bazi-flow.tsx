@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { ButtonLink } from "@/components/button-link";
+import { BaziFactMatrix } from "@/components/bazi-fact-matrix";
 import { BaziChart } from "@/components/readings/bazi-chart";
 import { NeedInputForm } from "@/components/readings/need-input-form";
 import {
@@ -343,6 +344,7 @@ export function BaziFlow({
             <p>未创建解读任务 · 未调用模型 · 未核销权益</p>
           </header>
           <BaziChart chart={chartView} title="本命细盘" />
+          <BaziFactMatrix facts={chartResult.fact_panel.facts} />
           <div className={styles.deepReading}>
             <div>
               <h3>想看白话判断？</h3>
