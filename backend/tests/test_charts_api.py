@@ -4,11 +4,11 @@ from typing import Any
 
 from app.adapters.runtime import FakeMingliRuntimeAdapter
 from app.charts.runtime import ChartRuntimeLease
+from app.entitlements.service import EntitlementService
 from app.readings.models import GenerationAttempt, ReadingJobRecord, ReadingRoot
 from app.readings.runtime_contracts import MingliCommand, Prepare, Prepared, Stopped
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import func, select
-
 from test_profiles_api import (
     assert_private_headers,
     create_confirmed_profile,
@@ -22,10 +22,27 @@ async def _row_count(database: Any, model: type[Any]) -> int:
     return int(count or 0)
 
 
+def _forbid_model_and_entitlement_calls(monkeypatch: Any) -> list[str]:
+    from app.adapters.model import DeepSeekStandaloneModelAdapter, FakeModelGateway
+
+    calls: list[str] = []
+
+    async def forbidden(*_args: object, **_kwargs: object) -> None:
+        calls.append("forbidden")
+        raise AssertionError("sync chart must not call Model or entitlement services")
+
+    monkeypatch.setattr(DeepSeekStandaloneModelAdapter, "generate", forbidden)
+    monkeypatch.setattr(FakeModelGateway, "generate", forbidden)
+    monkeypatch.setattr(EntitlementService, "require_paid_action", forbidden)
+    return calls
+
+
 async def test_guest_syncs_public_bazi_chart_without_creating_a_reading_job(
     client: AsyncClient,
     database: Any,
+    monkeypatch: Any,
 ) -> None:
+    forbidden_calls = _forbid_model_and_entitlement_calls(monkeypatch)
     headers = await create_guest(client)
     confirmed = await create_confirmed_profile(client, headers)
 
@@ -101,6 +118,7 @@ async def test_guest_syncs_public_bazi_chart_without_creating_a_reading_job(
     assert await _row_count(database, ReadingRoot) == 0
     assert await _row_count(database, ReadingJobRecord) == 0
     assert await _row_count(database, GenerationAttempt) == 0
+    assert forbidden_calls == []
 
 
 async def test_sync_chart_closes_its_runtime_lease(
@@ -157,9 +175,11 @@ async def test_sync_chart_closes_its_runtime_lease(
 async def test_need_input_resumes_with_the_same_private_runtime_token(
     database: Any,
     test_settings: Any,
+    monkeypatch: Any,
 ) -> None:
     from app.main import create_app
 
+    forbidden_calls = _forbid_model_and_entitlement_calls(monkeypatch)
     commands: list[MingliCommand] = []
     closed = 0
     fake = FakeMingliRuntimeAdapter()
@@ -274,6 +294,7 @@ async def test_need_input_resumes_with_the_same_private_runtime_token(
     assert await _row_count(database, ReadingRoot) == 0
     assert await _row_count(database, ReadingJobRecord) == 0
     assert await _row_count(database, GenerationAttempt) == 0
+    assert forbidden_calls == []
 
 
 async def test_abandoned_need_input_and_idempotency_entries_expire(
