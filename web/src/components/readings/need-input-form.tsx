@@ -13,6 +13,26 @@ import styles from "./need-input-form.module.css";
 type FieldValues = Record<string, unknown>;
 type FieldErrors = Record<string, string>;
 
+type NeedInputFormBaseProps = {
+  request?: NeedInputRequest | null;
+  onSubmitted?: () => void;
+  heading?: string;
+  description?: string;
+  submitLabel?: string;
+};
+
+type NeedInputFormProps = NeedInputFormBaseProps &
+  (
+    | {
+        readingId: string;
+        onSubmitValues?: never;
+      }
+    | {
+        readingId?: never;
+        onSubmitValues: (values: Record<string, unknown>) => Promise<void>;
+      }
+  );
+
 function isBlank(value: unknown): boolean {
   return (
     value === undefined ||
@@ -66,11 +86,11 @@ export function NeedInputForm({
   readingId,
   request,
   onSubmitted,
-}: Readonly<{
-  readingId: string;
-  request?: NeedInputRequest | null;
-  onSubmitted?: () => void;
-}>) {
+  onSubmitValues,
+  heading = "补充资料",
+  description = "服务端需要这些结构化信息后才能继续；输入只会作为 values 提交。",
+  submitLabel = "提交补充资料",
+}: Readonly<NeedInputFormProps>) {
   const [values, setValues] = useState<FieldValues>({});
   const [errors, setErrors] = useState<FieldErrors>({});
   const [busy, setBusy] = useState(false);
@@ -147,7 +167,11 @@ export function NeedInputForm({
     busyRef.current = true;
     setBusy(true);
     try {
-      await submitReadingInput(readingId, payload);
+      if (onSubmitValues) {
+        await onSubmitValues(payload);
+      } else {
+        await submitReadingInput(readingId, payload);
+      }
       onSubmitted?.();
     } catch (error) {
       setSubmitError(
@@ -164,10 +188,10 @@ export function NeedInputForm({
   return (
     <section className={styles.section} aria-labelledby="need-input-heading">
       <h2 id="need-input-heading" className={styles.heading}>
-        补充资料
+        {heading}
       </h2>
       <p className={styles.description}>
-        服务端需要这些结构化信息后才能继续；输入只会作为 values 提交。
+        {description}
       </p>
 
       <form className={styles.form} onSubmit={handleSubmit} noValidate aria-busy={busy}>
@@ -353,7 +377,7 @@ export function NeedInputForm({
           disabled={busy}
           aria-busy={busy}
         >
-          提交补充资料{busy ? " · 正在提交…" : ""}
+          {submitLabel}{busy ? " · 正在提交…" : ""}
         </button>
       </form>
     </section>

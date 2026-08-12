@@ -9,10 +9,12 @@ import { z } from "zod";
 
 import { ButtonLink } from "@/components/button-link";
 import { BaziChart } from "@/components/readings/bazi-chart";
+import { NeedInputForm } from "@/components/readings/need-input-form";
 import {
   formatProfileOption,
   listProfiles,
   startPreviewReading,
+  supplyBaziChartInput,
   syncBaziChart,
   type BaziChartNeedInputResponse,
   type BaziChartReadyResponse,
@@ -50,7 +52,9 @@ export function BaziFlow({
   const busyRef = useRef(false);
   const deepBusyRef = useRef(false);
   const intentKeyRef = useRef<IntentKey | null>(null);
+  const inputIntentKeyRef = useRef<IntentKey | null>(null);
   const deepIntentKeyRef = useRef<IntentKey | null>(null);
+  const chartGenerationRef = useRef(0);
   const {
     register,
     handleSubmit,
@@ -108,7 +112,9 @@ export function BaziFlow({
   }
 
   function resetChart() {
+    chartGenerationRef.current += 1;
     intentKeyRef.current = null;
+    inputIntentKeyRef.current = null;
     deepIntentKeyRef.current = null;
     setChartResult(null);
     setPendingInput(null);
@@ -174,6 +180,32 @@ export function BaziFlow({
       setDeepBusy(false);
     }
   }, [chartResult, router]);
+
+  const handleChartInput = useCallback(
+    async (values: Record<string, unknown>) => {
+      if (!pendingInput) return;
+      const generation = chartGenerationRef.current;
+      const payload = {
+        chart_handle: pendingInput.chart_handle,
+        values,
+      };
+      const intent = stableKeyForIntent(inputIntentKeyRef.current, payload);
+      inputIntentKeyRef.current = intent;
+      const response = await supplyBaziChartInput(
+        pendingInput.chart_handle,
+        values,
+        intent.key,
+      );
+      if (generation !== chartGenerationRef.current) return;
+      if (response.status === "ready") {
+        setChartResult(response);
+        setPendingInput(null);
+      } else {
+        setPendingInput(response);
+      }
+    },
+    [pendingInput],
+  );
 
   return (
     <div className={styles.flow}>
@@ -289,12 +321,17 @@ export function BaziFlow({
           </form>
         ) : null}
 
-        {pendingInput ? (
-          <p className={styles.status} role="status">
-            Runtime 还需要一项结构化资料，补充入口正在准备中。
-          </p>
-        ) : null}
       </section>
+
+      {pendingInput ? (
+        <NeedInputForm
+          request={pendingInput.input_request}
+          onSubmitValues={handleChartInput}
+          heading="补充排盘资料"
+          description="Runtime 需要这项结构化信息才能继续准备事实盘；浏览器只提交 values，不接触内部状态令牌。"
+          submitLabel="补充并继续排盘"
+        />
+      ) : null}
 
       {chartResult && chartView ? (
         <section className={styles.result} aria-labelledby="bazi-result-heading">

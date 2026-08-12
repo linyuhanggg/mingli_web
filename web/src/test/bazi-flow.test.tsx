@@ -8,6 +8,7 @@ const navigation = vi.hoisted(() => ({ push: vi.fn() }));
 const api = vi.hoisted(() => ({
   listProfiles: vi.fn(),
   syncBaziChart: vi.fn(),
+  supplyBaziChartInput: vi.fn(),
   startPreviewReading: vi.fn(),
 }));
 
@@ -28,34 +29,17 @@ vi.mock("@/lib/api", async (importOriginal) => {
     ...actual,
     listProfiles: api.listProfiles,
     syncBaziChart: api.syncBaziChart,
+    supplyBaziChartInput: api.supplyBaziChartInput,
     startPreviewReading: api.startPreviewReading,
   };
 });
 
 const profileVersionId = "22222222-2222-4222-8222-222222222222";
 
-beforeEach(() => {
-  navigation.push.mockReset();
-  api.listProfiles.mockReset();
-  api.syncBaziChart.mockReset();
-  api.startPreviewReading.mockReset();
-  api.listProfiles.mockResolvedValue({
-    profiles: [
-      {
-        profile_id: "11111111-1111-4111-8111-111111111111",
-        profile_version_id: profileVersionId,
-        subject_ref: `profile-version:${profileVersionId}`,
-        version: 1,
-        created_at: "2026-08-09T12:00:00Z",
-      },
-    ],
-  });
-  api.startPreviewReading.mockResolvedValue({
-    reading_version_id: "33333333-3333-4333-8333-333333333333",
-  });
-  api.syncBaziChart.mockResolvedValue({
+function readyChartResponse() {
+  return {
     profile_version_id: profileVersionId,
-    status: "ready",
+    status: "ready" as const,
     chart_handle: null,
     fact_panel: {
       question: "查看这个档案的确定性八字盘。",
@@ -82,7 +66,30 @@ beforeEach(() => {
       request_view: null,
     },
     input_request: null,
+  };
+}
+
+beforeEach(() => {
+  navigation.push.mockReset();
+  api.listProfiles.mockReset();
+  api.syncBaziChart.mockReset();
+  api.supplyBaziChartInput.mockReset();
+  api.startPreviewReading.mockReset();
+  api.listProfiles.mockResolvedValue({
+    profiles: [
+      {
+        profile_id: "11111111-1111-4111-8111-111111111111",
+        profile_version_id: profileVersionId,
+        subject_ref: `profile-version:${profileVersionId}`,
+        version: 1,
+        created_at: "2026-08-09T12:00:00Z",
+      },
+    ],
   });
+  api.startPreviewReading.mockResolvedValue({
+    reading_version_id: "33333333-3333-4333-8333-333333333333",
+  });
+  api.syncBaziChart.mockResolvedValue(readyChartResponse());
 });
 
 describe("BaziFlow", () => {
@@ -131,5 +138,55 @@ describe("BaziFlow", () => {
     expect(navigation.push).toHaveBeenCalledWith(
       "/app/readings/33333333-3333-4333-8333-333333333333",
     );
+  });
+
+  it("resumes a chart after Runtime requests structured input", async () => {
+    api.syncBaziChart.mockResolvedValueOnce({
+      profile_version_id: profileVersionId,
+      status: "need_input",
+      chart_handle: "chart-handle-0001",
+      fact_panel: null,
+      input_request: {
+        requirements: [
+          {
+            any_of: [
+              {
+                id: "zi_policy",
+                label: "夜子时口径",
+                type_id: "choice",
+                description: "选择服务端继续排盘所需的口径。",
+                choices: [
+                  {
+                    id: "midnight",
+                    label: "零点换日",
+                    description: null,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    });
+    api.supplyBaziChartInput.mockResolvedValueOnce(readyChartResponse());
+    const user = userEvent.setup();
+    render(<BaziFlow />);
+
+    await user.selectOptions(await screen.findByLabelText("档案版本"), profileVersionId);
+    await user.click(screen.getByRole("button", { name: "同步排盘" }));
+    await user.selectOptions(
+      await screen.findByLabelText("夜子时口径"),
+      "midnight",
+    );
+    await user.click(screen.getByRole("button", { name: "补充并继续排盘" }));
+
+    await waitFor(() =>
+      expect(api.supplyBaziChartInput).toHaveBeenCalledWith(
+        "chart-handle-0001",
+        { zi_policy: "midnight" },
+        expect.any(String),
+      ),
+    );
+    expect(await screen.findByText("命盘已就绪")).toBeVisible();
   });
 });
