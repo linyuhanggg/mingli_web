@@ -34,7 +34,7 @@
 |----|--------|------|
 | 代码权威 | Mac mini `/Volumes/Lexar/code/mingli_web` | **唯一带完整 `.git` 的工作树**；无 remote |
 | MacBook 同步副本 | `~/sync/code/mingli_web` | Syncthing 文件镜像，**不要**在此 `git init`；提交请在 Lexar 上做 |
-| 基线 HEAD | `8c0c66e` | `feat(platform): 增加管理后台与认证感知命理解读体验` |
+| 基线 HEAD | `44a7ac5` | dogfood 功能 `47e18f8` + checklist sha 注记；其上为平台壳 `8c0c66e` |
 | Alembic head | `0009_owner_grants` | 含 admin staff + dogfood capability grants |
 | 测试服主机 | `fateradar-prod` / `106.14.10.235:18080` | SSH 别名；**联调机不是 production** |
 | 测试服 current（已记录） | `6ec1578` | `local` + fake OTP + one-shot Runtime + deepseek |
@@ -279,3 +279,4 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | 2026-08-12 | 初版：合并原 HANDOFF、PHASE_0_GATES、plans/releases 叙事日志中的有效断点与门禁；删除工作日志类 md，证据目录保留 |
 | 2026-08-12 | 权威 Git 定位到 Mac mini Lexar；`make check` 全绿；修 401 身份刷新单飞；MacBook 误 init 的空 `.git` 已删 |
 | 2026-08-12 | 锁定内部 dogfood 窗口合同（§7）；推荐顺序改为 dogfood 优先（§8） |
+| 2026-08-12 | dogfood 最小集落地：`0009_owner_grants`、付费向 grant 闸、日熔断、ops 脚本、测试期文案；`make check` 绿；HEAD `44a7ac5` |
