@@ -7,6 +7,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 NGINX_CONFIG = ROOT / "infra" / "nginx" / "app.conf"
 COMPOSE_CONFIG = ROOT / "infra" / "compose.local.yml"
+TEST_API_SYSTEMD_CONFIG = ROOT / "infra" / "systemd" / "fateradar-test-api.service"
 
 
 def nginx_location(path: str) -> str:
@@ -54,3 +55,14 @@ def test_compose_declares_the_phase_one_process_boundaries() -> None:
         "edge",
     }
     assert "MINGLI_TRUSTED_PROXY_CIDRS" in compose["services"]["api"]["environment"]
+
+
+def test_test_api_can_lock_runtime_without_writing_the_runtime_tree() -> None:
+    config = TEST_API_SYSTEMD_CONFIG.read_text(encoding="utf-8")
+
+    assert "ProtectSystem=strict" in config
+    assert (
+        "ReadWritePaths=/opt/fateradar/shared/mingli-runtime/.venv.runtime.lock"
+        in config
+    )
+    assert "ReadWritePaths=/opt/fateradar/shared/mingli-runtime\n" not in config

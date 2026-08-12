@@ -50,6 +50,9 @@ SystemCallArchitectures=native
 # not JIT, so MemoryDenyWriteExecute is safe here. It is deliberately NOT set on
 # the web unit because Node/V8 needs writable-then-executable mappings.
 MemoryDenyWriteExecute=true
+# V5.1 takes a shared flock on this pre-provisioned file for every launcher
+# call. Keep the Runtime tree read-only; only the lock file needs O_RDWR.
+ReadWritePaths=/opt/fateradar/shared/mingli-runtime/.venv.runtime.lock
 
 [Install]
 WantedBy=multi-user.target
