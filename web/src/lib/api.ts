@@ -88,6 +88,10 @@ export type PreviewStartRequest = {
   dimension_ids?: ("overview" | "career")[];
 };
 
+export type BaziChartSyncRequest = {
+  profile_version_id: string;
+};
+
 export type FortuneStartRequest = {
   profile_version_id: string;
   query?: string;
@@ -145,6 +149,26 @@ export type ReadingFactPanel = {
   prior_answer: string | null;
   request_view: ReadingRequestView | null;
 };
+
+export type BaziChartReadyResponse = {
+  profile_version_id: string;
+  status: "ready";
+  chart_handle: null;
+  fact_panel: ReadingFactPanel;
+  input_request: null;
+};
+
+export type BaziChartNeedInputResponse = {
+  profile_version_id: string;
+  status: "need_input";
+  chart_handle: string;
+  fact_panel: null;
+  input_request: NeedInputRequest;
+};
+
+export type BaziChartSyncResponse =
+  | BaziChartReadyResponse
+  | BaziChartNeedInputResponse;
 
 export type VerificationOutcome =
   | "accepted"
@@ -475,6 +499,43 @@ export async function startPreviewReading(
   return jsonPost<ReadingVersionSummary>("/api/v1/readings/preview", body, {
     idempotencyKey,
   });
+}
+
+export async function syncBaziChart(
+  body: BaziChartSyncRequest,
+  idempotencyKey: string,
+): Promise<BaziChartSyncResponse> {
+  const result = await jsonPost<BaziChartSyncResponse>(
+    "/api/v1/charts/bazi/sync",
+    body,
+    { idempotencyKey },
+  );
+  if (result.status === "need_input") {
+    return result;
+  }
+  return {
+    ...result,
+    fact_panel: projectClientSafeFactPanel(result.fact_panel),
+  };
+}
+
+export async function supplyBaziChartInput(
+  chartHandle: string,
+  values: Record<string, unknown>,
+  idempotencyKey: string,
+): Promise<BaziChartSyncResponse> {
+  const result = await jsonPost<BaziChartSyncResponse>(
+    `/api/v1/charts/bazi/sync/${encodeURIComponent(chartHandle)}/input`,
+    { values },
+    { idempotencyKey },
+  );
+  if (result.status === "need_input") {
+    return result;
+  }
+  return {
+    ...result,
+    fact_panel: projectClientSafeFactPanel(result.fact_panel),
+  };
 }
 
 export async function startTodayReading(
