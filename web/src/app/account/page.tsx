@@ -1,4 +1,4 @@
-import { KeyRound, Mail } from "lucide-react";
+import { KeyRound, Mail, ShieldCheck } from "lucide-react";
 
 import { AccountCenter } from "@/components/account-center";
 import { AppPageHeader } from "@/components/app-page-header";
@@ -9,12 +9,13 @@ export default function AccountPage() {
   return (
     <div className={styles.page}>
       <AppPageHeader
-        title="个人中心"
-        description="登录后在这里确认当前身份、进入个人首页、管理设备并找到自己的档案与解读；未登录时只显示邮箱验证入口。"
+        title="我的"
+        description="从这里查看当前账号、进入档案与推演历史、处理通知和设备设置；未登录时只显示安全登录入口。"
         meta={
           <>
-            <span><Mail aria-hidden="true" size={15} /> 邮箱验证为主</span>
-            <span><KeyRound aria-hidden="true" size={15} /> 设备会话可撤销</span>
+            <span><KeyRound aria-hidden="true" size={15} /> 账户状态</span>
+            <span><Mail aria-hidden="true" size={15} /> 真实通知</span>
+            <span><ShieldCheck aria-hidden="true" size={15} /> 设备会话可撤销</span>
           </>
         }
       />

@@ -186,11 +186,15 @@ describe("identity-first application shell", () => {
       hidden: true,
     });
     expect(
-      within(navigation).getByRole("link", { name: "我的首页", hidden: true }),
-    ).toHaveAttribute("href", "/app");
-    expect(
-      within(navigation).getByRole("link", { name: "个人中心", hidden: true }),
+      within(navigation).getByRole("link", { name: "我的", hidden: true }),
     ).toHaveAttribute("href", "/account");
+    expect(
+      within(navigation).getByRole("link", { name: "受测人档案", hidden: true }),
+    ).toHaveAttribute("href", "/account/profiles");
+    expect(
+      within(navigation).getByRole("link", { name: "推演历史", hidden: true }),
+    ).toHaveAttribute("href", "/account/history");
+    expect(navigation.querySelector('a[href^="/app"]')).toBeNull();
   });
 
   it("makes guest mode and the login action explicit", async () => {
@@ -216,7 +220,7 @@ describe("personal center", () => {
     render(<AccountPage />);
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "个人中心" }),
+      screen.getByRole("heading", { level: 1, name: "我的" }),
     ).toBeVisible();
     expect(
       await screen.findByRole("heading", {
@@ -226,17 +230,13 @@ describe("personal center", () => {
     ).toBeVisible();
     expect(screen.getByText("当前设备已登录")).toBeVisible();
     expect(screen.queryByLabelText("邮箱地址")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /^进入我的首页/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /^受测人档案/ })).toHaveAttribute(
       "href",
-      "/app",
+      "/account/profiles",
     );
-    expect(screen.getByRole("link", { name: /^查看命理档案/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /^推演历史/ })).toHaveAttribute(
       "href",
-      "/app/profiles",
-    );
-    expect(screen.getByRole("link", { name: /^查看解读历史/ })).toHaveAttribute(
-      "href",
-      "/app/readings",
+      "/account/history",
     );
   });
 
@@ -244,9 +244,9 @@ describe("personal center", () => {
     render(<AccountPage />);
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "个人中心" }),
+      screen.getByRole("heading", { level: 1, name: "我的" }),
     ).toBeVisible();
-    expect(await screen.findByText("当前设备尚未登录")).toBeVisible();
+    expect(await screen.findByRole("heading", { level: 2, name: "游客模式" })).toBeVisible();
     expect(screen.getByLabelText("邮箱地址")).toBeVisible();
     expect(screen.queryByRole("button", { name: "退出当前设备" })).not.toBeInTheDocument();
   });
@@ -284,6 +284,7 @@ describe("personal center", () => {
         <AccountPage />
       </AccountSessionProvider>,
     );
+    await screen.findByText("安全会话已建立");
     const email = await screen.findByLabelText("邮箱地址");
     await user.type(email, "user@example.com");
     await user.click(screen.getByRole("button", { name: "发送验证码" }));
@@ -292,7 +293,7 @@ describe("personal center", () => {
     await user.click(screen.getByRole("button", { name: "验证并登录" }));
 
     await waitFor(() => {
-      expect(navigation.replace).toHaveBeenCalledWith("/app");
+      expect(navigation.replace).toHaveBeenCalledWith("/account");
     });
     expect(api.getAccount).toHaveBeenCalledTimes(2);
     expect(
@@ -311,7 +312,7 @@ describe("public account entry", () => {
     const accountLink = await screen.findByRole("link", {
       name: "已登录，进入我的首页",
     });
-    expect(accountLink).toHaveAttribute("href", "/app");
+    expect(accountLink).toHaveAttribute("href", "/account");
     expect(accountLink).toHaveTextContent("已登录");
     expect(accountLink).toHaveTextContent("我的首页");
   });

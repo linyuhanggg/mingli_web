@@ -2,27 +2,159 @@
 
 import {
   ArrowRight,
-  Database,
+  Bell,
   FolderLock,
+  Gift,
   History,
-  KeyRound,
   ReceiptText,
+  Settings2,
+  ShieldCheck,
   UserRoundCheck,
+  type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
 
 import {
   AccountSessionBoundary,
   primaryLoginIdentity,
+  type AccountSessionState,
   useAccountSession,
 } from "./account-session-context";
 import AccountSessionControl from "./account-session-control";
 import surface from "./app-surface.module.css";
 import styles from "./account-center.module.css";
 import { OtpForm } from "./otp-form";
+import { ReadingHistory } from "./reading-history";
 import { StatusPanel } from "./status-panel";
 
+
+type Shortcut = {
+  href: string;
+  label: string;
+  description: string;
+  icon: LucideIcon;
+};
+
+const shortcuts: readonly Shortcut[] = [
+  {
+    href: "/account/profiles",
+    label: "受测人档案",
+    description: "管理服务端确认的档案版本。",
+    icon: FolderLock,
+  },
+  {
+    href: "/account/history",
+    label: "推演历史",
+    description: "回看任务、版本与报告交付状态。",
+    icon: History,
+  },
+  {
+    href: "/account/orders",
+    label: "订单与权益",
+    description: "查看真实订单和追加式权益账本。",
+    icon: ReceiptText,
+  },
+  {
+    href: "/account/notifications",
+    label: "通知",
+    description: "查看任务、账户和安全状态。",
+    icon: Bell,
+  },
+  {
+    href: "/account/settings",
+    label: "账户设置",
+    description: "管理设备、通知与数据权利。",
+    icon: Settings2,
+  },
+  {
+    href: "/account/invites",
+    label: "邀请有礼",
+    description: "查看服务端确认的邀请进度。",
+    icon: Gift,
+  },
+];
+
+function AccountIdentityCard({ state }: { readonly state: AccountSessionState }) {
+  let title = "确认中";
+  let eyebrow = "账户状态";
+  let description = "正在向服务端确认当前设备，不会从浏览器存储猜测身份。";
+  let status = "正在确认";
+  let entitlement = "等待确认";
+  let Icon = ShieldCheck;
+
+  if (state.status === "signedOut") {
+    title = "游客模式";
+    description = "登录后才能读取你的档案、历史、通知和权益；当前不展示任何未授权资料。";
+    status = "未登录";
+    entitlement = "登录后查看";
+    Icon = UserRoundCheck;
+  } else if (state.status === "error") {
+    title = "账户状态暂不可读";
+    description = state.message;
+    status = "暂不可用";
+    entitlement = "暂不可读";
+    Icon = ShieldCheck;
+  } else if (state.status === "signedIn") {
+    const identity = primaryLoginIdentity(state.account);
+    title = identity?.masked_destination ?? "已验证账户";
+    eyebrow = "当前账号";
+    description = "这里只展示服务端返回的脱敏身份；档案、历史和权益都按当前账户权限读取。";
+    status = "已登录";
+    entitlement = "以订单与权益页为准";
+  }
+
+  return (
+    <section className={styles.identityCard} aria-labelledby="account-identity-title">
+      <div className={styles.identityMain}>
+        <span className={styles.identityIcon} aria-hidden="true">
+          <Icon size={25} strokeWidth={1.7} />
+        </span>
+        <div>
+          <p className={styles.identityEyebrow}>{eyebrow}</p>
+          <h2 id="account-identity-title">{title}</h2>
+          <p className={styles.identityDescription}>{description}</p>
+        </div>
+      </div>
+      <dl className={styles.identityFacts} aria-label="账户摘要">
+        <div>
+          <dt>账号状态</dt>
+          <dd>{status}</dd>
+        </div>
+        <div>
+          <dt>权益摘要</dt>
+          <dd>{entitlement}</dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
+function AccountShortcuts() {
+  return (
+    <section className={styles.shortcutSection} aria-labelledby="account-shortcuts-title">
+      <div className={styles.sectionHeader}>
+        <div>
+          <h2 id="account-shortcuts-title">我的入口</h2>
+          <p>只连接当前产品已经存在的账户页面，不在这里生成新的业务事实。</p>
+        </div>
+      </div>
+      <nav aria-label="我的账户入口" className={styles.shortcutGrid}>
+        {shortcuts.map(({ href, label, description, icon: Icon }) => (
+          <Link className={styles.shortcut} href={href} key={href}>
+            <span className={styles.shortcutIcon} aria-hidden="true">
+              <Icon size={21} strokeWidth={1.7} />
+            </span>
+            <span className={styles.shortcutCopy}>
+              <strong>{label}</strong>
+              <span>{description}</span>
+            </span>
+            <ArrowRight aria-hidden="true" size={18} strokeWidth={1.7} />
+          </Link>
+        ))}
+      </nav>
+    </section>
+  );
+}
 
 function AccountBoundaryNote() {
   return (
@@ -36,150 +168,83 @@ function AccountBoundaryNote() {
   );
 }
 
-function AccountLinks() {
+function GuestAccess() {
   return (
-    <section className={surface.paper} aria-labelledby="personal-data-title">
-      <div className={surface.sectionHeader}>
-        <div>
-          <h2 id="personal-data-title">我的档案与记录</h2>
-          <p>这里的入口只通向服务端已经保存的真实档案、解读和设备状态。</p>
+    <div className={surface.dashboard}>
+      <section className={surface.paper} aria-labelledby="login-title">
+        <div className={surface.sectionHeader}>
+          <div>
+            <h2 id="login-title">登录后开始使用</h2>
+            <p>
+              这里提供 OTP 快捷登录；密码是默认登录方式。OTP 用于注册验证、快捷登录和找回密码；注册需要在 OTP 核验后设置密码并同意当版政策。
+            </p>
+          </div>
         </div>
-      </div>
-      <nav className={styles.personalLinks} aria-label="个人资料入口">
-        <Link href="/app">
-          <UserRoundCheck aria-hidden="true" size={20} strokeWidth={1.7} />
-          <span>
-            <strong>进入我的首页</strong>
-            <small>查看下一步、处理状态和最近交付</small>
-          </span>
-          <ArrowRight aria-hidden="true" size={18} strokeWidth={1.7} />
-        </Link>
-        <Link href="/app/profiles">
-          <FolderLock aria-hidden="true" size={20} strokeWidth={1.7} />
-          <span>
-            <strong>查看命理档案</strong>
-            <small>回看每次确认形成的不可变版本</small>
-          </span>
-          <ArrowRight aria-hidden="true" size={18} strokeWidth={1.7} />
-        </Link>
-        <Link href="/app/readings">
-          <History aria-hidden="true" size={20} strokeWidth={1.7} />
-          <span>
-            <strong>查看解读历史</strong>
-            <small>按真实状态回看已交付与处理中记录</small>
-          </span>
-          <ArrowRight aria-hidden="true" size={18} strokeWidth={1.7} />
-        </Link>
-      </nav>
-    </section>
+        <OtpForm />
+      </section>
+      <AccountBoundaryNote />
+    </div>
   );
 }
 
 function AccountCenterContent() {
   const { state, refresh } = useAccountSession();
 
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
-
   if (state.status === "checking") {
     return (
-      <StatusPanel
-        state="loading"
-        title="正在确认当前设备身份"
-        description="只读取服务端会话与脱敏登录身份，不从浏览器存储猜测登录状态。"
-      />
+      <>
+        <AccountIdentityCard state={state} />
+        <StatusPanel
+          state="loading"
+          title="正在确认账户状态"
+          description="只读取服务端会话与脱敏登录身份，请稍候。"
+        />
+      </>
     );
   }
 
   if (state.status === "error") {
     return (
-      <div className={styles.statusStack}>
-        <StatusPanel
-          state="error"
-          title="暂时无法确认登录状态"
-          description={state.message}
-        />
-        <button
-          className={surface.secondaryButton}
-          type="button"
-          onClick={() => void refresh()}
-        >
-          重新读取账户状态
-        </button>
-      </div>
+      <>
+        <AccountIdentityCard state={state} />
+        <div className={styles.statusStack}>
+          <StatusPanel
+            state="error"
+            title="暂时无法确认账户"
+            description={state.message}
+          />
+          <button
+            className={surface.secondaryButton}
+            type="button"
+            onClick={() => void refresh()}
+          >
+            重新读取账户状态
+          </button>
+        </div>
+      </>
     );
   }
 
   if (state.status === "signedOut") {
     return (
       <>
-        <div className={styles.sessionBanner} data-state="signed-out" role="status">
-          <KeyRound aria-hidden="true" size={20} strokeWidth={1.7} />
-          <div>
-            <strong>当前设备尚未登录</strong>
-            <span>验证邮箱后，本页会切换为你的个人中心。</span>
-          </div>
-        </div>
-
-        <div className={surface.dashboard}>
-          <section className={surface.paper} aria-labelledby="login-title">
-            <div className={surface.sectionHeader}>
-              <div>
-                <h2 id="login-title">验证码登录</h2>
-                <p>首次邮箱验证自动注册，已有邮箱直接登录；验证成功后进入个人首页。</p>
-              </div>
-            </div>
-            <OtpForm />
-          </section>
-          <AccountBoundaryNote />
-        </div>
-
-        <AccountSessionControl />
+        <AccountIdentityCard state={state} />
+        <AccountShortcuts />
+        <GuestAccess />
       </>
     );
   }
 
-  const identity = primaryLoginIdentity(state.account);
-
   return (
     <>
-      <section className={styles.identityHero} aria-labelledby="identity-title">
-        <span className={styles.identityIcon} aria-hidden="true">
-          <UserRoundCheck size={27} strokeWidth={1.65} />
-        </span>
-        <div>
-          <p className={styles.sessionState}>账户已验证</p>
-          <h2 id="identity-title">{identity?.masked_destination ?? "已验证账户"}</h2>
-          <p>这是你在 FateRadar 的个人中心。这里只展示服务端返回的脱敏身份与真实记录。</p>
-        </div>
-      </section>
-
-      <AccountLinks />
-
-      <div className={surface.dashboard}>
-        <AccountSessionControl />
-        <AccountBoundaryNote />
-      </div>
-
-      <section className={surface.paper} aria-labelledby="account-tools-title">
-        <div className={surface.sectionHeader}>
-          <div>
-            <h2 id="account-tools-title">设备、订单与数据权利</h2>
-            <p>只有后端返回真实状态后，相关操作才会开放。</p>
-          </div>
-        </div>
-        <div className={styles.rightsGrid}>
-          <p>
-            <ReceiptText aria-hidden="true" size={18} />
-            真实支付尚未开放，不展示虚构订单、渠道或已付款状态。
-          </p>
-          <p>
-            <Database aria-hidden="true" size={18} />
-            导出、删除与撤回需要服务端授权和审计流程，正式资料不进 localStorage。
-          </p>
-        </div>
-      </section>
+      <AccountIdentityCard state={state} />
+      <AccountShortcuts />
+      <ReadingHistory
+        accountScoped
+        title="最近交付与待处理事项"
+        description="每条记录的状态、版本和时间都来自服务端；处理中或等待输入的任务会保留在这里。"
+      />
+      <AccountSessionControl />
     </>
   );
 }

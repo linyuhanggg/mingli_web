@@ -1,0 +1,715 @@
+{
+  "generatedAt": "2026-08-14T20:55:45.305Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "state": "signed-out",
+  "responseInterception": "The real browser audit explicitly returns 401 for the account probe and a CSRF token for the guest login form; no user or business fixture data is injected.",
+  "total": 32,
+  "passed": 32,
+  "failed": 0,
+  "results": [
+    {
+      "viewport": 360,
+      "route": "/account",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account",
+      "finalPathname": "/account",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "我的"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/360/account.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/account/profiles",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/profiles",
+      "finalPathname": "/account/profiles",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "受测人档案"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/360/profiles.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/account/history",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/history",
+      "finalPathname": "/account/history",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "任务、版本与报告历史"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/360/history.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/account/orders",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/orders",
+      "finalPathname": "/account/orders",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "订单与履约"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/360/orders.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/account/notifications",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/notifications",
+      "finalPathname": "/account/notifications",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "通知"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/360/notifications.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/account/settings",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/settings",
+      "finalPathname": "/account/settings",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "设置"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/360/settings.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/account/invites",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/invites",
+      "finalPathname": "/account/invites",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/360/invites.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/account/data-rights",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/data-rights",
+      "finalPathname": "/account/data-rights",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "隐私与数据权利"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/360/data-rights.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/account",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account",
+      "finalPathname": "/account",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "我的"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/768/account.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/account/profiles",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/profiles",
+      "finalPathname": "/account/profiles",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "受测人档案"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/768/profiles.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/account/history",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/history",
+      "finalPathname": "/account/history",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "任务、版本与报告历史"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/768/history.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/account/orders",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/orders",
+      "finalPathname": "/account/orders",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "订单与履约"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/768/orders.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/account/notifications",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/notifications",
+      "finalPathname": "/account/notifications",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "通知"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/768/notifications.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/account/settings",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/settings",
+      "finalPathname": "/account/settings",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "设置"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/768/settings.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/account/invites",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/invites",
+      "finalPathname": "/account/invites",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/768/invites.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/account/data-rights",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/data-rights",
+      "finalPathname": "/account/data-rights",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "隐私与数据权利"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/768/data-rights.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/account",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account",
+      "finalPathname": "/account",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "我的"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1024/account.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/account/profiles",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/profiles",
+      "finalPathname": "/account/profiles",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "受测人档案"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1024/profiles.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/account/history",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/history",
+      "finalPathname": "/account/history",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "任务、版本与报告历史"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1024/history.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/account/orders",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/orders",
+      "finalPathname": "/account/orders",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "订单与履约"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1024/orders.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/account/notifications",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/notifications",
+      "finalPathname": "/account/notifications",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "通知"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1024/notifications.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/account/settings",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/settings",
+      "finalPathname": "/account/settings",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "设置"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1024/settings.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/account/invites",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/invites",
+      "finalPathname": "/account/invites",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1024/invites.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/account/data-rights",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/data-rights",
+      "finalPathname": "/account/data-rights",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "隐私与数据权利"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1024/data-rights.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/account",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account",
+      "finalPathname": "/account",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "我的"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1440/account.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/account/profiles",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/profiles",
+      "finalPathname": "/account/profiles",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "受测人档案"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1440/profiles.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/account/history",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/history",
+      "finalPathname": "/account/history",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "任务、版本与报告历史"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1440/history.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/account/orders",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/orders",
+      "finalPathname": "/account/orders",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "订单与履约"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1440/orders.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/account/notifications",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/notifications",
+      "finalPathname": "/account/notifications",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "通知"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1440/notifications.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/account/settings",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/settings",
+      "finalPathname": "/account/settings",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "设置"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1440/settings.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/account/invites",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/invites",
+      "finalPathname": "/account/invites",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1440/invites.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/account/data-rights",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account/data-rights",
+      "finalPathname": "/account/data-rights",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "隐私与数据权利"
+        ]
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase3/1440/data-rights.png",
+      "ok": true
+    }
+  ]
+}

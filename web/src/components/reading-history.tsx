@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 
 import {
   ApiError,
+  listAccountHistory,
   listReadings,
+  type AccountHistoryResponse,
   type ReadingVersionSummary,
 } from "@/lib/api";
 import {
@@ -61,9 +63,38 @@ function statusMeta(
   }
 }
 
-export function ReadingHistory() {
+type ReadingHistoryProps = {
+  readonly accountScoped?: boolean;
+  readonly title?: string;
+  readonly description?: string;
+};
+
+function flattenAccountHistory({ roots }: AccountHistoryResponse): ReadingVersionSummary[] {
+  return roots.flatMap((root) =>
+    root.versions.map((version) => toReadingVersionSummary(root, version)),
+  );
+}
+
+function toReadingVersionSummary(
+  root: AccountHistoryResponse["roots"][number],
+  version: AccountHistoryResponse["roots"][number]["versions"][number],
+): ReadingVersionSummary {
+  return {
+    ...version,
+    profile_version_id: root.profile_version_id,
+    prior_answer: null,
+    input_request: null,
+  };
+}
+
+export function ReadingHistory({
+  accountScoped = false,
+  title,
+  description,
+}: ReadingHistoryProps) {
   const [loading, setLoading] = useState(true);
   const [readings, setReadings] = useState<ReadingVersionSummary[] | null>(null);
+  const [accountRoots, setAccountRoots] = useState<AccountHistoryResponse["roots"] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -71,11 +102,22 @@ export function ReadingHistory() {
   useEffect(() => {
     let cancelled = false;
 
-    listReadings()
-      .then(({ readings: next }) => {
+    const historyRequest = accountScoped
+      ? listAccountHistory().then((next) => ({
+          roots: next.roots,
+          readings: flattenAccountHistory(next),
+        }))
+      : listReadings().then(({ readings: next }) => ({
+          roots: null,
+          readings: next,
+        }));
+
+    historyRequest
+      .then(({ roots, readings: next }) => {
         if (cancelled) {
           return;
         }
+        setAccountRoots(roots);
         setReadings(next);
       })
       .catch((err: unknown) => {
@@ -94,21 +136,46 @@ export function ReadingHistory() {
     return () => {
       cancelled = true;
     };
-  }, [attempt]);
+  }, [accountScoped, attempt]);
 
   function handleRetry() {
     setLoading(true);
     setError(null);
     setSessionExpired(false);
     setReadings(null);
+    setAccountRoots(null);
     setAttempt((value) => value + 1);
+  }
+
+  function renderReadingEntry(entry: ReadingVersionSummary) {
+    const status = statusMeta(entry.status);
+    return (
+      <li key={entry.reading_version_id} className={styles.historyItem}>
+        <Link
+          className={styles.historyLink}
+          href={`/account/history/${encodeURIComponent(entry.reading_version_id)}`}
+        >
+          <span className={styles.historyTitle}>
+            <strong>{formatCapabilityIds([entry.capability_id])}</strong>
+            <span className={surface.stateTag} data-state={status.tone}>
+              {status.label}
+            </span>
+          </span>
+          <span className={styles.historyMeta}>
+            <span>{formatReadingTime(entry.created_at)}</span>
+            <span>版本 v{entry.version}</span>
+            <span>{formatHorizon(entry.horizon)}</span>
+          </span>
+        </Link>
+      </li>
+    );
   }
 
   if (loading) {
     return (
       <StatusPanel
         state="loading"
-        title="正在读取历史…"
+        title={title ? `正在读取${title}…` : "正在读取历史…"}
         description="最近解读版本正在抵达，请稍候。"
       />
     );
@@ -160,35 +227,33 @@ export function ReadingHistory() {
     <section className={surface.paper} aria-labelledby="reading-history-title">
       <div className={surface.sectionHeader}>
         <div>
-          <h2 id="reading-history-title">最近解读版本</h2>
-          <p>每条只展示解读种类、状态与创建时间，字段全部来自服务端公开摘要。</p>
+          <h2 id="reading-history-title">{title ?? "最近解读版本"}</h2>
+          <p>{description ?? (
+            accountScoped
+              ? "按 ReadingRoot 组织，每组保留真实历史版本；字段全部来自服务端公开摘要。"
+              : "每条只展示解读种类、状态与创建时间，字段全部来自服务端公开摘要。"
+          )}</p>
         </div>
       </div>
-      <ul className={styles.historyList}>
-        {readings.map((entry) => {
-          const status = statusMeta(entry.status);
-          return (
-            <li key={entry.reading_version_id} className={styles.historyItem}>
-              <Link
-                className={styles.historyLink}
-                href={`/app/readings/${encodeURIComponent(entry.reading_version_id)}`}
-              >
-                <span className={styles.historyTitle}>
-                  <strong>{formatCapabilityIds([entry.capability_id])}</strong>
-                  <span className={surface.stateTag} data-state={status.tone}>
-                    {status.label}
-                  </span>
-                </span>
-                <span className={styles.historyMeta}>
-                  <span>{formatReadingTime(entry.created_at)}</span>
-                  <span>版本 v{entry.version}</span>
-                  <span>{formatHorizon(entry.horizon)}</span>
-                </span>
-              </Link>
+      {accountScoped && accountRoots ? (
+        <ul className={styles.historyList}>
+          {accountRoots.map((root) => (
+            <li key={root.reading_root_id} className={styles.historyGroup}>
+              <div className={styles.historyGroupHeader}>
+                <strong>{formatCapabilityIds([root.capability_id])}任务</strong>
+                <span>{root.versions.length} 个版本</span>
+              </div>
+              <ul className={styles.historyGroupList}>
+                {root.versions.map((version) =>
+                  renderReadingEntry(toReadingVersionSummary(root, version)),
+                )}
+              </ul>
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      ) : (
+        <ul className={styles.historyList}>{readings.map(renderReadingEntry)}</ul>
+      )}
     </section>
   );
 }

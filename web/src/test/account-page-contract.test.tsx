@@ -1,5 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
-import { afterEach, beforeEach, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import AccountPage from "@/app/account/page";
 
@@ -23,11 +23,18 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
-function stubApiFetch(accountStatus: number, accountBody: unknown) {
+function stubApiFetch(
+  accountStatus: number,
+  accountBody: unknown,
+  historyBody: unknown = { roots: [] },
+) {
   const fetchMock = vi.fn<typeof fetch>(async (input) => {
     const url = String(input);
     if (url.includes("/api/v1/guest-sessions")) {
       return jsonResponse({ csrf_token: "stub-csrf-token" });
+    }
+    if (url.includes("/api/v1/account/history")) {
+      return jsonResponse(historyBody);
     }
     if (url.includes("/api/v1/account")) {
       return jsonResponse(accountBody, accountStatus);
@@ -59,91 +66,133 @@ afterEach(() => {
 });
 
 
-describe("account page header contract", () => {
-  it("uses the shared AppPageHeader shape with a single h1 and no eyebrow", async () => {
+describe("account home contract", () => {
+  it("uses the shared AppPageHeader shape with one h1 named 我的", () => {
     const { container } = render(<AccountPage />);
-    await screen.findByRole("heading", { level: 2, name: "身份与设备" });
-
     const header = container.querySelector("header");
-    expect(header).not.toBeNull();
 
-    const heading = screen.getByRole("heading", {
-      level: 1,
-      name: "个人中心",
-    });
-    expect(header?.firstElementChild).toBe(heading);
+    expect(header).not.toBeNull();
+    expect(header?.firstElementChild).toBe(
+      screen.getByRole("heading", { level: 1, name: "我的" }),
+    );
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
 
-  it("explains the personal-center purpose and the real login methods", async () => {
+  it("keeps guest data private while exposing the six existing account routes", async () => {
     const { container } = render(<AccountPage />);
-    const main = container;
-    const header = container.querySelector("header");
-    expect(header).not.toBeNull();
 
-    await screen.findByRole("heading", { level: 2, name: "身份与设备" });
+    expect(await screen.findByRole("heading", { level: 2, name: "游客模式" })).toBeVisible();
+    const navigation = screen.getByRole("navigation", { name: "我的账户入口" });
+    const routes = [
+      ["受测人档案", "/account/profiles"],
+      ["推演历史", "/account/history"],
+      ["订单与权益", "/account/orders"],
+      ["通知", "/account/notifications"],
+      ["账户设置", "/account/settings"],
+      ["邀请有礼", "/account/invites"],
+    ] as const;
 
-    const description = within(header!).getByText(
-      "登录后在这里确认当前身份、进入个人首页、管理设备并找到自己的档案与解读；未登录时只显示邮箱验证入口。",
+    for (const [label, href] of routes) {
+      expect(within(navigation).getByRole("link", { name: new RegExp(`^${label}`) })).toHaveAttribute(
+        "href",
+        href,
+      );
+    }
+
+    expect(screen.getByRole("heading", { level: 2, name: "登录后开始使用" })).toBeVisible();
+    expect(await screen.findByLabelText("邮箱地址")).toBeVisible();
+    expect(screen.getByRole("heading", { level: 2, name: "账户边界" })).toBeVisible();
+    expect(container).not.toHaveTextContent("4f9c3d6a-2f5e-4a8b-9c1d-3e7a5b9f2c41");
+    expect(container).not.toHaveTextContent("q***@example.com");
+  });
+
+  it("shows a signed-in identity card, six routes, and server-backed delivery status", async () => {
+    stubApiFetch(200, signedInAccount, { roots: [] });
+    const { container } = render(<AccountPage />);
+
+    expect(await screen.findByRole("heading", { level: 2, name: "q***@example.com" })).toBeVisible();
+    expect(screen.getByText("已登录")).toBeVisible();
+    expect(screen.getByText("以订单与权益页为准")).toBeVisible();
+    expect(screen.queryByLabelText("邮箱地址")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "退出当前设备" })).toBeVisible();
+    expect(await screen.findByText("还没有可显示的解读")).toBeVisible();
+
+    const navigation = screen.getByRole("navigation", { name: "我的账户入口" });
+    expect(within(navigation).getAllByRole("link")).toHaveLength(6);
+    expect(container).not.toHaveTextContent("4f9c3d6a-2f5e-4a8b-9c1d-3e7a5b9f2c41");
+    expect(container).not.toHaveTextContent("8d2f1a4b-6c3e-4d9f-8a5b-2e7c4f1d9a3b");
+  });
+
+  it("renders pending delivery labels from the account history projection", async () => {
+    stubApiFetch(200, signedInAccount, {
+      roots: [
+        {
+          reading_root_id: "44444444-4444-4444-8444-444444444444",
+          profile_version_id: null,
+          capability_id: "bazi",
+          created_at: "2026-08-10T01:00:00Z",
+          versions: [
+            {
+              reading_version_id: "33333333-3333-4333-8333-333333333333",
+              reading_root_id: "44444444-4444-4444-8444-444444444444",
+              capability_id: "bazi",
+              version: 1,
+              status: "waiting_input",
+              object_id: "natal",
+              dimension_ids: ["overview"],
+              horizon: { kind_id: "day", start: "2026-08-10", end: "2026-08-10" },
+              created_at: "2026-08-10T01:00:00Z",
+            },
+          ],
+        },
+      ],
+    });
+    render(<AccountPage />);
+
+    expect(await screen.findByRole("heading", { name: "最近交付与待处理事项" })).toBeVisible();
+    expect(screen.getByText("八字任务")).toBeVisible();
+    expect(screen.getByText("等待输入")).toBeVisible();
+  });
+
+  it("does not request account history for a signed-out device", async () => {
+    const fetchMock = stubApiFetch(401, { title: "Authentication required" });
+    render(<AccountPage />);
+
+    await screen.findByRole("heading", { level: 2, name: "游客模式" });
+    expect(fetchMock.mock.calls.some(([input]) => String(input).includes("/api/v1/account/history"))).toBe(false);
+  });
+
+  it("does not expose guest shortcuts or identity details while checking", async () => {
+    let resolveAccount: ((response: Response) => void) | undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>(async (input) => {
+        const url = String(input);
+        if (url.includes("/api/v1/account")) {
+          return new Promise<Response>((resolve) => {
+            resolveAccount = resolve;
+          });
+        }
+        return jsonResponse({ csrf_token: "stub-csrf-token" });
+      }),
     );
-    expect(description).toHaveTextContent(/确认当前身份/);
-    expect(description).toHaveTextContent(/进入个人首页/);
-    expect(description).toHaveTextContent(/未登录时只显示邮箱验证入口/);
-    expect(within(main).getByText("邮箱验证为主")).toBeVisible();
-    expect(within(main).getByText("设备会话可撤销")).toBeVisible();
-    expect(within(main).getByText("邮箱验证码")).toBeVisible();
-    expect(within(main).getByText("手机号验证码")).toBeVisible();
-    expect(within(main).getByText("稍后开放")).toBeVisible();
-    expect(within(main).getByText(/验证码将发送到该邮箱/)).toBeVisible();
+
+    render(<AccountPage />);
+
+    expect(screen.getByRole("heading", { level: 2, name: "确认中" })).toBeVisible();
+    expect(screen.queryByRole("navigation", { name: "我的账户入口" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/@example\.com/)).not.toBeInTheDocument();
+
+    resolveAccount?.(jsonResponse({ title: "Authentication required" }, 401));
+    expect(await screen.findByRole("heading", { level: 2, name: "游客模式" })).toBeVisible();
   });
 
-  it("shows the login form and account boundary only for a signed-out device", async () => {
-    const { container } = render(<AccountPage />);
-    const main = container;
+  it("shows an honest retry state when the account probe fails", async () => {
+    stubApiFetch(502, { title: "服务暂时不可用" });
+    render(<AccountPage />);
 
-    await screen.findByRole("heading", { level: 2, name: "身份与设备" });
-
-    expect(within(main).getByRole("heading", { level: 2, name: "验证码登录" })).toBeVisible();
-    expect(within(main).getByLabelText("邮箱地址")).toBeVisible();
-    expect(within(main).getByRole("heading", { level: 2, name: "账户边界" })).toBeVisible();
-    expect(within(main).queryByRole("heading", { level: 2, name: "我的档案与记录" })).not.toBeInTheDocument();
-    expect(within(main).queryByRole("heading", { level: 2, name: "设备、订单与数据权利" })).not.toBeInTheDocument();
-  });
-
-  it("keeps internal user identifiers out of the public copy", async () => {
-    const { container } = render(<AccountPage />);
-    const main = container;
-
-    await screen.findByRole("heading", { level: 2, name: "身份与设备" });
-
-    expect(within(main).queryByText(/User/i)).not.toBeInTheDocument();
-    expect(within(main).queryByText(/用户 ID/i)).not.toBeInTheDocument();
-  });
-
-  it("mounts the session control and stays honest when the device is signed out", async () => {
-    const { container } = render(<AccountPage />);
-    const main = container;
-
-    await screen.findByRole("heading", { level: 2, name: "身份与设备" });
-
-    expect(within(main).getByText(/当前设备尚未登录。邮箱验证码登录后/)).toBeVisible();
-    expect(within(main).queryByRole("button", { name: "退出当前设备" })).not.toBeInTheDocument();
-    expect(within(main).getByLabelText("邮箱地址")).toBeVisible();
-  });
-
-  it("surfaces the signed-in device session with masked identity and a logout action", async () => {
-    stubApiFetch(200, signedInAccount);
-    const { container } = render(<AccountPage />);
-    const main = container;
-
-    await screen.findByRole("button", { name: "退出当前设备" });
-
-    expect(within(main).getByText("当前设备已登录")).toBeVisible();
-    expect(within(main).getAllByText("q***@example.com")).toHaveLength(2);
-    expect(within(main).queryByLabelText("邮箱地址")).not.toBeInTheDocument();
-    expect(within(main).getByRole("link", { name: /^进入我的首页/ })).toHaveAttribute("href", "/app");
-    expect(within(main).getByRole("heading", { level: 2, name: "设备、订单与数据权利" })).toBeVisible();
-    expect(within(main).queryByText(/4f9c3d6a/)).not.toBeInTheDocument();
-    expect(within(main).queryByText(/8d2f1a4b/)).not.toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 2, name: "账户状态暂不可读" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "重新读取账户状态" })).toBeEnabled();
+    expect(screen.queryByText(/4f9c3d6a/)).not.toBeInTheDocument();
   });
 });

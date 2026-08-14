@@ -24,16 +24,15 @@ import styles from "./private-shell.module.css";
 
 
 const navigation = [
-  { href: "/app", label: "我的首页", mobileLabel: "首页", icon: CalendarDays },
-  { href: "/app/profiles", label: "命理档案", mobileLabel: "档案", icon: FolderLock },
-  { href: "/app/ask/liuyao", label: "一事一问", mobileLabel: "问事", icon: BookOpenText },
-  { href: "/app/readings", label: "解读历史", mobileLabel: "解读", icon: FileClock },
-  { href: "/account", label: "个人中心", mobileLabel: "我的", icon: UserRound },
+  { href: "/account", label: "我的", mobileLabel: "我的", icon: CalendarDays },
+  { href: "/account/profiles", label: "受测人档案", mobileLabel: "档案", icon: FolderLock },
+  { href: "/account/history", label: "推演历史", mobileLabel: "历史", icon: FileClock },
+  { href: "/account/orders", label: "订单与权益", mobileLabel: "订单", icon: BookOpenText },
+  { href: "/account/settings", label: "账户设置", mobileLabel: "设置", icon: UserRound },
 ] as const;
 
 function isCurrentDestination(pathname: string, href: string) {
-  if (href === "/app") return pathname === href;
-  if (href === "/app/profiles") return pathname.startsWith("/app/profile");
+  if (href === "/account") return pathname === href;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -106,7 +105,7 @@ function SessionIdentityLink() {
 }
 
 function PrivateShellContent({ children }: Readonly<{ children: ReactNode }>) {
-  const pathname = usePathname() ?? "/app";
+  const pathname = usePathname() ?? "/account";
   const mainRef = useRef<HTMLElement>(null);
   const previousPathnameRef = useRef(pathname);
 

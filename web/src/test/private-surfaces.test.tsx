@@ -2,17 +2,15 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, vi } from "vitest";
 
-import AppPage from "@/app/app/page";
-import LiuyaoPage from "@/app/app/ask/liuyao/page";
-import NewProfilePage from "@/app/app/profile/new/page";
-import ProfilesPage from "@/app/app/profiles/page";
-import ReadingsPage from "@/app/app/readings/page";
 import { AccountSessionProvider } from "@/components/account-session-context";
+import { DashboardHub as AppPage } from "@/components/dashboard-hub";
 import { PrivateShell } from "@/components/private-shell";
+import { ProfileArchive as ProfilesPage } from "@/components/profile-archive";
+import { ReadingHistory as ReadingsPage } from "@/components/reading-history";
 import { ApiError } from "@/lib/api";
 
 const navigationState = vi.hoisted(() => ({
-  pathname: "/app/readings/demo-reading",
+  pathname: "/account/history/demo-reading",
 }));
 
 vi.mock("next/navigation", () => ({
@@ -46,7 +44,7 @@ vi.mock("@/lib/api", async (importOriginal) => ({
 
 
 beforeEach(() => {
-  navigationState.pathname = "/app/readings/demo-reading";
+  navigationState.pathname = "/account/history/demo-reading";
   api.getAccount.mockReset();
   api.getAccount.mockRejectedValue(new ApiError("Authentication required", 401));
   api.getCsrfToken.mockReset();
@@ -66,11 +64,6 @@ describe("private P0 surfaces", () => {
   it("loads real dashboard data and gives an honest empty-profile next step", async () => {
     render(<AppPage />);
 
-    expect(
-      screen.getByRole("heading", { level: 1, name: "我的命理首页" }),
-    ).toBeVisible();
-    expect(screen.getByText("私人页面 · 不使用公共缓存")).toBeVisible();
-    expect(screen.queryByText(/no-store/)).not.toBeInTheDocument();
     expect(
       screen.getByRole("status", { name: "正在整理你的私人首页" }),
     ).toBeVisible();
@@ -279,9 +272,6 @@ describe("private P0 surfaces", () => {
   it("explains immutable profile versions and offers a real next step", async () => {
     render(<ProfilesPage />);
 
-    expect(
-      screen.getByText(/每次修改都会形成新的不可变档案版本/),
-    ).toBeVisible();
     await waitFor(() => {
       expect(
         screen.getByRole("status", { name: "还没有已保存的档案" }),
@@ -318,7 +308,7 @@ describe("private P0 surfaces", () => {
         screen.getByRole("link", { name: /日运与周运/ }),
       ).toHaveAttribute(
         "href",
-        "/app/readings/33333333-3333-4333-8333-333333333333",
+        "/account/history/33333333-3333-4333-8333-333333333333",
       );
     });
     expect(screen.getByText("已交付")).toBeVisible();
@@ -347,16 +337,16 @@ describe("private P0 surfaces", () => {
     const mobileNavigation = screen.getByRole("navigation", { name: "移动应用导航" });
 
     expect(within(desktopNavigation).getAllByRole("link", { hidden: true })).toHaveLength(5);
-    expect(within(desktopNavigation).getByRole("link", { name: "解读历史", hidden: true })).toHaveAttribute("href", "/app/readings");
+    expect(within(desktopNavigation).getByRole("link", { name: "推演历史", hidden: true })).toHaveAttribute("href", "/account/history");
     expect(within(mobileNavigation).getAllByRole("link")).toHaveLength(5);
-    expect(within(mobileNavigation).getByRole("link", { name: "解读" })).toHaveAttribute("href", "/app/readings");
-    expect(within(desktopNavigation).getByRole("link", { name: "解读历史", hidden: true })).toHaveAttribute("aria-current", "page");
-    expect(within(mobileNavigation).getByRole("link", { name: "解读" })).toHaveAttribute("aria-current", "page");
-    expect(within(mobileNavigation).getByRole("link", { name: "首页" })).not.toHaveAttribute("aria-current");
+    expect(within(mobileNavigation).getByRole("link", { name: "历史" })).toHaveAttribute("href", "/account/history");
+    expect(within(desktopNavigation).getByRole("link", { name: "推演历史", hidden: true })).toHaveAttribute("aria-current", "page");
+    expect(within(mobileNavigation).getByRole("link", { name: "历史" })).toHaveAttribute("aria-current", "page");
+    expect(within(mobileNavigation).getByRole("link", { name: "我的" })).not.toHaveAttribute("aria-current");
   });
 
   it("moves keyboard focus to the private main region after a client route change", async () => {
-    navigationState.pathname = "/app";
+    navigationState.pathname = "/account";
     const { rerender } = render(
       <PrivateShell>
         <p>首页内容</p>
@@ -365,7 +355,7 @@ describe("private P0 surfaces", () => {
     const main = screen.getByRole("main");
     expect(main).not.toHaveFocus();
 
-    navigationState.pathname = "/app/profiles";
+    navigationState.pathname = "/account/profiles";
     rerender(
       <PrivateShell>
         <p>档案内容</p>
@@ -377,17 +367,4 @@ describe("private P0 surfaces", () => {
     });
   });
 
-  it("keeps a single page title on the new profile surface and exposes the form title as h2", () => {
-    render(<NewProfilePage />);
-
-    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole("heading", { level: 2, name: "建立命理档案" })).toBeVisible();
-  });
-
-  it("keeps a single page title on the liuyao surface and exposes the form title as h2", () => {
-    render(<LiuyaoPage />);
-
-    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole("heading", { level: 2, name: "一事一问 · 六爻" })).toBeVisible();
-  });
 });
