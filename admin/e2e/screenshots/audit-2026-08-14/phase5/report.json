@@ -1,0 +1,5100 @@
+{
+  "generatedAt": "2026-08-14T21:23:11.989Z",
+  "baseUrl": "http://127.0.0.1:3001",
+  "routeCount": 41,
+  "viewportCount": 4,
+  "screenshotRouteCount": 9,
+  "total": 164,
+  "passed": 164,
+  "failed": 0,
+  "results": [
+    {
+      "viewport": 360,
+      "route": "/",
+      "name": "root",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/dashboard",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "总览"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/login",
+      "name": "login",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/login",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 0,
+        "h1Count": 1,
+        "h1Text": [
+          "员工登录"
+        ],
+        "top": null,
+        "desktopNavigation": null,
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/360/login.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/dashboard",
+      "name": "dashboard",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/dashboard",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "总览"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/360/dashboard.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/users",
+      "name": "users",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/users",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "用户与身份"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/360/users.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/users/demo-user",
+      "name": "users-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/users/demo-user",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "用户详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/subjects",
+      "name": "subjects",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/subjects",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Subject 与资料版本"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/subjects/demo-subject",
+      "name": "subjects-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/subjects/demo-subject",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Subject 详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/data-rights",
+      "name": "data-rights",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/data-rights",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "数据权利"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/support-cases",
+      "name": "support-cases",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/support-cases",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "客服案件"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/products",
+      "name": "products",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/products",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "商品与报价"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/products/demo-product/versions",
+      "name": "product-versions",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/products/demo-product/versions",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "商品版本"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/capabilities",
+      "name": "capabilities",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/capabilities",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "能力发布"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/cms/pages",
+      "name": "cms-pages",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/pages",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 页面"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/cms/daily",
+      "name": "cms-daily",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/daily",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 每日"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/cms/tools",
+      "name": "cms-tools",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/tools",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 工具"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/cms/library",
+      "name": "cms-library",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/library",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 知识"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/cms/help",
+      "name": "cms-help",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/help",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 帮助"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/cms/policies",
+      "name": "cms-policies",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/policies",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 政策"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/charts",
+      "name": "charts",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/charts",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "盘面"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/readings",
+      "name": "readings",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/readings",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "报告"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/360/readings.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/readings/demo-reading",
+      "name": "reading-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/readings/demo-reading",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "报告详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/reading-jobs",
+      "name": "reading-jobs",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/reading-jobs",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "解读任务"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/verifications",
+      "name": "verifications",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/verifications",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "逐条核对"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/observations",
+      "name": "observations",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/observations",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "见相观察"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/runtime",
+      "name": "runtime",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/runtime",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Runtime 与 Provider"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/360/runtime.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/model-profiles",
+      "name": "model-profiles",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/model-profiles",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Model 与 Guard"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/orders",
+      "name": "orders",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/orders",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "订单"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/360/orders.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/payments",
+      "name": "payments",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/payments",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "支付"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/refunds",
+      "name": "refunds",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/refunds",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "退款"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/reconciliation",
+      "name": "reconciliation",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/reconciliation",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "对账"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/entitlements",
+      "name": "entitlements",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/entitlements",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "权益账本"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/referrals",
+      "name": "referrals",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/referrals",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请活动"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/referrals/demo-referral",
+      "name": "referral-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/referrals/demo-referral",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请活动详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/appeals",
+      "name": "appeals",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/appeals",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请申诉"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/staff",
+      "name": "staff",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/staff",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "员工与角色"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/sessions",
+      "name": "sessions",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/sessions",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "会话"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/notifications",
+      "name": "notifications",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/notifications",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "通知"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/audit",
+      "name": "audit",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/audit",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "审计日志"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/settings",
+      "name": "settings",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/settings",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "系统设置"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/360/settings.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/health",
+      "name": "health",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/health",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "健康检查"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/360/health.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/_ui-lab",
+      "name": "ui-lab",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/_ui-lab",
+      "metrics": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "UI Lab"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 360,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/360/ui-lab.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/",
+      "name": "root",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/dashboard",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "总览"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/login",
+      "name": "login",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/login",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 0,
+        "h1Count": 1,
+        "h1Text": [
+          "员工登录"
+        ],
+        "top": null,
+        "desktopNavigation": null,
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/768/login.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/dashboard",
+      "name": "dashboard",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/dashboard",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "总览"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/768/dashboard.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/users",
+      "name": "users",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/users",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "用户与身份"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/768/users.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/users/demo-user",
+      "name": "users-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/users/demo-user",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "用户详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/subjects",
+      "name": "subjects",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/subjects",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Subject 与资料版本"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/subjects/demo-subject",
+      "name": "subjects-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/subjects/demo-subject",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Subject 详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/data-rights",
+      "name": "data-rights",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/data-rights",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "数据权利"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/support-cases",
+      "name": "support-cases",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/support-cases",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "客服案件"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/products",
+      "name": "products",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/products",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "商品与报价"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/products/demo-product/versions",
+      "name": "product-versions",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/products/demo-product/versions",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "商品版本"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/capabilities",
+      "name": "capabilities",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/capabilities",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "能力发布"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/cms/pages",
+      "name": "cms-pages",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/pages",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 页面"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/cms/daily",
+      "name": "cms-daily",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/daily",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 每日"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/cms/tools",
+      "name": "cms-tools",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/tools",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 工具"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/cms/library",
+      "name": "cms-library",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/library",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 知识"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/cms/help",
+      "name": "cms-help",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/help",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 帮助"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/cms/policies",
+      "name": "cms-policies",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/policies",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 政策"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/charts",
+      "name": "charts",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/charts",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "盘面"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/readings",
+      "name": "readings",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/readings",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "报告"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/768/readings.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/readings/demo-reading",
+      "name": "reading-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/readings/demo-reading",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "报告详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/reading-jobs",
+      "name": "reading-jobs",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/reading-jobs",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "解读任务"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/verifications",
+      "name": "verifications",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/verifications",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "逐条核对"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/observations",
+      "name": "observations",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/observations",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "见相观察"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/runtime",
+      "name": "runtime",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/runtime",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Runtime 与 Provider"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/768/runtime.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/model-profiles",
+      "name": "model-profiles",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/model-profiles",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Model 与 Guard"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/orders",
+      "name": "orders",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/orders",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "订单"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/768/orders.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/payments",
+      "name": "payments",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/payments",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "支付"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/refunds",
+      "name": "refunds",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/refunds",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "退款"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/reconciliation",
+      "name": "reconciliation",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/reconciliation",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "对账"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/entitlements",
+      "name": "entitlements",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/entitlements",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "权益账本"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/referrals",
+      "name": "referrals",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/referrals",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请活动"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/referrals/demo-referral",
+      "name": "referral-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/referrals/demo-referral",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请活动详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/appeals",
+      "name": "appeals",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/appeals",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请申诉"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/staff",
+      "name": "staff",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/staff",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "员工与角色"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/sessions",
+      "name": "sessions",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/sessions",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "会话"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/notifications",
+      "name": "notifications",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/notifications",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "通知"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/audit",
+      "name": "audit",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/audit",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "审计日志"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/settings",
+      "name": "settings",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/settings",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "系统设置"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/768/settings.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/health",
+      "name": "health",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/health",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "健康检查"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/768/health.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/_ui-lab",
+      "name": "ui-lab",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/_ui-lab",
+      "metrics": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "UI Lab"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 768,
+          "height": 56
+        },
+        "desktopNavigation": null,
+        "mobileMenu": {
+          "display": "inline-flex",
+          "width": 81.19,
+          "height": 44
+        },
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/768/ui-lab.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/",
+      "name": "root",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/dashboard",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "总览"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/login",
+      "name": "login",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/login",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 0,
+        "h1Count": 1,
+        "h1Text": [
+          "员工登录"
+        ],
+        "top": null,
+        "desktopNavigation": null,
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1024/login.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/dashboard",
+      "name": "dashboard",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/dashboard",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "总览"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1024/dashboard.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/users",
+      "name": "users",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/users",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "用户与身份"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1024/users.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/users/demo-user",
+      "name": "users-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/users/demo-user",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "用户详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/subjects",
+      "name": "subjects",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/subjects",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Subject 与资料版本"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/subjects/demo-subject",
+      "name": "subjects-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/subjects/demo-subject",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Subject 详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/data-rights",
+      "name": "data-rights",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/data-rights",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "数据权利"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/support-cases",
+      "name": "support-cases",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/support-cases",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "客服案件"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/products",
+      "name": "products",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/products",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "商品与报价"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/products/demo-product/versions",
+      "name": "product-versions",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/products/demo-product/versions",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "商品版本"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/capabilities",
+      "name": "capabilities",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/capabilities",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "能力发布"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/cms/pages",
+      "name": "cms-pages",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/pages",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 页面"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/cms/daily",
+      "name": "cms-daily",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/daily",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 每日"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/cms/tools",
+      "name": "cms-tools",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/tools",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 工具"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/cms/library",
+      "name": "cms-library",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/library",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 知识"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/cms/help",
+      "name": "cms-help",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/help",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 帮助"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/cms/policies",
+      "name": "cms-policies",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/policies",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 政策"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/charts",
+      "name": "charts",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/charts",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "盘面"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/readings",
+      "name": "readings",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/readings",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "报告"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1024/readings.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/readings/demo-reading",
+      "name": "reading-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/readings/demo-reading",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "报告详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/reading-jobs",
+      "name": "reading-jobs",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/reading-jobs",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "解读任务"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/verifications",
+      "name": "verifications",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/verifications",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "逐条核对"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/observations",
+      "name": "observations",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/observations",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "见相观察"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/runtime",
+      "name": "runtime",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/runtime",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Runtime 与 Provider"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1024/runtime.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/model-profiles",
+      "name": "model-profiles",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/model-profiles",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Model 与 Guard"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/orders",
+      "name": "orders",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/orders",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "订单"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1024/orders.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/payments",
+      "name": "payments",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/payments",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "支付"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/refunds",
+      "name": "refunds",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/refunds",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "退款"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/reconciliation",
+      "name": "reconciliation",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/reconciliation",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "对账"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/entitlements",
+      "name": "entitlements",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/entitlements",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "权益账本"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/referrals",
+      "name": "referrals",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/referrals",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请活动"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/referrals/demo-referral",
+      "name": "referral-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/referrals/demo-referral",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请活动详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/appeals",
+      "name": "appeals",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/appeals",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请申诉"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/staff",
+      "name": "staff",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/staff",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "员工与角色"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/sessions",
+      "name": "sessions",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/sessions",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "会话"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/notifications",
+      "name": "notifications",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/notifications",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "通知"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/audit",
+      "name": "audit",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/audit",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "审计日志"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/settings",
+      "name": "settings",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/settings",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "系统设置"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1024/settings.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/health",
+      "name": "health",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/health",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "健康检查"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1024/health.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/_ui-lab",
+      "name": "ui-lab",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/_ui-lab",
+      "metrics": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "UI Lab"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1024,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1024/ui-lab.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/",
+      "name": "root",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/dashboard",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "总览"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/login",
+      "name": "login",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/login",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 0,
+        "h1Count": 1,
+        "h1Text": [
+          "员工登录"
+        ],
+        "top": null,
+        "desktopNavigation": null,
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1440/login.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/dashboard",
+      "name": "dashboard",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/dashboard",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "总览"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1440/dashboard.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/users",
+      "name": "users",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/users",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "用户与身份"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1440/users.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/users/demo-user",
+      "name": "users-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/users/demo-user",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "用户详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/subjects",
+      "name": "subjects",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/subjects",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Subject 与资料版本"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/subjects/demo-subject",
+      "name": "subjects-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/subjects/demo-subject",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Subject 详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/data-rights",
+      "name": "data-rights",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/data-rights",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "数据权利"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/support-cases",
+      "name": "support-cases",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/support-cases",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "客服案件"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/products",
+      "name": "products",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/products",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "商品与报价"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/products/demo-product/versions",
+      "name": "product-versions",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/products/demo-product/versions",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "商品版本"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/capabilities",
+      "name": "capabilities",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/capabilities",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "能力发布"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/cms/pages",
+      "name": "cms-pages",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/pages",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 页面"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/cms/daily",
+      "name": "cms-daily",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/daily",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 每日"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/cms/tools",
+      "name": "cms-tools",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/tools",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 工具"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/cms/library",
+      "name": "cms-library",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/library",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 知识"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/cms/help",
+      "name": "cms-help",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/help",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 帮助"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/cms/policies",
+      "name": "cms-policies",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/cms/policies",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "CMS 政策"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/charts",
+      "name": "charts",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/charts",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "盘面"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/readings",
+      "name": "readings",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/readings",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "报告"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1440/readings.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/readings/demo-reading",
+      "name": "reading-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/readings/demo-reading",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "报告详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/reading-jobs",
+      "name": "reading-jobs",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/reading-jobs",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "解读任务"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/verifications",
+      "name": "verifications",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/verifications",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "逐条核对"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/observations",
+      "name": "observations",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/observations",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "见相观察"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/runtime",
+      "name": "runtime",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/runtime",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Runtime 与 Provider"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1440/runtime.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/model-profiles",
+      "name": "model-profiles",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/model-profiles",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "Model 与 Guard"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/orders",
+      "name": "orders",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/orders",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "订单"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1440/orders.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/payments",
+      "name": "payments",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/payments",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "支付"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/refunds",
+      "name": "refunds",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/refunds",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "退款"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/reconciliation",
+      "name": "reconciliation",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/reconciliation",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "对账"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/entitlements",
+      "name": "entitlements",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/entitlements",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "权益账本"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/referrals",
+      "name": "referrals",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/referrals",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请活动"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/referrals/demo-referral",
+      "name": "referral-detail",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/referrals/demo-referral",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请活动详情"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/appeals",
+      "name": "appeals",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/appeals",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "邀请申诉"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/staff",
+      "name": "staff",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/staff",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "员工与角色"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/sessions",
+      "name": "sessions",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/sessions",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "会话"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/notifications",
+      "name": "notifications",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/notifications",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "通知"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/audit",
+      "name": "audit",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/audit",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "审计日志"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/settings",
+      "name": "settings",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/settings",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "系统设置"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1440/settings.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/health",
+      "name": "health",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/health",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "健康检查"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1440/health.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/_ui-lab",
+      "name": "ui-lab",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/_ui-lab",
+      "metrics": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0,
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "UI Lab"
+        ],
+        "top": {
+          "display": "flex",
+          "width": 1440,
+          "height": 64
+        },
+        "desktopNavigation": {
+          "display": "flex",
+          "width": 240,
+          "height": 1883.59
+        },
+        "mobileMenu": null,
+        "targetViolations": []
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase5/1440/ui-lab.png",
+      "ok": true
+    }
+  ]
+}
