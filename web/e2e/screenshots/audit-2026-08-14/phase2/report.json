@@ -1,0 +1,1045 @@
+{
+  "generatedAt": "2026-08-14T20:37:44.985Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "total": 64,
+  "passed": 64,
+  "failed": 0,
+  "results": [
+    {
+      "viewport": 360,
+      "route": "/",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/",
+      "finalPathname": "/",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "home": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "十三术同根，五十五部古籍为证"
+        ],
+        "regionCounts": {
+          "命盘": 1,
+          "事件判断": 1,
+          "合参": 1,
+          "辅助": 1
+        },
+        "crossRegionCount": 1,
+        "crossEntryCount": 2
+      },
+      "keyboard": {
+        "navigationName": "移动底栏",
+        "reachedNavigation": true
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/home.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/hecan",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/hecan",
+      "finalPathname": "/hecan",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/hecan.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/wenshi",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/wenshi",
+      "finalPathname": "/wenshi",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/wenshi.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/canwen",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/hecan",
+      "finalPathname": "/hecan",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/canwen.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/liuyao",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/liuyao",
+      "finalPathname": "/liuyao",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/liuyao.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/jianxiang",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/jianxiang",
+      "finalPathname": "/jianxiang",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/jianxiang.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/account",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account",
+      "finalPathname": "/account",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/account.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/auth/login",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/auth/login",
+      "finalPathname": "/auth/login",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/auth-login.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/daily",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/daily",
+      "finalPathname": "/daily",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/daily.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/tools",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/tools",
+      "finalPathname": "/tools",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/tools.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/library",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/library",
+      "finalPathname": "/library",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/library.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/about",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/about",
+      "finalPathname": "/about",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/about.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/pricing",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/pricing",
+      "finalPathname": "/pricing",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/pricing.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/methodology",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/methodology",
+      "finalPathname": "/methodology",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/methodology.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/workbench/demo",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/workbench/demo",
+      "finalPathname": "/workbench/demo",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/workbench-demo.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/_ui-lab",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/_ui-lab",
+      "finalPathname": "/_ui-lab",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/360/ui-lab.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/",
+      "finalPathname": "/",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "home": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "十三术同根，五十五部古籍为证"
+        ],
+        "regionCounts": {
+          "命盘": 1,
+          "事件判断": 1,
+          "合参": 1,
+          "辅助": 1
+        },
+        "crossRegionCount": 1,
+        "crossEntryCount": 2
+      },
+      "keyboard": {
+        "navigationName": "主导航",
+        "reachedNavigation": true
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/home.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/hecan",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/hecan",
+      "finalPathname": "/hecan",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/hecan.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/wenshi",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/wenshi",
+      "finalPathname": "/wenshi",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/wenshi.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/canwen",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/hecan",
+      "finalPathname": "/hecan",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/canwen.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/liuyao",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/liuyao",
+      "finalPathname": "/liuyao",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/liuyao.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/jianxiang",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/jianxiang",
+      "finalPathname": "/jianxiang",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/jianxiang.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/account",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account",
+      "finalPathname": "/account",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/account.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/auth/login",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/auth/login",
+      "finalPathname": "/auth/login",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/auth-login.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/daily",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/daily",
+      "finalPathname": "/daily",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/daily.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/tools",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/tools",
+      "finalPathname": "/tools",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/tools.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/library",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/library",
+      "finalPathname": "/library",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/library.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/about",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/about",
+      "finalPathname": "/about",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/about.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/pricing",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/pricing",
+      "finalPathname": "/pricing",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/pricing.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/methodology",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/methodology",
+      "finalPathname": "/methodology",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/methodology.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/workbench/demo",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/workbench/demo",
+      "finalPathname": "/workbench/demo",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/workbench-demo.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/_ui-lab",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/_ui-lab",
+      "finalPathname": "/_ui-lab",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/768/ui-lab.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/",
+      "finalPathname": "/",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "home": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "十三术同根，五十五部古籍为证"
+        ],
+        "regionCounts": {
+          "命盘": 1,
+          "事件判断": 1,
+          "合参": 1,
+          "辅助": 1
+        },
+        "crossRegionCount": 1,
+        "crossEntryCount": 2
+      },
+      "keyboard": {
+        "navigationName": "主导航",
+        "reachedNavigation": true
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/home.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/hecan",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/hecan",
+      "finalPathname": "/hecan",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/hecan.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/wenshi",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/wenshi",
+      "finalPathname": "/wenshi",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/wenshi.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/canwen",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/hecan",
+      "finalPathname": "/hecan",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/canwen.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/liuyao",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/liuyao",
+      "finalPathname": "/liuyao",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/liuyao.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/jianxiang",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/jianxiang",
+      "finalPathname": "/jianxiang",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/jianxiang.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/account",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account",
+      "finalPathname": "/account",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/account.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/auth/login",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/auth/login",
+      "finalPathname": "/auth/login",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/auth-login.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/daily",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/daily",
+      "finalPathname": "/daily",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/daily.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/tools",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/tools",
+      "finalPathname": "/tools",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/tools.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/library",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/library",
+      "finalPathname": "/library",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/library.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/about",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/about",
+      "finalPathname": "/about",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/about.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/pricing",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/pricing",
+      "finalPathname": "/pricing",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/pricing.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/methodology",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/methodology",
+      "finalPathname": "/methodology",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/methodology.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/workbench/demo",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/workbench/demo",
+      "finalPathname": "/workbench/demo",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/workbench-demo.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/_ui-lab",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/_ui-lab",
+      "finalPathname": "/_ui-lab",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1024/ui-lab.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/",
+      "finalPathname": "/",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "home": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "十三术同根，五十五部古籍为证"
+        ],
+        "regionCounts": {
+          "命盘": 1,
+          "事件判断": 1,
+          "合参": 1,
+          "辅助": 1
+        },
+        "crossRegionCount": 1,
+        "crossEntryCount": 2
+      },
+      "keyboard": {
+        "navigationName": "主导航",
+        "reachedNavigation": true
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/home.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/hecan",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/hecan",
+      "finalPathname": "/hecan",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/hecan.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/wenshi",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/wenshi",
+      "finalPathname": "/wenshi",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/wenshi.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/canwen",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/hecan",
+      "finalPathname": "/hecan",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/canwen.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/liuyao",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/liuyao",
+      "finalPathname": "/liuyao",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/liuyao.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/jianxiang",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/jianxiang",
+      "finalPathname": "/jianxiang",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/jianxiang.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/account",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/account",
+      "finalPathname": "/account",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/account.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/auth/login",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/auth/login",
+      "finalPathname": "/auth/login",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/auth-login.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/daily",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/daily",
+      "finalPathname": "/daily",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/daily.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/tools",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/tools",
+      "finalPathname": "/tools",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/tools.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/library",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/library",
+      "finalPathname": "/library",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/library.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/about",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/about",
+      "finalPathname": "/about",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/about.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/pricing",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/pricing",
+      "finalPathname": "/pricing",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/pricing.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/methodology",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/methodology",
+      "finalPathname": "/methodology",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/methodology.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/workbench/demo",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/workbench/demo",
+      "finalPathname": "/workbench/demo",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/workbench-demo.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/_ui-lab",
+      "failures": [],
+      "httpStatus": 200,
+      "finalUrl": "http://127.0.0.1:3000/_ui-lab",
+      "finalPathname": "/_ui-lab",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase2/1440/ui-lab.png",
+      "ok": true
+    }
+  ]
+}

@@ -1,493 +1,362 @@
 .main {
-  overflow: clip;
-  color: var(--ink-950);
-  background: var(--ivory-50);
+  min-height: 100vh;
+  background: var(--color-canvas);
 }
 
-.stack {
+.container {
   display: grid;
-  gap: clamp(3rem, 7vw, 5.5rem);
-  padding-block: clamp(1rem, 3vw, 2rem) 4rem;
+  gap: var(--space-2xl);
+  padding-top: var(--space-2xl);
+  padding-bottom: var(--space-3xl);
 }
+
+/* ---------- Hero ---------- */
 
 .hero {
-  position: relative;
-  overflow: hidden;
-  padding: clamp(1.5rem, 4vw, 4rem);
-  border: 1px solid rgb(248 243 231 / 10%);
-  border-radius: 1.5rem;
-  background:
-    radial-gradient(circle at 88% 8%, rgb(169 133 63 / 12%), transparent 18rem),
-    radial-gradient(circle at 12% 90%, rgb(45 98 83 / 24%), transparent 22rem),
-    var(--ink-950);
-}
-
-.heroGrid {
-  position: relative;
-  z-index: 1;
   display: grid;
-  gap: clamp(2rem, 5vw, 3.5rem);
-  align-items: center;
+  max-width: 52rem;
+  gap: var(--space-md);
+  padding-top: var(--space-lg);
 }
 
-.heroCopy {
-  min-width: 0;
-  display: grid;
-  gap: 1.2rem;
-}
-
-.kicker,
-.sectionEyebrow {
-  width: fit-content;
+.eyebrow {
   margin: 0;
-  font-size: 0.72rem;
-  font-weight: 730;
-  letter-spacing: 0.08em;
-}
-
-.kicker {
-  padding: 0.35rem 0.75rem;
-  border: 1px solid rgb(193 162 99 / 28%);
-  border-radius: var(--radius-sm);
-  background: rgb(18 58 50 / 55%);
-  color: var(--gold-400);
-}
-
-.sectionEyebrow {
-  color: var(--terracotta-600);
-}
-
-.hero h1,
-.sectionHeader h2 {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-weight: 500;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-}
-
-.sectionHeader h2 {
-  color: var(--ink-950);
+  color: var(--color-accent);
+  font-size: var(--font-size-label);
+  font-weight: 680;
 }
 
 .hero h1 {
-  max-width: 12ch;
-  font-size: clamp(2.4rem, 7vw, 3.75rem);
-  color: var(--ivory-50);
-}
-
-.hero h1 span {
-  display: block;
-  color: var(--gold-400);
-}
-
-.sectionHeader p,
-.taskCard p,
-.methodCard p {
   margin: 0;
-  color: var(--ink-700);
+  font-size: clamp(2.5rem, 5vw, var(--font-size-hero));
+  font-weight: 700;
+  line-height: 1.1;
 }
 
-.heroIntro {
+.heroSub {
   margin: 0;
   max-width: 40rem;
-  color: var(--text-on-dark-secondary);
-  font-size: clamp(0.98rem, 2vw, 1.08rem);
-  line-height: 1.75;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-emphasis);
+  line-height: var(--line-height-body);
 }
 
-.actions {
+.heroActions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.4rem;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
 }
 
-.primaryAction {
-  border-color: var(--gold-400) !important;
-  background: var(--ink-900) !important;
-  color: var(--ivory-50) !important;
-  box-shadow: 0 10px 20px rgb(0 0 0 / 18%) !important;
-}
+/* ---------- 机制条（hairline 顶边三列，不复用卡片家族） ---------- */
 
-.primaryAction:hover {
-  background: var(--ink-800) !important;
-}
-
-.secondaryAction {
-  border-color: rgb(248 243 231 / 20%) !important;
-  background: transparent !important;
-  color: var(--ivory-100) !important;
-  box-shadow: none !important;
-}
-
-.secondaryAction:hover {
-  border-color: var(--gold-400) !important;
-  background: rgb(18 58 50 / 55%) !important;
-}
-
-.trustline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.85rem 1.25rem;
-  margin: 0.4rem 0 0;
-  padding: 1rem 0 0;
-  border-top: 1px solid rgb(248 243 231 / 12%);
+.mechanism ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-lg);
+  margin: 0;
+  padding: 0;
   list-style: none;
 }
 
-.trustline li {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: rgb(248 243 231 / 72%);
-  font-size: 0.8rem;
-}
-
-.trustline svg {
-  color: var(--gold-400);
-}
-
-.sectionHeader {
+.mechanism li {
   display: grid;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-subtle);
+  gap: var(--space-xs);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border-strong);
 }
 
-.sectionHeader h2 {
-  margin-top: 0.75rem;
-  font-size: clamp(1.8rem, 5vw, 2.6rem);
+.mechanism strong {
+  font-size: var(--font-size-label);
+  font-weight: 700;
 }
 
-.sectionHeader p {
-  max-width: 48rem;
-  font-size: 0.95rem;
+.mechanism span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+  line-height: var(--line-height-body);
 }
 
-.taskGrid,
-.methodGrid,
-.priceGrid {
+/* ---------- 分区 ---------- */
+
+.section {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-lg);
 }
 
-.taskCard,
-.methodCard,
-.priceCard {
-  position: relative;
-  display: grid;
-  gap: 0.75rem;
-  min-height: 100%;
-  padding: 1.35rem;
-  border-radius: 1rem;
-}
-
-.taskCard {
-  grid-template-rows: auto auto auto minmax(4.75rem, 1fr) auto;
-  transition: transform var(--duration-feedback) var(--ease-out-expo);
-}
-
-.taskCardPaper {
-  border: 1px solid var(--border-subtle);
-  background: var(--white);
-  box-shadow: var(--shadow-card);
-}
-
-.taskCardInk {
-  border: 1px solid rgb(248 243 231 / 12%);
-  background: var(--ink-900);
-  color: var(--ivory-50);
-}
-
-.taskCardClay {
-  border: 1px solid rgb(168 94 70 / 28%);
-  background:
-    linear-gradient(145deg, rgb(168 94 70 / 10%), transparent 62%),
-    var(--ivory-100);
-}
-
-.taskCard:hover,
-.taskCard:focus-within {
-  transform: translateY(-2px);
-}
-
-.taskTop {
+.sectionHead {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  color: var(--ink-700);
-  font-size: 0.72rem;
-  font-weight: 740;
-  letter-spacing: 0.08em;
+  gap: var(--space-lg);
 }
 
-.taskTop svg {
-  color: var(--gold-500);
-}
-
-.taskCardInk .taskTop,
-.taskCardInk .taskTop svg {
-  color: var(--gold-400);
-}
-
-.taskCardClay .taskTop,
-.taskCardClay .taskTop svg {
-  color: var(--terracotta-600);
-}
-
-.taskCard h3,
-.methodCard h3,
-.priceCard h3 {
+.sectionHead h2 {
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(1.35rem, 3vw, 1.7rem);
-  font-weight: 560;
-  color: var(--ink-950);
+  font-size: var(--font-size-section);
+  font-weight: 650;
 }
 
-.taskMeta {
-  color: var(--ink-700) !important;
-  font-size: 0.8rem !important;
+.sectionHead p {
+  margin: 0;
+  max-width: 30em;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-aux);
+  text-align: right;
 }
 
-.taskCardInk h3 {
-  color: var(--ivory-50);
-}
+/* ---------- 任务卡 ---------- */
 
-.taskCardInk p {
-  color: var(--text-on-dark-secondary);
-}
-
-.taskCardInk .taskMeta {
-  color: var(--gold-400) !important;
-}
-
-.taskCardClay .taskMeta {
-  color: var(--terracotta-600) !important;
-}
-
-.taskActions {
+.cardGrid {
   display: grid;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
-  border-top: 1px solid var(--border-subtle);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
 }
 
-.taskCardInk .taskActions {
-  border-top-color: var(--border-on-dark);
-}
-
-.taskAction {
-  justify-content: space-between;
-  width: 100%;
-  min-height: 2.75rem;
-  padding-inline: 0 !important;
-  border-radius: 0 !important;
-  color: var(--ink-800) !important;
-}
-
-.taskCardInk .taskAction {
-  color: var(--ivory-50) !important;
-}
-
-.methodCard {
+.card,
+.crossCard {
+  display: grid;
+  min-height: 10.5rem;
+  gap: var(--space-sm);
   align-content: start;
-  border: 1px solid var(--border-subtle);
-  background: var(--ivory-100);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  transition:
+    border-color var(--duration-feedback) ease,
+    box-shadow var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out);
 }
 
-.methodCard span {
-  display: grid;
-  width: 2.2rem;
-  aspect-ratio: 1;
-  place-items: center;
-  border-radius: 999px;
-  background: rgb(168 94 70 / 10%);
-  color: var(--terracotta-600);
-  font-family: var(--font-serif);
+.card:hover,
+.crossCard:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
 }
 
-.pricing {
-  padding: clamp(1.5rem, 4vw, 3rem);
-  border: 1px solid var(--border-on-dark);
-  border-radius: var(--radius-md);
-  background: var(--ink-950);
-  color: var(--ivory-50);
+.cardLead {
+  border-color: var(--color-border-strong);
 }
 
-.pricing .sectionHeader {
-  border-bottom-color: var(--border-on-dark);
+.cardTail {
+  background: var(--color-surface-subtle);
 }
 
-.pricing .sectionHeader h2 {
-  color: var(--ivory-50);
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
 }
 
-.pricing .sectionHeader p {
-  color: var(--text-on-dark-secondary);
+.cardName {
+  font-size: var(--font-size-body);
+  font-weight: 650;
 }
 
-.pricing .sectionEyebrow {
-  color: var(--gold-400);
+.cardIcon {
+  color: var(--color-text-muted);
+  transition:
+    color var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out);
 }
 
-.priceCard {
-  grid-template-rows: auto auto auto 1fr auto;
-  gap: 0.9rem;
-  border: 1px solid var(--border-on-dark);
-  background: rgb(18 58 50 / 54%);
+.card:hover .cardIcon,
+.crossCard:hover .cardIcon {
+  color: var(--color-accent);
+  transform: translate(1px, -1px);
 }
 
-.priceCard h3 {
-  color: var(--ivory-50);
+.cardSummary {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+  line-height: var(--line-height-body);
 }
 
-.priceCardFree {
-  border-color: var(--border-subtle);
-  background: var(--ivory-100);
-  color: var(--ink-950);
+.cardMeta {
+  margin-top: auto;
+  padding-top: var(--space-sm);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
 }
 
-.priceCardFree h3 {
-  color: var(--ink-950);
+/* ---------- 见相突出横条 ---------- */
+
+.observation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xl);
+  padding: var(--space-xl);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
 }
 
-.priceCardPaid {
-  background:
-    linear-gradient(180deg, rgb(193 162 99 / 8%), transparent 42%),
-    rgb(18 58 50 / 58%);
+.observationCopy {
+  min-width: 0;
 }
 
-.priceLabel {
+.eyebrowInverse {
+  margin: 0 0 var(--space-sm);
+  color: color-mix(in srgb, var(--color-text-inverse) 60%, transparent);
+  font-size: var(--font-size-meta);
+  font-weight: 680;
+}
+
+.observation h2 {
   margin: 0;
-  color: var(--gold-400);
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
+  font-size: var(--font-size-section);
+  font-weight: 650;
 }
 
-.priceCardFree .priceLabel {
-  color: var(--terracotta-600);
+.observation p {
+  max-width: 34em;
+  margin: var(--space-sm) 0 0;
+  color: color-mix(in srgb, var(--color-text-inverse) 72%, transparent);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-body);
 }
 
-.priceValue {
-  margin: 0;
-  color: var(--gold-400);
-  font-family: var(--font-serif);
-  font-size: clamp(2rem, 5vw, 2.8rem);
-  font-weight: 560;
-  line-height: 1;
+.observationAction {
+  display: inline-flex;
+  min-height: var(--target-min);
+  flex: none;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0 var(--space-lg);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+  font-weight: 680;
+  transition: opacity var(--duration-feedback) ease;
 }
 
-.priceValue strong {
-  font: inherit;
+.observationAction:hover {
+  opacity: 0.88;
 }
 
-.priceValue span {
-  color: rgb(248 243 231 / 62%);
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 500;
-}
+/* ---------- 合参 ---------- */
 
-.priceCardFree .priceValue {
-  color: var(--ink-900);
-}
-
-.priceCardFree .priceValue span {
-  color: var(--ink-700);
-}
-
-.priceCard ul {
+.crossGrid {
   display: grid;
-  gap: 0.65rem;
-  margin: 0.4rem 0 0;
-  padding: 0.9rem 0 0;
-  border-top: 1px solid var(--border-on-dark);
-  list-style: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
 }
 
-.priceCardFree ul {
-  border-top-color: var(--border-subtle);
+.crossBoundary {
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  line-height: var(--line-height-ui);
 }
 
-.priceCard li {
+/* ---------- 辅助入口 ---------- */
+
+.auxGrid {
   display: grid;
-  grid-template-columns: 1rem minmax(0, 1fr);
-  gap: 0.55rem;
-  align-items: start;
-  font-size: 0.88rem;
-  color: var(--text-on-dark-secondary);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
 }
 
-.priceCardFree li {
-  color: var(--ink-700);
+.auxEntry {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-md);
+  min-height: var(--target-min);
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  transition: border-color var(--duration-feedback) ease;
 }
 
-.priceCard li svg {
-  margin-top: 0.15rem;
-  color: var(--gold-400);
+.auxEntry:hover {
+  border-color: var(--color-border-strong);
 }
 
-.priceAction {
-  margin-top: 0.4rem;
-  box-shadow: none !important;
+.auxIcon {
+  color: var(--color-text-secondary);
 }
 
-.priceCardPaid .priceAction {
-  border-color: transparent !important;
-  background: var(--gold-400) !important;
-  color: var(--ink-950) !important;
+.auxBody {
+  display: grid;
+  gap: var(--space-xs);
+  min-width: 0;
 }
 
-.priceCardPaid .priceAction:hover {
-  background: var(--gold-500) !important;
+.auxBody strong {
+  font-size: var(--font-size-label);
+  font-weight: 680;
 }
 
-@media (min-width: 48rem) {
-  .sectionHeader {
-    grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 0.8fr);
-    align-items: end;
+.auxBody small {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+}
+
+.auxArrow {
+  color: var(--color-text-muted);
+}
+
+/* ---------- 焦点 ---------- */
+
+.card:focus-visible,
+.crossCard:focus-visible,
+.auxEntry:focus-visible,
+.observationAction:focus-visible {
+  outline-offset: 4px;
+}
+
+/* ---------- 响应式 ---------- */
+
+@media (max-width: 47.999rem) {
+  .container {
+    gap: var(--space-xl);
   }
 
-  .taskGrid,
-  .methodGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .cardGrid,
+  .crossGrid,
+  .auxGrid,
+  .mechanism ul {
+    grid-template-columns: 1fr;
   }
 
-  .priceGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 35rem) {
-  .actions {
-    display: grid;
+  .sectionHead {
+    flex-direction: column;
+    gap: var(--space-xs);
   }
 
-  .actions > a {
-    width: 100%;
-  }
-}
-
-@media (min-width: 64rem) {
-  .heroGrid {
-    grid-template-columns: minmax(0, 1.2fr) minmax(20rem, 0.8fr);
+  .sectionHead p {
+    text-align: left;
   }
 
-  .priceGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .observation {
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--space-lg);
+  }
+
+  .observationAction {
+    justify-content: center;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .taskCard {
+  .card,
+  .crossCard,
+  .cardIcon,
+  .observationAction,
+  .auxEntry {
     transition: none;
   }
 
-  .taskCard:hover,
-  .taskCard:focus-within {
+  .card:hover,
+  .crossCard:hover {
     transform: none;
   }
 }
