@@ -1,433 +1,473 @@
 ---
-name: FateRadar
-description: 东方编辑档案：把时间变成私密、可核对的个人档案。
-colors:
-  ink-950: "#0a2823"
-  ink-900: "#123a32"
-  ink-800: "#1b4b41"
-  ink-700: "#345f55"
-  ivory-50: "#fffdf7"
-  ivory-100: "#f8f3e7"
-  ivory-200: "#eee5d3"
-  gold-500: "#a9853f"
-  gold-400: "#c1a263"
-  terracotta-500: "#a85e46"
-  terracotta-600: "#884532"
-  moss-100: "#dfe9df"
-  moss-700: "#2d6253"
-  amber-100: "#f2e6c8"
-  white: "#ffffff"
-  border-subtle: "rgb(18 58 50 / 12%)"
-  border-control: "rgb(18 58 50 / 20%)"
-  border-emphasis: "rgb(18 58 50 / 25%)"
-  border-on-dark: "rgb(248 243 231 / 14%)"
-  surface-card-translucent: "rgb(255 255 255 / 64%)"
-  surface-ivory-translucent: "rgb(255 253 247 / 72%)"
-  text-on-dark-secondary: "rgb(248 243 231 / 78%)"
-  text-on-dark-muted: "rgb(248 243 231 / 68%)"
-typography:
-  display:
-    fontFamily: '"Noto Serif SC Variable", ui-serif, "Songti SC", "STSong", "Noto Serif CJK SC", serif'
-    fontSize: "clamp(3.25rem, 10.5vw, 6rem)"
-    fontWeight: 560
-    lineHeight: 0.98
-    letterSpacing: "-0.04em"
-  headline:
-    fontFamily: '"Noto Serif SC Variable", ui-serif, "Songti SC", "STSong", "Noto Serif CJK SC", serif'
-    fontSize: "clamp(2.45rem, 7vw, 4.8rem)"
-    fontWeight: 580
-    lineHeight: 1.04
-    letterSpacing: "-0.04em"
-  title:
-    fontFamily: '"Noto Serif SC Variable", ui-serif, "Songti SC", "STSong", "Noto Serif CJK SC", serif'
-    fontSize: "clamp(1.45rem, 4vw, 2.15rem)"
-    fontWeight: 600
-    lineHeight: 1.16
-    letterSpacing: "-0.025em"
-  body:
-    fontFamily: '"Noto Sans SC Variable", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif'
-    fontSize: "1rem"
-    fontWeight: 400
-    lineHeight: 1.65
-    letterSpacing: "normal"
-  label:
-    fontFamily: '"Noto Sans SC Variable", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif'
-    fontSize: "0.72rem"
-    fontWeight: 730
-    lineHeight: 1.65
-    letterSpacing: "0.08em"
-rounded:
-  sm: "0.75rem"
-  md: "1.25rem"
-  lg: "2rem"
-components:
-  button-primary:
-    backgroundColor: "{colors.ink-900}"
-    textColor: "{colors.ivory-50}"
-    rounded: "{rounded.sm}"
-    padding: "0.72rem 1.15rem"
-  button-primary-hover:
-    backgroundColor: "{colors.ink-800}"
-    textColor: "{colors.ivory-50}"
-    rounded: "{rounded.sm}"
-    padding: "0.72rem 1.15rem"
-  button-secondary:
-    backgroundColor: "{colors.surface-ivory-translucent}"
-    textColor: "{colors.ink-900}"
-    rounded: "{rounded.sm}"
-    padding: "0.72rem 1.15rem"
-  button-secondary-hover:
-    backgroundColor: "{colors.white}"
-    textColor: "{colors.ink-900}"
-    rounded: "{rounded.sm}"
-    padding: "0.72rem 1.15rem"
-  input-field:
-    backgroundColor: "{colors.ivory-50}"
-    textColor: "{colors.ink-950}"
-    rounded: "{rounded.sm}"
-    padding: "0.7rem 0.8rem"
-  choice-card:
-    backgroundColor: "{colors.ivory-50}"
-    textColor: "{colors.ink-950}"
-    rounded: "{rounded.sm}"
-    padding: "0.75rem"
-  choice-card-selected:
-    backgroundColor: "{colors.moss-100}"
-    textColor: "{colors.ink-950}"
-    rounded: "{rounded.sm}"
-    padding: "0.75rem"
-  task-card-paper:
-    backgroundColor: "{colors.white}"
-    textColor: "{colors.ink-950}"
-    rounded: "{rounded.md}"
-    padding: "clamp(1.45rem, 4vw, 2.2rem)"
-  status-panel:
-    backgroundColor: "{colors.surface-card-translucent}"
-    textColor: "{colors.ink-950}"
-    rounded: "{rounded.md}"
-    padding: "clamp(1.25rem, 5vw, 2rem)"
-  state-tag-processing:
-    backgroundColor: "{colors.amber-100}"
-    textColor: "{colors.ink-950}"
-    rounded: "999px"
-    padding: "0 0.55rem"
-  state-tag-success:
-    backgroundColor: "{colors.moss-100}"
-    textColor: "{colors.ink-950}"
-    rounded: "999px"
-    padding: "0 0.55rem"
-  state-tag-error:
-    backgroundColor: "{colors.ivory-100}"
-    textColor: "{colors.terracotta-600}"
-    rounded: "999px"
-    padding: "0 0.55rem"
-  time-archive:
-    backgroundColor: "rgb(255 253 247 / 4%)"
-    textColor: "{colors.ivory-50}"
-    rounded: "{rounded.lg}"
-    padding: "clamp(1.25rem, 4vw, 2rem)"
+name: Direction C UI Contract
+status: accepted
+frozen_at: 2026-08-13
+revised_at: 2026-08-14
+revision_basis: docs/redesign/2026-08-14-direction-c-decision.md
+scope: web-and-admin
 ---
 
-# FateRadar Design System
-
-> Status: Accepted
-> Updated: 2026-08-09
-> Scope: responsive website first; future native iOS should preserve the same brand language
-
-## 1. Design thesis
-
-The creative north star is **Eastern Editorial Archive** / **东方编辑档案**: a contemporary personal archive shaped by time, evidence, traditional calculation, and restrained Chinese editorial design.
-
-The product should feel calm, precise, private, and premium. It must not look like an enterprise dashboard, a neon astrology SaaS, a fortune-teller stall, or a chat interface with a decorative skin.
-
-The existing brand image and website tokens are the starting point:
-
-- deep ink green carries trust, depth, and privacy;
-- warm ivory provides a paper-like reading surface;
-- muted gold marks hierarchy and important evidence;
-- terracotta is reserved for focus, warning, and small warm accents;
-- generous negative space and clear typography create the premium feeling.
-
-FateRadar 把时间变成一份私密、可核对的个人档案。视觉系统像一册正在整理的东方编辑档案：深墨绿承担封面与权威，暖象牙承担长时间阅读，克制金线标出层级，少量陶土色只在焦点、错误与需要谨慎的地方出现。它拒绝把首页做成聊天框，也不借神秘装饰掩盖事实、条件和不确定性。
-
-公共入口先让访客看懂确定性核心、可核对依据、表达边界和三个 P0 任务，再决定是否登录保存。当前首屏是深色编辑扉页：一个大承诺、两项行动、时间刻度仪表和三项可信事实共同完成叙事。私人区域则收起表现性装饰，让输入、状态、证据和版本成为主角。
-
-深墨段落是封面、价格账簿和证据侧栏的局部材料，不是全站暗色模式。FORM 为 `Eastern Editorial Archive`，方向合同 key 为 `FATERADAR-EASTERN-ARCHIVE-V1`；任何新页面都应保留这套纸张、墨色、细金线与可核对层级。
-
-Key characteristics:
-
-- 深墨封面与暖象牙纸张形成明确的阅读层次。
-- 宋体/衬线负责标题、结论与档案感，无衬线负责操作、表单与说明。
-- 细边界、轻圆角和节制阴影建立结构，不堆叠浮卡。
-- 金色只标层级与证据，陶土色只标焦点、错误和有限提醒。
-- 状态、边界和门禁用直白文字说明，不靠颜色或装饰暗示成功。
-- 时间刻度、编号和账簿式分隔是可复用的档案语汇。
-
-## 2. What we take from Metis
-
-Metis is a structural and interaction reference, not a brand template.
-
-Adopt:
-
-- an editorial landing page rather than an empty chat box;
-- a large typographic hero with one clear promise;
-- large scene cards for real user tasks;
-- numbered modules only when order or sequence is meaningful;
-- trial before forced login;
-- clear Free versus paid-result comparison;
-- restrained fixed navigation and direct payment-status feedback.
-
-Do not copy:
-
-- the Metis wordmark, imagery, copy, exact composition, or private APIs;
-- its black-and-white identity as our default palette;
-- permanent-unlimited AI promises or browser-local sensitive history;
-- any layout whose only purpose is to imitate the reference site.
-
-## 3. Visual language
-
-### Color
-
-Use the semantic tokens already defined in `web/src/app/globals.css`. The frontmatter at the top of this file is the machine-readable source of truth for every token value; the table below is the canonical role mapping.
-
-| Role | Token | Value |
-| --- | --- | --- |
-| Primary text / deepest surface | `--ink-950` | `#0a2823` |
-| Brand surface / primary action | `--ink-900` | `#123a32` |
-| Interactive brand hover | `--ink-800` | `#1b4b41` |
-| Secondary text | `--ink-700` | `#345f55` |
-| Canvas | `--ivory-50` | `#fffdf7` |
-| Soft surface | `--ivory-100` | `#f8f3e7` |
-| Divided section / disabled surface | `--ivory-200` | `#eee5d3` |
-| Primary accent | `--gold-500` | `#a9853f` |
-| Soft accent | `--gold-400` | `#c1a263` |
-| Focus / warning accent | `--terracotta-500` | `#a85e46` |
-| Error text / required marker | `--terracotta-600` | `#884532` |
-| Selected / success surface | `--moss-100` | `#dfe9df` |
-| Selected / success boundary | `--moss-700` | `#2d6253` |
-| Pending surface (always with status copy) | `--amber-100` | `#f2e6c8` |
-| Clean sheet (paper cards, reading text) | `--white` | `#ffffff` |
-| Fine rule, quiet | `--border-subtle` | `rgb(18 58 50 / 12%)` |
-| Fine rule, control | `--border-control` | `rgb(18 58 50 / 20%)` |
-| Fine rule, emphasis | `--border-emphasis` | `rgb(18 58 50 / 25%)` |
-| Fine rule, on dark | `--border-on-dark` | `rgb(248 243 231 / 14%)` |
-| Translucent paper (status panels) | `--surface-card-translucent` | `rgb(255 255 255 / 64%)` |
-| Translucent paper (secondary actions) | `--surface-ivory-translucent` | `rgb(255 253 247 / 72%)` |
-| Copy on dark, secondary | `--text-on-dark-secondary` | `rgb(248 243 231 / 78%)` |
-| Copy on dark, muted | `--text-on-dark-muted` | `rgb(248 243 231 / 68%)` |
+# UI、组件、交互与响应式权威合同
 
-Role guidance:
+本文是公共 Web、用户区、产品工作台、`/_ui-lab` 与独立 Admin 的唯一视觉合同。页面范围、状态库存、依赖和进度只看 `docs/CHECKLIST.md`；名词只看 `CONTEXT.md`；盘面和解读数据边界只看 `docs/MINGLI_V51_WEB_INTEGRATION.md`。
 
-- **Deep Archive Ink**（`ink-950`）：首屏、价格段落和最深正文色，制造私密与确定性。
-- **Working Ink**（`ink-900`）：主要操作、私人侧栏与选中控件的品牌表面。
-- **Active Ink**（`ink-800`）：主要操作 hover 与成功图标的互动层。
-- **Archival Gold**（`gold-500`）：分隔线、编号、聚焦层级和少量证据标记。
-- **Soft Archival Gold**（`gold-400`）：深墨表面上的高光、选中边和正文强调。
-- **Terracotta Focus**（`terracotta-500`）：全局焦点环、无效输入边界和警示图标。
-- **Deep Terracotta**（`terracotta-600`）：错误文字与必填标记；不可扩张为普通品牌色。
-- **Moss Confirmation**（`moss-100` / `moss-700`）：已选择和成功状态的底色与边界。
-- **Amber Pending**（`amber-100`）：处理中状态的浅底色，必须同时带状态文案。
-- **Reading Ink**（`ink-700`）：正文次级文字、帮助信息和非主导导航。
-- **Warm Paper**（`ivory-50`）：全站默认画布与浅色控件表面。
-- **Soft Paper**（`ivory-100`）：私人应用背景、提示和次级表面。
-- **Divided Paper**（`ivory-200`）：分区背景与禁用控件表面。
-- **Clean Sheet**（`white`）：真正需要抬起的纸张卡片与阅读正文。
-- **Fine Rules**（`border-subtle` / `border-control` / `border-emphasis` / `border-on-dark`）：从安静分隔到控件边界的 1px 层级。
-- **Translucent Paper**（`surface-card-translucent` / `surface-ivory-translucent`）：状态面板和次级操作的轻透纸面。
-- **Ink-Surface Copy**（`text-on-dark-secondary` / `text-on-dark-muted`）：深墨段落上的次级与弱化文字。
+## 1. 三层权威与冲突顺序
 
-**The Paper-and-Ink Rule.** 默认画布是暖象牙，深墨只用于需要“封面、账簿、证据”语义的段落，不把整个产品反转成暗色界面。
+本产品不是复刻任一参考站，而是固定组合三种职责：
 
-**The Restrained Gold Rule.** 金色只标记层级、编号、边界和证据；一个视区通常只有一个主导金色强调。Gold is an accent, not a fill for every component.
+1. 自有 `mingli-master` Runtime 决定算法、盘面事实、古籍证据、Provider 能力与连续状态；
+2. 青囊实站审计决定产品层级、功能入口、单术/合参关系和“免费确定性盘面 → 深度解读”的任务模式；
+3. METIS 实站与公开 MIT 仓库决定中性组件、录入页、盘主文辅工作台、信息密度和响应式表现。
 
-**The Terracotta Focus Rule.** 陶土色优先服务键盘焦点与错误，不用于大面积装饰或制造紧迫感。
+冲突时按以下顺序裁决：
 
-Never introduce generic purple-blue AI gradients.
+1. Runtime 与版本化数据合同；
+2. `docs/CHECKLIST.md` 已冻结的产品地图和本期范围；
+3. 本文的可访问性、数据真实性和响应式底线；
+4. METIS 的表现参考；
+5. 青囊的视觉细节。
 
-### Typography
+青囊不决定品牌皮肤，METIS 不决定业务、价格、权益或算法。MIT 代码只能作为表现层来源，使用实质代码时保留版权与许可；客户端算法、时间换算、Prompt、账户数据和生产私有逻辑不得带入。
 
-- Display and reading headings: `Noto Serif SC Variable`, then the existing Song-style fallbacks (`typography.display` / `headline` / `title` in the frontmatter).
-- UI, forms, navigation, and body copy: `Noto Sans SC Variable`, then system sans fallbacks (`typography.body`).
-- Labels and archive metadata: `typography.label`.
-- Use tabular numerals for dates, prices, time, order state, 编号 and chart data.
-- Use the serif face for hierarchy, conclusions, and report reading—not every label.
-- Avoid fake calligraphy, excessive letter spacing in Chinese, and tiny low-contrast captions.
+设计证据：
 
-Scale (values in the frontmatter):
+- [青囊登录态产品与响应式审计](./docs/releases/evidence/2026-08-12-reference-site-audits/qingnang-authenticated-product-audit.md)
+- [METIS 生产站、响应式与开源边界审计](./docs/releases/evidence/2026-08-12-reference-site-audits/metis-live-responsive-ui-audit.md)
 
-| Token | Size | Weight | Line height | Tracking |
-| --- | --- | --- | --- | --- |
-| `display` | `clamp(3.25rem, 10.5vw, 6rem)` | 560 | 0.98 | `-0.04em` |
-| `headline` | `clamp(2.45rem, 7vw, 4.8rem)` | 580 | 1.04 | `-0.04em` |
-| `title` | `clamp(1.45rem, 4vw, 2.15rem)` | 600 | 1.16 | `-0.025em` |
-| `body` | `1rem` | 400 | 1.65 | normal |
-| `label` | `0.72rem` | 730 | 1.65 | `0.08em` |
+## 2. 当前视觉方向
 
-Hierarchy:
+2026-08-14 起，视觉方向冻结为**方向 C「现代 SaaS 锐感」**（决策记录：`docs/redesign/2026-08-14-direction-c-decision.md`）。浅灰底、纯白面、单一蓝色点缀、紧字距排版、细线与小圆角分层，靠网格精度、字阶对比和克制的微交互出质感，不靠装饰。
 
-- **Display**：只用于首页主承诺等最高层标题，当前首屏控制在约 11ch。
-- **Headline**：公共页面章节标题，负责建立大段落节奏。
-- **Title**：私人页面、纸张区块和阅读章节标题。
-- **Body**：说明、正文和表单帮助；正文行长通常控制在 62–68ch。
-- **Label**：folio、编号和档案元信息；英文可使用克制字距，中文不额外拉开。
+正式品牌名、Logo 和品牌字体仍未冻结；确定时只替换品牌资产、品牌别名与必要文案，不重做产品层级、组件和页面结构。
 
-**The Two-Voice Rule.** 衬线负责“读什么”，无衬线负责“做什么”；表单标签、按钮和导航不得改成装饰性书法字。
+旧 `FateRadar` 名称、东方编辑档案叙事、深墨绿、暖象牙、金色、陶土色、星轨和时间仪表全部废弃，不得出现在新页面、演示 Fixture、截图或权威文案中。宋体（`--font-domain`）维持仅限盘面大字的既有边界。
 
-**The Legible Archive Rule.** 小号标签只承载短元信息；条件、边界和错误必须回到正常正文尺寸与对比度。
+品牌层必须隔离为少量可替换 Token。
 
-### Layout
+## 3. 设计 Token
 
-- Mobile first from 360px; all purchase and reading flows must remain complete on mobile.
-- 公共容器最大宽度为 74rem；默认两侧总留白为 2.25rem，48rem 以上增至 4rem。核心验收宽度为 360、768、1024 和 1440px。
-- 当前实现按内容需要在 34、40、42、48、64 和 68rem 渐进增强，不把设备型号当布局依据。
-- 章节垂直留白使用 `clamp(4.5rem, 9vw, 8rem)`，常规网格 gap 为 1rem。
-- Public pages may use asymmetry, large type, full-bleed dark sections, and spacious scene cards. 首页先以深色扉页承诺价值，再用三张任务卡交付建档、今日/近七日和一事一问三个入口；方法、阅读结构、价格与隐私依次展开。
-- Private application pages prioritize the task and result; decoration must not compete with inputs or evidence. 64rem 起出现侧栏导航，68rem 起阅读正文与证据栏并排，证据栏可 sticky；手机使用五项底部导航并预留 safe-area。
-- Desktop reading pages may use navigation / main reading / evidence columns, but must collapse explicitly on mobile.
-- Cards exist only when they express a real grouping or hierarchy. 能用留白、1px 分隔线或纸色变化说明关系时，不再套一层卡。Prefer whitespace, dividers, and section contrast over nested cards.
+语义 Token 是组件的唯一颜色入口。业务组件不得散落硬编码品牌色。
 
-**The Task-Before-Decoration Rule.** 私人表单与阅读页先保证任务、证据和状态顺序，装饰不得挤占输入宽度或正文行长。
+```css
+:root {
+  --color-canvas: #fafafa;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f5f5f5;
+  --color-surface-muted: #eeeeee;
+  --color-surface-inverse: #0a0a0a;
 
-### Elevation & Depth
+  --color-text: #0a0a0a;
+  --color-text-secondary: #525252;
+  --color-text-muted: #8a8a8a;
+  --color-text-inverse: #ffffff;
 
-这是以色调和边界为主、阴影为辅的系统。`shadow-card` 只把白色纸张从象牙画布中轻轻抬起，`shadow-soft` 用于独立私人面板，`shadow-action` 只服务主要操作，`shadow-hero-orbit` 只服务首屏时间仪表。账簿、列表和嵌套内容默认保持平面，以纸色差、1px 规则线和深浅墨色建立纵深。
+  --color-border: #e5e5e5;
+  --color-border-strong: #d4d4d4;
+  --color-overlay: rgb(0 0 0 / 42%);
 
-Shadow vocabulary:
+  --color-action: #0a0a0a;
+  --color-action-hover: #262626;
+  --color-on-action: #ffffff;
+  --color-focus: #2563eb;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-on-accent: #ffffff;
 
-- **Hero Orbit**（`shadow-hero-orbit`）：首屏时间刻度仪表的唯一环境阴影。
-- **Action Lift**（`shadow-action`）：主要按钮的低幅动作反馈。
-- **Soft Panel**（`shadow-soft`）：需要从私人背景中独立出来的单一面板。
-- **Paper Card**（`shadow-card`）：白纸卡片、阅读正文和状态面板的轻抬升。
+  --color-info: #2563eb;
+  --color-success: #137a45;
+  --color-warning: #946200;
+  --color-danger: #c62828;
+  --surface-info: #eef5ff;
+  --surface-success: #ecf8f1;
+  --surface-warning: #fff7df;
+  --surface-danger: #fff0ef;
 
-**The Flat-by-Default Rule.** 同层内容默认不投影；只有主行动、独立纸张或签名仪表获得阴影。
+  --brand-mark: var(--color-text);
+  --brand-accent: var(--color-accent);
+  --brand-on-accent: var(--color-on-accent);
 
-**The One-Sheet Rule.** 阅读正文是一张连续纸，不把结论、依据、边界和核对拆成四张互相竞争的浮卡。
+  --radius-control: 8px;
+  --radius-card: 8px;
+  --radius-panel: 12px;
+  --radius-pill: 999px;
 
-### Shapes
+  --shadow-card-hover: 0 1px 2px rgb(0 0 0 / 4%), 0 4px 12px rgb(0 0 0 / 5%);
+  --shadow-float: 0 4px 16px rgb(0 0 0 / 8%);
+  --shadow-overlay: 0 16px 48px rgb(0 0 0 / 14%);
+}
+```
+
+规则：
 
-形状像装订良好的现代档案：控件使用轻柔小圆角（`rounded.sm`），纸张和主要容器使用更舒展的中圆角（`rounded.md`），只有时间仪表使用大圆角（`rounded.lg`）。大多数边界为 1px；轮廓细、转角温和，避免玻璃胶囊和过度柔软的 SaaS 卡片感。
+- 中性灰承担正常层级；`--color-accent` 蓝是全站唯一彩色点缀，只用于链接性强调、关键交互与焦点；绿、黄、红只表示成功、警告和危险；
+- 页面靠浅灰底 + 白面 + 1px 边界分层；卡片 hover 允许使用 `--shadow-card-hover` 单层淡阴影；菜单、Dialog、Drawer 等浮层使用 `--shadow-float/overlay`；
+- 选择、错误、锁定和成功不能只靠颜色表达；
+- 禁止渐变、玻璃拟态、星空、八卦壁纸、发光描边和多层彩色阴影。
 
-完全圆形保留给品牌印记、时间环和小状态图标；999px 胶囊只用于短状态标签。任务卡上的圆与斜线是档案测量记号，不是可随意复制的背景纹样。
+## 4. 字体与排版
 
-**The Light-Corner Rule.** 圆角负责保护触控与纸张感，不负责把每个区块变成药丸或气泡。
+- 界面、表单、报告正文和 Admin 使用 `Noto Sans SC Variable`，回退到系统无衬线；
+- `Songti SC` 只允许用于干支、宫位等盘面大字，不用于公共标题、按钮、导航或后台；
+- 品牌字体保持未冻结，不擅自制作字标；
+- 中文不添加人为字距；数字、金额、日期、时间、订单号使用 tabular numerals；
+- 冻结字阶（2026-08-14 收口，页面不得使用字阶外尺寸）：元信息 12px，辅助 13px，标签/帮助 14px，正文 16px，强调正文 18px，卡标题 20px，章节 24px，页面标题 30px，首页标题 40–64px；
+- 展示级字号（≥24px）使用 `letter-spacing: -0.02em ~ -0.035em` 紧字距与 600–700 字重；中文正文和标签不做负字距；
+- 界面文字行高 1.4，正文 1.6，标题 1.1–1.2；长文阅读宽度 62–72ch；
+- 不使用全站宋体、不使用 6rem 装饰标题，不靠极细或极浅文字制造“高级感”。
+
+## 5. 空间、容器与断点
+
+固定验收视口：360、768、1024、1440px。
+
+```text
+360 起：手机单列基线
+768 起：完整桌面顶栏，手机底栏退出
+1024 起：盘面工作台允许双栏
+1280 起：复杂合参允许主区/侧区双栏
+1440：最大设计验收宽度，内容不再无限拉伸
+```
+
+几何合同：
+
+- 手机页边距 16px；768 为 24px；1024 为 32px；1440 为 40–48px；
+- 公共页面主体最大宽 1120–1200px；
+- 单一录入面板最大宽 496px，手机为 `calc(100% - 32px)`；
+- 长报告正文最大宽 720px；
+- 桌面工作台盘面区目标宽 480–520px，阅读区不得小于 360px；
+- 768px 工作台纵向堆叠，禁止复刻 METIS 在平板竖屏的过窄右栏；
+- 复杂合参在 1024px 可继续纵向，1280px 起才根据内容拆成双栏；
+- 页面级永不横向滚动；真正的宽表只能在自己的容器内滚动并保留关键首列；
+- 手机年月日时采用 2×2、分步选择或底部选择器，禁止硬塞四个窄控件；
+- 复杂盘面可缩放、重排或使用页签，但不能靠 9px 字号和截断维持版面。
+
+## 6. 公共壳层与导航
+
+### 6.1 桌面端（768px 及以上）
+
+- 64px 白色顶栏和 1px 底边；
+- 左侧是中性品牌占位；中部是产品入口；右侧是登录/账户；
+- 一级入口固定为：术数、合参、工具、每日、知识内容、账户；「合参」下含命盘合参与问事合参两个产品；
+- 术数 Mega Menu 使用三组：
+
+```text
+命：八字、紫微、七政
+卦：六爻、奇门、大六壬、问事合参
+相：见相
+```
+
+- 13 Provider 不得出现在导航；
+- 768px 顶栏不得换成两行；空间不足时把次要入口收进“更多”，不压缩触达尺寸；
+- 菜单支持鼠标、键盘、触屏与明确关闭，焦点由 Radix 管理。
+
+### 6.2 手机端（767px 及以下）
+
+- 56px 精简顶栏；
+- 固定五项底栏：主页、术数、工具、每日、我的；
+- 底栏至少 64px，加 `env(safe-area-inset-bottom)`，正文预留同等空间；
+- “术数”打开全屏分组抽屉，分组与桌面一致；
+- 当前项同时用图形、文字和颜色表示；
+- 抽屉关闭后焦点返回触发器，系统返回键/浏览器后退行为可预测。
+
+### 6.3 首页
+
+首页是「价值主张 + 任务入口」混合结构（2026-08-14 起，取代纯任务选择器）：
+
+1. Hero：一句基于真实机制的主张（当前版本「十三术同根，五十五部古籍为证」+ 副标引用 13 Provider、55 reference pack、1328 条 evidence index 的真实规模）+ 主 CTA「开始排盘」+ 次 CTA「看示例盘面」；主张只讲机制与规模事实，不讲准不准、不做效果承诺、不伪造社会证明；
+2. 机制条：三个真实差异点——确定性盘面免费、事实与解释分层、多术互证；
+3. 任务入口区：八字、紫微、七政命盘入口；六爻、奇门、大六壬事件入口；见相单独入口；
+4. 合参区：命盘合参、问事合参两个入口；
+5. 辅助区：每日、工具和知识内容；
+6. 活动有效且用户符合资格时才出现临时邀请卡。
 
-**The Fine-Boundary Rule.** 优先使用单层 1px 边界；不要用双重描边、厚框或嵌套圆角模拟层级。
+360px 单列；768px 起基础术数三列；辅助区两列或三列。禁止旧品牌扉页、TimeArchive、固定旧价格卡和玄学装饰背景。
 
-### Imagery and symbols
+## 7. 用户任务壳层
 
-- Domain imagery may draw from celestial cycles, time rings, ink lines, paper, seals, trigrams, and archival notation.
-- Use abstract, original compositions rather than literal dragons, temples, flames, fortune tellers, or wallpaper made from repeated bagua symbols.
-- Lucide is for functional controls only. Important命理 concepts use custom, reviewed symbols or typography.
-- Emoji must not be used as interface icons.
+### 7.1 产品录入与采集
 
-## 4. Component and library contract
+- 使用 METIS 式窄面板居中，首屏直接聚焦任务；
+- 顶部显示任务名称、当前模式/步骤和必要说明；
+- 命盘录入（八字、紫微、七政）使用受测对象、历法、日期、时间、未知时辰、地点、性别和时间口径；
+- 事件起局（六爻、奇门、大六壬）使用问题、场景/侧重、起卦过程或事件时空，不索取无关出生资料；
+- 见相采集使用模式、独立同意、拍摄/上传、质量检查和必要问卷，不伪装成命盘表单；
+- 每个产品的专有字段有自己的可见分组，不全部塞进“高级选项”；
+- 主要提交按钮全宽、黑底白字、最小 48px；
+- 字段有永久可见 Label、帮助、错误和 disabled 原因；
+- 缺地点但可继续时弹出明确确认，而不是要求用户盲点两次同一按钮；
+- 游客能完成免费输入和盘面；保存、跨设备、深读、追问或购买时才要求登录；
+- 登录成功原地接管游客任务，不重填、不重复计算；
+- URL 仅使用不透明任务句柄，不放生辰、问题正文或性别。
 
-- Styling owner: semantic CSS variables plus CSS Modules.
-- Accessible interaction primitives: `radix-ui`.
-- JavaScript motion: `motion`, imported from `motion/react`.
-- Functional icons: `lucide-react`.
-- Conditional class composition: `clsx`.
-- Forms: `react-hook-form` plus `zod` and `@hookform/resolvers`.
-- Chinese type: `@fontsource-variable/noto-sans-sc` and `@fontsource-variable/noto-serif-sc`.
+### 7.2 工作台
 
-Do not introduce Tailwind, shadcn runtime, MUI, Ant Design, another primitive system, GSAP, Lenis, Lottie, or a second motion library without an explicit design/architecture decision. shadcn/ui may be used as a component-structure reference, but copied components must be restyled through this system and use only one primitive owner per interaction.
+提交后在当前产品路由内进入同一任务上下文的盘主文辅工作台；产品 URL 只携带不透明 handle。`/workbench/[handle]` 只负责深链恢复并解析或重定向回所属产品路由，不能成为提交后统一跳离产品页的新页面：
 
-## 5. Components
+- 顶部工作条包含返回、资料摘要、时间层、规则设置、保存、导出、分享、历史、账户/权益；360–767px 首层只保留返回和当前时间层，其余动作进入“更多”菜单或底部抽屉，不换行、不横溢；
+- 1024px 起盘面与阅读双栏；低于 1024px 盘面在前、阅读在后；
+- 本命/大运/流年/流月/流日/流时等层由该术数 ViewModel 声明，不做全术数硬编码；
+- 暂不可用的时间层可见但 disabled，并写明原因；
+- 手机使用粘性章节导航、页签或折叠，避免无法定位的超长页面；
+- 盘面、免费摘要、深读 Offer、支付、生成、报告、追问、导出和分享是独立区域与状态；
+- 任何用户可见区域都不展示 raw JSON、Provider key、snake_case、内部 ref 或调试文本。
 
-### Buttons
+## 8. 页面族合同
 
-- **Shape:** 所有主要与次要按钮至少 44px 高，使用 `rounded.sm` 和紧凑水平内边距。
-- **Primary:** Working Ink 底、Warm Paper 字，并使用 Action Lift；hover 切到 Active Ink，最多上移 2px，active 回到基线并轻微压缩。
-- **Secondary:** 半透明象牙纸面、细边界和 Working Ink 文字；hover 只提高清晰度与金色边界。
-- **Focus / Disabled:** 所有可交互变体使用 3px 陶土色 `:focus-visible` 外轮廓并留 3px offset。禁用态不位移、不伪装可点击，并在附近说明门禁原因。
+### 8.1 七个基础术数
 
-### Cards / Containers
+八字、紫微、七政、六爻、奇门、大六壬、见相均预制：
 
-- **Task Cards:** paper、ink、clay 三种真实 tone 使用同一中圆角和大留白；标题靠下形成编辑海报感，整张卡只保留一个明确去向。
-- **Paper / Reading Surfaces:** 白纸加轻阴影，只用于真实分组；连续内容依靠分隔线，不嵌套卡片。
-- **Dark Rails:** 深墨侧栏承载证据和继续操作，不把重要表单放到低对比深色表面。
+1. 入口与适用说明；
+2. 录入、起局或采集；
+3. 输入确认；
+4. 六个盘类术数的免费确定性盘面，或见相的结构化观察与证据充足度；
+5. 免费基础摘要；
+6. 深读 Offer 或“测试期未开放”；
+7. 购买确认；
+8. 生成状态；
+9. 结构化报告；
+10. 现实核对、追问、导出和分享；
+11. 未接入、暂停、无权限、失败、删除和过期状态。
 
-### Inputs / Fields
+每术使用独立版本化 ViewModel 和盘面组件，如 `bazi-chart/v1`、`ziwei-chart/v1`。共享工作台壳，不共享万能 `Record<string, unknown>` 展示器。
 
-- **Style:** 可见 label、48px 最小控件高度、象牙底、1px 强调边和小圆角；textarea 允许垂直缩放。
-- **Focus:** 继承全局陶土色焦点环；光标也使用陶土色。
-- **Error / Disabled:** `aria-invalid` 同时触发陶土色边界与就近错误文本；禁用态必须给出原因，不能只降低透明度。
-- **Choice Cards:** 选中时转为苔绿纸面并加深边界，原生 radio/checkbox 仍保留可见状态。
+UI 必须预制的免费结果槽位如下。这里只冻结信息架构，不授权照抄参考站算法，也不表示 Runtime 已经产出全部字段：
 
-### Navigation
+| 产品 | 必须预制的盘面/观察模块 |
+|---|---|
+| 八字 | 时间口径与四柱摘要；年月日时四柱；十神、藏干、纳音、空亡、地势、自坐、神煞；旺衰贡献；格局/喜忌/病药依据；大运、流年、关键流月；四柱图、特殊宫位、五行力量 |
+| 紫微 | 十二宫盘与宫位交互；主辅杂曜；三方四正；四化；格局与命宫摘要；大限、流年和可用时间层 |
+| 七政 | 星盘；命度/身度；命盘格局；功能十二宫；十一曜宿度；恩用仇难；大限小限；神煞落宫 |
+| 六爻 | 问题与起卦依据；六次过程；本卦/变卦；六爻、六亲、世应、动静、旬空/月日等事实槽位；基础摘要与边界 |
+| 奇门 | 阴/阳遁与局式；九宫；九星、八门、八神；值符值使；用神锚点；关键格局与大局基调 |
+| 大六壬 | 天地盘；四课；三传；九宗门；天将；课体候选；关键神煞与盘面综览 |
+| 见相 | 版本化结构化观察；部位/区域与置信度；质量与证据充足度；用户补充信息；基础摘要。原图不作为“盘面”展示 |
 
-- **Public:** 品牌印记、三项主导航和账户入口保持 44px 触控高度；hover 用金色下划线，不用大色块抢夺首屏。
-- **Private:** 桌面侧栏用左侧金线标记当前页；手机底栏用顶部金线和浅金底同时标记，状态不只靠颜色。
+### 8.2 双人合盘
 
-### Status, Reading, and Time
+八字、紫微、七政各有独立双人入口：
 
-- **Status Panels:** loading、empty、error、processing、success、disabled 都有图标、标题和直白说明；付款、权益、生成和正文交付必须拆开表达。
-- **State Tags:** 胶囊只显示短状态，并同时给出人能读懂的解释；处理中、成功和错误分别使用琥珀、苔绿和陶土语义。
-- **Reading Anatomy:** 结论、依据、边界、现实核对按编号顺序展开，来源零命中时明确留空，不生成伪出处。
-- **Time Archive:** 同心时间环、手针、中心印记与四段 ledger 组成首页签名仪表，表达“输入—事实—边界—核对”。
+- 输入甲乙两个 ProfileVersion 与情侣、夫妻、亲子、合伙、职场或朋友关系；
+- 桌面展示甲方、乙方、关系区；平板和手机使用甲方/乙方/关系页签；
+- 免费展示双方确定性盘面和基础关系结构；
+- 深读绑定双方版本、关系类型和所选术数；
+- 变更任一资料或关系类型创建新任务；
+- 不把双人合盘塞进单盘小卡，也不混入三术合参。
 
-**The Honest-State Rule.** UI 只呈现服务端已经确认的状态；客户端回跳不等于到账，已付款不等于已交付，未接通能力必须明确标成演示、为空或暂不可用。
+### 8.3 命盘合参（原三术合参，2026-08-14 起吸收多盘问答）
 
-## 6. Motion language
+固定流程：
 
-Motion should suggest **time becoming legible**, not spectacle.
+```text
+立命 → 在八字/紫微/七政中选择至少两术 → 免费互证 → 整合深读
+```
 
-### Approved patterns
+可带着具体问题进入（即原多盘问答模式）；追问始终绑定当前已交付报告或判断卡，保持对象、版本、术数和时间范围，越界时明确引导 Recast 而不是偷偷消耗追问。
 
-- Page/section entrance: opacity plus `translateY(8px–12px)`, 400–550ms, ease-out.
-- Related-item stagger: 60–90ms, capped at 5 visible items.
-- Button and card feedback: 160–200ms; at most 2px lift or a very small press scale.
-- Result reveal: 240–360ms per meaningful block, conclusion first, then evidence and boundaries. 状态面板与阅读切换按 260ms 执行。
-- Dialog and mobile sheet: spring motion with low bounce; focus behavior remains owned by Radix.
-- Optional ambient time/astrolabe ring: 8–12s, transform/opacity only, non-blocking, paused off-screen. 时间仪表自身的入场/状态变化为 420–840ms，最多四项 75ms stagger。
-- Color state changes may reuse the existing 160–200ms transition.
+择术卡必须解释主理、参证和不入边界。结果按维度展示各术精简盘、信号、互证、分歧、缺失和证据，不把三术平均成一篇文章。
 
-### Forbidden patterns
+### 8.4 问事合参
 
-- scroll hijacking, mandatory parallax, cursor followers, autoplay sound, or motion that delays reading;
-- continuous blur, glow, gradient, or large-image animation;
-- bouncing payment, privacy, destructive, or error controls;
-- animating width, height, top, left, margin, or padding when transform/opacity can express the same change;
-- adding animation to every section merely because the library is available.
+固定流程：
 
-**The Motion-Is-Legibility Rule.** 入场和位移动效只改变 `transform` 与 `opacity`。Every non-essential animation must honor `prefers-reduced-motion`; with reduced motion enabled, content appears immediately, animation and non-essential transitions stop, and no information may be lost.
+```text
+输入同一问题与时空 → 完成六爻起卦 → 生成六爻/六壬/奇门三盘 → 免费概览 → 整合深读
+```
 
-## 7. Accessibility and trust floor
+手机使用三术页签；桌面根据宽度使用三列或主盘切换。三术全部真实就绪前，正常路由诚实显示缺失能力，不用 Fixture 补齐。
 
-- Interactive targets are at least 44×44px.
-- Body text contrast targets WCAG AA; focus indicators remain clearly visible (3px terracotta outline with 3px offset on interactive controls).
-- Do not communicate certainty, payment state, error state, or verification state using color alone.
-- Forms always have visible labels, nearby helper/error text, and keyboard-complete interaction.
-- Dialogs, popovers, select controls, and tabs use tested primitives rather than hand-built focus management.
-- Loading, empty, error, pending-payment, generation, disabled, and reduced-motion states are part of the component definition; disabled controls always state the reason.
-- UI 只呈现服务端已经确认的状态；不伪造结果、古籍来源、成功付款、运营主体、评价、销量、备案号或支持渠道。
+### 8.5 多盘问答（已并入命盘合参）
 
-## 8. Do's and Don'ts
+2026-08-14 起，多盘问答不再是独立顶级入口，其「问题 → 立命 → 选择八字/紫微/七政 → 一问多盘结果 → 同根追问」流程作为命盘合参的带问题模式存在（见 §8.3）。原路由保留重定向，历史任务与报告链接不失效。
 
-### Do:
+### 8.6 见相
 
-- **Do** 让深墨封面、暖象牙纸张、细金线和少量陶土焦点形成清晰材料层级。
-- **Do** 在登录前讲清确定性核心、依据、边界与三个 P0 任务，并保留两项首屏行动和三项可信事实。
-- **Do** 让每个交互目标至少 44×44px，并为键盘焦点、标签、帮助和错误提供可见文本。
-- **Do** 用 `transform` / `opacity` 表达位移与入场，并完整支持 `prefers-reduced-motion`。
-- **Do** 把支付、权益、生成、校验与正文交付拆成诚实、可核对的状态。
+一个顶级入口，内部选择面相、手相、体态、综合观照：
 
-### Don't:
+- 面相预制正面与左右约 45 度拍摄/上传、光线、遮挡、角度、清晰度与重拍；
+- 手相预制左右掌、惯用手、掌形、掌丘、主线和辅助纹理观察；
+- 体态预制全身正面/侧面与用户问卷；照片无法确定的步态、声音等必须由用户输入；
+- 综合观照允许任意分支组合，分别呈现事实后再显示共同印证、分歧和证据充足度；
+- 相机拒绝时始终提供文件上传替代；
+- 原始图片、结构化观察和命理结论明确分层；
+- 分享永不包含原始照片或衍生标注图。
 
-- **Don't** 把首页改成聊天框、提示词输入框或一组尚未开放的十三体系入口。
-- **Don't** 把深墨段落误写成全站暗色模式，也不要引入通用紫蓝 AI 渐变、霓虹发光或大面积金色填充。
-- **Don't** 使用假书法、emoji 图标、龙庙火焰、算命摊意象或重复八卦壁纸制造“东方感”。
-- **Don't** 用嵌套卡片、厚边框或夸张阴影代替留白、纸色差和细分隔线。
-- **Don't** 只靠颜色表达错误、确定性、付款、验证或交付状态。
-- **Don't** 伪造结果、古籍来源、成功付款、运营主体、评价、销量、备案号或支持渠道。
+## 9. 报告与 ReadingDocument
 
-## 9. Required design workflow
+报告是一张连续阅读面，不用四层嵌套卡片假装层级。顺序为：
 
-1. Read this file and the relevant product contract before changing UI.
-2. For a new surface or major redesign, invoke `ui-ux-pro-max`, then use `impeccable` to shape or critique the direction.
-3. Implement with the existing tokens and approved component owners.
-4. For any motion work, invoke `fixing-motion-performance` before considering the work complete.
-5. Before handoff, invoke `web-design-guidelines` and `fixing-accessibility`; use `impeccable` for the final audit/polish pass on major surfaces.
-6. Verify at 360, 768, 1024, and 1440px, including reduced motion and keyboard navigation.
+1. 资料与盘面摘要；
+2. 一句话回答；
+3. 主题导航；
+4. 原子判断卡；
+5. 依据抽屉；
+6. 适用边界；
+7. 逐条现实核对；
+8. 资料纠正；
+9. 追问；
+10. 导出、分享和版本信息。
 
-Change tokens and shared primitives before adding page-local exceptions. If a new visual rule cannot be expressed through this contract, update this document deliberately instead of silently creating a second design system.
+模型只产出 `ReadingDocumentV1` 允许的短判断；栏目、盘面、证据正文、免责声明和按钮由服务端 PresentationContract 与前端 renderer 组装。Accepted 历史版本不可覆盖。
+
+事实核对与资料纠正必须分开。核对只追加 VerificationEvent，不进入模型或修改权重；资料纠正展示差异并创建新 ProfileVersion/盘面/报告。报告末尾另有整体反馈，分别询问清晰度、帮助程度和是否解决问题；它不替代逐条核对，也不能未经另行授权把正文、照片或身份资料用于训练。
+
+## 10. 账户与身份页面
+
+账户区结构（2026-08-14 起）：`/account` 重建为消费 App 式「我的」页——顶部身份卡（昵称/账号状态/权益摘要），宫格入口（受测人档案、推演历史、订单与权益、通知、账户设置、邀请有礼），下方最近交付与待处理事项；移动优先，桌面同构加宽。子页固定为：
+
+- 受测人档案；
+- 推演历史，按 ReadingRoot 和版本组织；
+- 订单与权益；
+- 通知；
+- 账户设置；
+- 邀请有礼，仅存在活动或历史时显示。
+
+报告属于推演历史，不另建重复报告库。第一版不做积分中心、余额钱包、会员等级或自动续费页面。
+
+全局登录弹层为主，另有邮件/安全操作可深链的 `/auth/*` 页面。注册按“OTP 核验 → 设置密码 → 同意政策版本”推进；默认密码登录，同时提供 OTP 快捷登录和找回密码。微信/Apple 只预制状态，适配器完成前不展示可用按钮。
+
+用户自己的姓名、手机号、邮箱和业务资料完整显示。公开邀请页只显示公开昵称/头像或“一位好友”。密码、验证码、Cookie、`state_token`、API Key 和其他系统秘密永不进入 UI。
+
+## 11. 商业、交付与邀请
+
+商业 UI 必须预制：
+
+```text
+no-offer / login-required / purchase-confirm / payment-pending
+payment-success / payment-failed / payment-expired / processing
+delivered / delayed / recoverable-failure / refund / reversed
+cross-device-recovery
+```
+
+无真实 Offer 时显示“测试期未开放”，不伪造商品、价格、付款成功或权益。客户端回跳只显示“确认中”，服务端支付事实到达后才改变权益和订单状态。
+
+邀请活动不占全局一级导航：
+
+- `/invite/{code}` 提供计划中、有效、暂停、满额、结束、无效和自邀状态；
+- 个人中心展示用户自己的归因、邀请进度、奖励、过期和冲正；
+- 首页只在活动有效且用户符合资格时显示临时卡；
+- 后台归入“商业运营 → 邀请活动”；
+- 不做公开排行榜、收益榜、虚假成交滚动或倒计时；
+- 活动订单的退款限制必须在订单确认和支付前主动勾选弹层中明确显示，邀请人也在活动页和奖励记录知情；
+- 邀请链接和二维码包含公开邀请码，不包含手机号、邮箱或真实姓名。
+
+## 12. Admin 设计合同
+
+Admin 是独立 `admin/` 应用和 Staff Session，与 C 端共享中性 Token，不共享大留白营销布局。
+
+一级六组：
+
+1. 总览；
+2. 用户与数据；
+3. 产品与内容；
+4. 排盘与解读；
+5. 商业运营；
+6. 系统与审计。
+
+布局：
+
+- 56–64px 顶栏；
+- 1024px 起使用 240px 固定侧栏；低于 1024px 使用抽屉；
+- 桌面高密度，但操作目标仍至少 44px；
+- 列表包含标题、筛选、表格/摘要行、分页、批量选择、详情抽屉和全部空/错/无权限状态；
+- 写操作使用明确确认弹层，显示影响对象、原因和审计结果；
+- 表格移动端优先转换为摘要行，不能让整个页面横滚。
+
+有权限员工可直接查看完整姓名、联系方式、生辰地点、档案、盘面、报告、订单、支付和权益；数据库静态存储继续加密。密码哈希、验证码、Cookie、Token、API Key、数据库口令、模型 Prompt 与系统秘密永不展示。
+
+Staff 固定为 support、finance、ops、superadmin 四类角色。隐藏按钮不是权限控制；每个无权限页面和写操作都有服务端拒绝与清楚的只读状态。
+
+## 13. 通用组件合同
+
+- `Button`：Primary、Secondary、Ghost、Destructive、Icon；最小 44px，主提交 48px；
+- `Field`：可见 Label、Hint、Error、Disabled reason、Required marker；输入控件 48px；
+- `SegmentedControl`：历法、性别、模式、时间层，完整键盘行为；
+- `Card`：普通、选择、摘要三类，默认无阴影；
+- `Dialog/Drawer/Popover/MegaMenu`：使用 Radix 管理焦点；
+- `Tabs`：工作台、双人合盘和移动盘面，支持方向键/Home/End；
+- `StatusPanel`：loading、empty、error、processing、success、unavailable、unauthorized、locked；
+- `Table`：排序、筛选、选择、分页和详情；宽表只在内部横滚；
+- `ChartBoard`：视觉盘面必须有同等信息的语义列表或表格替代；
+- `Toast`：只做短反馈；付款、生成、隐私、删除和重要错误不能只靠 Toast；
+- 表单使用 React Hook Form + Zod；复杂交互使用 Radix；图标只用 Lucide 功能图标或审核过的领域图形；
+- 动效只用 CSS 或 `motion/react`，不得混入第二套 Primitive 或动效系统。
+
+## 14. 状态与 Fixture 合同
+
+正常产品路由：已接 Runtime 时显示真实事实；未接时显示“适配中/暂不可用”；永不加载 Fixture。
+
+`/_ui-lab`：
+
+- 只在开发和测试环境开放，生产返回 404；
+- 顶部永久显示“UI 演示数据”；
+- Fixture 使用正式版本化 ViewModel；
+- 可按页面、状态、视口筛选；
+- 至少预制：
+
+```text
+pristine / filled / validation-error / submitting / loading / empty
+ready / free-summary / locked / need-login / need-input / queued
+preparing / generating / validating / accepted / delayed / failed
+follow-up / unauthorized / forbidden / unavailable / maintenance
+payment-confirming / payment-success / payment-failed / refund / reversed
+invite-planned / invite-active / invite-paused / invite-full
+invite-ended / invite-invalid / invite-self
+```
+
+UI 完成度与算法接入度分开记录；一个不能替代另一个。
+
+## 15. 动效
+
+- 普通反馈 120–180ms，浮层 180–240ms，页面切换上限 280ms；
+- 优先 opacity 与 transform，不动画布局尺寸；
+- 禁止常驻星环、漂浮字、滚动劫持、视差、发光和弹跳 CTA；
+- 付款、隐私、错误和删除不使用娱乐性动效；
+- `prefers-reduced-motion` 下关闭非必要动画，不丢信息、不延迟操作。
+
+## 16. 可访问性与信任
+
+目标为 WCAG 2.2 AA：
+
+- 所有操作目标至少 44×44px；
+- 键盘可完成导航、表单、菜单、抽屉、盘面切换、购买和后台操作；
+- 焦点环至少 2px，不能被 sticky 区域遮挡；
+- 表单有真实 Label、就近错误、顶部错误摘要和首错聚焦；
+- 状态变化使用 `aria-live`，错误使用 `role=alert`；
+- 复杂盘面有语义列表/表格和正确阅读顺序；
+- 200% 缩放不丢任务，400% 可按单列重排；
+- 相机拒绝、上传失败、删除和撤回同意都有键盘替代；
+- 每页有 Skip Link、唯一 `h1` 和可预测标题；
+- 用户数据、AI 标识、权益范围、保存期限和不可用原因必须直说，不用神秘化文案掩盖。
+
+## 17. 明确禁止
+
+- 在当前产品 UI 中使用 FateRadar 名称、旧域名、旧 Logo、墨绿金皮肤或东方编辑档案文案；
+- 把 13 Provider 做成 13 个产品页面或三术合参选项；
+- 浏览器排盘或移植参考站算法；
+- 展示 raw JSON、Provider payload、snake_case、内部引用、Prompt 或 `state_token`；
+- 未接能力展示假盘、假结论、假订单、假支付或假权益；
+- 把出生资料、问题正文或照片地址放进 URL；
+- 360px 硬塞四个日期时间控件；
+- 768px 强制 520px 盘面双栏；
+- 靠超小字、截断或页面横滚维持盘面；
+- 全局宋体、装饰书法、星空、八卦壁纸、玻璃拟态和多层阴影；
+- 用多层嵌套卡片替代信息层级；
+- 以前端隐藏 DOM 代替权益或 RBAC；
+- 用 DOM 存在、CSS 正则、单元测试或 checklist 勾选宣称 UI 完成。
+
+## 18. 真实浏览器验收
+
+每个公共页、用户页、产品流程和 Admin 页必须在 360、768、1024、1440 真实浏览器逐路点击。每条证据至少记录 route、state、viewport、Git SHA、截图/轨迹路径、测试结果和审阅日期。
+
+每个路由验证：
+
+- 首次加载与主要入口可发现；
+- 正常输入、校验、提交和返回；
+- loading、empty、error、unauthorized、unavailable；
+- 盘面重排、文字可读、无页面级横向溢出；
+- 键盘顺序、焦点、菜单、抽屉和弹层；
+- sticky 不遮挡内容或焦点；
+- reduced motion；
+- 与参考同视口并排检查页面比例与信息密度；
+- 正常路由无 Fixture、raw JSON 和旧品牌残留。
+
+双栏工作台必须实测右侧阅读区不小于 360px。自动化和截图是证据，用户亲自浏览批准才是 `USER_ACCEPTED`。本文的需求合同已经冻结；用户批准后，具体实现基线才进入 `USER_ACCEPTED`。此后改动必须在 `docs/CHECKLIST.md` 记录影响并重新验收。
