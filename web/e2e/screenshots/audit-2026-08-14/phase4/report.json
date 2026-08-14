@@ -1,0 +1,1205 @@
+{
+  "generatedAt": "2026-08-14T21:05:21.648Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "total": 44,
+  "passed": 44,
+  "failed": 0,
+  "results": [
+    {
+      "viewport": 360,
+      "route": "/bazi",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/bazi",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "八字：从出生资料建立四柱"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n八字：从出生资料建立四柱\n\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n\n适合处理\n长期结构、阶段节奏与个人资料建档\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n八字任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四柱与五行力量\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n时间口径与四柱摘要\n02\n年月日时四柱\n03\n十神、藏干、纳音、空亡、地势与自坐\n04\n神煞与特殊宫位\n05\n旺衰贡献\n06\n格局、喜忌与病药依据\n07\n大运、流年与关键流月\n08\n四柱图与五行力量\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/bazi",
+        "productId": "bazi",
+        "productName": "八字",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/360/bazi.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/ziwei",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/ziwei",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "紫微：从命宫进入十二宫"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n紫微：从命宫进入十二宫\n\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n\n适合处理\n角色结构、宫位主题与阶段观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n紫微任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n紫微专有：后续会单独确认闰月、命宫起法与四化版本。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n十二宫与四化\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n十二宫盘与宫位交互\n02\n主星、辅星与杂曜\n03\n三方四正\n04\n四化\n05\n格局与命宫摘要\n06\n大限、流年与可用时间层\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/ziwei",
+        "productId": "ziwei",
+        "productName": "紫微",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/360/ziwei.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/qizheng",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/qizheng",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "七政：用时间与地点建立星盘"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n七政：用时间与地点建立星盘\n\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n\n适合处理\n星曜位置、宫位结构与时限观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n七政任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n七政专有：地点将用于经纬度与时区校准，并保留坐标来源。\n\n出生经度\n\n东经为正，西经为负。\n\n出生纬度\n\n北纬为正，南纬为负。\n\n坐标来源\n\n例如城市地理编码、用户确认。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n星盘与十一曜\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n星盘\n02\n命度与身度\n03\n命盘格局\n04\n功能十二宫\n05\n十一曜宿度\n06\n恩用仇难\n07\n大限、小限与神煞落宫\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/qizheng",
+        "productId": "qizheng",
+        "productName": "七政",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/360/qizheng.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/liuyao",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/liuyao",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "六爻：围绕一件事记录起卦过程"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n六爻：围绕一件事记录起卦过程\n\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n\n适合处理\n边界清楚、时间明确的一事一问\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n六爻任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n起卦方式\n请选择\n三枚硬币\n手动记录\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六次过程与本卦变卦\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n问题与起卦依据\n02\n六次起卦过程\n03\n本卦与变卦\n04\n六爻、六亲与世应\n05\n动静、旬空、月日等事实\n06\n基础摘要与适用边界\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/liuyao",
+        "productId": "liuyao",
+        "productName": "六爻",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/360/liuyao.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/qimen",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/qimen",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "奇门：用问题与事件时空起局"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n奇门：用问题与事件时空起局\n\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n\n适合处理\n行动选择、局势判断与具体事件\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n奇门任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n场景侧重\n请选择\n行动选择\n局势判断\n时机观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n九宫与值符值使\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n阴遁、阳遁与局式\n02\n九宫\n03\n九星、八门与八神\n04\n值符与值使\n05\n用神锚点\n06\n关键格局与大局基调\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/qimen",
+        "productId": "qimen",
+        "productName": "奇门",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/360/qimen.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/daliuren",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/daliuren",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "大六壬：围绕明确问题建立课盘"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n大六壬：围绕明确问题建立课盘\n\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n\n适合处理\n人事进展、关系变化与事件推演\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n大六壬任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n事情进展\n人事关系\n结果观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四课三传\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n天地盘\n02\n四课\n03\n三传\n04\n九宗门\n05\n天将\n06\n课体候选\n07\n关键神煞与盘面综览\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/daliuren",
+        "productId": "daliuren",
+        "productName": "大六壬",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/360/daliuren.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/jianxiang",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/jianxiang",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "见相：先授权，再采集可核对观察"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n见相：先授权，再采集可核对观察\n\n选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n适合处理\n结构化视觉观察与用户补充信息\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n见相任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n当前不会提交到计算服务\n采集模式与独立同意\n观照模式\n面相\n手相\n体态\n综合观照\n\n各分支先分别呈现观察，再显示共同印证与分歧。\n\n照片处理独立同意\n我已了解原图、结构化观察和命理解读是三层不同数据，并可在提交前删除。\n保存到见相档案（另行同意）\n未勾选时只保留本次任务所需的短期媒体；当前页面不会执行保存。\n拍摄或上传照片\n\n相机被拒绝时始终可选文件。当前仅允许本地选择，不会上传或保存。\n\n相机采集待接入\n\n当前环境不会请求相机权限；请使用本地文件入口，拒绝权限不影响任务输入。\n\n尚未选择照片。\n\n选择见相照片\n用户补充信息\n\n照片无法确定的步态、声音或背景信息必须由用户明确补充，不由系统猜测。\n\n检查输入\n\n检查只发生在当前页面。继续后会在工作台明确显示未接入能力，不扣权益。\n\n结构化观察与证据充足度\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n原图采集与质量检查\n02\n版本化结构化观察\n03\n部位、区域与置信度\n04\n质量与证据充足度\n05\n用户补充信息\n06\n基础摘要与分享排除项\n真实能力适配中\n\n照片质量检查与视觉适配器尚未接入；现在不会上传或保存照片。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/jianxiang",
+        "productId": "jianxiang",
+        "productName": "见相",
+        "expectedState": "unavailable"
+      },
+      "jianxiangWorkbench": {
+        "gridTemplateColumns": "324px"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/360/jianxiang.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/hecan",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/hecan",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "命盘合参：八字、紫微、七政至少选两术"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n命盘合参：八字、紫微、七政至少选两术\n\n先立命，再按主理与参证选择术数，分开呈现互证、分歧和缺失；可带着具体问题进入（原多盘问答）。\n\n适合处理\n同一人的长期结构交叉核对\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n命盘合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n当前不会提交到计算服务\n立命与择术\n立命资料\n\n请输入已确认 ProfileVersion ID（UUID）；不会用名称或占位文字代替真实出生档案。\n\n至少选择两术（八字为主术，至少再选一术）\n\n当前结构接入固定八字为主术，再从紫微、七政中选择；各术结果不会被平均成一段话。\n\n八字\n时间结构\n紫微\n宫位参证\n七政\n星曜参证\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n互证、分歧与缺失\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n各术精简盘面\n02\n主理与参证信号\n03\n共同印证\n04\n分歧与适用边界\n05\n缺失能力\n06\n整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/hecan",
+        "productId": "hecan",
+        "productName": "命盘合参",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/360/hecan.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/wenshi",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/wenshi",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "问事合参：同一问题、同一时刻比较三盘"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n问事合参：同一问题、同一时刻比较三盘\n\n先完成六爻起卦，再生成大六壬与奇门，最后才做整合判断。\n\n适合处理\n需要三种事件术数交叉核对的同一问题\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n问事合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n同一问题与时空\n同一问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n同一事件时空\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六爻、大六壬与奇门\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n同一问题与时空\n02\n六爻先行起卦\n03\n六爻、大六壬与奇门三盘\n04\n三盘生成状态\n05\n共同信号与分歧\n06\n免费概览与整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/wenshi",
+        "productId": "wenshi",
+        "productName": "问事合参",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/360/wenshi.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/workbench/demo",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/workbench/demo",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "恢复任务"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n恢复任务\n\n这里仅用不透明句柄查找任务归属，再回到原产品路由。\n\n任务句柄\ndemo\n\nURL 不包含出生资料、问题正文、照片、性别或内部凭据。\n\n任务恢复服务尚未接入\n\n当前不会猜测任务类型或重建内容。服务接通后会解析并重定向回八字、六爻等所属产品路由。\n\n返回任务选择\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/360/workbench-demo.png",
+      "ok": true
+    },
+    {
+      "viewport": 360,
+      "route": "/_ui-lab",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/_ui-lab",
+      "layout": {
+        "scrollWidth": 360,
+        "innerWidth": 360,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 0,
+        "h1Count": 1,
+        "h1Text": [
+          "Web UI Lab"
+        ],
+        "bodyText": "跳到演示预览\nUI 演示数据\nFixture 只存在于本验收台，不代表真实算法、支付或权益\nWeb UI Lab\n\n在一个页面内检查路线、状态、身份、能力阶段与四档响应式。正常产品路由不会读取这里的数据。\n\nUI 完成度\n可验收\n\n页面壳可点击，仍需真实浏览器与用户验收。\n\n算法接入度\n未接入\n\n只使用明确标记的演示 Fixture。\n\n预览控制\n\n切换不会创建真实任务。\n\n页面与场景\n/ · 任务型首页\n/arts · 术数总览\n/daily · 每日\n/tools · 工具总览\n/tools/time-check · 寻时定盘\n/tools/chart-similarity · 同盘匹配\n/tools/rhythm · 本命音律\n/tools/five-elements · 五行喜忌\n/tools/dream · 解梦\n/tools/name · 姓名分析\n/library · 知识内容索引\n/library/[slug] · 公开文章模式\n/about · 关于与边界\n/pricing · 价格与交付\n/methodology · 方法与证据\n/support · 支持中心\n/privacy · 隐私政策\n/terms · 服务条款\n/bazi · 八字任务录入\n/bazi/hepan · 八字双人合盘\n/ziwei · 紫微任务录入\n/ziwei/hepan · 紫微双人合盘\n/qizheng · 七政任务录入\n/qizheng/hepan · 七政双人合盘\n/liuyao · 六爻任务录入\n/qimen · 奇门任务录入\n/daliuren · 大六壬任务录入\n/jianxiang · 见相任务录入\n/hecan · 命盘合参任务录入\n/wenshi · 问事合参任务录入\n/canwen · 多盘问答任务录入\n/workbench/[handle] · 任务恢复工作台\n/checkout/[orderId] · 订单结账\n/share/[shareId] · 限时分享\n/invite/[code] · 邀请活动落地页\n/auth/login · 登录\n/auth/register · 注册\n/auth/verify · 验证身份\n/auth/set-password · 设置密码\n/auth/recover · 找回账号\n/auth/consent · 政策同意\n/account · 个人中心\n/account/profiles · 受测人档案\n/account/profiles/[profileId] · 档案详情\n/account/history · 推演历史\n/account/history/[rootId] · 历史报告阅读\n/account/orders · 订单\n/account/entitlements · 权益\n/account/invitations · 邀请\n/account/notifications · 通知\n/account/settings · 设置\n/account/settings/security · 账户安全\n/account/settings/preferences · 通知偏好\n/account/settings/privacy-data · 隐私与数据\n/account/data-rights · 数据权利\n冻结路由库存\n\n点击任一路由模式，将同一组状态与视口控制应用到正式组件。\n\n公共与内容\n/\n任务型首页\n/arts\n术数总览\n/daily\n每日\n/tools\n工具总览\n/tools/time-check\n寻时定盘\n/tools/chart-similarity\n同盘匹配\n/tools/rhythm\n本命音律\n/tools/five-elements\n五行喜忌\n/tools/dream\n解梦\n/tools/name\n姓名分析\n/library\n知识内容索引\n/library/[slug]\n公开文章模式\n/about\n关于与边界\n/pricing\n价格与交付\n/methodology\n方法与证据\n/support\n支持中心\n/privacy\n隐私政策\n/terms\n服务条款\n产品与交付\n/bazi\n八字任务录入\n/bazi/hepan\n八字双人合盘\n/ziwei\n紫微任务录入\n/ziwei/hepan\n紫微双人合盘\n/qizheng\n七政任务录入\n/qizheng/hepan\n七政双人合盘\n/liuyao\n六爻任务录入\n/qimen\n奇门任务录入\n/daliuren\n大六壬任务录入\n/jianxiang\n见相任务录入\n/hecan\n命盘合参任务录入\n/wenshi\n问事合参任务录入\n/canwen\n多盘问答任务录入\n/workbench/[handle]\n任务恢复工作台\n/checkout/[orderId]\n订单结账\n/share/[shareId]\n限时分享\n/invite/[code]\n邀请活动落地页\n身份\n/auth/login\n登录\n/auth/register\n注册\n/auth/verify\n验证身份\n/auth/set-password\n设置密码\n/auth/recover\n找回账号\n/auth/consent\n政策同意\n账户\n/account\n个人中心\n/account/profiles\n受测人档案\n/account/profiles/[profileId]\n档案详情\n/account/history\n推演历史\n/account/history/[rootId]\n历史报告阅读\n/account/orders\n订单\n/account/entitlements\n权益\n/account/invitations\n邀请\n/account/notifications\n通知\n/account/settings\n设置\n/account/settings/security\n账户安全\n/account/settings/preferences\n通知偏好\n/account/settings/privacy-data\n隐私与数据\n/account/data-rights\n数据权利\n状态\n初始待填 · pristine\n已填写 · filled\n校验失败 · validation-error\n提交中 · submitting\n加载中 · loading\n暂无内容 · empty\n已就绪 · ready\n免费摘要 · free-summary\n相机权限未询问 · camera-prompt\n相机权限已允许 · camera-allowed\n相机权限被拒绝 · camera-denied\n本地照片已选择 · photo-selected\n照片裁切中 · photo-cropping\n照片旋转中 · photo-rotating\n照片质量不合格 · photo-quality-failed\n等待重拍 · photo-retake\n观察失败 · observation-failed\n观察处理中 · observation-processing\n原图即将过期 · source-expiring\n等待主动入档 · archive-consent\n原图删除中 · source-deleting\n原图已删除 · source-deleted\n原图已过期，结果可查看 · source-expired-result-ready\n已锁定 · locked\n需要登录 · need-login\n需要补充资料 · need-input\n登录已失效 · unauthorized\n无权访问 · forbidden\n已进入队列 · queued\n整理事实 · preparing\n生成解读 · generating\n文字校验 · validating\n已交付 · accepted\n交付延迟 · delayed\n处理失败 · failed\n可追问 · follow-up\n暂不可用 · unavailable\n维护中 · maintenance\n支付确认中 · payment-confirming\n支付成功 · payment-success\n支付失败 · payment-failed\n退款处理中 · refund\n已冲正 · reversed\n活动计划中 · invite-planned\n活动进行中 · invite-active\n活动已暂停 · invite-paused\n名额已满 · invite-full\n活动已结束 · invite-ended\n邀请无效 · invite-invalid\n不可自邀 · invite-self\n查看身份\n游客\n登录用户\n授权测试账号\n能力阶段\nUI 已预制\n算法适配中\n内部测试\n公开开放\n暂停服务\n预览宽度\n360\npx\n768\npx\n1024\npx\n1440\npx\n\n宽画布只在下方容器内滚动，不会让整页横向溢出。\n\n预览画布\n\n1024 px · 八字任务录入 · 初始待填\n\nUI 已预制\n演示 Fixture\n预览：八字任务录入\n\n使用正式 ProductInputForm 检查八字录入与校验。\n\nRoute\n/bazi\nSchema\nbazi-chart/v1\n来源\n正式 ViewModel registry\n身份\n游客\nUI\n可验收\n算法\n未接入\n当前演示状态\n概览：初始待填\npristine\n\n尚未填写或提交任何资料。\n\n八字任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n画布使用精确 CSS 宽度与容器查询；截图前仍需在真实浏览器验证浏览器栏、缩放、键盘和系统字体。"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/360/ui-lab.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/bazi",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/bazi",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "八字：从出生资料建立四柱"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n八字：从出生资料建立四柱\n\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n\n适合处理\n长期结构、阶段节奏与个人资料建档\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n八字任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四柱与五行力量\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n时间口径与四柱摘要\n02\n年月日时四柱\n03\n十神、藏干、纳音、空亡、地势与自坐\n04\n神煞与特殊宫位\n05\n旺衰贡献\n06\n格局、喜忌与病药依据\n07\n大运、流年与关键流月\n08\n四柱图与五行力量\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/bazi",
+        "productId": "bazi",
+        "productName": "八字",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/768/bazi.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/ziwei",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/ziwei",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "紫微：从命宫进入十二宫"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n紫微：从命宫进入十二宫\n\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n\n适合处理\n角色结构、宫位主题与阶段观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n紫微任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n紫微专有：后续会单独确认闰月、命宫起法与四化版本。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n十二宫与四化\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n十二宫盘与宫位交互\n02\n主星、辅星与杂曜\n03\n三方四正\n04\n四化\n05\n格局与命宫摘要\n06\n大限、流年与可用时间层\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/ziwei",
+        "productId": "ziwei",
+        "productName": "紫微",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/768/ziwei.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/qizheng",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/qizheng",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "七政：用时间与地点建立星盘"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n七政：用时间与地点建立星盘\n\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n\n适合处理\n星曜位置、宫位结构与时限观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n七政任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n七政专有：地点将用于经纬度与时区校准，并保留坐标来源。\n\n出生经度\n\n东经为正，西经为负。\n\n出生纬度\n\n北纬为正，南纬为负。\n\n坐标来源\n\n例如城市地理编码、用户确认。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n星盘与十一曜\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n星盘\n02\n命度与身度\n03\n命盘格局\n04\n功能十二宫\n05\n十一曜宿度\n06\n恩用仇难\n07\n大限、小限与神煞落宫\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/qizheng",
+        "productId": "qizheng",
+        "productName": "七政",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/768/qizheng.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/liuyao",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/liuyao",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "六爻：围绕一件事记录起卦过程"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n六爻：围绕一件事记录起卦过程\n\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n\n适合处理\n边界清楚、时间明确的一事一问\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n六爻任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n起卦方式\n请选择\n三枚硬币\n手动记录\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六次过程与本卦变卦\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n问题与起卦依据\n02\n六次起卦过程\n03\n本卦与变卦\n04\n六爻、六亲与世应\n05\n动静、旬空、月日等事实\n06\n基础摘要与适用边界\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/liuyao",
+        "productId": "liuyao",
+        "productName": "六爻",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/768/liuyao.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/qimen",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/qimen",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "奇门：用问题与事件时空起局"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n奇门：用问题与事件时空起局\n\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n\n适合处理\n行动选择、局势判断与具体事件\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n奇门任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n场景侧重\n请选择\n行动选择\n局势判断\n时机观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n九宫与值符值使\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n阴遁、阳遁与局式\n02\n九宫\n03\n九星、八门与八神\n04\n值符与值使\n05\n用神锚点\n06\n关键格局与大局基调\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/qimen",
+        "productId": "qimen",
+        "productName": "奇门",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/768/qimen.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/daliuren",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/daliuren",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "大六壬：围绕明确问题建立课盘"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n大六壬：围绕明确问题建立课盘\n\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n\n适合处理\n人事进展、关系变化与事件推演\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n大六壬任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n事情进展\n人事关系\n结果观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四课三传\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n天地盘\n02\n四课\n03\n三传\n04\n九宗门\n05\n天将\n06\n课体候选\n07\n关键神煞与盘面综览\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/daliuren",
+        "productId": "daliuren",
+        "productName": "大六壬",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/768/daliuren.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/jianxiang",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/jianxiang",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "见相：先授权，再采集可核对观察"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n见相：先授权，再采集可核对观察\n\n选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n适合处理\n结构化视觉观察与用户补充信息\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n见相任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n当前不会提交到计算服务\n采集模式与独立同意\n观照模式\n面相\n手相\n体态\n综合观照\n\n各分支先分别呈现观察，再显示共同印证与分歧。\n\n照片处理独立同意\n我已了解原图、结构化观察和命理解读是三层不同数据，并可在提交前删除。\n保存到见相档案（另行同意）\n未勾选时只保留本次任务所需的短期媒体；当前页面不会执行保存。\n拍摄或上传照片\n\n相机被拒绝时始终可选文件。当前仅允许本地选择，不会上传或保存。\n\n相机采集待接入\n\n当前环境不会请求相机权限；请使用本地文件入口，拒绝权限不影响任务输入。\n\n尚未选择照片。\n\n选择见相照片\n用户补充信息\n\n照片无法确定的步态、声音或背景信息必须由用户明确补充，不由系统猜测。\n\n检查输入\n\n检查只发生在当前页面。继续后会在工作台明确显示未接入能力，不扣权益。\n\n结构化观察与证据充足度\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n原图采集与质量检查\n02\n版本化结构化观察\n03\n部位、区域与置信度\n04\n质量与证据充足度\n05\n用户补充信息\n06\n基础摘要与分享排除项\n真实能力适配中\n\n照片质量检查与视觉适配器尚未接入；现在不会上传或保存照片。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/jianxiang",
+        "productId": "jianxiang",
+        "productName": "见相",
+        "expectedState": "unavailable"
+      },
+      "jianxiangWorkbench": {
+        "gridTemplateColumns": "704px"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/768/jianxiang.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/hecan",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/hecan",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "命盘合参：八字、紫微、七政至少选两术"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n命盘合参：八字、紫微、七政至少选两术\n\n先立命，再按主理与参证选择术数，分开呈现互证、分歧和缺失；可带着具体问题进入（原多盘问答）。\n\n适合处理\n同一人的长期结构交叉核对\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n命盘合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n当前不会提交到计算服务\n立命与择术\n立命资料\n\n请输入已确认 ProfileVersion ID（UUID）；不会用名称或占位文字代替真实出生档案。\n\n至少选择两术（八字为主术，至少再选一术）\n\n当前结构接入固定八字为主术，再从紫微、七政中选择；各术结果不会被平均成一段话。\n\n八字\n时间结构\n紫微\n宫位参证\n七政\n星曜参证\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n互证、分歧与缺失\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n各术精简盘面\n02\n主理与参证信号\n03\n共同印证\n04\n分歧与适用边界\n05\n缺失能力\n06\n整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/hecan",
+        "productId": "hecan",
+        "productName": "命盘合参",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/768/hecan.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/wenshi",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/wenshi",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "问事合参：同一问题、同一时刻比较三盘"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n问事合参：同一问题、同一时刻比较三盘\n\n先完成六爻起卦，再生成大六壬与奇门，最后才做整合判断。\n\n适合处理\n需要三种事件术数交叉核对的同一问题\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n问事合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n同一问题与时空\n同一问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n同一事件时空\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六爻、大六壬与奇门\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n同一问题与时空\n02\n六爻先行起卦\n03\n六爻、大六壬与奇门三盘\n04\n三盘生成状态\n05\n共同信号与分歧\n06\n免费概览与整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/wenshi",
+        "productId": "wenshi",
+        "productName": "问事合参",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/768/wenshi.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/workbench/demo",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/workbench/demo",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "恢复任务"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n恢复任务\n\n这里仅用不透明句柄查找任务归属，再回到原产品路由。\n\n任务句柄\ndemo\n\nURL 不包含出生资料、问题正文、照片、性别或内部凭据。\n\n任务恢复服务尚未接入\n\n当前不会猜测任务类型或重建内容。服务接通后会解析并重定向回八字、六爻等所属产品路由。\n\n返回任务选择\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/768/workbench-demo.png",
+      "ok": true
+    },
+    {
+      "viewport": 768,
+      "route": "/_ui-lab",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/_ui-lab",
+      "layout": {
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 0,
+        "h1Count": 1,
+        "h1Text": [
+          "Web UI Lab"
+        ],
+        "bodyText": "跳到演示预览\nUI 演示数据\nFixture 只存在于本验收台，不代表真实算法、支付或权益\nWeb UI Lab\n\n在一个页面内检查路线、状态、身份、能力阶段与四档响应式。正常产品路由不会读取这里的数据。\n\nUI 完成度\n可验收\n\n页面壳可点击，仍需真实浏览器与用户验收。\n\n算法接入度\n未接入\n\n只使用明确标记的演示 Fixture。\n\n预览控制\n\n切换不会创建真实任务。\n\n页面与场景\n/ · 任务型首页\n/arts · 术数总览\n/daily · 每日\n/tools · 工具总览\n/tools/time-check · 寻时定盘\n/tools/chart-similarity · 同盘匹配\n/tools/rhythm · 本命音律\n/tools/five-elements · 五行喜忌\n/tools/dream · 解梦\n/tools/name · 姓名分析\n/library · 知识内容索引\n/library/[slug] · 公开文章模式\n/about · 关于与边界\n/pricing · 价格与交付\n/methodology · 方法与证据\n/support · 支持中心\n/privacy · 隐私政策\n/terms · 服务条款\n/bazi · 八字任务录入\n/bazi/hepan · 八字双人合盘\n/ziwei · 紫微任务录入\n/ziwei/hepan · 紫微双人合盘\n/qizheng · 七政任务录入\n/qizheng/hepan · 七政双人合盘\n/liuyao · 六爻任务录入\n/qimen · 奇门任务录入\n/daliuren · 大六壬任务录入\n/jianxiang · 见相任务录入\n/hecan · 命盘合参任务录入\n/wenshi · 问事合参任务录入\n/canwen · 多盘问答任务录入\n/workbench/[handle] · 任务恢复工作台\n/checkout/[orderId] · 订单结账\n/share/[shareId] · 限时分享\n/invite/[code] · 邀请活动落地页\n/auth/login · 登录\n/auth/register · 注册\n/auth/verify · 验证身份\n/auth/set-password · 设置密码\n/auth/recover · 找回账号\n/auth/consent · 政策同意\n/account · 个人中心\n/account/profiles · 受测人档案\n/account/profiles/[profileId] · 档案详情\n/account/history · 推演历史\n/account/history/[rootId] · 历史报告阅读\n/account/orders · 订单\n/account/entitlements · 权益\n/account/invitations · 邀请\n/account/notifications · 通知\n/account/settings · 设置\n/account/settings/security · 账户安全\n/account/settings/preferences · 通知偏好\n/account/settings/privacy-data · 隐私与数据\n/account/data-rights · 数据权利\n冻结路由库存\n\n点击任一路由模式，将同一组状态与视口控制应用到正式组件。\n\n公共与内容\n/\n任务型首页\n/arts\n术数总览\n/daily\n每日\n/tools\n工具总览\n/tools/time-check\n寻时定盘\n/tools/chart-similarity\n同盘匹配\n/tools/rhythm\n本命音律\n/tools/five-elements\n五行喜忌\n/tools/dream\n解梦\n/tools/name\n姓名分析\n/library\n知识内容索引\n/library/[slug]\n公开文章模式\n/about\n关于与边界\n/pricing\n价格与交付\n/methodology\n方法与证据\n/support\n支持中心\n/privacy\n隐私政策\n/terms\n服务条款\n产品与交付\n/bazi\n八字任务录入\n/bazi/hepan\n八字双人合盘\n/ziwei\n紫微任务录入\n/ziwei/hepan\n紫微双人合盘\n/qizheng\n七政任务录入\n/qizheng/hepan\n七政双人合盘\n/liuyao\n六爻任务录入\n/qimen\n奇门任务录入\n/daliuren\n大六壬任务录入\n/jianxiang\n见相任务录入\n/hecan\n命盘合参任务录入\n/wenshi\n问事合参任务录入\n/canwen\n多盘问答任务录入\n/workbench/[handle]\n任务恢复工作台\n/checkout/[orderId]\n订单结账\n/share/[shareId]\n限时分享\n/invite/[code]\n邀请活动落地页\n身份\n/auth/login\n登录\n/auth/register\n注册\n/auth/verify\n验证身份\n/auth/set-password\n设置密码\n/auth/recover\n找回账号\n/auth/consent\n政策同意\n账户\n/account\n个人中心\n/account/profiles\n受测人档案\n/account/profiles/[profileId]\n档案详情\n/account/history\n推演历史\n/account/history/[rootId]\n历史报告阅读\n/account/orders\n订单\n/account/entitlements\n权益\n/account/invitations\n邀请\n/account/notifications\n通知\n/account/settings\n设置\n/account/settings/security\n账户安全\n/account/settings/preferences\n通知偏好\n/account/settings/privacy-data\n隐私与数据\n/account/data-rights\n数据权利\n状态\n初始待填 · pristine\n已填写 · filled\n校验失败 · validation-error\n提交中 · submitting\n加载中 · loading\n暂无内容 · empty\n已就绪 · ready\n免费摘要 · free-summary\n相机权限未询问 · camera-prompt\n相机权限已允许 · camera-allowed\n相机权限被拒绝 · camera-denied\n本地照片已选择 · photo-selected\n照片裁切中 · photo-cropping\n照片旋转中 · photo-rotating\n照片质量不合格 · photo-quality-failed\n等待重拍 · photo-retake\n观察失败 · observation-failed\n观察处理中 · observation-processing\n原图即将过期 · source-expiring\n等待主动入档 · archive-consent\n原图删除中 · source-deleting\n原图已删除 · source-deleted\n原图已过期，结果可查看 · source-expired-result-ready\n已锁定 · locked\n需要登录 · need-login\n需要补充资料 · need-input\n登录已失效 · unauthorized\n无权访问 · forbidden\n已进入队列 · queued\n整理事实 · preparing\n生成解读 · generating\n文字校验 · validating\n已交付 · accepted\n交付延迟 · delayed\n处理失败 · failed\n可追问 · follow-up\n暂不可用 · unavailable\n维护中 · maintenance\n支付确认中 · payment-confirming\n支付成功 · payment-success\n支付失败 · payment-failed\n退款处理中 · refund\n已冲正 · reversed\n活动计划中 · invite-planned\n活动进行中 · invite-active\n活动已暂停 · invite-paused\n名额已满 · invite-full\n活动已结束 · invite-ended\n邀请无效 · invite-invalid\n不可自邀 · invite-self\n查看身份\n游客\n登录用户\n授权测试账号\n能力阶段\nUI 已预制\n算法适配中\n内部测试\n公开开放\n暂停服务\n预览宽度\n360\npx\n768\npx\n1024\npx\n1440\npx\n\n宽画布只在下方容器内滚动，不会让整页横向溢出。\n\n预览画布\n\n1024 px · 八字任务录入 · 初始待填\n\nUI 已预制\n演示 Fixture\n预览：八字任务录入\n\n使用正式 ProductInputForm 检查八字录入与校验。\n\nRoute\n/bazi\nSchema\nbazi-chart/v1\n来源\n正式 ViewModel registry\n身份\n游客\nUI\n可验收\n算法\n未接入\n当前演示状态\n概览：初始待填\npristine\n\n尚未填写或提交任何资料。\n\n八字任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n画布使用精确 CSS 宽度与容器查询；截图前仍需在真实浏览器验证浏览器栏、缩放、键盘和系统字体。"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/768/ui-lab.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/bazi",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/bazi",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "八字：从出生资料建立四柱"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n八字：从出生资料建立四柱\n\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n\n适合处理\n长期结构、阶段节奏与个人资料建档\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n八字任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四柱与五行力量\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n时间口径与四柱摘要\n02\n年月日时四柱\n03\n十神、藏干、纳音、空亡、地势与自坐\n04\n神煞与特殊宫位\n05\n旺衰贡献\n06\n格局、喜忌与病药依据\n07\n大运、流年与关键流月\n08\n四柱图与五行力量\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/bazi",
+        "productId": "bazi",
+        "productName": "八字",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1024/bazi.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/ziwei",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/ziwei",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "紫微：从命宫进入十二宫"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n紫微：从命宫进入十二宫\n\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n\n适合处理\n角色结构、宫位主题与阶段观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n紫微任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n紫微专有：后续会单独确认闰月、命宫起法与四化版本。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n十二宫与四化\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n十二宫盘与宫位交互\n02\n主星、辅星与杂曜\n03\n三方四正\n04\n四化\n05\n格局与命宫摘要\n06\n大限、流年与可用时间层\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/ziwei",
+        "productId": "ziwei",
+        "productName": "紫微",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1024/ziwei.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/qizheng",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/qizheng",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "七政：用时间与地点建立星盘"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n七政：用时间与地点建立星盘\n\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n\n适合处理\n星曜位置、宫位结构与时限观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n七政任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n七政专有：地点将用于经纬度与时区校准，并保留坐标来源。\n\n出生经度\n\n东经为正，西经为负。\n\n出生纬度\n\n北纬为正，南纬为负。\n\n坐标来源\n\n例如城市地理编码、用户确认。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n星盘与十一曜\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n星盘\n02\n命度与身度\n03\n命盘格局\n04\n功能十二宫\n05\n十一曜宿度\n06\n恩用仇难\n07\n大限、小限与神煞落宫\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/qizheng",
+        "productId": "qizheng",
+        "productName": "七政",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1024/qizheng.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/liuyao",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/liuyao",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "六爻：围绕一件事记录起卦过程"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n六爻：围绕一件事记录起卦过程\n\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n\n适合处理\n边界清楚、时间明确的一事一问\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n六爻任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n起卦方式\n请选择\n三枚硬币\n手动记录\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六次过程与本卦变卦\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n问题与起卦依据\n02\n六次起卦过程\n03\n本卦与变卦\n04\n六爻、六亲与世应\n05\n动静、旬空、月日等事实\n06\n基础摘要与适用边界\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/liuyao",
+        "productId": "liuyao",
+        "productName": "六爻",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1024/liuyao.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/qimen",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/qimen",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "奇门：用问题与事件时空起局"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n奇门：用问题与事件时空起局\n\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n\n适合处理\n行动选择、局势判断与具体事件\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n奇门任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n场景侧重\n请选择\n行动选择\n局势判断\n时机观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n九宫与值符值使\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n阴遁、阳遁与局式\n02\n九宫\n03\n九星、八门与八神\n04\n值符与值使\n05\n用神锚点\n06\n关键格局与大局基调\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/qimen",
+        "productId": "qimen",
+        "productName": "奇门",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1024/qimen.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/daliuren",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/daliuren",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "大六壬：围绕明确问题建立课盘"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n大六壬：围绕明确问题建立课盘\n\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n\n适合处理\n人事进展、关系变化与事件推演\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n大六壬任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n事情进展\n人事关系\n结果观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四课三传\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n天地盘\n02\n四课\n03\n三传\n04\n九宗门\n05\n天将\n06\n课体候选\n07\n关键神煞与盘面综览\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/daliuren",
+        "productId": "daliuren",
+        "productName": "大六壬",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1024/daliuren.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/jianxiang",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/jianxiang",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "见相：先授权，再采集可核对观察"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n见相：先授权，再采集可核对观察\n\n选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n适合处理\n结构化视觉观察与用户补充信息\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n见相任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n当前不会提交到计算服务\n采集模式与独立同意\n观照模式\n面相\n手相\n体态\n综合观照\n\n各分支先分别呈现观察，再显示共同印证与分歧。\n\n照片处理独立同意\n我已了解原图、结构化观察和命理解读是三层不同数据，并可在提交前删除。\n保存到见相档案（另行同意）\n未勾选时只保留本次任务所需的短期媒体；当前页面不会执行保存。\n拍摄或上传照片\n\n相机被拒绝时始终可选文件。当前仅允许本地选择，不会上传或保存。\n\n相机采集待接入\n\n当前环境不会请求相机权限；请使用本地文件入口，拒绝权限不影响任务输入。\n\n尚未选择照片。\n\n选择见相照片\n用户补充信息\n\n照片无法确定的步态、声音或背景信息必须由用户明确补充，不由系统猜测。\n\n检查输入\n\n检查只发生在当前页面。继续后会在工作台明确显示未接入能力，不扣权益。\n\n结构化观察与证据充足度\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n原图采集与质量检查\n02\n版本化结构化观察\n03\n部位、区域与置信度\n04\n质量与证据充足度\n05\n用户补充信息\n06\n基础摘要与分享排除项\n真实能力适配中\n\n照片质量检查与视觉适配器尚未接入；现在不会上传或保存照片。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/jianxiang",
+        "productId": "jianxiang",
+        "productName": "见相",
+        "expectedState": "unavailable"
+      },
+      "jianxiangWorkbench": {
+        "gridTemplateColumns": "520px 416px"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1024/jianxiang.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/hecan",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/hecan",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "命盘合参：八字、紫微、七政至少选两术"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n命盘合参：八字、紫微、七政至少选两术\n\n先立命，再按主理与参证选择术数，分开呈现互证、分歧和缺失；可带着具体问题进入（原多盘问答）。\n\n适合处理\n同一人的长期结构交叉核对\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n命盘合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n当前不会提交到计算服务\n立命与择术\n立命资料\n\n请输入已确认 ProfileVersion ID（UUID）；不会用名称或占位文字代替真实出生档案。\n\n至少选择两术（八字为主术，至少再选一术）\n\n当前结构接入固定八字为主术，再从紫微、七政中选择；各术结果不会被平均成一段话。\n\n八字\n时间结构\n紫微\n宫位参证\n七政\n星曜参证\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n互证、分歧与缺失\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n各术精简盘面\n02\n主理与参证信号\n03\n共同印证\n04\n分歧与适用边界\n05\n缺失能力\n06\n整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/hecan",
+        "productId": "hecan",
+        "productName": "命盘合参",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1024/hecan.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/wenshi",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/wenshi",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "问事合参：同一问题、同一时刻比较三盘"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n问事合参：同一问题、同一时刻比较三盘\n\n先完成六爻起卦，再生成大六壬与奇门，最后才做整合判断。\n\n适合处理\n需要三种事件术数交叉核对的同一问题\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n问事合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n同一问题与时空\n同一问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n同一事件时空\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六爻、大六壬与奇门\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n同一问题与时空\n02\n六爻先行起卦\n03\n六爻、大六壬与奇门三盘\n04\n三盘生成状态\n05\n共同信号与分歧\n06\n免费概览与整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/wenshi",
+        "productId": "wenshi",
+        "productName": "问事合参",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1024/wenshi.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/workbench/demo",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/workbench/demo",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "恢复任务"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n恢复任务\n\n这里仅用不透明句柄查找任务归属，再回到原产品路由。\n\n任务句柄\ndemo\n\nURL 不包含出生资料、问题正文、照片、性别或内部凭据。\n\n任务恢复服务尚未接入\n\n当前不会猜测任务类型或重建内容。服务接通后会解析并重定向回八字、六爻等所属产品路由。\n\n返回任务选择\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1024/workbench-demo.png",
+      "ok": true
+    },
+    {
+      "viewport": 1024,
+      "route": "/_ui-lab",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/_ui-lab",
+      "layout": {
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 0,
+        "h1Count": 1,
+        "h1Text": [
+          "Web UI Lab"
+        ],
+        "bodyText": "跳到演示预览\nUI 演示数据\nFixture 只存在于本验收台，不代表真实算法、支付或权益\nWeb UI Lab\n\n在一个页面内检查路线、状态、身份、能力阶段与四档响应式。正常产品路由不会读取这里的数据。\n\nUI 完成度\n可验收\n\n页面壳可点击，仍需真实浏览器与用户验收。\n\n算法接入度\n未接入\n\n只使用明确标记的演示 Fixture。\n\n预览控制\n\n切换不会创建真实任务。\n\n页面与场景\n/ · 任务型首页\n/arts · 术数总览\n/daily · 每日\n/tools · 工具总览\n/tools/time-check · 寻时定盘\n/tools/chart-similarity · 同盘匹配\n/tools/rhythm · 本命音律\n/tools/five-elements · 五行喜忌\n/tools/dream · 解梦\n/tools/name · 姓名分析\n/library · 知识内容索引\n/library/[slug] · 公开文章模式\n/about · 关于与边界\n/pricing · 价格与交付\n/methodology · 方法与证据\n/support · 支持中心\n/privacy · 隐私政策\n/terms · 服务条款\n/bazi · 八字任务录入\n/bazi/hepan · 八字双人合盘\n/ziwei · 紫微任务录入\n/ziwei/hepan · 紫微双人合盘\n/qizheng · 七政任务录入\n/qizheng/hepan · 七政双人合盘\n/liuyao · 六爻任务录入\n/qimen · 奇门任务录入\n/daliuren · 大六壬任务录入\n/jianxiang · 见相任务录入\n/hecan · 命盘合参任务录入\n/wenshi · 问事合参任务录入\n/canwen · 多盘问答任务录入\n/workbench/[handle] · 任务恢复工作台\n/checkout/[orderId] · 订单结账\n/share/[shareId] · 限时分享\n/invite/[code] · 邀请活动落地页\n/auth/login · 登录\n/auth/register · 注册\n/auth/verify · 验证身份\n/auth/set-password · 设置密码\n/auth/recover · 找回账号\n/auth/consent · 政策同意\n/account · 个人中心\n/account/profiles · 受测人档案\n/account/profiles/[profileId] · 档案详情\n/account/history · 推演历史\n/account/history/[rootId] · 历史报告阅读\n/account/orders · 订单\n/account/entitlements · 权益\n/account/invitations · 邀请\n/account/notifications · 通知\n/account/settings · 设置\n/account/settings/security · 账户安全\n/account/settings/preferences · 通知偏好\n/account/settings/privacy-data · 隐私与数据\n/account/data-rights · 数据权利\n冻结路由库存\n\n点击任一路由模式，将同一组状态与视口控制应用到正式组件。\n\n公共与内容\n/\n任务型首页\n/arts\n术数总览\n/daily\n每日\n/tools\n工具总览\n/tools/time-check\n寻时定盘\n/tools/chart-similarity\n同盘匹配\n/tools/rhythm\n本命音律\n/tools/five-elements\n五行喜忌\n/tools/dream\n解梦\n/tools/name\n姓名分析\n/library\n知识内容索引\n/library/[slug]\n公开文章模式\n/about\n关于与边界\n/pricing\n价格与交付\n/methodology\n方法与证据\n/support\n支持中心\n/privacy\n隐私政策\n/terms\n服务条款\n产品与交付\n/bazi\n八字任务录入\n/bazi/hepan\n八字双人合盘\n/ziwei\n紫微任务录入\n/ziwei/hepan\n紫微双人合盘\n/qizheng\n七政任务录入\n/qizheng/hepan\n七政双人合盘\n/liuyao\n六爻任务录入\n/qimen\n奇门任务录入\n/daliuren\n大六壬任务录入\n/jianxiang\n见相任务录入\n/hecan\n命盘合参任务录入\n/wenshi\n问事合参任务录入\n/canwen\n多盘问答任务录入\n/workbench/[handle]\n任务恢复工作台\n/checkout/[orderId]\n订单结账\n/share/[shareId]\n限时分享\n/invite/[code]\n邀请活动落地页\n身份\n/auth/login\n登录\n/auth/register\n注册\n/auth/verify\n验证身份\n/auth/set-password\n设置密码\n/auth/recover\n找回账号\n/auth/consent\n政策同意\n账户\n/account\n个人中心\n/account/profiles\n受测人档案\n/account/profiles/[profileId]\n档案详情\n/account/history\n推演历史\n/account/history/[rootId]\n历史报告阅读\n/account/orders\n订单\n/account/entitlements\n权益\n/account/invitations\n邀请\n/account/notifications\n通知\n/account/settings\n设置\n/account/settings/security\n账户安全\n/account/settings/preferences\n通知偏好\n/account/settings/privacy-data\n隐私与数据\n/account/data-rights\n数据权利\n状态\n初始待填 · pristine\n已填写 · filled\n校验失败 · validation-error\n提交中 · submitting\n加载中 · loading\n暂无内容 · empty\n已就绪 · ready\n免费摘要 · free-summary\n相机权限未询问 · camera-prompt\n相机权限已允许 · camera-allowed\n相机权限被拒绝 · camera-denied\n本地照片已选择 · photo-selected\n照片裁切中 · photo-cropping\n照片旋转中 · photo-rotating\n照片质量不合格 · photo-quality-failed\n等待重拍 · photo-retake\n观察失败 · observation-failed\n观察处理中 · observation-processing\n原图即将过期 · source-expiring\n等待主动入档 · archive-consent\n原图删除中 · source-deleting\n原图已删除 · source-deleted\n原图已过期，结果可查看 · source-expired-result-ready\n已锁定 · locked\n需要登录 · need-login\n需要补充资料 · need-input\n登录已失效 · unauthorized\n无权访问 · forbidden\n已进入队列 · queued\n整理事实 · preparing\n生成解读 · generating\n文字校验 · validating\n已交付 · accepted\n交付延迟 · delayed\n处理失败 · failed\n可追问 · follow-up\n暂不可用 · unavailable\n维护中 · maintenance\n支付确认中 · payment-confirming\n支付成功 · payment-success\n支付失败 · payment-failed\n退款处理中 · refund\n已冲正 · reversed\n活动计划中 · invite-planned\n活动进行中 · invite-active\n活动已暂停 · invite-paused\n名额已满 · invite-full\n活动已结束 · invite-ended\n邀请无效 · invite-invalid\n不可自邀 · invite-self\n查看身份\n游客\n登录用户\n授权测试账号\n能力阶段\nUI 已预制\n算法适配中\n内部测试\n公开开放\n暂停服务\n预览宽度\n360\npx\n768\npx\n1024\npx\n1440\npx\n\n宽画布只在下方容器内滚动，不会让整页横向溢出。\n\n预览画布\n\n1024 px · 八字任务录入 · 初始待填\n\nUI 已预制\n演示 Fixture\n预览：八字任务录入\n\n使用正式 ProductInputForm 检查八字录入与校验。\n\nRoute\n/bazi\nSchema\nbazi-chart/v1\n来源\n正式 ViewModel registry\n身份\n游客\nUI\n可验收\n算法\n未接入\n当前演示状态\n概览：初始待填\npristine\n\n尚未填写或提交任何资料。\n\n八字任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n画布使用精确 CSS 宽度与容器查询；截图前仍需在真实浏览器验证浏览器栏、缩放、键盘和系统字体。"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1024/ui-lab.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/bazi",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/bazi",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "八字：从出生资料建立四柱"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n八字：从出生资料建立四柱\n\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n\n适合处理\n长期结构、阶段节奏与个人资料建档\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n八字任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四柱与五行力量\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n时间口径与四柱摘要\n02\n年月日时四柱\n03\n十神、藏干、纳音、空亡、地势与自坐\n04\n神煞与特殊宫位\n05\n旺衰贡献\n06\n格局、喜忌与病药依据\n07\n大运、流年与关键流月\n08\n四柱图与五行力量\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/bazi",
+        "productId": "bazi",
+        "productName": "八字",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1440/bazi.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/ziwei",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/ziwei",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "紫微：从命宫进入十二宫"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n紫微：从命宫进入十二宫\n\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n\n适合处理\n角色结构、宫位主题与阶段观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n紫微任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n紫微专有：后续会单独确认闰月、命宫起法与四化版本。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n十二宫与四化\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n十二宫盘与宫位交互\n02\n主星、辅星与杂曜\n03\n三方四正\n04\n四化\n05\n格局与命宫摘要\n06\n大限、流年与可用时间层\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/ziwei",
+        "productId": "ziwei",
+        "productName": "紫微",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1440/ziwei.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/qizheng",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/qizheng",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "七政：用时间与地点建立星盘"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n七政：用时间与地点建立星盘\n\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n\n适合处理\n星曜位置、宫位结构与时限观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n七政任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n七政专有：地点将用于经纬度与时区校准，并保留坐标来源。\n\n出生经度\n\n东经为正，西经为负。\n\n出生纬度\n\n北纬为正，南纬为负。\n\n坐标来源\n\n例如城市地理编码、用户确认。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n星盘与十一曜\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n星盘\n02\n命度与身度\n03\n命盘格局\n04\n功能十二宫\n05\n十一曜宿度\n06\n恩用仇难\n07\n大限、小限与神煞落宫\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/qizheng",
+        "productId": "qizheng",
+        "productName": "七政",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1440/qizheng.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/liuyao",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/liuyao",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "六爻：围绕一件事记录起卦过程"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n六爻：围绕一件事记录起卦过程\n\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n\n适合处理\n边界清楚、时间明确的一事一问\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n六爻任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n起卦方式\n请选择\n三枚硬币\n手动记录\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六次过程与本卦变卦\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n问题与起卦依据\n02\n六次起卦过程\n03\n本卦与变卦\n04\n六爻、六亲与世应\n05\n动静、旬空、月日等事实\n06\n基础摘要与适用边界\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/liuyao",
+        "productId": "liuyao",
+        "productName": "六爻",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1440/liuyao.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/qimen",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/qimen",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "奇门：用问题与事件时空起局"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n奇门：用问题与事件时空起局\n\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n\n适合处理\n行动选择、局势判断与具体事件\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n奇门任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n场景侧重\n请选择\n行动选择\n局势判断\n时机观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n九宫与值符值使\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n阴遁、阳遁与局式\n02\n九宫\n03\n九星、八门与八神\n04\n值符与值使\n05\n用神锚点\n06\n关键格局与大局基调\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/qimen",
+        "productId": "qimen",
+        "productName": "奇门",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1440/qimen.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/daliuren",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/daliuren",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "大六壬：围绕明确问题建立课盘"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n大六壬：围绕明确问题建立课盘\n\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n\n适合处理\n人事进展、关系变化与事件推演\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n大六壬任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n事情进展\n人事关系\n结果观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四课三传\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n天地盘\n02\n四课\n03\n三传\n04\n九宗门\n05\n天将\n06\n课体候选\n07\n关键神煞与盘面综览\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/daliuren",
+        "productId": "daliuren",
+        "productName": "大六壬",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1440/daliuren.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/jianxiang",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/jianxiang",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "见相：先授权，再采集可核对观察"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n见相：先授权，再采集可核对观察\n\n选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n适合处理\n结构化视觉观察与用户补充信息\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n见相任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n当前不会提交到计算服务\n采集模式与独立同意\n观照模式\n面相\n手相\n体态\n综合观照\n\n各分支先分别呈现观察，再显示共同印证与分歧。\n\n照片处理独立同意\n我已了解原图、结构化观察和命理解读是三层不同数据，并可在提交前删除。\n保存到见相档案（另行同意）\n未勾选时只保留本次任务所需的短期媒体；当前页面不会执行保存。\n拍摄或上传照片\n\n相机被拒绝时始终可选文件。当前仅允许本地选择，不会上传或保存。\n\n相机采集待接入\n\n当前环境不会请求相机权限；请使用本地文件入口，拒绝权限不影响任务输入。\n\n尚未选择照片。\n\n选择见相照片\n用户补充信息\n\n照片无法确定的步态、声音或背景信息必须由用户明确补充，不由系统猜测。\n\n检查输入\n\n检查只发生在当前页面。继续后会在工作台明确显示未接入能力，不扣权益。\n\n结构化观察与证据充足度\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n原图采集与质量检查\n02\n版本化结构化观察\n03\n部位、区域与置信度\n04\n质量与证据充足度\n05\n用户补充信息\n06\n基础摘要与分享排除项\n真实能力适配中\n\n照片质量检查与视觉适配器尚未接入；现在不会上传或保存照片。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/jianxiang",
+        "productId": "jianxiang",
+        "productName": "见相",
+        "expectedState": "unavailable"
+      },
+      "jianxiangWorkbench": {
+        "gridTemplateColumns": "520px 616px"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1440/jianxiang.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/hecan",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/hecan",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "命盘合参：八字、紫微、七政至少选两术"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n命盘合参：八字、紫微、七政至少选两术\n\n先立命，再按主理与参证选择术数，分开呈现互证、分歧和缺失；可带着具体问题进入（原多盘问答）。\n\n适合处理\n同一人的长期结构交叉核对\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n命盘合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n当前不会提交到计算服务\n立命与择术\n立命资料\n\n请输入已确认 ProfileVersion ID（UUID）；不会用名称或占位文字代替真实出生档案。\n\n至少选择两术（八字为主术，至少再选一术）\n\n当前结构接入固定八字为主术，再从紫微、七政中选择；各术结果不会被平均成一段话。\n\n八字\n时间结构\n紫微\n宫位参证\n七政\n星曜参证\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n互证、分歧与缺失\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n各术精简盘面\n02\n主理与参证信号\n03\n共同印证\n04\n分歧与适用边界\n05\n缺失能力\n06\n整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/hecan",
+        "productId": "hecan",
+        "productName": "命盘合参",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1440/hecan.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/wenshi",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/wenshi",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "问事合参：同一问题、同一时刻比较三盘"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n问事合参：同一问题、同一时刻比较三盘\n\n先完成六爻起卦，再生成大六壬与奇门，最后才做整合判断。\n\n适合处理\n需要三种事件术数交叉核对的同一问题\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n问事合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n同一问题与时空\n同一问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n同一事件时空\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六爻、大六壬与奇门\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n同一问题与时空\n02\n六爻先行起卦\n03\n六爻、大六壬与奇门三盘\n04\n三盘生成状态\n05\n共同信号与分歧\n06\n免费概览与整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "product": {
+        "route": "/wenshi",
+        "productId": "wenshi",
+        "productName": "问事合参",
+        "expectedState": "success"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1440/wenshi.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/workbench/demo",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/workbench/demo",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 1,
+        "h1Count": 1,
+        "h1Text": [
+          "恢复任务"
+        ],
+        "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n恢复任务\n\n这里仅用不透明句柄查找任务归属，再回到原产品路由。\n\n任务句柄\ndemo\n\nURL 不包含出生资料、问题正文、照片、性别或内部凭据。\n\n任务恢复服务尚未接入\n\n当前不会猜测任务类型或重建内容。服务接通后会解析并重定向回八字、六爻等所属产品路由。\n\n返回任务选择\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1440/workbench-demo.png",
+      "ok": true
+    },
+    {
+      "viewport": 1440,
+      "route": "/_ui-lab",
+      "failures": [],
+      "httpStatus": 200,
+      "finalPathname": "/_ui-lab",
+      "layout": {
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "overflow": 0
+      },
+      "landmarks": {
+        "mainCount": 0,
+        "h1Count": 1,
+        "h1Text": [
+          "Web UI Lab"
+        ],
+        "bodyText": "跳到演示预览\nUI 演示数据\nFixture 只存在于本验收台，不代表真实算法、支付或权益\nWeb UI Lab\n\n在一个页面内检查路线、状态、身份、能力阶段与四档响应式。正常产品路由不会读取这里的数据。\n\nUI 完成度\n可验收\n\n页面壳可点击，仍需真实浏览器与用户验收。\n\n算法接入度\n未接入\n\n只使用明确标记的演示 Fixture。\n\n预览控制\n\n切换不会创建真实任务。\n\n页面与场景\n/ · 任务型首页\n/arts · 术数总览\n/daily · 每日\n/tools · 工具总览\n/tools/time-check · 寻时定盘\n/tools/chart-similarity · 同盘匹配\n/tools/rhythm · 本命音律\n/tools/five-elements · 五行喜忌\n/tools/dream · 解梦\n/tools/name · 姓名分析\n/library · 知识内容索引\n/library/[slug] · 公开文章模式\n/about · 关于与边界\n/pricing · 价格与交付\n/methodology · 方法与证据\n/support · 支持中心\n/privacy · 隐私政策\n/terms · 服务条款\n/bazi · 八字任务录入\n/bazi/hepan · 八字双人合盘\n/ziwei · 紫微任务录入\n/ziwei/hepan · 紫微双人合盘\n/qizheng · 七政任务录入\n/qizheng/hepan · 七政双人合盘\n/liuyao · 六爻任务录入\n/qimen · 奇门任务录入\n/daliuren · 大六壬任务录入\n/jianxiang · 见相任务录入\n/hecan · 命盘合参任务录入\n/wenshi · 问事合参任务录入\n/canwen · 多盘问答任务录入\n/workbench/[handle] · 任务恢复工作台\n/checkout/[orderId] · 订单结账\n/share/[shareId] · 限时分享\n/invite/[code] · 邀请活动落地页\n/auth/login · 登录\n/auth/register · 注册\n/auth/verify · 验证身份\n/auth/set-password · 设置密码\n/auth/recover · 找回账号\n/auth/consent · 政策同意\n/account · 个人中心\n/account/profiles · 受测人档案\n/account/profiles/[profileId] · 档案详情\n/account/history · 推演历史\n/account/history/[rootId] · 历史报告阅读\n/account/orders · 订单\n/account/entitlements · 权益\n/account/invitations · 邀请\n/account/notifications · 通知\n/account/settings · 设置\n/account/settings/security · 账户安全\n/account/settings/preferences · 通知偏好\n/account/settings/privacy-data · 隐私与数据\n/account/data-rights · 数据权利\n冻结路由库存\n\n点击任一路由模式，将同一组状态与视口控制应用到正式组件。\n\n公共与内容\n/\n任务型首页\n/arts\n术数总览\n/daily\n每日\n/tools\n工具总览\n/tools/time-check\n寻时定盘\n/tools/chart-similarity\n同盘匹配\n/tools/rhythm\n本命音律\n/tools/five-elements\n五行喜忌\n/tools/dream\n解梦\n/tools/name\n姓名分析\n/library\n知识内容索引\n/library/[slug]\n公开文章模式\n/about\n关于与边界\n/pricing\n价格与交付\n/methodology\n方法与证据\n/support\n支持中心\n/privacy\n隐私政策\n/terms\n服务条款\n产品与交付\n/bazi\n八字任务录入\n/bazi/hepan\n八字双人合盘\n/ziwei\n紫微任务录入\n/ziwei/hepan\n紫微双人合盘\n/qizheng\n七政任务录入\n/qizheng/hepan\n七政双人合盘\n/liuyao\n六爻任务录入\n/qimen\n奇门任务录入\n/daliuren\n大六壬任务录入\n/jianxiang\n见相任务录入\n/hecan\n命盘合参任务录入\n/wenshi\n问事合参任务录入\n/canwen\n多盘问答任务录入\n/workbench/[handle]\n任务恢复工作台\n/checkout/[orderId]\n订单结账\n/share/[shareId]\n限时分享\n/invite/[code]\n邀请活动落地页\n身份\n/auth/login\n登录\n/auth/register\n注册\n/auth/verify\n验证身份\n/auth/set-password\n设置密码\n/auth/recover\n找回账号\n/auth/consent\n政策同意\n账户\n/account\n个人中心\n/account/profiles\n受测人档案\n/account/profiles/[profileId]\n档案详情\n/account/history\n推演历史\n/account/history/[rootId]\n历史报告阅读\n/account/orders\n订单\n/account/entitlements\n权益\n/account/invitations\n邀请\n/account/notifications\n通知\n/account/settings\n设置\n/account/settings/security\n账户安全\n/account/settings/preferences\n通知偏好\n/account/settings/privacy-data\n隐私与数据\n/account/data-rights\n数据权利\n状态\n初始待填 · pristine\n已填写 · filled\n校验失败 · validation-error\n提交中 · submitting\n加载中 · loading\n暂无内容 · empty\n已就绪 · ready\n免费摘要 · free-summary\n相机权限未询问 · camera-prompt\n相机权限已允许 · camera-allowed\n相机权限被拒绝 · camera-denied\n本地照片已选择 · photo-selected\n照片裁切中 · photo-cropping\n照片旋转中 · photo-rotating\n照片质量不合格 · photo-quality-failed\n等待重拍 · photo-retake\n观察失败 · observation-failed\n观察处理中 · observation-processing\n原图即将过期 · source-expiring\n等待主动入档 · archive-consent\n原图删除中 · source-deleting\n原图已删除 · source-deleted\n原图已过期，结果可查看 · source-expired-result-ready\n已锁定 · locked\n需要登录 · need-login\n需要补充资料 · need-input\n登录已失效 · unauthorized\n无权访问 · forbidden\n已进入队列 · queued\n整理事实 · preparing\n生成解读 · generating\n文字校验 · validating\n已交付 · accepted\n交付延迟 · delayed\n处理失败 · failed\n可追问 · follow-up\n暂不可用 · unavailable\n维护中 · maintenance\n支付确认中 · payment-confirming\n支付成功 · payment-success\n支付失败 · payment-failed\n退款处理中 · refund\n已冲正 · reversed\n活动计划中 · invite-planned\n活动进行中 · invite-active\n活动已暂停 · invite-paused\n名额已满 · invite-full\n活动已结束 · invite-ended\n邀请无效 · invite-invalid\n不可自邀 · invite-self\n查看身份\n游客\n登录用户\n授权测试账号\n能力阶段\nUI 已预制\n算法适配中\n内部测试\n公开开放\n暂停服务\n预览宽度\n360\npx\n768\npx\n1024\npx\n1440\npx\n\n宽画布只在下方容器内滚动，不会让整页横向溢出。\n\n预览画布\n\n1024 px · 八字任务录入 · 初始待填\n\nUI 已预制\n演示 Fixture\n预览：八字任务录入\n\n使用正式 ProductInputForm 检查八字录入与校验。\n\nRoute\n/bazi\nSchema\nbazi-chart/v1\n来源\n正式 ViewModel registry\n身份\n游客\nUI\n可验收\n算法\n未接入\n当前演示状态\n概览：初始待填\npristine\n\n尚未填写或提交任何资料。\n\n八字任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n画布使用精确 CSS 宽度与容器查询；截图前仍需在真实浏览器验证浏览器栏、缩放、键盘和系统字体。"
+      },
+      "screenshot": "e2e/screenshots/audit-2026-08-14/phase4/1440/ui-lab.png",
+      "ok": true
+    }
+  ]
+}

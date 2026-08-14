@@ -97,7 +97,9 @@ describe("identity-first application shell", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "强制刷新身份" }));
-    expect(await screen.findByTestId("session-state")).toHaveTextContent("signedIn");
+    await waitFor(() => {
+      expect(screen.getByTestId("session-state")).toHaveTextContent("signedIn");
+    });
 
     await act(async () => {
       rejectInitial?.(new ApiError("Authentication required", 401));
@@ -127,7 +129,9 @@ describe("identity-first application shell", () => {
       </AccountSessionProvider>,
     );
 
-    expect(await screen.findByTestId("session-state")).toHaveTextContent("signedIn");
+    await waitFor(() => {
+      expect(screen.getByTestId("session-state")).toHaveTextContent("signedIn");
+    });
     const accountCallsAtSignedIn = api.getAccount.mock.calls.length;
     const expiredRequests = await Promise.allSettled([
       getReadingResult("55555555-5555-4555-8555-555555555555"),
