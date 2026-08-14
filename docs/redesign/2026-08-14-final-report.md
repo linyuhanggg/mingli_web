@@ -25,9 +25,9 @@ Direction C 的公共壳、首页与营销页、账户区「我的」、产品�
 - Admin：lint、typecheck、test `33 files / 121 tests`、build 全通过。
 - 阶段 1 machine report：32/32，`failures: 0`，`fontOffenderCount: 0`；报告与证据目录已归档。
 - Web 生产构建在删除旧样板后生成 30 条路由；`redesign-a/b/c` 不再进入构建产物。
-- `docs/CHECKLIST.md` 第 15 节已追加阶段 3、4、5 记录，保留已有历史行。
+- `docs/CHECKLIST.md` 第 15 节已追加阶段 1–5 记录，保留已有历史行。
 - 已删除：`web/src/app/%5Fui-lab/redesign-a|b|c/` 与 `web/e2e/screenshots/audit-2026-08-14/redesign-a|b|c/`。正式 `/_ui-lab` 与阶段证据目录保留。
 
 ## 未覆盖边界
 
-本地 API 8000 端口未监听，因此账户的真实 signed-in 数据、Admin 登录/RBAC/CSRF、真实 Runtime/Provider、见相适配器、支付/权益和生产部署没有被冒充为已验收。阶段 2–5 均仍是「证据就绪，待用户验收」，本报告不声明 `USER_ACCEPTED`、上线或生产准入。
+本地 API 8000 端口未监听，因此账户的真实 signed-in 数据、Admin 登录/RBAC/CSRF、真实 Runtime/Provider、见相适配器、支付/权益和生产部署没有被冒充为已验收。阶段 1–5 均仍是「证据就绪，待用户验收」，本报告不声明 `USER_ACCEPTED`、上线或生产准入。
