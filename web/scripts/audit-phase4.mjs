@@ -3,7 +3,7 @@
  *
  * Uses the already-running local dev server and system Chrome. Product routes
  * are audited without submitting business data; the jianxiang route only
- * selects an in-memory local file to reach its honest unavailable workbench.
+ * selects an in-memory local file to reach its confirmation boundary.
  */
 import { chromium } from "@playwright/test";
 import fs from "node:fs";
@@ -84,8 +84,12 @@ async function assertProductRoute(page, entry, route, productId, productName, ex
   entry.product = { route, productId, productName, expectedState };
 }
 
-async function assertJianxiangWorkbench(page, entry, viewport) {
+async function assertJianxiangConfirmation(page, entry) {
   try {
+    // The supported input contract requires an explicitly named subject before
+    // the flow can advance to confirmation. Keep this fixture complete so the
+    // audit reaches the connected Runtime confirmation boundary it is meant to verify.
+    await page.getByLabel("受测对象", { exact: true }).fill("本地验收对象");
     await page.getByRole("checkbox", { name: "照片处理独立同意" }).check();
     await page.locator("#jianxiang-file").setInputFiles({
       name: "audit-local.png",
@@ -94,23 +98,17 @@ async function assertJianxiangWorkbench(page, entry, viewport) {
     });
     await page.getByRole("button", { name: "检查输入", exact: true }).click();
     await page.getByRole("heading", { name: "确认见相输入", exact: true }).waitFor();
-    await page.getByRole("button", { name: "确认并进入工作台", exact: true }).click();
-    const workspace = page.locator('[data-layout="workbench-workspace"]');
-    await workspace.waitFor();
-    const grid = await workspace.evaluate((element) => getComputedStyle(element).gridTemplateColumns);
-    entry.jianxiangWorkbench = { gridTemplateColumns: grid };
-    if (viewport < 768 && grid.split(" ").length !== 1) {
-      addFailure(entry, "workbench-mobile-layout", `expected one column below 768px, received ${grid}`);
-    }
-    if ((await page.getByRole("heading", { name: "盘面尚未生成", exact: true }).count()) !== 1) {
-      addFailure(entry, "workbench-unavailable-state", "expected honest unavailable workbench state");
+    const generateButton = page.getByRole("button", { name: "确认并生成盘面", exact: true });
+    if ((await generateButton.count()) !== 1 || !(await generateButton.isVisible())) {
+      addFailure(entry, "jianxiang-confirmation", "expected the connected Runtime generation action");
     }
     const bodyText = await page.locator("body").innerText();
     if (/UI 演示数据|页面已预制|provider key|raw JSON|snake_case/i.test(bodyText)) {
-      addFailure(entry, "workbench-copy-boundary", "found fixture or internal field copy in workbench");
+      addFailure(entry, "confirmation-copy-boundary", "found fixture or internal field copy in confirmation");
     }
+    entry.jianxiangConfirmation = { runtimeAction: "确认并生成盘面", submission: "not submitted" };
   } catch (error) {
-    addFailure(entry, "jianxiang-workbench", errorMessage(error));
+    addFailure(entry, "jianxiang-confirmation", errorMessage(error));
   }
 }
 
@@ -186,7 +184,7 @@ async function run() {
             }
 
             if (route === "/jianxiang") {
-              await assertJianxiangWorkbench(page, entry, viewport);
+              await assertJianxiangConfirmation(page, entry);
             }
           } catch (error) {
             addFailure(entry, "route-audit", errorMessage(error));
