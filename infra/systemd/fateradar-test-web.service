@@ -1,7 +1,7 @@
 # FateRadar code-test web (Next.js standalone server on 127.0.0.1:3000).
 # Single Ubuntu host, user/group fateradar, release at /opt/fateradar/current.
 #
-# The standalone bundle is /opt/fateradar/current/web/.next/standalone with
+# The standalone bundle is /opt/fateradar/current/web/.next/standalone/web with
 # .next/static and public copied next to server.js (mirrors
 # infra/docker/web.Dockerfile). BACKEND_INTERNAL_URL is inlined at build time by
 # web/next.config.ts; the value below documents the runtime proxy target.
@@ -21,16 +21,19 @@ After=network-online.target fateradar-test-api.service
 Type=simple
 User=fateradar
 Group=fateradar
-WorkingDirectory=/opt/fateradar/current/web/.next/standalone
+WorkingDirectory=/opt/fateradar/current/web/.next/standalone/web
 Environment=NODE_ENV=production
 Environment=HOSTNAME=127.0.0.1
 Environment=PORT=3000
 Environment=BACKEND_INTERNAL_URL=http://127.0.0.1:8000
 Environment=NEXT_TELEMETRY_DISABLED=1
 ExecStart=/usr/bin/node server.js
-ExecStartPre=+/bin/mkdir -p /opt/fateradar/current/web/.next/standalone/.next/cache
-ExecStartPre=+/bin/chown fateradar:fateradar /opt/fateradar/current/web/.next/standalone/.next/cache
-ExecStartPre=+/bin/chmod 0700 /opt/fateradar/current/web/.next/standalone/.next/cache
+ExecStartPre=+/bin/mkdir -p /opt/fateradar/current/web/.next/standalone/web/.next/cache
+ExecStartPre=+/bin/chown fateradar:fateradar /opt/fateradar/current/web/.next/standalone/web/.next/cache
+ExecStartPre=+/bin/chmod 0700 /opt/fateradar/current/web/.next/standalone/web/.next/cache
+ExecStartPre=+/bin/mkdir -p /opt/fateradar/current/web/.next/standalone/web/.next/server
+ExecStartPre=+/bin/chown -R fateradar:fateradar /opt/fateradar/current/web/.next/standalone/web/.next/server
+ExecStartPre=+/bin/chmod -R u+rwX /opt/fateradar/current/web/.next/standalone/web/.next/server
 Restart=on-failure
 RestartSec=5s
 TimeoutStopSec=30s
@@ -53,9 +56,10 @@ RestrictSUIDSGID=true
 RestrictRealtime=true
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 SystemCallArchitectures=native
-# Next standalone keeps its render cache below the standalone root. ExecStartPre
-# guarantees the path exists before the mount namespace is set up.
-ReadWritePaths=/opt/fateradar/current/web/.next/standalone/.next/cache
+# Next standalone keeps its render cache and server output below this build
+# directory. The parent exists after every Next build; ExecStartPre creates the
+# cache/server children before the process starts.
+ReadWritePaths=/opt/fateradar/current/web/.next/standalone/web/.next
 # MemoryDenyWriteExecute is intentionally omitted: Node/V8 JIT needs writable
 # and executable mappings.
 
