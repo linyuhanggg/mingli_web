@@ -1,0 +1,59 @@
+# FateRadar code-test Admin (Next.js standalone server on 127.0.0.1:3001).
+# Single Ubuntu host, user/group fateradar, release at /opt/fateradar/current.
+# The Admin console is intentionally loopback-only in this unit.
+
+# Deploy:
+#   install -o root -g root -m 0644 \
+#     infra/systemd/fateradar-test-admin.service /etc/systemd/system/
+#   systemctl daemon-reload
+#   systemctl enable --now fateradar-test-admin
+
+[Unit]
+Description=FateRadar Test Admin (Next.js standalone on 127.0.0.1:3001)
+Wants=network-online.target fateradar-test-api.service
+After=network-online.target fateradar-test-api.service
+
+[Service]
+Type=simple
+User=fateradar
+Group=fateradar
+WorkingDirectory=/opt/fateradar/current/admin/.next/standalone/admin
+Environment=NODE_ENV=production
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3001
+Environment=BACKEND_INTERNAL_URL=http://127.0.0.1:8000
+Environment=NEXT_TELEMETRY_DISABLED=1
+ExecStart=/usr/bin/node server.js
+ExecStartPre=+/bin/mkdir -p /opt/fateradar/current/admin/.next/standalone/admin/.next/cache
+ExecStartPre=+/bin/chown fateradar:fateradar /opt/fateradar/current/admin/.next/standalone/admin/.next/cache
+ExecStartPre=+/bin/chmod 0700 /opt/fateradar/current/admin/.next/standalone/admin/.next/cache
+ExecStartPre=+/bin/mkdir -p /opt/fateradar/current/admin/.next/standalone/admin/.next/server
+ExecStartPre=+/bin/chown -R fateradar:fateradar /opt/fateradar/current/admin/.next/standalone/admin/.next/server
+ExecStartPre=+/bin/chmod -R u+rwX /opt/fateradar/current/admin/.next/standalone/admin/.next/server
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+UMask=0077
+
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+LockPersonality=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+ReadWritePaths=/opt/fateradar/current/admin/.next/standalone/admin/.next/cache
+ReadWritePaths=/opt/fateradar/current/admin/.next/standalone/admin/.next/server
+# MemoryDenyWriteExecute is intentionally omitted: Node/V8 JIT needs writable
+# and executable mappings.
+
+[Install]
+WantedBy=multi-user.target

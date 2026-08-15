@@ -11,8 +11,11 @@ from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any, Protocol, runtime_checkable
 
-from app.config import Settings
-from app.readings.capability_policy import V51_RELEASE_CAPABILITY_IDS
+from app.config import _RUNTIME_RELEASE_PROFILES, Settings
+from app.readings.capability_policy import (
+    V51_RELEASE_CAPABILITY_IDS,
+    V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
+)
 from app.readings.errors import RuntimeTransportError
 from app.readings.runtime_contracts import (
     Accepted,
@@ -58,6 +61,7 @@ class MingliRuntime(Protocol):
 
 EXPECTED_RUNTIME_PROTOCOL = "mingli-portable-interface-v2"
 EXPECTED_RELEASE_FILE_COUNT = 217
+V53_TIME_CHECK_RELEASE_FILE_COUNT = 218
 EXPECTED_REFERENCE_PACK_COUNT = 55
 EXPECTED_EVIDENCE_RECORD_COUNT = 1328
 FROZEN_RELEASE_MANIFEST_SHA256 = "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
@@ -172,6 +176,8 @@ class FileSystemRuntimeReleaseInspector:
     expected_release_manifest_sha256: str
     expected_release_name: str
     expected_source_commit: str
+    expected_capability_ids: tuple[str, ...] = V51_RELEASE_CAPABILITY_IDS
+    expected_release_file_count: int = EXPECTED_RELEASE_FILE_COUNT
 
     def inspect(self) -> RuntimeReleaseInventory:
         _require_private_directory(self.release_root, "Runtime release root", writable=False)
@@ -195,8 +201,11 @@ class FileSystemRuntimeReleaseInspector:
         raw_modes = manifest.get("modes")
         if not isinstance(raw_files, dict) or not isinstance(raw_modes, dict):
             raise RuntimeStartupError("Runtime release manifest inventory is invalid")
-        if len(raw_files) != EXPECTED_RELEASE_FILE_COUNT or set(raw_files) != set(raw_modes):
-            raise RuntimeStartupError("Runtime release manifest must contain 217 files")
+        if (
+            len(raw_files) != self.expected_release_file_count
+            or set(raw_files) != set(raw_modes)
+        ):
+            raise RuntimeStartupError("Runtime release manifest has an unexpected file count")
         manifest_paths: set[str] = set()
         for raw_relative, expected_digest in raw_files.items():
             relative = _safe_relative(raw_relative, "signed file")
@@ -287,7 +296,10 @@ class FileSystemRuntimeReleaseInspector:
                 raise RuntimeStartupError("Runtime closure pattern matched no signed files")
             selected.update(matches)
         if selected != manifest_paths:
-            raise RuntimeStartupError("Runtime closure does not cover all 217 signed files")
+            raise RuntimeStartupError(
+                "Runtime closure does not cover "
+                f"all {len(manifest_paths)} signed release files"
+            )
         return len(selected)
 
     def _verify_providers(
@@ -304,9 +316,12 @@ class FileSystemRuntimeReleaseInspector:
             set(catalog) != {"providers", "schema_version"}
             or catalog.get("schema_version") != "catalog-v1"
             or not isinstance(entries, list)
-            or len(entries) != len(V51_RELEASE_CAPABILITY_IDS)
+            or len(entries) != len(self.expected_capability_ids)
         ):
-            raise RuntimeStartupError("13 Provider catalog is incomplete")
+            raise RuntimeStartupError(
+                "Runtime Provider catalog is incomplete "
+                f"(expected {len(self.expected_capability_ids)} Provider catalog entries)"
+            )
         provider_ids: list[str] = []
         for entry in entries:
             relative = _safe_relative(entry, "Provider manifest")
@@ -334,8 +349,8 @@ class FileSystemRuntimeReleaseInspector:
                 raise RuntimeStartupError("Provider manifest is not ready")
             provider_ids.append(provider_id)
         ordered = tuple(sorted(provider_ids))
-        if len(set(provider_ids)) != len(provider_ids) or ordered != V51_RELEASE_CAPABILITY_IDS:
-            raise RuntimeStartupError("13 Provider inventory does not match the frozen release")
+        if len(set(provider_ids)) != len(provider_ids) or ordered != self.expected_capability_ids:
+            raise RuntimeStartupError("Provider inventory does not match the admitted release")
         return ordered, ordered
 
     def _verify_reference_packs(
@@ -490,6 +505,8 @@ class RuntimeStartupGate:
     expected_manifest_digest: str
     expected_release_manifest_sha256: str
     expected_capability_shape_sha256: str
+    expected_capability_ids: tuple[str, ...] = V51_RELEASE_CAPABILITY_IDS
+    expected_release_file_count: int = EXPECTED_RELEASE_FILE_COUNT
     _ready: bool = field(default=False, init=False)
 
     async def startup(self) -> Described:
@@ -519,8 +536,11 @@ class RuntimeStartupGate:
         if description.manifest_digest != self.expected_manifest_digest:
             raise RuntimeStartupError("Runtime manifest digest mismatch")
         described_ids = tuple(str(item["id"]) for item in description.capabilities)
-        if described_ids != V51_RELEASE_CAPABILITY_IDS:
-            raise RuntimeStartupError("Runtime must describe the exact 13 Provider set")
+        if described_ids != self.expected_capability_ids:
+            raise RuntimeStartupError(
+                "Runtime must describe the exact "
+                f"{len(self.expected_capability_ids)} Provider set"
+            )
         if (
             runtime_capability_shape_sha256(description.capabilities)
             != self.expected_capability_shape_sha256
@@ -528,14 +548,17 @@ class RuntimeStartupGate:
             raise RuntimeStartupError("Runtime capability shape mismatch")
         if inventory.release_manifest_sha256 != self.expected_release_manifest_sha256:
             raise RuntimeStartupError("Runtime release manifest digest mismatch")
-        expected_providers = V51_RELEASE_CAPABILITY_IDS
+        expected_providers = self.expected_capability_ids
         if inventory.provider_ids != expected_providers:
             raise RuntimeStartupError("Runtime release Provider inventory mismatch")
         if inventory.ready_provider_ids != expected_providers:
-            raise RuntimeStartupError("Runtime release is not 13/13 ready")
-        if inventory.release_file_count != EXPECTED_RELEASE_FILE_COUNT:
+            count = len(expected_providers)
+            raise RuntimeStartupError(
+                f"Runtime release is not fully ready ({count}/{count} ready)"
+            )
+        if inventory.release_file_count != self.expected_release_file_count:
             raise RuntimeStartupError("Runtime release manifest is incomplete")
-        if inventory.runtime_closure_file_count != EXPECTED_RELEASE_FILE_COUNT:
+        if inventory.runtime_closure_file_count != self.expected_release_file_count:
             raise RuntimeStartupError("Runtime closure is incomplete")
         if inventory.reference_pack_count != EXPECTED_REFERENCE_PACK_COUNT:
             raise RuntimeStartupError("Runtime reference inventory is not 55/55")
@@ -724,6 +747,21 @@ def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:
         raise RuntimeStartupError("Runtime expected manifest digest is missing")
     if settings.runtime_expected_capability_shape_sha256 is None:
         raise RuntimeStartupError("Runtime expected capability shape digest is missing")
+    profile = _RUNTIME_RELEASE_PROFILES.get(settings.runtime_release_profile)
+    if profile is None:
+        raise RuntimeStartupError("Runtime release profile is not admitted")
+    if settings.environment == "production" or settings.runtime_release_profile != "v51":
+        if settings.runtime_expected_manifest_digest != profile["manifest_digest"]:
+            raise RuntimeStartupError(
+                "Runtime manifest digest does not match the admitted release"
+            )
+        if (
+            settings.runtime_expected_capability_shape_sha256
+            != profile["capability_shape_sha256"]
+        ):
+            raise RuntimeStartupError(
+                "Runtime capability shape does not match the admitted release"
+            )
     launcher_path = required_paths["launcher"]
     runtime_python_path = required_paths["Python"]
     release_root = required_paths["release root"]
@@ -732,6 +770,16 @@ def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:
     assert runtime_python_path is not None
     assert release_root is not None
     assert state_root is not None
+    expected_capability_ids = (
+        V53_TIME_CHECK_RELEASE_CAPABILITY_IDS
+        if settings.runtime_release_profile == "v53-time-check"
+        else V51_RELEASE_CAPABILITY_IDS
+    )
+    expected_release_file_count = (
+        V53_TIME_CHECK_RELEASE_FILE_COUNT
+        if settings.runtime_release_profile == "v53-time-check"
+        else EXPECTED_RELEASE_FILE_COUNT
+    )
     runtime = OneShotMingliRuntimeAdapter(
         launcher_path=launcher_path,
         runtime_python_path=runtime_python_path,
@@ -743,16 +791,20 @@ def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:
     )
     inspector = FileSystemRuntimeReleaseInspector(
         release_root=release_root,
-        expected_release_manifest_sha256=FROZEN_RELEASE_MANIFEST_SHA256,
-        expected_release_name=FROZEN_RELEASE_NAME,
-        expected_source_commit=FROZEN_SOURCE_COMMIT,
+        expected_release_manifest_sha256=profile["release_manifest_sha256"],
+        expected_release_name=profile["release_name"],
+        expected_source_commit=profile["source_commit"],
+        expected_capability_ids=expected_capability_ids,
+        expected_release_file_count=expected_release_file_count,
     )
     return RuntimeStartupGate(
         runtime=runtime,
         release_inspector=inspector,
         expected_manifest_digest=settings.runtime_expected_manifest_digest,
-        expected_release_manifest_sha256=FROZEN_RELEASE_MANIFEST_SHA256,
+        expected_release_manifest_sha256=profile["release_manifest_sha256"],
         expected_capability_shape_sha256=(settings.runtime_expected_capability_shape_sha256),
+        expected_capability_ids=expected_capability_ids,
+        expected_release_file_count=expected_release_file_count,
     )
 
 
@@ -868,10 +920,39 @@ class FakeMingliRuntimeAdapter:
         subject_refs = raw_subjects if isinstance(raw_subjects, tuple) else ()
         subject_ref = str(subject_refs[0]) if subject_refs else "fixture:subject"
         raw_dimensions = command.intent.get("dimension_ids")
-        dimensions = raw_dimensions if isinstance(raw_dimensions, tuple) else ()
-        dimension_id = str(dimensions[0]) if dimensions else "overview"
+        dimensions = (
+            tuple(str(item) for item in raw_dimensions)
+            if isinstance(raw_dimensions, tuple)
+            else ("overview",)
+        )
         raw_horizon = command.intent.get("horizon")
         horizon = raw_horizon if isinstance(raw_horizon, Mapping) else {}
+
+        findings = [
+            {
+                "ref": f"finding:fake-{index}",
+                "subject_ref": subject_ref,
+                "dimension_ids": [dimension_id],
+                "kind_id": "kind.tendency",
+                "data": {"fixture": True},
+                "fact_refs": ["fact:fake-1"],
+                "evidence_refs": [],
+                "limit_kind_ids": ["limit:traditional"],
+                "support_mode": "exact",
+            }
+            for index, dimension_id in enumerate(dimensions, start=1)
+        ]
+        claim_scopes = [
+            {
+                "subject_ref": subject_ref,
+                "dimension_id": dimension_id,
+                "allowed_kind_ids": ["kind.tendency"],
+                "certainty_ceiling_id": "certainty.tendency",
+                "fact_refs": ["fact:fake-1"],
+                "evidence_refs": [],
+            }
+            for dimension_id in dimensions
+        ]
 
         return ReadingBrief.from_dict(
             {
@@ -887,29 +968,8 @@ class FakeMingliRuntimeAdapter:
                     }
                 ],
                 "evidence": [],
-                "findings": [
-                    {
-                        "ref": "finding:fake-1",
-                        "subject_ref": subject_ref,
-                        "dimension_ids": [dimension_id],
-                        "kind_id": "kind.tendency",
-                        "data": {"fixture": True},
-                        "fact_refs": ["fact:fake-1"],
-                        "evidence_refs": [],
-                        "limit_kind_ids": ["limit:traditional"],
-                        "support_mode": "exact",
-                    }
-                ],
-                "claim_scopes": [
-                    {
-                        "subject_ref": subject_ref,
-                        "dimension_id": dimension_id,
-                        "allowed_kind_ids": ["kind.tendency"],
-                        "certainty_ceiling_id": "certainty.tendency",
-                        "fact_refs": ["fact:fake-1"],
-                        "evidence_refs": [],
-                    }
-                ],
+                "findings": findings,
+                "claim_scopes": claim_scopes,
                 "limits": [
                     {
                         "kind_id": "limit:traditional",

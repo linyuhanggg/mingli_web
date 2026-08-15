@@ -11,6 +11,25 @@ servers:
 tags:
   - name: Admin Auth
   - name: Admin Ops
+  - name: Admin Entitlements
+  - name: Admin Catalog
+  - name: Admin Reconciliation
+  - name: Admin Notifications
+  - name: Admin Audit
+  - name: Admin Sessions
+  - name: Admin Staff
+  - name: Admin Settings
+  - name: Admin Commerce
+  - name: Admin Identity
+  - name: Admin Readings
+  - name: Admin Runtime
+  - name: Admin Capabilities
+  - name: Admin Model Profiles
+  - name: Admin Referrals
+  - name: Admin Referral Appeals
+  - name: Admin Support Cases
+  - name: Admin Privacy
+  - name: Admin CMS
 paths:
   /api/v1/admin/auth/login:
     post:
@@ -70,16 +89,1585 @@ paths:
     get:
       operationId: adminOverview
       tags: [Admin Ops]
-      summary: Ops desk KPI stubs and work queues (Phase A placeholders)
+      summary: Ops desk KPI facts and work queues
       responses:
         "200":
-          description: Overview payload; KPI values may be stubs until domain wiring
+          description: Overview payload built from persisted order, payment, refund, reading-job, and reconciliation facts
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminOverviewResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
+  /api/v1/admin/entitlements/events:
+    get:
+      operationId: listAdminEntitlementEvents
+      tags: [Admin Entitlements]
+      summary: List append-only entitlement events for a user
+      parameters:
+        - name: owner_user_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: entitlement_id
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 160
+      responses:
+        "200":
+          description: Entitlement event history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminEntitlementEventsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: adjustAdminEntitlement
+      tags: [Admin Entitlements]
+      summary: Append an audited grant, compensation, or revoke event
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminEntitlementAdjustmentRequest"
+      responses:
+        "201":
+          description: Adjustment appended and audited
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminEntitlementAdjustmentResponse"
+        "200":
+          description: Idempotent replay of an existing adjustment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminEntitlementAdjustmentResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/entitlements/events/recent:
+    get:
+      operationId: listRecentAdminEntitlementEvents
+      tags: [Admin Entitlements]
+      summary: List recent entitlement ledger events across owners
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Recent append-only entitlement events
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminEntitlementEventsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/catalog:
+    get:
+      operationId: listAdminCatalog
+      tags: [Admin Catalog]
+      summary: List product families, versions, and channel offers
+      responses:
+        "200":
+          description: Current catalog state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCatalogResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/catalog/families:
+    post:
+      operationId: createAdminCatalogFamily
+      tags: [Admin Catalog]
+      summary: Create an audited product family
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCatalogFamilyCreateRequest"
+      responses:
+        "201":
+          description: Product family created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCatalogFamilyResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/catalog/versions:
+    post:
+      operationId: createAdminCatalogVersion
+      tags: [Admin Catalog]
+      summary: Create an immutable draft product version
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCatalogVersionCreateRequest"
+      responses:
+        "201":
+          description: Product version created as draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCatalogVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/catalog/offers:
+    post:
+      operationId: createAdminCatalogOffer
+      tags: [Admin Catalog]
+      summary: Create a channel offer for a product version
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCatalogOfferCreateRequest"
+      responses:
+        "201":
+          description: Product offer created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCatalogOfferResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/catalog/versions/{version_id}/publish:
+    post:
+      operationId: publishAdminCatalogVersion
+      tags: [Admin Catalog]
+      summary: Publish a draft product version with an enabled offer
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: version_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCatalogReasonRequest"
+      responses:
+        "200":
+          description: Product version published
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCatalogVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/catalog/versions/{version_id}/retire:
+    post:
+      operationId: retireAdminCatalogVersion
+      tags: [Admin Catalog]
+      summary: Retire an active product version without changing its snapshot
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: version_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCatalogReasonRequest"
+      responses:
+        "200":
+          description: Product version retired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCatalogVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/catalog/offers/{offer_id}/enabled:
+    post:
+      operationId: setAdminCatalogOfferEnabled
+      tags: [Admin Catalog]
+      summary: Enable or disable a channel offer
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: offer_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCatalogOfferEnabledRequest"
+      responses:
+        "200":
+          description: Offer state updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCatalogOfferResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/reconciliation:
+    get:
+      operationId: listAdminReconciliationRuns
+      tags: [Admin Reconciliation]
+      summary: List recent reconciliation runs and discrepancy counts
+      responses:
+        "200":
+          description: Recent reconciliation runs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReconciliationRunsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/reconciliation/runs:
+    post:
+      operationId: createAdminReconciliationRun
+      tags: [Admin Reconciliation]
+      summary: Run reconciliation over a verified normalized provider snapshot
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminReconciliationRunRequest"
+      responses:
+        "201":
+          description: Reconciliation run persisted with discrepancy items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReconciliationRunResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/reconciliation/runs/{run_id}:
+    get:
+      operationId: getAdminReconciliationRun
+      tags: [Admin Reconciliation]
+      summary: Read one reconciliation run and its discrepancy items
+      parameters:
+        - name: run_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reconciliation run detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReconciliationRunResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/admin/notifications:
+    get:
+      operationId: listAdminNotifications
+      tags: [Admin Notifications]
+      summary: List notification delivery state without user payloads
+      responses:
+        "200":
+          description: Notification outbox delivery state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminNotificationsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/notifications/{notification_id}/retry:
+    post:
+      operationId: retryAdminNotification
+      tags: [Admin Notifications]
+      summary: Requeue one terminal notification failure
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: notification_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminNotificationRetryRequest"
+      responses:
+        "200":
+          description: Notification requeued with attempt history preserved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminNotificationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/audit:
+    get:
+      operationId: listAdminAuditEvents
+      tags: [Admin Audit]
+      summary: List redacted staff audit events
+      parameters:
+        - name: action
+          in: query
+          required: false
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 120
+        - name: staff_user_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 100
+      responses:
+        "200":
+          description: Redacted audit event history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAuditEventsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/sessions:
+    get:
+      operationId: listAdminStaffSessions
+      tags: [Admin Sessions]
+      summary: List staff session metadata without opaque token material
+      responses:
+        "200":
+          description: Staff session inventory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStaffSessionsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/sessions/{session_id}/revoke:
+    post:
+      operationId: revokeAdminStaffSession
+      tags: [Admin Sessions]
+      summary: Revoke one staff session and write an audit event
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSessionRevokeRequest"
+      responses:
+        "200":
+          description: Revoked staff session metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStaffSessionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/admin/staff:
+    get:
+      operationId: listAdminStaff
+      tags: [Admin Staff]
+      summary: List staff directory metadata without password material
+      responses:
+        "200":
+          description: Staff directory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStaffListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createAdminStaff
+      tags: [Admin Staff]
+      summary: Create a local staff account with audited reason
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminStaffCreateRequest"
+      responses:
+        "201":
+          description: Staff account created without password material
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStaffResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/staff/{staff_id}/status:
+    post:
+      operationId: updateAdminStaffStatus
+      tags: [Admin Staff]
+      summary: Suspend or reactivate one staff account
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: staff_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminStaffStatusRequest"
+      responses:
+        "200":
+          description: Updated staff metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStaffResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/staff/{staff_id}/role:
+    post:
+      operationId: updateAdminStaffRole
+      tags: [Admin Staff]
+      summary: Change one staff role and revoke its existing sessions
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: staff_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminStaffRoleRequest"
+      responses:
+        "200":
+          description: Updated staff metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStaffResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/staff/{staff_id}/password-reset:
+    post:
+      operationId: resetAdminStaffPassword
+      tags: [Admin Staff]
+      summary: Reset one staff password and revoke its existing sessions
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: staff_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminStaffPasswordResetRequest"
+      responses:
+        "200":
+          description: Updated staff metadata without password material
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStaffResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/settings:
+    get:
+      operationId: getAdminSettings
+      tags: [Admin Settings]
+      summary: Read safe runtime configuration flags without secrets
+      responses:
+        "200":
+          description: Non-secret runtime settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSettingsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/commerce/orders:
+    get:
+      operationId: listAdminOrders
+      tags: [Admin Commerce]
+      summary: List local order and fulfillment facts
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Recent orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrdersResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/commerce/payments:
+    get:
+      operationId: listAdminPayments
+      tags: [Admin Commerce]
+      summary: List local payment confirmation facts
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Recent payments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPaymentsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/commerce/refunds:
+    get:
+      operationId: listAdminRefunds
+      tags: [Admin Commerce]
+      summary: List local refund facts
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Recent refunds
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminRefundsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/privacy/closures:
+    get:
+      operationId: listAccountClosures
+      tags: [Admin Privacy]
+      summary: List pending account closure requests
+      responses:
+        "200":
+          description: Pending closure queue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClosureListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/users:
+    get:
+      operationId: listAdminUsers
+      tags: [Admin Identity]
+      summary: List redacted user identity and data-rights metadata
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Redacted user directory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUsersResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/users/{user_id}:
+    get:
+      operationId: getAdminUser
+      tags: [Admin Identity]
+      summary: Read one user's authorized identity, consent, session, and Subject metadata
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Redacted user detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/admin/subjects:
+    get:
+      operationId: listAdminSubjects
+      tags: [Admin Identity]
+      summary: List Subject and ProfileVersion metadata without encrypted payloads
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Redacted Subject directory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSubjectsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/subjects/{subject_id}:
+    get:
+      operationId: getAdminSubject
+      tags: [Admin Identity]
+      summary: Read one Subject's version, authorization, and decrypted business facts without encrypted payloads
+      parameters:
+        - name: subject_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Redacted Subject detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSubjectResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/admin/referrals:
+    post:
+      operationId: createAdminReferralCampaign
+      tags: [Admin Referrals]
+      summary: Create a draft referral campaign version
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminReferralCampaignCreateRequest"
+      responses:
+        "201":
+          description: Referral campaign created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReferralCampaignResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    get:
+      operationId: listAdminReferrals
+      tags: [Admin Referrals]
+      summary: List referral campaigns and redacted funnel counts
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Referral campaign directory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReferralsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/referrals/{campaign_id}:
+    get:
+      operationId: getAdminReferral
+      tags: [Admin Referrals]
+      summary: Read one referral campaign's codes, attributions, and rewards
+      parameters:
+        - name: campaign_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Redacted referral campaign detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReferralResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/admin/referrals/{campaign_id}/codes:
+    post:
+      operationId: createAdminReferralCode
+      tags: [Admin Referrals]
+      summary: Add one public code to a referral campaign
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: campaign_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminReferralCodeCreateRequest"
+      responses:
+        "201":
+          description: Referral code created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReferralCodeResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/referrals/{campaign_id}/reward-slots:
+    post:
+      operationId: createAdminReferralRewardSlot
+      tags: [Admin Referrals]
+      summary: Configure one product reward slot for a draft campaign
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: campaign_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminReferralRewardSlotCreateRequest"
+      responses:
+        "201":
+          description: Reward slot created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReferralRewardSlotResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/referrals/{campaign_id}/state:
+    post:
+      operationId: setAdminReferralCampaignState
+      tags: [Admin Referrals]
+      summary: Advance a referral campaign through its state machine
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: campaign_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminReferralCampaignStateRequest"
+      responses:
+        "200":
+          description: Referral campaign state changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReferralCampaignResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/appeals:
+    get:
+      operationId: listAdminReferralAppeals
+      tags: [Admin Referral Appeals]
+      summary: List referral appeals with redacted risk and approval facts
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Referral appeal directory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReferralAppealsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createAdminReferralAppeal
+      tags: [Admin Referral Appeals]
+      summary: Submit one explainable appeal for a locked referral attribution
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminReferralAppealCreateRequest"
+      responses:
+        "201":
+          description: Referral appeal persisted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReferralAppealResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/appeals/{appeal_id}/risk-signals:
+    post:
+      operationId: recordAdminReferralRiskSignal
+      tags: [Admin Referral Appeals]
+      summary: Record a non-deterministic risk signal without changing reward state
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: appeal_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminReferralRiskSignalRequest"
+      responses:
+        "201":
+          description: Risk signal persisted without an automatic rejection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReferralRiskSignalResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/appeals/{appeal_id}/decision:
+    post:
+      operationId: decideAdminReferralAppeal
+      tags: [Admin Referral Appeals]
+      summary: Decide an appeal or complete a two-person reward correction
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: appeal_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminReferralAppealDecisionRequest"
+      responses:
+        "200":
+          description: Appeal decision or append-only correction result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReferralAppealResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/privacy/closures/{closure_id}/execute:
+    post:
+      operationId: executeAccountClosure
+      tags: [Admin Privacy]
+      summary: Execute a closure after its seven-day cancellation window
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - name: closure_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Account closed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClosureResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/cms:
+    get:
+      operationId: listContentIndex
+      tags: [Admin CMS]
+      summary: List latest CMS revision metadata without content bodies
+      parameters:
+        - name: prefix
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 120
+        - name: locale
+          in: query
+          required: false
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 16
+            default: zh-CN
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Latest revision metadata by content key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentIndexResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createContentDraft
+      tags: [Admin CMS]
+      summary: Create a versioned CMS draft
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentCreateRequest"
+      responses:
+        "201":
+          description: Draft created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevisionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/cms/{revision_id}:
+    patch:
+      operationId: editContentDraft
+      tags: [Admin CMS]
+      summary: Edit the body of a draft CMS revision
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - $ref: "#/components/parameters/RevisionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentEditRequest"
+      responses:
+        "200":
+          description: Edited draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevisionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/cms/{content_key}/history:
+    get:
+      operationId: listContentHistory
+      tags: [Admin CMS]
+      summary: List immutable CMS revision history
+      parameters:
+        - name: content_key
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: locale
+          in: query
+          required: false
+          schema:
+            type: string
+            default: zh-CN
+      responses:
+        "200":
+          description: Revision history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentHistoryResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/cms/{revision_id}/preview:
+    post:
+      operationId: previewContentRevision
+      tags: [Admin CMS]
+      summary: Move a draft into preview state
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - $ref: "#/components/parameters/RevisionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentReasonRequest"
+      responses:
+        "200":
+          description: Preview revision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevisionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/cms/{revision_id}/schedule:
+    post:
+      operationId: scheduleContentRevision
+      tags: [Admin CMS]
+      summary: Schedule a draft or preview revision
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - $ref: "#/components/parameters/RevisionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentScheduleRequest"
+      responses:
+        "200":
+          description: Scheduled revision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevisionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/cms/{revision_id}/publish:
+    post:
+      operationId: publishContentRevision
+      tags: [Admin CMS]
+      summary: Publish a ready CMS revision
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - $ref: "#/components/parameters/RevisionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentReasonRequest"
+      responses:
+        "200":
+          description: Published revision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevisionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/cms/{revision_id}/withdraw:
+    post:
+      operationId: withdrawContentRevision
+      tags: [Admin CMS]
+      summary: Withdraw a published revision without deleting history
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - $ref: "#/components/parameters/RevisionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentWithdrawRequest"
+      responses:
+        "200":
+          description: Withdrawn revision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevisionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/cms/{revision_id}/archive:
+    post:
+      operationId: archiveContentRevision
+      tags: [Admin CMS]
+      summary: Archive a draft or withdrawn revision
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - $ref: "#/components/parameters/RevisionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentReasonRequest"
+      responses:
+        "200":
+          description: Archived revision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevisionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/cms/{revision_id}/restore:
+    post:
+      operationId: restoreContentRevision
+      tags: [Admin CMS]
+      summary: Restore withdrawn content as a new draft revision
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+        - $ref: "#/components/parameters/RevisionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentReasonRequest"
+      responses:
+        "201":
+          description: Restored draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevisionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/v1/admin/reading-jobs:
+    get:
+      operationId: listAdminReadingJobs
+      tags: [Admin Readings]
+      summary: List reading job metadata without private inputs or lease material
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Reading job metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReadingJobsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/readings:
+    get:
+      operationId: listAdminReadings
+      tags: [Admin Readings]
+      summary: List reading version metadata without private inputs
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Reading version metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReadingsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/readings/{reading_version_id}:
+    get:
+      operationId: getAdminReading
+      tags: [Admin Readings]
+      summary: Read safe reading version aggregates without private output material
+      parameters:
+        - name: reading_version_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Safe reading version detail metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminReadingDetailResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/admin/runtime-releases:
+    get:
+      operationId: listAdminRuntimeReleases
+      tags: [Admin Runtime]
+      summary: List registered runtime release metadata without digests or credentials
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Registered runtime release metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminRuntimeReleasesResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/capabilities:
+    get:
+      operationId: listAdminCapabilities
+      tags: [Admin Capabilities]
+      summary: List product capability policy without runtime health claims
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Product capability policy metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCapabilitiesResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/model-profiles:
+    get:
+      operationId: listAdminModelProfiles
+      tags: [Admin Model Profiles]
+      summary: List model and guard receipt metadata without fingerprints or token usage
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Persisted model call receipt metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminModelProfilesResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/support-cases:
+    get:
+      operationId: listAdminSupportCases
+      tags: [Admin Support Cases]
+      summary: List support case applications without private credentials
+      responses:
+        "200":
+          description: Persisted support case applications
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSupportCasesResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createAdminSupportCase
+      tags: [Admin Support Cases]
+      summary: Submit a support case application for later operational handling
+      parameters:
+        - $ref: "#/components/parameters/AdminCsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSupportCaseCreateRequest"
+      responses:
+        "201":
+          description: Support case application persisted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSupportCaseResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/admin/verifications:
+    get:
+      operationId: listAdminVerificationEvents
+      tags: [Admin Readings]
+      summary: List verification and report feedback metadata without notes
+      parameters:
+        - $ref: "#/components/parameters/AdminLimit"
+      responses:
+        "200":
+          description: Verification event metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminVerificationEventsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 components:
   parameters:
     AdminCsrfToken:
@@ -89,6 +1677,22 @@ components:
       schema:
         type: string
       description: Double-submit token matching the mingli_admin_csrf cookie
+    RevisionId:
+      name: revision_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AdminLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 100
   schemas:
     AdminLoginRequest:
       type: object
@@ -144,6 +1748,1347 @@ components:
         expires_at:
           type: string
           format: date-time
+    AdminSessionRevokeRequest:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminStaffSessionResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, staff_user_id, actor, status, expires_at, last_seen_at, revoked_at,
+         created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        staff_user_id:
+          type: string
+          format: uuid
+        actor:
+          type: string
+        status:
+          type: string
+          enum: [active, expired, revoked]
+        expires_at:
+          type: string
+          format: date-time
+        last_seen_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: [string, "null"]
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    AdminStaffSessionsResponse:
+      type: object
+      additionalProperties: false
+      required: [sessions]
+      properties:
+        sessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminStaffSessionResponse"
+    AdminStaffCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [email, display_name, role, password, reason]
+      properties:
+        email:
+          type: string
+          format: email
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        role:
+          $ref: "#/components/schemas/StaffRole"
+        password:
+          type: string
+          minLength: 8
+          maxLength: 200
+          writeOnly: true
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminStaffStatusRequest:
+      type: object
+      additionalProperties: false
+      required: [status, reason]
+      properties:
+        status:
+          type: string
+          enum: [active, suspended]
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminStaffRoleRequest:
+      type: object
+      additionalProperties: false
+      required: [role, reason]
+      properties:
+        role:
+          $ref: "#/components/schemas/StaffRole"
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminStaffPasswordResetRequest:
+      type: object
+      additionalProperties: false
+      required: [password, reason]
+      properties:
+        password:
+          type: string
+          minLength: 8
+          maxLength: 200
+          writeOnly: true
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminStaffResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, email, display_name, role, status, created_at, last_login_at,
+         unrevoked_session_count]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        display_name:
+          type: string
+        role:
+          $ref: "#/components/schemas/StaffRole"
+        status:
+          type: string
+          enum: [active, suspended]
+        created_at:
+          type: string
+          format: date-time
+        last_login_at:
+          type: [string, "null"]
+          format: date-time
+        unrevoked_session_count:
+          type: integer
+          minimum: 0
+    AdminStaffListResponse:
+      type: object
+      additionalProperties: false
+      required: [staff]
+      properties:
+        staff:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminStaffResponse"
+    AdminSettingsResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [environment, cookie_secure, otp_adapter, runtime_adapter,
+         admin_session_hours, dogfood_entitlement_gates_enabled,
+         real_traffic_enabled, alert_sink_enabled]
+      properties:
+        environment:
+          type: string
+          enum: [local, test, staging, production]
+        cookie_secure:
+          type: boolean
+        otp_adapter:
+          type: string
+          enum: [fake, disabled, smtp]
+        runtime_adapter:
+          type: string
+          enum: [fake, one-shot]
+        admin_session_hours:
+          type: integer
+          minimum: 1
+          maximum: 24
+        dogfood_entitlement_gates_enabled:
+          type: boolean
+        real_traffic_enabled:
+          type: boolean
+        alert_sink_enabled:
+          type: boolean
+    AdminUserIdentityResponse:
+      type: object
+      additionalProperties: false
+      required: [id, provider, masked_destination, destination, status, verified_at, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        provider:
+          type: string
+        masked_destination:
+          type: string
+        destination:
+          type: [string, "null"]
+        status:
+          type: string
+        verified_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    AdminUserConsentResponse:
+      type: object
+      additionalProperties: false
+      required: [id, policy_key, policy_version, context, accepted_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        policy_key:
+          type: string
+        policy_version:
+          type: string
+        context:
+          type: string
+        accepted_at:
+          type: string
+          format: date-time
+    AdminUserSessionResponse:
+      type: object
+      additionalProperties: false
+      required: [id, status, expires_at, last_seen_at, revoked_at, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [active, expired, revoked]
+        expires_at:
+          type: string
+          format: date-time
+        last_seen_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: [string, "null"]
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    AdminUserSubjectSummary:
+      type: object
+      additionalProperties: false
+      required: [id, label, status, created_at, version_count, latest_version]
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: [string, "null"]
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        version_count:
+          type: integer
+          minimum: 0
+        latest_version:
+          type: [integer, "null"]
+    AdminUserSummary:
+      type: object
+      additionalProperties: false
+      required: [id, status, created_at, identity_count, consent_count, subject_count, active_session_count]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        identity_count:
+          type: integer
+          minimum: 0
+        consent_count:
+          type: integer
+          minimum: 0
+        subject_count:
+          type: integer
+          minimum: 0
+        active_session_count:
+          type: integer
+          minimum: 0
+    AdminUsersResponse:
+      type: object
+      additionalProperties: false
+      required: [users]
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminUserSummary"
+    AdminUserResponse:
+      type: object
+      additionalProperties: false
+      required: [id, status, created_at, identities, consents, sessions, subjects]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        identities:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminUserIdentityResponse"
+        consents:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminUserConsentResponse"
+        sessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminUserSessionResponse"
+        subjects:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminUserSubjectSummary"
+    AdminSubjectSummary:
+      type: object
+      additionalProperties: false
+      required: [id, owner_user_id, label, status, created_at, version_count, latest_version]
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner_user_id:
+          type: [string, "null"]
+          format: uuid
+        label:
+          type: [string, "null"]
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        version_count:
+          type: integer
+          minimum: 0
+        latest_version:
+          type: [integer, "null"]
+    AdminSubjectAuthorizationResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [subject_type, is_minor, authorization_confirmed,
+         photo_authorization_confirmed, minor_guardian_confirmed,
+         difference_acknowledged]
+      properties:
+        subject_type:
+          type: string
+        is_minor:
+          type: boolean
+        authorization_confirmed:
+          type: boolean
+        photo_authorization_confirmed:
+          type: boolean
+        minor_guardian_confirmed:
+          type: boolean
+        difference_acknowledged:
+          type: boolean
+    AdminSubjectVersionResponse:
+      type: object
+      additionalProperties: false
+      required: [id, version, created_at, authorization, profile]
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        authorization:
+          anyOf:
+            - $ref: "#/components/schemas/AdminSubjectAuthorizationResponse"
+            - type: "null"
+        profile:
+          $ref: "#/components/schemas/AdminSubjectProfileResponse"
+    AdminSubjectProfileResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [birth_datetime, timezone, location, gender, time_basis_policy,
+         zi_hour_policy, longitude, latitude, coordinate_source]
+      properties:
+        birth_datetime:
+          type: string
+        timezone:
+          type: string
+        location:
+          type: string
+        gender:
+          type: string
+          enum: [male, female, other]
+        time_basis_policy:
+          type: string
+          enum: [civil, solar, lunar]
+        zi_hour_policy:
+          type: string
+          enum: [midnight, substitute, solar]
+        longitude:
+          type: [number, "null"]
+        latitude:
+          type: [number, "null"]
+        coordinate_source:
+          type: [string, "null"]
+    AdminSubjectsResponse:
+      type: object
+      additionalProperties: false
+      required: [subjects]
+      properties:
+        subjects:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminSubjectSummary"
+    AdminSubjectResponse:
+      type: object
+      additionalProperties: false
+      required: [id, owner_user_id, label, status, created_at, versions]
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner_user_id:
+          type: [string, "null"]
+          format: uuid
+        label:
+          type: [string, "null"]
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminSubjectVersionResponse"
+    AdminReferralCampaignCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [campaign_key, version, starts_at, total_limit, reason]
+      properties:
+        campaign_key:
+          type: string
+          minLength: 1
+          maxLength: 80
+        version:
+          type: string
+          minLength: 1
+          maxLength: 40
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: [string, "null"]
+          format: date-time
+        total_limit:
+          type: integer
+          minimum: 1
+        per_inviter_limit:
+          type: integer
+          minimum: 1
+          default: 10
+        reward_quantity:
+          type: integer
+          minimum: 1
+          default: 1
+        reward_window_seconds:
+          type: integer
+          minimum: 1
+          default: 7776000
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminReferralCampaignStateRequest:
+      type: object
+      additionalProperties: false
+      required: [state, reason]
+      properties:
+        state:
+          type: string
+          enum: [draft, scheduled, active, paused, ended]
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminReferralCodeCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [code, inviter_user_id, reason]
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 120
+        inviter_user_id:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminReferralRewardSlotCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [product_version_id, slot, total_limit, quantity, reason]
+      properties:
+        product_version_id:
+          type: string
+          format: uuid
+        slot:
+          type: string
+          enum: [inviter_reward, invitee_reward]
+        enabled:
+          type: boolean
+          default: true
+        total_limit:
+          type: integer
+          minimum: 1
+        quantity:
+          type: integer
+          minimum: 1
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminReferralCampaignResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, campaign_key, version, state, starts_at, ends_at, total_limit,
+         per_inviter_limit, reward_quantity, reward_window_seconds,
+         code_count, temporary_attribution_count, attribution_count,
+         reservation_count, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        campaign_key:
+          type: string
+        version:
+          type: string
+        state:
+          type: string
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: [string, "null"]
+          format: date-time
+        total_limit:
+          type: [integer, "null"]
+        per_inviter_limit:
+          type: integer
+        reward_quantity:
+          type: integer
+        reward_window_seconds:
+          type: integer
+        code_count:
+          type: integer
+          minimum: 0
+        temporary_attribution_count:
+          type: integer
+          minimum: 0
+        attribution_count:
+          type: integer
+          minimum: 0
+        reservation_count:
+          type: integer
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+    AdminReferralCodeResponse:
+      type: object
+      additionalProperties: false
+      required: [id, campaign_version_id, code, inviter_user_id, status, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        campaign_version_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        inviter_user_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    AdminReferralAttributionResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, campaign_version_id, code_id, referred_user_id, inviter_user_id,
+         locked_at, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        campaign_version_id:
+          type: string
+          format: uuid
+        code_id:
+          type: string
+          format: uuid
+        referred_user_id:
+          type: string
+          format: uuid
+        inviter_user_id:
+          type: string
+          format: uuid
+        locked_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+    AdminReferralRewardSlotResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, campaign_version_id, product_version_id, slot_key, enabled,
+         total_limit, quantity, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        campaign_version_id:
+          type: string
+          format: uuid
+        product_version_id:
+          type: string
+          format: uuid
+        slot_key:
+          type: string
+        enabled:
+          type: boolean
+        total_limit:
+          type: integer
+          minimum: 1
+        quantity:
+          type: integer
+          minimum: 1
+        created_at:
+          type: string
+          format: date-time
+    AdminReferralRewardResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, campaign_version_id, attribution_id, referred_user_id,
+         inviter_user_id, product_version_id, payment_attempt_id, quantity,
+         status, reserved_at, committed_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        campaign_version_id:
+          type: string
+          format: uuid
+        attribution_id:
+          type: string
+          format: uuid
+        referred_user_id:
+          type: string
+          format: uuid
+        inviter_user_id:
+          type: string
+          format: uuid
+        product_version_id:
+          type: [string, "null"]
+          format: uuid
+        payment_attempt_id:
+          type: [string, "null"]
+          format: uuid
+        quantity:
+          type: integer
+        status:
+          type: string
+        reserved_at:
+          type: string
+          format: date-time
+        committed_at:
+          type: [string, "null"]
+          format: date-time
+    AdminReferralsResponse:
+      type: object
+      additionalProperties: false
+      required: [campaigns]
+      properties:
+        campaigns:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReferralCampaignResponse"
+    AdminReferralResponse:
+      type: object
+      additionalProperties: false
+      required: [campaign, codes, attributions, slots, rewards]
+      properties:
+        campaign:
+          $ref: "#/components/schemas/AdminReferralCampaignResponse"
+        codes:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReferralCodeResponse"
+        attributions:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReferralAttributionResponse"
+        slots:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReferralRewardSlotResponse"
+        rewards:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReferralRewardResponse"
+    AdminReferralAppealCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [attribution_id, reason]
+      properties:
+        attribution_id:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    AdminReferralRiskSignalRequest:
+      type: object
+      additionalProperties: false
+      required: [signal_type, severity, reason]
+      properties:
+        signal_type:
+          type: string
+          enum: [ip_overlap, device_overlap, address_overlap, other]
+        severity:
+          type: string
+          enum: [low, medium, high]
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminReferralAppealDecisionRequest:
+      type: object
+      additionalProperties: false
+      required: [outcome, reason]
+      properties:
+        outcome:
+          type: string
+          enum: [accept, reject, correction]
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminReferralRiskSignalResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, signal_type, severity, reason, created_by_staff_user_id, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        signal_type:
+          type: string
+        severity:
+          type: string
+        reason:
+          type: string
+        created_by_staff_user_id:
+          type: [string, "null"]
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+    AdminReferralAppealApprovalResponse:
+      type: object
+      additionalProperties: false
+      required: [id, staff_user_id, reason, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        staff_user_id:
+          type: string
+          format: uuid
+        reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    AdminReferralAppealResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, attribution_id, requester_user_id, inviter_user_id, status, reason,
+         decision_reason, created_at, decided_at, approval_count, risk_signals,
+         approvals, correction_event_id, correction_event_kind,
+         participation_restriction_user_ids]
+      properties:
+        id:
+          type: string
+          format: uuid
+        attribution_id:
+          type: string
+          format: uuid
+        requester_user_id:
+          type: string
+          format: uuid
+        inviter_user_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [submitted, accepted, rejected, correction_pending, corrected]
+        reason:
+          type: string
+        decision_reason:
+          type: [string, "null"]
+        created_at:
+          type: string
+          format: date-time
+        decided_at:
+          type: [string, "null"]
+          format: date-time
+        approval_count:
+          type: integer
+          minimum: 0
+        risk_signals:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReferralRiskSignalResponse"
+        approvals:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReferralAppealApprovalResponse"
+        correction_event_id:
+          type: [string, "null"]
+          format: uuid
+        correction_event_kind:
+          type: [string, "null"]
+        participation_restriction_user_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+    AdminReferralAppealsResponse:
+      type: object
+      additionalProperties: false
+      required: [appeals]
+      properties:
+        appeals:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReferralAppealResponse"
+    AdminOrderResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, owner_user_id, product_version_id, purchase_target_ref, amount_minor,
+         currency, status, fulfillment_status, created_at, paid_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner_user_id:
+          type: string
+          format: uuid
+        product_version_id:
+          type: string
+          format: uuid
+        purchase_target_ref:
+          type: string
+        amount_minor:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+        status:
+          type: string
+        fulfillment_status:
+          type: [string, "null"]
+        created_at:
+          type: string
+          format: date-time
+        paid_at:
+          type: [string, "null"]
+          format: date-time
+    AdminOrdersResponse:
+      type: object
+      additionalProperties: false
+      required: [orders]
+      properties:
+        orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminOrderResponse"
+    AdminPaymentResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, order_id, channel, channel_transaction_id, amount_minor, currency,
+         status, confirmed_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        order_id:
+          type: string
+          format: uuid
+        channel:
+          type: string
+        channel_transaction_id:
+          type: string
+        amount_minor:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+        status:
+          type: string
+        confirmed_at:
+          type: string
+          format: date-time
+    AdminPaymentsResponse:
+      type: object
+      additionalProperties: false
+      required: [payments]
+      properties:
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminPaymentResponse"
+    AdminRefundResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, payment_id, order_id, channel, channel_refund_id, amount_minor,
+         currency, reason, status, created_at, confirmed_at,
+         referral_confirmation_id, referral_confirmation_policy_version,
+         referral_confirmation_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        payment_id:
+          type: string
+          format: uuid
+        order_id:
+          type: string
+          format: uuid
+        channel:
+          type: string
+        channel_refund_id:
+          type: [string, "null"]
+        amount_minor:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+        reason:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        confirmed_at:
+          type: [string, "null"]
+          format: date-time
+        referral_confirmation_id:
+          type: [string, "null"]
+          format: uuid
+        referral_confirmation_policy_version:
+          type: [string, "null"]
+        referral_confirmation_at:
+          type: [string, "null"]
+          format: date-time
+    AdminRefundsResponse:
+      type: object
+      additionalProperties: false
+      required: [refunds]
+      properties:
+        refunds:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminRefundResponse"
+    AdminReadingJobResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, reading_version_id, reading_root_id, reading_version, capability_id,
+         reading_status, job_status, language, narrative_policy_version,
+         max_attempts, available_at, lease_generation, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        reading_version_id:
+          type: string
+          format: uuid
+        reading_root_id:
+          type: string
+          format: uuid
+        reading_version:
+          type: integer
+          minimum: 1
+        capability_id:
+          type: string
+        reading_status:
+          type: string
+        job_status:
+          type: string
+        language:
+          type: string
+        narrative_policy_version:
+          type: string
+        max_attempts:
+          type: integer
+          minimum: 1
+        available_at:
+          type: string
+          format: date-time
+        lease_generation:
+          type: integer
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+    AdminReadingJobsResponse:
+      type: object
+      additionalProperties: false
+      required: [jobs]
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReadingJobResponse"
+    AdminReadingResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [reading_version_id, reading_root_id, capability_id, version, status,
+         dimension_count, created_at]
+      properties:
+        reading_version_id:
+          type: string
+          format: uuid
+        reading_root_id:
+          type: string
+          format: uuid
+        capability_id:
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+        dimension_count:
+          type: integer
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+    AdminReadingsResponse:
+      type: object
+      additionalProperties: false
+      required: [readings]
+      properties:
+        readings:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReadingResponse"
+    AdminReadingDetailResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [reading_version_id, reading_root_id, capability_id, version, status,
+         dimension_count, job_count, verification_event_count, document_available,
+         created_at]
+      properties:
+        reading_version_id:
+          type: string
+          format: uuid
+        reading_root_id:
+          type: string
+          format: uuid
+        capability_id:
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+        dimension_count:
+          type: integer
+          minimum: 0
+        job_count:
+          type: integer
+          minimum: 0
+        verification_event_count:
+          type: integer
+          minimum: 0
+        document_available:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    AdminRuntimeReleaseResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, name, version, source_commit, protocol_version, production_ready,
+         created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        version:
+          type: string
+        source_commit:
+          type: string
+        protocol_version:
+          type: string
+        production_ready:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    AdminRuntimeReleasesResponse:
+      type: object
+      additionalProperties: false
+      required: [releases]
+      properties:
+        releases:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminRuntimeReleaseResponse"
+    AdminCapabilityResponse:
+      type: object
+      additionalProperties: false
+      required: [capability_id, label, release_state, audience, product_actions]
+      properties:
+        capability_id:
+          type: string
+        label:
+          type: string
+        release_state:
+          type: string
+          enum: [PUBLIC, INTERNAL_TEST]
+        audience:
+          type: string
+          enum: [P0 产品, 内部 Provider]
+        product_actions:
+          type: array
+          items:
+            type: string
+    AdminCapabilitiesResponse:
+      type: object
+      additionalProperties: false
+      required: [environment, runtime_adapter, runtime_health, production_ready, capabilities]
+      properties:
+        environment:
+          type: string
+          enum: [local, test, staging, production]
+        runtime_adapter:
+          type: string
+          enum: [fake, one-shot]
+        runtime_health:
+          type: string
+          enum: [unverified]
+        production_ready:
+          type: boolean
+        capabilities:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminCapabilityResponse"
+    AdminSupportCaseCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [subject_ref, category, summary, reason]
+      properties:
+        owner_user_id:
+          type: [string, "null"]
+          format: uuid
+        subject_ref:
+          type: string
+          minLength: 1
+          maxLength: 180
+        category:
+          type: string
+          enum: [account, delivery, billing, reading, referral, profile_correction, algorithm_review, after_sales, compensation, other]
+        summary:
+          type: string
+          minLength: 1
+          maxLength: 500
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminSupportCaseResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, owner_user_id, subject_ref, category, summary, status,
+         created_by_staff_user_id, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner_user_id:
+          type: [string, "null"]
+          format: uuid
+        subject_ref:
+          type: string
+        category:
+          type: string
+          enum: [account, delivery, billing, reading, referral, profile_correction, algorithm_review, after_sales, compensation, other]
+        summary:
+          type: string
+        status:
+          type: string
+          enum: [open, in_review, resolved, rejected]
+        created_by_staff_user_id:
+          type: [string, "null"]
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AdminSupportCasesResponse:
+      type: object
+      additionalProperties: false
+      required: [cases]
+      properties:
+        cases:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminSupportCaseResponse"
+    AdminModelProfileResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [generation_attempt_id, reading_version_id, attempt_number, model_profile_id,
+         provider, provider_model_version, outcome, error_code,
+         narrative_policy_version, output_contract_id, latency_ms, usage_known,
+         cost_known, guard_error_count, created_at]
+      properties:
+        generation_attempt_id:
+          type: string
+          format: uuid
+        reading_version_id:
+          type: string
+          format: uuid
+        attempt_number:
+          type: integer
+          minimum: 1
+        model_profile_id:
+          type: string
+        provider:
+          type: string
+        provider_model_version:
+          type: [string, "null"]
+        outcome:
+          type: string
+          enum: [succeeded, failed]
+        error_code:
+          type: [string, "null"]
+        narrative_policy_version:
+          type: string
+        output_contract_id:
+          type: string
+        latency_ms:
+          type: integer
+          minimum: 0
+        usage_known:
+          type: boolean
+        cost_known:
+          type: boolean
+        guard_error_count:
+          type: integer
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+    AdminModelProfilesResponse:
+      type: object
+      additionalProperties: false
+      required: [profiles]
+      properties:
+        profiles:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminModelProfileResponse"
+    AdminVerificationEventResponse:
+      type: object
+      additionalProperties: false
+      required: [id, source, reading_version_id, claim_id, outcome, actor_ref, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        source:
+          type: string
+          enum: [reading, claim, feedback]
+        reading_version_id:
+          type: string
+          format: uuid
+        claim_id:
+          type: [string, "null"]
+        outcome:
+          type: string
+        actor_ref:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    AdminVerificationEventsResponse:
+      type: object
+      additionalProperties: false
+      required: [events]
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminVerificationEventResponse"
     AdminOverviewResponse:
       type: object
       additionalProperties: false
@@ -154,7 +3099,7 @@ components:
           format: date-time
         is_stub:
           type: boolean
-          description: True while domain counters are not yet wired
+          description: Retained for contract compatibility; false when the payload is backed by persisted facts
         kpis:
           type: array
           items:
@@ -191,6 +3136,759 @@ components:
           minimum: 0
         is_stub:
           type: boolean
+    AdminEntitlementAdjustmentRequest:
+      type: object
+      additionalProperties: false
+      required: [owner_user_id, entitlement_id, action, reason, source_ref]
+      properties:
+        owner_user_id:
+          type: string
+          format: uuid
+        entitlement_id:
+          type: string
+          minLength: 1
+          maxLength: 160
+        action:
+          type: string
+          enum: [grant, compensate, revoke]
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+        source_ref:
+          type: string
+          minLength: 1
+          maxLength: 160
+        target_ref:
+          type: [string, "null"]
+          maxLength: 160
+    AdminEntitlementEventResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, owner_user_id, entitlement_id, kind, quantity, source_type,
+         source_ref, target_ref, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner_user_id:
+          type: string
+          format: uuid
+        entitlement_id:
+          type: string
+        kind:
+          type: string
+          enum: [GRANT, RESERVE, CONSUME, RELEASE, REVERSE, EXPIRE]
+        quantity:
+          type: integer
+          minimum: 1
+        source_type:
+          type: string
+        source_ref:
+          type: string
+        target_ref:
+          type: [string, "null"]
+        created_at:
+          type: string
+          format: date-time
+    AdminEntitlementAdjustmentResponse:
+      type: object
+      additionalProperties: false
+      required: [event, created]
+      properties:
+        event:
+          $ref: "#/components/schemas/AdminEntitlementEventResponse"
+        created:
+          type: boolean
+    AdminEntitlementEventsResponse:
+      type: object
+      additionalProperties: false
+      required: [events]
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminEntitlementEventResponse"
+    AdminCatalogReasonRequest:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminCatalogFamilyCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [key, label, reason]
+      properties:
+        key:
+          type: string
+          minLength: 1
+          maxLength: 80
+        label:
+          type: string
+          minLength: 1
+          maxLength: 160
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminCatalogVersionCreateRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [family_id, version, price_minor, currency, contract_version, reason]
+      properties:
+        family_id:
+          type: string
+          format: uuid
+        version:
+          type: string
+          minLength: 1
+          maxLength: 40
+        price_minor:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        contract_version:
+          type: string
+          minLength: 1
+          maxLength: 80
+        follow_up_count:
+          type: integer
+          minimum: 0
+          default: 0
+        follow_up_window_seconds:
+          type: integer
+          minimum: 0
+          default: 0
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminCatalogOfferCreateRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [product_version_id, channel, channel_sku, price_minor, currency, reason]
+      properties:
+        product_version_id:
+          type: string
+          format: uuid
+        channel:
+          type: string
+          minLength: 1
+          maxLength: 32
+        channel_sku:
+          type: string
+          minLength: 1
+          maxLength: 160
+        price_minor:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        enabled:
+          type: boolean
+          default: false
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminCatalogOfferEnabledRequest:
+      type: object
+      additionalProperties: false
+      required: [enabled, reason]
+      properties:
+        enabled:
+          type: boolean
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminCatalogOfferResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, product_version_id, channel, channel_sku, price_minor, currency,
+         enabled, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        product_version_id:
+          type: string
+          format: uuid
+        channel:
+          type: string
+        channel_sku:
+          type: string
+        price_minor:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+        enabled:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    AdminCatalogVersionResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, family_id, version, price_minor, currency, contract_version,
+         follow_up_count, follow_up_window_seconds, status, created_at, offers]
+      properties:
+        id:
+          type: string
+          format: uuid
+        family_id:
+          type: string
+          format: uuid
+        version:
+          type: string
+        price_minor:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+        contract_version:
+          type: string
+        follow_up_count:
+          type: integer
+          minimum: 0
+        follow_up_window_seconds:
+          type: integer
+          minimum: 0
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        offers:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminCatalogOfferResponse"
+    AdminCatalogFamilyResponse:
+      type: object
+      additionalProperties: false
+      required: [id, key, label, status, created_at, versions]
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        label:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminCatalogVersionResponse"
+    AdminCatalogResponse:
+      type: object
+      additionalProperties: false
+      required: [families]
+      properties:
+        families:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminCatalogFamilyResponse"
+    AdminReconciliationPaymentSnapshot:
+      type: object
+      additionalProperties: false
+      required: [transaction_id, status, amount_minor, currency]
+      properties:
+        transaction_id:
+          type: string
+          minLength: 1
+          maxLength: 180
+        status:
+          type: string
+          enum: [pending, succeeded, failed, refunded]
+        amount_minor:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+    AdminReconciliationRefundSnapshot:
+      type: object
+      additionalProperties: false
+      required: [refund_id, status, amount_minor, currency]
+      properties:
+        refund_id:
+          type: string
+          minLength: 1
+          maxLength: 180
+        payment_transaction_id:
+          type: [string, "null"]
+          maxLength: 180
+        status:
+          type: string
+          enum: [pending, succeeded, failed]
+        amount_minor:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+    AdminReconciliationRunRequest:
+      type: object
+      additionalProperties: false
+      required: [channel, reason]
+      properties:
+        channel:
+          type: string
+          minLength: 1
+          maxLength: 32
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReconciliationPaymentSnapshot"
+        refunds:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReconciliationRefundSnapshot"
+    AdminReconciliationItemResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, kind, reference, payment_id, refund_id, local_status,
+         provider_status, local_amount_minor, provider_amount_minor,
+         local_currency, provider_currency, discrepancy, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum: [payment, refund]
+        reference:
+          type: string
+        payment_id:
+          type: [string, "null"]
+          format: uuid
+        refund_id:
+          type: [string, "null"]
+          format: uuid
+        local_status:
+          type: [string, "null"]
+        provider_status:
+          type: [string, "null"]
+        local_amount_minor:
+          type: [integer, "null"]
+        provider_amount_minor:
+          type: [integer, "null"]
+        local_currency:
+          type: [string, "null"]
+        provider_currency:
+          type: [string, "null"]
+        discrepancy:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    AdminReconciliationRunResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, channel, run_at, status, item_count, matched_count,
+         difference_count, created_at, items]
+      properties:
+        id:
+          type: string
+          format: uuid
+        channel:
+          type: string
+        run_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+        item_count:
+          type: integer
+          minimum: 0
+        matched_count:
+          type: integer
+          minimum: 0
+        difference_count:
+          type: integer
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReconciliationItemResponse"
+    AdminReconciliationRunsResponse:
+      type: object
+      additionalProperties: false
+      required: [runs]
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminReconciliationRunResponse"
+    AdminNotificationRetryRequest:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AdminNotificationResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [id, owner_user_id, kind, dedupe_key, channel, status, available_at,
+         attempt_count, processing_until, sent_at, last_error]
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner_user_id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+        dedupe_key:
+          type: string
+        channel:
+          type: [string, "null"]
+        status:
+          type: string
+          enum: [pending, processing, sent, failed]
+        available_at:
+          type: string
+          format: date-time
+        attempt_count:
+          type: integer
+          minimum: 0
+        processing_until:
+          type: [string, "null"]
+          format: date-time
+        sent_at:
+          type: [string, "null"]
+          format: date-time
+        last_error:
+          type: [string, "null"]
+    AdminNotificationsResponse:
+      type: object
+      additionalProperties: false
+      required: [notifications]
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminNotificationResponse"
+    AdminAuditEventResponse:
+      type: object
+      additionalProperties: false
+      required: [id, action, actor, metadata, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        action:
+          type: string
+        actor:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: [string, integer, boolean, "null"]
+        created_at:
+          type: string
+          format: date-time
+    AdminAuditEventsResponse:
+      type: object
+      additionalProperties: false
+      required: [events]
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminAuditEventResponse"
+    ClosureResponse:
+      type: object
+      additionalProperties: false
+      required: [closure_id, user_id, status, requested_at, cancel_until]
+      properties:
+        closure_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, cancelled, executed]
+        requested_at:
+          type: string
+          format: date-time
+        cancel_until:
+          type: string
+          format: date-time
+        cancelled_at:
+          type: [string, "null"]
+          format: date-time
+        executed_at:
+          type: [string, "null"]
+          format: date-time
+    ClosureListResponse:
+      type: object
+      additionalProperties: false
+      required: [closures]
+      properties:
+        closures:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClosureResponse"
+    ContentCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [content_key, locale, body, reason]
+      properties:
+        content_key:
+          type: string
+          minLength: 1
+          maxLength: 160
+        locale:
+          type: string
+          minLength: 2
+          maxLength: 16
+          default: zh-CN
+        title:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 240
+        summary:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 500
+        topic:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 80
+        source_title:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 240
+        source_url:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 500
+        body:
+          type: string
+          minLength: 1
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    ContentReasonRequest:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    ContentEditRequest:
+      type: object
+      additionalProperties: false
+      required: [body, reason]
+      properties:
+        body:
+          type: string
+          minLength: 1
+        title:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 240
+        summary:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 500
+        topic:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 80
+        source_title:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 240
+        source_url:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 500
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    ContentScheduleRequest:
+      type: object
+      additionalProperties: false
+      required: [publish_at, reason]
+      properties:
+        publish_at:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    ContentWithdrawRequest:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    ContentRevisionResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [revision_id, content_key, locale, revision, state, title, summary,
+         topic, source_title, source_url, body, author_ref, publish_at,
+         withdrawn_reason, created_at]
+      properties:
+        revision_id:
+          type: string
+          format: uuid
+        content_key:
+          type: string
+        locale:
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+        state:
+          type: string
+          enum: [draft, preview, scheduled, published, withdrawn, archived]
+        title:
+          type: [string, "null"]
+        summary:
+          type: [string, "null"]
+        topic:
+          type: [string, "null"]
+        source_title:
+          type: [string, "null"]
+        source_url:
+          type: [string, "null"]
+        body:
+          type: string
+        author_ref:
+          type: string
+        publish_at:
+          type: [string, "null"]
+          format: date-time
+        withdrawn_reason:
+          type: [string, "null"]
+        created_at:
+          type: string
+          format: date-time
+    ContentHistoryResponse:
+      type: object
+      additionalProperties: false
+      required: [revisions]
+      properties:
+        revisions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentRevisionResponse"
+    ContentIndexItem:
+      type: object
+      additionalProperties: false
+      required:
+        [revision_id, content_key, locale, revision, state, title, summary,
+         topic, source_title, source_url, author_ref, publish_at,
+         withdrawn_reason, created_at]
+      properties:
+        revision_id:
+          type: string
+          format: uuid
+        content_key:
+          type: string
+        locale:
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+        state:
+          type: string
+          enum: [draft, preview, scheduled, published, withdrawn, archived]
+        title:
+          type: [string, "null"]
+        summary:
+          type: [string, "null"]
+        topic:
+          type: [string, "null"]
+        source_title:
+          type: [string, "null"]
+        source_url:
+          type: [string, "null"]
+        author_ref:
+          type: string
+        publish_at:
+          type: [string, "null"]
+          format: date-time
+        withdrawn_reason:
+          type: [string, "null"]
+        created_at:
+          type: string
+          format: date-time
+    ContentIndexResponse:
+      type: object
+      additionalProperties: false
+      required: [revisions]
+      properties:
+        revisions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentIndexItem"
+    NotFound:
+      description: Resource was not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Conflict:
+      description: State transition conflict
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
     StaffRole:
       type: string
       enum: [support, finance, ops, superadmin]

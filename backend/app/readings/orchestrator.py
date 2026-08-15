@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Protocol, cast
+from uuid import UUID
 
 from app.readings.alerts import AlertEvent, AlertSink, NoopAlertSink
 from app.readings.candidate_reference_closer import close_candidate_references
@@ -21,6 +22,7 @@ from app.readings.narrative_contracts import (
 )
 from app.readings.narrative_guard import GuardResult
 from app.readings.narrative_guard import NarrativeGuard as NarrativeGuard
+from app.readings.presentation import ReadingDocumentContext, ReadingDocumentV1
 from app.readings.public_copy import (
     PublicCopyAssembler as PublicCopyAssembler,
 )
@@ -49,6 +51,12 @@ class ReadingJob:
     language: str
     max_output_chars: int
     max_attempts: int = 2
+    reading_version_id: UUID | None = None
+    product_id: str | None = None
+    relationship_type: str | None = None
+    runtime_release: str = "runtime:unknown"
+    product_version: str | None = None
+    presentation_contract_version: str | None = None
 
     def __post_init__(self) -> None:
         if not self.id.strip():
@@ -106,6 +114,16 @@ class PublicCopyAssemblerPort(Protocol):
         brief: ReadingBrief,
         output_contract: OutputContract,
     ) -> str: ...
+
+
+class ReadingDocumentBuilderPort(Protocol):
+    def build(self, context: ReadingDocumentContext) -> ReadingDocumentV1 | None: ...
+
+
+# Fortune is intentionally a typed fact panel rather than a narrative
+# ReadingDocument. Every other product that reaches the SQL document builder
+# must produce its immutable document before the Accepted transaction commits.
+_DOCUMENT_OPTIONAL_PRODUCT_IDS = frozenset({"fortune"})
 
 
 class ReadingRepository(Protocol):
@@ -170,6 +188,16 @@ class ReadingRepository(Protocol):
         at: datetime,
     ) -> Accepted: ...
 
+    async def load_successful_candidate(self, job_id: str) -> NarrativeCandidate | None: ...
+
+    async def load_accepted_copy_ref(self, job_id: str) -> str | None: ...
+
+    async def save_reading_document_for_job(
+        self,
+        job_id: str,
+        document: ReadingDocumentV1,
+    ) -> None: ...
+
     async def mark_delayed(self, job_id: str, at: datetime) -> None: ...
 
     async def mark_runtime_unknown(self, job_id: str, at: datetime) -> None: ...
@@ -184,6 +212,8 @@ class ReadingOrchestrator:
     assembler: PublicCopyAssemblerPort
     clock: Clock
     alert_sink: AlertSink = NoopAlertSink()
+    document_builder: ReadingDocumentBuilderPort | None = None
+    require_reading_document: bool = False
     prepare_transport_backoff: timedelta = timedelta(seconds=5)
     complete_transport_backoff: timedelta = timedelta(seconds=5)
 
@@ -225,7 +255,7 @@ class ReadingOrchestrator:
                     "completion intent exists without a Prepared checkpoint"
                 )
             return await self._complete(
-                job.id,
+                job,
                 checkpoint.prepared,
                 checkpoint.completion_copy,
             )
@@ -395,7 +425,7 @@ class ReadingOrchestrator:
 
     async def _complete(
         self,
-        job_id: str,
+        job: ReadingJob,
         prepared: Prepared,
         public_copy: str,
     ) -> ReadingOutcome:
@@ -420,14 +450,48 @@ class ReadingOrchestrator:
                 raise OrchestratorInvariantError(
                     "Accepted bytes differ from the persisted completion intent"
                 )
-            await self.repository.record_accepted(job_id, result, self.clock.now())
+            await self.repository.record_accepted(job.id, result, self.clock.now())
+            if (
+                self.document_builder is not None
+                and self.require_reading_document
+                and job.reading_version_id is not None
+                and job.product_id not in _DOCUMENT_OPTIONAL_PRODUCT_IDS
+            ):
+                candidate = await self.repository.load_successful_candidate(job.id)
+                accepted_copy_ref = await self.repository.load_accepted_copy_ref(job.id)
+                if candidate is None or accepted_copy_ref is None or not job.product_id:
+                    raise OrchestratorInvariantError(
+                        "Accepted result is missing ReadingDocument inputs"
+                    )
+                document = self.document_builder.build(
+                    ReadingDocumentContext(
+                        reading_version_id=job.reading_version_id,
+                        accepted_copy_ref=accepted_copy_ref,
+                        product_id=job.product_id,
+                        relationship_type=job.relationship_type,
+                        runtime_release=job.runtime_release,
+                        prepared=prepared,
+                        candidate=candidate,
+                        output_contract=job.output_contract,
+                        product_version=job.product_version,
+                        presentation_contract_version=job.presentation_contract_version,
+                    )
+                )
+                if document is None:
+                    raise OrchestratorInvariantError(
+                        "Accepted result cannot be committed without ReadingDocument"
+                    )
+                # The SQL Worker wraps this whole stage in one transaction. The
+                # AcceptedCopy written above therefore rolls back together with
+                # the job if presentation cannot produce a typed document.
+                await self.repository.save_reading_document_for_job(job.id, document)
             return ReadingOutcome(
                 status=ReadingStatus.ACCEPTED,
                 public_copy=result.public_copy,
             )
         if isinstance(result, Stopped):
             await self.repository.record_terminal_stopped(
-                job_id,
+                job.id,
                 result,
                 self.clock.now(),
             )

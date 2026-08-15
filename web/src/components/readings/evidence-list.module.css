@@ -1,14 +1,14 @@
 .section {
   padding-top: 1.25rem;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--color-border);
 }
 
 .heading {
   margin: 0 0 1rem;
-  font-family: var(--font-serif);
-  font-size: 1.25rem;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-card);
   font-weight: 600;
-  color: var(--ink-950);
+  color: var(--color-text);
 }
 
 .list {
@@ -23,39 +23,39 @@
   display: grid;
   gap: 0.3rem;
   padding: 0.9rem 1rem;
-  border: 1px solid var(--border-subtle);
-  border-top-color: var(--gold-400);
-  background: var(--ivory-100);
+  border: 1px solid var(--color-border);
+  border-top-color: var(--color-text-secondary);
+  background: var(--color-surface-subtle);
   overflow-wrap: anywhere;
 }
 
 .source {
   margin: 0;
-  color: var(--ink-900);
+  color: var(--color-action);
   font-weight: 750;
 }
 
 .locator {
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
   font-weight: 600;
 }
 
 .excerpt {
   margin: 0;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
   line-height: 1.7;
 }
 
 .supportedFacts {
   margin: 0.35rem 0 0;
   padding-top: 0.55rem;
-  border-top: 1px solid var(--border-subtle);
-  color: var(--ink-800);
-  font-size: 0.8rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-action-hover);
+  font-size: var(--font-size-aux);
   line-height: 1.6;
 }
 
 .empty {
   margin: 0;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
 }

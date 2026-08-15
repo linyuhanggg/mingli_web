@@ -6,13 +6,7 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ReactNode } from "react";
 
-import AppPage from "@/app/app/page";
-import LiuyaoPage from "@/app/app/ask/liuyao/page";
-import NewProfilePage from "@/app/app/profile/new/page";
-import FortuneTodayPage from "@/app/app/fortune/today/page";
-import FortuneWeekPage from "@/app/app/fortune/week/page";
 import { AppPageHeader } from "@/components/app-page-header";
 import { FortuneFlow } from "@/components/fortune-flow";
 import { LiuyaoForm } from "@/components/liuyao-form";
@@ -97,34 +91,6 @@ describe("AppPageHeader", () => {
     expect(screen.getByText("描述正文")).toBeVisible();
     expect(screen.getByText("私人页面 · no-store")).toBeVisible();
     expect(screen.getAllByRole("heading")).toHaveLength(1);
-  });
-});
-
-describe("private shell h1 contract", () => {
-  const pages: Array<[string, ReactNode]> = [
-    ["/app", <AppPage key="app" />],
-    ["/app/profile/new", <NewProfilePage key="profile" />],
-    ["/app/fortune/today", <FortuneTodayPage key="today" />],
-    ["/app/fortune/week", <FortuneWeekPage key="week" />],
-    ["/app/ask/liuyao", <LiuyaoPage key="liuyao" />],
-  ];
-
-  it.each(pages)("keeps exactly one page-level h1 on %s", (_name, page) => {
-    render(page);
-    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-  });
-
-  it("promotes the fortune flow to a task-level h2 under the page h1", () => {
-    render(<FortuneTodayPage />);
-    expect(screen.getByRole("heading", { level: 2, name: "开始解读" })).toBeVisible();
-  });
-
-  it("keeps the form section titles as h2 under the page h1", () => {
-    render(<NewProfilePage />);
-    expect(screen.getByRole("heading", { level: 2, name: "建立命理档案" })).toBeVisible();
-
-    render(<LiuyaoPage />);
-    expect(screen.getByRole("heading", { level: 2, name: "一事一问 · 六爻" })).toBeVisible();
   });
 });
 

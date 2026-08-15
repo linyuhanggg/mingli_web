@@ -1,33 +1,33 @@
 .form {
   margin-top: 1.5rem;
-  animation: otp-shell-enter var(--duration-entrance) var(--ease-out-expo) both;
+  animation: otp-shell-enter var(--duration-page) var(--ease-out) both;
 }
 
 .status,
 .error,
 .success {
   padding: 0.85rem 1rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  font-size: 0.88rem;
-  animation: otp-status-enter var(--duration-state) var(--ease-out-expo) both;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-label);
+  animation: otp-status-enter var(--duration-overlay) var(--ease-out) both;
 }
 
 .status {
-  background: var(--ivory-100);
-  color: var(--ink-700);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
 }
 
 .error {
-  border-color: var(--terracotta-500);
-  background: var(--ivory-100);
-  color: var(--ink-950);
+  border-color: var(--color-danger);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
 }
 
 .success {
-  border-color: var(--moss-700);
-  background: var(--moss-100);
-  color: var(--ink-950);
+  border-color: var(--color-success);
+  background: var(--surface-success);
+  color: var(--color-text);
 }
 
 .methods {
@@ -51,26 +51,26 @@
   align-content: center;
   min-height: 2.75rem;
   padding-inline: 0.75rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   text-align: center;
-  font-size: 0.88rem;
+  font-size: var(--font-size-label);
   transition:
     border-color var(--duration-feedback) ease,
     background-color var(--duration-feedback) ease,
-    transform var(--duration-feedback) var(--ease-out-expo),
+    transform var(--duration-feedback) var(--ease-out),
     color var(--duration-feedback) ease;
 }
 
 .methodActive {
-  border: 1px solid var(--ink-900);
-  background: var(--ink-900);
-  color: var(--ivory-50);
+  border: 1px solid var(--color-action);
+  background: var(--color-action);
+  color: var(--color-on-action);
 }
 
 .methodLocked {
-  border: 1px dashed var(--border-control);
-  background: var(--ivory-100);
-  color: var(--ink-700);
+  border: 1px dashed var(--color-border);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
 }
 
 .methodActive strong,
@@ -80,17 +80,17 @@
 
 .methodActive span,
 .methodLocked span {
-  font-size: 0.72rem;
+  font-size: var(--font-size-meta);
   font-weight: 650;
   letter-spacing: 0.08em;
 }
 
 .submit {
   min-height: 2.75rem;
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-50);
-  color: var(--ink-900);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+  color: var(--color-action);
   cursor: pointer;
   font-weight: 750;
 }
@@ -102,21 +102,21 @@
 }
 
 .field label {
-  font-size: 0.86rem;
+  font-size: var(--font-size-label);
   font-weight: 750;
 }
 
 .fieldError {
   margin: 0;
-  color: var(--ink-950);
-  font-size: 0.82rem;
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
   font-weight: 650;
-  animation: otp-status-enter var(--duration-state) var(--ease-out-expo) both;
+  animation: otp-status-enter var(--duration-overlay) var(--ease-out) both;
 }
 
 .fieldError::before {
   margin-right: 0.35rem;
-  color: var(--terracotta-500);
+  color: var(--color-danger);
   content: "—";
 }
 
@@ -124,42 +124,42 @@
   width: 100%;
   min-height: 3rem;
   padding-inline: 0.9rem;
-  border: 1px solid var(--border-emphasis);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-50);
-  color: var(--ink-950);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+  color: var(--color-text);
   transition:
     border-color var(--duration-feedback) ease,
     background-color var(--duration-feedback) ease;
 }
 
 .field input:hover:not(:disabled) {
-  border-color: var(--border-control);
-  background: var(--white);
+  border-color: var(--color-border);
+  background: var(--color-surface);
 }
 
 .field input:focus {
-  border-color: var(--gold-500);
-  background: var(--white);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
 }
 
 .field input:focus-visible,
 .submit:focus-visible,
 .secondary:focus-visible {
-  outline: 3px solid var(--terracotta-500);
+  outline: 2px solid var(--color-focus);
   outline-offset: 3px;
 }
 
 .hint {
   margin: 0.45rem 0 0;
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
 }
 
 .codeMeta {
   margin: 0.75rem 0 0;
-  color: var(--ink-700);
-  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
@@ -167,10 +167,10 @@
 .submit {
   width: 100%;
   margin-top: 1rem;
-  border-color: var(--ink-900);
-  background: var(--ink-900);
-  color: var(--ivory-50);
-  box-shadow: var(--shadow-action);
+  border-color: var(--color-action);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  box-shadow: var(--shadow-float);
 }
 
 .actionRow {
@@ -182,10 +182,10 @@
 
 .secondary {
   min-height: 2.75rem;
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-50);
-  color: var(--ink-900);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+  color: var(--color-action);
   cursor: pointer;
   font-weight: 750;
 }
@@ -202,7 +202,7 @@
   transition:
     background-color var(--duration-feedback) ease,
     border-color var(--duration-feedback) ease,
-    transform var(--duration-feedback) var(--ease-out-expo),
+    transform var(--duration-feedback) var(--ease-out),
     color var(--duration-feedback) ease;
 }
 
@@ -212,12 +212,12 @@
 }
 
 .submit:not(:disabled):hover {
-  background: var(--ink-800);
+  background: var(--color-action-hover);
 }
 
 .secondary:not(:disabled):hover {
-  border-color: var(--gold-500);
-  background: var(--white);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
 }
 
 .submit:not(:disabled):active,
@@ -227,10 +227,10 @@
 
 .transition {
   margin: 0.75rem 0 0;
-  color: var(--ink-700);
-  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
   line-height: 1.55;
-  animation: otp-status-enter var(--duration-state) var(--ease-out-expo) both;
+  animation: otp-status-enter var(--duration-overlay) var(--ease-out) both;
 }
 
 @keyframes otp-shell-enter {

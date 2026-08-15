@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/taiyi-chart-v1.schema.json",
+  "title": "TaiyiChartV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "subject_ref", "calendar", "epoch", "cycle", "board", "host_guest", "four_generals", "long_cycle_deities", "board_predicates", "scope_contract"],
+  "properties": {
+    "schema_version": {"const": "taiyi-chart/v1"},
+    "subject_ref": {"type": "string", "minLength": 1},
+    "calendar": {"$ref": "#/$defs/calendar"},
+    "epoch": {"$ref": "#/$defs/epoch"},
+    "cycle": {"$ref": "#/$defs/cycle"},
+    "board": {"$ref": "#/$defs/board"},
+    "host_guest": {"type": "object"},
+    "four_generals": {"$ref": "#/$defs/fourGenerals"},
+    "long_cycle_deities": {"type": "array", "items": {"$ref": "#/$defs/longCycleDeity"}},
+    "board_predicates": {"type": "array", "items": {"$ref": "#/$defs/boardPredicate"}},
+    "scope_contract": {"$ref": "#/$defs/scopeContract"}
+  },
+  "$defs": {
+    "calendar": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["annual_boundary", "lunar_year", "year_ganzhi"],
+      "properties": {
+        "annual_boundary": {"type": "string", "minLength": 1},
+        "lunar_year": {"type": "integer"},
+        "year_ganzhi": {"type": "string", "minLength": 1}
+      }
+    },
+    "epoch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accumulated_year", "anchor_accumulated_year", "anchor_lunar_year_ce", "derived_ce_offset", "one_based", "profile_id", "source_anchor"],
+      "properties": {
+        "accumulated_year": {"type": "integer"},
+        "anchor_accumulated_year": {"type": "integer"},
+        "anchor_lunar_year_ce": {"type": "integer"},
+        "derived_ce_offset": {"type": "integer"},
+        "one_based": {"type": "boolean"},
+        "profile_id": {"type": "string", "minLength": 1},
+        "source_anchor": {"type": "string", "minLength": 1}
+      }
+    },
+    "cycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bureau", "governance", "ji", "position_360", "year_in_ji", "year_in_zi_yuan", "zi_yuan", "zi_yuan_head"],
+      "properties": {
+        "bureau": {"type": "integer"},
+        "governance": {"type": "string", "minLength": 1},
+        "ji": {"type": "integer"},
+        "position_360": {"type": "integer"},
+        "year_in_ji": {"type": "integer"},
+        "year_in_zi_yuan": {"type": "integer"},
+        "zi_yuan": {"type": "integer"},
+        "zi_yuan_head": {"type": "string", "minLength": 1}
+      }
+    },
+    "namedPosition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "position"],
+      "properties": {"name": {"type": "string", "minLength": 1}, "position": {"type": "string", "minLength": 1}}
+    },
+    "board": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["heshen", "jishen", "shiji", "taisui", "taiyi_position", "tianmu_wenchang"],
+      "properties": {
+        "heshen": {"type": "string", "minLength": 1},
+        "jishen": {"type": "string", "minLength": 1},
+        "shiji": {"type": "string", "minLength": 1},
+        "taisui": {"type": "string", "minLength": 1},
+        "taiyi_position": {"type": "string", "minLength": 1},
+        "tianmu_wenchang": {"$ref": "#/$defs/namedPosition"}
+      }
+    },
+    "fourGenerals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["guest_assistant", "guest_major", "host_assistant", "host_major"],
+      "properties": {"guest_assistant": {"type": "integer"}, "guest_major": {"type": "integer"}, "host_assistant": {"type": "integer"}, "host_major": {"type": "integer"}}
+    },
+    "longCycleDeity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deity_id", "accumulated_year", "cycle_position", "epoch_profile", "name", "position", "source_anchor", "status"],
+      "properties": {
+        "deity_id": {"type": "string", "minLength": 1},
+        "accumulated_year": {"type": "integer"},
+        "cycle_position": {"type": "integer"},
+        "epoch_profile": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "position": {"type": "string", "minLength": 1},
+        "source_anchor": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "minLength": 1}
+      }
+    },
+    "boardPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["predicate_id", "name", "predicate", "fact_paths", "source_anchor", "source_dependency_id", "status"],
+      "properties": {
+        "predicate_id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "predicate": {"type": "string", "minLength": 1},
+        "fact_paths": {"type": "array", "items": {"type": "string"}},
+        "source_anchor": {"type": "string", "minLength": 1},
+        "source_dependency_id": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "minLength": 1}
+      }
+    },
+    "scopeContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["declared_scope", "interpretation_policy", "supported_horizons", "supported_objects", "unsupported_scopes"],
+      "properties": {
+        "declared_scope": {"type": "string", "minLength": 1},
+        "interpretation_policy": {"type": "string", "minLength": 1},
+        "supported_horizons": {"type": "array", "items": {"type": "string"}},
+        "supported_objects": {"type": "array", "items": {"type": "string"}},
+        "unsupported_scopes": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

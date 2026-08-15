@@ -5,8 +5,10 @@ from __future__ import annotations
 import hmac
 from datetime import UTC, datetime
 from typing import cast
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, Depends, Query, Request, Response, status
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.admin.cookies import (
@@ -15,7 +17,7 @@ from app.admin.cookies import (
     clear_admin_cookies,
     set_admin_cookies,
 )
-from app.admin.models import StaffSession, StaffUser
+from app.admin.models import AdminAuditEvent, StaffSession, StaffUser
 from app.admin.repository import AdminRepository
 from app.admin.schemas import (
     AdminLoginRequest,
@@ -23,12 +25,28 @@ from app.admin.schemas import (
     AdminOverviewResponse,
     AdminSessionResponse,
 )
-from app.admin.service import AdminAuthError, AdminAuthService, build_stub_overview
+from app.admin.service import AdminAuthError, AdminAuthService, build_overview
 from app.api.dependencies import database_session, mark_private
 from app.api.errors import ApiProblem
 from app.api.rate_guard import check_rate_limiter
+from app.commerce.models import EntitlementEventRecord
+from app.commerce.schemas import (
+    AdminEntitlementAdjustmentRequest,
+    AdminEntitlementAdjustmentResponse,
+    AdminEntitlementEventResponse,
+    AdminEntitlementEventsResponse,
+)
+from app.commerce.service import CommerceError, CommerceService
 from app.config import Settings
 from app.identity.security import hash_token
+from app.privacy.models import AccountClosureRequest
+from app.privacy.schemas import ClosureListResponse, ClosureResponse
+from app.privacy.service import (
+    ClosureAlreadyExecutedError,
+    ClosureNotFoundError,
+    ClosureNotReadyError,
+    DataRightsService,
+)
 from app.readings.rate_limit import WindowRateLimiter
 
 router = APIRouter(prefix="/admin", tags=["Admin Auth"])
@@ -194,7 +212,208 @@ async def admin_me(
 )
 async def admin_overview(
     response: Response,
+    session: AsyncSession = Depends(database_session),
     _principal: tuple[StaffSession, StaffUser] = Depends(require_staff_session),
 ) -> AdminOverviewResponse:
     mark_private(response)
-    return build_stub_overview()
+    return await build_overview(session)
+
+
+def _require_entitlement_operator(staff: StaffUser) -> None:
+    if staff.role not in {"finance", "ops", "superadmin"}:
+        raise ApiProblem(status=403, title="Entitlement operator permission required")
+
+
+def _entitlement_event_response(
+    event: EntitlementEventRecord,
+) -> AdminEntitlementEventResponse:
+    return AdminEntitlementEventResponse(
+        id=event.id,
+        owner_user_id=event.owner_user_id,
+        entitlement_id=event.entitlement_id,
+        kind=event.kind,
+        quantity=event.quantity,
+        source_type=event.source_type,
+        source_ref=event.source_ref,
+        target_ref=event.target_ref,
+        created_at=event.created_at,
+    )
+
+
+def _commerce_problem(error: CommerceError) -> ApiProblem:
+    detail = str(error)
+    return ApiProblem(
+        status=404 if detail == "owner user not found" else 409,
+        title=(
+            "Owner user not found"
+            if detail == "owner user not found"
+            else "Invalid entitlement adjustment"
+        ),
+        detail=detail,
+    )
+
+
+@router.get(
+    "/entitlements/events/recent",
+    operation_id="listRecentAdminEntitlementEvents",
+    response_model=AdminEntitlementEventsResponse,
+    tags=["Admin Entitlements"],
+)
+async def list_recent_admin_entitlement_events(
+    response: Response,
+    limit: int = Query(default=100, ge=1, le=200),
+    session: AsyncSession = Depends(database_session),
+    principal: tuple[StaffSession, StaffUser] = Depends(require_staff_session),
+) -> AdminEntitlementEventsResponse:
+    _require_entitlement_operator(principal[1])
+    events = list(
+        await session.scalars(
+            select(EntitlementEventRecord)
+            .order_by(desc(EntitlementEventRecord.created_at), desc(EntitlementEventRecord.id))
+            .limit(limit)
+        )
+    )
+    mark_private(response)
+    return AdminEntitlementEventsResponse(
+        events=[_entitlement_event_response(event) for event in events]
+    )
+
+
+@router.get(
+    "/entitlements/events",
+    operation_id="listAdminEntitlementEvents",
+    response_model=AdminEntitlementEventsResponse,
+    tags=["Admin Entitlements"],
+)
+async def list_admin_entitlement_events(
+    response: Response,
+    owner_user_id: UUID,
+    entitlement_id: str | None = None,
+    session: AsyncSession = Depends(database_session),
+    principal: tuple[StaffSession, StaffUser] = Depends(require_staff_session),
+) -> AdminEntitlementEventsResponse:
+    _require_entitlement_operator(principal[1])
+    events = await CommerceService(session).ledger.list_events(
+        owner_user_id=owner_user_id,
+        entitlement_id=entitlement_id,
+    )
+    await session.commit()
+    mark_private(response)
+    return AdminEntitlementEventsResponse(
+        events=[_entitlement_event_response(event) for event in events]
+    )
+
+
+@router.post(
+    "/entitlements/events",
+    operation_id="adjustAdminEntitlement",
+    response_model=AdminEntitlementAdjustmentResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Admin Entitlements"],
+)
+async def adjust_admin_entitlement(
+    response: Response,
+    payload: AdminEntitlementAdjustmentRequest,
+    session: AsyncSession = Depends(database_session),
+    principal: tuple[StaffSession, StaffUser] = Depends(require_staff_csrf),
+) -> AdminEntitlementAdjustmentResponse:
+    staff_session, staff = principal
+    _require_entitlement_operator(staff)
+    try:
+        event, created = await CommerceService(session).adjust_entitlement_as_staff(
+            owner_user_id=payload.owner_user_id,
+            entitlement_id=payload.entitlement_id,
+            action=payload.action,
+            quantity=payload.quantity,
+            reason=payload.reason,
+            source_ref=payload.source_ref,
+            target_ref=payload.target_ref,
+            actor_staff_user_id=staff.id,
+            actor_session_id=staff_session.id,
+        )
+    except CommerceError as error:
+        raise _commerce_problem(error) from error
+    await session.commit()
+    mark_private(response)
+    if not created:
+        response.status_code = status.HTTP_200_OK
+    return AdminEntitlementAdjustmentResponse(
+        event=_entitlement_event_response(event),
+        created=created,
+    )
+
+
+def _require_privacy_operator(staff: StaffUser) -> None:
+    if staff.role not in {"ops", "superadmin"}:
+        raise ApiProblem(status=403, title="Privacy operator permission required")
+
+
+def _closure_response(closure: AccountClosureRequest) -> ClosureResponse:
+    return ClosureResponse(
+        closure_id=closure.id,
+        user_id=closure.user_id,
+        status=closure.status,
+        requested_at=closure.requested_at,
+        cancel_until=closure.cancel_until,
+        cancelled_at=closure.cancelled_at,
+        executed_at=closure.executed_at,
+    )
+
+
+@router.get(
+    "/privacy/closures",
+    operation_id="listAccountClosures",
+    response_model=ClosureListResponse,
+    tags=["Admin Privacy"],
+)
+async def list_account_closures(
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(database_session),
+    principal: tuple[StaffSession, StaffUser] = Depends(require_staff_session),
+) -> ClosureListResponse:
+    _require_privacy_operator(principal[1])
+    closures = await DataRightsService(
+        session, _settings(request)
+    ).list_pending_closures()
+    mark_private(response)
+    return ClosureListResponse(closures=[_closure_response(item) for item in closures])
+
+
+@router.post(
+    "/privacy/closures/{closure_id}/execute",
+    operation_id="executeAccountClosure",
+    response_model=ClosureResponse,
+    tags=["Admin Privacy"],
+)
+async def execute_account_closure(
+    request: Request,
+    response: Response,
+    closure_id: UUID,
+    session: AsyncSession = Depends(database_session),
+    principal: tuple[StaffSession, StaffUser] = Depends(require_staff_csrf),
+) -> ClosureResponse:
+    actor_session, actor = principal
+    _require_privacy_operator(actor)
+    try:
+        closure = await DataRightsService(
+            session, _settings(request)
+        ).execute_closure(closure_id)
+    except ClosureNotFoundError as error:
+        raise ApiProblem(status=404, title="Account closure not found") from error
+    except (ClosureNotReadyError, ClosureAlreadyExecutedError) as error:
+        raise ApiProblem(status=409, title="Account closure is not ready") from error
+    session.add(
+        AdminAuditEvent(
+            staff_user_id=actor.id,
+            actor_session_id=actor_session.id,
+            action="privacy.closure.execute",
+            event_metadata={
+                "target_id": str(closure.user_id),
+                "status": closure.status,
+            },
+        )
+    )
+    await session.commit()
+    mark_private(response)
+    return _closure_response(closure)

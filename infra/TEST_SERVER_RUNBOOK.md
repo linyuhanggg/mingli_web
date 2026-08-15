@@ -24,7 +24,8 @@
 /opt/fateradar/
 ├── releases/<sha>/        # 每版一个目录，内容 = git archive 源码，只写一次
 │   ├── backend/           # 源码 + 该版独立 .venv（uv 管理）
-│   └── web/               # 源码 + 该版独立 node_modules / standalone 产物
+│   ├── web/               # 源码 + 该版独立 node_modules / standalone 产物
+│   └── admin/             # 独立 Staff 控制台 + standalone 产物
 ├── current -> releases/<sha>   # 原子 symlink，唯一可变指针
 └── shared/
     ├── backups/           # 迁移前 pg_dump 与归档 sha256 记录
@@ -45,8 +46,13 @@
    ```
 
 3. 核对通过后解压到 `/opt/fateradar/releases/<sha>/`，把归档 digest 记入 `/opt/fateradar/shared/backups/<sha>-MANIFEST.txt`；
-4. 依赖安装和构建完成后 `chmod -R a-w` 把 release 转为只读；仅把
-   `web/.next/standalone/.next/cache` 单独留给 `fateradar` 用户写入。源码、`.venv`、
+4. 依赖安装和构建完成后先把归档可能带入的本机权限归一化：目录设为
+   `0755`、普通文件设为 `0644`，再执行 `chmod -R a-w` 把 release 转为只读；仅把
+   `web/.next/standalone/web/.next/cache` 与
+   `admin/.next/standalone/admin/.next/cache` 以及 Next standalone 的
+   `web/.next/standalone/web/.next/server`、
+   `admin/.next/standalone/admin/.next/server` 单独留给 `fateradar` 用户写入。
+   `.venv/bin` 内的启动脚本必须恢复为可执行权限。源码、`.venv`、
    `node_modules` 和 standalone 产物后续都不得原地修改。
 
 ## 3. Python 环境（uv 0.11.6 + Python 3.13）
@@ -80,13 +86,27 @@ BACKEND_INTERNAL_URL=http://127.0.0.1:8000 npm run build
 node scripts/start-standalone.mjs --prepare-only
 ```
 
-运行入口是构建产出的 `.next/standalone/server.js`：
+运行入口是构建产出的 `.next/standalone/web/server.js`：
 
 ```bash
-HOSTNAME=127.0.0.1 PORT=3000 node .next/standalone/server.js
+HOSTNAME=127.0.0.1 PORT=3000 node .next/standalone/web/server.js
 ```
 
 `BACKEND_INTERNAL_URL` 在构建期写进 Next.js 配置，指向回环 FastAPI。
+
+### 4.1 Admin 构建与运行
+
+Admin 与 Web 使用独立 Next.js standalone 产物和独立 Staff Session。每个 release 在服务器上重新安装并构建：
+
+```bash
+cd /opt/fateradar/releases/<sha>/admin
+npm ci
+BACKEND_INTERNAL_URL=http://127.0.0.1:8000 npm run build
+node scripts/start-standalone.mjs --prepare-only
+HOSTNAME=127.0.0.1 PORT=3001 node .next/standalone/admin/server.js
+```
+
+Admin 只监听 `127.0.0.1:3001`；本手册不授权把它接入临时公网预览。
 
 ## 5. 数据库：一个持久 role/db
 
@@ -108,17 +128,21 @@ sudo -u postgres psql -c "CREATE DATABASE fateradar_test OWNER fateradar_test;"
     > /opt/fateradar/shared/backups/<sha>-pre-migration.dump.sha256
   ```
 
+  `shared/backups` 默认是 `root:root 0700`，因此恢复演练不能直接让 `postgres` 读取其中的 dump。恢复时由 root 将目标 dump 临时复制到一个唯一路径，设置为 `postgres:postgres 0600`，再以 `runuser -u postgres` 执行 `pg_restore`；核对完成后删除临时副本。不要为了恢复而放宽整个备份目录权限，也不要把 dump 复制进 release。
+
 - 备份非空且 hash 已记录后，必须从该 release 的 backend 目录加载受保护环境，
   再调用 release 自带的 Alembic；不能用全局命令，也不能让它回退到默认数据库：
 
   ```bash
-  cd /opt/fateradar/releases/<sha>/backend
-  set -a
-  . /etc/fateradar/test.env
-  set +a
-  test -n "${MINGLI_DATABASE_URL:-}"
-  test "${MINGLI_DATABASE_URL##*/}" = "fateradar_test"
-  .venv/bin/alembic -c alembic.ini upgrade head
+  sudo bash -lc '
+    set -a
+    . /etc/fateradar/test.env
+    set +a
+    cd /opt/fateradar/releases/<sha>/backend
+    test -n "${MINGLI_DATABASE_URL:-}"
+    test "${MINGLI_DATABASE_URL##*/}" = "fateradar_test"
+    .venv/bin/alembic -c alembic.ini upgrade head
+  '
   ```
 
 迁移完成后，local + Fake 环境还要登记一条仅供合同测试使用的 Runtime
@@ -160,23 +184,25 @@ MINGLI_CONTENT_ENCRYPTION_KEY_B64=<server-generated>
 MINGLI_CONTENT_ENCRYPTION_KEY_ID=fateradar-test-v1
 ```
 
-三个 systemd 单元固定为 `fateradar-test-api.service`、`fateradar-test-worker.service`、`fateradar-test-web.service`，单元文件在仓库 `infra/systemd/`，**Nginx 用系统 nginx，不是自定义单元**。安装：
+四个 systemd 单元固定为 `fateradar-test-api.service`、`fateradar-test-worker.service`、`fateradar-test-web.service`、`fateradar-test-admin.service`，单元文件在仓库 `infra/systemd/`，**Nginx 用系统 nginx，不是自定义单元**。安装：
 
 ```bash
 sudo install -o root -g root -m 0644 \
   /opt/fateradar/current/infra/systemd/fateradar-test-api.service \
   /opt/fateradar/current/infra/systemd/fateradar-test-worker.service \
   /opt/fateradar/current/infra/systemd/fateradar-test-web.service \
+  /opt/fateradar/current/infra/systemd/fateradar-test-admin.service \
   /etc/systemd/system/
 sudo systemctl daemon-reload
 ```
 
 要点（以仓库文件为准）：
 
-- 三个单元都用 `User=fateradar` / `Group=fateradar`，`WorkingDirectory` 经 `current` 指向本版，自带 `ProtectSystem=strict` 等加固；
+- 四个单元都用 `User=fateradar` / `Group=fateradar`，`WorkingDirectory` 经 `current` 指向本版，自带 `ProtectSystem=strict` 等加固；
 - API：`ExecStart=/opt/fateradar/current/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000`，读取 `EnvironmentFile=/etc/fateradar/test.env`；
 - Worker：`ExecStart=.../.venv/bin/python -m worker.main --poll-interval 2`，同样读 `test.env`；**固定单副本**，任务抢占靠 Postgres 行锁，禁止模板扩容；
-- Web：`WorkingDirectory=/opt/fateradar/current/web/.next/standalone`，`ExecStart=/usr/bin/node server.js`，`HOSTNAME=127.0.0.1`、`PORT=3000`、`NODE_ENV=production` 由单元自带，不需要 secrets；`BACKEND_INTERNAL_URL` 构建期已内联。
+- Web：`WorkingDirectory=/opt/fateradar/current/web/.next/standalone/web`，`ExecStart=/usr/bin/node server.js`，`HOSTNAME=127.0.0.1`、`PORT=3000`、`NODE_ENV=production` 由单元自带，不需要 secrets；`BACKEND_INTERNAL_URL` 构建期已内联。
+- Admin：`WorkingDirectory=/opt/fateradar/current/admin/.next/standalone/admin`，`ExecStart=/usr/bin/node server.js`，`HOSTNAME=127.0.0.1`、`PORT=3001`、`NODE_ENV=production` 由单元自带；仅允许回环访问，不进入公共 Web 预览。
 
 ## 7. 秘密管理原则（服务器端生成、不落命令行、不打印）
 
@@ -238,10 +264,10 @@ sudo systemctl reload nginx
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now fateradar-test-api fateradar-test-worker fateradar-test-web
+sudo systemctl enable --now fateradar-test-api fateradar-test-worker fateradar-test-web fateradar-test-admin
 ```
 
-验收覆盖四层（API live/ready、Web、回环 Nginx、三个 systemd 单元）：
+验收覆盖五层（API live/ready、Web、Admin、回环 Nginx、四个 systemd 单元）：
 
 ```bash
 # Nginx 回环层
@@ -253,8 +279,10 @@ curl -fsS http://127.0.0.1:8080/api/v1/health/live
 curl -fsS http://127.0.0.1:8080/api/v1/health/ready
 # Web 首页
 curl -fsS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/
+# Admin 登录页（回环直连）
+curl -fsS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3001/login
 # systemd 单元状态
-sudo systemctl is-active fateradar-test-api fateradar-test-worker fateradar-test-web nginx
+sudo systemctl is-active fateradar-test-api fateradar-test-worker fateradar-test-web fateradar-test-admin nginx
 ```
 
 任一失败即视为部署失败，进入回滚。**全部通过后重启一次所有单元，再复跑一遍上面的检查**，确认开机自启路径可靠。
@@ -277,7 +305,7 @@ Next standalone 收到 systemd 的 SIGTERM 时会按其信号约定退出 `143`�
 ### 首次部署回滚（没有可用的旧版本）
 
 ```bash
-sudo systemctl stop fateradar-test-api fateradar-test-worker fateradar-test-web
+sudo systemctl stop fateradar-test-api fateradar-test-worker fateradar-test-web fateradar-test-admin
 sudo rm /opt/fateradar/current
 ```
 
@@ -288,7 +316,7 @@ sudo rm /opt/fateradar/current
 ### 后续版本回滚（恢复备份 + 原子切 current）
 
 ```bash
-sudo systemctl stop fateradar-test-api fateradar-test-worker fateradar-test-web
+sudo systemctl stop fateradar-test-api fateradar-test-worker fateradar-test-web fateradar-test-admin
 # 1) 把持久库恢复到该 release 迁移前状态
 sudo -u postgres pg_restore -d fateradar_test --clean --if-exists \
   /opt/fateradar/shared/backups/<旧sha>-pre-migration.dump
@@ -296,7 +324,7 @@ sudo -u postgres pg_restore -d fateradar_test --clean --if-exists \
 ln -s /opt/fateradar/releases/<旧sha> /opt/fateradar/current.new
 mv -Tf /opt/fateradar/current.new /opt/fateradar/current
 # 3) 重启并复跑第 9 节全部检查 + 第 10 节 Fake OTP 冒烟
-sudo systemctl start fateradar-test-api fateradar-test-worker fateradar-test-web
+sudo systemctl start fateradar-test-api fateradar-test-worker fateradar-test-web fateradar-test-admin
 ```
 
 - 新版本目录先保留，确认稳定后再清理；

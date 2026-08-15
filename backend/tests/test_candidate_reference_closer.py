@@ -150,3 +150,41 @@ def test_close_candidate_drops_out_of_scope_refs() -> None:
     assert block.evidence_refs == ("evidence:classic-1",)
     assert block.limit_kind_ids == ()
     assert NarrativeGuard().validate(closed, _brief(), PREVIEW_V1).passed is True
+
+
+def test_close_candidate_drops_dimension_scoped_limit_from_other_dimension() -> None:
+    payload = _brief().to_dict()
+    payload["limits"].append(
+        {
+            "kind_id": "limit:timing",
+            "public_text": "只适用于时机维度。",
+            "scope_refs": ["timing"],
+            "detail_ids": [],
+        }
+    )
+    brief = ReadingBrief.from_dict(payload)
+    candidate = NarrativeCandidate.from_dict(
+        {
+            "schema_version": "mingli-narrative-candidate-v1",
+            "blocks": [
+                {
+                    "block_id": "b1",
+                    "block_type": "claim",
+                    "text": "事业主线更适合先抓住可持续积累。",
+                    "subject_ref": "profile-version:test",
+                    "dimension_id": "career",
+                    "claim_kind_id": "kind.tendency",
+                    "certainty_id": "certainty.tendency",
+                    "fact_refs": ["fact:career-structure"],
+                    "finding_refs": [],
+                    "evidence_refs": [],
+                    "limit_kind_ids": ["limit:timing"],
+                }
+            ],
+        }
+    )
+
+    closed = close_candidate_references(candidate, brief)
+
+    assert closed.blocks[0].limit_kind_ids == ()
+    assert NarrativeGuard().validate(closed, brief, PREVIEW_V1).passed is True

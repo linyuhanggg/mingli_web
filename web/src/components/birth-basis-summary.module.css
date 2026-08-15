@@ -2,10 +2,10 @@
   display: grid;
   gap: 0.85rem;
   padding: 1rem 1.1rem;
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-100);
-  animation: form-shell-enter var(--duration-state) var(--ease-out-expo) both;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  animation: form-shell-enter var(--duration-overlay) var(--ease-out) both;
 }
 
 @keyframes form-shell-enter {
@@ -28,8 +28,8 @@
 
 .title {
   margin: 0;
-  color: var(--ink-950);
-  font-size: 0.88rem;
+  color: var(--color-text);
+  font-size: var(--font-size-label);
   font-weight: 750;
 }
 
@@ -47,35 +47,35 @@
 }
 
 .rowLabel {
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
 }
 
 .rowValue {
   margin: 0;
-  color: var(--ink-950);
-  font-size: 0.9rem;
+  color: var(--color-text);
+  font-size: var(--font-size-label);
   overflow-wrap: anywhere;
 }
 
 .hint,
 .degraded {
   margin: 0;
-  color: var(--ink-700);
-  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   line-height: 1.6;
 }
 
 .degraded {
-  color: var(--terracotta-600);
+  color: var(--color-danger);
 }
 
 .serverFinal {
   margin: 0;
   padding-top: 0.6rem;
-  border-top: 1px solid var(--border-subtle);
-  color: var(--ink-950);
-  font-size: 0.82rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
   font-weight: 680;
 }
 

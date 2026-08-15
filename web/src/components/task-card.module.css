@@ -5,9 +5,9 @@
   flex-direction: column;
   overflow: hidden;
   padding: clamp(1.45rem, 4vw, 2.2rem);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-panel);
   transition:
-    transform var(--duration-feedback) var(--ease-out-expo);
+    transform var(--duration-feedback) var(--ease-out);
 }
 
 .card::before {
@@ -20,7 +20,7 @@
   border-radius: 50%;
   content: "";
   opacity: 0.16;
-  transition: transform var(--duration-entrance) var(--ease-out-expo);
+  transition: transform var(--duration-page) var(--ease-out);
 }
 
 .card::after {
@@ -48,40 +48,40 @@
 }
 
 .card[data-tone="paper"] {
-  border: 1px solid var(--border-subtle);
-  background: var(--white);
-  color: var(--ink-950);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: none;
 }
 
 .card[data-tone="paper"]:hover {
-  box-shadow: 0 18px 42px 2px rgb(16 52 45 / 12%);
+  box-shadow: none;
 }
 
 .card[data-tone="ink"] {
-  background: var(--ink-900);
-  color: var(--ivory-50);
-  box-shadow: 0 22px 54px 4px rgb(10 40 35 / 22%);
+  background: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
+  box-shadow: none;
 }
 
 .card[data-tone="ink"]:hover {
-  box-shadow: 0 26px 60px 4px rgb(10 40 35 / 28%);
+  border-color: var(--color-border-strong);
 }
 
 .card[data-tone="clay"] {
-  background: var(--ivory-200);
-  color: var(--ink-950);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
 }
 
 .card[data-tone="clay"]:hover {
-  box-shadow: 0 16px 36px 2px rgb(16 52 45 / 10%);
+  border-color: var(--color-border-strong);
 }
 
 .card h3 {
   max-width: 8ch;
   margin: auto 0 0.8rem;
-  font-family: var(--font-serif);
-  font-size: clamp(2.15rem, 8vw, 3.6rem);
+  font-family: var(--font-sans);
+  font-size: clamp(2.5rem, 8vw, 3.6rem);
   font-weight: 600;
   letter-spacing: -0.035em;
   line-height: 1.02;
@@ -100,7 +100,7 @@
   padding-bottom: 0.35rem;
   border-bottom: 1px solid currentColor;
   color: currentColor;
-  font-size: 0.72rem;
+  font-size: var(--font-size-meta);
   font-weight: 760;
   letter-spacing: 0.08em;
   opacity: 0.72;
@@ -114,16 +114,16 @@
   gap: 1rem;
   margin-top: 1.4rem;
   border-top: 1px solid currentColor;
-  font-size: 0.9rem;
+  font-size: var(--font-size-label);
   font-weight: 750;
   opacity: 0.9;
   transition:
     opacity var(--duration-feedback) ease,
-    transform var(--duration-feedback) var(--ease-out-expo);
+    transform var(--duration-feedback) var(--ease-out);
 }
 
 .arrow {
-  transition: transform var(--duration-feedback) var(--ease-out-expo);
+  transition: transform var(--duration-feedback) var(--ease-out);
 }
 
 .action:hover {

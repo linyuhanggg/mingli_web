@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/time-check-view-v1.schema.json",
+  "title": "TimeCheckViewV1",
+  "description": "Facts-only projection for the twelve-hour time-check candidates.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "subject_ref",
+    "candidate_count",
+    "candidates",
+    "known_time_range",
+    "time_basis_policy",
+    "known_event_count",
+    "ranking_status",
+    "event_matching_status",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {"const": "time-check-view/v1"},
+    "subject_ref": {"type": "string", "minLength": 1},
+    "candidate_count": {"type": "integer", "minimum": 12, "maximum": 12},
+    "candidates": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": {"$ref": "#/$defs/candidate"}
+    },
+    "known_time_range": {"type": "object"},
+    "time_basis_policy": {"type": "string", "minLength": 1},
+    "known_event_count": {"type": "integer", "minimum": 0},
+    "ranking_status": {"const": "not_ranked"},
+    "event_matching_status": {"const": "not_calculated"},
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string"}
+    }
+  },
+  "$defs": {
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "hour_branch",
+        "local_civil_datetime",
+        "within_known_time_range",
+        "four_pillars",
+        "calendar_normalization"
+      ],
+      "properties": {
+        "candidate_id": {"type": "string", "minLength": 1},
+        "hour_branch": {"type": "string", "minLength": 1},
+        "local_civil_datetime": {"type": "string", "minLength": 1},
+        "within_known_time_range": {"type": "boolean"},
+        "bazi_chart_digest": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "four_pillars": {},
+        "day_master": {},
+        "calendar_normalization": {"type": "object"}
+      }
+    }
+  }
+}

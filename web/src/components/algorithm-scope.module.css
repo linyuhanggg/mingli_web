@@ -8,8 +8,8 @@
 
 .group legend {
   margin-bottom: 0.15rem;
-  color: var(--ink-950);
-  font-size: 0.88rem;
+  color: var(--color-text);
+  font-size: var(--font-size-label);
   font-weight: 750;
 }
 
@@ -25,33 +25,33 @@
   gap: 0.2rem 0.7rem;
   align-items: center;
   padding: 0.8rem 0.9rem;
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-50);
-  color: var(--ink-950);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+  color: var(--color-text);
   cursor: pointer;
   transition:
-    transform var(--duration-feedback) var(--ease-out-expo),
+    transform var(--duration-feedback) var(--ease-out),
     border-color var(--duration-feedback) ease,
     background-color var(--duration-feedback) ease;
 }
 
 .option:hover {
-  border-color: var(--moss-700);
-  background: var(--white);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
   transform: translateY(-1px);
 }
 
 .option:has(input:checked) {
-  border-color: var(--moss-700);
-  background: var(--moss-100);
+  border-color: var(--color-action);
+  background: var(--color-surface);
 }
 
 .option input {
   width: 1.1rem;
   height: 1.1rem;
   margin: 0;
-  accent-color: var(--ink-900);
+  accent-color: var(--color-action);
 }
 
 .title {
@@ -60,24 +60,24 @@
 
 .description {
   grid-column: 2;
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   line-height: 1.5;
 }
 
 .hint {
   margin: 0;
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
 }
 
 .notice {
   display: grid;
   gap: 0.45rem;
   padding: 0.9rem 1rem;
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-sm);
-  background: var(--moss-100);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
 }
 
 .noticeTitle,
@@ -86,15 +86,15 @@
 }
 
 .noticeTitle {
-  color: var(--ink-950);
-  font-family: var(--font-serif);
-  font-size: 1rem;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
   font-weight: 600;
 }
 
 .noticeText {
-  color: var(--ink-700);
-  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   line-height: 1.65;
 }
 

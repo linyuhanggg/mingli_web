@@ -1,0 +1,611 @@
+import copy
+import json
+from pathlib import Path
+
+import pytest
+from app.charts.contracts import VIEW_MODEL_TYPES, parse_view_model
+from app.charts.projectors import project_view_model
+from app.readings.presentation import (
+    PresentationContract,
+    PresentationSection,
+    ReadingDocumentV1,
+    build_reading_document,
+)
+from jsonschema import Draft202012Validator
+from pydantic import ValidationError
+
+ROOT = Path(__file__).resolve().parents[2]
+SCHEMA_ROOT = ROOT / "contracts" / "schemas"
+
+VIEW_SCHEMAS = (
+    "bazi-chart-v1.schema.json",
+    "ziwei-chart-v1.schema.json",
+    "qizheng-chart-v1.schema.json",
+    "liuyao-chart-v1.schema.json",
+    "meihua-chart-v1.schema.json",
+    "luming-nayin-chart-v1.schema.json",
+    "rhythm-facts-view-v1.schema.json",
+    "taiyi-chart-v1.schema.json",
+    "selection-chart-v1.schema.json",
+    "fengshui-view-v1.schema.json",
+    "qimen-chart-v1.schema.json",
+    "daliuren-chart-v1.schema.json",
+    "physiognomy-view-v1.schema.json",
+    "bazi-relationship-v1.schema.json",
+    "ziwei-relationship-v1.schema.json",
+    "qizheng-relationship-v1.schema.json",
+    "hecan-view-v1.schema.json",
+    "wenshi-view-v1.schema.json",
+    "canwen-view-v1.schema.json",
+)
+
+
+def _schema(path: Path) -> dict[str, object]:
+    assert path.is_file(), f"missing frozen contract: {path}"
+    with path.open(encoding="utf-8") as stream:
+        schema = json.load(stream)
+    Draft202012Validator.check_schema(schema)
+    return schema
+
+
+def _bazi_payload() -> dict[str, object]:
+    return {
+        "schema_version": "bazi-chart/v1",
+        "subject_ref": "profile-version:alice-v1",
+        "pillars": [
+            {"position": "year", "stem": "甲", "branch": "子"},
+            {"position": "month", "stem": "乙", "branch": "丑"},
+            {"position": "day", "stem": "丙", "branch": "寅"},
+            {"position": "hour", "stem": "丁", "branch": "卯"},
+        ],
+        "element_balance": [
+            {"element": "wood", "value": 2, "display_text": "木二"}
+        ],
+        "time_layers": [
+            {
+                "layer_id": "life",
+                "label": "本命",
+                "available": True,
+                "unavailable_reason": None,
+            }
+        ],
+    }
+
+
+def _rhythm_payload() -> dict[str, object]:
+    return {
+        "schema_version": "rhythm-facts-view/v1",
+        "subject_ref": "profile-version:alice-v1",
+        "pillars": [
+            {"position": "year", "stem": "甲", "branch": "戌", "nayin": "山头火"},
+            {"position": "month", "stem": "戊", "branch": "辰", "nayin": "大林木"},
+            {"position": "day", "stem": "丙", "branch": "戌", "nayin": "屋上土"},
+            {"position": "hour", "stem": "辛", "branch": "卯", "nayin": "松柏木"},
+        ],
+        "independent_lineage": "early-luming-nayin",
+        "fact_scope": "early_luming_natal_facts",
+        "interpretation_status": "facts_only",
+        "source_boundary": "只展示 Runtime 四柱纳音事实。",
+    }
+
+
+def _reading_document_payload() -> dict[str, object]:
+    return {
+        "schema_version": "reading-document/v1",
+        "document_id": "reading-version:1",
+        "reading_version_id": "reading-version:1",
+        "accepted_copy_ref": "accepted-copy:1",
+        "product_version": "bazi-deep/v1",
+        "presentation_contract_version": "bazi-deep-presentation/v1",
+        "view_model": _bazi_payload(),
+        "answer_summary": "先稳住长期积累。",
+        "subject_summaries": [
+            {"subject_ref": "profile-version:alice-v1", "label": "本人"}
+        ],
+        "themes": [{"theme_id": "career", "label": "事业"}],
+        "claims": [
+            {
+                "claim_id": "claim:1",
+                "section_id": "overview",
+                "text": "先稳住长期积累。",
+                "subject_ref": "profile-version:alice-v1",
+                "dimension_id": "career",
+                "claim_kind_id": "kind.tendency",
+                "certainty_id": "certainty.tendency",
+                "fact_refs": ["fact:1"],
+                "finding_refs": ["finding:1"],
+                "evidence_refs": ["evidence:1"],
+                "limit_refs": ["limit:1"],
+                "verification": {"enabled": True},
+            }
+        ],
+        "evidence": [
+            {
+                "evidence_ref": "evidence:1",
+                "title": "依据",
+                "supports_fact_refs": ["fact:1"],
+            }
+        ],
+        "boundaries": [{"limit_ref": "limit:1", "text": "仅供个人参考。"}],
+        "actions": {
+            "correction": {"enabled": True},
+            "follow_up": {"enabled": True},
+            "export": {"enabled": False},
+            "share": {"enabled": False},
+        },
+        "versions": {
+            "runtime_release": "runtime:v1",
+            "view_model_schema": "bazi-chart/v1",
+            "reading_document_schema": "reading-document/v1",
+        },
+    }
+
+
+def _interpretive_candidates_payload() -> dict[str, object]:
+    return {
+        "strength": {
+            "status": "evidence_only",
+            "hard_verdict": None,
+            "day_element": "fire",
+            "month_command_element": "earth",
+            "same_element_occurrences": 2,
+            "resource_element": "wood",
+            "resource_occurrences": 1,
+            "all_element_occurrences": [
+                {"element": "fire", "value": 2},
+                {"element": "wood", "value": 1},
+            ],
+            "boundary": "机械证据，不作强弱裁定。",
+        },
+        "structure": {
+            "status": "candidate_only",
+            "hard_verdict": None,
+            "month_main_qi": "己",
+            "month_main_qi_ten_god": "伤官",
+            "main_qi_visible": False,
+            "visible_positions": [],
+            "boundary": "仅为候选，不作格局裁定。",
+        },
+        "following_and_transformation": {
+            "status": "requires_classical_adjudication",
+            "hard_verdict": None,
+            "stem_combination_candidates": [],
+            "branch_formation_candidates": [],
+            "boundary": "需按古法进一步裁定。",
+        },
+        "salience_signals": [],
+    }
+
+
+def _reading_document_with_candidates(view_kind: str) -> dict[str, object]:
+    payload = _reading_document_payload()
+    candidates = _interpretive_candidates_payload()
+    if view_kind == "bazi":
+        payload["view_model"]["core_facts"] = {
+            "interpretive_candidates": candidates,
+        }
+        return payload
+
+    payload["view_model"] = {
+        "schema_version": "five-elements-facts-view/v1",
+        "subject_ref": "profile-version:alice-v1",
+        "day_master": None,
+        "month_command": None,
+        "seasonal_profile": None,
+        "tiaohou_markers": None,
+        "element_inventory": None,
+        "interpretive_candidates": candidates,
+        "source_identity": None,
+        "active_source_rule_ids": [],
+        "source_dependency_ids": [],
+        "source_status": "unavailable",
+        "source_gaps": [],
+        "limitations": [],
+    }
+    payload["versions"]["view_model_schema"] = "five-elements-facts-view/v1"
+    return payload
+
+
+@pytest.mark.parametrize("schema_name", VIEW_SCHEMAS)
+def test_p5_publishes_each_versioned_view_schema(schema_name: str) -> None:
+    schema = _schema(SCHEMA_ROOT / "views" / schema_name)
+    assert schema["additionalProperties"] is False
+    assert schema["properties"]["schema_version"]["const"].endswith("/v1")
+
+
+def test_chart_contract_rejects_unknown_fields_and_unknown_versions() -> None:
+    payload = _bazi_payload()
+    parsed = parse_view_model(payload)
+    assert parsed.schema_version == "bazi-chart/v1"
+    assert "bazi-chart/v1" in VIEW_MODEL_TYPES
+
+    with pytest.raises(ValidationError):
+        parse_view_model({**payload, "raw": {"day_master": "丙"}})
+    with pytest.raises(ValueError, match="unsupported view model schema_version"):
+        parse_view_model({**payload, "schema_version": "bazi-chart/v999"})
+
+
+def test_rhythm_facts_view_model_is_strict_and_parseable() -> None:
+    payload = _rhythm_payload()
+    parsed = parse_view_model(payload)
+
+    assert parsed.schema_version == "rhythm-facts-view/v1"
+    assert parsed.independent_lineage == "early-luming-nayin"
+    assert len(parsed.pillars) == 4
+
+    with pytest.raises(ValidationError):
+        parse_view_model({**payload, "sound_score": 1})
+
+
+def test_projector_requires_a_typed_supported_view_model() -> None:
+    projected = project_view_model(parse_view_model(_bazi_payload()))
+    assert projected["schema_version"] == "bazi-chart/v1"
+
+    with pytest.raises(TypeError, match="typed view model"):
+        project_view_model(_bazi_payload())
+
+
+def test_view_models_reject_missing_layer_reasons_duplicate_subjects_and_arts() -> None:
+    unavailable = _bazi_payload()
+    unavailable["time_layers"][0] = {
+        "layer_id": "year",
+        "label": "流年",
+        "available": False,
+        "unavailable_reason": None,
+    }
+    with pytest.raises(ValidationError):
+        parse_view_model(unavailable)
+
+    subject = {
+        "subject_ref": "profile-version:alice-v1",
+        "profile_version_id": "alice-v1",
+        "label": "甲方",
+    }
+    with pytest.raises(ValidationError):
+        parse_view_model(
+            {
+                "schema_version": "bazi-relationship/v1",
+                "subjects": [subject, {**subject, "label": "乙方"}],
+                "relationship_type": "friend",
+                "signals": [],
+            }
+        )
+
+    with pytest.raises(ValidationError):
+        parse_view_model(
+            {
+                "schema_version": "hecan-view/v1",
+                "subject_ref": "profile-version:alice-v1",
+                "selected_art_ids": ["bazi", "bazi"],
+                "dimensions": [
+                    {
+                        "dimension_id": "career",
+                        "signals": [],
+                        "convergence": [],
+                        "disagreements": [],
+                        "missing_art_ids": ["ziwei", "qizheng"],
+                    }
+                ],
+            }
+        )
+
+
+def test_reading_document_is_closed_and_embeds_only_known_view_models() -> None:
+    schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
+    payload = _reading_document_payload()
+    Draft202012Validator(schema).validate(payload)
+
+    unknown = copy.deepcopy(payload)
+    unknown["raw"] = {"provider_payload": True}
+    assert tuple(Draft202012Validator(schema).iter_errors(unknown))
+
+    unknown_view = copy.deepcopy(payload)
+    unknown_view["view_model"]["schema_version"] = "unknown-view/v1"
+    with pytest.raises(ValidationError):
+        ReadingDocumentV1.model_validate(unknown_view)
+
+
+@pytest.mark.parametrize("view_kind", ["bazi", "five_elements"])
+def test_reading_document_accepts_strict_interpretive_candidates(
+    view_kind: str,
+) -> None:
+    schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
+    payload = _reading_document_with_candidates(view_kind)
+
+    Draft202012Validator(schema).validate(payload)
+
+
+@pytest.mark.parametrize("view_kind", ["bazi", "five_elements"])
+@pytest.mark.parametrize("invalid_case", ["missing", "status", "extra"])
+def test_reading_document_rejects_invalid_interpretive_candidates(
+    view_kind: str,
+    invalid_case: str,
+) -> None:
+    schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
+    payload = _reading_document_with_candidates(view_kind)
+    if view_kind == "bazi":
+        candidates = payload["view_model"]["core_facts"]["interpretive_candidates"]
+    else:
+        candidates = payload["view_model"]["interpretive_candidates"]
+
+    if invalid_case == "missing":
+        del candidates["structure"]
+    elif invalid_case == "status":
+        candidates["strength"]["status"] = "adjudicated"
+    else:
+        candidates["unexpected"] = True
+
+    assert tuple(Draft202012Validator(schema).iter_errors(payload))
+
+
+@pytest.mark.parametrize(
+    ("schema_version", "view_model"),
+    [
+        (
+            "meihua-chart/v1",
+            {
+                "schema_version": "meihua-chart/v1",
+                "subject_ref": "meihua:fixture",
+                "question": "这件事如何推进？",
+                "casting_method": "time",
+                "primary_hexagram": {
+                    "name": "风雷益",
+                    "upper_trigram": "巽",
+                    "lower_trigram": "震",
+                },
+                "mutual_hexagram": None,
+                "changed_hexagram": None,
+                "moving_lines": [2],
+                "body_use": {
+                    "body": {"position": "upper", "trigram": "巽", "element": "木"},
+                    "use": {"position": "lower", "trigram": "震", "element": "木"},
+                    "relation": "比和",
+                    "status": "calculated_relation_not_verdict",
+                },
+            },
+        ),
+        (
+            "luming-nayin-chart/v1",
+            {
+                "schema_version": "luming-nayin-chart/v1",
+                "subject_ref": "profile-version:fixture",
+                "pillars": [
+                    {"position": "year", "stem": "甲", "branch": "子", "nayin": "海中金"},
+                    {"position": "month", "stem": "乙", "branch": "丑", "nayin": "海中金"},
+                    {"position": "day", "stem": "丙", "branch": "寅", "nayin": "炉中火"},
+                    {"position": "hour", "stem": "丁", "branch": "卯", "nayin": "炉中火"},
+                ],
+                "three_yuan_profiles": {"year": {"name": "上元"}},
+                "taiyuan": None,
+                "relations": [
+                    {
+                        "category": "lu",
+                        "relation": "干禄",
+                        "anchor": "year",
+                        "anchor_pillar": "甲子",
+                        "status": "calculated_relation_not_verdict",
+                        "target_branch": None,
+                        "candidates": [],
+                        "matched_positions": [],
+                        "recension": None,
+                    }
+                ],
+            },
+        ),
+        (
+            "rhythm-facts-view/v1",
+            {
+                "schema_version": "rhythm-facts-view/v1",
+                "subject_ref": "profile-version:fixture",
+                "pillars": [
+                    {"position": "year", "stem": "甲", "branch": "子", "nayin": "海中金"},
+                    {"position": "month", "stem": "乙", "branch": "丑", "nayin": "海中金"},
+                    {"position": "day", "stem": "丙", "branch": "寅", "nayin": "炉中火"},
+                    {"position": "hour", "stem": "丁", "branch": "卯", "nayin": "炉中火"},
+                ],
+                "independent_lineage": "early-luming-nayin",
+                "fact_scope": "early_luming_natal_facts",
+                "interpretation_status": "facts_only",
+                "source_boundary": "只展示 Runtime 四柱纳音事实。",
+            },
+        ),
+        (
+            "chart-similarity-view/v1",
+            {
+                "schema_version": "chart-similarity-view/v1",
+                "left_subject_ref": "profile-version:left",
+                "right_subject_ref": "profile-version:right",
+                "basis": "bazi.four_pillars.exact",
+                "left_fact_ref": "fact:left/calculated/bazi/four_pillars",
+                "right_fact_ref": "fact:right/calculated/bazi/four_pillars",
+                "comparisons": [
+                    {
+                        "position": "year",
+                        "left": {"position": "year", "stem": "甲", "branch": "子"},
+                        "right": {"position": "year", "stem": "甲", "branch": "子"},
+                        "exact_match": True,
+                    },
+                    {
+                        "position": "month",
+                        "left": {"position": "month", "stem": "乙", "branch": "丑"},
+                        "right": {"position": "month", "stem": "乙", "branch": "丑"},
+                        "exact_match": True,
+                    },
+                    {
+                        "position": "day",
+                        "left": {"position": "day", "stem": "丙", "branch": "寅"},
+                        "right": {"position": "day", "stem": "丙", "branch": "寅"},
+                        "exact_match": True,
+                    },
+                    {
+                        "position": "hour",
+                        "left": {"position": "hour", "stem": "丁", "branch": "卯"},
+                        "right": {"position": "hour", "stem": "戊", "branch": "辰"},
+                        "exact_match": False,
+                    },
+                ],
+                "exact_match": False,
+                "matched_positions": ["year", "month", "day"],
+                "differing_positions": ["hour"],
+                "limitations": ["只比较四柱原值，不生成百分比评分。"],
+            },
+        ),
+        (
+            "taiyi-chart/v1",
+            {
+                "schema_version": "taiyi-chart/v1",
+                "subject_ref": "taiyi:fixture",
+                "calendar": {
+                    "annual_boundary": "lunar_new_year",
+                    "lunar_year": 2026,
+                    "year_ganzhi": "丙午",
+                },
+                "epoch": {
+                    "accumulated_year": 1,
+                    "anchor_accumulated_year": 1,
+                    "anchor_lunar_year_ce": 1,
+                    "derived_ce_offset": 0,
+                    "one_based": True,
+                    "profile_id": "fixture",
+                    "source_anchor": "fixture",
+                },
+                "cycle": {
+                    "bureau": 1,
+                    "governance": "理天",
+                    "ji": 1,
+                    "position_360": 1,
+                    "year_in_ji": 1,
+                    "year_in_zi_yuan": 1,
+                    "zi_yuan": 1,
+                    "zi_yuan_head": "甲子",
+                },
+                "board": {
+                    "heshen": "子",
+                    "jishen": "丑",
+                    "shiji": "寅",
+                    "taisui": "卯",
+                    "taiyi_position": "辰",
+                    "tianmu_wenchang": {"name": "文昌", "position": "巳"},
+                },
+                "host_guest": {},
+                "four_generals": {
+                    "guest_assistant": 1,
+                    "guest_major": 2,
+                    "host_assistant": 3,
+                    "host_major": 4,
+                },
+                "long_cycle_deities": [],
+                "board_predicates": [],
+                "scope_contract": {
+                    "declared_scope": "annual",
+                    "interpretation_policy": "facts_only",
+                    "supported_horizons": ["year"],
+                    "supported_objects": ["macro_historical"],
+                    "unsupported_scopes": ["personal_event"],
+                },
+            },
+        ),
+        (
+            "selection-chart/v1",
+            {
+                "schema_version": "selection-chart/v1",
+                "subject_ref": "selection:fixture",
+                "event_profile": "business_opening_transaction",
+                "eligible_candidates": [],
+                "eligible_date_time_candidates": [],
+                "eliminations": [],
+                "ranking": {
+                    "component_order": [],
+                    "eligible_candidate_ids": [],
+                    "eligible_date_time_candidate_ids": [],
+                    "folk_affects_rank": False,
+                    "method": "explainable_lexicographic_v1",
+                    "opaque_numeric_score": False,
+                    "ordered_candidate_ids": [],
+                    "ordered_date_time_candidate_ids": [],
+                },
+                "lineage_policy": {
+                    "folk": "folk",
+                    "folk_priority": "comparison_only",
+                    "merge_verdicts": False,
+                    "official": "official",
+                    "official_priority": "primary",
+                    "preserve_disagreement": True,
+                },
+                "no_valid_candidate": True,
+                "basis_projection": {},
+            },
+        ),
+        (
+            "fengshui-view/v1",
+            {
+                "schema_version": "fengshui-view/v1",
+                "subject_ref": "fengshui:fixture",
+                "active_subprofiles": ["liqi"],
+                "observation_provenance": {},
+                "compass": {},
+                "building_chronology": {},
+                "layout_graph": {},
+                "form": {},
+                "liqi": {},
+                "active_source_rule_ids": [],
+                "conflicts": [],
+                "uncertainties": [],
+                "critical_missing": [],
+            },
+        ),
+    ],
+)
+def test_reading_document_accepts_the_recent_art_view_models(
+    schema_version: str,
+    view_model: dict[str, object],
+) -> None:
+    schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
+    payload = _reading_document_payload()
+    payload["view_model"] = view_model
+    payload["versions"] = {
+        **payload["versions"],
+        "view_model_schema": schema_version,
+    }
+    Draft202012Validator(schema).validate(payload)
+    document = ReadingDocumentV1.model_validate(payload)
+    assert document.view_model.schema_version == schema_version
+
+
+def test_presentation_contract_controls_order_slots_disclosures_and_renderer() -> None:
+    contract = PresentationContract(
+        contract_version="bazi-deep-presentation/v1",
+        product_version="bazi-deep/v1",
+        renderer="bazi-reading/v1",
+        sections=(
+            PresentationSection(
+                section_id="overview",
+                title="总览",
+                min_claims=1,
+                max_claims=1,
+                max_chars_per_claim=40,
+                allowed_claim_kind_ids=("kind.tendency",),
+            ),
+        ),
+        fixed_disclosures=("仅供个人参考。",),
+    )
+    document = build_reading_document(contract, _reading_document_payload())
+    assert document.presentation_contract_version == contract.contract_version
+
+    too_many = copy.deepcopy(_reading_document_payload())
+    too_many["claims"].append(copy.deepcopy(too_many["claims"][0]))
+    too_many["claims"][1]["claim_id"] = "claim:2"
+    with pytest.raises(ValueError, match="claim slots"):
+        build_reading_document(contract, too_many)
+
+    disallowed = copy.deepcopy(_reading_document_payload())
+    disallowed["claims"][0]["claim_kind_id"] = "kind.guarantee"
+    with pytest.raises(ValueError, match="claim kind"):
+        build_reading_document(contract, disallowed)
+
+
+def test_models_do_not_offer_raw_or_unknown_fallback_fields() -> None:
+    forbidden = {"raw", "payload", "unknown", "fallback"}
+    for model in (*VIEW_MODEL_TYPES.values(), ReadingDocumentV1, PresentationContract):
+        assert forbidden.isdisjoint(model.model_fields)
+        assert model.model_config.get("extra") == "forbid"

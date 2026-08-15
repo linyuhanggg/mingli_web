@@ -3,11 +3,17 @@ from logging.config import fileConfig
 
 from alembic import context
 from app.admin import models as admin_models  # noqa: F401
+from app.commerce import models as commerce_models  # noqa: F401
 from app.config import Settings
+from app.content import models as content_models  # noqa: F401
 from app.entitlements import models as entitlement_models  # noqa: F401
 from app.identity.models import Base
+from app.media import models as media_models  # noqa: F401
+from app.privacy import models as privacy_models  # noqa: F401
 from app.profiles import models as profile_models  # noqa: F401
 from app.readings import models as reading_models  # noqa: F401
+from app.referrals import models as referral_models  # noqa: F401
+from app.support import models as support_models  # noqa: F401
 from sqlalchemy import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 

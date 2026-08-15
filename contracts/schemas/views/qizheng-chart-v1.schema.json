@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/qizheng-chart-v1.schema.json",
+  "title": "Qizheng Chart ViewModel v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "subject_ref", "planets", "houses", "aspects", "time_layers"],
+  "properties": {
+    "schema_version": {"const": "qizheng-chart/v1"},
+    "subject_ref": {"$ref": "#/$defs/text"},
+    "planets": {"type": "array", "items": {"$ref": "#/$defs/planet"}},
+    "houses": {"type": "array", "items": {"$ref": "#/$defs/house"}},
+    "aspects": {"type": "array", "items": {"$ref": "#/$defs/aspect"}},
+    "time_layers": {"type": "array", "items": {"$ref": "#/$defs/timeLayer"}},
+    "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1},
+    "timeLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layer_id", "label", "available", "unavailable_reason"],
+      "properties": {
+        "layer_id": {"$ref": "#/$defs/text"},
+        "label": {"$ref": "#/$defs/text"},
+        "available": {"type": "boolean"},
+        "unavailable_reason": {"type": ["string", "null"], "minLength": 1}
+      },
+      "allOf": [
+        {"if": {"properties": {"available": {"const": true}}}, "then": {"properties": {"unavailable_reason": {"type": "null"}}}, "else": {"properties": {"unavailable_reason": {"type": "string", "minLength": 1}}}}
+      ]
+    },
+    "planet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["planet_id", "sign_id", "house_id", "longitude"],
+      "properties": {
+        "planet_id": {"$ref": "#/$defs/text"},
+        "sign_id": {"$ref": "#/$defs/text"},
+        "house_id": {"$ref": "#/$defs/text"},
+        "longitude": {"type": "number", "minimum": 0, "exclusiveMaximum": 360}
+      }
+    },
+    "house": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["house_id", "sign_id", "cusp_longitude"],
+      "properties": {
+        "house_id": {"$ref": "#/$defs/text"},
+        "sign_id": {"$ref": "#/$defs/text"},
+        "cusp_longitude": {"type": "number", "minimum": 0, "exclusiveMaximum": 360}
+      }
+    },
+    "aspect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["aspect_id", "from_planet_id", "to_planet_id", "orb"],
+      "properties": {
+        "aspect_id": {"$ref": "#/$defs/text"},
+        "from_planet_id": {"$ref": "#/$defs/text"},
+        "to_planet_id": {"$ref": "#/$defs/text"},
+        "orb": {"type": "number", "minimum": 0}
+      }
+    },
+    "bodyFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["body_id", "classical_name", "longitude", "latitude_degrees", "degree_in_zodiac_sign", "house_id", "house_degree", "motion_state", "fact_status"],
+      "properties": {
+        "body_id": {"$ref": "#/$defs/text"},
+        "classical_name": {"$ref": "#/$defs/text"},
+        "longitude": {"type": "number", "minimum": 0, "exclusiveMaximum": 360},
+        "latitude_degrees": {"type": ["number", "null"]},
+        "degree_in_zodiac_sign": {"type": ["number", "null"], "minimum": 0, "exclusiveMaximum": 30},
+        "house_id": {"type": ["string", "null"], "minLength": 1},
+        "house_degree": {"type": ["number", "null"], "minimum": 0},
+        "motion_state": {"type": ["string", "null"], "minLength": 1},
+        "fact_status": {"$ref": "#/$defs/text"}
+      }
+    },
+    "mingShen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ming_degree", "shen_degree", "longitude_degrees", "latitude_degrees", "separation_degrees", "local_apparent_sidereal_degrees", "profile", "fact_status"],
+      "properties": {
+        "ming_degree": {"type": "number", "minimum": 0, "exclusiveMaximum": 360},
+        "shen_degree": {"type": "number", "minimum": 0, "exclusiveMaximum": 360},
+        "longitude_degrees": {"type": "number", "minimum": 0, "exclusiveMaximum": 360},
+        "latitude_degrees": {"type": ["number", "null"]},
+        "separation_degrees": {"type": "number", "minimum": 0},
+        "local_apparent_sidereal_degrees": {"type": ["number", "null"], "minimum": 0, "exclusiveMaximum": 360},
+        "profile": {"$ref": "#/$defs/text"},
+        "fact_status": {"$ref": "#/$defs/text"}
+      }
+    },
+    "limit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sequence", "house", "age_start_years", "age_end_years", "start_degree", "end_degree", "status"],
+      "properties": {
+        "sequence": {"type": "integer", "minimum": 1, "maximum": 12},
+        "house": {"$ref": "#/$defs/text"},
+        "age_start_years": {"type": "number", "minimum": 0},
+        "age_end_years": {"type": "number", "minimum": 0},
+        "start_degree": {"type": "number", "minimum": 0, "exclusiveMaximum": 360},
+        "end_degree": {"type": "number", "minimum": 0, "exclusiveMaximum": 360},
+        "status": {"$ref": "#/$defs/text"}
+      }
+    },
+    "transformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sequence", "transformation", "label", "classical_body", "body", "year_stem", "status"],
+      "properties": {
+        "sequence": {"type": "integer", "minimum": 1},
+        "transformation": {"$ref": "#/$defs/text"},
+        "label": {"$ref": "#/$defs/text"},
+        "classical_body": {"$ref": "#/$defs/text"},
+        "body": {"$ref": "#/$defs/text"},
+        "year_stem": {"$ref": "#/$defs/text"},
+        "status": {"$ref": "#/$defs/text"}
+      }
+    },
+    "coreFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classical_bodies", "ming_shen", "major_limits", "transformations"],
+      "properties": {
+        "classical_bodies": {"oneOf": [{"type": "array", "items": {"$ref": "#/$defs/bodyFact"}}, {"type": "null"}]},
+        "ming_shen": {"oneOf": [{"$ref": "#/$defs/mingShen"}, {"type": "null"}]},
+        "major_limits": {"oneOf": [{"type": "array", "items": {"$ref": "#/$defs/limit"}}, {"type": "null"}]},
+        "transformations": {"oneOf": [{"type": "array", "items": {"$ref": "#/$defs/transformation"}}, {"type": "null"}]}
+      }
+    }
+  }
+}

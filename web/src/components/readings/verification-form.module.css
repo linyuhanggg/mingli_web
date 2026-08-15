@@ -1,14 +1,14 @@
 .section {
   padding-top: 1.25rem;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--color-border);
 }
 
 .heading {
   margin: 0 0 1rem;
-  font-family: var(--font-serif);
-  font-size: 1.25rem;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-card);
   font-weight: 600;
-  color: var(--ink-950);
+  color: var(--color-text);
 }
 
 .fieldset {
@@ -21,8 +21,8 @@
 
 .legend {
   margin-bottom: 0.3rem;
-  color: var(--ink-900);
-  font-size: 0.95rem;
+  color: var(--color-action);
+  font-size: var(--font-size-body);
   font-weight: 700;
 }
 
@@ -38,28 +38,28 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0 0.95rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-50);
-  color: var(--ink-900);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+  color: var(--color-action);
   font-weight: 700;
   cursor: pointer;
   transition:
     border-color var(--duration-feedback) ease,
     background-color var(--duration-feedback) ease,
-    transform var(--duration-feedback) var(--ease-out-expo),
+    transform var(--duration-feedback) var(--ease-out),
     color var(--duration-feedback) ease;
 }
 
 .optionLabel:hover {
-  border-color: var(--gold-500);
-  background: var(--white);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
 }
 
 .optionLabel:has(.optionInput:checked) {
-  border-color: var(--moss-700);
-  background: var(--moss-100);
-  color: var(--ink-950);
+  border-color: var(--color-action);
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .optionLabel:active {
@@ -69,7 +69,7 @@
 .optionInput {
   width: 1.15rem;
   height: 1.15rem;
-  accent-color: var(--ink-900);
+  accent-color: var(--color-action);
 }
 
 .noteField {
@@ -79,8 +79,8 @@
 }
 
 .noteLabel {
-  color: var(--ink-900);
-  font-size: 0.95rem;
+  color: var(--color-action);
+  font-size: var(--font-size-body);
   font-weight: 700;
 }
 
@@ -89,11 +89,11 @@
   box-sizing: border-box;
   min-height: 3rem;
   padding: 0.7rem 0.85rem;
-  font-size: 1rem;
-  border: 1px solid var(--border-emphasis);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-50);
-  color: var(--ink-950);
+  font-size: var(--font-size-body);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+  color: var(--color-text);
   line-height: 1.6;
   resize: vertical;
   transition:
@@ -102,13 +102,13 @@
 }
 
 .note:hover {
-  border-color: var(--border-control);
-  background: var(--white);
+  border-color: var(--color-border);
+  background: var(--color-surface);
 }
 
 .note:focus {
-  border-color: var(--gold-500);
-  background: var(--white);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
 }
 
 .button {
@@ -119,11 +119,11 @@
   gap: 0.55rem;
   padding: 0.65rem 1.1rem;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: var(--ink-900);
-  color: var(--ivory-50);
-  box-shadow: var(--shadow-action);
-  font-size: 0.95rem;
+  border-radius: var(--radius-control);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  box-shadow: var(--shadow-float);
+  font-size: var(--font-size-body);
   font-weight: 700;
   cursor: pointer;
   transition:
@@ -133,7 +133,7 @@
 }
 
 .button:hover:not(:disabled) {
-  background: var(--ink-800);
+  background: var(--color-action-hover);
   transform: translateY(-2px);
 }
 
@@ -145,10 +145,10 @@
 .success {
   margin: 0;
   padding: 0.75rem;
-  border: 1px solid var(--gold-500);
-  border-radius: var(--radius-sm);
-  color: var(--ink-900);
-  animation: verification-success-enter var(--duration-state) var(--ease-out-expo) both;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  color: var(--color-action);
+  animation: verification-success-enter var(--duration-overlay) var(--ease-out) both;
 }
 
 @keyframes verification-success-enter {
@@ -165,7 +165,7 @@
 
 .error {
   margin: 0.9rem 0 0;
-  color: var(--terracotta-500);
+  color: var(--color-danger);
 }
 
 /* 尊重系统减弱动效设置：关闭过渡与位移 */

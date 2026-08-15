@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+from dataclasses import replace
 from types import MappingProxyType
 
 from app.readings.narrative_contracts import OutputContract
@@ -17,6 +19,15 @@ PREVIEW_V1 = OutputContract(
     required_limit_kind_ids=(),
     disclosure_text="AI 辅助生成，仅供传统文化参考。",
 )
+
+
+def output_contract_for_dimensions(dimension_ids: Sequence[str]) -> OutputContract:
+    """Freeze the requested dimensions into the product contract for this Job."""
+
+    dimensions = tuple(dict.fromkeys(item for item in dimension_ids if item))
+    if not dimensions:
+        return PREVIEW_V1
+    return replace(PREVIEW_V1, required_dimension_ids=dimensions)
 
 _OUTPUT_CONTRACTS = MappingProxyType({PREVIEW_V1.contract_id: PREVIEW_V1})
 

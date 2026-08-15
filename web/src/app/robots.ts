@@ -6,8 +6,16 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/app/", "/account", "/api/"],
+      disallow: [
+        "/app/",
+        "/account",
+        "/auth/",
+        "/workbench/",
+        "/checkout/",
+        "/share/",
+        "/invite/",
+        "/api/",
+      ],
     },
-    sitemap: "https://fateradar.cn/sitemap.xml",
   };
 }

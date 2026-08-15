@@ -1,26 +1,6 @@
-"use client";
-
-import { LockKeyhole, ScanLine } from "lucide-react";
-
-import { AppPageHeader } from "@/components/app-page-header";
-import styles from "@/components/app-surface.module.css";
-import { ProfileForm } from "@/components/profile-form";
+import { redirect } from "next/navigation";
 
 
-export default function NewProfilePage() {
-  return (
-    <div className={styles.page}>
-      <AppPageHeader
-        title="先确认出生事实，再进入可复现的推算。"
-        description="原始资料与时间口径由你最后确认，再由服务端规范化。修改资料会产生新版本，不覆盖已经用于解读的历史快照。"
-        meta={
-          <>
-            <span><ScanLine aria-hidden="true" size={15} /> 游客可先核对输入</span>
-            <span><LockKeyhole aria-hidden="true" size={15} /> 登录后才承诺保存</span>
-          </>
-        }
-      />
-      <ProfileForm />
-    </div>
-  );
+export default function LegacyNewProfilePage() {
+  redirect("/account/profiles");
 }

@@ -1,0 +1,66 @@
+.main {
+  min-height: 100vh;
+  background: var(--color-canvas);
+}
+
+.container {
+  display: grid;
+  max-width: var(--container-prose);
+  gap: var(--space-xl);
+  padding-top: var(--space-2xl);
+  padding-bottom: var(--space-3xl);
+}
+
+.container > header {
+  display: flex;
+  align-items: start;
+  gap: var(--space-md);
+}
+
+.container h1,
+.container h2,
+.container p {
+  margin: 0;
+}
+
+.container h1 {
+  font-size: clamp(2.5rem, 5vw, var(--font-size-hero));
+}
+
+.container header p,
+.handle p {
+  margin-top: var(--space-sm);
+  color: var(--color-text-secondary);
+}
+
+.handle {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-subtle);
+}
+
+.handle code {
+  width: fit-content;
+  max-width: 100%;
+  padding: var(--space-sm);
+  overflow-wrap: anywhere;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.homeLink {
+  display: inline-flex;
+  width: fit-content;
+  min-height: var(--target-min);
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-label);
+  font-weight: 680;
+}

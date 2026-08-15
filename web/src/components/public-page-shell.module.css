@@ -1,5 +1,12 @@
 .shell {
   min-height: 100vh;
-  background: var(--ink-950);
-  color: var(--ivory-50);
+  overflow-x: hidden;
+  background: var(--color-canvas);
+  color: var(--color-text);
+}
+
+@media (max-width: 47.999rem) {
+  .shell {
+    padding-bottom: calc(var(--nav-bottom) + env(safe-area-inset-bottom));
+  }
 }

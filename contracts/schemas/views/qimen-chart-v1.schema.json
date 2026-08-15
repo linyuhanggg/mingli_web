@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://fateradar.cn/contracts/views/qimen-chart-v1.schema.json", "title": "Qimen Chart ViewModel v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "subject_ref", "question", "dun_type", "ju_number", "palaces"],
+  "properties": {
+    "schema_version": {"const": "qimen-chart/v1"}, "subject_ref": {"type": "string", "minLength": 1}, "question": {"type": "string", "minLength": 1}, "dun_type": {"enum": ["yin", "yang"]}, "ju_number": {"type": "integer", "minimum": 1, "maximum": 9},
+    "palaces": {"type": "array", "minItems": 9, "maxItems": 9, "items": {"type": "object", "additionalProperties": false, "required": ["palace_id", "stem", "star", "door", "deity"], "properties": {"palace_id": {"type": "string", "minLength": 1}, "stem": {"type": "string", "minLength": 1}, "star": {"type": "string", "minLength": 1}, "door": {"type": "string", "minLength": 1}, "deity": {"type": "string", "minLength": 1}}}}
+  }
+}

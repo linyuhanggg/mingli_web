@@ -1,9 +1,0 @@
-schema_version: 1
-module_path: docs_and_design
-title: 项目文档与设计系统（ADR/计划/发布证据/Mingli Web 设计规范）
-scope:
-    - docs/
-    - design-system/
-source_files: []
-depends_on: []
-related_to: []

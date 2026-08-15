@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/luming-nayin-chart-v1.schema.json",
+  "title": "LumingNayinChartV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "subject_ref", "pillars", "three_yuan_profiles", "taiyuan", "relations"],
+  "properties": {
+    "schema_version": {"const": "luming-nayin-chart/v1"},
+    "subject_ref": {"type": "string", "minLength": 1},
+    "pillars": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"$ref": "#/$defs/pillar"}},
+    "three_yuan_profiles": {"type": "object"},
+    "taiyuan": {"oneOf": [{"type": "object"}, {"type": "null"}]},
+    "relations": {"type": "array", "items": {"$ref": "#/$defs/relation"}}
+  },
+  "$defs": {
+    "pillar": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["position", "stem", "branch", "nayin"],
+      "properties": {
+        "position": {"enum": ["year", "month", "day", "hour"]},
+        "stem": {"type": "string", "minLength": 1},
+        "branch": {"type": "string", "minLength": 1},
+        "nayin": {"type": "string", "minLength": 1}
+      }
+    },
+    "relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category", "relation", "anchor", "anchor_pillar", "status", "target_branch", "candidates", "matched_positions", "recension"],
+      "properties": {
+        "category": {"enum": ["lu", "ma", "gui"]},
+        "relation": {"type": "string", "minLength": 1},
+        "anchor": {"type": "string", "minLength": 1},
+        "anchor_pillar": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "minLength": 1},
+        "target_branch": {"type": ["string", "null"], "minLength": 1},
+        "candidates": {"type": "array", "items": {"type": "string"}},
+        "matched_positions": {"type": "array", "items": {"type": "string"}},
+        "recension": {"type": ["string", "null"], "minLength": 1}
+      }
+    }
+  }
+}

@@ -1,12 +1,16 @@
 export type ProductId =
   | "bazi"
+  | "luming-nayin"
   | "ziwei"
   | "qizheng"
   | "liuyao"
   | "meihua"
   | "qimen"
   | "daliuren"
+  | "taiyi"
+  | "selection"
   | "jianxiang"
+  | "fengshui"
   | "hecan"
   | "canwen"
   | "wenshi";
@@ -48,7 +52,20 @@ export const PRODUCT_CATALOG = {
       "大运、流年与关键流月",
       "四柱图与五行力量",
     ],
-    unavailableReason: "八字深读、追问和导出仍在接入；确定性四柱盘面已由 Runtime 生成。",
+    unavailableReason: "八字深读、追问和导出仍在接入；本命与指定年/月/日事实已由 Runtime 生成。",
+  },
+  "luming-nayin": {
+    id: "luming-nayin",
+    name: "禄命纳音",
+    href: "/luming-nayin",
+    group: "natal",
+    headline: "查看四柱与纳音关系",
+    summary: "沿用已确认出生资料，单独呈现禄命、纳音、三元和关系事实。",
+    suitableFor: "四柱纳音、禄命锚点与基础关系核对",
+    inputLead: "出生资料",
+    moduleTitle: "四柱纳音与禄命关系",
+    modules: ["四柱与纳音", "三元结构", "胎元", "禄马贵关系", "来源与适用边界"],
+    unavailableReason: "禄命纳音深读、追问和导出仍在接入；确定性结构已由 Runtime 生成。",
   },
   ziwei: {
     id: "ziwei",
@@ -68,7 +85,7 @@ export const PRODUCT_CATALOG = {
       "格局与命宫摘要",
       "大限、流年与可用时间层",
     ],
-    unavailableReason: "紫微深读、时间层和导出仍在接入；确定性十二宫盘面已由 Runtime 生成。",
+    unavailableReason: "紫微深读、追问和导出仍在接入；本命与指定年/月事实已由 Runtime 生成。",
   },
   qizheng: {
     id: "qizheng",
@@ -89,7 +106,7 @@ export const PRODUCT_CATALOG = {
       "恩用仇难",
       "大限、小限与神煞落宫",
     ],
-    unavailableReason: "七政深读、时间层和导出仍在接入；确定性星体位置已由 Runtime 生成。",
+    unavailableReason: "七政深读、追问和导出仍在接入；本命与指定年/月/日时限事实已由 Runtime 生成。",
   },
   liuyao: {
     id: "liuyao",
@@ -172,6 +189,32 @@ export const PRODUCT_CATALOG = {
     ],
     unavailableReason: "大六壬事件深读、追问和导出仍在接入；四课三传已由 Runtime 生成。",
   },
+  taiyi: {
+    id: "taiyi",
+    name: "太乙",
+    href: "/taiyi",
+    group: "event",
+    headline: "建立年度太乙年计盘",
+    summary: "确认参考时间与地点，查看历法、积年、周期、主客与范围契约。",
+    suitableFor: "年度节律、宏观时段与结构事实",
+    inputLead: "参考时间",
+    moduleTitle: "太乙年计盘",
+    modules: ["历法边界", "积年与纪元", "周期位置", "太乙九宫结构", "主客四将", "范围与来源边界"],
+    unavailableReason: "太乙深读、追问和导出仍在接入；年度结构事实已由 Runtime 生成。",
+  },
+  selection: {
+    id: "selection",
+    name: "择日",
+    href: "/selection",
+    group: "event",
+    headline: "在日期范围内比较候选",
+    summary: "明确事件类型、日期范围和硬约束，保留候选淘汰与可解释排序。",
+    suitableFor: "开市、搬迁、签约等明确行动的日期比较",
+    inputLead: "日期范围",
+    moduleTitle: "候选日期与排序依据",
+    modules: ["事件类型", "日期范围", "行动与硬约束", "候选资格", "淘汰原因", "可解释排序"],
+    unavailableReason: "择日深读、追问和导出仍在接入；候选与排序事实已由 Runtime 生成。",
+  },
   jianxiang: {
     id: "jianxiang",
     name: "见相",
@@ -190,7 +233,20 @@ export const PRODUCT_CATALOG = {
       "用户补充信息",
       "基础摘要与分享排除项",
     ],
-    unavailableReason: "照片质量检查与视觉适配器尚未接入；现在不会上传或保存照片。",
+    unavailableReason: "照片质量、结构化观察与基础阅读已接入；深读、追问和导出仍在接入。",
+  },
+  fengshui: {
+    id: "fengshui",
+    name: "风水",
+    href: "/fengshui",
+    group: "observation",
+    headline: "记录空间与方向事实",
+    summary: "提交已确认的空间观察和罗盘测量，分别呈现形势、理气与缺失。",
+    suitableFor: "住宅空间、朝向与布局事实核对",
+    inputLead: "空间测量",
+    moduleTitle: "方向、布局与来源",
+    modules: ["空间范围", "罗盘测量", "布局节点", "形势观察", "理气结构", "缺失与适用边界"],
+    unavailableReason: "风水深读、追问和导出仍在接入；空间结构事实已由 Runtime 生成。",
   },
   hecan: {
     id: "hecan",
@@ -203,7 +259,7 @@ export const PRODUCT_CATALOG = {
     inputLead: "至少选择两术",
     moduleTitle: "互证、分歧与缺失",
     modules: ["各术精简盘面", "主理与参证信号", "共同印证", "分歧与适用边界", "缺失能力", "整合深读"],
-    unavailableReason: "结构化合参已接通；实质互证、深读和追问仍在接入。",
+    unavailableReason: "八字、紫微、七政的共同事实范围已接通；实质互证、深读和追问仍在接入。",
   },
   canwen: {
     id: "canwen",
@@ -216,7 +272,7 @@ export const PRODUCT_CATALOG = {
     inputLead: "表达偏好",
     moduleTitle: "一问多盘与同根追问",
     modules: ["问题与立命版本", "八字、紫微、七政选术", "深度与表达偏好", "一问多盘判断", "同根追问", "越界 Recast"],
-    unavailableReason: "多盘问答的共同事实范围已接通；七政跨术范围、实质互证、深读和追问仍在接入。",
+    unavailableReason: "八字、紫微、七政的共同事实范围已接通；实质互证、深读和追问仍在接入。",
   },
   wenshi: {
     id: "wenshi",
@@ -233,8 +289,9 @@ export const PRODUCT_CATALOG = {
   },
 } as const satisfies Record<ProductId, ProductDefinition>;
 
-export const NATAL_PRODUCTS = [PRODUCT_CATALOG.bazi, PRODUCT_CATALOG.ziwei, PRODUCT_CATALOG.qizheng] as const;
-export const EVENT_PRODUCTS = [PRODUCT_CATALOG.liuyao, PRODUCT_CATALOG.meihua, PRODUCT_CATALOG.qimen, PRODUCT_CATALOG.daliuren] as const;
+export const NATAL_PRODUCTS = [PRODUCT_CATALOG.bazi, PRODUCT_CATALOG["luming-nayin"], PRODUCT_CATALOG.ziwei, PRODUCT_CATALOG.qizheng] as const;
+export const EVENT_PRODUCTS = [PRODUCT_CATALOG.liuyao, PRODUCT_CATALOG.meihua, PRODUCT_CATALOG.qimen, PRODUCT_CATALOG.daliuren, PRODUCT_CATALOG.taiyi, PRODUCT_CATALOG.selection] as const;
+export const OBSERVATION_PRODUCTS = [PRODUCT_CATALOG.jianxiang, PRODUCT_CATALOG.fengshui] as const;
 // 2026-08-14 起多盘问答并入命盘合参（DESIGN §8.5）：
 // canwen 仍是 PRODUCT_CATALOG 成员（历史任务与 ViewModel 保留），但不再是顶级产品入口。
 export const CROSS_PRODUCTS = [PRODUCT_CATALOG.hecan, PRODUCT_CATALOG.wenshi] as const;

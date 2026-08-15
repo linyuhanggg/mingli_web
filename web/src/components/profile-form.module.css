@@ -3,11 +3,11 @@
   gap: 1.25rem;
   min-width: 0;
   padding: clamp(1.25rem, 4vw, 2rem);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--white);
-  box-shadow: var(--shadow-card);
-  animation: form-shell-enter var(--duration-entrance) var(--ease-out-expo) both;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  box-shadow: none;
+  animation: form-shell-enter var(--duration-page) var(--ease-out) both;
 }
 
 @keyframes form-shell-enter {
@@ -30,8 +30,8 @@
 
 .wrap h2 {
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(1.2rem, 3.2vw, 1.45rem);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-card);
   font-weight: 600;
   letter-spacing: -0.015em;
   line-height: 1.25;
@@ -39,7 +39,7 @@
 
 .lead {
   margin: 0;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
 }
 
 .form {
@@ -53,7 +53,7 @@
    baselines; this rule pins the floor locally for the surface guard. */
 .form button {
   min-height: 2.75rem;
-  font-size: 1rem;
+  font-size: var(--font-size-body);
 }
 
 .grid {
@@ -65,7 +65,7 @@
   display: grid;
   gap: 1rem;
   padding-block: 1.15rem;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--color-border);
 }
 
 .step:first-of-type {
@@ -86,15 +86,15 @@
 }
 
 .stepHeader h3 {
-  font-family: var(--font-serif);
-  font-size: clamp(1.05rem, 2.8vw, 1.25rem);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-emphasis);
   line-height: 1.3;
 }
 
 .stepHeader p,
 .policyNote {
-  color: var(--ink-700);
-  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   line-height: 1.6;
 }
 
@@ -107,10 +107,10 @@
   width: 2.25rem;
   height: 2.25rem;
   place-items: center;
-  border: 1px solid var(--gold-500);
+  border: 1px solid var(--color-border-strong);
   border-radius: 50%;
-  color: var(--ink-900);
-  font-size: 0.72rem;
+  color: var(--color-action);
+  font-size: var(--font-size-meta);
   font-variant-numeric: tabular-nums;
   font-weight: 800;
 }
@@ -118,18 +118,18 @@
 .policyNote {
   margin: 0;
   padding: 0.75rem 0.85rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-100);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
 }
 
 .errorBox {
   margin: 0;
   padding: 0.85rem 1rem;
-  border: 1px solid var(--terracotta-500);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-100);
-  color: var(--ink-950);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
 }
 
 @media (min-width: 40rem) {

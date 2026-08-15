@@ -6,11 +6,16 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.admin.models import AdminAuditEvent, StaffSession, StaffUser
 from app.admin.passwords import hash_password, verify_password
 from app.admin.repository import AdminRepository
 from app.admin.schemas import AdminKpi, AdminOverviewResponse, AdminQueueSummary
+from app.commerce.models import PaymentAttempt, PaymentReconciliationRun, Refund
 from app.identity.security import hash_token, new_opaque_token
+from app.readings.models import ReadingJobRecord
 
 
 class AdminAuthError(Exception):
@@ -129,19 +134,88 @@ class AdminAuthService:
         return staff
 
 
-def build_stub_overview() -> AdminOverviewResponse:
+async def build_overview(session: AsyncSession) -> AdminOverviewResponse:
+    """Build the ops desk from persisted platform facts.
+
+    The dashboard intentionally reports only states that have an explicit
+    durable representation. It does not infer pending work from missing rows
+    or turn unavailable adapters into zero-valued business metrics.
+    """
+
     now = datetime.now(UTC)
+    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    refunds_pending = int(
+        await session.scalar(
+            select(func.count(Refund.id)).where(Refund.status == "pending")
+        )
+        or 0
+    )
+    readings_failed = int(
+        await session.scalar(
+            select(func.count(ReadingJobRecord.id)).where(
+                ReadingJobRecord.status.in_(("failed", "canceled", "runtime_unknown"))
+            )
+        )
+        or 0
+    )
+    payments_abnormal = int(
+        await session.scalar(
+            select(func.count(PaymentAttempt.id)).where(
+                PaymentAttempt.status == "failed",
+                PaymentAttempt.created_at >= day_start,
+            )
+        )
+        or 0
+    )
+    reconcile_diff = int(
+        await session.scalar(
+            select(func.coalesce(func.sum(PaymentReconciliationRun.difference_count), 0)).where(
+                PaymentReconciliationRun.difference_count > 0
+            )
+        )
+        or 0
+    )
     return AdminOverviewResponse(
         generated_at=now,
-        is_stub=True,
+        is_stub=False,
         kpis=[
-            AdminKpi(id="refunds_pending", label="待审退款", value=0, is_stub=True),
-            AdminKpi(id="readings_failed", label="失败解读", value=0, is_stub=True),
-            AdminKpi(id="payments_abnormal", label="今日支付异常", value=0, is_stub=True),
-            AdminKpi(id="reconcile_diff", label="对账差异", value=0, is_stub=True),
+            AdminKpi(
+                id="refunds_pending",
+                label="待审退款",
+                value=refunds_pending,
+                is_stub=False,
+            ),
+            AdminKpi(
+                id="readings_failed",
+                label="失败解读",
+                value=readings_failed,
+                is_stub=False,
+            ),
+            AdminKpi(
+                id="payments_abnormal",
+                label="今日支付异常",
+                value=payments_abnormal,
+                is_stub=False,
+            ),
+            AdminKpi(
+                id="reconcile_diff",
+                label="对账差异",
+                value=reconcile_diff,
+                is_stub=False,
+            ),
         ],
         queues=[
-            AdminQueueSummary(id="refund_queue", label="退款审批队列", count=0, is_stub=True),
-            AdminQueueSummary(id="reading_queue", label="解读失败队列", count=0, is_stub=True),
+            AdminQueueSummary(
+                id="refund_queue",
+                label="退款审批队列",
+                count=refunds_pending,
+                is_stub=False,
+            ),
+            AdminQueueSummary(
+                id="reading_queue",
+                label="解读失败队列",
+                count=readings_failed,
+                is_stub=False,
+            ),
         ],
     )

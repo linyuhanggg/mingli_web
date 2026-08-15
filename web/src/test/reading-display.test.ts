@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import type { ReadingFact } from "@/lib/api";
-import { buildBaziChartView, formatReadingFact, formatReadingFacts, splitAcceptedCopy } from "@/lib/reading-display";
+import {
+  buildBaziChartView,
+  buildBaziChartViewFromViewModel,
+  formatCapabilityIds,
+  formatDimensionIds,
+  formatObjectId,
+  formatReadingFact,
+  formatReadingFacts,
+  splitAcceptedCopy,
+} from "@/lib/reading-display";
 
 function fact(display_text: string, overrides: Partial<ReadingFact> = {}): ReadingFact {
   return {
@@ -28,13 +37,13 @@ describe("formatReadingFact", () => {
       fact("性别: male"),
       fact("时间口径: civil"),
       fact("子时策略: midnight"),
-      fact("出生时间: 2000-10-18T05:10:00+08:00"),
+      fact("出生时间: 1994-04-30T05:55:00+08:00"),
     ]);
     expect(facts.map((item) => [item.label, item.text])).toEqual([
       ["性别", "男"],
       ["时间口径", "民用时"],
       ["子时策略", "按午夜换日"],
-      ["出生时间", expect.stringMatching(/2000年10月18日/)],
+      ["出生时间", expect.stringMatching(/1994年4月30日/)],
     ]);
   });
 
@@ -117,6 +126,38 @@ describe("formatReadingFact", () => {
   });
 });
 
+describe("format reading scope", () => {
+  it("uses product labels for every installed Runtime capability", () => {
+    expect(
+      formatCapabilityIds([
+        "bazi",
+        "fortune",
+        "liuyao",
+        "meihua",
+        "qimen",
+        "liuren",
+        "luming-nayin",
+        "physiognomy",
+        "selection",
+        "taiyi",
+        "xingming",
+        "ziwei",
+        "time-check",
+      ]),
+    ).toBe(
+      "八字、日运与周运、六爻、梅花易数、奇门遁甲、大六壬、禄命/纳音、相法、择日、太乙神数、七政四余、紫微斗数、寻时定盘",
+    );
+  });
+
+  it("uses product labels for P10 objects and dimensions", () => {
+    expect(formatObjectId("spatial_observation")).toBe("空间观察");
+    expect(formatObjectId("visible_observation")).toBe("可见观察");
+    expect(formatDimensionIds(["current_state", "direction", "time_options"])).toBe(
+      "当前状态、方位、时辰候选",
+    );
+  });
+});
+
 
 describe("buildBaziChartView", () => {
   it("uses the real Runtime four_pillars value even when display text is truncated", () => {
@@ -157,6 +198,57 @@ describe("buildBaziChartView", () => {
     expect(chart.dayMaster).toContain("己");
     expect(chart.activeLuck).toBe("戊子");
     expect(chart.highlights.some((item) => item.text.includes("持续积累"))).toBe(true);
+  });
+
+  it("maps the typed Runtime ViewModel without recalculating the pillars", () => {
+    const chart = buildBaziChartViewFromViewModel({
+      schema_version: "bazi-chart/v1",
+      subject_ref: "profile-version:test",
+      pillars: [
+        { position: "year", stem: "甲", branch: "戌" },
+        { position: "month", stem: "戊", branch: "辰" },
+        { position: "day", stem: "丙", branch: "戌" },
+        { position: "hour", stem: "辛", branch: "卯" },
+      ],
+      element_balance: [
+        {
+          element: "earth",
+          value: 4,
+          display_text: "土 · 可见干支计数 4（不等同旺衰裁决）",
+        },
+      ],
+      time_layers: [],
+      core_facts: {
+        day_master: { stem: "丙", element: "fire", polarity: "阳" },
+        hidden_stems: null,
+        ten_gods: null,
+        nayin: null,
+        month_command: {
+          branch: "辰",
+          label: "辰月",
+          main_qi: "戊",
+          main_qi_element: "earth",
+        },
+        seasonal_profile: null,
+        tiaohou_markers: null,
+        element_inventory: null,
+        interpretive_candidates: null,
+        branch_relations: null,
+        shensha_auxiliary: null,
+        luck_cycles: null,
+        year_layers: null,
+      },
+    });
+
+    expect(chart.pillars).toEqual({
+      year: "甲戌",
+      month: "戊辰",
+      day: "丙戌",
+      hour: "辛卯",
+    });
+    expect(chart.dayMaster).toContain("丙");
+    expect(chart.monthCommand).toContain("主气 戊");
+    expect(chart.secondary[0]?.text).toContain("不等同旺衰裁决");
   });
 });
 

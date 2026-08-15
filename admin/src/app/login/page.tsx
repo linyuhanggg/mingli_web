@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { adminFetch, type AdminSessionResponse } from "@/lib/api";
 import { EnvBadge } from "@/components/env-badge";
+import { Button, Field } from "@/components/ui";
 import ui from "@/components/ui.module.css";
 
 export default function LoginPage() {
@@ -37,14 +38,12 @@ export default function LoginPage() {
           <div style={{ marginBottom: "0.75rem" }}>
             <EnvBadge />
           </div>
-          <h1>员工登录</h1>
+          <h1 id="admin-login-title">员工登录</h1>
           <p className={ui.muted}>运营台仅限员工。与用户账号分离。</p>
         </div>
-        <form className={ui.form} onSubmit={onSubmit}>
-          <div className={ui.field}>
-            <label htmlFor="email">工作邮箱</label>
+        <form aria-labelledby="admin-login-title" className={ui.form} onSubmit={onSubmit}>
+          <Field label="工作邮箱" required>
             <input
-              id="email"
               name="email"
               type="email"
               autoComplete="username"
@@ -52,11 +51,9 @@ export default function LoginPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
-          </div>
-          <div className={ui.field}>
-            <label htmlFor="password">密码</label>
+          </Field>
+          <Field label="密码" required>
             <input
-              id="password"
               name="password"
               type="password"
               autoComplete="current-password"
@@ -65,15 +62,15 @@ export default function LoginPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
-          </div>
+          </Field>
           {error ? (
             <p className={ui.alert} role="alert">
               {error}
             </p>
           ) : null}
-          <button className={`${ui.button} ${ui.primary}`} type="submit" disabled={pending}>
+          <Button type="submit" loading={pending}>
             {pending ? "登录中…" : "进入运营台"}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

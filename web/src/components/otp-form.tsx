@@ -190,7 +190,7 @@ export function OtpForm() {
       if (accountSession) {
         await accountSession.refresh();
       }
-      router.replace("/app");
+      router.replace("/account");
     } catch (reason) {
       codeForm.setError(
         "code",
@@ -210,7 +210,7 @@ export function OtpForm() {
       <section className={styles.form} aria-live="polite">
         <p className={styles.success}>登录成功</p>
         <p className={styles.transition}>
-          正在进入 /app…设备会话已建立，不会再创建游客身份。
+          正在进入 /account…设备会话已建立，不会再创建游客身份。
         </p>
       </section>
     );

@@ -55,15 +55,21 @@ PHASE_TWO_PATHS = {
     "/api/v1/profiles/drafts/{draft_id}/confirm": "post",
     "/api/v1/profiles": "get",
     "/api/v1/readings/preview": "post",
+    "/api/v1/readings/chart-similarity": "post",
+    "/api/v1/readings/canwen": "post",
+    "/api/v1/readings/hecan": "post",
     "/api/v1/readings/today": "post",
     "/api/v1/readings/week": "post",
     "/api/v1/readings/liuyao": "post",
+    "/api/v1/readings/wenshi": "post",
     "/api/v1/readings": "get",
     "/api/v1/readings/{reading_version_id}": "get",
+    "/api/v1/readings/{reading_version_id}/fulfillment": "post",
     "/api/v1/readings/{reading_version_id}/input": "post",
     "/api/v1/readings/{reading_version_id}/result": "get",
     "/api/v1/readings/{reading_version_id}/verification": "post",
     "/api/v1/readings/{reading_version_id}/follow-up": "post",
+    "/api/v1/readings/{reading_version_id}/recast": "post",
 }
 
 
@@ -124,18 +130,35 @@ def test_phase_two_contracts_never_expose_runtime_or_birth_secrets() -> None:
         assert banned not in response_text, f"response exposes decrypted birth data {banned!r}"
 
 
+def test_reading_result_contract_exposes_the_runtime_view_model_slot() -> None:
+    schema = load_openapi_document()["components"]["schemas"]["ReadingResultResponse"]
+
+    assert "view_model" in schema["required"]
+    assert schema["properties"]["view_model"]["oneOf"][0]["type"] == "object"
+    assert "document" in schema["required"]
+    assert schema["properties"]["document"]["oneOf"][0]["$ref"] == (
+        "#/components/schemas/ReadingDocumentV1"
+    )
+
+
 def test_phase_two_mutating_routes_declare_csrf_and_idempotency() -> None:
     paths = load_openapi_document()["paths"]
     csrf_mutating_paths = {
         "/api/v1/profiles/drafts": "post",
         "/api/v1/profiles/drafts/{draft_id}/confirm": "post",
         "/api/v1/readings/preview": "post",
+        "/api/v1/readings/chart-similarity": "post",
+        "/api/v1/readings/canwen": "post",
+        "/api/v1/readings/hecan": "post",
         "/api/v1/readings/today": "post",
         "/api/v1/readings/week": "post",
         "/api/v1/readings/liuyao": "post",
+        "/api/v1/readings/wenshi": "post",
+        "/api/v1/readings/{reading_version_id}/fulfillment": "post",
         "/api/v1/readings/{reading_version_id}/input": "post",
         "/api/v1/readings/{reading_version_id}/verification": "post",
         "/api/v1/readings/{reading_version_id}/follow-up": "post",
+        "/api/v1/readings/{reading_version_id}/recast": "post",
     }
     for path, method in csrf_mutating_paths.items():
         parameters = paths[path][method].get("parameters", [])
@@ -144,15 +167,51 @@ def test_phase_two_mutating_routes_declare_csrf_and_idempotency() -> None:
 
     idempotent_paths = {
         "/api/v1/readings/preview": "post",
+        "/api/v1/readings/chart-similarity": "post",
+        "/api/v1/readings/canwen": "post",
+        "/api/v1/readings/hecan": "post",
         "/api/v1/readings/today": "post",
         "/api/v1/readings/week": "post",
         "/api/v1/readings/liuyao": "post",
+        "/api/v1/readings/wenshi": "post",
         "/api/v1/readings/{reading_version_id}/follow-up": "post",
+        "/api/v1/readings/{reading_version_id}/recast": "post",
     }
     for path, method in idempotent_paths.items():
         parameters = paths[path][method].get("parameters", [])
         parameter_names = {item.get("$ref") for item in parameters}
         assert "#/components/parameters/IdempotencyKey" in parameter_names
+
+
+def test_fulfillment_contract_requires_payment_and_owner_scoped_idempotency() -> None:
+    document = load_openapi_document()
+    operation = document["paths"][
+        "/api/v1/readings/{reading_version_id}/fulfillment"
+    ]["post"]
+
+    assert operation["operationId"] == "bindReadingFulfillment"
+    parameters = operation["parameters"]
+    assert {
+        item.get("$ref")
+        for item in parameters
+        if "$ref" in item
+    } == {"#/components/parameters/CsrfToken"}
+    idempotency = next(
+        item for item in parameters if item.get("name") == "Idempotency-Key"
+    )
+    assert idempotency["in"] == "header"
+    assert idempotency["required"] is True
+    assert operation["requestBody"]["content"]["application/json"]["schema"] == {
+        "$ref": "#/components/schemas/FulfillmentBindingRequest"
+    }
+    response = document["components"]["schemas"]["FulfillmentBindingResponse"]
+    assert response["required"] == [
+        "fulfillment_id",
+        "reading_version_id",
+        "reading_job_id",
+        "status",
+        "created",
+    ]
 
 
 def test_readings_list_contract_is_frozen_with_summary_items() -> None:
@@ -173,3 +232,49 @@ def test_readings_list_contract_is_frozen_with_summary_items() -> None:
     assert list_schema["properties"]["readings"]["items"] == {
         "$ref": "#/components/schemas/ReadingVersionSummary"
     }
+
+
+def test_account_history_contract_is_private_and_grouped_by_root() -> None:
+    document = load_openapi_document()
+    operation = document["paths"]["/api/v1/account/history"]["get"]
+
+    assert operation["operationId"] == "listAccountHistory"
+    assert operation["security"] == [{"deviceSession": []}]
+    response_schema = operation["responses"]["200"]["content"]["application/json"][
+        "schema"
+    ]
+    assert response_schema == {"$ref": "#/components/schemas/AccountHistoryResponse"}
+
+    schemas = document["components"]["schemas"]
+    root_schema = schemas["AccountHistoryRootResponse"]
+    assert root_schema["properties"]["versions"]["items"] == {
+        "$ref": "#/components/schemas/AccountHistoryVersionSummary"
+    }
+    version_schema = schemas["AccountHistoryVersionSummary"]
+    assert "prior_answer" not in version_schema["properties"]
+    assert "input_request" not in version_schema["properties"]
+
+
+def test_public_referral_contract_has_guest_capture_and_safe_projection() -> None:
+    document = load_openapi_document()
+    paths = document["paths"]
+
+    invite = paths["/api/v1/referrals/{code}"]["get"]
+    assert invite["operationId"] == "getReferralInvite"
+    assert invite["responses"]["200"]["content"]["application/json"]["schema"] == {
+        "$ref": "#/components/schemas/ReferralPublicResponse"
+    }
+
+    attribution = paths["/api/v1/referrals/{code}/attribution"]
+    assert attribution["post"]["operationId"] == "recordReferralAttribution"
+    assert attribution["delete"]["operationId"] == "clearReferralAttribution"
+    assert {
+        item.get("$ref")
+        for item in attribution["post"]["parameters"]
+        if "$ref" in item
+    } == {"#/components/parameters/CsrfToken"}
+
+    schema = document["components"]["schemas"]["ReferralPublicResponse"]
+    assert schema["additionalProperties"] is False
+    assert "inviter_user_id" not in schema["properties"]
+    assert "visitor_key_hash" not in schema["properties"]

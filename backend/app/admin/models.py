@@ -7,7 +7,6 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import DateTime, ForeignKey, Index, String, UniqueConstraint, func
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import JSON, Uuid
 
@@ -71,7 +70,7 @@ class AdminAuditEvent(Base):
     actor_session_id: Mapped[UUID | None] = mapped_column(Uuid)
     action: Mapped[str] = mapped_column(String(120), nullable=False)
     event_metadata: Mapped[dict[str, Any]] = mapped_column(
-        JSON().with_variant(JSONB, "postgresql"),
+        JSON(),
         default=dict,
         nullable=False,
     )

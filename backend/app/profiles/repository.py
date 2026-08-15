@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
 
-from app.profiles.models import ProfileVersion, SubjectProfile
+from app.profiles.models import ProfileVersion, ProfileVersionAuthorization, SubjectProfile
 from app.security.envelope import EncryptedPayload, EnvelopeCipher
 
 
@@ -53,6 +53,30 @@ class ProfileRepository:
         if profile is None:
             raise LookupError("Subject Profile not found")
         return await self._insert_version(profile_id, payload)
+
+    async def create_version_authorization(
+        self,
+        *,
+        profile_version_id: UUID,
+        subject_type: str,
+        is_minor: bool,
+        authorization_confirmed: bool,
+        photo_authorization_confirmed: bool,
+        minor_guardian_confirmed: bool,
+        difference_acknowledged: bool,
+    ) -> ProfileVersionAuthorization:
+        authorization = ProfileVersionAuthorization(
+            profile_version_id=profile_version_id,
+            subject_type=subject_type,
+            is_minor=is_minor,
+            authorization_confirmed=authorization_confirmed,
+            photo_authorization_confirmed=photo_authorization_confirmed,
+            minor_guardian_confirmed=minor_guardian_confirmed,
+            difference_acknowledged=difference_acknowledged,
+        )
+        self.session.add(authorization)
+        await self.session.flush()
+        return authorization
 
     async def create_version_if_unconfirmed(
         self,
@@ -115,9 +139,38 @@ class ProfileRepository:
                 SubjectProfile.id == draft_id,
                 SubjectProfile.owner_user_id == owner_user_id,
                 SubjectProfile.owner_guest_session_id == owner_guest_session_id,
+                SubjectProfile.status == "active",
             )
         )
         return profile
+
+    async def get_owned_profile(
+        self,
+        profile_id: UUID,
+        *,
+        owner_user_id: UUID | None,
+        owner_guest_session_id: UUID | None,
+    ) -> SubjectProfile | None:
+        return cast(
+            SubjectProfile | None,
+            await self.session.scalar(
+                select(SubjectProfile).where(
+                    SubjectProfile.id == profile_id,
+                    SubjectProfile.owner_user_id == owner_user_id,
+                    SubjectProfile.owner_guest_session_id == owner_guest_session_id,
+                    SubjectProfile.status == "active",
+                )
+            ),
+        )
+
+    async def list_versions(self, profile_id: UUID) -> list[ProfileVersion]:
+        return list(
+            await self.session.scalars(
+                select(ProfileVersion)
+                .where(ProfileVersion.profile_id == profile_id)
+                .order_by(ProfileVersion.version)
+            )
+        )
 
     async def get_owned_profile_version(
         self,
@@ -136,6 +189,7 @@ class ProfileRepository:
                 SubjectProfile.id == version.profile_id,
                 SubjectProfile.owner_user_id == owner_user_id,
                 SubjectProfile.owner_guest_session_id == owner_guest_session_id,
+                SubjectProfile.status == "active",
             )
         )
         if profile is None:
@@ -160,6 +214,7 @@ class ProfileRepository:
             .where(
                 SubjectProfile.owner_user_id == owner_user_id,
                 SubjectProfile.owner_guest_session_id == owner_guest_session_id,
+                SubjectProfile.status == "active",
             )
             .group_by(ProfileVersion.profile_id)
             .subquery()

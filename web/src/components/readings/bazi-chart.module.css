@@ -4,9 +4,9 @@
   gap: 1rem;
   min-width: 0;
   padding: 1rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: calc(var(--radius-md) - 0.2rem);
-  background: var(--white);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius-panel) - 0.2rem);
+  background: var(--color-surface);
 }
 
 .brandBlock {
@@ -17,8 +17,8 @@
 
 .brand {
   margin: 0;
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   font-weight: 780;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -26,16 +26,16 @@
 
 .brandSub {
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: 1.35rem;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-card);
   font-weight: 600;
-  color: var(--ink-950);
+  color: var(--color-text);
 }
 
 .brandMeta {
   margin: 0;
-  color: var(--ink-700);
-  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
 }
 
 .pillarGrid {
@@ -51,9 +51,9 @@
   min-width: 0;
   min-height: 6.5rem;
   padding: 0.75rem 0.4rem 0.7rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-100);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
   color: inherit;
   font: inherit;
   text-align: center;
@@ -65,8 +65,8 @@
 }
 
 .pillarCard:hover {
-  border-color: var(--gold-500);
-  background: var(--ivory-50);
+  border-color: var(--color-border-strong);
+  background: var(--color-canvas);
   transform: translateY(-1px);
 }
 
@@ -79,31 +79,31 @@
 }
 
 .pillarCard[data-selected="true"] {
-  border-color: var(--ink-900);
-  background: var(--moss-100);
-  box-shadow: inset 0 0 0 1px var(--ink-900);
+  border-color: var(--color-action);
+  background: var(--color-surface-muted);
+  box-shadow: inset 0 0 0 1px var(--color-action);
 }
 
 .pillarLabel {
-  color: var(--ink-700);
-  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
   font-weight: 750;
   letter-spacing: 0.06em;
 }
 
 .pillarStem,
 .pillarBranch {
-  font-family: var(--font-serif);
+  font-family: var(--font-domain);
   font-size: clamp(1.35rem, 3vw, 1.7rem);
   font-weight: 600;
   line-height: 1.1;
-  color: var(--ink-950);
+  color: var(--color-text);
 }
 
 .pillarFull {
   margin-top: 0.15rem;
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   font-variant-numeric: tabular-nums;
 }
 
@@ -111,22 +111,22 @@
   display: grid;
   gap: 0.4rem;
   padding: 1.2rem 1rem;
-  border: 1px dashed var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-100);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
 }
 
 .layerNoteTitle {
   margin: 0;
-  color: var(--ink-900);
-  font-family: var(--font-serif);
-  font-size: 1rem;
+  color: var(--color-action);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
   font-weight: 600;
 }
 
 .layerNoteText {
   margin: 0;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
   line-height: 1.65;
 }
 
@@ -137,9 +137,9 @@
 
 .highlights h4 {
   margin: 0;
-  font-size: 0.86rem;
+  font-size: var(--font-size-label);
   font-weight: 750;
-  color: var(--ink-900);
+  color: var(--color-action);
 }
 
 .highlights ul {
@@ -154,30 +154,82 @@
   display: grid;
   gap: 0.15rem;
   padding: 0.7rem 0.8rem;
-  border: 1px solid var(--border-subtle);
-  border-color: var(--gold-400);
-  border-radius: var(--radius-sm);
-  background: var(--white);
+  border: 1px solid var(--color-border);
+  border-color: var(--color-text-secondary);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
 }
 
 .highlights li[data-tone="emphasis"] {
-  border-color: var(--ink-800);
+  border-color: var(--color-action-hover);
 }
 
 .highlights li[data-tone="caution"] {
-  border-color: var(--terracotta-500);
+  border-color: var(--color-danger);
 }
 
 .highlights strong {
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   letter-spacing: 0.03em;
 }
 
 .highlights span {
-  color: var(--ink-950);
+  color: var(--color-text);
   line-height: 1.6;
   overflow-wrap: anywhere;
+}
+
+.coreFacts {
+  display: grid;
+  gap: 0.7rem;
+  padding-top: 0.2rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.coreFacts summary {
+  color: var(--color-action);
+  font-size: var(--font-size-label);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.coreFactsList {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.coreFactsList div {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, auto) minmax(0, 1fr);
+  gap: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+}
+
+.coreFactsList dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+  font-weight: 700;
+}
+
+.coreFactsList dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.coreFactsNote {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  line-height: 1.55;
 }
 
 @container (min-width: 34rem) {

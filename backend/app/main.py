@@ -23,6 +23,7 @@ from app.database import Database
 from app.identity.cookies import clear_device_cookies
 from app.identity.otp import InMemoryOtpChallengeStore, InMemoryOtpRequestLimiter
 from app.identity.service import random_six_digit_otp_code
+from app.media.physiognomy import InMemoryPrivateMediaStore, LocalPrivateMediaStore
 from app.network import parse_trusted_proxy_cidrs
 from app.observability import configure_logging, install_request_observability
 from app.readings.rate_limit import WindowRateLimiter
@@ -60,6 +61,11 @@ def create_app(
     application.state.settings = resolved_settings
     application.state.database = resolved_database
     application.state.session_factory = resolved_database.sessions
+    application.state.physiognomy_media_store = (
+        InMemoryPrivateMediaStore()
+        if resolved_settings.physiognomy_media_root is None
+        else LocalPrivateMediaStore(resolved_settings.physiognomy_media_root)
+    )
     identity_hash_key = resolved_settings.identity_hash_key.get_secret_value()
     application.state.otp_challenge_store = InMemoryOtpChallengeStore(
         secret=identity_hash_key,

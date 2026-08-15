@@ -11,6 +11,10 @@ node_modules/
 out/
 coverage/
 *.tsbuildinfo
+/web/e2e/report/
+/web/e2e/test-results/
+/admin/e2e/report/
+/admin/e2e/test-results/
 
 # Python
 .venv/
@@ -34,3 +38,11 @@ tmp/
 
 # Local signed runtime install for real adapter smoke
 .runtime/
+
+# Regenerable tool output; never treat these snapshots as product authority
+.qoder/repowiki/
+.qoder/better-harness/
+.qoder/worktrees/
+.impeccable/
+PRODUCT.md
+design-system/mingli-web/

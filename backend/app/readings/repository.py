@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import cast
 from uuid import UUID, uuid4
 
@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
 
+from app.commerce.models import ProductFamily, ProductVersion
 from app.persistence import ImmutableRecordError as ImmutableRecordError
 from app.profiles.models import ProfileVersion, SubjectProfile
 from app.readings.model_contracts import ModelCallReceipt
@@ -17,6 +18,7 @@ from app.readings.models import (
     AcceptedCopy,
     FactBrief,
     GenerationAttempt,
+    ReadingDocumentRecord,
     ReadingIdempotencyKey,
     ReadingJobRecord,
     ReadingRoot,
@@ -26,6 +28,7 @@ from app.readings.models import (
 )
 from app.readings.narrative_contracts import NarrativeCandidate, OutputContract
 from app.readings.orchestrator import ReadingCheckpoint, ReadingJob
+from app.readings.presentation import ReadingDocumentV1
 from app.readings.runtime_contracts import (
     Accepted,
     Prepare,
@@ -39,6 +42,10 @@ from app.readings.status import ReadingStatus
 from app.security.envelope import EncryptedPayload, EnvelopeCipher
 
 READING_HISTORY_LIMIT = 50
+
+
+class ReadingJobAlreadyQueuedError(ValueError):
+    """A waiting version already has another active Job."""
 
 
 def reading_root_version_lock_statement(
@@ -84,14 +91,31 @@ class SqlReadingRepository:
         self,
         *,
         capability_id: str,
+        product_id: str | None = None,
+        runtime_capability_ids: tuple[str, ...] | None = None,
         owner_user_id: UUID | None = None,
         owner_guest_session_id: UUID | None = None,
         profile_version_id: UUID | None = None,
+        profile_version_ids: tuple[UUID, ...] | None = None,
+        relationship_type: str | None = None,
     ) -> ReadingRoot:
         if (owner_user_id is None) == (owner_guest_session_id is None):
             raise ValueError("a Reading Root must have exactly one User or Guest owner")
-        if profile_version_id is not None:
-            profile_version = await self.session.get(ProfileVersion, profile_version_id)
+        resolved_profile_version_ids = profile_version_ids
+        if resolved_profile_version_ids is None:
+            resolved_profile_version_ids = (
+                (profile_version_id,) if profile_version_id is not None else ()
+            )
+        if len(set(resolved_profile_version_ids)) != len(resolved_profile_version_ids):
+            raise ValueError("Reading Root profile versions must be distinct")
+        if profile_version_id is not None and (
+            not resolved_profile_version_ids
+            or resolved_profile_version_ids[0] != profile_version_id
+        ):
+            raise ValueError("primary ProfileVersion must be the first relationship profile")
+        resolved_profile_ids: list[UUID] = []
+        for resolved_profile_version_id in resolved_profile_version_ids:
+            profile_version = await self.session.get(ProfileVersion, resolved_profile_version_id)
             if profile_version is None:
                 raise LookupError("ProfileVersion not found")
             profile = await self.session.scalar(
@@ -106,12 +130,23 @@ class SqlReadingRepository:
                 or profile.owner_guest_session_id != owner_guest_session_id
             ):
                 raise ValueError("ProfileVersion owner must match the Reading Root owner")
+            resolved_profile_ids.append(profile.id)
+        if (
+            relationship_type is not None
+            and len(resolved_profile_ids) == 2
+            and len(set(resolved_profile_ids)) != 2
+        ):
+            raise ValueError("relationship profiles must belong to distinct SubjectProfiles")
         root = ReadingRoot(
             id=uuid4(),
             owner_user_id=owner_user_id,
             owner_guest_session_id=owner_guest_session_id,
             profile_version_id=profile_version_id,
+            profile_version_ids=[str(value) for value in resolved_profile_version_ids] or None,
             capability_id=capability_id,
+            product_id=product_id or capability_id,
+            relationship_type=relationship_type,
+            runtime_capability_ids=list(runtime_capability_ids or (capability_id,)),
         )
         self.session.add(root)
         await self.session.flush()
@@ -123,6 +158,7 @@ class SqlReadingRepository:
         reading_root_id: UUID,
         runtime_release_id: UUID,
         prepare_command: Prepare,
+        relationship_type: str | None = None,
     ) -> ReadingVersion:
         root = await self.session.scalar(reading_root_version_lock_statement(reading_root_id))
         if root is None:
@@ -130,6 +166,24 @@ class SqlReadingRepository:
         capability_id = str(prepare_command.intent["capability_id"])
         if root.capability_id != capability_id:
             raise ValueError("Prepare capability_id must match the locked Reading Root capability")
+        comparisons = prepare_command.intent.get("comparisons", [])
+        if not isinstance(comparisons, (list, tuple)):
+            raise ValueError("Prepare comparisons must be a list or tuple")
+        runtime_capability_ids = [capability_id]
+        for comparison in comparisons:
+            if not isinstance(comparison, Mapping):
+                raise ValueError("Prepare comparison must be an object")
+            comparison_capability_id = comparison.get("capability_id")
+            if not isinstance(comparison_capability_id, str) or not comparison_capability_id:
+                raise ValueError("Prepare comparison capability_id must be a non-empty string")
+            runtime_capability_ids.append(comparison_capability_id)
+        if len(runtime_capability_ids) != len(set(runtime_capability_ids)):
+            raise ValueError("Prepare runtime capabilities must be unique")
+        expected_runtime_capability_ids = root.runtime_capability_ids or [root.capability_id]
+        if runtime_capability_ids != expected_runtime_capability_ids:
+            raise ValueError(
+                "Prepare runtime capabilities must match the locked Reading Root"
+            )
         current = await self.session.scalar(
             select(func.max(ReadingVersion.version)).where(
                 ReadingVersion.reading_root_id == reading_root_id
@@ -153,6 +207,9 @@ class SqlReadingRepository:
             version=(current or 0) + 1,
             status=ReadingStatus.INPUT_READY.value,
             capability_id=capability_id,
+            product_id=root.product_id or root.capability_id,
+            relationship_type=relationship_type or root.relationship_type,
+            runtime_capability_ids=list(expected_runtime_capability_ids),
             object_id=str(intent["object_id"]),
             dimension_ids=[str(value) for value in dimension_ids],
             horizon={str(key): value for key, value in horizon.items()},
@@ -170,8 +227,10 @@ class SqlReadingRepository:
         self,
         version_id: UUID,
         prepare: Prepare,
-    ) -> None:
-        """Persist the resumed Prepare for a waiting_input Reading Version."""
+        *,
+        available_at: datetime | None = None,
+    ) -> ReadingJobRecord:
+        """Resume the existing Job for a waiting_input Reading Version."""
         version = await self.session.scalar(
             select(ReadingVersion)
             .where(ReadingVersion.id == version_id)
@@ -181,6 +240,29 @@ class SqlReadingRepository:
             raise LookupError("Reading Version not found")
         if version.status != ReadingStatus.WAITING_INPUT.value:
             raise ValueError("Reading Version is not waiting for input")
+        job = await self.session.scalar(
+            select(ReadingJobRecord)
+            .where(
+                ReadingJobRecord.reading_version_id == version_id,
+                ReadingJobRecord.status == "waiting_input",
+            )
+            .with_for_update()
+        )
+        if job is None:
+            raise ValueError("Reading Job is not waiting for input")
+        active_job = await self.session.scalar(
+            select(ReadingJobRecord)
+            .where(
+                ReadingJobRecord.reading_version_id == version_id,
+                ReadingJobRecord.status.in_(("queued", "claimed", "running")),
+                ReadingJobRecord.id != job.id,
+            )
+            .with_for_update()
+        )
+        if active_job is not None:
+            raise ReadingJobAlreadyQueuedError(
+                "Reading Version already has an active Job"
+            )
         encrypted = self.cipher.encrypt_json(
             prepare.to_dict(),
             context=f"reading-version:{version.id}:prepare",
@@ -191,11 +273,18 @@ class SqlReadingRepository:
         version.prepare_digest = encrypted.fingerprint
         version.prepare_has_state_token = prepare.state_token is not None
         version.status = ReadingStatus.INPUT_READY.value
+        version.waiting_input_at = None
         version.last_result_key_id = None
         version.last_result_nonce = None
         version.last_result_ciphertext = None
         version.last_result_digest = None
+        job.status = "queued"
+        job.available_at = available_at or datetime.now(UTC)
+        job.lease_owner = None
+        job.lease_token = None
+        job.lease_expires_at = None
         await self.session.flush()
+        return job
 
     async def create_job(
         self,
@@ -362,6 +451,59 @@ class SqlReadingRepository:
             context=f"reading-version:{version_id}:accepted-copy",
         )
 
+    async def load_successful_candidate(self, job_id: str) -> NarrativeCandidate | None:
+        _job, version = await self._job_and_version(job_id)
+        attempts = (
+            await self.session.scalars(
+                select(GenerationAttempt)
+                .where(
+                    GenerationAttempt.reading_version_id == version.id,
+                    GenerationAttempt.candidate_ciphertext.is_not(None),
+                )
+                .order_by(GenerationAttempt.attempt_number.desc())
+            )
+        ).all()
+        attempt = next(
+            (
+                candidate_attempt
+                for candidate_attempt in attempts
+                if not candidate_attempt.guard_errors
+            ),
+            None,
+        )
+        if attempt is None:
+            return None
+        payload = self.cipher.decrypt_json(
+            self._payload(
+                attempt.candidate_key_id,
+                attempt.candidate_nonce,
+                attempt.candidate_ciphertext,
+                attempt.candidate_digest,
+            ),
+            context=f"reading-version:{version.id}:candidate:{attempt.attempt_number}",
+        )
+        return NarrativeCandidate.from_dict(payload)
+
+    async def load_accepted_copy_ref(self, job_id: str) -> str | None:
+        _job, version = await self._job_and_version(job_id)
+        accepted_copy = await self.get_accepted_copy(version.id)
+        return None if accepted_copy is None else f"accepted-copy:{accepted_copy.id}"
+
+    async def save_reading_document_for_job(
+        self,
+        job_id: str,
+        document: ReadingDocumentV1,
+    ) -> None:
+        _job, version = await self._job_and_version(job_id)
+        accepted_copy = await self.get_accepted_copy(version.id)
+        if accepted_copy is None:
+            raise ImmutableRecordError("AcceptedCopy is required before ReadingDocument")
+        await self.save_reading_document(
+            version_id=version.id,
+            accepted_copy_id=accepted_copy.id,
+            document=document,
+        )
+
     async def load_verification(
         self,
         version_id: UUID,
@@ -459,6 +601,25 @@ class SqlReadingRepository:
         command = command_from_dict(command_payload)
         if not isinstance(command, Prepare):
             raise ImmutableRecordError("ReadingVersion does not contain Prepare")
+        release = await self.session.get(RuntimeRelease, version.runtime_release_id)
+        product_version: str | None = None
+        presentation_contract_version: str | None = None
+        root = await self.session.get(ReadingRoot, version.reading_root_id)
+        if root is None:
+            raise ImmutableRecordError("Reading Version points to a missing Reading Root")
+        if root.product_version_snapshot_id is not None:
+            snapshot = await self.session.get(ProductVersion, root.product_version_snapshot_id)
+            if snapshot is None:
+                raise ImmutableRecordError(
+                    "Reading Root points to a missing ProductVersion snapshot"
+                )
+            family = await self.session.get(ProductFamily, snapshot.family_id)
+            if family is None:
+                raise ImmutableRecordError(
+                    "ProductVersion snapshot points to a missing ProductFamily"
+                )
+            product_version = f"{family.key}-reading/{snapshot.version}"
+            presentation_contract_version = snapshot.contract_version
         return ReadingJob(
             id=str(job.id),
             prepare_command=command,
@@ -467,6 +628,16 @@ class SqlReadingRepository:
             language=job.language,
             max_output_chars=job.max_output_chars,
             max_attempts=job.max_attempts,
+            reading_version_id=version.id,
+            product_id=version.product_id,
+            relationship_type=version.relationship_type,
+            runtime_release=(
+                f"{release.name}@{release.version}"
+                if release is not None
+                else "runtime:unknown"
+            ),
+            product_version=product_version,
+            presentation_contract_version=presentation_contract_version,
         )
 
     async def load_checkpoint(self, job_id: str) -> ReadingCheckpoint:
@@ -559,14 +730,66 @@ class SqlReadingRepository:
         stopped: Stopped,
         at: datetime,
     ) -> None:
-        del at
         job, version = await self._job_and_version(job_id)
         if stopped.state_token is not None:
             self._set_state_token(version, stopped.state_token)
         self._set_last_result(version, stopped)
         version.status = ReadingStatus.WAITING_INPUT.value
+        version.waiting_input_at = at
         job.status = "waiting_input"
         await self.session.flush()
+
+    async def expire_waiting_input(
+        self,
+        *,
+        now: datetime,
+        max_age: timedelta = timedelta(days=7),
+    ) -> ReadingJobRecord | None:
+        """Cancel one stale input wait while holding the row lock."""
+        if max_age <= timedelta(0):
+            raise ValueError("waiting input timeout must be positive")
+        cutoff = now - max_age
+        row = (
+            await self.session.execute(
+                select(ReadingJobRecord, ReadingVersion)
+                .join(
+                    ReadingVersion,
+                    ReadingVersion.id == ReadingJobRecord.reading_version_id,
+                )
+                .where(
+                    ReadingJobRecord.status == "waiting_input",
+                    ReadingVersion.status == ReadingStatus.WAITING_INPUT.value,
+                    ReadingVersion.waiting_input_at.is_not(None),
+                    ReadingVersion.waiting_input_at <= cutoff,
+                )
+                .order_by(ReadingVersion.waiting_input_at, ReadingJobRecord.id)
+                .limit(1)
+                .with_for_update(skip_locked=True)
+            )
+        ).one_or_none()
+        if row is None:
+            return None
+        job = cast(ReadingJobRecord, row[0])
+        version = cast(ReadingVersion, row[1])
+        public_copy = (
+            "Supplemental input was not provided within 7 days; this reading was canceled."
+            if job.language.lower().startswith("en")
+            else "补充资料超过 7 天，任务已取消。"
+        )
+        self._set_last_result(
+            version,
+            Stopped(
+                reason="error",
+                public_copy=public_copy,
+            ),
+        )
+        version.status = ReadingStatus.TERMINAL_STOPPED.value
+        job.status = "stopped"
+        job.lease_owner = None
+        job.lease_token = None
+        job.lease_expires_at = None
+        await self.session.flush()
+        return job
 
     async def record_terminal_stopped(
         self,
@@ -578,6 +801,7 @@ class SqlReadingRepository:
         job, version = await self._job_and_version(job_id)
         self._set_last_result(version, stopped)
         version.status = ReadingStatus.TERMINAL_STOPPED.value
+        version.waiting_input_at = None
         job.status = "stopped"
         await self.session.flush()
 
@@ -714,6 +938,84 @@ class SqlReadingRepository:
         job.status = "complete"
         await self.session.flush()
         return accepted
+
+    async def save_reading_document(
+        self,
+        *,
+        version_id: UUID,
+        accepted_copy_id: UUID,
+        document: ReadingDocumentV1,
+    ) -> tuple[ReadingDocumentRecord, bool]:
+        """Persist the validated document paired with its first Accepted Copy."""
+
+        if document.reading_version_id != str(version_id):
+            raise ValueError("ReadingDocument must point to the supplied Reading Version")
+        accepted_copy = await self.session.get(AcceptedCopy, accepted_copy_id)
+        if accepted_copy is None or accepted_copy.reading_version_id != version_id:
+            raise ValueError("ReadingDocument must point to an Accepted Copy of the version")
+        expected_ref = f"accepted-copy:{accepted_copy.id}"
+        if document.accepted_copy_ref != expected_ref:
+            raise ValueError("ReadingDocument accepted_copy_ref does not match the Accepted Copy")
+
+        existing = await self.get_reading_document(version_id)
+        if existing is not None:
+            current = await self.load_reading_document(version_id)
+            if current != document:
+                raise ImmutableRecordError("ReadingDocument is first-write-wins") from None
+            return existing, False
+
+        encrypted = self.cipher.encrypt_json(
+            document.model_dump(mode="json"),
+            context=f"reading-version:{version_id}:reading-document",
+        )
+        record = ReadingDocumentRecord(
+            id=uuid4(),
+            reading_version_id=version_id,
+            accepted_copy_id=accepted_copy_id,
+            schema_version=document.schema_version,
+            payload_key_id=encrypted.key_id,
+            payload_nonce=encrypted.nonce,
+            payload_ciphertext=encrypted.ciphertext,
+            payload_digest=encrypted.fingerprint,
+        )
+        try:
+            async with self.session.begin_nested():
+                self.session.add(record)
+                await self.session.flush()
+        except IntegrityError:
+            existing = await self.get_reading_document(version_id)
+            if existing is None:
+                raise
+            current = await self.load_reading_document(version_id)
+            if current != document:
+                raise ImmutableRecordError("ReadingDocument is first-write-wins") from None
+            return existing, False
+        return record, True
+
+    async def get_reading_document(self, version_id: UUID) -> ReadingDocumentRecord | None:
+        return cast(
+            ReadingDocumentRecord | None,
+            await self.session.scalar(
+                select(ReadingDocumentRecord).where(
+                    ReadingDocumentRecord.reading_version_id == version_id
+                )
+            ),
+        )
+
+    async def load_reading_document(self, version_id: UUID) -> ReadingDocumentV1 | None:
+        record = await self.get_reading_document(version_id)
+        if record is None:
+            return None
+        payload = self.cipher.decrypt_json(
+            self._payload(
+                record.payload_key_id,
+                record.payload_nonce,
+                record.payload_ciphertext,
+                record.payload_digest,
+            ),
+            context=f"reading-version:{version_id}:reading-document",
+        )
+        return ReadingDocumentV1.model_validate(payload)
 
     async def mark_delayed(self, job_id: str, at: datetime) -> None:
         del at

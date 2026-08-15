@@ -84,6 +84,8 @@ export interface BaziWorkspaceFacts {
   targetDay?: string | null;
   targetPeriod?: string | null;
   calendarSummary?: string | null;
+  yearlyReady?: boolean;
+  yearlySummary?: string | null;
   highlights?: BaziWorkspaceHighlightFacts[] | null;
 }
 
@@ -156,6 +158,9 @@ function buildLayers(facts: BaziWorkspaceFacts): WorkspaceLayer[] {
   const decadalStatus: WorkspaceLayerStatus = hasText(facts.activeLuck)
     ? "ready"
     : "unavailable";
+  const yearlyStatus: WorkspaceLayerStatus = facts.yearlyReady
+    ? "ready"
+    : "unavailable";
 
   return [
     {
@@ -178,8 +183,8 @@ function buildLayers(facts: BaziWorkspaceFacts): WorkspaceLayer[] {
     {
       id: "yearly",
       label: "流年",
-      status: "unavailable",
-      summary: "此时间层未生成",
+      status: yearlyStatus,
+      summary: facts.yearlySummary ?? "此时间层未生成",
     },
   ];
 }
@@ -294,6 +299,14 @@ export function baziWorkspaceFactsFromChart(
     targetDay: chart.targetDay,
     targetPeriod: chart.targetPeriod,
     calendarSummary: chart.calendarSummary,
+    yearlyReady: chart.timeLayers?.some(
+      (layer) => layer.layer_id === "year" && layer.available,
+    ),
+    yearlySummary: chart.coreFacts?.year_layers?.length
+      ? chart.coreFacts.year_layers
+          .map((item) => `${item.year} ${item.ganzhi}（${item.ganzhi_segments.length} 个节气分段）`)
+          .join("；")
+      : null,
     highlights: chart.highlights.map((highlight) => ({
       label: highlight.label,
       text: highlight.text,

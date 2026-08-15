@@ -1,0 +1,173 @@
+.pillars,
+.palaces,
+.nineGrid,
+.comparison,
+.observation {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.pillars {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.pillars > div,
+.palaces > span,
+.nineGrid > span,
+.comparison > div,
+.observation > div,
+.liuren span,
+.liuren strong {
+  display: grid;
+  min-height: 5.5rem;
+  place-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  text-align: center;
+}
+
+.pillars small,
+.pillars span,
+.palaces small,
+.nineGrid small,
+.observation small {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+  font-style: normal;
+}
+
+.palaces,
+.nineGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.palaces > span {
+  min-height: 4.5rem;
+}
+
+.orbit {
+  position: relative;
+  display: grid;
+  min-height: 24rem;
+  place-items: center;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 50%;
+  background: var(--color-surface-subtle);
+}
+
+.orbit::before,
+.orbit::after {
+  position: absolute;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  content: "";
+}
+
+.orbit::before {
+  inset: 17%;
+}
+
+.orbit::after {
+  inset: 33%;
+}
+
+.orbit > div {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 8rem;
+  height: 8rem;
+  place-content: center;
+  gap: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.orbit span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+}
+
+.hexagram {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.hexagram > div {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(5rem, 1fr) minmax(8rem, auto);
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.hexagram span,
+.hexagram small {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+}
+
+.hexagram i {
+  height: 0.7rem;
+  border-right: 3rem solid var(--color-text);
+  border-left: 3rem solid var(--color-text);
+}
+
+.liuren {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.liuren > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.liuren > div:last-child {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.comparison,
+.observation {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 31rem) {
+  .pillars {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .palaces > span,
+  .nineGrid > span {
+    min-height: 4rem;
+    padding: var(--space-xs);
+    font-size: var(--font-size-meta);
+  }
+
+  .orbit {
+    min-height: 18rem;
+  }
+
+  .hexagram > div {
+    grid-template-columns: 2.5rem minmax(4rem, 1fr);
+  }
+
+  .hexagram small {
+    grid-column: 2;
+  }
+
+  .hexagram i {
+    border-right-width: 1.5rem;
+    border-left-width: 1.5rem;
+  }
+
+  .comparison,
+  .observation {
+    grid-template-columns: 1fr;
+  }
+}

@@ -217,10 +217,14 @@ def main() -> int:
         return 2
 
     summary_json = f"{work_dir}/summary.json"
+    forwarded_env = {
+        key: value
+        for key, value in os.environ.items()
+        if key.startswith("TASK13_QUERY_") or key == "TASK13_EMAIL"
+    }
     query_env = " ".join(
         f"{key}={shlex.quote(value)}"
-        for key, value in sorted(os.environ.items())
-        if key.startswith("TASK13_QUERY_")
+        for key, value in sorted(forwarded_env.items())
     )
     query_prefix = f"{query_env} " if query_env else ""
     command = (
@@ -230,7 +234,10 @@ def main() -> int:
         f"--env-file {shlex.quote(_SERVER_ENV_FILE)}"
     )
     if query_env:
-        print(f"query overrides: {', '.join(sorted(k for k in os.environ if k.startswith('TASK13_QUERY_')))}")
+        print(
+            "trajectory overrides: "
+            + ", ".join(sorted(forwarded_env))
+        )
     print("running trajectory payload on server (may take minutes)...")
     completed = _ssh(args.ssh_host, command, timeout=3600)
     print(completed.stdout)

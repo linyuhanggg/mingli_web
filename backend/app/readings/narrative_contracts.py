@@ -12,6 +12,84 @@ from app.readings.runtime_contracts import (
 CANDIDATE_SCHEMA = "mingli-narrative-candidate-v1.schema.json"
 OUTPUT_CONTRACT_SCHEMA = "mingli-output-contract-v1.schema.json"
 
+_CERTAINTY_RANK = {
+    "certainty.possible": 1,
+    "certainty.tendency": 2,
+    "certainty.strong": 3,
+    "certainty.certain": 4,
+}
+
+
+def _scope_values(scope: Mapping[str, object], key: str) -> tuple[str, ...]:
+    value = scope.get(key)
+    if not isinstance(value, (list, tuple)):
+        return ()
+    return tuple(str(item) for item in value if str(item))
+
+
+def _strictest_certainty(current: str, incoming: str) -> str:
+    current_rank = _CERTAINTY_RANK.get(current)
+    incoming_rank = _CERTAINTY_RANK.get(incoming)
+    if current_rank is None or incoming_rank is None:
+        return current
+    return current if current_rank <= incoming_rank else incoming
+
+
+def merge_claim_scopes(
+    brief: ReadingBrief | Mapping[str, object],
+) -> dict[tuple[str, str], dict[str, object]]:
+    """Merge provider lanes that share a subject and dimension.
+
+    Multi-art Runtime briefs intentionally publish one scope per provider.
+    The public Guard contract is keyed by subject plus dimension, so those
+    lanes must be unioned instead of silently overwritten by the last provider.
+    The certainty ceiling remains the strictest declared ceiling.
+    """
+
+    payload = brief.to_dict() if isinstance(brief, ReadingBrief) else brief
+    raw_scopes = payload.get("claim_scopes")
+    if not isinstance(raw_scopes, (list, tuple)):
+        return {}
+
+    merged: dict[tuple[str, str], dict[str, object]] = {}
+    for raw_scope in raw_scopes:
+        if not isinstance(raw_scope, Mapping):
+            continue
+        subject_ref = raw_scope.get("subject_ref")
+        dimension_id = raw_scope.get("dimension_id")
+        certainty_ceiling_id = raw_scope.get("certainty_ceiling_id")
+        if not all(
+            isinstance(value, str) and value.strip()
+            for value in (subject_ref, dimension_id, certainty_ceiling_id)
+        ):
+            continue
+        subject_ref = cast(str, subject_ref)
+        dimension_id = cast(str, dimension_id)
+        certainty_ceiling_id = cast(str, certainty_ceiling_id)
+        key = (subject_ref, dimension_id)
+        current = merged.setdefault(
+            key,
+            {
+                "subject_ref": subject_ref,
+                "dimension_id": dimension_id,
+                "allowed_kind_ids": (),
+                "certainty_ceiling_id": certainty_ceiling_id,
+                "fact_refs": (),
+                "evidence_refs": (),
+            },
+        )
+        for field in ("allowed_kind_ids", "fact_refs", "evidence_refs"):
+            existing = current[field]
+            assert isinstance(existing, tuple)
+            current[field] = tuple(
+                dict.fromkeys((*existing, *_scope_values(raw_scope, field)))
+            )
+        current["certainty_ceiling_id"] = _strictest_certainty(
+            str(current["certainty_ceiling_id"]),
+            certainty_ceiling_id,
+        )
+    return merged
+
 
 @dataclass(frozen=True, slots=True)
 class NarrativeBlock:

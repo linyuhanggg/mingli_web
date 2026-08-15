@@ -11,7 +11,11 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import cast
 
-from app.readings.narrative_contracts import NarrativeBlock, NarrativeCandidate
+from app.readings.narrative_contracts import (
+    NarrativeBlock,
+    NarrativeCandidate,
+    merge_claim_scopes,
+)
 from app.readings.runtime_contracts import ReadingBrief
 
 
@@ -40,15 +44,7 @@ def close_candidate_references(
         for item in cast(list[object], payload.get("limits") or [])
         if isinstance(item, Mapping) and item.get("kind_id")
     }
-    scopes = {
-        (str(item["subject_ref"]), str(item["dimension_id"])): cast(
-            Mapping[str, object], item
-        )
-        for item in cast(list[object], payload.get("claim_scopes") or [])
-        if isinstance(item, Mapping)
-        and item.get("subject_ref")
-        and item.get("dimension_id")
-    }
+    scopes = merge_claim_scopes(payload)
 
     closed_blocks: list[NarrativeBlock] = []
     for block in candidate.blocks:
@@ -82,6 +78,16 @@ def _unique(values: list[str]) -> tuple[str, ...]:
     return tuple(ordered)
 
 
+def _limit_applies(
+    limit: Mapping[str, object],
+    *,
+    subject_ref: str,
+    dimension_id: str,
+) -> bool:
+    scope_refs = _as_str_tuple(limit.get("scope_refs"))
+    return not scope_refs or subject_ref in scope_refs or dimension_id in scope_refs
+
+
 def _close_block(
     block: NarrativeBlock,
     *,
@@ -110,7 +116,16 @@ def _close_block(
         for ref in block.evidence_refs
         if ref in evidence and ref in allowed_evidence
     ]
-    limit_kind_ids = [ref for ref in block.limit_kind_ids if ref in limits]
+    limit_kind_ids = [
+        ref
+        for ref in block.limit_kind_ids
+        if ref in limits
+        and _limit_applies(
+            limits[ref],
+            subject_ref=block.subject_ref,
+            dimension_id=block.dimension_id,
+        )
+    ]
 
     # Pull closed-world dependencies required by cited findings.
     for finding_ref in list(finding_refs):
@@ -122,7 +137,11 @@ def _close_block(
             if evidence_ref in evidence and evidence_ref in allowed_evidence:
                 evidence_refs.append(evidence_ref)
         for limit_id in _as_str_tuple(finding.get("limit_kind_ids")):
-            if limit_id in limits:
+            if limit_id in limits and _limit_applies(
+                limits[limit_id],
+                subject_ref=block.subject_ref,
+                dimension_id=block.dimension_id,
+            ):
                 limit_kind_ids.append(limit_id)
 
     # Ensure each cited evidence intersects the block's fact set.

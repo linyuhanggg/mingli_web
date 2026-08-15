@@ -775,7 +775,10 @@ def main() -> int:
 
     args.work_dir.mkdir(parents=True, exist_ok=True)
     args.work_dir.chmod(0o700)
-    email = f"task13.trajectory.{uuid4().hex[:10]}@example.com"
+    email = _env_query(
+        "TASK13_EMAIL",
+        default=f"task13.trajectory.{uuid4().hex[:10]}@example.com",
+    )
     runner = TrajectoryRunner(
         api_base=args.api_base,
         work_dir=args.work_dir,

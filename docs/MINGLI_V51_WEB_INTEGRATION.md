@@ -2,8 +2,8 @@
 
 > 决策日期：2026-08-09
 > 状态：Accepted，命理算法与成稿链的权威实施合同
-> 适用范围：网站 P0/P1；未来 iOS 继续复用同一后端
-> 上位蓝图：[PRODUCT_BLUEPRINT_WEB_IOS_V2.md](./PRODUCT_BLUEPRINT_WEB_IOS_V2.md)
+> 适用范围：当前响应式网站、Admin 与未来共享同一后端的客户端
+> 产品范围、顺序与进度：[CHECKLIST.md](./CHECKLIST.md)
 > 相关 ADR：[0010-replace-agent-loop-with-an-explicit-reading-orchestrator.md](./adr/0010-replace-agent-loop-with-an-explicit-reading-orchestrator.md)
 
 ## 1. 最终决定
@@ -45,7 +45,7 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 
 ### 2.1 完整发布物范围
 
-网站迁移、生产打包和 Runtime 验收的对象始终是**完整、原样的 5.1 发布物**，不是只保留首发页面会调用的三个能力。当前发布物包含 13 个 Provider：
+网站迁移、生产打包和 Runtime 验收的对象始终是**完整、原样的 5.1 发布物**，不是只保留当前产品会调用的能力。当前发布物包含 13 个 Provider：
 
 | Capability | 中文体系 |
 |---|---|
@@ -63,13 +63,13 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 | `xingming` | 星命/七政四余 |
 | `ziwei` | 紫微斗数 |
 
-发布物还包含 55/55 个古籍 reference pack、1328 条 evidence index 记录、各体系的规则矩阵、事实适配器、来源映射、边界与回归资产。不得为了 P0 缩小镜像而删除未开放 Provider、古籍目录、证据索引、vendored engine 或其测试。
+发布物还包含 55/55 个古籍 reference pack、1328 条 evidence index 记录、各体系的规则矩阵、事实适配器、来源映射、边界与回归资产。不得为了产品阶段缩小镜像而删除未开放 Provider、古籍目录、证据索引、vendored engine 或其测试。
 
 这里必须分清三个范围：
 
 1. **Runtime 制品范围**：完整 13 个 Provider 和全部算法/古籍资产，原样打包；
 2. **Runtime 准入范围**：完整制品逐文件验签，13/13 Provider、55/55 reference pack、1328 条 evidence index 和全量回归均通过；
-3. **产品曝光范围**：P0 页面和业务 API 暂时只允许 `bazi`、`fortune`、`liuyao`。
+3. **产品曝光范围**：由 `docs/CHECKLIST.md` 的冻结产品地图、版本化 Product Capability Policy 与发布状态共同决定。七个基础术数和固定合参产品是用户产品；13 个 Provider 不是 13 个页面。
 
 第三项是产品节奏，不得反向裁剪前两项。
 
@@ -165,30 +165,31 @@ NarrativeGuard.validate(Candidate, Brief, OutputContract) -> GuardResult
 
 生产实现与测试 Fake 都实现同一接口。业务后端不得 import `reading_engine`，也不得复制 Provider 算法。
 
-## 6. 完整 Runtime 与 P0 Capability 白名单
+## 6. 完整 Runtime 与产品能力策略
 
-5.1 的完整 Runtime 必须 `describe` 出并通过验收的 13 个能力；网站首发只开放其中三个。新增能力不能因为核心“已经有”就自动出现在页面，但也不能因为页面尚未开放就从 Runtime 制品、验签或回归中删掉。
+5.1 的完整 Runtime 必须 `describe` 出并通过验收的 13 个能力。新增能力不能因为核心“已经有”就自动出现在页面，也不能因为页面尚未开放就从 Runtime 制品、验签或回归中删掉。
 
-| 网站任务 | Capability | object | horizon | 说明 |
-|---|---|---|---|---|
-| 建档、免费概览、个人深度解读 | `bazi` | `natal` | `life`，或明确选择的 `year/month/day` | 本命与中长时间范围 |
-| 今日 | `fortune` | `near_time_personal` | `day` | 近时单日事实 |
-| 近七日 | `fortune` | `near_time_personal` | `week` | 近时七日事实 |
-| 一事一问 | `liuyao` | `concrete_event` | `instant` | 明确问题与明确起卦方式 |
+当前用户产品映射为：
 
-首发 allowlist 为：
+| 用户产品 | Runtime Provider | 产品关系 |
+|---|---|---|
+| 八字、八字合盘 | `bazi` | 独立版本化输入、盘面与关系 ViewModel |
+| 紫微、紫微合盘 | `ziwei` | 独立版本化输入、盘面与关系 ViewModel |
+| 七政、七政合盘 | `xingming` | 独立版本化输入、盘面与关系 ViewModel |
+| 六爻 | `liuyao` | 明确问题与明确起卦方式 |
+| 奇门 | `qimen` | 场景、问题与时空 |
+| 大六壬 | `liuren` | 问题、侧重与时空 |
+| 见相 | `physiognomy` | 只消费独立视觉 Adapter 的结构化观察 |
+| 三术合参 | `bazi + ziwei + xingming` | 至少两术，固定组合 |
+| 问事合参 | `liuyao + qimen + liuren` | 固定三术，同问同刻 |
+| 多盘问答 | `bazi + ziwei + xingming` | 按明确选择组合，不由模型路由 |
+| 每日与六项工具 | 对应现有或待开发 Provider | 每项另立输入、ViewModel、黄金样例与发布合同 |
 
-```json
-{
-  "bazi": ["natal", "life", "year", "month", "day"],
-  "fortune": ["near_time_personal", "day", "week"],
-  "liuyao": ["concrete_event", "instant"]
-}
-```
+`describe` 验证完整制品并提供字段元数据；独立、版本化的 Product Capability Policy 声明产品、输入合同、Provider 组合、ViewModel、免费/深读范围和 `UI_PREBUILT → ADAPTING → INTERNAL_TEST → PUBLIC → PAUSED` 状态。模型不能从 13 个 Provider 中自由猜路由。正常页面只有 `PUBLIC` 能运行真实用户任务；`/_ui-lab` Fixture 不改变产品状态。
 
-`describe` 用于验证完整 13 能力发布物并生成字段元数据；独立的 Product Capability Policy 再把可被页面和 API 选择的范围收窄到上述三项。页面路由不让模型从 13 个能力里自由猜。
+以下八字、近时运势和六爻请求样例是当前实现的 characterization 基线，不再代表完整产品范围。保留它们的真实 fixture、黄金输入输出和算法映射；旧产品 Request Compiler 与 endpoint 实现仍按 `CHECKLIST` 重写。其余术数必须按同等严格程度补齐新 Request Compiler、真实 fixture、黄金样例和 ViewModel 投影。
 
-## 7. 三类首发请求的准确映射
+## 7. 已有三类请求的准确映射
 
 ### 7.1 八字
 
@@ -311,7 +312,7 @@ NarrativeGuard.validate(Candidate, Brief, OutputContract) -> GuardResult
 }
 ```
 
-问题主题由用户在 UI 选择，映射到允许的 dimension。P0 不增加一次“意图路由模型调用”。
+问题主题由用户在 UI 选择，映射到允许的 dimension。不增加一次“意图路由模型调用”。
 
 ## 8. Reading Orchestrator 状态机
 
@@ -445,7 +446,7 @@ Guard 是普通代码，不是第二个模型。调用 `complete` 前必须全�
 2. 每个 `subject_ref`、dimension、fact、finding、evidence 和 limit 都存在于当前 brief；
 3. claim block 能找到同 subject/dimension 的 `claim_scope`；
 4. `claim_kind_id` 属于 `allowed_kind_ids`；
-5. certainty 不高于 `certainty_ceiling_id`；P0 不允许模型自造概率等级；
+5. certainty 不高于 `certainty_ceiling_id`；任何产品都不允许模型自造概率等级；
 6. fact/evidence refs 都是该 claim scope 的允许子集；
 7. evidence 的 `supports_fact_refs` 能闭合到候选稿引用的事实；
 8. finding 的 subject、dimension、fact/evidence 和 limit 依赖全部闭合；
@@ -454,7 +455,7 @@ Guard 是普通代码，不是第二个模型。调用 `complete` 前必须全�
 11. 没有缺乏校准事实支撑的百分比、保证性用语或凭空出现的人物、事件、金额、日期；
 12. 符合商品范围、隐私规则和平台内容安全合同。
 
-Guard 能证明“引用闭合、范围合法、结构合规”，不能数学证明一句自然语言的所有语义都正确。语义质量依靠闭世界 brief、固定模型评测、黄金样例、红队与上线抽检；P0 不再增加第二个模型冒充绝对裁判。
+Guard 能证明“引用闭合、范围合法、结构合规”，不能数学证明一句自然语言的所有语义都正确。语义质量依靠闭世界 brief、固定模型评测、黄金样例、红队与上线抽检；不增加第二个模型冒充绝对裁判。
 
 ### 9.5 正文组装
 
@@ -483,7 +484,7 @@ Guard 能证明“引用闭合、范围合法、结构合规”，不能数学�
 | 符合/部分符合/不符合/未知 | Verification | 否 |
 | 追问或重新起盘入口 | Entitlement + Reading 状态 | 否 |
 
-### 10.1 P0 各产品的正文范围
+### 10.1 已有产品正文基线与新结构化报告
 
 | 产品/功能 | 正文合同 |
 |---|---|
@@ -496,16 +497,25 @@ Guard 能证明“引用闭合、范围合法、结构合规”，不能数学�
 
 “古籍依据”由核心 evidence 决定。零命中就是零，模型不能补一个看起来像古文的出处。
 
+新产品不再让模型一次生成整篇 Markdown 报告。模型只生成原子短判断，每条绑定 `subject_ref`、dimension、certainty 与 fact/finding/evidence/limit refs；服务端按 ProductVersion 使用版本化 PresentationContract 组装栏目、顺序、数量、固定声明和专用 renderer。
+
+同一次 Guard 通过并获得 Accepted 时，必须固化两个互相可追溯、不可变的产物：
+
+1. `AcceptedCopy`：提交给 Runtime 并原样接纳的文字凭证；
+2. `ReadingDocumentV1`：Web、PDF、Share 与 Admin 使用的结构化报告文档。
+
+`ReadingDocumentV1` 至少包含资料/盘面摘要、主题导航、判断卡、依据引用、适用边界、逐条现实核对入口、追问/导出/分享元数据和版本信息。八字、紫微、七政、六爻、奇门、六壬、见相及三种合参分别有专属章节/ViewModel；合参按维度展示各术信号、互证、分歧和缺失，不平均成文章。旧 Accepted 报告保持原样只读，不以字符串解析伪造成新文档。
+
 ## 11. 模型重试与失败策略
 
-P0 只启用一个通过评测的模型配置。Model Gateway 只是 HTTP/SDK 适配器，不是 Agent 框架。
+每个已发布 ProductVersion 只使用明确通过评测的模型配置。Model Gateway 只是 HTTP/SDK 适配器，不是 Agent 框架。
 
 - 正常成功：1 次模型调用；
 - JSON/Guard 失败：同一 brief、同一模型、同一 Output Contract 最多再生成 1 次；
 - 第二次仍失败、模型超时或额度不足：进入延迟交付，付费权益保持 Reservation 或按超时策略释放；
 - 没有通过 Guard 的文字绝不调用 `complete`；
-- P0 不用模板生成付费 Accepted Copy；
-- P0 不自动切换另一个供应商，以免同一 Product Version 的表达合同漂移；备用模型须完成独立评测并发布新的 Model Profile 后才可开启。
+- 不用模板生成付费 Accepted Copy；
+- 不自动切换另一个供应商，以免同一 Product Version 的表达合同漂移；备用模型须完成独立评测并发布新的 Model Profile 后才可开启。
 
 模型温度、最大输出、模型版本、Narrative Policy 与 Output Contract 都进入版本快照。模型升级不能改变历史 Accepted Copy。
 
@@ -541,7 +551,7 @@ P0 只启用一个通过评测的模型配置。Model Gateway 只是 HTTP/SDK �
 - release manifest digest；
 - protocol version；
 - `describe.manifest_digest`；
-- P0 capability allowlist；
+- Product Capability Policy 版本与发布状态；
 - 容器镜像 digest、安装路径和启停状态。
 
 ### Reading Version
@@ -617,11 +627,11 @@ Runtime Adapter 使用 `asyncio.create_subprocess_exec` 执行固定入口，不
 - 非预期空输出/多输出作为 transport failure；
 - 任何用户输入都只能进 JSON stdin，不能拼到命令行。
 
-### 14.4 P0 部署拓扑
+### 14.4 首个生产部署拓扑
 
 5.1 当前状态是本地文件、append-only token log、文件锁与私有权限模型，不是无状态多副本服务。
 
-P0 固定采用：
+首个生产阶段固定采用：
 
 - 一个专用 Runtime Worker 副本；
 - 非 root 固定 UID；
@@ -656,7 +666,7 @@ Runtime Worker 启动时必须先执行一次 `describe` 并 fail closed：
 4. Capability 集合与冻结的 13 Provider 清单完全一致，且 13/13 readiness 通过；
 5. 完整 release manifest、55/55 reference pack、1328 条 evidence index 和 runtime closure 均通过验签；
 6. 13 个能力的 object/horizon/dimension/required input group 与冻结快照一致；
-7. Product Capability Policy 只允许 P0 的 `bazi`、`fortune`、`liuyao` 被业务 Request Compiler 选择。
+7. Product Capability Policy 只允许状态为 `PUBLIC`、且其输入/Provider/ViewModel/黄金样例均与已发布版本匹配的产品被业务 Request Compiler 选择。
 
 Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、状态盘可读写、describe 合同和数据库/队列连接。
 
@@ -671,17 +681,25 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 - no-token prepare 传输不明时禁止自动重放；
 - complete 传输不明时原样重放。
 
-### 16.2 全量 Runtime 与三类 P0 黄金样例
+### 16.2 全量 Runtime、已有三类基线与逐产品黄金样例
 
 - 完整 release 自带回归在 Mac mini 原生 `native-full` 中以 1584/0 通过；
 - 13 个 Provider 各自至少有一个固定输入的 characterization/smoke fixture，覆盖依赖加载、事实层、证据映射与可重现 digest；
 - 55/55 reference pack 和 1328 条 evidence index 通过存在性、哈希、可解析性和引用闭合检查；
-- P0 三类产品再做以下更深的 API/Orchestrator 端到端黄金样例：
+- 已有三类接入基线继续做以下更深的 API/Orchestrator 端到端黄金样例：
 
 - 八字：出生时间输入、四柱输入、时区/子时策略、life/year/month/day；
 - fortune：day/week 边界、跨时区、只给 start/end、目标七日与 period markers 一致；
 - 六爻：手工六次投掷、数字投币、投掷顺序、非法值、time cast unsupported、restart/correct；
 - 同一已固定输入和 Runtime Release 产生同一 brief digest；数字投币以已持久化 token/起卦事实做重放测试。
+
+新增产品逐项补齐：
+
+- 紫微、七政、奇门、六壬：输入边界、历法/时区、盘面事实、证据闭合和专用 ViewModel；
+- 双人合盘：甲乙两个 ProfileVersion、关系类型、双方事实隔离和关系 ViewModel；
+- 三术合参/问事合参/多盘问答：固定 Provider 组合、缺失能力、互证/分歧/缺失投影；
+- 见相：媒体采集与结构化视觉观察 Adapter 分离、部位/区域/置信度、Provider 事实和图片删除；
+- 每日与工具：每项独立的产品输入、Provider/算法、免费边界、黄金样例与发布状态。
 
 ### 16.3 Narrative Model 与 Guard
 
@@ -720,32 +738,34 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 
 模型或 Prompt 变更只有在固定盲测集上不退化，才能发布新 Model Profile。
 
-## 17. 分阶段实施
+## 17. 与唯一开发总纲的关系
+
+完整产品阶段、路由和进度只在 `docs/CHECKLIST.md` 更新。本文只保留下列算法依赖门，不能作为平行施工计划。
 
 ### Gate 0：Mac mini 原生可运行性
 
 - 归档精确 5.1 release、manifest 与完整测试源码；
 - 用 PreparedInputs 固定原生 Python 的路径和 SHA-256；当前验收基线为 CPython 3.14.6；
 - 在 600 秒和 10 槽内验收完整 13 Provider、全部运行时依赖、55/55 reference pack、1328 条 evidence index 和 1584/0 全量回归；
-- 另跑三类 P0 端到端黄金测试、篡改测试、备份恢复演练；
+- 另跑已有三类接入基线的端到端黄金测试、篡改测试、备份恢复演练；
 - 不启动 Linux 模拟或把 Linux 报告作为后续任务前置条件。
 
-### Phase A：端口与 Fake
+### Gate 1：端口与 Fake
 
 - 定义 Command/Result JSON Schema；
 - 实现 `MingliRuntime`、`NarrativeModel`、`NarrativeGuard` Protocol；
 - 用 Fake Runtime/Model 完成 Reading Orchestrator 全状态机测试；
 - 建 Runtime Release、Reading Version、Generation Attempt 表。
 
-### Phase B：真实 prepare 闭环
+### Gate 2：真实 prepare 基线闭环
 
 - 接入单副本 Runtime Worker；
 - 启动 describe 验签；
-- 完成 bazi/fortune/liuyao Request Compiler；
+- 保留 bazi/fortune/liuyao 的 characterization fixture 和算法映射，按 `CHECKLIST` 重写产品 Request Compiler，并按其术数顺序补齐其他产品；
 - 完成 need_input 表单和 token 加密存储；
 - 暂不调用真实模型。
 
-### Phase C：单模型成稿
+### Gate 3：单模型成稿
 
 - 冻结 Narrative Policy v1 与 Candidate JSON Schema；
 - 接一个批准模型；
@@ -753,11 +773,11 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 - 运行黄金评测与红队；
 - complete 仅在 Guard passed 后启用。
 
-### Phase D：免费与付费交付
+### Gate 4：免费盘面、结构化深读与付费交付
 
-- 先上线免费 Preview/今日/近七日/六爻基础事实；
+- `CHECKLIST` 的 P10-001 → 八字相关 P11 垂直切片先完成八字免费盘面、结构化深读，并复用已完成的账号/商业闭环；其余术数按专用 ViewModel 与黄金样例逐项开放；
 - 再接权益 Reservation/Consumption；
-- 验证崩溃恢复后开放两个单次付费商品；
+- 验证崩溃恢复后只开放后台已发布、存在真实 ProductVersion/Offer 的单次商品；
 - 小流量观察质量、成本、失败率和投诉。
 
 ## 18. 明确禁止
@@ -771,24 +791,24 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 - 不在 Guard 前调用 complete；
 - 不在 Accepted 后改写、截断或“二次润色”；
 - 不因为 describe 出现 13 个能力就把 13 个入口全量开放；
-- 不因为 P0 只开放三个入口就裁剪其余十个 Provider、算法、古籍、证据或测试；
+- 不因为当前产品只开放部分入口就裁剪其他 Provider、算法、古籍、证据或测试；
 - 不修改 5.1 release 文件来迁就任何部署环境；
 - 不自动启动或恢复 VZ、Rosetta、QEMU、`linux-certify` 和 `run_lima_gate.py`；
 - 不复制命理算法到业务代码做第二套结果。
 
-## 19. 首版 Definition of Done
+## 19. Runtime 与解读链 Definition of Done
 
-以下全部满足，才算“5.1 已经真正迁到网站”：
+以下全部满足，才算“5.1 Runtime 与结构化解读链已经真正接入网站”；这不等于 `docs/CHECKLIST.md` 中整个产品已经完成：
 
 1. Mac mini `native-full` 对原样包含 13 Provider、完整算法/古籍/证据资产的 Runtime Release 完成逐文件验签和 1584/0 全量回归，总墙钟不超过 600 秒；
-2. 启动 describe 严格匹配协议、manifest、13/13 Provider 冻结快照；Product Capability Policy 另行把 P0 曝光限制为三项；
-3. 三类 Request Compiler 通过真实 fixture，不再手拼错误 facts；
+2. 启动 describe 严格匹配协议、manifest、13/13 Provider 冻结快照；Product Capability Policy 只开放版本匹配且状态为 `PUBLIC` 的产品；
+3. 每个公开产品的 Request Compiler、Provider 组合和专用 ViewModel 通过真实 fixture，不再手拼或猜测 facts；
 4. Runtime 单副本状态卷通过备份恢复与旧 token 重放；
 5. 模型只有 brief + 版本化输出合同，无工具、无记忆、无网络；
 6. Candidate JSON Schema、Narrative Guard 和组装器通过反例测试；
 7. 正常路径一次模型调用，失败路径有明确上限且不会形成 Agent loop；
 8. complete 前后字节一致，Accepted 后不再改文；
 9. Prepared token 提交后，崩溃恢复不会重复起盘、重复正文或重复核销；无 token `prepare` 的提交前孤儿窗口被明确审计，且不伪称 exactly-once；
-10. 免费、八字深度与六爻一问的输出范围和页面组成有版本快照；
+10. 每个公开产品的免费范围、深读范围、PresentationContract 和页面组成有版本快照；
 11. `state_token`、出生资料、Prompt 和支付密钥不进入客户端或日志；
-12. 模型/Prompt/Runtime 任一升级都能通过版本化灰度，不影响历史交付。
+12. AcceptedCopy 与 ReadingDocumentV1 同步不可变、可追溯，模型/Prompt/Runtime 任一升级都能通过版本化灰度，不影响历史交付。

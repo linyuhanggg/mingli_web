@@ -1,28 +1,49 @@
+from contextlib import suppress
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Request, Response, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.otp import OtpDeliveryUnavailable
 from app.api.dependencies import (
     database_session,
+    mark_private,
     require_device_csrf,
     require_guest_csrf,
 )
 from app.api.errors import ApiProblem
 from app.config import Settings
 from app.identity.cookies import clear_device_cookies, set_device_cookies
-from app.identity.models import AuditEvent, DeviceSession, GuestSession
+from app.identity.models import AuditEvent, ConsentRecord, DeviceSession, GuestSession
 from app.identity.otp import InvalidDestination, InvalidOtp, OtpRateLimited
+from app.identity.policy import (
+    InvalidPolicyKey,
+    InvalidPolicyVersion,
+    require_current_policy_version,
+    require_policy_key,
+)
 from app.identity.repository import IdentityRepository
 from app.identity.schemas import (
     AuthSessionResponse,
+    ConsentRequest,
+    ConsentResponse,
     OtpChallengeResponse,
     OtpRequest,
     OtpVerifyRequest,
+    PasswordLoginRequest,
+    PasswordRecoveryRequest,
+    RegistrationRequest,
+    SetPasswordRequest,
 )
-from app.identity.service import AuthService
+from app.identity.service import (
+    AuthService,
+    CreatedDeviceSession,
+    IdentityAlreadyRegistered,
+    InvalidPassword,
+)
 from app.network import resolve_client_ip
+from app.security.envelope import EnvelopeCipher
 
 router = APIRouter(prefix="/auth", tags=["Identity"])
 
@@ -38,6 +59,52 @@ def _auth_service(request: Request, session: AsyncSession) -> AuthService:
         otp_cooldown_seconds=settings.otp_cooldown_seconds,
         device_session_days=settings.device_session_days,
         request_limiter=request.app.state.otp_request_limiter,
+        destination_cipher=EnvelopeCipher.from_settings(settings),
+    )
+
+
+async def _finish_device_login(
+    request: Request,
+    response: Response,
+    session: AsyncSession,
+    guest_session: GuestSession,
+    created: CreatedDeviceSession,
+) -> AuthSessionResponse:
+    from app.profiles.service import GuestAlreadyClaimedError, ProfileService
+
+    try:
+        await ProfileService(session, request.app.state.settings).claim_guest_ownership(
+            guest_session,
+            created.user.id,
+        )
+    except GuestAlreadyClaimedError as error:
+        raise ApiProblem(
+            status=409,
+            title="Guest Session is already claimed",
+        ) from error
+    if created.is_new_user:
+        from app.referrals.policy import ReferralError
+        from app.referrals.service import ReferralService
+
+        with suppress(ReferralError):
+            await ReferralService(session).lock_latest_attribution(
+                visitor_key=str(guest_session.id),
+                referred_user_id=created.user.id,
+            )
+    await session.commit()
+    settings: Settings = request.app.state.settings
+    set_device_cookies(
+        response,
+        settings=settings,
+        session_token=created.token,
+        csrf_token=created.csrf_token,
+        expires_at=created.expires_at,
+    )
+    return AuthSessionResponse(
+        user_id=created.user.id,
+        session_id=created.session_id,
+        expires_at=created.expires_at,
+        csrf_token=created.csrf_token,
     )
 
 
@@ -109,32 +176,174 @@ async def verify_otp(
     except OtpRateLimited as error:
         raise ApiProblem(status=429, title="Too many verification attempts") from error
 
-    from app.profiles.service import GuestAlreadyClaimedError, ProfileService
-
-    try:
-        await ProfileService(session, request.app.state.settings).claim_guest_ownership(
-            guest_session,
-            created.user.id,
-        )
-    except GuestAlreadyClaimedError as error:
-        raise ApiProblem(
-            status=409,
-            title="Guest Session is already claimed",
-        ) from error
-    await session.commit()
-    settings: Settings = request.app.state.settings
-    set_device_cookies(
+    return await _finish_device_login(
+        request,
         response,
-        settings=settings,
-        session_token=created.token,
-        csrf_token=created.csrf_token,
-        expires_at=created.expires_at,
+        session,
+        guest_session,
+        created,
     )
-    return AuthSessionResponse(
-        user_id=created.user.id,
-        session_id=created.session_id,
-        expires_at=created.expires_at,
-        csrf_token=created.csrf_token,
+
+
+@router.post(
+    "/password/login",
+    operation_id="loginWithPassword",
+    response_model=AuthSessionResponse,
+)
+async def password_login(
+    request: Request,
+    response: Response,
+    payload: PasswordLoginRequest,
+    session: AsyncSession = Depends(database_session),
+    guest_session: GuestSession = Depends(require_guest_csrf),
+) -> AuthSessionResponse:
+    try:
+        created = await _auth_service(request, session).authenticate_password(
+            payload.channel,
+            payload.destination,
+            payload.password,
+        )
+    except InvalidDestination as error:
+        raise ApiProblem(status=400, title="Invalid destination", detail=str(error)) from error
+    except InvalidPassword as error:
+        raise ApiProblem(status=401, title="Invalid credentials") from error
+    return await _finish_device_login(
+        request,
+        response,
+        session,
+        guest_session,
+        created,
+    )
+
+
+@router.post(
+    "/password/recover",
+    operation_id="recoverPassword",
+    response_model=AuthSessionResponse,
+)
+async def recover_password(
+    request: Request,
+    response: Response,
+    payload: PasswordRecoveryRequest,
+    session: AsyncSession = Depends(database_session),
+    guest_session: GuestSession = Depends(require_guest_csrf),
+) -> AuthSessionResponse:
+    try:
+        created = await _auth_service(request, session).recover_password(
+            payload.challenge_id,
+            payload.code,
+            payload.password,
+        )
+    except InvalidOtp as error:
+        raise ApiProblem(status=400, title="Invalid or expired code") from error
+    except OtpRateLimited as error:
+        raise ApiProblem(status=429, title="Too many verification attempts") from error
+    except InvalidPassword as error:
+        raise ApiProblem(status=401, title="Invalid credentials") from error
+    except ValueError as error:
+        raise ApiProblem(status=400, title="Invalid password", detail=str(error)) from error
+
+    return await _finish_device_login(
+        request,
+        response,
+        session,
+        guest_session,
+        created,
+    )
+
+
+@router.post(
+    "/register",
+    operation_id="registerWithOtp",
+    response_model=AuthSessionResponse,
+)
+async def register_with_otp(
+    request: Request,
+    response: Response,
+    payload: RegistrationRequest,
+    session: AsyncSession = Depends(database_session),
+    guest_session: GuestSession = Depends(require_guest_csrf),
+) -> AuthSessionResponse:
+    try:
+        created = await _auth_service(request, session).register_with_otp(
+            payload.challenge_id,
+            payload.code,
+            payload.password,
+            payload.policy_version,
+        )
+    except InvalidOtp as error:
+        raise ApiProblem(status=400, title="Invalid or expired code") from error
+    except OtpRateLimited as error:
+        raise ApiProblem(status=429, title="Too many verification attempts") from error
+    except IdentityAlreadyRegistered as error:
+        raise ApiProblem(status=409, title="Account already registered") from error
+    except InvalidPolicyVersion as error:
+        raise ApiProblem(status=400, title="Policy version is not current") from error
+    except ValueError as error:
+        raise ApiProblem(status=400, title="Invalid registration", detail=str(error)) from error
+
+    return await _finish_device_login(
+        request,
+        response,
+        session,
+        guest_session,
+        created,
+    )
+
+
+@router.put("/password", operation_id="setPassword", status_code=status.HTTP_204_NO_CONTENT)
+async def set_password(
+    request: Request,
+    payload: SetPasswordRequest,
+    session: AsyncSession = Depends(database_session),
+    device_session: DeviceSession = Depends(require_device_csrf),
+) -> Response:
+    try:
+        await _auth_service(request, session).set_password(
+            device_session.user_id,
+            payload.password,
+        )
+    except ValueError as error:
+        raise ApiProblem(status=400, title="Invalid password", detail=str(error)) from error
+    await session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(
+    "/consents",
+    operation_id="recordConsent",
+    response_model=ConsentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def record_consent(
+    payload: ConsentRequest,
+    session: AsyncSession = Depends(database_session),
+    device_session: DeviceSession = Depends(require_device_csrf),
+) -> ConsentResponse:
+    try:
+        policy_key = require_policy_key(payload.policy_key)
+        policy_version = require_current_policy_version(payload.policy_version)
+    except InvalidPolicyVersion as error:
+        raise ApiProblem(status=400, title="Policy version is not current") from error
+    except InvalidPolicyKey as error:
+        raise ApiProblem(status=400, title="Policy key is not supported") from error
+    now = datetime.now(UTC)
+    record = ConsentRecord(
+        user_id=device_session.user_id,
+        policy_key=policy_key,
+        policy_version=policy_version,
+        context=payload.context,
+        accepted_at=now,
+        actor_session_id=device_session.id,
+    )
+    session.add(record)
+    await session.commit()
+    return ConsentResponse(
+        consent_id=record.id,
+        policy_key=record.policy_key,
+        policy_version=record.policy_version,
+        context=record.context,
+        accepted_at=record.accepted_at,
     )
 
 
@@ -158,3 +367,38 @@ async def logout(
     response = Response(status_code=status.HTTP_204_NO_CONTENT)
     clear_device_cookies(response, settings=request.app.state.settings)
     return response
+
+
+@router.post(
+    "/sessions/revoke-all",
+    operation_id="revokeAllSessions",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def revoke_all_sessions(
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(database_session),
+    device_session: DeviceSession = Depends(require_device_csrf),
+) -> None:
+    now = datetime.now(UTC)
+    sessions = list(
+        await session.scalars(
+            select(DeviceSession).where(
+                DeviceSession.user_id == device_session.user_id,
+                DeviceSession.revoked_at.is_(None),
+            )
+        )
+    )
+    for active in sessions:
+        active.revoked_at = now
+        IdentityRepository(session).add_audit_event(
+            AuditEvent(
+                user_id=device_session.user_id,
+                actor_session_id=device_session.id,
+                action="device_session.revoked",
+                event_metadata={"reason": "revoke_all"},
+            )
+        )
+    await session.commit()
+    mark_private(response)
+    clear_device_cookies(response, settings=request.app.state.settings)

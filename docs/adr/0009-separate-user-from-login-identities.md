@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-08-09
+amended_by: 0011-rebuild-the-product-surface-from-main-under-a-ui-first-contract
 ---
 
 # 将 User 与所有登录身份分离

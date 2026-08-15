@@ -1,0 +1,578 @@
+{
+  "schema": "mingli.route-evidence/v1",
+  "app": "admin",
+  "gitCommit": "working-tree-content-metadata",
+  "generatedAt": "2026-08-14T02:55:31.817Z",
+  "reviewedAt": null,
+  "reviewStatus": "automated-only",
+  "test": {
+    "file": "e2e/route-matrix.spec.ts",
+    "name": "Admin route catalog has no critical browser failures or horizontal overflow",
+    "checks": [
+      "http-200",
+      "critical-browser-errors",
+      "horizontal-overflow"
+    ]
+  },
+  "baseURL": "http://127.0.0.1:3001",
+  "project": "360",
+  "routes": [
+    {
+      "requestedRoute": "/",
+      "finalPath": "/dashboard",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "error"
+      ],
+      "screenshot": "360/screenshots/001-home.jpg"
+    },
+    {
+      "requestedRoute": "/login",
+      "finalPath": "/login",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [],
+      "screenshot": "360/screenshots/002-login.jpg"
+    },
+    {
+      "requestedRoute": "/dashboard",
+      "finalPath": "/dashboard",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "error"
+      ],
+      "screenshot": "360/screenshots/003-dashboard.jpg"
+    },
+    {
+      "requestedRoute": "/users",
+      "finalPath": "/users",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/004-users.jpg"
+    },
+    {
+      "requestedRoute": "/users/demo",
+      "finalPath": "/users/demo",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/005-users-demo.jpg"
+    },
+    {
+      "requestedRoute": "/subjects",
+      "finalPath": "/subjects",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/006-subjects.jpg"
+    },
+    {
+      "requestedRoute": "/subjects/demo",
+      "finalPath": "/subjects/demo",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/007-subjects-demo.jpg"
+    },
+    {
+      "requestedRoute": "/data-rights",
+      "finalPath": "/data-rights",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/008-data-rights.jpg"
+    },
+    {
+      "requestedRoute": "/support-cases",
+      "finalPath": "/support-cases",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/009-support-cases.jpg"
+    },
+    {
+      "requestedRoute": "/products",
+      "finalPath": "/products",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/010-products.jpg"
+    },
+    {
+      "requestedRoute": "/products/demo/versions",
+      "finalPath": "/products/demo/versions",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/011-products-demo-versions.jpg"
+    },
+    {
+      "requestedRoute": "/capabilities",
+      "finalPath": "/capabilities",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/012-capabilities.jpg"
+    },
+    {
+      "requestedRoute": "/cms/pages",
+      "finalPath": "/cms/pages",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/013-cms-pages.jpg"
+    },
+    {
+      "requestedRoute": "/cms/daily",
+      "finalPath": "/cms/daily",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/014-cms-daily.jpg"
+    },
+    {
+      "requestedRoute": "/cms/tools",
+      "finalPath": "/cms/tools",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/015-cms-tools.jpg"
+    },
+    {
+      "requestedRoute": "/cms/library",
+      "finalPath": "/cms/library",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/016-cms-library.jpg"
+    },
+    {
+      "requestedRoute": "/cms/help",
+      "finalPath": "/cms/help",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/017-cms-help.jpg"
+    },
+    {
+      "requestedRoute": "/cms/policies",
+      "finalPath": "/cms/policies",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/018-cms-policies.jpg"
+    },
+    {
+      "requestedRoute": "/charts",
+      "finalPath": "/charts",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/019-charts.jpg"
+    },
+    {
+      "requestedRoute": "/readings",
+      "finalPath": "/readings",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/020-readings.jpg"
+    },
+    {
+      "requestedRoute": "/readings/demo",
+      "finalPath": "/readings/demo",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/021-readings-demo.jpg"
+    },
+    {
+      "requestedRoute": "/reading-jobs",
+      "finalPath": "/reading-jobs",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/022-reading-jobs.jpg"
+    },
+    {
+      "requestedRoute": "/verifications",
+      "finalPath": "/verifications",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/023-verifications.jpg"
+    },
+    {
+      "requestedRoute": "/observations",
+      "finalPath": "/observations",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/024-observations.jpg"
+    },
+    {
+      "requestedRoute": "/runtime",
+      "finalPath": "/runtime",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/025-runtime.jpg"
+    },
+    {
+      "requestedRoute": "/model-profiles",
+      "finalPath": "/model-profiles",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/026-model-profiles.jpg"
+    },
+    {
+      "requestedRoute": "/orders",
+      "finalPath": "/orders",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/027-orders.jpg"
+    },
+    {
+      "requestedRoute": "/payments",
+      "finalPath": "/payments",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/028-payments.jpg"
+    },
+    {
+      "requestedRoute": "/refunds",
+      "finalPath": "/refunds",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/029-refunds.jpg"
+    },
+    {
+      "requestedRoute": "/reconciliation",
+      "finalPath": "/reconciliation",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/030-reconciliation.jpg"
+    },
+    {
+      "requestedRoute": "/entitlements",
+      "finalPath": "/entitlements",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/031-entitlements.jpg"
+    },
+    {
+      "requestedRoute": "/referrals",
+      "finalPath": "/referrals",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/032-referrals.jpg"
+    },
+    {
+      "requestedRoute": "/referrals/demo",
+      "finalPath": "/referrals/demo",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/033-referrals-demo.jpg"
+    },
+    {
+      "requestedRoute": "/appeals",
+      "finalPath": "/appeals",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/034-appeals.jpg"
+    },
+    {
+      "requestedRoute": "/staff",
+      "finalPath": "/staff",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/035-staff.jpg"
+    },
+    {
+      "requestedRoute": "/sessions",
+      "finalPath": "/sessions",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/036-sessions.jpg"
+    },
+    {
+      "requestedRoute": "/notifications",
+      "finalPath": "/notifications",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/037-notifications.jpg"
+    },
+    {
+      "requestedRoute": "/audit",
+      "finalPath": "/audit",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/038-audit.jpg"
+    },
+    {
+      "requestedRoute": "/settings",
+      "finalPath": "/settings",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/039-settings.jpg"
+    },
+    {
+      "requestedRoute": "/health",
+      "finalPath": "/health",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "360/screenshots/040-health.jpg"
+    }
+  ]
+}

@@ -1,16 +1,16 @@
 .copy {
   margin: 0;
-  font-family: var(--font-serif);
-  color: var(--ink-950);
+  font-family: var(--font-sans);
+  color: var(--color-text);
   line-height: 1.9;
   overflow-wrap: anywhere;
   white-space: pre-line;
-  animation: accepted-copy-enter var(--duration-state) var(--ease-out-expo) both;
+  animation: accepted-copy-enter var(--duration-overlay) var(--ease-out) both;
 }
 
 .empty {
   margin: 0;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
 }
 
 @keyframes accepted-copy-enter {

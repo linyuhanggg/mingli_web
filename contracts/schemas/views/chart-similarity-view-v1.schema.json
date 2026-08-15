@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/chart-similarity-view-v1.schema.json",
+  "title": "ChartSimilarityViewV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "left_subject_ref",
+    "right_subject_ref",
+    "basis",
+    "left_fact_ref",
+    "right_fact_ref",
+    "comparisons",
+    "exact_match",
+    "matched_positions",
+    "differing_positions",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {"const": "chart-similarity-view/v1"},
+    "left_subject_ref": {"type": "string", "minLength": 1},
+    "right_subject_ref": {"type": "string", "minLength": 1},
+    "basis": {"const": "bazi.four_pillars.exact"},
+    "left_fact_ref": {"type": "string", "minLength": 1},
+    "right_fact_ref": {"type": "string", "minLength": 1},
+    "comparisons": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"$ref": "#/$defs/comparison"}
+    },
+    "exact_match": {"type": "boolean"},
+    "matched_positions": {"type": "array", "items": {"$ref": "#/$defs/position"}},
+    "differing_positions": {"type": "array", "items": {"$ref": "#/$defs/position"}},
+    "limitations": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+  },
+  "$defs": {
+    "position": {"enum": ["year", "month", "day", "hour"]},
+    "pillar": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["position", "stem", "branch"],
+      "properties": {
+        "position": {"$ref": "#/$defs/position"},
+        "stem": {"type": "string", "minLength": 1},
+        "branch": {"type": "string", "minLength": 1}
+      }
+    },
+    "comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["position", "left", "right", "exact_match"],
+      "properties": {
+        "position": {"$ref": "#/$defs/position"},
+        "left": {"$ref": "#/$defs/pillar"},
+        "right": {"$ref": "#/$defs/pillar"},
+        "exact_match": {"type": "boolean"}
+      }
+    }
+  }
+}

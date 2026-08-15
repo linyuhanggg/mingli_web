@@ -13,6 +13,7 @@ import pytest
 from app.readings.alerts import NoopAlertSink
 from sqlalchemy import event, func, select, text
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 # isort: split
@@ -218,6 +219,337 @@ async def seed_prepared_job(database: Any) -> Any:
         return job
 
 
+async def bind_paid_fulfillment(
+    session: Any,
+    *,
+    version: Any,
+    job: Any,
+    key_prefix: str,
+) -> Any:
+    readings = importlib.import_module("app.readings.models")
+    commerce_models = importlib.import_module("app.commerce.models")
+    commerce_service = importlib.import_module("app.commerce.service")
+    identity_models = importlib.import_module("app.identity.models")
+
+    root = await session.get(readings.ReadingRoot, version.reading_root_id)
+    assert root is not None and root.owner_user_id is not None
+    user = await session.get(identity_models.User, root.owner_user_id)
+    assert user is not None
+    family = commerce_models.ProductFamily(
+        key=f"{key_prefix}-family",
+        label="Worker 超时释放测试",
+    )
+    session.add(family)
+    await session.flush()
+    product = commerce_models.ProductVersion(
+        family_id=family.id,
+        version="v1",
+        price_minor=9900,
+        currency="CNY",
+        follow_up_count=0,
+        follow_up_window_seconds=0,
+        contract_version="reading-document-v1",
+        status="active",
+    )
+    session.add(product)
+    await session.flush()
+    offer = commerce_models.ProductOffer(
+        product_version_id=product.id,
+        channel="closed",
+        channel_sku=f"{key_prefix}-offer",
+        price_minor=9900,
+        currency="CNY",
+        enabled=True,
+    )
+    session.add(offer)
+    await session.flush()
+    service = commerce_service.CommerceService(session)
+    order = await service.create_order(
+        owner_user_id=user.id,
+        offer_id=offer.id,
+        purchase_target_ref=f"{key_prefix}-target",
+    )
+    attempt, _ = await service.create_payment_attempt(
+        order_id=order.id,
+        channel="closed",
+        idempotency_key=f"{key_prefix}-attempt",
+    )
+    payment, _ = await service.confirm_payment(
+        order_id=order.id,
+        attempt_id=attempt.id,
+        channel="closed",
+        channel_transaction_id=f"{key_prefix}-transaction",
+        verified=True,
+    )
+    fulfillment, _ = await service.reserve_fulfillment(
+        payment_id=payment.id,
+        idempotency_key=f"{key_prefix}-fulfillment",
+    )
+    await service.bind_fulfillment_job(
+        fulfillment_id=fulfillment.id,
+        reading_version_ref=str(version.id),
+        reading_job_ref=str(job.id),
+    )
+    return fulfillment
+
+
+async def test_worker_expires_stale_waiting_input_and_releases_fulfillment(
+    database: Any,
+) -> None:
+    readings = importlib.import_module("app.readings.models")
+    commerce_models = importlib.import_module("app.commerce.models")
+    runtime_contracts = importlib.import_module("app.readings.runtime_contracts")
+    waiting_at = WORKER_TEST_NOW - timedelta(days=7)
+    async with database.sessions() as session, session.begin():
+        repository, _profile, version, job, _contracts = await create_reading_graph(
+            session,
+            available_at=WORKER_TEST_NOW,
+        )
+        await repository.record_waiting_input(
+            str(job.id),
+            runtime_contracts.Stopped(
+                reason="need_input",
+                public_copy="还需要补充资料。",
+                state_token="waiting-timeout-token",
+                input_request={
+                    "requirements": [
+                        {
+                            "any_of": [
+                                {
+                                    "id": "birth_datetime",
+                                    "label": "出生时间",
+                                    "type_id": "datetime",
+                                    "description": None,
+                                    "choices": [],
+                                }
+                            ]
+                        }
+                    ]
+                },
+            ),
+            waiting_at,
+        )
+        fulfillment = await bind_paid_fulfillment(
+            session,
+            version=version,
+            job=job,
+            key_prefix="waiting-timeout",
+        )
+
+    readings_worker = importlib.import_module("worker.readings")
+    clock = MutableClock(WORKER_TEST_NOW)
+    source = readings_worker.ReadingJobWorkSource(
+        sessions=database.sessions,
+        worker_id="worker-waiting-timeout",
+        clock=clock,
+        cipher=make_test_cipher(),
+    )
+    assert await source.claim_one() is None
+    assert await source.claim_one() is None
+
+    async with database.sessions() as session:
+        persisted_version = await session.get(readings.ReadingVersion, version.id)
+        persisted_job = await session.get(readings.ReadingJobRecord, job.id)
+        persisted_fulfillment = await session.get(
+            commerce_models.FulfillmentRecord,
+            fulfillment.id,
+        )
+        assert persisted_version is not None
+        assert persisted_job is not None
+        assert persisted_fulfillment is not None
+        assert persisted_version.status == "terminal_stopped"
+        assert persisted_job.status == "stopped"
+        assert persisted_fulfillment.status == "released"
+        release_events = list(
+            await session.scalars(
+                select(commerce_models.EntitlementEventRecord).where(
+                    commerce_models.EntitlementEventRecord.entitlement_id
+                    == fulfillment.entitlement_id,
+                    commerce_models.EntitlementEventRecord.kind == "RELEASE",
+                )
+            )
+        )
+        assert len(release_events) == 1
+        root = await session.get(readings.ReadingRoot, persisted_version.reading_root_id)
+        assert root is not None and root.owner_user_id is not None
+        notifications = list(
+            await session.scalars(
+                select(commerce_models.NotificationOutbox).where(
+                    commerce_models.NotificationOutbox.owner_user_id == root.owner_user_id,
+                    commerce_models.NotificationOutbox.kind == "reading.failed",
+                )
+            )
+        )
+        assert len(notifications) == 1
+        assert notifications[0].payload["reason"] == "input_timeout"
+
+
+async def test_worker_keeps_recent_waiting_input_and_reserved_fulfillment(
+    database: Any,
+) -> None:
+    readings = importlib.import_module("app.readings.models")
+    runtime_contracts = importlib.import_module("app.readings.runtime_contracts")
+    waiting_at = WORKER_TEST_NOW - timedelta(days=6, hours=23)
+    async with database.sessions() as session, session.begin():
+        repository, _profile, version, job, _contracts = await create_reading_graph(
+            session,
+            available_at=WORKER_TEST_NOW,
+        )
+        await repository.record_waiting_input(
+            str(job.id),
+            runtime_contracts.Stopped(
+                reason="need_input",
+                public_copy="还需要补充资料。",
+                state_token="recent-waiting-token",
+                input_request={
+                    "requirements": [
+                        {
+                            "any_of": [
+                                {
+                                    "id": "birth_datetime",
+                                    "label": "出生时间",
+                                    "type_id": "datetime",
+                                    "description": None,
+                                    "choices": [],
+                                }
+                            ]
+                        }
+                    ]
+                },
+            ),
+            waiting_at,
+        )
+
+    readings_worker = importlib.import_module("worker.readings")
+    clock = MutableClock(WORKER_TEST_NOW)
+    source = readings_worker.ReadingJobWorkSource(
+        sessions=database.sessions,
+        worker_id="worker-recent-waiting",
+        clock=clock,
+        cipher=make_test_cipher(),
+    )
+    assert await source.claim_one() is None
+
+    async with database.sessions() as session:
+        persisted_version = await session.get(readings.ReadingVersion, version.id)
+        persisted_job = await session.get(readings.ReadingJobRecord, job.id)
+        assert persisted_version is not None
+        assert persisted_job is not None
+        assert persisted_version.status == "waiting_input"
+        assert persisted_job.status == "waiting_input"
+
+
+async def test_worker_releases_bound_fulfillment_on_terminal_stop(
+    database: Any,
+) -> None:
+    readings = importlib.import_module("app.readings.models")
+    commerce_models = importlib.import_module("app.commerce.models")
+    commerce_service = importlib.import_module("app.commerce.service")
+    identity_models = importlib.import_module("app.identity.models")
+    orchestrator = importlib.import_module("app.readings.orchestrator")
+
+    async with database.sessions() as session, session.begin():
+        repository, _profile_version, version, job, _contracts = await create_reading_graph(
+            session,
+            available_at=WORKER_TEST_NOW,
+        )
+        root = await session.get(readings.ReadingRoot, version.reading_root_id)
+        assert root is not None and root.owner_user_id is not None
+        user = await session.get(identity_models.User, root.owner_user_id)
+        assert user is not None
+        family = commerce_models.ProductFamily(
+            key="worker-terminal-stop-family",
+            label="Worker 终止释放测试",
+        )
+        session.add(family)
+        await session.flush()
+        product = commerce_models.ProductVersion(
+            family_id=family.id,
+            version="v1",
+            price_minor=9900,
+            currency="CNY",
+            follow_up_count=0,
+            follow_up_window_seconds=0,
+            contract_version="reading-document-v1",
+            status="active",
+        )
+        session.add(product)
+        await session.flush()
+        offer = commerce_models.ProductOffer(
+            product_version_id=product.id,
+            channel="closed",
+            channel_sku="worker-terminal-stop-v1",
+            price_minor=9900,
+            currency="CNY",
+            enabled=True,
+        )
+        session.add(offer)
+        await session.flush()
+        service = commerce_service.CommerceService(session)
+        order = await service.create_order(
+            owner_user_id=user.id,
+            offer_id=offer.id,
+            purchase_target_ref="worker-terminal-stop-target",
+        )
+        attempt, _ = await service.create_payment_attempt(
+            order_id=order.id,
+            channel="closed",
+            idempotency_key="worker-terminal-stop-attempt",
+        )
+        payment, _ = await service.confirm_payment(
+            order_id=order.id,
+            attempt_id=attempt.id,
+            channel="closed",
+            channel_transaction_id="worker-terminal-stop-transaction",
+            verified=True,
+        )
+        fulfillment, _ = await service.reserve_fulfillment(
+            payment_id=payment.id,
+            idempotency_key="worker-terminal-stop-fulfillment",
+        )
+        await service.bind_fulfillment_job(
+            fulfillment_id=fulfillment.id,
+            reading_version_ref=str(version.id),
+            reading_job_ref=str(job.id),
+        )
+
+    class TerminalStopFactory:
+        def __call__(self, _session: Any) -> TerminalStopFactory:
+            return self
+
+        async def run(self, _job_id: str) -> Any:
+            return orchestrator.ReadingOutcome(
+                status=orchestrator.ReadingStatus.TERMINAL_STOPPED,
+                stopped_reason="terminal test stop",
+            )
+
+    clock = MutableClock(WORKER_TEST_NOW)
+    await process_one_stage(
+        database,
+        worker_id="worker-terminal-stop",
+        clock=clock,
+        orchestrator_factory=TerminalStopFactory(),
+    )
+
+    async with database.sessions() as session:
+        persisted = await session.get(commerce_models.FulfillmentRecord, fulfillment.id)
+        assert persisted is not None
+        assert persisted.status == "released"
+        events = list(
+            await session.scalars(
+                select(commerce_models.EntitlementEventRecord).where(
+                    commerce_models.EntitlementEventRecord.entitlement_id
+                    == fulfillment.entitlement_id,
+                    commerce_models.EntitlementEventRecord.kind == "RELEASE",
+                )
+            )
+        )
+        assert len(events) == 1
+        persisted_job = await session.get(readings.ReadingJobRecord, job.id)
+        assert persisted_job is not None
+        assert persisted_job.status == "stopped"
+
+
 def test_claim_query_is_fail_safe_for_postgresql_workers() -> None:
     readings = importlib.import_module("worker.readings")
     now = datetime(2026, 8, 9, 12, 0, tzinfo=UTC)
@@ -263,6 +595,61 @@ async def test_postgresql_workers_concurrently_claim_a_job_at_most_once(
     assert items[0].id == str(job.id)
     assert items[0].claim_token
     assert items[0].lease_generation == 1
+
+
+@pytest.mark.parametrize("owner_kind", ["user", "guest"])
+async def test_postgresql_idempotency_key_insert_is_atomic_per_owner(
+    postgres_worker_database: Any,
+    owner_kind: str,
+) -> None:
+    identity_models = importlib.import_module("app.identity.models")
+    reading_models = importlib.import_module("app.readings.models")
+
+    async with postgres_worker_database.sessions() as session, session.begin():
+        _repository, _profile_version, version, _job, _contracts = await create_reading_graph(
+            session
+        )
+        root = await session.get(reading_models.ReadingRoot, version.reading_root_id)
+        assert root is not None
+        user_id = root.owner_user_id
+        assert user_id is not None
+        guest_id = None
+        if owner_kind == "guest":
+            guest = identity_models.GuestSession(
+                token_hash=f"guest-token-{uuid4().hex}",
+                csrf_token_hash=f"guest-csrf-{uuid4().hex}",
+                expires_at=datetime(2099, 1, 1, tzinfo=UTC),
+            )
+            session.add(guest)
+            await session.flush()
+            guest_id = guest.id
+        version_id = version.id
+
+    async def insert_once() -> bool:
+        async with postgres_worker_database.sessions() as session:
+            session.add(
+                reading_models.ReadingIdempotencyKey(
+                    key_hash=f"{owner_kind}-same-key",
+                    action="profile_preview",
+                    request_fingerprint="f" * 64,
+                    owner_user_id=user_id if owner_kind == "user" else None,
+                    owner_guest_session_id=guest_id,
+                    reading_version_id=version_id,
+                )
+            )
+            try:
+                await session.commit()
+            except IntegrityError:
+                await session.rollback()
+                return False
+            return True
+
+    outcomes = await asyncio.gather(insert_once(), insert_once())
+
+    assert sorted(outcomes) == [False, True]
+    async with postgres_worker_database.sessions() as session:
+        records = list(await session.scalars(select(reading_models.ReadingIdempotencyKey)))
+    assert len(records) == 1
 
 
 async def test_active_postgresql_processor_lock_fences_an_expired_reclaim(

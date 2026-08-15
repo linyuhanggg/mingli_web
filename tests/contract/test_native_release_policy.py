@@ -14,7 +14,6 @@ POLICY_DOCUMENTS = (
     ROOT / "README.md",
     ROOT / "docs" / "CHECKLIST.md",
     ROOT / "docs" / "MINGLI_V51_WEB_INTEGRATION.md",
-    ROOT / "docs" / "PRODUCT_BLUEPRINT_WEB_IOS_V2.md",
     ROOT
     / "docs"
     / "adr"

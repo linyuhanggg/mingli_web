@@ -2,6 +2,8 @@ import asyncio
 import hashlib
 import importlib
 from dataclasses import replace
+from typing import Any
+from uuid import uuid4
 
 import pytest
 
@@ -86,6 +88,100 @@ async def test_model_receipt_is_persisted_with_the_successful_generation_attempt
     assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.COMPLETING
 
     assert repository.model_receipts == [audit]
+
+
+async def test_accepted_result_runs_the_reading_document_builder_before_returning() -> None:
+    orchestrator, contracts, narrative = modules()
+    prepared = make_prepared(contracts)
+    candidate = make_candidate(narrative)
+    job = replace(
+        make_job(orchestrator, contracts, narrative),
+        reading_version_id=uuid4(),
+        product_id="bazi",
+        runtime_release="runtime:test@v1",
+    )
+    repository = MemoryRepository(orchestrator, job)
+
+    class RecordingDocumentBuilder:
+        def __init__(self) -> None:
+            self.context: Any | None = None
+
+        def build(self, context: Any) -> object:
+            self.context = context
+            return {"document": "persisted"}
+
+    builder = RecordingDocumentBuilder()
+    machine = orchestrator.ReadingOrchestrator(
+        repository=repository,
+        runtime=ScriptedRuntime(
+            [
+                prepared,
+                lambda command: contracts.Accepted(
+                    command.state_token,
+                    command.public_copy,
+                ),
+            ]
+        ),
+        model=ScriptedModel([candidate]),
+        guard=orchestrator.NarrativeGuard(),
+        assembler=orchestrator.PublicCopyAssembler(),
+        clock=FixedClock(),
+        document_builder=builder,
+        require_reading_document=True,
+    )
+
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.COMPLETING
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.ACCEPTED
+
+    assert builder.context is not None
+    assert builder.context.accepted_copy_ref == "accepted-copy:test"
+    assert repository.saved_document == {"document": "persisted"}
+
+
+async def test_accepted_result_is_rejected_when_document_projection_is_unavailable() -> None:
+    orchestrator, contracts, narrative = modules()
+    prepared = make_prepared(contracts)
+    candidate = make_candidate(narrative)
+    job = replace(
+        make_job(orchestrator, contracts, narrative),
+        reading_version_id=uuid4(),
+        product_id="bazi",
+        runtime_release="runtime:test@v1",
+    )
+    repository = MemoryRepository(orchestrator, job)
+
+    class MissingDocumentBuilder:
+        def build(self, context: Any) -> None:
+            del context
+            return None
+
+    machine = orchestrator.ReadingOrchestrator(
+        repository=repository,
+        runtime=ScriptedRuntime(
+            [
+                prepared,
+                lambda command: contracts.Accepted(
+                    command.state_token,
+                    command.public_copy,
+                ),
+            ]
+        ),
+        model=ScriptedModel([candidate]),
+        guard=orchestrator.NarrativeGuard(),
+        assembler=orchestrator.PublicCopyAssembler(),
+        clock=FixedClock(),
+        document_builder=MissingDocumentBuilder(),
+        require_reading_document=True,
+    )
+
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.PREPARED
+    assert (await machine.run(job.id)).status is orchestrator.ReadingStatus.COMPLETING
+    with pytest.raises(
+        orchestrator.OrchestratorInvariantError,
+        match="without ReadingDocument",
+    ):
+        await machine.run(job.id)
 
 
 async def test_safe_failed_model_receipt_is_persisted_with_the_failed_attempt() -> None:

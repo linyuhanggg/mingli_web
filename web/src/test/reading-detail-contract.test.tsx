@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import ReadingDetailPage from "@/app/app/readings/[readingId]/page";
+import { ReadingResult } from "@/components/readings/reading-result";
 import { resetApiCache } from "@/lib/api";
 
 const { routerPush } = vi.hoisted(() => ({ routerPush: vi.fn() }));
@@ -22,6 +22,10 @@ vi.mock("next/navigation", () => ({
 }));
 
 const VERSION_ID = "33333333-3333-4333-8333-333333333333";
+
+function ReadingDetailPage() {
+  return <ReadingResult readingId={VERSION_ID} />;
+}
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -120,28 +124,7 @@ beforeEach(() => {
   resetApiCache();
 });
 
-describe("reading detail route shell", () => {
-  it("uses AppPageHeader as the only page h1, with no eyebrow or kicker", async () => {
-    const route = read(
-      join(root, "src/app/app/readings/[readingId]/page.tsx"),
-    );
-    expect(route).toContain('from "@/components/app-page-header"');
-    expect(route).toContain("<AppPageHeader");
-    expect(route).not.toMatch(/eyebrow|folio/i);
-
-    const fetchMock = vi.fn<typeof fetch>(async (url) => {
-      if (String(url).endsWith("/result")) return jsonResponse(readingResult());
-      return jsonResponse(readingSummary("accepted"));
-    });
-    vi.stubGlobal("fetch", fetchMock);
-
-    render(<ReadingDetailPage />);
-
-    expect(await screen.findByRole("heading", { level: 1 })).toBeVisible();
-    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toMatch(/解读详情/);
-  });
-
+describe("reading detail component", () => {
   it("renders the accepted manuscript with numbered sections in true reading order", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       if (String(url).endsWith("/result")) return jsonResponse(readingResult());
@@ -244,26 +227,26 @@ describe("reading detail visual contract", () => {
     }
 
     const result = read(join(root, READINGS_DIR, "reading-result.module.css"));
-    expect(ruleFor(result, ".retryButton")).toContain("var(--radius-sm)");
-    expect(ruleFor(result, ".restartLink")).toContain("var(--radius-sm)");
+    expect(ruleFor(result, ".retryButton")).toContain("var(--radius-control)");
+    expect(ruleFor(result, ".restartLink")).toContain("var(--radius-control)");
 
     const verification = read(
       join(root, READINGS_DIR, "verification-form.module.css"),
     );
-    expect(ruleFor(verification, ".button")).toContain("var(--radius-sm)");
-    expect(ruleFor(verification, ".optionLabel")).toContain("var(--radius-sm)");
+    expect(ruleFor(verification, ".button")).toContain("var(--radius-control)");
+    expect(ruleFor(verification, ".optionLabel")).toContain("var(--radius-control)");
 
     const followUp = read(
       join(root, READINGS_DIR, "follow-up-form.module.css"),
     );
-    expect(ruleFor(followUp, ".submit")).toContain("var(--radius-sm)");
-    expect(ruleFor(followUp, ".recastLink")).toContain("var(--radius-sm)");
+    expect(ruleFor(followUp, ".submit")).toContain("var(--radius-control)");
+    expect(ruleFor(followUp, ".recastLink")).toContain("var(--radius-control)");
 
     const needInput = read(
       join(root, READINGS_DIR, "need-input-form.module.css"),
     );
-    expect(ruleFor(needInput, ".submit")).toContain("var(--radius-sm)");
-    expect(ruleFor(needInput, ".radioLabel")).toContain("var(--radius-sm)");
+    expect(ruleFor(needInput, ".submit")).toContain("var(--radius-control)");
+    expect(ruleFor(needInput, ".radioLabel")).toContain("var(--radius-control)");
   });
 
   it("gives every reading input at least a 48px hit area with 1rem text", () => {
@@ -271,7 +254,9 @@ describe("reading detail visual contract", () => {
       join(root, READINGS_DIR, "verification-form.module.css"),
     );
     expect(ruleFor(verification, ".note")).toMatch(/min-height:\s*3rem/);
-    expect(ruleFor(verification, ".note")).toMatch(/font-size:\s*1rem/);
+    expect(ruleFor(verification, ".note")).toMatch(
+      /font-size:\s*(1rem|var\(--font-size-body\))/,
+    );
 
     const followUp = read(
       join(root, READINGS_DIR, "follow-up-form.module.css"),
@@ -284,7 +269,9 @@ describe("reading detail visual contract", () => {
     expect(ruleFor(needInput, ".input")).toMatch(/min-height:\s*3rem/);
     expect(ruleFor(needInput, ".select")).toMatch(/min-height:\s*3rem/);
     expect(ruleFor(needInput, ".textarea")).toMatch(/min-height:\s*3rem/);
-    expect(ruleFor(needInput, ".input")).toMatch(/font-size:\s*1rem/);
+    expect(ruleFor(needInput, ".input")).toMatch(
+      /font-size:\s*(1rem|var\(--font-size-body\))/,
+    );
   });
 
   it("limits motion to transform/opacity/colors and honors reduced motion", () => {

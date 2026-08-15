@@ -1,8 +1,10 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const backendOrigin = (
   process.env.BACKEND_INTERNAL_URL ?? "http://127.0.0.1:8000"
 ).replace(/\/+$/, "");
+const developmentEval = process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'";
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -10,7 +12,7 @@ const contentSecurityPolicy = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${developmentEval}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
@@ -26,8 +28,13 @@ const privateHeaders = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
+  outputFileTracingRoot: path.join(__dirname, ".."),
   poweredByHeader: false,
   reactStrictMode: true,
+  turbopack: {
+    root: path.join(__dirname, ".."),
+  },
   async rewrites() {
     return [
       {

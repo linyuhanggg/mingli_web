@@ -6,10 +6,10 @@ import "@fontsource-variable/noto-serif-sc";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://admin.fateradar.cn"),
+  metadataBase: new URL("https://admin.mingli.tools"),
   title: {
-    default: "FateRadar 运营台",
-    template: "%s｜FateRadar 运营台",
+    default: "命理工具运营台",
+    template: "%s｜命理工具运营台",
   },
   description: "员工内部运营后台。不面向公众。",
   robots: {
@@ -18,14 +18,14 @@ export const metadata: Metadata = {
     nocache: true,
     googleBot: { index: false, follow: false, noimageindex: true },
   },
-  applicationName: "FateRadar Admin",
+  applicationName: "命理工具运营台",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   colorScheme: "light",
-  themeColor: "#123a32",
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

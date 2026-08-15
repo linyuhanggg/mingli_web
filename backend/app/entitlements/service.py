@@ -16,6 +16,7 @@ _ACTION_TO_CAPABILITY = {
     "today": "today",
     "near_seven": "week",
     "liuyao_one_question": "liuyao",
+    "wenshi_one_question": "liuyao",
 }
 
 OwnerKind = Literal["user", "guest"]

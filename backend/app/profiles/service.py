@@ -10,7 +10,7 @@ from app.config import Settings
 from app.identity.models import GuestSession
 from app.profiles.models import ProfileVersion, SubjectProfile
 from app.profiles.repository import ProfileRepository
-from app.profiles.schemas import ProfileConfirmRequest, ProfileSummary
+from app.profiles.schemas import ProfileConfirmRequest, ProfileSummary, ProfileVersionRequest
 from app.readings.models import ReadingIdempotencyKey, ReadingRoot
 from app.security.envelope import EnvelopeCipher
 
@@ -25,6 +25,26 @@ class ProfileAlreadyConfirmedError(ValueError):
 
 class GuestAlreadyClaimedError(ValueError):
     """The Guest Session is already bound to a verified User."""
+
+
+class ProfileAuthorizationRequiredError(ValueError):
+    """An explicitly authorized other-person profile was not confirmed."""
+
+
+class ProfileAuthorizationPayloadError(ValueError):
+    """Authorization flags contradict the selected subject type."""
+
+
+class MinorGuardianConfirmationRequiredError(ValueError):
+    """A minor profile is missing the required guardian confirmation."""
+
+
+class ProfileDifferenceNotAcknowledgedError(ValueError):
+    """An appended ProfileVersion was not confirmed as a visible difference."""
+
+
+class ProfileNotConfirmedError(ValueError):
+    """An append was requested for a SubjectProfile with no first version."""
 
 
 class OwnerProtocol(Protocol):
@@ -76,6 +96,7 @@ class ProfileService:
         )
         if draft is None:
             raise ProfileNotFoundError("Profile Draft not found")
+        self._validate_authorization(payload)
         try:
             version = await self.repository.create_version_if_unconfirmed(
                 profile_id=draft.id,
@@ -101,8 +122,79 @@ class ProfileService:
             raise ProfileAlreadyConfirmedError(
                 "Profile Draft is already confirmed"
             ) from error
+        await self.repository.create_version_authorization(
+            profile_version_id=version.id,
+            subject_type=payload.subject_type,
+            is_minor=payload.is_minor,
+            authorization_confirmed=payload.authorization_confirmed,
+            photo_authorization_confirmed=payload.photo_authorization_confirmed,
+            minor_guardian_confirmed=payload.minor_guardian_confirmed,
+            difference_acknowledged=False,
+        )
         await self.session.refresh(version)
         return _summary(draft.id, version)
+
+    async def append_version(
+        self,
+        owner: OwnerProtocol,
+        profile_id: UUID,
+        payload: ProfileVersionRequest,
+    ) -> ProfileSummary:
+        user_id, guest_id = owner_ids(owner)
+        profile = await self.repository.get_owned_profile(
+            profile_id,
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+        )
+        if profile is None:
+            raise ProfileNotFoundError("Subject Profile not found")
+        has_version = await self.session.scalar(
+            select(ProfileVersion.id).where(ProfileVersion.profile_id == profile.id).limit(1)
+        )
+        if has_version is None:
+            raise ProfileNotConfirmedError("Subject Profile has no confirmed version")
+        self._validate_version_authorization(payload)
+        version = await self.repository.create_version(
+            profile_id=profile.id,
+            payload={
+                "birth_datetime": payload.birth_datetime,
+                "timezone": payload.timezone,
+                "location": payload.location,
+                "gender": payload.gender,
+                "time_basis_policy": payload.time_basis_policy,
+                "zi_hour_policy": payload.zi_hour_policy,
+                "longitude": payload.longitude,
+                "latitude": payload.latitude,
+                "coordinate_source": payload.coordinate_source,
+            },
+        )
+        await self.repository.create_version_authorization(
+            profile_version_id=version.id,
+            subject_type=payload.subject_type,
+            is_minor=payload.is_minor,
+            authorization_confirmed=payload.authorization_confirmed,
+            photo_authorization_confirmed=payload.photo_authorization_confirmed,
+            minor_guardian_confirmed=payload.minor_guardian_confirmed,
+            difference_acknowledged=payload.difference_acknowledged,
+        )
+        await self.session.refresh(version)
+        return _summary(profile.id, version)
+
+    async def list_profile_versions(
+        self,
+        owner: OwnerProtocol,
+        profile_id: UUID,
+    ) -> list[ProfileSummary]:
+        user_id, guest_id = owner_ids(owner)
+        profile = await self.repository.get_owned_profile(
+            profile_id,
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+        )
+        if profile is None:
+            raise ProfileNotFoundError("Subject Profile not found")
+        versions = await self.repository.list_versions(profile.id)
+        return [_summary(profile.id, version) for version in versions]
 
     async def list_profiles(self, owner: OwnerProtocol) -> list[ProfileSummary]:
         user_id, guest_id = owner_ids(owner)
@@ -176,6 +268,29 @@ class ProfileService:
                 owner_guest_session_id=None,
             )
         )
+
+    @staticmethod
+    def _validate_authorization(payload: ProfileConfirmRequest) -> None:
+        if payload.subject_type == "other" and not payload.authorization_confirmed:
+            raise ProfileAuthorizationRequiredError(
+                "authorization for the other person's profile is required"
+            )
+        if payload.subject_type == "self" and payload.authorization_confirmed:
+            raise ProfileAuthorizationPayloadError(
+                "a self profile cannot be marked as authorized for another person"
+            )
+        if payload.is_minor and not payload.minor_guardian_confirmed:
+            raise MinorGuardianConfirmationRequiredError(
+                "guardian confirmation for a minor profile is required"
+            )
+
+    @staticmethod
+    def _validate_version_authorization(payload: ProfileVersionRequest) -> None:
+        ProfileService._validate_authorization(payload)
+        if not payload.difference_acknowledged:
+            raise ProfileDifferenceNotAcknowledgedError(
+                "the visible difference from the previous ProfileVersion must be acknowledged"
+            )
 
 
 def _summary(profile_id: UUID, version: ProfileVersion) -> ProfileSummary:

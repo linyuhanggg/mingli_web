@@ -1,0 +1,377 @@
+import os
+from datetime import UTC, date, datetime
+from uuid import uuid4
+
+import pytest
+from app.adapters.runtime import MingliRuntime, build_runtime_startup_gate
+from app.charts.contracts import (
+    BaziChartV1,
+    DaliurenChartV1,
+    LiuyaoChartV1,
+    PhysiognomyViewV1,
+    QizhengChartV1,
+    ZiweiChartV1,
+)
+from app.charts.projectors import (
+    project_bazi_view_model,
+    project_daliuren_view_model,
+    project_liuyao_view_model,
+    project_physiognomy_view_model,
+    project_qizheng_view_model,
+    project_ziwei_view_model,
+)
+from app.config import Settings
+from app.media.physiognomy import InMemoryPrivateMediaStore, PhysiognomyMediaAdapter
+from app.readings.public_fact_panel import project_public_fact_panel
+from app.readings.request_compiler import (
+    ConfirmedProfileVersion,
+    compile_bazi_day_prepare,
+    compile_bazi_month_prepare,
+    compile_bazi_prepare,
+    compile_bazi_year_prepare,
+    compile_fortune_prepare,
+    compile_liuren_prepare,
+    compile_liuyao_prepare,
+    compile_qizheng_day_prepare,
+    compile_qizheng_month_prepare,
+    compile_qizheng_prepare,
+    compile_qizheng_year_prepare,
+    compile_ziwei_month_prepare,
+    compile_ziwei_prepare,
+    compile_ziwei_year_prepare,
+)
+from app.readings.runtime_contracts import Prepared
+
+pytestmark = pytest.mark.skipif(
+    os.environ.get("MINGLI_RUN_REAL_RUNTIME_TESTS") != "1",
+    reason="real frozen Runtime test is opt-in",
+)
+
+
+SYNTHETIC_PROFILE = ConfirmedProfileVersion(
+    subject_ref="profile-version:public-core-synthetic",
+    birth_datetime="1994-04-30T05:55:00+08:00",
+    birth_datetime_or_four_pillars="1994-04-30T05:55:00+08:00",
+    timezone="Asia/Shanghai",
+    location="福建省福州市",
+    gender="male",
+    time_basis_policy="solar",
+    zi_hour_policy="midnight",
+    longitude=119.2965,
+    latitude=26.0745,
+    coordinate_source="synthetic-fixture",
+)
+
+
+async def _runtime() -> MingliRuntime:
+    gate = build_runtime_startup_gate(Settings())
+    await gate.startup()
+    return gate.runtime
+
+
+@pytest.mark.asyncio
+async def test_real_runtime_projects_public_natal_and_divination_core() -> None:
+    runtime = await _runtime()
+
+    bazi = await runtime.execute(
+        compile_bazi_prepare(
+            action="profile_preview",
+            query="验证八字核心盘面",
+            profile=SYNTHETIC_PROFILE,
+            dimension_ids=("career",),
+        )
+    )
+    assert isinstance(bazi, Prepared)
+    assert isinstance(project_bazi_view_model(bazi.to_dict()["brief"]), BaziChartV1)
+
+    ziwei = await runtime.execute(
+        compile_ziwei_prepare(
+            action="ziwei_preview",
+            query="验证紫微核心盘面",
+            profile=SYNTHETIC_PROFILE,
+            dimension_ids=("career",),
+        )
+    )
+    assert isinstance(ziwei, Prepared)
+    assert isinstance(project_ziwei_view_model(ziwei.to_dict()["brief"]), ZiweiChartV1)
+
+    qizheng = await runtime.execute(
+        compile_qizheng_prepare(
+            action="qizheng_preview",
+            query="验证七政核心盘面",
+            profile=SYNTHETIC_PROFILE,
+            dimension_ids=("career",),
+        )
+    )
+    assert isinstance(qizheng, Prepared)
+    assert isinstance(
+        project_qizheng_view_model(qizheng.to_dict()["brief"]), QizhengChartV1
+    )
+
+    liuyao = await runtime.execute(
+        compile_liuyao_prepare(
+            action="liuyao_one_question",
+            query="验证六爻核心卦盘",
+            subject_ref="liuyao:public-core-synthetic",
+            cast=(6, 7, 8, 9, 6, 7),
+            event_datetime=datetime.fromisoformat("2026-08-14T10:00:00+08:00"),
+            confirmed_timezone="Asia/Shanghai",
+            location="福建省福州市",
+            dimension_ids=("outcome",),
+        )
+    )
+    assert isinstance(liuyao, Prepared)
+    liuyao_view = project_liuyao_view_model(liuyao.to_dict()["brief"])
+    assert isinstance(liuyao_view, LiuyaoChartV1)
+    assert liuyao_view.core_facts is not None
+    assert liuyao_view.core_facts.najia is not None
+    assert liuyao_view.core_facts.relation_facts is not None
+    assert liuyao_view.core_facts.line_facts is not None
+    assert liuyao_view.core_facts.returning_relations is not None
+
+    daliuren = await runtime.execute(
+        compile_liuren_prepare(
+            action="liuren_one_question",
+            query="验证大六壬核心课盘",
+            subject_ref="liuren:public-core-synthetic",
+            event_datetime=datetime.fromisoformat("2026-08-14T10:00:00+08:00"),
+            confirmed_timezone="Asia/Shanghai",
+            location="福建省福州市",
+            dimension_ids=("outcome", "timing"),
+        )
+    )
+    assert isinstance(daliuren, Prepared)
+    daliuren_view = project_daliuren_view_model(daliuren.to_dict()["brief"])
+    assert isinstance(daliuren_view, DaliurenChartV1)
+    assert daliuren_view.core_facts is not None
+    assert daliuren_view.core_facts.heaven_plate is not None
+    assert daliuren_view.core_facts.transmission_method is not None
+    assert daliuren_view.core_facts.timing_candidates is not None
+
+    adapter = PhysiognomyMediaAdapter(store=InMemoryPrivateMediaStore())
+    asset = adapter.ingest(
+        owner_kind="guest",
+        owner_id=uuid4(),
+        content_type="image/png",
+        filename="synthetic-face.png",
+        payload=b"\x89PNG\r\n\x1a\nsynthetic",
+        width=1200,
+        height=1600,
+        consent=True,
+        mode="face",
+        now=datetime(2026, 8, 14, 2, 0, tzinfo=UTC),
+    )
+    physiognomy_input = adapter.build_runtime_input(
+        asset_id=asset.asset_id,
+        subject_ref="sid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        observations=(
+            {
+                "region": "forehead",
+                "feature_kind": "visible_morphology",
+                "descriptor": "region_visible",
+                "visibility": "full",
+                "uncertainty": 0.1,
+            },
+        ),
+        dimension_ids=("state",),
+    )
+    physiognomy = await runtime.execute(
+        physiognomy_input.to_prepare(
+            query="验证相法结构化观察核心",
+            action="physiognomy_preview",
+        )
+    )
+    assert isinstance(physiognomy, Prepared)
+    assert isinstance(
+        project_physiognomy_view_model(physiognomy.to_dict()["brief"]), PhysiognomyViewV1
+    )
+
+
+@pytest.mark.asyncio
+async def test_real_runtime_projects_bazi_year_layer() -> None:
+    runtime = await _runtime()
+
+    result = await runtime.execute(
+        compile_bazi_year_prepare(
+            action="bazi_year_preview",
+            query="验证指定年份流年事实",
+            profile=SYNTHETIC_PROFILE,
+            year=2026,
+            dimension_ids=("career",),
+        )
+    )
+
+    assert isinstance(result, Prepared)
+    view_model = project_bazi_view_model(result.to_dict()["brief"])
+    assert isinstance(view_model, BaziChartV1)
+    assert view_model.time_layers[1].available is True
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.year_layers is not None
+    assert [item.year for item in view_model.core_facts.year_layers] == [2026]
+
+
+@pytest.mark.asyncio
+async def test_real_runtime_projects_ziwei_and_qizheng_year_layers() -> None:
+    runtime = await _runtime()
+
+    ziwei = await runtime.execute(
+        compile_ziwei_year_prepare(
+            action="ziwei_year_preview",
+            query="验证紫微指定年份事实",
+            profile=SYNTHETIC_PROFILE,
+            year=2026,
+            dimension_ids=("career",),
+        )
+    )
+    assert isinstance(ziwei, Prepared)
+    ziwei_view = project_ziwei_view_model(ziwei.to_dict()["brief"])
+    assert isinstance(ziwei_view, ZiweiChartV1)
+    assert ziwei_view.time_layers[1].available is True
+    assert ziwei_view.core_facts is not None
+    assert ziwei_view.core_facts.chart_convention is not None
+    assert ziwei_view.core_facts.active_major_limit is not None
+    assert ziwei_view.core_facts.annual_layers is not None
+    assert [item.year for item in ziwei_view.core_facts.annual_layers] == [2026]
+
+    qizheng = await runtime.execute(
+        compile_qizheng_year_prepare(
+            action="qizheng_year_preview",
+            query="验证七政指定年份事实",
+            profile=SYNTHETIC_PROFILE,
+            year=2026,
+            dimension_ids=("career",),
+        )
+    )
+    assert isinstance(qizheng, Prepared)
+    qizheng_view = project_qizheng_view_model(qizheng.to_dict()["brief"])
+    assert isinstance(qizheng_view, QizhengChartV1)
+    assert qizheng_view.time_layers[1].available is True
+    assert qizheng_view.core_facts is not None
+    assert qizheng_view.core_facts.ephemeris is not None
+    assert qizheng_view.core_facts.conventions is not None
+    assert qizheng_view.core_facts.annual_transformations is not None
+    assert [item.year for item in qizheng_view.core_facts.annual_transformations] == [2026]
+
+
+@pytest.mark.asyncio
+async def test_real_runtime_projects_declared_month_and_day_layers() -> None:
+    runtime = await _runtime()
+
+    bazi_month = await runtime.execute(
+        compile_bazi_month_prepare(
+            action="bazi_month_preview",
+            query="验证八字指定月份事实",
+            profile=SYNTHETIC_PROFILE,
+            month="2026-08",
+            dimension_ids=("career",),
+        )
+    )
+    assert isinstance(bazi_month, Prepared)
+    bazi_month_view = project_bazi_view_model(bazi_month.to_dict()["brief"])
+    assert isinstance(bazi_month_view, BaziChartV1)
+    assert bazi_month_view.core_facts is not None
+    assert bazi_month_view.core_facts.month_layers is not None
+    assert [item.period for item in bazi_month_view.core_facts.month_layers] == ["2026-08"]
+    assert next(
+        layer for layer in bazi_month_view.time_layers if layer.layer_id == "month"
+    ).available
+
+    bazi_day = await runtime.execute(
+        compile_bazi_day_prepare(
+            action="bazi_day_preview",
+            query="验证八字指定日期事实",
+            profile=SYNTHETIC_PROFILE,
+            target_date=date(2026, 8, 15),
+            dimension_ids=("career",),
+        )
+    )
+    assert isinstance(bazi_day, Prepared)
+    bazi_day_view = project_bazi_view_model(bazi_day.to_dict()["brief"])
+    assert isinstance(bazi_day_view, BaziChartV1)
+    assert bazi_day_view.core_facts is not None
+    assert bazi_day_view.core_facts.day_layers is not None
+    assert [item.period for item in bazi_day_view.core_facts.day_layers] == ["2026-08-15"]
+    assert next(layer for layer in bazi_day_view.time_layers if layer.layer_id == "day").available
+
+    ziwei_month = await runtime.execute(
+        compile_ziwei_month_prepare(
+            action="ziwei_month_preview",
+            query="验证紫微指定月份事实",
+            profile=SYNTHETIC_PROFILE,
+            month="2026-08",
+            dimension_ids=("career",),
+        )
+    )
+    assert isinstance(ziwei_month, Prepared)
+    ziwei_month_view = project_ziwei_view_model(ziwei_month.to_dict()["brief"])
+    assert isinstance(ziwei_month_view, ZiweiChartV1)
+    assert ziwei_month_view.core_facts is not None
+    assert ziwei_month_view.core_facts.monthly_layers is not None
+    assert [
+        (item.year, item.month)
+        for item in ziwei_month_view.core_facts.monthly_layers
+    ] == [(2026, 8)]
+    assert next(
+        layer for layer in ziwei_month_view.time_layers if layer.layer_id == "month"
+    ).available
+
+    qizheng_month = await runtime.execute(
+        compile_qizheng_month_prepare(
+            action="qizheng_month_preview",
+            query="验证七政指定月份事实",
+            profile=SYNTHETIC_PROFILE,
+            month="2026-08",
+            dimension_ids=("career",),
+        )
+    )
+    assert isinstance(qizheng_month, Prepared)
+    qizheng_month_view = project_qizheng_view_model(qizheng_month.to_dict()["brief"])
+    assert isinstance(qizheng_month_view, QizhengChartV1)
+    assert qizheng_month_view.core_facts is not None
+    assert qizheng_month_view.core_facts.requested_limit_layers is not None
+    assert next(
+        layer
+        for layer in qizheng_month_view.time_layers
+        if layer.layer_id == "month"
+    ).available
+
+    qizheng_day = await runtime.execute(
+        compile_qizheng_day_prepare(
+            action="qizheng_day_preview",
+            query="验证七政指定日期事实",
+            profile=SYNTHETIC_PROFILE,
+            target_date=date(2026, 8, 15),
+            dimension_ids=("career",),
+        )
+    )
+    assert isinstance(qizheng_day, Prepared)
+    qizheng_day_view = project_qizheng_view_model(qizheng_day.to_dict()["brief"])
+    assert isinstance(qizheng_day_view, QizhengChartV1)
+    assert qizheng_day_view.core_facts is not None
+    assert qizheng_day_view.core_facts.requested_limit_layers is not None
+    assert next(
+        layer for layer in qizheng_day_view.time_layers if layer.layer_id == "day"
+    ).available
+
+
+@pytest.mark.asyncio
+async def test_real_runtime_projects_fortune_fact_panel_without_chart_claim() -> None:
+    runtime = await _runtime()
+    fortune = await runtime.execute(
+        compile_fortune_prepare(
+            action="today",
+            query="验证日运事实面板",
+            profile=SYNTHETIC_PROFILE,
+            server_reference_datetime=datetime.fromisoformat(
+                "2026-08-14T02:00:00+00:00"
+            ),
+            dimension_ids=("career",),
+        )
+    )
+
+    assert isinstance(fortune, Prepared)
+    brief = fortune.to_dict()["brief"]
+    assert brief["request_view"]["capability_ids"] == ["fortune"]
+    panel = project_public_fact_panel(brief)
+    assert panel is not None
+    assert panel["request_view"]["capability_ids"] == ["fortune"]

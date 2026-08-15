@@ -121,6 +121,45 @@ def test_candidate_refs_close_over_the_current_brief() -> None:
     assert candidate == original
 
 
+def test_relationship_scope_allows_explicit_cross_subject_source_facts() -> None:
+    guard_module = importlib.import_module("app.readings.narrative_guard")
+    payload = brief_payload()
+    payload["facts"].append(
+        {
+            "ref": "fact:relationship-other-subject",
+            "subject_ref": "profile-version:other",
+            "kind_id": "kind.structure",
+            "value": {"fixture": "other-subject"},
+            "display_text": "另一主体的跨盘结构事实。",
+        }
+    )
+    payload["claim_scopes"][1]["fact_refs"].append(
+        "fact:relationship-other-subject"
+    )
+    candidate = load_candidate()
+    candidate["blocks"][0].update(
+        dimension_id="relationship",
+        finding_refs=[],
+        fact_refs=[
+            "fact:relationship-structure",
+            "fact:relationship-other-subject",
+        ],
+        evidence_refs=["evidence:classic-other"],
+    )
+
+    output_contracts = importlib.import_module("app.readings.output_contracts")
+    result = guard_module.NarrativeGuard().validate(
+        candidate,
+        build_brief(payload),
+        output_contract=output_contracts.output_contract_for_dimensions(
+            ("relationship",)
+        ),
+    )
+
+    assert result.passed is True
+    assert result.errors == ()
+
+
 def test_frozen_invalid_reference_fixture_is_rejected() -> None:
     guard_module = importlib.import_module("app.readings.narrative_guard")
     result = guard_module.NarrativeGuard().validate(

@@ -36,11 +36,22 @@ class ProfileConfirmRequest(BaseModel):
     longitude: float | None = Field(default=None, ge=-180, le=180)
     latitude: float | None = Field(default=None, ge=-90, le=90)
     coordinate_source: str | None = Field(default=None, min_length=1, max_length=40)
+    subject_type: Literal["self", "other"] = "self"
+    is_minor: bool = False
+    authorization_confirmed: bool = False
+    photo_authorization_confirmed: bool = False
+    minor_guardian_confirmed: bool = False
 
     @field_validator("timezone")
     @classmethod
     def _timezone_must_be_iana(cls, value: str) -> str:
         return validate_iana_timezone(value)
+
+
+class ProfileVersionRequest(ProfileConfirmRequest):
+    model_config = ConfigDict(extra="forbid")
+
+    difference_acknowledged: bool
 
 
 class ProfileSummary(BaseModel):
@@ -57,3 +68,9 @@ class ProfileListResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     profiles: list[ProfileSummary]
+
+
+class ProfileVersionListResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    versions: list[ProfileSummary]

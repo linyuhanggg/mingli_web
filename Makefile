@@ -1,11 +1,12 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help install test check backend-test backend-check web-test web-check admin-typecheck build migrate worker-once
+.PHONY: help install test check backend-test backend-check web-test web-check admin-check admin-typecheck build migrate worker-once
 
 help:
 	@echo "install       Install locked backend and web dependencies"
 	@echo "test          Run backend, contract, and web tests"
 	@echo "check         Run lint, type checks, tests, and production web build"
+	@echo "admin-check   Run Admin lint, type checks, tests, and production build"
 	@echo "migrate       Upgrade the configured PostgreSQL database to Alembic head"
 	@echo "worker-once   Run one non-blocking Worker iteration"
 	@echo "admin-typecheck  Typecheck the independent admin console"
@@ -16,7 +17,7 @@ install:
 	npm install --prefix admin
 
 backend-test:
-	uv run --project backend pytest backend/tests tests/contract -q
+	uv run --directory backend pytest tests ../tests/contract -q
 
 backend-check: backend-test
 	uv run --project backend ruff check --config backend/pyproject.toml backend tests
@@ -29,6 +30,12 @@ web-check: web-test
 	npm --prefix web run lint
 	npm --prefix web run typecheck
 
+admin-check:
+	npm --prefix admin test
+	npm --prefix admin run lint
+	npm --prefix admin run typecheck
+	npm --prefix admin run build
+
 admin-typecheck:
 	npm --prefix admin run typecheck
 
@@ -37,7 +44,7 @@ test: backend-test web-test
 build:
 	npm --prefix web run build
 
-check: backend-check web-check build
+check: backend-check web-check admin-check build
 
 migrate:
 	uv run --project backend alembic -c backend/alembic.ini upgrade head

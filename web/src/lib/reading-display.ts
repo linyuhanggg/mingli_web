@@ -1,3 +1,9 @@
+import type {
+  BaziChartViewModel,
+  BaziCoreFacts,
+  BaziInterpretiveCandidates,
+} from "@/view-models/registry";
+
 import type { ReadingFact, ReadingHorizon } from "./api";
 
 const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
@@ -20,12 +26,26 @@ const capabilityLabels: Record<string, string> = {
   bazi: "八字",
   fortune: "日运与周运",
   liuyao: "六爻",
+  meihua: "梅花易数",
+  qimen: "奇门遁甲",
+  liuren: "大六壬",
+  "luming-nayin": "禄命/纳音",
+  physiognomy: "相法",
+  selection: "择日",
+  taiyi: "太乙神数",
+  xingming: "七政四余",
+  ziwei: "紫微斗数",
+  "time-check": "寻时定盘",
 };
 
 const objectLabels: Record<string, string> = {
   natal: "命理档案",
   near_time_personal: "近期个人趋势",
   concrete_event: "具体事项",
+  macro_historical: "年度宏观事项",
+  calendar_choice: "日期选择",
+  spatial_observation: "空间观察",
+  visible_observation: "可见观察",
 };
 
 const dimensionLabels: Record<string, string> = {
@@ -33,6 +53,14 @@ const dimensionLabels: Record<string, string> = {
   career: "事业",
   outcome: "结果",
   timing: "时机",
+  health: "健康",
+  location: "地点",
+  relationship: "关系",
+  state: "状态",
+  current_state: "当前状态",
+  direction: "方位",
+  source_comparison: "来源对照",
+  time_options: "时辰候选",
 };
 
 const genderLabels: Record<string, string> = {
@@ -578,6 +606,8 @@ export function formatReadingFacts(facts: ReadingFact[]): FactPresentation[] {
 
 export type BaziChartView = {
   pillars: FactPillars | null;
+  coreFacts?: BaziCoreFacts | null;
+  timeLayers?: BaziChartViewModel["time_layers"];
   dayMaster: string | null;
   monthCommand: string | null;
   activeLuck: string | null;
@@ -593,6 +623,49 @@ export type BaziChartView = {
   highlights: FactPresentation[];
   secondary: FactPresentation[];
 };
+
+const BAZI_ELEMENT_LABELS: Record<string, string> = {
+  wood: "木",
+  fire: "火",
+  earth: "土",
+  metal: "金",
+  water: "水",
+};
+
+export function formatBaziInterpretiveCandidateRows(
+  candidates: BaziInterpretiveCandidates,
+): string[][] {
+  const strength = candidates.strength;
+  const inventory = strength.all_element_occurrences
+    .map(
+      (item) =>
+        `${BAZI_ELEMENT_LABELS[item.element] ?? item.element}${item.value}`,
+    )
+    .join("、");
+  const stemCandidates =
+    candidates.following_and_transformation.stem_combination_candidates;
+  const branchCandidates =
+    candidates.following_and_transformation.branch_formation_candidates;
+  return [
+    [
+      "强弱证据",
+      `日主${BAZI_ELEMENT_LABELS[strength.day_element] ?? strength.day_element}；月令${BAZI_ELEMENT_LABELS[strength.month_command_element] ?? strength.month_command_element}；同类 ${strength.same_element_occurrences} 项；生扶 ${BAZI_ELEMENT_LABELS[strength.resource_element] ?? strength.resource_element} ${strength.resource_occurrences} 项；盘面 ${inventory}`,
+    ],
+    [
+      "月令结构",
+      `${candidates.structure.month_main_qi} · ${candidates.structure.month_main_qi_ten_god}；${candidates.structure.main_qi_visible ? "主气已透干" : "主气未透干"}；${candidates.structure.visible_positions.join("、") || "无可见位置"}`,
+    ],
+    [
+      "合化 / 从格候选",
+      `天干候选 ${stemCandidates.length} 项；地支成局候选 ${branchCandidates.length} 项；${candidates.following_and_transformation.status === "requires_classical_adjudication" ? "仍需经典裁决" : "状态未知"}`,
+    ],
+    [
+      "显著信号",
+      `${candidates.salience_signals.length} 项机械候选：${candidates.salience_signals.map((signal) => signal.signal_id).join("、") || "无"}`,
+    ],
+    ["证据边界", strength.boundary],
+  ];
+}
 
 function presentationByLabel(
   items: FactPresentation[],
@@ -639,6 +712,7 @@ export function buildBaziChartView(facts: ReadingFact[]): BaziChartView {
 
   return {
     pillars: pillarsItem?.pillars ?? null,
+    coreFacts: null,
     dayMaster,
     monthCommand,
     activeLuck,
@@ -653,6 +727,56 @@ export function buildBaziChartView(facts: ReadingFact[]): BaziChartView {
     calendarSummary,
     highlights: leftovers.filter((item) => item.emphasis === "primary"),
     secondary: leftovers.filter((item) => item.emphasis === "secondary"),
+  };
+}
+
+export function buildBaziChartViewFromViewModel(
+  viewModel: BaziChartViewModel,
+): BaziChartView {
+  const coreFacts = viewModel.core_facts ?? null;
+  const pillars: FactPillars = {
+    year: "",
+    month: "",
+    day: "",
+    hour: "",
+  };
+  for (const pillar of viewModel.pillars) {
+    pillars[pillar.position] = `${pillar.stem}${pillar.branch}`;
+  }
+
+  return {
+    pillars,
+    coreFacts,
+    timeLayers: viewModel.time_layers,
+    dayMaster: coreFacts?.day_master
+      ? `${coreFacts.day_master.stem}（${coreFacts.day_master.element}·${coreFacts.day_master.polarity}）`
+      : null,
+    monthCommand: coreFacts?.month_command
+      ? `${coreFacts.month_command.label} · 主气 ${coreFacts.month_command.main_qi}`
+      : null,
+    activeLuck: null,
+    birthTime: null,
+    gender: null,
+    location: null,
+    timeBasis: null,
+    ziHour: null,
+    timezone: null,
+    targetDay: null,
+    targetPeriod: coreFacts?.day_layers?.length
+      ? coreFacts.day_layers.map((item) => item.period).join("、")
+      : coreFacts?.month_layers?.length
+        ? coreFacts.month_layers.map((item) => item.period).join("、")
+        : coreFacts?.year_layers?.length
+          ? coreFacts.year_layers.map((item) => String(item.year)).join("、")
+          : null,
+    calendarSummary: null,
+    highlights: [],
+    secondary: viewModel.element_balance.map((item) => ({
+      key: `view-model:element-balance:${item.element}`,
+      label: "五行计数",
+      text: item.display_text,
+      emphasis: "secondary" as const,
+    })),
   };
 }
 

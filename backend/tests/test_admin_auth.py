@@ -27,9 +27,10 @@ async def test_admin_bootstrap_login_me_and_logout(client: AsyncClient) -> None:
     overview = await client.get("/api/v1/admin/overview")
     assert overview.status_code == 200
     overview_body = overview.json()
-    assert overview_body["is_stub"] is True
+    assert overview_body["is_stub"] is False
     assert len(overview_body["kpis"]) == 4
-    assert all(item["is_stub"] for item in overview_body["kpis"])
+    assert all(not item["is_stub"] for item in overview_body["kpis"])
+    assert all(not item["is_stub"] for item in overview_body["queues"])
 
     logout = await client.post(
         "/api/v1/admin/auth/logout",

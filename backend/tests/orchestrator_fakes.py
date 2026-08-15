@@ -86,6 +86,8 @@ class MemoryRepository:
         self.checkpoint = orchestrator.ReadingCheckpoint()
         self.attempts: list[tuple[int, tuple[str, ...]]] = []
         self.model_receipts: list[Any] = []
+        self.successful_candidate: Any | None = None
+        self.saved_document: Any | None = None
 
     async def load_job(self, job_id: str) -> Any:
         assert job_id == self.job.id
@@ -167,11 +169,12 @@ class MemoryRepository:
         *,
         model_receipt: Any = None,
     ) -> None:
-        del candidate, at
+        del at
         assert job_id == self.job.id
         self.events.append(f"repo:successful_attempt:{attempt_number}")
         self.attempts.append((attempt_number, ()))
         self.model_receipts.append(model_receipt)
+        self.successful_candidate = candidate
         self.checkpoint = replace(
             self.checkpoint,
             status=self.orchestrator.ReadingStatus.COMPLETING,
@@ -189,6 +192,18 @@ class MemoryRepository:
             accepted=accepted,
         )
         return accepted
+
+    async def load_successful_candidate(self, job_id: str) -> Any | None:
+        assert job_id == self.job.id
+        return self.successful_candidate
+
+    async def load_accepted_copy_ref(self, job_id: str) -> str | None:
+        assert job_id == self.job.id
+        return "accepted-copy:test"
+
+    async def save_reading_document_for_job(self, job_id: str, document: Any) -> None:
+        assert job_id == self.job.id
+        self.saved_document = document
 
     async def mark_delayed(self, job_id: str, at: datetime) -> None:
         del at
