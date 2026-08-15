@@ -2,6 +2,7 @@
 status: accepted
 date: 2026-08-09
 supersedes: 0003-use-direct-virtual-goods-and-an-entitlement-ledger
+amended_by: 0011-rebuild-the-product-surface-from-main-under-a-ui-first-contract
 ---
 
 # 使用渠道中立的计费层与统一权益账本

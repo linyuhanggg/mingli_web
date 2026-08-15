@@ -1,86 +1,79 @@
 # mingli_web
 
-> Runtime 永远装完整 5.1（13 Provider / 55 古籍 / 1328 evidence）；P0 产品只曝光 bazi、fortune、liuyao。生产源只用签名 release + `scripts/verify_frozen_runtime_release.py`，不要拿脏 skill 工作树当源。
+`mingli_web` 是一个响应式命理产品网站与独立管理后台。产品开发遵守三层边界：
 
-当前权威方向是：**先做响应式网站，后做原生 iOS App，共用同一套账户、商品、权益和命理解读后端。** Phase 0 与 Phase 1 已建立可运行基础：Next.js 公共/私人网站壳、FastAPI、PostgreSQL 首版迁移、独立 Worker、Guest Session、手机号/邮箱 Fake OTP、Cookie Device Session、CSRF 和同源 `/api`。
+- 自有 `mingli-master` Runtime 是盘面、算法事实、古籍证据与连续状态的唯一权威；
+- 青囊实站审计用于确定产品层级、功能入口与“免费确定性盘面 → 深度解读”的任务模式；
+- METIS 实站与其公开 MIT 仓库用于确定表单、组件、工作台、信息密度和响应式表现。
 
-## 文档
+当前正式产品没有品牌名。旧 `FateRadar` 名称、墨绿金色皮肤和旧三能力页面均已废弃；代码、域名或运维文件中的同名标识只作为待迁移的历史基础设施标识，不是产品权威。
 
-**进度、门禁、下一步（唯一清单）：** [docs/CHECKLIST.md](./docs/CHECKLIST.md)
+## 唯一开发权威
 
-冻结合同（不是进度日志，不随施工改状态）：
+范围、依赖、进度、门禁、证据和下一步只看 [docs/CHECKLIST.md](./docs/CHECKLIST.md)。
+
+冻结合同各司其职，不互相复制：
 
 - 共同语言：[CONTEXT.md](./CONTEXT.md)
-- 视觉：[DESIGN.md](./DESIGN.md)
-- 产品方向：[docs/PRODUCT_DIRECTION.md](./docs/PRODUCT_DIRECTION.md)
-- 商业与技术蓝图：[docs/PRODUCT_BLUEPRINT_WEB_IOS_V2.md](./docs/PRODUCT_BLUEPRINT_WEB_IOS_V2.md)
-- 算法接入：[docs/MINGLI_V51_WEB_INTEGRATION.md](./docs/MINGLI_V51_WEB_INTEGRATION.md)
-- 架构决策：[docs/adr](./docs/adr)
-- 机器证据：`docs/releases/evidence/`（只存可复验产物，不写叙事日志）
+- 视觉、组件、交互与响应式：[DESIGN.md](./DESIGN.md)
+- 算法、Provider、Orchestrator 与 `ReadingDocumentV1`：[docs/MINGLI_V51_WEB_INTEGRATION.md](./docs/MINGLI_V51_WEB_INTEGRATION.md)
+- 不可逆架构决策：[docs/adr](./docs/adr)
+- 可复验机器与浏览器证据：`docs/releases/evidence/`
 
-不要新增 HANDOFF / plans / releases 施工 md；只更新 `CHECKLIST.md` 勾选与断点。
+禁止新增平行的 `HANDOFF`、`docs/plans/*`、产品蓝图或第二份 checklist。新需求进入 `docs/CHECKLIST.md` 对应 backlog；改变已经验收的产品地图、页面层级或视觉合同，必须先记录影响并由用户明确批准。
+
+## 当前开发基线
+
+当前 `main` 是唯一基线。保留后端身份、档案、解读编排、Worker、Runtime/Model Adapter、Guard、数据库迁移、合同和基础设施；公共 Web 与 Admin 的产品表现层按新权威重建。旧 UI 分支只用于取证，不整体合并。
+
+测试版先预制公共站、用户区、全部产品流程和完整后台的全路由、全状态、全尺寸 UI；真实产品路由不允许 Fixture、假盘、假支付或 raw JSON。只有 `/_ui-lab` 可以展示明确标记的 UI 演示数据。
 
 ## 目录边界
 
-~~~text
-web/                    Next.js App Router + TypeScript
+```text
+web/                    Next.js 公共站、产品任务与账户区
+admin/                  独立 Next.js 管理后台
 backend/app/            FastAPI 模块化单体与领域模块
-backend/worker/         独立异步任务进程入口
-backend/alembic/        PostgreSQL 迁移
+backend/worker/         独立异步任务进程
+backend/alembic/        PostgreSQL 迁移历史
 contracts/openapi/      同源 API 合同
-contracts/schemas/      共享 JSON Schema
+contracts/schemas/      共享 JSON Schema 与 ViewModel 合同
 infra/                  本地容器、Nginx 与运行手册
-tests/contract/         跨模块合同测试
-~~~
-
-早期小程序骨架已由 Git 提交 `15cbc95` 完整保全，随后从当前工作树移除。网站不沿用小程序的目录、状态或客户端架构。
+tests/contract/         跨模块与权威文档合同测试
+docs/releases/evidence/ 机器、浏览器和发布证据
+```
 
 ## 本机运行
 
 要求：Node.js 22+、Python 3.12、uv、PostgreSQL 16。Docker 可选。
 
-~~~bash
+```bash
 uv sync --project backend --group dev
 npm install --prefix web
+npm install --prefix admin
 
-# 默认连接本机 mingli / mingli-local；需要时用 MINGLI_* 环境变量覆盖
 uv run --project backend alembic -c backend/alembic.ini upgrade head
 
-# 分别启动三个进程
 uv run --project backend uvicorn app.main:app --app-dir backend --reload --port 8000
 uv run --directory backend python -m worker.main --poll-interval 2
 npm --prefix web run dev
-~~~
+npm --prefix admin run dev
+```
 
-如果本机持久 SQLite 开发库曾在 `2026-08-10` 的迁移 ID 修复前跑到旧的
-`0003`、`0006` 或 `0007`，先保留数据库备份，再把 `alembic_version`
-中的旧 ID 映射为同一份 schema 的短 ID；这一步只用于旧 SQLite 开发库，
-不要对 PostgreSQL 执行：
+Web 默认访问 `http://127.0.0.1:3000`，相对 `/api/*` 由 Next.js 转发到 `BACKEND_INTERNAL_URL`。完整同源入口参见 [infra/PHASE_1_RUNBOOK.md](./infra/PHASE_1_RUNBOOK.md)。Admin 仍是独立应用与 Staff Session，不与普通用户会话混用。
 
-~~~sql
-UPDATE alembic_version
-SET version_num = CASE version_num
-  WHEN '0003_reading_integrity_constraints' THEN '0003_reading_integrity'
-  WHEN '0006_generation_attempt_model_receipt' THEN '0006_model_receipt'
-  WHEN '0007_reading_api_idempotency_and_verification' THEN '0007_api_idem_verify'
-  ELSE version_num
-END;
-~~~
-
-浏览器访问 `http://127.0.0.1:3000`。Next.js 把相对 `/api/*` 转发到 `BACKEND_INTERNAL_URL`，默认是 `http://127.0.0.1:8000`；正式浏览器不会看到跨域 API 地址。
-
-如果本机有 Docker Compose，可按 [infra/PHASE_1_RUNBOOK.md](./infra/PHASE_1_RUNBOOK.md) 从 `http://127.0.0.1:8080` 启动完整同源入口。
+如果旧本机 SQLite 开发库曾使用长迁移 ID，先备份再按 [infra/PHASE_1_RUNBOOK.md](./infra/PHASE_1_RUNBOOK.md) 的既有映射修复；不得对 PostgreSQL 猜测或重写迁移历史。
 
 ## 测试与质量门
 
-~~~bash
+```bash
 make test
 make check
-~~~
+```
 
-等价的独立命令：
+需要单独定位时使用：
 
-~~~bash
+```bash
 uv run --project backend pytest backend/tests tests/contract -q
 uv run --project backend ruff check --config backend/pyproject.toml backend tests
 uv run --project backend mypy --config-file backend/pyproject.toml backend/app backend/worker
@@ -88,23 +81,26 @@ npm --prefix web test
 npm --prefix web run lint
 npm --prefix web run typecheck
 npm --prefix web run build
-~~~
+npm --prefix admin run lint
+npm --prefix admin run typecheck
+npm --prefix admin run build
+```
 
-## Fake 与安全边界
+自动化绿灯只说明对应合同通过。UI 完成还必须在 360、768、1024、1440 四档真实浏览器逐路点击、截图、检查键盘/焦点/响应式，并由用户亲自确认；DOM 存在、CSS 正则或 checklist 勾选都不能替代。
 
-- 本地验证码固定为 `246810`，仅 local/test 响应可见；不会发送真实短信或邮件。
-- Fake Payment 永远不能产生到账事实。
-- Fake Model 的结构占位永远不是 Accepted Copy。
-- Fake Runtime 不执行真实命理计算。
-- Cookie 中是随机不透明 token；数据库只保存会话哈希。
-- 手机号/邮箱规范化后使用带服务端密钥的 HMAC 标识，业务外键始终是内部 User UUID。
-- 仓库没有真实支付、短信、邮件、模型或命理运行时密钥；生产值必须由 Secret Manager/运行环境注入。
+## Fake、数据与安全边界
 
-Metis 紫薇及其开源仓库只作为信息层级和交互参考，不复制其品牌资产、具体版式、私有 API 或支付参数。
+- Fake Runtime、Model、OTP 与 Payment 只用于本地测试或 `/_ui-lab`，不能产生生产事实。
+- 浏览器不排盘，不猜 Provider 字段，不展示 raw JSON、snake_case 或内部引用。
+- 用户本人和有权限的后台页面可完整显示业务资料；数据库静态存储仍加密。
+- 密码只存不可逆哈希；验证码、Cookie、`state_token`、API Key、数据库口令和模型秘密永不进入用户或后台页面。
+- 支付回跳不是到账事实；服务端验签通知或主动查单才可授予权益。
+- 迁移历史只追加。旧 dogfood grant 不是正式商业账本，待正式账本落地后用新迁移退出。
 
-## 进度与下一阶段
+## Runtime 发布门禁
 
-见 **[docs/CHECKLIST.md](./docs/CHECKLIST.md)**。
+Runtime Release 始终完整包含 13 个 Provider、55 个古籍 reference pack 与 1328 条 evidence index；产品地图不会反向裁剪发布物。13 个 Provider 是内部能力模块，不是 13 个用户产品入口。
 
-Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。  
-当前总判：`联调主链路已通` · `production blocked` · `real traffic disabled`。浏览器只展示服务端 Accepted Copy / 公开 fact 投影，不在客户端伪造排盘。
+Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、发布和验收不得启动 VZ、Rosetta、QEMU 或 `linux-certify`。
+
+生产源只使用固定、可验签的 Runtime Release，不把任意 Skill 工作树当发布物。完整实施顺序和当前阻塞见 [docs/CHECKLIST.md](./docs/CHECKLIST.md)。

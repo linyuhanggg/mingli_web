@@ -1,5 +1,6 @@
 ---
 status: accepted
+amended_by: 0011-rebuild-the-product-surface-from-main-under-a-ui-first-contract
 ---
 
 # 用户订阅与模型厂商账务完全分离

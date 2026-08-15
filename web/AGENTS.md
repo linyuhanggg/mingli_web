@@ -5,8 +5,9 @@ These rules apply to everything under `web/`.
 ## Binding context
 
 - Read `../DESIGN.md` before UI work.
-- Product behavior remains governed by `../docs/PRODUCT_DIRECTION.md`, `../docs/PRODUCT_BLUEPRINT_WEB_IOS_V2.md`, and `../CONTEXT.md`.
-- Metis is an interaction and information-hierarchy reference only. Do not copy its brand assets, exact layouts, copy, or private behavior.
+- Product scope, route/state inventory, dependencies, progress, and evidence are governed only by `../docs/CHECKLIST.md`.
+- Shared terminology is governed by `../CONTEXT.md`; Runtime, Provider, Orchestrator, and ReadingDocument boundaries are governed by `../docs/MINGLI_V51_WEB_INTEGRATION.md`.
+- Qingnang is a product-mode and information-architecture reference. METIS is the neutral component, task-shell, and workbench reference. MIT-licensed presentation code may be adapted with its license preserved; do not import either site's brand assets, proprietary production code, business data, client-side algorithms, or private behavior.
 
 ## Skill routing
 
@@ -20,7 +21,7 @@ Do not invoke design Skills for backend-only or non-visual changes.
 
 ## Implementation rules
 
-- Keep semantic tokens in `src/app/globals.css`; use CSS Modules for component styling.
+- Import the shared semantic-token source from `../ui/tokens.css` in `src/app/globals.css`; keep only Web-specific global rules there and use CSS Modules for component styling.
 - Use `radix-ui` for complex keyboard/focus interactions and do not mix primitive systems in one surface.
 - Use only `motion/react` for JavaScript animation. Prefer CSS for simple transform/opacity transitions.
 - Use Lucide only for functional icons; use reviewed custom marks for domain-specific命理 imagery.
@@ -33,6 +34,7 @@ Do not invoke design Skills for backend-only or non-visual changes.
 - Run `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` as applicable.
 - Verify 360, 768, 1024, and 1440px layouts.
 - Test keyboard navigation and `prefers-reduced-motion` for interactive or animated work.
+- Record real-browser evidence for every affected route/state. DOM presence, CSS regexes, unit tests, or a checked checklist item cannot by themselves establish UI completion; user acceptance is required by `../docs/CHECKLIST.md`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
