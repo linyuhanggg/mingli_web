@@ -20,6 +20,7 @@ import {
 import { BrandMark } from "./brand-mark";
 import { Container } from "./container";
 import { RouteEnter } from "./motion-primitives";
+import { SitePrimaryNavigation } from "./site-header";
 import styles from "./private-shell.module.css";
 
 
@@ -146,6 +147,7 @@ function PrivateShellContent({
       <header className={styles.header}>
         <Container className={styles.headerInner}>
           <BrandMark />
+          {accountShell ? <SitePrimaryNavigation /> : null}
           <div className={styles.headerActions}>
             {!accountShell ? (
               <Link className={styles.back} href="/">

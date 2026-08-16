@@ -67,3 +67,25 @@
 - `http://106.14.10.235:18080/account` 返回 200，HTML 有 `h1=我的` 且不含「返回公共首页」；页面引用的 5 个 CSS 资源均正常。
 - 公网 Chrome 360、768、1024、1440 四档均无横向溢出、无关键资源 4xx、无页面错误；服务器实拍截图为 `web/e2e/screenshots/audit-2026-08-14/phase3-account/server-360.png`、`server-768.png`、`server-1024.png`、`server-1440.png`。
 - 生产域名 `https://fateradar.cn/` 没有修改。阶段 3 仍是「证据就绪，待用户验收」，服务器部署完成不等于用户验收完成。
+
+## 2026-08-16 全局导航回补与账户导航固定补充
+
+用户验收前的补充修正：账户页继续保留原有顶部公共功能导航，桌面端显示「术数、合参、工具、每日、知识内容、更多」；账户导航固定在页头下方并居中，滚动时保持可见。移动端保留账户底部导航和账户导航的横向浏览，不改变账户路由、接口、权限或数据边界。
+
+### 补充门禁
+
+| 项目 | 结果 |
+|---|---|
+| `cd web && npm run lint` | 通过，0 warnings |
+| `cd web && npm run typecheck` | 通过 |
+| `cd web && npm test` | 通过，72 files / 456 tests |
+| `cd web && npm run build` | 通过，Next.js 16.3.0，34 pages |
+| 真实浏览器本地滚动检查 | 通过，360、768、1024、1440 |
+| 真实浏览器公网滚动检查 | 通过，桌面主导航六入口、账户栏 sticky、无横向溢出 |
+
+### 补充发布边界
+
+- 测试服务器当前 release 为 `/opt/fateradar/releases/ui-preview-20260816-account-global-nav`，只重启 `fateradar-test-web`；API、Worker、Admin 没有重启，生产环境没有修改。
+- 新 release 在切换时发现覆盖包继承了本机临时目录的 0700 权限，导致 systemd `CHDIR Permission denied`；已确认上一版自动回滚成功，修正新 release 的 `web` 目录为 0755 后重新切换，公网恢复 200。
+- 公网 `http://106.14.10.235:18080/account` 返回 200，HTML 有 `h1=我的`，不含旧「私人档案区」；Chrome 滚动 520px 后账户导航仍位于页头下方。
+- 证据记录：`docs/releases/evidence/2026-08-16-account-global-nav/README.md`。状态继续保持「证据就绪，待用户验收」。

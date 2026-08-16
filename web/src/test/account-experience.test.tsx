@@ -215,6 +215,22 @@ describe("identity-first application shell", () => {
       name: "已登录，q***@example.com，前往个人中心",
     });
     expect(screen.queryByRole("link", { name: "返回公共首页" })).not.toBeInTheDocument();
+    const primaryNavigation = screen.getByRole("navigation", { name: "主导航" });
+    expect(within(primaryNavigation).getByRole("button", { name: "术数" })).toBeVisible();
+    expect(within(primaryNavigation).getByRole("button", { name: "合参" })).toBeVisible();
+    expect(within(primaryNavigation).getByRole("link", { name: "工具" })).toHaveAttribute(
+      "href",
+      "/tools",
+    );
+    expect(within(primaryNavigation).getByRole("link", { name: "每日" })).toHaveAttribute(
+      "href",
+      "/daily",
+    );
+    expect(within(primaryNavigation).getByRole("link", { name: "知识内容" })).toHaveAttribute(
+      "href",
+      "/library",
+    );
+    expect(within(primaryNavigation).getByRole("button", { name: "更多" })).toBeVisible();
     const accountNavigation = screen.getByRole("navigation", {
       name: "账户中心导航",
       hidden: true,

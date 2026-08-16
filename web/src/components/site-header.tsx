@@ -474,6 +474,28 @@ function MobileNavigation({ pathname }: { pathname: string }) {
   );
 }
 
+export function SitePrimaryNavigation() {
+  const pathname = usePathname() || "/";
+
+  return (
+    <nav aria-label="主导航" className={`${styles.nav} ${styles.desktopOnly}`}>
+      <MegaMenu />
+      <CrossMenu />
+      {desktopLinks.map((item) => (
+        <Link
+          aria-current={isRouteActive(pathname, item.href) ? "page" : undefined}
+          className={`${styles.navItem} ${item.compact ? styles.compactOverflow : ""}`}
+          href={item.href}
+          key={item.href}
+        >
+          {item.label}
+        </Link>
+      ))}
+      <MoreMenu />
+    </nav>
+  );
+}
+
 export function SiteHeader() {
   const pathname = usePathname() || "/";
 
@@ -485,21 +507,7 @@ export function SiteHeader() {
       <header className={styles.header}>
         <Container className={styles.headerInner}>
           <BrandMark />
-          <nav aria-label="主导航" className={`${styles.nav} ${styles.desktopOnly}`}>
-            <MegaMenu />
-            <CrossMenu />
-            {desktopLinks.map((item) => (
-              <Link
-                aria-current={isRouteActive(pathname, item.href) ? "page" : undefined}
-                className={`${styles.navItem} ${item.compact ? styles.compactOverflow : ""}`}
-                href={item.href}
-                key={item.href}
-              >
-                {item.label}
-              </Link>
-            ))}
-            <MoreMenu />
-          </nav>
+          <SitePrimaryNavigation />
           <div className={styles.headerActions}>
             <nav aria-label="账户入口">
               <PublicAccountEntry pathname={pathname} />

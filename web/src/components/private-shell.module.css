@@ -135,18 +135,27 @@
 }
 
 .accountNavigation {
-  display: none;
+  position: sticky;
+  z-index: 20;
+  top: 3.5rem;
   min-width: 0;
   border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .accountNav {
   display: flex;
   min-width: 0;
   align-items: stretch;
+  justify-content: center;
   gap: 0.15rem;
   overflow-x: auto;
+  padding-inline: 0.25rem;
   scrollbar-width: thin;
+}
+
+.accountNav::-webkit-scrollbar {
+  display: none;
 }
 
 .accountNav a {
@@ -437,8 +446,14 @@
     min-height: 4rem;
   }
 
+  .accountShell .headerInner > nav[aria-label="主导航"] {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
   .accountShell .accountNavigation {
     display: block;
+    top: 4rem;
   }
 
   .accountShell .accountMain {
@@ -456,8 +471,9 @@
     min-height: 3.5rem;
   }
 
-  .accountShell .accountNavigation {
-    display: none;
+  .accountShell .accountNav {
+    justify-content: flex-start;
+    padding-inline: 0.5rem;
   }
 
   .accountShell .mobileNav {
