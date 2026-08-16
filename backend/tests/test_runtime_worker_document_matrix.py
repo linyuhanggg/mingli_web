@@ -300,6 +300,7 @@ def _assert_runtime_golden_facts(
             return
         source_patterns = values["source_conditioned_patterns"]
         assert [item["local_rule_id"] for item in source_patterns] == [
+            "DR-01-01",
             "QR-02-01",
             "QTB-M01",
             "R-01-02",
@@ -1322,6 +1323,38 @@ async def test_real_runtime_qimen_deep_facts_reach_paid_typed_document() -> None
     assert document is not None
     assert document.view_model.named_patterns
     assert any(len(palace.stars) > 1 for palace in document.view_model.palaces)
+
+
+@pytest.mark.asyncio
+async def test_real_runtime_liuyao_deep_facts_reach_paid_typed_document() -> None:
+    """The paid Liuyao contract must preserve candidates without a verdict."""
+
+    runtime = await _runtime()
+    prepare = compile_liuyao_prepare(
+        action="liuyao_deep",
+        query="验证六爻候选证据进入 Worker 与类型化文档",
+        subject_ref="liuyao-deep:worker-matrix-synthetic",
+        cast=(6, 7, 8, 9, 6, 7),
+        event_datetime=_EVENT_DATETIME,
+        confirmed_timezone="Asia/Shanghai",
+        location="福建省福州市",
+        dimension_ids=("outcome", "timing", "state"),
+    )
+
+    document = await _run_worker_document_job(
+        runtime,
+        label="liuyao-deep",
+        product_id="liuyao-deep",
+        expected_schema="liuyao-chart/v1",
+        prepare=prepare,
+        runtime_release="mingli-runtime-v53-time-check",
+    )
+
+    assert document is not None
+    assert document.view_model.core_facts is not None
+    assert document.view_model.core_facts.useful_spirit_candidates
+    assert document.view_model.core_facts.useful_spirit_selection
+    assert document.view_model.core_facts.source_conditioned_patterns
 
 
 @pytest.mark.asyncio

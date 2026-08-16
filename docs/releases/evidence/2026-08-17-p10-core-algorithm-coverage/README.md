@@ -64,6 +64,14 @@
 - 定向阅读 API/合同回归 `61 passed`；当前完整本地门禁为 Backend `956 passed / 127 skipped`、Web `454 passed`、Admin `123 passed`，Ruff、mypy、两端 lint/typecheck、生产构建和 `git diff --check` 均通过；真实 V53 Worker 矩阵为 `9 passed / 1 skipped`。
 - 已按可回滚热更新同步到 `fateradar-prod` 测试验收机的当前 release `ui-preview-20260816-codex-web`。7 个后端文件的旧版本备份在 `/opt/fateradar/shared/cache/qimen-deep-contract-hotfix-20260817`；API/Worker/Web/Admin/Nginx active，health、OpenAPI `/api/v1/readings/qimen-deep`、公网 `/`/`/qimen` 均复验通过。服务器仍是 `local + Fake`，只用于用户浏览批准，不代表生产或真实支付/模型准入。
 
+## 2026-08-17 六爻深读候选证据垂直切片
+
+- 新增 `liuyao_deep` 产品动作、`POST /api/v1/readings/liuyao-deep`、付费能力映射和 `liuyao-deep-output-v1` 输出合同。Job 在正式商品履约绑定前保持 `awaiting_fulfillment`，固定 `outcome`、`timing`、`state` 三个维度；部分维度或错误顺序会被拒绝，不静默改写用户请求。
+- 六爻深读复用已接通的本卦/变卦、爻位、六亲、用神候选、月日旺衰和来源条件谓词；合同明确候选不等于用神定夺，不输出成败或应期硬结论。真实 V53 Runtime → Worker → Accepted → `liuyao-chart/v1` Typed ReadingDocument 回归 `1 passed`。
+- API/编译器/付费权限/OpenAPI/合同定向回归 `187 passed`；OpenAPI 冻结清单同时锁定 `startLiuyaoDeepReading`、`LiuyaoDeepStartRequest` 和六爻 `state` 维度。
+- 这一步补的是六爻“深读入口和证据交付”合同，不是六爻正式用神选择、成败吉凶、应期裁决，也不代表真实商品支付、模型履约、用户浏览批准或 P12 生产准入。
+- 本轮完整本地门禁为 Backend `973 passed / 128 skipped`、Web `459 passed`、Admin `123 passed`；Ruff/mypy、两端 lint/typecheck、生产构建和 `git diff --check` 均通过。
+
 ## 复核结果
 
 - 真实 V53 单术数 Worker/Accepted/Typed ReadingDocument 矩阵：`40 passed, 1 skipped`（包含 14 个入口的 Worker/Accepted/Typed ReadingDocument、pinned adapter、禄命/紫微/七政/择日来源条件候选回归与已核验 Luming `LX-01-17` 来源绑定回归；skip 是没有匹配 V52 relationship release）。
@@ -93,6 +101,7 @@
 - 已同步并逐字节核对本地已通过门禁的 Backend contracts/projector、Web ViewModel registry、Runtime chart 和 Web 测试夹具；远端 `npm run build`、standalone `--prepare-only` 成功，生成 `34` 个页面。
 - API、worker、Web、Admin、Nginx 均为 `active`，本轮重启后的 `NRestarts` 均为 `0`；`healthz`、API live/ready 均正常。`/`、`/bazi`、`/selection`、`/tools/time-check`、`/tools/dream`、`/tools/name`、`/wenshi`、`/hecan`、`/fengshui`、`/qimen`、`/ziwei`、Admin `/login` 和公网测试根地址均可访问；`/canwen` 返回规范化跳转 `308`。
 - 该服务器仍是 `local + Fake` 测试环境，只证明上传后的结果层可构建、可启动、可浏览；P4-007 仍等待用户逐页浏览批准，不代表生产部署或真实算法/支付/模型准入。
+- 本轮六爻深读 API 合同以可回滚 hotfix 同步到当前测试 release；覆盖前 8 个后端/OpenAPI 文件备份在 `/opt/fateradar/shared/cache/liuyao-deep-contract-hotfix-20260817/`，远端文件 SHA-256 与本地逐项一致。正确的 `fateradar-test-api/worker/web/admin` 四个服务重启后均 active、`NRestarts=0`，live/ready/healthz、动态 OpenAPI `startLiuyaoDeepReading`、公网 `/bazi`/`/liuyao`/Admin 登录均返回 200；公网浏览入口为 `http://106.14.10.235:18080/liuyao`。本次未做 UI 大改，也未注入凭据；测试机仍为 local + Fake，仅供用户浏览批准。
 
 本轮 V53 Runtime 来源修复已同步到测试验收机：新增独立目录
 `/opt/fateradar/shared/mingli-master-v53-time-check`，旧 V51
@@ -230,3 +239,25 @@ Runtime 相法 Provider、签名 manifest、后端 `PhysiognomyViewV1` 合同/�
 - 回归结果：manifest contract `20 passed`、startup/config `48 passed`、真实 V53 Worker→Accepted→Typed ReadingDocument `9 passed/1 skipped`、process adapter/public core `40 passed`、Ruff/mypy/git diff check 通过；V53 release 无新增 `.pyc`。
 - 这只是来源证据的契约闭合，不新增正式断语，也未把 `candidate_only` 或 `predicate_matched_not_verdict` 升级成结论；当前本地 release 尚未作为生产 release 发布。
 - 随后完整 `make check` 通过：Backend `967 passed/127 skipped`，Ruff 与 mypy（142 个源文件）通过；Web `72 files/459 passed`、Admin `33 files/123 passed`，两端 lint、typecheck 和 production build 均通过。权威扫描明确跳过 `.claude` 工具工作树，不影响真实 `docs/` 与 `ui/tokens.css` 唯一性校验。
+
+## P4-007/P10 V53 来源条件契约测试机复验（2026-08-17）
+
+- 在保留覆盖前文件的前提下，将四份 Provider manifest、V53 `.mingli-release-manifest.json` 和匹配的后端 Runtime digest 配置同步到 `fateradar-prod` 测试机；备份目录为 `/opt/fateradar/shared/cache/v53-source-binding-hotfix-20260817-local-v2/before-owner-final/`。远端当前 release manifest SHA-256 为 `9000f1def70089fc6880fb135e1b1c6ae46ee7a2dc45e44beb7b45a0ff23104c`，describe digest 为 `7464229e744d8711dbdf261d758b160d2dce6744cd2f6ee9700dfdd56d145fbd`。
+- 使用测试夹具和独立临时状态目录，以 `fateradar` 服务用户直接调用远端 V53 one-shot Runtime；Bazi `Prepare` 返回 `kind=prepared`、28 个 facts，并包含 `/source_conditioned_patterns` 事实，随后同一 token 的 `Complete` 返回 `kind=accepted`。该黑盒只验证来源条件事实已经穿过远端 manifest→Runtime→Prepared→Accepted，不把它升级成旺衰、格局、用神或吉凶断语，也未使用个人资料。
+- API/Worker 继续为 active/running，`NRestarts=0`；本机 healthz 与 `/bazi` 均返回 `200`。浏览入口为 [测试服务器 `/bazi`](http://106.14.10.235:18080/bazi)，当前仍是 `local + Fake` 测试环境，仅供用户 P4-007 逐页浏览批准，不代表生产 Runtime、正式裁决、真实支付或 P12 生产门禁。
+
+## 当前轮 Bazi 来源绑定修复与测试机复验（2026-08-17）
+
+- 发现 V53 已激活的 `bazi/ditiansui-chanwei#DR-01-01` 仍引用旧输出路径 `/calendar_normalization/ganzhi`；当前 Runtime 的实际四柱事实是 `/four_pillars`，隐干事实仍是 `/hidden_stems`。修复后的严格谓词为 `nonempty(/four_pillars)` + `nonempty(/hidden_stems)`，没有增加旺衰、格局、喜忌、用神或吉凶 verdict。
+- classical binding、evidence index、build/runtime binding pin 与 `.mingli-release-manifest.json` 已同步重签；本地 release `219/219` 哈希闭合，release manifest SHA-256 为 `0a9b12bfba192c41189fcb41f3e3235a138531798ed30618cdc85369eda71c7c`，describe digest 仍为 `7464229e744d8711dbdf261d758b160d2dce6744cd2f6ee9700dfdd56d145fbd`。
+- 新增 Runtime matcher 回归在旧索引上先失败、修复后通过；完整本地门禁为 Backend `968 passed/127 skipped`、Web `72 files/459 passed`、Admin `33 files/123 passed`，Ruff、mypy、lint、typecheck 和两端 production build 全通过。专用本地 Runtime 的 `Describe → Prepare → Complete` 为 `14 Provider / 28 facts / accepted`。
+- 测试机 `/opt/fateradar/shared/mingli-master-v53-time-check-20260817-time-evidence` 已保留旧文件备份；以 fateradar 用户远端 one-shot 验证 `DR-01-01` evidence 1 条，随后 `Complete=accepted`。同步后修正了 release 父目录 owner 以及 Backend V53 profile 的新 manifest SHA；API/Worker/Web/Admin/Nginx 全 active，API/Worker `NRestarts=0`，live/ready、Nginx healthz、`/bazi` 均 `200`。
+- 本项仍只是来源条件事实的准确绑定，不能把 `predicate_matched_not_verdict` 写成正式命理结论。测试机仍为 `local + Fake`，P4-007 用户逐页批准、正式裁决/P11 深读和 P12 生产门禁仍未完成。
+
+## 当前轮 V53 证据作用域发布输入与测试机复验（2026-08-17）
+
+- 发现 `build_evidence_index.py` 在发布包内声明依赖 `references/matrices/evidence-scope-bindings-v1.yaml`，但旧 V53 closure 没有发布这个唯一输入；这会使下一次规则变更无法从制品自重建索引。已从当前已检查索引机械恢复 110 条作用域绑定，保留原有 1328 条规则和适用事实，不增加 active rule、候选或 verdict。
+- 新输入经过编译器验证：`build_evidence_index.py --check` 为 `pass / 1328 records`，canonical JSONL 与现有 `evidence-rules.jsonl` 逐字节一致。closure 增加该 YAML 后为 58 条 explicit 文件、7 个 pattern；manifest、closure 和后端 V53 文件计数统一为 `220`，本地 manifest 220/220 哈希通过；后端受影响配置/启动/Runtime 回归 `58 passed`。
+- 测试机 `/opt/fateradar/shared/mingli-master-v53-time-check-20260817-time-evidence` 已同步新 YAML、closure、manifest 和匹配的后端 profile；远端 220/220 哈希通过，作用域文件为 `fateradar:fateradar`、`0700`。服务用户 one-shot 返回 `14 capabilities / 28 facts / DR-01-01 present / Complete=accepted`；API/Worker/Web/Admin/Nginx active，API/Worker `NRestarts=0`，live/ready/healthz 和公网 `/bazi` 均 `200`。
+- 备份目录为 `/opt/fateradar/shared/cache/v53-scope-input-20260817/before`。这仍是测试机 `local + Fake` 的可浏览证据，不等于正式术数裁决、Mac mini native-full、生产凭据、支付、备案或 P12 生产准入；P4-007 仍待用户逐页浏览批准。
+- 本轮变更后的完整本地 `make check`：Backend `968 passed/127 skipped`、Web `72 files/459 passed`、Admin `33 files/123 passed`，Ruff/mypy、两端 lint/typecheck/production build 和 `git diff --check` 全通过。

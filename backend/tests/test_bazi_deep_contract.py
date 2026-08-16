@@ -1,5 +1,6 @@
 from app.readings.output_contracts import (
     BAZI_DEEP_V1,
+    LIUYAO_DEEP_V1,
     QIMEN_DEEP_V1,
     get_output_contract,
     output_contract_for_product,
@@ -34,4 +35,19 @@ def test_qimen_deep_uses_a_structured_event_output_contract() -> None:
     assert contract.required_dimension_ids == ("outcome", "timing", "state")
     assert contract.min_blocks == 3
     assert contract.max_blocks == 8
+    assert get_output_contract(contract.contract_id) == contract
+
+
+def test_liuyao_deep_uses_a_candidate_evidence_output_contract() -> None:
+    contract = output_contract_for_product(
+        "liuyao-deep", ("outcome", "timing", "state")
+    )
+
+    assert contract is LIUYAO_DEEP_V1
+    assert contract.contract_id == "liuyao-deep-output-v1"
+    assert contract.required_dimension_ids == ("outcome", "timing", "state")
+    assert contract.min_blocks == 3
+    assert contract.max_blocks == 8
+    assert "候选" in contract.disclosure_text
+    assert "硬结论" in contract.disclosure_text
     assert get_output_contract(contract.contract_id) == contract

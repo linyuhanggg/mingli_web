@@ -611,6 +611,79 @@ async def test_qimen_deep_rejects_non_structured_dimension_selection(
     assert rejected.json()["title"] == "Invalid reading input"
 
 
+async def test_liuyao_deep_starts_with_candidate_evidence_contract(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    await seed_runtime_release(database, test_settings)
+
+    started = await client.post(
+        "/api/v1/readings/liuyao-deep",
+        headers=headers,
+        json={
+            "cast": [6, 7, 8, 9, 7, 8],
+            "event_datetime": "2026-08-14T10:00:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市",
+            "subject_ref": "liuyao-deep:api-contract",
+            "query": "验证六爻候选证据深读合同",
+            "dimension_ids": ["outcome", "timing", "state"],
+        },
+    )
+
+    assert started.status_code == 201, started.text
+    body = started.json()
+    assert body["capability_id"] == "liuyao"
+    assert body["product_id"] == "liuyao-deep"
+    assert body["object_id"] == "concrete_event"
+    assert body["status"] == "input_ready"
+    assert body["horizon"]["kind_id"] == "instant"
+    assert_private_headers(started)
+
+    async with database.sessions() as session:
+        version = await session.get(ReadingVersion, UUID(body["reading_version_id"]))
+        assert version is not None
+        job = await session.scalar(
+            select(ReadingJobRecord).where(
+                ReadingJobRecord.reading_version_id == version.id
+            )
+        )
+        assert job is not None
+        assert job.status == "awaiting_fulfillment"
+        assert job.output_contract["contract_id"] == "liuyao-deep-output-v1"
+        assert job.output_contract["required_dimension_ids"] == [
+            "outcome",
+            "timing",
+            "state",
+        ]
+
+
+async def test_liuyao_deep_rejects_partial_dimension_selection(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    await seed_runtime_release(database, test_settings)
+
+    rejected = await client.post(
+        "/api/v1/readings/liuyao-deep",
+        headers=headers,
+        json={
+            "cast": [6, 7, 8, 9, 7, 8],
+            "event_datetime": "2026-08-14T10:00:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市",
+            "dimension_ids": ["outcome"],
+        },
+    )
+
+    assert rejected.status_code == 400, rejected.text
+    assert rejected.json()["title"] == "Invalid reading input"
+
+
 async def test_preview_job_reaches_accepted_under_default_local_fake_stack(
     client: AsyncClient,
     database: Any,

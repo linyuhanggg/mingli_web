@@ -28,9 +28,11 @@ describe("responsive public home", () => {
     ).toBeVisible();
 
     // 价值主张只讲机制与真实规模，不做效果承诺
-    expect(within(main).getByText("13 个术数体系")).toBeVisible();
-    expect(within(main).getByText("55 部古籍")).toBeVisible();
-    expect(within(main).getByText("1328 条证据索引")).toBeVisible();
+    const getStat = (label: string) =>
+      within(main).getByText((_, element) => element?.textContent === label);
+    expect(getStat("13 个术数体系")).toBeVisible();
+    expect(getStat("55 部古籍")).toBeVisible();
+    expect(getStat("1328 条证据索引")).toBeVisible();
     expect(within(main).getByText(/先给确定性盘面事实，再谈解释与边界/)).toBeVisible();
 
     // Hero CTA

@@ -84,6 +84,7 @@ DEFAULT_QUERIES = {
     "profile_preview": "请预览我的本命格局。",
     "bazi_deep": "请围绕事业主线生成八字结构化深读。",
     "qimen_deep": "请围绕这件事的行动、时机与局势生成奇门结构化深读。",
+    "liuyao_deep": "请围绕这次六爻问题整理盘面、用神候选与旺衰证据。",
     "bazi_year_preview": "请展示我指定年份的八字流年事实。",
     "bazi_month_preview": "请展示我指定月份的八字流月事实。",
     "bazi_day_preview": "请展示我指定日期的八字流日事实。",
@@ -1288,6 +1289,68 @@ class ReadingService:
             capability_id="liuyao",
             profile_version_id=None,
             idempotency=idempotency,
+        )
+
+    async def start_liuyao_deep(
+        self,
+        owner: OwnerProtocol,
+        *,
+        cast: tuple[int, ...] | str,
+        event_datetime: datetime,
+        timezone: str,
+        location: str,
+        subject_ref: str | None,
+        query: str | None,
+        dimension_ids: Sequence[str] | None,
+        idempotency_key: str | None,
+    ) -> tuple[ReadingStartResponse, bool]:
+        """Create a paid Liuyao evidence-read Job awaiting fulfillment binding."""
+
+        await self._require_paid_action(owner, action="liuyao_deep")
+        resolved_query = query or DEFAULT_QUERIES["liuyao_deep"]
+        resolved_dimensions = ("outcome", "timing", "state")
+        requested_dimensions = tuple(
+            dict.fromkeys(str(item) for item in (dimension_ids or ()))
+        )
+        if requested_dimensions and requested_dimensions != resolved_dimensions:
+            raise InvalidReadingInputError(
+                "Liuyao deep dimensions are fixed to outcome, timing, and state"
+            )
+        resolved_subject_ref = subject_ref or f"liuyao:{uuid4().hex}"
+        idempotency = self._idempotency_context(
+            idempotency_key,
+            action="liuyao_deep",
+            payload={
+                "cast": list(cast) if isinstance(cast, tuple) else cast,
+                "event_datetime": event_datetime.isoformat(),
+                "timezone": timezone,
+                "location": location,
+                "subject_ref": subject_ref,
+                "query": resolved_query,
+                "dimension_ids": list(resolved_dimensions),
+            },
+        )
+        replayed = await self._replay_idempotency(owner, idempotency)
+        if replayed is not None:
+            return replayed, False
+        prepare = compile_liuyao_prepare(
+            action="liuyao_deep",
+            query=resolved_query,
+            subject_ref=resolved_subject_ref,
+            cast=cast,
+            event_datetime=event_datetime,
+            confirmed_timezone=timezone,
+            location=location,
+            dimension_ids=resolved_dimensions,
+        )
+        return await self._persist_start(
+            owner,
+            prepare,
+            capability_id="liuyao",
+            product_id="liuyao-deep",
+            profile_version_id=None,
+            idempotency=idempotency,
+            initial_job_status="awaiting_fulfillment",
         )
 
     async def start_wenshi(

@@ -75,7 +75,7 @@ _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
             "94c2ccaafa587ea64f15bd9bd96a35ac36b72dd07523b7359a37973a4cf893e0"
         ),
         "release_manifest_sha256": (
-            "9000f1def70089fc6880fb135e1b1c6ae46ee7a2dc45e44beb7b45a0ff23104c"
+            "2a2144d208ea3b439c7367b25a22054a8f598c706cd4d04e4c2bd81e4ccb44c3"
         ),
         "release_name": "mingli-master-portable-core-v53-time-check",
         "source_commit": "local-bazi-san-yuan-v1",

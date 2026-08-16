@@ -16,7 +16,7 @@ _BAZI_YEAR_MAX = 2199
 _FIVE_ELEMENTS_FACTS_DIMENSION_IDS = frozenset({"state"})
 _CHART_SIMILARITY_DIMENSION_IDS = frozenset({"state"})
 _FORTUNE_DIMENSION_IDS = frozenset({"career"})
-_LIUYAO_DIMENSION_IDS = frozenset({"career", "outcome", "timing"})
+_LIUYAO_DIMENSION_IDS = frozenset({"career", "outcome", "state", "timing"})
 _WENSHI_DIMENSION_IDS = frozenset({"outcome", "timing"})
 _NATAL_ART_DIMENSION_IDS = frozenset(
     {"career", "health", "location", "outcome", "relationship", "state", "timing"}

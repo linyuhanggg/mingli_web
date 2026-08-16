@@ -101,6 +101,45 @@ def test_calendar_contract_records_applied_true_solar_time() -> None:
     )
 
 
+def test_bazi_source_rule_uses_current_four_pillar_fact_path() -> None:
+    _run_runtime_assertions(
+        """
+        from bazi_fact_adapter import _source_conditioned_patterns
+
+        patterns = _source_conditioned_patterns(
+            {
+                "four_pillars": {
+                    "year": "庚辰",
+                    "month": "丙戌",
+                    "day": "己酉",
+                    "hour": "丁卯",
+                },
+                "hidden_stems": {
+                    "year": [{"stem": "戊", "residual": 1.0}],
+                    "month": [{"stem": "戊", "residual": 1.0}],
+                    "day": [{"stem": "辛", "residual": 1.0}],
+                    "hour": [{"stem": "乙", "residual": 1.0}],
+                },
+            }
+        )
+
+        matched = next(
+            item
+            for item in patterns
+            if item["local_rule_id"] == "DR-01-01"
+        )
+        assert matched["status"] == "predicate_matched_not_verdict"
+        assert "verdict" not in matched
+        assert any("/four_pillars/" in path for path in matched["fact_paths"])
+        assert any("/hidden_stems/" in path for path in matched["fact_paths"])
+        assert not any(
+            "/calendar_normalization/ganzhi" in path
+            for path in matched["fact_paths"]
+        )
+        """
+    )
+
+
 def test_time_check_evidence_keeps_positive_and_negative_signals() -> None:
     _run_runtime_assertions(
         """

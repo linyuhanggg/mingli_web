@@ -169,6 +169,10 @@ class LiuyaoStartRequest(BaseModel):
         return validate_iana_timezone(value)
 
 
+class LiuyaoDeepStartRequest(LiuyaoStartRequest):
+    """Start a paid Liuyao deep read from one preserved six-line cast."""
+
+
 class WenshiStartRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

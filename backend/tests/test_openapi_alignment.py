@@ -36,6 +36,24 @@ def test_fastapi_operations_match_the_frozen_contract() -> None:
             assert runtime_paths[path][method]["operationId"] == frozen_operation["operationId"]
 
 
+def test_liuyao_deep_contract_freezes_the_candidate_evidence_entrypoint() -> None:
+    frozen = load_paths(USER_OPENAPI_PATH)
+    operation = frozen["/api/v1/readings/liuyao-deep"]["post"]
+
+    assert operation["operationId"] == "startLiuyaoDeepReading"
+    assert (
+        operation["requestBody"]["content"]["application/json"]["schema"]["$ref"]
+        == "#/components/schemas/LiuyaoDeepStartRequest"
+    )
+    with USER_OPENAPI_PATH.open(encoding="utf-8") as stream:
+        document: dict[str, Any] = yaml.safe_load(stream)
+    liuyao = document["components"]["schemas"]["LiuyaoStartRequest"]
+    assert "state" in liuyao["properties"]["dimension_ids"]["items"]["enum"]
+    assert document["components"]["schemas"]["LiuyaoDeepStartRequest"]["allOf"] == [
+        {"$ref": "#/components/schemas/LiuyaoStartRequest"}
+    ]
+
+
 def test_admin_contract_paths_are_namespaced() -> None:
     admin_paths = load_paths(ADMIN_OPENAPI_PATH)
     assert admin_paths

@@ -37,6 +37,7 @@ from app.readings.api_schemas import (
     FulfillmentBindingRequest,
     FulfillmentBindingResponse,
     HecanStartRequest,
+    LiuyaoDeepStartRequest,
     LiuyaoStartRequest,
     LumingNayinStartRequest,
     MeihuaStartRequest,
@@ -574,6 +575,49 @@ async def start_liuyao_reading(
     cast_value = tuple(payload.cast) if isinstance(payload.cast, list) else payload.cast
     try:
         result = await _service(request, session).start_liuyao(
+            owner,
+            cast=cast_value,
+            event_datetime=payload.event_datetime,
+            timezone=payload.timezone,
+            location=payload.location,
+            subject_ref=payload.subject_ref,
+            query=payload.query,
+            dimension_ids=payload.dimension_ids,
+            idempotency_key=idempotency_key,
+        )
+    except (RequestCompilationError, CapabilityNotExposedError) as error:
+        raise ApiProblem(status=400, title="Invalid request") from error
+    except ReadingServiceError as error:
+        raise _reading_problem(error) from error
+    await session.commit()
+    mark_private(response)
+    return _start_response(result, response)
+
+
+@router.post(
+    "/liuyao-deep",
+    operation_id="startLiuyaoDeepReading",
+    response_model=ReadingStartResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def start_liuyao_deep_reading(
+    request: Request,
+    response: Response,
+    payload: LiuyaoDeepStartRequest,
+    session: AsyncSession = Depends(database_session),
+    owner: Owner = Depends(require_owner_csrf),
+    idempotency_key: str | None = Header(
+        default=None,
+        alias="Idempotency-Key",
+        min_length=8,
+        max_length=128,
+    ),
+) -> ReadingStartResponse:
+    _check_rate(owner, request)
+    _check_dogfood_daily_limits(owner, request, paid=True)
+    cast_value = tuple(payload.cast) if isinstance(payload.cast, list) else payload.cast
+    try:
+        result = await _service(request, session).start_liuyao_deep(
             owner,
             cast=cast_value,
             event_datetime=payload.event_datetime,

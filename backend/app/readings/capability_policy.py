@@ -45,7 +45,7 @@ RELATIONSHIP_PRODUCT_IDS: Final = (
     "ziwei-relationship",
     "qizheng-relationship",
 )
-PAID_PRODUCT_IDS: Final = ("bazi-deep", "qimen-deep")
+PAID_PRODUCT_IDS: Final = ("bazi-deep", "qimen-deep", "liuyao-deep")
 CAPABILITY_LABELS: Final = MappingProxyType(
     {
         "bazi": "八字",
@@ -93,6 +93,11 @@ _PRODUCT_ROUTES = MappingProxyType(
         "today": ProductRoute("fortune", "near_time_personal", "day"),
         "near_seven": ProductRoute("fortune", "near_time_personal", "week"),
         "liuyao_one_question": ProductRoute(
+            "liuyao",
+            "concrete_event",
+            "instant",
+        ),
+        "liuyao_deep": ProductRoute(
             "liuyao",
             "concrete_event",
             "instant",

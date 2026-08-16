@@ -310,8 +310,10 @@ export type LiuyaoStartRequest = {
   location: string;
   subject_ref?: string;
   query?: string;
-  dimension_ids?: ("career" | "outcome" | "timing")[];
+  dimension_ids?: ("career" | "outcome" | "state" | "timing")[];
 };
+
+export type LiuyaoDeepStartRequest = LiuyaoStartRequest;
 
 export type WenshiStartRequest = {
   cast: "digital_coin" | [number, number, number, number, number, number];

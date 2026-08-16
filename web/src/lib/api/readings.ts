@@ -7,6 +7,7 @@ import type {
   FiveElementsFactsStartRequest,
   FortuneStartRequest,
   HecanStartRequest,
+  LiuyaoDeepStartRequest,
   LiuyaoStartRequest,
   LumingNayinStartRequest,
   MeihuaStartRequest,
@@ -105,6 +106,15 @@ export async function startQimenDeepReading(
   idempotencyKey: string,
 ): Promise<ReadingVersionSummary> {
   return jsonPost<ReadingVersionSummary>("/api/v1/readings/qimen-deep", body, {
+    idempotencyKey,
+  });
+}
+
+export async function startLiuyaoDeepReading(
+  body: LiuyaoDeepStartRequest,
+  idempotencyKey: string,
+): Promise<ReadingVersionSummary> {
+  return jsonPost<ReadingVersionSummary>("/api/v1/readings/liuyao-deep", body, {
     idempotencyKey,
   });
 }

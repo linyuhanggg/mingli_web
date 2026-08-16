@@ -2,7 +2,7 @@ import importlib
 import inspect
 import json
 from dataclasses import replace
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -198,7 +198,11 @@ def test_every_p10_provider_has_a_product_action_mapping() -> None:
         "fengshui": ("fengshui_preview",),
         "fortune": ("today", "near_seven"),
         "liuren": ("liuren_one_question",),
-        "liuyao": ("liuyao_one_question", "wenshi_one_question"),
+        "liuyao": (
+            "liuyao_one_question",
+            "liuyao_deep",
+            "wenshi_one_question",
+        ),
         "luming-nayin": ("luming_nayin_preview", "rhythm_preview"),
         "meihua": ("meihua_preview",),
         "physiognomy": ("physiognomy_preview",),
@@ -1136,3 +1140,22 @@ def test_compilers_preserve_the_real_query_without_keyword_routing() -> None:
 
     assert command.query == query
     assert "query" not in inspect.signature(compiler._route_for_compiler).parameters
+
+
+def test_liuyao_deep_compiles_the_fixed_event_dimensions() -> None:
+    compiler = importlib.import_module("app.readings.request_compiler")
+
+    command = compiler.compile_liuyao_prepare(
+        action="liuyao_deep",
+        query="验证六爻深读合同",
+        subject_ref="liuyao-deep:test",
+        cast=(6, 7, 8, 9, 7, 8),
+        event_datetime=datetime(2026, 8, 14, 10, 0, tzinfo=UTC),
+        confirmed_timezone="Asia/Shanghai",
+        location="上海市",
+        dimension_ids=("outcome", "timing", "state"),
+    )
+
+    assert command.intent["capability_id"] == "liuyao"
+    assert command.intent["dimension_ids"] == ("outcome", "timing", "state")
+    assert command.facts["liuyao-deep:test"]["cast"] == (6, 7, 8, 9, 7, 8)

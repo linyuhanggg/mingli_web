@@ -51,6 +51,21 @@ QIMEN_DEEP_V1 = OutputContract(
 )
 
 
+LIUYAO_DEEP_V1 = OutputContract(
+    contract_id="liuyao-deep-output-v1",
+    language="zh-CN",
+    min_blocks=3,
+    max_blocks=8,
+    max_output_chars=3200,
+    required_dimension_ids=("outcome", "timing", "state"),
+    required_limit_kind_ids=(),
+    disclosure_text=(
+        "本深读只基于已计算的六爻盘面、用神候选与旺衰证据；候选不等于用神定夺，"
+        "不输出成败或应期的硬结论，也不替代现实中的专业判断。"
+    ),
+)
+
+
 def output_contract_for_dimensions(dimension_ids: Sequence[str]) -> OutputContract:
     """Freeze the requested dimensions into the product contract for this Job."""
 
@@ -64,6 +79,7 @@ _OUTPUT_CONTRACTS = MappingProxyType(
         PREVIEW_V1.contract_id: PREVIEW_V1,
         BAZI_DEEP_V1.contract_id: BAZI_DEEP_V1,
         QIMEN_DEEP_V1.contract_id: QIMEN_DEEP_V1,
+        LIUYAO_DEEP_V1.contract_id: LIUYAO_DEEP_V1,
     }
 )
 
@@ -78,6 +94,8 @@ def output_contract_for_product(
         return BAZI_DEEP_V1
     if product_id == "qimen-deep":
         return QIMEN_DEEP_V1
+    if product_id == "liuyao-deep":
+        return LIUYAO_DEEP_V1
     return output_contract_for_dimensions(dimension_ids)
 
 
