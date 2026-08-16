@@ -1,10 +1,10 @@
 .identityCard {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.25rem;
   padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-panel);
-  background: var(--color-surface-inverse);
-  color: var(--color-text-inverse);
+  background: var(--color-surface);
 }
 
 .identityMain {
@@ -19,10 +19,10 @@
   width: 3.25rem;
   height: 3.25rem;
   place-items: center;
-  border: 1px solid var(--color-border);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 24%, var(--color-border));
   border-radius: 50%;
-  background: var(--color-surface-subtle);
-  color: var(--color-text);
+  background: var(--surface-info);
+  color: var(--color-accent);
 }
 
 .identityEyebrow,
@@ -32,14 +32,14 @@
 }
 
 .identityEyebrow {
-  color: var(--color-text-inverse);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-meta);
   font-weight: 760;
 }
 
 .identityMain h2 {
   margin-top: 0.2rem;
-  color: var(--color-text-inverse);
+  color: var(--color-text);
   font-family: var(--font-sans);
   font-size: var(--font-size-page);
   font-weight: 620;
@@ -51,7 +51,7 @@
 .identityDescription {
   max-width: 62ch;
   margin-top: 0.55rem;
-  color: var(--color-text-inverse);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-label);
   line-height: 1.55;
 }
@@ -72,21 +72,21 @@
 }
 
 .identityFacts dt {
-  color: var(--color-text-inverse);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-meta);
   font-weight: 720;
 }
 
 .identityFacts dd {
   margin: 0;
-  color: var(--color-text-inverse);
+  color: var(--color-text);
   font-size: var(--font-size-label);
   overflow-wrap: anywhere;
 }
 
 .shortcutSection {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .sectionHeader {
@@ -114,33 +114,79 @@
   font-size: var(--font-size-label);
 }
 
-.shortcutGrid {
+.shortcutGroups {
   display: grid;
+  gap: 1.5rem;
+}
+
+.shortcutGroup {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.shortcutGroupTitle {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  font-weight: 720;
+}
+
+.primaryShortcutGrid,
+.secondaryShortcutGrid {
+  display: grid;
+  min-width: 0;
+}
+
+.primaryShortcutGrid {
   gap: 0.75rem;
 }
 
-.shortcut {
+.primaryShortcut {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.8rem;
   min-width: 0;
-  min-height: 5.5rem;
+  min-height: 6.25rem;
   align-items: center;
   padding: 1rem;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   color: var(--color-text);
   transition:
     border-color var(--duration-feedback) ease,
-    transform var(--duration-feedback) var(--ease-out),
-    background-color var(--duration-feedback) ease;
+    box-shadow var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out);
 }
 
-.shortcut:hover {
+.primaryShortcut:hover {
   border-color: var(--color-border-strong);
-  background: var(--color-canvas);
+  box-shadow: var(--shadow-card-hover);
   transform: translateY(-2px);
+}
+
+.secondaryShortcutGrid {
+  gap: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.secondaryShortcut {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  min-width: 0;
+  min-height: 4rem;
+  align-items: center;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  transition:
+    background-color var(--duration-feedback) ease,
+    color var(--duration-feedback) ease;
+}
+
+.secondaryShortcut:hover {
+  background: var(--color-surface-subtle);
 }
 
 .shortcutIcon {
@@ -150,7 +196,12 @@
   place-items: center;
   border-radius: var(--radius-control);
   background: var(--color-surface-muted);
-  color: var(--color-action);
+  color: var(--color-accent);
+}
+
+.secondaryShortcut .shortcutIcon {
+  width: 2.25rem;
+  height: 2.25rem;
 }
 
 .shortcutCopy {
@@ -170,8 +221,39 @@
   line-height: 1.45;
 }
 
-.shortcut > svg {
+.primaryShortcut > svg,
+.secondaryShortcut > svg {
   color: var(--color-border-strong);
+}
+
+.boundaryNote {
+  display: grid;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.boundaryNote h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-card);
+  font-weight: 620;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.boundaryNote p {
+  max-width: 62ch;
+  margin: 0;
+  font-size: var(--font-size-label);
+  line-height: 1.6;
+}
+
+.boundaryNoteDetail {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta) !important;
 }
 
 .statusStack {
@@ -181,13 +263,19 @@
 }
 
 @media (min-width: 48rem) {
-  .shortcutGrid {
+  .primaryShortcutGrid,
+  .secondaryShortcutGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .secondaryShortcutGrid {
+    column-gap: 1.5rem;
   }
 }
 
-@media (min-width: 72rem) {
-  .shortcutGrid {
+@media (min-width: 68rem) {
+  .primaryShortcutGrid,
+  .secondaryShortcutGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
@@ -203,11 +291,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shortcut {
+  .primaryShortcut,
+  .secondaryShortcut {
     transition: none;
   }
 
-  .shortcut:hover {
+  .primaryShortcut:hover {
     transform: none;
   }
 }

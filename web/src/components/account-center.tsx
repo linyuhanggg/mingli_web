@@ -35,6 +35,8 @@ type Shortcut = {
   icon: LucideIcon;
 };
 
+type ShortcutVariant = "primary" | "secondary";
+
 const shortcuts: readonly Shortcut[] = [
   {
     href: "/account/profiles",
@@ -73,6 +75,9 @@ const shortcuts: readonly Shortcut[] = [
     icon: Gift,
   },
 ];
+
+const primaryShortcuts = shortcuts.slice(0, 3);
+const secondaryShortcuts = shortcuts.slice(3);
 
 function AccountIdentityCard({ state }: { readonly state: AccountSessionState }) {
   let title = "确认中";
@@ -129,28 +134,58 @@ function AccountIdentityCard({ state }: { readonly state: AccountSessionState })
   );
 }
 
+function ShortcutLink({
+  shortcut,
+  variant,
+}: {
+  shortcut: Shortcut;
+  variant: ShortcutVariant;
+}) {
+  const { href, label, description, icon: Icon } = shortcut;
+
+  return (
+    <Link
+      className={variant === "primary" ? styles.primaryShortcut : styles.secondaryShortcut}
+      href={href}
+    >
+      <span className={styles.shortcutIcon} aria-hidden="true">
+        <Icon size={variant === "primary" ? 21 : 19} strokeWidth={1.7} />
+      </span>
+      <span className={styles.shortcutCopy}>
+        <strong>{label}</strong>
+        <span>{description}</span>
+      </span>
+      <ArrowRight aria-hidden="true" size={18} strokeWidth={1.7} />
+    </Link>
+  );
+}
+
 function AccountShortcuts() {
   return (
     <section className={styles.shortcutSection} aria-labelledby="account-shortcuts-title">
       <div className={styles.sectionHeader}>
         <div>
-          <h2 id="account-shortcuts-title">我的入口</h2>
-          <p>只连接当前产品已经存在的账户页面，不在这里生成新的业务事实。</p>
+          <h2 id="account-shortcuts-title">继续使用</h2>
+          <p>从这里进入已有的档案、历史、订单和账户服务。</p>
         </div>
       </div>
-      <nav aria-label="我的账户入口" className={styles.shortcutGrid}>
-        {shortcuts.map(({ href, label, description, icon: Icon }) => (
-          <Link className={styles.shortcut} href={href} key={href}>
-            <span className={styles.shortcutIcon} aria-hidden="true">
-              <Icon size={21} strokeWidth={1.7} />
-            </span>
-            <span className={styles.shortcutCopy}>
-              <strong>{label}</strong>
-              <span>{description}</span>
-            </span>
-            <ArrowRight aria-hidden="true" size={18} strokeWidth={1.7} />
-          </Link>
-        ))}
+      <nav aria-label="我的账户入口" className={styles.shortcutGroups}>
+        <div className={styles.shortcutGroup}>
+          <h3 className={styles.shortcutGroupTitle}>主要入口</h3>
+          <div className={styles.primaryShortcutGrid}>
+            {primaryShortcuts.map((shortcut) => (
+              <ShortcutLink key={shortcut.href} shortcut={shortcut} variant="primary" />
+            ))}
+          </div>
+        </div>
+        <div className={styles.shortcutGroup}>
+          <h3 className={styles.shortcutGroupTitle}>账户工具</h3>
+          <div className={styles.secondaryShortcutGrid}>
+            {secondaryShortcuts.map((shortcut) => (
+              <ShortcutLink key={shortcut.href} shortcut={shortcut} variant="secondary" />
+            ))}
+          </div>
+        </div>
       </nav>
     </section>
   );
@@ -158,10 +193,10 @@ function AccountShortcuts() {
 
 function AccountBoundaryNote() {
   return (
-    <aside className={surface.rail} aria-labelledby="account-boundary-title">
+    <aside className={styles.boundaryNote} aria-labelledby="account-boundary-title">
       <h2 id="account-boundary-title">账户边界</h2>
       <p>登录成功只代表设备会话建立，不代表支付、模型或其他能力已经开通。</p>
-      <p className={surface.railNote}>
+      <p className={styles.boundaryNoteDetail}>
         游客草稿认领要由服务端一次性、幂等完成；跨设备历史需要当前账号授权；换绑、导出和删除等高风险操作需要近期重新验证。
       </p>
     </aside>
@@ -238,12 +273,12 @@ function AccountCenterContent() {
   return (
     <>
       <AccountIdentityCard state={state} />
-      <AccountShortcuts />
       <ReadingHistory
         accountScoped
         title="最近交付与待处理事项"
         description="每条记录的状态、版本和时间都来自服务端；处理中或等待输入的任务会保留在这里。"
       />
+      <AccountShortcuts />
       <AccountSessionControl />
     </>
   );

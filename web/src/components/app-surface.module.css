@@ -3,19 +3,23 @@
   gap: clamp(2rem, 5vw, 3.5rem);
 }
 
+.accountPage {
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
 .pageHeader {
   display: grid;
   gap: 1rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border-emphasis);
-  animation: surface-enter var(--duration-entrance) var(--ease-out-expo) both;
+  border-bottom: 1px solid var(--color-border-strong);
+  animation: surface-enter var(--duration-page) var(--ease-out) both;
 }
 
 .pageHeader h1 {
   max-width: 24ch;
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(1.45rem, 4vw, 2.15rem);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-page);
   font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.16;
@@ -24,15 +28,15 @@
 .pageHeader p {
   max-width: 66ch;
   margin: 0;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
 }
 
 .metaLine {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
-  color: var(--ink-700);
-  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
   font-weight: 720;
 }
 
@@ -53,15 +57,15 @@
 .rail,
 .formShell {
   min-width: 0;
-  border-radius: var(--radius-md);
-  background: var(--white);
-  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  box-shadow: none;
 }
 
 .paper,
 .formShell {
   padding: clamp(1.25rem, 4vw, 2.5rem);
-  animation: surface-enter var(--duration-entrance) var(--ease-out-expo) both;
+  animation: surface-enter var(--duration-page) var(--ease-out) both;
 }
 
 .dashboard > .paper {
@@ -69,14 +73,14 @@
 }
 
 .dashboard > .rail {
-  animation: surface-enter var(--duration-entrance) var(--ease-out-expo) both;
+  animation: surface-enter var(--duration-page) var(--ease-out) both;
   animation-delay: 0.1s;
 }
 
 .rail {
   padding: 1.25rem;
-  background: var(--ink-900);
-  color: var(--ivory-50);
+  background: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
 }
 
 .sectionHeader {
@@ -94,8 +98,8 @@
 .readingSection h2 {
   max-width: 24ch;
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(1.45rem, 4vw, 2.15rem);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-section);
   font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.16;
@@ -106,37 +110,37 @@
 .rail > p {
   max-width: 62ch;
   margin: 0;
-  color: var(--ink-700);
-  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
 }
 
 .rail > p {
-  color: var(--text-on-dark-muted);
+  color: var(--color-text-inverse);
 }
 
 .periodSwitch {
   display: inline-flex;
   gap: 0.25rem;
   padding: 0.25rem;
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-100);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
 }
 
 .periodSwitch button {
   min-height: 2.75rem;
   padding-inline: 0.9rem;
   border: 0;
-  border-radius: 0.55rem;
+  border-radius: var(--radius-control);
   background: transparent;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
   cursor: pointer;
   font-weight: 700;
 }
 
 .periodSwitch button[aria-pressed="true"] {
-  background: var(--ink-900);
-  color: var(--ivory-50);
+  background: var(--color-action);
+  color: var(--color-on-action);
 }
 
 .weekList,
@@ -148,7 +152,7 @@
 .accountList {
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--color-border);
   list-style: none;
 }
 
@@ -160,7 +164,7 @@
 .legendList li,
 .accountList li {
   padding-block: 1rem;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .weekList li,
@@ -181,20 +185,20 @@
 .activityList span,
 .historyItem p,
 .accountList span {
-  color: var(--ink-700);
-  font-size: 0.86rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
 }
 
 .rail .activityList {
-  border-color: var(--border-on-dark);
+  border-color: var(--color-border);
 }
 
 .rail .activityList li {
-  border-color: var(--border-on-dark);
+  border-color: var(--color-border);
 }
 
 .rail .activityList span {
-  color: var(--text-on-dark-muted);
+  color: var(--color-text-inverse);
 }
 
 .actionRow {
@@ -209,7 +213,7 @@
   gap: 0;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--border-emphasis);
+  border-top: 1px solid var(--color-border-strong);
   list-style: none;
 }
 
@@ -220,8 +224,8 @@
   justify-content: space-between;
   gap: 0.75rem 1.5rem;
   padding-block: 1.35rem;
-  border-bottom: 1px solid var(--border-emphasis);
-  transition: transform var(--duration-feedback) var(--ease-out-expo);
+  border-bottom: 1px solid var(--color-border-strong);
+  transition: transform var(--duration-feedback) var(--ease-out);
 }
 
 .flowItem:hover {
@@ -230,8 +234,8 @@
 
 .flowItem h3 {
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: 1.22rem;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-card);
   font-weight: 600;
   letter-spacing: -0.015em;
   line-height: 1.3;
@@ -240,8 +244,8 @@
 .flowItem p {
   max-width: 56ch;
   margin: 0.35rem 0 0;
-  color: var(--ink-700);
-  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
 }
 
 .flowItem .actionRow {
@@ -257,30 +261,30 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.7rem 1rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   cursor: pointer;
   font-weight: 720;
   transition: transform var(--duration-feedback) ease, background-color var(--duration-feedback) ease, border-color var(--duration-feedback) ease;
 }
 
 .button {
-  border: 1px solid var(--ink-900);
-  background: var(--ink-900);
-  color: var(--ivory-50);
+  border: 1px solid var(--color-action);
+  background: var(--color-action);
+  color: var(--color-on-action);
 }
 
 .secondaryButton {
-  border: 1px solid var(--border-emphasis);
-  background: var(--ivory-50);
-  color: var(--ink-900);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-canvas);
+  color: var(--color-action);
 }
 
 .quietButton {
   border: 1px solid transparent;
   background: transparent;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
   text-decoration: underline;
-  text-decoration-color: var(--gold-500);
+  text-decoration-color: var(--color-border-strong);
   text-underline-offset: 0.3rem;
 }
 
@@ -298,9 +302,9 @@
 
 .button:disabled,
 .secondaryButton:disabled {
-  border-color: var(--border-control);
-  background: var(--ivory-200);
-  color: var(--ink-700);
+  border-color: var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
   cursor: not-allowed;
   transform: none;
 }
@@ -313,7 +317,7 @@
 .historyItem {
   display: grid;
   gap: 0.75rem;
-  transition: transform var(--duration-feedback) var(--ease-out-expo);
+  transition: transform var(--duration-feedback) var(--ease-out);
 }
 
 .historyItem:hover {
@@ -328,8 +332,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem 0.9rem;
-  color: var(--ink-700);
-  font-size: 0.74rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
   font-variant-numeric: tabular-nums;
 }
 
@@ -340,30 +344,30 @@
   align-items: center;
   gap: 0.35rem;
   padding-inline: 0.55rem;
-  border: 1px solid var(--border-control);
-  border-radius: 999px;
-  background: var(--ivory-100);
-  color: var(--ink-700);
-  font-size: 0.72rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
   font-weight: 750;
 }
 
 .stateTag[data-state="processing"] {
-  border-color: var(--gold-500);
-  background: var(--amber-100);
-  color: var(--ink-950);
+  border-color: var(--color-info);
+  background: var(--surface-info);
+  color: var(--color-text);
 }
 
 .stateTag[data-state="success"] {
-  border-color: var(--moss-700);
-  background: var(--moss-100);
-  color: var(--ink-950);
+  border-color: var(--color-success);
+  background: var(--surface-success);
+  color: var(--color-text);
 }
 
 .stateTag[data-state="error"] {
-  border-color: var(--terracotta-500);
-  background: var(--ivory-100);
-  color: var(--terracotta-600);
+  border-color: var(--color-danger);
+  background: var(--color-surface-subtle);
+  color: var(--color-danger);
 }
 
 .legendList li {
@@ -375,29 +379,29 @@
 
 .legendList p {
   margin: 0;
-  color: var(--ink-700);
-  font-size: 0.84rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
 }
 
 .readingBody {
   min-width: 0;
   padding: clamp(1.4rem, 5vw, 3.2rem);
-  border-radius: var(--radius-md);
-  background: var(--white);
-  box-shadow: var(--shadow-card);
-  animation: surface-enter var(--duration-entrance) var(--ease-out-expo) both;
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  box-shadow: none;
+  animation: surface-enter var(--duration-page) var(--ease-out) both;
 }
 
 .readingHeader {
   padding-bottom: 2rem;
-  border-bottom: 1px solid var(--border-emphasis);
+  border-bottom: 1px solid var(--color-border-strong);
 }
 
 .readingHeader h1 {
   max-width: 14ch;
   margin: 0.8rem 0 0;
-  font-family: var(--font-serif);
-  font-size: clamp(2.3rem, 7vw, 4.6rem);
+  font-family: var(--font-sans);
+  font-size: clamp(2.5rem, 5.5vw, var(--font-size-hero));
   font-weight: 560;
   letter-spacing: -0.04em;
   line-height: 1.04;
@@ -406,8 +410,8 @@
 .readingHeader h2 {
   max-width: 26ch;
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-section);
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.22;
@@ -416,8 +420,8 @@
 .readingHeader p {
   max-width: 64ch;
   margin: 1rem 0 0;
-  color: var(--ink-700);
-  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
   font-weight: 720;
 }
 
@@ -426,8 +430,8 @@
   grid-template-columns: 2.25rem minmax(0, 1fr);
   gap: 1rem;
   padding-block: clamp(2rem, 5vw, 3.5rem);
-  border-bottom: 1px solid var(--border-subtle);
-  animation: surface-enter var(--duration-entrance) var(--ease-out-expo) both;
+  border-bottom: 1px solid var(--color-border);
+  animation: surface-enter var(--duration-page) var(--ease-out) both;
 }
 
 .readingSection:nth-of-type(1) {
@@ -455,15 +459,15 @@
 }
 
 .sectionIndex {
-  color: var(--gold-500);
-  font-size: 0.75rem;
+  color: var(--color-border-strong);
+  font-size: var(--font-size-meta);
   font-variant-numeric: tabular-nums;
 }
 
 .readingSection p {
   max-width: 68ch;
   margin: 0.8rem 0 0;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
 }
 
 .evidenceList,
@@ -474,13 +478,13 @@
 .evidenceList strong,
 .verificationList strong {
   display: block;
-  color: var(--ink-950);
+  color: var(--color-text);
 }
 
 .evidenceList span,
 .verificationList span {
-  color: var(--ink-700);
-  font-size: 0.84rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
 }
 
 .evidenceRail {
@@ -499,19 +503,19 @@
   display: grid;
   gap: 0.2rem;
   padding-block: 0.7rem;
-  border-bottom: 1px solid var(--border-on-dark);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .railMeta dt {
-  color: var(--gold-400);
-  font-size: 0.7rem;
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-meta);
   font-weight: 750;
   letter-spacing: 0.08em;
 }
 
 .railMeta dd {
   margin: 0;
-  color: var(--ivory-50);
+  color: var(--color-text-inverse);
   font-variant-numeric: tabular-nums;
   line-height: 1.55;
   overflow-wrap: anywhere;
@@ -526,17 +530,17 @@
 
 .railNote {
   margin: 1.1rem 0 0;
-  color: var(--text-on-dark-muted);
-  font-size: 0.8rem;
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-aux);
   line-height: 1.7;
 }
 
 .sourceEmpty {
   padding: 1rem;
-  border: 1px dashed var(--border-on-dark);
-  border-radius: var(--radius-sm);
-  color: var(--text-on-dark-muted);
-  font-size: 0.82rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-aux);
 }
 
 .formShell {
@@ -548,19 +552,19 @@
   display: grid;
   gap: 0.6rem;
   padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .formIntro h2 {
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(1.45rem, 4vw, 2.1rem);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-section);
   font-weight: 600;
 }
 
 .formIntro p {
   margin: 0;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
 }
 
 .stepList {
@@ -577,14 +581,14 @@
   min-width: 0;
   gap: 0.2rem;
   padding-top: 0.55rem;
-  border-top: 2px solid var(--border-control);
-  color: var(--ink-700);
-  font-size: 0.72rem;
+  border-top: 2px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
 }
 
 .stepList li[data-active="true"] {
-  border-color: var(--gold-500);
-  color: var(--ink-950);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
 }
 
 .stepList strong {
@@ -609,23 +613,23 @@
 
 .field label,
 .legend {
-  color: var(--ink-950);
-  font-size: 0.88rem;
+  color: var(--color-text);
+  font-size: var(--font-size-label);
   font-weight: 750;
 }
 
 .required {
-  color: var(--terracotta-600);
+  color: var(--color-danger);
 }
 
 .control {
   width: 100%;
   min-height: 3rem;
   padding: 0.7rem 0.8rem;
-  border: 1px solid var(--border-emphasis);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-50);
-  color: var(--ink-950);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+  color: var(--color-text);
 }
 
 textarea.control {
@@ -634,23 +638,23 @@ textarea.control {
 }
 
 .control[aria-invalid="true"] {
-  border-color: var(--terracotta-500);
+  border-color: var(--color-danger);
 }
 
 .help,
 .fieldError,
 .disabledReason {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: var(--font-size-aux);
 }
 
 .help,
 .disabledReason {
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
 }
 
 .fieldError {
-  color: var(--terracotta-600);
+  color: var(--color-danger);
   font-weight: 680;
 }
 
@@ -668,19 +672,19 @@ textarea.control {
   align-items: flex-start;
   gap: 0.7rem;
   padding: 0.75rem;
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-50);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
   cursor: pointer;
   transition:
     border-color var(--duration-feedback) ease,
     background-color var(--duration-feedback) ease,
-    transform var(--duration-feedback) var(--ease-out-expo),
+    transform var(--duration-feedback) var(--ease-out),
     color var(--duration-feedback) ease;
 }
 
 .choice:hover {
-  border-color: var(--gold-500);
+  border-color: var(--color-border-strong);
   transform: translateY(-1px);
 }
 
@@ -689,9 +693,9 @@ textarea.control {
 }
 
 .choice:has(input:checked) {
-  border-color: var(--moss-700);
-  background: var(--moss-100);
-  color: var(--ink-950);
+  border-color: var(--color-action);
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .choice input {
@@ -707,7 +711,7 @@ textarea.control {
 }
 
 .choice small {
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
 }
 
 .checkbox {
@@ -715,7 +719,7 @@ textarea.control {
   min-height: 2.75rem;
   align-items: flex-start;
   gap: 0.65rem;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 
@@ -730,7 +734,7 @@ textarea.control {
   display: grid;
   gap: 0;
   margin: 0;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--color-border);
 }
 
 .summary div {
@@ -738,12 +742,12 @@ textarea.control {
   grid-template-columns: minmax(6rem, 0.35fr) minmax(0, 1fr);
   gap: 1rem;
   padding-block: 0.75rem;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .summary dt {
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
 }
 
 .summary dd {
@@ -776,17 +780,22 @@ textarea.control {
 
 .gateNote {
   padding: 1rem;
-  border: 1px dashed var(--border-emphasis);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-100);
-  color: var(--ink-700);
-  font-size: 0.82rem;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
 }
 
 @media (min-width: 42rem) {
   .pageHeader {
     grid-template-columns: minmax(0, 1.1fr) minmax(19rem, 0.7fr);
     align-items: end;
+  }
+
+  .pageHeaderStacked {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
   }
 
   .fieldGrid,
@@ -874,7 +883,7 @@ textarea.control {
 
 .inlineNote {
   margin: 0 0 0.9rem;
-  color: var(--ink-700);
-  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
   line-height: 1.65;
 }

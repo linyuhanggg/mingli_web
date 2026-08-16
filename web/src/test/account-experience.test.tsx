@@ -184,6 +184,7 @@ describe("identity-first application shell", () => {
     expect(screen.getByText("已登录")).toBeVisible();
     expect(screen.getByText("q***@example.com")).toBeVisible();
     expect(screen.queryByText(/4f9c3d6a/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "返回公共首页" })).toHaveAttribute("href", "/");
 
     const navigation = screen.getByRole("navigation", {
       name: "私人应用导航",
@@ -199,6 +200,33 @@ describe("identity-first application shell", () => {
       within(navigation).getByRole("link", { name: "推演历史", hidden: true }),
     ).toHaveAttribute("href", "/account/history");
     expect(navigation.querySelector('a[href^="/app"]')).toBeNull();
+  });
+
+  it("uses the compact account navigation without the desktop private rail", async () => {
+    api.getAccount.mockResolvedValue(signedInAccount);
+
+    render(
+      <PrivateShell variant="account">
+        <p>账户内容</p>
+      </PrivateShell>,
+    );
+
+    await screen.findByRole("link", {
+      name: "已登录，q***@example.com，前往个人中心",
+    });
+    expect(screen.queryByRole("link", { name: "返回公共首页" })).not.toBeInTheDocument();
+    const accountNavigation = screen.getByRole("navigation", {
+      name: "账户中心导航",
+      hidden: true,
+    });
+    expect(accountNavigation).toBeInTheDocument();
+    expect(screen.queryByText("私人档案区")).not.toBeInTheDocument();
+    expect(
+      within(accountNavigation).getByRole("link", {
+        name: "受测人档案",
+        hidden: true,
+      }),
+    ).toHaveAttribute("href", "/account/profiles");
   });
 
   it("makes guest mode and the login action explicit", async () => {

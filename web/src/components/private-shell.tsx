@@ -31,18 +31,36 @@ const navigation = [
   { href: "/account/settings", label: "账户设置", mobileLabel: "设置", icon: UserRound },
 ] as const;
 
+export type PrivateShellVariant = "account" | "rail";
+
 function isCurrentDestination(pathname: string, href: string) {
   if (href === "/account") return pathname === href;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function PrivateNavigation({ mobile = false }: { mobile?: boolean }) {
+function PrivateNavigation({
+  account = false,
+  mobile = false,
+}: {
+  account?: boolean;
+  mobile?: boolean;
+}) {
   const pathname = usePathname() ?? "";
+  const className = mobile
+    ? styles.mobileNav
+    : account
+      ? styles.accountNav
+      : styles.sideNav;
+  const label = mobile
+    ? "移动应用导航"
+    : account
+      ? "账户中心导航"
+      : "私人应用导航";
 
   return (
     <nav
-      className={mobile ? styles.mobileNav : styles.sideNav}
-      aria-label={mobile ? "移动应用导航" : "私人应用导航"}
+      className={className}
+      aria-label={label}
     >
       {navigation.map(({ href, icon: Icon, label, mobileLabel }) => (
         <Link
@@ -104,10 +122,14 @@ function SessionIdentityLink() {
   );
 }
 
-function PrivateShellContent({ children }: Readonly<{ children: ReactNode }>) {
+function PrivateShellContent({
+  children,
+  variant,
+}: Readonly<{ children: ReactNode; variant: PrivateShellVariant }>) {
   const pathname = usePathname() ?? "/account";
   const mainRef = useRef<HTMLElement>(null);
   const previousPathnameRef = useRef(pathname);
+  const accountShell = variant === "account";
 
   useEffect(() => {
     if (previousPathnameRef.current === pathname) return;
@@ -117,7 +139,7 @@ function PrivateShellContent({ children }: Readonly<{ children: ReactNode }>) {
   }, [pathname]);
 
   return (
-    <div className={styles.shell}>
+    <div className={accountShell ? `${styles.shell} ${styles.accountShell}` : styles.shell}>
       <a className={styles.skipLink} href="#private-main">
         跳到主要内容
       </a>
@@ -125,21 +147,29 @@ function PrivateShellContent({ children }: Readonly<{ children: ReactNode }>) {
         <Container className={styles.headerInner}>
           <BrandMark />
           <div className={styles.headerActions}>
-            <Link className={styles.back} href="/">
-              返回公共首页
-            </Link>
+            {!accountShell ? (
+              <Link className={styles.back} href="/">
+                返回公共首页
+              </Link>
+            ) : null}
             <SessionIdentityLink />
           </div>
         </Container>
       </header>
       <Container className={styles.frame}>
-        <aside className={styles.aside}>
-          <p className={styles.archiveLabel}>私人档案区</p>
-          <PrivateNavigation />
-          <p className={styles.asideNote}>资料默认不进入公共缓存；正式保存需登录。</p>
-        </aside>
+        {accountShell ? (
+          <div className={styles.accountNavigation}>
+            <PrivateNavigation account />
+          </div>
+        ) : (
+          <aside className={styles.aside}>
+            <p className={styles.archiveLabel}>私人档案区</p>
+            <PrivateNavigation />
+            <p className={styles.asideNote}>资料默认不进入公共缓存；正式保存需登录。</p>
+          </aside>
+        )}
         <main
-          className={styles.main}
+          className={accountShell ? `${styles.main} ${styles.accountMain}` : styles.main}
           id="private-main"
           ref={mainRef}
           tabIndex={-1}
@@ -152,10 +182,13 @@ function PrivateShellContent({ children }: Readonly<{ children: ReactNode }>) {
   );
 }
 
-export function PrivateShell({ children }: Readonly<{ children: ReactNode }>) {
+export function PrivateShell({
+  children,
+  variant = "rail",
+}: Readonly<{ children: ReactNode; variant?: PrivateShellVariant }>) {
   return (
     <AccountSessionBoundary>
-      <PrivateShellContent>{children}</PrivateShellContent>
+      <PrivateShellContent variant={variant}>{children}</PrivateShellContent>
     </AccountSessionBoundary>
   );
 }

@@ -14,5 +14,5 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 export default function AccountLayout({ children }: Readonly<{ children: ReactNode }>) {
-  return <PrivateShell>{children}</PrivateShell>;
+  return <PrivateShell variant="account">{children}</PrivateShell>;
 }

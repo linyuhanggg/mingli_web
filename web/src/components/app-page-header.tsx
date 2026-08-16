@@ -6,15 +6,17 @@ type AppPageHeaderProps = {
   title: string;
   description: string;
   meta?: ReactNode;
+  stacked?: boolean;
 };
 
 export function AppPageHeader({
   title,
   description,
   meta,
+  stacked = false,
 }: AppPageHeaderProps) {
   return (
-    <header className={styles.pageHeader}>
+    <header className={stacked ? `${styles.pageHeader} ${styles.pageHeaderStacked}` : styles.pageHeader}>
       <h1>{title}</h1>
       <div>
         <p>{description}</p>
