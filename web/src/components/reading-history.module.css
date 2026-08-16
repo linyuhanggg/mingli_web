@@ -7,13 +7,43 @@
 .historyList {
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--color-border);
   list-style: none;
 }
 
 .historyItem {
-  border-bottom: 1px solid var(--border-subtle);
-  animation: history-item-enter var(--duration-entrance) var(--ease-out-expo) both;
+  border-bottom: 1px solid var(--color-border);
+  animation: history-item-enter var(--duration-page) var(--ease-out) both;
+}
+
+.historyGroup {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.historyGroupHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.9rem 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+}
+
+.historyGroupHeader strong {
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+}
+
+.historyGroupList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historyGroupList .historyItem:last-child {
+  border-bottom: 0;
 }
 
 .historyItem:nth-child(1) { animation-delay: 0.02s; }
@@ -31,7 +61,7 @@
   padding-block: 1rem;
   color: inherit;
   text-decoration: none;
-  transition: transform var(--duration-feedback) var(--ease-out-expo);
+  transition: transform var(--duration-feedback) var(--ease-out);
 }
 
 .historyLink:hover {
@@ -40,9 +70,9 @@
 
 .historyLink:hover .historyTitle strong,
 .historyLink:focus-visible .historyTitle strong {
-  color: var(--terracotta-600);
+  color: var(--color-action);
   text-decoration: underline;
-  text-decoration-color: var(--gold-500);
+  text-decoration-color: var(--color-border-strong);
   text-underline-offset: 0.3rem;
 }
 
@@ -54,7 +84,7 @@
 }
 
 .historyTitle strong {
-  font-size: 1.02rem;
+  font-size: var(--font-size-body);
   font-weight: 750;
   transition: color var(--duration-feedback) ease;
 }
@@ -63,8 +93,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem 0.9rem;
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   font-variant-numeric: tabular-nums;
 }
 

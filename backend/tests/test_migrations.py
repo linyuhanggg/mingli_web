@@ -54,6 +54,33 @@ def test_identity_migration_builds_the_phase_one_tables(
         "staff_users",
         "staff_sessions",
         "admin_audit_events",
+        "product_families",
+        "product_versions",
+        "product_offers",
+        "orders",
+        "payment_attempts",
+        "payments",
+        "refunds",
+        "fulfillments",
+        "payment_notification_receipts",
+        "payment_reconciliation_runs",
+        "payment_reconciliation_items",
+        "entitlement_events",
+        "notification_outbox",
+        "notification_preferences",
+        "user_password_credentials",
+        "consent_records",
+        "referral_campaign_versions",
+        "referral_codes",
+        "referral_temporary_attributions",
+        "referral_attributions",
+        "referral_reward_slots",
+        "referral_reward_reservations",
+        "referral_refund_confirmations",
+        "referral_participation_restrictions",
+        "content_revisions",
+        "account_closure_requests",
+        "profile_version_authorizations",
     }
 
     assert expected <= set(inspector.get_table_names())
@@ -61,5 +88,44 @@ def test_identity_migration_builds_the_phase_one_tables(
     assert any(
         constraint["column_names"] == ["provider", "provider_subject_hash"]
         for constraint in identity_constraints
+    )
+    authorization_constraints = inspector.get_unique_constraints(
+        "profile_version_authorizations"
+    )
+    assert any(
+        constraint["column_names"] == ["profile_version_id"]
+        for constraint in authorization_constraints
+    )
+    payment_constraints = inspector.get_unique_constraints("payments")
+    assert any(
+        constraint["column_names"] == ["attempt_id"]
+        for constraint in payment_constraints
+    )
+    reward_slot_constraints = inspector.get_unique_constraints("referral_reward_slots")
+    assert any(
+        constraint["column_names"]
+        == ["campaign_version_id", "product_version_id", "slot_key"]
+        for constraint in reward_slot_constraints
+    )
+    reward_reservation_constraints = inspector.get_unique_constraints(
+        "referral_reward_reservations"
+    )
+    assert any(
+        constraint["column_names"] == ["payment_attempt_id"]
+        for constraint in reward_reservation_constraints
+    )
+    refund_confirmation_constraints = inspector.get_unique_constraints(
+        "referral_refund_confirmations"
+    )
+    assert any(
+        constraint["column_names"] == ["payment_id"]
+        for constraint in refund_confirmation_constraints
+    )
+    restriction_constraints = inspector.get_unique_constraints(
+        "referral_participation_restrictions"
+    )
+    assert any(
+        constraint["column_names"] == ["user_id"]
+        for constraint in restriction_constraints
     )
     engine.dispose()

@@ -1,0 +1,109 @@
+.stack {
+  display: grid;
+  gap: var(--space-lg);
+  min-width: 0;
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.heading h2 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-card);
+}
+
+.heading p {
+  max-width: 72ch;
+  margin: 0.35rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-body);
+}
+
+.badge {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.reasonField {
+  display: grid;
+  max-width: 68ch;
+  gap: 0.35rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.reasonField textarea {
+  min-height: 5.5rem;
+  padding: 0.7rem 0.8rem;
+  resize: vertical;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.reasonField textarea:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.inlineAlert {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-control);
+  background: var(--surface-danger);
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+@media (max-width: 47.99rem) {
+  .panel {
+    padding: var(--space-md);
+  }
+
+  .heading {
+    display: grid;
+  }
+
+  .badge {
+    justify-self: start;
+  }
+}
+
+@container admin-preview (max-width: 47.99rem) {
+  .panel {
+    padding: var(--space-md);
+  }
+
+  .heading {
+    display: grid;
+  }
+
+  .badge {
+    justify-self: start;
+  }
+}

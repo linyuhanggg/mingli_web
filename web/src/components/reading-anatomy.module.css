@@ -16,18 +16,18 @@
   justify-content: center;
   gap: 0.45rem;
   padding-inline: 0.75rem;
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
   background: transparent;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
 }
 
 .controls button[aria-pressed="true"] {
-  border-color: var(--ink-900);
-  background: var(--ink-900);
-  color: var(--ivory-50);
+  border-color: var(--color-action);
+  background: var(--color-action);
+  color: var(--color-on-action);
 }
 
 .paper {
@@ -35,12 +35,10 @@
   min-height: 22rem;
   overflow: hidden;
   padding: clamp(1.35rem, 5vw, 3rem);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background:
-    linear-gradient(90deg, transparent 0 3.5rem, rgb(169 133 63 / 14%) 3.5rem 3.56rem, transparent 3.56rem),
-    var(--white);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  box-shadow: none;
 }
 
 .meta {
@@ -49,9 +47,9 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border-subtle);
-  color: var(--ink-700);
-  font-size: 0.7rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
   font-weight: 730;
   letter-spacing: 0.06em;
 }
@@ -64,16 +62,16 @@
 }
 
 .folio {
-  color: var(--gold-500);
-  font-size: 0.78rem;
+  color: var(--color-border-strong);
+  font-size: var(--font-size-aux);
   font-variant-numeric: tabular-nums;
 }
 
 .layer h3 {
   max-width: 15ch;
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(1.85rem, 7vw, 3.5rem);
+  font-family: var(--font-sans);
+  font-size: clamp(2.5rem, 7vw, 3.5rem);
   font-weight: 600;
   letter-spacing: -0.035em;
   line-height: 1.08;
@@ -82,7 +80,7 @@
 .layer p {
   max-width: 55ch;
   margin: 1rem 0 0;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
 }
 
 .digest {
@@ -96,15 +94,15 @@
 .digest span {
   width: 1.4rem;
   height: 0.2rem;
-  background: var(--gold-500);
+  background: var(--color-border-strong);
 }
 
 .digest span:nth-child(2) {
-  background: var(--ink-700);
+  background: var(--color-text-secondary);
 }
 
 .digest span:nth-child(3) {
-  background: var(--terracotta-500);
+  background: var(--color-text);
 }
 
 @media (min-width: 40rem) {

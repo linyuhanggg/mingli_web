@@ -1,0 +1,265 @@
+from __future__ import annotations
+
+import importlib
+import json
+import os
+import shutil
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from typing import Any, cast
+from uuid import UUID
+
+import pytest
+from app.adapters.model import FakeModelGateway
+from app.adapters.runtime import build_runtime_startup_gate
+from app.config import _RUNTIME_RELEASE_PROFILES, Settings
+from app.main import create_app
+from app.readings.repository import SqlReadingRepository
+from app.security.envelope import EnvelopeCipher
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy import func, select
+from worker.readings import build_reading_worker
+
+# isort: split
+from test_reading_worker import MutableClock
+
+pytest_plugins = ("test_reading_worker",)
+
+ROOT = Path(__file__).resolve().parents[2]
+SOURCE_RELEASE = ROOT / ".runtime" / "v53-time-check-release"
+RUNTIME_PYTHON = Path(
+    os.environ.get(
+        "MINGLI_RUNTIME_TEST_PYTHON",
+        str(Path.home() / ".local/share/mingli-master/venv/bin/python"),
+    )
+)
+RUNTIME_PYTHON_AVAILABLE = RUNTIME_PYTHON.is_file()
+
+pytestmark = pytest.mark.skipif(
+    os.environ.get("MINGLI_RUN_REAL_RUNTIME_TESTS") != "1",
+    reason="real PostgreSQL and frozen Runtime test is opt-in",
+)
+
+
+def _copy_admitted_release(tmp_path: Path) -> Path:
+    if not SOURCE_RELEASE.is_dir():
+        pytest.skip("the V53 Runtime release is not present")
+    release_root = tmp_path / "v53-time-check-release"
+    shutil.copytree(SOURCE_RELEASE, release_root, copy_function=shutil.copy2)
+    manifest = json.loads(
+        (release_root / ".mingli-release-manifest.json").read_text(encoding="utf-8")
+    )
+    for relative, mode in manifest["modes"].items():
+        (release_root / relative).chmod(mode)
+    return release_root
+
+
+def _settings(tmp_path: Path, release_root: Path, database_url: str) -> Settings:
+    profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
+    state_root = tmp_path / "runtime-state"
+    state_root.mkdir(mode=0o700)
+    state_root.chmod(0o700)
+    return Settings(
+        environment="test",
+        database_url=database_url,
+        cookie_secure=True,
+        otp_adapter="fake",
+        admin_bootstrap_email="ops@example.com",
+        admin_bootstrap_password="correct-horse",
+        runtime_adapter="one-shot",
+        runtime_release_profile="v53-time-check",
+        runtime_launcher_path=release_root / "scripts" / "run_reading_transaction.sh",
+        runtime_python_path=RUNTIME_PYTHON,
+        runtime_release_root=release_root,
+        runtime_state_root=state_root,
+        runtime_expected_manifest_digest=profile["manifest_digest"],
+        runtime_expected_capability_shape_sha256=profile["capability_shape_sha256"],
+    )
+
+
+async def _create_v53_release(database: Any, settings: Settings) -> None:
+    profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
+    async with database.sessions() as session, session.begin():
+        repository = SqlReadingRepository(
+            session,
+            EnvelopeCipher.from_settings(settings),
+        )
+        await repository.create_runtime_release(
+            name=profile["release_name"],
+            version="5.3",
+            source_commit=profile["source_commit"],
+            release_manifest_digest=profile["release_manifest_sha256"],
+            protocol_version="mingli-portable-interface-v2",
+            describe_manifest_digest=profile["manifest_digest"],
+            image_digest=None,
+            production_ready=True,
+        )
+
+
+async def _create_v53_profile(client: AsyncClient, headers: dict[str, str]) -> dict[str, object]:
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "V53 时间校验夹具"},
+    )
+    assert draft.status_code == 201, draft.text
+    confirmed = await client.post(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm",
+        headers=headers,
+        json={
+            "birth_datetime": "1994-04-30T05:55:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "福建省福州市",
+            "gender": "female",
+            "time_basis_policy": "solar",
+            "zi_hour_policy": "solar",
+            "longitude": 119.2965,
+            "latitude": 26.0745,
+            "coordinate_source": "synthetic-fixture",
+        },
+    )
+    assert confirmed.status_code == 201, confirmed.text
+    return cast(dict[str, object], confirmed.json())
+
+
+async def test_time_check_api_to_postgres_worker_document_and_web_result(
+    postgres_worker_database: Any,
+    tmp_path: Path,
+) -> None:
+    if not RUNTIME_PYTHON_AVAILABLE:
+        pytest.skip("the dedicated Mingli Runtime Python is not installed")
+    database_url = os.environ.get("MINGLI_TEST_POSTGRES_URL", "")
+    release_root = _copy_admitted_release(tmp_path)
+    settings = _settings(tmp_path, release_root, database_url)
+    await _create_v53_release(postgres_worker_database, settings)
+
+    async def readiness() -> None:
+        return None
+
+    application = create_app(
+        settings=settings,
+        database=postgres_worker_database,
+        readiness_probe=readiness,
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as client:
+        started_guest = await client.post("/api/v1/guest-sessions")
+        assert started_guest.status_code == 201, started_guest.text
+        headers = {"X-CSRF-Token": started_guest.json()["csrf_token"]}
+        profile = await _create_v53_profile(client, headers)
+        started = await client.post(
+            "/api/v1/readings/time-check",
+            headers={**headers, "Idempotency-Key": "time-check-sql-vertical-1"},
+            json={
+                "profile_version_id": profile["profile_version_id"],
+                "time_range_start": "05:00",
+                "time_range_end": "07:00",
+                "known_events": ["synthetic-event-a"],
+                "known_event_facts": [
+                    {
+                        "event_id": "synthetic-education",
+                        "occurred_at": "2012-09-01",
+                        "domain": "education",
+                    },
+                    {
+                        "event_id": "synthetic-career",
+                        "occurred_at": "2018-07-01T09:00:00+08:00",
+                        "domain": "career",
+                    },
+                ],
+                "query": "验证寻时定盘十二候选 Worker 闭环",
+                "dimension_ids": ["time_options"],
+            },
+        )
+        assert started.status_code == 201, started.text
+        assert started.json()["capability_id"] == "time-check"
+        assert started.json()["product_id"] == "time-check"
+        version_id = UUID(started.json()["reading_version_id"])
+
+        gate = build_runtime_startup_gate(settings)
+        await gate.startup()
+        worker = build_reading_worker(
+            settings=settings,
+            database=postgres_worker_database,
+            worker_id="time-check-postgres-vertical",
+            clock=MutableClock(datetime.now(UTC) + timedelta(minutes=1)),
+            runtime=gate.runtime,
+            model=FakeModelGateway(),
+        )
+        assert [await worker.run_once() for _ in range(3)] == [True, True, True]
+        assert await worker.run_once() is False
+
+        result = await client.get(
+            f"/api/v1/readings/{version_id}/result",
+            headers=headers,
+        )
+        assert result.status_code == 200, result.text
+        result_payload = result.json()
+        assert result_payload["document"]["schema_version"] == "reading-document/v1"
+        assert result_payload["document"]["view_model"]["schema_version"] == "time-check-view/v1"
+        assert result_payload["view_model"] == result_payload["document"]["view_model"]
+
+        admin_login = await client.post(
+            "/api/v1/admin/auth/login",
+            json={"email": "ops@example.com", "password": "correct-horse"},
+        )
+        assert admin_login.status_code == 200, admin_login.text
+        admin_detail = await client.get(
+            f"/api/v1/admin/readings/{version_id}",
+            headers={"X-CSRF-Token": admin_login.json()["csrf_token"]},
+        )
+        assert admin_detail.status_code == 200, admin_detail.text
+        assert admin_detail.json()["time_check_summary"] == {
+            "candidate_count": 12,
+            "known_event_count": 2,
+            "event_input_status": "structured_valid",
+            "ranking_status": "candidate_evidence_ranked",
+            "event_matching_status": "structured_evidence",
+            "ranked_candidate_count": 12,
+            "event_match_count": 2,
+        }
+        assert "synthetic-career" not in admin_detail.text
+        assert "subject_ref" not in admin_detail.json()["time_check_summary"]
+
+    readings = importlib.import_module("app.readings.models")
+    async with postgres_worker_database.sessions() as session:
+        version = await session.get(readings.ReadingVersion, version_id)
+        job = await session.scalar(
+            select(readings.ReadingJobRecord).where(
+                readings.ReadingJobRecord.reading_version_id == version_id
+            )
+        )
+        accepted_copy_count = await session.scalar(
+            select(func.count(readings.AcceptedCopy.id)).where(
+                readings.AcceptedCopy.reading_version_id == version_id
+            )
+        )
+        document_count = await session.scalar(
+            select(func.count(readings.ReadingDocumentRecord.id)).where(
+                readings.ReadingDocumentRecord.reading_version_id == version_id
+            )
+        )
+        assert version is not None
+        assert job is not None
+        assert version.status == "accepted"
+        assert job.status == "complete"
+        assert accepted_copy_count == 1
+        assert document_count == 1
+
+        document = await SqlReadingRepository(
+            session,
+            EnvelopeCipher.from_settings(settings),
+        ).load_reading_document(version_id)
+        assert document is not None
+        view = document.view_model
+        assert view.schema_version == "time-check-view/v1"
+        assert view.candidate_count == 12
+        assert view.known_event_count == 2
+        assert view.event_input_status == "structured_valid"
+        assert view.ranking_status == "candidate_evidence_ranked"
+        assert view.event_matching_status == "structured_evidence"
+        assert len(view.candidate_rankings) == 12
+        assert len(view.event_matches) == 2
+        assert any("不等于古法断定" in text for text in view.limitations)

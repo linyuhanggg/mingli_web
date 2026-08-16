@@ -1,0 +1,231 @@
+.stack {
+  display: grid;
+  gap: var(--space-lg);
+  min-width: 0;
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.heading h2 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-card);
+}
+
+.heading p {
+  max-width: 72ch;
+  margin: 0.35rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-body);
+}
+
+.badge {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.history {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.revision {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-muted);
+}
+
+.revisionHeading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.revisionHeading h3 {
+  margin: 0;
+  font-size: var(--font-size-label);
+}
+
+.revisionHeading span,
+.revisionMeta {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}
+
+.revisionMeta {
+  margin: 0;
+}
+
+.body {
+  margin: 0;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  line-height: var(--line-height-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.selectRevision,
+.commandActions button {
+  min-height: 44px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.selectRevision[aria-pressed="true"] {
+  border-color: var(--color-action);
+  background: var(--color-surface-muted);
+}
+
+.selectRevision:disabled,
+.commandActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.commandField {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.commandField label {
+  font-weight: 700;
+}
+
+.commandField textarea,
+.commandField input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  line-height: var(--line-height-body);
+}
+
+.commandField textarea {
+  resize: vertical;
+}
+
+.commandHelp {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  line-height: var(--line-height-body);
+}
+
+.commandActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.commandActions button:first-child {
+  background: var(--color-action);
+  color: var(--color-on-action);
+}
+
+.inlineAlert {
+  margin: 0;
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-sm);
+  margin: 0;
+}
+
+.summaryItem {
+  min-width: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+}
+
+.summaryItem dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}
+
+.summaryItem dd {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+@media (max-width: 47.99rem) {
+  .panel {
+    padding: var(--space-md);
+  }
+
+  .heading {
+    display: grid;
+  }
+
+  .badge {
+    justify-self: start;
+  }
+
+  .summary {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@container admin-preview (max-width: 47.99rem) {
+  .panel {
+    padding: var(--space-md);
+  }
+
+  .heading {
+    display: grid;
+  }
+
+  .badge {
+    justify-self: start;
+  }
+
+  .summary {
+    grid-template-columns: 1fr 1fr;
+  }
+}

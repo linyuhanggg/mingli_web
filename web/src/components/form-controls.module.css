@@ -5,8 +5,8 @@
 }
 
 .field > label {
-  color: var(--ink-950);
-  font-size: 0.88rem;
+  color: var(--color-text);
+  font-size: var(--font-size-label);
   font-weight: 750;
 }
 
@@ -14,11 +14,11 @@
   width: 100%;
   min-height: 3rem;
   padding: 0.7rem 0.85rem;
-  border: 1px solid var(--border-emphasis);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-50);
-  color: var(--ink-950);
-  font-size: 1rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
   transition:
     border-color var(--duration-feedback) ease,
     background-color var(--duration-feedback) ease,
@@ -26,13 +26,13 @@
 }
 
 .input:hover:not(:disabled) {
-  border-color: var(--border-control);
-  background: var(--white);
+  border-color: var(--color-border);
+  background: var(--color-surface);
 }
 
 .input:focus {
-  border-color: var(--gold-500);
-  background: var(--white);
+  border-color: var(--color-focus);
+  background: var(--color-surface);
 }
 
 textarea.input {
@@ -47,31 +47,31 @@ textarea.input {
 }
 
 .input[aria-invalid="true"] {
-  border-color: var(--terracotta-500);
+  border-color: var(--color-danger);
 }
 
 .error {
   margin: 0;
-  color: var(--terracotta-600);
-  font-size: 0.82rem;
+  color: var(--color-danger);
+  font-size: var(--font-size-aux);
   font-weight: 680;
-  animation: form-error-enter var(--duration-state) var(--ease-out-expo) both;
+  animation: form-error-enter var(--duration-overlay) var(--ease-out) both;
 }
 
 .hint {
   margin: 0;
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
 }
 
 .disabledReason {
   margin: 0;
   padding: 0.7rem 0.85rem;
-  border: 1px dashed var(--border-emphasis);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-100);
-  color: var(--ink-700);
-  font-size: 0.82rem;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
 }
 
 .actions {
@@ -89,11 +89,11 @@ textarea.input {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.72rem 1.15rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   cursor: pointer;
   font-weight: 750;
   transition:
-    transform var(--duration-feedback) var(--ease-out-expo),
+    transform var(--duration-feedback) var(--ease-out),
     background-color var(--duration-feedback) ease,
     border-color var(--duration-feedback) ease;
 }
@@ -108,32 +108,31 @@ textarea.input {
 
 .actionPrimary {
   width: 100%;
-  border: 1px solid var(--ink-900);
-  border-radius: var(--radius-sm);
-  background: var(--ink-900);
-  color: var(--ivory-50);
-  box-shadow: var(--shadow-action);
+  border: 1px solid var(--color-action);
+  border-radius: var(--radius-control);
+  background: var(--color-action);
+  color: var(--color-on-action);
 }
 
 .actionPrimary:hover {
-  background: var(--ink-800);
+  background: var(--color-action-hover);
 }
 
 .actionSecondary {
-  border: 1px solid var(--border-emphasis);
-  background: var(--ivory-50);
-  color: var(--ink-900);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-canvas);
+  color: var(--color-action);
 }
 
 .actionSecondary:hover {
-  border-color: var(--gold-500);
-  background: var(--white);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
 }
 
 .action[disabled] {
-  border-color: var(--border-control);
-  background: var(--ivory-200);
-  color: var(--ink-700);
+  border-color: var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;

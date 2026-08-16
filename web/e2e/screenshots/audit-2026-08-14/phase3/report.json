@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-14T20:55:45.305Z",
+  "generatedAt": "2026-08-16T01:32:31.876Z",
   "baseUrl": "http://127.0.0.1:3000",
   "state": "signed-out",
   "responseInterception": "The real browser audit explicitly returns 401 for the account probe and a CSRF token for the guest login form; no user or business fixture data is injected.",

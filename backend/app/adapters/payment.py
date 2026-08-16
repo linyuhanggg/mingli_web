@@ -15,6 +15,7 @@ class PaymentNotificationResult:
     verified: bool
     payment_succeeded: bool
     channel_transaction_id: str | None = None
+    external_event_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

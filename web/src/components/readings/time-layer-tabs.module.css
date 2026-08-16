@@ -10,18 +10,18 @@
   align-items: center;
   gap: 0.45rem;
   padding: 0.45rem 0.9rem;
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-100);
-  color: var(--ink-700);
-  font-size: 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
   font-weight: 700;
   cursor: pointer;
   transition:
     border-color var(--duration-feedback) ease,
     background-color var(--duration-feedback) ease,
     color var(--duration-feedback) ease,
-    transform var(--duration-feedback) var(--ease-out-expo);
+    transform var(--duration-feedback) var(--ease-out);
 }
 
 .tab:active:not(:disabled) {
@@ -29,14 +29,14 @@
 }
 
 .tab:hover:not(:disabled) {
-  border-color: var(--gold-500);
-  background: var(--ivory-50);
+  border-color: var(--color-border-strong);
+  background: var(--color-canvas);
 }
 
 .tab[data-active="true"] {
-  border-color: var(--ink-900);
-  background: var(--ink-900);
-  color: var(--ivory-50);
+  border-color: var(--color-action);
+  background: var(--color-action);
+  color: var(--color-on-action);
 }
 
 .tab:disabled {
@@ -49,19 +49,23 @@
 }
 
 .tabSummary {
-  color: var(--ink-500);
-  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-aux);
   font-weight: 650;
 }
 
 .tab[data-active="true"] .tabSummary {
-  color: var(--gold-400);
+  color: var(--color-text-inverse);
 }
 
 .tabStatus {
-  color: var(--ink-500);
-  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
   font-weight: 720;
+}
+
+.tab[data-active="true"] .tabStatus {
+  color: var(--color-text-inverse);
 }
 
 @media (prefers-reduced-motion: reduce) {

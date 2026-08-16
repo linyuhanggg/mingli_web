@@ -108,3 +108,17 @@ def test_verification_summary_contract_is_four_value_and_aligned() -> None:
         runtime["properties"]["outcome"]["enum"]
     )
     assert _is_nullable(frozen["properties"]["note"])
+
+
+def test_reading_result_response_keeps_required_runtime_and_document_slots() -> None:
+    frozen_schemas = _frozen_schemas()
+    runtime_schemas = _runtime_spec()["components"]["schemas"]
+
+    frozen = frozen_schemas["ReadingResultResponse"]
+    runtime = runtime_schemas["ReadingResultResponse"]
+
+    assert {"view_model", "document"} <= set(frozen["required"])
+    assert {"view_model", "document"} <= set(runtime["required"])
+    assert runtime["properties"]["document"]["anyOf"][0]["$ref"] == (
+        "#/components/schemas/ReadingDocumentV1"
+    )

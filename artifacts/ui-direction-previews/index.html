@@ -1,0 +1,33 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<title>UI 方向预览</title>
+<style>
+body{font-family:-apple-system,"PingFang SC",sans-serif;background:#f2f2f0;color:#111;margin:0;padding:32px}
+h1{font-size:20px;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start}
+.col{background:#fff;border:1px solid #ddd;border-radius:12px;padding:16px}
+.col h2{margin:0 0 6px;font-size:16px}
+.col p{margin:0 0 12px;font-size:13px;color:#555;line-height:1.6}
+.col a{display:block;margin:4px 0;font-size:12px;color:#2456f0;text-decoration:none}
+img{width:100%;border:1px solid #e3e3e3;border-radius:8px;margin-bottom:10px;display:block;background:#fafafa}
+.note{font-size:12px;color:#777;margin-top:16px;line-height:1.7}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+</style></head>
+<body>
+<h1>mingli_web 视觉方向预览（静态原型截图，示意数据）</h1>
+<div class="grid">
+<div class="col"><h2>C4 液体玻璃（新）</h2><p>iOS 风格悬浮玻璃：彩色光斑底 + blur/saturate + 顶部高光 + 1px 内描边 + 超椭圆圆角。移动端自动降级减少光晕。</p>
+<img src="c4-1440.png" alt="C4 1440"><img src="c4-360.png" alt="C4 360">
+<a href="c4.html">打开 C4 可交互原型</a><a href="c4-768.png">查看 768 截图</a></div>
+<div class="col"><h2>C1 锐感数据工坊</h2><p>现代 SaaS 锐感升级：4px 尺度、6 级字阶、清晰状态与 tabular 数字；风险最低。</p>
+<img src="c1-1440.png" alt="C1 1440"><img src="c1-360.png" alt="C1 360">
+<a href="c1.html">打开 C1 可交互原型</a><a href="c1-768.png">查看 768 截图</a></div>
+<div class="col"><h2>C2 纸上术数档案</h2><p>古籍善本/档案编辑部：纸感底、墨字、朱砂唯一强调色、宋体盘面大字。</p>
+<img src="c2-1440.png" alt="C2 1440"><img src="c2-360.png" alt="C2 360">
+<a href="c2.html">打开 C2 可交互原型</a><a href="c2-768.png">查看 768 截图</a></div>
+<div class="col"><h2>C3 星历精密仪器</h2><p>天文台数据终端：冷铅灰、仪器黑、信号青+铜色刻度、深色观测工作台。</p>
+<img src="c3-1440.png" alt="C3 1440"><img src="c3-360.png" alt="C3 360">
+<a href="c3.html">打开 C3 可交互原型</a><a href="c3-768.png">查看 768 截图</a></div>
+</div>
+<p class="note">说明：四套预览同内容、同产品事实，只换视觉世界；盘面是“示例数据”，正式页由 Runtime 生成。预检通过：1440/768/360 无横向滚动、导航单行、hero 与 CTA 首屏内、primary CTA 对比度过 AA、零 em-dash。C4 的液体玻璃为 CSS 近似（backdrop-filter），非 Apple 官方实现；配方参考 GitHub MIT 项目 einui/einui，高保真引擎候选 iyinchao/liquid-glass-studio、dashersw/liquid-glass-js。无 backdrop-filter 的环境自动回退为实体面板。</p>
+</body></html>

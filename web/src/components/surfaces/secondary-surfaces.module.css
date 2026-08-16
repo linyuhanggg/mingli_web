@@ -1,0 +1,463 @@
+.main {
+  min-height: 70vh;
+  padding-block: clamp(2.75rem, 8vw, 6.5rem);
+  background: var(--color-canvas);
+  color: var(--color-text);
+}
+
+.container {
+  width: min(100%, 74rem);
+}
+
+.header {
+  display: grid;
+  gap: 1rem;
+  max-width: 52rem;
+  padding-bottom: clamp(2rem, 5vw, 3.5rem);
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.eyebrow {
+  width: fit-content;
+  margin: 0;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--color-border-strong);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 720;
+}
+
+.header h1 {
+  max-width: 24ch;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(2.5rem, 6vw, 3.6rem);
+  font-weight: 620;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.intro {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-emphasis);
+  line-height: 1.7;
+}
+
+.content {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  padding-top: clamp(2rem, 5vw, 3.5rem);
+}
+
+.status {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-subtle);
+}
+
+.status[data-state="need-login"] {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+}
+
+.status[data-state="empty"] {
+  border-style: dashed;
+}
+
+.statusIcon {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+.status > div {
+  min-width: 0;
+}
+
+.status h2,
+.section h2,
+.policyPreview h2,
+.boundaryPanel h2 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-section);
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.status p,
+.section p,
+.policyPreview p {
+  max-width: 66ch;
+  margin: 0.45rem 0 0;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+.primaryLink,
+.linkList a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-control);
+  font-weight: 700;
+  text-decoration: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: var(--color-border-strong);
+}
+
+.primaryLink {
+  margin-top: 1rem;
+  padding: 0.65rem 1rem;
+  background: var(--color-action);
+  color: var(--color-on-action);
+}
+
+.entryGrid,
+.linkList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entryGrid {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--color-border-strong);
+}
+
+.entryGrid li {
+  min-width: 0;
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.entryGrid a {
+  display: grid;
+  min-height: 8rem;
+  gap: 0.75rem;
+  align-content: center;
+  padding: 1.25rem 0;
+  color: var(--color-text);
+  text-decoration: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: var(--color-border-strong);
+}
+
+.entryGrid a > span:last-child {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.entryHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.entryHeading strong {
+  font-size: var(--font-size-card);
+}
+
+.entryHeading small {
+  flex: 0 0 auto;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  font-weight: 700;
+}
+
+.sectionGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.inviteFacts {
+  display: grid;
+  gap: 0;
+  margin: 1.5rem 0 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.inviteFacts > div {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.35fr) minmax(0, 1fr);
+  gap: 1rem;
+  padding-block: 0.9rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.inviteFacts dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+  font-weight: 700;
+}
+
+.inviteFacts dd {
+  margin: 0;
+  font-weight: 650;
+}
+
+.section,
+.boundaryPanel {
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.publishedBody {
+  margin-top: 0.5rem !important;
+  white-space: pre-wrap;
+}
+
+.authGrid {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.form {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 31rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.fields {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.choiceList {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  cursor: pointer;
+}
+
+.choice input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0.1rem 0 0;
+  accent-color: var(--color-action);
+}
+
+.choice span {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.choice small {
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.field label {
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+  font: inherit;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.filterFieldset {
+  display: grid;
+  min-inline-size: 0;
+  gap: 1.1rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filterLegend {
+  padding: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.filterFieldset:disabled .field input,
+.filterFieldset:disabled .field select,
+.filterFieldset:disabled button {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.field p,
+.disabledReason {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+  line-height: 1.55;
+}
+
+.status h2,
+.status p,
+.entryGrid a > span,
+.field p,
+.disabledReason {
+  overflow-wrap: anywhere;
+}
+
+.form button {
+  min-height: 3rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-weight: 720;
+}
+
+.form button:disabled {
+  cursor: not-allowed;
+}
+
+.authAside {
+  display: grid;
+  gap: 1rem;
+}
+
+.linkList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.linkList a {
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.policyPreview {
+  display: grid;
+  gap: 1rem;
+}
+
+.accountPage {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.accountPanel {
+  display: grid;
+  gap: 1rem;
+}
+
+.boundaryPanel ul {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--color-text-secondary);
+}
+
+.primaryLink:hover,
+.entryGrid a:hover,
+.linkList a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
+}
+
+.primaryLink:focus-visible,
+.entryGrid a:focus-visible,
+.linkList a:focus-visible,
+.field input:focus-visible,
+.field select:focus-visible,
+.choice input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+@media (min-width: 48rem) {
+  .entryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .entryGrid li:nth-child(odd) {
+    padding-right: 1.5rem;
+    border-right: 1px solid var(--color-border-strong);
+  }
+
+  .entryGrid li:nth-child(even) {
+    padding-left: 1.5rem;
+  }
+
+  .sectionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .authGrid {
+    grid-template-columns: minmax(0, 31rem) minmax(17rem, 1fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+  }
+}
+
+@media (max-width: 24rem) {
+  .status {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryLink,
+  .entryGrid a,
+  .linkList a,
+  .field input {
+    scroll-behavior: auto;
+  }
+}

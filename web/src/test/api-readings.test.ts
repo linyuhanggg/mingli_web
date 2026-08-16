@@ -2,8 +2,20 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 import {
   ApiError,
+  createReadingRecast,
   listReadings,
   resetApiCache,
+  startBaziRelationshipReading,
+  startCanwenReading,
+  startChartSimilarityReading,
+  startDaliurenReading,
+  startHecanReading,
+  startQimenReading,
+  startQizhengReading,
+  startQizhengRelationshipReading,
+  startWenshiReading,
+  startZiweiReading,
+  startZiweiRelationshipReading,
   type ReadingVersionSummary,
 } from "@/lib/api";
 
@@ -139,5 +151,150 @@ it("preserves the newest-first order the server returns", async () => {
   expect(readings.map((entry) => entry.created_at)).toEqual([
     "2026-08-10T02:00:00Z",
     "2026-08-09T02:00:00Z",
+  ]);
+});
+
+it("submits an explicit Recast request with a stable idempotency key", async () => {
+  const fetchMock = vi.fn<typeof fetch>();
+  vi.stubGlobal("fetch", fetchMock);
+  document.cookie = "mingli_csrf=recast-csrf-token; path=/";
+  fetchMock.mockResolvedValueOnce(jsonResponse(readingSummary({ capability_id: "liuyao", profile_version_id: null }), 201));
+
+  const result = await createReadingRecast(
+    "11111111-1111-4111-8111-111111111111",
+    {
+      action: "liuyao_one_question",
+      cast: [6, 7, 8, 9, 6, 7],
+      event_datetime: "2026-08-14T10:00:00+08:00",
+      timezone: "Asia/Shanghai",
+      location: "上海市",
+      dimension_ids: ["outcome"],
+    },
+    "recast-web-v1",
+  );
+
+  expect(result.capability_id).toBe("liuyao");
+  const [url, init] = fetchMock.mock.calls[0]!;
+  expect(url).toBe("/api/v1/readings/11111111-1111-4111-8111-111111111111/recast");
+  expect(init?.method).toBe("POST");
+  expect(new Headers(init?.headers).get("Idempotency-Key")).toBe("recast-web-v1");
+  expect(JSON.parse(String(init?.body))).toMatchObject({
+    action: "liuyao_one_question",
+    dimension_ids: ["outcome"],
+  });
+});
+
+it("routes each newly connected core art through its explicit reading endpoint", async () => {
+  const fetchMock = vi.fn<typeof fetch>();
+  vi.stubGlobal("fetch", fetchMock);
+  document.cookie = "mingli_csrf=core-art-csrf-token; path=/";
+  fetchMock.mockImplementation(async () =>
+    jsonResponse(readingSummary({ capability_id: "ziwei" }), 201),
+  );
+
+  await startZiweiReading(
+    { profile_version_id: "22222222-2222-4222-8222-222222222222", dimension_ids: ["career"] },
+    "ziwei-key-1",
+  );
+  await startQizhengReading(
+    { profile_version_id: "22222222-2222-4222-8222-222222222222", dimension_ids: ["career"] },
+    "qizheng-key-1",
+  );
+  await startQimenReading(
+    {
+      event_datetime: "2026-08-14T10:00:00+08:00",
+      timezone: "Asia/Shanghai",
+      location: "上海市",
+      query: "这件事如何推进？",
+      dimension_ids: ["outcome"],
+    },
+    "qimen-key-1",
+  );
+  await startDaliurenReading(
+    {
+      event_datetime: "2026-08-14T10:00:00+08:00",
+      timezone: "Asia/Shanghai",
+      location: "上海市",
+      query: "这件事如何推进？",
+      dimension_ids: ["timing"],
+    },
+    "liuren-key-1",
+  );
+  await startWenshiReading(
+    {
+      cast: [6, 7, 8, 9, 6, 7],
+      event_datetime: "2026-08-14T10:00:00+08:00",
+      timezone: "Asia/Shanghai",
+      location: "上海市",
+      query: "这件事如何推进？",
+      dimension_ids: ["outcome", "timing"],
+    },
+    "wenshi-key-1",
+  );
+  await startCanwenReading(
+    {
+      profile_version_id: "22222222-2222-4222-8222-222222222222",
+      selected_art_ids: ["bazi", "ziwei"],
+      query: "比较共同事实范围",
+      dimension_ids: ["career"],
+    },
+    "canwen-key-1",
+  );
+  await startHecanReading(
+    {
+      profile_version_id: "22222222-2222-4222-8222-222222222222",
+      selected_art_ids: ["bazi", "ziwei"],
+      dimension_ids: ["career"],
+    },
+    "hecan-key-1",
+  );
+  const relationshipBody = {
+    profile_version_ids: [
+      "22222222-2222-4222-8222-222222222222",
+      "55555555-5555-4555-8555-555555555555",
+    ] as [string, string],
+    relationship_type: "romantic" as const,
+    dimension_ids: ["relationship"] as ["relationship"],
+  };
+  await startBaziRelationshipReading(relationshipBody, "bazi-relation-key-1");
+  await startZiweiRelationshipReading(relationshipBody, "ziwei-relation-key-1");
+  await startQizhengRelationshipReading(relationshipBody, "qizheng-relation-key-1");
+  await startChartSimilarityReading(
+    {
+      profile_version_ids: [
+        "22222222-2222-4222-8222-222222222222",
+        "55555555-5555-4555-8555-555555555555",
+      ],
+      query: "比较两份已确认命盘的八字四柱事实。",
+      dimension_ids: ["state"],
+    },
+    "chart-similarity-key-1",
+  );
+
+  expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+    "/api/v1/readings/ziwei",
+    "/api/v1/readings/qizheng",
+    "/api/v1/readings/qimen",
+    "/api/v1/readings/daliuren",
+    "/api/v1/readings/wenshi",
+    "/api/v1/readings/canwen",
+    "/api/v1/readings/hecan",
+    "/api/v1/readings/bazi-relationship",
+    "/api/v1/readings/ziwei-relationship",
+    "/api/v1/readings/qizheng-relationship",
+    "/api/v1/readings/chart-similarity",
+  ]);
+  expect(fetchMock.mock.calls.map(([, init]) => new Headers(init?.headers).get("Idempotency-Key"))).toEqual([
+    "ziwei-key-1",
+    "qizheng-key-1",
+    "qimen-key-1",
+    "liuren-key-1",
+    "wenshi-key-1",
+    "canwen-key-1",
+    "hecan-key-1",
+    "bazi-relation-key-1",
+    "ziwei-relation-key-1",
+    "qizheng-relation-key-1",
+    "chart-similarity-key-1",
   ]);
 });

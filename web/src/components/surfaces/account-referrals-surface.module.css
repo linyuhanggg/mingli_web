@@ -1,0 +1,107 @@
+.campaigns {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.campaign {
+  display: grid;
+  gap: 1rem;
+  padding: 1.15rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+}
+
+.campaignHeader,
+.progressLine,
+.codeHeader,
+.rewardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.campaignHeader h3,
+.codeHeader h4,
+.rewardHeader h4 {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: 720;
+}
+
+.campaignMeta,
+.progressLine,
+.codeList,
+.rewardList,
+.emptyNote {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+}
+
+.campaignMeta,
+.emptyNote {
+  margin: 0;
+}
+
+.progressLine {
+  margin: 0;
+  font-weight: 720;
+}
+
+.codeBlock,
+.rewardBlock {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.codeHeader h4,
+.rewardHeader h4 {
+  font-size: var(--font-size-label);
+}
+
+.codeList,
+.rewardList {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.codeList li,
+.rewardList li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.code {
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-label);
+}
+
+.stateTag {
+  display: inline-flex;
+  min-height: 1.7rem;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-meta);
+  font-weight: 720;
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://fateradar.cn/contracts/views/daliuren-chart-v1.schema.json", "title": "Daliuren Chart ViewModel v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "subject_ref", "question", "lessons", "transmissions"],
+  "properties": {
+    "schema_version": {"const": "daliuren-chart/v1"}, "subject_ref": {"type": "string", "minLength": 1}, "question": {"type": "string", "minLength": 1},
+    "lessons": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "object", "additionalProperties": false, "required": ["lesson_id", "upper", "lower"], "properties": {"lesson_id": {"type": "string", "minLength": 1}, "upper": {"type": "string", "minLength": 1}, "lower": {"type": "string", "minLength": 1}}}},
+    "transmissions": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "object", "additionalProperties": false, "required": ["stage", "branch", "general"], "properties": {"stage": {"enum": ["initial", "middle", "final"]}, "branch": {"type": "string", "minLength": 1}, "general": {"type": "string", "minLength": 1}}}},
+    "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]}
+  },
+  "$defs": {
+    "coreFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "day_hour": {"type": ["object", "null"]},
+        "dimension_facts": {"type": ["object", "null"]},
+        "earth_plate": {"type": ["array", "null"], "items": {"type": "string"}},
+        "heaven_plate": {"type": ["array", "null"], "items": {"type": "object"}},
+        "heavenly_generals": {"type": ["array", "null"], "items": {"type": "object"}},
+        "lesson_method": {"type": ["object", "null"]},
+        "month_general": {"type": ["object", "null"]},
+        "noble_person": {"type": ["object", "null"]},
+        "plate_offset": {"type": ["integer", "null"]},
+        "structural_patterns": {"type": ["array", "null"], "items": {"type": "string"}},
+        "transmission_method": {"type": ["object", "null"]},
+        "timing_candidates": {"type": ["array", "null"], "items": {"type": "object"}},
+        "xunkong": {"type": ["object", "null"]}
+      }
+    }
+  }
+}

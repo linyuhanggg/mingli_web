@@ -10,12 +10,17 @@ from app.config import Settings
 from app.entitlements.repository import EntitlementRepository
 from app.profiles.service import OwnerProtocol
 
-PAID_READING_CAPABILITIES = frozenset({"today", "week", "liuyao"})
+PAID_READING_CAPABILITIES = frozenset(
+    {"today", "week", "liuyao", "bazi_deep", "qimen_deep"}
+)
 
 _ACTION_TO_CAPABILITY = {
     "today": "today",
     "near_seven": "week",
     "liuyao_one_question": "liuyao",
+    "wenshi_one_question": "liuyao",
+    "bazi_deep": "bazi_deep",
+    "qimen_deep": "qimen_deep",
 }
 
 OwnerKind = Literal["user", "guest"]

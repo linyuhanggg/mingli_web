@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
 
 import { EditorialPage, editorialStyles as styles } from "@/components/editorial-page";
+import { PublicCmsProjection } from "@/components/public-cms-projection";
+import { getPublicCmsMetadata } from "@/lib/public-cms-metadata";
 
 
-export const metadata: Metadata = {
-  title: "方法与边界",
-  description: "FateRadar 如何先计算事实、再生成白话、校验后接纳和交付。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getPublicCmsMetadata("seo.methodology", {
+    title: "方法与边界",
+    description: "如何先计算事实、再生成白话、校验后接纳和交付。",
+  });
+}
 
 export default function MethodologyPage() {
   return (
     <EditorialPage
-      eyebrow="FateRadar · Methodology"
+      eyebrow="方法与边界"
       title="先算再讲，证据和边界都能回看。"
       intro="命理核心、模型表达与产品交付各管一件事。换模型不会改盘，用户反馈也不会覆盖历史事实。"
     >
@@ -60,6 +64,10 @@ export default function MethodologyPage() {
       <p className={styles.notice}>
         命理解读用于传统文化参考和自我观察，不以“保证应验”替代现实证据，也不替代专业判断。
       </p>
+      <PublicCmsProjection
+        heading="已发布方法内容"
+        source={{ kind: "item", contentKey: "page.methodology" }}
+      />
     </EditorialPage>
   );
 }

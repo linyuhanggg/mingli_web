@@ -1,0 +1,962 @@
+{
+  "schema": "mingli.route-evidence/v1",
+  "app": "web",
+  "gitCommit": "f488fa4d6eaa989b708b14d87b747ee931468829",
+  "generatedAt": "2026-08-13T18:23:37.484Z",
+  "reviewedAt": "2026-08-14T10:20:00+08:00",
+  "reviewStatus": "reviewed",
+  "test": {
+    "file": "e2e/route-matrix.spec.ts",
+    "name": "public and private route matrix has no critical browser failures or horizontal overflow",
+    "checks": [
+      "http-200",
+      "critical-browser-errors",
+      "horizontal-overflow"
+    ]
+  },
+  "baseURL": "http://127.0.0.1:3000",
+  "project": "1440",
+  "routes": [
+    {
+      "requestedRoute": "/",
+      "finalPath": "/",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed"
+      ],
+      "screenshot": "1440/screenshots/001-home.jpg"
+    },
+    {
+      "requestedRoute": "/about",
+      "finalPath": "/about",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "disabled"
+      ],
+      "screenshot": "1440/screenshots/002-about.jpg"
+    },
+    {
+      "requestedRoute": "/account",
+      "finalPath": "/account",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error"
+      ],
+      "screenshot": "1440/screenshots/003-account.jpg"
+    },
+    {
+      "requestedRoute": "/account/data-rights",
+      "finalPath": "/account/data-rights",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/004-account-data-rights.jpg"
+    },
+    {
+      "requestedRoute": "/account/entitlements",
+      "finalPath": "/account/entitlements",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/005-account-entitlements.jpg"
+    },
+    {
+      "requestedRoute": "/account/history",
+      "finalPath": "/account/history",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/006-account-history.jpg"
+    },
+    {
+      "requestedRoute": "/account/history/demo-root",
+      "finalPath": "/account/history/demo-root",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/007-account-history-demo-root.jpg"
+    },
+    {
+      "requestedRoute": "/account/invitations",
+      "finalPath": "/account/invitations",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/008-account-invitations.jpg"
+    },
+    {
+      "requestedRoute": "/account/invites",
+      "finalPath": "/account/invites",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/009-account-invites.jpg"
+    },
+    {
+      "requestedRoute": "/account/notifications",
+      "finalPath": "/account/notifications",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/010-account-notifications.jpg"
+    },
+    {
+      "requestedRoute": "/account/orders",
+      "finalPath": "/account/orders",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/011-account-orders.jpg"
+    },
+    {
+      "requestedRoute": "/account/profiles",
+      "finalPath": "/account/profiles",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/012-account-profiles.jpg"
+    },
+    {
+      "requestedRoute": "/account/profiles/demo-profile",
+      "finalPath": "/account/profiles/demo-profile",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/013-account-profiles-demo-profile.jpg"
+    },
+    {
+      "requestedRoute": "/account/settings",
+      "finalPath": "/account/settings",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/014-account-settings.jpg"
+    },
+    {
+      "requestedRoute": "/account/settings/preferences",
+      "finalPath": "/account/settings/preferences",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/015-account-settings-preferences.jpg"
+    },
+    {
+      "requestedRoute": "/account/settings/privacy-data",
+      "finalPath": "/account/settings/privacy-data",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/016-account-settings-privacy-data.jpg"
+    },
+    {
+      "requestedRoute": "/account/settings/security",
+      "finalPath": "/account/settings/security",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/017-account-settings-security.jpg"
+    },
+    {
+      "requestedRoute": "/app",
+      "finalPath": "/account",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error"
+      ],
+      "screenshot": "1440/screenshots/018-app.jpg"
+    },
+    {
+      "requestedRoute": "/app/ask/liuyao",
+      "finalPath": "/liuyao",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "active",
+        "closed",
+        "pending",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/019-app-ask-liuyao.jpg"
+    },
+    {
+      "requestedRoute": "/app/bazi",
+      "finalPath": "/bazi",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "active",
+        "closed",
+        "pending",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/020-app-bazi.jpg"
+    },
+    {
+      "requestedRoute": "/app/fortune/today",
+      "finalPath": "/daily",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/021-app-fortune-today.jpg"
+    },
+    {
+      "requestedRoute": "/app/fortune/week",
+      "finalPath": "/daily",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/022-app-fortune-week.jpg"
+    },
+    {
+      "requestedRoute": "/app/profile/new",
+      "finalPath": "/account/profiles",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/023-app-profile-new.jpg"
+    },
+    {
+      "requestedRoute": "/app/profiles",
+      "finalPath": "/account/profiles",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/024-app-profiles.jpg"
+    },
+    {
+      "requestedRoute": "/app/readings",
+      "finalPath": "/account/history",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/025-app-readings.jpg"
+    },
+    {
+      "requestedRoute": "/app/readings/demo-reading",
+      "finalPath": "/account/history/demo-reading",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "error",
+        "need-login"
+      ],
+      "screenshot": "1440/screenshots/026-app-readings-demo-reading.jpg"
+    },
+    {
+      "requestedRoute": "/arts",
+      "finalPath": "/arts",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed"
+      ],
+      "screenshot": "1440/screenshots/027-arts.jpg"
+    },
+    {
+      "requestedRoute": "/auth/consent",
+      "finalPath": "/auth/consent",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/028-auth-consent.jpg"
+    },
+    {
+      "requestedRoute": "/auth/login",
+      "finalPath": "/auth/login",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/029-auth-login.jpg"
+    },
+    {
+      "requestedRoute": "/auth/recover",
+      "finalPath": "/auth/recover",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/030-auth-recover.jpg"
+    },
+    {
+      "requestedRoute": "/auth/register",
+      "finalPath": "/auth/register",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/031-auth-register.jpg"
+    },
+    {
+      "requestedRoute": "/auth/set-password",
+      "finalPath": "/auth/set-password",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/032-auth-set-password.jpg"
+    },
+    {
+      "requestedRoute": "/auth/verify",
+      "finalPath": "/auth/verify",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/033-auth-verify.jpg"
+    },
+    {
+      "requestedRoute": "/bazi",
+      "finalPath": "/bazi",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "active",
+        "closed",
+        "pending",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/034-bazi.jpg"
+    },
+    {
+      "requestedRoute": "/bazi/hepan",
+      "finalPath": "/bazi/hepan",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/035-bazi-hepan.jpg"
+    },
+    {
+      "requestedRoute": "/canwen",
+      "finalPath": "/canwen",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "active",
+        "closed",
+        "pending",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/036-canwen.jpg"
+    },
+    {
+      "requestedRoute": "/checkout",
+      "finalPath": "/checkout",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/037-checkout.jpg"
+    },
+    {
+      "requestedRoute": "/checkout/demo-order",
+      "finalPath": "/checkout/demo-order",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/038-checkout-demo-order.jpg"
+    },
+    {
+      "requestedRoute": "/daily",
+      "finalPath": "/daily",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/039-daily.jpg"
+    },
+    {
+      "requestedRoute": "/daliuren",
+      "finalPath": "/daliuren",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "active",
+        "closed",
+        "pending",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/040-daliuren.jpg"
+    },
+    {
+      "requestedRoute": "/hecan",
+      "finalPath": "/hecan",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "active",
+        "closed",
+        "pending",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/041-hecan.jpg"
+    },
+    {
+      "requestedRoute": "/invite/demo-code",
+      "finalPath": "/invite/demo-code",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/042-invite-demo-code.jpg"
+    },
+    {
+      "requestedRoute": "/jianxiang",
+      "finalPath": "/jianxiang",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "active",
+        "closed",
+        "pending",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/043-jianxiang.jpg"
+    },
+    {
+      "requestedRoute": "/library",
+      "finalPath": "/library",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "screenshot": "1440/screenshots/044-library.jpg"
+    },
+    {
+      "requestedRoute": "/library/demo-article",
+      "finalPath": "/library/demo-article",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "screenshot": "1440/screenshots/045-library-demo-article.jpg"
+    },
+    {
+      "requestedRoute": "/liuyao",
+      "finalPath": "/liuyao",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "active",
+        "closed",
+        "pending",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/046-liuyao.jpg"
+    },
+    {
+      "requestedRoute": "/methodology",
+      "finalPath": "/methodology",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed"
+      ],
+      "screenshot": "1440/screenshots/047-methodology.jpg"
+    },
+    {
+      "requestedRoute": "/pricing",
+      "finalPath": "/pricing",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "disabled"
+      ],
+      "screenshot": "1440/screenshots/048-pricing.jpg"
+    },
+    {
+      "requestedRoute": "/privacy",
+      "finalPath": "/privacy",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed"
+      ],
+      "screenshot": "1440/screenshots/049-privacy.jpg"
+    },
+    {
+      "requestedRoute": "/qimen",
+      "finalPath": "/qimen",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "active",
+        "closed",
+        "pending",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/050-qimen.jpg"
+    },
+    {
+      "requestedRoute": "/qizheng",
+      "finalPath": "/qizheng",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "active",
+        "closed",
+        "pending",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/051-qizheng.jpg"
+    },
+    {
+      "requestedRoute": "/qizheng/hepan",
+      "finalPath": "/qizheng/hepan",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/052-qizheng-hepan.jpg"
+    },
+    {
+      "requestedRoute": "/share/demo-share",
+      "finalPath": "/share/demo-share",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/053-share-demo-share.jpg"
+    },
+    {
+      "requestedRoute": "/support",
+      "finalPath": "/support",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "disabled"
+      ],
+      "screenshot": "1440/screenshots/054-support.jpg"
+    },
+    {
+      "requestedRoute": "/terms",
+      "finalPath": "/terms",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed"
+      ],
+      "screenshot": "1440/screenshots/055-terms.jpg"
+    },
+    {
+      "requestedRoute": "/tools",
+      "finalPath": "/tools",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/056-tools.jpg"
+    },
+    {
+      "requestedRoute": "/tools/chart-similarity",
+      "finalPath": "/tools/chart-similarity",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/057-tools-chart-similarity.jpg"
+    },
+    {
+      "requestedRoute": "/tools/dream",
+      "finalPath": "/tools/dream",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/058-tools-dream.jpg"
+    },
+    {
+      "requestedRoute": "/tools/five-elements",
+      "finalPath": "/tools/five-elements",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/059-tools-five-elements.jpg"
+    },
+    {
+      "requestedRoute": "/tools/name",
+      "finalPath": "/tools/name",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/060-tools-name.jpg"
+    },
+    {
+      "requestedRoute": "/tools/rhythm",
+      "finalPath": "/tools/rhythm",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/061-tools-rhythm.jpg"
+    },
+    {
+      "requestedRoute": "/tools/time-check",
+      "finalPath": "/tools/time-check",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/062-tools-time-check.jpg"
+    },
+    {
+      "requestedRoute": "/wenshi",
+      "finalPath": "/wenshi",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "active",
+        "closed",
+        "pending",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/063-wenshi.jpg"
+    },
+    {
+      "requestedRoute": "/workbench/demo-handle",
+      "finalPath": "/workbench/demo-handle",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/064-workbench-demo-handle.jpg"
+    },
+    {
+      "requestedRoute": "/ziwei",
+      "finalPath": "/ziwei",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "active",
+        "closed",
+        "pending",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/065-ziwei.jpg"
+    },
+    {
+      "requestedRoute": "/ziwei/hepan",
+      "finalPath": "/ziwei/hepan",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "screenshot": "1440/screenshots/066-ziwei-hepan.jpg"
+    }
+  ]
+}

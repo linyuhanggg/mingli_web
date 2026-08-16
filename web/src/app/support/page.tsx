@@ -1,25 +1,31 @@
 import type { Metadata } from "next";
 
 import { EditorialPage, editorialStyles as styles } from "@/components/editorial-page";
+import { PublicCmsProjection } from "@/components/public-cms-projection";
 import { StatusPanel } from "@/components/status-panel";
+import { getPublicCmsMetadata } from "@/lib/public-cms-metadata";
 
 
-export const metadata: Metadata = {
-  title: "帮助与支持",
-  description: "账号、付款、报告、数据权利和人工售后入口。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getPublicCmsMetadata("seo.support", {
+    title: "帮助与支持",
+    description: "账号、付款、报告、数据权利和人工售后入口。",
+  });
+}
 
 export default function SupportPage() {
   return (
     <EditorialPage
-      eyebrow="FateRadar · Support"
+      eyebrow="帮助与支持"
       title="事情卡住时，先看状态，再找对应入口。"
       intro="Phase 1 先提供清楚的帮助边界。真实工单渠道和服务时段会在运营主体确认后补充，不展示虚构联系方式。"
     >
       <section className={styles.grid2}>
         <article className={styles.card}>
           <h2>账号与登录</h2>
-          <p>使用手机号或邮箱验证码。验证码验证成功后自动登录，不需要另设注册密码。</p>
+          <p>
+            第一版使用手机号或邮箱加密码主登录；OTP 用于注册验证、快捷登录和找回密码。注册流程是 OTP 核验后设置密码，再同意当版政策；当前身份服务尚未接通。
+          </p>
         </article>
         <article className={styles.card}>
           <h2>付款与退款</h2>
@@ -39,6 +45,7 @@ export default function SupportPage() {
         title="人工支持入口尚未启用"
         description="真实客服主体、服务时间与隐私处理流程确认前，不展示虚构电话、邮箱或即时在线状态。紧急医疗、法律或人身安全问题请直接联系相应专业机构。"
       />
+      <PublicCmsProjection heading="已发布帮助与 FAQ" source={{ kind: "index", prefix: "faq" }} />
     </EditorialPage>
   );
 }

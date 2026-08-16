@@ -16,11 +16,12 @@ from app.adapters.model import (
     build_deepseek_model_adapter,
 )
 from app.adapters.runtime import FakeMingliRuntimeAdapter, build_runtime_startup_gate
+from app.commerce.service import CommerceService
 from app.config import Settings, get_settings
 from app.database import Database
 from app.observability import configure_logging
 from app.readings.alerts import AlertSink, build_alert_sink
-from app.readings.models import ReadingJobRecord, ReadingVersion
+from app.readings.models import ReadingJobRecord, ReadingRoot, ReadingVersion
 from app.readings.narrative_guard import NarrativeGuard
 from app.readings.orchestrator import (
     NarrativeModelPort,
@@ -28,6 +29,7 @@ from app.readings.orchestrator import (
     ReadingOutcome,
     RuntimePort,
 )
+from app.readings.presentation import ReadingDocumentBuilder
 from app.readings.public_copy import PublicCopyAssembler
 from app.readings.repository import SqlReadingRepository
 from app.readings.status import ReadingStatus
@@ -111,15 +113,50 @@ class ReadingJobWorkSource:
     worker_id: str
     clock: Clock
     lease_seconds: int = 30
+    cipher: EnvelopeCipher | None = None
+    waiting_input_timeout: timedelta = timedelta(days=7)
 
     def __post_init__(self) -> None:
         if not self.worker_id.strip():
             raise ValueError("worker id must be non-empty")
         if self.lease_seconds < 1:
             raise ValueError("reading job lease must be positive")
+        if self.waiting_input_timeout <= timedelta(0):
+            raise ValueError("waiting input timeout must be positive")
+
+    async def expire_stale_waiting_input(self, now: datetime) -> bool:
+        if self.cipher is None:
+            return False
+        async with self.sessions() as session, session.begin():
+            repository = SqlReadingRepository(session, self.cipher)
+            job = await repository.expire_waiting_input(
+                now=now,
+                max_age=self.waiting_input_timeout,
+            )
+            if job is None:
+                return False
+            await CommerceService(session).release_fulfillment_for_job(
+                reading_job_ref=str(job.id),
+                reason="reading_waiting_input_timeout",
+            )
+            root = await session.scalar(
+                select(ReadingRoot)
+                .join(ReadingVersion, ReadingVersion.reading_root_id == ReadingRoot.id)
+                .where(ReadingVersion.id == job.reading_version_id)
+            )
+            if root is not None and root.owner_user_id is not None:
+                await CommerceService(session).enqueue_notification(
+                    owner_user_id=root.owner_user_id,
+                    kind="reading.failed",
+                    dedupe_key=f"reading.failed:{job.id}:input-timeout",
+                    payload={"reason": "input_timeout"},
+                    channel="in_app",
+                )
+            return True
 
     async def claim_one(self) -> WorkItem | None:
         now = self.clock.now()
+        await self.expire_stale_waiting_input(now)
         async with self.sessions() as session, session.begin():
             job = await session.scalar(reading_job_claim_statement(now))
             if job is None:
@@ -182,6 +219,16 @@ class ReadingJobProcessor:
             if job is None:
                 raise LeaseLostError("Reading Job lease is expired or owned by another Worker")
             outcome = await self.orchestrator_factory(session).run(item.id)
+            commerce = CommerceService(session)
+            if outcome.status is ReadingStatus.ACCEPTED:
+                await commerce.deliver_fulfillment_for_job(
+                    reading_job_ref=str(job.id),
+                )
+            elif outcome.status is ReadingStatus.TERMINAL_STOPPED:
+                await commerce.release_fulfillment_for_job(
+                    reading_job_ref=str(job.id),
+                    reason="reading_terminal_stopped",
+                )
             status = self._job_status(outcome.status)
             finished_at = self.clock.now()
             if outcome.retry_not_before is not None:
@@ -238,6 +285,7 @@ class SqlReadingOrchestratorFactory:
     model: NarrativeModelPort
     clock: Clock
     alert_sink: AlertSink
+    require_reading_document: bool = False
 
     def __call__(self, session: AsyncSession) -> ReadingOrchestrator:
         return ReadingOrchestrator(
@@ -246,6 +294,8 @@ class SqlReadingOrchestratorFactory:
             model=self.model,
             guard=NarrativeGuard(),
             assembler=PublicCopyAssembler(),
+            document_builder=ReadingDocumentBuilder(),
+            require_reading_document=self.require_reading_document,
             clock=self.clock,
             alert_sink=self.alert_sink,
         )
@@ -265,17 +315,20 @@ def build_reading_worker(
         raise RuntimeError("staging and production require real Runtime and Model adapters")
     resolved_runtime = runtime or FakeMingliRuntimeAdapter()
     resolved_model = model or FakeModelGateway()
+    resolved_cipher = EnvelopeCipher.from_settings(settings)
     orchestrator_factory = SqlReadingOrchestratorFactory(
-        cipher=EnvelopeCipher.from_settings(settings),
+        cipher=resolved_cipher,
         runtime=resolved_runtime,
         model=resolved_model,
         clock=resolved_clock,
         alert_sink=build_alert_sink(enabled=settings.alert_sink_enabled),
+        require_reading_document=settings.runtime_adapter == "one-shot",
     )
     source = ReadingJobWorkSource(
         sessions=database.sessions,
         worker_id=worker_id,
         clock=resolved_clock,
+        cipher=resolved_cipher,
     )
     processor = ReadingJobProcessor(
         sessions=database.sessions,

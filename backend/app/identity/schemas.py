@@ -36,6 +36,55 @@ class OtpVerifyRequest(BaseModel):
     code: str = Field(pattern=r"^[0-9]{6}$")
 
 
+class PasswordLoginRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    channel: Literal["phone", "email"]
+    destination: str = Field(min_length=3, max_length=320)
+    password: str = Field(min_length=8, max_length=256)
+
+
+class PasswordRecoveryRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    challenge_id: UUID
+    code: str = Field(pattern=r"^[0-9]{6}$")
+    password: str = Field(min_length=8, max_length=256)
+
+
+class RegistrationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    challenge_id: UUID
+    code: str = Field(pattern=r"^[0-9]{6}$")
+    password: str = Field(min_length=8, max_length=256)
+    policy_version: str = Field(min_length=1, max_length=80)
+
+
+class SetPasswordRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    password: str = Field(min_length=8, max_length=256)
+
+
+class ConsentRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    policy_key: str = Field(min_length=1, max_length=80)
+    policy_version: str = Field(min_length=1, max_length=80)
+    context: Literal["registration", "purchase", "reaccept"]
+
+
+class ConsentResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    consent_id: UUID
+    policy_key: str
+    policy_version: str
+    context: Literal["registration", "purchase", "reaccept"]
+    accepted_at: datetime
+
+
 class AuthSessionResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

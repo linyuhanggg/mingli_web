@@ -1,5 +1,10 @@
 import importlib
+import json
+import os
+import subprocess
+import sys
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -37,6 +42,176 @@ def brief_payload() -> dict[str, Any]:
         "prior_answer": None,
         "request_view": None,
     }
+
+
+def test_bazi_public_core_facts_are_declared_by_runtime_manifest() -> None:
+    """Facts consumed by the Bazi ViewModels must retain Runtime provenance."""
+
+    root = Path(__file__).parents[2]
+    provider = json.loads(
+        (root / ".runtime/v51-release/resources/runtime/providers/bazi.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    runtime = provider["runtime_capability"]
+    bindings = {
+        item["name"]: tuple(item["json_pointers"])
+        for item in runtime["output_bindings"]
+    }
+    expected = {
+        "seasonal_profile",
+        "tiaohou_markers",
+        "element_inventory",
+        "branch_relations",
+        "shensha_auxiliary",
+        "nayin",
+        "interpretive_candidates",
+    }
+
+    assert expected <= set(bindings)
+    for name in expected:
+        assert bindings[name] == (f"/facts/chart_facts/output/{name}",)
+
+
+def test_v53_bazi_declares_calendar_normalization_public_fact() -> None:
+    root = Path(__file__).parents[2]
+    provider = json.loads(
+        (
+            root
+            / ".runtime/v53-time-check-release/resources/runtime/providers/bazi.json"
+        ).read_text(encoding="utf-8")
+    )
+    bindings = {
+        item["name"]: tuple(item["json_pointers"])
+        for item in provider["runtime_capability"]["output_bindings"]
+    }
+    assert bindings["calendar_normalization"] == (
+        "/facts/chart_facts/public_calendar_normalization",
+    )
+    assert "calendar_normalization" in provider["runtime_capability"]["outputs"]
+
+
+def test_v53_bazi_declares_xunkong_public_fact() -> None:
+    root = Path(__file__).parents[2]
+    provider = json.loads(
+        (
+            root
+            / ".runtime/v53-time-check-release/resources/runtime/providers/bazi.json"
+        ).read_text(encoding="utf-8")
+    )
+    runtime = provider["runtime_capability"]
+    bindings = {
+        item["name"]: tuple(item["json_pointers"])
+        for item in runtime["output_bindings"]
+    }
+    assert bindings["xunkong"] == ("/facts/chart_facts/output/xunkong",)
+    assert "xunkong" in runtime["outputs"]
+
+
+def test_v53_bazi_declares_san_yuan_public_fact() -> None:
+    root = Path(__file__).parents[2]
+    provider = json.loads(
+        (
+            root
+            / ".runtime/v53-time-check-release/resources/runtime/providers/bazi.json"
+        ).read_text(encoding="utf-8")
+    )
+    runtime = provider["runtime_capability"]
+    bindings = {
+        item["name"]: tuple(item["json_pointers"])
+        for item in runtime["output_bindings"]
+    }
+    assert bindings["san_yuan"] == ("/facts/chart_facts/output/san_yuan",)
+    assert "san_yuan" in runtime["outputs"]
+
+
+@pytest.mark.parametrize("provider_id", ["bazi", "fengshui", "liuyao", "meihua"])
+def test_v53_source_conditioned_patterns_are_manifest_bound(provider_id: str) -> None:
+    """Every V53 source-conditioned core output must survive the public contract."""
+
+    root = Path(__file__).parents[2]
+    provider = json.loads(
+        (
+            root
+            / ".runtime/v53-time-check-release/resources/runtime/providers"
+            / f"{provider_id}.json"
+        ).read_text(encoding="utf-8")
+    )
+    runtime = provider["runtime_capability"]
+    bindings = {
+        item["name"]: tuple(item["json_pointers"])
+        for item in runtime["output_bindings"]
+    }
+
+    assert bindings["source_conditioned_patterns"] == (
+        "/facts/chart_facts/output/source_conditioned_patterns",
+    )
+    assert "source_conditioned_patterns" in runtime["outputs"]
+
+
+def test_v53_bazi_san_yuan_matches_recovered_chart_engine_formula() -> None:
+    root = Path(__file__).parents[2]
+    scripts = root / ".runtime/v53-time-check-release/scripts"
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(scripts)
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(scripts / "bazi_fact_adapter.py"),
+            "pillars",
+            "--pillars",
+            "甲戌",
+            "戊辰",
+            "丙戌",
+            "辛卯",
+            "--gender",
+            "male",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        env=environment,
+    )
+    payload = json.loads(completed.stdout)
+    assert payload["output"]["san_yuan"] == {
+        "tai_yuan": "己未",
+        "ming_gong": "甲戌",
+        "shen_gong": "庚午",
+        "source": "lunar-typescript-auxiliary",
+        "source_dependency_id": "bazi.chart.san-yuan-lunar-typescript-v1",
+        "boundary": "胎元、命宫、身宫位置事实；不能单独推出格局、旺衰、吉凶或事件结论",
+    }
+
+
+def test_v53_provider_inventory_has_a_typed_view_contract_for_each_chart_provider() -> None:
+    """A Runtime Provider must not stop at Accepted with no public view contract."""
+
+    root = Path(__file__).parents[2]
+    catalog = json.loads(
+        (
+            root
+            / ".runtime/v53-time-check-release/resources/runtime/catalog-v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    provider_ids = {
+        json.loads(
+            (
+                root
+                / ".runtime/v53-time-check-release/resources/runtime"
+                / entry
+            ).read_text(encoding="utf-8")
+        )["id"]
+        for entry in catalog["providers"]
+    }
+
+    from app.charts.contracts import VIEW_MODEL_TYPES
+    from app.charts.projectors import RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS
+    from app.readings.capability_policy import V53_TIME_CHECK_RELEASE_CAPABILITY_IDS
+
+    assert provider_ids == set(V53_TIME_CHECK_RELEASE_CAPABILITY_IDS)
+    assert set(RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS) == provider_ids - {"fortune"}
+    assert set(RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS.values()) <= set(VIEW_MODEL_TYPES)
+    assert "fortune" not in RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS
 
 
 @pytest.mark.parametrize(

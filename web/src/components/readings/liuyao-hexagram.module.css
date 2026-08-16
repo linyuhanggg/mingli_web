@@ -3,11 +3,11 @@
   gap: var(--space-md);
   min-width: 0;
   padding: clamp(1rem, 3vw, 1.4rem);
-  border: 1px solid var(--border-subtle);
-  border-top-color: var(--gold-500);
-  border-radius: var(--radius-md);
-  background: var(--ivory-50);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  border-top-color: var(--color-border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--color-canvas);
+  box-shadow: none;
 }
 
 .header {
@@ -27,22 +27,22 @@
 }
 
 .header h3 {
-  color: var(--ink-950);
-  font-family: var(--font-serif);
-  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-card);
   font-weight: 600;
 }
 
 .eyebrow {
-  color: var(--terracotta-600);
-  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
   font-weight: 760;
   letter-spacing: 0.12em;
 }
 
 .order {
-  color: var(--ink-700);
-  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
 }
 
 .names {
@@ -51,39 +51,39 @@
   gap: 1px;
   margin: 0;
   overflow: hidden;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--border-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-border);
 }
 
 .names div {
   display: grid;
   gap: 0.15rem;
   padding: 0.85rem 1rem;
-  background: var(--white);
+  background: var(--color-surface);
 }
 
 .names dt {
-  color: var(--ink-700);
-  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
   font-weight: 750;
   letter-spacing: 0.08em;
 }
 
 .names dd {
   margin: 0;
-  color: var(--ink-950);
-  font-family: var(--font-serif);
+  color: var(--color-text);
+  font-family: var(--font-domain);
   font-size: 1.2rem;
   font-weight: 600;
 }
 
 .fallback {
   padding: 0.75rem 0.85rem;
-  border: 1px solid var(--terracotta-500);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-100);
-  color: var(--terracotta-600);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  color: var(--color-danger);
   line-height: 1.65;
 }
 
@@ -92,7 +92,7 @@
   gap: 0;
   margin: 0;
   padding: 0;
-  border-block: 1px solid var(--border-subtle);
+  border-block: 1px solid var(--color-border);
   list-style: none;
 }
 
@@ -103,7 +103,7 @@
   align-items: center;
   min-width: 0;
   padding: 0.8rem 0.25rem;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .line:last-child {
@@ -111,12 +111,12 @@
 }
 
 .line[data-moving="true"] {
-  background: var(--amber-100);
+  background: var(--color-surface-muted);
 }
 
 .position {
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   font-weight: 750;
 }
 
@@ -151,25 +151,25 @@
   display: block;
   flex: 1;
   height: 0.38rem;
-  background: var(--ink-900);
+  background: var(--color-action);
 }
 
 .lineMark[data-kind="unknown"] > span {
   height: 0;
-  border-top: 2px dashed var(--ink-500);
+  border-top: 2px dashed var(--color-text-muted);
   background: transparent;
 }
 
 .state {
-  color: var(--ink-950);
-  font-size: 0.82rem;
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
   font-weight: 700;
   white-space: nowrap;
 }
 
 .details {
-  color: var(--ink-700);
-  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   overflow-wrap: anywhere;
 }
 
@@ -185,35 +185,35 @@
   align-items: center;
   min-height: 1.7rem;
   padding-inline: 0.48rem;
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-sm);
-  font-size: 0.72rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-meta);
   line-height: 1;
   white-space: nowrap;
 }
 
 .moving {
-  border-color: var(--terracotta-500);
-  color: var(--terracotta-600);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
   font-weight: 760;
 }
 
 .static {
-  color: var(--ink-500);
+  color: var(--color-text-muted);
 }
 
 .role {
-  border-color: var(--gold-500);
-  background: var(--white);
-  color: var(--ink-950);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .changed {
   grid-column: 2 / -1;
   gap: 0.55rem;
   padding-top: 0.25rem;
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
 }
 
 .changed .lineMark {
@@ -223,13 +223,13 @@
 
 .evidenceLink,
 .boundary {
-  color: var(--ink-700);
-  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   line-height: 1.6;
 }
 
 .evidenceLink a {
-  color: var(--ink-900);
+  color: var(--color-action);
   font-weight: 720;
   text-underline-offset: 0.2em;
 }

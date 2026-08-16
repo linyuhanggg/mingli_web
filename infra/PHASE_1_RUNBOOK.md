@@ -7,13 +7,14 @@
 ~~~bash
 docker compose --env-file infra/.env.example -f infra/compose.local.yml up --build -d postgres redis
 docker compose --env-file infra/.env.example -f infra/compose.local.yml run --rm api alembic upgrade head
-docker compose --env-file infra/.env.example -f infra/compose.local.yml up --build api worker web edge
+docker compose --env-file infra/.env.example -f infra/compose.local.yml up --build api worker web admin edge
 ~~~
 
 入口：
 
 - 同源网站与 API：`http://127.0.0.1:8080`
 - Next.js 直连调试：`http://127.0.0.1:3000`
+- Admin 独立直连：`http://127.0.0.1:3001`
 - FastAPI 直连调试：`http://127.0.0.1:8000/api/docs`
 - 存活检查：`/api/v1/health/live`
 - 数据库就绪检查：`/api/v1/health/ready`
@@ -21,6 +22,7 @@ docker compose --env-file infra/.env.example -f infra/compose.local.yml up --bui
 ## 进程边界
 
 - `web` 只负责页面、私人应用壳和本地 `/api` rewrite；
+- `admin` 是独立 Staff Session 的 Next.js 控制台，只监听本机 `3001`，不由公共 `edge` 代理；
 - `api` 负责 Cookie、CSRF、Guest Session、Login Identity 和 Device Session；
 - `worker` 是独立进程，目前只运行空任务源，不伪造 Phase 2 任务；
 - PostgreSQL 是持久事实源；Redis 已建立但 Phase 1 的 Fake OTP、目标 cooldown 与游客/网络窗口限流仍为进程内状态，不能用于多副本真实发送；

@@ -1,20 +1,25 @@
 import type { Metadata } from "next";
 
-import { EditorialPage, editorialStyles as styles } from "@/components/editorial-page";
+import { EditorialPage, PolicyMeta, editorialStyles as styles } from "@/components/editorial-page";
+import { PublicCmsProjection } from "@/components/public-cms-projection";
+import { getPublicCmsMetadata } from "@/lib/public-cms-metadata";
 
 
-export const metadata: Metadata = {
-  title: "服务条款（开发期说明）",
-  description: "服务范围、AI 标识、付费交付和使用边界。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getPublicCmsMetadata("seo.terms", {
+    title: "服务条款（开发期说明）",
+    description: "服务范围、AI 标识、付费交付和使用边界。",
+  });
+}
 
 export default function TermsPage() {
   return (
     <EditorialPage
-      eyebrow="FateRadar · Terms"
+      eyebrow="服务条款"
       title="说清楚能交付什么，也说清楚不能承诺什么。"
       intro="本页是进入正式法律审阅前的产品合同草案。运营主体、争议处理、退款细则与生效日期必须在上线 Gate 中由真实资料替换。"
     >
+      <PolicyMeta />
       <section className={styles.grid2}>
         <article className={styles.card}>
           <h2>服务性质</h2>
@@ -41,6 +46,10 @@ export default function TermsPage() {
           <li>绕过访问控制、批量枚举报告或攻击 OTP 与支付接口。</li>
         </ul>
       </section>
+      <PublicCmsProjection
+        heading="已发布服务条款内容"
+        source={{ kind: "item", contentKey: "policy.terms" }}
+      />
     </EditorialPage>
   );
 }

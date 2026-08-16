@@ -15,7 +15,7 @@ from uuid import UUID
 import pytest
 from app.identity.models import DeviceSession, LoginIdentity, User
 from app.main import create_app
-from app.security.envelope import EnvelopeCipher
+from app.security.envelope import EncryptedPayload, EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
 from worker.readings import build_reading_worker
@@ -174,6 +174,23 @@ async def test_email_registration_login_full_journey(
         device_sessions = list(await session.scalars(select(DeviceSession)))
     assert len(users) == 1
     assert len(identities) == 1
+    identity = identities[0]
+    assert identity.destination_key_id is not None
+    assert identity.destination_nonce is not None
+    assert identity.destination_ciphertext is not None
+    assert identity.destination_fingerprint is not None
+    assert (
+        EnvelopeCipher.from_settings(test_settings).decrypt_text(
+            EncryptedPayload(
+                key_id=identity.destination_key_id,
+                nonce=identity.destination_nonce,
+                ciphertext=identity.destination_ciphertext,
+                fingerprint=identity.destination_fingerprint,
+            ),
+            context=f"login-identity:{identity.id}",
+        )
+        == EMAIL_NORMALIZED
+    )
     assert len(device_sessions) == 1
     assert device_sessions[0].user_id == users[0].id
     assert UUID(str(users[0].id)) == first_user_id

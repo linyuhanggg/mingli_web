@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    Integer,
     String,
     Text,
     UniqueConstraint,
@@ -15,14 +16,13 @@ from sqlalchemy import (
     func,
     text,
 )
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import JSON, Uuid
 
 from app.identity.models import Base
 from app.persistence import ImmutableRecordError
 
-JSON_TYPE = JSON().with_variant(JSONB, "postgresql")
+JSON_TYPE = JSON()
 
 
 class RuntimeRelease(Base):
@@ -73,7 +73,17 @@ class ReadingRoot(Base):
         Uuid,
         ForeignKey("profile_versions.id", ondelete="RESTRICT"),
     )
+    profile_version_ids: Mapped[list[str] | None] = mapped_column(JSON_TYPE)
     capability_id: Mapped[str] = mapped_column(String(80), nullable=False)
+    product_id: Mapped[str | None] = mapped_column(String(80))
+    relationship_type: Mapped[str | None] = mapped_column(String(32))
+    runtime_capability_ids: Mapped[list[str] | None] = mapped_column(JSON_TYPE)
+    product_version_snapshot_id: Mapped[UUID | None] = mapped_column(Uuid)
+    follow_up_count_snapshot: Mapped[int | None] = mapped_column(Integer)
+    follow_up_window_seconds_snapshot: Mapped[int | None] = mapped_column(Integer)
+    follow_up_started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -88,6 +98,11 @@ class ReadingVersion(Base):
             "reading_root_id",
             "version",
             name="uq_reading_versions_reading_root_id_version",
+        ),
+        Index(
+            "ix_reading_versions_waiting_at",
+            "status",
+            "waiting_input_at",
         ),
         CheckConstraint(
             "(state_token_key_id IS NULL AND state_token_nonce IS NULL "
@@ -126,7 +141,11 @@ class ReadingVersion(Base):
     )
     version: Mapped[int] = mapped_column(nullable=False)
     status: Mapped[str] = mapped_column(String(40), default="input_ready", nullable=False)
+    waiting_input_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     capability_id: Mapped[str] = mapped_column(String(80), nullable=False)
+    product_id: Mapped[str | None] = mapped_column(String(80))
+    relationship_type: Mapped[str | None] = mapped_column(String(32))
+    runtime_capability_ids: Mapped[list[str] | None] = mapped_column(JSON_TYPE)
     object_id: Mapped[str] = mapped_column(String(80), nullable=False)
     dimension_ids: Mapped[list[str]] = mapped_column(JSON_TYPE, default=list, nullable=False)
     horizon: Mapped[dict[str, Any]] = mapped_column(JSON_TYPE, nullable=False)
@@ -244,6 +263,200 @@ class AcceptedCopy(Base):
     accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
+class ReadingDocumentRecord(Base):
+    """Immutable, encrypted presentation document paired with one Accepted Copy."""
+
+    __tablename__ = "reading_documents"
+    __table_args__ = (
+        UniqueConstraint(
+            "reading_version_id",
+            name="uq_reading_documents_reading_version_id",
+        ),
+        CheckConstraint(
+            "schema_version = 'reading-document/v1'",
+            name="schema_version_allowed",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    reading_version_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("reading_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    accepted_copy_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("accepted_copies.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    schema_version: Mapped[str] = mapped_column(
+        String(40),
+        nullable=False,
+        default="reading-document/v1",
+    )
+    payload_key_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    payload_nonce: Mapped[str] = mapped_column(String(64), nullable=False)
+    payload_ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
+    payload_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
+class ClaimVerificationEvent(Base):
+    """One first-write-wins user verification per rendered claim."""
+
+    __tablename__ = "claim_verification_events"
+    __table_args__ = (
+        UniqueConstraint(
+            "reading_version_id",
+            "claim_id",
+            name="uq_claim_verification_events_version_claim",
+        ),
+        CheckConstraint(
+            "outcome IN ('accepted', 'partial', 'disagreed', 'unknown')",
+            name="outcome_allowed",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    reading_version_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("reading_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    claim_id: Mapped[str] = mapped_column(String(160), nullable=False)
+    actor_ref: Mapped[str] = mapped_column(String(180), nullable=False)
+    outcome: Mapped[str] = mapped_column(String(16), nullable=False)
+    note: Mapped[str | None] = mapped_column(String(500))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
+class ReportFeedback(Base):
+    """Independent report feedback; it is not fed into the reading/runtime path."""
+
+    __tablename__ = "report_feedback"
+    __table_args__ = (
+        CheckConstraint(
+            "outcome IN ('helpful', 'not_helpful', 'unknown')",
+            name="ck_report_feedback_outcome_allowed",
+        ),
+        Index("ix_report_feedback_reading_version_id", "reading_version_id"),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    reading_version_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("reading_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    actor_ref: Mapped[str] = mapped_column(String(180), nullable=False)
+    outcome: Mapped[str] = mapped_column(String(24), nullable=False)
+    note: Mapped[str | None] = mapped_column(String(500))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
+class ReadingShareSnapshot(Base):
+    """Short-lived, revocable, encrypted public projection of a ReadingDocument."""
+
+    __tablename__ = "reading_share_snapshots"
+    __table_args__ = (
+        UniqueConstraint("token_hash", name="uq_reading_share_snapshots_token_hash"),
+        CheckConstraint(
+            "(owner_user_id IS NOT NULL AND owner_guest_session_id IS NULL) "
+            "OR (owner_user_id IS NULL AND owner_guest_session_id IS NOT NULL)",
+            name="owner_exactly_one",
+        ),
+        Index("ix_reading_share_snapshots_expiry", "expires_at"),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    reading_version_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("reading_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    owner_user_id: Mapped[UUID | None] = mapped_column(
+        Uuid,
+        ForeignKey("users.id", ondelete="CASCADE"),
+    )
+    owner_guest_session_id: Mapped[UUID | None] = mapped_column(
+        Uuid,
+        ForeignKey("guest_sessions.id", ondelete="CASCADE"),
+    )
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    payload_key_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    payload_nonce: Mapped[str] = mapped_column(String(64), nullable=False)
+    payload_ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
+    payload_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
+class ReadingExportArtifact(Base):
+    """Short-lived, encrypted product-report export for one accepted version."""
+
+    __tablename__ = "reading_export_artifacts"
+    __table_args__ = (
+        UniqueConstraint("token_hash", name="uq_reading_export_artifacts_token_hash"),
+        CheckConstraint(
+            "(owner_user_id IS NOT NULL AND owner_guest_session_id IS NULL) "
+            "OR (owner_user_id IS NULL AND owner_guest_session_id IS NOT NULL)",
+            name="owner_exactly_one",
+        ),
+        CheckConstraint(
+            "format IN ('png', 'pdf')",
+            name="format_allowed",
+        ),
+        Index("ix_reading_export_artifacts_expiry", "expires_at"),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    reading_version_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("reading_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    owner_user_id: Mapped[UUID | None] = mapped_column(
+        Uuid,
+        ForeignKey("users.id", ondelete="CASCADE"),
+    )
+    owner_guest_session_id: Mapped[UUID | None] = mapped_column(
+        Uuid,
+        ForeignKey("guest_sessions.id", ondelete="CASCADE"),
+    )
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    format: Mapped[str] = mapped_column(String(8), nullable=False)
+    content_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    file_name: Mapped[str] = mapped_column(String(180), nullable=False)
+    payload_key_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    payload_nonce: Mapped[str] = mapped_column(String(64), nullable=False)
+    payload_ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
+    payload_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
 class ReadingJobRecord(Base):
     __tablename__ = "reading_jobs"
     __table_args__ = (
@@ -301,11 +514,21 @@ class ReadingIdempotencyKey(Base):
             "OR (owner_user_id IS NULL AND owner_guest_session_id IS NOT NULL)",
             name="owner_exactly_one",
         ),
-        UniqueConstraint(
+        Index(
+            "uq_reading_idempotency_keys_user_key",
             "key_hash",
             "owner_user_id",
+            unique=True,
+            sqlite_where=text("owner_user_id IS NOT NULL"),
+            postgresql_where=text("owner_user_id IS NOT NULL"),
+        ),
+        Index(
+            "uq_reading_idempotency_keys_guest_key",
+            "key_hash",
             "owner_guest_session_id",
-            name="uq_reading_idempotency_keys_owner_key",
+            unique=True,
+            sqlite_where=text("owner_guest_session_id IS NOT NULL"),
+            postgresql_where=text("owner_guest_session_id IS NOT NULL"),
         ),
         Index(
             "ix_reading_idempotency_keys_reading_version_id",
@@ -367,7 +590,15 @@ class ReadingVerification(Base):
     )
 
 
-for immutable_model in (RuntimeRelease, FactBrief, GenerationAttempt, AcceptedCopy):
+for immutable_model in (
+    RuntimeRelease,
+    FactBrief,
+    GenerationAttempt,
+    AcceptedCopy,
+    ReadingDocumentRecord,
+    ClaimVerificationEvent,
+    ReportFeedback,
+):
     event.listen(
         immutable_model,
         "before_update",

@@ -12,6 +12,7 @@ import {
   type ProductDefinition,
 } from "@/products/catalog";
 
+import { HomeAtmosphere } from "./home-atmosphere";
 import styles from "./home.module.css";
 
 export async function generateMetadata() {
@@ -59,6 +60,29 @@ const auxiliary = [
   },
 ] as const;
 
+const quickStarts = [
+  {
+    href: "/bazi",
+    name: "命盘推演",
+    description: "确立结构，起四柱排盘，逐盘细推。",
+  },
+  {
+    href: "/liuyao",
+    name: "事件判断",
+    description: "聚焦具体事件，以事证盘，理清因果。",
+  },
+  {
+    href: "/hecan",
+    name: "命盘合参",
+    description: "多术互证互补，厘清分歧，聚合真结论。",
+  },
+  {
+    href: "/jianxiang",
+    name: "见相",
+    description: "观相识人，体态气韵，综合印证。",
+  },
+] as const;
+
 function TaskCard({ product, tier = "" }: { product: ProductDefinition; tier?: string }) {
   return (
     <a className={`${styles.card} ${tier}`} href={product.href}>
@@ -75,23 +99,54 @@ function TaskCard({ product, tier = "" }: { product: ProductDefinition; tier?: s
 export default function HomePage() {
   return (
     <PublicPageShell>
-      <main className={styles.main} id="main-content" tabIndex={-1}>
-        <Container className={styles.container}>
-          <section aria-labelledby="home-hero" className={styles.hero}>
-            <p className={styles.eyebrow}>命理推演</p>
-            <h1 id="home-hero">十三术同根，五十五部古籍为证</h1>
-            <p className={styles.heroSub}>
-              13 个术数体系 Provider、55 部古籍 reference pack、1328 条 evidence index 记录。
-              <br />
-              先给确定性盘面事实，再谈解释与边界。
-            </p>
-            <div className={styles.heroActions}>
-              <ButtonLink href="/bazi">开始排盘</ButtonLink>
-              <ButtonLink href="/hecan" variant="secondary">
-                多术合参
-              </ButtonLink>
+      <main className={`${styles.main} liquid-home-prototype`} id="main-content" tabIndex={-1}>
+        <section aria-labelledby="home-hero" className={styles.heroStage}>
+          <HomeAtmosphere />
+          <Container className={styles.heroFrame}>
+            <div className={styles.hero}>
+              <h1 aria-label="十三术同根，五十五部古籍为证" id="home-hero">
+                <span>十三术同根，</span>
+                <span>五十五部古籍为证</span>
+              </h1>
+              <p className={styles.heroSub}>以统一命盘为底，沿古籍证据逐层展开推演。</p>
+              <div className={styles.heroActions}>
+                <ButtonLink className={styles.heroPrimary} href="/bazi">
+                  开始排盘
+                </ButtonLink>
+                <ButtonLink className={styles.heroSecondary} href="/hecan" variant="secondary">
+                  命盘合参
+                </ButtonLink>
+              </div>
+              <p className={styles.heroProof}>
+                <span>13 个术数体系</span>
+                <span>55 部古籍</span>
+                <span>1328 条证据索引</span>
+              </p>
             </div>
-          </section>
+          </Container>
+        </section>
+
+        <section aria-labelledby="home-start" className={styles.quickStart}>
+          <Container className={styles.quickStartInner}>
+            <header className={styles.quickStartHead}>
+              <h2 id="home-start">从何开始</h2>
+              <p>先给确定性盘面事实，再谈解释与边界。</p>
+            </header>
+            <nav aria-label="首页快捷入口" className={styles.quickStartGrid}>
+              {quickStarts.map((entry) => (
+                <a className={styles.quickStartEntry} href={entry.href} key={entry.href}>
+                  <span className={styles.quickStartTop}>
+                    <strong>{entry.name}</strong>
+                    <ArrowRight aria-hidden="true" size={17} strokeWidth={1.75} />
+                  </span>
+                  <small>{entry.description}</small>
+                </a>
+              ))}
+            </nav>
+          </Container>
+        </section>
+
+        <Container className={styles.container}>
 
           <section aria-label="机制" className={styles.mechanism}>
             <ul>

@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     DateTime,
     ForeignKey,
@@ -77,3 +78,76 @@ class ProfileVersion(Base):
 @event.listens_for(ProfileVersion, "before_update")
 def _profile_versions_are_immutable(*_: object) -> None:
     raise ImmutableRecordError("ProfileVersion rows are immutable")
+
+
+class ProfileVersionAuthorization(Base):
+    """Immutable, explicit authorization facts attached to a ProfileVersion."""
+
+    __tablename__ = "profile_version_authorizations"
+    __table_args__ = (
+        UniqueConstraint(
+            "profile_version_id",
+            name="uq_profile_version_authorizations_profile_version_id",
+        ),
+        CheckConstraint(
+            "subject_type IN ('self', 'other')",
+            name="subject_type_allowed",
+        ),
+        CheckConstraint(
+            "(subject_type = 'self' AND authorization_confirmed = false) "
+            "OR (subject_type = 'other' AND authorization_confirmed = true)",
+            name="authorization_matches_subject",
+        ),
+        CheckConstraint(
+            "is_minor = false OR minor_guardian_confirmed = true",
+            name="minor_guardian_confirmed",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    profile_version_id: Mapped[UUID] = mapped_column(
+        Uuid,
+        ForeignKey("profile_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    subject_type: Mapped[str] = mapped_column(String(16), nullable=False)
+    is_minor: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default="false",
+        nullable=False,
+    )
+    authorization_confirmed: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default="false",
+        nullable=False,
+    )
+    photo_authorization_confirmed: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default="false",
+        nullable=False,
+    )
+    minor_guardian_confirmed: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default="false",
+        nullable=False,
+    )
+    difference_acknowledged: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default="false",
+        nullable=False,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
+@event.listens_for(ProfileVersionAuthorization, "before_update")
+def _profile_version_authorizations_are_immutable(*_: object) -> None:
+    raise ImmutableRecordError("ProfileVersion authorization rows are immutable")

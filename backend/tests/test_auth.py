@@ -116,9 +116,10 @@ async def test_repeat_login_resolves_the_same_user(
     assert sum(item.revoked_at is not None for item in device_sessions) == 1
 
 
-async def test_email_is_normalized_and_raw_destination_is_not_persisted(
+async def test_email_is_normalized_and_destination_is_encrypted_at_rest(
     client: AsyncClient,
     database: Any,
+    test_settings: Any,
 ) -> None:
     headers = await create_guest(client)
     challenge = await request_otp(
@@ -137,8 +138,13 @@ async def test_email_is_normalized_and_raw_destination_is_not_persisted(
 
     assert identity.provider == "email"
     assert identity.masked_destination == "c***@example.com"
+    assert identity.destination_key_id == test_settings.content_encryption_key_id
+    assert identity.destination_nonce is not None
+    assert identity.destination_ciphertext is not None
+    assert identity.destination_fingerprint is not None
     assert len(identity.provider_subject_hash) == 64
     assert "cherry@example.com" not in identity.provider_subject_hash
+    assert "Cherry@Example.COM" not in identity.destination_ciphertext
     assert "Cherry@Example.COM" not in str(audit.event_metadata)
 
 

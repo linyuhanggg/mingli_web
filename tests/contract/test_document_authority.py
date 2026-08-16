@@ -102,7 +102,10 @@ def test_no_parallel_plan_or_handoff_authority_is_reintroduced() -> None:
     violations = []
     for path in ROOT.rglob("*.md"):
         relative = path.relative_to(ROOT)
-        if any(part in {".git", ".qoder", "node_modules"} for part in relative.parts):
+        if any(
+            part in {".git", ".qoder", ".claude", "node_modules"}
+            for part in relative.parts
+        ):
             continue
         if relative.parts[:3] == ("docs", "releases", "evidence"):
             continue

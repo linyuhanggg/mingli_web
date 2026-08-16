@@ -44,11 +44,30 @@ def test_reading_migration_builds_immutable_phase_two_tables(
         "fact_briefs",
         "generation_attempts",
         "accepted_copies",
+        "reading_documents",
         "reading_jobs",
         "reading_idempotency_keys",
         "reading_verifications",
+        "claim_verification_events",
+        "report_feedback",
+        "reading_share_snapshots",
+        "reading_export_artifacts",
     }
     assert expected <= set(inspector.get_table_names())
+
+    export_checks = {
+        constraint["name"]
+        for constraint in inspector.get_check_constraints("reading_export_artifacts")
+    }
+    assert export_checks >= {
+        "ck_reading_export_artifacts_owner_exactly_one",
+        "ck_reading_export_artifacts_format_allowed",
+    }
+
+    fulfillment_indexes = {
+        index["name"]: index for index in inspector.get_indexes("fulfillments")
+    }
+    assert fulfillment_indexes["uq_fulfillments_reading_job_ref"]["unique"]
 
     def has_unique(table: str, columns: list[str]) -> bool:
         return any(
@@ -63,7 +82,15 @@ def test_reading_migration_builds_immutable_phase_two_tables(
         ["reading_version_id", "attempt_number"],
     )
     assert has_unique("accepted_copies", ["reading_version_id"])
-    assert has_unique(
+    idempotency_indexes = {
+        index["name"]: index for index in inspector.get_indexes("reading_idempotency_keys")
+    }
+    for index_name in (
+        "uq_reading_idempotency_keys_user_key",
+        "uq_reading_idempotency_keys_guest_key",
+    ):
+        assert idempotency_indexes[index_name]["unique"]
+    assert not has_unique(
         "reading_idempotency_keys",
         ["key_hash", "owner_user_id", "owner_guest_session_id"],
     )
@@ -84,6 +111,26 @@ def test_reading_migration_builds_immutable_phase_two_tables(
         column["name"]: column for column in inspector.get_columns("reading_versions")
     }
     assert reading_version_columns["prepare_has_state_token"]["nullable"] is False
+    assert reading_version_columns["waiting_input_at"]["nullable"] is True
+    assert any(
+        index["name"] == "ix_reading_versions_waiting_at"
+        for index in inspector.get_indexes("reading_versions")
+    )
+    reading_root_columns = {
+        column["name"]: column for column in inspector.get_columns("reading_roots")
+    }
+    assert {
+        "product_version_snapshot_id",
+        "follow_up_count_snapshot",
+        "follow_up_window_seconds_snapshot",
+        "follow_up_started_at",
+        "product_id",
+        "runtime_capability_ids",
+    } <= set(reading_root_columns)
+    assert {
+        "product_id",
+        "runtime_capability_ids",
+    } <= set(reading_version_columns)
     generation_attempt_columns = {
         column["name"]: column for column in inspector.get_columns("generation_attempts")
     }
@@ -134,6 +181,42 @@ def test_reading_migration_builds_immutable_phase_two_tables(
         column["name"]: column for column in inspector.get_columns("subject_profiles")
     }
     assert subject_profile_columns["label"]["nullable"] is True
+    engine.dispose()
+
+
+def test_waiting_input_rows_get_a_new_deadline_origin_on_upgrade(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:  # type: ignore[no-untyped-def]
+    database_path = tmp_path / "waiting-timeout-backfill.sqlite3"
+    monkeypatch.setenv(
+        "MINGLI_DATABASE_URL",
+        f"sqlite+aiosqlite:///{database_path}",
+    )
+    config = Config(str(ROOT / "backend" / "alembic.ini"))
+    command.upgrade(config, "0037_fulfillment_job_unique")
+    engine = create_engine(f"sqlite:///{database_path}")
+    _user_id, root_id, release_id = _seed_reading_parent_rows(engine)
+    version_id = uuid4().hex
+    with engine.begin() as connection:
+        _insert_reading_version(
+            connection,
+            root_id=root_id,
+            release_id=release_id,
+            version_id=version_id,
+        )
+        connection.execute(
+            text("UPDATE reading_versions SET status = 'waiting_input' WHERE id = :id"),
+            {"id": version_id},
+        )
+
+    command.upgrade(config, "head")
+    with engine.connect() as connection:
+        waiting_at = connection.execute(
+            text("SELECT waiting_input_at FROM reading_versions WHERE id = :id"),
+            {"id": version_id},
+        ).scalar_one()
+    assert waiting_at is not None
     engine.dispose()
 
 
@@ -197,6 +280,64 @@ def test_idempotency_key_owner_xor_is_enforced_by_the_migrated_database(
             ),
             {"id": uuid4().hex, "user_id": user_id, "version_id": version_id},
         )
+    engine.dispose()
+
+
+@pytest.mark.parametrize("owner_kind", ["user", "guest"])
+def test_idempotency_key_is_unique_per_nullable_owner_in_the_migrated_database(
+    tmp_path: Path,
+    monkeypatch,
+    owner_kind: str,
+) -> None:  # type: ignore[no-untyped-def]
+    engine = upgraded_engine(tmp_path, monkeypatch, f"idempotency-{owner_kind}.sqlite3")
+    user_id, root_id, release_id = _seed_reading_parent_rows(engine)
+    version_id = uuid4().hex
+    with engine.begin() as connection:
+        _insert_reading_version(
+            connection,
+            root_id=root_id,
+            release_id=release_id,
+            version_id=version_id,
+        )
+
+    guest_id: str | None = None
+    if owner_kind == "guest":
+        guest_id = uuid4().hex
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "INSERT INTO guest_sessions "
+                    "(id, token_hash, csrf_token_hash, expires_at) "
+                    "VALUES (:id, 'guest-token', 'guest-csrf', '2099-01-01 00:00:00')"
+                ),
+                {"id": guest_id},
+            )
+
+    owner_values = {
+        "owner_user_id": user_id if owner_kind == "user" else None,
+        "owner_guest_session_id": guest_id,
+    }
+
+    def insert_key(record_id: str) -> None:
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "INSERT INTO reading_idempotency_keys "
+                    "(id, key_hash, action, request_fingerprint, owner_user_id, "
+                    "owner_guest_session_id, reading_version_id) "
+                    "VALUES (:id, 'same-key', 'preview', 'fingerprint', "
+                    ":owner_user_id, :owner_guest_session_id, :version_id)"
+                ),
+                {
+                    "id": record_id,
+                    **owner_values,
+                    "version_id": version_id,
+                },
+            )
+
+    insert_key(uuid4().hex)
+    with pytest.raises(IntegrityError):
+        insert_key(uuid4().hex)
     engine.dispose()
 
 

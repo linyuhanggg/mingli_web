@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, vi } from "vitest";
 
 import AccountPage from "@/app/account/page";
+import AboutPage from "@/app/about/page";
 import MethodologyPage from "@/app/methodology/page";
 import PricingPage from "@/app/pricing/page";
 import PrivacyPage from "@/app/privacy/page";
@@ -52,6 +53,14 @@ afterEach(() => {
 
 
 describe("public contract pages", () => {
+  it("does not expose internal prebuilt-page wording on the about route", () => {
+    render(<AboutPage />);
+    const main = screen.getByRole("main");
+
+    expect(main).not.toHaveTextContent("页面已预制");
+    expect(within(main).getByText(/正式品牌、运营主体与团队信息尚未冻结/)).toBeVisible();
+  });
+
   it("keeps one skip-target main landmark around the account page", () => {
     render(
       <PrivateShell>
@@ -74,7 +83,10 @@ describe("public contract pages", () => {
     expect(within(main).getByText("¥9.90")).toBeVisible();
     expect(within(main).getByText(/7 天内 3 次同盘追问/)).toBeVisible();
     expect(within(main).getByText(/72 小时内 2 次同盘追问/)).toBeVisible();
-    expect(within(main).getByText(/当前不开放自动续费/)).toBeVisible();
+    expect(
+      within(main).getByText(/当前不开放自动续费、代币余额、充值钱包或永久无限 AI/),
+    ).toBeVisible();
+    expect(within(main).getByText(/按钮点击不会被写成已付款/)).toBeVisible();
   });
 
   it("explains calculation, evidence, accepted copy, and AI boundaries", () => {
@@ -100,6 +112,16 @@ describe("public contract pages", () => {
     expect(within(main).getByText(/人工支持/)).toBeVisible();
   });
 
+  it("keeps support copy aligned with password-first identity flow", () => {
+    render(<SupportPage />);
+    const main = screen.getByRole("main");
+
+    expect(within(main).getByText(/密码主登录/)).toBeVisible();
+    expect(within(main).getByText(/OTP 用于注册验证、快捷登录和找回密码/)).toBeVisible();
+    expect(within(main).getByText(/OTP 核验后设置密码/)).toBeVisible();
+    expect(within(main).queryByText(/不需要另设注册密码/)).not.toBeInTheDocument();
+  });
+
   it("treats birth data and readings as protected data and forbids local token storage", () => {
     render(<PrivacyPage />);
     const main = screen.getByRole("main");
@@ -107,6 +129,25 @@ describe("public contract pages", () => {
     expect(within(main).getByText(/出生日期、时间、地点/)).toBeVisible();
     expect(within(main).getByText(/localStorage 不保存正式访问令牌/)).toBeVisible();
     expect(within(main).getByText(/访问、导出、更正与删除/)).toBeVisible();
+  });
+
+  it.each([
+    ["隐私政策", PrivacyPage],
+    ["服务条款", TermsPage],
+  ] as const)("publishes an explicit preview policy state for %s", (_name, Page) => {
+    render(<Page />);
+    const metadata = screen.getByRole("region", { name: "政策版本" });
+
+    expect(within(metadata).getByText("开发预览 v0.1")).toBeVisible();
+    expect(within(metadata).getByText("未生效")).toBeVisible();
+    expect(within(metadata).getByRole("link", { name: "前往登录" })).toHaveAttribute(
+      "href",
+      "/auth/login",
+    );
+    expect(within(metadata).getByRole("link", { name: "查看价格与交付" })).toHaveAttribute(
+      "href",
+      "/pricing",
+    );
   });
 
   it("labels the service as traditional-culture reference with AI assistance", () => {

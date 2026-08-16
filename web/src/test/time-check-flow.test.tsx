@@ -48,8 +48,7 @@ describe("TimeCheckFlow", () => {
     render(<TimeCheckFlow />);
 
     await screen.findByLabelText("档案版本");
-    expect(screen.queryByLabelText(/结构化事件/)).not.toBeInTheDocument();
-    expect(screen.getByText(/真实产品路由暂不接受这类输入/)).toBeVisible();
+    expect(screen.getByLabelText(/结构化事件证据/)).toBeVisible();
     await user.clear(screen.getByLabelText("已知时间范围·开始"));
     await user.type(screen.getByLabelText("已知时间范围·开始"), "05:00");
     await user.clear(screen.getByLabelText("已知时间范围·结束"));
@@ -57,6 +56,10 @@ describe("TimeCheckFlow", () => {
     await user.type(
       screen.getByLabelText("可核对事件（可选，每行一条，最多 5 条）"),
       "第一次搬家\n开始工作",
+    );
+    await user.type(
+      screen.getByLabelText("结构化事件证据（可选，每行一条，最多 5 条）"),
+      "2018-07-01 | career | 开始工作",
     );
     await user.click(screen.getByRole("button", { name: /生成十二候选事实/ }));
 
@@ -69,6 +72,13 @@ describe("TimeCheckFlow", () => {
         time_range_start: "05:00",
         time_range_end: "07:00",
         known_events: ["第一次搬家", "开始工作"],
+        known_event_facts: [
+          {
+            occurred_at: "2018-07-01",
+            domain: "career",
+            event_id: "开始工作",
+          },
+        ],
         query: "围绕已确认出生档案生成十二个候选时辰事实",
         dimension_ids: ["time_options"],
       },
@@ -86,6 +96,22 @@ describe("TimeCheckFlow", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "最多填写 5 条可核对事件",
+    );
+    expect(api.startTimeCheckReading).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed structured event evidence before submitting", async () => {
+    const user = userEvent.setup();
+    render(<TimeCheckFlow />);
+
+    const events = await screen.findByLabelText(
+      "结构化事件证据（可选，每行一条，最多 5 条）",
+    );
+    await user.type(events, "2018/07/01 | 工作 | 开始工作");
+    await user.click(screen.getByRole("button", { name: /生成十二候选事实/ }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "结构化事件格式应为",
     );
     expect(api.startTimeCheckReading).not.toHaveBeenCalled();
   });

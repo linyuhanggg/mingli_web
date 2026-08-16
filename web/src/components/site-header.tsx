@@ -36,6 +36,7 @@ const divinationGroups = [
       { href: "/bazi", label: "八字" },
       { href: "/ziwei", label: "紫微" },
       { href: "/qizheng", label: "七政" },
+      { href: "/luming-nayin", label: "禄命纳音" },
       { href: "/hecan", label: "命盘合参" },
     ],
   },
@@ -45,12 +46,17 @@ const divinationGroups = [
       { href: "/liuyao", label: "六爻" },
       { href: "/qimen", label: "奇门" },
       { href: "/daliuren", label: "大六壬" },
+      { href: "/taiyi", label: "太乙" },
+      { href: "/selection", label: "择日" },
       { href: "/wenshi", label: "问事合参" },
     ],
   },
   {
     label: "相",
-    items: [{ href: "/jianxiang", label: "见相" }],
+    items: [
+      { href: "/jianxiang", label: "见相" },
+      { href: "/fengshui", label: "风水" },
+    ],
   },
 ] as const;
 

@@ -104,6 +104,179 @@ async def test_guest_can_create_confirm_and_list_an_encrypted_profile(
     assert "1994-04-30" not in stored.payload_ciphertext
 
 
+async def test_owned_profile_can_append_an_authorized_other_person_version(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+
+    appended = await client.post(
+        f"/api/v1/profiles/{confirmed['profile_id']}/versions",
+        headers=headers,
+        json={
+            "birth_datetime": "2001-07-12T09:30:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市",
+            "gender": "male",
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+            "subject_type": "other",
+            "authorization_confirmed": True,
+            "difference_acknowledged": True,
+        },
+    )
+
+    assert appended.status_code == 201, appended.text
+    assert appended.json()["profile_id"] == confirmed["profile_id"]
+    assert appended.json()["version"] == 2
+    assert appended.json()["profile_version_id"] != confirmed["profile_version_id"]
+
+    from app.profiles.models import ProfileVersion, ProfileVersionAuthorization
+
+    async with database.sessions() as session:
+        versions = list(
+            await session.scalars(
+                select(ProfileVersion).order_by(ProfileVersion.version)
+            )
+        )
+        authorization = await session.scalar(
+            select(ProfileVersionAuthorization).where(
+                ProfileVersionAuthorization.profile_version_id == versions[1].id
+            )
+        )
+    assert [version.version for version in versions] == [1, 2]
+    assert authorization is not None
+    assert authorization.profile_version_id == versions[1].id
+    assert authorization.subject_type == "other"
+    assert authorization.authorization_confirmed is True
+    assert authorization.difference_acknowledged is True
+
+
+async def test_initial_other_person_profile_requires_authorization(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    headers = await create_guest(client)
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "他人"},
+    )
+    assert draft.status_code == 201, draft.text
+
+    response = await client.post(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm",
+        headers=headers,
+        json={
+            "birth_datetime": "2001-07-12T09:30:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市",
+            "gender": "male",
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+            "subject_type": "other",
+            "authorization_confirmed": False,
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["title"] == "Profile authorization is required"
+    from app.profiles.models import ProfileVersion
+
+    async with database.sessions() as session:
+        assert len(list(await session.scalars(select(ProfileVersion)))) == 0
+
+
+async def test_other_person_profile_version_requires_authorization_and_difference_ack(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+
+    response = await client.post(
+        f"/api/v1/profiles/{confirmed['profile_id']}/versions",
+        headers=headers,
+        json={
+            "birth_datetime": "2001-07-12T09:30:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市",
+            "gender": "male",
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+            "subject_type": "other",
+            "authorization_confirmed": False,
+            "difference_acknowledged": False,
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["title"] == "Profile authorization is required"
+    from app.profiles.models import ProfileVersion
+
+    async with database.sessions() as session:
+        assert len(list(await session.scalars(select(ProfileVersion)))) == 1
+
+
+async def test_minor_profile_version_requires_guardian_confirmation(
+    client: AsyncClient,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+
+    response = await client.post(
+        f"/api/v1/profiles/{confirmed['profile_id']}/versions",
+        headers=headers,
+        json={
+            "birth_datetime": "2015-07-12T09:30:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市",
+            "gender": "male",
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+            "subject_type": "other",
+            "is_minor": True,
+            "authorization_confirmed": True,
+            "minor_guardian_confirmed": False,
+            "difference_acknowledged": True,
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["title"] == "Minor guardian confirmation is required"
+
+
+async def test_profile_version_history_returns_all_versions_without_payloads(
+    client: AsyncClient,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    appended = await client.post(
+        f"/api/v1/profiles/{confirmed['profile_id']}/versions",
+        headers=headers,
+        json={
+            "birth_datetime": "2001-07-12T09:30:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市",
+            "gender": "male",
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+            "difference_acknowledged": True,
+        },
+    )
+    assert appended.status_code == 201, appended.text
+
+    history = await client.get(
+        f"/api/v1/profiles/{confirmed['profile_id']}/versions"
+    )
+
+    assert history.status_code == 200
+    assert [item["version"] for item in history.json()["versions"]] == [1, 2]
+    assert "birth_datetime" not in history.text
+    assert "上海市" not in history.text
+
+
 async def test_draft_label_is_persisted_not_discarded(
     client: AsyncClient,
     database: Any,

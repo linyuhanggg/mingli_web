@@ -63,7 +63,7 @@ function AccountSessionControlContent() {
       <StatusPanel
         state="disabled"
         title="身份与设备"
-        description="当前设备尚未登录。邮箱验证码登录后，这里会显示已绑定身份，并可以撤销当前设备。"
+        description="当前设备尚未登录。OTP 快捷登录后，这里会显示已绑定身份，并可以撤销当前设备。"
       />
     );
   }

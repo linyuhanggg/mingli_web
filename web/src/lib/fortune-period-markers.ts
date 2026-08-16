@@ -9,7 +9,23 @@ export type FortunePeriodMarker = {
   dayPillar: string | null;
   dayRole: string | null;
   activeLuckCycle: string | null;
+  primaryMechanismIds: string[];
+  decisiveMechanismIds: string[];
+  unresolvedBoundaries: string[];
 };
+
+const FORTUNE_MECHANISM_LABELS: Record<string, string> = {
+  "day-stem-ten-god": "日干十神",
+  "day-branch-relations": "日支关系",
+  "multi-branch-formations": "多支组合",
+  "hour-stem-ten-god": "时干十神",
+};
+
+export function formatFortuneMechanismIds(ids: readonly string[]): string {
+  return ids
+    .map((id) => FORTUNE_MECHANISM_LABELS[id] ?? id)
+    .join("、");
+}
 
 const PERIOD_MARKER_DISPLAY =
   /^\s*(?:period_markers|周期确定性标记)\s*(?::|：|$)/i;
@@ -22,6 +38,12 @@ function stringField(
   if (typeof field !== "string") return null;
   const trimmed = field.trim();
   return trimmed || null;
+}
+
+function stringArrayField(value: Record<string, unknown>, key: string): string[] {
+  const field = value[key];
+  if (!Array.isArray(field)) return [];
+  return field.filter((item): item is string => typeof item === "string" && item.trim() !== "");
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -57,8 +79,18 @@ export function extractFortunePeriodMarkers(
       const dayPillar = stringField(value, "day_pillar");
       const dayRole = stringField(value, "day_role");
       const activeLuckCycle = stringField(value, "active_luck_cycle");
+      const primaryMechanismIds = stringArrayField(value, "primary_mechanism_ids");
+      const decisiveMechanismIds = stringArrayField(value, "decisive_mechanism_ids");
+      const unresolvedBoundaries = stringArrayField(value, "unresolved_boundaries");
 
-      if (!rawDate && !dayPillar && !dayRole && !activeLuckCycle) {
+      if (
+        !rawDate &&
+        !dayPillar &&
+        !dayRole &&
+        !activeLuckCycle &&
+        primaryMechanismIds.length === 0 &&
+        decisiveMechanismIds.length === 0
+      ) {
         return [];
       }
 
@@ -70,6 +102,9 @@ export function extractFortunePeriodMarkers(
           dayPillar,
           dayRole,
           activeLuckCycle,
+          primaryMechanismIds,
+          decisiveMechanismIds,
+          unresolvedBoundaries,
         },
       ];
     });

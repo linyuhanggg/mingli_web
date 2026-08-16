@@ -96,11 +96,12 @@ const plannedTools = [
   {
     slug: "time-check",
     title: "寻时定盘",
-    description: "围绕未知时辰生成十二个候选事实；事件匹配、候选淘汰和排序暂未启用。",
+    description: "围绕未知时辰生成十二个候选事实；提供结构化事件后可生成有界候选证据排序。",
     form: {
       fields: [
         { id: "time-check-range", label: "已知时间范围", type: "text", hint: "进入专用流程后由 Runtime 生成十二候选并标记范围命中。" },
-        { id: "time-check-events", label: "可核对事件", type: "textarea", hint: "目前只记录事件条数；事件匹配、候选淘汰、权重和排序尚未启用。" },
+        { id: "time-check-events", label: "可核对事件", type: "textarea", hint: "自由文本只记录事件条数；结构化事件输入可进入有界候选证据比较。" },
+        { id: "time-check-event-facts", label: "结构化事件证据", type: "textarea", hint: "格式为日期、领域和事件标识；只生成候选证据排序，不生成古法校时结论。" },
       ],
     },
   },
@@ -184,7 +185,7 @@ export const publicContentSurfaces = {
     intro: "入口已经保留。每项工具只会展示服务端确认的输入与结果，不在浏览器里补算或编造内容。",
     state: "unavailable",
     statusTitle: "工具能力暂不可用",
-    statusDescription: "本命音律、五行事实、同盘比较和寻时定盘已接入有界 Runtime 事实；寻时事件匹配、候选淘汰和排序尚未启用，解梦和姓名分析仍只展示范围。",
+    statusDescription: "本命音律、五行事实、同盘比较和寻时定盘已接入有界 Runtime 事实；结构化事件可生成候选证据排序，但完整古法校时、候选淘汰和结论仍未启用，解梦和姓名分析仍只展示范围。",
     entries: toolEntries,
   },
   library: {

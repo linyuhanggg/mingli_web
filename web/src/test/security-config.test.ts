@@ -8,6 +8,10 @@ function headerMap(headers: Array<{ key: string; value: string }>) {
 }
 
 describe("same-origin and private-surface configuration", () => {
+  it("allows local browser hosts to load development client resources", () => {
+    expect(nextConfig.allowedDevOrigins).toEqual(["127.0.0.1", "localhost"]);
+  });
+
   it("proxies browser API requests to the internal FastAPI service", async () => {
     expect(nextConfig.rewrites).toBeTypeOf("function");
     const rewrites = await nextConfig.rewrites!();
@@ -30,9 +34,18 @@ describe("same-origin and private-surface configuration", () => {
     expect(headers["Permissions-Policy"]).toContain("camera=()");
     expect(headers["Content-Security-Policy"]).toContain("default-src 'self'");
     expect(headers["Content-Security-Policy"]).toContain("frame-ancestors 'none'");
+    expect(headers["Content-Security-Policy"]).toContain("'unsafe-eval'");
   });
 
-  it.each(["/app/:path*", "/account/:path*"])(
+  it.each([
+    "/app/:path*",
+    "/account/:path*",
+    "/auth/:path*",
+    "/workbench/:path*",
+    "/checkout/:path*",
+    "/share/:path*",
+    "/invite/:path*",
+  ])(
     "prevents caching and indexing for %s",
     async (source) => {
       const rules = await nextConfig.headers!();
@@ -48,11 +61,23 @@ describe("same-origin and private-surface configuration", () => {
     const robotsConfig = robots();
     const manifestConfig = manifest();
 
-    expect(robotsConfig.rules).toEqual(
-      expect.objectContaining({ disallow: ["/app/", "/account", "/api/"] }),
-    );
+    expect(robotsConfig.rules).toEqual({
+      userAgent: "*",
+      allow: "/",
+      disallow: [
+        "/app/",
+        "/account",
+        "/auth/",
+        "/workbench/",
+        "/checkout/",
+        "/share/",
+        "/invite/",
+        "/api/",
+      ],
+    });
     expect(manifestConfig).toMatchObject({
-      name: "FateRadar 命理档案",
+      name: "命理工具",
+      short_name: "命理工具",
       start_url: "/",
       display: "standalone",
     });

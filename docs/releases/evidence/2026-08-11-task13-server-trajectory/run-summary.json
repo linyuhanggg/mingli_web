@@ -1,58 +1,47 @@
 {
   "adapters": {
     "MINGLI_ENVIRONMENT": "local",
-    "MINGLI_MODEL_ADAPTER": "deepseek",
+    "MINGLI_MODEL_ADAPTER": "fake",
     "MINGLI_MODEL_ID": "deepseek-v4-flash",
     "MINGLI_MODEL_PROFILE_ID": "deepseek-v4-flash-p0-v1",
     "MINGLI_OTP_ADAPTER": "fake",
-    "MINGLI_RUNTIME_ADAPTER": "one-shot"
+    "MINGLI_RUNTIME_ADAPTER": "fake"
   },
   "api_base": "http://127.0.0.1:8080/api/v1",
   "delayed_backlog": {
     "after": {
       "available": true,
       "counts": {
-        "accepted": 7,
-        "delayed": 13,
-        "terminal_stopped": 1
+        "accepted": 46,
+        "delayed": 18,
+        "terminal_stopped": 3
       },
-      "total": 21
+      "total": 67
     },
     "before": {
       "available": true,
       "counts": {
-        "accepted": 6,
-        "delayed": 10
+        "accepted": 41,
+        "delayed": 18,
+        "terminal_stopped": 3
       },
-      "total": 16
+      "total": 62
     }
   },
-  "duration_s": 94.1,
-  "exit_code": 2,
-  "generated_at": "2026-08-10T21:53:07+00:00",
-  "hard_failure": true,
+  "duration_s": 15.8,
+  "exit_code": 0,
+  "generated_at": "2026-08-14T10:00:09+00:00",
+  "hard_failure": false,
   "identity": {
     "birth_datetime_marker_scanned": "1994-04-30T05:55:00+08:00",
     "email_masked": "t***@example.com",
     "profile": "fictional (not recorded raw)"
   },
-  "partial_reasons": [
-    "S7-today today fortune: delayed",
-    "S8-week week fortune: delayed",
-    "S9-liuyao-digital-coin liuyao digital_coin: delayed",
-    "S10-follow-up follow-up (new version): terminal_stopped",
-    "sensitive markers found: raw_birth_datetime@S6-preview-bazi-result"
-  ],
-  "raw_log_dir": "/tmp/mingli-task13-run-o7E2iP",
+  "partial_reasons": [],
+  "raw_log_dir": "/tmp/mingli-task13-run-WFFFpQ",
   "schema": "mingli-task13-server-trajectory-v1",
   "sensitive_scan": {
-    "found": [
-      {
-        "marker": "raw_birth_datetime",
-        "path": "/readings/68ce155a-14f2-4215-9d6d-709b04f43b56/result",
-        "step_id": "S6-preview-bazi-result"
-      }
-    ],
+    "found": [],
     "markers": [
       "state_token",
       "prompt_key",
@@ -66,7 +55,7 @@
     {
       "detail": {
         "csrf_matches_cookie": true,
-        "expires_at": "2026-08-11T21:51:32.980604Z"
+        "expires_at": "2026-08-15T09:59:54.193073Z"
       },
       "http_status": 201,
       "id": "S1-guest-session",
@@ -98,8 +87,8 @@
         "confirm_http_status": 201,
         "draft_http_status": 201,
         "private_headers": true,
-        "profile_version_id": "30252024-661b-49e5-b31d-62bd3ca0891c",
-        "subject_ref": "profile-version:30252024-661b-49e5-b31d-62bd3ca0891c"
+        "profile_version_id": "2d60020b-9657-4511-ba45-a496718cf761",
+        "subject_ref": "profile-version:2d60020b-9657-4511-ba45-a496718cf761"
       },
       "http_status": 201,
       "id": "S4-S5-profile",
@@ -108,15 +97,14 @@
     },
     {
       "detail": {
-        "accepted_copy_chars": 218,
-        "accepted_copy_sha256": "d66f9636a169b690c138ac34eb0edd0417bc7598f0498bad67d0752966ab165b",
-        "poll_seconds": 15.1,
-        "reading_version_id": "68ce155a-14f2-4215-9d6d-709b04f43b56",
+        "accepted_copy_chars": 61,
+        "accepted_copy_sha256": "211ea8ac190220e38f6a0754ff7449070635b6f425ab99648d2dcb596a788f17",
+        "poll_seconds": 3.0,
+        "reading_version_id": "d36dd07b-a418-4b5c-8fa5-2e80fba98591",
         "result_http_status": 200,
         "start_status": "input_ready",
         "status_path": [
           "input_ready",
-          "prepared",
           "accepted"
         ],
         "terminal_status": "accepted",
@@ -129,74 +117,85 @@
     },
     {
       "detail": {
-        "poll_seconds": 15.1,
-        "reading_version_id": "218f65e4-6fe5-4c3d-85ef-05ecd3a5c7a9",
+        "accepted_copy_chars": 61,
+        "accepted_copy_sha256": "211ea8ac190220e38f6a0754ff7449070635b6f425ab99648d2dcb596a788f17",
+        "poll_seconds": 3.0,
+        "reading_version_id": "0910d173-c7da-4a74-8764-5ee92b86949e",
+        "result_http_status": 200,
         "start_status": "input_ready",
         "status_path": [
           "input_ready",
-          "prepared",
-          "delayed"
+          "accepted"
         ],
-        "terminal_status": "delayed"
+        "terminal_status": "accepted",
+        "verification": null
       },
       "http_status": 201,
       "id": "S7-today",
       "name": "today fortune",
-      "ok": false
+      "ok": true
     },
     {
       "detail": {
-        "poll_seconds": 36.3,
-        "reading_version_id": "36bc94bd-7a5b-4ede-b8f4-4fd57753e2b2",
+        "accepted_copy_chars": 61,
+        "accepted_copy_sha256": "211ea8ac190220e38f6a0754ff7449070635b6f425ab99648d2dcb596a788f17",
+        "poll_seconds": 3.1,
+        "reading_version_id": "d983f4db-2c7a-4e21-a887-1dfed50ee2d3",
+        "result_http_status": 200,
         "start_status": "input_ready",
         "status_path": [
           "input_ready",
-          "prepared",
-          "delayed"
+          "accepted"
         ],
-        "terminal_status": "delayed"
+        "terminal_status": "accepted",
+        "verification": null
       },
       "http_status": 201,
       "id": "S8-week",
       "name": "week fortune",
-      "ok": false
+      "ok": true
     },
     {
       "detail": {
+        "accepted_copy_chars": 61,
+        "accepted_copy_sha256": "211ea8ac190220e38f6a0754ff7449070635b6f425ab99648d2dcb596a788f17",
         "input_field_ids": [],
-        "poll_seconds": 24.2,
-        "reading_version_id": "9105f280-7673-493f-8620-47cd5528a8ab",
+        "poll_seconds": 3.0,
+        "reading_version_id": "94bc5619-5d96-4afd-8893-7bf5379006aa",
+        "result_http_status": 200,
         "start_status": "input_ready",
         "status_path": [
           "input_ready",
-          "prepared",
-          "delayed"
+          "accepted"
         ],
         "supplied_six_cast_values": false,
-        "terminal_status": "delayed",
+        "terminal_status": "accepted",
         "waiting_input": false
       },
       "http_status": 201,
       "id": "S9-liuyao-digital-coin",
       "name": "liuyao digital_coin",
-      "ok": false
+      "ok": true
     },
     {
       "detail": {
-        "base_reading_version_id": "68ce155a-14f2-4215-9d6d-709b04f43b56",
+        "accepted_copy_chars": 61,
+        "accepted_copy_sha256": "211ea8ac190220e38f6a0754ff7449070635b6f425ab99648d2dcb596a788f17",
+        "base_reading_version_id": "d36dd07b-a418-4b5c-8fa5-2e80fba98591",
         "poll_seconds": 3.0,
-        "reading_version_id": "3fdc73bb-7c77-4bc1-a663-b130c04355ff",
+        "reading_version_id": "4820bc92-63e8-497d-b3ed-0564190a6382",
+        "result_http_status": 200,
         "status_path": [
           "input_ready",
-          "terminal_stopped"
+          "accepted"
         ],
-        "terminal_status": "terminal_stopped"
+        "terminal_status": "accepted"
       },
       "http_status": 201,
       "id": "S10-follow-up",
       "name": "follow-up (new version)",
-      "ok": false
+      "ok": true
     }
   ],
-  "transcript_count": 47
+  "transcript_count": 25
 }

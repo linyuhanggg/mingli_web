@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function PricingPage() {
   return (
     <EditorialPage
-      eyebrow="FateRadar · Pricing"
+      eyebrow="价格与交付"
       title="每一次付款，都绑定一份明确结果。"
       intro="测试期说明：公网预览入口无 TLS、无真实支付。付费向解读（今日/本周/六爻）仅运营开通，不会产生扣款；正式商户接入前价格只作展示。"
     >

@@ -1,0 +1,131 @@
+.main {
+  min-height: 100vh;
+  background: var(--color-canvas);
+}
+
+.container {
+  display: grid;
+  gap: var(--space-2xl);
+  padding-top: var(--space-2xl);
+  padding-bottom: var(--space-3xl);
+}
+
+.hero {
+  max-width: 45rem;
+}
+
+.hero h1,
+.hero p,
+.container section > h2,
+.container section > p,
+.relationships h2,
+.relationships p {
+  margin: 0;
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 5vw, var(--font-size-hero));
+}
+
+.hero p,
+.container section > p,
+.relationships p {
+  margin-top: var(--space-sm);
+  color: var(--color-text-secondary);
+}
+
+.container section {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.container section > h2,
+.relationships h2 {
+  font-size: var(--font-size-section);
+}
+
+.productList {
+  display: grid;
+  border-top: 1px solid var(--color-border);
+}
+
+.productList a {
+  display: grid;
+  min-height: 6.5rem;
+  grid-template-columns: minmax(11rem, 0.7fr) minmax(15rem, 1.3fr) auto;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.productList a:hover {
+  background: var(--color-surface-subtle);
+}
+
+.productList span {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.productList small {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+}
+
+.productList p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+}
+
+.relationships {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-subtle);
+}
+
+.relationships nav {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.relationships a {
+  display: inline-flex;
+  min-height: var(--target-min);
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  font-size: var(--font-size-label);
+  font-weight: 680;
+}
+
+@media (max-width: 47.999rem) {
+  .container {
+    padding-top: var(--space-xl);
+  }
+
+  .productList a,
+  .relationships {
+    grid-template-columns: 1fr;
+  }
+
+  .productList a {
+    gap: var(--space-sm);
+    padding: var(--space-lg) 0;
+  }
+
+  .relationships nav {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .relationships a {
+    justify-content: center;
+  }
+}

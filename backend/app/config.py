@@ -17,6 +17,12 @@ from app.adapters.otp import OtpSecurityMode
 Environment = Literal["local", "test", "staging", "production"]
 OtpAdapterName = Literal["fake", "disabled", "smtp"]
 RuntimeAdapterName = Literal["fake", "one-shot"]
+RuntimeReleaseProfile = Literal[
+    "v51",
+    "v51-extension-facts",
+    "v52-relationship",
+    "v53-time-check",
+]
 ModelAdapterName = Literal["fake", "deepseek"]
 _LOCAL_CONTENT_KEY_B64 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 _PRODUCTION_RUNTIME_LAUNCHER = Path("/opt/mingli-master/scripts/run_reading_transaction.sh")
@@ -26,7 +32,55 @@ _PRODUCTION_RUNTIME_STATE_ROOT = Path("/var/lib/mingli")
 _FROZEN_DESCRIBE_MANIFEST_DIGEST = (
     "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"
 )
+_V52_RELATIONSHIP_DESCRIBE_MANIFEST_DIGEST = (
+    "6118c5f525c87b9cbde95b4d51c945be18bfd18fff8e03306da9fa748b87d917"
+)
+_V53_TIME_CHECK_DESCRIBE_MANIFEST_DIGEST = (
+    "7464229e744d8711dbdf261d758b160d2dce6744cd2f6ee9700dfdd56d145fbd"
+)
 _FROZEN_CAPABILITY_SHAPE_SHA256 = "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
+_RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
+    "v51": {
+        "manifest_digest": _FROZEN_DESCRIBE_MANIFEST_DIGEST,
+        "capability_shape_sha256": _FROZEN_CAPABILITY_SHAPE_SHA256,
+        "release_manifest_sha256": (
+            "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
+        ),
+        "release_name": "mingli-master-portable-core",
+        "source_commit": "494ce0bba174a77800daf9b9c38ce9c9166d9a94",
+    },
+    "v51-extension-facts": {
+        "manifest_digest": (
+            "9b9852860336336420825d1bf845c2aa17deb9c450b69a8f59fe09303bbafb08"
+        ),
+        "capability_shape_sha256": _FROZEN_CAPABILITY_SHAPE_SHA256,
+        "release_manifest_sha256": (
+            "da5f8edb8a147417f3ba1fbb3136d64c7ccfbfab1e476421ef0dd50db7e39b05"
+        ),
+        "release_name": "mingli-master-portable-core-v51-extension-facts",
+        "source_commit": "494ce0bba174a77800daf9b9c38ce9c9166d9a94",
+    },
+    "v52-relationship": {
+        "manifest_digest": _V52_RELATIONSHIP_DESCRIBE_MANIFEST_DIGEST,
+        "capability_shape_sha256": _FROZEN_CAPABILITY_SHAPE_SHA256,
+        "release_manifest_sha256": (
+            "bef3df256ce06a9796d5eaef999d1141873128fe75b06916922ddd7fe9ac5d50"
+        ),
+        "release_name": "mingli-master-portable-core-v52-relationship",
+        "source_commit": "da46e7c0d565fe781e40a115acbb2874c400a195",
+    },
+    "v53-time-check": {
+        "manifest_digest": _V53_TIME_CHECK_DESCRIBE_MANIFEST_DIGEST,
+        "capability_shape_sha256": (
+            "94c2ccaafa587ea64f15bd9bd96a35ac36b72dd07523b7359a37973a4cf893e0"
+        ),
+        "release_manifest_sha256": (
+            "9000f1def70089fc6880fb135e1b1c6ae46ee7a2dc45e44beb7b45a0ff23104c"
+        ),
+        "release_name": "mingli-master-portable-core-v53-time-check",
+        "source_commit": "local-bazi-san-yuan-v1",
+    },
+}
 _P0_MODEL_PROVIDER = "deepseek"
 _P0_MODEL_PROFILE_ID = "deepseek-v4-flash-p0-v1"
 _P0_MODEL_ID = "deepseek-v4-flash"
@@ -82,6 +136,7 @@ class Settings(BaseSettings):
     smtp_password: SecretStr | None = None
     smtp_sender: str | None = None
     runtime_adapter: RuntimeAdapterName = "fake"
+    runtime_release_profile: RuntimeReleaseProfile = "v51"
     runtime_launcher_path: Path | None = None
     runtime_python_path: Path | None = None
     runtime_release_root: Path | None = None
@@ -98,6 +153,7 @@ class Settings(BaseSettings):
     runtime_max_stdin_bytes: int = Field(default=2 * 1024 * 1024, ge=1)
     runtime_max_stdout_bytes: int = Field(default=2 * 1024 * 1024, ge=1)
     runtime_max_stderr_bytes: int = Field(default=64 * 1024, ge=1)
+    physiognomy_media_root: Path | None = None
     model_adapter: ModelAdapterName = "fake"
     model_provider: str = _P0_MODEL_PROVIDER
     model_profile_id: str = _P0_MODEL_PROFILE_ID
@@ -312,6 +368,11 @@ class Settings(BaseSettings):
         if any(path is not None and not path.is_absolute() for path in runtime_paths):
             raise ValueError("Runtime launcher, Python, release and state paths must be absolute")
         if self.environment == "production":
+            if self.runtime_release_profile in {
+                "v51-extension-facts",
+                "v53-time-check",
+            }:
+                raise ValueError("selected Runtime release is local/test only")
             if self.runtime_launcher_path is None:
                 raise ValueError("production Runtime launcher is required")
             if self.runtime_launcher_path != _PRODUCTION_RUNTIME_LAUNCHER:
@@ -326,12 +387,16 @@ class Settings(BaseSettings):
                 raise ValueError("production requires the fixed Runtime state root")
             if self.runtime_expected_manifest_digest is None:
                 raise ValueError("production expected Runtime manifest digest is required")
-            if self.runtime_expected_manifest_digest != _FROZEN_DESCRIBE_MANIFEST_DIGEST:
-                raise ValueError("production Runtime manifest digest is not the frozen release")
+            profile = _RUNTIME_RELEASE_PROFILES[self.runtime_release_profile]
+            if self.runtime_expected_manifest_digest != profile["manifest_digest"]:
+                raise ValueError("production Runtime manifest digest is not the admitted release")
             if self.runtime_expected_capability_shape_sha256 is None:
                 raise ValueError("production expected capability shape digest is required")
-            if self.runtime_expected_capability_shape_sha256 != _FROZEN_CAPABILITY_SHAPE_SHA256:
-                raise ValueError("production requires the frozen capability shape digest")
+            if self.runtime_expected_capability_shape_sha256 != profile["capability_shape_sha256"]:
+                raise ValueError(
+                    "production requires the frozen capability shape digest "
+                    "for the admitted release"
+                )
             if self.real_traffic_enabled and not self.alert_sink_enabled:
                 raise ValueError(
                     "production real traffic requires alert_sink_enabled"

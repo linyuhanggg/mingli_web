@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C1 锐感数据工坊 方向预览</title>
+<style>
+:root{
+  --bg:#fbfbfd; --surface:#ffffff; --surface-2:#f4f4f7; --ink:#111318;
+  --muted:#5b5e66; --faint:#8a8d95; --line:#e6e7eb; --line-strong:#d4d6dc;
+  --accent:#2456f0; --on-accent:#ffffff; --r:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;line-height:1.6}
+.wrap{max-width:1160px;margin:0 auto;padding:0 40px}
+.top{height:64px;display:flex;align-items:center;gap:32px;border-bottom:1px solid var(--line);background:rgba(251,251,253,.92)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:650}
+.brand .mark{width:28px;height:28px;border-radius:6px;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:15px}
+.brand .sub{font-size:12px;color:var(--faint);font-weight:400}
+.nav{display:flex;gap:22px;font-size:14px;color:var(--muted);margin-left:8px}
+.nav b{color:var(--ink);font-weight:600}
+.actions{margin-left:auto;display:flex;gap:12px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 18px;border-radius:var(--r);font-size:14px;font-weight:550;border:1px solid transparent;cursor:default;text-decoration:none}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--line-strong)}
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;padding:72px 0 56px;align-items:center}
+.hero .eyebrow{font-size:13px;color:var(--accent);font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.hero .eyebrow::before{content:"";width:18px;height:2px;background:var(--accent);display:inline-block}
+.hero h1{font-size:46px;line-height:1.12;letter-spacing:-.02em;font-weight:720;max-width:12em}
+.hero .sub{margin-top:18px;font-size:16px;color:var(--muted);max-width:30em;line-height:1.7}
+.hero .cta{display:flex;gap:12px;margin-top:30px}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px;box-shadow:0 1px 2px rgba(17,19,24,.03),0 10px 28px rgba(17,19,24,.05)}
+.chart .head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:12px}
+.chart .head b{font-size:15px}
+.chart .head span{font-size:12px;color:var(--faint)}
+.pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.pillar{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:12px 10px;text-align:center}
+.pillar .k{font-size:11px;color:var(--faint);margin-bottom:8px}
+.pillar .v{font-family:"SF Mono","Menlo",monospace;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.pillar .g{font-size:11px;color:var(--muted);margin-top:4px}
+.rows{margin-top:14px;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:88px 1fr auto;gap:12px;font-size:13px;padding:9px 0;border-bottom:1px solid var(--line)}
+.row span{color:var(--faint)}
+.row b{font-weight:600;font-variant-numeric:tabular-nums}
+.note{font-size:11px;color:var(--faint);text-align:right;margin-top:12px}
+.mech{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.mech>div{padding:22px 24px;border-right:1px solid var(--line)}
+.mech>div:last-child{border-right:none}
+.mech .n{font-family:"SF Mono","Menlo",monospace;font-size:12px;color:var(--accent);font-weight:700}
+.mech b{display:block;margin-top:8px;font-size:16px}
+.mech p{margin-top:6px;font-size:13px;color:var(--muted)}
+.section{padding:60px 0 8px}
+.section .h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px}
+.section h2{font-size:26px;letter-spacing:-.015em;font-weight:700}
+.section .h span{font-size:13px;color:var(--faint)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.card:hover{transform:translateY(-2px);border-color:var(--line-strong);box-shadow:0 10px 26px rgba(17,19,24,.07)}
+.card .top{display:flex;justify-content:space-between;align-items:center}
+.card .glyph{width:34px;height:34px;border-radius:8px;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:16px;font-weight:700}
+.card .flag{font-size:11px;color:var(--accent);background:#eef3ff;padding:3px 8px;border-radius:999px}
+.card h3{margin-top:16px;font-size:17px}
+.card p{margin-top:6px;font-size:13px;color:var(--muted);line-height:1.7}
+.card .meta{border-top:1px solid var(--line);margin-top:14px;padding-top:10px;display:flex;justify-content:space-between;font-size:12px;color:var(--faint)}
+.footer{margin-top:64px;border-top:1px solid var(--line);padding:26px 0 36px;display:flex;justify-content:space-between;font-size:12px;color:var(--faint)}
+@media(max-width:760px){
+  .wrap{padding:0 16px}
+  .nav,.brand .sub,.hero .eyebrow::before{display:none}
+  .top{height:56px;gap:10px}
+  .actions{margin-left:auto}
+  .hero{grid-template-columns:1fr;gap:28px;padding:36px 0 28px}
+  .hero h1{font-size:30px}
+  .mech{grid-template-columns:1fr}
+  .mech>div{border-right:none;border-bottom:1px solid var(--line)}
+  .grid{grid-template-columns:1fr}
+  .pillars{grid-template-columns:repeat(2,1fr)}
+  .footer{flex-direction:column;gap:8px}
+}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap" style="display:flex;align-items:center;width:100%;gap:32px">
+  <div class="brand"><span class="mark">命</span>命理工具<span class="sub">可核对盘面</span></div>
+  <nav class="nav"><b>术数</b><span>合参</span><span>工具</span><span>每日</span><span>知识内容</span><span>账户</span></nav>
+  <div class="actions"><a class="btn ghost">登录</a><a class="btn primary">开始排盘</a></div>
+</div></div>
+
+<div class="wrap">
+  <section class="hero">
+    <div>
+      <div class="eyebrow">确定性排盘 · 免费</div>
+      <h1>先给你一张可核对的盘，再谈解释</h1>
+      <p class="sub">八字、紫微、七政等七个体系免费出盘；事实与解读分层，未接通的功能直接标明，不假不玄。</p>
+      <div class="cta"><a class="btn primary">开始排盘</a><a class="btn ghost">看示例盘面</a></div>
+    </div>
+    <div class="chart">
+      <div class="head"><b>示例盘面</b><span>示意数据</span></div>
+      <div class="pillars">
+        <div class="pillar"><div class="k">年柱</div><div class="v">甲辰</div><div class="g">1992</div></div>
+        <div class="pillar"><div class="k">月柱</div><div class="v">己巳</div><div class="g">5月</div></div>
+        <div class="pillar"><div class="k">日柱</div><div class="v">辛未</div><div class="g">8日</div></div>
+        <div class="pillar"><div class="k">时柱</div><div class="v">戊子</div><div class="g">12时</div></div>
+      </div>
+      <div class="rows">
+        <div class="row"><span>出生时间</span><b>1992-05-08 12:00</b><span>+08:00</span></div>
+        <div class="row"><span>地点口径</span><b>北京 · 真太阳时</b><span>已应用</span></div>
+        <div class="row"><span>证据索引</span><b>0 / 1328 条可核证据</b><span>阅读层</span></div>
+      </div>
+      <div class="note">正式产品由 Runtime 生成；此处仅为视觉示意。</div>
+    </div>
+  </section>
+
+  <section class="mech">
+    <div><span class="n">01</span><b>确定性盘面</b><p>排盘是计算不是猜测，先看事实。</p></div>
+    <div><span class="n">02</span><b>事实解释分层</b><p>哪些来自规则与证据，一目了然。</p></div>
+    <div><span class="n">03</span><b>多术互证</b><p>合参并列各术信号，不混合成一句。</p></div>
+  </section>
+
+  <section class="section">
+    <div class="h"><h2>选择你要起的盘</h2><span>所有确定性排盘免费</span></div>
+    <div class="grid">
+      <div class="card"><div class="top"><span class="glyph">命</span><span class="flag">命盘</span></div><h3>八字</h3><p>四柱、十神与大运流年的确定性结构。</p><div class="meta"><span>约 2 分钟</span><span>免费盘面</span></div></div>
+      <div class="card"><div class="top"><span class="glyph">斗</span><span class="flag">命盘</span></div><h3>紫微</h3><p>十二宫、四化与三方四正的盘面事实。</p><div class="meta"><span>约 2 分钟</span><span>免费盘面</span></div></div>
+      <div class="card"><div class="top"><span class="glyph">政</span><span class="flag">命盘</span></div><h3>七政</h3><p>星曜宿度与命度格局的天文排布。</p><div class="meta"><span>约 2 分钟</span><span>免费盘面</span></div></div>
+      <div class="card"><div class="top"><span class="glyph">爻</span><span class="flag">事件</span></div><h3>六爻</h3><p>一事一问，本卦变卦与爻位事实。</p><div class="meta"><span>即时起课</span><span>免费盘面</span></div></div>
+      <div class="card"><div class="top"><span class="glyph">奇</span><span class="flag">事件</span></div><h3>奇门</h3><p>局式、九宫与用神锚点的结构化排布。</p><div class="meta"><span>即时起局</span><span>免费盘面</span></div></div>
+      <div class="card"><div class="top"><span class="glyph">壬</span><span class="flag">事件</span></div><h3>大六壬</h3><p>天地盘、四课三传与课体候选。</p><div class="meta"><span>即时起课</span><span>免费盘面</span></div></div>
+      <div class="card"><div class="top"><span class="glyph">相</span><span class="flag">采集</span></div><h3>见相</h3><p>结构化视觉观察与证据充足度。</p><div class="meta"><span>图片采集</span><span>部分已接</span></div></div>
+      <div class="card"><div class="top"><span class="glyph">合</span><span class="flag">合参</span></div><h3>命盘合参</h3><p>八字领头，紫微七政并列互证。</p><div class="meta"><span>需一次建档</span><span>三术对照</span></div></div>
+      <div class="card"><div class="top"><span class="glyph">问</span><span class="flag">合参</span></div><h3>问事合参</h3><p>六爻奇门六壬同问同刻并列。</p><div class="meta"><span>需明确问题</span><span>三术对照</span></div></div>
+    </div>
+  </section>
+
+  <footer class="footer"><span>命理工具 · 测试版</span><span>七个基础术数 · 三种合参 · 盘面免费</span></footer>
+</div>
+</body>
+</html>

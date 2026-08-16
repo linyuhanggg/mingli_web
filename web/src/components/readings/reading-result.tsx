@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 import {
   buildBaziChartView,
+  buildBaziChartViewFromViewModel,
   formatCapabilityIds,
   formatDimensionIds,
   formatHorizon,
@@ -32,11 +33,44 @@ import { FortunePeriodTimeline } from "./fortune-period-timeline";
 import { LimitNotice } from "./limit-notice";
 import { LiuyaoHexagram } from "./liuyao-hexagram";
 import { NeedInputForm } from "./need-input-form";
+import { ReadingSharePanel } from "./reading-share-panel";
+import { ReadingExportPanel } from "./reading-export-panel";
+import { RuntimeChart } from "./runtime-chart";
 import { VerificationForm } from "./verification-form";
 
 import styles from "./reading-result.module.css";
 
 const DEFAULT_POLL_MS = 2000;
+const RUNTIME_CHART_VERSIONS = new Set([
+  "hecan-view/v1",
+  "canwen-view/v1",
+  "wenshi-view/v1",
+  "bazi-relationship/v1",
+  "ziwei-relationship/v1",
+  "qizheng-relationship/v1",
+  "ziwei-chart/v1",
+  "qizheng-chart/v1",
+  "luming-nayin-chart/v1",
+  "rhythm-facts-view/v1",
+  "taiyi-chart/v1",
+  "selection-chart/v1",
+  "fengshui-view/v1",
+  "liuyao-chart/v1",
+  "meihua-chart/v1",
+  "qimen-chart/v1",
+  "daliuren-chart/v1",
+  "physiognomy-view/v1",
+  "five-elements-facts-view/v1",
+  "chart-similarity-view/v1",
+  "time-check-view/v1",
+]);
+const CROSS_ART_PRODUCT_IDS = new Set(["hecan", "canwen", "wenshi"]);
+const RELATIONSHIP_PRODUCT_IDS = new Set([
+  "bazi-relationship",
+  "ziwei-relationship",
+  "qizheng-relationship",
+]);
+const RESULT_READY_STATUSES = new Set(["prepared", "completing", "accepted"]);
 
 type StatusTone = "processing" | "success" | "error";
 
@@ -109,9 +143,11 @@ function errorMessage(error: unknown): string {
 }
 
 function ArchiveRail({
+  readingId,
   summary,
   result,
 }: Readonly<{
+  readingId: string;
   summary: ReadingVersionSummary;
   result: ReadingResultResponse | null;
 }>) {
@@ -165,6 +201,12 @@ function ArchiveRail({
           只展示服务端公开摘要；状态与正文分开保存，现实反馈独立记录，不会回写盘面。
         </p>
       </div>
+      {summary.status === "accepted" && result?.document?.actions.share.enabled === true ? (
+        <ReadingSharePanel readingId={readingId} />
+      ) : null}
+      {summary.status === "accepted" && result?.document?.actions.export.enabled === true ? (
+        <ReadingExportPanel readingId={readingId} />
+      ) : null}
     </aside>
   );
 }
@@ -195,10 +237,12 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
         setError(null);
         setLoading(false);
 
-        if (response.status === "accepted") {
+        if (RESULT_READY_STATUSES.has(response.status)) {
           const nextResult = await getReadingResult(readingId);
           if (cancelled) return;
           setResult(nextResult);
+          if (response.status === "accepted") return;
+          schedule(DEFAULT_POLL_MS);
           return;
         }
 
@@ -265,7 +309,10 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     );
   }
 
-  if (loading || (summary?.status === "accepted" && !result)) {
+  if (
+    loading ||
+    (summary && RESULT_READY_STATUSES.has(summary.status) && !result)
+  ) {
     return (
       <article className={surface.readingBody}>
         <div className={styles.statusCard} role="status">
@@ -282,12 +329,40 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     return null;
   }
 
-  if (summary.status === "accepted" && result) {
-    const isBazi = summary.capability_id === "bazi";
+  if (RESULT_READY_STATUSES.has(summary.status) && result) {
+    const isAccepted = summary.status === "accepted";
+    const canFollowUp = isAccepted && result.document?.actions.follow_up.enabled === true;
+    const productId = summary.product_id;
+    const isRuntimeCrossArt =
+      (typeof productId === "string" && CROSS_ART_PRODUCT_IDS.has(productId)) ||
+      result.view_model?.schema_version === "hecan-view/v1" ||
+      result.view_model?.schema_version === "canwen-view/v1";
+    const isRelationship =
+      (typeof productId === "string" && RELATIONSHIP_PRODUCT_IDS.has(productId)) ||
+      (result.view_model?.schema_version.endsWith("-relationship/v1") ?? false);
+    const isFiveElementsFacts =
+      result.view_model?.schema_version === "five-elements-facts-view/v1";
+    const isChartSimilarity =
+      summary.product_id === "chart-similarity" ||
+      result.view_model?.schema_version === "chart-similarity-view/v1";
+    const isBazi =
+      summary.capability_id === "bazi" &&
+      !isRuntimeCrossArt &&
+      !isRelationship &&
+      !isFiveElementsFacts &&
+      !isChartSimilarity;
     const isFortune = summary.capability_id === "fortune";
     const isLiuyao = summary.capability_id === "liuyao";
+    const hasTypedLiuyao = result.view_model?.schema_version === "liuyao-chart/v1";
+    const hasRawLiuyao = isLiuyao && !hasTypedLiuyao;
+    const hasRuntimeChart = Boolean(
+      result.view_model && RUNTIME_CHART_VERSIONS.has(result.view_model.schema_version),
+    );
     const publicFacts = result.fact_panel?.facts ?? [];
-    const chart = buildBaziChartView(publicFacts);
+    const chart =
+      result.view_model?.schema_version === "bazi-chart/v1"
+        ? buildBaziChartViewFromViewModel(result.view_model)
+        : buildBaziChartView(publicFacts);
     const fortuneMarkers = isFortune
       ? extractFortunePeriodMarkers(publicFacts)
       : [];
@@ -303,7 +378,24 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
         : result.fact_panel;
     const copyParts = splitAcceptedCopy(result.accepted_copy);
     const question = result.fact_panel?.question ?? "本次解读";
-    const scopeLabel = formatCapabilityIds([summary.capability_id]);
+    const scopeLabel =
+      summary.product_id === "hecan"
+        ? "命盘合参"
+        : summary.product_id === "canwen"
+          ? "多盘问答"
+          : summary.product_id === "bazi-relationship"
+            ? "八字合盘"
+            : summary.product_id === "ziwei-relationship"
+              ? "紫微合盘"
+          : summary.product_id === "qizheng-relationship"
+            ? "七政合盘"
+            : summary.product_id === "five-elements-facts"
+              ? "五行事实与调候依据"
+          : summary.product_id === "rhythm"
+            ? "本命音律事实"
+          : summary.product_id === "chart-similarity"
+            ? "八字同盘四柱事实比较"
+          : formatCapabilityIds([summary.capability_id]);
 
     if (!isBazi) {
       return (
@@ -347,7 +439,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               </section>
             ) : null}
 
-            {isLiuyao ? (
+            {hasRawLiuyao ? (
               <section
                 className={surface.readingSection}
                 aria-labelledby="reading-liuyao-title"
@@ -368,12 +460,30 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               </section>
             ) : null}
 
+            {hasRuntimeChart && result.view_model ? (
+              <section
+                className={surface.readingSection}
+                aria-labelledby="reading-runtime-chart-title"
+              >
+                <span className={surface.sectionIndex} aria-hidden="true">
+                  {String(2 + (hasFortuneTimeline ? 1 : 0) + (hasRawLiuyao ? 1 : 0)).padStart(2, "0")}
+                </span>
+                <div>
+                  <h2 id="reading-runtime-chart-title">盘面事实</h2>
+                  <p className={surface.inlineNote}>
+                    盘面来自服务端 Runtime ViewModel；浏览器只负责展示，不重新计算。
+                  </p>
+                  <RuntimeChart viewModel={result.view_model} />
+                </div>
+              </section>
+            ) : null}
+
             <section
               className={surface.readingSection}
               aria-labelledby="reading-fact-title"
             >
               <span className={surface.sectionIndex} aria-hidden="true">
-                {isLiuyao || hasFortuneTimeline ? "03" : "02"}
+                {String(2 + (hasFortuneTimeline ? 1 : 0) + (hasRawLiuyao ? 1 : 0) + (hasRuntimeChart ? 1 : 0)).padStart(2, "0")}
               </span>
               <div>
                 <h2 id="reading-fact-title">事实</h2>
@@ -386,7 +496,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               aria-labelledby="reading-evidence-title"
             >
               <span className={surface.sectionIndex} aria-hidden="true">
-                {isLiuyao || hasFortuneTimeline ? "04" : "03"}
+                {String(3 + (hasFortuneTimeline ? 1 : 0) + (hasRawLiuyao ? 1 : 0) + (hasRuntimeChart ? 1 : 0)).padStart(2, "0")}
               </span>
               <div>
                 <h2 id="reading-evidence-title">依据与边界</h2>
@@ -398,24 +508,26 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               </div>
             </section>
 
-            <section
-              className={surface.readingSection}
-              aria-labelledby="reading-review-title"
-            >
-              <span className={surface.sectionIndex} aria-hidden="true">
-                {isLiuyao || hasFortuneTimeline ? "05" : "04"}
-              </span>
-              <div>
-                <h2 id="reading-review-title">复核与追问</h2>
-                <VerificationForm
-                  readingId={readingId}
-                  initialVerification={result.verification}
-                />
-                <FollowUpForm readingId={readingId} />
-              </div>
-            </section>
+            {isAccepted ? (
+              <section
+                className={surface.readingSection}
+                aria-labelledby="reading-review-title"
+              >
+                <span className={surface.sectionIndex} aria-hidden="true">
+                  {String(4 + (hasFortuneTimeline ? 1 : 0) + (hasRawLiuyao ? 1 : 0) + (hasRuntimeChart ? 1 : 0)).padStart(2, "0")}
+                </span>
+                <div>
+                  <h2 id="reading-review-title">复核与追问</h2>
+                  <VerificationForm
+                    readingId={readingId}
+                    initialVerification={result.verification}
+                  />
+                  {canFollowUp ? <FollowUpForm readingId={readingId} /> : null}
+                </div>
+              </section>
+            ) : null}
           </article>
-          <ArchiveRail summary={summary} result={result} />
+          <ArchiveRail readingId={readingId} summary={summary} result={result} />
         </div>
       );
     }
@@ -490,24 +602,26 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
             </div>
           </section>
 
-          <section
-            className={surface.readingSection}
-            aria-labelledby="reading-review-title"
-          >
-            <span className={surface.sectionIndex} aria-hidden="true">
-              05
-            </span>
-            <div>
-              <h2 id="reading-review-title">复核与追问</h2>
-              <VerificationForm
-                readingId={readingId}
-                initialVerification={result.verification}
-              />
-              <FollowUpForm readingId={readingId} />
-            </div>
-          </section>
+          {isAccepted ? (
+            <section
+              className={surface.readingSection}
+              aria-labelledby="reading-review-title"
+            >
+              <span className={surface.sectionIndex} aria-hidden="true">
+                05
+              </span>
+              <div>
+                <h2 id="reading-review-title">复核与追问</h2>
+                <VerificationForm
+                  readingId={readingId}
+                  initialVerification={result.verification}
+                />
+                {canFollowUp ? <FollowUpForm readingId={readingId} /> : null}
+              </div>
+            </section>
+          ) : null}
         </article>
-        <ArchiveRail summary={summary} result={result} />
+        <ArchiveRail readingId={readingId} summary={summary} result={result} />
       </div>
     );
   }
@@ -522,7 +636,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
             onSubmitted={handleInputSubmitted}
           />
         </article>
-        <ArchiveRail summary={summary} result={null} />
+        <ArchiveRail readingId={readingId} summary={summary} result={null} />
       </div>
     );
   }
@@ -543,7 +657,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
             </p>
           </div>
         </article>
-        <ArchiveRail summary={summary} result={null} />
+        <ArchiveRail readingId={readingId} summary={summary} result={null} />
       </div>
     );
   }
@@ -571,7 +685,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
           ) : null}
         </div>
       </article>
-      <ArchiveRail summary={summary} result={null} />
+      <ArchiveRail readingId={readingId} summary={summary} result={null} />
     </div>
   );
 }

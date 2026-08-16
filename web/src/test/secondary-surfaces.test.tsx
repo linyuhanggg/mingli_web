@@ -340,13 +340,13 @@ describe("secondary surface families", () => {
       "已接候选事实",
     );
     expect(getToolSurface("time-check").intro).toContain(
-      "事件匹配、候选淘汰和排序暂未启用",
+      "提供结构化事件后可生成有界候选证据排序",
     );
     expect(entries.find((entry) => entry.href === "/tools/dream")?.status).toBe("适配中");
   });
 
   it.each([
-    ["time-check", "寻时定盘", ["已知时间范围", "可核对事件"]],
+    ["time-check", "寻时定盘", ["已知时间范围", "可核对事件", "结构化事件证据"]],
     ["chart-similarity", "同盘匹配", ["左侧已确认盘面", "右侧已确认盘面"]],
     ["rhythm", "本命音律", ["本命资料", "音律侧重"]],
     ["five-elements", "五行事实与调候", ["已确认盘面", "关注主题"]],

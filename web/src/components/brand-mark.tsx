@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import styles from "./site-chrome.module.css";
@@ -5,16 +6,22 @@ import styles from "./site-chrome.module.css";
 
 export function BrandMark() {
   return (
-    <Link className={styles.brand} href="/" aria-label="FateRadar 首页">
-      <span className={styles.symbol} aria-hidden="true">
-        <span>命</span>
-      </span>
+    <Link className={styles.brand} href="/" aria-label="命理工具首页">
+      <Image
+        alt=""
+        aria-hidden="true"
+        className={styles.brandSymbolImage}
+        height={48}
+        priority
+        src="/brand/mingli-mark.webp"
+        width={24}
+      />
       <span>
         <span className={styles.brandTitleRow}>
-          <strong>FateRadar</strong>
-          <span className={styles.versionPill}>v2.4</span>
+          <strong>命理工具</strong>
+          <span className={styles.versionPill}>测试版</span>
         </span>
-        <small>命盘 AI · 东方编辑档案</small>
+        <small>可核对盘面 · 中性界面</small>
       </span>
     </Link>
   );

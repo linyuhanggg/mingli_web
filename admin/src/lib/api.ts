@@ -25,6 +25,8 @@ export type AdminOverviewResponse = {
   queues: Array<{ id: string; label: string; count: number; is_stub: boolean }>;
 };
 
+const ADMIN_UNAVAILABLE_MESSAGE = "运营平台暂时不可用；当前页面保留只读结构。";
+
 function readCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
   const parts = document.cookie.split(";").map((part) => part.trim());
@@ -52,12 +54,17 @@ export async function adminFetch<T>(
   if (csrf && !headers.has("x-csrf-token")) {
     headers.set("x-csrf-token", csrf);
   }
-  const response = await fetch(path, {
-    ...init,
-    headers,
-    credentials: "same-origin",
-    cache: "no-store",
-  });
+  let response: Response;
+  try {
+    response = await fetch(path, {
+      ...init,
+      headers,
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+  } catch {
+    return { ok: false, status: 0, title: ADMIN_UNAVAILABLE_MESSAGE };
+  }
   if (response.status === 204) {
     return { ok: true, data: undefined as T };
   }
@@ -69,6 +76,9 @@ export async function adminFetch<T>(
     parsed = null;
   }
   if (!response.ok) {
+    if (response.status >= 500) {
+      return { ok: false, status: response.status, title: ADMIN_UNAVAILABLE_MESSAGE };
+    }
     const title =
       parsed && typeof parsed === "object" && parsed !== null && "title" in parsed
         ? String((parsed as { title: unknown }).title)

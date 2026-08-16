@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/meihua-chart-v1.schema.json",
+  "title": "MeihuaChartV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "subject_ref", "question", "casting_method", "primary_hexagram", "mutual_hexagram", "changed_hexagram", "moving_lines", "body_use"],
+  "properties": {
+    "schema_version": {"const": "meihua-chart/v1"},
+    "subject_ref": {"type": "string", "minLength": 1},
+    "question": {"type": "string", "minLength": 1},
+    "casting_method": {"enum": ["time", "supplied_number", "sound_count", "observation", "supplied_hexagram"]},
+    "primary_hexagram": {"$ref": "#/$defs/hexagram"},
+    "mutual_hexagram": {"oneOf": [{"$ref": "#/$defs/hexagram"}, {"type": "null"}]},
+    "changed_hexagram": {"oneOf": [{"$ref": "#/$defs/hexagram"}, {"type": "null"}]},
+    "moving_lines": {"type": "array", "minItems": 0, "maxItems": 6, "items": {"type": "integer"}},
+    "body_use": {"$ref": "#/$defs/bodyUse"},
+    "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]}
+  },
+  "$defs": {
+    "hexagram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "upper_trigram", "lower_trigram"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "upper_trigram": {"type": "string", "minLength": 1},
+        "lower_trigram": {"type": "string", "minLength": 1}
+      }
+    },
+    "trigram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["position", "trigram", "element"],
+      "properties": {
+        "position": {"enum": ["upper", "lower"]},
+        "trigram": {"type": "string", "minLength": 1},
+        "element": {"type": "string", "minLength": 1}
+      }
+    },
+    "bodyUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["body", "use", "relation", "status"],
+      "properties": {
+        "body": {"$ref": "#/$defs/trigram"},
+        "use": {"$ref": "#/$defs/trigram"},
+        "relation": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "minLength": 1}
+      }
+    },
+    "bodyRelationFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["body", "element", "position", "relation", "source_dependency_id", "source_plate", "status", "trigram"],
+      "properties": {
+        "body": {"$ref": "#/$defs/trigram"},
+        "element": {"type": "string", "minLength": 1},
+        "position": {"type": "string", "minLength": 1},
+        "relation": {"type": "string", "minLength": 1},
+        "source_dependency_id": {"type": "string", "minLength": 1},
+        "source_plate": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "minLength": 1},
+        "trigram": {"type": "string", "minLength": 1}
+      }
+    },
+    "seasonalStrengthFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["month_branch", "season", "source_dependency_id", "state", "status", "trigram"],
+      "properties": {
+        "month_branch": {"type": "string", "minLength": 1},
+        "season": {"type": "string", "minLength": 1},
+        "source_dependency_id": {"type": "string", "minLength": 1},
+        "state": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "minLength": 1},
+        "trigram": {"type": "string", "minLength": 1}
+      }
+    },
+    "coreFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["body_relation_facts", "seasonal_strength", "interpretive_candidates", "interpretation_status"],
+      "properties": {
+        "body_relation_facts": {"oneOf": [{"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/bodyRelationFact"}}, {"type": "null"}]},
+        "seasonal_strength": {"oneOf": [{"type": "object", "additionalProperties": {"$ref": "#/$defs/seasonalStrengthFact"}}, {"type": "null"}]},
+        "interpretive_candidates": {"oneOf": [{"$ref": "#/$defs/interpretiveCandidates"}, {"type": "null"}]},
+        "interpretation_status": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "relationCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_id", "source_plate", "position", "relation", "relation_key", "actor", "body", "seasonal_state", "rule_id", "status", "hard_verdict", "verification_status", "source_pack", "source_anchor", "source_dependency_id"],
+      "properties": {
+        "candidate_id": {"type": "string", "minLength": 1},
+        "source_plate": {"type": "string", "minLength": 1},
+        "position": {"enum": ["upper", "lower"]},
+        "relation": {"type": "string", "minLength": 1},
+        "relation_key": {"type": "string", "minLength": 1},
+        "actor": {"$ref": "#/$defs/trigram"},
+        "body": {"$ref": "#/$defs/trigram"},
+        "seasonal_state": {"oneOf": [{"type": "string", "minLength": 1}, {"type": "null"}]},
+        "rule_id": {"type": "string", "minLength": 1},
+        "status": {"const": "candidate_only"},
+        "hard_verdict": {"type": "null"},
+        "verification_status": {"const": "pending_verification"},
+        "source_pack": {"type": "string", "minLength": 1},
+        "source_anchor": {"type": "string", "minLength": 1},
+        "source_dependency_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "interpretiveCandidates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "status", "hard_verdict", "verification_status", "relation_candidates", "requires_classical_adjudication", "boundary"],
+      "properties": {
+        "schema_version": {"const": "mingli-meihua-interpretive-candidates-v1"},
+        "status": {"const": "candidate_only"},
+        "hard_verdict": {"type": "null"},
+        "verification_status": {"const": "pending_verification"},
+        "relation_candidates": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/relationCandidate"}},
+        "requires_classical_adjudication": {"type": "boolean"},
+        "boundary": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

@@ -21,6 +21,48 @@ import styles from "./fortune-flow.module.css";
 import formControls from "./form-controls.module.css";
 
 const CLOCK_TEXT = /^([01]\d|2[0-3]):[0-5]\d$/;
+const DATE_TEXT = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_CHECK_EVENT_DOMAINS = [
+  "career",
+  "education",
+  "finance",
+  "relationship",
+  "family",
+  "location",
+  "health",
+] as const;
+type TimeCheckEventDomain = (typeof TIME_CHECK_EVENT_DOMAINS)[number];
+
+type TimeCheckEventFact = {
+  event_id: string;
+  occurred_at: string;
+  domain: TimeCheckEventDomain;
+};
+
+function structuredEventLines(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function parseStructuredEventLine(line: string): TimeCheckEventFact | null {
+  const parts = line.split("|").map((part) => part.trim());
+  if (parts.length !== 3) return null;
+  const [occurredAt, domain, eventId] = parts;
+  if (
+    !DATE_TEXT.test(occurredAt) ||
+    !TIME_CHECK_EVENT_DOMAINS.includes(domain as TimeCheckEventDomain) ||
+    !eventId
+  ) {
+    return null;
+  }
+  return {
+    occurred_at: occurredAt,
+    domain: domain as TimeCheckEventDomain,
+    event_id: eventId,
+  };
+}
 
 const timeCheckSchema = z
   .object({
@@ -28,12 +70,10 @@ const timeCheckSchema = z
     time_range_start: z.string().regex(CLOCK_TEXT, "请输入有效的开始时间"),
     time_range_end: z.string().regex(CLOCK_TEXT, "请输入有效的结束时间"),
     known_events: z.string().max(4000, "可核对事件不能超过 4000 个字符"),
+    known_event_facts: z.string().max(2000, "结构化事件不能超过 2000 个字符"),
   })
   .superRefine((values, context) => {
-    const eventCount = values.known_events
-      .split(/\r?\n/)
-      .map((event) => event.trim())
-      .filter(Boolean).length;
+    const eventCount = structuredEventLines(values.known_events).length;
     if (eventCount > 5) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
@@ -41,6 +81,22 @@ const timeCheckSchema = z
         message: "最多填写 5 条可核对事件，每行一条",
       });
     }
+    const eventFactLines = structuredEventLines(values.known_event_facts);
+    if (eventFactLines.length > 5) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["known_event_facts"],
+        message: "最多填写 5 条结构化事件，每行一条",
+      });
+    }
+    eventFactLines.forEach((line) => {
+      if (parseStructuredEventLine(line)) return;
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["known_event_facts"],
+        message: "结构化事件格式应为：YYYY-MM-DD | 领域 | 事件标识",
+      });
+    });
   });
 
 type TimeCheckFormValues = z.infer<typeof timeCheckSchema>;
@@ -69,6 +125,7 @@ export function TimeCheckFlow() {
       time_range_start: "00:00",
       time_range_end: "23:59",
       known_events: "",
+      known_event_facts: "",
     },
   });
 
@@ -107,14 +164,19 @@ export function TimeCheckFlow() {
       setBusy(true);
       setSubmitError("");
       const knownEvents = values.known_events
-        .split(/\r?\n/)
-        .map((event) => event.trim())
-        .filter(Boolean);
+        ? structuredEventLines(values.known_events)
+        : [];
+      const knownEventFacts = structuredEventLines(values.known_event_facts)
+        .map(parseStructuredEventLine)
+        .filter((event): event is TimeCheckEventFact => event !== null);
       const payload: TimeCheckStartRequest = {
         profile_version_id: values.profile_version_id,
         time_range_start: values.time_range_start,
         time_range_end: values.time_range_end,
         known_events: knownEvents,
+        ...(knownEventFacts.length > 0
+          ? { known_event_facts: knownEventFacts }
+          : {}),
         query: "围绕已确认出生档案生成十二个候选时辰事实",
         dimension_ids: ["time_options"],
       };
@@ -148,8 +210,8 @@ export function TimeCheckFlow() {
         选择已确认的出生档案，提交已知时间范围和可核对事件。服务端 Runtime 会用现有八字核心逐个生成十二个候选时辰；本页不在浏览器排盘。
       </p>
       <p className={styles.scopeNotice}>
-        <strong>当前输出范围：十二候选、四柱原值和时间口径。</strong>
-        事件匹配、候选淘汰和排序尚未接通；这里不会把事件标签变成“最可能时辰”的结论。
+        <strong>当前输出范围：十二候选、四柱原值、时间口径和有界候选证据排序。</strong>
+        结构化事件只用于证据比较，不会直接生成“最可能时辰”的古法结论。
       </p>
 
       {loading ? <p className={styles.status} role="status">正在加载档案…</p> : null}
@@ -282,8 +344,26 @@ export function TimeCheckFlow() {
           </div>
 
           <div className={formControls.field}>
-            <p className={formControls.hint}>
-              结构化事件匹配、淘汰规则和候选排序正在适配中；真实产品路由暂不接受这类输入。
+            <label htmlFor="time-check-event-facts">
+              结构化事件证据（可选，每行一条，最多 5 条）
+            </label>
+            <textarea
+              id="time-check-event-facts"
+              className={formControls.input}
+              rows={5}
+              disabled={busy}
+              aria-invalid={Boolean(errors.known_event_facts)}
+              aria-describedby="time-check-event-facts-help"
+              placeholder="2018-07-01 | career | 开始工作"
+              {...register("known_event_facts")}
+            />
+            {errors.known_event_facts ? (
+              <p className={formControls.error} role="alert">
+                {errors.known_event_facts.message}
+              </p>
+            ) : null}
+            <p className={formControls.hint} id="time-check-event-facts-help">
+              格式：YYYY-MM-DD | career/education/finance/relationship/family/location/health | 事件标识。只生成有界证据排序，不生成生命事件结论。
             </p>
           </div>
 

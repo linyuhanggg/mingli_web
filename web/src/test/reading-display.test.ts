@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import type { ReadingFact } from "@/lib/api";
-import { buildBaziChartView, formatReadingFact, formatReadingFacts, splitAcceptedCopy } from "@/lib/reading-display";
+import {
+  buildBaziChartView,
+  buildBaziChartViewFromViewModel,
+  formatCapabilityIds,
+  formatDimensionIds,
+  formatObjectId,
+  formatReadingFact,
+  formatReadingFacts,
+  splitAcceptedCopy,
+} from "@/lib/reading-display";
 
 function fact(display_text: string, overrides: Partial<ReadingFact> = {}): ReadingFact {
   return {
@@ -28,13 +37,13 @@ describe("formatReadingFact", () => {
       fact("性别: male"),
       fact("时间口径: civil"),
       fact("子时策略: midnight"),
-      fact("出生时间: 2000-10-18T05:10:00+08:00"),
+      fact("出生时间: 1994-04-30T05:55:00+08:00"),
     ]);
     expect(facts.map((item) => [item.label, item.text])).toEqual([
       ["性别", "男"],
       ["时间口径", "民用时"],
       ["子时策略", "按午夜换日"],
-      ["出生时间", expect.stringMatching(/2000年10月18日/)],
+      ["出生时间", expect.stringMatching(/1994年4月30日/)],
     ]);
   });
 
@@ -62,6 +71,16 @@ describe("formatReadingFact", () => {
     expect(calendar.text).toContain("sxtwl-2.0.7");
     expect(calendar.text).toContain("民用时");
     expect(calendar.text).not.toContain("calendar_convention");
+
+    const fortuneTargetCalendar = formatReadingFact(
+      fact(
+        'calendar_normalization: {"time_basis":{"policy":"civil"},"true_solar_time":{"status":"not_applied"}}',
+      ),
+    );
+    expect(fortuneTargetCalendar.text).toContain("时间策略：民用时");
+    expect(fortuneTargetCalendar.text).toContain(
+      "太阳时修正未应用（当前周期按民用日边界）",
+    );
   });
 
   it("never dumps sensitive value payloads when display_text is usable", () => {
@@ -115,6 +134,58 @@ describe("formatReadingFact", () => {
     expect(presentation.text).toContain("2026年8月12日");
     expect(presentation.text).toContain("丙寅");
   });
+
+  it("keeps Runtime fortune mechanisms visible without turning them into a verdict", () => {
+    const presentation = formatReadingFact(
+      fact("周期确定性标记：已由服务端计算", {
+        kind_id: "fact:period_markers",
+        value: [
+          {
+            date: "2026-08-14",
+            day_pillar: "庚申",
+            primary_mechanism_ids: ["day-stem-ten-god"],
+            unresolved_boundaries: ["specific_life_event_cannot_be_determined"],
+          },
+        ],
+      }),
+    );
+
+    expect(presentation.text).toContain("机制 日干十神");
+    expect(presentation.text).not.toContain("吉");
+    expect(presentation.text).not.toContain("凶");
+  });
+});
+
+describe("format reading scope", () => {
+  it("uses product labels for every installed Runtime capability", () => {
+    expect(
+      formatCapabilityIds([
+        "bazi",
+        "fortune",
+        "liuyao",
+        "meihua",
+        "qimen",
+        "liuren",
+        "luming-nayin",
+        "physiognomy",
+        "selection",
+        "taiyi",
+        "xingming",
+        "ziwei",
+        "time-check",
+      ]),
+    ).toBe(
+      "八字、日运与周运、六爻、梅花易数、奇门遁甲、大六壬、禄命/纳音、相法、择日、太乙神数、七政四余、紫微斗数、寻时定盘",
+    );
+  });
+
+  it("uses product labels for P10 objects and dimensions", () => {
+    expect(formatObjectId("spatial_observation")).toBe("空间观察");
+    expect(formatObjectId("visible_observation")).toBe("可见观察");
+    expect(formatDimensionIds(["current_state", "direction", "time_options"])).toBe(
+      "当前状态、方位、时辰候选",
+    );
+  });
 });
 
 
@@ -157,6 +228,87 @@ describe("buildBaziChartView", () => {
     expect(chart.dayMaster).toContain("己");
     expect(chart.activeLuck).toBe("戊子");
     expect(chart.highlights.some((item) => item.text.includes("持续积累"))).toBe(true);
+  });
+
+  it("maps the typed Runtime ViewModel without recalculating the pillars", () => {
+    const chart = buildBaziChartViewFromViewModel({
+      schema_version: "bazi-chart/v1",
+      subject_ref: "profile-version:test",
+      pillars: [
+        { position: "year", stem: "甲", branch: "戌" },
+        { position: "month", stem: "戊", branch: "辰" },
+        { position: "day", stem: "丙", branch: "戌" },
+        { position: "hour", stem: "辛", branch: "卯" },
+      ],
+      element_balance: [
+        {
+          element: "earth",
+          value: 4,
+          display_text: "土 · 可见干支计数 4（不等同旺衰裁决）",
+        },
+      ],
+      time_layers: [],
+      core_facts: {
+        day_master: { stem: "丙", element: "fire", polarity: "阳" },
+        hidden_stems: null,
+        ten_gods: null,
+        nayin: null,
+        twelve_growth_stages: [
+          {
+            position: "year",
+            stem: "甲",
+            branch: "戌",
+            stage: "养",
+            stage_index: 12,
+            direction: "forward",
+            source_dependency_id: "bazi.chart.twelve-growth-stages-v1",
+            boundary: "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论",
+          },
+        ],
+        xunkong: {
+          day_pillar: "丙戌",
+          xun: "甲申",
+          branches: ["午", "未"],
+          source_dependency_id: "bazi.chart.xunkong-sexagenary-v1",
+          boundary: "按日柱所属旬计算旬空事实；不能单独推出吉凶、六亲或事件结论",
+        },
+        san_yuan: {
+          tai_yuan: "己未",
+          ming_gong: "甲戌",
+          shen_gong: "庚午",
+          source: "lunar-typescript-auxiliary",
+          source_dependency_id: "bazi.chart.san-yuan-lunar-typescript-v1",
+          boundary: "胎元、命宫、身宫位置事实；不能单独推出格局、旺衰、吉凶或事件结论",
+        },
+        month_command: {
+          branch: "辰",
+          label: "辰月",
+          main_qi: "戊",
+          main_qi_element: "earth",
+        },
+        seasonal_profile: null,
+        tiaohou_markers: null,
+        element_inventory: null,
+        interpretive_candidates: null,
+        branch_relations: null,
+        shensha_auxiliary: null,
+        luck_cycles: null,
+        year_layers: null,
+      },
+    });
+
+    expect(chart.pillars).toEqual({
+      year: "甲戌",
+      month: "戊辰",
+      day: "丙戌",
+      hour: "辛卯",
+    });
+    expect(chart.dayMaster).toContain("丙");
+    expect(chart.monthCommand).toContain("主气 戊");
+    expect(chart.coreFacts?.twelve_growth_stages?.[0]?.stage).toBe("养");
+    expect(chart.coreFacts?.xunkong?.branches).toEqual(["午", "未"]);
+    expect(chart.coreFacts?.san_yuan?.tai_yuan).toBe("己未");
+    expect(chart.secondary[0]?.text).toContain("不等同旺衰裁决");
   });
 });
 

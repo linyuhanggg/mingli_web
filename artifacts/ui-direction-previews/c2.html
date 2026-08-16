@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C2 纸上术数档案 方向预览</title>
+<style>
+:root{
+  --paper:#f4efe4; --surface:#faf6ec; --ink:#1c1b16; --muted:#5f5a4d;
+  --faint:#8b8271; --line:#d9cfb8; --line-strong:#c7b995; --seal:#bf2e22; --seal-soft:#f3e1da;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;line-height:1.7}
+.serif{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif}
+.wrap{max-width:1120px;margin:0 auto;padding:0 48px}
+.top{border-top:3px solid var(--ink);border-bottom:1px solid var(--line);height:66px;display:flex;align-items:center}
+.top .wrap{display:flex;align-items:center;width:100%;gap:28px}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand .name{font-family:"Songti SC",serif;font-size:20px;font-weight:700;letter-spacing:.05em}
+.brand .sub{font-size:12px;color:var(--faint)}
+.nav{display:flex;gap:20px;font-size:14px;color:var(--muted)}
+.nav b{color:var(--ink)}
+.actions{margin-left:auto;display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 20px;font-size:14px;font-weight:550;border:1px solid var(--ink);background:transparent;color:var(--ink);text-decoration:none;border-radius:2px}
+.btn.primary{background:var(--ink);color:#f7f2e6}
+.btn.seal{background:var(--seal);border-color:var(--seal);color:#fff}
+.hero{display:grid;grid-template-columns:1.04fr .96fr;gap:64px;padding:76px 0 60px;align-items:center}
+.hero .kicker{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--seal);margin-bottom:20px}
+.hero .kicker::before{content:"";width:10px;height:10px;background:var(--seal);display:inline-block}
+.hero h1{font-family:"Songti SC",serif;font-size:42px;line-height:1.22;font-weight:700;letter-spacing:.03em}
+.hero .sub{margin-top:20px;font-size:15px;color:var(--muted);max-width:27em}
+.hero .cta{display:flex;gap:14px;margin-top:32px}
+.plate{border:1px solid var(--line);background:var(--surface);padding:26px 24px 18px;position:relative}
+.plate::before{content:"";position:absolute;inset:7px;border:1px solid var(--line);pointer-events:none}
+.plate .head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:10px}
+.plate .head b{font-family:"Songti SC",serif;font-size:16px;letter-spacing:.08em}
+.plate .head span{font-size:12px;color:var(--faint)}
+.pillars{display:grid;grid-template-columns:repeat(4,1fr);margin-top:18px;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.pillar{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 8px;text-align:center;background:rgba(250,246,236,.7)}
+.pillar .k{font-size:11px;color:var(--faint);margin-bottom:10px}
+.pillar .v{font-family:"Songti SC",serif;font-size:24px;font-weight:700}
+.pillar .g{font-size:11px;color:var(--muted);margin-top:6px}
+.notes{margin-top:16px;font-size:13px}
+.notes .row{display:grid;grid-template-columns:76px 1fr;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.notes .row span{color:var(--faint)}
+.sealmark{position:absolute;right:18px;bottom:16px;width:52px;height:52px;background:var(--seal);color:#fff;font-family:"Songti SC",serif;display:grid;place-items:center;font-size:22px;letter-spacing:.15em}
+.plate .foot{font-size:11px;color:var(--faint);text-align:left;margin-top:14px;padding-right:64px}
+.mech{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line);margin-bottom:56px}
+.mech>div{padding:24px 26px;border-right:1px solid var(--line)}
+.mech>div:last-child{border-right:none}
+.mech .n{font-family:"Songti SC",serif;font-size:30px;color:var(--seal);font-weight:700;line-height:1}
+.mech b{display:block;margin-top:12px;font-size:17px;font-family:"Songti SC",serif}
+.mech p{margin-top:6px;font-size:13px;color:var(--muted)}
+.section .h{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--line-strong);padding-bottom:12px;margin:56px 0 8px}
+.section h2{font-family:"Songti SC",serif;font-size:24px;letter-spacing:.06em}
+.section .h span{font-size:13px;color:var(--faint)}
+.rows .row{display:grid;grid-template-columns:52px 1fr auto;gap:18px;align-items:center;padding:15px 4px;border-bottom:1px solid var(--line)}
+.rows .idx{font-family:"Songti SC",serif;font-size:20px;color:var(--seal)}
+.rows h3{font-size:16px;font-weight:600}
+.rows p{font-size:13px;color:var(--muted);margin-top:2px}
+.rows .tag{font-size:12px;color:var(--faint);text-align:right}
+.footer{margin-top:56px;border-top:3px double var(--line-strong);padding:26px 0 40px;display:flex;justify-content:space-between;font-size:12px;color:var(--faint)}
+@media(max-width:760px){
+  .wrap{padding:0 16px}
+  .nav,.brand .sub{display:none}
+  .top{height:56px}
+  .hero{grid-template-columns:1fr;gap:32px;padding:40px 0 32px}
+  .hero h1{font-size:28px}
+  .mech{grid-template-columns:1fr}
+  .mech>div{border-right:none;border-bottom:1px solid var(--line)}
+  .pillars{grid-template-columns:repeat(2,1fr)}
+  .rows .row{grid-template-columns:36px 1fr}
+  .rows .tag{display:none}
+  .footer{flex-direction:column;gap:6px}
+}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <div class="brand"><span class="name">命理工具</span><span class="sub">纸上证据 · 免费排盘</span></div>
+  <nav class="nav"><b>术数</b><span>合参</span><span>工具</span><span>每日</span><span>知识内容</span><span>账户</span></nav>
+  <div class="actions"><a class="btn">登录</a><a class="btn seal">开始排盘</a></div>
+</div></div>
+
+<div class="wrap">
+  <section class="hero">
+    <div>
+      <div class="kicker">免费排盘 · 证据成书</div>
+      <h1 class="serif">把你的生辰，写成一本可核对的命书</h1>
+      <p class="sub">七个体系先出确定性事实，证据与解释分层；未接通之处留白说明，不编造一行。</p>
+      <div class="cta"><a class="btn primary">开始排盘</a><a class="btn">看示例盘面</a></div>
+    </div>
+    <div class="plate">
+      <div class="head"><b>示例·四柱卷</b><span>示意数据</span></div>
+      <div class="pillars">
+        <div class="pillar"><div class="k">年柱</div><div class="v">甲辰</div><div class="g">一九九二</div></div>
+        <div class="pillar"><div class="k">月柱</div><div class="v">己巳</div><div class="g">五月</div></div>
+        <div class="pillar"><div class="k">日柱</div><div class="v">辛未</div><div class="g">初八</div></div>
+        <div class="pillar"><div class="k">时柱</div><div class="v">戊子</div><div class="g">午时</div></div>
+      </div>
+      <div class="notes">
+        <div class="row"><span>出生</span><b>1992年5月8日 午时</b></div>
+        <div class="row"><span>地点</span><b>北京 · 真太阳时</b></div>
+        <div class="row"><span>依据</span><b>0 / 1328 条可核证据，零命中即记零</b></div>
+      </div>
+      <div class="sealmark">命</div>
+      <div class="foot">正式产品由 Runtime 生成；此处仅为视觉示意。</div>
+    </div>
+  </section>
+
+  <section class="mech">
+    <div><span class="n">一</span><b>事实与解释分层</b><p>盘面是计算，解读必须挂在可核对证据上。</p></div>
+    <div><span class="n">二</span><b>证据零命中即零</b><p>不补一段看似古文的出处，不伪造一句。</p></div>
+    <div><span class="n">三</span><b>三术并列互证</b><p>合参展示各术信号与分歧，不揉成一句。</p></div>
+  </section>
+
+  <section class="section">
+    <div class="h"><h2>选择一门入手</h2><span>确定性盘面全部免费</span></div>
+    <div class="rows">
+      <div class="row"><span class="idx">命</span><div><h3>八字</h3><p>四柱、十神、大运流年的确定性结构</p></div><span class="tag">免费盘面 · 约两分钟</span></div>
+      <div class="row"><span class="idx">斗</span><div><h3>紫微</h3><p>十二宫、四化与三方四正的盘面事实</p></div><span class="tag">免费盘面 · 约两分钟</span></div>
+      <div class="row"><span class="idx">政</span><div><h3>七政</h3><p>星曜宿度与命度格局的天文排布</p></div><span class="tag">免费盘面 · 约两分钟</span></div>
+      <div class="row"><span class="idx">爻</span><div><h3>六爻</h3><p>一事一问，本卦变卦与爻位事实</p></div><span class="tag">即时起课</span></div>
+      <div class="row"><span class="idx">奇</span><div><h3>奇门</h3><p>局式、九宫与用神锚点的结构化排布</p></div><span class="tag">即时起局</span></div>
+      <div class="row"><span class="idx">壬</span><div><h3>大六壬</h3><p>天地盘、四课三传与课体候选</p></div><span class="tag">即时起课</span></div>
+      <div class="row"><span class="idx">相</span><div><h3>见相</h3><p>结构化视觉观察与证据充足度</p></div><span class="tag">图片采集</span></div>
+      <div class="row"><span class="idx">合</span><div><h3>命盘合参</h3><p>八字领头，紫微七政并列互证</p></div><span class="tag">三术对照</span></div>
+      <div class="row"><span class="idx">问</span><div><h3>问事合参</h3><p>六爻奇门六壬同问同刻并列</p></div><span class="tag">三术对照</span></div>
+    </div>
+  </section>
+
+  <footer class="footer"><span>命理工具 · 测试版</span><span>盘面免费 · 深读与追问收费 · 证据可核</span></footer>
+</div>
+</body>
+</html>

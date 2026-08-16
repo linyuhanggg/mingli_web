@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/fengshui-view-v1.schema.json",
+  "title": "FengshuiViewV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "subject_ref", "active_subprofiles", "observation_provenance", "compass", "building_chronology", "layout_graph", "form", "liqi", "active_source_rule_ids", "conflicts", "uncertainties", "critical_missing"],
+  "properties": {
+    "schema_version": {"const": "fengshui-view/v1"},
+    "subject_ref": {"type": "string", "minLength": 1},
+    "active_subprofiles": {"type": "array", "items": {"enum": ["form", "liqi"]}},
+    "observation_provenance": {"type": "object"},
+    "compass": {"type": "object"},
+    "building_chronology": {"type": "object"},
+    "layout_graph": {"type": "object"},
+    "form": {"type": "object"},
+    "liqi": {"type": "object"},
+    "active_source_rule_ids": {"type": "array", "items": {"type": "string"}},
+    "conflicts": {"type": "array", "items": {"type": "object"}},
+    "uncertainties": {"type": "array", "items": {"type": "object"}},
+    "critical_missing": {"type": "array", "items": {"type": "string"}}
+  }
+}

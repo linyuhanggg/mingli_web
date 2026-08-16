@@ -603,10 +603,6 @@ class FakeModelGateway:
 
     async def generate(self, request: NarrativeRequest) -> ModelGenerationResult:
         scopes = _objects(request.brief.get("claim_scopes"))
-        scope = scopes[0] if scopes else {}
-        subject_ref = str(scope.get("subject_ref", "fixture:subject"))
-        dimension_id = str(scope.get("dimension_id", "overview"))
-        allowed_kinds = _strings(scope.get("allowed_kind_ids"))
         findings = _objects(request.brief.get("findings"))
         brief_limit_ids = {
             str(item.get("kind_id"))
@@ -622,29 +618,52 @@ class FakeModelGateway:
             # Keep Fake closed-world when the contract does not require a limit.
             limit_ids = (sorted(brief_limit_ids)[0],)
 
+        dimensions = request.output_contract.required_dimension_ids or tuple(
+            str(scope.get("dimension_id", "overview")) for scope in scopes[:1]
+        )
+        if not dimensions:
+            dimensions = ("overview",)
+        blocks: list[dict[str, object]] = []
+        block_count = max(len(dimensions), request.output_contract.min_blocks)
+        for index in range(block_count):
+            dimension_id = dimensions[index % len(dimensions)]
+            scope = next(
+                (
+                    item
+                    for item in scopes
+                    if str(item.get("dimension_id")) == dimension_id
+                ),
+                scopes[0] if scopes else {},
+            )
+            subject_ref = str(scope.get("subject_ref", "fixture:subject"))
+            allowed_kinds = _strings(scope.get("allowed_kind_ids"))
+            fact_refs = list(_strings(scope.get("fact_refs")))
+            evidence_refs = list(_strings(scope.get("evidence_refs")))
+            blocks.append(
+                {
+                    "block_id": f"fake-block-{index}",
+                    "block_type": "claim",
+                    "text": "这是合同测试候选稿，不是正式命理解读。",
+                    "subject_ref": subject_ref,
+                    "dimension_id": dimension_id,
+                    "claim_kind_id": (allowed_kinds[0] if allowed_kinds else "kind.fixture"),
+                    "certainty_id": str(scope.get("certainty_ceiling_id", "certainty.fixture")),
+                    "fact_refs": fact_refs,
+                    "finding_refs": [
+                        str(item["ref"])
+                        for item in findings
+                        if item.get("subject_ref") == subject_ref
+                        and dimension_id in _strings(item.get("dimension_ids"))
+                    ],
+                    "evidence_refs": evidence_refs,
+                    "limit_kind_ids": list(limit_ids),
+                }
+            )
+
         candidate = NarrativeCandidate.from_dict(
             {
                 "schema_version": "mingli-narrative-candidate-v1",
-                "blocks": [
-                    {
-                        "block_id": "fake-block-1",
-                        "block_type": "claim",
-                        "text": "这是合同测试候选稿，不是正式命理解读。",
-                        "subject_ref": subject_ref,
-                        "dimension_id": dimension_id,
-                        "claim_kind_id": (allowed_kinds[0] if allowed_kinds else "kind.fixture"),
-                        "certainty_id": str(scope.get("certainty_ceiling_id", "certainty.fixture")),
-                        "fact_refs": list(_strings(scope.get("fact_refs"))),
-                        "finding_refs": [
-                            str(item["ref"])
-                            for item in findings
-                            if item.get("subject_ref") == subject_ref
-                            and dimension_id in _strings(item.get("dimension_ids"))
-                        ],
-                        "evidence_refs": list(_strings(scope.get("evidence_refs"))),
-                        "limit_kind_ids": list(limit_ids),
-                    }
-                ],
+                "blocks": blocks,
             }
         )
         usage = ModelTokenUsage(input_tokens=0, output_tokens=0, total_tokens=0)

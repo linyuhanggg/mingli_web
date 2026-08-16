@@ -5,7 +5,15 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 from app.adapters.otp import OtpChannel, OtpDeliveryAdapter, OtpDeliveryUnavailable
-from app.identity.models import AuditEvent, DeviceSession, GuestSession, LoginIdentity, User
+from app.admin.passwords import hash_password, verify_password
+from app.identity.models import (
+    AuditEvent,
+    ConsentRecord,
+    DeviceSession,
+    GuestSession,
+    LoginIdentity,
+    User,
+)
 from app.identity.otp import (
     InMemoryOtpChallengeStore,
     InMemoryOtpRequestLimiter,
@@ -14,8 +22,10 @@ from app.identity.otp import (
     hash_identity,
     normalize_destination,
 )
+from app.identity.policy import require_current_policy_version
 from app.identity.repository import IdentityRepository
 from app.identity.security import hash_token, new_opaque_token
+from app.security.envelope import EnvelopeCipher
 
 GUEST_SESSION_LIFETIME = timedelta(hours=24)
 
@@ -73,6 +83,15 @@ class CreatedDeviceSession:
     token: str
     csrf_token: str
     expires_at: datetime
+    is_new_user: bool = False
+
+
+class InvalidPassword(RuntimeError):
+    """The credentials do not identify an active password-enabled account."""
+
+
+class IdentityAlreadyRegistered(RuntimeError):
+    """The verified identity already has a password-enabled account."""
 
 
 class AuthService:
@@ -87,6 +106,7 @@ class AuthService:
         otp_cooldown_seconds: int,
         device_session_days: int,
         request_limiter: InMemoryOtpRequestLimiter | None = None,
+        destination_cipher: EnvelopeCipher | None = None,
     ) -> None:
         self.repository = repository
         self.challenge_store = challenge_store
@@ -96,6 +116,7 @@ class AuthService:
         self.otp_cooldown_seconds = otp_cooldown_seconds
         self.device_session_days = device_session_days
         self.request_limiter = request_limiter
+        self.destination_cipher = destination_cipher
 
     async def request_otp(
         self,
@@ -153,12 +174,165 @@ class AuthService:
     async def verify_otp(self, challenge_id: UUID, code: str) -> CreatedDeviceSession:
         challenge = await self.challenge_store.verify(challenge_id, code)
         now = datetime.now(UTC)
-        user, identity = await self.repository.resolve_identity(
+        user, identity, is_new_user = await self.repository.resolve_identity(
             provider=challenge.address.channel,
             provider_subject_hash=challenge.provider_subject_hash,
             masked_destination=challenge.address.masked,
             verified_at=now,
         )
+        await self._store_destination(identity, challenge.address.normalized)
+        return await self._create_device_session(
+            user=user,
+            identity=identity,
+            action="identity.otp_verified",
+            is_new_user=is_new_user,
+        )
+
+    async def authenticate_password(
+        self,
+        channel: OtpChannel,
+        destination: str,
+        password: str,
+    ) -> CreatedDeviceSession:
+        address = normalize_destination(channel, destination)
+        subject_hash = hash_identity(self.identity_hash_key, address)
+        found = await self.repository.find_identity(
+            provider=address.channel,
+            provider_subject_hash=subject_hash,
+        )
+        if found is None:
+            raise InvalidPassword("invalid credentials")
+        user, identity = found
+        credential = await self.repository.get_password_credential(user.id)
+        if credential is None or not verify_password(password, credential.password_hash):
+            raise InvalidPassword("invalid credentials")
+        await self._store_destination(identity, address.normalized)
+        return await self._create_device_session(
+            user=user,
+            identity=identity,
+            action="identity.password_verified",
+        )
+
+    async def recover_password(
+        self,
+        challenge_id: UUID,
+        code: str,
+        password: str,
+    ) -> CreatedDeviceSession:
+        challenge = await self.challenge_store.verify(challenge_id, code)
+        found = await self.repository.find_identity(
+            provider=challenge.address.channel,
+            provider_subject_hash=challenge.provider_subject_hash,
+        )
+        if found is None:
+            raise InvalidPassword("invalid recovery credentials")
+
+        user, identity = found
+        await self._store_destination(identity, challenge.address.normalized)
+        await self.set_password(user.id, password)
+        revoked_count = await self.repository.revoke_active_device_sessions(
+            user.id,
+            datetime.now(UTC),
+        )
+        self.repository.add_audit_event(
+            AuditEvent(
+                user_id=user.id,
+                action="identity.password_recovery_sessions_revoked",
+                event_metadata={"revoked_count": revoked_count},
+            )
+        )
+        return await self._create_device_session(
+            user=user,
+            identity=identity,
+            action="identity.password_recovered",
+        )
+
+    async def register_with_otp(
+        self,
+        challenge_id: UUID,
+        code: str,
+        password: str,
+        policy_version: str,
+    ) -> CreatedDeviceSession:
+        normalized_policy_version = require_current_policy_version(policy_version)
+        challenge = await self.challenge_store.verify(challenge_id, code)
+        found = await self.repository.find_identity(
+            provider=challenge.address.channel,
+            provider_subject_hash=challenge.provider_subject_hash,
+        )
+        if found is None:
+            now = datetime.now(UTC)
+            user, identity, is_new_user = await self.repository.resolve_identity(
+                provider=challenge.address.channel,
+                provider_subject_hash=challenge.provider_subject_hash,
+                masked_destination=challenge.address.masked,
+                verified_at=now,
+            )
+        else:
+            user, identity = found
+            is_new_user = False
+            if await self.repository.get_password_credential(user.id) is not None:
+                raise IdentityAlreadyRegistered("identity already has a password")
+
+        await self._store_destination(identity, challenge.address.normalized)
+        await self.set_password(user.id, password)
+        accepted_at = datetime.now(UTC)
+        consent_records = [
+            ConsentRecord(
+                user_id=user.id,
+                policy_key=policy_key,
+                policy_version=normalized_policy_version,
+                context="registration",
+                accepted_at=accepted_at,
+            )
+            for policy_key in ("privacy", "terms")
+        ]
+        for record in consent_records:
+            self.repository.add_consent_record(record)
+
+        created = await self._create_device_session(
+            user=user,
+            identity=identity,
+            action="identity.registered",
+            is_new_user=is_new_user,
+        )
+        for record in consent_records:
+            record.actor_session_id = created.session_id
+        return created
+
+    async def set_password(self, user_id: UUID, password: str) -> None:
+        password_hash = hash_password(password)
+        now = datetime.now(UTC)
+        await self.repository.save_password_credential(
+            user_id=user_id,
+            password_hash=password_hash,
+            updated_at=now,
+        )
+        self.repository.add_audit_event(
+            AuditEvent(
+                user_id=user_id,
+                action="identity.password_set",
+                event_metadata={},
+            )
+        )
+
+    async def _store_destination(self, identity: LoginIdentity, destination: str) -> None:
+        if self.destination_cipher is not None:
+            await self.repository.store_destination(
+                identity,
+                destination,
+                self.destination_cipher,
+            )
+
+    async def _create_device_session(
+        self,
+        *,
+        user: User,
+        identity: LoginIdentity,
+        action: str,
+        is_new_user: bool = False,
+    ) -> CreatedDeviceSession:
+        now = datetime.now(UTC)
         session_id = uuid4()
         token = new_opaque_token()
         csrf_token = new_opaque_token()
@@ -177,8 +351,8 @@ class AuthService:
             AuditEvent(
                 user_id=user.id,
                 actor_session_id=session_id,
-                action="identity.otp_verified",
-                event_metadata={"provider": challenge.address.channel},
+                action=action,
+                event_metadata={"provider": identity.provider},
             )
         )
         return CreatedDeviceSession(
@@ -188,4 +362,5 @@ class AuthService:
             token=token,
             csrf_token=csrf_token,
             expires_at=expires_at,
+            is_new_user=is_new_user,
         )

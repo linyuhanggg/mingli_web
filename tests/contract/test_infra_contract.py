@@ -51,6 +51,9 @@ def test_compose_declares_the_phase_one_process_boundaries() -> None:
         "api",
         "worker",
         "web",
+        "admin",
         "edge",
     }
     assert "MINGLI_TRUSTED_PROXY_CIDRS" in compose["services"]["api"]["environment"]
+    assert compose["services"]["admin"]["ports"] == ["127.0.0.1:3001:3001"]
+    assert compose["services"]["admin"]["depends_on"] == ["api"]

@@ -15,7 +15,13 @@ async def database() -> AsyncIterator[Any]:
     importlib.import_module("app.profiles.models")
     importlib.import_module("app.readings.models")
     importlib.import_module("app.admin.models")
+    importlib.import_module("app.support.models")
     importlib.import_module("app.entitlements.models")
+    importlib.import_module("app.commerce.models")
+    importlib.import_module("app.referrals.models")
+    importlib.import_module("app.content.models")
+    importlib.import_module("app.privacy.models")
+    importlib.import_module("app.media.models")
     database = database_module.Database("sqlite+aiosqlite:///:memory:")
 
     async with database.engine.begin() as connection:

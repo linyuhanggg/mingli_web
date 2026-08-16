@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/rhythm-facts-view-v1.schema.json",
+  "title": "Rhythm Facts ViewModel v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "subject_ref",
+    "pillars",
+    "independent_lineage",
+    "fact_scope",
+    "interpretation_status",
+    "source_boundary"
+  ],
+  "properties": {
+    "schema_version": {"const": "rhythm-facts-view/v1"},
+    "subject_ref": {"type": "string", "minLength": 1},
+    "pillars": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"$ref": "#/$defs/pillar"}
+    },
+    "independent_lineage": {"type": "string", "minLength": 1},
+    "fact_scope": {"type": "string", "minLength": 1},
+    "interpretation_status": {"const": "facts_only"},
+    "source_boundary": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "pillar": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["position", "stem", "branch", "nayin"],
+      "properties": {
+        "position": {"enum": ["year", "month", "day", "hour"]},
+        "stem": {"type": "string", "minLength": 1},
+        "branch": {"type": "string", "minLength": 1},
+        "nayin": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

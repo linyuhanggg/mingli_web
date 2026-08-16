@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/qimen-chart-v1.schema.json",
+  "title": "Qimen Chart ViewModel v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "subject_ref", "question", "dun_type", "ju_number", "palaces", "chief", "director", "instruments_wonders", "xunkong", "horse", "named_patterns"],
+  "properties": {
+    "schema_version": {"const": "qimen-chart/v1"},
+    "subject_ref": {"type": "string", "minLength": 1},
+    "question": {"type": "string", "minLength": 1},
+    "dun_type": {"enum": ["yin", "yang"]},
+    "ju_number": {"type": "integer", "minimum": 1, "maximum": 9},
+    "palaces": {"type": "array", "minItems": 9, "maxItems": 9, "items": {"$ref": "#/$defs/palace"}},
+    "chief": {"$ref": "#/$defs/chief"},
+    "director": {"$ref": "#/$defs/director"},
+    "instruments_wonders": {"$ref": "#/$defs/instrumentsWonders"},
+    "xunkong": {"$ref": "#/$defs/xunkong"},
+    "horse": {"$ref": "#/$defs/horse"},
+    "named_patterns": {"type": "array", "items": {"$ref": "#/$defs/namedPattern"}}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1},
+    "stringArray": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+    "palace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["palace_id", "stem", "heaven_stems", "stars", "star", "door", "deity"],
+      "properties": {
+        "palace_id": {"$ref": "#/$defs/text"},
+        "stem": {"$ref": "#/$defs/text"},
+        "heaven_stems": {"$ref": "#/$defs/stringArray"},
+        "stars": {"$ref": "#/$defs/stringArray"},
+        "star": {"oneOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]},
+        "door": {"oneOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]},
+        "deity": {"oneOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]}
+      }
+    },
+    "chief": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["star", "door", "hidden_instrument", "xun_palace", "hosted_xun_palace", "destination_palace"],
+      "properties": {
+        "star": {"$ref": "#/$defs/text"},
+        "door": {"$ref": "#/$defs/text"},
+        "hidden_instrument": {"$ref": "#/$defs/text"},
+        "xun_palace": {"type": "integer", "minimum": 1, "maximum": 9},
+        "hosted_xun_palace": {"type": "integer", "minimum": 1, "maximum": 9},
+        "destination_palace": {"type": "integer", "minimum": 1, "maximum": 9}
+      }
+    },
+    "director": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["door", "xun_palace", "destination_palace", "hour_offset_in_xun"],
+      "properties": {
+        "door": {"$ref": "#/$defs/text"},
+        "xun_palace": {"type": "integer", "minimum": 1, "maximum": 9},
+        "destination_palace": {"type": "integer", "minimum": 1, "maximum": 9},
+        "hour_offset_in_xun": {"type": "integer", "minimum": 0, "maximum": 9}
+      }
+    },
+    "plateStem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["palace", "stem", "kind"],
+      "properties": {
+        "palace": {"type": "integer", "minimum": 1, "maximum": 9},
+        "stem": {"$ref": "#/$defs/text"},
+        "kind": {"enum": ["six_instrument", "three_wonder"]}
+      }
+    },
+    "hiddenJia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["xun", "instrument"],
+      "properties": {"xun": {"$ref": "#/$defs/text"}, "instrument": {"$ref": "#/$defs/text"}}
+    },
+    "instrumentsWonders": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["six_instruments", "three_wonders", "earth_plate", "heaven_plate", "hidden_jia"],
+      "properties": {
+        "six_instruments": {"$ref": "#/$defs/stringArray"},
+        "three_wonders": {"$ref": "#/$defs/stringArray"},
+        "earth_plate": {"type": "array", "items": {"$ref": "#/$defs/plateStem"}},
+        "heaven_plate": {"type": "array", "items": {"$ref": "#/$defs/plateStem"}},
+        "hidden_jia": {"$ref": "#/$defs/hiddenJia"}
+      }
+    },
+    "xunkong": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["xun", "branches", "palaces"],
+      "properties": {
+        "xun": {"$ref": "#/$defs/text"},
+        "branches": {"$ref": "#/$defs/stringArray"},
+        "palaces": {"type": "array", "items": {"type": "integer", "minimum": 1, "maximum": 9}}
+      }
+    },
+    "horse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hour_branch", "branch", "palace"],
+      "properties": {
+        "hour_branch": {"$ref": "#/$defs/text"},
+        "branch": {"$ref": "#/$defs/text"},
+        "palace": {"type": "integer", "minimum": 1, "maximum": 9}
+      }
+    },
+    "namedPattern": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "status", "palace"],
+      "properties": {
+        "id": {"$ref": "#/$defs/text"},
+        "name": {"$ref": "#/$defs/text"},
+        "status": {"$ref": "#/$defs/text"},
+        "palace": {"type": "integer", "minimum": 1, "maximum": 9}
+      }
+    }
+  }
+}

@@ -8,6 +8,7 @@ FROM dependencies AS build
 ARG BACKEND_INTERNAL_URL=http://api:8000
 ENV BACKEND_INTERNAL_URL=$BACKEND_INTERNAL_URL \
     NEXT_TELEMETRY_DISABLED=1
+COPY ui /srv/ui
 COPY web/ ./
 RUN npm run build
 
@@ -18,7 +19,7 @@ ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0
 WORKDIR /srv/web
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
-COPY --from=build --chown=nextjs:nodejs /srv/web/.next/standalone ./
+COPY --from=build --chown=nextjs:nodejs /srv/web/.next/standalone/web ./
 COPY --from=build --chown=nextjs:nodejs /srv/web/.next/static ./.next/static
 COPY --from=build --chown=nextjs:nodejs /srv/web/public ./public
 USER nextjs

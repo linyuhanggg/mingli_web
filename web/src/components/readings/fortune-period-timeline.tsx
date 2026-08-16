@@ -1,4 +1,7 @@
-import type { FortunePeriodMarker } from "@/lib/fortune-period-markers";
+import {
+  formatFortuneMechanismIds,
+  type FortunePeriodMarker,
+} from "@/lib/fortune-period-markers";
 
 import styles from "./fortune-period-timeline.module.css";
 
@@ -38,6 +41,24 @@ export function FortunePeriodTimeline({
                 <div>
                   <dt>当前大运</dt>
                   <dd>{marker.activeLuckCycle}</dd>
+                </div>
+              ) : null}
+              {marker.primaryMechanismIds.length > 0 || marker.decisiveMechanismIds.length > 0 ? (
+                <div>
+                  <dt>已计算机制</dt>
+                  <dd>
+                    {formatFortuneMechanismIds(
+                      marker.primaryMechanismIds.length > 0
+                        ? marker.primaryMechanismIds
+                        : marker.decisiveMechanismIds,
+                    )}
+                  </dd>
+                </div>
+              ) : null}
+              {marker.unresolvedBoundaries.length > 0 ? (
+                <div>
+                  <dt>结论边界</dt>
+                  <dd>仅展示服务端事实，尚未形成具体事件断语</dd>
                 </div>
               ) : null}
             </dl>

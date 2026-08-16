@@ -1,28 +1,16 @@
-"use client";
-
-import { CalendarDays, LockKeyhole } from "lucide-react";
-import { Suspense } from "react";
-
 import { AppPageHeader } from "@/components/app-page-header";
-import styles from "@/components/app-surface.module.css";
 import { FortuneFlow } from "@/components/fortune-flow";
+import styles from "@/components/app-surface.module.css";
 
-export default function FortunePage() {
+
+export default function WeekFortunePage() {
   return (
     <div className={styles.page}>
       <AppPageHeader
-        title="近七日阶段解读"
-        description="从已确认档案出发，发起近七日的阶段解读；日期范围由服务端确认，不在浏览器里推算。"
-        meta={
-          <>
-            <span><CalendarDays aria-hidden="true" size={15} /> 日期范围由服务端确认</span>
-            <span><LockKeyhole aria-hidden="true" size={15} /> 从已确认档案出发</span>
-          </>
-        }
+        title="近七日解读"
+        description="从已确认档案启动近七日 fortune 事实面板；范围和参考时间由服务端确认。"
       />
-      <Suspense fallback={<p role="status">正在准备解读入口…</p>}>
-        <FortuneFlow mode="week" />
-      </Suspense>
+      <FortuneFlow mode="week" />
     </div>
   );
 }

@@ -1,0 +1,2 @@
+# Reference audits are immutable evidence; preserve their original Markdown hard breaks.
+docs/releases/evidence/2026-08-12-reference-site-audits/*.md whitespace=-trailing-space

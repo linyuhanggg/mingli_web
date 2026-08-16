@@ -163,6 +163,35 @@ function readingResult(
   };
 }
 
+function readingDocument() {
+  return {
+    schema_version: "reading-document/v1",
+    document_id: "reading-version:document-1",
+    reading_version_id: VERSION_ID,
+    accepted_copy_ref: "accepted-copy:document-1",
+    product_version: "fortune-reading/v1",
+    presentation_contract_version: "fortune-presentation/v1",
+    view_model: { schema_version: "bazi-chart/v1" },
+    answer_summary: "先稳住节奏。",
+    subject_summaries: [{ subject_ref: "profile-version:test", label: "本人" }],
+    themes: [],
+    claims: [],
+    evidence: [],
+    boundaries: [{ limit_ref: "contract:disclosure", text: "仅供参考。" }],
+    actions: {
+      correction: { enabled: false },
+      follow_up: { enabled: true },
+      export: { enabled: false },
+      share: { enabled: true },
+    },
+    versions: {
+      runtime_release: "runtime:test",
+      view_model_schema: "bazi-chart/v1",
+      reading_document_schema: "reading-document/v1",
+    },
+  };
+}
+
 function getHeader(init: RequestInit | undefined, name: string): string | null {
   return new Headers(init?.headers).get(name);
 }
@@ -199,10 +228,140 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     const acceptedRegion = await screen.findByRole("region", { name: "判断" });
     const copy = within(acceptedRegion).getByText(acceptedCopyQuery);
     expect(copy.textContent).toBe(acceptedCopy);
+    expect(screen.queryByRole("heading", { name: "分享" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("追问")).not.toBeInTheDocument();
     expect(fetchMock.mock.calls.map(([url]) => String(url)).slice(0, 2)).toEqual([
       `/api/v1/readings/${VERSION_ID}`,
       `/api/v1/readings/${VERSION_ID}/result`,
     ]);
+  });
+
+  it("does not fall back to a Bazi chart when a relationship ViewModel is unavailable", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path === `/api/v1/readings/${VERSION_ID}`) {
+        return jsonResponse(
+          readingSummary("accepted", {
+            capability_id: "bazi",
+            product_id: "bazi-relationship",
+          }),
+        );
+      }
+      if (path === `/api/v1/readings/${VERSION_ID}/result`) {
+        return jsonResponse(
+          readingResult({
+            view_model: null,
+            document: null,
+          }),
+        );
+      }
+      return problemResponse("Unexpected request", 500);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByRole("heading", { name: "事实" })).toBeInTheDocument();
+    expect(screen.queryByText("八字盘面")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "分享" })).not.toBeInTheDocument();
+  });
+
+  it("renders a typed Runtime chart while the narrative is still prepared", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            status: "prepared",
+            accepted_copy: null,
+            view_model: {
+              schema_version: "meihua-chart/v1",
+              subject_ref: "meihua:test",
+              question: "这件事如何推进？",
+              casting_method: "time",
+              primary_hexagram: {
+                name: "水雷屯",
+                upper_trigram: "坎",
+                lower_trigram: "震",
+              },
+              mutual_hexagram: {
+                name: "山地剥",
+                upper_trigram: "艮",
+                lower_trigram: "坤",
+              },
+              changed_hexagram: null,
+              moving_lines: [3],
+              body_use: {
+                body: { position: "lower", trigram: "震", element: "木" },
+                use: { position: "upper", trigram: "坎", element: "水" },
+                relation: "生",
+                status: "calculated_relation_not_verdict",
+              },
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("prepared", {
+          capability_id: "meihua",
+          object_id: "concrete_event",
+          horizon: { kind_id: "instant", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { unmount } = render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByText("按时间起卦")).toBeVisible();
+    expect(screen.getByText("水雷屯")).toBeVisible();
+    expect(screen.getAllByText("calculated_relation_not_verdict").length).toBe(2);
+    expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith("/result"))).toBe(true);
+    expect(screen.queryByText("复核与追问")).not.toBeInTheDocument();
+    unmount();
+  });
+
+  it("renders Hecan as a cross-art view even when its Runtime primary is Bazi", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            status: "prepared",
+            accepted_copy: null,
+            view_model: {
+              schema_version: "hecan-view/v1",
+              subject_ref: "profile-version:test",
+              selected_art_ids: ["bazi", "ziwei"],
+              dimensions: [
+                {
+                  dimension_id: "career",
+                  signals: [],
+                  convergence: ["两术目前只声明共同事实范围。"],
+                  disagreements: [],
+                  missing_art_ids: [],
+                },
+              ],
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("prepared", {
+          capability_id: "bazi",
+          product_id: "hecan",
+          object_id: "natal",
+          horizon: { kind_id: "life", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByText(/命盘合参/)).toBeVisible();
+    expect(screen.getAllByText(/共同事实范围/).length).toBeGreaterThan(0);
+    expect(screen.queryByText("八字命盘")).not.toBeInTheDocument();
   });
 
   it("renders structured facts, evidence, limits, prior answer, and server horizon without opaque refs", async () => {
@@ -239,9 +398,11 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     ["completing", "正在接纳正文"],
     ["delayed", "交付延迟"],
   ])("shows the real %s state and the server-provided horizon", async (status, text) => {
-    const fetchMock = vi
-      .fn<typeof fetch>()
-      .mockResolvedValue(jsonResponse(readingSummary(status)));
+    const fetchMock = vi.fn<typeof fetch>(async (url) =>
+      String(url).endsWith("/result")
+        ? jsonResponse(readingResult({ status }))
+        : jsonResponse(readingSummary(status)),
+    );
     vi.stubGlobal("fetch", fetchMock);
 
     render(<ReadingResult readingId={VERSION_ID} />);
@@ -963,7 +1124,9 @@ describe("verification and follow-up", () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
       if (path === "/api/v1/guest-sessions") return guestSession();
-      if (path.endsWith("/result")) return jsonResponse(readingResult());
+      if (path.endsWith("/result")) {
+        return jsonResponse(readingResult({ document: readingDocument() }));
+      }
       if (path.endsWith("/follow-up")) {
         followUpAttempts += 1;
         return followUpAttempts === 1
@@ -1012,7 +1175,9 @@ describe("Web interface regression guards", () => {
   it("keeps 48px inputs, mobile-safe input text, reduced motion, and bounded pre overflow", () => {
     const root = process.cwd();
     const globals = readFileSync(join(root, "src/app/globals.css"), "utf8");
-    expect(globals).toContain("@media (prefers-reduced-motion: reduce)");
+    const sharedBase = readFileSync(join(root, "../ui/base.css"), "utf8");
+    expect(globals).toContain('@import "../../../ui/base.css"');
+    expect(sharedBase).toContain("@media (prefers-reduced-motion: reduce)");
 
     const formCssFiles = [
       "src/components/readings/need-input-form.module.css",
@@ -1022,7 +1187,7 @@ describe("Web interface regression guards", () => {
     for (const file of formCssFiles) {
       const css = readFileSync(join(root, file), "utf8");
       expect(css).toMatch(/min-height:\s*3rem/);
-      expect(css).toMatch(/font-size:\s*1rem/);
+      expect(css).toMatch(/font-size:\s*(1rem|var\(--font-size-body\))/);
       expect(css).not.toMatch(/transition:\s*all/i);
       expect(css).not.toMatch(/animation-[a-z-]+:\s*[^;]*infinite/i);
       expect(css).not.toContain("999px");
@@ -1131,6 +1296,104 @@ describe("bazi chart workspace", () => {
                 },
               },
             },
+            view_model: {
+              schema_version: "bazi-chart/v1",
+              subject_ref: "profile-version:secret-profile-id",
+              pillars: [
+                { position: "year", stem: "庚", branch: "辰" },
+                { position: "month", stem: "丙", branch: "戌" },
+                { position: "day", stem: "己", branch: "酉" },
+                { position: "hour", stem: "丁", branch: "卯" },
+              ],
+              element_balance: [],
+              time_layers: [],
+              core_facts: {
+                day_master: { stem: "己", element: "earth", polarity: "阴" },
+                hidden_stems: null,
+                ten_gods: null,
+                nayin: null,
+                twelve_growth_stages: [
+                  {
+                    position: "year",
+                    stem: "庚",
+                    branch: "辰",
+                    stage: "养",
+                    stage_index: 12,
+                    direction: "reverse",
+                    source_dependency_id: "bazi.chart.twelve-growth-stages-v1",
+                    boundary: "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论",
+                  },
+                  {
+                    position: "month",
+                    stem: "丙",
+                    branch: "戌",
+                    stage: "冠带",
+                    stage_index: 3,
+                    direction: "forward",
+                    source_dependency_id: "bazi.chart.twelve-growth-stages-v1",
+                    boundary: "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论",
+                  },
+                ],
+                xunkong: {
+                  day_pillar: "己酉",
+                  xun: "甲申",
+                  branches: ["午", "未"],
+                  source_dependency_id: "bazi.chart.xunkong-sexagenary-v1",
+                  boundary: "按日柱所属旬计算旬空事实；不能单独推出吉凶、六亲或事件结论",
+                },
+                san_yuan: {
+                  tai_yuan: "丁丑",
+                  ming_gong: "庚卯",
+                  shen_gong: "戊子",
+                  source: "lunar-typescript-auxiliary",
+                  source_dependency_id: "bazi.chart.san-yuan-lunar-typescript-v1",
+                  boundary: "胎元、命宫、身宫位置事实；不能单独推出格局、旺衰、吉凶或事件结论",
+                },
+                month_command: null,
+                seasonal_profile: null,
+                tiaohou_markers: null,
+                element_inventory: null,
+                interpretive_candidates: {
+                  strength: {
+                    status: "evidence_only",
+                    hard_verdict: null,
+                    day_element: "earth",
+                    month_command_element: "earth",
+                    same_element_occurrences: 5,
+                    resource_element: "fire",
+                    resource_occurrences: 3,
+                    all_element_occurrences: [
+                      { element: "wood", value: 0 },
+                      { element: "fire", value: 3 },
+                      { element: "earth", value: 5 },
+                      { element: "metal", value: 1 },
+                      { element: "water", value: 0 },
+                    ],
+                    boundary: "只展示五行出现次数，不等于旺衰定论。",
+                  },
+                  structure: {
+                    status: "candidate_only",
+                    hard_verdict: null,
+                    month_main_qi: "戊",
+                    month_main_qi_ten_god: "劫财",
+                    main_qi_visible: false,
+                    visible_positions: ["month"],
+                    boundary: "只展示月令主气与透干候选，不完成格局裁定。",
+                  },
+                  following_and_transformation: {
+                    status: "requires_classical_adjudication",
+                    hard_verdict: null,
+                    stem_combination_candidates: [],
+                    branch_formation_candidates: [],
+                    boundary: "合化、从格仍需经典裁决。",
+                  },
+                  salience_signals: [],
+                },
+                branch_relations: null,
+                shensha_auxiliary: null,
+                luck_cycles: null,
+              },
+            },
           }),
         );
       }
@@ -1156,6 +1419,13 @@ describe("bazi chart workspace", () => {
     expect(screen.getAllByText("庚辰").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/日主.*己/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/当前大运|大运 戊子|戊子/).length).toBeGreaterThan(0);
+    expect(screen.getByText("强弱证据")).toBeVisible();
+    expect(screen.getByText(/同类 5 项；生扶 火 3 项/)).toBeVisible();
+    expect(screen.getByText(/不等于旺衰定论/)).toBeVisible();
+    expect(screen.getByText("十二长生")).toBeVisible();
+    expect(screen.getByText(/年柱 庚辰：养；月柱 丙戌：冠带/)).toBeVisible();
+    expect(screen.getByText("旬空")).toBeVisible();
+    expect(screen.getByText(/己酉 属 甲申 旬：午、未/)).toBeVisible();
     expect(screen.getAllByText("当前结构更支持持续积累。").length).toBeGreaterThan(0);
     expect(screen.queryByText("杭州市西湖区")).not.toBeInTheDocument();
     expect(screen.queryByText("Asia/Shanghai")).not.toBeInTheDocument();

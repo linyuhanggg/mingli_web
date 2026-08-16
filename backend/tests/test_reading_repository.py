@@ -22,6 +22,7 @@ async def reading_database() -> AsyncIterator[Any]:
     identity_models = importlib.import_module("app.identity.models")
     importlib.import_module("app.profiles.models")
     importlib.import_module("app.readings.models")
+    importlib.import_module("app.commerce.models")
     database = database_module.Database("sqlite+aiosqlite:///:memory:")
     async with database.engine.begin() as connection:
         await connection.run_sync(identity_models.Base.metadata.create_all)
@@ -148,6 +149,55 @@ async def test_repository_persists_prepare_token_presence_without_exposing_it(
             assert prepare_state_token not in repr(raw_rows)
 
 
+async def test_waiting_input_timestamp_clears_when_prepare_is_resumed(
+    reading_database: Any,
+) -> None:
+    models = importlib.import_module("app.readings.models")
+    now = datetime(2026, 8, 9, 12, 0, tzinfo=UTC)
+    async with reading_database.sessions() as session, session.begin():
+        repository, _profile, version, job, contracts = await create_reading_graph(session)
+        await repository.record_waiting_input(
+            str(job.id),
+            contracts.Stopped(
+                reason="need_input",
+                public_copy="还需要补充资料。",
+                state_token="waiting-input-token",
+                input_request={
+                    "requirements": [
+                        {
+                            "any_of": [
+                                {
+                                    "id": "birth_datetime",
+                                    "label": "出生时间",
+                                    "type_id": "datetime",
+                                    "description": None,
+                                    "choices": [],
+                                }
+                            ]
+                        }
+                    ]
+                },
+            ),
+            now,
+        )
+        assert version.waiting_input_at == now
+        prepare = await repository.load_prepare(version.id)
+        await repository.replace_prepare(
+            version.id,
+            contracts.Prepare(
+                query=prepare.query,
+                intent=prepare.intent,
+                facts=prepare.facts,
+                state_token="waiting-input-token",
+                transition="correct",
+            ),
+        )
+        refreshed = await session.get(models.ReadingVersion, version.id)
+        assert refreshed is not None
+        assert refreshed.status == "input_ready"
+        assert refreshed.waiting_input_at is None
+
+
 async def test_repository_round_trips_encrypted_orchestrator_checkpoints(
     reading_database: Any,
 ) -> None:
@@ -182,6 +232,12 @@ async def test_repository_round_trips_encrypted_orchestrator_checkpoints(
             now,
         )
 
+        loaded_candidate = await repository.load_successful_candidate(str(job.id))
+        assert loaded_candidate == candidate
+        accepted_copy_ref = await repository.load_accepted_copy_ref(str(job.id))
+        assert accepted_copy_ref is not None
+        assert accepted_copy_ref.startswith("accepted-copy:")
+
         loaded_job = await repository.load_job(str(job.id))
         checkpoint = await repository.load_checkpoint(str(job.id))
         assert loaded_job.prepare_command.query == "事业上最该先抓住哪条主线？"
@@ -214,6 +270,39 @@ async def test_repository_round_trips_encrypted_orchestrator_checkpoints(
         accepted_copy = await repository.get_accepted_copy(version.id)
         assert fact_brief.payload_digest
         assert accepted_copy.public_copy_digest
+
+
+async def test_load_job_uses_the_immutable_product_version_contract_snapshot(
+    reading_database: Any,
+) -> None:
+    commerce = importlib.import_module("app.commerce.models")
+    readings = importlib.import_module("app.readings.models")
+
+    async with reading_database.sessions() as session, session.begin():
+        repository, _profile, version, job, _contracts = await create_reading_graph(session)
+        family = commerce.ProductFamily(key="bazi", label="八字")
+        session.add(family)
+        await session.flush()
+        product = commerce.ProductVersion(
+            family_id=family.id,
+            version="v7",
+            price_minor=19900,
+            currency="CNY",
+            follow_up_count=1,
+            follow_up_window_seconds=86_400,
+            contract_version="bazi-presentation/v7",
+            status="active",
+        )
+        session.add(product)
+        await session.flush()
+        root = await session.get(readings.ReadingRoot, version.reading_root_id)
+        assert root is not None
+        root.product_version_snapshot_id = product.id
+
+        loaded = await repository.load_job(str(job.id))
+
+    assert loaded.product_version == "bazi-reading/v7"
+    assert loaded.presentation_contract_version == "bazi-presentation/v7"
 
 
 async def test_generation_attempt_persists_the_safe_model_receipt(

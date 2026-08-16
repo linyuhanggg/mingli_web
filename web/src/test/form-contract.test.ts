@@ -46,16 +46,16 @@ describe("shared form-control primitives", () => {
     }
   });
 
-  it("gives inputs an ivory-50 background and at least 48px hit area", () => {
+  it("gives inputs a canvas background and at least 48px hit area", () => {
     const input = ruleFor(css, ".input");
     expect(input).toContain("min-height: 3rem");
-    expect(input).toContain("var(--ivory-50)");
-    expect(input).toContain("border-radius: var(--radius-sm)");
+    expect(input).toContain("var(--color-canvas)");
+    expect(input).toContain("border-radius: var(--radius-control)");
   });
 
-  it("styles primary actions with radius-sm, never a 999px pill", () => {
+  it("styles primary actions with radius-control, never a 999px pill", () => {
     const primary = ruleFor(css, ".actionPrimary");
-    expect(primary).toContain("border-radius: var(--radius-sm)");
+    expect(primary).toContain("border-radius: var(--radius-control)");
     expect(primary).not.toContain("999px");
   });
 
@@ -76,7 +76,7 @@ describe("no pill buttons in form surfaces", () => {
   it("keeps the capsule only for short status tags in the wider surface", () => {
     const appSurface = read("app-surface.module.css");
     const tagRule = ruleFor(appSurface, ".stateTag");
-    expect(tagRule).toContain("border-radius: 999px");
+    expect(tagRule).toMatch(/border-radius:\s*(999px|var\(--radius-pill\))/);
   });
 });
 
@@ -124,23 +124,24 @@ describe("private title scale and shell surface contract", () => {
   it("moves private page headers off the homepage display scale onto title scale", () => {
     const appSurface = read("app-surface.module.css");
     const pageHeaderH1 = ruleFor(appSurface, ".pageHeader h1");
-    expect(pageHeaderH1).toContain("var(--font-serif)");
-    expect(pageHeaderH1).toContain("clamp(1.45rem");
+    expect(pageHeaderH1).toContain("var(--font-sans)");
+    expect(pageHeaderH1).toMatch(/font-size:\s*(clamp\(1\.45rem|var\(--font-size-page\))/);
     expect(pageHeaderH1).not.toContain("6rem");
 
     const privateShell = read("private-shell.module.css");
     const panelH1 = ruleFor(privateShell, ".panel h1");
-    expect(panelH1).toContain("clamp(1.45rem");
+    expect(panelH1).toMatch(/font-size:\s*(clamp\(1\.45rem|var\(--font-size-page\))/);
     expect(panelH1).not.toContain("6rem");
   });
 
-  it("lets the desktop private rail use deep ink with a fine gold line", () => {
+  it("lets the desktop private rail use the inverse action surface", () => {
     const shell = read("private-shell.module.css");
     const desktopShell = shell.slice(shell.indexOf("@media (min-width: 64rem)"));
     const aside = ruleFor(desktopShell, ".aside");
-    expect(aside).toContain("var(--ink-900)");
-    expect(aside).toMatch(/border-right: 1px solid rgb\(248 243 231 \/ 12%\)/);
-    expect(aside).toMatch(/rgb\(169 133 63/);
+    expect(aside).toContain("var(--color-surface-inverse)");
+    expect(aside).toContain("var(--color-text-inverse)");
+    expect(aside).toContain("1px solid");
+    expect(aside).not.toMatch(/169 133 63|248 243 231|linear-gradient|radial-gradient/);
   });
 
   it("keeps the five-item mobile bottom bar and its safe-area padding", () => {

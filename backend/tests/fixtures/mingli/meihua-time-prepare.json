@@ -1,0 +1,27 @@
+{
+  "kind": "prepare",
+  "query": "用时间起一卦看这件事的状态与结果",
+  "intent": {
+    "subject_refs": ["meihua:fixture"],
+    "object_id": "concrete_event",
+    "dimension_ids": ["outcome", "state"],
+    "horizon": {"kind_id": "instant", "start": null, "end": null},
+    "capability_id": "meihua",
+    "comparisons": []
+  },
+  "facts": {
+    "meihua:fixture": {
+      "casting_method": "time",
+      "event_datetime": "2026-08-14T10:00:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "location": "上海市",
+      "time_basis_policy": "local_apparent_solar-v1",
+      "zi_hour_policy": "midnight",
+      "longitude": 121.4737,
+      "latitude": 31.2304,
+      "coordinate_source": "user_confirmed"
+    }
+  },
+  "state_token": null,
+  "transition": null
+}

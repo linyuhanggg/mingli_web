@@ -1,5 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
 
 import HomePage from "@/app/page";
 
@@ -8,6 +8,10 @@ vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api")>()),
   getAccount: vi.fn(() => new Promise(() => undefined)),
 }));
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 
 describe("responsive public home", () => {
@@ -24,12 +28,18 @@ describe("responsive public home", () => {
     ).toBeVisible();
 
     // 价值主张只讲机制与真实规模，不做效果承诺
-    expect(within(main).getByText(/13 个术数体系 Provider、55 部古籍 reference pack、1328 条 evidence index 记录/)).toBeVisible();
+    expect(within(main).getByText("13 个术数体系")).toBeVisible();
+    expect(within(main).getByText("55 部古籍")).toBeVisible();
+    expect(within(main).getByText("1328 条证据索引")).toBeVisible();
     expect(within(main).getByText(/先给确定性盘面事实，再谈解释与边界/)).toBeVisible();
 
     // Hero CTA
-    expect(within(main).getByRole("link", { name: /开始排盘/ })).toHaveAttribute("href", "/bazi");
-    expect(within(main).getByRole("link", { name: /多术合参/ })).toHaveAttribute("href", "/hecan");
+    const hero = within(main).getByRole("region", { name: "十三术同根，五十五部古籍为证" });
+    expect(within(hero).getByRole("link", { name: /开始排盘/ })).toHaveAttribute("href", "/bazi");
+    expect(within(hero).getByRole("link", { name: "命盘合参" })).toHaveAttribute("href", "/hecan");
+
+    // 装饰层不进入阅读或交互语义
+    expect(within(main).getByTestId("home-atmosphere")).toHaveAttribute("aria-hidden", "true");
 
     // 任务入口链接矩阵：七术 + 见相 + 合参两产品 + 辅助三入口；/canwen 已并入命盘合参
     const expectedEntries = [
@@ -79,5 +89,30 @@ describe("responsive public home", () => {
     expect(within(main).queryByText(/把时间变成私密/)).not.toBeInTheDocument();
     expect(within(main).queryByRole("link", { name: /免费体验起盘档案/ })).not.toBeInTheDocument();
     expect(screen.getByRole("contentinfo")).toBeVisible();
+  });
+
+  it("observes the hero section so its negative-z-index art is not paused on screen", () => {
+    const observe = vi.fn();
+
+    class IntersectionObserverMock {
+      readonly root = null;
+      readonly rootMargin = "0px";
+      readonly thresholds = [0.01];
+
+      disconnect = vi.fn();
+      observe = observe;
+      takeRecords = vi.fn(() => []);
+      unobserve = vi.fn();
+    }
+
+    vi.stubGlobal(
+      "IntersectionObserver",
+      IntersectionObserverMock,
+    );
+
+    render(<HomePage />);
+
+    const atmosphere = screen.getByTestId("home-atmosphere");
+    expect(observe).toHaveBeenCalledWith(atmosphere.parentElement);
   });
 });

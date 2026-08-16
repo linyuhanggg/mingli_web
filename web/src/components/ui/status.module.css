@@ -1,0 +1,97 @@
+.panel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-md);
+  align-items: start;
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.icon {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-card);
+  font-weight: 650;
+  line-height: var(--line-height-title);
+}
+
+.description {
+  margin: 0.4rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+/* Busy states are neutral — a spinner, never a warning tint. */
+.loading .icon,
+.processing .icon {
+  color: var(--color-text-secondary);
+  animation: status-spin 1s linear infinite;
+}
+
+.error {
+  border-color: var(--color-danger);
+  background: var(--surface-danger);
+}
+
+.error .icon {
+  color: var(--color-danger);
+}
+
+.success {
+  border-color: var(--color-success);
+  background: var(--surface-success);
+}
+
+.success .icon {
+  color: var(--color-success);
+}
+
+.unavailable {
+  border-style: dashed;
+  background: var(--color-surface-subtle);
+}
+
+.unauthorized {
+  border-color: var(--color-info);
+  background: var(--surface-info);
+}
+
+.unauthorized .icon {
+  color: var(--color-info);
+}
+
+.locked {
+  border-color: var(--color-warning);
+  background: var(--surface-warning);
+}
+
+.locked .icon {
+  color: var(--color-warning);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading .icon,
+  .processing .icon {
+    animation: none;
+  }
+}
+
+@keyframes status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

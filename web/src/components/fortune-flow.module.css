@@ -3,11 +3,11 @@
   gap: 1.25rem;
   min-width: 0;
   padding: clamp(1.25rem, 4vw, 2rem);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--white);
-  box-shadow: var(--shadow-card);
-  animation: form-shell-enter var(--duration-entrance) var(--ease-out-expo) both;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  box-shadow: none;
+  animation: form-shell-enter var(--duration-page) var(--ease-out) both;
 }
 
 @keyframes form-shell-enter {
@@ -30,8 +30,8 @@
 
 .wrap h2 {
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(1.2rem, 3.2vw, 1.45rem);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-card);
   font-weight: 600;
   letter-spacing: -0.015em;
   line-height: 1.25;
@@ -39,40 +39,40 @@
 
 .lead {
   margin: 0;
-  color: var(--ink-700);
+  color: var(--color-text-secondary);
 }
 
 .scopeNotice {
   margin: 0;
   padding: 0.8rem 0.9rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-100);
-  color: var(--ink-700);
-  font-size: 0.82rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   line-height: 1.6;
 }
 
 .scopeNotice strong {
-  color: var(--ink-950);
+  color: var(--color-text);
 }
 
 .status,
 .error {
   padding: 0.85rem 1rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.88rem;
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-label);
 }
 
 .status {
-  background: var(--ivory-100);
-  color: var(--ink-700);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
 }
 
 .error {
-  border: 1px solid var(--terracotta-500);
-  background: var(--ivory-100);
-  color: var(--ink-950);
+  border: 1px solid var(--color-danger);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
 }
 
 .state {
@@ -86,10 +86,22 @@
   margin-top: 0.5rem;
 }
 
+.formGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 42rem) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Interactive controls keep a readable floor on this surface: at least 44px
    tall and 1rem text. Shared form-controls primitives enforce the same
    baselines; this rule pins the floor locally for the surface guard. */
 .form button {
   min-height: 2.75rem;
-  font-size: 1rem;
+  font-size: var(--font-size-body);
 }

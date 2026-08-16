@@ -4,10 +4,12 @@ import json
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import cast
 
 from app.readings.narrative_contracts import (
     NarrativeCandidate,
     OutputContract,
+    merge_claim_scopes,
 )
 from app.readings.output_contracts import resolve_output_contract
 from app.readings.runtime_contracts import (
@@ -87,9 +89,7 @@ class NarrativeGuard:
         evidence = {item["ref"]: item for item in payload["evidence"]}
         findings = {item["ref"]: item for item in payload["findings"]}
         limits = {item["kind_id"]: item for item in payload["limits"]}
-        scopes = {
-            (item["subject_ref"], item["dimension_id"]): item for item in payload["claim_scopes"]
-        }
+        scopes = merge_claim_scopes(payload)
         subjects = {item["subject_ref"] for item in [*payload["facts"], *payload["findings"]]} | {
             subject for subject, _dimension in scopes
         }
@@ -118,6 +118,7 @@ class NarrativeGuard:
             known_findings = [findings.get(ref) for ref in block.finding_refs]
             known_evidence = [evidence.get(ref) for ref in block.evidence_refs]
             known_limits = [limits.get(ref) for ref in block.limit_kind_ids]
+            relationship_scope_fact_refs: frozenset[str] = frozenset()
             if any(item is None for item in known_facts):
                 _add_error(errors, "unknown_fact_ref")
             if any(item is None for item in known_findings):
@@ -131,20 +132,36 @@ class NarrativeGuard:
             if scope is None:
                 _add_error(errors, "scope_mismatch")
             else:
-                if block.claim_kind_id not in scope["allowed_kind_ids"]:
+                allowed_kind_ids = cast(tuple[str, ...], scope["allowed_kind_ids"])
+                certainty_ceiling_id = cast(str, scope["certainty_ceiling_id"])
+                fact_refs = cast(tuple[str, ...], scope["fact_refs"])
+                evidence_refs = cast(tuple[str, ...], scope["evidence_refs"])
+                relationship_scope_fact_refs = frozenset(fact_refs)
+                if block.claim_kind_id not in allowed_kind_ids:
                     _add_error(errors, "kind_not_allowed")
                 if _certainty_exceeds(
                     block.certainty_id,
-                    scope["certainty_ceiling_id"],
+                    certainty_ceiling_id,
                 ):
                     _add_error(errors, "certainty_exceeded")
-                if not set(block.fact_refs).issubset(scope["fact_refs"]):
+                if not set(block.fact_refs).issubset(fact_refs):
                     _add_error(errors, "scope_mismatch")
-                if not set(block.evidence_refs).issubset(scope["evidence_refs"]):
+                if not set(block.evidence_refs).issubset(evidence_refs):
                     _add_error(errors, "scope_mismatch")
 
             for fact in known_facts:
-                if fact is not None and fact["subject_ref"] != block.subject_ref:
+                # A relationship claim is deliberately a cross-subject block.
+                # It may cite the other subject's source fact only when that
+                # exact ref was published in the relationship scope; ordinary
+                # single-subject dimensions stay strict.
+                if (
+                    fact is not None
+                    and fact["subject_ref"] != block.subject_ref
+                    and not (
+                        block.dimension_id == "relationship"
+                        and fact["ref"] in relationship_scope_fact_refs
+                    )
+                ):
                     _add_error(errors, "scope_mismatch")
             for item in known_evidence:
                 if item is not None and not (
@@ -163,10 +180,16 @@ class NarrativeGuard:
                 ):
                     _add_error(errors, "scope_mismatch")
             for limit in known_limits:
+                scope_refs = (
+                    cast(tuple[str, ...], limit["scope_refs"])
+                    if limit is not None
+                    else ()
+                )
                 if (
                     limit is not None
-                    and limit["scope_refs"]
-                    and block.subject_ref not in limit["scope_refs"]
+                    and scope_refs
+                    and block.subject_ref not in scope_refs
+                    and block.dimension_id not in scope_refs
                 ):
                     _add_error(errors, "scope_mismatch")
 

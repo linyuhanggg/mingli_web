@@ -1,20 +1,25 @@
 import type { Metadata } from "next";
 
-import { EditorialPage, editorialStyles as styles } from "@/components/editorial-page";
+import { EditorialPage, PolicyMeta, editorialStyles as styles } from "@/components/editorial-page";
+import { PublicCmsProjection } from "@/components/public-cms-projection";
+import { getPublicCmsMetadata } from "@/lib/public-cms-metadata";
 
 
-export const metadata: Metadata = {
-  title: "隐私政策（开发期说明）",
-  description: "命理资料、登录身份、会话和模型数据的处理边界。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getPublicCmsMetadata("seo.privacy", {
+    title: "隐私政策（开发期说明）",
+    description: "命理资料、登录身份、会话和模型数据的处理边界。",
+  });
+}
 
 export default function PrivacyPage() {
   return (
     <EditorialPage
-      eyebrow="FateRadar · Privacy"
+      eyebrow="隐私政策"
       title="个人资料只为这次明确任务服务。"
       intro="本页是 Phase 1 的产品与工程边界说明，不冒充已经过法律审阅的最终隐私政策。上线前会补齐真实主体、第三方清单、保存期限和联系渠道。"
     >
+      <PolicyMeta />
       <section className={styles.prose}>
         <h2>我们把哪些数据按高敏感业务数据保护</h2>
         <p>
@@ -45,6 +50,10 @@ export default function PrivacyPage() {
         测试期/联调预览：入口可能无 TLS；允许使用真实邮箱 OTP 与模型供应商，但支付仍为 Fake/未接入。
         你可请求按邮箱删除账户相关档案与解读；测试窗口结束默认清空测试库敏感数据。勿把本环境当作生产。
       </p>
+      <PublicCmsProjection
+        heading="已发布隐私政策内容"
+        source={{ kind: "item", contentKey: "policy.privacy" }}
+      />
     </EditorialPage>
   );
 }

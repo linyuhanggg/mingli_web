@@ -49,8 +49,6 @@ const legacyRedirects = [
   { source: "/app/bazi", destination: "/bazi", permanent: false },
   { source: "/app/ask/liuyao", destination: "/liuyao", permanent: false },
   { source: "/canwen", destination: "/hecan", permanent: true },
-  { source: "/app/fortune/today", destination: "/daily", permanent: false },
-  { source: "/app/fortune/week", destination: "/daily", permanent: false },
 ] as const;
 
 const nextConfig: NextConfig = {

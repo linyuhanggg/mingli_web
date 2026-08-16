@@ -78,6 +78,19 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
 
+  admin:
+    build:
+      context: ..
+      dockerfile: infra/docker/admin.Dockerfile
+      args:
+        BACKEND_INTERNAL_URL: ${ADMIN_BACKEND_INTERNAL_URL:-http://api:8000}
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:3001:3001"
+
   edge:
     image: nginx:1.27-alpine
     depends_on:

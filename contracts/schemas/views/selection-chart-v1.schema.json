@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/selection-chart-v1.schema.json",
+  "title": "SelectionChartV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "subject_ref", "event_profile", "eligible_candidates", "eligible_date_time_candidates", "eliminations", "ranking", "lineage_policy", "no_valid_candidate", "basis_projection"],
+  "properties": {
+    "schema_version": {"const": "selection-chart/v1"},
+    "subject_ref": {"type": "string", "minLength": 1},
+    "event_profile": {"type": "string", "minLength": 1},
+    "eligible_candidates": {"type": "array", "items": {"$ref": "#/$defs/candidate"}},
+    "eligible_date_time_candidates": {"type": "array", "items": {"type": "string"}},
+    "eliminations": {"type": "array", "items": {"type": "object"}},
+    "ranking": {"$ref": "#/$defs/ranking"},
+    "lineage_policy": {"$ref": "#/$defs/lineage"},
+    "no_valid_candidate": {"type": "boolean"},
+    "basis_projection": {"type": "object"}
+  },
+  "$defs": {
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_id", "civil_date", "best_candidate_time_id", "eligibility", "rejection_reasons", "ranking_components"],
+      "properties": {
+        "candidate_id": {"type": "string", "minLength": 1},
+        "civil_date": {"type": "string", "minLength": 1},
+        "best_candidate_time_id": {"type": "string", "minLength": 1},
+        "eligibility": {"type": "object"},
+        "rejection_reasons": {"type": "array", "items": {"type": "object"}},
+        "ranking_components": {"type": "object"}
+      }
+    },
+    "ranking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["component_order", "eligible_candidate_ids", "eligible_date_time_candidate_ids", "folk_affects_rank", "method", "opaque_numeric_score", "ordered_candidate_ids", "ordered_date_time_candidate_ids"],
+      "properties": {
+        "component_order": {"type": "array", "items": {"type": "string"}},
+        "eligible_candidate_ids": {"type": "array", "items": {"type": "string"}},
+        "eligible_date_time_candidate_ids": {"type": "array", "items": {"type": "string"}},
+        "folk_affects_rank": {"type": "boolean"},
+        "method": {"type": "string", "minLength": 1},
+        "opaque_numeric_score": {"type": "boolean"},
+        "ordered_candidate_ids": {"type": "array", "items": {"type": "string"}},
+        "ordered_date_time_candidate_ids": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["folk", "folk_priority", "merge_verdicts", "official", "official_priority", "preserve_disagreement"],
+      "properties": {
+        "folk": {"type": "string", "minLength": 1},
+        "folk_priority": {"type": "string", "minLength": 1},
+        "merge_verdicts": {"type": "boolean"},
+        "official": {"type": "string", "minLength": 1},
+        "official_priority": {"type": "string", "minLength": 1},
+        "preserve_disagreement": {"type": "boolean"}
+      }
+    }
+  }
+}

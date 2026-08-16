@@ -245,7 +245,7 @@ export function ProfileArchive() {
           <Link className={surface.secondaryButton} href="/app/bazi">
             选择档案并查看事业主题
           </Link>
-          <Link className={surface.secondaryButton} href="/app/readings">
+          <Link className={surface.secondaryButton} href="/account/history">
             查看解读历史
           </Link>
         </div>

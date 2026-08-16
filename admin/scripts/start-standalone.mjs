@@ -1,15 +1,19 @@
-import { cpSync, existsSync, rmSync } from "node:fs";
-import { resolve } from "node:path";
+import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import { basename, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 
+const APP_NAME = basename(resolve(fileURLToPath(import.meta.url), "..", ".."));
+
 export function prepareStandaloneAssets(root = process.cwd()) {
   const standaloneRoot = resolve(root, ".next", "standalone");
-  const serverFile = resolve(standaloneRoot, "server.js");
+  const runtimeRoot = resolve(standaloneRoot, APP_NAME);
+  const serverFile = resolve(runtimeRoot, "server.js");
   const staticSource = resolve(root, ".next", "static");
-  const staticTarget = resolve(standaloneRoot, ".next", "static");
+  const staticTarget = resolve(runtimeRoot, ".next", "static");
+  const cacheTarget = resolve(runtimeRoot, ".next", "cache");
   const publicSource = resolve(root, "public");
-  const publicTarget = resolve(standaloneRoot, "public");
+  const publicTarget = resolve(runtimeRoot, "public");
 
   if (!existsSync(serverFile) || !existsSync(staticSource)) {
     throw new Error("Standalone build missing. Run `npm run build` first.");
@@ -23,17 +27,19 @@ export function prepareStandaloneAssets(root = process.cwd()) {
     cpSync(publicSource, publicTarget, { recursive: true });
   }
 
-  return { serverFile, standaloneRoot };
+  mkdirSync(cacheTarget, { recursive: true });
+
+  return { serverFile, standaloneRoot, runtimeRoot };
 }
 
 async function main() {
-  const { serverFile, standaloneRoot } = prepareStandaloneAssets();
+  const { serverFile, runtimeRoot } = prepareStandaloneAssets();
 
   if (process.argv.includes("--prepare-only")) {
     return;
   }
 
-  process.chdir(standaloneRoot);
+  process.chdir(runtimeRoot);
   await import(pathToFileURL(serverFile).href);
 }
 

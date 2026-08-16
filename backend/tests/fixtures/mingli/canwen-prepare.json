@@ -1,0 +1,31 @@
+{
+  "kind": "prepare",
+  "query": "比较三张命盘在事业与关系上的共同信号",
+  "intent": {
+    "subject_refs": ["profile-version:test"],
+    "object_id": "natal",
+    "dimension_ids": ["career", "relationship", "state"],
+    "horizon": {"kind_id": "life", "start": null, "end": null},
+    "capability_id": "bazi",
+    "comparisons": [
+      {"capability_id": "ziwei", "requirement": "required"},
+      {"capability_id": "xingming", "requirement": "required"}
+    ]
+  },
+  "facts": {
+    "profile-version:test": {
+      "birth_datetime_or_four_pillars": "1994-04-30T05:55:00+08:00",
+      "birth_datetime": "1994-04-30T05:55:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "location": "福建省福州市",
+      "gender": "female",
+      "time_basis_policy": "civil",
+      "zi_hour_policy": "midnight",
+      "longitude": 119.2965,
+      "latitude": 26.0745,
+      "coordinate_source": "user_confirmed"
+    }
+  },
+  "state_token": null,
+  "transition": null
+}

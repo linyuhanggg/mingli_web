@@ -247,7 +247,7 @@ it("lets the user change the email and clears the pending challenge", async () =
   });
 });
 
-it("verifying adopts the device CSRF, routes to /app, and never leaks the User ID", async () => {
+it("verifying adopts the device CSRF, routes to /account, and never leaks the User ID", async () => {
   const fetchMock = guestWithRequestFlow().mockResolvedValueOnce(
     jsonResponse({
       user_id: "2ec4dc6c-3e6e-4aef-ae3b-c900b3f1d239",
@@ -265,10 +265,10 @@ it("verifying adopts the device CSRF, routes to /app, and never leaks the User I
   await user.click(screen.getByRole("button", { name: "验证并登录" }));
 
   await waitFor(() => {
-    expect(replaceMock).toHaveBeenCalledWith("/app");
+    expect(replaceMock).toHaveBeenCalledWith("/account");
   });
   expect(await screen.findByText("登录成功")).toBeVisible();
-  expect(screen.getByText(/正在进入 \/app/)).toBeVisible();
+  expect(screen.getByText(/正在进入 \/account/)).toBeVisible();
 
   expect(screen.queryByText(/User ID/)).not.toBeInTheDocument();
   expect(screen.queryByText(/2ec4dc6c-3e6e-4aef-ae3b-c900b3f1d239/)).not.toBeInTheDocument();
@@ -392,13 +392,13 @@ describe("otp form a11y css contract", () => {
     expect(hidden).toContain("display: none");
   });
 
-  it("uses the readable ink-700 token for the locked phone entry instead of faded ink-500", () => {
+  it("uses the readable secondary text token for the locked phone entry instead of muted text", () => {
     const locked =
       [...css.matchAll(/\.methodLocked\s*\{([^}]*)\}/g)]
         .map((m) => m[1])
         .find((body) => /(^|\n)\s*color\s*:/.test(body)) ?? "";
-    expect(locked).toContain("var(--ink-700)");
-    expect(locked).not.toContain("var(--ink-500)");
+    expect(locked).toContain("var(--color-text-secondary)");
+    expect(locked).not.toContain("var(--color-text-muted)");
   });
 
   it("keeps 44px+ controls: 48px inputs and 44px buttons", () => {
@@ -411,7 +411,7 @@ describe("otp form a11y css contract", () => {
     expect(css).toContain(".field input:focus-visible");
     expect(css).toContain(".submit:focus-visible");
     expect(css).toContain(".secondary:focus-visible");
-    expect(css).toContain("outline: 3px solid var(--terracotta-500)");
+    expect(css).toContain("outline: 2px solid var(--color-focus)");
     expect(css).toContain("outline-offset: 3px");
   });
 });

@@ -683,6 +683,43 @@ async def test_runtime_startup_gate_factory_requires_one_shot_settings_and_start
         await gate.readiness_probe()
 
 
+def test_runtime_startup_gate_admits_the_relationship_release_profile(
+    tmp_path: Path,
+) -> None:
+    from app.config import Settings
+
+    launcher = tmp_path / "runtime-relationship-fixture"
+    launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    launcher.chmod(0o700)
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    settings = Settings(
+        runtime_adapter="one-shot",
+        runtime_release_profile="v52-relationship",
+        runtime_launcher_path=launcher,
+        runtime_python_path=Path("/usr/bin/python3"),
+        runtime_release_root=release_root,
+        runtime_state_root=state_root,
+        runtime_expected_manifest_digest=(
+            "6118c5f525c87b9cbde95b4d51c945be18bfd18fff8e03306da9fa748b87d917"
+        ),
+        runtime_expected_capability_shape_sha256=(
+            "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
+        ),
+    )
+
+    gate = build_runtime_startup_gate(settings)
+
+    assert gate.expected_release_manifest_sha256 == (
+        "bef3df256ce06a9796d5eaef999d1141873128fe75b06916922ddd7fe9ac5d50"
+    )
+    assert gate.release_inspector.expected_release_name == (
+        "mingli-master-portable-core-v52-relationship"
+    )
+
+
 async def test_configured_worker_admits_the_real_runtime_before_processing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

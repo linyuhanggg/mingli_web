@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import ReadingsPage from "@/app/app/readings/page";
-import ProfilesPage from "@/app/app/profiles/page";
+import { ProfileArchive as ProfilesPage } from "@/components/profile-archive";
+import { ReadingHistory as ReadingsPage } from "@/components/reading-history";
 import { ApiError } from "@/lib/api";
 
 
@@ -84,8 +84,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("ProfilesPage", () => {
-  it("shows the page header and loading state, then the saved profile versions", async () => {
+describe("ProfileArchive", () => {
+  it("shows the loading state, then the saved profile versions", async () => {
     api.listProfiles.mockResolvedValue({
       profiles: [
         profile(),
@@ -98,12 +98,6 @@ describe("ProfilesPage", () => {
 
     render(<ProfilesPage />);
 
-    expect(
-      screen.getByRole("heading", {
-        level: 1,
-        name: "档案保存人，也保存每次确认。",
-      }),
-    ).toBeInTheDocument();
     expect(screen.getByRole("status", { name: "正在读取档案…" })).toBeInTheDocument();
 
     await waitFor(() =>
@@ -202,8 +196,8 @@ describe("ProfilesPage", () => {
   });
 });
 
-describe("ReadingsPage", () => {
-  it("shows the page header and loading state, then lists kind, status and time per reading", async () => {
+describe("ReadingHistory", () => {
+  it("shows the loading state, then lists kind, status and time per reading", async () => {
     api.listReadings.mockResolvedValue({
       readings: [
         reading(),
@@ -218,12 +212,6 @@ describe("ReadingsPage", () => {
 
     render(<ReadingsPage />);
 
-    expect(
-      screen.getByRole("heading", {
-        level: 1,
-        name: "历史里保存的是版本，不是一串聊天消息。",
-      }),
-    ).toBeInTheDocument();
     expect(screen.getByRole("status", { name: "正在读取历史…" })).toBeInTheDocument();
 
     await waitFor(() =>
@@ -233,13 +221,13 @@ describe("ReadingsPage", () => {
       screen.getByRole("link", { name: /日运与周运/ }),
     ).toHaveAttribute(
       "href",
-      `/app/readings/${readingVersionId}`,
+      `/account/history/${readingVersionId}`,
     );
     expect(
       screen.getByRole("link", { name: /六爻/ }),
     ).toHaveAttribute(
       "href",
-      "/app/readings/55555555-5555-4555-8555-555555555555",
+      "/account/history/55555555-5555-4555-8555-555555555555",
     );
     expect(screen.getByText("已交付")).toBeInTheDocument();
     expect(screen.getByText("等待输入")).toBeInTheDocument();

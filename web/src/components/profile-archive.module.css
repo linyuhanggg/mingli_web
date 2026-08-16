@@ -8,16 +8,16 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--color-border);
 }
 
 .profileItem {
   display: grid;
   gap: 0.85rem;
   padding-block: 1.15rem;
-  border-bottom: 1px solid var(--border-subtle);
-  animation: archive-item-enter var(--duration-entrance) var(--ease-out-expo) both;
-  transition: transform var(--duration-feedback) var(--ease-out-expo);
+  border-bottom: 1px solid var(--color-border);
+  animation: archive-item-enter var(--duration-page) var(--ease-out) both;
+  transition: transform var(--duration-feedback) var(--ease-out);
 }
 
 .profileItem:nth-child(1) { animation-delay: 0.02s; }
@@ -49,13 +49,13 @@
 }
 
 .profileName {
-  font-size: 1.02rem;
+  font-size: var(--font-size-body);
   font-weight: 750;
 }
 
 .profileMeta {
-  color: var(--ink-700);
-  font-size: 0.84rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   font-variant-numeric: tabular-nums;
 }
 
@@ -74,8 +74,8 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.35rem 0.9rem;
-  color: var(--ink-700);
-  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
 }
 
 .emptyFlows ul {
@@ -94,14 +94,14 @@
 }
 
 .emptyFlows a {
-  color: var(--ink-900);
+  color: var(--color-action);
   font-weight: 700;
-  text-decoration-color: var(--gold-500);
+  text-decoration-color: var(--color-border-strong);
   text-underline-offset: 0.25rem;
 }
 
 .emptyFlows a:hover {
-  color: var(--terracotta-600);
+  color: var(--color-action-hover);
 }
 
 @media (min-width: 768px) {

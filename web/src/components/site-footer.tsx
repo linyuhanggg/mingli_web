@@ -1,13 +1,48 @@
 import Link from "next/link";
 
-import {
-  PUBLIC_FOOTER_APPLICATIONS,
-  PUBLIC_INFORMATION_LINKS,
-} from "@/lib/product-capabilities";
-
 import { Container } from "./container";
 import styles from "./site-chrome.module.css";
 
+
+const productLinks = [
+  { href: "/arts", label: "术数总览" },
+  { href: "/hecan", label: "命盘合参" },
+  { href: "/tools", label: "工具" },
+  { href: "/daily", label: "每日" },
+] as const;
+
+const contentLinks = [
+  { href: "/library", label: "知识内容" },
+  { href: "/methodology", label: "方法与边界" },
+  { href: "/support", label: "帮助与支持" },
+] as const;
+
+const accountLinks = [
+  { href: "/account", label: "账户" },
+  { href: "/privacy", label: "隐私政策" },
+  { href: "/terms", label: "服务条款" },
+] as const;
+
+function FooterLinkGroup({
+  ariaLabel,
+  links,
+  title,
+}: {
+  ariaLabel: string;
+  links: readonly { href: string; label: string }[];
+  title: string;
+}) {
+  return (
+    <nav aria-label={ariaLabel} className={styles.footerColumn}>
+      <h2>{title}</h2>
+      {links.map((item) => (
+        <Link href={item.href} key={item.href}>
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
 
 export function SiteFooter() {
   return (
@@ -19,44 +54,21 @@ export function SiteFooter() {
               <span className={styles.symbol} aria-hidden="true">
                 <span>命</span>
               </span>
-              <strong>FateRadar</strong>
+              <strong>命理工具</strong>
             </div>
             <p>
-              东方编辑档案：把时间变成私密、可核对的个人档案。结合确定性命理核心与现代 AI 表达，不替代医疗、法律、投资或其他专业意见。
+              中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。
             </p>
           </div>
           <div className={styles.footerColumns}>
-            <nav className={styles.footerColumn} aria-label="核心应用">
-              <h2>核心应用</h2>
-              {PUBLIC_FOOTER_APPLICATIONS.map((item) => (
-                <Link href={item.href} key={`${item.href}-${item.label}`}>
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <nav className={styles.footerColumn} aria-label="方法与说明">
-              <h2>方法与说明</h2>
-              {PUBLIC_INFORMATION_LINKS.map((item) => (
-                <Link href={item.href} key={`${item.href}-${item.label}`}>
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <div className={styles.footerColumn}>
-              <h2>平台承诺</h2>
-              <p>
-                本平台旨在通过现代化信息技术传承中华传统易学文化，所有解读仅供学术文化研究与理智思考参考。
-              </p>
-            </div>
+            <FooterLinkGroup ariaLabel="产品入口" links={productLinks} title="产品入口" />
+            <FooterLinkGroup ariaLabel="知识与帮助" links={contentLinks} title="知识与帮助" />
+            <FooterLinkGroup ariaLabel="账户与政策" links={accountLinks} title="账户与政策" />
           </div>
         </div>
         <div className={styles.legal}>
-          <span>© 2026 FateRadar（命盘 AI）. 保留所有权利</span>
-          <nav className={styles.legalLinks} aria-label="法律链接">
-            <Link href="/terms">使用条款与免责声明</Link>
-            <Link href="/privacy">隐私政策</Link>
-            <Link href="/support">支持中心</Link>
-          </nav>
+          <span>© 2026 命理工具测试版</span>
+          <span>内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。</span>
         </div>
       </Container>
     </footer>

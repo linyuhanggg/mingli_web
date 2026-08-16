@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/ziwei-chart-v1.schema.json",
+  "title": "Ziwei Chart ViewModel v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "subject_ref", "life_palace_id", "body_palace_id", "palaces", "time_layers"],
+  "properties": {
+    "schema_version": {"const": "ziwei-chart/v1"},
+    "subject_ref": {"$ref": "#/$defs/text"},
+    "life_palace_id": {"$ref": "#/$defs/text"},
+    "body_palace_id": {"$ref": "#/$defs/text"},
+    "palaces": {"type": "array", "minItems": 12, "maxItems": 12, "items": {"$ref": "#/$defs/palace"}},
+    "time_layers": {"type": "array", "items": {"$ref": "#/$defs/timeLayer"}},
+    "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1},
+    "textArray": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+    "timeLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layer_id", "label", "available", "unavailable_reason"],
+      "properties": {
+        "layer_id": {"$ref": "#/$defs/text"},
+        "label": {"$ref": "#/$defs/text"},
+        "available": {"type": "boolean"},
+        "unavailable_reason": {"type": ["string", "null"], "minLength": 1}
+      },
+      "allOf": [
+        {"if": {"properties": {"available": {"const": true}}}, "then": {"properties": {"unavailable_reason": {"type": "null"}}}, "else": {"properties": {"unavailable_reason": {"type": "string", "minLength": 1}}}}
+      ]
+    },
+    "star": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "star_type", "scope", "brightness"],
+      "properties": {
+        "name": {"$ref": "#/$defs/text"},
+        "star_type": {"type": ["string", "null"], "minLength": 1},
+        "scope": {"type": ["string", "null"], "minLength": 1},
+        "brightness": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "decadal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["age_start", "age_end", "heavenly_stem", "earthly_branch"],
+      "properties": {
+        "age_start": {"type": "integer", "minimum": 0},
+        "age_end": {"type": "integer", "minimum": 0},
+        "heavenly_stem": {"$ref": "#/$defs/text"},
+        "earthly_branch": {"$ref": "#/$defs/text"}
+      }
+    },
+    "palace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["palace_id", "label", "heavenly_stem", "earthly_branch", "major_stars", "minor_stars", "adjective_stars", "changsheng12", "boshi12", "jiangqian12", "suiqian12", "decadal", "ages"],
+      "properties": {
+        "palace_id": {"$ref": "#/$defs/text"},
+        "label": {"$ref": "#/$defs/text"},
+        "heavenly_stem": {"$ref": "#/$defs/text"},
+        "earthly_branch": {"$ref": "#/$defs/text"},
+        "major_stars": {"$ref": "#/$defs/textArray"},
+        "minor_stars": {"type": "array", "items": {"$ref": "#/$defs/star"}},
+        "adjective_stars": {"type": "array", "items": {"$ref": "#/$defs/star"}},
+        "changsheng12": {"type": ["string", "null"], "minLength": 1},
+        "boshi12": {"type": ["string", "null"], "minLength": 1},
+        "jiangqian12": {"type": ["string", "null"], "minLength": 1},
+        "suiqian12": {"type": ["string", "null"], "minLength": 1},
+        "decadal": {"oneOf": [{"$ref": "#/$defs/decadal"}, {"type": "null"}]},
+        "ages": {"type": "array", "items": {"type": "integer"}}
+      }
+    },
+    "limit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["palace", "palace_index", "palace_branch", "age_start", "age_end", "sequence", "heavenly_stem", "earthly_branch", "direction"],
+      "properties": {
+        "palace": {"$ref": "#/$defs/text"},
+        "palace_index": {"type": "integer", "minimum": 0},
+        "palace_branch": {"$ref": "#/$defs/text"},
+        "age_start": {"type": "integer", "minimum": 0},
+        "age_end": {"type": "integer", "minimum": 0},
+        "sequence": {"type": "integer", "minimum": 1, "maximum": 12},
+        "heavenly_stem": {"$ref": "#/$defs/text"},
+        "earthly_branch": {"$ref": "#/$defs/text"},
+        "direction": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "direction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["direction", "gender", "year_polarity", "year_stem"],
+      "properties": {
+        "direction": {"$ref": "#/$defs/text"},
+        "gender": {"$ref": "#/$defs/text"},
+        "year_polarity": {"$ref": "#/$defs/text"},
+        "year_stem": {"$ref": "#/$defs/text"}
+      }
+    },
+    "mingShen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["body_star", "ming_branch", "shen_branch", "soul_star"],
+      "properties": {
+        "body_star": {"$ref": "#/$defs/text"},
+        "ming_branch": {"$ref": "#/$defs/text"},
+        "shen_branch": {"$ref": "#/$defs/text"},
+        "soul_star": {"$ref": "#/$defs/text"}
+      }
+    },
+    "transformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["star", "transformation", "palace", "palace_branch", "scope"],
+      "properties": {
+        "star": {"$ref": "#/$defs/text"},
+        "transformation": {"$ref": "#/$defs/text"},
+        "palace": {"$ref": "#/$defs/text"},
+        "palace_branch": {"$ref": "#/$defs/text"},
+        "scope": {"$ref": "#/$defs/text"}
+      }
+    },
+    "starFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "star_type", "scope", "brightness", "palace", "palace_branch", "palace_index"],
+      "properties": {
+        "name": {"$ref": "#/$defs/text"},
+        "star_type": {"type": ["string", "null"], "minLength": 1},
+        "scope": {"type": ["string", "null"], "minLength": 1},
+        "brightness": {"type": ["string", "null"], "minLength": 1},
+        "palace": {"$ref": "#/$defs/text"},
+        "palace_branch": {"$ref": "#/$defs/text"},
+        "palace_index": {"type": "integer", "minimum": 0}
+      }
+    },
+    "coreFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["five_elements_class", "ming_shen", "major_limit_direction", "major_limit_starting_age", "major_limit_sequence", "major_limits", "transformations", "star_facts"],
+      "properties": {
+        "five_elements_class": {"type": ["string", "null"], "minLength": 1},
+        "ming_shen": {"oneOf": [{"$ref": "#/$defs/mingShen"}, {"type": "null"}]},
+        "major_limit_direction": {"oneOf": [{"$ref": "#/$defs/direction"}, {"type": "null"}]},
+        "major_limit_starting_age": {"type": ["integer", "null"], "minimum": 0},
+        "interpretive_candidates": {"type": ["object", "null"], "additionalProperties": true},
+        "major_limit_sequence": {"oneOf": [{"type": "array", "items": {"$ref": "#/$defs/limit"}}, {"type": "null"}]},
+        "major_limits": {"oneOf": [{"type": "array", "items": {"$ref": "#/$defs/limit"}}, {"type": "null"}]},
+        "transformations": {"oneOf": [{"type": "array", "items": {"$ref": "#/$defs/transformation"}}, {"type": "null"}]},
+        "star_facts": {"oneOf": [{"type": "array", "items": {"$ref": "#/$defs/starFact"}}, {"type": "null"}]}
+      }
+    }
+  }
+}

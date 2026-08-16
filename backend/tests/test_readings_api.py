@@ -29,10 +29,7 @@ from test_profiles_api import (
 )
 from worker.readings import build_reading_worker
 
-ACCEPTED_COPY = (
-    "本命格局以稳定积累为主线。\n\n"
-    "本解读仅供传统文化参考，不构成现实决策保证。"
-)
+ACCEPTED_COPY = "本命格局以稳定积累为主线。\n\n本解读仅供传统文化参考，不构成现实决策保证。"
 
 
 async def seed_runtime_release(
@@ -332,6 +329,203 @@ async def test_guest_starts_preview_reading_and_polls_a_queued_job(
         assert version.status == "input_ready"
         jobs = list(
             await session.scalars(
+                select(ReadingJobRecord).where(ReadingJobRecord.reading_version_id == version.id)
+            )
+        )
+        assert len(jobs) == 1
+        assert jobs[0].status == "queued"
+        assert jobs[0].narrative_policy_version
+        assert jobs[0].output_contract["contract_id"] == "preview-v1"
+
+
+@pytest.mark.parametrize(
+    "path, payload, expected_capability, expected_object",
+    [
+        (
+            "/api/v1/readings/ziwei",
+            {"dimension_ids": ["career"]},
+            "ziwei",
+            "natal",
+        ),
+        (
+            "/api/v1/readings/qizheng",
+            {"dimension_ids": ["career"]},
+            "xingming",
+            "natal",
+        ),
+        (
+            "/api/v1/readings/canwen",
+            {
+                "selected_art_ids": ["bazi", "ziwei"],
+                "query": "比较事业上的共同事实范围",
+                "dimension_ids": ["career"],
+            },
+            "bazi",
+            "natal",
+        ),
+        (
+            "/api/v1/readings/hecan",
+            {
+                "selected_art_ids": ["bazi", "ziwei"],
+                "dimension_ids": ["career"],
+            },
+            "bazi",
+            "natal",
+        ),
+        (
+            "/api/v1/readings/wenshi",
+            {
+                "cast": [6, 7, 8, 9, 6, 7],
+                "event_datetime": "2026-08-14T10:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "location": "上海市",
+                "query": "这件事如何推进？",
+                "dimension_ids": ["outcome", "timing"],
+            },
+            "liuyao",
+            "concrete_event",
+        ),
+        (
+            "/api/v1/readings/qimen",
+            {
+                "event_datetime": "2026-08-14T10:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "location": "上海市",
+                "query": "这件事如何推进？",
+                "dimension_ids": ["outcome"],
+            },
+            "qimen",
+            "concrete_event",
+        ),
+        (
+            "/api/v1/readings/daliuren",
+            {
+                "event_datetime": "2026-08-14T10:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "location": "上海市",
+                "query": "这件事如何推进？",
+                "dimension_ids": ["timing"],
+            },
+            "liuren",
+            "concrete_event",
+        ),
+        (
+            "/api/v1/readings/meihua",
+            {
+                "casting_method": "time",
+                "event_datetime": "2026-08-14T10:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "location": "上海市",
+                "query": "这件事如何推进？",
+                "dimension_ids": ["outcome", "state"],
+            },
+            "meihua",
+            "concrete_event",
+        ),
+        (
+            "/api/v1/readings/meihua",
+            {
+                "casting_method": "supplied_number",
+                "number": 17,
+                "provenance": {"kind": "user_supplied", "source": "api-test"},
+                "event_datetime": "2026-08-14T10:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "location": "上海市",
+                "query": "按数字起卦看这件事如何推进？",
+                "dimension_ids": ["outcome"],
+            },
+            "meihua",
+            "concrete_event",
+        ),
+        (
+            "/api/v1/readings/meihua",
+            {
+                "casting_method": "sound_count",
+                "count": 9,
+                "observation_source": {"kind": "sound_count", "source": "api-test"},
+                "event_datetime": "2026-08-14T10:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "location": "上海市",
+                "query": "按声数起卦看这件事如何推进？",
+                "dimension_ids": ["state"],
+            },
+            "meihua",
+            "concrete_event",
+        ),
+        (
+            "/api/v1/readings/meihua",
+            {
+                "casting_method": "observation",
+                "upper_trigram": "乾",
+                "lower_trigram": "坤",
+                "observation_source": {"kind": "direct_observation", "source": "api-test"},
+                "event_datetime": "2026-08-14T10:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "location": "上海市",
+                "query": "按观察起卦看这件事如何推进？",
+                "dimension_ids": ["outcome"],
+            },
+            "meihua",
+            "concrete_event",
+        ),
+        (
+            "/api/v1/readings/meihua",
+            {
+                "casting_method": "supplied_hexagram",
+                "upper_trigram": "乾",
+                "lower_trigram": "坤",
+                "moving_line": 4,
+                "provenance": {"kind": "user_supplied", "source": "api-test"},
+                "event_datetime": "2026-08-14T10:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "location": "上海市",
+                "query": "按完整卦象看这件事如何推进？",
+                "dimension_ids": ["state"],
+            },
+            "meihua",
+            "concrete_event",
+        ),
+    ],
+)
+async def test_guest_starts_each_new_single_art_reading(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+    path: str,
+    payload: dict[str, Any],
+    expected_capability: str,
+    expected_object: str,
+) -> None:
+    headers = await create_guest(client)
+    if expected_object == "natal":
+        profile = await create_confirmed_profile(client, headers)
+        payload = {**payload, "profile_version_id": profile["profile_version_id"]}
+    await seed_runtime_release(database, test_settings)
+
+    started = await client.post(path, headers=headers, json=payload)
+
+    assert started.status_code == 201, started.text
+    body = started.json()
+    assert body["capability_id"] == expected_capability
+    assert body["object_id"] == expected_object
+    assert body["status"] == "input_ready"
+    assert body["horizon"]["kind_id"] == ("life" if expected_object == "natal" else "instant")
+    if path == "/api/v1/readings/wenshi":
+        assert body["product_id"] == "wenshi"
+        assert body["runtime_capability_ids"] == ["liuyao", "qimen", "liuren"]
+    if path == "/api/v1/readings/canwen":
+        assert body["product_id"] == "canwen"
+        assert body["runtime_capability_ids"] == ["bazi", "ziwei"]
+    if path == "/api/v1/readings/hecan":
+        assert body["product_id"] == "hecan"
+        assert body["runtime_capability_ids"] == ["bazi", "ziwei"]
+    assert_private_headers(started)
+
+    async with database.sessions() as session:
+        version = await session.get(ReadingVersion, UUID(body["reading_version_id"]))
+        assert version is not None
+        jobs = list(
+            await session.scalars(
                 select(ReadingJobRecord).where(
                     ReadingJobRecord.reading_version_id == version.id
                 )
@@ -339,8 +533,82 @@ async def test_guest_starts_preview_reading_and_polls_a_queued_job(
         )
         assert len(jobs) == 1
         assert jobs[0].status == "queued"
-        assert jobs[0].narrative_policy_version
-        assert jobs[0].output_contract["contract_id"] == "preview-v1"
+
+
+async def test_qimen_deep_starts_with_a_frozen_structured_job_contract(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    await seed_runtime_release(database, test_settings)
+
+    started = await client.post(
+        "/api/v1/readings/qimen-deep",
+        headers=headers,
+        json={
+            "event_datetime": "2026-08-14T10:00:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市",
+            "subject_ref": "qimen-deep:api-contract",
+            "query": "验证奇门深读合同链路",
+            "dimension_ids": ["outcome", "timing", "state"],
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+            "longitude": 121.4737,
+            "latitude": 31.2304,
+            "coordinate_source": "synthetic-fixture",
+        },
+    )
+
+    assert started.status_code == 201, started.text
+    body = started.json()
+    assert body["capability_id"] == "qimen"
+    assert body["product_id"] == "qimen-deep"
+    assert body["object_id"] == "concrete_event"
+    assert body["status"] == "input_ready"
+    assert body["horizon"]["kind_id"] == "instant"
+    assert_private_headers(started)
+
+    async with database.sessions() as session:
+        version = await session.get(ReadingVersion, UUID(body["reading_version_id"]))
+        assert version is not None
+        job = await session.scalar(
+            select(ReadingJobRecord).where(
+                ReadingJobRecord.reading_version_id == version.id
+            )
+        )
+        assert job is not None
+        assert job.status == "awaiting_fulfillment"
+        assert job.output_contract["contract_id"] == "qimen-deep-output-v1"
+        assert job.output_contract["required_dimension_ids"] == [
+            "outcome",
+            "timing",
+            "state",
+        ]
+
+
+async def test_qimen_deep_rejects_non_structured_dimension_selection(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    await seed_runtime_release(database, test_settings)
+
+    rejected = await client.post(
+        "/api/v1/readings/qimen-deep",
+        headers=headers,
+        json={
+            "event_datetime": "2026-08-14T10:00:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市",
+            "dimension_ids": ["outcome"],
+        },
+    )
+
+    assert rejected.status_code == 400, rejected.text
+    assert rejected.json()["title"] == "Invalid reading input"
 
 
 async def test_preview_job_reaches_accepted_under_default_local_fake_stack(
@@ -381,9 +649,7 @@ async def test_preview_job_reaches_accepted_under_default_local_fake_stack(
         version = await session.get(ReadingVersion, UUID(version_id))
         assert version is not None
         job = await session.scalar(
-            select(ReadingJobRecord).where(
-                ReadingJobRecord.reading_version_id == version.id
-            )
+            select(ReadingJobRecord).where(ReadingJobRecord.reading_version_id == version.id)
         )
         assert job is not None
         attempts = list(
@@ -450,9 +716,7 @@ async def test_today_and_week_jobs_reach_accepted_under_default_local_fake_stack
             version = await session.get(ReadingVersion, UUID(version_id))
             assert version is not None
             job = await session.scalar(
-                select(ReadingJobRecord).where(
-                    ReadingJobRecord.reading_version_id == version.id
-                )
+                select(ReadingJobRecord).where(ReadingJobRecord.reading_version_id == version.id)
             )
             assert job is not None
             attempts = list(
@@ -463,8 +727,7 @@ async def test_today_and_week_jobs_reach_accepted_under_default_local_fake_stack
                 )
             )
             attempt_summary = [
-                (attempt.attempt_number, tuple(attempt.guard_errors))
-                for attempt in attempts
+                (attempt.attempt_number, tuple(attempt.guard_errors)) for attempt in attempts
             ]
             assert job.status == "complete", (
                 "fortune job must reach accepted under the default local fake stack; "
@@ -988,6 +1251,18 @@ async def test_liuyao_need_input_supply_enqueues_a_tokenized_job(
     assert polled.json()["status"] == "waiting_input"
     assert polled.json()["input_request"]["requirements"][0]["any_of"][0]["id"] == "cast_1"
 
+    async with database.sessions() as session:
+        waiting_jobs = list(
+            await session.scalars(
+                select(ReadingJobRecord).where(
+                    ReadingJobRecord.reading_version_id == UUID(version_id),
+                )
+            )
+        )
+        assert len(waiting_jobs) == 1
+        waiting_job_id = waiting_jobs[0].id
+        assert waiting_jobs[0].status == "waiting_input"
+
     supplied = await client.post(
         f"/api/v1/readings/{version_id}/input",
         headers=headers,
@@ -1030,16 +1305,16 @@ async def test_liuyao_need_input_supply_enqueues_a_tokenized_job(
         assert version is not None
         jobs = list(
             await session.scalars(
-                select(ReadingJobRecord).where(
-                    ReadingJobRecord.reading_version_id == version.id
-                )
+                select(ReadingJobRecord).where(ReadingJobRecord.reading_version_id == version.id)
             )
         )
-        assert [job.status for job in jobs] == ["waiting_input", "queued"]
+        assert len(jobs) == 1
+        assert jobs[0].id == waiting_job_id
+        assert jobs[0].status == "queued"
         cipher = EnvelopeCipher.from_settings(test_settings)
         readings = __import__("app.readings.repository", fromlist=["SqlReadingRepository"])
         repository = readings.SqlReadingRepository(session, cipher)
-        supplied_job = next(job for job in jobs if job.status == "queued")
+        supplied_job = jobs[0]
         loaded = await repository.load_job(str(supplied_job.id))
         assert loaded.prepare_command.state_token == "api-supply-token"
         assert loaded.prepare_command.transition == "correct"
@@ -1055,6 +1330,46 @@ async def test_liuyao_need_input_supply_enqueues_a_tokenized_job(
     advanced = await client.get(f"/api/v1/readings/{version_id}")
     assert advanced.status_code == 200
     assert advanced.json()["status"] in {"prepared", "completing", "accepted"}
+
+
+async def test_liuyao_outcome_dimension_worker_reaches_accepted(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    await seed_runtime_release(database, test_settings)
+    started = await client.post(
+        "/api/v1/readings/liuyao",
+        headers=headers,
+        json={
+            "cast": [7, 8, 6, 9, 7, 8],
+            "event_datetime": "2026-08-10T12:00:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "北京市朝阳区",
+            "dimension_ids": ["outcome"],
+        },
+    )
+
+    assert started.status_code == 201, started.text
+    version_id = started.json()["reading_version_id"]
+
+    async with database.sessions() as session:
+        job = await session.scalar(
+            select(ReadingJobRecord).where(
+                ReadingJobRecord.reading_version_id == UUID(version_id)
+            )
+        )
+        assert job is not None
+        assert job.output_contract["required_dimension_ids"] == ["outcome"]
+
+    runtime = TokenEchoRuntime()
+    assert await run_worker_once(database, test_settings, runtime=runtime) is True
+    assert await run_worker_once(database, test_settings, runtime=runtime) is True
+    assert await run_worker_once(database, test_settings, runtime=runtime) is True
+    finished = await client.get(f"/api/v1/readings/{version_id}")
+    assert finished.status_code == 200
+    assert finished.json()["status"] == "accepted"
 
 
 async def test_liuyao_start_rejects_an_unknown_timezone(
@@ -1130,6 +1445,44 @@ async def test_supply_input_active_job_collision_returns_conflict_not_500(
     assert polled.json()["input_request"] is not None
 
 
+async def test_supply_input_after_waiting_timeout_is_rejected(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    version_id = await start_waiting_liuyao(
+        client,
+        database,
+        test_settings,
+        headers,
+    )
+    async with database.sessions() as session:
+        version = await session.get(ReadingVersion, UUID(version_id))
+        assert version is not None
+        version.waiting_input_at = datetime.now(UTC) - timedelta(days=7)
+        await session.commit()
+
+    assert await run_worker_once(database, test_settings) is False
+    response = await client.post(
+        f"/api/v1/readings/{version_id}/input",
+        headers=headers,
+        json={
+            "values": {
+                "cast_1": 8,
+                "cast_2": 7,
+                "cast_3": 8,
+                "cast_4": 7,
+                "cast_5": 8,
+                "cast_6": 7,
+            }
+        },
+    )
+
+    assert response.status_code == 409
+    assert response.json()["title"] == "Reading is not waiting for input"
+
+
 async def test_accepted_result_verification_and_idempotent_verification(
     client: AsyncClient,
     database: Any,
@@ -1161,6 +1514,7 @@ async def test_accepted_result_verification_and_idempotent_verification(
     body = result.json()
     assert body["status"] == "accepted"
     assert body["accepted_copy"] == ACCEPTED_COPY
+    assert body["document"] is None
     assert body["fact_panel"]["facts"][0]["display_text"] == "当前结构更支持持续积累。"
     assert body["fact_panel"]["limits"][0]["kind_id"] == "limit:traditional"
     assert body["verification"] is None
@@ -1190,9 +1544,7 @@ async def test_accepted_result_verification_and_idempotent_verification(
         assert version.status == "accepted"
         jobs = list(
             await session.scalars(
-                select(ReadingJobRecord).where(
-                    ReadingJobRecord.reading_version_id == version.id
-                )
+                select(ReadingJobRecord).where(ReadingJobRecord.reading_version_id == version.id)
             )
         )
         assert [job.status for job in jobs] == ["complete"]
@@ -1279,29 +1631,28 @@ async def test_follow_up_creates_a_new_version_with_projected_prior_answer(
 
     async with database.sessions() as session:
         versions = list(
-            await session.scalars(
-                select(ReadingVersion).order_by(ReadingVersion.version)
-            )
+            await session.scalars(select(ReadingVersion).order_by(ReadingVersion.version))
         )
         roots = list(await session.scalars(select(ReadingRoot)))
         assert len(roots) == 1
         assert [version.version for version in versions] == [1, 2]
-        assert len(
-            list(
-                await session.scalars(
-                    select(ReadingJobRecord).where(
-                        ReadingJobRecord.reading_version_id == versions[1].id
+        assert (
+            len(
+                list(
+                    await session.scalars(
+                        select(ReadingJobRecord).where(
+                            ReadingJobRecord.reading_version_id == versions[1].id
+                        )
                     )
                 )
             )
-        ) == 1
+            == 1
+        )
         cipher = EnvelopeCipher.from_settings(test_settings)
         readings = __import__("app.readings.repository", fromlist=["SqlReadingRepository"])
         repository = readings.SqlReadingRepository(session, cipher)
         job = await session.scalar(
-            select(ReadingJobRecord).where(
-                ReadingJobRecord.reading_version_id == versions[1].id
-            )
+            select(ReadingJobRecord).where(ReadingJobRecord.reading_version_id == versions[1].id)
         )
         loaded = await repository.load_job(str(job.id))
         assert loaded.prepare_command.facts[subject_ref]["prior_answer"] == ACCEPTED_COPY
@@ -1309,6 +1660,257 @@ async def test_follow_up_creates_a_new_version_with_projected_prior_answer(
         assert loaded.prepare_command.transition is None
 
 
+async def test_recast_creates_a_new_root_from_an_accepted_reading(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    source = await start_preview(
+        client,
+        headers,
+        confirmed["profile_version_id"],
+        idempotency_key="recast-source-v1",
+    )
+    await advance_to_accepted(
+        database,
+        test_settings,
+        version_id=source["reading_version_id"],
+        subject_ref=f"profile-version:{confirmed['profile_version_id']}",
+    )
+
+    recast = await client.post(
+        f"/api/v1/readings/{source['reading_version_id']}/recast",
+        headers={**headers, "Idempotency-Key": "recast-request-v1"},
+        json={
+            "action": "profile_preview",
+            "profile_version_id": confirmed["profile_version_id"],
+            "query": "改看长期结构中的职业主线",
+            "dimension_ids": ["career"],
+        },
+    )
+
+    assert recast.status_code == 201, recast.text
+    body = recast.json()
+    assert body["version"] == 1
+    assert body["reading_root_id"] != source["reading_root_id"]
+    assert body["profile_version_id"] == confirmed["profile_version_id"]
+    assert body["capability_id"] == "bazi"
+
+    replayed = await client.post(
+        f"/api/v1/readings/{source['reading_version_id']}/recast",
+        headers={**headers, "Idempotency-Key": "recast-request-v1"},
+        json={
+            "action": "profile_preview",
+            "profile_version_id": confirmed["profile_version_id"],
+            "query": "改看长期结构中的职业主线",
+            "dimension_ids": ["career"],
+        },
+    )
+    assert replayed.status_code == 200, replayed.text
+    assert replayed.json()["reading_version_id"] == body["reading_version_id"]
+
+    async with database.sessions() as session:
+        roots = list(await session.scalars(select(ReadingRoot)))
+        assert len(roots) == 2
+        assert {str(root.id) for root in roots} >= {
+            source["reading_root_id"],
+            body["reading_root_id"],
+        }
+
+
+async def test_recast_requires_accepted_source_and_owner_scope(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+
+    async with (
+        AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as first,
+        AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as second,
+    ):
+        first_headers = await create_guest(first)
+        confirmed = await create_confirmed_profile(first, first_headers)
+        await seed_runtime_release(database, test_settings)
+        source = await start_preview(
+            first,
+            first_headers,
+            confirmed["profile_version_id"],
+            idempotency_key="recast-not-ready-v1",
+        )
+
+        not_ready = await first.post(
+            f"/api/v1/readings/{source['reading_version_id']}/recast",
+            headers={**first_headers, "Idempotency-Key": "recast-not-ready-request"},
+            json={
+                "action": "profile_preview",
+                "profile_version_id": confirmed["profile_version_id"],
+            },
+        )
+        assert not_ready.status_code == 409
+
+        second_headers = await create_guest(second)
+        cross_owner = await second.post(
+            f"/api/v1/readings/{source['reading_version_id']}/recast",
+            headers={**second_headers, "Idempotency-Key": "recast-cross-owner"},
+            json={
+                "action": "profile_preview",
+                "profile_version_id": confirmed["profile_version_id"],
+            },
+        )
+
+    assert cross_owner.status_code == 404
+
+
+async def test_recast_liuyao_uses_a_structured_event_request(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    source = await start_preview(
+        client,
+        headers,
+        confirmed["profile_version_id"],
+        idempotency_key="recast-liuyao-source",
+    )
+    await advance_to_accepted(
+        database,
+        test_settings,
+        version_id=source["reading_version_id"],
+        subject_ref=f"profile-version:{confirmed['profile_version_id']}",
+    )
+
+    recast = await client.post(
+        f"/api/v1/readings/{source['reading_version_id']}/recast",
+        headers={**headers, "Idempotency-Key": "recast-liuyao-request"},
+        json={
+            "action": "liuyao_one_question",
+            "cast": [6, 7, 8, 9, 6, 7],
+            "event_datetime": "2026-08-14T10:00:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市",
+            "query": "换一个具体事件重新判断",
+            "dimension_ids": ["outcome"],
+        },
+    )
+
+    assert recast.status_code == 201, recast.text
+    body = recast.json()
+    assert body["version"] == 1
+    assert body["reading_root_id"] != source["reading_root_id"]
+    assert body["profile_version_id"] is None
+    assert body["capability_id"] == "liuyao"
+    assert body["dimension_ids"] == ["outcome"]
+
+
+async def test_follow_up_enforces_snapshot_expiry_count_and_linear_active_child(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    started = await start_preview(
+        client,
+        headers,
+        confirmed["profile_version_id"],
+        idempotency_key="follow-up-contract-base",
+    )
+    version_id = started["reading_version_id"]
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    await advance_to_accepted(
+        database,
+        test_settings,
+        version_id=version_id,
+        subject_ref=subject_ref,
+    )
+
+    async with database.sessions() as session:
+        root = await session.get(ReadingRoot, UUID(started["reading_root_id"]))
+        assert root is not None
+        root.follow_up_count_snapshot = 1
+        root.follow_up_window_seconds_snapshot = 3_600
+        root.follow_up_started_at = datetime.now(UTC)
+        await session.commit()
+
+    first = await client.post(
+        f"/api/v1/readings/{version_id}/follow-up",
+        headers={**headers, "Idempotency-Key": "follow-up-contract-first"},
+        json={"query": "继续看这条主线"},
+    )
+    assert first.status_code == 201
+    first_child_id = first.json()["reading_version_id"]
+
+    active_branch = await client.post(
+        f"/api/v1/readings/{version_id}/follow-up",
+        headers={**headers, "Idempotency-Key": "follow-up-contract-branch"},
+        json={"query": "从旧版再开一个问题"},
+    )
+    assert active_branch.status_code == 409
+
+    await advance_to_accepted(
+        database,
+        test_settings,
+        version_id=first_child_id,
+        subject_ref=subject_ref,
+    )
+    exhausted = await client.post(
+        f"/api/v1/readings/{first_child_id}/follow-up",
+        headers={**headers, "Idempotency-Key": "follow-up-contract-exhausted"},
+        json={"query": "再问一次"},
+    )
+    assert exhausted.status_code == 409
+
+
+async def test_follow_up_rejects_an_expired_product_snapshot(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    started = await start_preview(
+        client,
+        headers,
+        confirmed["profile_version_id"],
+        idempotency_key="follow-up-contract-expired-base",
+    )
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    await advance_to_accepted(
+        database,
+        test_settings,
+        version_id=started["reading_version_id"],
+        subject_ref=subject_ref,
+    )
+
+    async with database.sessions() as session:
+        root = await session.get(ReadingRoot, UUID(started["reading_root_id"]))
+        assert root is not None
+        root.follow_up_count_snapshot = 1
+        root.follow_up_window_seconds_snapshot = 60
+        root.follow_up_started_at = datetime.now(UTC) - timedelta(minutes=2)
+        await session.commit()
+
+    expired = await client.post(
+        f"/api/v1/readings/{started['reading_version_id']}/follow-up",
+        headers={**headers, "Idempotency-Key": "follow-up-contract-expired"},
+        json={"query": "已过期的问题"},
+    )
+    assert expired.status_code == 409
 
 
 async def test_result_fact_panel_strips_raw_inputs_and_dependent_refs(
@@ -1409,6 +2011,7 @@ async def test_follow_up_requires_accepted_reading(
         json={"query": "再往下看事业节奏"},
     )
     assert response.status_code == 409
+
 
 async def test_reading_writes_require_matching_csrf(client: AsyncClient) -> None:
     await create_guest(client)
@@ -1554,9 +2157,7 @@ async def test_list_readings_orders_newest_first_caps_at_50_and_stays_private(
     await seed_runtime_release(database, test_settings)
     release_id = await _seed_release_id(database)
     async with database.sessions() as session:
-        guest = await session.scalar(
-            select(GuestSession).order_by(GuestSession.created_at.desc())
-        )
+        guest = await session.scalar(select(GuestSession).order_by(GuestSession.created_at.desc()))
     assert guest is not None
 
     base = datetime(2026, 8, 1, tzinfo=UTC)
@@ -1610,6 +2211,8 @@ async def test_list_readings_orders_newest_first_caps_at_50_and_stays_private(
         "reading_root_id",
         "profile_version_id",
         "capability_id",
+        "product_id",
+        "runtime_capability_ids",
         "version",
         "status",
         "object_id",
@@ -1653,9 +2256,7 @@ async def test_list_readings_is_isolated_per_owner_and_survives_user_claim(
 
     listed_a = await client.get("/api/v1/readings")
     assert listed_a.status_code == 200
-    assert [item["reading_version_id"] for item in listed_a.json()["readings"]] == [
-        version_a
-    ]
+    assert [item["reading_version_id"] for item in listed_a.json()["readings"]] == [version_a]
 
     guest_b = await create_guest(client)
     confirmed_b = await create_confirmed_profile(client, guest_b)
@@ -1670,9 +2271,7 @@ async def test_list_readings_is_isolated_per_owner_and_survives_user_claim(
 
     listed_b = await client.get("/api/v1/readings")
     assert listed_b.status_code == 200
-    assert [item["reading_version_id"] for item in listed_b.json()["readings"]] == [
-        version_b
-    ]
+    assert [item["reading_version_id"] for item in listed_b.json()["readings"]] == [version_b]
 
     # After guest B claims a User account, the same session must still see only
     # its own readings: guest A's Version must never leak across owners.
@@ -1682,3 +2281,148 @@ async def test_list_readings_is_isolated_per_owner_and_survives_user_claim(
     assert claimed_ids == [version_b]
     assert str(logged_in["user_id"])
     assert version_a not in claimed_ids
+
+
+@pytest.mark.parametrize(
+    (
+        "path",
+        "payload",
+        "expected_capability",
+        "expected_product",
+        "expected_horizon",
+        "needs_profile",
+    ),
+    [
+        (
+            "/api/v1/readings/luming-nayin",
+            {"dimension_ids": ["state", "career"]},
+            "luming-nayin",
+            "luming-nayin",
+            "life",
+            True,
+        ),
+        (
+            "/api/v1/readings/five-elements-facts",
+            {"dimension_ids": ["state"]},
+            "bazi",
+            "five-elements-facts",
+            "life",
+            True,
+        ),
+        (
+            "/api/v1/readings/rhythm",
+            {"dimension_ids": ["state"]},
+            "luming-nayin",
+            "rhythm",
+            "life",
+            True,
+        ),
+        (
+            "/api/v1/readings/taiyi",
+            {
+                "event_datetime": "2026-08-14T10:00:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "location": "上海市",
+                "dimension_ids": ["outcome", "timing"],
+            },
+            "taiyi",
+            "taiyi",
+            "year",
+            False,
+        ),
+        (
+            "/api/v1/readings/selection",
+            {
+                "event_profile": "business_opening_transaction",
+                "requested_actions": ["开市"],
+                "date_range_start": "2026-09-01",
+                "date_range_end": "2026-09-03",
+                "timezone": "Asia/Shanghai",
+                "location": "上海市",
+                "dimension_ids": ["timing", "state"],
+            },
+            "selection",
+            "selection",
+            "year",
+            False,
+        ),
+        (
+            "/api/v1/readings/fengshui",
+            {
+                "fengshui_spec": {
+                    "schema_version": "mingli-fengshui-input-v1",
+                    "property_scope": "residential",
+                    "subprofiles": ["liqi"],
+                    "requested_form_variables": [],
+                    "liqi": {
+                        "selected_school": "bazhai",
+                        "origin_basis": "door_trigram",
+                        "origin_node_id": "door-1",
+                    },
+                    "building": {},
+                    "assets": [],
+                    "observations": [],
+                    "compass_measurements": [
+                        {
+                            "measurement_id": "m-door",
+                            "method": "synthetic-compass",
+                            "source_ref": "synthetic-compass-1",
+                            "source_type": "user_measurement",
+                            "north_reference": "true",
+                            "facing_degrees": 180,
+                            "correction_degrees": 0,
+                            "uncertainty_degrees": 0,
+                            "quality": "good",
+                        }
+                    ],
+                    "declared_orientation": {},
+                    "layout_graph": {
+                        "nodes": [
+                            {
+                                "node_id": "door-1",
+                                "kind": "door",
+                                "direction_measurement": "m-door",
+                            }
+                        ],
+                        "edges": [],
+                    },
+                },
+                "dimension_ids": ["current_state", "direction"],
+            },
+            "fengshui",
+            "fengshui",
+            "instant",
+            False,
+        ),
+    ],
+)
+async def test_guest_can_start_each_remaining_core_product(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+    path: str,
+    payload: dict[str, Any],
+    expected_capability: str,
+    expected_product: str,
+    expected_horizon: str,
+    needs_profile: bool,
+) -> None:
+    headers = await create_guest(client)
+    if needs_profile:
+        profile = await create_confirmed_profile(client, headers)
+        payload = {**payload, "profile_version_id": profile["profile_version_id"]}
+    await seed_runtime_release(database, test_settings)
+
+    started = await client.post(
+        path,
+        headers={**headers, "Idempotency-Key": f"internal-core-{expected_capability}"},
+        json=payload,
+    )
+
+    assert started.status_code == 201, started.text
+    body = started.json()
+    assert body["capability_id"] == expected_capability
+    assert body["product_id"] == expected_product
+    assert body["horizon"]["kind_id"] == expected_horizon
+    assert body["status"] == "input_ready"
+    assert_private_headers(started)

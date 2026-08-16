@@ -1,7 +1,7 @@
 .cardStack {
   display: grid;
   gap: 0.75rem;
-  animation: account-stack-enter var(--duration-entrance) var(--ease-out-expo) both;
+  animation: account-stack-enter var(--duration-page) var(--ease-out) both;
 }
 
 .retryRow,
@@ -18,26 +18,26 @@
 
 .noIdentity {
   margin: 0;
-  color: var(--ink-700);
-  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
 }
 
 .logoutError {
   margin: 0.9rem 0 0;
   padding: 0.75rem 0.9rem;
-  border: 1px solid var(--terracotta-500);
-  border-radius: var(--radius-sm);
-  background: var(--ivory-100);
-  color: var(--ink-950);
-  font-size: 0.88rem;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  font-size: var(--font-size-label);
   line-height: 1.55;
-  animation: account-stack-enter var(--duration-state) var(--ease-out-expo) both;
+  animation: account-stack-enter var(--duration-overlay) var(--ease-out) both;
 }
 
 .busyReason {
   margin: 0;
-  color: var(--ink-700);
-  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
   line-height: 1.5;
 }
 

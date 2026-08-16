@@ -1,0 +1,2097 @@
+{
+  "pages": [
+    {
+      "label": "home@1440",
+      "route": "/",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/",
+      "status": 200,
+      "title": "十三术同根，五十五部古籍为证",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content?prefix=notice&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content?prefix=notice&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 255,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n\n命理推演\n\n十三术同根，五十五部古籍为证\n\n13 个术数体系 Provider、55 部古籍 reference pack、1328 条 evidence index 记录。\n先给确定性盘面事实，再谈解释与边界。\n\n开始排盘\n多术合参\n确定性盘面免费\n盘面由 Runtime 确定性生成，可复现、可核对。\n事实与解释分层\n盘面事实与模型表达分开标注，适用边界可见。\n多术互证\n同根资料多术对照，分歧与缺失明示。\n命盘\n\n从出生资料开始，观察长期结构与时间层。\n\n八字\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n长期结构、阶段节奏与个人资料建档\n禄命纳音\n沿用已确认出生资料，单独呈现禄命、纳音、三元和关系事实。\n四柱纳音、禄命锚点与基础关系核对\n紫微\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n角色结构、宫位主题与阶段观察\n七政\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n星曜位置、宫位结构与时限观察\n事件判断\n\n围绕同一件具体事情，记录问题、过程与发生时空。\n\n六爻\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n边界清楚、时间明确的一事一问\n奇门\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n行动选择、局势判断与具体事件\n大六壬\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n人事进展、关系变化与事件推演\n\n观照\n\n见相\n\n面相 · 手相 · 体态 · 综合观照。选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n进入见相\n合参\n\n同一对象、同一问题，多术分别计算后再对照。\n\n命盘合参\n八字主理，紫微、七政参证；可带着具体问题进入（原多盘问答）。\n八字、紫微、七政至少选两术\n问事合参\n六爻先行起卦，大六壬与奇门参证同一问题与时空。\n同一问题、同一时刻比较三盘\n辅助\n\n日常查看、校对工具与方法资料。\n\n每日\n当天与近阶段的可用时间摘要。\n工具\n历法、时间与资料辅助工具。\n知识内容\n术数方法、术语与适用边界。\nCMS 内容暂不可用\n\n公开内容服务暂不可用；页面保留既有产品说明，不伪造动态内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "home@1024",
+      "route": "/",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/",
+      "status": 200,
+      "title": "十三术同根，五十五部古籍为证",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content?prefix=notice&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content?prefix=notice&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 382,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n\n命理推演\n\n十三术同根，五十五部古籍为证\n\n13 个术数体系 Provider、55 部古籍 reference pack、1328 条 evidence index 记录。\n先给确定性盘面事实，再谈解释与边界。\n\n开始排盘\n多术合参\n确定性盘面免费\n盘面由 Runtime 确定性生成，可复现、可核对。\n事实与解释分层\n盘面事实与模型表达分开标注，适用边界可见。\n多术互证\n同根资料多术对照，分歧与缺失明示。\n命盘\n\n从出生资料开始，观察长期结构与时间层。\n\n八字\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n长期结构、阶段节奏与个人资料建档\n禄命纳音\n沿用已确认出生资料，单独呈现禄命、纳音、三元和关系事实。\n四柱纳音、禄命锚点与基础关系核对\n紫微\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n角色结构、宫位主题与阶段观察\n七政\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n星曜位置、宫位结构与时限观察\n事件判断\n\n围绕同一件具体事情，记录问题、过程与发生时空。\n\n六爻\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n边界清楚、时间明确的一事一问\n奇门\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n行动选择、局势判断与具体事件\n大六壬\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n人事进展、关系变化与事件推演\n\n观照\n\n见相\n\n面相 · 手相 · 体态 · 综合观照。选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n进入见相\n合参\n\n同一对象、同一问题，多术分别计算后再对照。\n\n命盘合参\n八字主理，紫微、七政参证；可带着具体问题进入（原多盘问答）。\n八字、紫微、七政至少选两术\n问事合参\n六爻先行起卦，大六壬与奇门参证同一问题与时空。\n同一问题、同一时刻比较三盘\n辅助\n\n日常查看、校对工具与方法资料。\n\n每日\n当天与近阶段的可用时间摘要。\n工具\n历法、时间与资料辅助工具。\n知识内容\n术数方法、术语与适用边界。\nCMS 内容暂不可用\n\n公开内容服务暂不可用；页面保留既有产品说明，不伪造动态内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "home@768",
+      "route": "/",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/",
+      "status": 200,
+      "title": "十三术同根，五十五部古籍为证",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content?prefix=notice&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content?prefix=notice&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 419,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n\n命理推演\n\n十三术同根，五十五部古籍为证\n\n13 个术数体系 Provider、55 部古籍 reference pack、1328 条 evidence index 记录。\n先给确定性盘面事实，再谈解释与边界。\n\n开始排盘\n多术合参\n确定性盘面免费\n盘面由 Runtime 确定性生成，可复现、可核对。\n事实与解释分层\n盘面事实与模型表达分开标注，适用边界可见。\n多术互证\n同根资料多术对照，分歧与缺失明示。\n命盘\n\n从出生资料开始，观察长期结构与时间层。\n\n八字\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n长期结构、阶段节奏与个人资料建档\n禄命纳音\n沿用已确认出生资料，单独呈现禄命、纳音、三元和关系事实。\n四柱纳音、禄命锚点与基础关系核对\n紫微\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n角色结构、宫位主题与阶段观察\n七政\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n星曜位置、宫位结构与时限观察\n事件判断\n\n围绕同一件具体事情，记录问题、过程与发生时空。\n\n六爻\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n边界清楚、时间明确的一事一问\n奇门\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n行动选择、局势判断与具体事件\n大六壬\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n人事进展、关系变化与事件推演\n\n观照\n\n见相\n\n面相 · 手相 · 体态 · 综合观照。选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n进入见相\n合参\n\n同一对象、同一问题，多术分别计算后再对照。\n\n命盘合参\n八字主理，紫微、七政参证；可带着具体问题进入（原多盘问答）。\n八字、紫微、七政至少选两术\n问事合参\n六爻先行起卦，大六壬与奇门参证同一问题与时空。\n同一问题、同一时刻比较三盘\n辅助\n\n日常查看、校对工具与方法资料。\n\n每日\n当天与近阶段的可用时间摘要。\n工具\n历法、时间与资料辅助工具。\n知识内容\n术数方法、术语与适用边界。\nCMS 内容暂不可用\n\n公开内容服务暂不可用；页面保留既有产品说明，不伪造动态内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "home@360",
+      "route": "/",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/",
+      "status": 200,
+      "title": "十三术同根，五十五部古籍为证",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content?prefix=notice&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content?prefix=notice&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 345,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n\n命理推演\n\n十三术同根，五十五部古籍为证\n\n13 个术数体系 Provider、55 部古籍 reference pack、1328 条 evidence index 记录。\n先给确定性盘面事实，再谈解释与边界。\n\n开始排盘\n多术合参\n确定性盘面免费\n盘面由 Runtime 确定性生成，可复现、可核对。\n事实与解释分层\n盘面事实与模型表达分开标注，适用边界可见。\n多术互证\n同根资料多术对照，分歧与缺失明示。\n命盘\n\n从出生资料开始，观察长期结构与时间层。\n\n八字\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n长期结构、阶段节奏与个人资料建档\n禄命纳音\n沿用已确认出生资料，单独呈现禄命、纳音、三元和关系事实。\n四柱纳音、禄命锚点与基础关系核对\n紫微\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n角色结构、宫位主题与阶段观察\n七政\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n星曜位置、宫位结构与时限观察\n事件判断\n\n围绕同一件具体事情，记录问题、过程与发生时空。\n\n六爻\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n边界清楚、时间明确的一事一问\n奇门\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n行动选择、局势判断与具体事件\n大六壬\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n人事进展、关系变化与事件推演\n\n观照\n\n见相\n\n面相 · 手相 · 体态 · 综合观照。选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n进入见相\n合参\n\n同一对象、同一问题，多术分别计算后再对照。\n\n命盘合参\n八字主理，紫微、七政参证；可带着具体问题进入（原多盘问答）。\n八字、紫微、七政至少选两术\n问事合参\n六爻先行起卦，大六壬与奇门参证同一问题与时空。\n同一问题、同一时刻比较三盘\n辅助\n\n日常查看、校对工具与方法资料。\n\n每日\n当天与近阶段的可用时间摘要。\n工具\n历法、时间与资料辅助工具。\n知识内容\n术数方法、术语与适用边界。\nCMS 内容暂不可用\n\n公开内容服务暂不可用；页面保留既有产品说明，不伪造动态内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "bazi@1440",
+      "route": "/bazi",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/bazi",
+      "status": 200,
+      "title": "八字｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 416,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n八字：从出生资料建立四柱\n\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n\n适合处理\n长期结构、阶段节奏与个人资料建档\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n八字任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则；目标时间层只选一个。\n\n流年目标年份（可选）\n\n填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。\n\n流月目标月份（可选）\n\n填写后请求 Runtime 的精确月份层；与年份、日期互斥。\n\n流日目标日期（可选）\n\n填写后请求 Runtime 的精确日期层；与年份、月份互斥。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四柱与五行力量\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n时间口径与四柱摘要\n02\n年月日时四柱\n03\n十神、藏干、纳音、空亡、地势与自坐\n04\n神煞与特殊宫位\n05\n旺衰贡献\n06\n格局、喜忌与病药依据\n07\n大运、流年与关键流月\n08\n四柱图与五行力量\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "bazi@1024",
+      "route": "/bazi",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/bazi",
+      "status": 200,
+      "title": "八字｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 414,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n八字：从出生资料建立四柱\n\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n\n适合处理\n长期结构、阶段节奏与个人资料建档\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n八字任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则；目标时间层只选一个。\n\n流年目标年份（可选）\n\n填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。\n\n流月目标月份（可选）\n\n填写后请求 Runtime 的精确月份层；与年份、日期互斥。\n\n流日目标日期（可选）\n\n填写后请求 Runtime 的精确日期层；与年份、月份互斥。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四柱与五行力量\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n时间口径与四柱摘要\n02\n年月日时四柱\n03\n十神、藏干、纳音、空亡、地势与自坐\n04\n神煞与特殊宫位\n05\n旺衰贡献\n06\n格局、喜忌与病药依据\n07\n大运、流年与关键流月\n08\n四柱图与五行力量\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "bazi@768",
+      "route": "/bazi",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/bazi",
+      "status": 200,
+      "title": "八字｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 330,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n八字：从出生资料建立四柱\n\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n\n适合处理\n长期结构、阶段节奏与个人资料建档\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n八字任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则；目标时间层只选一个。\n\n流年目标年份（可选）\n\n填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。\n\n流月目标月份（可选）\n\n填写后请求 Runtime 的精确月份层；与年份、日期互斥。\n\n流日目标日期（可选）\n\n填写后请求 Runtime 的精确日期层；与年份、月份互斥。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四柱与五行力量\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n时间口径与四柱摘要\n02\n年月日时四柱\n03\n十神、藏干、纳音、空亡、地势与自坐\n04\n神煞与特殊宫位\n05\n旺衰贡献\n06\n格局、喜忌与病药依据\n07\n大运、流年与关键流月\n08\n四柱图与五行力量\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "bazi@360",
+      "route": "/bazi",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/bazi",
+      "status": 200,
+      "title": "八字｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 373,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n八字：从出生资料建立四柱\n\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n\n适合处理\n长期结构、阶段节奏与个人资料建档\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n八字任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则；目标时间层只选一个。\n\n流年目标年份（可选）\n\n填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。\n\n流月目标月份（可选）\n\n填写后请求 Runtime 的精确月份层；与年份、日期互斥。\n\n流日目标日期（可选）\n\n填写后请求 Runtime 的精确日期层；与年份、月份互斥。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四柱与五行力量\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n时间口径与四柱摘要\n02\n年月日时四柱\n03\n十神、藏干、纳音、空亡、地势与自坐\n04\n神煞与特殊宫位\n05\n旺衰贡献\n06\n格局、喜忌与病药依据\n07\n大运、流年与关键流月\n08\n四柱图与五行力量\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "ziwei@1440",
+      "route": "/ziwei",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/ziwei",
+      "status": 200,
+      "title": "紫微｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 298,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n紫微：从命宫进入十二宫\n\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n\n适合处理\n角色结构、宫位主题与阶段观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n紫微任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n紫微专有：后续会单独确认闰月、命宫起法与四化版本；目标时间层只选一个。\n\n流年目标年份（可选）\n\n填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。\n\n流月目标月份（可选）\n\n填写后请求 Runtime 的精确月份层；与年份、日期互斥。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n十二宫与四化\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n十二宫盘与宫位交互\n02\n主星、辅星与杂曜\n03\n三方四正\n04\n四化\n05\n格局与命宫摘要\n06\n大限、流年与可用时间层\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "ziwei@1024",
+      "route": "/ziwei",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/ziwei",
+      "status": 200,
+      "title": "紫微｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 457,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n紫微：从命宫进入十二宫\n\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n\n适合处理\n角色结构、宫位主题与阶段观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n紫微任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n紫微专有：后续会单独确认闰月、命宫起法与四化版本；目标时间层只选一个。\n\n流年目标年份（可选）\n\n填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。\n\n流月目标月份（可选）\n\n填写后请求 Runtime 的精确月份层；与年份、日期互斥。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n十二宫与四化\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n十二宫盘与宫位交互\n02\n主星、辅星与杂曜\n03\n三方四正\n04\n四化\n05\n格局与命宫摘要\n06\n大限、流年与可用时间层\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "ziwei@768",
+      "route": "/ziwei",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/ziwei",
+      "status": 200,
+      "title": "紫微｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 415,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n紫微：从命宫进入十二宫\n\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n\n适合处理\n角色结构、宫位主题与阶段观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n紫微任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n紫微专有：后续会单独确认闰月、命宫起法与四化版本；目标时间层只选一个。\n\n流年目标年份（可选）\n\n填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。\n\n流月目标月份（可选）\n\n填写后请求 Runtime 的精确月份层；与年份、日期互斥。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n十二宫与四化\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n十二宫盘与宫位交互\n02\n主星、辅星与杂曜\n03\n三方四正\n04\n四化\n05\n格局与命宫摘要\n06\n大限、流年与可用时间层\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "ziwei@360",
+      "route": "/ziwei",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/ziwei",
+      "status": 200,
+      "title": "紫微｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 375,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n紫微：从命宫进入十二宫\n\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n\n适合处理\n角色结构、宫位主题与阶段观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n紫微任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n紫微专有：后续会单独确认闰月、命宫起法与四化版本；目标时间层只选一个。\n\n流年目标年份（可选）\n\n填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。\n\n流月目标月份（可选）\n\n填写后请求 Runtime 的精确月份层；与年份、日期互斥。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n十二宫与四化\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n十二宫盘与宫位交互\n02\n主星、辅星与杂曜\n03\n三方四正\n04\n四化\n05\n格局与命宫摘要\n06\n大限、流年与可用时间层\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "qizheng@1440",
+      "route": "/qizheng",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/qizheng",
+      "status": 200,
+      "title": "七政｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 365,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n七政：用时间与地点建立星盘\n\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n\n适合处理\n星曜位置、宫位结构与时限观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n七政任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n七政专有：地点将用于经纬度与时区校准，并保留坐标来源。\n\n流年目标年份（可选）\n\n填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。\n\n流月目标月份（可选）\n\n填写后请求 Runtime 的精确月份层；与年份、日期互斥。\n\n流日目标日期（可选）\n\n填写后请求 Runtime 的精确日期层；与年份、月份互斥。\n\n出生经度\n\n东经为正，西经为负。\n\n出生纬度\n\n北纬为正，南纬为负。\n\n坐标来源\n\n例如城市地理编码、用户确认。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n星盘与十一曜\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n星盘\n02\n命度与身度\n03\n命盘格局\n04\n功能十二宫\n05\n十一曜宿度\n06\n恩用仇难\n07\n大限、小限与神煞落宫\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "qizheng@1024",
+      "route": "/qizheng",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/qizheng",
+      "status": 200,
+      "title": "七政｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 359,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n七政：用时间与地点建立星盘\n\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n\n适合处理\n星曜位置、宫位结构与时限观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n七政任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n七政专有：地点将用于经纬度与时区校准，并保留坐标来源。\n\n流年目标年份（可选）\n\n填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。\n\n流月目标月份（可选）\n\n填写后请求 Runtime 的精确月份层；与年份、日期互斥。\n\n流日目标日期（可选）\n\n填写后请求 Runtime 的精确日期层；与年份、月份互斥。\n\n出生经度\n\n东经为正，西经为负。\n\n出生纬度\n\n北纬为正，南纬为负。\n\n坐标来源\n\n例如城市地理编码、用户确认。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n星盘与十一曜\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n星盘\n02\n命度与身度\n03\n命盘格局\n04\n功能十二宫\n05\n十一曜宿度\n06\n恩用仇难\n07\n大限、小限与神煞落宫\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "qizheng@768",
+      "route": "/qizheng",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/qizheng",
+      "status": 200,
+      "title": "七政｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 334,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n七政：用时间与地点建立星盘\n\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n\n适合处理\n星曜位置、宫位结构与时限观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n七政任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n七政专有：地点将用于经纬度与时区校准，并保留坐标来源。\n\n流年目标年份（可选）\n\n填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。\n\n流月目标月份（可选）\n\n填写后请求 Runtime 的精确月份层；与年份、日期互斥。\n\n流日目标日期（可选）\n\n填写后请求 Runtime 的精确日期层；与年份、月份互斥。\n\n出生经度\n\n东经为正，西经为负。\n\n出生纬度\n\n北纬为正，南纬为负。\n\n坐标来源\n\n例如城市地理编码、用户确认。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n星盘与十一曜\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n星盘\n02\n命度与身度\n03\n命盘格局\n04\n功能十二宫\n05\n十一曜宿度\n06\n恩用仇难\n07\n大限、小限与神煞落宫\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "qizheng@360",
+      "route": "/qizheng",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/qizheng",
+      "status": 200,
+      "title": "七政｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 422,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n七政：用时间与地点建立星盘\n\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n\n适合处理\n星曜位置、宫位结构与时限观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n七政任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n出生资料\n受测对象\n\n可以填写“本人”或便于自己识别的称呼。\n\n历法\n公历\n农历\n性别\n暂不指定\n女\n男\n出生日期\n出生时间\n\n请按当时民用钟表时间填写。\n\n未知时辰\n后续只开放支持未知时辰的能力，并明确精度边界。\n出生地点\n\n用于确定时区与地方时口径；当前只做输入确认。\n\n出生时区\n\n主动确认出生地的 IANA 时区，不读取设备位置。\n\n时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；当地视太阳时由确定性脚本换算。\n\n七政专有：地点将用于经纬度与时区校准，并保留坐标来源。\n\n流年目标年份（可选）\n\n填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。\n\n流月目标月份（可选）\n\n填写后请求 Runtime 的精确月份层；与年份、日期互斥。\n\n流日目标日期（可选）\n\n填写后请求 Runtime 的精确日期层；与年份、月份互斥。\n\n出生经度\n\n东经为正，西经为负。\n\n出生纬度\n\n北纬为正，南纬为负。\n\n坐标来源\n\n例如城市地理编码、用户确认。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n星盘与十一曜\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n星盘\n02\n命度与身度\n03\n命盘格局\n04\n功能十二宫\n05\n十一曜宿度\n06\n恩用仇难\n07\n大限、小限与神煞落宫\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "daliuren@1440",
+      "route": "/daliuren",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/daliuren",
+      "status": 200,
+      "title": "大六壬｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 369,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n大六壬：围绕明确问题建立课盘\n\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n\n适合处理\n人事进展、关系变化与事件推演\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n大六壬任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n事情进展\n人事关系\n结果观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四课三传\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n天地盘\n02\n四课\n03\n三传\n04\n九宗门\n05\n天将\n06\n课体候选\n07\n关键神煞与盘面综览\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "daliuren@1024",
+      "route": "/daliuren",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/daliuren",
+      "status": 200,
+      "title": "大六壬｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 357,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n大六壬：围绕明确问题建立课盘\n\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n\n适合处理\n人事进展、关系变化与事件推演\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n大六壬任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n事情进展\n人事关系\n结果观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四课三传\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n天地盘\n02\n四课\n03\n三传\n04\n九宗门\n05\n天将\n06\n课体候选\n07\n关键神煞与盘面综览\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "daliuren@768",
+      "route": "/daliuren",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/daliuren",
+      "status": 200,
+      "title": "大六壬｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 363,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n大六壬：围绕明确问题建立课盘\n\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n\n适合处理\n人事进展、关系变化与事件推演\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n大六壬任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n事情进展\n人事关系\n结果观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四课三传\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n天地盘\n02\n四课\n03\n三传\n04\n九宗门\n05\n天将\n06\n课体候选\n07\n关键神煞与盘面综览\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "daliuren@360",
+      "route": "/daliuren",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/daliuren",
+      "status": 200,
+      "title": "大六壬｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 396,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n大六壬：围绕明确问题建立课盘\n\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n\n适合处理\n人事进展、关系变化与事件推演\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n大六壬任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n事情进展\n人事关系\n结果观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n四课三传\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n天地盘\n02\n四课\n03\n三传\n04\n九宗门\n05\n天将\n06\n课体候选\n07\n关键神煞与盘面综览\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "liuyao@1440",
+      "route": "/liuyao",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/liuyao",
+      "status": 200,
+      "title": "六爻｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 480,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n六爻：围绕一件事记录起卦过程\n\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n\n适合处理\n边界清楚、时间明确的一事一问\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n六爻任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n起卦方式\n请选择\n三枚硬币\n手动记录\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六次过程与本卦变卦\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n问题与起卦依据\n02\n六次起卦过程\n03\n本卦与变卦\n04\n六爻、六亲与世应\n05\n动静、旬空、月日等事实\n06\n基础摘要与适用边界\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "liuyao@1024",
+      "route": "/liuyao",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/liuyao",
+      "status": 200,
+      "title": "六爻｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 422,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n六爻：围绕一件事记录起卦过程\n\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n\n适合处理\n边界清楚、时间明确的一事一问\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n六爻任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n起卦方式\n请选择\n三枚硬币\n手动记录\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六次过程与本卦变卦\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n问题与起卦依据\n02\n六次起卦过程\n03\n本卦与变卦\n04\n六爻、六亲与世应\n05\n动静、旬空、月日等事实\n06\n基础摘要与适用边界\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "liuyao@768",
+      "route": "/liuyao",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/liuyao",
+      "status": 200,
+      "title": "六爻｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 420,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n六爻：围绕一件事记录起卦过程\n\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n\n适合处理\n边界清楚、时间明确的一事一问\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n六爻任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n起卦方式\n请选择\n三枚硬币\n手动记录\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六次过程与本卦变卦\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n问题与起卦依据\n02\n六次起卦过程\n03\n本卦与变卦\n04\n六爻、六亲与世应\n05\n动静、旬空、月日等事实\n06\n基础摘要与适用边界\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "liuyao@360",
+      "route": "/liuyao",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/liuyao",
+      "status": 200,
+      "title": "六爻｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 420,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n六爻：围绕一件事记录起卦过程\n\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n\n适合处理\n边界清楚、时间明确的一事一问\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n六爻任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n起卦方式\n请选择\n三枚硬币\n手动记录\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六次过程与本卦变卦\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n问题与起卦依据\n02\n六次起卦过程\n03\n本卦与变卦\n04\n六爻、六亲与世应\n05\n动静、旬空、月日等事实\n06\n基础摘要与适用边界\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "qimen@1440",
+      "route": "/qimen",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/qimen",
+      "status": 200,
+      "title": "奇门｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 475,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n奇门：用问题与事件时空起局\n\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n\n适合处理\n行动选择、局势判断与具体事件\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n奇门任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n场景侧重\n请选择\n行动选择\n局势判断\n时机观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n九宫与值符值使\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n阴遁、阳遁与局式\n02\n九宫\n03\n九星、八门与八神\n04\n值符与值使\n05\n用神锚点\n06\n关键格局与大局基调\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "qimen@1024",
+      "route": "/qimen",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/qimen",
+      "status": 200,
+      "title": "奇门｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 367,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n奇门：用问题与事件时空起局\n\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n\n适合处理\n行动选择、局势判断与具体事件\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n奇门任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n场景侧重\n请选择\n行动选择\n局势判断\n时机观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n九宫与值符值使\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n阴遁、阳遁与局式\n02\n九宫\n03\n九星、八门与八神\n04\n值符与值使\n05\n用神锚点\n06\n关键格局与大局基调\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "qimen@768",
+      "route": "/qimen",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/qimen",
+      "status": 200,
+      "title": "奇门｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 321,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n奇门：用问题与事件时空起局\n\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n\n适合处理\n行动选择、局势判断与具体事件\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n奇门任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n场景侧重\n请选择\n行动选择\n局势判断\n时机观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n九宫与值符值使\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n阴遁、阳遁与局式\n02\n九宫\n03\n九星、八门与八神\n04\n值符与值使\n05\n用神锚点\n06\n关键格局与大局基调\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "qimen@360",
+      "route": "/qimen",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/qimen",
+      "status": 200,
+      "title": "奇门｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 322,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n奇门：用问题与事件时空起局\n\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n\n适合处理\n行动选择、局势判断与具体事件\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n奇门任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n场景侧重\n请选择\n行动选择\n局势判断\n时机观察\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n九宫与值符值使\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n阴遁、阳遁与局式\n02\n九宫\n03\n九星、八门与八神\n04\n值符与值使\n05\n用神锚点\n06\n关键格局与大局基调\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "meihua@1440",
+      "route": "/meihua",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/meihua",
+      "status": 200,
+      "title": "梅花易数｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 2418,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n梅花易数：按五种方式起一卦\n\n写清一件事和起卦依据，先查看本卦、互卦、变卦与体用结构。\n\n适合处理\n具体事件、状态变化与行动观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n梅花易数任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n结果观察\n状态变化\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n梅花起卦方式\n按时间起卦\n按数字起卦\n按声数起卦\n按观察起卦\n提供完整卦象\n\n按实际采用的起法提交，不会把数字、声音或观测资料改成时间起卦。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n本卦、互卦与体用\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n问题与起卦时空\n02\n本卦、互卦与变卦\n03\n动爻\n04\n体卦与用卦\n05\n五行生克关系事实\n06\n起卦方式与适用边界\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "meihua@1024",
+      "route": "/meihua",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/meihua",
+      "status": 200,
+      "title": "梅花易数｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 449,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n梅花易数：按五种方式起一卦\n\n写清一件事和起卦依据，先查看本卦、互卦、变卦与体用结构。\n\n适合处理\n具体事件、状态变化与行动观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n梅花易数任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n结果观察\n状态变化\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n梅花起卦方式\n按时间起卦\n按数字起卦\n按声数起卦\n按观察起卦\n提供完整卦象\n\n按实际采用的起法提交，不会把数字、声音或观测资料改成时间起卦。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n本卦、互卦与体用\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n问题与起卦时空\n02\n本卦、互卦与变卦\n03\n动爻\n04\n体卦与用卦\n05\n五行生克关系事实\n06\n起卦方式与适用边界\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "meihua@768",
+      "route": "/meihua",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/meihua",
+      "status": 200,
+      "title": "梅花易数｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 425,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n梅花易数：按五种方式起一卦\n\n写清一件事和起卦依据，先查看本卦、互卦、变卦与体用结构。\n\n适合处理\n具体事件、状态变化与行动观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n梅花易数任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n结果观察\n状态变化\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n梅花起卦方式\n按时间起卦\n按数字起卦\n按声数起卦\n按观察起卦\n提供完整卦象\n\n按实际采用的起法提交，不会把数字、声音或观测资料改成时间起卦。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n本卦、互卦与体用\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n问题与起卦时空\n02\n本卦、互卦与变卦\n03\n动爻\n04\n体卦与用卦\n05\n五行生克关系事实\n06\n起卦方式与适用边界\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "meihua@360",
+      "route": "/meihua",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/meihua",
+      "status": 200,
+      "title": "梅花易数｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 348,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n梅花易数：按五种方式起一卦\n\n写清一件事和起卦依据，先查看本卦、互卦、变卦与体用结构。\n\n适合处理\n具体事件、状态变化与行动观察\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n梅花易数任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n结果观察\n状态变化\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n梅花起卦方式\n按时间起卦\n按数字起卦\n按声数起卦\n按观察起卦\n提供完整卦象\n\n按实际采用的起法提交，不会把数字、声音或观测资料改成时间起卦。\n\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n本卦、互卦与体用\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n问题与起卦时空\n02\n本卦、互卦与变卦\n03\n动爻\n04\n体卦与用卦\n05\n五行生克关系事实\n06\n起卦方式与适用边界\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "wenshi@1440",
+      "route": "/wenshi",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/wenshi",
+      "status": 200,
+      "title": "问事合参｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 321,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n问事合参：同一问题、同一时刻比较三盘\n\n先完成六爻起卦，再生成大六壬与奇门，最后才做整合判断。\n\n适合处理\n需要三种事件术数交叉核对的同一问题\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n问事合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n同一问题与时空\n同一问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n同一事件时空\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六爻、大六壬与奇门\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n同一问题与时空\n02\n六爻先行起卦\n03\n六爻、大六壬与奇门三盘\n04\n三盘生成状态\n05\n共同信号与分歧\n06\n免费概览与整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "wenshi@1024",
+      "route": "/wenshi",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/wenshi",
+      "status": 200,
+      "title": "问事合参｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 434,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n问事合参：同一问题、同一时刻比较三盘\n\n先完成六爻起卦，再生成大六壬与奇门，最后才做整合判断。\n\n适合处理\n需要三种事件术数交叉核对的同一问题\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n问事合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n同一问题与时空\n同一问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n同一事件时空\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六爻、大六壬与奇门\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n同一问题与时空\n02\n六爻先行起卦\n03\n六爻、大六壬与奇门三盘\n04\n三盘生成状态\n05\n共同信号与分歧\n06\n免费概览与整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "wenshi@768",
+      "route": "/wenshi",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/wenshi",
+      "status": 200,
+      "title": "问事合参｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 416,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n问事合参：同一问题、同一时刻比较三盘\n\n先完成六爻起卦，再生成大六壬与奇门，最后才做整合判断。\n\n适合处理\n需要三种事件术数交叉核对的同一问题\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n问事合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n同一问题与时空\n同一问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n同一事件时空\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六爻、大六壬与奇门\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n同一问题与时空\n02\n六爻先行起卦\n03\n六爻、大六壬与奇门三盘\n04\n三盘生成状态\n05\n共同信号与分歧\n06\n免费概览与整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "wenshi@360",
+      "route": "/wenshi",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/wenshi",
+      "status": 200,
+      "title": "问事合参｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 425,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n问事合参：同一问题、同一时刻比较三盘\n\n先完成六爻起卦，再生成大六壬与奇门，最后才做整合判断。\n\n适合处理\n需要三种事件术数交叉核对的同一问题\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n问事合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n同一问题与时空\n同一问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n同一事件时空\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n六爻起卦作为第一步\n\n按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。\n\n初爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n二爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n三爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n四爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n五爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n上爻\n请选择\n老阴（6 · 动爻）\n少阳（7 · 静爻）\n少阴（8 · 静爻）\n老阳（9 · 动爻）\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n六爻、大六壬与奇门\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n同一问题与时空\n02\n六爻先行起卦\n03\n六爻、大六壬与奇门三盘\n04\n三盘生成状态\n05\n共同信号与分歧\n06\n免费概览与整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "hecan@1440",
+      "route": "/hecan",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/hecan",
+      "status": 200,
+      "title": "命盘合参｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 441,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n命盘合参：八字、紫微、七政至少选两术\n\n先立命，再按主理与参证选择术数，分开呈现互证、分歧和缺失；可带着具体问题进入（原多盘问答）。\n\n适合处理\n同一人的长期结构交叉核对\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n命盘合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n当前不会提交到计算服务\n立命与择术\n立命资料\n\n请输入已确认 ProfileVersion ID（UUID）；不会用名称或占位文字代替真实出生档案。\n\n至少选择两术（八字为主术，至少再选一术）\n\n当前结构接入固定八字为主术，再从紫微、七政中选择；各术结果不会被平均成一段话。\n\n八字\n时间结构\n紫微\n宫位参证\n七政\n星曜参证\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n互证、分歧与缺失\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n各术精简盘面\n02\n主理与参证信号\n03\n共同印证\n04\n分歧与适用边界\n05\n缺失能力\n06\n整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "hecan@1024",
+      "route": "/hecan",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/hecan",
+      "status": 200,
+      "title": "命盘合参｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 341,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n命盘合参：八字、紫微、七政至少选两术\n\n先立命，再按主理与参证选择术数，分开呈现互证、分歧和缺失；可带着具体问题进入（原多盘问答）。\n\n适合处理\n同一人的长期结构交叉核对\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n命盘合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n当前不会提交到计算服务\n立命与择术\n立命资料\n\n请输入已确认 ProfileVersion ID（UUID）；不会用名称或占位文字代替真实出生档案。\n\n至少选择两术（八字为主术，至少再选一术）\n\n当前结构接入固定八字为主术，再从紫微、七政中选择；各术结果不会被平均成一段话。\n\n八字\n时间结构\n紫微\n宫位参证\n七政\n星曜参证\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n互证、分歧与缺失\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n各术精简盘面\n02\n主理与参证信号\n03\n共同印证\n04\n分歧与适用边界\n05\n缺失能力\n06\n整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "hecan@768",
+      "route": "/hecan",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/hecan",
+      "status": 200,
+      "title": "命盘合参｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 329,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n命盘合参：八字、紫微、七政至少选两术\n\n先立命，再按主理与参证选择术数，分开呈现互证、分歧和缺失；可带着具体问题进入（原多盘问答）。\n\n适合处理\n同一人的长期结构交叉核对\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n命盘合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n当前不会提交到计算服务\n立命与择术\n立命资料\n\n请输入已确认 ProfileVersion ID（UUID）；不会用名称或占位文字代替真实出生档案。\n\n至少选择两术（八字为主术，至少再选一术）\n\n当前结构接入固定八字为主术，再从紫微、七政中选择；各术结果不会被平均成一段话。\n\n八字\n时间结构\n紫微\n宫位参证\n七政\n星曜参证\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n互证、分歧与缺失\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n各术精简盘面\n02\n主理与参证信号\n03\n共同印证\n04\n分歧与适用边界\n05\n缺失能力\n06\n整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "hecan@360",
+      "route": "/hecan",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/hecan",
+      "status": 200,
+      "title": "命盘合参｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 391,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n命盘合参：八字、紫微、七政至少选两术\n\n先立命，再按主理与参证选择术数，分开呈现互证、分歧和缺失；可带着具体问题进入（原多盘问答）。\n\n适合处理\n同一人的长期结构交叉核对\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n命盘合参任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n当前不会提交到计算服务\n立命与择术\n立命资料\n\n请输入已确认 ProfileVersion ID（UUID）；不会用名称或占位文字代替真实出生档案。\n\n至少选择两术（八字为主术，至少再选一术）\n\n当前结构接入固定八字为主术，再从紫微、七政中选择；各术结果不会被平均成一段话。\n\n八字\n时间结构\n紫微\n宫位参证\n七政\n星曜参证\n检查输入\n\n确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。\n\n互证、分歧与缺失\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n各术精简盘面\n02\n主理与参证信号\n03\n共同印证\n04\n分歧与适用边界\n05\n缺失能力\n06\n整合深读\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "jianxiang@1440",
+      "route": "/jianxiang",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/jianxiang",
+      "status": 200,
+      "title": "见相｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 390,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n见相：先授权，再采集可核对观察\n\n选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n适合处理\n结构化视觉观察与用户补充信息\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n见相任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n采集模式与独立同意\n受测对象\n\n只填写本人或已获授权的对象称呼；不从照片猜测身份。\n\n观照模式\n面相\n手相\n体态\n综合观照\n\n四种模式都只接收你核对过的可见观察；系统不会从原图猜测结论。\n\n已核对的结构化观察\n\n原图不会被 Runtime 读取；请只提交你已经核对、且能说明可见程度的观察，不让系统从照片自动猜测。\n\n观察部位\nforehead\nleft_eyebrow\nright_eyebrow\nleft_eye\nright_eye\nnose\nmouth\nchin\njawline\nleft_ear\nright_ear\nleft_cheek\nright_cheek\ncomplexion\n观察描述\nregion_visible\nrelative_width_broad\nrelative_width_narrow\ncontour_rounded\ncontour_flat\n可见程度\n完整可见\n部分可见\n不确定度\n\n0 表示你确认度最高，1 表示几乎无法确认。\n\n照片处理独立同意\n我已了解原图、结构化观察和命理解读是三层不同数据，并可在提交前删除。\n保存到见相档案（另行同意）\n未勾选时只保留本次任务所需的短期媒体；当前页面不会执行保存。\n拍摄或上传照片\n\n相机被拒绝时始终可选文件。确认后文件才会上传到本次私有会话，并按页面显示的期限自动过期。\n\n相机采集待接入\n\n当前环境不会请求相机权限；请使用本地文件入口，拒绝权限不影响任务输入。\n\n服务端质量检查已接入\n\n确认后服务端会读取容器尺寸和格式；不满足条件时不会建立资产。\n\n尚未选择照片。\n\n选择见相照片\n用户补充信息\n\n照片无法确定的步态、声音或背景信息必须由用户明确补充，不由系统猜测。\n\n检查输入\n\n检查只发生在当前页面。继续后会在工作台明确显示未接入能力，不扣权益。\n\n结构化观察与证据充足度\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n原图采集与质量检查\n02\n版本化结构化观察\n03\n部位、区域与置信度\n04\n质量与证据充足度\n05\n用户补充信息\n06\n基础摘要与分享排除项\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先"
+    },
+    {
+      "label": "jianxiang@1024",
+      "route": "/jianxiang",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/jianxiang",
+      "status": 200,
+      "title": "见相｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 385,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n见相：先授权，再采集可核对观察\n\n选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n适合处理\n结构化视觉观察与用户补充信息\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n见相任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n采集模式与独立同意\n受测对象\n\n只填写本人或已获授权的对象称呼；不从照片猜测身份。\n\n观照模式\n面相\n手相\n体态\n综合观照\n\n四种模式都只接收你核对过的可见观察；系统不会从原图猜测结论。\n\n已核对的结构化观察\n\n原图不会被 Runtime 读取；请只提交你已经核对、且能说明可见程度的观察，不让系统从照片自动猜测。\n\n观察部位\nforehead\nleft_eyebrow\nright_eyebrow\nleft_eye\nright_eye\nnose\nmouth\nchin\njawline\nleft_ear\nright_ear\nleft_cheek\nright_cheek\ncomplexion\n观察描述\nregion_visible\nrelative_width_broad\nrelative_width_narrow\ncontour_rounded\ncontour_flat\n可见程度\n完整可见\n部分可见\n不确定度\n\n0 表示你确认度最高，1 表示几乎无法确认。\n\n照片处理独立同意\n我已了解原图、结构化观察和命理解读是三层不同数据，并可在提交前删除。\n保存到见相档案（另行同意）\n未勾选时只保留本次任务所需的短期媒体；当前页面不会执行保存。\n拍摄或上传照片\n\n相机被拒绝时始终可选文件。确认后文件才会上传到本次私有会话，并按页面显示的期限自动过期。\n\n相机采集待接入\n\n当前环境不会请求相机权限；请使用本地文件入口，拒绝权限不影响任务输入。\n\n服务端质量检查已接入\n\n确认后服务端会读取容器尺寸和格式；不满足条件时不会建立资产。\n\n尚未选择照片。\n\n选择见相照片\n用户补充信息\n\n照片无法确定的步态、声音或背景信息必须由用户明确补充，不由系统猜测。\n\n检查输入\n\n检查只发生在当前页面。继续后会在工作台明确显示未接入能力，不扣权益。\n\n结构化观察与证据充足度\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n原图采集与质量检查\n02\n版本化结构化观察\n03\n部位、区域与置信度\n04\n质量与证据充足度\n05\n用户补充信息\n06\n基础摘要与分享排除项\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先"
+    },
+    {
+      "label": "jianxiang@768",
+      "route": "/jianxiang",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/jianxiang",
+      "status": 200,
+      "title": "见相｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 413,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n见相：先授权，再采集可核对观察\n\n选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n适合处理\n结构化视觉观察与用户补充信息\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n见相任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n采集模式与独立同意\n受测对象\n\n只填写本人或已获授权的对象称呼；不从照片猜测身份。\n\n观照模式\n面相\n手相\n体态\n综合观照\n\n四种模式都只接收你核对过的可见观察；系统不会从原图猜测结论。\n\n已核对的结构化观察\n\n原图不会被 Runtime 读取；请只提交你已经核对、且能说明可见程度的观察，不让系统从照片自动猜测。\n\n观察部位\nforehead\nleft_eyebrow\nright_eyebrow\nleft_eye\nright_eye\nnose\nmouth\nchin\njawline\nleft_ear\nright_ear\nleft_cheek\nright_cheek\ncomplexion\n观察描述\nregion_visible\nrelative_width_broad\nrelative_width_narrow\ncontour_rounded\ncontour_flat\n可见程度\n完整可见\n部分可见\n不确定度\n\n0 表示你确认度最高，1 表示几乎无法确认。\n\n照片处理独立同意\n我已了解原图、结构化观察和命理解读是三层不同数据，并可在提交前删除。\n保存到见相档案（另行同意）\n未勾选时只保留本次任务所需的短期媒体；当前页面不会执行保存。\n拍摄或上传照片\n\n相机被拒绝时始终可选文件。确认后文件才会上传到本次私有会话，并按页面显示的期限自动过期。\n\n相机采集待接入\n\n当前环境不会请求相机权限；请使用本地文件入口，拒绝权限不影响任务输入。\n\n服务端质量检查已接入\n\n确认后服务端会读取容器尺寸和格式；不满足条件时不会建立资产。\n\n尚未选择照片。\n\n选择见相照片\n用户补充信息\n\n照片无法确定的步态、声音或背景信息必须由用户明确补充，不由系统猜测。\n\n检查输入\n\n检查只发生在当前页面。继续后会在工作台明确显示未接入能力，不扣权益。\n\n结构化观察与证据充足度\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n原图采集与质量检查\n02\n版本化结构化观察\n03\n部位、区域与置信度\n04\n质量与证据充足度\n05\n用户补充信息\n06\n基础摘要与分享排除项\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界"
+    },
+    {
+      "label": "jianxiang@360",
+      "route": "/jianxiang",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/jianxiang",
+      "status": 200,
+      "title": "见相｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 440,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n见相：先授权，再采集可核对观察\n\n选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n适合处理\n结构化视觉观察与用户补充信息\n当前边界\n支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。\n任务输入\n输入确认\n工作台\n报告与追问\n见相任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后提交到对应计算服务\n采集模式与独立同意\n受测对象\n\n只填写本人或已获授权的对象称呼；不从照片猜测身份。\n\n观照模式\n面相\n手相\n体态\n综合观照\n\n四种模式都只接收你核对过的可见观察；系统不会从原图猜测结论。\n\n已核对的结构化观察\n\n原图不会被 Runtime 读取；请只提交你已经核对、且能说明可见程度的观察，不让系统从照片自动猜测。\n\n观察部位\nforehead\nleft_eyebrow\nright_eyebrow\nleft_eye\nright_eye\nnose\nmouth\nchin\njawline\nleft_ear\nright_ear\nleft_cheek\nright_cheek\ncomplexion\n观察描述\nregion_visible\nrelative_width_broad\nrelative_width_narrow\ncontour_rounded\ncontour_flat\n可见程度\n完整可见\n部分可见\n不确定度\n\n0 表示你确认度最高，1 表示几乎无法确认。\n\n照片处理独立同意\n我已了解原图、结构化观察和命理解读是三层不同数据，并可在提交前删除。\n保存到见相档案（另行同意）\n未勾选时只保留本次任务所需的短期媒体；当前页面不会执行保存。\n拍摄或上传照片\n\n相机被拒绝时始终可选文件。确认后文件才会上传到本次私有会话，并按页面显示的期限自动过期。\n\n相机采集待接入\n\n当前环境不会请求相机权限；请使用本地文件入口，拒绝权限不影响任务输入。\n\n服务端质量检查已接入\n\n确认后服务端会读取容器尺寸和格式；不满足条件时不会建立资产。\n\n尚未选择照片。\n\n选择见相照片\n用户补充信息\n\n照片无法确定的步态、声音或背景信息必须由用户明确补充，不由系统猜测。\n\n检查输入\n\n检查只发生在当前页面。继续后会在工作台明确显示未接入能力，不扣权益。\n\n结构化观察与证据充足度\n\n以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。\n\n01\n原图采集与质量检查\n02\n版本化结构化观察\n03\n部位、区域与置信度\n04\n质量与证据充足度\n05\n用户补充信息\n06\n基础摘要与分享排除项\n确定性盘面已接入\n\n确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、"
+    },
+    {
+      "label": "tools@1440",
+      "route": "/tools",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/tools",
+      "status": 200,
+      "title": "工具｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content?prefix=tools.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content?prefix=tools.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 489,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n六项辅助工具，逐项说明能力边界。\n\n入口已经保留。每项工具只会展示服务端确认的输入与结果，不在浏览器里补算或编造内容。\n\n寻时定盘\n已接候选事实\n围绕未知时辰生成十二个候选事实；提供结构化事件后可生成有界候选证据排序。\n同盘匹配\n已接有界事实\n只比较两份服务端确认命盘的八字四柱原值；不生成百分比、合婚或缘分结论。\n本命音律\n已接事实\n展示服务端确认的四柱纳音音律事实；不生成姓名学、吉凶或性格结论。\n五行事实与调候\n已接有界事实\n展示服务端五行库存与调候适用性事实；旺衰、喜忌、用神结论仍未接通。\n解梦\n适配中\n先说明问题和现实背景；内容服务接通前不拼接临时解释。\n姓名分析\n适配中\n只处理用户明确提交的输入；确定性规则接通前不输出结论。\n工具能力暂不可用\n\n本命音律、五行事实、同盘比较和寻时定盘已接入有界 Runtime 事实；结构化事件可生成候选证据排序，但完整古法校时、候选淘汰和结论仍未启用，解梦和姓名分析仍只展示范围。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools@1024",
+      "route": "/tools",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/tools",
+      "status": 200,
+      "title": "工具｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content?prefix=tools.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content?prefix=tools.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 419,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n六项辅助工具，逐项说明能力边界。\n\n入口已经保留。每项工具只会展示服务端确认的输入与结果，不在浏览器里补算或编造内容。\n\n寻时定盘\n已接候选事实\n围绕未知时辰生成十二个候选事实；提供结构化事件后可生成有界候选证据排序。\n同盘匹配\n已接有界事实\n只比较两份服务端确认命盘的八字四柱原值；不生成百分比、合婚或缘分结论。\n本命音律\n已接事实\n展示服务端确认的四柱纳音音律事实；不生成姓名学、吉凶或性格结论。\n五行事实与调候\n已接有界事实\n展示服务端五行库存与调候适用性事实；旺衰、喜忌、用神结论仍未接通。\n解梦\n适配中\n先说明问题和现实背景；内容服务接通前不拼接临时解释。\n姓名分析\n适配中\n只处理用户明确提交的输入；确定性规则接通前不输出结论。\n工具能力暂不可用\n\n本命音律、五行事实、同盘比较和寻时定盘已接入有界 Runtime 事实；结构化事件可生成候选证据排序，但完整古法校时、候选淘汰和结论仍未启用，解梦和姓名分析仍只展示范围。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools@768",
+      "route": "/tools",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/tools",
+      "status": 200,
+      "title": "工具｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content?prefix=tools.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content?prefix=tools.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 362,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n六项辅助工具，逐项说明能力边界。\n\n入口已经保留。每项工具只会展示服务端确认的输入与结果，不在浏览器里补算或编造内容。\n\n寻时定盘\n已接候选事实\n围绕未知时辰生成十二个候选事实；提供结构化事件后可生成有界候选证据排序。\n同盘匹配\n已接有界事实\n只比较两份服务端确认命盘的八字四柱原值；不生成百分比、合婚或缘分结论。\n本命音律\n已接事实\n展示服务端确认的四柱纳音音律事实；不生成姓名学、吉凶或性格结论。\n五行事实与调候\n已接有界事实\n展示服务端五行库存与调候适用性事实；旺衰、喜忌、用神结论仍未接通。\n解梦\n适配中\n先说明问题和现实背景；内容服务接通前不拼接临时解释。\n姓名分析\n适配中\n只处理用户明确提交的输入；确定性规则接通前不输出结论。\n工具能力暂不可用\n\n本命音律、五行事实、同盘比较和寻时定盘已接入有界 Runtime 事实；结构化事件可生成候选证据排序，但完整古法校时、候选淘汰和结论仍未启用，解梦和姓名分析仍只展示范围。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools@360",
+      "route": "/tools",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/tools",
+      "status": 200,
+      "title": "工具｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content?prefix=tools.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content?prefix=tools.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 345,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n六项辅助工具，逐项说明能力边界。\n\n入口已经保留。每项工具只会展示服务端确认的输入与结果，不在浏览器里补算或编造内容。\n\n寻时定盘\n已接候选事实\n围绕未知时辰生成十二个候选事实；提供结构化事件后可生成有界候选证据排序。\n同盘匹配\n已接有界事实\n只比较两份服务端确认命盘的八字四柱原值；不生成百分比、合婚或缘分结论。\n本命音律\n已接事实\n展示服务端确认的四柱纳音音律事实；不生成姓名学、吉凶或性格结论。\n五行事实与调候\n已接有界事实\n展示服务端五行库存与调候适用性事实；旺衰、喜忌、用神结论仍未接通。\n解梦\n适配中\n先说明问题和现实背景；内容服务接通前不拼接临时解释。\n姓名分析\n适配中\n只处理用户明确提交的输入；确定性规则接通前不输出结论。\n工具能力暂不可用\n\n本命音律、五行事实、同盘比较和寻时定盘已接入有界 Runtime 事实；结构化事件可生成候选证据排序，但完整古法校时、候选淘汰和结论仍未启用，解梦和姓名分析仍只展示范围。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-time-check@1440",
+      "route": "/tools/time-check",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/tools/time-check",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 851,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n围绕未知时辰生成候选事实\n\n选择已确认的出生档案，提交已知时间范围和可核对事件。服务端 Runtime 会用现有八字核心逐个生成十二个候选时辰；本页不在浏览器排盘。\n\n当前输出范围：十二候选、四柱原值、时间口径和有界候选证据排序。结构化事件只用于证据比较，不会直接生成“最可能时辰”的古法结论。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-time-check@1024",
+      "route": "/tools/time-check",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/tools/time-check",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 428,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n围绕未知时辰生成候选事实\n\n选择已确认的出生档案，提交已知时间范围和可核对事件。服务端 Runtime 会用现有八字核心逐个生成十二个候选时辰；本页不在浏览器排盘。\n\n当前输出范围：十二候选、四柱原值、时间口径和有界候选证据排序。结构化事件只用于证据比较，不会直接生成“最可能时辰”的古法结论。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-time-check@768",
+      "route": "/tools/time-check",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/tools/time-check",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 367,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n围绕未知时辰生成候选事实\n\n选择已确认的出生档案，提交已知时间范围和可核对事件。服务端 Runtime 会用现有八字核心逐个生成十二个候选时辰；本页不在浏览器排盘。\n\n当前输出范围：十二候选、四柱原值、时间口径和有界候选证据排序。结构化事件只用于证据比较，不会直接生成“最可能时辰”的古法结论。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-time-check@360",
+      "route": "/tools/time-check",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/tools/time-check",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 325,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n围绕未知时辰生成候选事实\n\n选择已确认的出生档案，提交已知时间范围和可核对事件。服务端 Runtime 会用现有八字核心逐个生成十二个候选时辰；本页不在浏览器排盘。\n\n当前输出范围：十二候选、四柱原值、时间口径和有界候选证据排序。结构化事件只用于证据比较，不会直接生成“最可能时辰”的古法结论。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-chart-similarity@1440",
+      "route": "/tools/chart-similarity",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/tools/chart-similarity",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 351,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n比较两份命盘的八字四柱事实\n\n选择两份已经确认的档案版本，由服务端 Runtime 逐柱比较年、月、日、时四柱原值。\n\n当前只比较四柱原值，不生成相似度分数。结果不代表合婚、缘分、性格相似度或现实决定；浏览器不会重新排盘。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-chart-similarity@1024",
+      "route": "/tools/chart-similarity",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/tools/chart-similarity",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 349,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n比较两份命盘的八字四柱事实\n\n选择两份已经确认的档案版本，由服务端 Runtime 逐柱比较年、月、日、时四柱原值。\n\n当前只比较四柱原值，不生成相似度分数。结果不代表合婚、缘分、性格相似度或现实决定；浏览器不会重新排盘。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-chart-similarity@768",
+      "route": "/tools/chart-similarity",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/tools/chart-similarity",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 344,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n比较两份命盘的八字四柱事实\n\n选择两份已经确认的档案版本，由服务端 Runtime 逐柱比较年、月、日、时四柱原值。\n\n当前只比较四柱原值，不生成相似度分数。结果不代表合婚、缘分、性格相似度或现实决定；浏览器不会重新排盘。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-chart-similarity@360",
+      "route": "/tools/chart-similarity",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/tools/chart-similarity",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 420,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n比较两份命盘的八字四柱事实\n\n选择两份已经确认的档案版本，由服务端 Runtime 逐柱比较年、月、日、时四柱原值。\n\n当前只比较四柱原值，不生成相似度分数。结果不代表合婚、缘分、性格相似度或现实决定；浏览器不会重新排盘。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-rhythm@1440",
+      "route": "/tools/rhythm",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/tools/rhythm",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 360,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n查看本命音律事实\n\n从已确认档案读取 Runtime 计算的四柱纳音；本页只展示纳音事实，不把它扩写成姓名学、吉凶或性格结论。\n\n当前输出范围：四柱、纳音、禄命结构事实。音律事实与解释结论分开；浏览器不会自行排盘或重算纳音。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-rhythm@1024",
+      "route": "/tools/rhythm",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/tools/rhythm",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 339,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n查看本命音律事实\n\n从已确认档案读取 Runtime 计算的四柱纳音；本页只展示纳音事实，不把它扩写成姓名学、吉凶或性格结论。\n\n当前输出范围：四柱、纳音、禄命结构事实。音律事实与解释结论分开；浏览器不会自行排盘或重算纳音。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-rhythm@768",
+      "route": "/tools/rhythm",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/tools/rhythm",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 358,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n查看本命音律事实\n\n从已确认档案读取 Runtime 计算的四柱纳音；本页只展示纳音事实，不把它扩写成姓名学、吉凶或性格结论。\n\n当前输出范围：四柱、纳音、禄命结构事实。音律事实与解释结论分开；浏览器不会自行排盘或重算纳音。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-rhythm@360",
+      "route": "/tools/rhythm",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/tools/rhythm",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 424,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n查看本命音律事实\n\n从已确认档案读取 Runtime 计算的四柱纳音；本页只展示纳音事实，不把它扩写成姓名学、吉凶或性格结论。\n\n当前输出范围：四柱、纳音、禄命结构事实。音律事实与解释结论分开；浏览器不会自行排盘或重算纳音。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-five-elements@1440",
+      "route": "/tools/five-elements",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/tools/five-elements",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 345,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n查看五行事实与调候依据\n\n从已确认档案版本出发，读取服务端 Runtime 的五行库存、季节画像和调候适用性身份。\n\n当前只展示事实，不输出旺衰、喜忌或用神结论。五行计数不等于力量裁决；调候标记也不会单独生成用神判断。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-five-elements@1024",
+      "route": "/tools/five-elements",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/tools/five-elements",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 397,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n查看五行事实与调候依据\n\n从已确认档案版本出发，读取服务端 Runtime 的五行库存、季节画像和调候适用性身份。\n\n当前只展示事实，不输出旺衰、喜忌或用神结论。五行计数不等于力量裁决；调候标记也不会单独生成用神判断。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-five-elements@768",
+      "route": "/tools/five-elements",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/tools/five-elements",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 382,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n查看五行事实与调候依据\n\n从已确认档案版本出发，读取服务端 Runtime 的五行库存、季节画像和调候适用性身份。\n\n当前只展示事实，不输出旺衰、喜忌或用神结论。五行计数不等于力量裁决；调候标记也不会单独生成用神判断。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "tools-five-elements@360",
+      "route": "/tools/five-elements",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/tools/five-elements",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/guest-sessions :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 344,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n查看五行事实与调候依据\n\n从已确认档案版本出发，读取服务端 Runtime 的五行库存、季节画像和调候适用性身份。\n\n当前只展示事实，不输出旺衰、喜忌或用神结论。五行计数不等于力量裁决；调候标记也不会单独生成用神判断。\n\n服务暂时不可用，请稍后重试\n\n重新加载\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "daily@1440",
+      "route": "/daily",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/daily",
+      "status": 200,
+      "title": "每日｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content/daily :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content/daily :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 430,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n每日信息只展示当天真实可用的内容。\n\n日期口径、确定性数据与运营内容都由服务端确认；当前不会根据浏览器时间拼出临时结论。\n\n每日能力暂不可用\n\n每日数据源和展示合同尚未接通。可用前不会显示假日期、假宜忌或假解读。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "daily@1024",
+      "route": "/daily",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/daily",
+      "status": 200,
+      "title": "每日｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content/daily :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content/daily :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 344,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n每日信息只展示当天真实可用的内容。\n\n日期口径、确定性数据与运营内容都由服务端确认；当前不会根据浏览器时间拼出临时结论。\n\n每日能力暂不可用\n\n每日数据源和展示合同尚未接通。可用前不会显示假日期、假宜忌或假解读。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "daily@768",
+      "route": "/daily",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/daily",
+      "status": 200,
+      "title": "每日｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content/daily :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content/daily :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 391,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n每日信息只展示当天真实可用的内容。\n\n日期口径、确定性数据与运营内容都由服务端确认；当前不会根据浏览器时间拼出临时结论。\n\n每日能力暂不可用\n\n每日数据源和展示合同尚未接通。可用前不会显示假日期、假宜忌或假解读。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "daily@360",
+      "route": "/daily",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/daily",
+      "status": 200,
+      "title": "每日｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content/daily :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content/daily :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 405,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n每日信息只展示当天真实可用的内容。\n\n日期口径、确定性数据与运营内容都由服务端确认；当前不会根据浏览器时间拼出临时结论。\n\n每日能力暂不可用\n\n每日数据源和展示合同尚未接通。可用前不会显示假日期、假宜忌或假解读。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "pricing@1440",
+      "route": "/pricing",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/pricing",
+      "status": 200,
+      "title": "价格与交付｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 434,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n每一次付款，都绑定一份明确结果。\n\n价格与交付\n\n测试期说明：公网预览入口无 TLS、无真实支付。付费向解读（今日/本周/六爻）仅运营开通，不会产生扣款；正式商户接入前价格只作展示。\n\n免费\n\n¥0\n\n一个本人受测档案与确定性八字排盘\n有限白话概览与 3 条现实核对\n测试期可自助使用 Preview；付费向能力需运营开通\n个人命盘深度解读\n\n¥29.90\n\n绑定一个已经确认的档案版本\n已接纳报告永久查看\n7 天内 3 次同盘追问\n一事一问 · 六爻\n\n¥9.90\n\n当前绑定一个事业或工作问题、卦象、方式与起卦时刻\n事件报告永久查看\n72 小时内 2 次同盘追问\n不是残缺文字解锁\n\n免费概览与付费报告是两个独立解读根。购买前会展示购买目标、交付范围、金额、追问次数与期限，付款后不能偷换目标。\n\n付款不等于已经交付\n\n到账、权益授予、生成和正文交付分别记录。模型失败时不会核销未完成权益；退款按渠道确认结果追加冲正记录。\n\n测试期：无在线购买，付费轨仅运营开通\n\n当前不开放自动续费、代币余额、充值钱包或永久无限 AI。联调/dogfood 环境可能使用真实邮箱 OTP 与模型，但仍无微信支付/支付宝；数据可能被按人删除或在测试窗口结束后清空。按钮点击不会被写成已付款。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "pricing@1024",
+      "route": "/pricing",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/pricing",
+      "status": 200,
+      "title": "价格与交付｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 306,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n每一次付款，都绑定一份明确结果。\n\n价格与交付\n\n测试期说明：公网预览入口无 TLS、无真实支付。付费向解读（今日/本周/六爻）仅运营开通，不会产生扣款；正式商户接入前价格只作展示。\n\n免费\n\n¥0\n\n一个本人受测档案与确定性八字排盘\n有限白话概览与 3 条现实核对\n测试期可自助使用 Preview；付费向能力需运营开通\n个人命盘深度解读\n\n¥29.90\n\n绑定一个已经确认的档案版本\n已接纳报告永久查看\n7 天内 3 次同盘追问\n一事一问 · 六爻\n\n¥9.90\n\n当前绑定一个事业或工作问题、卦象、方式与起卦时刻\n事件报告永久查看\n72 小时内 2 次同盘追问\n不是残缺文字解锁\n\n免费概览与付费报告是两个独立解读根。购买前会展示购买目标、交付范围、金额、追问次数与期限，付款后不能偷换目标。\n\n付款不等于已经交付\n\n到账、权益授予、生成和正文交付分别记录。模型失败时不会核销未完成权益；退款按渠道确认结果追加冲正记录。\n\n测试期：无在线购买，付费轨仅运营开通\n\n当前不开放自动续费、代币余额、充值钱包或永久无限 AI。联调/dogfood 环境可能使用真实邮箱 OTP 与模型，但仍无微信支付/支付宝；数据可能被按人删除或在测试窗口结束后清空。按钮点击不会被写成已付款。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "pricing@768",
+      "route": "/pricing",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/pricing",
+      "status": 200,
+      "title": "价格与交付｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 382,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n每一次付款，都绑定一份明确结果。\n\n价格与交付\n\n测试期说明：公网预览入口无 TLS、无真实支付。付费向解读（今日/本周/六爻）仅运营开通，不会产生扣款；正式商户接入前价格只作展示。\n\n免费\n\n¥0\n\n一个本人受测档案与确定性八字排盘\n有限白话概览与 3 条现实核对\n测试期可自助使用 Preview；付费向能力需运营开通\n个人命盘深度解读\n\n¥29.90\n\n绑定一个已经确认的档案版本\n已接纳报告永久查看\n7 天内 3 次同盘追问\n一事一问 · 六爻\n\n¥9.90\n\n当前绑定一个事业或工作问题、卦象、方式与起卦时刻\n事件报告永久查看\n72 小时内 2 次同盘追问\n不是残缺文字解锁\n\n免费概览与付费报告是两个独立解读根。购买前会展示购买目标、交付范围、金额、追问次数与期限，付款后不能偷换目标。\n\n付款不等于已经交付\n\n到账、权益授予、生成和正文交付分别记录。模型失败时不会核销未完成权益；退款按渠道确认结果追加冲正记录。\n\n测试期：无在线购买，付费轨仅运营开通\n\n当前不开放自动续费、代币余额、充值钱包或永久无限 AI。联调/dogfood 环境可能使用真实邮箱 OTP 与模型，但仍无微信支付/支付宝；数据可能被按人删除或在测试窗口结束后清空。按钮点击不会被写成已付款。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "pricing@360",
+      "route": "/pricing",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/pricing",
+      "status": 200,
+      "title": "价格与交付｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 424,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n每一次付款，都绑定一份明确结果。\n\n价格与交付\n\n测试期说明：公网预览入口无 TLS、无真实支付。付费向解读（今日/本周/六爻）仅运营开通，不会产生扣款；正式商户接入前价格只作展示。\n\n免费\n\n¥0\n\n一个本人受测档案与确定性八字排盘\n有限白话概览与 3 条现实核对\n测试期可自助使用 Preview；付费向能力需运营开通\n个人命盘深度解读\n\n¥29.90\n\n绑定一个已经确认的档案版本\n已接纳报告永久查看\n7 天内 3 次同盘追问\n一事一问 · 六爻\n\n¥9.90\n\n当前绑定一个事业或工作问题、卦象、方式与起卦时刻\n事件报告永久查看\n72 小时内 2 次同盘追问\n不是残缺文字解锁\n\n免费概览与付费报告是两个独立解读根。购买前会展示购买目标、交付范围、金额、追问次数与期限，付款后不能偷换目标。\n\n付款不等于已经交付\n\n到账、权益授予、生成和正文交付分别记录。模型失败时不会核销未完成权益；退款按渠道确认结果追加冲正记录。\n\n测试期：无在线购买，付费轨仅运营开通\n\n当前不开放自动续费、代币余额、充值钱包或永久无限 AI。联调/dogfood 环境可能使用真实邮箱 OTP 与模型，但仍无微信支付/支付宝；数据可能被按人删除或在测试窗口结束后清空。按钮点击不会被写成已付款。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "about@1440",
+      "route": "/about",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/about",
+      "status": 200,
+      "title": "关于与边界｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content/page.about :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content/page.about :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 420,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n先把能做什么、还不能做什么说清楚。\n\n关于与边界\n\n正式品牌、运营主体与团队信息尚未冻结，当前只说明已经确认的产品原则。\n\n当前原则\n\n盘面事实由确定性能力生成，语言模型只负责受约束的表达；未接能力不展示模拟结果。\n\n完整信息待确认\n\n品牌与运营资料确认后再补充，不使用临时名称或虚构团队信息。\n\nCMS 内容暂不可用\n\n公开内容服务暂不可用；页面保留既有产品说明，不伪造动态内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "about@1024",
+      "route": "/about",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/about",
+      "status": 200,
+      "title": "关于与边界｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content/page.about :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content/page.about :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 324,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n先把能做什么、还不能做什么说清楚。\n\n关于与边界\n\n正式品牌、运营主体与团队信息尚未冻结，当前只说明已经确认的产品原则。\n\n当前原则\n\n盘面事实由确定性能力生成，语言模型只负责受约束的表达；未接能力不展示模拟结果。\n\n完整信息待确认\n\n品牌与运营资料确认后再补充，不使用临时名称或虚构团队信息。\n\nCMS 内容暂不可用\n\n公开内容服务暂不可用；页面保留既有产品说明，不伪造动态内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "about@768",
+      "route": "/about",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/about",
+      "status": 200,
+      "title": "关于与边界｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content/page.about :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content/page.about :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 356,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n先把能做什么、还不能做什么说清楚。\n\n关于与边界\n\n正式品牌、运营主体与团队信息尚未冻结，当前只说明已经确认的产品原则。\n\n当前原则\n\n盘面事实由确定性能力生成，语言模型只负责受约束的表达；未接能力不展示模拟结果。\n\n完整信息待确认\n\n品牌与运营资料确认后再补充，不使用临时名称或虚构团队信息。\n\nCMS 内容暂不可用\n\n公开内容服务暂不可用；页面保留既有产品说明，不伪造动态内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "about@360",
+      "route": "/about",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/about",
+      "status": 200,
+      "title": "关于与边界｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content/page.about :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content/page.about :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 409,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n先把能做什么、还不能做什么说清楚。\n\n关于与边界\n\n正式品牌、运营主体与团队信息尚未冻结，当前只说明已经确认的产品原则。\n\n当前原则\n\n盘面事实由确定性能力生成，语言模型只负责受约束的表达；未接能力不展示模拟结果。\n\n完整信息待确认\n\n品牌与运营资料确认后再补充，不使用临时名称或虚构团队信息。\n\nCMS 内容暂不可用\n\n公开内容服务暂不可用；页面保留既有产品说明，不伪造动态内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "library@1440",
+      "route": "/library",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/library",
+      "status": 200,
+      "title": "知识内容｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content?prefix=library.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content?prefix=library.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 479,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n公开内容会标明来源、整理方式和更新时间。\n\n内容索引只收录已经发布的真实文章与公开来源，不用演示标题填满页面。\n\n发布规则\n\n每篇内容都要说明来源、整理方式、更新时间和适用边界。\n\n内容索引筛选\n搜索内容\n按主题筛选\n全部主题\n术数基础\n现实核对\n方法与边界\n筛选\n\n当前没有已发布内容；发布内容后可用。\n\n还没有已发布内容\n\n内容库当前为空。CMS 发布真实内容后，文章会出现在这里。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "library@1024",
+      "route": "/library",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/library",
+      "status": 200,
+      "title": "知识内容｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content?prefix=library.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content?prefix=library.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 351,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n公开内容会标明来源、整理方式和更新时间。\n\n内容索引只收录已经发布的真实文章与公开来源，不用演示标题填满页面。\n\n发布规则\n\n每篇内容都要说明来源、整理方式、更新时间和适用边界。\n\n内容索引筛选\n搜索内容\n按主题筛选\n全部主题\n术数基础\n现实核对\n方法与边界\n筛选\n\n当前没有已发布内容；发布内容后可用。\n\n还没有已发布内容\n\n内容库当前为空。CMS 发布真实内容后，文章会出现在这里。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "library@768",
+      "route": "/library",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/library",
+      "status": 200,
+      "title": "知识内容｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content?prefix=library.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content?prefix=library.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 365,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n公开内容会标明来源、整理方式和更新时间。\n\n内容索引只收录已经发布的真实文章与公开来源，不用演示标题填满页面。\n\n发布规则\n\n每篇内容都要说明来源、整理方式、更新时间和适用边界。\n\n内容索引筛选\n搜索内容\n按主题筛选\n全部主题\n术数基础\n现实核对\n方法与边界\n筛选\n\n当前没有已发布内容；发布内容后可用。\n\n还没有已发布内容\n\n内容库当前为空。CMS 发布真实内容后，文章会出现在这里。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "library@360",
+      "route": "/library",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/library",
+      "status": 200,
+      "title": "知识内容｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content?prefix=library.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content?prefix=library.&locale=zh-CN&limit=100 :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 322,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n公开内容会标明来源、整理方式和更新时间。\n\n内容索引只收录已经发布的真实文章与公开来源，不用演示标题填满页面。\n\n发布规则\n\n每篇内容都要说明来源、整理方式、更新时间和适用边界。\n\n内容索引筛选\n搜索内容\n按主题筛选\n全部主题\n术数基础\n现实核对\n方法与边界\n筛选\n\n当前没有已发布内容；发布内容后可用。\n\n还没有已发布内容\n\n内容库当前为空。CMS 发布真实内容后，文章会出现在这里。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "methodology@1440",
+      "route": "/methodology",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/methodology",
+      "status": 200,
+      "title": "方法与边界｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content/page.methodology :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content/page.methodology :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 417,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n先算再讲，证据和边界都能回看。\n\n方法与边界\n\n命理核心、模型表达与产品交付各管一件事。换模型不会改盘，用户反馈也不会覆盖历史事实。\n\n输入确认\nProfile Version\nprepare\nFact Brief\n候选成稿\n校验\ncomplete\nAccepted\n确定性命理层\n\n规范化历法、时区、地点和口径，负责盘面事实、古籍证据、限制与连续状态。\n\n受约束表达层\n\n模型不能自行算盘、补造证据或决定权益，只能在事实简报允许的范围内写成自然中文。\n\n产品交付层\n\n负责账号、不可变版本、订单、权益、任务、报告、追问、隐私和访问授权。\n\n证据不靠模型补\n\n每个事实声明必须回指 Fact Brief；古籍只有真正命中且能定位时才展示，零命中就保持零。\n\nAccepted 后原样交付\n\n候选稿先过结构、事实、隐私和内容安全合同，之后才交给核心 complete。已接纳正文不会被二次改写；更正会产生新的解读版本。\n\n命理解读用于传统文化参考和自我观察，不以“保证应验”替代现实证据，也不替代专业判断。\n\nCMS 内容暂不可用\n\n公开内容服务暂不可用；页面保留既有产品说明，不伪造动态内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "methodology@1024",
+      "route": "/methodology",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/methodology",
+      "status": 200,
+      "title": "方法与边界｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content/page.methodology :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content/page.methodology :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 336,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n先算再讲，证据和边界都能回看。\n\n方法与边界\n\n命理核心、模型表达与产品交付各管一件事。换模型不会改盘，用户反馈也不会覆盖历史事实。\n\n输入确认\nProfile Version\nprepare\nFact Brief\n候选成稿\n校验\ncomplete\nAccepted\n确定性命理层\n\n规范化历法、时区、地点和口径，负责盘面事实、古籍证据、限制与连续状态。\n\n受约束表达层\n\n模型不能自行算盘、补造证据或决定权益，只能在事实简报允许的范围内写成自然中文。\n\n产品交付层\n\n负责账号、不可变版本、订单、权益、任务、报告、追问、隐私和访问授权。\n\n证据不靠模型补\n\n每个事实声明必须回指 Fact Brief；古籍只有真正命中且能定位时才展示，零命中就保持零。\n\nAccepted 后原样交付\n\n候选稿先过结构、事实、隐私和内容安全合同，之后才交给核心 complete。已接纳正文不会被二次改写；更正会产生新的解读版本。\n\n命理解读用于传统文化参考和自我观察，不以“保证应验”替代现实证据，也不替代专业判断。\n\nCMS 内容暂不可用\n\n公开内容服务暂不可用；页面保留既有产品说明，不伪造动态内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "methodology@768",
+      "route": "/methodology",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/methodology",
+      "status": 200,
+      "title": "方法与边界｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content/page.methodology :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content/page.methodology :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 338,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n先算再讲，证据和边界都能回看。\n\n方法与边界\n\n命理核心、模型表达与产品交付各管一件事。换模型不会改盘，用户反馈也不会覆盖历史事实。\n\n输入确认\nProfile Version\nprepare\nFact Brief\n候选成稿\n校验\ncomplete\nAccepted\n确定性命理层\n\n规范化历法、时区、地点和口径，负责盘面事实、古籍证据、限制与连续状态。\n\n受约束表达层\n\n模型不能自行算盘、补造证据或决定权益，只能在事实简报允许的范围内写成自然中文。\n\n产品交付层\n\n负责账号、不可变版本、订单、权益、任务、报告、追问、隐私和访问授权。\n\n证据不靠模型补\n\n每个事实声明必须回指 Fact Brief；古籍只有真正命中且能定位时才展示，零命中就保持零。\n\nAccepted 后原样交付\n\n候选稿先过结构、事实、隐私和内容安全合同，之后才交给核心 complete。已接纳正文不会被二次改写；更正会产生新的解读版本。\n\n命理解读用于传统文化参考和自我观察，不以“保证应验”替代现实证据，也不替代专业判断。\n\nCMS 内容暂不可用\n\n公开内容服务暂不可用；页面保留既有产品说明，不伪造动态内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "methodology@360",
+      "route": "/methodology",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/methodology",
+      "status": 200,
+      "title": "方法与边界｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/content/page.methodology :: HTTP 500",
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/content/page.methodology :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 433,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n先算再讲，证据和边界都能回看。\n\n方法与边界\n\n命理核心、模型表达与产品交付各管一件事。换模型不会改盘，用户反馈也不会覆盖历史事实。\n\n输入确认\nProfile Version\nprepare\nFact Brief\n候选成稿\n校验\ncomplete\nAccepted\n确定性命理层\n\n规范化历法、时区、地点和口径，负责盘面事实、古籍证据、限制与连续状态。\n\n受约束表达层\n\n模型不能自行算盘、补造证据或决定权益，只能在事实简报允许的范围内写成自然中文。\n\n产品交付层\n\n负责账号、不可变版本、订单、权益、任务、报告、追问、隐私和访问授权。\n\n证据不靠模型补\n\n每个事实声明必须回指 Fact Brief；古籍只有真正命中且能定位时才展示，零命中就保持零。\n\nAccepted 后原样交付\n\n候选稿先过结构、事实、隐私和内容安全合同，之后才交给核心 complete。已接纳正文不会被二次改写；更正会产生新的解读版本。\n\n命理解读用于传统文化参考和自我观察，不以“保证应验”替代现实证据，也不替代专业判断。\n\nCMS 内容暂不可用\n\n公开内容服务暂不可用；页面保留既有产品说明，不伪造动态内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "arts@1440",
+      "route": "/arts",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/arts",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 469,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n\n按任务选择公开产品。内部计算模块不会在这里伪装成独立入口。\n\n命盘\n\n从同一份已确认出生资料建立长期结构。\n\n八字\n长期结构、阶段节奏与个人资料建档\n\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n\n禄命纳音\n四柱纳音、禄命锚点与基础关系核对\n\n沿用已确认出生资料，单独呈现禄命、纳音、三元和关系事实。\n\n紫微\n角色结构、宫位主题与阶段观察\n\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n\n七政\n星曜位置、宫位结构与时限观察\n\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n\n事件判断\n\n围绕一个清楚的问题与事件时空起局。\n\n六爻\n边界清楚、时间明确的一事一问\n\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n\n梅花易数\n具体事件、状态变化与行动观察\n\n写清一件事和起卦依据，先查看本卦、互卦、变卦与体用结构。\n\n奇门\n行动选择、局势判断与具体事件\n\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n\n大六壬\n人事进展、关系变化与事件推演\n\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n\n太乙\n年度节律、宏观时段与结构事实\n\n确认参考时间与地点，查看历法、积年、周期、主客与范围契约。\n\n择日\n开市、搬迁、签约等明确行动的日期比较\n\n明确事件类型、日期范围和硬约束，保留候选淘汰与可解释排序。\n\n观照\n\n空间、方向与视觉观察分别记录来源和适用边界。\n\n见相\n结构化视觉观察与用户补充信息\n\n选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n风水\n住宅空间、朝向与布局事实核对\n\n提交已确认的空间观察和罗盘测量，分别呈现形势、理气与缺失。\n\n跨术\n\n多术结果分别呈现，再比较信号、分歧与缺失。\n\n命盘合参\n同一人的长期结构交叉核对\n\n先立命，再按主理与参证选择术数，分开呈现互证、分歧和缺失；可带着具体问题进入（原多盘问答）。\n\n问事合参\n需要三种事件术数交叉核对的同一问题\n\n先完成六爻起卦，再生成大六壬与奇门，最后才做整合判断。\n\n双人合盘\n\n双方资料与关系区独立呈现。\n\n八字合盘\n紫微合盘\n七政合盘\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "arts@1024",
+      "route": "/arts",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/arts",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 362,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n术数总览\n\n按任务选择公开产品。内部计算模块不会在这里伪装成独立入口。\n\n命盘\n\n从同一份已确认出生资料建立长期结构。\n\n八字\n长期结构、阶段节奏与个人资料建档\n\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n\n禄命纳音\n四柱纳音、禄命锚点与基础关系核对\n\n沿用已确认出生资料，单独呈现禄命、纳音、三元和关系事实。\n\n紫微\n角色结构、宫位主题与阶段观察\n\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n\n七政\n星曜位置、宫位结构与时限观察\n\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n\n事件判断\n\n围绕一个清楚的问题与事件时空起局。\n\n六爻\n边界清楚、时间明确的一事一问\n\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n\n梅花易数\n具体事件、状态变化与行动观察\n\n写清一件事和起卦依据，先查看本卦、互卦、变卦与体用结构。\n\n奇门\n行动选择、局势判断与具体事件\n\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n\n大六壬\n人事进展、关系变化与事件推演\n\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n\n太乙\n年度节律、宏观时段与结构事实\n\n确认参考时间与地点，查看历法、积年、周期、主客与范围契约。\n\n择日\n开市、搬迁、签约等明确行动的日期比较\n\n明确事件类型、日期范围和硬约束，保留候选淘汰与可解释排序。\n\n观照\n\n空间、方向与视觉观察分别记录来源和适用边界。\n\n见相\n结构化视觉观察与用户补充信息\n\n选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n风水\n住宅空间、朝向与布局事实核对\n\n提交已确认的空间观察和罗盘测量，分别呈现形势、理气与缺失。\n\n跨术\n\n多术结果分别呈现，再比较信号、分歧与缺失。\n\n命盘合参\n同一人的长期结构交叉核对\n\n先立命，再按主理与参证选择术数，分开呈现互证、分歧和缺失；可带着具体问题进入（原多盘问答）。\n\n问事合参\n需要三种事件术数交叉核对的同一问题\n\n先完成六爻起卦，再生成大六壬与奇门，最后才做整合判断。\n\n双人合盘\n\n双方资料与关系区独立呈现。\n\n八字合盘\n紫微合盘\n七政合盘\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "arts@768",
+      "route": "/arts",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/arts",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 348,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n术数总览\n\n按任务选择公开产品。内部计算模块不会在这里伪装成独立入口。\n\n命盘\n\n从同一份已确认出生资料建立长期结构。\n\n八字\n长期结构、阶段节奏与个人资料建档\n\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n\n禄命纳音\n四柱纳音、禄命锚点与基础关系核对\n\n沿用已确认出生资料，单独呈现禄命、纳音、三元和关系事实。\n\n紫微\n角色结构、宫位主题与阶段观察\n\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n\n七政\n星曜位置、宫位结构与时限观察\n\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n\n事件判断\n\n围绕一个清楚的问题与事件时空起局。\n\n六爻\n边界清楚、时间明确的一事一问\n\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n\n梅花易数\n具体事件、状态变化与行动观察\n\n写清一件事和起卦依据，先查看本卦、互卦、变卦与体用结构。\n\n奇门\n行动选择、局势判断与具体事件\n\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n\n大六壬\n人事进展、关系变化与事件推演\n\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n\n太乙\n年度节律、宏观时段与结构事实\n\n确认参考时间与地点，查看历法、积年、周期、主客与范围契约。\n\n择日\n开市、搬迁、签约等明确行动的日期比较\n\n明确事件类型、日期范围和硬约束，保留候选淘汰与可解释排序。\n\n观照\n\n空间、方向与视觉观察分别记录来源和适用边界。\n\n见相\n结构化视觉观察与用户补充信息\n\n选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n风水\n住宅空间、朝向与布局事实核对\n\n提交已确认的空间观察和罗盘测量，分别呈现形势、理气与缺失。\n\n跨术\n\n多术结果分别呈现，再比较信号、分歧与缺失。\n\n命盘合参\n同一人的长期结构交叉核对\n\n先立命，再按主理与参证选择术数，分开呈现互证、分歧和缺失；可带着具体问题进入（原多盘问答）。\n\n问事合参\n需要三种事件术数交叉核对的同一问题\n\n先完成六爻起卦，再生成大六壬与奇门，最后才做整合判断。\n\n双人合盘\n\n双方资料与关系区独立呈现。\n\n八字合盘\n紫微合盘\n七政合盘\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "arts@360",
+      "route": "/arts",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/arts",
+      "status": 200,
+      "title": "命理工具｜可核对的盘面与解读",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 417,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n主页\n术数\n工具\n每日\n我的\n术数总览\n\n按任务选择公开产品。内部计算模块不会在这里伪装成独立入口。\n\n命盘\n\n从同一份已确认出生资料建立长期结构。\n\n八字\n长期结构、阶段节奏与个人资料建档\n\n确认历法、时间与地点口径，查看四柱、五行与可用时间层。\n\n禄命纳音\n四柱纳音、禄命锚点与基础关系核对\n\n沿用已确认出生资料，单独呈现禄命、纳音、三元和关系事实。\n\n紫微\n角色结构、宫位主题与阶段观察\n\n确认出生资料与时间口径，查看十二宫、星曜、四化和时间层。\n\n七政\n星曜位置、宫位结构与时限观察\n\n校准出生地点和时间口径，查看星盘、宿度、十二宫和限法。\n\n事件判断\n\n围绕一个清楚的问题与事件时空起局。\n\n六爻\n边界清楚、时间明确的一事一问\n\n写清问题与场景，保留六次过程，再进入本卦、变卦和事实摘要。\n\n梅花易数\n具体事件、状态变化与行动观察\n\n写清一件事和起卦依据，先查看本卦、互卦、变卦与体用结构。\n\n奇门\n行动选择、局势判断与具体事件\n\n先确定场景侧重和发生时空，再进入九宫、星门神与用神锚点。\n\n大六壬\n人事进展、关系变化与事件推演\n\n确认判断侧重与事件时空，再查看天地盘、四课三传和课体候选。\n\n太乙\n年度节律、宏观时段与结构事实\n\n确认参考时间与地点，查看历法、积年、周期、主客与范围契约。\n\n择日\n开市、搬迁、签约等明确行动的日期比较\n\n明确事件类型、日期范围和硬约束，保留候选淘汰与可解释排序。\n\n观照\n\n空间、方向与视觉观察分别记录来源和适用边界。\n\n见相\n结构化视觉观察与用户补充信息\n\n选择面相、手相、体态或综合观照，独立同意后拍摄或上传。\n\n风水\n住宅空间、朝向与布局事实核对\n\n提交已确认的空间观察和罗盘测量，分别呈现形势、理气与缺失。\n\n跨术\n\n多术结果分别呈现，再比较信号、分歧与缺失。\n\n命盘合参\n同一人的长期结构交叉核对\n\n先立命，再按主理与参证选择术数，分开呈现互证、分歧和缺失；可带着具体问题进入（原多盘问答）。\n\n问事合参\n需要三种事件术数交叉核对的同一问题\n\n先完成六爻起卦，再生成大六壬与奇门，最后才做整合判断。\n\n双人合盘\n\n双方资料与关系区独立呈现。\n\n八字合盘\n紫微合盘\n七政合盘\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+    },
+    {
+      "label": "account@1440",
+      "route": "/account",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3000/account",
+      "status": 200,
+      "title": "个人中心｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 452,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n检查账户\n我的\n受测人档案\n推演历史\n订单与权益\n账户设置\n我的\n\n从这里查看当前账号、档案、推演历史、通知和账户设置。\n\n账户状态\n\n账户状态暂不可读\n\n服务暂时不可用，请稍后重试\n\n账号状态\n暂不可用\n权益摘要\n暂不可读\n暂时无法确认账户\n\n服务暂时不可用，请稍后重试\n\n重新读取账户状态"
+    },
+    {
+      "label": "account@1024",
+      "route": "/account",
+      "width": 1024,
+      "height": 768,
+      "url": "http://127.0.0.1:3000/account",
+      "status": 200,
+      "title": "个人中心｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 386,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n可核对盘面 · 中性界面\n术数\n合参\n工具\n每日\n知识内容\n更多\n身份未知\n检查账户\n我的\n受测人档案\n推演历史\n订单与权益\n账户设置\n我的\n\n从这里查看当前账号、档案、推演历史、通知和账户设置。\n\n账户状态\n\n账户状态暂不可读\n\n服务暂时不可用，请稍后重试\n\n账号状态\n暂不可用\n权益摘要\n暂不可读\n暂时无法确认账户\n\n服务暂时不可用，请稍后重试\n\n重新读取账户状态"
+    },
+    {
+      "label": "account@768",
+      "route": "/account",
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:3000/account",
+      "status": 200,
+      "title": "个人中心｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 277,
+      "bodyText": "跳到主要内容\n命\n命理工具\n测试版\n术数\n合参\n工具\n更多\n身份未知\n检查账户\n我的\n受测人档案\n推演历史\n订单与权益\n账户设置\n我的\n\n从这里查看当前账号、档案、推演历史、通知和账户设置。\n\n账户状态\n\n账户状态暂不可读\n\n服务暂时不可用，请稍后重试\n\n账号状态\n暂不可用\n权益摘要\n暂不可读\n暂时无法确认账户\n\n服务暂时不可用，请稍后重试\n\n重新读取账户状态"
+    },
+    {
+      "label": "account@360",
+      "route": "/account",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3000/account",
+      "status": 200,
+      "title": "个人中心｜命理工具",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [
+        "/api/v1/account :: HTTP 500",
+        "/api/v1/account :: HTTP 500"
+      ],
+      "gotoMs": 322,
+      "bodyText": "跳到主要内容\n命\n命理工具\n身份未知\n检查账户\n我的\n受测人档案\n推演历史\n订单与权益\n账户设置\n我的\n\n从这里查看当前账号、档案、推演历史、通知和账户设置。\n\n账户状态\n\n账户状态暂不可读\n\n服务暂时不可用，请稍后重试\n\n账号状态\n暂不可用\n权益摘要\n暂不可读\n暂时无法确认账户\n\n服务暂时不可用，请稍后重试\n\n重新读取账户状态\n我的\n档案\n历史\n订单\n设置"
+    },
+    {
+      "label": "admin-login@1440",
+      "route": "/login",
+      "width": 1440,
+      "height": 900,
+      "url": "http://127.0.0.1:3001/login",
+      "status": 200,
+      "title": "命理工具运营台",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [],
+      "gotoMs": 373,
+      "bodyText": "LOCAL\n员工登录\n\n运营台仅限员工。与用户账号分离。\n\n工作邮箱 *\n密码 *\n进入运营台"
+    },
+    {
+      "label": "admin-login@360",
+      "route": "/login",
+      "width": 360,
+      "height": 800,
+      "url": "http://127.0.0.1:3001/login",
+      "status": 200,
+      "title": "命理工具运营台",
+      "consoleErrors": [],
+      "consoleWarnings": 0,
+      "pageErrors": [],
+      "failedRequests": [],
+      "gotoMs": 308,
+      "bodyText": "LOCAL\n员工登录\n\n运营台仅限员工。与用户账号分离。\n\n工作邮箱 *\n密码 *\n进入运营台"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://fateradar.cn/contracts/views/liuyao-chart-v1.schema.json", "title": "Liuyao Chart ViewModel v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "subject_ref", "question", "primary_hexagram", "changed_hexagram", "lines"],
+  "properties": {
+    "schema_version": {"const": "liuyao-chart/v1"}, "subject_ref": {"type": "string", "minLength": 1}, "question": {"type": "string", "minLength": 1},
+    "primary_hexagram": {"$ref": "#/$defs/hexagram"}, "changed_hexagram": {"oneOf": [{"$ref": "#/$defs/hexagram"}, {"type": "null"}]},
+    "lines": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"type": "object", "additionalProperties": false, "required": ["position", "value", "moving"], "properties": {"position": {"type": "integer", "minimum": 1, "maximum": 6}, "value": {"enum": [6, 7, 8, 9]}, "moving": {"type": "boolean"}}}},
+    "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]}
+  },
+  "$defs": {
+    "hexagram": {"type": "object", "additionalProperties": false, "required": ["name", "upper_trigram", "lower_trigram"], "properties": {"name": {"type": "string", "minLength": 1}, "upper_trigram": {"type": "string", "minLength": 1}, "lower_trigram": {"type": "string", "minLength": 1}}},
+    "coreFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "calendar": {"type": ["object", "null"]},
+        "casting": {"type": ["object", "null"]},
+        "casting_method": {"type": ["string", "null"], "minLength": 1},
+        "changed_najia": {"type": ["array", "null"], "items": {"type": "object"}},
+        "changed_plate_lines": {"type": ["array", "null"], "items": {"type": "object"}},
+        "changed_six_relatives": {"type": ["array", "null"], "items": {"type": "string"}},
+        "hidden_lines": {"type": ["array", "null"], "items": {"type": "object"}},
+        "interpretation_status": {"type": ["string", "null"], "minLength": 1},
+        "line_facts": {"type": ["array", "null"], "items": {"type": "object"}},
+        "lines": {"type": ["array", "null"], "items": {"type": "object"}},
+        "month_day_strength": {"type": ["array", "null"], "items": {"type": "object"}},
+        "moving_lines": {"type": ["array", "null"], "items": {"type": "integer"}},
+        "najia": {"type": ["array", "null"], "items": {"type": "object"}},
+        "relation_facts": {"type": ["array", "null"], "items": {"type": "object"}},
+        "returning_relations": {"type": ["array", "null"], "items": {"type": "object"}},
+        "requested_useful_spirit_candidates": {"type": ["object", "null"]},
+        "shi_ying": {"type": ["object", "null"]},
+        "shi_ying_moving_relations": {"type": ["object", "null"]},
+        "six_relatives": {"type": ["array", "null"], "items": {"type": "string"}},
+        "six_spirit_profile": {"type": ["object", "null"]},
+        "six_spirits": {"type": ["array", "null"], "items": {"type": "string"}},
+        "useful_spirit_candidates": {"type": ["object", "null"]},
+        "useful_spirit_selection": {"type": ["object", "null"]},
+        "xunkong": {"type": ["object", "null"]}
+      }
+    }
+  }
+}
