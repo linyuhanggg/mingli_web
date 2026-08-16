@@ -43,6 +43,7 @@ tmp/
 .qoder/repowiki/
 .qoder/better-harness/
 .qoder/worktrees/
+.claude/worktrees/
 .impeccable/
 PRODUCT.md
 design-system/mingli-web/
