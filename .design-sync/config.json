@@ -1,0 +1,29 @@
+{
+  "projectId": "3c228d90-14e9-408b-b0f0-9af57bda383a",
+  "shape": "package",
+  "pkg": "mingli-web",
+  "globalName": "MingliWeb",
+  "srcDir": "src",
+  "tsconfig": "tsconfig.json",
+  "componentSrcMap": {
+    "Button": "src/components/ui/button.tsx",
+    "Field": "src/components/ui/field.tsx",
+    "Segmented": "src/components/ui/segmented.tsx",
+    "Tabs": "src/components/ui/tabs.tsx",
+    "Dialog": "src/components/ui/dialog.tsx",
+    "Drawer": "src/components/ui/drawer.tsx",
+    "Status": "src/components/ui/status.tsx",
+    "Table": "src/components/ui/table.tsx"
+  },
+  "extraEntries": ["../.design-sync/ds-global-styles.ts"],
+  "readmeHeader": ".design-sync/conventions.md",
+  "overrides": {
+    "Dialog": { "cardMode": "single", "primaryStory": "Confirm", "viewport": "720x520" },
+    "Drawer": { "cardMode": "single", "primaryStory": "BottomSheet", "viewport": "720x560" },
+    "Table": { "cardMode": "column" }
+  },
+  "extraFonts": [
+    "node_modules/@fontsource-variable/noto-sans-sc/index.css",
+    "node_modules/@fontsource-variable/noto-serif-sc/index.css"
+  ]
+}

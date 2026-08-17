@@ -39,6 +39,10 @@ tmp/
 # Local signed runtime install for real adapter smoke
 .runtime/
 
+# Independent mingli-master Git checkout. Synology syncs this visible directory;
+# the website repository does not vendor the core's Git history or source files.
+core/mingli-master/
+
 # Regenerable tool output; never treat these snapshots as product authority
 .qoder/repowiki/
 .qoder/better-harness/
@@ -47,3 +51,14 @@ tmp/
 .impeccable/
 PRODUCT.md
 design-system/mingli-web/
+metis/
+
+# qingnang.cc 本地镜像与研究产物（212MB，不进入版本库）
+qingnang/
+
+# design-sync（claude.ai/design 同步）：暂存脚本、构建产物与机器状态
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules
