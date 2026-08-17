@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import SharePage from "@/app/share/[shareId]/page";
-import { ApiError } from "@/lib/api";
+import { ApiError, type ReadingShareDocument } from "@/lib/api";
 
 const api = vi.hoisted(() => ({
   getReadingShare: vi.fn(),
@@ -13,47 +13,28 @@ vi.mock("@/lib/api", async (importOriginal) => ({
   getReadingShare: api.getReadingShare,
 }));
 
-const sharedDocument = {
-  schema_version: "reading-document/v1",
+const sharedDocument: ReadingShareDocument = {
+  schema_version: "shared-reading-document/v1",
   document_id: "document-1",
   reading_version_id: "33333333-3333-4333-8333-333333333333",
   accepted_copy_ref: "accepted-copy-1",
   product_version: "bazi-v1",
   presentation_contract_version: "presentation-v1",
-  view_model: { schema_version: "bazi-chart/v1" },
   answer_summary: "先稳住长期积累。",
-  subject_summaries: [{ subject_ref: "profile-version:1", label: "本人" }],
   themes: [{ theme_id: "career", label: "事业" }],
   claims: [
     {
       claim_id: "claim-1",
-      section_id: "overview",
       text: "先完成可持续的基础动作。",
-      subject_ref: "profile-version:1",
-      dimension_id: "career",
-      claim_kind_id: "guidance",
-      certainty_id: "bounded",
-      fact_refs: [],
-      finding_refs: [],
-      evidence_refs: ["evidence-1"],
-      limit_refs: ["limit-1"],
-      verification: { enabled: false },
     },
   ],
   evidence: [
     {
       evidence_ref: "evidence-1",
       title: "服务端确定性事实",
-      supports_fact_refs: [],
     },
   ],
   boundaries: [{ limit_ref: "limit-1", text: "仅供个人参考。" }],
-  actions: {
-    correction: { enabled: false },
-    follow_up: { enabled: false },
-    export: { enabled: false },
-    share: { enabled: true },
-  },
   versions: {
     runtime_release: "runtime-v1",
     view_model_schema: "bazi-chart/v1",
