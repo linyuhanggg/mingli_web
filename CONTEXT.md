@@ -76,8 +76,11 @@ URL 中恢复输入或工作台的不透明标识。出生资料、问题正文�
 
 ## 算法、解读与报告
 
+**命理核心源码工作树（Mingli Core Source Checkout）**
+`core/mingli-master` 下可见、可同步、拥有独立 Git 历史的 `mingli-master` 权威源码。网站仓库不复制或直接 import 它；开发修改先进入该工作树，再经过发布门禁生成 Runtime Release。
+
 **算法运行时发布物（Runtime Release）**
-经过验签和原生全量回归的完整 `mingli-master` 制品，包含 13 Provider、算法、古籍证据与协议资产。任意工作树或散落目录不是发布物。
+经过验签和原生全量回归、安装在 `.runtime` 或生产固定路径的完整 `mingli-master` 制品，包含 13 Provider、算法、古籍证据与协议资产。它是源码工作树的生成结果，不是编辑入口；任意工作树或散落目录不是发布物。
 
 **事实简报（Fact Brief）**
 Runtime 在写作前提供的不可变闭世界事实、finding、evidence、claim scope、limit 和 request view。模型只能使用本次 Brief，不能另查命理事实。
@@ -94,8 +97,11 @@ Reading Root 上的一次不可变交付或追问。原报告、追问一、追�
 **判断候选（Claim Candidate）**
 模型基于 Fact Brief 生成的结构化原子短判断。每条绑定 subject、dimension、certainty 和 fact/finding/evidence/limit 引用；它尚未接纳，不能直接交付。
 
+**公开 Runtime Claim Unit（Public Runtime Claim Unit）**
+核心 Runtime 在 `Prepared` Brief 中枚举的、带 `public_text` 的公开 finding。它必须绑定本轮的 fact refs 与 `verified_exact` evidence refs，正文是核心确定性投影，不是模型改写，也不是硬裁定。当前八字源码有三个固定单元：`bazi.month-order-state-v1`、`bazi.ziping-pattern-entry-v1`、`bazi.tiaohou-priority-v1`；都保留“未裁定”边界，`hard_verdict` 仍为空。源码有这些单元不等于隐藏签名 V53 Release 已包含它们。
+
 **成稿守门（Narrative Guard）**
-在 complete 前执行的确定性校验，检查结构、引用闭合、表达范围、限制、隐私和商品合同。它不是第二个评审模型。
+在 complete 前执行的确定性校验，检查结构、引用闭合、表达范围、限制、隐私和商品合同。八字深读还要求每个 block 逐字等于一个直接引用的公开来源，并拒绝跨 block 复用同一来源或相同文本。它不是第二个评审模型。
 
 **展示合同（Presentation Contract）**
 服务端针对某一产品版本定义的章节、槽位、顺序、数量、字数、固定声明和专用 renderer 合同。模型不生成栏目、按钮或免责声明。
@@ -138,11 +144,15 @@ ProductVersion 在某个支付渠道上的可售映射，包含渠道 SKU、币�
 **订单（Order）**
 用户购买某 ProductVersion 和 PurchaseTarget 的意图；它不等于支付或交付。
 
+八字深读公共 checkout 只接受本人 `reading_version_id`。服务端必须确认该 Reading Version 属于当前登录 User、产品族是 `bazi-deep`、只有一个启用中的 Offer，并由服务端从 Reading Root 生成 Purchase Target；客户端不能提交任意 `offer_id` 或目标引用来换绑其他结果。
+
 **支付尝试（Payment Attempt）**
 订单通过一个渠道发起的一次结账尝试。失败或超时可重试，但不能重复授予权益。
 
 **支付（Payment）**
 服务端通过验签通知或主动查单确认的资金事实。客户端跳转或“支付成功”页面不是到账依据。
+
+当前实现的 Fake gateway 只返回 `unavailable`，不能伪造支付成功；由于还没有能证明订单与回调 payload 绑定的安全支付 Provider 回调，真实线上付款暂时关闭。测试中的本地 `verified` confirmation 只证明后端状态合同，不是线上收款能力。
 
 **退款（Refund）**
 支付渠道确认的资金返还。它追加权益冲正，不删除订单、支付或历史报告。
@@ -161,6 +171,8 @@ ProductVersion 在某个支付渠道上的可售映射，包含渠道 SKU、币�
 
 **交付（Fulfillment）**
 购买目标获得可访问的 Accepted Copy、ReadingDocumentV1 及商品承诺内追问权益。支付成功不等于交付完成。
+
+`delivery_state` 是给本人看的交付投影：`payment_required → queued → processing → delivered`，失败时进入明确的延迟/恢复状态。它不把内部 `ReadingJob` 状态泄露给 Web，也不允许页面靠猜测“等待支付”或无限轮询。
 
 ## 邀请活动
 
@@ -195,6 +207,15 @@ ProductVersion 在某个支付渠道上的可售映射，包含渠道 SKU、币�
 
 **证据产物（Evidence Artifact）**
 真实浏览器截图、轨迹、测试报告或发布报告。它证明某次验收发生过，但不能单独替代用户批准或产品完成定义。
+
+**逐字核验引文（Verified Exact Citation）**
+Runtime 从已核验古籍来源原样投影的引文。只有 evidence 节点及其每条 citation 都标记 `verified_exact`，并同时携带来源、定位锚点和非空逐字正文（核心来源记录为 `verbatim_quote`，公共合同为 `verbatim_excerpt`）时，Web 才能称为“原文”或“可核验”；rule assertion、摘要、改写、单独的 legacy `excerpt` 和只有来源名的记录都不属于逐字核验引文。多条引文必须全部保留，任一条不完整则该 evidence 对外 fail closed。
+
+**有效排盘时刻（Effective Chart Datetime）**
+Runtime 按已声明的时间策略、经度修正、均时差、历法边界和子时策略算出的排盘时刻，不是浏览器从出生输入自行换算的显示值。`changed_pillars=[]` 表示 Runtime 已比较且四柱未变；字段缺失表示该 Runtime 没提供比较结果，二者不能混用。完整有效时刻只属于本人 owner 范围的结果，不自动获得分享授权。
+
+**分享隐私投影（Share-safe Projection）**
+从本人完整 `ReadingDocumentV1` 生成的最小邀请快照，只保留分享页实际消费的摘要、判断、依据、边界和版本信息，不携带原始资料、完整 ViewModel 或精确有效排盘时刻。Bearer 分享令牌授予的是这份投影的读取权，不是本人结果文档的读取权。
 
 ## 禁止混用
 

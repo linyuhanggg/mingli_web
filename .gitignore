@@ -4,6 +4,7 @@
 !.env.example
 project.private.config.json
 .DS_Store
+._*
 
 # JavaScript / Next.js
 node_modules/
@@ -44,6 +45,7 @@ tmp/
 core/mingli-master/
 
 # Regenerable tool output; never treat these snapshots as product authority
+/snapshots/
 .qoder/repowiki/
 .qoder/better-harness/
 .qoder/worktrees/

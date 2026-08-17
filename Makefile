@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help install test check backend-test backend-check web-test web-check admin-check admin-typecheck build migrate worker-once
+.PHONY: help install test check backend-test backend-check web-test web-check admin-check admin-typecheck build migrate worker-once mingli-core-status
 
 help:
 	@echo "install       Install locked backend and web dependencies"
@@ -10,6 +10,7 @@ help:
 	@echo "migrate       Upgrade the configured PostgreSQL database to Alembic head"
 	@echo "worker-once   Run one non-blocking Worker iteration"
 	@echo "admin-typecheck  Typecheck the independent admin console"
+	@echo "mingli-core-status  Check the visible core checkout and local Runtime drift"
 
 install:
 	uv sync --project backend --group dev
@@ -51,3 +52,6 @@ migrate:
 
 worker-once:
 	uv run --directory backend python -m worker.main --once
+
+mingli-core-status:
+	python3 scripts/check_mingli_core_workspace.py

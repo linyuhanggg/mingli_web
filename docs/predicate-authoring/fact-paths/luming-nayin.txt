@@ -1,0 +1,101 @@
+# luming-nayin 可寻址 fact path（matcher 口径，非 brief 投影）
+#
+# 来源：真实签名 Runtime .runtime/v53-time-check-release
+#       220 签名文件 / 14 capability / 1328 条规则 / 192 条已激活
+# 采样：60 张基准盘（scripts/baseline_charts.py，日期×时辰交叉积）
+# 原始 167 条 → 归一后 89 条形状（数组下标归一为 /N）
+#
+# 注意：末段为中文的路径（如 /role_counts/食神、/visible_stem_branch_counts/火）
+#       其最后一段是**数据键**而非固定字段名。这类键的全集是可枚举的
+#       （五行 5 个、十神 10 个、地支 12 个等），即使本采样未全部出现，
+#       同族的其它键同样可寻址。谓词优先写到该键的父路径 + descendant_eq。
+
+/chart_facts/output/fact_scope
+/chart_facts/output/four_pillars/day
+/chart_facts/output/four_pillars/hour
+/chart_facts/output/four_pillars/month
+/chart_facts/output/four_pillars/year
+/chart_facts/output/independent_lineage
+/chart_facts/output/interpretation_status
+/chart_facts/output/nayin/day
+/chart_facts/output/nayin/hour
+/chart_facts/output/nayin/month
+/chart_facts/output/nayin/year
+/chart_facts/output/pillars/day/branch
+/chart_facts/output/pillars/day/ganzhi
+/chart_facts/output/pillars/day/nayin/cycle_index
+/chart_facts/output/pillars/day/nayin/element
+/chart_facts/output/pillars/day/nayin/ganzhi
+/chart_facts/output/pillars/day/nayin/name
+/chart_facts/output/pillars/day/nayin/source_dependency_id
+/chart_facts/output/pillars/day/nayin/source_row_id
+/chart_facts/output/pillars/day/stem
+/chart_facts/output/pillars/hour/branch
+/chart_facts/output/pillars/hour/ganzhi
+/chart_facts/output/pillars/hour/nayin/cycle_index
+/chart_facts/output/pillars/hour/nayin/element
+/chart_facts/output/pillars/hour/nayin/ganzhi
+/chart_facts/output/pillars/hour/nayin/name
+/chart_facts/output/pillars/hour/nayin/source_dependency_id
+/chart_facts/output/pillars/hour/nayin/source_row_id
+/chart_facts/output/pillars/hour/stem
+/chart_facts/output/pillars/month/branch
+/chart_facts/output/pillars/month/ganzhi
+/chart_facts/output/pillars/month/nayin/cycle_index
+/chart_facts/output/pillars/month/nayin/element
+/chart_facts/output/pillars/month/nayin/ganzhi
+/chart_facts/output/pillars/month/nayin/name
+/chart_facts/output/pillars/month/nayin/source_dependency_id
+/chart_facts/output/pillars/month/nayin/source_row_id
+/chart_facts/output/pillars/month/stem
+/chart_facts/output/pillars/year/branch
+/chart_facts/output/pillars/year/ganzhi
+/chart_facts/output/pillars/year/nayin/cycle_index
+/chart_facts/output/pillars/year/nayin/element
+/chart_facts/output/pillars/year/nayin/ganzhi
+/chart_facts/output/pillars/year/nayin/name
+/chart_facts/output/pillars/year/nayin/source_dependency_id
+/chart_facts/output/pillars/year/nayin/source_row_id
+/chart_facts/output/pillars/year/stem
+/chart_facts/output/relations/gui/N/anchor
+/chart_facts/output/relations/gui/N/anchor_pillar
+/chart_facts/output/relations/gui/N/candidates/N
+/chart_facts/output/relations/gui/N/matched_positions
+/chart_facts/output/relations/gui/N/matched_positions/N
+/chart_facts/output/relations/gui/N/recension
+/chart_facts/output/relations/gui/N/relation
+/chart_facts/output/relations/gui/N/source_dependency_id
+/chart_facts/output/relations/gui/N/status
+/chart_facts/output/relations/interpretation_status
+/chart_facts/output/relations/lu/N/anchor
+/chart_facts/output/relations/lu/N/anchor_pillar
+/chart_facts/output/relations/lu/N/matched_positions
+/chart_facts/output/relations/lu/N/matched_positions/N
+/chart_facts/output/relations/lu/N/relation
+/chart_facts/output/relations/lu/N/source_dependency_id
+/chart_facts/output/relations/lu/N/status
+/chart_facts/output/relations/lu/N/target_branch
+/chart_facts/output/relations/ma/N/anchor
+/chart_facts/output/relations/ma/N/anchor_pillar
+/chart_facts/output/relations/ma/N/matched_positions
+/chart_facts/output/relations/ma/N/matched_positions/N
+/chart_facts/output/relations/ma/N/relation
+/chart_facts/output/relations/ma/N/source_dependency_id
+/chart_facts/output/relations/ma/N/status
+/chart_facts/output/relations/ma/N/target_branch
+/chart_facts/output/relations/school_boundary
+/chart_facts/output/taiyuan/convention_conflict
+/chart_facts/output/taiyuan/disputed
+/chart_facts/output/taiyuan/selected_profile
+/chart_facts/output/taiyuan/source_dependency_id
+/chart_facts/output/taiyuan/status
+/chart_facts/output/three_yuan_profiles/li_xuzhong/diyuan/N
+/chart_facts/output/three_yuan_profiles/li_xuzhong/profile
+/chart_facts/output/three_yuan_profiles/li_xuzhong/renyuan_nayin/N
+/chart_facts/output/three_yuan_profiles/li_xuzhong/source_dependency_id
+/chart_facts/output/three_yuan_profiles/li_xuzhong/tianyuan/N
+/chart_facts/output/three_yuan_profiles/luoluzi/profile
+/chart_facts/output/three_yuan_profiles/luoluzi/renyuan_hidden_stems/N/N
+/chart_facts/output/three_yuan_profiles/luoluzi/source_dependency_id
+/chart_facts/output/three_yuan_profiles/luoluzi/tianyuan/N
+/chart_facts/output/three_yuan_profiles/luoluzi/zhiyuan/N

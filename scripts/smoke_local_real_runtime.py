@@ -225,7 +225,7 @@ async def _run_async(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
         print(
             "runtime startup   : OK "
             f"({runtime_summary['adapter_kind']} / "
-            f"{runtime_summary['capability_count']}/13 describe)"
+            f"{runtime_summary['capability_count']}/{runtime_summary['capability_count']} describe)"
         )
         print(f"protocol          : {runtime_summary['protocol_version']}")
         print(f"manifest digest   : {runtime_summary['manifest_digest']}")

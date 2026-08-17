@@ -146,7 +146,7 @@
 
 ### 2026-08-16 个人资料一次性真太阳时 smoke
 
-- 按用户授权使用一次个人资料，在 `solar` 时间口径和莆田涵江区坐标下执行八字、紫微、七政本命请求；Runtime admission 为 `13/13`，三项均返回 `Prepared`。
+- 按用户授权使用一次个人资料，在 `solar` 时间口径和一次性授权坐标下执行八字、紫微、七政本命请求；Runtime admission 为 `13/13`，三项均返回 `Prepared`。
 - 脱敏结果只记录总事实数/计算事实数：八字 `23/14`、紫微 `33/24`、七政（Runtime capability `xingming`）`21/13`；没有记录姓名、出生时间、地址、坐标或状态 token。
 
 ### 2026-08-16 Runtime 来源证据 → ReadingDocument 回归

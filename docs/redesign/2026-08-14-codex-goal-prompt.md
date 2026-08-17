@@ -55,7 +55,7 @@
 3. 四视口真实浏览器证据：dev server `http://127.0.0.1:3000`（已有进程；若需重启：`lsof -ti tcp:3000` 取 PID kill 后 `cd /Volumes/Lexar/code/mingli_web/web && npm run dev` 后台）。Playwright **无内置浏览器**，用系统 `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`；参照 `web/scripts/audit-phase1.mjs` 写 `web/scripts/audit-phase2.mjs`。路由：`/`、`/hecan`、`/wenshi`、`/canwen`（验证最终 URL=/hecan）、`/liuyao`、`/jianxiang`、`/account`、`/auth/login`、`/daily`、`/tools`、`/library`、`/about`、`/pricing`、`/methodology`、`/workbench/demo`、`/_ui-lab`；视口 360/768/1024/1440。断言：无横向滚动（scrollWidth<=innerWidth+1）、首页唯一 h1、主要 region、合参区恰好 2 个入口。截图存 `web/e2e/screenshots/audit-2026-08-14/phase2/{viewport}/{route}.png`。
 4. 可访问性抽查（手写 evaluate）：主导航 Tab 可达、「合参」trigger aria-expanded、菜单项键盘可开合、首页唯一 h1。
 5. 写阶段报告 `docs/redesign/2026-08-14-phase2-report.md`（证据路径 + 门禁结果 + 截图清单），commit 阶段 2 相关文件（只加你改的文件，**严禁 `git add -A`**——仓库有大量与本次重构无关的既有未提交改动，不要碰）。
-6. 标记「证据就绪，待用户验收」。**注意**：按 CHECKLIST 合同，未获用户批准不得宣称阶段完成；批准由用户（林宇航/Cherry）在本会话外给出。
+6. 标记「证据就绪，待用户验收」。**注意**：按 CHECKLIST 合同，未获用户批准不得宣称阶段完成；批准由用户本人在本会话外给出。
 
 ## 3. 阶段 3：账户区重建（DESIGN §10）
 

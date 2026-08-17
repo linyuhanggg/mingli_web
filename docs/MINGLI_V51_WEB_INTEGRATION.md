@@ -122,6 +122,34 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 
 因此“模型只看 Brief”不等于“古籍没有迁移”，而是把职责固定为：完整语料与算法由核心管理，相关证据由核心筛选，模型只负责对已选中的材料成稿。零命中必须保持零；把整套古籍塞进 Prompt 或另建一个让模型自由检索的 RAG 都会破坏这个边界。
 
+### 3.4 公共逐字证据合同
+
+对外称为“原文”或“可核验”的 evidence 必须由 Runtime 的已核验来源记录生成，不能从 rule assertion、finding 摘要或模型文案反推。核心来源记录保留 `verbatim_quote`；公共 `ReadingEvidence` 使用以下原子组：
+
+- `ref == evidence_ref`，并携带非空 `rule_id`；
+- `verification_status == verified_exact`；
+- 非空 `verbatim_excerpt` 与至少一条 `verbatim_citations`；
+- 每条 citation 都同时包含非空 `source_title`、`locator`、`verbatim_excerpt` 和 `verification_status == verified_exact`；
+- 顶层 `source_title`、`locator`、`verbatim_excerpt` 必须与第一条 citation 一致；legacy `excerpt` 若非空，也只能等于第一条逐字引文。
+
+上述字段要么整组存在并全部闭合，要么整组不公开。多条已核验引文必须按 Runtime 顺序全部透传，不能只挑第一条；任一 citation 缺字段、状态不对或与顶层冲突时，Backend 与 Web 都 fail closed。八字结果页只把该原子组当古籍原文，旧的 summary-only evidence 仍可供未迁移产品作一般“依据”，但不得标成原文或可核验。
+
+这里区分源码和发布物：工作树中的 Provider、Schema、Projector 或 Web 已完成，不代表安装中的签名 Runtime 已经提供这些字段。只有重新生成完整 Release、验签、通过原生门禁并被 Backend 准入后，才可记录为 Runtime 已发布；此前消费者必须把可选字段缺失当成“该 Release 未提供”，不能在浏览器补算或用摘要兜底冒充逐字证据。
+
+### 3.5 八字事业深读的 P0 抽取合同
+
+`bazi-deep-output-v1` 不是普通的“有引用即可”合同。每一个候选稿 block 都必须满足：
+
+```text
+block.text == directly_referenced.fact.display_text
+          或 directly_referenced.finding.public_text
+          或 directly_referenced.limit.public_text
+```
+
+这是逐 block 的原字符串相等约束。模型不能把多个来源拼成一句新话，不能改写、润色、截断或引用 `evidence.excerpt` 作为正文；`evidence` 只负责证明来源，不是可供模型自由摘抄的公共文案。Finding 只有在 `support_mode=exact`、fact refs/evidence refs 闭合、且 evidence 全部是 `verified_exact` 时才可作为公开 Claim Unit。不同 block 不得复用同一直接来源，也不得输出相同文本来凑足最少段数。缺少足够数量、可直接复制且互不重复的公开直接来源时，Guard 必须拒绝深读成稿，不得退回普通摘要或用模板填三段正文。
+
+当前 Core 源码在满足完整 exact evidence 的 Bazi Prepared turn 中枚举三个有界 Claim Unit：月令季节状态、子平月令格局入口、调候候选次序。它们均保留“未裁定”边界且不产生 `hard_verdict`。本轮源码测试用干净临时 Runtime venv 通过；隐藏 `.runtime` 的签名 V53 尚未重建、重签或重新准入，所以不能把这三个单元写成当前 Release 已发布能力。
+
 ## 4. 没有 Agent 后，各项职责由谁接手
 
 | 以前宿主/Agent 可能承担的事 | 网站中的固定替代者 |
@@ -226,6 +254,10 @@ NarrativeGuard.validate(Candidate, Brief, OutputContract) -> GuardResult
 ```
 
 核心硬性最少要求是 `birth_datetime_or_four_pillars`。网站产品为了可复现性还应确认时区、地点、性别、时间口径和子时策略；经纬度未知时不能伪造精度。
+
+八字公共盘面中的时间透明字段只能来自 Runtime calculated facts。当前版本化投影包括 `calendar_normalization.effective_datetime`、`day_boundary`、`changed_pillars`、相邻 `solar_terms`，以及既有的 `time_basis`、`true_solar_time`、`calendar_convention`。Web 只负责格式化：不能根据出生输入自行换算真太阳时、节气、子时换日或四柱差异。
+
+`changed_pillars=[]` 表示 Runtime 已用同一子时策略比较民用时与有效时刻且四柱未变；字段缺失表示该 Release 没提供比较，不能显示“没有变化”。`day_boundary.correction_crossed_date` 与 `zi_policy_advanced_day_pillar` 分别说明时间修正是否跨民用日期、子时策略是否推进日柱，不能合并成一个模糊的“跨日”。完整 `effective_datetime` 只进入 owner-scoped 结果与加密本人文档；Bearer 分享只接收独立隐私投影。
 
 ### 7.2 今日与近七日
 
@@ -506,6 +538,8 @@ Guard 能证明“引用闭合、范围合法、结构合规”，不能数学�
 
 `ReadingDocumentV1` 至少包含资料/盘面摘要、主题导航、判断卡、依据引用、适用边界、逐条现实核对入口、追问/导出/分享元数据和版本信息。八字、紫微、七政、六爻、奇门、六壬、见相及三种合参分别有专属章节/ViewModel；合参按维度展示各术信号、互证、分歧和缺失，不平均成文章。旧 Accepted 报告保持原样只读，不以字符串解析伪造成新文档。
 
+本人结果、数据库持久化和 owner-only 导出消费完整 `ReadingDocumentV1`。Bearer 分享不能复用这个授权边界：创建分享时必须固化独立、版本化的 share-safe document，只保留分享页实际消费的摘要、主题、判断、依据、边界和版本信息；响应合同中不得出现完整 ViewModel、原始资料、精确地点、账号/订单信息或 `effective_datetime`。撤销或过期后服务端不再返回该投影。
+
 ## 11. 模型重试与失败策略
 
 每个已发布 ProductVersion 只使用明确通过评测的模型配置。Model Gateway 只是 HTTP/SDK 适配器，不是 Agent 框架。
@@ -530,6 +564,32 @@ Guard 能证明“引用闭合、范围合法、结构合规”，不能数学�
 5. 调用 `complete`；
 6. 收到 Accepted 后，在同一个 PostgreSQL 事务中保存 exact copy/digest、标记 Reading Version Accepted、追加 CONSUME；
 7. 事务提交后才通知用户交付完成。
+
+### 12.1 八字深读当前公共付费纵链
+
+已接通的公共状态合同只允许登录用户进入：
+
+```text
+start bazi-deep
+  → delivery_state=payment_required
+  → POST /api/v1/commerce/checkout
+      body 只能有 reading_version_id
+      服务端解析唯一 enabled 的 bazi-deep Offer
+      服务端从 Reading Root 生成 Purchase Target
+  → 仅确认后的 payment_id 才能绑定 Fulfillment
+      owner / ProductFamily / Root target 三者都必须匹配
+  → delivery_state=queued
+  → Worker → Accepted Copy + ReadingDocumentV1
+  → delivery_state=delivered
+```
+
+游客的深读 start 被拒绝；未付款的 Job 保持 `awaiting_fulfillment`，Worker 不抢跑；错误商品族、错误目标、错误 User 或未确认 payment 都 fail closed。Checkout status 在确认前不返回 `payment_id`，客户端不能把回跳、订单号或自带目标引用当成到账事实。
+
+当前 Fake gateway 明确返回 `unavailable`。项目尚无能证明订单与回调 payload 绑定的安全 Provider 回调，因此真实线上支付仍关闭；测试里直接调用的本地 `verified` confirmation 只用于验证数据库履约合同，不是线上支付已开通的证据。
+
+本轮显式 opt-in 真实纵链已经通过：登录 → 本地 verified payment → fulfillment bind → 现有签名 V53 one-shot Runtime → Worker → Accepted → `ReadingDocumentV1`，并断言文档 `runtime_release == mingli-master-portable-core-v53-time-check@5.3`。该结果只证明当前签名 Release 的公共付费 Worker 纵链；三个新 Bazi Claim Unit 仍只存在于 Core 源码，未重建或重签进该 Release，不能由这条测试反推为已发布。
+
+Web 生产构建另以真实 `/bazi` 产品路由在 360×800、768×1024、1024×768、1440×900 四个视口验证：checkout 请求体只有 `reading_version_id`，Fake gateway 不触发 fulfillment 或深读结果请求，不展示订单/attempt 标识，五个免费结果区段连续且页面无横向溢出。截图位于 `artifacts/browser-evidence/2026-08-18-bazi-deep-authority/`。这是浏览器合同证据，不替代真实支付 Provider、签名 Claim Unit Release 或用户 P4 批准。
 
 核心文件存储与 PostgreSQL 无法做分布式事务，因此恢复依赖 5.1 的 Accepted 重放语义：如果核心已经接纳但业务库在提交前崩溃，Worker 用**同一 token 和同一候选字节串**重放 `complete`，拿回第一次 Accepted，再完成落库与核销。
 
@@ -810,5 +870,9 @@ Liveness 只代表 Worker 进程活着；Readiness 必须同时验证 release、
 8. complete 前后字节一致，Accepted 后不再改文；
 9. Prepared token 提交后，崩溃恢复不会重复起盘、重复正文或重复核销；无 token `prepare` 的提交前孤儿窗口被明确审计，且不伪称 exactly-once；
 10. 每个公开产品的免费范围、深读范围、PresentationContract 和页面组成有版本快照；
-11. `state_token`、出生资料、Prompt 和支付密钥不进入客户端或日志；
-12. AcceptedCopy 与 ReadingDocumentV1 同步不可变、可追溯，模型/Prompt/Runtime 任一升级都能通过版本化灰度，不影响历史交付。
+11. 公开称为原文的 evidence 通过 `verified_exact` 原子组、全量引文、来源锚点与冲突反例门禁；摘要或 assertion 不能冒充原文；
+12. `state_token`、出生资料、Prompt 和支付密钥不进入客户端或日志；owner 结果中的精确时间不进入 Bearer 分享合同；
+13. AcceptedCopy 与 ReadingDocumentV1 同步不可变、可追溯，模型/Prompt/Runtime 任一升级都能通过版本化灰度，不影响历史交付；
+14. 八字事业深读的每个 block 逐字复制直接引用的 `fact.display_text`、`finding.public_text` 或 `limit.public_text`，不能拼接、改写或拿 evidence excerpt 冒充正文；
+15. 八字公共 checkout 只接受 owner 的 `reading_version_id`，服务端选择唯一启用 Offer 并绑定 root target；确认 payment、Fulfillment、Worker 与 Document 的 owner/family/root 三重关系闭合；
+16. Core 源码 Claim Unit、签名 Runtime Release、真实支付 Provider、四视口浏览器证据和用户 `P4` 批准分别验收；任何一层未完成，都不能用另一层的测试结果代替。
