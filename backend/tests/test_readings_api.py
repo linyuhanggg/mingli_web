@@ -405,6 +405,8 @@ async def test_guest_starts_preview_reading_and_polls_a_queued_job(
                 "location": "上海市",
                 "query": "这件事如何推进？",
                 "dimension_ids": ["timing"],
+                "timing_start": "2026-08-15",
+                "timing_end": "2026-09-14",
             },
             "liuren",
             "concrete_event",
@@ -509,7 +511,17 @@ async def test_guest_starts_each_new_single_art_reading(
     assert body["capability_id"] == expected_capability
     assert body["object_id"] == expected_object
     assert body["status"] == "input_ready"
-    assert body["horizon"]["kind_id"] == ("life" if expected_object == "natal" else "instant")
+    expected_horizon = (
+        "life"
+        if expected_object == "natal"
+        else "month"
+        if path == "/api/v1/readings/daliuren"
+        else "instant"
+    )
+    assert body["horizon"]["kind_id"] == expected_horizon
+    if path == "/api/v1/readings/daliuren":
+        assert body["horizon"]["start"] == "2026-08-15"
+        assert body["horizon"]["end"] == "2026-09-14"
     if path == "/api/v1/readings/wenshi":
         assert body["product_id"] == "wenshi"
         assert body["runtime_capability_ids"] == ["liuyao", "qimen", "liuren"]
@@ -533,6 +545,27 @@ async def test_guest_starts_each_new_single_art_reading(
         )
         assert len(jobs) == 1
         assert jobs[0].status == "queued"
+
+
+async def test_daliuren_timing_rejects_an_unbounded_public_request(
+    client: AsyncClient,
+) -> None:
+    headers = await create_guest(client)
+
+    started = await client.post(
+        "/api/v1/readings/daliuren",
+        headers=headers,
+        json={
+            "event_datetime": "2026-08-14T10:00:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市",
+            "query": "这件事何时可能出现回应？",
+            "dimension_ids": ["timing"],
+        },
+    )
+
+    assert started.status_code == 400
+    assert started.json()["title"] == "Invalid request"
 
 
 async def test_qimen_deep_starts_with_a_frozen_structured_job_contract(
@@ -2294,6 +2327,7 @@ async def test_list_readings_orders_newest_first_caps_at_50_and_stays_private(
         "prior_answer",
         "input_request",
         "created_at",
+        "delivery_state",
     }
     assert item["reading_root_id"]
     assert item["profile_version_id"] is None

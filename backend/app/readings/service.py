@@ -14,7 +14,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.charts.projectors import project_runtime_view_model
-from app.commerce.models import Order, Payment
+from app.commerce.models import FulfillmentRecord, Order, Payment, ProductFamily, ProductVersion
+from app.commerce.public_service import BAZI_DEEP_PRODUCT_FAMILY_KEY
 from app.commerce.service import CommerceError, CommerceService
 from app.config import Settings
 from app.entitlements.service import EntitlementDeniedError, EntitlementService
@@ -24,6 +25,7 @@ from app.readings.api_schemas import (
     AccountHistoryResponse,
     AccountHistoryRootResponse,
     AccountHistoryVersionSummary,
+    DeliveryState,
     Horizon,
     ReadingResultResponse,
     ReadingStartResponse,
@@ -80,6 +82,7 @@ from app.readings.status import ReadingStatus
 from app.security.envelope import EnvelopeCipher
 
 NARRATIVE_POLICY_VERSION = "policy-v1"
+_PAID_PRODUCT_IDS = frozenset({"bazi-deep", "qimen-deep", "liuyao-deep"})
 DEFAULT_QUERIES = {
     "profile_preview": "请预览我的本命格局。",
     "bazi_deep": "请围绕事业主线生成八字结构化深读。",
@@ -331,6 +334,11 @@ class ReadingService:
     ) -> tuple[ReadingStartResponse, bool]:
         """Create a paid Bazi deep-read Job that waits for fulfillment binding."""
 
+        if owner.kind != "user":
+            raise PaidReadingNotGrantedError(
+                "Paid reading not granted",
+                detail="Paid deep reads cannot be created for a guest owner.",
+            )
         await self._require_paid_action(owner, action="bazi_deep")
         resolved_query = query or DEFAULT_QUERIES["bazi_deep"]
         idempotency = self._idempotency_context(
@@ -386,7 +394,7 @@ class ReadingService:
             raise InvalidReadingInputError("Fulfillment Idempotency-Key is required")
 
         try:
-            _root, version = await self.repository.load_owned_version(
+            root, version = await self.repository.load_owned_version(
                 reading_version_id,
                 owner_user_id=owner.id,
                 owner_guest_session_id=None,
@@ -413,6 +421,13 @@ class ReadingService:
         )
         if payment is None:
             raise ReadingNotFoundError("Payment not found")
+
+        order = await self.session.get(Order, payment.order_id)
+        if order is None:
+            raise ReadingFulfillmentUnavailableError(
+                "Paid fulfillment cannot bind to this Reading Job"
+            )
+        await self._validate_paid_target(root, version, order)
 
         commerce = CommerceService(self.session)
         try:
@@ -444,6 +459,44 @@ class ReadingService:
             status=fulfillment.status,
             created=reserved_created or bound_created,
         )
+
+    async def _validate_paid_target(
+        self,
+        root: Any,
+        version: Any,
+        order: Order,
+    ) -> None:
+        """Fail closed when a paid order is not for this deep-read root.
+
+        The bazi-deep catalog family and the Reading Root are the two stable
+        identities available to this binding API.  An arbitrary confirmed
+        Payment must not unlock another product or another user's/root's
+        reading merely because the owner id matches.
+        """
+        if version.product_id != "bazi-deep":
+            return
+        if root.product_id != "bazi-deep":
+            raise ReadingFulfillmentUnavailableError(
+                "Paid fulfillment target is not a Bazi deep read"
+            )
+        if order.purchase_target_ref != str(root.id):
+            raise ReadingFulfillmentUnavailableError(
+                "Paid order target does not match the Reading Root"
+            )
+        product = await self.session.get(ProductVersion, order.product_version_id)
+        if product is None:
+            raise ReadingFulfillmentUnavailableError(
+                "Paid order product version is unavailable"
+            )
+        family = await self.session.get(ProductFamily, product.family_id)
+        if family is None or family.key != BAZI_DEEP_PRODUCT_FAMILY_KEY:
+            raise ReadingFulfillmentUnavailableError(
+                "Paid order product is not the Bazi deep ProductFamily"
+            )
+        if root.product_version_snapshot_id not in {None, product.id}:
+            raise ReadingFulfillmentUnavailableError(
+                "Reading Root ProductVersion snapshot is immutable"
+            )
 
     async def start_five_elements_facts(
         self,
@@ -1250,6 +1303,7 @@ class ReadingService:
         location: str,
         subject_ref: str | None,
         query: str | None,
+        question_class: str | None,
         dimension_ids: Sequence[str] | None,
         idempotency_key: str | None,
     ) -> tuple[ReadingStartResponse, bool]:
@@ -1265,6 +1319,7 @@ class ReadingService:
                 "location": location,
                 "subject_ref": subject_ref,
                 "query": resolved_query,
+                "question_class": question_class,
                 "dimension_ids": resolved_dimensions,
             },
         )
@@ -1282,6 +1337,7 @@ class ReadingService:
             confirmed_timezone=timezone,
             location=location,
             dimension_ids=tuple(resolved_dimensions),
+            question_class=question_class,
         )
         return await self._persist_start(
             owner,
@@ -1301,6 +1357,7 @@ class ReadingService:
         location: str,
         subject_ref: str | None,
         query: str | None,
+        question_class: str | None,
         dimension_ids: Sequence[str] | None,
         idempotency_key: str | None,
     ) -> tuple[ReadingStartResponse, bool]:
@@ -1327,6 +1384,7 @@ class ReadingService:
                 "location": location,
                 "subject_ref": subject_ref,
                 "query": resolved_query,
+                "question_class": question_class,
                 "dimension_ids": list(resolved_dimensions),
             },
         )
@@ -1342,6 +1400,7 @@ class ReadingService:
             confirmed_timezone=timezone,
             location=location,
             dimension_ids=resolved_dimensions,
+            question_class=question_class,
         )
         return await self._persist_start(
             owner,
@@ -1572,14 +1631,21 @@ class ReadingService:
         longitude: float | None,
         latitude: float | None,
         coordinate_source: str | None,
+        timing_start: date | None,
+        timing_end: date | None,
         idempotency_key: str | None,
     ) -> tuple[ReadingStartResponse, bool]:
         resolved_query = query or DEFAULT_QUERIES["liuren_one_question"]
-        resolved_dimensions = list(dimension_ids or ("outcome", "timing"))
+        resolved_dimensions = list(dimension_ids or ("outcome",))
+        action = (
+            "liuren_timing_question"
+            if timing_start is not None and timing_end is not None
+            else "liuren_one_question"
+        )
         resolved_subject_ref = subject_ref or f"liuren:{uuid4().hex}"
         idempotency = self._idempotency_context(
             idempotency_key,
-            action="liuren_one_question",
+            action=action,
             payload={
                 "event_datetime": event_datetime.isoformat(),
                 "timezone": timezone,
@@ -1592,13 +1658,15 @@ class ReadingService:
                 "longitude": longitude,
                 "latitude": latitude,
                 "coordinate_source": coordinate_source,
+                "timing_start": timing_start.isoformat() if timing_start else None,
+                "timing_end": timing_end.isoformat() if timing_end else None,
             },
         )
         replayed = await self._replay_idempotency(owner, idempotency)
         if replayed is not None:
             return replayed, False
         prepare = compile_liuren_prepare(
-            action="liuren_one_question",
+            action=action,
             query=resolved_query,
             subject_ref=resolved_subject_ref,
             event_datetime=event_datetime,
@@ -1610,6 +1678,8 @@ class ReadingService:
             longitude=longitude,
             latitude=latitude,
             coordinate_source=coordinate_source,
+            timing_start=timing_start,
+            timing_end=timing_end,
         )
         return await self._persist_start(
             owner,
@@ -1814,6 +1884,7 @@ class ReadingService:
         location: str,
         subject_ref: str | None,
         query: str | None,
+        question_class: str | None,
         dimension_ids: Sequence[str] | None,
         idempotency_key: str | None,
     ) -> tuple[ReadingStartResponse, bool]:
@@ -1831,6 +1902,7 @@ class ReadingService:
                 "location": location,
                 "subject_ref": subject_ref,
                 "query": resolved_query,
+                "question_class": question_class,
                 "dimension_ids": resolved_dimensions,
             },
         )
@@ -1848,6 +1920,7 @@ class ReadingService:
             confirmed_timezone=timezone,
             location=location,
             dimension_ids=tuple(resolved_dimensions),
+            question_class=question_class,
         )
         return await self._persist_start(
             owner,
@@ -2440,7 +2513,41 @@ class ReadingService:
                 None if waiting is None else _public_json(waiting.input_request)
             ),
             created_at=version.created_at,
+            delivery_state=await self._delivery_state(root, version),
         )
+
+    async def _delivery_state(self, root: Any, version: Any) -> DeliveryState:
+        """Project payment/fulfillment progress without exposing job internals."""
+        product_id = version.product_id or root.product_id or root.capability_id
+        if product_id not in _PAID_PRODUCT_IDS:
+            return "not_required"
+        job = await self.session.scalar(
+            select(ReadingJobRecord)
+            .where(ReadingJobRecord.reading_version_id == version.id)
+            .order_by(ReadingJobRecord.created_at.desc(), ReadingJobRecord.id.desc())
+        )
+        if job is None or job.status == "awaiting_fulfillment":
+            return "payment_required"
+        fulfillment = await self.session.scalar(
+            select(FulfillmentRecord).where(
+                FulfillmentRecord.reading_job_ref == str(job.id)
+            )
+        )
+        if fulfillment is None:
+            return "payment_required"
+        if fulfillment.status == "delivered":
+            return "delivered"
+        if fulfillment.status == "released":
+            return "failed"
+        if job.status == "queued":
+            return "queued"
+        if job.status in {"claimed", "running"}:
+            return "processing"
+        if job.status == "waiting_input":
+            return "waiting_input"
+        if job.status == "delayed":
+            return "delayed"
+        return "failed"
 
     async def _projected_prior_answer(self, version_id: UUID) -> str | None:
         brief = await self.repository.load_fact_brief(version_id)

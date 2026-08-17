@@ -122,12 +122,6 @@ class ReadingDocumentBuilderPort(Protocol):
     def build(self, context: ReadingDocumentContext) -> ReadingDocumentV1 | None: ...
 
 
-# Fortune is intentionally a typed fact panel rather than a narrative
-# ReadingDocument. Every other product that reaches the SQL document builder
-# must produce its immutable document before the Accepted transaction commits.
-_DOCUMENT_OPTIONAL_PRODUCT_IDS = frozenset({"fortune"})
-
-
 class ReadingRepository(Protocol):
     async def load_job(self, job_id: str) -> ReadingJob: ...
 
@@ -457,7 +451,6 @@ class ReadingOrchestrator:
                 self.document_builder is not None
                 and self.require_reading_document
                 and job.reading_version_id is not None
-                and job.product_id not in _DOCUMENT_OPTIONAL_PRODUCT_IDS
             ):
                 candidate = await self.repository.load_successful_candidate(job.id)
                 accepted_copy_ref = await self.repository.load_accepted_copy_ref(job.id)

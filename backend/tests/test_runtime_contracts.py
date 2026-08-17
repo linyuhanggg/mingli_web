@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from mingli_paths import MINGLI_CORE_ROOT, MINGLI_CORE_SCRIPTS
 
 
 def prepare_payload() -> dict[str, Any]:
@@ -74,11 +75,29 @@ def test_bazi_public_core_facts_are_declared_by_runtime_manifest() -> None:
 
 
 def test_v53_bazi_declares_calendar_normalization_public_fact() -> None:
-    root = Path(__file__).parents[2]
     provider = json.loads(
         (
-            root
-            / ".runtime/v53-time-check-release/resources/runtime/providers/bazi.json"
+            MINGLI_CORE_ROOT
+            / "resources/runtime/providers/bazi.json"
+        ).read_text(encoding="utf-8")
+    )
+    bindings = {
+        item["name"]: tuple(item["json_pointers"])
+        for item in provider["runtime_capability"]["output_bindings"]
+    }
+    assert bindings["calendar_normalization"] == (
+        "/facts/chart_facts/public_calendar_normalization",
+    )
+    assert "calendar_normalization" in provider["runtime_capability"]["outputs"]
+
+
+def test_v53_fortune_declares_calendar_normalization_public_fact() -> None:
+    """Fortune must publish time-basis evidence without reproducing profile input."""
+
+    provider = json.loads(
+        (
+            MINGLI_CORE_ROOT
+            / "resources/runtime/providers/fortune.json"
         ).read_text(encoding="utf-8")
     )
     bindings = {
@@ -92,11 +111,10 @@ def test_v53_bazi_declares_calendar_normalization_public_fact() -> None:
 
 
 def test_v53_bazi_declares_xunkong_public_fact() -> None:
-    root = Path(__file__).parents[2]
     provider = json.loads(
         (
-            root
-            / ".runtime/v53-time-check-release/resources/runtime/providers/bazi.json"
+            MINGLI_CORE_ROOT
+            / "resources/runtime/providers/bazi.json"
         ).read_text(encoding="utf-8")
     )
     runtime = provider["runtime_capability"]
@@ -109,11 +127,10 @@ def test_v53_bazi_declares_xunkong_public_fact() -> None:
 
 
 def test_v53_bazi_declares_san_yuan_public_fact() -> None:
-    root = Path(__file__).parents[2]
     provider = json.loads(
         (
-            root
-            / ".runtime/v53-time-check-release/resources/runtime/providers/bazi.json"
+            MINGLI_CORE_ROOT
+            / "resources/runtime/providers/bazi.json"
         ).read_text(encoding="utf-8")
     )
     runtime = provider["runtime_capability"]
@@ -129,11 +146,10 @@ def test_v53_bazi_declares_san_yuan_public_fact() -> None:
 def test_v53_source_conditioned_patterns_are_manifest_bound(provider_id: str) -> None:
     """Every V53 source-conditioned core output must survive the public contract."""
 
-    root = Path(__file__).parents[2]
     provider = json.loads(
         (
-            root
-            / ".runtime/v53-time-check-release/resources/runtime/providers"
+            MINGLI_CORE_ROOT
+            / "resources/runtime/providers"
             / f"{provider_id}.json"
         ).read_text(encoding="utf-8")
     )
@@ -150,14 +166,14 @@ def test_v53_source_conditioned_patterns_are_manifest_bound(provider_id: str) ->
 
 
 def test_v53_bazi_san_yuan_matches_recovered_chart_engine_formula() -> None:
-    root = Path(__file__).parents[2]
-    scripts = root / ".runtime/v53-time-check-release/scripts"
     environment = os.environ.copy()
-    environment["PYTHONPATH"] = str(scripts)
+    environment["PYTHONPATH"] = str(MINGLI_CORE_SCRIPTS)
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    environment["PYTHONPYCACHEPREFIX"] = "/dev/null"
     completed = subprocess.run(
         [
             sys.executable,
-            str(scripts / "bazi_fact_adapter.py"),
+            str(MINGLI_CORE_SCRIPTS / "bazi_fact_adapter.py"),
             "pillars",
             "--pillars",
             "甲戌",
@@ -186,18 +202,17 @@ def test_v53_bazi_san_yuan_matches_recovered_chart_engine_formula() -> None:
 def test_v53_provider_inventory_has_a_typed_view_contract_for_each_chart_provider() -> None:
     """A Runtime Provider must not stop at Accepted with no public view contract."""
 
-    root = Path(__file__).parents[2]
     catalog = json.loads(
         (
-            root
-            / ".runtime/v53-time-check-release/resources/runtime/catalog-v1.json"
+            MINGLI_CORE_ROOT
+            / "resources/runtime/catalog-v1.json"
         ).read_text(encoding="utf-8")
     )
     provider_ids = {
         json.loads(
             (
-                root
-                / ".runtime/v53-time-check-release/resources/runtime"
+                MINGLI_CORE_ROOT
+                / "resources/runtime"
                 / entry
             ).read_text(encoding="utf-8")
         )["id"]
@@ -209,9 +224,9 @@ def test_v53_provider_inventory_has_a_typed_view_contract_for_each_chart_provide
     from app.readings.capability_policy import V53_TIME_CHECK_RELEASE_CAPABILITY_IDS
 
     assert provider_ids == set(V53_TIME_CHECK_RELEASE_CAPABILITY_IDS)
-    assert set(RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS) == provider_ids - {"fortune"}
+    assert set(RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS) == provider_ids
     assert set(RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS.values()) <= set(VIEW_MODEL_TYPES)
-    assert "fortune" not in RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS
+    assert RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS["fortune"] == "fortune-facts-view/v1"
 
 
 @pytest.mark.parametrize(

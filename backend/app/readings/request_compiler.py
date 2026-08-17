@@ -43,6 +43,7 @@ _MEIHUA_CASTING_METHODS = frozenset(
 )
 _MEIHUA_TRIGRAMS = frozenset({"乾", "兑", "离", "震", "巽", "坎", "艮", "坤"})
 _LIUYAO_CAST_VALUES = frozenset({6, 7, 8, 9})
+_LIUYAO_QUESTION_CLASSES = frozenset({"finance"})
 _LIUREN_TARGET_RELATIVES = frozenset({"兄弟", "子孙", "妻财", "官鬼", "父母"})
 
 
@@ -1372,6 +1373,17 @@ def _normalize_liuyao_cast(cast: tuple[int | bool, ...] | str) -> object:
     return list(cast)
 
 
+def _normalize_liuyao_question_class(value: str | None) -> str | None:
+    if value is None:
+        return None
+    if value not in _LIUYAO_QUESTION_CLASSES:
+        raise RequestCompilationError(
+            "unsupported Liuyao question class: "
+            f"{value!r}; available classes: {sorted(_LIUYAO_QUESTION_CLASSES)!r}"
+        )
+    return value
+
+
 def compile_liuyao_prepare(
     *,
     action: str,
@@ -1382,11 +1394,21 @@ def compile_liuyao_prepare(
     confirmed_timezone: str,
     location: str,
     dimension_ids: tuple[str, ...],
+    question_class: str | None = None,
 ) -> Prepare:
     route = _route_for_compiler(action, expected_capability_id="liuyao")
     _validate_dimensions(dimension_ids, allowed=_LIUYAO_DIMENSION_IDS)
     normalized_datetime = _normalize_datetime(event_datetime, confirmed_timezone)
     normalized_cast = _normalize_liuyao_cast(cast)
+    normalized_question_class = _normalize_liuyao_question_class(question_class)
+    facts: dict[str, object] = {
+        "cast": normalized_cast,
+        "event_datetime": normalized_datetime.isoformat(),
+        "timezone": confirmed_timezone,
+        "location": location,
+    }
+    if normalized_question_class is not None:
+        facts["question_class"] = normalized_question_class
     return Prepare(
         query=query,
         intent=_intent(
@@ -1396,14 +1418,7 @@ def compile_liuyao_prepare(
             start=None,
             end=None,
         ),
-        facts={
-            subject_ref: {
-                "cast": normalized_cast,
-                "event_datetime": normalized_datetime.isoformat(),
-                "timezone": confirmed_timezone,
-                "location": location,
-            }
-        },
+        facts={subject_ref: facts},
     )
 
 
@@ -1480,6 +1495,8 @@ def _compile_event_art_prepare(
     latitude: float | None = None,
     coordinate_source: str | None = None,
     extra_facts: Mapping[str, object] | None = None,
+    horizon_start: str | None = None,
+    horizon_end: str | None = None,
 ) -> Prepare:
     route = _route_for_compiler(
         action,
@@ -1510,8 +1527,8 @@ def _compile_event_art_prepare(
             subject_ref=subject_ref,
             route=route,
             dimension_ids=dimension_ids,
-            start=None,
-            end=None,
+            start=horizon_start,
+            end=horizon_end,
         ),
         facts={subject_ref: facts},
     )
@@ -1564,6 +1581,8 @@ def compile_liuren_prepare(
     latitude: float | None = None,
     coordinate_source: str | None = None,
     target_relative: str | None = None,
+    timing_start: date | None = None,
+    timing_end: date | None = None,
 ) -> Prepare:
     if target_relative is not None and target_relative not in _LIUREN_TARGET_RELATIVES:
         raise RequestCompilationError(
@@ -1573,6 +1592,31 @@ def compile_liuren_prepare(
     if target_relative is not None and not set(dimension_ids) & {"work", "career"}:
         raise RequestCompilationError(
             "Liuren target_relative requires the work or career dimension"
+        )
+    if (timing_start is None) != (timing_end is None):
+        raise RequestCompilationError(
+            "Liuren timing_start and timing_end must be supplied together"
+        )
+    if timing_start is not None and timing_end is not None:
+        if action != "liuren_timing_question":
+            raise RequestCompilationError(
+                "bounded Liuren timing requires liuren_timing_question"
+            )
+        if "timing" not in dimension_ids:
+            raise RequestCompilationError(
+                "bounded Liuren timing requires the timing dimension"
+            )
+        if timing_end < timing_start:
+            raise RequestCompilationError(
+                "Liuren timing_end must not precede timing_start"
+            )
+        if timing_end - timing_start > timedelta(days=30):
+            raise RequestCompilationError(
+                "Liuren timing horizon may contain at most 31 days"
+            )
+    elif action == "liuren_timing_question":
+        raise RequestCompilationError(
+            "liuren_timing_question requires a bounded timing horizon"
         )
     return _compile_event_art_prepare(
         action=action,
@@ -1591,4 +1635,6 @@ def compile_liuren_prepare(
         extra_facts={"target_relative": target_relative}
         if target_relative is not None
         else None,
+        horizon_start=timing_start.isoformat() if timing_start is not None else None,
+        horizon_end=timing_end.isoformat() if timing_end is not None else None,
     )

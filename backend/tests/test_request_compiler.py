@@ -159,6 +159,7 @@ def test_product_policy_rejects_unexposed_runtime_capabilities(
         ("physiognomy_preview", "physiognomy", "visible_observation", "instant"),
         ("qimen_one_question", "qimen", "concrete_event", "instant"),
         ("liuren_one_question", "liuren", "concrete_event", "instant"),
+        ("liuren_timing_question", "liuren", "concrete_event", "month"),
     ],
 )
 def test_product_actions_have_explicit_capability_routes(
@@ -197,7 +198,7 @@ def test_every_p10_provider_has_a_product_action_mapping() -> None:
         ),
         "fengshui": ("fengshui_preview",),
         "fortune": ("today", "near_seven"),
-        "liuren": ("liuren_one_question",),
+        "liuren": ("liuren_one_question", "liuren_timing_question"),
         "liuyao": (
             "liuyao_one_question",
             "liuyao_deep",
@@ -649,12 +650,12 @@ def test_wenshi_compiler_binds_the_same_event_to_three_required_runtime_arts() -
         cast=(6, 7, 8, 9, 6, 7),
         event_datetime=datetime.fromisoformat("2026-08-14T10:00:00+08:00"),
         confirmed_timezone="Asia/Shanghai",
-        location="福建省莆田市",
+        location="合成测试地点",
         dimension_ids=("outcome", "timing"),
         time_basis_policy="civil",
         zi_hour_policy="midnight",
-        longitude=119.1,
-        latitude=25.4,
+        longitude=120.0,
+        latitude=30.0,
         coordinate_source="synthetic-fixture",
     )
 
@@ -689,7 +690,7 @@ def test_wenshi_compiler_rejects_dimensions_outside_the_cross_art_contract(
             cast=(6, 7, 8, 9, 6, 7),
             event_datetime=datetime.fromisoformat("2026-08-14T10:00:00+08:00"),
             confirmed_timezone="Asia/Shanghai",
-            location="福建省莆田市",
+            location="合成测试地点",
             dimension_ids=dimension_ids,
         )
 
@@ -949,6 +950,40 @@ def test_liuren_work_compiler_binds_explicit_target_relative() -> None:
         )
 
 
+def test_liuren_timing_compiler_binds_a_bounded_month_horizon() -> None:
+    compiler = importlib.import_module("app.readings.request_compiler")
+    command = compiler.compile_liuren_prepare(
+        action="liuren_timing_question",
+        query="这件事何时可能出现回应？",
+        subject_ref="event:timing-fixture",
+        event_datetime=datetime.fromisoformat("2026-08-14T02:00:00+00:00"),
+        confirmed_timezone="Asia/Shanghai",
+        location="上海市",
+        dimension_ids=("timing",),
+        timing_start=date(2026, 8, 15),
+        timing_end=date(2026, 9, 14),
+    )
+
+    assert command.to_dict()["intent"]["horizon"] == {
+        "kind_id": "month",
+        "start": "2026-08-15",
+        "end": "2026-09-14",
+    }
+
+    with pytest.raises(compiler.RequestCompilationError, match="31 days"):
+        compiler.compile_liuren_prepare(
+            action="liuren_timing_question",
+            query="不接受无限时间窗",
+            subject_ref="event:timing-fixture",
+            event_datetime=datetime.fromisoformat("2026-08-14T02:00:00+00:00"),
+            confirmed_timezone="Asia/Shanghai",
+            location="上海市",
+            dimension_ids=("timing",),
+            timing_start=date(2026, 8, 15),
+            timing_end=date(2026, 9, 15),
+        )
+
+
 @pytest.mark.parametrize(
     "action, reference_datetime, fixture_name",
     [
@@ -1159,3 +1194,34 @@ def test_liuyao_deep_compiles_the_fixed_event_dimensions() -> None:
     assert command.intent["capability_id"] == "liuyao"
     assert command.intent["dimension_ids"] == ("outcome", "timing", "state")
     assert command.facts["liuyao-deep:test"]["cast"] == (6, 7, 8, 9, 7, 8)
+
+
+def test_liuyao_compiler_preserves_explicit_finance_question_class() -> None:
+    compiler = importlib.import_module("app.readings.request_compiler")
+
+    command = compiler.compile_liuyao_prepare(
+        action="liuyao_one_question",
+        query="验证求财问题的结构化输入",
+        subject_ref="liuyao-finance:test",
+        cast=(6, 7, 8, 9, 7, 8),
+        event_datetime=datetime(2026, 8, 14, 10, 0, tzinfo=UTC),
+        confirmed_timezone="Asia/Shanghai",
+        location="上海市",
+        dimension_ids=("outcome",),
+        question_class="finance",
+    )
+
+    assert command.facts["liuyao-finance:test"]["question_class"] == "finance"
+
+    with pytest.raises(compiler.RequestCompilationError, match="question class"):
+        compiler.compile_liuyao_prepare(
+            action="liuyao_one_question",
+            query="不允许的六爻问题类别",
+            subject_ref="liuyao-finance:test",
+            cast=(6, 7, 8, 9, 7, 8),
+            event_datetime=datetime(2026, 8, 14, 10, 0, tzinfo=UTC),
+            confirmed_timezone="Asia/Shanghai",
+            location="上海市",
+            dimension_ids=("outcome",),
+            question_class="unknown",
+        )

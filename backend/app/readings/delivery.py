@@ -22,6 +22,7 @@ from app.readings.models import (
 )
 from app.readings.presentation import ReadingDocumentV1
 from app.readings.repository import SqlReadingRepository
+from app.readings.share_contracts import SharedReadingDocumentV1
 from app.security.envelope import EnvelopeCipher
 
 ExportFormat = Literal["png", "pdf"]
@@ -103,6 +104,11 @@ def _utc(value: datetime) -> datetime:
 
 def _actor_ref(owner: OwnerProtocol) -> str:
     return f"{owner.kind}:{owner.id}"
+
+
+def _share_safe_document(document: ReadingDocumentV1) -> SharedReadingDocumentV1:
+    """Build the narrow, validated document allowed through a bearer token."""
+    return SharedReadingDocumentV1.from_document(document)
 
 
 class ReadingDeliveryService:
@@ -225,8 +231,9 @@ class ReadingDeliveryService:
         snapshot_id = uuid4()
         token = new_opaque_token()
         expires_at = datetime.now(UTC) + ttl
+        share_document = _share_safe_document(document)
         encrypted = self.cipher.encrypt_json(
-            document.model_dump(mode="json"),
+            share_document.model_dump(mode="json"),
             context=f"reading-share:{snapshot_id}",
         )
         record = ReadingShareSnapshot(
@@ -354,7 +361,7 @@ class ReadingDeliveryService:
             await self.session.flush()
         return len(records)
 
-    async def load_share(self, token: str) -> ReadingDocumentV1:
+    async def load_share(self, token: str) -> SharedReadingDocumentV1:
         record = await self.session.scalar(
             select(ReadingShareSnapshot).where(
                 ReadingShareSnapshot.token_hash == hash_token(token)
@@ -376,7 +383,7 @@ class ReadingDeliveryService:
             ),
             context=f"reading-share:{record.id}",
         )
-        return ReadingDocumentV1.model_validate(payload)
+        return SharedReadingDocumentV1.model_validate(payload)
 
     async def revoke_share(
         self,

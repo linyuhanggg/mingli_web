@@ -1,0 +1,136 @@
+.flow {
+  display: grid;
+  gap: var(--space-xl);
+  min-width: 0;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.backButton {
+  display: inline-flex;
+  min-height: var(--target-min);
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 680;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-card);
+}
+
+.toolbarNote {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.section h2,
+.section h3,
+.section p {
+  margin: 0;
+}
+
+.section h2 {
+  font-size: var(--font-size-section);
+}
+
+.section h3 {
+  font-size: var(--font-size-emphasis);
+}
+
+.section p {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.statusCopy {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  min-height: var(--target-min);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-control);
+  font-weight: 680;
+  text-decoration: none;
+}
+
+.primaryAction {
+  border: 1px solid var(--color-action);
+  background: var(--color-action);
+  color: var(--color-on-action);
+}
+
+.secondaryAction {
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.result {
+  min-width: 0;
+}
+
+.result :global(.readingLayout) {
+  min-width: 0;
+}
+
+.securityNote {
+  color: var(--color-text-muted) !important;
+  font-size: var(--font-size-meta);
+}
+
+@media (max-width: 47.999rem) {
+  .toolbar,
+  .section {
+    padding: var(--space-md);
+  }
+
+  .toolbar {
+    align-items: flex-start;
+  }
+
+  .title {
+    width: 100%;
+    order: -1;
+  }
+}

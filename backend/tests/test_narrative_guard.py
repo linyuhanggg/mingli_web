@@ -9,6 +9,9 @@ from typing import Any
 import pytest
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "narrative"
+FACT_TEXT = "当前结构更支持持续积累。"
+FINDING_TEXT = "月令季节状态已经确定；整盘身强身弱仍未裁定。"
+LIMIT_TEXT = "本解读仅供传统文化参考，不构成现实决策保证。"
 
 
 def load_candidate(name: str = "valid-bazi-candidate.json") -> dict[str, Any]:
@@ -27,7 +30,7 @@ def brief_payload() -> dict[str, Any]:
                 "subject_ref": "profile-version:test",
                 "kind_id": "kind.structure",
                 "value": {"fixture": "stable"},
-                "display_text": "当前结构更支持持续积累。",
+                "display_text": FACT_TEXT,
             },
             {
                 "ref": "fact:relationship-structure",
@@ -40,9 +43,21 @@ def brief_payload() -> dict[str, Any]:
         "evidence": [
             {
                 "ref": "evidence:classic-1",
+                "evidence_ref": "evidence:classic-1",
+                "rule_id": "bazi/test#R-01",
                 "source_title": "测试古籍",
                 "locator": "测试卷",
                 "excerpt": "只用于合同测试的短摘录。",
+                "verification_status": "verified_exact",
+                "verbatim_excerpt": "只用于合同测试的短摘录。",
+                "verbatim_citations": [
+                    {
+                        "source_title": "测试古籍",
+                        "locator": "测试卷",
+                        "verbatim_excerpt": "只用于合同测试的短摘录。",
+                        "verification_status": "verified_exact",
+                    }
+                ],
                 "supports_fact_refs": ["fact:career-structure"],
             },
             {
@@ -60,6 +75,7 @@ def brief_payload() -> dict[str, Any]:
                 "dimension_ids": ["career"],
                 "kind_id": "kind.tendency",
                 "data": {"fixture": True},
+                "public_text": FINDING_TEXT,
                 "fact_refs": ["fact:career-structure"],
                 "evidence_refs": ["evidence:classic-1"],
                 "limit_kind_ids": ["limit:traditional"],
@@ -87,7 +103,7 @@ def brief_payload() -> dict[str, Any]:
         "limits": [
             {
                 "kind_id": "limit:traditional",
-                "public_text": "本解读仅供传统文化参考，不构成现实决策保证。",
+                "public_text": LIMIT_TEXT,
                 "scope_refs": ["profile-version:test"],
                 "detail_ids": [],
             }
@@ -106,6 +122,31 @@ def brief_payload() -> dict[str, Any]:
 def build_brief(payload: dict[str, Any] | None = None) -> Any:
     runtime = importlib.import_module("app.readings.runtime_contracts")
     return runtime.ReadingBrief.from_dict(payload or brief_payload())
+
+
+def bazi_deep_candidate(
+    text: str,
+    *,
+    include_limit_ref: bool = True,
+) -> dict[str, Any]:
+    candidate = load_candidate()
+    texts = tuple(
+        [text]
+        + [item for item in (FACT_TEXT, FINDING_TEXT, LIMIT_TEXT) if item != text][
+            :2
+        ]
+    )
+    blocks: list[dict[str, Any]] = []
+    for index, block_text in enumerate(texts):
+        block = copy.deepcopy(candidate["blocks"][0])
+        block["block_id"] = f"b{index + 1}"
+        block["text"] = block_text
+        if not include_limit_ref and index == 0:
+            block["limit_kind_ids"] = []
+            block["finding_refs"] = []
+        blocks.append(block)
+    candidate["blocks"] = blocks
+    return candidate
 
 
 def test_candidate_refs_close_over_the_current_brief() -> None:
@@ -281,3 +322,69 @@ def test_guard_proves_reference_closure_not_general_semantic_entailment() -> Non
     )
 
     assert result.passed is True
+
+
+def test_bazi_deep_rejects_unrelated_text_even_when_refs_are_legal() -> None:
+    guard_module = importlib.import_module("app.readings.narrative_guard")
+
+    result = guard_module.NarrativeGuard().validate(
+        bazi_deep_candidate("这是一句与当前事实无关的硬断。"),
+        build_brief(),
+        output_contract="bazi-deep-output-v1",
+    )
+
+    assert result.passed is False
+    assert result.errors == ("bazi_deep_text_not_grounded",)
+
+
+def test_bazi_deep_accepts_text_exactly_equal_to_a_referenced_fact() -> None:
+    guard_module = importlib.import_module("app.readings.narrative_guard")
+
+    result = guard_module.NarrativeGuard().validate(
+        bazi_deep_candidate(FACT_TEXT),
+        build_brief(),
+        output_contract="bazi-deep-output-v1",
+    )
+
+    assert result.passed is True
+    assert result.errors == ()
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "另一条仅供闭合测试的事实。",
+        "只用于合同测试的短摘录。",
+    ],
+)
+def test_bazi_deep_rejects_unreferenced_fact_or_evidence_text(text: str) -> None:
+    guard_module = importlib.import_module("app.readings.narrative_guard")
+
+    result = guard_module.NarrativeGuard().validate(
+        bazi_deep_candidate(text),
+        build_brief(),
+        output_contract="bazi-deep-output-v1",
+    )
+
+    assert result.passed is False
+    assert result.errors == ("bazi_deep_text_not_grounded",)
+
+
+def test_bazi_deep_accepts_limit_text_only_when_block_references_that_limit() -> None:
+    guard_module = importlib.import_module("app.readings.narrative_guard")
+    text = LIMIT_TEXT
+
+    referenced = guard_module.NarrativeGuard().validate(
+        bazi_deep_candidate(text),
+        build_brief(),
+        output_contract="bazi-deep-output-v1",
+    )
+    unreferenced = guard_module.NarrativeGuard().validate(
+        bazi_deep_candidate(text, include_limit_ref=False),
+        build_brief(),
+        output_contract="bazi-deep-output-v1",
+    )
+
+    assert referenced.passed is True
+    assert unreferenced.passed is False
+    assert "bazi_deep_text_not_grounded" in unreferenced.errors

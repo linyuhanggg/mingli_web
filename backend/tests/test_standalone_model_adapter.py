@@ -24,6 +24,7 @@ from app.observability import configure_logging
 from app.readings.errors import NarrativeGenerationError
 from app.readings.model_contracts import ModelCost, ModelPriceReceipt, ModelTokenUsage
 from app.readings.narrative_contracts import NarrativeRequest, OutputContract
+from app.readings.output_contracts import BAZI_DEEP_V1
 from app.readings.runtime_contracts import ReadingBrief
 from pydantic import SecretStr, ValidationError
 
@@ -77,6 +78,14 @@ def _narrative_request(question: str = "事业上最该先抓住哪条主线？"
         ),
         language="zh-CN",
         max_output_chars=1200,
+    )
+
+
+def _bazi_deep_request() -> NarrativeRequest:
+    return replace(
+        _narrative_request(),
+        output_contract=BAZI_DEEP_V1,
+        max_output_chars=BAZI_DEEP_V1.max_output_chars,
     )
 
 
@@ -242,6 +251,32 @@ async def test_successful_call_returns_candidate_and_auditable_integer_cost() ->
     assert audit.cost.input_microunits_per_million_tokens == 2_000_000
     assert audit.cost.output_microunits_per_million_tokens == 4_000_000
     assert audit.latency_ms == 125
+
+
+async def test_bazi_deep_provider_request_adds_extractive_text_instruction() -> None:
+    async def handler(request: httpx.Request) -> httpx.Response:
+        del request
+        return httpx.Response(500)
+
+    adapter = _adapter(httpx.MockTransport(handler))
+    try:
+        bazi_body = adapter._provider_request(_bazi_deep_request())  # noqa: SLF001
+        preview_body = adapter._provider_request(_narrative_request())  # noqa: SLF001
+    finally:
+        await adapter.aclose()
+
+    bazi_prompt = json.loads(bazi_body["messages"][1]["content"])
+    preview_prompt = json.loads(preview_body["messages"][1]["content"])
+    bazi_instructions = bazi_prompt["narrative_policy"]["instructions"]
+    preview_instructions = preview_prompt["narrative_policy"]["instructions"]
+
+    assert "每个 block.text 必须逐字复制" in bazi_instructions
+    assert "fact.display_text、finding.public_text 或 limit.public_text" in bazi_instructions
+    assert "不得改写" in bazi_instructions
+    assert "不同 block 不得复用同一直接来源" in bazi_instructions
+    assert "也不得输出相同 text" in bazi_instructions
+    assert "每个 block.text 必须逐字复制" not in preview_instructions
+    assert "不同 block 不得复用同一直接来源" not in preview_instructions
 
 
 async def test_two_concurrent_jobs_receive_their_own_explicit_receipts() -> None:

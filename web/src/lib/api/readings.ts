@@ -1,8 +1,13 @@
 import type {
   BaziDeepStartRequest,
+  BaziDeepCheckoutRequest,
+  BaziDeepCheckoutResponse,
   CanwenStartRequest,
   ChartSimilarityStartRequest,
+  DaliurenStartRequest,
   EventArtStartRequest,
+  FulfillmentBindingRequest,
+  FulfillmentBindingResponse,
   FengshuiStartRequest,
   FiveElementsFactsStartRequest,
   FortuneStartRequest,
@@ -99,6 +104,43 @@ export async function startBaziDeepReading(
   return jsonPost<ReadingVersionSummary>("/api/v1/readings/bazi-deep", body, {
     idempotencyKey,
   });
+}
+
+export async function createBaziDeepCheckout(
+  body: BaziDeepCheckoutRequest,
+  idempotencyKey: string,
+): Promise<BaziDeepCheckoutResponse> {
+  return jsonPost<BaziDeepCheckoutResponse>("/api/v1/commerce/checkout", body, {
+    idempotencyKey,
+  });
+}
+
+export async function getBaziDeepCheckout(
+  orderId: string,
+): Promise<BaziDeepCheckoutResponse> {
+  return requestJson<BaziDeepCheckoutResponse>(
+    `/api/v1/commerce/checkout/${encodeURIComponent(orderId)}`,
+  );
+}
+
+/**
+ * Bind one server-confirmed payment to an owned paid Reading Job.
+ *
+ * There is deliberately no checkout fallback here. The backend is the only
+ * authority that can verify payment ownership, product targeting and ledger
+ * reservation; callers must obtain the opaque payment id from the owner-scoped
+ * checkout status after confirmation.
+ */
+export async function bindReadingFulfillment(
+  readingVersionId: string,
+  body: FulfillmentBindingRequest,
+  idempotencyKey: string,
+): Promise<FulfillmentBindingResponse> {
+  return jsonPost<FulfillmentBindingResponse>(
+    `/api/v1/readings/${encodeURIComponent(readingVersionId)}/fulfillment`,
+    body,
+    { idempotencyKey },
+  );
 }
 
 export async function startQimenDeepReading(
@@ -312,7 +354,7 @@ export async function startQimenReading(
 }
 
 export async function startDaliurenReading(
-  body: EventArtStartRequest,
+  body: DaliurenStartRequest,
   idempotencyKey: string,
 ): Promise<ReadingVersionSummary> {
   return jsonPost<ReadingVersionSummary>("/api/v1/readings/daliuren", body, {

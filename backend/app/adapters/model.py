@@ -56,6 +56,13 @@ NARRATIVE_POLICY_INSTRUCTIONS = {
         "只返回一个符合 Candidate JSON Schema 的 JSON object。"
     )
 }
+_BAZI_DEEP_EXTRACTIVE_INSTRUCTIONS = (
+    "bazi-deep P0 是抽取式文本合同：每个 block.text 必须逐字复制该 block 自己实际引用的一个 "
+    "fact.display_text、finding.public_text 或 limit.public_text；fact_refs、finding_refs 与 "
+    "limit_kind_ids 必须对应实际复制的来源；"
+    "不得改写、拼接、摘要，也不得使用 evidence.excerpt；"
+    "不同 block 不得复用同一直接来源，也不得输出相同 text。"
+)
 _SCHEMA_ROOT = Path(__file__).resolve().parents[3] / "contracts" / "schemas"
 _logger = logging.getLogger("mingli.model")
 _SAFE_PROVIDER_METADATA = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
@@ -362,6 +369,8 @@ class DeepSeekStandaloneModelAdapter:
         policy_instructions = NARRATIVE_POLICY_INSTRUCTIONS.get(request.narrative_policy_version)
         if policy_instructions is None:
             raise NarrativeGenerationError("model_policy_not_approved")
+        if request.output_contract.contract_id == "bazi-deep-output-v1":
+            policy_instructions = f"{policy_instructions}{_BAZI_DEEP_EXTRACTIVE_INSTRUCTIONS}"
         prompt = {
             "narrative_policy": {
                 "version": request.narrative_policy_version,
