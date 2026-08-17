@@ -6,6 +6,7 @@ export const VIEW_MODEL_VERSIONS = [
   "daliuren-chart/v1",
   "fengshui-view/v1",
   "five-elements-facts-view/v1",
+  "fortune-facts-view/v1",
   "hecan-view/v1",
   "liuyao-chart/v1",
   "luming-nayin-chart/v1",
@@ -38,6 +39,8 @@ export type BaziInterpretiveCandidates = {
     readonly hard_verdict: null;
     readonly day_element: "wood" | "fire" | "earth" | "metal" | "water";
     readonly month_command_element: "wood" | "fire" | "earth" | "metal" | "water";
+    readonly seasonal_state: "旺" | "相" | "休" | "囚" | "死";
+    readonly seasonal_state_source_rule_id: string;
     readonly same_element_occurrences: number;
     readonly resource_element: "wood" | "fire" | "earth" | "metal" | "water";
     readonly resource_occurrences: number;
@@ -45,6 +48,23 @@ export type BaziInterpretiveCandidates = {
       readonly element: "wood" | "fire" | "earth" | "metal" | "water";
       readonly value: number;
     }>;
+    readonly month_order_adjudication: {
+      readonly status: "adjudicated_month_order_state";
+      readonly decision_scope: "bazi_month_order_seasonal_state";
+      readonly day_master_element: "wood" | "fire" | "earth" | "metal" | "water";
+      readonly month_command_element: "wood" | "fire" | "earth" | "metal" | "water";
+      readonly seasonal_state: "旺" | "相" | "休" | "囚" | "死";
+      readonly whole_chart_strength_verdict: null;
+      readonly useful_god_verdict: null;
+      readonly source_ref: {
+        readonly pack: "bazi/sanming-tonghui";
+        readonly rule_id: "R-02-04";
+        readonly source_anchor: string;
+        readonly verification_status: "verified";
+        readonly binding_digest: string;
+      };
+      readonly unresolved_checks: ReadonlyArray<string>;
+    };
     readonly boundary: string;
   };
   readonly structure: {
@@ -79,6 +99,19 @@ export type BaziInterpretiveCandidates = {
     readonly basis: Readonly<Record<string, unknown>>;
     readonly boundary: string;
   }>;
+  readonly reasoning_tools?: Readonly<Record<string, {
+    readonly schema_version?: string;
+    readonly tool_id?: string;
+    readonly tool_kind?: string;
+    readonly confidence_bucket?: "low" | "medium" | "high";
+    readonly confidence_ceiling?: "low" | "medium" | "high";
+    readonly visibility_class?: "auto_injected" | "on_demand" | "translated" | "trigger_only";
+    readonly fact_refs?: ReadonlyArray<Readonly<Record<string, unknown>>>;
+    readonly source_refs?: ReadonlyArray<Readonly<Record<string, string>>>;
+    readonly output: Readonly<Record<string, unknown>>;
+    readonly caveats?: ReadonlyArray<string>;
+    readonly tool_digest?: string;
+  }>> | null;
 };
 
 export type BaziTemporalLayer = {
@@ -96,6 +129,80 @@ export type BaziTemporalLayer = {
   readonly calendar_normalization: Readonly<Record<string, unknown>>;
   readonly representative_instant: string | null;
   readonly rule_trace: ReadonlyArray<Readonly<Record<string, unknown>>>;
+};
+
+export type BaziCalendarNormalization = {
+  readonly status: string;
+  readonly algorithm_version: string;
+  readonly effective_datetime?: string | null;
+  readonly day_boundary?: {
+    readonly correction_crossed_date: boolean;
+    readonly zi_policy_advanced_day_pillar: boolean;
+  } | null;
+  readonly changed_pillars?: ReadonlyArray<"year" | "month" | "day" | "hour"> | null;
+  readonly solar_terms?: {
+    readonly previous: {
+      readonly name: string;
+      readonly index: number;
+      readonly is_month_boundary_jie: boolean;
+      readonly datetime: string;
+      readonly instant_utc: string;
+    } | null;
+    readonly next: {
+      readonly name: string;
+      readonly index: number;
+      readonly is_month_boundary_jie: boolean;
+      readonly datetime: string;
+      readonly instant_utc: string;
+    } | null;
+    readonly month_switch_policy: string;
+  } | null;
+  readonly time_basis: {
+    readonly policy: string;
+    readonly standard_meridian_degrees: number | null;
+    readonly longitude_correction_seconds: number | null;
+    readonly equation_of_time_seconds: number | null;
+    readonly total_correction_seconds: number | null;
+    readonly algorithm: {
+      readonly id: string | null;
+      readonly version: string | null;
+      readonly source: string | null;
+      readonly uncertainty_seconds: number | null;
+    };
+    readonly boundary: {
+      readonly distance_seconds: number | null;
+      readonly correction_changes_hour_branch: boolean | null;
+      readonly within_uncertainty: boolean | null;
+    };
+  };
+  readonly true_solar_time: {
+    readonly status: string;
+    readonly policy: string | null;
+    readonly longitude_correction_seconds: number | null;
+    readonly equation_of_time_seconds: number | null;
+    readonly total_correction_seconds: number | null;
+  };
+  readonly calendar_convention: {
+    readonly id: string | null;
+    readonly version: string | null;
+    readonly year_boundary: string | null;
+    readonly month_boundary: string | null;
+    readonly day_rollover: string | null;
+    readonly hour_basis: string | null;
+    readonly zi_hour_policy: string | null;
+  };
+};
+
+export type BaziSourcePattern = {
+  readonly rule_id: string;
+  readonly local_rule_id: string;
+  readonly title: string;
+  readonly source_pack: string;
+  readonly source_anchor: string;
+  readonly status: "predicate_matched_not_verdict";
+  readonly fact_paths: ReadonlyArray<string>;
+  readonly predicate_audit: ReadonlyArray<string>;
+  readonly evidence_ref?: string | null;
 };
 
 export type BaziCoreFacts = {
@@ -184,6 +291,7 @@ export type BaziCoreFacts = {
     readonly scope: string;
   } | null;
   readonly interpretive_candidates: BaziInterpretiveCandidates | null;
+  readonly source_conditioned_patterns: ReadonlyArray<BaziSourcePattern>;
   readonly branch_relations: ReadonlyArray<{
     readonly relation_type: string;
     readonly positions: ReadonlyArray<string>;
@@ -236,7 +344,7 @@ export type BaziCoreFacts = {
     }>; 
     readonly unavailable: ReadonlyArray<string>;
   } | null;
-  readonly calendar_normalization?: Readonly<Record<string, unknown>> | null;
+  readonly calendar_normalization: BaziCalendarNormalization | null;
   readonly year_layers?: ReadonlyArray<{
     readonly year: number;
     readonly ganzhi: string;
@@ -382,7 +490,19 @@ export type TimeCheckViewModel = {
     readonly evidence_score: number;
     readonly matched_event_ids: ReadonlyArray<string>;
     readonly elimination_reasons: ReadonlyArray<string>;
-    readonly event_evidence: ReadonlyArray<Readonly<Record<string, unknown>>>;
+    readonly event_evidence: ReadonlyArray<{
+      readonly event_id: string;
+      readonly matched: boolean;
+      readonly evidence_score: number;
+      readonly relations: ReadonlyArray<{
+        readonly natal_position: "year" | "month" | "day" | "hour";
+        readonly natal_branch: string;
+        readonly event_branch: string;
+        readonly relation_type: string;
+      }>;
+      readonly event_year_ten_god: string | null;
+      readonly reasons: ReadonlyArray<string>;
+    }>;
     readonly rank: number;
   }>;
   readonly event_matches: ReadonlyArray<{
@@ -496,7 +616,20 @@ export type ZiweiCoreFacts = {
 };
 
 export type QizhengCoreFacts = {
-  readonly ephemeris?: Readonly<Record<string, unknown>> | null;
+  readonly ephemeris?: {
+    readonly schema_version: string;
+    readonly engine: {
+      readonly name: string;
+      readonly version: string;
+      readonly license: string;
+    };
+    readonly coordinate_convention: {
+      readonly frame: string;
+      readonly zodiac: string;
+      readonly aberration: boolean;
+      readonly precession: string;
+    };
+  } | null;
   readonly conventions?: Readonly<Record<string, unknown>> | null;
   readonly classical_bodies: ReadonlyArray<{
     readonly body_id: string;
@@ -516,8 +649,6 @@ export type QizhengCoreFacts = {
   readonly ming_shen: {
     readonly ming_degree: number;
     readonly shen_degree: number;
-    readonly longitude_degrees: number;
-    readonly latitude_degrees: number | null;
     readonly separation_degrees: number;
     readonly local_apparent_sidereal_degrees: number | null;
     readonly profile: string;
@@ -653,7 +784,18 @@ export type DaliurenChartViewModel = {
     readonly plate_offset: number | null;
     readonly structural_patterns: ReadonlyArray<string> | null;
     readonly transmission_method: StructuredFactObject | null;
-    readonly timing_candidates: ReadonlyArray<StructuredFactObject> | null;
+    readonly timing_candidates: ReadonlyArray<{
+      readonly id: "initial_group_upper_candidate";
+      readonly role: "event_response_candidate";
+      readonly anchor_earth_branch: string;
+      readonly branch: string;
+      readonly solar_date: string;
+      readonly day_ganzhi: string;
+      readonly days_after_cast: number;
+      readonly source_pack: string;
+      readonly source_rule: "LM-R21";
+      readonly candidate_not_guarantee: true;
+    }> | null;
     readonly xunkong: StructuredFactObject | null;
   } | null;
 };
@@ -665,6 +807,159 @@ export type HecanViewModel = {
     | readonly [NatalArtId, NatalArtId]
     | readonly [NatalArtId, NatalArtId, NatalArtId];
   readonly dimensions: ReadonlyArray<CrossArtDimension>;
+};
+
+export type LiuyaoSourceRef = {
+  readonly pack: "divination/huangjin-ce";
+  readonly rule_id: "HJC-R009";
+  readonly source_anchor: string;
+  readonly verification_status: "verified";
+  readonly binding_digest: string;
+};
+
+export type LiuyaoSpecificLineSourceRef = {
+  readonly pack: "divination/zengshan-buyi";
+  readonly rule_id: "ZR-04-04";
+  readonly source_anchor: string;
+  readonly verification_status: "verified";
+  readonly binding_digest: string;
+};
+
+export type LiuyaoSpecificLineAdjudication = {
+  readonly status:
+    | "adjudicated_unique_visible_line"
+    | "adjudicated_single_moving_visible_line"
+    | "unresolved_multiple_visible_lines"
+    | "unresolved_no_visible_line";
+  readonly decision_scope: "finance_primary_relative_line_identity";
+  readonly primary_relative: "妻财";
+  readonly visible_candidate_count: number;
+  readonly visible_candidate_lines: ReadonlyArray<1 | 2 | 3 | 4 | 5 | 6>;
+  readonly moving_visible_candidate_count: number;
+  readonly moving_visible_candidate_lines: ReadonlyArray<1 | 2 | 3 | 4 | 5 | 6>;
+  readonly specific_line_selection: 1 | 2 | 3 | 4 | 5 | 6 | null;
+  readonly derivation_basis:
+    | "verified_role_plus_runtime_unique_visible_candidate"
+    | "verified_two_present_rule_plus_runtime_single_moving_candidate"
+    | "verified_role_plus_runtime_multiple_visible_candidates"
+    | "verified_role_plus_runtime_no_visible_candidate";
+  readonly selection_source_ref:
+    | LiuyaoSourceRef
+    | LiuyaoSpecificLineSourceRef
+    | null;
+  readonly hard_verdict: null;
+};
+
+export type LiuyaoRoleAdjudication = {
+  readonly status: "adjudicated_question_role_set";
+  readonly decision_scope: "finance_useful_spirit_role_set";
+  readonly question_class: "finance";
+  readonly primary_relative: "妻财";
+  readonly supporting_relatives: readonly ["子孙"];
+  readonly obstacle_attention_relatives: readonly ["兄弟", "官鬼", "父母"];
+  readonly specific_line_selection: 1 | 2 | 3 | 4 | 5 | 6 | null;
+  readonly specific_line_adjudication: LiuyaoSpecificLineAdjudication;
+  readonly hard_verdict: null;
+  readonly source_ref: LiuyaoSourceRef;
+  readonly unresolved_checks: ReadonlyArray<string>;
+};
+
+export type LiuyaoNotRequestedRoleAdjudication = {
+  readonly status: "not_requested";
+  readonly decision_scope: null;
+  readonly question_class: null;
+  readonly primary_relative: null;
+  readonly supporting_relatives: readonly [];
+  readonly obstacle_attention_relatives: readonly [];
+  readonly specific_line_selection: null;
+  readonly hard_verdict: null;
+  readonly source_ref: null;
+  readonly unresolved_checks: ReadonlyArray<string>;
+};
+
+export type LiuyaoSeasonalStrengthSourceRef = {
+  readonly pack: "divination/zengshan-buyi";
+  readonly rule_id: "ZR-05-05";
+  readonly source_anchor: string;
+  readonly verification_status: "verified";
+  readonly binding_digest: string;
+};
+
+export type LiuyaoSeasonalStrengthAdjudication = {
+  readonly status: "adjudicated_seasonal_strength_band";
+  readonly decision_scope: "liuyao_candidate_month_order_strength_band";
+  readonly candidate_source: "visible_line" | "changed_line" | "hidden_line";
+  readonly line: 1 | 2 | 3 | 4 | 5 | 6;
+  readonly line_element: "木" | "火" | "土" | "金" | "水";
+  readonly month_element: "木" | "火" | "土" | "金" | "水";
+  readonly seasonal_state: "旺" | "相" | "休" | "囚" | "死";
+  readonly strength_band: "旺相" | "休囚";
+  readonly whole_candidate_strength_verdict: null;
+  readonly outcome_verdict: null;
+  readonly source_ref: LiuyaoSeasonalStrengthSourceRef;
+  readonly unresolved_checks: ReadonlyArray<string>;
+};
+
+export type LiuyaoStrengthSignal = {
+  readonly signal:
+    | "seasonal_support"
+    | "seasonal_weakening"
+    | "month_break"
+    | "day_clash"
+    | "xunkong"
+    | "moving_line";
+  readonly value: string | boolean;
+  readonly status: "candidate_signal";
+};
+
+export type LiuyaoStrengthCandidate = {
+  readonly source: "visible_line" | "changed_line" | "hidden_line";
+  readonly line: 1 | 2 | 3 | 4 | 5 | 6;
+  readonly moving: boolean;
+  readonly xunkong: boolean;
+  readonly najia: StructuredFactObject;
+  readonly month_day_strength: StructuredFactObject;
+  readonly seasonal_adjudication: LiuyaoSeasonalStrengthAdjudication;
+  readonly signals: ReadonlyArray<LiuyaoStrengthSignal>;
+  readonly status: "candidate_only";
+  readonly hard_verdict: null;
+};
+
+export type LiuyaoRelativeStrengthEvidence = {
+  readonly status: "candidate_only" | "not_available";
+  readonly candidates: ReadonlyArray<LiuyaoStrengthCandidate>;
+  readonly hard_verdict: null;
+};
+
+export type LiuyaoStrengthRuleRef = LiuyaoSeasonalStrengthSourceRef & {
+  readonly role: "useful_spirit_month_order_strength_band";
+};
+
+export type LiuyaoStrengthEvidence = {
+  readonly status: "candidate_only" | "not_requested";
+  readonly by_relative: Readonly<Record<string, LiuyaoRelativeStrengthEvidence>>;
+  readonly source_rules: ReadonlyArray<LiuyaoStrengthRuleRef>;
+  readonly fact_status: "calculated_relation_not_verdict";
+  readonly hard_verdict: null;
+  readonly requires_school_adjudication: true;
+  readonly source_dependency_id:
+    "liuyao.interpretation.useful-spirit-strength-evidence";
+};
+
+export type LiuyaoUsefulSpiritSelection = {
+  readonly status: "evidence_bound";
+  readonly reason: string;
+  readonly query_word_matching: false;
+  readonly source_dependency_id: string;
+  readonly chain_candidates: StructuredFactObject;
+  readonly strength_evidence: LiuyaoStrengthEvidence;
+  readonly role_adjudication:
+    | LiuyaoRoleAdjudication
+    | LiuyaoNotRequestedRoleAdjudication;
+  readonly question_context: {
+    readonly question_class: "finance";
+    readonly classification_source: "explicit_structured_input";
+  } | null;
 };
 
 export type LiuyaoChartViewModel = {
@@ -712,9 +1007,56 @@ export type LiuyaoChartViewModel = {
     readonly six_spirit_profile: StructuredFactObject | null;
     readonly six_spirits: ReadonlyArray<string> | null;
     readonly useful_spirit_candidates: StructuredFactObject | null;
-    readonly useful_spirit_selection: StructuredFactObject | null;
+    readonly useful_spirit_selection: LiuyaoUsefulSpiritSelection | null;
     readonly xunkong: StructuredFactObject | null;
   } | null;
+};
+
+export type MeihuaRelationSourceRef = {
+  readonly pack: string;
+  readonly rule_id: string;
+  readonly source_anchor: string;
+  readonly verification_status: "verified";
+  readonly binding_digest: string;
+};
+
+export type MeihuaRelationAdjudication = {
+  readonly status: "adjudicated_relation_polarity";
+  readonly decision_scope: "meihua_body_use_relation";
+  readonly relation_key: string;
+  readonly source_polarity: "supportive" | "depleting" | "adverse" | "favorable" | "harmonious";
+  readonly hard_verdict: null;
+  readonly event_verdict: null;
+  readonly source_refs: ReadonlyArray<MeihuaRelationSourceRef>;
+  readonly unresolved_checks: ReadonlyArray<string>;
+};
+
+export type MeihuaInterpretiveCandidates = {
+  readonly schema_version: "mingli-meihua-interpretive-candidates-v1";
+  readonly status: "source_adjudicated_relations";
+  readonly hard_verdict: null;
+  readonly verification_status: "verified";
+  readonly relation_candidates: ReadonlyArray<{
+    readonly candidate_id: string;
+    readonly source_plate: string;
+    readonly position: "upper" | "lower";
+    readonly relation: string;
+    readonly relation_key: string;
+    readonly actor: { readonly position: "upper" | "lower"; readonly trigram: string; readonly element: string };
+    readonly body: { readonly position: "upper" | "lower"; readonly trigram: string; readonly element: string };
+    readonly seasonal_state: string | null;
+    readonly rule_id: string;
+    readonly status: "relation_adjudicated_not_event_verdict";
+    readonly hard_verdict: null;
+    readonly verification_status: "verified";
+    readonly source_pack: string;
+    readonly source_anchor: string;
+    readonly source_dependency_id: string;
+    readonly relation_adjudication: MeihuaRelationAdjudication;
+  }>;
+  readonly requires_classical_adjudication: false;
+  readonly requires_synthesis_adjudication: true;
+  readonly boundary: string;
 };
 
 export type MeihuaChartViewModel = {
@@ -752,7 +1094,7 @@ export type MeihuaChartViewModel = {
   readonly core_facts: {
     readonly body_relation_facts: ReadonlyArray<StructuredFactObject> | null;
     readonly seasonal_strength: StructuredFactObject | null;
-    readonly interpretive_candidates: StructuredFactObject | null;
+    readonly interpretive_candidates: MeihuaInterpretiveCandidates | null;
     readonly interpretation_status: string | null;
   } | null;
 };
@@ -811,6 +1153,26 @@ export type LumingNayinChartViewModel = {
     readonly status: "predicate_matched_not_verdict";
     readonly fact_paths: ReadonlyArray<string>;
     readonly predicate_audit: ReadonlyArray<string>;
+    readonly applicability_adjudication: {
+      readonly status: "adjudicated_rule_applicability";
+      readonly decision_scope: "luming_nayin_source_rule_applicability";
+      readonly rule_id: string;
+      readonly local_rule_id: string;
+      readonly rule_title: string;
+      readonly evidence_role:
+        | "issue_specific_judgment_rule"
+        | "methodology_rule";
+      readonly hard_verdict: null;
+      readonly life_verdict: null;
+      readonly source_ref: {
+        readonly pack: string;
+        readonly rule_id: string;
+        readonly source_anchor: string;
+        readonly verification_status: "verified";
+        readonly binding_digest: string;
+      };
+      readonly unresolved_checks: ReadonlyArray<string>;
+    };
   }>;
 };
 
@@ -827,6 +1189,80 @@ export type RhythmFactsViewModel = {
   readonly fact_scope: string;
   readonly interpretation_status: "facts_only";
   readonly source_boundary: string;
+};
+
+export type FortuneFactsViewModel = {
+  readonly schema_version: "fortune-facts-view/v1";
+  readonly subject_ref: string;
+  readonly natal_pillars: Readonly<Record<"year" | "month" | "day" | "hour", string>>;
+  readonly day_master: {
+    readonly stem: string;
+    readonly element: "wood" | "fire" | "earth" | "metal" | "water";
+    readonly polarity: "阳" | "阴";
+  };
+  readonly month_command: {
+    readonly branch: string;
+    readonly label: string;
+    readonly main_qi: string;
+    readonly main_qi_element: "wood" | "fire" | "earth" | "metal" | "water";
+  };
+  readonly active_luck_cycle: string;
+  readonly target_day: string;
+  readonly target_period: {
+    readonly kind: string;
+    readonly start: string;
+    readonly end: string;
+  };
+  readonly available_periods: ReadonlyArray<string>;
+  readonly period_markers: ReadonlyArray<{
+    readonly date: string;
+    readonly day_pillar: string;
+    readonly day_role: string;
+    readonly active_luck_cycle: string;
+    readonly primary_mechanism_ids: ReadonlyArray<string>;
+    readonly decisive_mechanism_ids: ReadonlyArray<string>;
+    readonly relations: ReadonlyArray<StructuredFactObject>;
+    readonly specific_event_policy: string;
+    readonly unresolved_boundaries: ReadonlyArray<string>;
+  }>;
+  readonly calendar_normalization: {
+    readonly status: string;
+    readonly algorithm_version: string;
+    readonly time_basis: {
+      readonly policy: string;
+      readonly standard_meridian_degrees: number | null;
+      readonly longitude_correction_seconds: number | null;
+      readonly equation_of_time_seconds: number | null;
+      readonly total_correction_seconds: number | null;
+      readonly algorithm: {
+        readonly id: string | null;
+        readonly version: string | null;
+        readonly source: string | null;
+        readonly uncertainty_seconds: number | null;
+      };
+      readonly boundary: {
+        readonly distance_seconds: number | null;
+        readonly correction_changes_hour_branch: boolean | null;
+        readonly within_uncertainty: boolean | null;
+      };
+    };
+    readonly true_solar_time: {
+      readonly status: string;
+      readonly policy: string | null;
+      readonly longitude_correction_seconds: number | null;
+      readonly equation_of_time_seconds: number | null;
+      readonly total_correction_seconds: number | null;
+    };
+    readonly calendar_convention: {
+      readonly id: string | null;
+      readonly version: string | null;
+      readonly year_boundary: string | null;
+      readonly month_boundary: string | null;
+      readonly day_rollover: string | null;
+      readonly hour_basis: string | null;
+      readonly zi_hour_policy: string | null;
+    };
+  };
 };
 
 export type TaiyiChartViewModel = {
@@ -888,7 +1324,23 @@ export type TaiyiChartViewModel = {
     readonly fact_paths: ReadonlyArray<string>;
     readonly source_anchor: string;
     readonly source_dependency_id: string;
-    readonly status: string;
+    readonly status: "predicate_matched_not_verdict";
+    readonly identity_adjudication: {
+      readonly status: "adjudicated_pattern_identity";
+      readonly decision_scope: "taiyi_board_pattern_identity";
+      readonly pattern_id: string;
+      readonly pattern_name: string;
+      readonly hard_verdict: null;
+      readonly event_verdict: null;
+      readonly source_ref: {
+        readonly pack: string;
+        readonly rule_id: string;
+        readonly source_anchor: string;
+        readonly verification_status: "verified";
+        readonly binding_digest: string;
+      };
+      readonly unresolved_checks: ReadonlyArray<string>;
+    };
   }>;
   readonly scope_contract: {
     readonly declared_scope: string;
@@ -1027,8 +1479,25 @@ export type QimenChartViewModel = {
   readonly named_patterns: ReadonlyArray<{
     readonly id: string;
     readonly name: string;
-    readonly status: string;
-    readonly palace: number;
+    readonly status: "predicate_matched_not_verdict";
+    readonly palace: number | null;
+    readonly identity_adjudication: {
+      readonly status: "adjudicated_pattern_identity";
+      readonly decision_scope: "qimen_named_pattern_identity";
+      readonly pattern_id: string;
+      readonly pattern_name: string;
+      readonly palace: number | null;
+      readonly hard_verdict: null;
+      readonly event_verdict: null;
+      readonly source_ref: {
+        readonly pack: string;
+        readonly rule_id: string;
+        readonly source_anchor: string;
+        readonly verification_status: "verified";
+        readonly binding_digest: string;
+      };
+      readonly unresolved_checks: ReadonlyArray<string>;
+    };
   }>;
 };
 
@@ -1125,6 +1594,7 @@ export type ViewModelByVersion = {
   "daliuren-chart/v1": DaliurenChartViewModel;
   "fengshui-view/v1": FengshuiViewModel;
   "five-elements-facts-view/v1": FiveElementsFactsViewModel;
+  "fortune-facts-view/v1": FortuneFactsViewModel;
   "hecan-view/v1": HecanViewModel;
   "liuyao-chart/v1": LiuyaoChartViewModel;
   "luming-nayin-chart/v1": LumingNayinChartViewModel;
@@ -1200,6 +1670,11 @@ export const VIEW_MODEL_FIXTURES: {
     "five-elements-facts-view/v1",
     "五行事实与调候依据已接入",
     "事实切片使用真实 Runtime 结果；当前不输出旺衰、喜忌或用神结论。",
+  ),
+  "fortune-facts-view/v1": unavailableFixture(
+    "fortune-facts-view/v1",
+    "日运事实已接入",
+    "只展示 Runtime 日运与周期事实；当前不追加具体事件、吉凶或人生判断。",
   ),
   "hecan-view/v1": unavailableFixture("hecan-view/v1", "命盘合参待接入"),
   "liuyao-chart/v1": unavailableFixture("liuyao-chart/v1", "六爻盘面待接入"),

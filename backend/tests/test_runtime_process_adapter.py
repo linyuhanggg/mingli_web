@@ -688,10 +688,10 @@ async def test_frozen_runtime_prepares_and_projects_the_wenshi_three_art_brief()
         cast=(6, 7, 8, 9, 6, 7),
         event_datetime=datetime.fromisoformat("2026-08-14T10:00:00+08:00"),
         confirmed_timezone="Asia/Shanghai",
-        location="福建省莆田市",
+        location="合成测试地点",
         dimension_ids=("outcome", "timing"),
-        longitude=119.1,
-        latitude=25.4,
+        longitude=120.0,
+        latitude=30.0,
         coordinate_source="synthetic-fixture",
     )
 
@@ -802,6 +802,17 @@ async def test_frozen_runtime_prepares_and_projects_the_meihua_time_plate() -> N
     assert view_model.core_facts.body_relation_facts is not None
     assert len(view_model.core_facts.body_relation_facts) >= 1
     assert view_model.core_facts.seasonal_strength is not None
+    assert view_model.core_facts.interpretive_candidates is not None
+    assert (
+        view_model.core_facts.interpretive_candidates.status
+        == "source_adjudicated_relations"
+    )
+    assert (
+        view_model.core_facts.interpretive_candidates.relation_candidates[
+            0
+        ].relation_adjudication.event_verdict
+        is None
+    )
 
 
 @pytest.mark.skipif(
@@ -991,6 +1002,9 @@ async def test_frozen_runtime_prepares_and_projects_luming_nayin(action: str) ->
     assert view_model.source_conditioned_patterns
     assert all(
         pattern.status == "predicate_matched_not_verdict"
+        and pattern.applicability_adjudication.status
+        == "adjudicated_rule_applicability"
+        and pattern.applicability_adjudication.life_verdict is None
         for pattern in view_model.source_conditioned_patterns
     )
     assert not any(
@@ -1047,6 +1061,12 @@ async def test_frozen_runtime_binds_verified_luming_year_rule_to_evidence() -> N
     assert any(
         pattern.rule_id.endswith("#LX-01-17")
         and pattern.status == "predicate_matched_not_verdict"
+        and pattern.applicability_adjudication.status
+        == "adjudicated_rule_applicability"
+        and pattern.applicability_adjudication.source_ref.rule_id == "LX-01-17"
+        and pattern.applicability_adjudication.source_ref.verification_status
+        == "verified"
+        and pattern.applicability_adjudication.life_verdict is None
         and "verdict" not in pattern.model_dump()
         for pattern in view_model.source_conditioned_patterns
     )

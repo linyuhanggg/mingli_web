@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Any
 
@@ -5,11 +6,18 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 OPENAPI_PATH = ROOT / "contracts" / "openapi" / "v1.yaml"
+MINGLI_RESULT_SCHEMA_PATH = ROOT / "contracts" / "schemas" / "mingli-result-v2.schema.json"
 
 
 def load_openapi_document() -> dict[str, Any]:
     with OPENAPI_PATH.open(encoding="utf-8") as stream:
         document: dict[str, Any] = yaml.safe_load(stream)
+    return document
+
+
+def load_mingli_result_schema() -> dict[str, Any]:
+    with MINGLI_RESULT_SCHEMA_PATH.open(encoding="utf-8") as stream:
+        document: dict[str, Any] = json.load(stream)
     return document
 
 
@@ -139,6 +147,66 @@ def test_reading_result_contract_exposes_the_runtime_view_model_slot() -> None:
     assert schema["properties"]["document"]["oneOf"][0]["$ref"] == (
         "#/components/schemas/ReadingDocumentV1"
     )
+
+
+def test_verified_exact_evidence_fields_are_atomic_and_multi_citation() -> None:
+    schemas = load_openapi_document()["components"]["schemas"]
+    evidence = schemas["ReadingEvidence"]
+    citation = schemas["VerifiedExactCitation"]
+
+    assert evidence["additionalProperties"] is False
+    assert set(evidence["required"]) >= {
+        "ref",
+        "source_title",
+        "locator",
+        "excerpt",
+        "supports_fact_refs",
+    }
+    assert evidence["properties"]["locator"]["type"] == ["string", "null"]
+    assert evidence["properties"]["excerpt"]["type"] == ["string", "null"]
+    assert citation["additionalProperties"] is False
+    assert citation["properties"]["verification_status"]["const"] == (
+        "verified_exact"
+    )
+    assert evidence["properties"]["verbatim_citations"]["minItems"] == 1
+    assert evidence["properties"]["verbatim_citations"]["items"]["$ref"] == (
+        "#/components/schemas/VerifiedExactCitation"
+    )
+
+    exact_fields = {
+        "evidence_ref",
+        "rule_id",
+        "verification_status",
+        "verbatim_excerpt",
+        "verbatim_citations",
+    }
+    dependencies = evidence["dependentRequired"]
+    assert set(dependencies) == exact_fields
+    for field in exact_fields:
+        assert set(dependencies[field]) == exact_fields - {field}
+
+
+def test_openapi_reading_evidence_matches_authoritative_result_schema() -> None:
+    openapi_evidence = load_openapi_document()["components"]["schemas"][
+        "ReadingEvidence"
+    ]
+    authoritative_evidence = load_mingli_result_schema()["$defs"]["publicEvidence"]
+
+    assert openapi_evidence["required"] == authoritative_evidence["required"]
+    assert authoritative_evidence["properties"]["locator"]["$ref"] == (
+        "#/$defs/nullableText"
+    )
+    assert authoritative_evidence["properties"]["excerpt"]["$ref"] == (
+        "#/$defs/nullableText"
+    )
+    assert openapi_evidence["properties"]["locator"]["type"] == [
+        "string",
+        "null",
+    ]
+    assert openapi_evidence["properties"]["excerpt"]["type"] == [
+        "string",
+        "null",
+    ]
 
 
 def test_phase_two_mutating_routes_declare_csrf_and_idempotency() -> None:
@@ -278,3 +346,35 @@ def test_public_referral_contract_has_guest_capture_and_safe_projection() -> Non
     assert schema["additionalProperties"] is False
     assert "inviter_user_id" not in schema["properties"]
     assert "visitor_key_hash" not in schema["properties"]
+
+
+def test_public_bazi_checkout_contract_is_owner_scoped_and_confirmed_only() -> None:
+    document = load_openapi_document()
+    paths = document["paths"]
+    create = paths["/api/v1/commerce/checkout"]["post"]
+    status = paths["/api/v1/commerce/checkout/{order_id}"]["get"]
+
+    assert create["operationId"] == "createBaziDeepCheckout"
+    assert create["security"] == [{"deviceSession": []}]
+    assert {
+        item.get("$ref")
+        for item in create["parameters"]
+        if "$ref" in item
+    } == {
+        "#/components/parameters/CsrfToken",
+        "#/components/parameters/IdempotencyKey",
+    }
+    assert status["operationId"] == "getBaziDeepCheckout"
+    assert status["security"] == [{"deviceSession": []}]
+
+    schemas = document["components"]["schemas"]
+    request = schemas["PublicBaziCheckoutRequest"]
+    response = schemas["PublicCheckoutResponse"]
+    order = schemas["PublicCheckoutOrder"]
+    assert request["additionalProperties"] is False
+    assert request["required"] == ["reading_version_id"]
+    assert set(request["properties"]) == {"reading_version_id"}
+    assert response["additionalProperties"] is False
+    assert "payment_id" not in response["required"]
+    assert "owner_user_id" not in order["properties"]
+    assert "purchase_target_ref" not in order["properties"]

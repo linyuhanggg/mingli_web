@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
@@ -7,9 +7,20 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from app.api.validators import validate_iana_timezone
 from app.charts.contracts import ViewModel
 from app.readings.presentation import ReadingDocumentV1
+from app.readings.share_contracts import SharedReadingDocumentV1
 from app.readings.status import ReadingStatus
 
 JsonObject = dict[str, Any]
+DeliveryState = Literal[
+    "not_required",
+    "payment_required",
+    "queued",
+    "processing",
+    "waiting_input",
+    "delivered",
+    "delayed",
+    "failed",
+]
 LiuyaoCast = Annotated[
     list[Annotated[int, Field(ge=6, le=9)]],
     Field(min_length=6, max_length=6),
@@ -22,6 +33,7 @@ MeihuaCastingMethod = Literal[
     "observation",
     "supplied_hexagram",
 ]
+LiuyaoQuestionClass = Literal["finance"]
 
 
 class PreviewStartRequest(BaseModel):
@@ -157,6 +169,7 @@ class LiuyaoStartRequest(BaseModel):
     location: str = Field(min_length=1, max_length=120)
     subject_ref: str | None = Field(default=None, min_length=1, max_length=120)
     query: str | None = Field(default=None, min_length=1, max_length=300)
+    question_class: LiuyaoQuestionClass | None = None
     dimension_ids: list[str] | None = Field(
         default=None,
         min_length=1,
@@ -232,6 +245,34 @@ class EventArtStartRequest(BaseModel):
     @classmethod
     def _timezone_must_be_iana(cls, value: str) -> str:
         return validate_iana_timezone(value)
+
+
+class DaliurenStartRequest(EventArtStartRequest):
+    """Start a Liuren event reading, with an explicit bounded timing window."""
+
+    timing_start: date | None = None
+    timing_end: date | None = None
+
+    @model_validator(mode="after")
+    def _timing_window_matches_requested_dimension(self) -> "DaliurenStartRequest":
+        dimensions = set(self.dimension_ids or ("outcome",))
+        timing_requested = "timing" in dimensions
+        if timing_requested and (self.timing_start is None or self.timing_end is None):
+            raise ValueError(
+                "Daliuren timing requires timing_start and timing_end"
+            )
+        if not timing_requested and (
+            self.timing_start is not None or self.timing_end is not None
+        ):
+            raise ValueError(
+                "Daliuren timing bounds require the timing dimension"
+            )
+        if self.timing_start is not None and self.timing_end is not None:
+            if self.timing_end < self.timing_start:
+                raise ValueError("Daliuren timing_end must not precede timing_start")
+            if self.timing_end - self.timing_start > timedelta(days=30):
+                raise ValueError("Daliuren timing horizon may contain at most 31 days")
+        return self
 
 
 class QimenDeepStartRequest(EventArtStartRequest):
@@ -436,6 +477,7 @@ class RecastLiuyaoRequest(BaseModel):
     location: str = Field(min_length=1, max_length=120)
     subject_ref: str | None = Field(default=None, min_length=1, max_length=120)
     query: str | None = Field(default=None, min_length=1, max_length=300)
+    question_class: LiuyaoQuestionClass | None = None
     dimension_ids: list[Literal["career", "outcome", "timing"]] | None = Field(
         default=None,
         min_length=1,
@@ -513,6 +555,10 @@ class ReadingVersionSummary(BaseModel):
     prior_answer: str | None = None
     input_request: JsonObject | None = None
     created_at: datetime
+    # Public delivery/payment state is intentionally separate from the
+    # internal ReadingStatus state machine.  Free previews do not have a
+    # fulfillment gate; paid products expose only this bounded projection.
+    delivery_state: DeliveryState = "not_required"
 
 
 class ReadingStartResponse(ReadingVersionSummary):
@@ -645,4 +691,4 @@ class ExportResponse(BaseModel):
 class SharedReadingResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    document: ReadingDocumentV1
+    document: SharedReadingDocumentV1

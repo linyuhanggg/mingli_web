@@ -9,6 +9,7 @@ from app.charts.contracts import (
     DaliurenChartV1,
     FengshuiViewV1,
     FiveElementsFactsViewV1,
+    FortuneFactsViewV1,
     HecanViewV1,
     LiuyaoChartV1,
     LumingNayinChartV1,
@@ -26,6 +27,7 @@ from app.charts.projectors import (
     project_canwen_view_model,
     project_daliuren_view_model,
     project_fengshui_view_model,
+    project_fortune_view_model,
     project_hecan_view_model,
     project_liuyao_view_model,
     project_luming_nayin_view_model,
@@ -41,6 +43,142 @@ from app.charts.projectors import (
     project_ziwei_view_model,
 )
 from jsonschema import Draft202012Validator
+
+
+def test_fortune_projector_preserves_runtime_facts_without_verdict() -> None:
+    view_model = project_fortune_view_model(
+        brief(
+            "fortune",
+            {
+                "natal_pillars": {
+                    "year": "甲戌",
+                    "month": "戊辰",
+                    "day": "丙戌",
+                    "hour": "辛卯",
+                },
+                "day_master": {"stem": "丙", "element": "fire", "polarity": "阳"},
+                "month_command": {
+                    "branch": "辰",
+                    "label": "辰月",
+                    "main_qi": "戊",
+                    "main_qi_element": "earth",
+                },
+                "active_luck_cycle": "乙丑",
+                "target_day": "2026-08-14",
+                "target_period": {
+                    "kind": "day",
+                    "start": "2026-08-14",
+                    "end": "2026-08-14",
+                },
+                "available_periods": ["2026-08-14"],
+                "period_markers": [
+                    {
+                        "date": "2026-08-14",
+                        "day_pillar": "甲子",
+                        "day_role": "日运",
+                        "active_luck_cycle": "乙丑",
+                        "primary_mechanism_ids": ["fortune.day_pillar"],
+                        "decisive_mechanism_ids": [],
+                        "relations": [],
+                        "specific_event_policy": "事实标记，不推出具体事件",
+                        "unresolved_boundaries": [],
+                    }
+                ],
+                "calendar_normalization": {
+                    "status": "calculated",
+                    "algorithm_version": "fixture-v1",
+                    "time_basis": {
+                        "policy": "local_apparent_solar-v1",
+                        "total_correction_seconds": 1182.0,
+                        "algorithm": {},
+                        "boundary": {"correction_changes_hour_branch": False},
+                    },
+                    "true_solar_time": {
+                        "status": "apparent_solar_applied",
+                        "policy": "local_apparent_solar-v1",
+                        "total_correction_seconds": 1182.0,
+                    },
+                    "calendar_convention": {"hour_basis": "true_solar"},
+                },
+            },
+        )
+    )
+
+    assert isinstance(view_model, FortuneFactsViewV1)
+    assert view_model.schema_version == "fortune-facts-view/v1"
+    assert view_model.natal_pillars["day"] == "丙戌"
+    assert view_model.day_master.element == "fire"
+    assert view_model.period_markers[0].primary_mechanism_ids == ("fortune.day_pillar",)
+    assert view_model.period_markers[0].specific_event_policy == "事实标记，不推出具体事件"
+
+    schema_path = (
+        Path(__file__).resolve().parents[2]
+        / "contracts"
+        / "schemas"
+        / "views"
+        / "fortune-facts-view-v1.schema.json"
+    )
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
+    payload = view_model.model_dump(mode="json")
+    validator = Draft202012Validator(schema)
+    validator.validate(payload)
+    payload["calendar_normalization"]["location"] = {"name": "private fixture"}
+    assert not validator.is_valid(payload)
+
+
+def test_fortune_projector_rejects_private_calendar_input_fields() -> None:
+    values = {
+        "natal_pillars": {
+            "year": "甲戌",
+            "month": "戊辰",
+            "day": "丙戌",
+            "hour": "辛卯",
+        },
+        "day_master": {"stem": "丙", "element": "fire", "polarity": "阳"},
+        "month_command": {
+            "branch": "辰",
+            "label": "辰月",
+            "main_qi": "戊",
+            "main_qi_element": "earth",
+        },
+        "active_luck_cycle": "乙丑",
+        "target_day": "2026-08-14",
+        "target_period": {
+            "kind": "day",
+            "start": "2026-08-14",
+            "end": "2026-08-14",
+        },
+        "available_periods": ["2026-08-14"],
+        "period_markers": [
+            {
+                "date": "2026-08-14",
+                "day_pillar": "甲子",
+                "day_role": "日运",
+                "active_luck_cycle": "乙丑",
+                "primary_mechanism_ids": ["fortune.day_pillar"],
+                "decisive_mechanism_ids": [],
+                "relations": [],
+                "specific_event_policy": "事实标记，不推出具体事件",
+                "unresolved_boundaries": [],
+            }
+        ],
+        "calendar_normalization": {
+            "status": "calculated",
+            "algorithm_version": "fixture-v1",
+            "time_basis": {
+                "policy": "local_apparent_solar-v1",
+                "algorithm": {},
+                "boundary": {},
+            },
+            "true_solar_time": {"status": "apparent_solar_applied"},
+            "calendar_convention": {},
+            "civil_datetime": "2000-01-01T00:00:00+08:00",
+            "location": {"name": "private fixture"},
+        },
+    }
+
+    assert project_fortune_view_model(brief("fortune", values)) is None
 
 
 def brief(capability_id: str, values: dict[str, Any]) -> dict[str, object]:
@@ -251,6 +389,26 @@ def test_qizheng_projector_exposes_ephemeris_ming_shen_limits_and_transformation
                 "positions": positions,
                 "classical_bodies": positions,
                 "houses": houses,
+                "ephemeris": {
+                    "schema_version": "mingli-ephemeris-v1",
+                    "instant_utc": "2000-01-01T00:00:00+00:00",
+                    "observer": {
+                        "longitude": 120.2,
+                        "latitude": 25.0,
+                        "coordinate_source": "private-fixture",
+                    },
+                    "engine": {
+                        "name": "astronomy-engine",
+                        "version": "2.1.19",
+                        "license": "MIT",
+                    },
+                    "coordinate_convention": {
+                        "frame": "geocentric_true_ecliptic_of_date",
+                        "zodiac": "tropical",
+                        "aberration": True,
+                        "precession": "equinox_of_date_by_astronomy_engine",
+                    },
+                },
                 "ming_shen": {
                     "ming_degree": 46.6,
                     "shen_degree": 226.6,
@@ -306,6 +464,10 @@ def test_qizheng_projector_exposes_ephemeris_ming_shen_limits_and_transformation
     )
     assert view_model.core_facts.ming_shen is not None
     assert view_model.core_facts.ming_shen.separation_degrees == 180.0
+    assert "longitude_degrees" not in view_model.core_facts.ming_shen.model_dump()
+    assert view_model.core_facts.ephemeris is not None
+    assert "instant_utc" not in view_model.core_facts.ephemeris.model_dump()
+    assert "observer" not in view_model.core_facts.ephemeris.model_dump()
     assert view_model.core_facts.major_limits is not None
     assert view_model.core_facts.major_limits[0].age_end_years == 15.0
     assert view_model.core_facts.transformations is not None
@@ -348,6 +510,143 @@ def test_liuyao_projector_maps_runtime_line_states_to_contract_values() -> None:
         "najia": [{"branch": "子", "element": "水", "ganzhi": "甲子"}],
         "returning_relations": [{"source_line": 1, "relations": ["回头生"]}],
         "six_relatives": ["妻财"],
+        "useful_spirit_selection": {
+            "status": "evidence_bound",
+            "reason": "school-dependent adjudication is outside deterministic calculation",
+            "query_word_matching": False,
+            "source_dependency_id": (
+                "liuyao.relations.returning-and-useful-spirit-candidates"
+            ),
+            "chain_candidates": {"status": "candidate_only"},
+            "strength_evidence": {
+                "status": "candidate_only",
+                "by_relative": {
+                    "妻财": {
+                        "status": "candidate_only",
+                        "candidates": [
+                            {
+                                "source": "visible_line",
+                                "line": 1,
+                                "moving": True,
+                                "xunkong": False,
+                                "najia": {"element": "水"},
+                                "month_day_strength": {"seasonal_state": "旺"},
+                                "seasonal_adjudication": {
+                                    "status": (
+                                        "adjudicated_seasonal_strength_band"
+                                    ),
+                                    "decision_scope": (
+                                        "liuyao_candidate_month_order_strength_band"
+                                    ),
+                                    "candidate_source": "visible_line",
+                                    "line": 1,
+                                    "line_element": "水",
+                                    "month_element": "水",
+                                    "seasonal_state": "旺",
+                                    "strength_band": "旺相",
+                                    "whole_candidate_strength_verdict": None,
+                                    "outcome_verdict": None,
+                                    "source_ref": {
+                                        "pack": "divination/zengshan-buyi",
+                                        "rule_id": "ZR-05-05",
+                                        "source_anchor": (
+                                            "references/books/divination/"
+                                            "zengshan-buyi/rules.md#ZR-05-05"
+                                        ),
+                                        "verification_status": "verified",
+                                        "binding_digest": "strength-binding-digest",
+                                    },
+                                    "unresolved_checks": ["日辰与空破动变"],
+                                },
+                                "signals": [
+                                    {
+                                        "signal": "seasonal_support",
+                                        "value": "旺",
+                                        "status": "candidate_signal",
+                                    },
+                                    {
+                                        "signal": "moving_line",
+                                        "value": True,
+                                        "status": "candidate_signal",
+                                    },
+                                ],
+                                "status": "candidate_only",
+                                "hard_verdict": None,
+                            }
+                        ],
+                        "hard_verdict": None,
+                    }
+                },
+                "source_rules": [
+                    {
+                        "pack": "divination/zengshan-buyi",
+                        "rule_id": "ZR-05-05",
+                        "source_anchor": (
+                            "references/books/divination/zengshan-buyi/"
+                            "rules.md#ZR-05-05"
+                        ),
+                        "verification_status": "verified",
+                        "binding_digest": "strength-binding-digest",
+                        "role": "useful_spirit_month_order_strength_band",
+                    }
+                ],
+                "fact_status": "calculated_relation_not_verdict",
+                "hard_verdict": None,
+                "requires_school_adjudication": True,
+                "source_dependency_id": (
+                    "liuyao.interpretation.useful-spirit-strength-evidence"
+                ),
+            },
+            "role_adjudication": {
+                "status": "adjudicated_question_role_set",
+                "decision_scope": "finance_useful_spirit_role_set",
+                "question_class": "finance",
+                "primary_relative": "妻财",
+                "supporting_relatives": ["子孙"],
+                "obstacle_attention_relatives": ["兄弟", "官鬼", "父母"],
+                "specific_line_selection": 1,
+                "specific_line_adjudication": {
+                    "status": "adjudicated_unique_visible_line",
+                    "decision_scope": "finance_primary_relative_line_identity",
+                    "primary_relative": "妻财",
+                    "visible_candidate_count": 1,
+                    "visible_candidate_lines": [1],
+                    "moving_visible_candidate_count": 1,
+                    "moving_visible_candidate_lines": [1],
+                    "specific_line_selection": 1,
+                    "derivation_basis": (
+                        "verified_role_plus_runtime_unique_visible_candidate"
+                    ),
+                    "selection_source_ref": {
+                        "pack": "divination/huangjin-ce",
+                        "rule_id": "HJC-R009",
+                        "source_anchor": (
+                            "references/books/divination/huangjin-ce/"
+                            "rules.md#HJC-R009"
+                        ),
+                        "verification_status": "verified",
+                        "binding_digest": "test-binding-digest",
+                    },
+                    "hard_verdict": None,
+                },
+                "hard_verdict": None,
+                "source_ref": {
+                    "pack": "divination/huangjin-ce",
+                    "rule_id": "HJC-R009",
+                    "source_anchor": (
+                        "references/books/divination/huangjin-ce/"
+                        "rules.md#HJC-R009"
+                    ),
+                    "verification_status": "verified",
+                    "binding_digest": "test-binding-digest",
+                },
+                "unresolved_checks": ["月日旺衰与空破冲合"],
+            },
+            "question_context": {
+                "question_class": "finance",
+                "classification_source": "explicit_structured_input",
+            },
+        },
         "xunkong": {"day_ganzhi": "甲子", "void_branches": ["戌", "亥"]},
         "source_conditioned_patterns": [
             {
@@ -380,6 +679,12 @@ def test_liuyao_projector_maps_runtime_line_states_to_contract_values() -> None:
         "day_ganzhi": "甲子",
         "void_branches": ["戌", "亥"],
     }
+    assert view_model.core_facts.useful_spirit_selection is not None
+    assert (
+        view_model.core_facts.useful_spirit_selection.role_adjudication
+        .specific_line_adjudication.specific_line_selection
+        == 1
+    )
     assert [
         pattern.local_rule_id
         for pattern in view_model.core_facts.source_conditioned_patterns
@@ -387,6 +692,13 @@ def test_liuyao_projector_maps_runtime_line_states_to_contract_values() -> None:
     assert view_model.core_facts.source_conditioned_patterns[0].status == (
         "predicate_matched_not_verdict"
     )
+    schema = json.loads(
+        (
+            Path(__file__).resolve().parents[2]
+            / "contracts/schemas/views/liuyao-chart-v1.schema.json"
+        ).read_text(encoding="utf-8")
+    )
+    Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
 
 
 def test_meihua_projector_maps_structural_plate_facts_without_verdicts() -> None:
@@ -438,9 +750,9 @@ def test_meihua_projector_maps_structural_plate_facts_without_verdicts() -> None
         },
         "interpretive_candidates": {
             "schema_version": "mingli-meihua-interpretive-candidates-v1",
-            "status": "candidate_only",
+            "status": "source_adjudicated_relations",
             "hard_verdict": None,
-            "verification_status": "pending_verification",
+            "verification_status": "verified",
             "relation_candidates": [
                 {
                     "candidate_id": "meihua.primary_use.upper.same_element",
@@ -460,16 +772,45 @@ def test_meihua_projector_maps_structural_plate_facts_without_verdicts() -> None
                     },
                     "seasonal_state": "旺",
                     "rule_id": "MR-04-02",
-                    "status": "candidate_only",
+                    "status": "relation_adjudicated_not_event_verdict",
                     "hard_verdict": None,
-                    "verification_status": "pending_verification",
+                    "verification_status": "verified",
                     "source_pack": "divination/meihua-yishu",
                     "source_anchor": "references/books/divination/meihua-yishu/rules.md#MR-04-02",
                     "source_dependency_id": "meihua.classical-adjudication.body-use-candidates",
+                    "relation_adjudication": {
+                        "status": "adjudicated_relation_polarity",
+                        "decision_scope": "meihua_body_use_relation",
+                        "relation_key": "same_element",
+                        "source_polarity": "harmonious",
+                        "hard_verdict": None,
+                        "event_verdict": None,
+                        "source_refs": [
+                            {
+                                "pack": "divination/meihua-yishu",
+                                "rule_id": "MR-04-02",
+                                "source_anchor": (
+                                    "references/fulltext/divination/"
+                                    "meihua-yishu/fulltext.md#L875"
+                                ),
+                                "verification_status": "verified",
+                                "binding_digest": (
+                                    "202662eb4c023883aab61febf3de3d7d"
+                                    "42137740f31d50ba1a7ada25149db50f"
+                                ),
+                            }
+                        ],
+                        "unresolved_checks": [
+                            "具体问题中的体用取义、领域例外与外应",
+                            "本卦、互卦、变卦关系的并见权重及月令旺衰",
+                            "现实事件成败、吉凶程度与应期",
+                        ],
+                    },
                 }
             ],
-            "requires_classical_adjudication": True,
-            "boundary": "关系候选不等于最终结论",
+            "requires_classical_adjudication": False,
+            "requires_synthesis_adjudication": True,
+            "boundary": "关系极性已裁定，综合事件结论仍待裁决",
         },
     }
 
@@ -490,6 +831,23 @@ def test_meihua_projector_maps_structural_plate_facts_without_verdicts() -> None
         view_model.core_facts.interpretive_candidates.relation_candidates[0].rule_id
         == "MR-04-02"
     )
+    relation_adjudication = (
+        view_model.core_facts.interpretive_candidates.relation_candidates[
+            0
+        ].relation_adjudication
+    )
+    assert relation_adjudication.source_polarity == "harmonious"
+    assert relation_adjudication.event_verdict is None
+    schema_path = (
+        Path(__file__).resolve().parents[2]
+        / "contracts"
+        / "schemas"
+        / "views"
+        / "meihua-chart-v1.schema.json"
+    )
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
+    Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
 
 
 def test_luming_projector_maps_nayin_and_source_named_relations() -> None:
@@ -531,6 +889,31 @@ def test_luming_projector_maps_nayin_and_source_named_relations() -> None:
                             "fact:/chart_facts/output/four_pillars/year"
                         ],
                         "predicate_audit": ["/four_pillars/year:eq:庚辰"],
+                        "applicability_adjudication": {
+                            "status": "adjudicated_rule_applicability",
+                            "decision_scope": (
+                                "luming_nayin_source_rule_applicability"
+                            ),
+                            "rule_id": (
+                                "luming-nayin/li-xuzhong-mingshu#LX-01-17"
+                            ),
+                            "local_rule_id": "LX-01-17",
+                            "rule_title": "庚辰（禄暗会）",
+                            "evidence_role": "issue_specific_judgment_rule",
+                            "hard_verdict": None,
+                            "life_verdict": None,
+                            "source_ref": {
+                                "pack": "luming-nayin/li-xuzhong-mingshu",
+                                "rule_id": "LX-01-17",
+                                "source_anchor": (
+                                    "references/books/luming-nayin/"
+                                    "li-xuzhong-mingshu/rules.md#LX-01-17"
+                                ),
+                                "verification_status": "verified",
+                                "binding_digest": "1" * 64,
+                            },
+                            "unresolved_checks": ["多条规则并见尚未权衡"],
+                        },
                     }
                 ],
             },
@@ -542,6 +925,22 @@ def test_luming_projector_maps_nayin_and_source_named_relations() -> None:
     assert view_model.relations[0].category == "lu"
     assert view_model.taiyuan == {"ganzhi": "己巳"}
     assert view_model.source_conditioned_patterns[0].local_rule_id == "LX-01-17"
+    adjudication = view_model.source_conditioned_patterns[
+        0
+    ].applicability_adjudication
+    assert adjudication.status == "adjudicated_rule_applicability"
+    assert adjudication.life_verdict is None
+    assert adjudication.source_ref.verification_status == "verified"
+    schema_path = (
+        Path(__file__).resolve().parents[2]
+        / "contracts"
+        / "schemas"
+        / "views"
+        / "luming-nayin-chart-v1.schema.json"
+    )
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
+    Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
 
 
 def test_rhythm_projector_keeps_only_nayin_facts_and_uses_product_dispatch() -> None:
@@ -636,6 +1035,29 @@ def test_taiyi_projector_keeps_annual_scope_and_predicates_typed() -> None:
                         "source_anchor": "fulltext.md L430",
                         "source_dependency_id": "taiyi.synthetic",
                         "status": "predicate_matched_not_verdict",
+                        "identity_adjudication": {
+                            "status": "adjudicated_pattern_identity",
+                            "decision_scope": "taiyi_board_pattern_identity",
+                            "pattern_id": "TY-P01",
+                            "pattern_name": "掩",
+                            "hard_verdict": None,
+                            "event_verdict": None,
+                            "source_ref": {
+                                "pack": "san-shi/taiyi-shenshu",
+                                "rule_id": "TY-P01",
+                                "source_anchor": (
+                                    "references/books/san-shi/taiyi-shenshu/"
+                                    "rules.md#TY-P01"
+                                ),
+                                "verification_status": "verified",
+                                "binding_digest": "a" * 64,
+                            },
+                            "unresolved_checks": [
+                                "并见格局、制化与主客关系",
+                                "宏观事项范围及盘面取用",
+                                "现实成败、吉凶与应期",
+                            ],
+                        },
                     }
                 ],
                 "scope_contract": {
@@ -652,6 +1074,21 @@ def test_taiyi_projector_keeps_annual_scope_and_predicates_typed() -> None:
     assert isinstance(view_model, TaiyiChartV1)
     assert view_model.calendar.year_ganzhi == "丙午"
     assert view_model.board_predicates[0].status == "predicate_matched_not_verdict"
+    adjudication = view_model.board_predicates[0].identity_adjudication
+    assert adjudication.status == "adjudicated_pattern_identity"
+    assert adjudication.source_ref.rule_id == "TY-P01"
+    assert adjudication.hard_verdict is None
+    assert adjudication.event_verdict is None
+    schema_path = (
+        Path(__file__).resolve().parents[2]
+        / "contracts"
+        / "schemas"
+        / "views"
+        / "taiyi-chart-v1.schema.json"
+    )
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
+    Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
 
 
 def test_selection_projector_uses_bounded_public_basis_projection() -> None:
@@ -806,7 +1243,39 @@ def test_qimen_projector_keeps_center_palace_omissions_as_null() -> None:
                 },
                 "xunkong": {"xun": "甲子", "branches": ["戌", "亥"], "palaces": [6, 7]},
                 "horse": {"hour_branch": "子", "branch": "寅", "palace": 8},
-                "named_patterns": [],
+                "named_patterns": [
+                    {
+                        "id": "QM-P13",
+                        "name": "五不遇时",
+                        "status": "predicate_matched_not_verdict",
+                        "identity_adjudication": {
+                            "status": "adjudicated_pattern_identity",
+                            "decision_scope": "qimen_named_pattern_identity",
+                            "pattern_id": "QM-P13",
+                            "pattern_name": "五不遇时",
+                            "palace": None,
+                            "hard_verdict": None,
+                            "event_verdict": None,
+                            "source_ref": {
+                                "pack": "san-shi/qimen-dunjia-tongzhi",
+                                "rule_id": "QM-P13",
+                                "source_anchor": (
+                                    "references/books/san-shi/"
+                                    "qimen-dunjia-tongzhi/rules.md#QM-P13"
+                                ),
+                                "verification_status": "verified",
+                                "binding_digest": (
+                                    "addc36958a2efaf63b6ceac219a8afe49ea4b26e5bcb5d32e404c35d59d70302"
+                                ),
+                            },
+                            "unresolved_checks": [
+                                "格局强弱、制化与并见关系",
+                                "事项用神及宫位关系",
+                                "事件成败、吉凶与应期",
+                            ],
+                        },
+                    }
+                ],
                 "palaces": palaces,
             },
         )
@@ -822,6 +1291,11 @@ def test_qimen_projector_keeps_center_palace_omissions_as_null() -> None:
     assert view_model.palaces[0].stars == ("天辅", "天禽")
     assert view_model.chief.star == "天蓬"
     assert view_model.xunkong.palaces == (6, 7)
+    assert view_model.named_patterns[0].palace is None
+    assert view_model.named_patterns[0].identity_adjudication.status == (
+        "adjudicated_pattern_identity"
+    )
+    assert view_model.named_patterns[0].identity_adjudication.event_verdict is None
 
     schema_path = (
         Path(__file__).resolve().parents[2]
@@ -852,7 +1326,18 @@ def test_daliuren_projector_maps_lessons_and_three_transmissions() -> None:
         "earth_plate": ["子", "丑"],
         "structural_patterns": ["伏吟"],
         "timing_candidates": [
-            {"id": "initial_group_upper_candidate", "candidate_not_guarantee": True}
+            {
+                "id": "initial_group_upper_candidate",
+                "role": "event_response_candidate",
+                "anchor_earth_branch": "巳",
+                "branch": "酉",
+                "solar_date": "2026-08-21",
+                "day_ganzhi": "丁卯",
+                "days_after_cast": 7,
+                "source_pack": "san-shi/liuren-miben",
+                "source_rule": "LM-R21",
+                "candidate_not_guarantee": True,
+            }
         ],
         "xunkong": {"xun": "甲子", "branches": ["戌", "亥"]},
     }
@@ -865,9 +1350,19 @@ def test_daliuren_projector_maps_lessons_and_three_transmissions() -> None:
     assert view_model.core_facts is not None
     assert view_model.core_facts.earth_plate == ("子", "丑")
     assert view_model.core_facts.structural_patterns == ("伏吟",)
-    assert view_model.core_facts.timing_candidates == (
-        {"id": "initial_group_upper_candidate", "candidate_not_guarantee": True},
+    assert view_model.core_facts.timing_candidates[0].solar_date == "2026-08-21"
+    assert view_model.core_facts.timing_candidates[0].source_rule == "LM-R21"
+    assert view_model.core_facts.timing_candidates[0].candidate_not_guarantee is True
+    schema_path = (
+        Path(__file__).resolve().parents[2]
+        / "contracts"
+        / "schemas"
+        / "views"
+        / "daliuren-chart-v1.schema.json"
     )
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
+    Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
 
 
 def test_physiognomy_projector_maps_public_observations_and_ignores_private_input() -> None:
@@ -1151,6 +1646,19 @@ def test_canwen_projector_exposes_candidate_and_source_pattern_evidence() -> Non
                 "display_text": "interpretive_candidates",
             },
             {
+                "ref": "fact:profile/calculated/bazi/source_conditioned_patterns",
+                "subject_ref": "profile:fixture",
+                "kind_id": "kind.fact",
+                "value": [
+                    {
+                        "local_rule_id": "DR-01-01",
+                        "title": "八字来源谓词",
+                        "status": "predicate_matched_not_verdict",
+                    }
+                ],
+                "display_text": "source_conditioned_patterns",
+            },
+            {
                 "ref": "fact:profile/calculated/ziwei/dimension_fact_scope",
                 "subject_ref": "profile:fixture",
                 "kind_id": "kind.fact",
@@ -1217,6 +1725,7 @@ def test_canwen_projector_exposes_candidate_and_source_pattern_evidence() -> Non
         "bazi.dimension_scope",
         "bazi.career.candidate_scope.strength",
         "bazi.career.candidate_scope.structure",
+        "bazi.career.source_pattern.DR-01-01",
         "ziwei.dimension_scope",
         "ziwei.career.source_pattern.ZW-M01",
         "qizheng.dimension_scope",
@@ -1410,6 +1919,19 @@ def test_wenshi_projector_exposes_liuyao_candidates_and_qimen_predicates() -> No
                 "display_text": "relation_facts",
             },
             {
+                "ref": "fact:wenshi:evidence/calculated/liuyao/source_conditioned_patterns",
+                "subject_ref": "wenshi:evidence",
+                "kind_id": "kind.liuyao-patterns",
+                "value": [
+                    {
+                        "local_rule_id": "HJC-M001",
+                        "title": "六爻来源谓词",
+                        "status": "predicate_matched_not_verdict",
+                    }
+                ],
+                "display_text": "source_conditioned_patterns",
+            },
+            {
                 "ref": "fact:wenshi:evidence/calculated/liuyao/useful_spirit_candidates",
                 "subject_ref": "wenshi:evidence",
                 "kind_id": "kind.liuyao-candidates",
@@ -1438,6 +1960,42 @@ def test_wenshi_projector_exposes_liuyao_candidates_and_qimen_predicates() -> No
                         "status": "candidate_only",
                         "by_relative": {"官鬼": []},
                     },
+                    "role_adjudication": {
+                        "status": "adjudicated_question_role_set",
+                        "decision_scope": "finance_useful_spirit_role_set",
+                        "question_class": "finance",
+                        "primary_relative": "妻财",
+                        "supporting_relatives": ["子孙"],
+                        "obstacle_attention_relatives": ["兄弟", "官鬼", "父母"],
+                        "specific_line_selection": 4,
+                        "specific_line_adjudication": {
+                            "status": "adjudicated_unique_visible_line",
+                            "decision_scope": (
+                                "finance_primary_relative_line_identity"
+                            ),
+                            "primary_relative": "妻财",
+                            "visible_candidate_count": 1,
+                            "visible_candidate_lines": [4],
+                            "moving_visible_candidate_count": 1,
+                            "moving_visible_candidate_lines": [4],
+                            "specific_line_selection": 4,
+                            "derivation_basis": (
+                                "verified_role_plus_runtime_unique_visible_candidate"
+                            ),
+                            "selection_source_ref": {
+                                "pack": "divination/huangjin-ce",
+                                "rule_id": "HJC-R009",
+                                "verification_status": "verified",
+                            },
+                            "hard_verdict": None,
+                        },
+                        "hard_verdict": None,
+                        "source_ref": {
+                            "pack": "divination/huangjin-ce",
+                            "rule_id": "HJC-R009",
+                            "verification_status": "verified",
+                        },
+                    },
                 },
                 "display_text": "useful_spirit_selection",
             },
@@ -1458,12 +2016,38 @@ def test_wenshi_projector_exposes_liuyao_candidates_and_qimen_predicates() -> No
                         "name": "三奇入墓",
                         "status": "predicate_matched_not_verdict",
                         "palace": 3,
+                        "identity_adjudication": {
+                            "status": "adjudicated_pattern_identity",
+                            "decision_scope": "qimen_named_pattern_identity",
+                            "pattern_id": "QM-P16",
+                            "pattern_name": "三奇入墓",
+                            "palace": 3,
+                            "hard_verdict": None,
+                            "event_verdict": None,
+                            "source_ref": {
+                                "rule_id": "QM-P16",
+                                "verification_status": "verified",
+                            },
+                        },
                     },
                     {
                         "id": "QM-P17",
                         "name": "六仪击刑",
                         "status": "predicate_matched_not_verdict",
                         "palace": 8,
+                        "identity_adjudication": {
+                            "status": "adjudicated_pattern_identity",
+                            "decision_scope": "qimen_named_pattern_identity",
+                            "pattern_id": "QM-P17",
+                            "pattern_name": "六仪击刑",
+                            "palace": 8,
+                            "hard_verdict": None,
+                            "event_verdict": None,
+                            "source_ref": {
+                                "rule_id": "QM-P17",
+                                "verification_status": "verified",
+                            },
+                        },
                     },
                 ],
                 "display_text": "named_patterns",
@@ -1484,9 +2068,11 @@ def test_wenshi_projector_exposes_liuyao_candidates_and_qimen_predicates() -> No
         signal.signal_id for signal in signals
     } == {
         "liuyao.outcome.structure",
+        "liuyao.outcome.source_pattern.HJC-M001",
         "liuyao.outcome.useful_spirit_candidates.兄弟",
         "liuyao.outcome.useful_spirit_candidates.官鬼",
         "liuyao.outcome.useful_spirit_selection.chain_candidates",
+        "liuyao.outcome.useful_spirit_selection.role_adjudication",
         "liuyao.outcome.useful_spirit_selection.strength_evidence",
         "qimen.outcome.structure",
         "qimen.outcome.named_pattern.QM-P16",
@@ -1499,8 +2085,78 @@ def test_wenshi_projector_exposes_liuyao_candidates_and_qimen_predicates() -> No
         or "useful_spirit_selection" in signal.signal_id
         or "named_pattern" in signal.signal_id
     )
+    role_signal = next(
+        signal
+        for signal in signals
+        if signal.signal_id.endswith("role_adjudication")
+    )
+    assert "妻财为主、子孙为辅" in role_signal.display_text
+    assert "盘内唯一可见妻财为第4爻" in role_signal.display_text
+    qimen_signals = [
+        signal for signal in signals if ".named_pattern." in signal.signal_id
+    ]
+    assert all("格局身份" in signal.display_text for signal in qimen_signals)
     assert view_model.dimensions[0].convergence == ()
     assert view_model.dimensions[0].disagreements == ()
+
+
+def test_wenshi_projector_exposes_liuren_timing_candidate_evidence() -> None:
+    payload = {
+        "question": "验证大六壬应期候选证据是否进入问事合参",
+        "facts": [
+            {
+                "ref": "fact:wenshi:timing/calculated/liuyao/relation_facts",
+                "subject_ref": "wenshi:timing",
+                "kind_id": "kind.liuyao-structure",
+                "value": [],
+                "display_text": "relation_facts",
+            },
+            {
+                "ref": "fact:wenshi:timing/calculated/qimen/calculated_board_scope",
+                "subject_ref": "wenshi:timing",
+                "kind_id": "kind.qimen-structure",
+                "value": {"scope": "fixture"},
+                "display_text": "calculated_board_scope",
+            },
+            {
+                "ref": "fact:wenshi:timing/calculated/liuren/dimension_facts",
+                "subject_ref": "wenshi:timing",
+                "kind_id": "kind.liuren-structure",
+                "value": {
+                    "timing": {
+                        "status": "calculated_facts_not_verdict",
+                        "relative_speed": "relatively_faster",
+                        "candidate_branch": "酉",
+                        "candidate_date": "2026-08-21",
+                    }
+                },
+                "display_text": "dimension_facts",
+            },
+        ],
+        "request_view": {
+            "subject_refs": ["wenshi:timing"],
+            "capability_ids": ["liuyao", "qimen", "liuren"],
+            "dimension_ids": ["timing"],
+        },
+    }
+
+    view_model = project_wenshi_view_model(payload)
+
+    assert isinstance(view_model, WenshiViewV1)
+    signals = view_model.dimensions[0].signals
+    assert "daliuren.timing.timing_candidate_evidence" in {
+        signal.signal_id for signal in signals
+    }
+    timing_signal = next(
+        signal
+        for signal in signals
+        if signal.signal_id == "daliuren.timing.timing_candidate_evidence"
+    )
+    assert timing_signal.fact_refs == (
+        "fact:wenshi:timing/calculated/liuren/dimension_facts",
+    )
+    assert "不形成问事合参结论" in timing_signal.display_text
+    assert view_model.dimensions[0].missing_art_ids == ()
 
 
 def test_runtime_dispatch_returns_none_for_a_capability_without_a_projector() -> None:

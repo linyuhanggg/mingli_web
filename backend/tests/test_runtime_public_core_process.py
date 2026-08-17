@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import UTC, date, datetime
 from uuid import uuid4
@@ -7,6 +8,7 @@ from app.adapters.runtime import MingliRuntime, build_runtime_startup_gate
 from app.charts.contracts import (
     BaziChartV1,
     DaliurenChartV1,
+    FortuneFactsViewV1,
     LiuyaoChartV1,
     PhysiognomyViewV1,
     QizhengChartV1,
@@ -15,6 +17,7 @@ from app.charts.contracts import (
 from app.charts.projectors import (
     project_bazi_view_model,
     project_daliuren_view_model,
+    project_fortune_view_model,
     project_liuyao_view_model,
     project_physiognomy_view_model,
     project_qizheng_view_model,
@@ -166,6 +169,32 @@ async def test_real_runtime_projects_public_natal_and_divination_core() -> None:
     assert daliuren_view.core_facts.heaven_plate is not None
     assert daliuren_view.core_facts.transmission_method is not None
     assert daliuren_view.core_facts.timing_candidates is not None
+
+    daliuren_timing = await runtime.execute(
+        compile_liuren_prepare(
+            action="liuren_timing_question",
+            query="验证大六壬有界应期候选",
+            subject_ref="liuren:public-timing-synthetic",
+            event_datetime=datetime.fromisoformat("2026-08-14T10:00:00+08:00"),
+            confirmed_timezone="Asia/Shanghai",
+            location="福建省福州市",
+            dimension_ids=("timing",),
+            timing_start=date(2026, 8, 15),
+            timing_end=date(2026, 9, 14),
+        )
+    )
+    assert isinstance(daliuren_timing, Prepared)
+    timing_values = {
+        str(item["ref"]).split("/calculated/liuren/", 1)[1]: item.get("value")
+        for item in daliuren_timing.to_dict()["brief"]["facts"]
+        if isinstance(item, dict)
+        and "/calculated/liuren/" in str(item.get("ref"))
+    }
+    timing_candidates = timing_values["timing_candidates"]
+    assert timing_candidates
+    assert timing_candidates[0]["source_rule"] == "LM-R21"
+    assert timing_candidates[0]["candidate_not_guarantee"] is True
+    assert "2026-08-15" <= timing_candidates[0]["solar_date"] <= "2026-09-14"
 
     daliuren_work = await runtime.execute(
         compile_liuren_prepare(
@@ -489,3 +518,23 @@ async def test_real_runtime_projects_fortune_fact_panel_without_chart_claim() ->
     panel = project_public_fact_panel(brief)
     assert panel is not None
     assert panel["request_view"]["capability_ids"] == ["fortune"]
+    view_model = project_fortune_view_model(brief)
+    assert isinstance(view_model, FortuneFactsViewV1)
+    assert view_model.period_markers
+    assert view_model.period_markers[0].specific_event_policy
+    assert view_model.calendar_normalization.time_basis.policy == (
+        "local_apparent_solar-v1"
+    )
+    assert view_model.calendar_normalization.true_solar_time.status == (
+        "apparent_solar_applied"
+    )
+    public_payload = json.dumps(
+        {"panel": panel, "view_model": view_model.model_dump(mode="json")},
+        ensure_ascii=False,
+        sort_keys=True,
+    )
+    assert SYNTHETIC_PROFILE.birth_datetime not in public_payload
+    assert SYNTHETIC_PROFILE.location not in public_payload
+    assert str(SYNTHETIC_PROFILE.longitude) not in public_payload
+    assert str(SYNTHETIC_PROFILE.latitude) not in public_payload
+    assert "/input/" not in public_payload

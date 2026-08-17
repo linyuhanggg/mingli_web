@@ -2,6 +2,7 @@ import type {
   BaziChartViewModel,
   BaziCoreFacts,
   BaziInterpretiveCandidates,
+  StructuredFactObject,
 } from "@/view-models/registry";
 import { formatFortuneMechanismIds } from "./fortune-period-markers";
 
@@ -684,10 +685,15 @@ export function formatBaziInterpretiveCandidateRows(
     candidates.following_and_transformation.stem_combination_candidates;
   const branchCandidates =
     candidates.following_and_transformation.branch_formation_candidates;
-  return [
+  const monthOrderAdjudication = strength.month_order_adjudication;
+  const rows = [
     [
-      "强弱证据",
-      `日主${BAZI_ELEMENT_LABELS[strength.day_element] ?? strength.day_element}；月令${BAZI_ELEMENT_LABELS[strength.month_command_element] ?? strength.month_command_element}；同类 ${strength.same_element_occurrences} 项；生扶 ${BAZI_ELEMENT_LABELS[strength.resource_element] ?? strength.resource_element} ${strength.resource_occurrences} 项；盘面 ${inventory}`,
+      "全局强弱证据（未裁定）",
+      `日主${BAZI_ELEMENT_LABELS[strength.day_element] ?? strength.day_element}；月令${BAZI_ELEMENT_LABELS[strength.month_command_element] ?? strength.month_command_element}；月令状态 ${strength.seasonal_state}；同类 ${strength.same_element_occurrences} 项；生扶 ${BAZI_ELEMENT_LABELS[strength.resource_element] ?? strength.resource_element} ${strength.resource_occurrences} 项；盘面 ${inventory}`,
+    ],
+    [
+      "月令状态裁定",
+      `${BAZI_ELEMENT_LABELS[monthOrderAdjudication.day_master_element] ?? monthOrderAdjudication.day_master_element}日主在${BAZI_ELEMENT_LABELS[monthOrderAdjudication.month_command_element] ?? monthOrderAdjudication.month_command_element}月令为“${monthOrderAdjudication.seasonal_state}”；已按 ${monthOrderAdjudication.source_ref.rule_id} 核验，全局身强身弱与唯一用神仍未裁定`,
     ],
     [
       "月令结构",
@@ -702,6 +708,257 @@ export function formatBaziInterpretiveCandidateRows(
       `${candidates.salience_signals.length} 项机械候选：${candidates.salience_signals.map((signal) => signal.signal_id).join("、") || "无"}`,
     ],
     ["证据边界", strength.boundary],
+  ];
+  const adjudication = candidates.reasoning_tools?.ziping_month_pattern_adjudication?.output;
+  if (isPlainObject(adjudication)) {
+    const patternLabel = typeof adjudication.pattern_label === "string"
+      ? adjudication.pattern_label
+      : "月令格局入口";
+    const decisionLabel = adjudication.status === "adjudicated_pattern_entry"
+      ? "已裁定月令格局入口"
+      : adjudication.status === "exception_requires_external_selection"
+        ? "进入建禄月劫另取分支"
+        : "裁决状态待确认";
+    const unresolved = Array.isArray(adjudication.unresolved_checks)
+      ? adjudication.unresolved_checks.filter(
+          (item): item is string => typeof item === "string" && Boolean(item),
+        )
+      : [];
+    rows.splice(2, 0, [
+      "子平月令裁决",
+      `${patternLabel}；${decisionLabel}；待完成：${unresolved.join("、") || "无"}`,
+    ]);
+  }
+  const tiaohou = candidates.reasoning_tools?.tiaohou_candidates?.output;
+  if (isPlainObject(tiaohou)) {
+    const ruleId = typeof tiaohou.rule_id === "string" ? tiaohou.rule_id : "来源规则";
+    if (tiaohou.status === "adjudicated_seasonal_priority") {
+      const priorityStems = Array.isArray(tiaohou.priority_stems)
+        ? tiaohou.priority_stems.filter(
+            (item): item is string => typeof item === "string" && Boolean(item),
+          )
+        : [];
+      const coverageLabels: Record<string, string> = {
+        complete_visible: "全部透干",
+        partial_visible_or_hidden: "部分透藏",
+        missing: "盘内未见",
+      };
+      const coverage = typeof tiaohou.coverage_status === "string"
+        ? coverageLabels[tiaohou.coverage_status] ?? "已记录"
+        : "已记录";
+      rows.splice(adjudication ? 3 : 2, 0, [
+        "调候季节裁决",
+        `${ruleId}；季节优先：${priorityStems.join("、") || "无"}；已裁定来源规则内的季节优先项；可见性：${coverage}`,
+      ]);
+    } else if (tiaohou.status === "unavailable_unverified_rule") {
+      rows.splice(adjudication ? 3 : 2, 0, [
+        "调候季节裁决",
+        `${ruleId} 尚未通过来源审核，本盘不输出调候优先项`,
+      ]);
+    }
+  }
+  return rows;
+}
+
+export function formatLiuyaoRoleAdjudicationRows(
+  selection: StructuredFactObject | null,
+): string[][] {
+  if (!selection || !isPlainObject(selection.role_adjudication)) return [];
+  const adjudication = selection.role_adjudication;
+  if (
+    adjudication.status !== "adjudicated_question_role_set" ||
+    adjudication.question_class !== "finance" ||
+    adjudication.hard_verdict != null
+  ) {
+    return [];
+  }
+
+  const lineAdjudication = isPlainObject(
+    adjudication.specific_line_adjudication,
+  )
+    ? adjudication.specific_line_adjudication
+    : null;
+  const visibleCandidateLines = lineAdjudication &&
+      Array.isArray(lineAdjudication.visible_candidate_lines)
+    ? lineAdjudication.visible_candidate_lines.filter(
+        (item): item is number =>
+          typeof item === "number" && Number.isInteger(item) && item >= 1 && item <= 6,
+      )
+    : [];
+  const movingVisibleCandidateLines = lineAdjudication &&
+      Array.isArray(lineAdjudication.moving_visible_candidate_lines)
+    ? lineAdjudication.moving_visible_candidate_lines.filter(
+        (item): item is number =>
+          typeof item === "number" &&
+          Number.isInteger(item) &&
+          item >= 1 &&
+          item <= 6 &&
+          visibleCandidateLines.includes(item),
+      )
+    : [];
+  const candidateCountsMatch =
+    lineAdjudication?.visible_candidate_count === visibleCandidateLines.length &&
+    lineAdjudication?.moving_visible_candidate_count ===
+      movingVisibleCandidateLines.length;
+  const specificLine = typeof adjudication.specific_line_selection === "number" &&
+      Number.isInteger(adjudication.specific_line_selection) &&
+      adjudication.specific_line_selection >= 1 &&
+      adjudication.specific_line_selection <= 6
+    ? adjudication.specific_line_selection
+    : null;
+  const lineStatus = lineAdjudication?.status;
+  const isUniqueVisibleLine =
+    lineStatus === "adjudicated_unique_visible_line" &&
+    visibleCandidateLines.length === 1 &&
+    candidateCountsMatch &&
+    specificLine === visibleCandidateLines[0] &&
+    lineAdjudication?.specific_line_selection === specificLine;
+  const selectionSource = isPlainObject(lineAdjudication?.selection_source_ref)
+    ? lineAdjudication.selection_source_ref
+    : null;
+  const isSingleMovingVisibleLine =
+    lineStatus === "adjudicated_single_moving_visible_line" &&
+    visibleCandidateLines.length === 2 &&
+    movingVisibleCandidateLines.length === 1 &&
+    candidateCountsMatch &&
+    specificLine === movingVisibleCandidateLines[0] &&
+    lineAdjudication?.specific_line_selection === specificLine &&
+    selectionSource?.rule_id === "ZR-04-04" &&
+    selectionSource?.verification_status === "verified";
+  const isUnresolvedVisibleLines =
+    lineStatus === "unresolved_multiple_visible_lines" &&
+    visibleCandidateLines.length >= 2 &&
+    candidateCountsMatch &&
+    specificLine === null &&
+    lineAdjudication?.specific_line_selection == null &&
+    lineAdjudication?.selection_source_ref == null;
+  const isUnresolvedNoVisibleLine =
+    lineStatus === "unresolved_no_visible_line" &&
+    visibleCandidateLines.length === 0 &&
+    movingVisibleCandidateLines.length === 0 &&
+    candidateCountsMatch &&
+    specificLine === null &&
+    lineAdjudication?.specific_line_selection == null &&
+    lineAdjudication?.selection_source_ref == null;
+  if (
+    !isUniqueVisibleLine &&
+    !isSingleMovingVisibleLine &&
+    !isUnresolvedVisibleLines &&
+    !isUnresolvedNoVisibleLine
+  ) {
+    return [];
+  }
+
+  const primary = typeof adjudication.primary_relative === "string"
+    ? adjudication.primary_relative
+    : "—";
+  const supporting = Array.isArray(adjudication.supporting_relatives)
+    ? adjudication.supporting_relatives.filter(
+        (item): item is string => typeof item === "string" && Boolean(item),
+      )
+    : [];
+  const obstacles = Array.isArray(adjudication.obstacle_attention_relatives)
+    ? adjudication.obstacle_attention_relatives.filter(
+        (item): item is string => typeof item === "string" && Boolean(item),
+      )
+    : [];
+  const unresolved = Array.isArray(adjudication.unresolved_checks)
+    ? adjudication.unresolved_checks.filter(
+        (item): item is string => typeof item === "string" && Boolean(item),
+      )
+    : [];
+  const source = isPlainObject(adjudication.source_ref)
+    ? adjudication.source_ref
+    : null;
+  const sourceRule = source && typeof source.rule_id === "string"
+    ? source.rule_id
+    : "来源规则";
+  const sourcePack = source && typeof source.pack === "string"
+    ? source.pack
+    : "来源包";
+  const sourceStatus = source?.verification_status === "verified"
+    ? "已核验"
+    : "核验状态未知";
+
+  const lineRow = isUniqueVisibleLine
+    ? ["具体用神爻", `第${specificLine}爻（盘内唯一可见妻财爻）`]
+    : isSingleMovingVisibleLine
+      ? [
+          "具体用神爻",
+          `第${specificLine}爻（妻财两现，仅此爻发动，按核验规则取用）`,
+        ]
+      : isUnresolvedVisibleLines
+      ? [
+          "具体用神爻",
+          `第${visibleCandidateLines.join("、")}爻均为可见妻财爻，同动静时尚待完整旺衰裁定`,
+        ]
+      : ["具体用神爻", "盘内无可见妻财爻，伏神或变爻取用尚未裁定"];
+  const selectionSourceRow = isSingleMovingVisibleLine && selectionSource
+    ? [[
+        "取爻依据",
+        `${selectionSource.rule_id} · ${selectionSource.pack}（已核验）`,
+      ]]
+    : [];
+  const strengthEvidence = isPlainObject(selection.strength_evidence)
+    ? selection.strength_evidence
+    : null;
+  const strengthByRelative = isPlainObject(strengthEvidence?.by_relative)
+    ? strengthEvidence.by_relative
+    : null;
+  const primaryStrength = strengthByRelative && isPlainObject(
+    strengthByRelative[primary],
+  )
+    ? strengthByRelative[primary]
+    : null;
+  const selectedStrengthCandidate = specificLine !== null &&
+      Array.isArray(primaryStrength?.candidates)
+    ? primaryStrength.candidates.find((candidate) => {
+        if (!isPlainObject(candidate) || candidate.line !== specificLine) return false;
+        const seasonal = isPlainObject(candidate.seasonal_adjudication)
+          ? candidate.seasonal_adjudication
+          : null;
+        const seasonalSource = isPlainObject(seasonal?.source_ref)
+          ? seasonal.source_ref
+          : null;
+        const state = seasonal?.seasonal_state;
+        const expectedBand = state === "旺" || state === "相" ? "旺相" : "休囚";
+        return seasonal?.status === "adjudicated_seasonal_strength_band" &&
+          seasonal?.line === specificLine &&
+          seasonal?.strength_band === expectedBand &&
+          seasonal?.whole_candidate_strength_verdict == null &&
+          seasonal?.outcome_verdict == null &&
+          seasonalSource?.rule_id === "ZR-05-05" &&
+          seasonalSource?.verification_status === "verified";
+      })
+    : null;
+  const selectedSeasonal = selectedStrengthCandidate &&
+      isPlainObject(selectedStrengthCandidate.seasonal_adjudication)
+    ? selectedStrengthCandidate.seasonal_adjudication
+    : null;
+  const seasonalStrengthRow = selectedSeasonal
+    ? [[
+        "月令季节带",
+        `第${specificLine}爻：${selectedSeasonal.seasonal_state}（${selectedSeasonal.strength_band}带；ZR-05-05 已核验）`,
+      ]]
+    : [];
+  const boundary = isUniqueVisibleLine || isSingleMovingVisibleLine
+    ? selectedSeasonal
+      ? "已定位具体爻位；仅裁定月令季节带，未判断综合旺衰、成败与应期"
+      : "已定位具体爻位；未判断旺衰、成败与应期"
+    : "未指定具体爻位；未判断成败与应期";
+
+  return [
+    [
+      "问题角色裁决",
+      `求财：${primary}为主，${supporting.join("、") || "无"}为辅`,
+    ],
+    lineRow,
+    ...seasonalStrengthRow,
+    ["阻碍关注", obstacles.join("、") || "无"],
+    ["来源", `${sourceRule} · ${sourcePack}（${sourceStatus}）`],
+    ...selectionSourceRow,
+    ["裁决边界", boundary],
+    ["待完成", unresolved.join("、") || "无"],
   ];
 }
 

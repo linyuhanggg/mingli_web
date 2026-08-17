@@ -11,6 +11,7 @@ tags:
   - name: Content
   - name: Identity
   - name: Referrals
+  - name: Commerce
   - name: Profiles
   - name: Readings
   - name: Physiognomy
@@ -488,6 +489,75 @@ paths:
           description: Temporary attribution cleared; repeated clears are idempotent
         "403":
           $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/commerce/checkout:
+    post:
+      operationId: createBaziDeepCheckout
+      tags: [Commerce]
+      summary: Create an owner-scoped Bazi deep-reading checkout
+      description: >-
+        The server derives the purchase target from the owned Reading Root.
+        The client cannot provide an arbitrary target reference or offer UUID.
+        The server selects exactly one enabled Offer under the active
+        bazi-deep ProductFamily; zero or multiple eligible Offers fail closed.
+        A checkout response never represents a confirmed payment unless a
+        local Payment fact is already confirmed.
+      security:
+        - deviceSession: []
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicBaziCheckoutRequest"
+      responses:
+        "201":
+          description: Checkout order and payment attempt created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicCheckoutResponse"
+        "200":
+          description: Existing checkout returned for an idempotent replay
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicCheckoutResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /api/v1/commerce/checkout/{order_id}:
+    get:
+      operationId: getBaziDeepCheckout
+      tags: [Commerce]
+      summary: Read an owner-scoped Bazi deep-reading checkout status
+      security:
+        - deviceSession: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Checkout order, attempt, and confirmed-payment projection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicCheckoutResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
   /api/v1/account/orders:
@@ -2809,6 +2879,89 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AccountReferralCampaignResponse"
+    PublicBaziCheckoutRequest:
+      type: object
+      additionalProperties: false
+      required: [reading_version_id]
+      properties:
+        reading_version_id:
+          type: string
+          format: uuid
+    PublicCheckoutOrder:
+      type: object
+      additionalProperties: false
+      required:
+        - order_id
+        - product_id
+        - product_version
+        - amount_minor
+        - currency
+        - status
+        - created_at
+      properties:
+        order_id:
+          type: string
+          format: uuid
+        reading_version_id:
+          type: [string, "null"]
+          format: uuid
+        product_id:
+          const: bazi-deep
+        product_version:
+          type: string
+          minLength: 1
+        amount_minor:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        status:
+          type: string
+          minLength: 1
+        created_at:
+          type: string
+          format: date-time
+        paid_at:
+          type: [string, "null"]
+          format: date-time
+    PublicCheckoutAttempt:
+      type: object
+      additionalProperties: false
+      required: [attempt_id, channel, status, created_at]
+      properties:
+        attempt_id:
+          type: string
+          format: uuid
+        channel:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          minLength: 1
+        created_at:
+          type: string
+          format: date-time
+    PublicCheckoutResponse:
+      type: object
+      additionalProperties: false
+      required: [order, attempt, gateway_status, created]
+      properties:
+        order:
+          $ref: "#/components/schemas/PublicCheckoutOrder"
+        attempt:
+          $ref: "#/components/schemas/PublicCheckoutAttempt"
+        gateway_status:
+          type: string
+          enum: [unavailable, pending, succeeded, failed]
+        redirect_url:
+          type: [string, "null"]
+        payment_id:
+          type: [string, "null"]
+          format: uuid
+        created:
+          type: boolean
     AccountOrderResponse:
       type: object
       additionalProperties: false
@@ -4162,23 +4315,62 @@ components:
           additionalProperties: true
         display_text:
           type: string
+    VerifiedExactCitation:
+      type: object
+      additionalProperties: false
+      required: [source_title, locator, verbatim_excerpt, verification_status]
+      properties:
+        source_title:
+          type: string
+          minLength: 1
+        locator:
+          type: string
+          minLength: 1
+        verbatim_excerpt:
+          type: string
+          minLength: 1
+        verification_status:
+          const: verified_exact
     ReadingEvidence:
       type: object
       additionalProperties: false
-      required: [ref, source_title, supports_fact_refs]
+      required: [ref, source_title, locator, excerpt, supports_fact_refs]
       properties:
         ref:
           type: string
+        evidence_ref:
+          type: string
+          minLength: 1
+        rule_id:
+          type: string
+          minLength: 1
         source_title:
           type: string
         locator:
-          type: string
+          type: [string, "null"]
         excerpt:
+          type: [string, "null"]
+        verification_status:
+          const: verified_exact
+        verbatim_excerpt:
           type: string
+          minLength: 1
+        verbatim_citations:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/VerifiedExactCitation"
         supports_fact_refs:
           type: array
           items:
             type: string
+      dependentRequired:
+        evidence_ref: [rule_id, verification_status, verbatim_excerpt, verbatim_citations]
+        rule_id: [evidence_ref, verification_status, verbatim_excerpt, verbatim_citations]
+        verification_status: [evidence_ref, rule_id, verbatim_excerpt, verbatim_citations]
+        verbatim_excerpt: [evidence_ref, rule_id, verification_status, verbatim_citations]
+        verbatim_citations: [evidence_ref, rule_id, verification_status, verbatim_excerpt]
     ReadingFinding:
       type: object
       additionalProperties: false
@@ -4483,13 +4675,115 @@ components:
         expires_at:
           type: string
           format: date-time
+    SharedReadingDocumentV1:
+      type: object
+      additionalProperties: false
+      required:
+        - schema_version
+        - document_id
+        - reading_version_id
+        - accepted_copy_ref
+        - product_version
+        - presentation_contract_version
+        - answer_summary
+        - themes
+        - claims
+        - evidence
+        - boundaries
+        - versions
+      properties:
+        schema_version:
+          const: shared-reading-document/v1
+        document_id:
+          type: string
+          minLength: 1
+        reading_version_id:
+          type: string
+          minLength: 1
+        accepted_copy_ref:
+          type: string
+          minLength: 1
+        product_version:
+          type: string
+          minLength: 1
+        presentation_contract_version:
+          type: string
+          minLength: 1
+        answer_summary:
+          type: string
+          minLength: 1
+        themes:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [theme_id, label]
+            properties:
+              theme_id:
+                type: string
+                minLength: 1
+              label:
+                type: string
+                minLength: 1
+        claims:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [claim_id, text]
+            properties:
+              claim_id:
+                type: string
+                minLength: 1
+              text:
+                type: string
+                minLength: 1
+        evidence:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [evidence_ref, title]
+            properties:
+              evidence_ref:
+                type: string
+                minLength: 1
+              title:
+                type: string
+                minLength: 1
+        boundaries:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [limit_ref, text]
+            properties:
+              limit_ref:
+                type: string
+                minLength: 1
+              text:
+                type: string
+                minLength: 1
+        versions:
+          type: object
+          additionalProperties: false
+          required: [runtime_release, view_model_schema, reading_document_schema]
+          properties:
+            runtime_release:
+              type: string
+              minLength: 1
+            view_model_schema:
+              type: string
+              minLength: 1
+            reading_document_schema:
+              const: reading-document/v1
     SharedReadingResponse:
       type: object
       additionalProperties: false
       required: [document]
       properties:
         document:
-          $ref: "#/components/schemas/ReadingDocumentV1"
+          $ref: "#/components/schemas/SharedReadingDocumentV1"
     ReadingDocumentV1:
       type: object
       additionalProperties: false

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+from app.charts.contracts import BaziCalendarNormalization, FortuneCalendarNormalization
 from app.charts.projectors import (
     project_bazi_view_model,
     project_runtime_view_model,
@@ -70,10 +72,39 @@ def _interpretive_candidates() -> dict[str, object]:
             "hard_verdict": None,
             "day_element": "土",
             "month_command_element": "土",
+            "seasonal_state": "旺",
+            "seasonal_state_source_rule_id": "bazi/sanming-tonghui#R-02-04",
             "same_element_occurrences": 4,
             "resource_element": "火",
             "resource_occurrences": 2,
             "all_element_occurrences": {"木": 2, "火": 2, "土": 4, "金": 1, "水": 1},
+            "month_order_adjudication": {
+                "status": "adjudicated_month_order_state",
+                "decision_scope": "bazi_month_order_seasonal_state",
+                "day_master_element": "土",
+                "month_command_element": "土",
+                "seasonal_state": "旺",
+                "whole_chart_strength_verdict": None,
+                "useful_god_verdict": None,
+                "source_ref": {
+                    "pack": "bazi/sanming-tonghui",
+                    "rule_id": "R-02-04",
+                    "source_anchor": (
+                        "references/books/bazi/sanming-tonghui/"
+                        "rules.md#R-02-04"
+                    ),
+                    "verification_status": "verified",
+                    "binding_digest": (
+                        "77b387e17e65b50c7cbcdba3cc8ef5b1"
+                        "70499c6d5c07461856b710d5aa50759e"
+                    ),
+                },
+                "unresolved_checks": [
+                    "全局根气、生扶、克泄与合化",
+                    "从格、化气及旺极衰极的反向取用",
+                    "整个日主强弱、唯一用神与现实吉凶应期",
+                ],
+            },
             "boundary": "只展示五行出现次数，不等于旺衰定论。",
         },
         "structure": {
@@ -221,6 +252,133 @@ def _year_layer() -> dict[str, object]:
     }
 
 
+def _g3_calendar_normalization() -> dict[str, object]:
+    return {
+        "status": "calculated",
+        "algorithm_version": "calendar-v53",
+        "time_basis": {
+            "policy": "local_apparent_solar-v1",
+            "algorithm": {},
+            "boundary": {},
+        },
+        "true_solar_time": {"status": "apparent_solar_applied"},
+        "calendar_convention": {},
+        "effective_datetime": "1985-03-01T23:33:00+08:00",
+        "day_boundary": {
+            "correction_crossed_date": True,
+            "zi_policy_advanced_day_pillar": False,
+        },
+        "changed_pillars": ["day", "hour"],
+        "solar_terms": {
+            "previous": {
+                "name": "雨水",
+                "index": 2,
+                "is_month_boundary_jie": False,
+                "datetime": "1985-02-19T06:00:00+08:00",
+                "instant_utc": "1985-02-18T22:00:00Z",
+            },
+            "next": {
+                "name": "惊蛰",
+                "index": 3,
+                "is_month_boundary_jie": True,
+                "datetime": "1985-03-05T17:00:00+08:00",
+                "instant_utc": "1985-03-05T09:00:00Z",
+            },
+            "month_switch_policy": "exact_jie_instant",
+        },
+    }
+
+
+def _brief_with_calendar(calendar: dict[str, object]) -> dict[str, object]:
+    payload = _brief().to_dict()
+    payload["facts"] = [
+        *payload["facts"],
+        {
+            "ref": "fact:profile-version:test/calculated/bazi/calendar_normalization",
+            "subject_ref": "profile-version:test",
+            "kind_id": "kind.fact",
+            "value": calendar,
+            "display_text": "历法与真太阳时已由 Runtime 计算。",
+        },
+    ]
+    return payload
+
+
+def test_projects_g3_bazi_calendar_facts_without_cross_contract_leakage() -> None:
+    view_model = project_bazi_view_model(
+        _brief_with_calendar(_g3_calendar_normalization())
+    )
+
+    assert view_model is not None
+    assert view_model.core_facts is not None
+    calendar = view_model.core_facts.calendar_normalization
+    assert calendar is not None
+    assert calendar.effective_datetime == "1985-03-01T23:33:00+08:00"
+    assert calendar.day_boundary is not None
+    assert calendar.day_boundary.correction_crossed_date is True
+    assert calendar.day_boundary.zi_policy_advanced_day_pillar is False
+    assert calendar.changed_pillars == ("day", "hour")
+    assert calendar.solar_terms is not None
+    assert calendar.solar_terms.previous is not None
+    assert calendar.solar_terms.previous.name == "雨水"
+    assert calendar.solar_terms.next is not None
+    assert calendar.solar_terms.next.is_month_boundary_jie is True
+    assert calendar.solar_terms.month_switch_policy == "exact_jie_instant"
+
+
+def test_empty_changed_pillars_remains_present_and_distinct_from_missing() -> None:
+    calendar = _g3_calendar_normalization()
+    calendar["changed_pillars"] = []
+    view_model = project_bazi_view_model(_brief_with_calendar(calendar))
+
+    assert view_model is not None
+    assert view_model.core_facts is not None
+    normalized = view_model.core_facts.calendar_normalization
+    assert normalized is not None
+    assert normalized.changed_pillars == ()
+    assert "changed_pillars" in normalized.model_dump(mode="json")
+
+
+def test_missing_g3_bazi_calendar_fields_are_not_inferred_or_emitted() -> None:
+    calendar = _g3_calendar_normalization()
+    for field in (
+        "effective_datetime",
+        "day_boundary",
+        "changed_pillars",
+        "solar_terms",
+    ):
+        calendar.pop(field)
+    view_model = project_bazi_view_model(_brief_with_calendar(calendar))
+
+    assert view_model is not None
+    assert view_model.core_facts is not None
+    normalized = view_model.core_facts.calendar_normalization
+    assert normalized is not None
+    dumped = normalized.model_dump(mode="json")
+    assert "effective_datetime" not in dumped
+    assert "day_boundary" not in dumped
+    assert "changed_pillars" not in dumped
+    assert "solar_terms" not in dumped
+
+
+def test_invalid_changed_pillar_is_rejected_by_bazi_contract_and_projector() -> None:
+    calendar = _g3_calendar_normalization()
+    calendar["changed_pillars"] = ["day", "week"]
+
+    with pytest.raises(ValueError):
+        BaziCalendarNormalization.model_validate(calendar)
+
+    view_model = project_bazi_view_model(_brief_with_calendar(calendar))
+    assert view_model is not None
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.calendar_normalization is None
+
+
+def test_g3_calendar_fields_are_bazi_specific_and_do_not_relax_fortune_contract() -> None:
+    with pytest.raises(ValueError):
+        FortuneCalendarNormalization.model_validate(_g3_calendar_normalization())
+
+
 def test_projects_calculated_bazi_facts_into_versioned_chart() -> None:
     view_model = project_bazi_view_model(_brief())
 
@@ -355,6 +513,11 @@ def test_projects_five_elements_facts_without_inventing_a_verdict() -> None:
     assert "用神" in " ".join(view_model.limitations)
     assert view_model.interpretive_candidates is not None
     assert view_model.interpretive_candidates.strength.same_element_occurrences == 4
+    assert view_model.interpretive_candidates.strength.seasonal_state == "旺"
+    assert (
+        view_model.interpretive_candidates.strength.seasonal_state_source_rule_id
+        == "bazi/sanming-tonghui#R-02-04"
+    )
     assert view_model.interpretive_candidates.reasoning_tools is not None
     assert (
         view_model.interpretive_candidates.reasoning_tools["strength_evidence"]
@@ -531,16 +694,44 @@ def test_projects_runtime_bazi_core_facts_without_input_or_findings() -> None:
             "subject_ref": "profile-version:test",
             "kind_id": "kind.fact",
             "value": {
+                "algorithm_version": "sxtwl-2.0.7/exact-jie-boundary-v1.2",
+                "calendar_convention": {
+                    "day_rollover": "civil_midnight",
+                    "hour_basis": "local_apparent_solar-v1",
+                    "id": "east-asian-civil-jieqi-v1",
+                    "month_boundary": "exact Jie instant",
+                    "version": "1.0.2",
+                    "year_boundary": "exact Li Chun instant",
+                    "zi_hour_policy": "midnight",
+                },
                 "status": "calculated",
                 "time_basis": {
                     "policy": "local_apparent_solar-v1",
-                    "total_correction_seconds": 1182.0,
-                    "boundary": {"correction_changes_hour_branch": False},
+                    "algorithm": {
+                        "id": "astronomy-engine-apparent-solar-eot-v1",
+                        "source": (
+                            "astronomy-engine apparent solar hour angle; "
+                            "equation_of_time = apparent_solar_time - mean_solar_time"
+                        ),
+                        "uncertainty_seconds": 30,
+                        "version": "astronomy-engine-2.1.19",
+                    },
+                    "boundary": {
+                        "correction_changes_hour_branch": False,
+                        "distance_seconds": 3294,
+                        "within_uncertainty": False,
+                    },
+                    "equation_of_time_seconds": 163,
+                    "longitude_correction_seconds": -169,
+                    "standard_meridian_degrees": 120.0,
+                    "total_correction_seconds": -6,
                 },
                 "true_solar_time": {
+                    "equation_of_time_seconds": 163,
+                    "longitude_correction_seconds": -169,
                     "status": "apparent_solar_applied",
                     "policy": "local_apparent_solar-v1",
-                    "total_correction_seconds": 1182.0,
+                    "total_correction_seconds": -6,
                 },
             },
             "display_text": "历法与真太阳时已由 Runtime 计算。",
@@ -558,11 +749,11 @@ def test_projects_runtime_bazi_core_facts_without_input_or_findings() -> None:
             "kind_id": "kind.fact",
             "value": [
                 {
-                    "rule_id": "bazi.qiongtong.QR-02-01",
+                    "rule_id": "bazi/qiongtong-baojian#QR-02-01",
                     "local_rule_id": "QR-02-01",
-                    "title": "月令调候条件",
+                    "title": "QR-02-01 — 三春丙火",
                     "source_pack": "bazi/qiongtong-baojian",
-                    "source_anchor": "references/books/bazi/qiongtong-baojian/rules.md#QR-02-01",
+                    "source_anchor": "fulltext.md L317-L382",
                     "status": "predicate_matched_not_verdict",
                     "fact_paths": [
                         "/chart_facts/output/day_master/stem",
@@ -576,6 +767,36 @@ def test_projects_runtime_bazi_core_facts_without_input_or_findings() -> None:
             ],
             "display_text": "已命中的经典来源条件已由 Runtime 计算，尚未形成裁决。",
         },
+    ]
+    payload["evidence"] = [
+        {
+            "ref": "evidence:bazi/bazi/qiongtong-baojian#QR-02-01",
+            "evidence_ref": "evidence:bazi/bazi/qiongtong-baojian#QR-02-01",
+            "rule_id": "bazi/qiongtong-baojian#QR-02-01",
+            "source_title": "穷通宝鉴",
+            "locator": "fulltext.md#L319",
+            "excerpt": "正月用壬，庚辛为助。二月耑用壬水。三月土重晦光，取甲佐之为妙",
+            "verification_status": "verified_exact",
+            "verbatim_excerpt": (
+                "正月用壬，庚辛为助。二月耑用壬水。"
+                "三月土重晦光，取甲佐之为妙"
+            ),
+            "verbatim_citations": [
+                {
+                    "source_title": "穷通宝鉴",
+                    "locator": "fulltext.md#L319",
+                    "verbatim_excerpt": (
+                        "正月用壬，庚辛为助。二月耑用壬水。"
+                        "三月土重晦光，取甲佐之为妙"
+                    ),
+                    "verification_status": "verified_exact",
+                }
+            ],
+            "supports_fact_refs": [
+                "fact:profile-version:test/calculated/bazi/day_master",
+                "fact:profile-version:test/calculated/bazi/month_command",
+            ],
+        }
     ]
 
     view_model = project_bazi_view_model(ReadingBrief.from_dict(payload))
@@ -605,8 +826,27 @@ def test_projects_runtime_bazi_core_facts_without_input_or_findings() -> None:
     assert view_model.core_facts.luck_cycles.status == "sequence_only"
     assert view_model.core_facts.calendar_normalization is not None
     assert (
-        view_model.core_facts.calendar_normalization["true_solar_time"]["status"]
+        view_model.core_facts.calendar_normalization.true_solar_time.status
         == "apparent_solar_applied"
+    )
+    assert view_model.core_facts.calendar_normalization.time_basis.policy == (
+        "local_apparent_solar-v1"
+    )
+    assert (
+        view_model.core_facts.calendar_normalization.time_basis.longitude_correction_seconds
+        == -169
+    )
+    assert (
+        view_model.core_facts.calendar_normalization.time_basis.equation_of_time_seconds
+        == 163
+    )
+    assert (
+        view_model.core_facts.calendar_normalization.time_basis.boundary.within_uncertainty
+        is False
+    )
+    assert (
+        view_model.core_facts.calendar_normalization.calendar_convention.zi_hour_policy
+        == "midnight"
     )
     assert view_model.core_facts.interpretive_candidates is not None
     assert view_model.core_facts.interpretive_candidates.strength.day_element == "earth"
@@ -623,4 +863,50 @@ def test_projects_runtime_bazi_core_facts_without_input_or_findings() -> None:
         view_model.core_facts.source_conditioned_patterns[0].status
         == "predicate_matched_not_verdict"
     )
+    evidence_by_ref = {item["ref"]: item for item in payload["evidence"]}
+    assert view_model.core_facts.source_conditioned_patterns[0].evidence_ref is not None
+    assert (
+        view_model.core_facts.source_conditioned_patterns[0].evidence_ref
+        in evidence_by_ref
+    )
+    assert all(
+        pattern.evidence_ref in evidence_by_ref
+        for pattern in view_model.core_facts.source_conditioned_patterns
+        if pattern.evidence_ref is not None
+    )
+    assert "source_title" not in view_model.core_facts.source_conditioned_patterns[0].model_dump()
+    assert "excerpt" not in view_model.core_facts.source_conditioned_patterns[0].model_dump()
     assert "1994-04-30" not in str(view_model.model_dump(mode="json"))
+
+
+def test_bazi_source_pattern_does_not_invent_an_evidence_reference() -> None:
+    payload = _brief().to_dict()
+    payload["facts"] = [
+        *payload["facts"],
+        {
+            "ref": "fact:profile-version:test/calculated/bazi/source_conditioned_patterns",
+            "subject_ref": "profile-version:test",
+            "kind_id": "kind.fact",
+            "value": [
+                {
+                    "rule_id": "bazi/missing-source#R-01",
+                    "local_rule_id": "R-01",
+                    "title": "无公开 evidence 的 Runtime 条件",
+                    "source_pack": "bazi/missing-source",
+                    "source_anchor": "rules.md#R-01",
+                    "status": "predicate_matched_not_verdict",
+                    "fact_paths": ["/chart_facts/output/day_master/stem"],
+                    "predicate_audit": ["/day_master/stem:nonempty:()"],
+                }
+            ],
+            "display_text": "Runtime 条件命中，未形成裁决。",
+        },
+    ]
+
+    view_model = project_bazi_view_model(ReadingBrief.from_dict(payload))
+
+    assert view_model is not None
+    assert view_model.core_facts is not None
+    pattern = view_model.core_facts.source_conditioned_patterns[0]
+    assert pattern.evidence_ref is None
+    assert "evidence_ref" not in pattern.model_dump()

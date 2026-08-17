@@ -9,6 +9,7 @@ from app.charts.contracts import (
     ArtSignal,
     BaziBoundaryTerm,
     BaziBranchRelation,
+    BaziCalendarNormalization,
     BaziChartV1,
     BaziCoreFacts,
     BaziDayMaster,
@@ -21,6 +22,8 @@ from app.charts.contracts import (
     BaziLuckCycle,
     BaziLuckCycles,
     BaziMonthCommand,
+    BaziMonthOrderAdjudication,
+    BaziMonthOrderSourceRef,
     BaziNayin,
     BaziReasoningTool,
     BaziSalienceSignal,
@@ -51,6 +54,7 @@ from app.charts.contracts import (
     DaliurenChartV1,
     DaliurenCoreFacts,
     DaliurenLesson,
+    DaliurenTimingCandidate,
     DaliurenTransmission,
     DimensionSynthesis,
     ElementBalance,
@@ -58,6 +62,10 @@ from app.charts.contracts import (
     FengshuiViewV1,
     FiveElementsFactsViewV1,
     FiveElementsSourceIdentity,
+    FortuneCalendarNormalization,
+    FortuneFactsViewV1,
+    FortunePeriodMarker,
+    FortuneTargetPeriod,
     HecanViewV1,
     HexagramSummary,
     HousePosition,
@@ -68,12 +76,14 @@ from app.charts.contracts import (
     LumingNayinChartV1,
     LumingNayinPillar,
     LumingNayinRelation,
+    LumingNayinRuleApplicabilityAdjudication,
     LumingNayinSourcePattern,
     MeihuaBodyRelationFact,
     MeihuaBodyUse,
     MeihuaChartV1,
     MeihuaCoreFacts,
     MeihuaInterpretiveCandidates,
+    MeihuaRelationAdjudication,
     MeihuaRelationCandidate,
     MeihuaSeasonalStrengthFact,
     MeihuaTrigram,
@@ -91,12 +101,17 @@ from app.charts.contracts import (
     QimenInstrumentsWonders,
     QimenNamedPattern,
     QimenPalace,
+    QimenPatternIdentityAdjudication,
+    QimenPatternSourceRef,
     QimenPlateStem,
     QimenXunkong,
     QizhengAnnualTransformation,
     QizhengBodyFact,
     QizhengChartV1,
+    QizhengCoordinateConvention,
     QizhengCoreFacts,
+    QizhengEphemerisEngine,
+    QizhengEphemerisSummary,
     QizhengLimit,
     QizhengMingShen,
     QizhengRequestedLimitLayer,
@@ -118,6 +133,8 @@ from app.charts.contracts import (
     TaiyiFourGenerals,
     TaiyiLongCycleDeity,
     TaiyiNamedPosition,
+    TaiyiPatternIdentityAdjudication,
+    TaiyiPatternSourceRef,
     TaiyiScopeContract,
     TimeCheckCandidateEvidenceV1,
     TimeCheckCandidateV1,
@@ -459,6 +476,47 @@ def _bazi_element_inventory(value: object) -> BaziElementInventory | None:
     )
 
 
+def _bazi_month_order_adjudication(
+    value: object,
+) -> BaziMonthOrderAdjudication | None:
+    if not isinstance(value, Mapping):
+        return None
+    day_element = _element_id(value.get("day_master_element"))
+    month_element = _element_id(value.get("month_command_element"))
+    seasonal_state = value.get("seasonal_state")
+    source_raw = value.get("source_ref")
+    unresolved = _text_tuple(value.get("unresolved_checks"))
+    if not isinstance(source_raw, Mapping):
+        return None
+    try:
+        source_ref = BaziMonthOrderSourceRef.model_validate(dict(source_raw))
+    except ValueError:
+        return None
+    if (
+        value.get("status") != "adjudicated_month_order_state"
+        or value.get("decision_scope") != "bazi_month_order_seasonal_state"
+        or day_element is None
+        or month_element is None
+        or seasonal_state not in {"旺", "相", "休", "囚", "死"}
+        or value.get("whole_chart_strength_verdict") is not None
+        or value.get("useful_god_verdict") is not None
+        or unresolved is None
+        or not unresolved
+    ):
+        return None
+    return BaziMonthOrderAdjudication(
+        status="adjudicated_month_order_state",
+        decision_scope="bazi_month_order_seasonal_state",
+        day_master_element=day_element,
+        month_command_element=month_element,
+        seasonal_state=cast(
+            Literal["旺", "相", "休", "囚", "死"], seasonal_state
+        ),
+        source_ref=source_ref,
+        unresolved_checks=unresolved,
+    )
+
+
 def _bazi_strength_evidence(value: object) -> BaziStrengthEvidence | None:
     if not isinstance(value, Mapping):
         return None
@@ -466,19 +524,31 @@ def _bazi_strength_evidence(value: object) -> BaziStrengthEvidence | None:
         return None
     day_element = _element_id(value.get("day_element"))
     month_command_element = _element_id(value.get("month_command_element"))
+    seasonal_state = value.get("seasonal_state")
+    seasonal_state_source_rule_id = _text(value.get("seasonal_state_source_rule_id"))
     resource_element = _element_id(value.get("resource_element"))
     all_counts = _bazi_element_counts(value.get("all_element_occurrences"))
     integer_fields = {
         key: value.get(key)
         for key in ("same_element_occurrences", "resource_occurrences")
     }
+    month_order_adjudication = _bazi_month_order_adjudication(
+        value.get("month_order_adjudication")
+    )
     boundary = _text(value.get("boundary"))
     if (
         day_element is None
         or month_command_element is None
+        or seasonal_state not in {"旺", "相", "休", "囚", "死"}
+        or seasonal_state_source_rule_id is None
         or resource_element is None
         or all_counts is None
         or len(all_counts) != len(_BAZI_ELEMENTS)
+        or month_order_adjudication is None
+        or month_order_adjudication.day_master_element != day_element
+        or month_order_adjudication.month_command_element
+        != month_command_element
+        or month_order_adjudication.seasonal_state != seasonal_state
         or boundary is None
         or any(
             isinstance(item, bool) or not isinstance(item, int) or item < 0
@@ -490,10 +560,15 @@ def _bazi_strength_evidence(value: object) -> BaziStrengthEvidence | None:
         status="evidence_only",
         day_element=day_element,
         month_command_element=month_command_element,
+        seasonal_state=cast(
+            Literal["旺", "相", "休", "囚", "死"], seasonal_state
+        ),
+        seasonal_state_source_rule_id=seasonal_state_source_rule_id,
         same_element_occurrences=cast(int, integer_fields["same_element_occurrences"]),
         resource_element=resource_element,
         resource_occurrences=cast(int, integer_fields["resource_occurrences"]),
         all_element_occurrences=all_counts,
+        month_order_adjudication=month_order_adjudication,
         boundary=boundary,
     )
 
@@ -1159,7 +1234,105 @@ def _bazi_temporal_layers(
     return tuple(result)
 
 
-def _bazi_core_facts(facts: object) -> BaziCoreFacts | None:
+def _bazi_calendar_normalization(value: object) -> BaziCalendarNormalization | None:
+    plain = _plain_mapping_copy(value)
+    if plain is None:
+        return None
+    try:
+        return BaziCalendarNormalization.model_validate(plain)
+    except (TypeError, ValueError):
+        return None
+
+
+def _bazi_exact_evidence_rule_id(raw: Mapping[object, object], ref: str) -> str | None:
+    if raw.get("verification_status") != "verified_exact":
+        return None
+    evidence_ref = raw.get("evidence_ref")
+    rule_id = raw.get("rule_id")
+    verbatim_excerpt = raw.get("verbatim_excerpt")
+    source_title = raw.get("source_title")
+    locator = raw.get("locator")
+    citations = raw.get("verbatim_citations")
+    if (
+        evidence_ref != ref
+        or not isinstance(rule_id, str)
+        or not rule_id.strip()
+        or ref != f"evidence:bazi/{rule_id}"
+        or not isinstance(verbatim_excerpt, str)
+        or not verbatim_excerpt.strip()
+        or not isinstance(source_title, str)
+        or not source_title.strip()
+        or not isinstance(locator, str)
+        or not locator.strip()
+        or not isinstance(citations, (list, tuple))
+        or not citations
+    ):
+        return None
+    normalized: list[tuple[str, str, str]] = []
+    for citation in citations:
+        if not isinstance(citation, Mapping):
+            return None
+        citation_title = citation.get("source_title")
+        citation_locator = citation.get("locator")
+        citation_excerpt = citation.get("verbatim_excerpt")
+        if (
+            citation.get("verification_status") != "verified_exact"
+            or not isinstance(citation_title, str)
+            or not citation_title.strip()
+            or not isinstance(citation_locator, str)
+            or not citation_locator.strip()
+            or not isinstance(citation_excerpt, str)
+            or not citation_excerpt.strip()
+        ):
+            return None
+        normalized.append((citation_title, citation_locator, citation_excerpt))
+    if normalized[0] != (source_title, locator, verbatim_excerpt):
+        return None
+    legacy_excerpt = raw.get("excerpt")
+    if legacy_excerpt is not None and legacy_excerpt != normalized[0][2]:
+        return None
+    return rule_id
+
+
+def _bazi_evidence_refs(value: object) -> dict[str, str]:
+    if not isinstance(value, (list, tuple)):
+        return {}
+    refs: dict[str, str] = {}
+    for raw in value:
+        if not isinstance(raw, Mapping):
+            continue
+        ref = raw.get("ref")
+        if not isinstance(ref, str) or not ref.strip():
+            continue
+        rule_id = _bazi_exact_evidence_rule_id(raw, ref)
+        if rule_id is not None:
+            refs[rule_id] = ref
+    return refs
+
+
+def _bazi_source_conditioned_patterns(
+    value: object,
+    evidence: object,
+) -> tuple[BaziSourcePattern, ...] | None:
+    patterns = _source_conditioned_patterns(value, BaziSourcePattern)
+    if patterns is None:
+        return None
+    evidence_refs = _bazi_evidence_refs(evidence)
+    return tuple(
+        pattern.model_copy(
+            update={
+                "evidence_ref": evidence_refs.get(pattern.rule_id),
+            }
+        )
+        for pattern in patterns
+    )
+
+
+def _bazi_core_facts(
+    facts: object,
+    *,
+    evidence: object = None,
+) -> BaziCoreFacts | None:
     calculated = {
         key: _brief_fact_value(facts, key)
         for key in (
@@ -1210,9 +1383,9 @@ def _bazi_core_facts(facts: object) -> BaziCoreFacts | None:
         interpretive_candidates=_bazi_interpretive_candidates(
             _calculated_value(calculated, "interpretive_candidates")
         ),
-        source_conditioned_patterns=_source_conditioned_patterns(
+        source_conditioned_patterns=_bazi_source_conditioned_patterns(
             _calculated_value(calculated, "source_conditioned_patterns"),
-            BaziSourcePattern,
+            evidence,
         )
         or (),
         branch_relations=_bazi_branch_relations(
@@ -1222,7 +1395,7 @@ def _bazi_core_facts(facts: object) -> BaziCoreFacts | None:
             _calculated_value(calculated, "shensha_auxiliary")
         ),
         luck_cycles=_bazi_luck_cycles(_calculated_value(calculated, "luck_cycles")),
-        calendar_normalization=_plain_mapping_copy(
+        calendar_normalization=_bazi_calendar_normalization(
             _calculated_value(calculated, "calendar_normalization")
         ),
         year_layers=_bazi_year_layers(_calculated_value(calculated, "year_layers")),
@@ -1497,6 +1670,40 @@ def _wenshi_liuren_rule_evidence_signals(
     return tuple(signals)
 
 
+def _wenshi_liuren_timing_candidate_signals(
+    *,
+    fact_ref: str,
+    fact_value: object,
+    subject_ref: str,
+    dimension_id: str,
+) -> tuple[ArtSignal, ...]:
+    """Expose Runtime timing candidates without turning them into an outcome."""
+
+    if not isinstance(fact_value, Mapping) or dimension_id != "timing":
+        return ()
+    present_fields = tuple(
+        field
+        for field in ("relative_speed", "candidate_branch", "candidate_date")
+        if isinstance(fact_value.get(field), str)
+        and bool(fact_value[field].strip())
+    )
+    if not present_fields:
+        return ()
+    return (
+        ArtSignal(
+            art_id="daliuren",
+            subject_refs=(subject_ref,),
+            signal_id="daliuren.timing.timing_candidate_evidence",
+            display_text=(
+                "大六壬已提供应期候选/迟速材料（"
+                + "、".join(present_fields)
+                + "）；当前仅保留候选事实，不形成问事合参结论。"
+            ),
+            fact_refs=(fact_ref,),
+        ),
+    )
+
+
 def _wenshi_liuyao_candidate_signals(
     *,
     fact_ref: str,
@@ -1555,10 +1762,11 @@ def _wenshi_liuyao_selection_signals(
 ) -> tuple[ArtSignal, ...]:
     """Project Liuyao's bounded useful-spirit evidence into Wenshi.
 
-    The Runtime keeps this lane at ``evidence_bound`` because useful-spirit
-    selection is school-dependent.  Wenshi may show that the chain and
-    strength evidence are available, but it must not choose one or assign an
-    event polarity without a separate adjudication contract.
+    Candidate chain and strength lanes remain non-verdict evidence.  A checked
+    Runtime role adjudication may identify six-relative roles for an explicit
+    question class and may identify either a sole visible line or the only
+    moving line among exactly two visible candidates. Strength, event result,
+    and timing remain unresolved.
     """
 
     if not isinstance(fact_value, Mapping):
@@ -1571,6 +1779,129 @@ def _wenshi_liuyao_selection_signals(
     if not isinstance(source_dependency_id, str) or not source_dependency_id.strip():
         return ()
     signals: list[ArtSignal] = []
+    role_adjudication = fact_value.get("role_adjudication")
+    if isinstance(role_adjudication, Mapping):
+        source_ref = role_adjudication.get("source_ref")
+        supporting = role_adjudication.get("supporting_relatives")
+        line_adjudication = role_adjudication.get("specific_line_adjudication")
+        line_selection = role_adjudication.get("specific_line_selection")
+        line_text: str | None = None
+        if isinstance(line_adjudication, Mapping):
+            raw_visible_lines = line_adjudication.get("visible_candidate_lines")
+            visible_lines = (
+                tuple(
+                    item
+                    for item in raw_visible_lines
+                    if isinstance(item, int)
+                    and not isinstance(item, bool)
+                    and item in range(1, 7)
+                )
+                if isinstance(raw_visible_lines, (list, tuple))
+                else ()
+            )
+            raw_moving_lines = line_adjudication.get(
+                "moving_visible_candidate_lines"
+            )
+            moving_lines = (
+                tuple(
+                    item
+                    for item in raw_moving_lines
+                    if isinstance(item, int)
+                    and not isinstance(item, bool)
+                    and item in range(1, 7)
+                    and item in visible_lines
+                )
+                if isinstance(raw_moving_lines, (list, tuple))
+                else ()
+            )
+            counts_match = (
+                line_adjudication.get("visible_candidate_count")
+                == len(visible_lines)
+                and line_adjudication.get("moving_visible_candidate_count")
+                == len(moving_lines)
+            )
+            if (
+                line_adjudication.get("status")
+                == "adjudicated_unique_visible_line"
+                and len(visible_lines) == 1
+                and counts_match
+                and line_selection == visible_lines[0]
+                and line_adjudication.get("specific_line_selection")
+                == line_selection
+                and line_adjudication.get("hard_verdict") is None
+            ):
+                line_text = f"盘内唯一可见妻财为第{line_selection}爻"
+            elif (
+                line_adjudication.get("status")
+                == "adjudicated_single_moving_visible_line"
+                and len(visible_lines) == 2
+                and len(moving_lines) == 1
+                and counts_match
+                and line_selection == moving_lines[0]
+                and line_adjudication.get("specific_line_selection")
+                == line_selection
+                and line_adjudication.get("hard_verdict") is None
+                and isinstance(
+                    line_adjudication.get("selection_source_ref"), Mapping
+                )
+                and line_adjudication["selection_source_ref"].get("rule_id")
+                == "ZR-04-04"
+                and line_adjudication["selection_source_ref"].get(
+                    "verification_status"
+                )
+                == "verified"
+            ):
+                line_text = (
+                    f"妻财两现且仅第{line_selection}爻发动，"
+                    f"按核验规则取第{line_selection}爻"
+                )
+            elif (
+                line_adjudication.get("status")
+                == "unresolved_multiple_visible_lines"
+                and len(visible_lines) >= 2
+                and counts_match
+                and line_selection is None
+                and line_adjudication.get("specific_line_selection") is None
+            ):
+                line_text = "多个可见妻财爻同动静，仍待完整旺衰裁定取舍"
+            elif (
+                line_adjudication.get("status") == "unresolved_no_visible_line"
+                and not visible_lines
+                and not moving_lines
+                and counts_match
+                and line_selection is None
+                and line_adjudication.get("specific_line_selection") is None
+            ):
+                line_text = "盘内无可见妻财爻，伏神或变爻取用仍未裁定"
+        if (
+            role_adjudication.get("status")
+            == "adjudicated_question_role_set"
+            and role_adjudication.get("question_class") == "finance"
+            and role_adjudication.get("primary_relative") == "妻财"
+            and isinstance(supporting, (list, tuple))
+            and tuple(supporting) == ("子孙",)
+            and role_adjudication.get("hard_verdict") is None
+            and line_text is not None
+            and isinstance(source_ref, Mapping)
+            and source_ref.get("rule_id") == "HJC-R009"
+            and source_ref.get("verification_status") == "verified"
+        ):
+            signals.append(
+                ArtSignal(
+                    art_id="liuyao",
+                    subject_refs=(subject_ref,),
+                    signal_id=(
+                        f"liuyao.{dimension_id}."
+                        "useful_spirit_selection.role_adjudication"
+                    ),
+                    display_text=(
+                        "六爻已按核验来源裁定求财问题角色："
+                        f"妻财为主、子孙为辅；{line_text}；"
+                        "不形成问事合参结论。"
+                    ),
+                    fact_refs=(fact_ref,),
+                )
+            )
     for lane, label in (
         ("chain_candidates", "用神链候选"),
         ("strength_evidence", "旺衰证据"),
@@ -1600,7 +1931,7 @@ def _wenshi_qimen_pattern_signals(
     subject_ref: str,
     dimension_id: str,
 ) -> tuple[ArtSignal, ...]:
-    """Project Qimen source predicates without assigning their polarity."""
+    """Project source-adjudicated Qimen identities without event polarity."""
 
     if not isinstance(fact_value, (list, tuple)):
         return ()
@@ -1613,6 +1944,12 @@ def _wenshi_qimen_pattern_signals(
         name = raw_pattern.get("name")
         status = raw_pattern.get("status")
         palace = raw_pattern.get("palace")
+        adjudication = raw_pattern.get("identity_adjudication")
+        source_ref = (
+            adjudication.get("source_ref")
+            if isinstance(adjudication, Mapping)
+            else None
+        )
         if (
             not isinstance(pattern_id, str)
             or not pattern_id.strip()
@@ -1621,18 +1958,30 @@ def _wenshi_qimen_pattern_signals(
             or not name.strip()
             or status != "predicate_matched_not_verdict"
             or isinstance(palace, bool)
-            or not isinstance(palace, int)
+            or (palace is not None and not isinstance(palace, int))
+            or not isinstance(adjudication, Mapping)
+            or adjudication.get("status") != "adjudicated_pattern_identity"
+            or adjudication.get("pattern_id") != pattern_id
+            or adjudication.get("pattern_name") != name
+            or adjudication.get("palace") != palace
+            or adjudication.get("hard_verdict") is not None
+            or adjudication.get("event_verdict") is not None
+            or not isinstance(source_ref, Mapping)
+            or source_ref.get("rule_id") != pattern_id
+            or source_ref.get("verification_status") != "verified"
         ):
             continue
         seen_pattern_ids.add(pattern_id)
+        scope = "全局" if palace is None else f"第{palace}宫"
         signals.append(
             ArtSignal(
                 art_id="qimen",
                 subject_refs=(subject_ref,),
                 signal_id=f"qimen.{dimension_id}.named_pattern.{pattern_id}",
                 display_text=(
-                    f"奇门已匹配来源谓词“{name}”（{pattern_id}，{palace}宫）；"
-                    "当前仅保留盘面证据，不形成问事合参结论。"
+                    f"奇门已按核验来源裁定格局身份“{name}”"
+                    f"（{pattern_id}，{scope}）；仍未裁定格局强弱或事项吉凶，"
+                    "不形成问事合参结论。"
                 ),
                 fact_refs=(fact_ref,),
             )
@@ -1802,7 +2151,7 @@ def project_bazi_view_model(
             month_available=month_layers is not None,
             day_available=day_layers is not None,
         ),
-        core_facts=_bazi_core_facts(facts),
+        core_facts=_bazi_core_facts(facts, evidence=brief.get("evidence")),
     )
 
 
@@ -1979,7 +2328,6 @@ def project_time_check_view_model(
         candidates = tuple(
             TimeCheckCandidateV1.model_validate(item)
             for item in candidate_fact[1]
-            if isinstance(item, Mapping)
         )
     except (TypeError, ValueError):
         return None
@@ -2004,7 +2352,6 @@ def project_time_check_view_model(
             ranking_rows = tuple(
                 TimeCheckCandidateEvidenceV1.model_validate(item)
                 for item in ranking_rows_fact[1]
-                if isinstance(item, Mapping)
             )
         except (TypeError, ValueError):
             return None
@@ -2016,7 +2363,6 @@ def project_time_check_view_model(
             event_matches = tuple(
                 TimeCheckEventMatchV1.model_validate(item)
                 for item in event_matches_fact[1]
-                if isinstance(item, Mapping)
             )
         except (TypeError, ValueError):
             return None
@@ -2617,19 +2963,62 @@ def _qizheng_body_facts(value: object) -> tuple[QizhengBodyFact, ...] | None:
     return tuple(result)
 
 
+def _qizheng_ephemeris(value: object) -> QizhengEphemerisSummary | None:
+    if not isinstance(value, Mapping):
+        return None
+    schema_version = _text(value.get("schema_version"))
+    engine = value.get("engine")
+    convention = value.get("coordinate_convention")
+    if (
+        schema_version is None
+        or not isinstance(engine, Mapping)
+        or not isinstance(convention, Mapping)
+    ):
+        return None
+    engine_name = _text(engine.get("name"))
+    engine_version = _text(engine.get("version"))
+    engine_license = _text(engine.get("license"))
+    frame = _text(convention.get("frame"))
+    zodiac = _text(convention.get("zodiac"))
+    aberration = convention.get("aberration")
+    precession = _text(convention.get("precession"))
+    if (
+        engine_name is None
+        or engine_version is None
+        or engine_license is None
+        or frame is None
+        or zodiac is None
+        or not isinstance(aberration, bool)
+        or precession is None
+    ):
+        return None
+    return QizhengEphemerisSummary(
+        schema_version=schema_version,
+        engine=QizhengEphemerisEngine(
+            name=engine_name,
+            version=engine_version,
+            license=engine_license,
+        ),
+        coordinate_convention=QizhengCoordinateConvention(
+            frame=frame,
+            zodiac=zodiac,
+            aberration=aberration,
+            precession=precession,
+        ),
+    )
+
+
 def _qizheng_ming_shen(value: object) -> QizhengMingShen | None:
     if not isinstance(value, Mapping):
         return None
     ming_degree = _finite_longitude(value.get("ming_degree"))
     shen_degree = _finite_longitude(value.get("shen_degree"))
-    longitude = _finite_longitude(value.get("longitude_degrees"))
     separation = _finite_number(value.get("separation_degrees"))
     profile = _text(value.get("profile"))
     fact_status = _text(value.get("fact_status"))
     if (
         ming_degree is None
         or shen_degree is None
-        or longitude is None
         or separation is None
         or separation < 0
         or profile is None
@@ -2639,12 +3028,9 @@ def _qizheng_ming_shen(value: object) -> QizhengMingShen | None:
     local_sidereal = _bounded_number(
         value.get("local_apparent_sidereal_degrees"), lower=0, upper=360
     )
-    latitude = _finite_number(value.get("latitude_degrees"))
     return QizhengMingShen(
         ming_degree=ming_degree,
         shen_degree=shen_degree,
-        longitude_degrees=longitude,
-        latitude_degrees=latitude,
         separation_degrees=separation,
         local_apparent_sidereal_degrees=local_sidereal,
         profile=profile,
@@ -2817,7 +3203,7 @@ def _qizheng_core_facts(facts: object) -> QizhengCoreFacts | None:
         )
     }
     core = QizhengCoreFacts(
-        ephemeris=_mapping_copy(_calculated_value(values, "ephemeris")),
+        ephemeris=_qizheng_ephemeris(_calculated_value(values, "ephemeris")),
         conventions=_mapping_copy(_calculated_value(values, "conventions")),
         classical_bodies=_qizheng_body_facts(
             _calculated_value(values, "classical_bodies")
@@ -3186,11 +3572,12 @@ def _meihua_interpretive_candidates(
         return None
     if (
         value.get("schema_version") != "mingli-meihua-interpretive-candidates-v1"
-        or value.get("status") != "candidate_only"
+        or value.get("status") != "source_adjudicated_relations"
         or value.get("hard_verdict") is not None
-        or value.get("verification_status") != "pending_verification"
+        or value.get("verification_status") != "verified"
         or not isinstance(value.get("relation_candidates"), list)
-        or not isinstance(value.get("requires_classical_adjudication"), bool)
+        or value.get("requires_classical_adjudication") is not False
+        or value.get("requires_synthesis_adjudication") is not True
         or not isinstance(value.get("boundary"), str)
         or not str(value.get("boundary") or "").strip()
     ):
@@ -3227,13 +3614,25 @@ def _meihua_interpretive_candidates(
             )
         }
         seasonal_state = raw.get("seasonal_state")
+        adjudication = raw.get("relation_adjudication")
+        if not isinstance(adjudication, Mapping):
+            return None
+        try:
+            parsed_adjudication = MeihuaRelationAdjudication.model_validate(
+                dict(adjudication)
+            )
+        except ValueError:
+            return None
         if (
             actor is None
             or body is None
             or not all(isinstance(item, str) and item.strip() for item in strings.values())
-            or strings["status"] != "candidate_only"
-            or strings["verification_status"] != "pending_verification"
+            or strings["status"] != "relation_adjudicated_not_event_verdict"
+            or strings["verification_status"] != "verified"
             or raw.get("hard_verdict") is not None
+            or parsed_adjudication.relation_key != strings["relation_key"]
+            or parsed_adjudication.source_refs[0].pack != strings["source_pack"]
+            or parsed_adjudication.source_refs[0].rule_id != strings["rule_id"]
             or (
                 seasonal_state is not None
                 and (not isinstance(seasonal_state, str) or not seasonal_state.strip())
@@ -3251,19 +3650,21 @@ def _meihua_interpretive_candidates(
                 body=body,
                 seasonal_state=seasonal_state,
                 rule_id=cast(str, strings["rule_id"]),
-                status="candidate_only",
-                verification_status="pending_verification",
+                status="relation_adjudicated_not_event_verdict",
+                verification_status="verified",
                 source_pack=cast(str, strings["source_pack"]),
                 source_anchor=cast(str, strings["source_anchor"]),
                 source_dependency_id=cast(str, strings["source_dependency_id"]),
+                relation_adjudication=parsed_adjudication,
             )
         )
     return MeihuaInterpretiveCandidates(
         schema_version="mingli-meihua-interpretive-candidates-v1",
-        status="candidate_only",
-        verification_status="pending_verification",
+        status="source_adjudicated_relations",
+        verification_status="verified",
         relation_candidates=tuple(candidates),
-        requires_classical_adjudication=value["requires_classical_adjudication"],
+        requires_classical_adjudication=False,
+        requires_synthesis_adjudication=True,
         boundary=cast(str, value["boundary"]),
     )
 
@@ -3548,8 +3949,37 @@ def _source_conditioned_patterns[SourcePatternT](
 def _luming_source_patterns(
     value: object,
 ) -> tuple[LumingNayinSourcePattern, ...] | None:
-    patterns = _source_conditioned_patterns(value, LumingNayinSourcePattern)
-    return patterns
+    common_patterns = _source_conditioned_patterns(value, BaziSourcePattern)
+    if common_patterns is None or not isinstance(value, (list, tuple)):
+        return None
+    result: list[LumingNayinSourcePattern] = []
+    for common, raw in zip(common_patterns, value, strict=True):
+        if not isinstance(raw, Mapping):
+            return None
+        adjudication = raw.get("applicability_adjudication")
+        if not isinstance(adjudication, Mapping):
+            return None
+        try:
+            parsed = LumingNayinRuleApplicabilityAdjudication.model_validate(
+                dict(adjudication)
+            )
+        except ValueError:
+            return None
+        if (
+            parsed.rule_id != common.rule_id
+            or parsed.local_rule_id != common.local_rule_id
+            or parsed.rule_title != common.title
+            or parsed.source_ref.pack != common.source_pack
+            or parsed.source_ref.rule_id != common.local_rule_id
+        ):
+            return None
+        result.append(
+            LumingNayinSourcePattern(
+                **common.model_dump(),
+                applicability_adjudication=parsed,
+            )
+        )
+    return tuple(result)
 
 
 def project_luming_nayin_view_model(
@@ -3642,6 +4072,152 @@ def project_rhythm_facts_view_model(
         fact_scope=fact_scope[1],
         interpretation_status="facts_only",
         source_boundary="只展示 Runtime 四柱纳音事实，不生成音色、频率、姓名学、性格或吉凶结论。",
+    )
+
+
+def _fortune_natal_pillars(value: object) -> dict[str, str] | None:
+    if not isinstance(value, Mapping) or set(value) != set(_BAZI_PILLAR_POSITIONS):
+        return None
+    result: dict[str, str] = {}
+    for position in _BAZI_PILLAR_POSITIONS:
+        pillar = _text(value.get(position))
+        if pillar is None:
+            return None
+        result[position] = pillar
+    return result
+
+
+def _fortune_target_period(value: object) -> FortuneTargetPeriod | None:
+    if not isinstance(value, Mapping):
+        return None
+    kind = _text(value.get("kind"))
+    start = _text(value.get("start"))
+    end = _text(value.get("end"))
+    if kind is None or start is None or end is None:
+        return None
+    return FortuneTargetPeriod(kind=kind, start=start, end=end)
+
+
+def _fortune_period_markers(value: object) -> tuple[FortunePeriodMarker, ...] | None:
+    if not isinstance(value, (list, tuple)):
+        return None
+    result: list[FortunePeriodMarker] = []
+    for item in value:
+        if not isinstance(item, Mapping):
+            return None
+        date = _text(item.get("date"))
+        day_pillar = _text(item.get("day_pillar"))
+        day_role = _text(item.get("day_role"))
+        active_luck_cycle = _text(item.get("active_luck_cycle"))
+        primary_mechanism_ids = _text_tuple(item.get("primary_mechanism_ids"))
+        decisive_mechanism_ids = _text_tuple(item.get("decisive_mechanism_ids"))
+        relations = _mapping_tuple(item.get("relations"))
+        specific_event_policy = _text(item.get("specific_event_policy"))
+        unresolved_boundaries = _text_tuple(item.get("unresolved_boundaries"))
+        if (
+            date is None
+            or day_pillar is None
+            or day_role is None
+            or active_luck_cycle is None
+            or primary_mechanism_ids is None
+            or decisive_mechanism_ids is None
+            or relations is None
+            or specific_event_policy is None
+            or unresolved_boundaries is None
+        ):
+            return None
+        result.append(
+            FortunePeriodMarker(
+                date=date,
+                day_pillar=day_pillar,
+                day_role=day_role,
+                active_luck_cycle=active_luck_cycle,
+                primary_mechanism_ids=primary_mechanism_ids,
+                decisive_mechanism_ids=decisive_mechanism_ids,
+                relations=relations,
+                specific_event_policy=specific_event_policy,
+                unresolved_boundaries=unresolved_boundaries,
+            )
+        )
+    return tuple(result)
+
+
+def _fortune_calendar_normalization(
+    value: object,
+) -> FortuneCalendarNormalization | None:
+    plain = _plain_mapping_copy(value)
+    if plain is None:
+        return None
+    try:
+        return FortuneCalendarNormalization.model_validate(plain)
+    except (TypeError, ValueError):
+        return None
+
+
+def project_fortune_view_model(
+    brief: Mapping[str, object] | None,
+) -> FortuneFactsViewV1 | None:
+    """Project Runtime fortune facts without adding a daily verdict."""
+
+    if brief is None or not _capability_is(brief, "fortune"):
+        return None
+    facts = brief.get("facts")
+    subject_ref = _subject_ref(brief, facts)
+    calculated = {
+        key: _brief_fact_value(facts, key)
+        for key in (
+            "natal_pillars",
+            "day_master",
+            "month_command",
+            "active_luck_cycle",
+            "target_day",
+            "target_period",
+            "available_periods",
+            "period_markers",
+            "calendar_normalization",
+        )
+    }
+    natal_pillars = _fortune_natal_pillars(_calculated_value(calculated, "natal_pillars"))
+    day_master = _bazi_day_master(_calculated_value(calculated, "day_master"))
+    month_command = _bazi_month_command(
+        _calculated_value(calculated, "month_command")
+    )
+    active_luck_cycle = _text(_calculated_value(calculated, "active_luck_cycle"))
+    target_day = _text(_calculated_value(calculated, "target_day"))
+    target_period = _fortune_target_period(
+        _calculated_value(calculated, "target_period")
+    )
+    available_periods = _text_tuple(_calculated_value(calculated, "available_periods"))
+    period_markers = _fortune_period_markers(
+        _calculated_value(calculated, "period_markers")
+    )
+    calendar_normalization = _fortune_calendar_normalization(
+        _calculated_value(calculated, "calendar_normalization")
+    )
+    if (
+        subject_ref is None
+        or natal_pillars is None
+        or day_master is None
+        or month_command is None
+        or active_luck_cycle is None
+        or target_day is None
+        or target_period is None
+        or available_periods is None
+        or period_markers is None
+        or calendar_normalization is None
+    ):
+        return None
+    return FortuneFactsViewV1(
+        subject_ref=subject_ref,
+        natal_pillars=natal_pillars,
+        day_master=day_master,
+        month_command=month_command,
+        active_luck_cycle=active_luck_cycle,
+        target_day=target_day,
+        target_period=target_period,
+        available_periods=available_periods,
+        period_markers=period_markers,
+        calendar_normalization=calendar_normalization,
     )
 
 
@@ -3868,6 +4444,7 @@ def _taiyi_predicates(value: object) -> tuple[TaiyiBoardPredicate, ...] | None:
         source_anchor = raw.get("source_anchor")
         source_dependency_id = raw.get("source_dependency_id")
         status = raw.get("status")
+        adjudication = raw.get("identity_adjudication")
         if (
             not all(
                 isinstance(item, str) and item.strip()
@@ -3881,6 +4458,43 @@ def _taiyi_predicates(value: object) -> tuple[TaiyiBoardPredicate, ...] | None:
                 )
             )
             or fact_paths is None
+            or status != "predicate_matched_not_verdict"
+            or not isinstance(adjudication, Mapping)
+        ):
+            return None
+        source_ref = adjudication.get("source_ref")
+        unresolved_checks = _taiyi_string_tuple(
+            adjudication.get("unresolved_checks")
+        )
+        if (
+            adjudication.get("status") != "adjudicated_pattern_identity"
+            or adjudication.get("decision_scope")
+            != "taiyi_board_pattern_identity"
+            or adjudication.get("pattern_id") != predicate_id
+            or adjudication.get("pattern_name") != name
+            or adjudication.get("hard_verdict") is not None
+            or adjudication.get("event_verdict") is not None
+            or not isinstance(source_ref, Mapping)
+            or source_ref.get("verification_status") != "verified"
+            or source_ref.get("rule_id") != predicate_id
+            or unresolved_checks is None
+            or not unresolved_checks
+        ):
+            return None
+        source_pack = source_ref.get("pack")
+        adjudication_source_anchor = source_ref.get("source_anchor")
+        binding_digest = source_ref.get("binding_digest")
+        if not all(
+            isinstance(item, str) and item.strip()
+            for item in (
+                source_pack,
+                adjudication_source_anchor,
+                binding_digest,
+            )
+        ) or not (
+            isinstance(binding_digest, str)
+            and len(binding_digest) == 64
+            and set(binding_digest) <= set("0123456789abcdef")
         ):
             return None
         result.append(
@@ -3891,7 +4505,23 @@ def _taiyi_predicates(value: object) -> tuple[TaiyiBoardPredicate, ...] | None:
                 fact_paths=fact_paths,
                 source_anchor=cast(str, source_anchor),
                 source_dependency_id=cast(str, source_dependency_id),
-                status=cast(str, status),
+                status="predicate_matched_not_verdict",
+                identity_adjudication=TaiyiPatternIdentityAdjudication(
+                    status="adjudicated_pattern_identity",
+                    decision_scope="taiyi_board_pattern_identity",
+                    pattern_id=cast(str, predicate_id),
+                    pattern_name=cast(str, name),
+                    hard_verdict=None,
+                    event_verdict=None,
+                    source_ref=TaiyiPatternSourceRef(
+                        pack=cast(str, source_pack),
+                        rule_id=cast(str, predicate_id),
+                        source_anchor=cast(str, adjudication_source_anchor),
+                        verification_status="verified",
+                        binding_digest=binding_digest,
+                    ),
+                    unresolved_checks=unresolved_checks,
+                ),
             )
         )
     return tuple(result)
@@ -4330,19 +4960,77 @@ def _qimen_named_patterns(value: object) -> tuple[QimenNamedPattern, ...] | None
         pattern_id = raw.get("id")
         name = raw.get("name")
         status = raw.get("status")
-        palace = _qimen_int(raw.get("palace"), minimum=1, maximum=9)
+        raw_palace = raw.get("palace")
+        palace = (
+            None
+            if raw_palace is None
+            else _qimen_int(raw_palace, minimum=1, maximum=9)
+        )
+        adjudication = raw.get("identity_adjudication")
         if (
             not isinstance(pattern_id, str)
             or not pattern_id.strip()
             or not isinstance(name, str)
             or not name.strip()
-            or not isinstance(status, str)
-            or not status.strip()
-            or palace is None
+            or status != "predicate_matched_not_verdict"
+            or (raw_palace is not None and palace is None)
+            or not isinstance(adjudication, Mapping)
+        ):
+            return None
+        source_ref = adjudication.get("source_ref")
+        unresolved_checks = _qimen_strings(adjudication.get("unresolved_checks"))
+        if (
+            adjudication.get("status") != "adjudicated_pattern_identity"
+            or adjudication.get("decision_scope")
+            != "qimen_named_pattern_identity"
+            or adjudication.get("pattern_id") != pattern_id
+            or adjudication.get("pattern_name") != name
+            or adjudication.get("palace") != palace
+            or adjudication.get("hard_verdict") is not None
+            or adjudication.get("event_verdict") is not None
+            or not isinstance(source_ref, Mapping)
+            or source_ref.get("verification_status") != "verified"
+            or source_ref.get("rule_id") != pattern_id
+            or unresolved_checks is None
+            or not unresolved_checks
+        ):
+            return None
+        source_pack = source_ref.get("pack")
+        source_anchor = source_ref.get("source_anchor")
+        binding_digest = source_ref.get("binding_digest")
+        if not all(
+            isinstance(item, str) and item.strip()
+            for item in (source_pack, source_anchor, binding_digest)
+        ) or not (
+            isinstance(binding_digest, str)
+            and len(binding_digest) == 64
+            and set(binding_digest) <= set("0123456789abcdef")
         ):
             return None
         result.append(
-            QimenNamedPattern(id=pattern_id, name=name, status=status, palace=palace)
+            QimenNamedPattern(
+                id=pattern_id,
+                name=name,
+                status="predicate_matched_not_verdict",
+                palace=palace,
+                identity_adjudication=QimenPatternIdentityAdjudication(
+                    status="adjudicated_pattern_identity",
+                    decision_scope="qimen_named_pattern_identity",
+                    pattern_id=pattern_id,
+                    pattern_name=name,
+                    palace=palace,
+                    hard_verdict=None,
+                    event_verdict=None,
+                    source_ref=QimenPatternSourceRef(
+                        pack=cast(str, source_pack),
+                        rule_id=pattern_id,
+                        source_anchor=cast(str, source_anchor),
+                        verification_status="verified",
+                        binding_digest=binding_digest,
+                    ),
+                    unresolved_checks=unresolved_checks,
+                ),
+            )
         )
     return tuple(result)
 
@@ -4350,7 +5038,7 @@ def _qimen_named_patterns(value: object) -> tuple[QimenNamedPattern, ...] | None
 def project_qimen_view_model(
     brief: Mapping[str, object] | None,
 ) -> QimenChartV1 | None:
-    """Project Runtime's complete structural Qimen board without judgments."""
+    """Project the Qimen board and bounded source-adjudicated pattern identities."""
 
     if brief is None or not _capability_is(brief, "qimen"):
         return None
@@ -4536,13 +5224,59 @@ def _daliuren_core_facts(facts: object) -> DaliurenCoreFacts | None:
         if parsed is not None:
             kwargs[field] = parsed
 
-    for field in ("heaven_plate", "heavenly_generals", "timing_candidates"):
+    for field in ("heaven_plate", "heavenly_generals"):
         fact = _brief_fact_value(facts, field)
         if fact is None:
             continue
         parsed_rows = _mapping_tuple(fact[1])
         if parsed_rows is not None:
             kwargs[field] = parsed_rows
+
+    timing_fact = _brief_fact_value(facts, "timing_candidates")
+    if timing_fact is not None:
+        timing_value = timing_fact[1]
+        if not isinstance(timing_value, list):
+            return None
+        timing_candidates: list[DaliurenTimingCandidate] = []
+        for raw in timing_value:
+            if not isinstance(raw, Mapping):
+                return None
+            text_fields = (
+                raw.get("anchor_earth_branch"),
+                raw.get("branch"),
+                raw.get("solar_date"),
+                raw.get("day_ganzhi"),
+                raw.get("source_pack"),
+            )
+            days_after_cast = raw.get("days_after_cast")
+            if (
+                raw.get("id") != "initial_group_upper_candidate"
+                or raw.get("role") != "event_response_candidate"
+                or raw.get("source_rule") != "LM-R21"
+                or raw.get("candidate_not_guarantee") is not True
+                or not all(
+                    isinstance(item, str) and item.strip() for item in text_fields
+                )
+                or not isinstance(days_after_cast, int)
+                or isinstance(days_after_cast, bool)
+                or not 1 <= days_after_cast <= 12
+            ):
+                return None
+            timing_candidates.append(
+                DaliurenTimingCandidate(
+                    id="initial_group_upper_candidate",
+                    role="event_response_candidate",
+                    anchor_earth_branch=cast(str, text_fields[0]),
+                    branch=cast(str, text_fields[1]),
+                    solar_date=cast(str, text_fields[2]),
+                    day_ganzhi=cast(str, text_fields[3]),
+                    days_after_cast=days_after_cast,
+                    source_pack=cast(str, text_fields[4]),
+                    source_rule="LM-R21",
+                    candidate_not_guarantee=True,
+                )
+            )
+        kwargs["timing_candidates"] = tuple(timing_candidates)
 
     for field in ("earth_plate", "structural_patterns"):
         fact = _brief_fact_value(facts, field)
@@ -4859,6 +5593,7 @@ _WENSHI_ART_LABELS = {
     "qimen": "奇门",
     "daliuren": "大六壬",
 }
+_ART_LABELS = {**_CANWEN_ART_LABELS, **_WENSHI_ART_LABELS}
 
 
 def _brief_fact_value_for_capability(
@@ -4942,15 +5677,22 @@ def _canwen_bazi_candidate_signals(
     return tuple(signals)
 
 
-def _canwen_source_pattern_signals(
+def _source_pattern_signals(
     *,
     fact_ref: str,
     fact_value: object,
     subject_ref: str,
     dimension_id: str,
-    art_id: Literal["bazi", "ziwei", "qizheng"],
+    art_id: Literal[
+        "bazi",
+        "ziwei",
+        "qizheng",
+        "liuyao",
+        "qimen",
+        "daliuren",
+    ],
 ) -> tuple[ArtSignal, ...]:
-    """Expose only source-bound predicate matches from a natal Provider."""
+    """Expose only source-bound predicate matches from a Runtime Provider."""
 
     if not isinstance(fact_value, (list, tuple)):
         return ()
@@ -4977,7 +5719,7 @@ def _canwen_source_pattern_signals(
                 subject_refs=(subject_ref,),
                 signal_id=f"{art_id}.{dimension_id}.source_pattern.{rule_id}",
                 display_text=(
-                    f"{_CANWEN_ART_LABELS[art_id]}已匹配来源谓词“{title}”（{rule_id}）；"
+                    f"{_ART_LABELS[art_id]}已匹配来源谓词“{title}”（{rule_id}）；"
                     "当前仅保留候选事实，不形成跨术结论。"
                 ),
                 fact_refs=(fact_ref,),
@@ -5069,6 +5811,21 @@ def project_canwen_view_model(
                             dimension_id=raw_dimension,
                         )
                     )
+                pattern_fact = _brief_fact_value_for_capability(
+                    facts,
+                    capability_id=runtime_id,
+                    field_id="source_conditioned_patterns",
+                )
+                if pattern_fact is not None:
+                    signals.extend(
+                        _source_pattern_signals(
+                            fact_ref=pattern_fact[0],
+                            fact_value=pattern_fact[1],
+                            subject_ref=subject_ref,
+                            dimension_id=raw_dimension,
+                            art_id="bazi",
+                        )
+                    )
             else:
                 pattern_fact = _brief_fact_value_for_capability(
                     facts,
@@ -5077,7 +5834,7 @@ def project_canwen_view_model(
                 )
                 if pattern_fact is not None:
                     signals.extend(
-                        _canwen_source_pattern_signals(
+                        _source_pattern_signals(
                             fact_ref=pattern_fact[0],
                             fact_value=pattern_fact[1],
                             subject_ref=subject_ref,
@@ -5185,6 +5942,21 @@ def project_wenshi_view_model(
                     fact_refs=(liuyao_fact[0],),
                 )
             )
+            liuyao_patterns = _brief_fact_value_for_capability(
+                facts,
+                capability_id="liuyao",
+                field_id="source_conditioned_patterns",
+            )
+            if liuyao_patterns is not None:
+                signals.extend(
+                    _source_pattern_signals(
+                        fact_ref=liuyao_patterns[0],
+                        fact_value=liuyao_patterns[1],
+                        subject_ref=subject_ref,
+                        dimension_id=raw_dimension,
+                        art_id="liuyao",
+                    )
+                )
             liuyao_candidates = _brief_fact_value_for_capability(
                 facts,
                 capability_id="liuyao",
@@ -5273,6 +6045,18 @@ def project_wenshi_view_model(
                 )
             )
             signals.extend(
+                _wenshi_liuren_timing_candidate_signals(
+                    fact_ref=liuren_fact[0],
+                    fact_value=(
+                        liuren_value.get(raw_dimension)
+                        if isinstance(liuren_value, Mapping)
+                        else None
+                    ),
+                    subject_ref=subject_ref,
+                    dimension_id=raw_dimension,
+                )
+            )
+            signals.extend(
                 _wenshi_liuren_rule_evidence_signals(
                     fact_ref=liuren_fact[0],
                     fact_value=(
@@ -5319,6 +6103,7 @@ RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS: Final[dict[str, str]] = {
     "liuren": "daliuren-chart/v1",
     "physiognomy": "physiognomy-view/v1",
     "time-check": "time-check-view/v1",
+    "fortune": "fortune-facts-view/v1",
 }
 
 _RUNTIME_PROVIDER_PROJECTORS: Final = {
@@ -5335,6 +6120,7 @@ _RUNTIME_PROVIDER_PROJECTORS: Final = {
     "liuren": project_daliuren_view_model,
     "physiognomy": project_physiognomy_view_model,
     "time-check": project_time_check_view_model,
+    "fortune": project_fortune_view_model,
 }
 
 

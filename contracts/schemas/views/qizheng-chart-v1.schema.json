@@ -85,16 +85,45 @@
     "mingShen": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["ming_degree", "shen_degree", "longitude_degrees", "latitude_degrees", "separation_degrees", "local_apparent_sidereal_degrees", "profile", "fact_status"],
+      "required": ["ming_degree", "shen_degree", "separation_degrees", "local_apparent_sidereal_degrees", "profile", "fact_status"],
       "properties": {
         "ming_degree": {"type": "number", "minimum": 0, "exclusiveMaximum": 360},
         "shen_degree": {"type": "number", "minimum": 0, "exclusiveMaximum": 360},
-        "longitude_degrees": {"type": "number", "minimum": 0, "exclusiveMaximum": 360},
-        "latitude_degrees": {"type": ["number", "null"]},
         "separation_degrees": {"type": "number", "minimum": 0},
         "local_apparent_sidereal_degrees": {"type": ["number", "null"], "minimum": 0, "exclusiveMaximum": 360},
         "profile": {"$ref": "#/$defs/text"},
         "fact_status": {"$ref": "#/$defs/text"}
+      }
+    },
+    "ephemerisSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "engine", "coordinate_convention"],
+      "properties": {
+        "schema_version": {"$ref": "#/$defs/text"},
+        "engine": {"$ref": "#/$defs/ephemerisEngine"},
+        "coordinate_convention": {"$ref": "#/$defs/coordinateConvention"}
+      }
+    },
+    "ephemerisEngine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "license"],
+      "properties": {
+        "name": {"$ref": "#/$defs/text"},
+        "version": {"$ref": "#/$defs/text"},
+        "license": {"$ref": "#/$defs/text"}
+      }
+    },
+    "coordinateConvention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frame", "zodiac", "aberration", "precession"],
+      "properties": {
+        "frame": {"$ref": "#/$defs/text"},
+        "zodiac": {"$ref": "#/$defs/text"},
+        "aberration": {"type": "boolean"},
+        "precession": {"$ref": "#/$defs/text"}
       }
     },
     "limit": {
@@ -145,7 +174,7 @@
       "additionalProperties": false,
       "required": ["classical_bodies", "ming_shen", "major_limits", "transformations"],
       "properties": {
-        "ephemeris": {"oneOf": [{"type": "object"}, {"type": "null"}]},
+        "ephemeris": {"oneOf": [{"$ref": "#/$defs/ephemerisSummary"}, {"type": "null"}]},
         "conventions": {"oneOf": [{"type": "object"}, {"type": "null"}]},
         "classical_bodies": {"oneOf": [{"type": "array", "items": {"$ref": "#/$defs/bodyFact"}}, {"type": "null"}]},
         "ming_shen": {"oneOf": [{"$ref": "#/$defs/mingShen"}, {"type": "null"}]},

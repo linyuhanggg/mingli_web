@@ -96,8 +96,32 @@
         "evidence_score": {"type": "integer"},
         "matched_event_ids": {"type": "array", "items": {"type": "string"}},
         "elimination_reasons": {"type": "array", "items": {"type": "string"}},
-        "event_evidence": {"type": "array", "items": {"type": "object"}},
+        "event_evidence": {"type": "array", "items": {"$ref": "#/$defs/eventEvidence"}},
         "rank": {"type": "integer", "minimum": 1, "maximum": 12}
+      }
+    },
+    "branchRelation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["natal_position", "natal_branch", "event_branch", "relation_type"],
+      "properties": {
+        "natal_position": {"enum": ["year", "month", "day", "hour"]},
+        "natal_branch": {"type": "string", "minLength": 1},
+        "event_branch": {"type": "string", "minLength": 1},
+        "relation_type": {"type": "string", "minLength": 1}
+      }
+    },
+    "eventEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_id", "matched", "evidence_score", "relations", "reasons"],
+      "properties": {
+        "event_id": {"type": "string", "minLength": 1},
+        "matched": {"type": "boolean"},
+        "evidence_score": {"type": "integer"},
+        "relations": {"type": "array", "items": {"$ref": "#/$defs/branchRelation"}},
+        "event_year_ten_god": {"type": ["string", "null"], "minLength": 1},
+        "reasons": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
       }
     },
     "eventMatch": {

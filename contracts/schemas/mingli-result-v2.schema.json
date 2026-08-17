@@ -156,6 +156,22 @@
         "display_text": { "$ref": "#/$defs/nonEmptyText" }
       }
     },
+    "verifiedExactCitation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_title",
+        "locator",
+        "verbatim_excerpt",
+        "verification_status"
+      ],
+      "properties": {
+        "source_title": { "$ref": "#/$defs/nonEmptyText" },
+        "locator": { "$ref": "#/$defs/nonEmptyText" },
+        "verbatim_excerpt": { "$ref": "#/$defs/nonEmptyText" },
+        "verification_status": { "const": "verified_exact" }
+      }
+    },
     "publicEvidence": {
       "type": "object",
       "additionalProperties": false,
@@ -168,10 +184,27 @@
       ],
       "properties": {
         "ref": { "$ref": "#/$defs/nonEmptyText" },
+        "evidence_ref": { "$ref": "#/$defs/nonEmptyText" },
+        "rule_id": { "$ref": "#/$defs/nonEmptyText" },
         "source_title": { "$ref": "#/$defs/nonEmptyText" },
         "locator": { "$ref": "#/$defs/nullableText" },
         "excerpt": { "$ref": "#/$defs/nullableText" },
+        "verification_status": { "const": "verified_exact" },
+        "verbatim_excerpt": { "$ref": "#/$defs/nonEmptyText" },
+        "verbatim_citations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/verifiedExactCitation" }
+        },
         "supports_fact_refs": { "$ref": "#/$defs/stringArray" }
+      },
+      "dependentRequired": {
+        "evidence_ref": ["rule_id", "verification_status", "verbatim_excerpt", "verbatim_citations"],
+        "rule_id": ["evidence_ref", "verification_status", "verbatim_excerpt", "verbatim_citations"],
+        "verification_status": ["evidence_ref", "rule_id", "verbatim_excerpt", "verbatim_citations"],
+        "verbatim_excerpt": ["evidence_ref", "rule_id", "verification_status", "verbatim_citations"],
+        "verbatim_citations": ["evidence_ref", "rule_id", "verification_status", "verbatim_excerpt"]
       }
     },
     "publicFinding": {
@@ -194,6 +227,7 @@
         "dimension_ids": { "$ref": "#/$defs/stringArray" },
         "kind_id": { "$ref": "#/$defs/nonEmptyText" },
         "data": {},
+        "public_text": { "$ref": "#/$defs/nonEmptyText" },
         "fact_refs": { "$ref": "#/$defs/stringArray" },
         "evidence_refs": { "$ref": "#/$defs/stringArray" },
         "limit_kind_ids": { "$ref": "#/$defs/stringArray" },

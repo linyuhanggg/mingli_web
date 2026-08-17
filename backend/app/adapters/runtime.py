@@ -619,9 +619,16 @@ async def _exchange(
         await asyncio.gather(stdout_task, stderr_task, return_exceptions=True)
 
 
-async def _kill_process_group(process: asyncio.subprocess.Process) -> None:
-    with suppress(ProcessLookupError):
-        os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+async def _kill_process_group(
+    process: asyncio.subprocess.Process,
+    process_group_id: int | None = None,
+) -> None:
+    if process_group_id is None:
+        with suppress(ProcessLookupError):
+            process_group_id = os.getpgid(process.pid)
+    if process_group_id is not None:
+        with suppress(ProcessLookupError, PermissionError):
+            os.killpg(process_group_id, signal.SIGKILL)
     await process.wait()
 
 
@@ -695,6 +702,10 @@ class OneShotMingliRuntimeAdapter:
         except OSError as error:
             raise RuntimeTransportError("runtime_spawn_failed") from error
         try:
+            process_group_id: int | None = os.getpgid(process.pid)
+        except ProcessLookupError:
+            process_group_id = None
+        try:
             async with asyncio.timeout(self._timeout_seconds):
                 stdout, _stderr = await _exchange(
                     process,
@@ -703,13 +714,13 @@ class OneShotMingliRuntimeAdapter:
                     max_stderr_bytes=self._max_stderr_bytes,
                 )
         except TimeoutError as error:
-            await _kill_process_group(process)
+            await _kill_process_group(process, process_group_id)
             raise RuntimeTransportError("runtime_timed_out") from error
         except RuntimeTransportError:
-            await _kill_process_group(process)
+            await _kill_process_group(process, process_group_id)
             raise
         except BaseException:
-            await _kill_process_group(process)
+            await _kill_process_group(process, process_group_id)
             raise
         if process.returncode != 0:
             raise RuntimeTransportError("runtime_nonzero_exit")

@@ -28,6 +28,7 @@ from app.readings.api_schemas import (
     ClaimVerificationSummary,
     CreateExportRequest,
     CreateShareRequest,
+    DaliurenStartRequest,
     EventArtStartRequest,
     ExportResponse,
     FengshuiStartRequest,
@@ -246,6 +247,7 @@ async def start_bazi_deep_reading(
     ),
 ) -> ReadingStartResponse:
     _check_rate(owner, request)
+    _check_dogfood_daily_limits(owner, request, paid=True)
     try:
         result = await _service(request, session).start_bazi_deep(
             owner,
@@ -582,6 +584,7 @@ async def start_liuyao_reading(
             location=payload.location,
             subject_ref=payload.subject_ref,
             query=payload.query,
+            question_class=payload.question_class,
             dimension_ids=payload.dimension_ids,
             idempotency_key=idempotency_key,
         )
@@ -625,6 +628,7 @@ async def start_liuyao_deep_reading(
             location=payload.location,
             subject_ref=payload.subject_ref,
             query=payload.query,
+            question_class=payload.question_class,
             dimension_ids=payload.dimension_ids,
             idempotency_key=idempotency_key,
         )
@@ -1162,7 +1166,7 @@ async def start_qimen_deep_reading(
 async def start_daliuren_reading(
     request: Request,
     response: Response,
-    payload: EventArtStartRequest,
+    payload: DaliurenStartRequest,
     session: AsyncSession = Depends(database_session),
     owner: Owner = Depends(require_owner_csrf),
     idempotency_key: str | None = Header(
@@ -1188,6 +1192,8 @@ async def start_daliuren_reading(
             longitude=payload.longitude,
             latitude=payload.latitude,
             coordinate_source=payload.coordinate_source,
+            timing_start=payload.timing_start,
+            timing_end=payload.timing_end,
             idempotency_key=idempotency_key,
         )
     except (RequestCompilationError, CapabilityNotExposedError) as error:
@@ -1570,6 +1576,7 @@ async def create_reading_recast(
                 location=payload.location,
                 subject_ref=payload.subject_ref,
                 query=payload.query,
+                question_class=payload.question_class,
                 dimension_ids=payload.dimension_ids,
                 idempotency_key=idempotency_key,
             )

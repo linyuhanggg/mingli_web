@@ -217,6 +217,8 @@ it("routes each newly connected core art through its explicit reading endpoint",
       location: "上海市",
       query: "这件事如何推进？",
       dimension_ids: ["timing"],
+      timing_start: "2026-08-15",
+      timing_end: "2026-09-14",
     },
     "liuren-key-1",
   );

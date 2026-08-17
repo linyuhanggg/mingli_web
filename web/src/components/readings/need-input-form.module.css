@@ -50,7 +50,7 @@
   font-size: var(--font-size-body);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-control);
-  background: var(--color-canvas);
+  background-color: var(--color-canvas);
   color: var(--color-text);
   transition:
     border-color var(--duration-feedback) ease,
@@ -61,14 +61,14 @@
 .textarea:hover,
 .select:hover {
   border-color: var(--color-border);
-  background: var(--color-surface);
+  background-color: var(--color-surface);
 }
 
 .input:focus,
 .textarea:focus,
 .select:focus {
   border-color: var(--color-border-strong);
-  background: var(--color-surface);
+  background-color: var(--color-surface);
 }
 
 .textarea {
@@ -194,4 +194,9 @@
     transition: none;
     transform: none;
   }
+}
+
+/* 与 ui/base.css 的下拉箭头留出净空。 */
+.select {
+  padding-right: 2.5rem;
 }

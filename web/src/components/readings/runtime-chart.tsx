@@ -4,6 +4,7 @@ import type {
   DaliurenChartViewModel,
   FengshuiViewModel,
   FiveElementsFactsViewModel,
+  FortuneFactsViewModel,
   HecanViewModel,
   LumingNayinChartViewModel,
   RhythmFactsViewModel,
@@ -24,7 +25,10 @@ import type {
   ZiweiChartViewModel,
   ZiweiRelationshipViewModel,
 } from "@/view-models/registry";
-import { formatBaziInterpretiveCandidateRows } from "@/lib/reading-display";
+import {
+  formatBaziInterpretiveCandidateRows,
+  formatLiuyaoRoleAdjudicationRows,
+} from "@/lib/reading-display";
 
 import styles from "./runtime-chart.module.css";
 
@@ -488,6 +492,9 @@ function LiuyaoChart({ view }: Readonly<{ view: LiuyaoChartViewModel }>) {
   const coreRows = view.core_facts
     ? coreFactRows(view.core_facts as unknown as StructuredFactObject)
     : [];
+  const roleAdjudicationRows = formatLiuyaoRoleAdjudicationRows(
+    view.core_facts?.useful_spirit_selection ?? null,
+  );
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
       <dl className={styles.meta}>
@@ -511,15 +518,29 @@ function LiuyaoChart({ view }: Readonly<{ view: LiuyaoChartViewModel }>) {
             line.moving ? "动爻" : "静爻",
           ])}
       />
+      {roleAdjudicationRows.length ? (
+        <Table
+          caption="六爻问题角色裁决"
+          headers={["裁决项", "Runtime 输出"]}
+          rows={roleAdjudicationRows}
+        />
+      ) : null}
       {coreRows.length ? (
         <Table caption="六爻结构事实" headers={["事实项", "状态"]} rows={coreRows} />
       ) : null}
-      <p className={styles.note}>卦象与爻位由 Runtime 固定；页面不重新起卦，也不把盘面事实当成判断。</p>
+      <p className={styles.note}>卦象与爻位由 Runtime 固定；求财角色、唯一可见妻财爻，以及妻财两现时唯一发动的一爻可由核验规则裁定。月令仅显示旺相/休囚季节带；页面不自行排序同动静候选，也不补写综合旺衰、成败或应期。</p>
     </div>
   );
 }
 
 function MeihuaChart({ view }: Readonly<{ view: MeihuaChartViewModel }>) {
+  const relationPolarityLabels = {
+    supportive: "用生体（支持体）",
+    depleting: "体生用（体有耗）",
+    adverse: "用克体（克体）",
+    favorable: "体克用（体制用）",
+    harmonious: "体用比和",
+  } as const;
   const hexagramRows = [
     ["本卦", view.primary_hexagram.name, view.primary_hexagram.upper_trigram, view.primary_hexagram.lower_trigram],
     view.mutual_hexagram
@@ -550,19 +571,14 @@ function MeihuaChart({ view }: Readonly<{ view: MeihuaChartViewModel }>) {
       })
     : [];
   const interpretiveCandidates = view.core_facts?.interpretive_candidates;
-  const relationCandidateRows = interpretiveCandidates && Array.isArray(interpretiveCandidates.relation_candidates)
-    ? interpretiveCandidates.relation_candidates.flatMap((value) => {
-        if (!isStructuredObject(value)) return [];
-        return [[
-          structuredText(value, ["source_plate"]) ?? "—",
-          structuredText(value, ["position"]) ?? "—",
-          structuredText(value, ["relation"]) ?? "—",
-          structuredText(value, ["relation_key"]) ?? "—",
-          structuredPrimitive(value.seasonal_state),
-          structuredPrimitive(value.status),
-        ]];
-      })
-    : [];
+  const relationCandidateRows = interpretiveCandidates?.relation_candidates.map((value) => [
+    value.source_plate,
+    value.position,
+    value.relation,
+    value.seasonal_state ?? "—",
+    relationPolarityLabels[value.relation_adjudication.source_polarity],
+    "关系极性已裁定",
+  ]) ?? [];
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
       <dl className={styles.meta}>
@@ -600,12 +616,14 @@ function MeihuaChart({ view }: Readonly<{ view: MeihuaChartViewModel }>) {
       ) : null}
       {relationCandidateRows.length ? (
         <Table
-          caption="体用关系候选（非最终结论）"
-          headers={["盘层", "位置", "关系", "关系类型", "月令状态", "候选状态"]}
+          caption="体用关系来源裁定（未形成事件结论）"
+          headers={["盘层", "位置", "关系", "月令状态", "来源极性", "裁定状态"]}
           rows={relationCandidateRows}
         />
       ) : null}
-      <p className={styles.note}>只展示 Runtime 返回的本卦、互卦、变卦与体用结构；页面不根据生克关系追加吉凶判断。</p>
+      <p className={styles.note}>
+        Runtime 已按核验古籍裁定每条体用生克的来源极性；多条关系、月令、具体问题的综合成败与应期仍待正式合成裁决。
+      </p>
     </div>
   );
 }
@@ -650,17 +668,20 @@ function LumingNayinChart({ view }: Readonly<{ view: LumingNayinChartViewModel }
       ) : null}
       {view.source_conditioned_patterns.length ? (
         <Table
-          caption="古籍来源条件候选"
-          headers={["规则", "来源", "命中条件", "状态"]}
+          caption="古籍规则适用性裁定"
+          headers={["规则", "规则角色", "来源", "命中条件", "状态"]}
           rows={view.source_conditioned_patterns.map((pattern) => [
             `${pattern.local_rule_id} · ${pattern.title}`,
-            pattern.source_pack,
+            pattern.applicability_adjudication.evidence_role === "methodology_rule"
+              ? "方法规则"
+              : "实质判断规则",
+            `${pattern.applicability_adjudication.source_ref.pack} · ${pattern.applicability_adjudication.source_ref.rule_id}`,
             pattern.predicate_audit.join("；"),
-            "谓词命中，未下断语",
+            "规则适用性已裁定（未形成命断）",
           ])}
         />
       ) : null}
-      <p className={styles.note}>这里只展示禄命纳音的四柱、纳音、已计算关系和来源条件候选；页面不追加吉凶或人生判断。</p>
+      <p className={styles.note}>这里只展示禄命纳音的四柱、纳音、已计算关系和已核验规则适用性；多条规则尚未完成整体权衡，因此不追加吉凶、人生等级或时限判断。</p>
     </div>
   );
 }
@@ -693,6 +714,64 @@ function RhythmFactsChart({ view }: Readonly<{ view: RhythmFactsViewModel }>) {
         </div>
       </dl>
       <p className={styles.note}>{view.source_boundary}</p>
+    </div>
+  );
+}
+
+function FortuneFactsChart({ view }: Readonly<{ view: FortuneFactsViewModel }>) {
+  return (
+    <div className={styles.wrap} data-schema={view.schema_version}>
+      <dl className={styles.meta}>
+        <div>
+          <dt>目标日期</dt>
+          <dd>{view.target_day}</dd>
+        </div>
+        <div>
+          <dt>当前大运</dt>
+          <dd>{view.active_luck_cycle}</dd>
+        </div>
+        <div>
+          <dt>目标周期</dt>
+          <dd>{view.target_period.kind} · {view.target_period.start} 至 {view.target_period.end}</dd>
+        </div>
+        <div>
+          <dt>日主</dt>
+          <dd>{view.day_master.stem} · {view.day_master.element} · {view.day_master.polarity}</dd>
+        </div>
+        <div>
+          <dt>月令</dt>
+          <dd>{view.month_command.label} · {view.month_command.main_qi}</dd>
+        </div>
+      </dl>
+      <Table
+        caption="日运本命四柱事实"
+        headers={["柱位", "四柱"]}
+        rows={(["year", "month", "day", "hour"] as const).map((position) => [
+          POSITION_LABELS[position],
+          view.natal_pillars[position],
+        ])}
+      />
+      <Table
+        caption="可用周期"
+        headers={["周期"]}
+        rows={view.available_periods.map((period) => [period])}
+      />
+      {view.period_markers.length ? (
+        <Table
+          caption="日运周期标记"
+          headers={["日期", "日柱", "角色", "主要机制", "具体事件边界"]}
+          rows={view.period_markers.map((marker) => [
+            marker.date,
+            marker.day_pillar,
+            marker.day_role,
+            marker.primary_mechanism_ids.join("、") || "无",
+            marker.specific_event_policy,
+          ])}
+        />
+      ) : null}
+      <p className={styles.note}>
+        这里只展示 Runtime 日运与周期事实，不追加具体事件、吉凶或人生判断。
+      </p>
     </div>
   );
 }
@@ -766,11 +845,13 @@ function TaiyiChart({ view }: Readonly<{ view: TaiyiChartViewModel }>) {
       {view.board_predicates.length ? (
         <Table
           caption="盘面结构命题"
-          headers={["命题", "事实路径数", "状态"]}
+          headers={["命题", "事实路径数", "状态", "身份裁决", "来源"]}
           rows={view.board_predicates.map((predicate) => [
             predicate.name,
             String(predicate.fact_paths.length),
             factStatusLabel(predicate.status),
+            "格局身份已裁定（未断吉凶）",
+            `${predicate.identity_adjudication.source_ref.rule_id} · ${predicate.identity_adjudication.source_ref.pack}`,
           ])}
         />
       ) : null}
@@ -784,7 +865,7 @@ function TaiyiChart({ view }: Readonly<{ view: TaiyiChartViewModel }>) {
           ["解释边界", internalScopeLabel(view.scope_contract.interpretation_policy)],
         ]}
       />
-      <p className={styles.note}>太乙当前只展示年度宏观盘面事实和结构命题，不把它扩展成个人事件或现实决策结论。</p>
+      <p className={styles.note}>太乙格局身份已由核验来源裁定；仍不把格局名称扩展成个人事件、现实成败、吉凶或应期结论。</p>
     </div>
   );
 }
@@ -974,22 +1055,28 @@ function QimenChart({ view }: Readonly<{ view: QimenChartViewModel }>) {
       />
       <Table
         caption="结构格局"
-        headers={["编号", "名称", "状态", "宫位"]}
+        headers={["编号", "名称", "裁决状态", "范围", "来源"]}
         rows={view.named_patterns.map((pattern) => [
           pattern.id,
           pattern.name,
-          pattern.status,
-          `第${pattern.palace}宫`,
+          pattern.identity_adjudication.status === "adjudicated_pattern_identity"
+            ? "格局身份已裁定（未断吉凶）"
+            : "仅命中结构谓词",
+          pattern.palace === null ? "全局" : `第${pattern.palace}宫`,
+          `${pattern.identity_adjudication.source_ref.rule_id} · ${pattern.identity_adjudication.source_ref.pack}`,
         ])}
       />
-      <p className={styles.note}>中宫缺少星、门、神时按 Runtime 的空值显示，不用占位事实填充。</p>
+      <p className={styles.note}>中宫缺项按 Runtime 空值显示；已核验格局只裁定格局身份，页面不自行追加格局强弱、事项吉凶、成败或应期。</p>
     </div>
   );
 }
 
 function DaliurenChart({ view }: Readonly<{ view: DaliurenChartViewModel }>) {
   const coreRows = view.core_facts
-    ? coreFactRows(view.core_facts as unknown as StructuredFactObject)
+    ? coreFactRows({
+        ...(view.core_facts as unknown as StructuredFactObject),
+        timing_candidates: null,
+      })
     : [];
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
@@ -1006,7 +1093,20 @@ function DaliurenChart({ view }: Readonly<{ view: DaliurenChartViewModel }>) {
       {coreRows.length ? (
         <Table caption="大六壬结构事实" headers={["事实项", "状态"]} rows={coreRows} />
       ) : null}
-      <p className={styles.note}>只复述四课三传结构，吉凶判断仍受服务端证据与边界约束。</p>
+      {view.core_facts?.timing_candidates?.length ? (
+        <Table
+          caption="有界应期候选"
+          headers={["候选日期", "干支 / 候选支", "距起课", "来源", "边界"]}
+          rows={view.core_facts.timing_candidates.map((candidate) => [
+            candidate.solar_date,
+            `${candidate.day_ganzhi} · ${candidate.branch}`,
+            `${candidate.days_after_cast} 天`,
+            `${candidate.source_rule} · ${candidate.source_pack}`,
+            "候选日期，不是现实保证",
+          ])}
+        />
+      ) : null}
+      <p className={styles.note}>只复述四课三传和已核验的有界应期候选；候选日期不是事件必然发生日，吉凶判断仍受服务端证据与边界约束。</p>
     </div>
   );
 }
@@ -1124,7 +1224,7 @@ function FiveElementsFactsChart({
       />
       {view.interpretive_candidates ? (
         <Table
-          caption="强弱与结构候选（非最终结论）"
+          caption="月令状态裁定与强弱 / 结构边界"
           headers={["层", "Runtime 输出"]}
           rows={formatBaziInterpretiveCandidateRows(view.interpretive_candidates)}
         />
@@ -1484,6 +1584,8 @@ export function RuntimeChart({ viewModel }: Readonly<{ viewModel: ViewModel }>) 
       return <LumingNayinChart view={viewModel} />;
     case "rhythm-facts-view/v1":
       return <RhythmFactsChart view={viewModel} />;
+    case "fortune-facts-view/v1":
+      return <FortuneFactsChart view={viewModel} />;
     case "taiyi-chart/v1":
       return <TaiyiChart view={viewModel} />;
     case "selection-chart/v1":

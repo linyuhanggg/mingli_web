@@ -14,6 +14,7 @@ const EXPECTED_VERSIONS = [
   "daliuren-chart/v1",
   "fengshui-view/v1",
   "five-elements-facts-view/v1",
+  "fortune-facts-view/v1",
   "hecan-view/v1",
   "liuyao-chart/v1",
   "luming-nayin-chart/v1",

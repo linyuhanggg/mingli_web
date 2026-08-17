@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime
-from pathlib import Path
+from datetime import date, datetime
 from uuid import uuid4
 
 import pytest
@@ -39,6 +38,7 @@ from app.readings.request_compiler import (
 )
 from app.readings.runtime_contracts import Prepare
 from app.readings.status import ReadingStatus
+from mingli_paths import MINGLI_RUNTIME_RELEASE_ROOT
 
 # isort: split
 from orchestrator_fakes import FixedClock, MemoryRepository
@@ -176,11 +176,7 @@ def _assert_bazi_reasoning_sources_are_shipped(
     """Every Bazi reasoning source ref must resolve inside the frozen release."""
 
     assert isinstance(reasoning_tools, dict)
-    release_root = (
-        Path(__file__).resolve().parents[2]
-        / ".runtime"
-        / "v53-time-check-release"
-    )
+    release_root = MINGLI_RUNTIME_RELEASE_ROOT
     for tool_id, tool in reasoning_tools.items():
         assert isinstance(tool, dict), tool_id
         source_refs = tool.get("source_refs")
@@ -278,6 +274,11 @@ def _assert_runtime_golden_facts(
         assert candidates["strength"]["status"] == "evidence_only", label
         assert candidates["strength"]["same_element_occurrences"] == 3, label
         assert candidates["strength"]["resource_occurrences"] == 4, label
+        month_order = candidates["strength"]["month_order_adjudication"]
+        assert month_order["status"] == "adjudicated_month_order_state", label
+        assert month_order["whole_chart_strength_verdict"] is None, label
+        assert month_order["useful_god_verdict"] is None, label
+        assert month_order["source_ref"]["verification_status"] == "verified", label
         assert candidates["structure"]["status"] == "candidate_only", label
         assert len(candidates["salience_signals"]) == 9, label
         reasoning_tools = candidates["reasoning_tools"]
@@ -286,6 +287,7 @@ def _assert_runtime_golden_facts(
             "strength_evidence",
             "tiaohou_candidates",
             "month_structure_candidate",
+            "ziping_month_pattern_adjudication",
             "conflict_arbitration",
         }
         dimensions = {
@@ -304,6 +306,7 @@ def _assert_runtime_golden_facts(
             "QR-02-01",
             "QTB-M01",
             "R-01-02",
+            "R-02-04",
             "ZPR-01",
         ], label
         assert all(
@@ -318,12 +321,28 @@ def _assert_runtime_golden_facts(
         tiaohou = reasoning_tools["tiaohou_candidates"]
         assert tiaohou["output"]["rule_id"] == "QR-02-01", label
         assert tiaohou["output"]["month_branch"] == "辰", label
-        assert tiaohou["output"]["status"] == "candidate_only", label
-        assert tiaohou["output"]["verification_status"] == "unverified", label
+        assert tiaohou["output"]["status"] == (
+            "adjudicated_seasonal_priority"
+        ), label
+        assert tiaohou["output"]["verification_status"] == "verified", label
+        assert tiaohou["output"]["hard_verdict"] is None, label
         assert all(
             "day" not in item["visible_positions"]
             for item in tiaohou["output"]["matches"]
         ), label
+        pattern_adjudication = reasoning_tools[
+            "ziping_month_pattern_adjudication"
+        ]
+        assert pattern_adjudication["output"]["status"] == (
+            "adjudicated_pattern_entry"
+        ), label
+        assert pattern_adjudication["output"]["pattern_label"] == (
+            "食神格入口"
+        ), label
+        assert pattern_adjudication["output"]["hard_verdict"] is None, label
+        assert pattern_adjudication["source_refs"][0][
+            "verification_status"
+        ] == "verified", label
         assert reasoning_tools["domain_work"]["output"]["status"] == (
             "indicators_only"
         ), label
@@ -416,12 +435,22 @@ def _assert_runtime_golden_facts(
         ), label
     elif capability_id == "liuyao":
         source_patterns = values["source_conditioned_patterns"]
-        assert [item["local_rule_id"] for item in source_patterns] == [
+        expected_source_pattern_ids = [
             "BSZZ-M01",
             "HJC-M001",
             "HZL-M001",
             "ZZR-M001",
-        ], label
+        ]
+        if label in {
+            "liuyao-finance",
+            "liuyao-two-present-single-moving",
+        }:
+            expected_source_pattern_ids.insert(2, "HJC-R009")
+        if label == "liuyao-two-present-single-moving":
+            expected_source_pattern_ids.insert(4, "ZR-04-04")
+        assert [item["local_rule_id"] for item in source_patterns] == (
+            expected_source_pattern_ids
+        ), label
         assert all(
             item["status"] == "predicate_matched_not_verdict"
             and item["source_dependency_id"]
@@ -429,6 +458,18 @@ def _assert_runtime_golden_facts(
             and "verdict" not in item
             for item in source_patterns
         ), label
+        if label == "liuyao-two-present-single-moving":
+            selection = values["useful_spirit_selection"]
+            assert isinstance(selection, dict), label
+            assert selection["question_context"]["question_class"] == (
+                "finance"
+            ), label
+            line_adjudication = selection["role_adjudication"][
+                "specific_line_adjudication"
+            ]
+            assert line_adjudication["visible_candidate_lines"] == [3, 6], label
+            assert line_adjudication["moving_visible_candidate_lines"] == [3], label
+            return
         changed = values["changed_hexagram"]
         assert isinstance(changed, dict), label
         assert (changed["name"], changed["king_wen_number"]) == (
@@ -446,7 +487,70 @@ def _assert_runtime_golden_facts(
         dimensions = {
             str(item) for item in (prepare.intent.get("dimension_ids") or ())
         }
-        if "career" in dimensions:
+        if label == "liuyao-finance":
+            assert selection["question_context"] == {
+                "classification_source": "explicit_structured_input",
+                "question_class": "finance",
+            }, label
+            assert selection["role_adjudication"] == {
+                "status": "adjudicated_question_role_set",
+                "decision_scope": "finance_useful_spirit_role_set",
+                "question_class": "finance",
+                "primary_relative": "妻财",
+                "supporting_relatives": ["子孙"],
+                "obstacle_attention_relatives": ["兄弟", "官鬼", "父母"],
+                "specific_line_selection": 4,
+                "specific_line_adjudication": {
+                    "status": "adjudicated_unique_visible_line",
+                    "decision_scope": "finance_primary_relative_line_identity",
+                    "primary_relative": "妻财",
+                    "visible_candidate_count": 1,
+                    "visible_candidate_lines": [4],
+                    "moving_visible_candidate_count": 1,
+                    "moving_visible_candidate_lines": [4],
+                    "specific_line_selection": 4,
+                    "derivation_basis": (
+                        "verified_role_plus_runtime_unique_visible_candidate"
+                    ),
+                    "selection_source_ref": {
+                        "pack": "divination/huangjin-ce",
+                        "rule_id": "HJC-R009",
+                        "source_anchor": (
+                            "references/books/divination/huangjin-ce/"
+                            "rules.md#HJC-R009"
+                        ),
+                        "verification_status": "verified",
+                        "binding_digest": (
+                            "2b46bab3c084a2adbdc56de6ee3ea29e9890712767a43c5cd1e68a845c23cbdc"
+                        ),
+                    },
+                    "hard_verdict": None,
+                },
+                "hard_verdict": None,
+                "source_ref": {
+                    "pack": "divination/huangjin-ce",
+                    "rule_id": "HJC-R009",
+                    "source_anchor": (
+                        "references/books/divination/huangjin-ce/"
+                        "rules.md#HJC-R009"
+                    ),
+                    "verification_status": "verified",
+                    "binding_digest": (
+                        "2b46bab3c084a2adbdc56de6ee3ea29e9890712767a43c5cd1e68a845c23cbdc"
+                    ),
+                },
+                "unresolved_checks": [
+                    "月日旺衰与空破冲合",
+                    "动变生克与救应",
+                    "成败、应期与事件结果",
+                ],
+            }, label
+            assert requested.get("妻财"), label
+            assert requested.get("子孙"), label
+            assert chain["status"] == "candidate_only", label
+            assert chain["chains"], label
+            assert strength["status"] == "candidate_only", label
+        elif "career" in dimensions:
             assert isinstance(requested.get("官鬼"), list), label
             assert requested["官鬼"], label
             assert chain["status"] == "candidate_only", label
@@ -460,12 +564,9 @@ def _assert_runtime_golden_facts(
             assert strength["status"] == "candidate_only", label
             source_rule = strength["source_rules"][0]
             assert source_rule["rule_id"] == "ZR-05-05", label
-            source_path = (
-                Path(__file__).resolve().parents[2]
-                / ".runtime"
-                / "v53-time-check-release"
-                / source_rule["source_anchor"].split("#", 1)[0]
-            )
+            source_path = MINGLI_RUNTIME_RELEASE_ROOT / source_rule[
+                "source_anchor"
+            ].split("#", 1)[0]
             assert source_path.is_file(), label
             assert "ZR-05-05" in source_path.read_text(encoding="utf-8"), label
             useful_strength = strength["by_relative"]["官鬼"]
@@ -490,14 +591,25 @@ def _assert_runtime_golden_facts(
         ) == ("坎", "坤", "用克体"), label
         candidates = values["interpretive_candidates"]
         assert isinstance(candidates, dict), label
-        assert candidates["status"] == "candidate_only", label
+        assert candidates["status"] == "source_adjudicated_relations", label
         assert candidates["hard_verdict"] is None, label
-        assert candidates["verification_status"] == "pending_verification", label
-        assert candidates["requires_classical_adjudication"] is True, label
+        assert candidates["verification_status"] == "verified", label
+        assert candidates["requires_classical_adjudication"] is False, label
+        assert candidates["requires_synthesis_adjudication"] is True, label
         assert len(candidates["relation_candidates"]) == 5, label
         assert candidates["relation_candidates"][0]["rule_id"] == "MR-04-02", label
         assert all(
             candidate["hard_verdict"] is None
+            for candidate in candidates["relation_candidates"]
+        ), label
+        assert all(
+            candidate["status"] == "relation_adjudicated_not_event_verdict"
+            and candidate["verification_status"] == "verified"
+            and candidate["relation_adjudication"]["event_verdict"] is None
+            and candidate["relation_adjudication"]["source_refs"][0][
+                "verification_status"
+            ]
+            == "verified"
             for candidate in candidates["relation_candidates"]
         ), label
         source_patterns = values["source_conditioned_patterns"]
@@ -519,6 +631,19 @@ def _assert_runtime_golden_facts(
             "year": "甲戌",
         }, label
         assert values["independent_lineage"] == "early-luming-nayin", label
+        source_patterns = values["source_conditioned_patterns"]
+        assert isinstance(source_patterns, list) and source_patterns, label
+        assert all(
+            item["status"] == "predicate_matched_not_verdict"
+            and item["applicability_adjudication"]["status"]
+            == "adjudicated_rule_applicability"
+            and item["applicability_adjudication"]["source_ref"][
+                "verification_status"
+            ]
+            == "verified"
+            and item["applicability_adjudication"]["life_verdict"] is None
+            for item in source_patterns
+        ), label
     elif capability_id == "taiyi":
         board = values["board"]
         assert isinstance(board, dict), label
@@ -526,6 +651,14 @@ def _assert_runtime_golden_facts(
         predicates = values["board_predicates"]
         assert isinstance(predicates, list), label
         assert [item["id"] for item in predicates] == ["TY-P01", "TY-P07"], label
+        assert all(
+            item["identity_adjudication"]["status"]
+            == "adjudicated_pattern_identity"
+            and item["identity_adjudication"]["source_ref"]["rule_id"]
+            == item["id"]
+            and item["identity_adjudication"]["event_verdict"] is None
+            for item in predicates
+        ), label
     elif capability_id == "selection":
         if label.startswith("selection-burial-"):
             basis = values["basis_projection"]
@@ -605,6 +738,18 @@ def _assert_runtime_golden_facts(
         assert all(
             item["status"] == "predicate_matched_not_verdict" for item in patterns
         ), label
+        assert all(
+            item["identity_adjudication"]["status"]
+            == "adjudicated_pattern_identity"
+            and item["identity_adjudication"]["pattern_id"] == item["id"]
+            and item["identity_adjudication"]["hard_verdict"] is None
+            and item["identity_adjudication"]["event_verdict"] is None
+            and item["identity_adjudication"]["source_ref"][
+                "verification_status"
+            ]
+            == "verified"
+            for item in patterns
+        ), label
     elif capability_id == "liuren":
         assert values["day_hour"] == {"day": "庚申", "hour": "辛巳"}, label
         assert values["earth_plate"] == list("子丑寅卯辰巳午未申酉戌亥"), label
@@ -631,7 +776,12 @@ def _assert_runtime_golden_facts(
         timing = dimension_facts["timing"]
         assert isinstance(timing, dict), label
         timing_evidence = timing["rule_evidence"]
-        assert timing_evidence["status"] == "not_bound", label
+        assert timing_evidence["status"] == "matched_evidence", label
+        assert timing_evidence["hard_verdict"] is None, label
+        timing_candidates = values["timing_candidates"]
+        assert isinstance(timing_candidates, list) and timing_candidates, label
+        assert timing_candidates[0]["source_rule"] == "LM-R21", label
+        assert timing_candidates[0]["candidate_not_guarantee"] is True, label
     elif capability_id == "physiognomy":
         observations = values["normalized_visible_observations"]
         assert isinstance(observations, list), label
@@ -818,7 +968,7 @@ def _single_art_cases() -> tuple[tuple[str, str, str | None, Prepare], ...]:
         (
             "fortune",
             "fortune",
-            None,
+            "fortune-facts-view/v1",
             compile_fortune_prepare(
                 action="today",
                 query="验证日运事实面板 Worker 闭环",
@@ -970,13 +1120,15 @@ def _single_art_cases() -> tuple[tuple[str, str, str | None, Prepare], ...]:
             "daliuren",
             "daliuren-chart/v1",
             compile_liuren_prepare(
-                action="liuren_one_question",
+                action="liuren_timing_question",
                 query="验证大六壬 Worker 闭环",
                 subject_ref="liuren:worker-matrix-synthetic",
                 event_datetime=event,
                 confirmed_timezone="Asia/Shanghai",
                 location="福建省福州市",
                 dimension_ids=("outcome", "timing"),
+                timing_start=date(2026, 8, 15),
+                timing_end=date(2026, 9, 14),
                 longitude=119.2965,
                 latitude=26.0745,
                 coordinate_source="synthetic-fixture",
@@ -1227,11 +1379,6 @@ async def _run_worker_document_job(
     accepted = await machine.run(job.id)
     assert accepted.status is ReadingStatus.ACCEPTED, label
 
-    if expected_schema is None:
-        # Fortune is deliberately a typed fact panel, not a fabricated chart.
-        assert repository.saved_document is None, label
-        return None
-
     document = repository.saved_document
     assert document is not None, label
     assert document.view_model.schema_version == expected_schema, label
@@ -1322,6 +1469,12 @@ async def test_real_runtime_qimen_deep_facts_reach_paid_typed_document() -> None
 
     assert document is not None
     assert document.view_model.named_patterns
+    assert all(
+        pattern.identity_adjudication.status
+        == "adjudicated_pattern_identity"
+        and pattern.identity_adjudication.event_verdict is None
+        for pattern in document.view_model.named_patterns
+    )
     assert any(len(palace.stars) > 1 for palace in document.view_model.palaces)
 
 
@@ -1355,6 +1508,102 @@ async def test_real_runtime_liuyao_deep_facts_reach_paid_typed_document() -> Non
     assert document.view_model.core_facts.useful_spirit_candidates
     assert document.view_model.core_facts.useful_spirit_selection
     assert document.view_model.core_facts.source_conditioned_patterns
+
+
+@pytest.mark.asyncio
+async def test_real_runtime_liuyao_finance_question_reaches_source_conditioned_pattern() -> None:
+    """An explicit finance class must reach the Liuyao source-rule boundary."""
+
+    runtime = await _runtime()
+    prepare = compile_liuyao_prepare(
+        action="liuyao_one_question",
+        query="验证求财问题的来源条件进入 Worker 与类型化文档",
+        subject_ref="liuyao-finance:worker-matrix-synthetic",
+        cast=(6, 7, 8, 9, 6, 7),
+        event_datetime=_EVENT_DATETIME,
+        confirmed_timezone="Asia/Shanghai",
+        location="福建省福州市",
+        dimension_ids=("outcome", "timing", "state"),
+        question_class="finance",
+    )
+
+    document = await _run_worker_document_job(
+        runtime,
+        label="liuyao-finance",
+        product_id="liuyao-deep",
+        expected_schema="liuyao-chart/v1",
+        prepare=prepare,
+        runtime_release="mingli-runtime-v53-time-check",
+    )
+
+    assert document is not None
+    assert document.view_model.core_facts is not None
+    selection = document.view_model.core_facts.useful_spirit_selection
+    assert selection is not None
+    assert selection.question_context is not None
+    assert selection.question_context.question_class == "finance"
+    role_adjudication = selection.role_adjudication
+    assert role_adjudication.status == "adjudicated_question_role_set"
+    assert role_adjudication.primary_relative == "妻财"
+    assert role_adjudication.supporting_relatives == ("子孙",)
+    assert role_adjudication.specific_line_selection == 4
+    assert role_adjudication.specific_line_adjudication.status == (
+        "adjudicated_unique_visible_line"
+    )
+    assert role_adjudication.hard_verdict is None
+    matches = document.view_model.core_facts.source_conditioned_patterns
+    finance_match = next(
+        item for item in matches if item.local_rule_id == "HJC-R009"
+    )
+    assert finance_match.status == "predicate_matched_not_verdict"
+    assert all("verdict" not in item.model_dump() for item in matches)
+
+
+@pytest.mark.asyncio
+async def test_real_runtime_liuyao_two_present_single_moving_rule_reaches_typed_document() -> None:
+    """The checked two-present rule must select only the moving visible line."""
+
+    runtime = await _runtime()
+    prepare = compile_liuyao_prepare(
+        action="liuyao_one_question",
+        query="验证妻财两现且仅一爻发动时的取爻规则进入类型化文档",
+        subject_ref="liuyao-two-present:worker-matrix-synthetic",
+        cast=(6, 6, 6, 6, 6, 7),
+        event_datetime=_EVENT_DATETIME,
+        confirmed_timezone="Asia/Shanghai",
+        location="福建省福州市",
+        dimension_ids=("outcome", "timing", "state"),
+        question_class="finance",
+    )
+
+    document = await _run_worker_document_job(
+        runtime,
+        label="liuyao-two-present-single-moving",
+        product_id="liuyao-deep",
+        expected_schema="liuyao-chart/v1",
+        prepare=prepare,
+        runtime_release="mingli-runtime-v53-time-check",
+    )
+
+    assert document is not None
+    assert document.view_model.core_facts is not None
+    selection = document.view_model.core_facts.useful_spirit_selection
+    assert selection is not None
+    role_adjudication = selection.role_adjudication
+    assert role_adjudication.status == "adjudicated_question_role_set"
+    assert role_adjudication.specific_line_selection == 3
+    line_adjudication = role_adjudication.specific_line_adjudication
+    assert line_adjudication.status == "adjudicated_single_moving_visible_line"
+    assert line_adjudication.visible_candidate_lines == (3, 6)
+    assert line_adjudication.moving_visible_candidate_lines == (3,)
+    assert line_adjudication.selection_source_ref is not None
+    assert line_adjudication.selection_source_ref.rule_id == "ZR-04-04"
+    assert line_adjudication.hard_verdict is None
+    matches = document.view_model.core_facts.source_conditioned_patterns
+    line_rule_match = next(
+        item for item in matches if item.local_rule_id == "ZR-04-04"
+    )
+    assert line_rule_match.status == "predicate_matched_not_verdict"
 
 
 @pytest.mark.asyncio
@@ -1568,10 +1817,22 @@ async def test_real_runtime_cross_art_products_reach_worker_accepted_and_typed_d
         ("hecan", "hecan", "hecan-view/v1", hecan),
         ("wenshi", "wenshi", "wenshi-view/v1", wenshi),
     ):
-        await _run_worker_document_job(
+        document = await _run_worker_document_job(
             runtime,
             label=label,
             product_id=product_id,
             expected_schema=expected_schema,
             prepare=prepare,
         )
+        assert document is not None
+        dimensions = getattr(document.view_model, "dimensions", ())
+        signal_ids = {
+            signal.signal_id
+            for dimension in dimensions
+            for signal in dimension.signals
+        }
+        if label in {"canwen", "hecan"}:
+            assert "bazi.career.source_pattern.DR-01-01" in signal_ids
+        else:
+            assert "liuyao.outcome.source_pattern.HJC-M001" in signal_ids
+            assert "daliuren.timing.timing_candidate_evidence" in signal_ids

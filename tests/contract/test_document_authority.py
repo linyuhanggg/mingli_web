@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+CORE_SOURCE_CHECKOUT = ROOT / "core" / "mingli-master"
 REFERENCE_AUDIT_SOURCE = Path(
     "/Users/yuhanglin/.codex/visualizations/2026/08/12/"
     "019ff5b8-ffff-7f42-8629-e68f090ebc05"
@@ -25,6 +26,11 @@ RETIRED_PARALLEL_AUTHORITIES = (
     ROOT / "docs" / "PRODUCT_BLUEPRINT_WEB_IOS_V2.md",
     ROOT / "docs" / "plans",
     ROOT / "design-system" / "mingli-web",
+)
+
+MERGED_REDESIGN_SPECS = (
+    ROOT / "docs" / "redesign" / "2026-08-17-bazi-result-page-dev-spec.md",
+    ROOT / "docs" / "redesign" / "2026-08-17-ux-differentiation-spec.md",
 )
 
 REFERENCE_AUDITS = (
@@ -68,6 +74,26 @@ HISTORICAL_ADR_FRAGMENTS = {
 }
 
 
+def _is_parallel_authority_violation(path: Path) -> bool:
+    relative = path.relative_to(ROOT)
+    if any(
+        part in {".git", ".qoder", ".claude", "node_modules"}
+        for part in relative.parts
+    ):
+        return False
+    if relative.parts[:3] == ("docs", "releases", "evidence"):
+        return False
+    if CORE_SOURCE_CHECKOUT in path.parents:
+        return False
+
+    name = path.name.lower()
+    return (
+        name.startswith("handoff")
+        or "blueprint" in name
+        or "checklist" in name and relative != Path("docs/CHECKLIST.md")
+    )
+
+
 def test_only_the_frozen_authority_set_remains() -> None:
     missing = [str(path.relative_to(ROOT)) for path in REQUIRED_AUTHORITIES if not path.exists()]
     revived = [
@@ -99,25 +125,63 @@ def test_reference_site_audits_are_kept_as_repository_evidence() -> None:
 
 
 def test_no_parallel_plan_or_handoff_authority_is_reintroduced() -> None:
-    violations = []
-    for path in ROOT.rglob("*.md"):
-        relative = path.relative_to(ROOT)
-        if any(
-            part in {".git", ".qoder", ".claude", "node_modules"}
-            for part in relative.parts
-        ):
-            continue
-        if relative.parts[:3] == ("docs", "releases", "evidence"):
-            continue
-        name = path.name.lower()
-        if (
-            name.startswith("handoff")
-            or "blueprint" in name
-            or "checklist" in name and relative != Path("docs/CHECKLIST.md")
-        ):
-            violations.append(str(relative))
+    violations = [
+        str(path.relative_to(ROOT))
+        for path in ROOT.rglob("*.md")
+        if _is_parallel_authority_violation(path)
+    ]
 
     assert violations == []
+
+
+def test_merged_redesign_specs_are_historical_records_not_live_contracts() -> None:
+    violations = [
+        str(path.relative_to(ROOT))
+        for path in MERGED_REDESIGN_SPECS
+        if "不再是有效合同" not in path.read_text(encoding="utf-8")
+    ]
+
+    assert violations == []
+
+
+def test_g1_g3_and_share_boundaries_are_frozen_in_the_authorities() -> None:
+    required_fragments = {
+        ROOT / "CONTEXT.md": (
+            "逐字核验引文（Verified Exact Citation）",
+            "有效排盘时刻（Effective Chart Datetime）",
+            "分享隐私投影（Share-safe Projection）",
+        ),
+        ROOT / "docs" / "MINGLI_V51_WEB_INTEGRATION.md": (
+            "### 3.4 公共逐字证据合同",
+            "`changed_pillars=[]` 表示 Runtime 已用同一子时策略比较",
+            "响应合同中不得出现完整 ViewModel",
+            "工作树中的 Provider、Schema、Projector 或 Web 已完成，不代表安装中的签名 Runtime",
+        ),
+    }
+    violations = [
+        f"{path.relative_to(ROOT)}: {fragment}"
+        for path, fragments in required_fragments.items()
+        for fragment in fragments
+        if fragment not in path.read_text(encoding="utf-8")
+    ]
+
+    assert violations == []
+
+
+def test_core_validation_checklist_is_allowed_but_site_parallel_checklists_are_rejected() -> None:
+    core_checklist = CORE_SOURCE_CHECKOUT / "references" / "matrices" / "validation-checklist.md"
+    root_handoff = ROOT / "HANDOFF.md"
+    docs_parallel_checklist = ROOT / "docs" / "plans" / "validation-checklist.md"
+
+    violations = [
+        str(path.relative_to(ROOT))
+        for path in (core_checklist, root_handoff, docs_parallel_checklist)
+        if _is_parallel_authority_violation(path)
+    ]
+
+    assert str(core_checklist.relative_to(ROOT)) not in violations
+    assert str(root_handoff.relative_to(ROOT)) in violations
+    assert str(docs_parallel_checklist.relative_to(ROOT)) in violations
 
 
 def test_ui_work_rules_bind_web_and_admin_to_the_same_authorities() -> None:

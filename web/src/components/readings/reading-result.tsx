@@ -61,6 +61,7 @@ const RUNTIME_CHART_VERSIONS = new Set([
   "daliuren-chart/v1",
   "physiognomy-view/v1",
   "five-elements-facts-view/v1",
+  "fortune-facts-view/v1",
   "chart-similarity-view/v1",
   "time-check-view/v1",
 ]);
@@ -568,7 +569,11 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               <p className={surface.inlineNote}>
                 先看结论，再点开盘面核对服务端公开事实；前端不本地排盘。
               </p>
-              <BaziChart chart={chart} title="八字命盘" />
+              <BaziChart
+                chart={chart}
+                title="八字命盘"
+                evidence={result.fact_panel?.evidence ?? []}
+              />
             </div>
           </section>
 
@@ -597,6 +602,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               <EvidenceList
                 evidence={result.fact_panel?.evidence ?? null}
                 facts={result.fact_panel?.facts ?? []}
+                exactOnly
               />
               <LimitNotice limits={result.fact_panel?.limits ?? null} />
             </div>

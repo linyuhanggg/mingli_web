@@ -35,9 +35,198 @@
         "six_relatives": {"type": ["array", "null"], "items": {"type": "string"}},
         "six_spirit_profile": {"type": ["object", "null"]},
         "six_spirits": {"type": ["array", "null"], "items": {"type": "string"}},
+        "source_conditioned_patterns": {"type": "array", "items": {"$ref": "#/$defs/sourcePattern"}},
         "useful_spirit_candidates": {"type": ["object", "null"]},
-        "useful_spirit_selection": {"type": ["object", "null"]},
+        "useful_spirit_selection": {"oneOf": [{"$ref": "#/$defs/usefulSpiritSelection"}, {"type": "null"}]},
         "xunkong": {"type": ["object", "null"]}
+      }
+    },
+    "liuyaoSourceRef": {
+      "type": "object", "additionalProperties": false,
+      "required": ["pack", "rule_id", "source_anchor", "verification_status", "binding_digest"],
+      "properties": {
+        "pack": {"const": "divination/huangjin-ce"},
+        "rule_id": {"const": "HJC-R009"},
+        "source_anchor": {"type": "string", "minLength": 1},
+        "verification_status": {"const": "verified"},
+        "binding_digest": {"type": "string", "minLength": 1}
+      }
+    },
+    "liuyaoSpecificLineSourceRef": {
+      "type": "object", "additionalProperties": false,
+      "required": ["pack", "rule_id", "source_anchor", "verification_status", "binding_digest"],
+      "properties": {
+        "pack": {"const": "divination/zengshan-buyi"},
+        "rule_id": {"const": "ZR-04-04"},
+        "source_anchor": {"type": "string", "minLength": 1},
+        "verification_status": {"const": "verified"},
+        "binding_digest": {"type": "string", "minLength": 1}
+      }
+    },
+    "sourcePattern": {
+      "type": "object", "additionalProperties": false,
+      "required": ["rule_id", "local_rule_id", "title", "source_pack", "source_anchor", "status", "fact_paths", "predicate_audit"],
+      "properties": {
+        "rule_id": {"type": "string", "minLength": 1},
+        "local_rule_id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "source_pack": {"type": "string", "minLength": 1},
+        "source_anchor": {"type": "string", "minLength": 1},
+        "status": {"const": "predicate_matched_not_verdict"},
+        "fact_paths": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "predicate_audit": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "specificLineAdjudication": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "decision_scope", "primary_relative", "visible_candidate_count", "visible_candidate_lines", "moving_visible_candidate_count", "moving_visible_candidate_lines", "specific_line_selection", "derivation_basis", "selection_source_ref", "hard_verdict"],
+      "properties": {
+        "status": {"enum": ["adjudicated_unique_visible_line", "adjudicated_single_moving_visible_line", "unresolved_multiple_visible_lines", "unresolved_no_visible_line"]},
+        "decision_scope": {"const": "finance_primary_relative_line_identity"},
+        "primary_relative": {"const": "妻财"},
+        "visible_candidate_count": {"type": "integer", "minimum": 0, "maximum": 6},
+        "visible_candidate_lines": {"type": "array", "uniqueItems": true, "items": {"type": "integer", "minimum": 1, "maximum": 6}},
+        "moving_visible_candidate_count": {"type": "integer", "minimum": 0, "maximum": 6},
+        "moving_visible_candidate_lines": {"type": "array", "uniqueItems": true, "items": {"type": "integer", "minimum": 1, "maximum": 6}},
+        "specific_line_selection": {"type": ["integer", "null"], "minimum": 1, "maximum": 6},
+        "derivation_basis": {"enum": ["verified_role_plus_runtime_unique_visible_candidate", "verified_two_present_rule_plus_runtime_single_moving_candidate", "verified_role_plus_runtime_multiple_visible_candidates", "verified_role_plus_runtime_no_visible_candidate"]},
+        "selection_source_ref": {"oneOf": [{"$ref": "#/$defs/liuyaoSourceRef"}, {"$ref": "#/$defs/liuyaoSpecificLineSourceRef"}, {"type": "null"}]},
+        "hard_verdict": {"type": "null"}
+      }
+    },
+    "financeRoleAdjudication": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "decision_scope", "question_class", "primary_relative", "supporting_relatives", "obstacle_attention_relatives", "specific_line_selection", "specific_line_adjudication", "hard_verdict", "source_ref", "unresolved_checks"],
+      "properties": {
+        "status": {"const": "adjudicated_question_role_set"},
+        "decision_scope": {"const": "finance_useful_spirit_role_set"},
+        "question_class": {"const": "finance"},
+        "primary_relative": {"const": "妻财"},
+        "supporting_relatives": {"type": "array", "prefixItems": [{"const": "子孙"}], "items": false, "minItems": 1, "maxItems": 1},
+        "obstacle_attention_relatives": {"type": "array", "prefixItems": [{"const": "兄弟"}, {"const": "官鬼"}, {"const": "父母"}], "items": false, "minItems": 3, "maxItems": 3},
+        "specific_line_selection": {"type": ["integer", "null"], "minimum": 1, "maximum": 6},
+        "specific_line_adjudication": {"$ref": "#/$defs/specificLineAdjudication"},
+        "hard_verdict": {"type": "null"},
+        "source_ref": {"$ref": "#/$defs/liuyaoSourceRef"},
+        "unresolved_checks": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "notRequestedRoleAdjudication": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "decision_scope", "question_class", "primary_relative", "supporting_relatives", "obstacle_attention_relatives", "specific_line_selection", "hard_verdict", "source_ref", "unresolved_checks"],
+      "properties": {
+        "status": {"const": "not_requested"},
+        "decision_scope": {"type": "null"},
+        "question_class": {"type": "null"},
+        "primary_relative": {"type": "null"},
+        "supporting_relatives": {"type": "array", "maxItems": 0},
+        "obstacle_attention_relatives": {"type": "array", "maxItems": 0},
+        "specific_line_selection": {"type": "null"},
+        "hard_verdict": {"type": "null"},
+        "source_ref": {"type": "null"},
+        "unresolved_checks": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "seasonalStrengthSourceRef": {
+      "type": "object", "additionalProperties": false,
+      "required": ["pack", "rule_id", "source_anchor", "verification_status", "binding_digest"],
+      "properties": {
+        "pack": {"const": "divination/zengshan-buyi"},
+        "rule_id": {"const": "ZR-05-05"},
+        "source_anchor": {"type": "string", "minLength": 1},
+        "verification_status": {"const": "verified"},
+        "binding_digest": {"type": "string", "minLength": 1}
+      }
+    },
+    "seasonalStrengthAdjudication": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "decision_scope", "candidate_source", "line", "line_element", "month_element", "seasonal_state", "strength_band", "whole_candidate_strength_verdict", "outcome_verdict", "source_ref", "unresolved_checks"],
+      "properties": {
+        "status": {"const": "adjudicated_seasonal_strength_band"},
+        "decision_scope": {"const": "liuyao_candidate_month_order_strength_band"},
+        "candidate_source": {"enum": ["visible_line", "changed_line", "hidden_line"]},
+        "line": {"type": "integer", "minimum": 1, "maximum": 6},
+        "line_element": {"enum": ["木", "火", "土", "金", "水"]},
+        "month_element": {"enum": ["木", "火", "土", "金", "水"]},
+        "seasonal_state": {"enum": ["旺", "相", "休", "囚", "死"]},
+        "strength_band": {"enum": ["旺相", "休囚"]},
+        "whole_candidate_strength_verdict": {"type": "null"},
+        "outcome_verdict": {"type": "null"},
+        "source_ref": {"$ref": "#/$defs/seasonalStrengthSourceRef"},
+        "unresolved_checks": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "strengthSignal": {
+      "type": "object", "additionalProperties": false,
+      "required": ["signal", "value", "status"],
+      "properties": {
+        "signal": {"enum": ["seasonal_support", "seasonal_weakening", "month_break", "day_clash", "xunkong", "moving_line"]},
+        "value": {"type": ["string", "boolean"]},
+        "status": {"const": "candidate_signal"}
+      }
+    },
+    "strengthCandidate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source", "line", "moving", "xunkong", "najia", "month_day_strength", "seasonal_adjudication", "signals", "status", "hard_verdict"],
+      "properties": {
+        "source": {"enum": ["visible_line", "changed_line", "hidden_line"]},
+        "line": {"type": "integer", "minimum": 1, "maximum": 6},
+        "moving": {"type": "boolean"},
+        "xunkong": {"type": "boolean"},
+        "najia": {"type": "object"},
+        "month_day_strength": {"type": "object"},
+        "seasonal_adjudication": {"$ref": "#/$defs/seasonalStrengthAdjudication"},
+        "signals": {"type": "array", "items": {"$ref": "#/$defs/strengthSignal"}},
+        "status": {"const": "candidate_only"},
+        "hard_verdict": {"type": "null"}
+      }
+    },
+    "relativeStrengthEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "candidates", "hard_verdict"],
+      "properties": {
+        "status": {"enum": ["candidate_only", "not_available"]},
+        "candidates": {"type": "array", "items": {"$ref": "#/$defs/strengthCandidate"}},
+        "hard_verdict": {"type": "null"}
+      }
+    },
+    "strengthRuleRef": {
+      "type": "object", "additionalProperties": false,
+      "required": ["pack", "rule_id", "source_anchor", "verification_status", "binding_digest", "role"],
+      "properties": {
+        "pack": {"const": "divination/zengshan-buyi"},
+        "rule_id": {"const": "ZR-05-05"},
+        "source_anchor": {"type": "string", "minLength": 1},
+        "verification_status": {"const": "verified"},
+        "binding_digest": {"type": "string", "minLength": 1},
+        "role": {"const": "useful_spirit_month_order_strength_band"}
+      }
+    },
+    "strengthEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "by_relative", "source_rules", "fact_status", "hard_verdict", "requires_school_adjudication", "source_dependency_id"],
+      "properties": {
+        "status": {"enum": ["candidate_only", "not_requested"]},
+        "by_relative": {"type": "object", "additionalProperties": {"$ref": "#/$defs/relativeStrengthEvidence"}},
+        "source_rules": {"type": "array", "items": {"$ref": "#/$defs/strengthRuleRef"}},
+        "fact_status": {"const": "calculated_relation_not_verdict"},
+        "hard_verdict": {"type": "null"},
+        "requires_school_adjudication": {"const": true},
+        "source_dependency_id": {"const": "liuyao.interpretation.useful-spirit-strength-evidence"}
+      }
+    },
+    "usefulSpiritSelection": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "reason", "query_word_matching", "source_dependency_id", "chain_candidates", "strength_evidence", "role_adjudication", "question_context"],
+      "properties": {
+        "status": {"const": "evidence_bound"},
+        "reason": {"type": "string", "minLength": 1},
+        "query_word_matching": {"const": false},
+        "source_dependency_id": {"type": "string", "minLength": 1},
+        "chain_candidates": {"type": "object"},
+        "strength_evidence": {"$ref": "#/$defs/strengthEvidence"},
+        "role_adjudication": {"oneOf": [{"$ref": "#/$defs/financeRoleAdjudication"}, {"$ref": "#/$defs/notRequestedRoleAdjudication"}]},
+        "question_context": {"oneOf": [{"type": "object", "additionalProperties": false, "required": ["question_class", "classification_source"], "properties": {"question_class": {"const": "finance"}, "classification_source": {"const": "explicit_structured_input"}}}, {"type": "null"}]}
       }
     }
   }

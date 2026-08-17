@@ -88,10 +88,37 @@
         "interpretation_status": {"type": ["string", "null"], "minLength": 1}
       }
     },
+    "relationSourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pack", "rule_id", "source_anchor", "verification_status", "binding_digest"],
+      "properties": {
+        "pack": {"type": "string", "minLength": 1},
+        "rule_id": {"type": "string", "minLength": 1},
+        "source_anchor": {"type": "string", "minLength": 1},
+        "verification_status": {"const": "verified"},
+        "binding_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "relationAdjudication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "decision_scope", "relation_key", "source_polarity", "hard_verdict", "event_verdict", "source_refs", "unresolved_checks"],
+      "properties": {
+        "status": {"const": "adjudicated_relation_polarity"},
+        "decision_scope": {"const": "meihua_body_use_relation"},
+        "relation_key": {"type": "string", "minLength": 1},
+        "source_polarity": {"enum": ["supportive", "depleting", "adverse", "favorable", "harmonious"]},
+        "hard_verdict": {"type": "null"},
+        "event_verdict": {"type": "null"},
+        "source_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/relationSourceRef"}},
+        "unresolved_checks": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
     "relationCandidate": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["candidate_id", "source_plate", "position", "relation", "relation_key", "actor", "body", "seasonal_state", "rule_id", "status", "hard_verdict", "verification_status", "source_pack", "source_anchor", "source_dependency_id"],
+      "required": ["candidate_id", "source_plate", "position", "relation", "relation_key", "actor", "body", "seasonal_state", "rule_id", "status", "hard_verdict", "verification_status", "source_pack", "source_anchor", "source_dependency_id", "relation_adjudication"],
       "properties": {
         "candidate_id": {"type": "string", "minLength": 1},
         "source_plate": {"type": "string", "minLength": 1},
@@ -102,25 +129,27 @@
         "body": {"$ref": "#/$defs/trigram"},
         "seasonal_state": {"oneOf": [{"type": "string", "minLength": 1}, {"type": "null"}]},
         "rule_id": {"type": "string", "minLength": 1},
-        "status": {"const": "candidate_only"},
+        "status": {"const": "relation_adjudicated_not_event_verdict"},
         "hard_verdict": {"type": "null"},
-        "verification_status": {"const": "pending_verification"},
+        "verification_status": {"const": "verified"},
         "source_pack": {"type": "string", "minLength": 1},
         "source_anchor": {"type": "string", "minLength": 1},
-        "source_dependency_id": {"type": "string", "minLength": 1}
+        "source_dependency_id": {"type": "string", "minLength": 1},
+        "relation_adjudication": {"$ref": "#/$defs/relationAdjudication"}
       }
     },
     "interpretiveCandidates": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["schema_version", "status", "hard_verdict", "verification_status", "relation_candidates", "requires_classical_adjudication", "boundary"],
+      "required": ["schema_version", "status", "hard_verdict", "verification_status", "relation_candidates", "requires_classical_adjudication", "requires_synthesis_adjudication", "boundary"],
       "properties": {
         "schema_version": {"const": "mingli-meihua-interpretive-candidates-v1"},
-        "status": {"const": "candidate_only"},
+        "status": {"const": "source_adjudicated_relations"},
         "hard_verdict": {"type": "null"},
-        "verification_status": {"const": "pending_verification"},
+        "verification_status": {"const": "verified"},
         "relation_candidates": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/relationCandidate"}},
-        "requires_classical_adjudication": {"type": "boolean"},
+        "requires_classical_adjudication": {"const": false},
+        "requires_synthesis_adjudication": {"const": true},
         "boundary": {"type": "string", "minLength": 1}
       }
     }

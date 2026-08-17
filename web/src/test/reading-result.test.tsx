@@ -1359,6 +1359,8 @@ describe("bazi chart workspace", () => {
                     hard_verdict: null,
                     day_element: "earth",
                     month_command_element: "earth",
+                    seasonal_state: "旺",
+                    seasonal_state_source_rule_id: "bazi/sanming-tonghui#R-02-04",
                     same_element_occurrences: 5,
                     resource_element: "fire",
                     resource_occurrences: 3,
@@ -1369,6 +1371,23 @@ describe("bazi chart workspace", () => {
                       { element: "metal", value: 1 },
                       { element: "water", value: 0 },
                     ],
+                    month_order_adjudication: {
+                      status: "adjudicated_month_order_state",
+                      decision_scope: "bazi_month_order_seasonal_state",
+                      day_master_element: "earth",
+                      month_command_element: "earth",
+                      seasonal_state: "旺",
+                      whole_chart_strength_verdict: null,
+                      useful_god_verdict: null,
+                      source_ref: {
+                        pack: "bazi/sanming-tonghui",
+                        rule_id: "R-02-04",
+                        source_anchor: "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
+                        verification_status: "verified",
+                        binding_digest: "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                      },
+                      unresolved_checks: ["全局根气、生扶、克泄与合化"],
+                    },
                     boundary: "只展示五行出现次数，不等于旺衰定论。",
                   },
                   structure: {
@@ -1419,7 +1438,9 @@ describe("bazi chart workspace", () => {
     expect(screen.getAllByText("庚辰").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/日主.*己/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/当前大运|大运 戊子|戊子/).length).toBeGreaterThan(0);
-    expect(screen.getByText("强弱证据")).toBeVisible();
+    expect(screen.getByText("全局强弱证据（未裁定）")).toBeVisible();
+    expect(screen.getByText("月令状态裁定")).toBeVisible();
+    expect(screen.getByText(/月令状态 旺/)).toBeVisible();
     expect(screen.getByText(/同类 5 项；生扶 火 3 项/)).toBeVisible();
     expect(screen.getByText(/不等于旺衰定论/)).toBeVisible();
     expect(screen.getByText("十二长生")).toBeVisible();

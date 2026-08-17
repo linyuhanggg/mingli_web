@@ -3,6 +3,85 @@ import { expect, it } from "vitest";
 
 import { RuntimeChart } from "@/components/readings/runtime-chart";
 
+it("renders Fortune Runtime facts without adding a daily verdict", () => {
+  render(
+    <RuntimeChart
+      viewModel={{
+        schema_version: "fortune-facts-view/v1",
+        subject_ref: "fortune:fixture",
+        natal_pillars: { year: "甲戌", month: "戊辰", day: "丙戌", hour: "辛卯" },
+        day_master: { stem: "丙", element: "fire", polarity: "阳" },
+        month_command: {
+          branch: "辰",
+          label: "辰月",
+          main_qi: "戊",
+          main_qi_element: "earth",
+        },
+        active_luck_cycle: "乙丑",
+        target_day: "2026-08-14",
+        target_period: { kind: "day", start: "2026-08-14", end: "2026-08-14" },
+        available_periods: ["2026-08-14"],
+        period_markers: [
+          {
+            date: "2026-08-14",
+            day_pillar: "甲子",
+            day_role: "日运",
+            active_luck_cycle: "乙丑",
+            primary_mechanism_ids: ["fortune.day_pillar"],
+            decisive_mechanism_ids: [],
+            relations: [],
+            specific_event_policy: "事实标记，不推出具体事件",
+            unresolved_boundaries: [],
+          },
+        ],
+        calendar_normalization: {
+          status: "calculated",
+          algorithm_version: "fixture-v1",
+          time_basis: {
+            policy: "local_apparent_solar-v1",
+            standard_meridian_degrees: 120,
+            longitude_correction_seconds: 0,
+            equation_of_time_seconds: 0,
+            total_correction_seconds: 0,
+            algorithm: {
+              id: null,
+              version: null,
+              source: null,
+              uncertainty_seconds: null,
+            },
+            boundary: {
+              distance_seconds: null,
+              correction_changes_hour_branch: false,
+              within_uncertainty: null,
+            },
+          },
+          true_solar_time: {
+            status: "apparent_solar_applied",
+            policy: "local_apparent_solar-v1",
+            longitude_correction_seconds: 0,
+            equation_of_time_seconds: 0,
+            total_correction_seconds: 0,
+          },
+          calendar_convention: {
+            id: null,
+            version: null,
+            year_boundary: null,
+            month_boundary: null,
+            day_rollover: null,
+            hour_basis: "true_solar",
+            zi_hour_policy: null,
+          },
+        },
+      }}
+    />
+  );
+
+  expect(screen.getByText("日运本命四柱事实")).toBeVisible();
+  expect(screen.getAllByText("2026-08-14").length).toBeGreaterThanOrEqual(3);
+  expect(screen.getByText("fortune.day_pillar")).toBeVisible();
+  expect(screen.getByText(/不追加具体事件、吉凶或人生判断/)).toBeVisible();
+});
+
 it("renders Wenshi Runtime evidence without turning it into a verdict", () => {
   render(
     <RuntimeChart
@@ -37,6 +116,172 @@ it("renders Wenshi Runtime evidence without turning it into a verdict", () => {
   expect(screen.getByText("缺少三术结构事实：六爻、奇门")).toBeVisible();
   expect(screen.queryByText(/fact:wenshi:fixture/)).toBeNull();
   expect(screen.queryByText(/生成吉凶|直接判断成败/)).toBeNull();
+});
+
+it("renders the source-bound Liuyao role adjudication without a line verdict", () => {
+  render(
+    <RuntimeChart
+      viewModel={{
+        schema_version: "liuyao-chart/v1",
+        subject_ref: "liuyao:finance-fixture",
+        question: "这次求财如何？",
+        primary_hexagram: {
+          name: "山泽损",
+          upper_trigram: "艮",
+          lower_trigram: "兑",
+        },
+        changed_hexagram: {
+          name: "风泽中孚",
+          upper_trigram: "巽",
+          lower_trigram: "兑",
+        },
+        lines: [
+          { position: 1, value: 6, moving: true },
+          { position: 2, value: 7, moving: false },
+          { position: 3, value: 8, moving: false },
+          { position: 4, value: 9, moving: true },
+          { position: 5, value: 6, moving: true },
+          { position: 6, value: 7, moving: false },
+        ],
+        core_facts: {
+          calendar: null,
+          casting: null,
+          casting_method: "supplied_complete_cast",
+          changed_najia: null,
+          changed_plate_lines: null,
+          changed_six_relatives: null,
+          hidden_lines: null,
+          interpretation_status: "facts_only",
+          line_facts: null,
+          lines: null,
+          month_day_strength: null,
+          moving_lines: [1, 4, 5],
+          najia: null,
+          relation_facts: null,
+          returning_relations: null,
+          requested_useful_spirit_candidates: null,
+          shi_ying: null,
+          shi_ying_moving_relations: null,
+          six_relatives: null,
+          six_spirit_profile: null,
+          six_spirits: null,
+          useful_spirit_candidates: null,
+          useful_spirit_selection: {
+            status: "evidence_bound",
+            reason: "school-dependent adjudication is outside deterministic calculation",
+            query_word_matching: false,
+            source_dependency_id: "liuyao.relations.returning-and-useful-spirit-candidates",
+            chain_candidates: { status: "candidate_only" },
+            strength_evidence: {
+              status: "candidate_only",
+              by_relative: {
+                妻财: {
+                  status: "candidate_only",
+                  candidates: [{
+                    source: "visible_line",
+                    line: 4,
+                    moving: true,
+                    xunkong: false,
+                    najia: { element: "金" },
+                    month_day_strength: { seasonal_state: "旺" },
+                    seasonal_adjudication: {
+                      status: "adjudicated_seasonal_strength_band",
+                      decision_scope: "liuyao_candidate_month_order_strength_band",
+                      candidate_source: "visible_line",
+                      line: 4,
+                      line_element: "金",
+                      month_element: "金",
+                      seasonal_state: "旺",
+                      strength_band: "旺相",
+                      whole_candidate_strength_verdict: null,
+                      outcome_verdict: null,
+                      source_ref: {
+                        pack: "divination/zengshan-buyi",
+                        rule_id: "ZR-05-05",
+                        source_anchor: "references/books/divination/zengshan-buyi/rules.md#ZR-05-05",
+                        verification_status: "verified",
+                        binding_digest: "strength-binding-digest",
+                      },
+                      unresolved_checks: ["日辰与空破动变"],
+                    },
+                    signals: [
+                      { signal: "seasonal_support", value: "旺", status: "candidate_signal" },
+                      { signal: "moving_line", value: true, status: "candidate_signal" },
+                    ],
+                    status: "candidate_only",
+                    hard_verdict: null,
+                  }],
+                  hard_verdict: null,
+                },
+              },
+              source_rules: [{
+                pack: "divination/zengshan-buyi",
+                rule_id: "ZR-05-05",
+                source_anchor: "references/books/divination/zengshan-buyi/rules.md#ZR-05-05",
+                verification_status: "verified",
+                binding_digest: "strength-binding-digest",
+                role: "useful_spirit_month_order_strength_band",
+              }],
+              fact_status: "calculated_relation_not_verdict",
+              hard_verdict: null,
+              requires_school_adjudication: true,
+              source_dependency_id: "liuyao.interpretation.useful-spirit-strength-evidence",
+            },
+            role_adjudication: {
+              status: "adjudicated_question_role_set",
+              decision_scope: "finance_useful_spirit_role_set",
+              question_class: "finance",
+              primary_relative: "妻财",
+              supporting_relatives: ["子孙"],
+              obstacle_attention_relatives: ["兄弟", "官鬼", "父母"],
+              specific_line_selection: 4,
+              specific_line_adjudication: {
+                status: "adjudicated_unique_visible_line",
+                decision_scope: "finance_primary_relative_line_identity",
+                primary_relative: "妻财",
+                visible_candidate_count: 1,
+                visible_candidate_lines: [4],
+                moving_visible_candidate_count: 1,
+                moving_visible_candidate_lines: [4],
+                specific_line_selection: 4,
+                derivation_basis: "verified_role_plus_runtime_unique_visible_candidate",
+                selection_source_ref: {
+                  pack: "divination/huangjin-ce",
+                  rule_id: "HJC-R009",
+                  source_anchor: "references/books/divination/huangjin-ce/rules.md#HJC-R009",
+                  verification_status: "verified",
+                  binding_digest: "test-binding-digest",
+                },
+                hard_verdict: null,
+              },
+              hard_verdict: null,
+              source_ref: {
+                pack: "divination/huangjin-ce",
+                rule_id: "HJC-R009",
+                source_anchor: "references/books/divination/huangjin-ce/rules.md#HJC-R009",
+                verification_status: "verified",
+                binding_digest: "test-binding-digest",
+              },
+              unresolved_checks: ["月日旺衰与空破冲合", "成败、应期与事件结果"],
+            },
+            question_context: {
+              question_class: "finance",
+              classification_source: "explicit_structured_input",
+            },
+          },
+          xunkong: null,
+        },
+      }}
+    />,
+  );
+
+  expect(screen.getByText("六爻问题角色裁决")).toBeVisible();
+  expect(screen.getByText("求财：妻财为主，子孙为辅")).toBeVisible();
+  expect(screen.getByText("第4爻（盘内唯一可见妻财爻）")).toBeVisible();
+  expect(screen.getByText("第4爻：旺（旺相带；ZR-05-05 已核验）")).toBeVisible();
+  expect(
+    screen.getByText("已定位具体爻位；仅裁定月令季节带，未判断综合旺衰、成败与应期"),
+  ).toBeVisible();
 });
 
 it("renders every Runtime Qimen star when a palace has a duplicated star", () => {
@@ -80,12 +325,44 @@ it("renders every Runtime Qimen star when a palace has a duplicated star", () =>
         },
         xunkong: { xun: "甲子", branches: ["戌", "亥"], palaces: [6, 7] },
         horse: { hour_branch: "子", branch: "寅", palace: 8 },
-        named_patterns: [],
+        named_patterns: [
+          {
+            id: "QM-P13",
+            name: "五不遇时",
+            status: "predicate_matched_not_verdict",
+            palace: null,
+            identity_adjudication: {
+              status: "adjudicated_pattern_identity",
+              decision_scope: "qimen_named_pattern_identity",
+              pattern_id: "QM-P13",
+              pattern_name: "五不遇时",
+              palace: null,
+              hard_verdict: null,
+              event_verdict: null,
+              source_ref: {
+                pack: "san-shi/qimen-dunjia-tongzhi",
+                rule_id: "QM-P13",
+                source_anchor: "references/books/san-shi/qimen-dunjia-tongzhi/rules.md#QM-P13",
+                verification_status: "verified",
+                binding_digest: "addc36958a2efaf63b6ceac219a8afe49ea4b26e5bcb5d32e404c35d59d70302",
+              },
+              unresolved_checks: [
+                "格局强弱、制化与并见关系",
+                "事项用神及宫位关系",
+                "事件成败、吉凶与应期",
+              ],
+            },
+          },
+        ],
       }}
     />,
   );
 
   expect(screen.getByText("天辅、天禽")).toBeVisible();
+  expect(screen.getByText("格局身份已裁定（未断吉凶）")).toBeVisible();
+  expect(screen.getByText("全局")).toBeVisible();
+  expect(screen.getByText("QM-P13 · san-shi/qimen-dunjia-tongzhi")).toBeVisible();
+  expect(screen.queryByText("第null宫")).toBeNull();
 });
 
 it("renders relationship ViewModels as traceable cross-chart facts", () => {
@@ -232,8 +509,6 @@ it("renders Runtime Qizheng core facts and keeps absent aspects absent", () => {
           ming_shen: {
             ming_degree: 46.6,
             shen_degree: 226.6,
-            longitude_degrees: 120.2,
-            latitude_degrees: 25,
             separation_degrees: 180,
             local_apparent_sidereal_degrees: 112,
             profile: "synthetic",
@@ -291,7 +566,12 @@ it("renders time-check event evidence without turning an unmatched row into a ve
                   event_id: "开工",
                   matched: true,
                   evidence_score: 3,
-                  relations: [{ natal_position: "day", relation_type: "六合" }],
+                  relations: [{
+                    natal_position: "day",
+                    natal_branch: "午",
+                    event_branch: "未",
+                    relation_type: "六合",
+                  }],
                   event_year_ten_god: "正官",
                   reasons: ["positive_branch_relation", "domain_ten_god_role"],
                 },
@@ -357,6 +637,24 @@ it("renders internal Runtime provider ViewModels as bounded fact tables", () => 
           status: "predicate_matched_not_verdict",
           fact_paths: ["fact:/chart_facts/output/four_pillars/year"],
           predicate_audit: ["/four_pillars/year:eq:庚辰"],
+          applicability_adjudication: {
+            status: "adjudicated_rule_applicability",
+            decision_scope: "luming_nayin_source_rule_applicability",
+            rule_id: "luming-nayin/li-xuzhong-mingshu#LX-01-17",
+            local_rule_id: "LX-01-17",
+            rule_title: "庚辰（禄暗会）",
+            evidence_role: "issue_specific_judgment_rule",
+            hard_verdict: null,
+            life_verdict: null,
+            source_ref: {
+              pack: "luming-nayin/li-xuzhong-mingshu",
+              rule_id: "LX-01-17",
+              source_anchor: "references/books/luming-nayin/li-xuzhong-mingshu/rules.md#LX-01-17",
+              verification_status: "verified",
+              binding_digest: "1".repeat(64),
+            },
+            unresolved_checks: ["多条规则并见尚未权衡"],
+          },
         }],
       }}
     />,
@@ -365,8 +663,9 @@ it("renders internal Runtime provider ViewModels as bounded fact tables", () => 
   expect(screen.getByText("禄命纳音四柱")).toBeVisible();
   expect(screen.getByText("山头火")).toBeVisible();
   expect(screen.getByText("已计算关系")).toBeVisible();
-  expect(screen.getByText("古籍来源条件候选")).toBeVisible();
+  expect(screen.getByText("古籍规则适用性裁定")).toBeVisible();
   expect(screen.getByText("LX-01-17 · 庚辰（禄暗会）")).toBeVisible();
+  expect(screen.getByText("规则适用性已裁定（未形成命断）")).toBeVisible();
   expect(screen.queryByText("calculated_relation_not_verdict")).toBeNull();
   expect(screen.getByText(/不追加吉凶/)).toBeVisible();
 
@@ -427,6 +726,26 @@ it("renders internal Runtime provider ViewModels as bounded fact tables", () => 
           source_anchor: "fulltext.md L430",
           source_dependency_id: "taiyi.synthetic",
           status: "predicate_matched_not_verdict",
+          identity_adjudication: {
+            status: "adjudicated_pattern_identity",
+            decision_scope: "taiyi_board_pattern_identity",
+            pattern_id: "TY-P01",
+            pattern_name: "掩",
+            hard_verdict: null,
+            event_verdict: null,
+            source_ref: {
+              pack: "san-shi/taiyi-shenshu",
+              rule_id: "TY-P01",
+              source_anchor: "references/books/san-shi/taiyi-shenshu/rules.md#TY-P01",
+              verification_status: "verified",
+              binding_digest: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            },
+            unresolved_checks: [
+              "并见格局、制化与主客关系",
+              "宏观事项范围及盘面取用",
+              "现实成败、吉凶与应期",
+            ],
+          },
         }],
         scope_contract: {
           declared_scope: "annual_macro_historical_board_facts",
@@ -444,6 +763,8 @@ it("renders internal Runtime provider ViewModels as bounded fact tables", () => 
   expect(screen.getByText("个人事件范围")).toBeVisible();
   expect(screen.getByText("已计算位置")).toBeVisible();
   expect(screen.getByText("结构命题已匹配")).toBeVisible();
+  expect(screen.getByText("格局身份已裁定（未断吉凶）")).toBeVisible();
+  expect(screen.getByText("TY-P01 · san-shi/taiyi-shenshu")).toBeVisible();
   expect(screen.queryByText("calculated_position_not_verdict")).toBeNull();
   expect(screen.queryByText("predicate_matched_not_verdict")).toBeNull();
 
@@ -535,6 +856,86 @@ it("renders internal Runtime provider ViewModels as bounded fact tables", () => 
   expect(screen.getByText(/没有图像识别或居住吉凶判断/)).toBeVisible();
 });
 
+it("renders Meihua source-adjudicated relation polarity without inventing an event verdict", () => {
+  render(
+    <RuntimeChart
+      viewModel={{
+        schema_version: "meihua-chart/v1",
+        subject_ref: "meihua:fixture",
+        question: "这件事后续如何",
+        casting_method: "time",
+        primary_hexagram: { name: "风雷益", upper_trigram: "巽", lower_trigram: "震" },
+        mutual_hexagram: { name: "山地剥", upper_trigram: "艮", lower_trigram: "坤" },
+        changed_hexagram: { name: "风泽中孚", upper_trigram: "巽", lower_trigram: "兑" },
+        moving_lines: [2],
+        body_use: {
+          body: { position: "upper", trigram: "巽", element: "木" },
+          use: { position: "lower", trigram: "震", element: "木" },
+          relation: "比和",
+          status: "calculated_relation_not_verdict",
+        },
+        core_facts: {
+          body_relation_facts: [],
+          seasonal_strength: null,
+          interpretation_status: "source_adjudicated_relations",
+          interpretive_candidates: {
+            schema_version: "mingli-meihua-interpretive-candidates-v1",
+            status: "source_adjudicated_relations",
+            hard_verdict: null,
+            verification_status: "verified",
+            relation_candidates: [{
+              candidate_id: "meihua.primary_use.upper.same_element",
+              source_plate: "primary_use",
+              position: "upper",
+              relation: "比和",
+              relation_key: "same_element",
+              actor: { position: "upper", trigram: "巽", element: "木" },
+              body: { position: "upper", trigram: "巽", element: "木" },
+              seasonal_state: "旺",
+              rule_id: "MR-04-02",
+              status: "relation_adjudicated_not_event_verdict",
+              hard_verdict: null,
+              verification_status: "verified",
+              source_pack: "divination/meihua-yishu",
+              source_anchor: "references/books/divination/meihua-yishu/rules.md#MR-04-02",
+              source_dependency_id: "meihua.classical-adjudication.body-use-candidates",
+              relation_adjudication: {
+                status: "adjudicated_relation_polarity",
+                decision_scope: "meihua_body_use_relation",
+                relation_key: "same_element",
+                source_polarity: "harmonious",
+                hard_verdict: null,
+                event_verdict: null,
+                source_refs: [{
+                  pack: "divination/meihua-yishu",
+                  rule_id: "MR-04-02",
+                  source_anchor: "references/fulltext/divination/meihua-yishu/fulltext.md#L875",
+                  verification_status: "verified",
+                  binding_digest: "202662eb4c023883aab61febf3de3d7d42137740f31d50ba1a7ada25149db50f",
+                }],
+                unresolved_checks: [
+                  "具体问题中的体用取义、领域例外与外应",
+                  "本卦、互卦、变卦关系的并见权重及月令旺衰",
+                  "现实事件成败、吉凶程度与应期",
+                ],
+              },
+            }],
+            requires_classical_adjudication: false,
+            requires_synthesis_adjudication: true,
+            boundary: "关系极性已裁定，综合事件结论仍待裁决",
+          },
+        },
+      }}
+    />,
+  );
+
+  expect(screen.getByText("体用关系来源裁定（未形成事件结论）")).toBeVisible();
+  expect(screen.getByText("体用比和")).toBeVisible();
+  expect(screen.getByText("关系极性已裁定")).toBeVisible();
+  expect(screen.getByText(/综合成败与应期仍待正式合成裁决/)).toBeVisible();
+  expect(screen.queryByText("体用关系候选（非最终结论）")).toBeNull();
+});
+
 it("renders rhythm facts without importing the broader luming relation surface", () => {
   render(
     <RuntimeChart
@@ -603,6 +1004,8 @@ it("renders five-elements facts with explicit source gaps and no verdict", () =>
             hard_verdict: null,
             day_element: "fire",
             month_command_element: "earth",
+            seasonal_state: "休",
+            seasonal_state_source_rule_id: "bazi/sanming-tonghui#R-02-04",
             same_element_occurrences: 1,
             resource_element: "wood",
             resource_occurrences: 2,
@@ -613,6 +1016,23 @@ it("renders five-elements facts with explicit source gaps and no verdict", () =>
               { element: "metal", value: 0 },
               { element: "water", value: 0 },
             ],
+            month_order_adjudication: {
+              status: "adjudicated_month_order_state",
+              decision_scope: "bazi_month_order_seasonal_state",
+              day_master_element: "fire",
+              month_command_element: "earth",
+              seasonal_state: "休",
+              whole_chart_strength_verdict: null,
+              useful_god_verdict: null,
+              source_ref: {
+                pack: "bazi/sanming-tonghui",
+                rule_id: "R-02-04",
+                source_anchor: "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
+                verification_status: "verified",
+                binding_digest: "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+              },
+              unresolved_checks: ["全局根气、生扶、克泄与合化"],
+            },
             boundary: "只展示五行出现次数，不等于旺衰定论。",
           },
           structure: {
@@ -665,7 +1085,10 @@ it("renders five-elements facts with explicit source gaps and no verdict", () =>
 
   expect(screen.getByText("五行库存事实")).toBeVisible();
   expect(screen.getByText("只有日主×月令适用性身份")).toBeVisible();
-  expect(screen.getByText("强弱与结构候选（非最终结论）")).toBeVisible();
+  expect(screen.getByText("月令状态裁定与强弱 / 结构边界")).toBeVisible();
+  expect(screen.getByText("月令状态裁定")).toBeVisible();
+  expect(screen.getByText(/全局身强身弱与唯一用神仍未裁定/)).toBeVisible();
+  expect(screen.getByText(/月令状态 休/)).toBeVisible();
   expect(screen.getByText(/同类 1 项；生扶 木 2 项/)).toBeVisible();
   expect(screen.getByText(/1 项机械候选/)).toBeVisible();
   expect(screen.getByText(/未返回逐条来源规则 ID/)).toBeVisible();
@@ -727,4 +1150,59 @@ it("renders exact chart comparison facts without turning them into a score", () 
   expect(screen.getByText("不同")).toBeVisible();
   expect(screen.getByText(/不生成百分比评分/)).toBeVisible();
   expect(screen.queryByText(/相似度分数/)).toBeNull();
+});
+
+it("renders a bounded Daliuren timing candidate as a non-guaranteed date", () => {
+  render(
+    <RuntimeChart
+      viewModel={{
+        schema_version: "daliuren-chart/v1",
+        subject_ref: "liuren:timing-fixture",
+        question: "这件事何时可能出现回应？",
+        lessons: [
+          { lesson_id: "1", upper: "酉", lower: "庚" },
+          { lesson_id: "2", upper: "戌", lower: "酉" },
+          { lesson_id: "3", upper: "子", lower: "申" },
+          { lesson_id: "4", upper: "丑", lower: "子" },
+        ],
+        transmissions: [
+          { stage: "initial", branch: "酉", general: "朱雀" },
+          { stage: "middle", branch: "戌", general: "六合" },
+          { stage: "final", branch: "亥", general: "勾陈" },
+        ],
+        core_facts: {
+          day_hour: null,
+          dimension_facts: null,
+          earth_plate: null,
+          heaven_plate: null,
+          heavenly_generals: null,
+          lesson_method: null,
+          month_general: null,
+          noble_person: null,
+          plate_offset: null,
+          structural_patterns: null,
+          transmission_method: null,
+          timing_candidates: [{
+            id: "initial_group_upper_candidate",
+            role: "event_response_candidate",
+            anchor_earth_branch: "巳",
+            branch: "酉",
+            solar_date: "2026-08-21",
+            day_ganzhi: "丁卯",
+            days_after_cast: 7,
+            source_pack: "san-shi/liuren-miben",
+            source_rule: "LM-R21",
+            candidate_not_guarantee: true,
+          }],
+          xunkong: null,
+        },
+      }}
+    />,
+  );
+
+  expect(screen.getByText("有界应期候选")).toBeVisible();
+  expect(screen.getByText("2026-08-21")).toBeVisible();
+  expect(screen.getByText("丁卯 · 酉")).toBeVisible();
+  expect(screen.getByText("LM-R21 · san-shi/liuren-miben")).toBeVisible();
+  expect(screen.getByText("候选日期，不是现实保证")).toBeVisible();
 });

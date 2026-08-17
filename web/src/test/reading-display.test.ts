@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import type { ReadingFact } from "@/lib/api";
+import type { BaziInterpretiveCandidates } from "@/view-models/registry";
 import {
   buildBaziChartView,
   buildBaziChartViewFromViewModel,
   formatCapabilityIds,
+  formatBaziInterpretiveCandidateRows,
   formatDimensionIds,
+  formatLiuyaoRoleAdjudicationRows,
   formatObjectId,
   formatReadingFact,
   formatReadingFacts,
@@ -290,9 +293,11 @@ describe("buildBaziChartView", () => {
         tiaohou_markers: null,
         element_inventory: null,
         interpretive_candidates: null,
+        source_conditioned_patterns: [],
         branch_relations: null,
         shensha_auxiliary: null,
         luck_cycles: null,
+        calendar_normalization: null,
         year_layers: null,
       },
     });
@@ -309,6 +314,208 @@ describe("buildBaziChartView", () => {
     expect(chart.coreFacts?.xunkong?.branches).toEqual(["午", "未"]);
     expect(chart.coreFacts?.san_yuan?.tai_yuan).toBe("己未");
     expect(chart.secondary[0]?.text).toContain("不等同旺衰裁决");
+  });
+});
+
+describe("formatBaziInterpretiveCandidateRows", () => {
+  it("renders the verified Ziping pattern entry as a bounded adjudication", () => {
+    const candidates = {
+      strength: {
+        status: "evidence_only",
+        hard_verdict: null,
+        day_element: "fire",
+        month_command_element: "earth",
+        seasonal_state: "休",
+        seasonal_state_source_rule_id: "bazi/sanming-tonghui#R-02-04",
+        same_element_occurrences: 1,
+        resource_element: "wood",
+        resource_occurrences: 2,
+        all_element_occurrences: [
+          { element: "wood", value: 2 },
+          { element: "fire", value: 1 },
+          { element: "earth", value: 4 },
+        ],
+        month_order_adjudication: {
+          status: "adjudicated_month_order_state",
+          decision_scope: "bazi_month_order_seasonal_state",
+          day_master_element: "fire",
+          month_command_element: "earth",
+          seasonal_state: "休",
+          whole_chart_strength_verdict: null,
+          useful_god_verdict: null,
+          source_ref: {
+            pack: "bazi/sanming-tonghui",
+            rule_id: "R-02-04",
+            source_anchor: "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
+            verification_status: "verified",
+            binding_digest: "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+          },
+          unresolved_checks: ["全局根气、生扶、克泄与合化"],
+        },
+        boundary: "强弱证据不等于旺衰定论",
+      },
+      structure: {
+        status: "candidate_only",
+        hard_verdict: null,
+        month_main_qi: "戊",
+        month_main_qi_ten_god: "食神",
+        main_qi_visible: true,
+        visible_positions: ["month"],
+        boundary: "格局成败仍待裁决",
+      },
+      following_and_transformation: {
+        status: "requires_classical_adjudication",
+        hard_verdict: null,
+        stem_combination_candidates: [],
+        branch_formation_candidates: [],
+        boundary: "合化与从格仍待裁决",
+      },
+      salience_signals: [],
+      reasoning_tools: {
+        tiaohou_candidates: {
+          output: {
+            status: "adjudicated_seasonal_priority",
+            rule_id: "QR-02-01",
+            priority_stems: ["丙", "甲"],
+            coverage_status: "partial_visible_or_hidden",
+            hard_verdict: null,
+          },
+        },
+        ziping_month_pattern_adjudication: {
+          output: {
+            status: "adjudicated_pattern_entry",
+            pattern_label: "食神格入口",
+            hard_verdict: null,
+            unresolved_checks: ["格局成败与救应", "旺衰、调候与行运"],
+          },
+        },
+      },
+    } as unknown as BaziInterpretiveCandidates;
+
+    expect(formatBaziInterpretiveCandidateRows(candidates)).toContainEqual([
+      "月令状态裁定",
+      "火日主在土月令为“休”；已按 R-02-04 核验，全局身强身弱与唯一用神仍未裁定",
+    ]);
+    expect(formatBaziInterpretiveCandidateRows(candidates)).toContainEqual([
+      "子平月令裁决",
+      "食神格入口；已裁定月令格局入口；待完成：格局成败与救应、旺衰、调候与行运",
+    ]);
+    expect(formatBaziInterpretiveCandidateRows(candidates)).toContainEqual([
+      "调候季节裁决",
+      "QR-02-01；季节优先：丙、甲；已裁定来源规则内的季节优先项；可见性：部分透藏",
+    ]);
+  });
+});
+
+describe("formatLiuyaoRoleAdjudicationRows", () => {
+  it("shows a uniquely identified visible wealth line without implying an outcome verdict", () => {
+    expect(
+      formatLiuyaoRoleAdjudicationRows({
+        status: "evidence_bound",
+        role_adjudication: {
+          status: "adjudicated_question_role_set",
+          decision_scope: "finance_useful_spirit_role_set",
+          question_class: "finance",
+          primary_relative: "妻财",
+          supporting_relatives: ["子孙"],
+          obstacle_attention_relatives: ["兄弟", "官鬼", "父母"],
+          specific_line_selection: 4,
+          specific_line_adjudication: {
+            status: "adjudicated_unique_visible_line",
+            decision_scope: "finance_primary_relative_line_identity",
+            primary_relative: "妻财",
+            visible_candidate_count: 1,
+            visible_candidate_lines: [4],
+            moving_visible_candidate_count: 1,
+            moving_visible_candidate_lines: [4],
+            specific_line_selection: 4,
+            derivation_basis: "verified_role_plus_runtime_unique_visible_candidate",
+            selection_source_ref: {
+              pack: "divination/huangjin-ce",
+              rule_id: "HJC-R009",
+              verification_status: "verified",
+            },
+            hard_verdict: null,
+          },
+          hard_verdict: null,
+          source_ref: {
+            pack: "divination/huangjin-ce",
+            rule_id: "HJC-R009",
+            verification_status: "verified",
+          },
+          unresolved_checks: ["月日旺衰与空破冲合", "成败、应期与事件结果"],
+        },
+      }),
+    ).toEqual([
+      ["问题角色裁决", "求财：妻财为主，子孙为辅"],
+      ["具体用神爻", "第4爻（盘内唯一可见妻财爻）"],
+      ["阻碍关注", "兄弟、官鬼、父母"],
+      ["来源", "HJC-R009 · divination/huangjin-ce（已核验）"],
+      ["裁决边界", "已定位具体爻位；未判断旺衰、成败与应期"],
+      ["待完成", "月日旺衰与空破冲合、成败、应期与事件结果"],
+    ]);
+  });
+
+  it("shows the checked moving line when wealth appears twice and only one line moves", () => {
+    expect(
+      formatLiuyaoRoleAdjudicationRows({
+        status: "evidence_bound",
+        role_adjudication: {
+          status: "adjudicated_question_role_set",
+          decision_scope: "finance_useful_spirit_role_set",
+          question_class: "finance",
+          primary_relative: "妻财",
+          supporting_relatives: ["子孙"],
+          obstacle_attention_relatives: ["兄弟", "官鬼", "父母"],
+          specific_line_selection: 3,
+          specific_line_adjudication: {
+            status: "adjudicated_single_moving_visible_line",
+            decision_scope: "finance_primary_relative_line_identity",
+            primary_relative: "妻财",
+            visible_candidate_count: 2,
+            visible_candidate_lines: [3, 6],
+            moving_visible_candidate_count: 1,
+            moving_visible_candidate_lines: [3],
+            specific_line_selection: 3,
+            derivation_basis:
+              "verified_two_present_rule_plus_runtime_single_moving_candidate",
+            selection_source_ref: {
+              pack: "divination/zengshan-buyi",
+              rule_id: "ZR-04-04",
+              verification_status: "verified",
+            },
+            hard_verdict: null,
+          },
+          hard_verdict: null,
+          source_ref: {
+            pack: "divination/huangjin-ce",
+            rule_id: "HJC-R009",
+            verification_status: "verified",
+          },
+          unresolved_checks: ["月日旺衰与空破冲合", "成败、应期与事件结果"],
+        },
+      }),
+    ).toEqual([
+      ["问题角色裁决", "求财：妻财为主，子孙为辅"],
+      ["具体用神爻", "第3爻（妻财两现，仅此爻发动，按核验规则取用）"],
+      ["阻碍关注", "兄弟、官鬼、父母"],
+      ["来源", "HJC-R009 · divination/huangjin-ce（已核验）"],
+      ["取爻依据", "ZR-04-04 · divination/zengshan-buyi（已核验）"],
+      ["裁决边界", "已定位具体爻位；未判断旺衰、成败与应期"],
+      ["待完成", "月日旺衰与空破冲合、成败、应期与事件结果"],
+    ]);
+  });
+
+  it("does not invent finance roles when no structured question class was supplied", () => {
+    expect(
+      formatLiuyaoRoleAdjudicationRows({
+        status: "evidence_bound",
+        role_adjudication: {
+          status: "not_requested",
+          question_class: null,
+        },
+      }),
+    ).toEqual([]);
   });
 });
 

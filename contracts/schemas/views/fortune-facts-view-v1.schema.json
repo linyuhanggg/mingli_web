@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/fortune-facts-view-v1.schema.json",
+  "title": "Fortune Facts ViewModel v1",
+  "description": "Facts-only projection for Runtime daily and period calculations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "subject_ref",
+    "natal_pillars",
+    "day_master",
+    "month_command",
+    "active_luck_cycle",
+    "target_day",
+    "target_period",
+    "available_periods",
+    "period_markers",
+    "calendar_normalization"
+  ],
+  "properties": {
+    "schema_version": {"const": "fortune-facts-view/v1"},
+    "subject_ref": {"$ref": "#/$defs/text"},
+    "natal_pillars": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["year", "month", "day", "hour"],
+      "properties": {
+        "year": {"$ref": "#/$defs/text"},
+        "month": {"$ref": "#/$defs/text"},
+        "day": {"$ref": "#/$defs/text"},
+        "hour": {"$ref": "#/$defs/text"}
+      }
+    },
+    "day_master": {"$ref": "#/$defs/dayMaster"},
+    "month_command": {"$ref": "#/$defs/monthCommand"},
+    "active_luck_cycle": {"$ref": "#/$defs/text"},
+    "target_day": {"$ref": "#/$defs/text"},
+    "target_period": {"$ref": "#/$defs/targetPeriod"},
+    "available_periods": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+    "period_markers": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/periodMarker"}
+    },
+    "calendar_normalization": {"$ref": "#/$defs/calendarNormalization"}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1},
+    "element": {"enum": ["wood", "fire", "earth", "metal", "water"]},
+    "nullableText": {
+      "anyOf": [
+        {"$ref": "#/$defs/text"},
+        {"type": "null"}
+      ]
+    },
+    "nullableNumber": {"type": ["number", "null"]},
+    "nullableBoolean": {"type": ["boolean", "null"]},
+    "calendarNormalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "algorithm_version",
+        "time_basis",
+        "true_solar_time",
+        "calendar_convention"
+      ],
+      "properties": {
+        "status": {"$ref": "#/$defs/text"},
+        "algorithm_version": {"$ref": "#/$defs/text"},
+        "time_basis": {"$ref": "#/$defs/calendarTimeBasis"},
+        "true_solar_time": {"$ref": "#/$defs/trueSolarTime"},
+        "calendar_convention": {"$ref": "#/$defs/calendarConvention"}
+      }
+    },
+    "calendarTimeBasis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy", "algorithm", "boundary"],
+      "properties": {
+        "policy": {"$ref": "#/$defs/text"},
+        "standard_meridian_degrees": {"$ref": "#/$defs/nullableNumber"},
+        "longitude_correction_seconds": {"$ref": "#/$defs/nullableNumber"},
+        "equation_of_time_seconds": {"$ref": "#/$defs/nullableNumber"},
+        "total_correction_seconds": {"$ref": "#/$defs/nullableNumber"},
+        "algorithm": {"$ref": "#/$defs/calendarAlgorithm"},
+        "boundary": {"$ref": "#/$defs/calendarBoundary"}
+      }
+    },
+    "calendarAlgorithm": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref": "#/$defs/nullableText"},
+        "version": {"$ref": "#/$defs/nullableText"},
+        "source": {"$ref": "#/$defs/nullableText"},
+        "uncertainty_seconds": {"$ref": "#/$defs/nullableNumber"}
+      }
+    },
+    "calendarBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "distance_seconds": {"$ref": "#/$defs/nullableNumber"},
+        "correction_changes_hour_branch": {"$ref": "#/$defs/nullableBoolean"},
+        "within_uncertainty": {"$ref": "#/$defs/nullableBoolean"}
+      }
+    },
+    "trueSolarTime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {"$ref": "#/$defs/text"},
+        "policy": {"$ref": "#/$defs/nullableText"},
+        "longitude_correction_seconds": {"$ref": "#/$defs/nullableNumber"},
+        "equation_of_time_seconds": {"$ref": "#/$defs/nullableNumber"},
+        "total_correction_seconds": {"$ref": "#/$defs/nullableNumber"}
+      }
+    },
+    "calendarConvention": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref": "#/$defs/nullableText"},
+        "version": {"$ref": "#/$defs/nullableText"},
+        "year_boundary": {"$ref": "#/$defs/nullableText"},
+        "month_boundary": {"$ref": "#/$defs/nullableText"},
+        "day_rollover": {"$ref": "#/$defs/nullableText"},
+        "hour_basis": {"$ref": "#/$defs/nullableText"},
+        "zi_hour_policy": {"$ref": "#/$defs/nullableText"}
+      }
+    },
+    "dayMaster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stem", "element", "polarity"],
+      "properties": {
+        "stem": {"$ref": "#/$defs/text"},
+        "element": {"$ref": "#/$defs/element"},
+        "polarity": {"enum": ["阳", "阴"]}
+      }
+    },
+    "monthCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "label", "main_qi", "main_qi_element"],
+      "properties": {
+        "branch": {"$ref": "#/$defs/text"},
+        "label": {"$ref": "#/$defs/text"},
+        "main_qi": {"$ref": "#/$defs/text"},
+        "main_qi_element": {"$ref": "#/$defs/element"}
+      }
+    },
+    "targetPeriod": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "start", "end"],
+      "properties": {
+        "kind": {"$ref": "#/$defs/text"},
+        "start": {"$ref": "#/$defs/text"},
+        "end": {"$ref": "#/$defs/text"}
+      }
+    },
+    "periodMarker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "day_pillar",
+        "day_role",
+        "active_luck_cycle",
+        "primary_mechanism_ids",
+        "decisive_mechanism_ids",
+        "relations",
+        "specific_event_policy",
+        "unresolved_boundaries"
+      ],
+      "properties": {
+        "date": {"$ref": "#/$defs/text"},
+        "day_pillar": {"$ref": "#/$defs/text"},
+        "day_role": {"$ref": "#/$defs/text"},
+        "active_luck_cycle": {"$ref": "#/$defs/text"},
+        "primary_mechanism_ids": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+        "decisive_mechanism_ids": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+        "relations": {"type": "array", "items": {"type": "object"}},
+        "specific_event_policy": {"$ref": "#/$defs/text"},
+        "unresolved_boundaries": {"type": "array", "items": {"$ref": "#/$defs/text"}}
+      }
+    }
+  }
+}

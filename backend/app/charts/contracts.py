@@ -131,6 +131,28 @@ class BaziBranchRelation(ContractModel):
     branches: tuple[str, ...] = Field(min_length=2)
 
 
+class BaziMonthOrderSourceRef(ContractModel):
+    pack: Literal["bazi/sanming-tonghui"]
+    rule_id: Literal["R-02-04"]
+    source_anchor: str = Field(min_length=1)
+    verification_status: Literal["verified"]
+    binding_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class BaziMonthOrderAdjudication(ContractModel):
+    """Verified seasonal state under the month command, not total strength."""
+
+    status: Literal["adjudicated_month_order_state"]
+    decision_scope: Literal["bazi_month_order_seasonal_state"]
+    day_master_element: Literal["wood", "fire", "earth", "metal", "water"]
+    month_command_element: Literal["wood", "fire", "earth", "metal", "water"]
+    seasonal_state: Literal["旺", "相", "休", "囚", "死"]
+    whole_chart_strength_verdict: None = None
+    useful_god_verdict: None = None
+    source_ref: BaziMonthOrderSourceRef
+    unresolved_checks: tuple[str, ...] = Field(min_length=1)
+
+
 class BaziStrengthEvidence(ContractModel):
     """Runtime evidence for strength, without a categorical strong/weak verdict."""
 
@@ -138,10 +160,13 @@ class BaziStrengthEvidence(ContractModel):
     hard_verdict: None = None
     day_element: Literal["wood", "fire", "earth", "metal", "water"]
     month_command_element: Literal["wood", "fire", "earth", "metal", "water"]
+    seasonal_state: Literal["旺", "相", "休", "囚", "死"]
+    seasonal_state_source_rule_id: str = Field(min_length=1)
     same_element_occurrences: int = Field(ge=0)
     resource_element: Literal["wood", "fire", "earth", "metal", "water"]
     resource_occurrences: int = Field(ge=0)
     all_element_occurrences: tuple[BaziElementCount, ...] = Field(min_length=1)
+    month_order_adjudication: BaziMonthOrderAdjudication
     boundary: str = Field(min_length=1)
 
 
@@ -360,6 +385,84 @@ class BaziSourcePattern(ContractModel):
     status: Literal["predicate_matched_not_verdict"]
     fact_paths: tuple[str, ...] = Field(min_length=1)
     predicate_audit: tuple[str, ...] = Field(min_length=1)
+    evidence_ref: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+
+
+class BaziSolarTerm(ContractModel):
+    """One Runtime solar-term boundary exposed to the Bazi chart."""
+
+    name: str = Field(min_length=1)
+    index: int
+    is_month_boundary_jie: bool
+    datetime: str = Field(min_length=1)
+    instant_utc: str = Field(min_length=1)
+
+
+class BaziSolarTerms(ContractModel):
+    """The adjacent solar terms and the Runtime month-switch policy."""
+
+    previous: BaziSolarTerm | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    next: BaziSolarTerm | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    month_switch_policy: str = Field(min_length=1)
+
+
+class BaziCalendarDayBoundary(ContractModel):
+    """Explicit day-boundary effects of the Runtime calendar correction."""
+
+    correction_crossed_date: bool
+    zi_policy_advanced_day_pillar: bool
+
+
+class BaziCalendarNormalization(ContractModel):
+    """Typed Bazi calendar facts with no inferred effective instant."""
+
+    status: str = Field(min_length=1)
+    algorithm_version: str = Field(min_length=1)
+    time_basis: FortuneCalendarTimeBasis
+    true_solar_time: FortuneTrueSolarTime
+    calendar_convention: FortuneCalendarConvention
+    effective_datetime: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    day_boundary: BaziCalendarDayBoundary | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    changed_pillars: tuple[Literal["year", "month", "day", "hour"], ...] | None = Field(
+        default=None,
+        min_length=0,
+        max_length=4,
+        exclude_if=lambda value: value is None,
+    )
+    solar_terms: BaziSolarTerms | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+
+    @model_validator(mode="after")
+    def _changed_pillars_are_stable(
+        self,
+    ) -> BaziCalendarNormalization:
+        if self.changed_pillars is None:
+            return self
+        if len(set(self.changed_pillars)) != len(self.changed_pillars):
+            raise ValueError("changed Bazi pillars must be unique")
+        order = {position: index for index, position in enumerate(("year", "month", "day", "hour"))}
+        if tuple(sorted(self.changed_pillars, key=order.__getitem__)) != self.changed_pillars:
+            raise ValueError("changed Bazi pillars must use year-month-day-hour order")
+        return self
 
 
 class BaziCoreFacts(ContractModel):
@@ -381,7 +484,7 @@ class BaziCoreFacts(ContractModel):
     branch_relations: tuple[BaziBranchRelation, ...] | None = None
     shensha_auxiliary: BaziShenshaAuxiliary | None = None
     luck_cycles: BaziLuckCycles | None = None
-    calendar_normalization: dict[str, object] | None = None
+    calendar_normalization: BaziCalendarNormalization | None = None
     year_layers: tuple[BaziYearLayer, ...] | None = None
     month_layers: tuple[BaziTemporalLayer, ...] | None = None
     day_layers: tuple[BaziTemporalLayer, ...] | None = None
@@ -412,6 +515,89 @@ class FiveElementsFactsViewV1(ContractModel):
     source_status: Literal["exact_rule_bound", "identity_only", "unavailable"]
     source_gaps: tuple[str, ...]
     limitations: tuple[str, ...]
+
+
+class FortuneTargetPeriod(ContractModel):
+    kind: str = Field(min_length=1)
+    start: str = Field(min_length=1)
+    end: str = Field(min_length=1)
+
+
+class FortunePeriodMarker(ContractModel):
+    date: str = Field(min_length=1)
+    day_pillar: str = Field(min_length=1)
+    day_role: str = Field(min_length=1)
+    active_luck_cycle: str = Field(min_length=1)
+    primary_mechanism_ids: tuple[str, ...]
+    decisive_mechanism_ids: tuple[str, ...]
+    relations: tuple[dict[str, object], ...]
+    specific_event_policy: str = Field(min_length=1)
+    unresolved_boundaries: tuple[str, ...]
+
+
+class FortuneCalendarAlgorithm(ContractModel):
+    id: str | None = Field(default=None, min_length=1)
+    version: str | None = Field(default=None, min_length=1)
+    source: str | None = Field(default=None, min_length=1)
+    uncertainty_seconds: float | None = None
+
+
+class FortuneCalendarBoundary(ContractModel):
+    distance_seconds: float | None = None
+    correction_changes_hour_branch: bool | None = None
+    within_uncertainty: bool | None = None
+
+
+class FortuneCalendarTimeBasis(ContractModel):
+    policy: str = Field(min_length=1)
+    standard_meridian_degrees: float | None = None
+    longitude_correction_seconds: float | None = None
+    equation_of_time_seconds: float | None = None
+    total_correction_seconds: float | None = None
+    algorithm: FortuneCalendarAlgorithm
+    boundary: FortuneCalendarBoundary
+
+
+class FortuneTrueSolarTime(ContractModel):
+    status: str = Field(min_length=1)
+    policy: str | None = Field(default=None, min_length=1)
+    longitude_correction_seconds: float | None = None
+    equation_of_time_seconds: float | None = None
+    total_correction_seconds: float | None = None
+
+
+class FortuneCalendarConvention(ContractModel):
+    id: str | None = Field(default=None, min_length=1)
+    version: str | None = Field(default=None, min_length=1)
+    year_boundary: str | None = Field(default=None, min_length=1)
+    month_boundary: str | None = Field(default=None, min_length=1)
+    day_rollover: str | None = Field(default=None, min_length=1)
+    hour_basis: str | None = Field(default=None, min_length=1)
+    zi_hour_policy: str | None = Field(default=None, min_length=1)
+
+
+class FortuneCalendarNormalization(ContractModel):
+    status: str = Field(min_length=1)
+    algorithm_version: str = Field(min_length=1)
+    time_basis: FortuneCalendarTimeBasis
+    true_solar_time: FortuneTrueSolarTime
+    calendar_convention: FortuneCalendarConvention
+
+
+class FortuneFactsViewV1(ContractModel):
+    """Facts-only projection for Runtime daily and period calculations."""
+
+    schema_version: Literal["fortune-facts-view/v1"] = "fortune-facts-view/v1"
+    subject_ref: str = Field(min_length=1)
+    natal_pillars: dict[str, str]
+    day_master: BaziDayMaster
+    month_command: BaziMonthCommand
+    active_luck_cycle: str = Field(min_length=1)
+    target_day: str = Field(min_length=1)
+    target_period: FortuneTargetPeriod
+    available_periods: tuple[str, ...]
+    period_markers: tuple[FortunePeriodMarker, ...]
+    calendar_normalization: FortuneCalendarNormalization
 
 
 class BaziChartV1(ContractModel):
@@ -465,6 +651,26 @@ class TimeCheckCandidateV1(ContractModel):
     calendar_normalization: dict[str, object]
 
 
+class TimeCheckBranchRelationV1(ContractModel):
+    """One Runtime-computed natal/event branch relation."""
+
+    natal_position: Literal["year", "month", "day", "hour"]
+    natal_branch: str = Field(min_length=1)
+    event_branch: str = Field(min_length=1)
+    relation_type: str = Field(min_length=1)
+
+
+class TimeCheckEventEvidenceV1(ContractModel):
+    """Typed evidence for one structured life event and one candidate."""
+
+    event_id: str = Field(min_length=1)
+    matched: bool
+    evidence_score: int
+    relations: tuple[TimeCheckBranchRelationV1, ...]
+    event_year_ten_god: str | None = Field(default=None, min_length=1)
+    reasons: tuple[str, ...] = Field(min_length=1)
+
+
 class TimeCheckCandidateEvidenceV1(ContractModel):
     """Bounded Runtime evidence attached to one time-check candidate."""
 
@@ -474,7 +680,7 @@ class TimeCheckCandidateEvidenceV1(ContractModel):
     evidence_score: int
     matched_event_ids: tuple[str, ...]
     elimination_reasons: tuple[str, ...]
-    event_evidence: tuple[dict[str, object], ...]
+    event_evidence: tuple[TimeCheckEventEvidenceV1, ...]
     rank: int = Field(ge=1, le=12)
 
 
@@ -684,11 +890,28 @@ class QizhengBodyFact(ContractModel):
     trace: dict[str, object] | None = None
 
 
+class QizhengEphemerisEngine(ContractModel):
+    name: str = Field(min_length=1)
+    version: str = Field(min_length=1)
+    license: str = Field(min_length=1)
+
+
+class QizhengCoordinateConvention(ContractModel):
+    frame: str = Field(min_length=1)
+    zodiac: str = Field(min_length=1)
+    aberration: bool
+    precession: str = Field(min_length=1)
+
+
+class QizhengEphemerisSummary(ContractModel):
+    schema_version: str = Field(min_length=1)
+    engine: QizhengEphemerisEngine
+    coordinate_convention: QizhengCoordinateConvention
+
+
 class QizhengMingShen(ContractModel):
     ming_degree: float = Field(ge=0, lt=360)
     shen_degree: float = Field(ge=0, lt=360)
-    longitude_degrees: float = Field(ge=0, lt=360)
-    latitude_degrees: float | None = None
     separation_degrees: float = Field(ge=0)
     local_apparent_sidereal_degrees: float | None = Field(default=None, ge=0, lt=360)
     profile: str = Field(min_length=1)
@@ -748,7 +971,7 @@ class QizhengRequestedLimitLayer(ContractModel):
 
 
 class QizhengCoreFacts(ContractModel):
-    ephemeris: dict[str, object] | None = None
+    ephemeris: QizhengEphemerisSummary | None = None
     conventions: dict[str, object] | None = None
     classical_bodies: tuple[QizhengBodyFact, ...] | None = None
     ming_shen: QizhengMingShen | None = None
@@ -792,6 +1015,278 @@ class LiuyaoSourcePattern(ContractModel):
     predicate_audit: tuple[str, ...] = Field(min_length=1)
 
 
+class LiuyaoSourceRef(ContractModel):
+    pack: Literal["divination/huangjin-ce"]
+    rule_id: Literal["HJC-R009"]
+    source_anchor: str = Field(min_length=1)
+    verification_status: Literal["verified"]
+    binding_digest: str = Field(min_length=1)
+
+
+class LiuyaoSpecificLineSourceRef(ContractModel):
+    pack: Literal["divination/zengshan-buyi"]
+    rule_id: Literal["ZR-04-04"]
+    source_anchor: str = Field(min_length=1)
+    verification_status: Literal["verified"]
+    binding_digest: str = Field(min_length=1)
+
+
+class LiuyaoSpecificLineAdjudication(ContractModel):
+    status: Literal[
+        "adjudicated_unique_visible_line",
+        "adjudicated_single_moving_visible_line",
+        "unresolved_multiple_visible_lines",
+        "unresolved_no_visible_line",
+    ]
+    decision_scope: Literal["finance_primary_relative_line_identity"]
+    primary_relative: Literal["妻财"]
+    visible_candidate_count: int = Field(ge=0, le=6)
+    visible_candidate_lines: tuple[int, ...]
+    moving_visible_candidate_count: int = Field(ge=0, le=6)
+    moving_visible_candidate_lines: tuple[int, ...]
+    specific_line_selection: int | None = Field(default=None, ge=1, le=6)
+    derivation_basis: Literal[
+        "verified_role_plus_runtime_unique_visible_candidate",
+        "verified_two_present_rule_plus_runtime_single_moving_candidate",
+        "verified_role_plus_runtime_multiple_visible_candidates",
+        "verified_role_plus_runtime_no_visible_candidate",
+    ]
+    selection_source_ref: LiuyaoSourceRef | LiuyaoSpecificLineSourceRef | None
+    hard_verdict: None = None
+
+    @model_validator(mode="after")
+    def _line_identity_matches_status(self) -> LiuyaoSpecificLineAdjudication:
+        lines = self.visible_candidate_lines
+        if tuple(sorted(set(lines))) != lines or any(line not in range(1, 7) for line in lines):
+            raise ValueError("visible Liuyao candidate lines must be unique and sorted")
+        moving_lines = self.moving_visible_candidate_lines
+        if tuple(sorted(set(moving_lines))) != moving_lines or any(
+            line not in lines for line in moving_lines
+        ):
+            raise ValueError("moving Liuyao candidate lines must be sorted visible lines")
+        if self.visible_candidate_count != len(lines):
+            raise ValueError("visible Liuyao candidate count is inconsistent")
+        if self.moving_visible_candidate_count != len(moving_lines):
+            raise ValueError("moving Liuyao candidate count is inconsistent")
+        if self.status == "adjudicated_unique_visible_line":
+            if (
+                len(lines) != 1
+                or self.specific_line_selection != lines[0]
+                or self.derivation_basis
+                != "verified_role_plus_runtime_unique_visible_candidate"
+                or not isinstance(self.selection_source_ref, LiuyaoSourceRef)
+            ):
+                raise ValueError("unique visible Liuyao line adjudication is inconsistent")
+        elif self.status == "adjudicated_single_moving_visible_line":
+            if (
+                len(lines) != 2
+                or len(moving_lines) != 1
+                or self.specific_line_selection != moving_lines[0]
+                or self.derivation_basis
+                != "verified_two_present_rule_plus_runtime_single_moving_candidate"
+                or not isinstance(
+                    self.selection_source_ref,
+                    LiuyaoSpecificLineSourceRef,
+                )
+            ):
+                raise ValueError("single-moving Liuyao line adjudication is inconsistent")
+        elif self.status == "unresolved_multiple_visible_lines":
+            if (
+                len(lines) < 2
+                or self.specific_line_selection is not None
+                or self.derivation_basis
+                != "verified_role_plus_runtime_multiple_visible_candidates"
+                or self.selection_source_ref is not None
+                or (len(lines) == 2 and len(moving_lines) == 1)
+            ):
+                raise ValueError("multiple visible Liuyao lines must remain unresolved")
+        elif (
+            lines
+            or moving_lines
+            or self.specific_line_selection is not None
+            or self.derivation_basis
+            != "verified_role_plus_runtime_no_visible_candidate"
+            or self.selection_source_ref is not None
+        ):
+            raise ValueError("non-visible Liuyao line adjudication is inconsistent")
+        return self
+
+
+class LiuyaoRoleAdjudication(ContractModel):
+    status: Literal["adjudicated_question_role_set"]
+    decision_scope: Literal["finance_useful_spirit_role_set"]
+    question_class: Literal["finance"]
+    primary_relative: Literal["妻财"]
+    supporting_relatives: tuple[Literal["子孙"], ...]
+    obstacle_attention_relatives: tuple[Literal["兄弟", "官鬼", "父母"], ...]
+    specific_line_selection: int | None = Field(default=None, ge=1, le=6)
+    specific_line_adjudication: LiuyaoSpecificLineAdjudication
+    hard_verdict: None = None
+    source_ref: LiuyaoSourceRef
+    unresolved_checks: tuple[str, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _bounded_finance_contract(self) -> LiuyaoRoleAdjudication:
+        if self.supporting_relatives != ("子孙",):
+            raise ValueError("finance support relative must be 子孙")
+        if self.obstacle_attention_relatives != ("兄弟", "官鬼", "父母"):
+            raise ValueError("finance obstacle relatives are inconsistent")
+        if (
+            self.specific_line_selection
+            != self.specific_line_adjudication.specific_line_selection
+        ):
+            raise ValueError("specific Liuyao line selections do not match")
+        return self
+
+
+class LiuyaoNotRequestedRoleAdjudication(ContractModel):
+    status: Literal["not_requested"]
+    decision_scope: None = None
+    question_class: None = None
+    primary_relative: None = None
+    supporting_relatives: tuple[()] = ()
+    obstacle_attention_relatives: tuple[()] = ()
+    specific_line_selection: None = None
+    hard_verdict: None = None
+    source_ref: None = None
+    unresolved_checks: tuple[str, ...] = Field(min_length=1)
+
+
+class LiuyaoQuestionContext(ContractModel):
+    question_class: Literal["finance"]
+    classification_source: Literal["explicit_structured_input"]
+
+
+class LiuyaoSeasonalStrengthSourceRef(ContractModel):
+    pack: Literal["divination/zengshan-buyi"]
+    rule_id: Literal["ZR-05-05"]
+    source_anchor: str = Field(min_length=1)
+    verification_status: Literal["verified"]
+    binding_digest: str = Field(min_length=1)
+
+
+class LiuyaoSeasonalStrengthAdjudication(ContractModel):
+    status: Literal["adjudicated_seasonal_strength_band"]
+    decision_scope: Literal["liuyao_candidate_month_order_strength_band"]
+    candidate_source: Literal["visible_line", "changed_line", "hidden_line"]
+    line: int = Field(ge=1, le=6)
+    line_element: Literal["木", "火", "土", "金", "水"]
+    month_element: Literal["木", "火", "土", "金", "水"]
+    seasonal_state: Literal["旺", "相", "休", "囚", "死"]
+    strength_band: Literal["旺相", "休囚"]
+    whole_candidate_strength_verdict: None = None
+    outcome_verdict: None = None
+    source_ref: LiuyaoSeasonalStrengthSourceRef
+    unresolved_checks: tuple[str, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _seasonal_band_matches_state(self) -> LiuyaoSeasonalStrengthAdjudication:
+        expected = "旺相" if self.seasonal_state in {"旺", "相"} else "休囚"
+        if self.strength_band != expected:
+            raise ValueError("Liuyao seasonal strength band conflicts with state")
+        return self
+
+
+class LiuyaoStrengthSignal(ContractModel):
+    signal: Literal[
+        "seasonal_support",
+        "seasonal_weakening",
+        "month_break",
+        "day_clash",
+        "xunkong",
+        "moving_line",
+    ]
+    value: str | bool
+    status: Literal["candidate_signal"]
+
+
+class LiuyaoStrengthCandidate(ContractModel):
+    source: Literal["visible_line", "changed_line", "hidden_line"]
+    line: int = Field(ge=1, le=6)
+    moving: bool
+    xunkong: bool
+    najia: dict[str, object]
+    month_day_strength: dict[str, object]
+    seasonal_adjudication: LiuyaoSeasonalStrengthAdjudication
+    signals: tuple[LiuyaoStrengthSignal, ...]
+    status: Literal["candidate_only"]
+    hard_verdict: None = None
+
+    @model_validator(mode="after")
+    def _candidate_identity_matches_adjudication(self) -> LiuyaoStrengthCandidate:
+        if (
+            self.source != self.seasonal_adjudication.candidate_source
+            or self.line != self.seasonal_adjudication.line
+        ):
+            raise ValueError("Liuyao strength candidate identity is inconsistent")
+        return self
+
+
+class LiuyaoRelativeStrengthEvidence(ContractModel):
+    status: Literal["candidate_only", "not_available"]
+    candidates: tuple[LiuyaoStrengthCandidate, ...]
+    hard_verdict: None = None
+
+    @model_validator(mode="after")
+    def _candidate_availability_matches_status(self) -> LiuyaoRelativeStrengthEvidence:
+        if (self.status == "candidate_only") != bool(self.candidates):
+            raise ValueError("Liuyao relative strength availability is inconsistent")
+        return self
+
+
+class LiuyaoStrengthRuleRef(LiuyaoSeasonalStrengthSourceRef):
+    role: Literal["useful_spirit_month_order_strength_band"]
+
+
+class LiuyaoStrengthEvidence(ContractModel):
+    status: Literal["candidate_only", "not_requested"]
+    by_relative: dict[str, LiuyaoRelativeStrengthEvidence]
+    source_rules: tuple[LiuyaoStrengthRuleRef, ...]
+    fact_status: Literal["calculated_relation_not_verdict"]
+    hard_verdict: None = None
+    requires_school_adjudication: Literal[True]
+    source_dependency_id: Literal[
+        "liuyao.interpretation.useful-spirit-strength-evidence"
+    ]
+
+    @model_validator(mode="after")
+    def _source_presence_matches_status(self) -> LiuyaoStrengthEvidence:
+        if self.status == "candidate_only":
+            if len(self.source_rules) != 1 or not self.by_relative:
+                raise ValueError("requested Liuyao strength evidence needs one source")
+            binding_digest = self.source_rules[0].binding_digest
+            if any(
+                candidate.seasonal_adjudication.source_ref.binding_digest
+                != binding_digest
+                for evidence in self.by_relative.values()
+                for candidate in evidence.candidates
+            ):
+                raise ValueError("Liuyao strength source bindings do not match")
+        elif self.source_rules or self.by_relative:
+            raise ValueError("unrequested Liuyao strength evidence must be empty")
+        return self
+
+
+class LiuyaoUsefulSpiritSelection(ContractModel):
+    status: Literal["evidence_bound"]
+    reason: str = Field(min_length=1)
+    query_word_matching: Literal[False]
+    source_dependency_id: str = Field(min_length=1)
+    chain_candidates: dict[str, object]
+    strength_evidence: LiuyaoStrengthEvidence
+    role_adjudication: LiuyaoRoleAdjudication | LiuyaoNotRequestedRoleAdjudication
+    question_context: LiuyaoQuestionContext | None = None
+
+    @model_validator(mode="after")
+    def _question_context_matches_role(self) -> LiuyaoUsefulSpiritSelection:
+        if isinstance(self.role_adjudication, LiuyaoRoleAdjudication):
+            if self.question_context is None:
+                raise ValueError("finance Liuyao role adjudication requires context")
+        elif self.question_context is not None:
+            raise ValueError("unrequested Liuyao role adjudication cannot have context")
+        return self
+
+
 class LiuyaoCoreFacts(ContractModel):
     """Runtime-owned six-line structural facts; no divination verdicts."""
 
@@ -817,7 +1312,7 @@ class LiuyaoCoreFacts(ContractModel):
     six_spirit_profile: dict[str, object] | None = None
     six_spirits: tuple[str, ...] | None = None
     useful_spirit_candidates: dict[str, object] | None = None
-    useful_spirit_selection: dict[str, object] | None = None
+    useful_spirit_selection: LiuyaoUsefulSpiritSelection | None = None
     xunkong: dict[str, object] | None = None
     source_conditioned_patterns: tuple[LiuyaoSourcePattern, ...] = ()
 
@@ -869,8 +1364,35 @@ class MeihuaSeasonalStrengthFact(ContractModel):
     trigram: str = Field(min_length=1)
 
 
+class MeihuaRelationSourceRef(ContractModel):
+    pack: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    source_anchor: str = Field(min_length=1)
+    verification_status: Literal["verified"]
+    binding_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class MeihuaRelationAdjudication(ContractModel):
+    """Classical polarity for one body/use relation, not an event verdict."""
+
+    status: Literal["adjudicated_relation_polarity"]
+    decision_scope: Literal["meihua_body_use_relation"]
+    relation_key: str = Field(min_length=1)
+    source_polarity: Literal[
+        "supportive",
+        "depleting",
+        "adverse",
+        "favorable",
+        "harmonious",
+    ]
+    hard_verdict: None = None
+    event_verdict: None = None
+    source_refs: tuple[MeihuaRelationSourceRef, ...] = Field(min_length=1)
+    unresolved_checks: tuple[str, ...] = Field(min_length=1)
+
+
 class MeihuaRelationCandidate(ContractModel):
-    """Source-directed Meihua relation candidate, never a final verdict."""
+    """Source-adjudicated relation polarity, never a final event verdict."""
 
     candidate_id: str = Field(min_length=1)
     source_plate: str = Field(min_length=1)
@@ -881,23 +1403,25 @@ class MeihuaRelationCandidate(ContractModel):
     body: MeihuaTrigram
     seasonal_state: str | None = Field(default=None, min_length=1)
     rule_id: str = Field(min_length=1)
-    status: Literal["candidate_only"]
+    status: Literal["relation_adjudicated_not_event_verdict"]
     hard_verdict: None = None
-    verification_status: Literal["pending_verification"]
+    verification_status: Literal["verified"]
     source_pack: str = Field(min_length=1)
     source_anchor: str = Field(min_length=1)
     source_dependency_id: str = Field(min_length=1)
+    relation_adjudication: MeihuaRelationAdjudication
 
 
 class MeihuaInterpretiveCandidates(ContractModel):
-    """Bounded classical relation candidates for later question adjudication."""
+    """Bounded source adjudications awaiting multi-relation synthesis."""
 
     schema_version: Literal["mingli-meihua-interpretive-candidates-v1"]
-    status: Literal["candidate_only"]
+    status: Literal["source_adjudicated_relations"]
     hard_verdict: None = None
-    verification_status: Literal["pending_verification"]
+    verification_status: Literal["verified"]
     relation_candidates: tuple[MeihuaRelationCandidate, ...] = Field(min_length=1)
-    requires_classical_adjudication: bool
+    requires_classical_adjudication: Literal[False]
+    requires_synthesis_adjudication: Literal[True]
     boundary: str = Field(min_length=1)
 
 
@@ -944,6 +1468,30 @@ class LumingNayinRelation(ContractModel):
     recension: str | None = Field(default=None, min_length=1)
 
 
+class LumingNayinRuleSourceRef(ContractModel):
+    pack: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    source_anchor: str = Field(min_length=1)
+    verification_status: Literal["verified"]
+    binding_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class LumingNayinRuleApplicabilityAdjudication(ContractModel):
+    status: Literal["adjudicated_rule_applicability"]
+    decision_scope: Literal["luming_nayin_source_rule_applicability"]
+    rule_id: str = Field(min_length=1)
+    local_rule_id: str = Field(min_length=1)
+    rule_title: str = Field(min_length=1)
+    evidence_role: Literal[
+        "issue_specific_judgment_rule",
+        "methodology_rule",
+    ]
+    hard_verdict: None = None
+    life_verdict: None = None
+    source_ref: LumingNayinRuleSourceRef
+    unresolved_checks: tuple[str, ...] = Field(min_length=1)
+
+
 class LumingNayinSourcePattern(ContractModel):
     rule_id: str = Field(min_length=1)
     local_rule_id: str = Field(min_length=1)
@@ -953,6 +1501,7 @@ class LumingNayinSourcePattern(ContractModel):
     status: Literal["predicate_matched_not_verdict"]
     fact_paths: tuple[str, ...] = Field(min_length=1)
     predicate_audit: tuple[str, ...] = Field(min_length=1)
+    applicability_adjudication: LumingNayinRuleApplicabilityAdjudication
 
 
 class LumingNayinChartV1(ContractModel):
@@ -1043,6 +1592,25 @@ class TaiyiLongCycleDeity(ContractModel):
     status: str = Field(min_length=1)
 
 
+class TaiyiPatternSourceRef(ContractModel):
+    pack: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    source_anchor: str = Field(min_length=1)
+    verification_status: Literal["verified"]
+    binding_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class TaiyiPatternIdentityAdjudication(ContractModel):
+    status: Literal["adjudicated_pattern_identity"]
+    decision_scope: Literal["taiyi_board_pattern_identity"]
+    pattern_id: str = Field(min_length=1)
+    pattern_name: str = Field(min_length=1)
+    hard_verdict: None = None
+    event_verdict: None = None
+    source_ref: TaiyiPatternSourceRef
+    unresolved_checks: tuple[str, ...] = Field(min_length=1)
+
+
 class TaiyiBoardPredicate(ContractModel):
     predicate_id: str = Field(min_length=1)
     name: str = Field(min_length=1)
@@ -1050,7 +1618,8 @@ class TaiyiBoardPredicate(ContractModel):
     fact_paths: tuple[str, ...]
     source_anchor: str = Field(min_length=1)
     source_dependency_id: str = Field(min_length=1)
-    status: str = Field(min_length=1)
+    status: Literal["predicate_matched_not_verdict"]
+    identity_adjudication: TaiyiPatternIdentityAdjudication
 
 
 class TaiyiScopeContract(ContractModel):
@@ -1195,11 +1764,32 @@ class QimenHorse(ContractModel):
     palace: int = Field(ge=1, le=9)
 
 
+class QimenPatternSourceRef(ContractModel):
+    pack: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    source_anchor: str = Field(min_length=1)
+    verification_status: Literal["verified"]
+    binding_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class QimenPatternIdentityAdjudication(ContractModel):
+    status: Literal["adjudicated_pattern_identity"]
+    decision_scope: Literal["qimen_named_pattern_identity"]
+    pattern_id: str = Field(min_length=1)
+    pattern_name: str = Field(min_length=1)
+    palace: int | None = Field(default=None, ge=1, le=9)
+    hard_verdict: None = None
+    event_verdict: None = None
+    source_ref: QimenPatternSourceRef
+    unresolved_checks: tuple[str, ...] = Field(min_length=1)
+
+
 class QimenNamedPattern(ContractModel):
     id: str = Field(min_length=1)
     name: str = Field(min_length=1)
-    status: str = Field(min_length=1)
-    palace: int = Field(ge=1, le=9)
+    status: Literal["predicate_matched_not_verdict"]
+    palace: int | None = Field(default=None, ge=1, le=9)
+    identity_adjudication: QimenPatternIdentityAdjudication
 
 
 class QimenPlateStem(ContractModel):
@@ -1248,6 +1838,19 @@ class DaliurenTransmission(ContractModel):
     general: str = Field(min_length=1)
 
 
+class DaliurenTimingCandidate(ContractModel):
+    id: Literal["initial_group_upper_candidate"]
+    role: Literal["event_response_candidate"]
+    anchor_earth_branch: str = Field(min_length=1)
+    branch: str = Field(min_length=1)
+    solar_date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    day_ganzhi: str = Field(min_length=2)
+    days_after_cast: int = Field(ge=1, le=12)
+    source_pack: str = Field(min_length=1)
+    source_rule: Literal["LM-R21"]
+    candidate_not_guarantee: Literal[True]
+
+
 class DaliurenCoreFacts(ContractModel):
     """Runtime-owned six-ren plate and rule-trace facts; no event verdicts."""
 
@@ -1262,7 +1865,7 @@ class DaliurenCoreFacts(ContractModel):
     plate_offset: int | None = None
     structural_patterns: tuple[str, ...] | None = None
     transmission_method: dict[str, object] | None = None
-    timing_candidates: tuple[dict[str, object], ...] | None = None
+    timing_candidates: tuple[DaliurenTimingCandidate, ...] | None = None
     xunkong: dict[str, object] | None = None
 
 
@@ -1414,11 +2017,17 @@ class CanwenViewV1(ContractModel):
         return value
 
 
+BaziCalendarNormalization.model_rebuild()
+BaziCoreFacts.model_rebuild()
+BaziChartV1.model_rebuild()
+
+
 ViewModel = Annotated[
     BaziChartV1
     | ChartSimilarityViewV1
     | TimeCheckViewV1
     | FiveElementsFactsViewV1
+    | FortuneFactsViewV1
     | ZiweiChartV1
     | QizhengChartV1
     | LiuyaoChartV1
@@ -1445,6 +2054,7 @@ VIEW_MODEL_TYPES: dict[str, type[ContractModel]] = {
     "chart-similarity-view/v1": ChartSimilarityViewV1,
     "time-check-view/v1": TimeCheckViewV1,
     "five-elements-facts-view/v1": FiveElementsFactsViewV1,
+    "fortune-facts-view/v1": FortuneFactsViewV1,
     "ziwei-chart/v1": ZiweiChartV1,
     "qizheng-chart/v1": QizhengChartV1,
     "liuyao-chart/v1": LiuyaoChartV1,

@@ -57,6 +57,17 @@ export type ReadingStatus =
   | "runtime_unknown"
   | "terminal_stopped";
 
+/** Public payment/job projection; internal ReadingJob statuses stay server-only. */
+export type DeliveryState =
+  | "not_required"
+  | "payment_required"
+  | "queued"
+  | "processing"
+  | "waiting_input"
+  | "delivered"
+  | "delayed"
+  | "failed";
+
 export type ReadingHorizon = {
   kind_id: string;
   start: string | null;
@@ -100,6 +111,7 @@ export type ReadingVersionSummary = {
   prior_answer: string | null;
   input_request: NeedInputRequest | null;
   created_at: string;
+  delivery_state?: DeliveryState;
 };
 
 export type PreviewStartRequest = {
@@ -114,6 +126,50 @@ export type PreviewStartRequest = {
 export type BaziDeepStartRequest = {
   profile_version_id: string;
   query?: string;
+};
+
+export type BaziDeepCheckoutRequest = {
+  reading_version_id: string;
+};
+
+export type CheckoutGatewayStatus = "unavailable" | "pending" | "succeeded" | "failed";
+
+export type BaziDeepCheckoutResponse = {
+  order: {
+    order_id: string;
+    reading_version_id: string | null;
+    product_id: "bazi-deep";
+    product_version: string;
+    amount_minor: number;
+    currency: string;
+    status: string;
+    created_at: string;
+    paid_at: string | null;
+  };
+  attempt: {
+    attempt_id: string;
+    channel: string;
+    status: string;
+    created_at: string;
+  };
+  gateway_status: CheckoutGatewayStatus;
+  redirect_url?: string | null;
+  /** Omitted until the backend confirms a Payment for this order. */
+  payment_id?: string | null;
+  created: boolean;
+};
+
+/** A confirmed checkout Payment is bound to the current deep-reading Job by the backend. */
+export type FulfillmentBindingRequest = {
+  payment_id: string;
+};
+
+export type FulfillmentBindingResponse = {
+  fulfillment_id: string;
+  reading_version_id: string;
+  reading_job_id: string;
+  status: string;
+  created: boolean;
 };
 
 export type QimenDeepStartRequest = EventArtStartRequest;
@@ -201,6 +257,11 @@ export type EventArtStartRequest = {
   longitude?: number | null;
   latitude?: number | null;
   coordinate_source?: string | null;
+};
+
+export type DaliurenStartRequest = EventArtStartRequest & {
+  timing_start?: string;
+  timing_end?: string;
 };
 
 export type TaiyiStartRequest = Omit<EventArtStartRequest, "dimension_ids"> & {
@@ -362,11 +423,23 @@ export type ReadingFact = {
   display_text: string;
 };
 
+export type VerifiedExactCitation = {
+  source_title: string;
+  locator: string;
+  verbatim_excerpt: string;
+  verification_status: "verified_exact";
+};
+
 export type ReadingEvidence = {
   ref: string;
+  evidence_ref?: string;
+  rule_id?: string;
   source_title: string;
   locator: string | null;
   excerpt: string | null;
+  verification_status?: "verified_exact";
+  verbatim_excerpt?: string;
+  verbatim_citations?: VerifiedExactCitation[];
   supports_fact_refs: string[];
 };
 
@@ -419,10 +492,10 @@ export type ReadingResultResponse = {
   view_model?: import("@/view-models/registry").ViewModel | null;
   verification: ReadingVerificationSummary | null;
   input_request: NeedInputRequest | null;
-  document: ReadingShareDocument | null;
+  document: ReadingDocumentV1 | null;
 };
 
-export type ReadingShareDocument = {
+export type ReadingDocumentV1 = {
   schema_version: "reading-document/v1";
   document_id: string;
   reading_version_id: string;
@@ -459,6 +532,25 @@ export type ReadingShareDocument = {
     export: { enabled: boolean };
     share: { enabled: boolean };
   };
+  versions: {
+    runtime_release: string;
+    view_model_schema: string;
+    reading_document_schema: "reading-document/v1";
+  };
+};
+
+export type ReadingShareDocument = {
+  schema_version: "shared-reading-document/v1";
+  document_id: string;
+  reading_version_id: string;
+  accepted_copy_ref: string;
+  product_version: string;
+  presentation_contract_version: string;
+  answer_summary: string;
+  themes: { theme_id: string; label: string }[];
+  claims: { claim_id: string; text: string }[];
+  evidence: { evidence_ref: string; title: string }[];
+  boundaries: { limit_ref: string; text: string }[];
   versions: {
     runtime_release: string;
     view_model_schema: string;

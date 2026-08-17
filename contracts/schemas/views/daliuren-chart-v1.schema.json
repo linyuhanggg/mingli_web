@@ -24,8 +24,25 @@
         "plate_offset": {"type": ["integer", "null"]},
         "structural_patterns": {"type": ["array", "null"], "items": {"type": "string"}},
         "transmission_method": {"type": ["object", "null"]},
-        "timing_candidates": {"type": ["array", "null"], "items": {"type": "object"}},
+        "timing_candidates": {"type": ["array", "null"], "items": {"$ref": "#/$defs/timingCandidate"}},
         "xunkong": {"type": ["object", "null"]}
+      }
+    },
+    "timingCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "role", "anchor_earth_branch", "branch", "solar_date", "day_ganzhi", "days_after_cast", "source_pack", "source_rule", "candidate_not_guarantee"],
+      "properties": {
+        "id": {"const": "initial_group_upper_candidate"},
+        "role": {"const": "event_response_candidate"},
+        "anchor_earth_branch": {"type": "string", "minLength": 1},
+        "branch": {"type": "string", "minLength": 1},
+        "solar_date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "day_ganzhi": {"type": "string", "minLength": 2},
+        "days_after_cast": {"type": "integer", "minimum": 1, "maximum": 12},
+        "source_pack": {"type": "string", "minLength": 1},
+        "source_rule": {"const": "LM-R21"},
+        "candidate_not_guarantee": {"const": true}
       }
     }
   }

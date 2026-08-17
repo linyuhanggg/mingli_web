@@ -72,6 +72,70 @@ def _bazi_payload() -> dict[str, object]:
     }
 
 
+def _bazi_calendar_normalization_payload() -> dict[str, object]:
+    return {
+        "status": "calculated",
+        "algorithm_version": "calendar-v53",
+        "time_basis": {
+            "policy": "local_apparent_solar-v1",
+            "standard_meridian_degrees": None,
+            "longitude_correction_seconds": None,
+            "equation_of_time_seconds": None,
+            "total_correction_seconds": None,
+            "algorithm": {
+                "id": None,
+                "version": None,
+                "source": None,
+                "uncertainty_seconds": None,
+            },
+            "boundary": {
+                "distance_seconds": None,
+                "correction_changes_hour_branch": None,
+                "within_uncertainty": None,
+            },
+        },
+        "true_solar_time": {
+            "status": "apparent_solar_applied",
+            "policy": None,
+            "longitude_correction_seconds": None,
+            "equation_of_time_seconds": None,
+            "total_correction_seconds": None,
+        },
+        "calendar_convention": {
+            "id": None,
+            "version": None,
+            "year_boundary": None,
+            "month_boundary": None,
+            "day_rollover": None,
+            "hour_basis": None,
+            "zi_hour_policy": None,
+        },
+        "effective_datetime": "1985-03-01T23:33:00+08:00",
+        "day_boundary": {
+            "correction_crossed_date": True,
+            "zi_policy_advanced_day_pillar": False,
+        },
+        "changed_pillars": ["day", "hour"],
+        "solar_terms": {
+            "previous": {
+                "name": "雨水",
+                "index": 2,
+                "is_month_boundary_jie": False,
+                "datetime": "1985-02-19T06:00:00+08:00",
+                "instant_utc": "1985-02-18T22:00:00Z",
+            },
+            "next": {
+                "name": "惊蛰",
+                "index": 3,
+                "is_month_boundary_jie": True,
+                "datetime": "1985-03-05T17:00:00+08:00",
+                "instant_utc": "1985-03-05T09:00:00Z",
+            },
+            "month_switch_policy": "exact_jie_instant",
+        },
+    }
+
+
 def _rhythm_payload() -> dict[str, object]:
     return {
         "schema_version": "rhythm-facts-view/v1",
@@ -169,7 +233,20 @@ def _qizheng_reading_document_payload() -> dict[str, object]:
             }
         ],
         "core_facts": {
-            "ephemeris": {},
+            "ephemeris": {
+                "schema_version": "mingli-ephemeris-v1",
+                "engine": {
+                    "name": "astronomy-engine",
+                    "version": "2.1.19",
+                    "license": "MIT",
+                },
+                "coordinate_convention": {
+                    "frame": "geocentric_true_ecliptic_of_date",
+                    "zodiac": "tropical",
+                    "aberration": True,
+                    "precession": "equinox_of_date_by_astronomy_engine",
+                },
+            },
             "conventions": {},
             "classical_bodies": [
                 {
@@ -221,6 +298,8 @@ def _interpretive_candidates_payload() -> dict[str, object]:
             "hard_verdict": None,
             "day_element": "fire",
             "month_command_element": "earth",
+            "seasonal_state": "休",
+            "seasonal_state_source_rule_id": "bazi/sanming-tonghui#R-02-04",
             "same_element_occurrences": 2,
             "resource_element": "wood",
             "resource_occurrences": 1,
@@ -228,6 +307,28 @@ def _interpretive_candidates_payload() -> dict[str, object]:
                 {"element": "fire", "value": 2},
                 {"element": "wood", "value": 1},
             ],
+            "month_order_adjudication": {
+                "status": "adjudicated_month_order_state",
+                "decision_scope": "bazi_month_order_seasonal_state",
+                "day_master_element": "fire",
+                "month_command_element": "earth",
+                "seasonal_state": "休",
+                "whole_chart_strength_verdict": None,
+                "useful_god_verdict": None,
+                "source_ref": {
+                    "pack": "bazi/sanming-tonghui",
+                    "rule_id": "R-02-04",
+                    "source_anchor": (
+                        "references/books/bazi/sanming-tonghui/"
+                        "rules.md#R-02-04"
+                    ),
+                    "verification_status": "verified",
+                    "binding_digest": (
+                        "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e"
+                    ),
+                },
+                "unresolved_checks": ["全局根气、生扶、克泄与合化"],
+            },
             "boundary": "机械证据，不作强弱裁定。",
         },
         "structure": {
@@ -376,6 +477,34 @@ def test_reading_document_is_closed_and_embeds_only_known_view_models() -> None:
     unknown_view["view_model"]["schema_version"] = "unknown-view/v1"
     with pytest.raises(ValidationError):
         ReadingDocumentV1.model_validate(unknown_view)
+
+
+def test_bazi_calendar_g3_fields_are_shared_by_view_and_document_schemas() -> None:
+    calendar = _bazi_calendar_normalization_payload()
+    view_payload = _bazi_payload()
+    view_payload["core_facts"] = {"calendar_normalization": calendar}
+
+    view_schema = _schema(SCHEMA_ROOT / "views" / "bazi-chart-v1.schema.json")
+    Draft202012Validator(view_schema).validate(view_payload)
+
+    document_payload = _reading_document_payload()
+    document_payload["view_model"] = view_payload
+    document_schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
+    Draft202012Validator(document_schema).validate(document_payload)
+    document = ReadingDocumentV1.model_validate(document_payload)
+    assert document.view_model.core_facts is not None
+    normalized = document.view_model.core_facts.calendar_normalization
+    assert normalized is not None
+    assert normalized.changed_pillars == ("day", "hour")
+    assert normalized.solar_terms is not None
+    assert normalized.solar_terms.next is not None
+    assert normalized.solar_terms.next.name == "惊蛰"
+
+    invalid = copy.deepcopy(document_payload)
+    invalid["view_model"]["core_facts"]["calendar_normalization"][
+        "changed_pillars"
+    ] = ["day", "week"]
+    assert tuple(Draft202012Validator(document_schema).iter_errors(invalid))
 
 
 @pytest.mark.parametrize("view_kind", ["bazi", "five_elements"])
