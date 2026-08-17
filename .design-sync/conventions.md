@@ -1,6 +1,12 @@
 # Conventions
 
-Mingli Web 的 UI 基元层。8 个组件：`Button`、`Field`、`Segmented`、`Tabs`、`Dialog`、`Drawer`、`Status`、`Table`。产品语言是简体中文——所有示例文案都用中文写。
+Mingli Web 的 UI 基元与页面外壳层，共 19 个组件：`Button`、`Field`、`Segmented`、`Tabs`、`Dialog`、`Drawer`、`Status`、`Table`（基础控件）+ `Container`、`AppPageHeader`、`ButtonLink`、`SiteFooter`、`StatusPanel`、`TaskCard`（布局与展示，可正常渲染）+ `BrandMark`、`SiteHeader`、`PublicPageShell`、`PrivateShell`、`EditorialPage`（**当前在设计工具里不可渲染**，见下方"已知限制"）。产品语言是简体中文——所有示例文案都用中文写。
+
+## 已知限制：5 个组件目前无法在设计工具中渲染
+
+`BrandMark`、`SiteHeader`、`PublicPageShell`、`PrivateShell`、`EditorialPage` 这 5 个组件在浏览器里渲染会直接报错（`Element type is invalid`）——根因是 `BrandMark` 内部用了 `next/image`，这个包在当前打包链路下解析出来的对象少一层，不是合法的 React 元素类型；其余 4 个组件都会渲染到 `BrandMark`，所以被连带影响。这不是这几个组件 API 的问题（它们的 `.d.ts` 依然准确），只是它们暂时不能被设计工具实际渲染出来。
+
+**生成设计时：不要使用这 5 个组件。** 需要页头/页脚/文章外壳时，直接用 `Container` + 原生元素（`<header>`/`<nav>`/`<footer>`）+ `Button`/`ButtonLink` 手工搭建，参照 `SiteFooter` 的真实产出作为页脚的视觉参照（它本身可以正常使用，因为它不依赖 `next/image`）。需要品牌标识时用文字 wordmark（"命理工具"），不要尝试渲染 `BrandMark`。
 
 ## 无需 Provider
 
@@ -40,6 +46,12 @@ Mingli Web 的 UI 基元层。8 个组件：`Button`、`Field`、`Segmented`、`
 - `Dialog` / `Drawer`：受控 `open` + `onOpenChange`，且 `trigger` 是**必填**的（焦点关闭后要还给它）。`Drawer` 的 `side` 取 `bottom`（默认）或 `right`。
 - `Status`：八种状态 `loading | empty | error | processing | success | unavailable | locked | unauthorized`，自带中文默认文案与图标，`title` / `description` 可覆写。缺省态、错误态、加载态一律用它，不要自己拼空状态。
 - `Table`：`caption` 必填；可选开筛选（`filterLabel`）、多选（`selectable`）、分页（`pageSize`）、行详情（`onRowActivate`）、空态（`emptyState`）。排序由 `columns[].sortable` 打开。
+- `Container`：纯宽度容器，把内容夹在页面统一的最大宽度里，页面正文一律用它包裹，无其他行为。
+- `AppPageHeader`：私人应用内的页头，`title` + `description` 必填，`meta`（如剩余次数、到期日）可选，`stacked` 让标题描述纵向排列（默认是标题左、描述靠右两栏）。
+- `ButtonLink`：把 `Button` 的视觉套在 `next/link` 的 `<Link>` 上做导航型按钮，`variant` 只有 `primary | secondary | text`（映射到 Button 的 primary/secondary/ghost），自带箭头图标。
+- `SiteFooter`：无 props，公共页脚，三栏链接分组 + 品牌区 + 法律行，深色底。
+- `StatusPanel`：六种状态 `loading | empty | error | processing | success | disabled`，比 `Status` 多一个可选的 `actionHref`+`actionLabel` 跳转链接，用在需要"出错后给一个操作"的场景。
+- `TaskCard`：入口卡片，`tone` 取 `paper | ink | clay` 三种视觉基调，`title`/`description`/`label`/`href`/`action` 均必填。
 
 真正的样式源在 `_ds/<folder>/styles.css` 及其 import 闭包，逐组件 API 见各自的 `.d.ts` 与 `.prompt.md`——拿不准时直接读这些文件。
 

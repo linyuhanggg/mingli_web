@@ -3,27 +3,56 @@
   "shape": "package",
   "pkg": "mingli-web",
   "globalName": "MingliWeb",
-  "srcDir": "src",
-  "tsconfig": "tsconfig.json",
+  "srcDir": "../web/src",
+  "tsconfig": "../web/tsconfig.json",
   "componentSrcMap": {
-    "Button": "src/components/ui/button.tsx",
-    "Field": "src/components/ui/field.tsx",
-    "Segmented": "src/components/ui/segmented.tsx",
-    "Tabs": "src/components/ui/tabs.tsx",
-    "Dialog": "src/components/ui/dialog.tsx",
-    "Drawer": "src/components/ui/drawer.tsx",
-    "Status": "src/components/ui/status.tsx",
-    "Table": "src/components/ui/table.tsx"
+    "Button": "../web/src/components/ui/button.tsx",
+    "Field": "../web/src/components/ui/field.tsx",
+    "Segmented": "../web/src/components/ui/segmented.tsx",
+    "Tabs": "../web/src/components/ui/tabs.tsx",
+    "Dialog": "../web/src/components/ui/dialog.tsx",
+    "Drawer": "../web/src/components/ui/drawer.tsx",
+    "Status": "../web/src/components/ui/status.tsx",
+    "Table": "../web/src/components/ui/table.tsx",
+    "Container": "../web/src/components/container.tsx",
+    "BrandMark": "../web/src/components/brand-mark.tsx",
+    "ButtonLink": "../web/src/components/button-link.tsx",
+    "AppPageHeader": "../web/src/components/app-page-header.tsx",
+    "SiteFooter": "../web/src/components/site-footer.tsx",
+    "StatusPanel": "../web/src/components/status-panel.tsx",
+    "TaskCard": "../web/src/components/task-card.tsx",
+    "SiteHeader": "../web/src/components/site-header.tsx",
+    "PublicPageShell": "../web/src/components/public-page-shell.tsx",
+    "PrivateShell": "../web/src/components/private-shell.tsx",
+    "EditorialPage": "../web/src/components/editorial-page.tsx"
   },
-  "extraEntries": ["../.design-sync/ds-global-styles.ts"],
+  "extraEntries": [
+    "./ds-global-styles.ts"
+  ],
   "readmeHeader": ".design-sync/conventions.md",
   "overrides": {
-    "Dialog": { "cardMode": "single", "primaryStory": "Confirm", "viewport": "720x520" },
-    "Drawer": { "cardMode": "single", "primaryStory": "BottomSheet", "viewport": "720x560" },
-    "Table": { "cardMode": "column" }
+    "Dialog": {
+      "cardMode": "single",
+      "primaryStory": "Confirm",
+      "viewport": "720x520"
+    },
+    "Drawer": {
+      "cardMode": "single",
+      "primaryStory": "BottomSheet",
+      "viewport": "720x560"
+    },
+    "Table": {
+      "cardMode": "column"
+    },
+    "TaskCard": {
+      "cardMode": "column"
+    },
+    "AppPageHeader": {
+      "cardMode": "column"
+    }
   },
   "extraFonts": [
-    "node_modules/@fontsource-variable/noto-sans-sc/index.css",
-    "node_modules/@fontsource-variable/noto-serif-sc/index.css"
+    "../web/node_modules/@fontsource-variable/noto-sans-sc/index.css",
+    "../web/node_modules/@fontsource-variable/noto-serif-sc/index.css"
   ]
 }
