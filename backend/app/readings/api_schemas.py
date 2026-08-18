@@ -635,6 +635,27 @@ class ReadingVerificationSummary(BaseModel):
     created_at: datetime
 
 
+class CapabilityProjection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    capability_id: str
+    label: str
+    tier: Literal["A", "B", "C"]
+    source_system: str | None
+    runtime_active_rule_count: int = Field(ge=0)
+    judgment_rule_count: int = Field(ge=0)
+    source_status: Literal["available", "unavailable"]
+    user_decision_pending: bool = False
+
+
+class CapabilityProjectionResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    runtime_release_profile: str
+    source_status: Literal["available", "unavailable"]
+    capabilities: list[CapabilityProjection]
+
+
 class ReadingResultResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -643,6 +664,7 @@ class ReadingResultResponse(BaseModel):
     accepted_copy: str | None
     fact_panel: JsonObject | None
     view_model: ViewModel | None
+    capability: CapabilityProjection | None = None
     verification: ReadingVerificationSummary | None
     input_request: JsonObject | None
     document: ReadingDocumentV1 | None

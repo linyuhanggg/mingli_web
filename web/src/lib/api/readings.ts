@@ -2,6 +2,7 @@ import type {
   BaziDeepStartRequest,
   BaziDeepCheckoutRequest,
   BaziDeepCheckoutResponse,
+  CapabilityProjectionResponse,
   CanwenStartRequest,
   ChartSimilarityStartRequest,
   DaliurenStartRequest,
@@ -39,6 +40,10 @@ import type {
 import { getCsrfToken, jsonDelete, jsonPost, requestJson } from "./client";
 
 const RAW_INPUT_FACT_REF = /\/input\/[^/]+$/;
+
+export async function getCapabilityProjection(): Promise<CapabilityProjectionResponse> {
+  return requestJson<CapabilityProjectionResponse>("/api/v1/capabilities");
+}
 
 function removePrivateFactRefs(
   items: unknown[],

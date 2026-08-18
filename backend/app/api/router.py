@@ -7,6 +7,7 @@ from app.api.admin import router as admin_router
 from app.api.appeals_admin import router as appeals_admin_router
 from app.api.audit_admin import router as audit_admin_router
 from app.api.auth import router as auth_router
+from app.api.capabilities import router as capabilities_router
 from app.api.capabilities_admin import router as capabilities_admin_router
 from app.api.commerce_admin import router as commerce_admin_router
 from app.api.commerce_public import router as commerce_public_router
@@ -42,6 +43,7 @@ def build_api_router(readiness_probe: ReadinessProbe) -> APIRouter:
     router.include_router(content_router)
     router.include_router(guest_sessions_router)
     router.include_router(auth_router)
+    router.include_router(capabilities_router)
     router.include_router(account_router)
     router.include_router(account_commerce_router)
     router.include_router(account_history_router)

@@ -74,6 +74,27 @@ function readingSummary(
 const acceptedCopy = "先给结论。\n\n再说明依据，原字原序。";
 const acceptedCopyQuery = acceptedCopy.replace(/\s+/g, " ");
 
+const baziCapabilityA = {
+  capability_id: "bazi",
+  label: "八字",
+  tier: "A" as const,
+  source_system: "bazi",
+  runtime_active_rule_count: 24,
+  judgment_rule_count: 19,
+  source_status: "available" as const,
+};
+
+const meihuaCapabilityB = {
+  capability_id: "meihua",
+  label: "梅花易数",
+  tier: "B" as const,
+  source_system: "divination",
+  runtime_active_rule_count: 3,
+  judgment_rule_count: 3,
+  source_status: "available" as const,
+  user_decision_pending: true,
+};
+
 function factPanel() {
   return {
     question: "近七日最值得关注什么？",
@@ -274,6 +295,7 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
           readingResult({
             status: "prepared",
             accepted_copy: null,
+            capability: meihuaCapabilityB,
             view_model: {
               schema_version: "meihua-chart/v1",
               subject_ref: "meihua:test",
@@ -329,6 +351,7 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
           readingResult({
             status: "prepared",
             accepted_copy: null,
+            capability: baziCapabilityA,
             view_model: {
               schema_version: "hecan-view/v1",
               subject_ref: "profile-version:test",
@@ -1221,6 +1244,36 @@ describe("Web interface regression guards", () => {
 });
 
 describe("bazi chart workspace", () => {
+  it("fails closed when the Bazi Runtime capability projection is missing", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            view_model: { schema_version: "bazi-chart/v1" },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          object_id: "natal",
+          dimension_ids: ["career"],
+          horizon: { kind_id: "life", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(
+      await screen.findByText("当前能力仍在适配中，暂不可用；未加载未确认的盘面或断法。"),
+    ).toBeVisible();
+    expect(screen.queryByText("八字命盘")).not.toBeInTheDocument();
+    expect(screen.queryByText("全局强弱证据（未裁定）")).not.toBeInTheDocument();
+  });
+
   it("renders a left chart / right analysis layout for bazi readings", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
@@ -1228,6 +1281,7 @@ describe("bazi chart workspace", () => {
       if (path.endsWith("/result")) {
         return jsonResponse(
           readingResult({
+            capability: baziCapabilityA,
             fact_panel: {
               ...factPanel(),
               question: "看一下这个八字",
@@ -1482,6 +1536,7 @@ describe("bazi chart workspace", () => {
       if (path.endsWith("/result")) {
         return jsonResponse(
           readingResult({
+            capability: baziCapabilityA,
             fact_panel: {
               ...factPanel(),
               question: "看一下这个八字",
@@ -1554,6 +1609,7 @@ describe("bazi chart workspace", () => {
       if (path.endsWith("/result")) {
         return jsonResponse(
           readingResult({
+            capability: baziCapabilityA,
             fact_panel: {
               ...factPanel(),
               question: "看一下这个八字",

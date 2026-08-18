@@ -25,6 +25,7 @@ from app.readings.api_schemas import (
     AccountHistoryResponse,
     AccountHistoryRootResponse,
     AccountHistoryVersionSummary,
+    CapabilityProjection,
     DeliveryState,
     Horizon,
     ReadingResultResponse,
@@ -33,6 +34,7 @@ from app.readings.api_schemas import (
     ReadingVersionSummary,
 )
 from app.readings.capability_policy import (
+    project_capability,
     require_public_product_exposure,
     require_public_runtime_capabilities,
 )
@@ -2058,6 +2060,12 @@ class ReadingService:
         document = await self.repository.load_reading_document(version_id)
         verification = await self.repository.load_verification(version_id)
         waiting = await self.repository.load_waiting_input(version_id)
+        capability_projection = project_capability(
+            capability_id=version.capability_id,
+            product_id=version.product_id or root.product_id,
+            release_root=self.settings.runtime_release_root,
+            release_profile=self.settings.runtime_release_profile,
+        )
         return ReadingResultResponse(
             reading_version_id=version.id,
             status=ReadingStatus(version.status),
@@ -2071,6 +2079,16 @@ class ReadingService:
                     product_id=version.product_id or root.product_id,
                     relationship_type=version.relationship_type,
                 )
+            ),
+            capability=CapabilityProjection(
+                capability_id=capability_projection.capability_id,
+                label=capability_projection.label,
+                tier=capability_projection.tier,
+                source_system=capability_projection.source_system,
+                runtime_active_rule_count=capability_projection.runtime_active_rule_count,
+                judgment_rule_count=capability_projection.judgment_rule_count,
+                source_status=capability_projection.source_status,
+                user_decision_pending=capability_projection.user_decision_pending,
             ),
             verification=(
                 None

@@ -352,6 +352,12 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
       !isRelationship &&
       !isFiveElementsFacts &&
       !isChartSimilarity;
+    // A missing projection is C only for a route that actually depends on a
+    // Runtime ViewModel. Plain legacy result pages do not have this gate.
+    const requiresCapabilityProjection = isBazi || result.view_model != null;
+    const capabilityTier =
+      result.capability?.tier ?? (requiresCapabilityProjection ? "C" : null);
+    const showRuntimeChart = capabilityTier === "A" || capabilityTier === "B";
     const isFortune = summary.capability_id === "fortune";
     const isLiuyao = summary.capability_id === "liuyao";
     const hasTypedLiuyao = result.view_model?.schema_version === "liuyao-chart/v1";
@@ -361,9 +367,11 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     );
     const publicFacts = result.fact_panel?.facts ?? [];
     const chart =
-      result.view_model?.schema_version === "bazi-chart/v1"
-        ? buildBaziChartViewFromViewModel(result.view_model)
-        : buildBaziChartView(publicFacts);
+      isBazi && capabilityTier !== "C"
+        ? result.view_model?.schema_version === "bazi-chart/v1"
+          ? buildBaziChartViewFromViewModel(result.view_model)
+          : buildBaziChartView(publicFacts)
+        : null;
     const fortuneMarkers = isFortune
       ? extractFortunePeriodMarkers(publicFacts)
       : [];
@@ -461,7 +469,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               </section>
             ) : null}
 
-            {hasRuntimeChart && result.view_model ? (
+            {hasRuntimeChart && result.view_model && showRuntimeChart ? (
               <section
                 className={surface.readingSection}
                 aria-labelledby="reading-runtime-chart-title"
@@ -474,9 +482,20 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
                   <p className={surface.inlineNote}>
                     盘面来自服务端 Runtime ViewModel；浏览器只负责展示，不重新计算。
                   </p>
-                  <RuntimeChart viewModel={result.view_model} />
+                  {capabilityTier === "B" ? (
+                    <p className={surface.inlineNote} data-capability-tier="B">
+                      当前只提供确定性盘面与事实，不提供断语。
+                    </p>
+                  ) : null}
+                  <RuntimeChart viewModel={result.view_model} capability={result.capability} />
                 </div>
               </section>
+            ) : null}
+
+            {capabilityTier === "C" ? (
+              <p className={surface.inlineNote} data-capability-tier="C">
+                当前能力仍在适配中，暂不展示未确认的盘面或断法。
+              </p>
             ) : null}
 
             <section
@@ -557,25 +576,34 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
             </div>
           </section>
 
-          <section
-            className={surface.readingSection}
-            aria-labelledby="reading-workspace-title"
-          >
-            <span className={surface.sectionIndex} aria-hidden="true">
-              02
-            </span>
-            <div>
-              <h2 id="reading-workspace-title">盘面证据</h2>
-              <p className={surface.inlineNote}>
-                先看结论，再点开盘面核对服务端公开事实；前端不本地排盘。
-              </p>
-              <BaziChart
-                chart={chart}
-                title="八字命盘"
-                evidence={result.fact_panel?.evidence ?? []}
-              />
-            </div>
-          </section>
+            <section
+              className={surface.readingSection}
+              aria-labelledby="reading-workspace-title"
+            >
+              <span className={surface.sectionIndex} aria-hidden="true">
+                02
+              </span>
+              <div>
+                <h2 id="reading-workspace-title">盘面证据</h2>
+                {capabilityTier === "C" ? (
+                  <p className={surface.inlineNote} data-capability-tier="C">
+                    当前能力仍在适配中，暂不可用；未加载未确认的盘面或断法。
+                  </p>
+                ) : (
+                  <>
+                    <p className={surface.inlineNote}>
+                      先看结论，再点开盘面核对服务端公开事实；前端不本地排盘。
+                    </p>
+                    <BaziChart
+                      chart={chart!}
+                      title="八字命盘"
+                      evidence={result.fact_panel?.evidence ?? []}
+                      showInterpretiveSections={capabilityTier === "A"}
+                    />
+                  </>
+                )}
+              </div>
+            </section>
 
           <section
             className={surface.readingSection}

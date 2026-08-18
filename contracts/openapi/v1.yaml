@@ -8,6 +8,7 @@ servers:
     description: Same-origin web entry
 tags:
   - name: Health
+  - name: Capabilities
   - name: Content
   - name: Identity
   - name: Referrals
@@ -42,6 +43,18 @@ paths:
                 $ref: "#/components/schemas/HealthResponse"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
+  /api/v1/capabilities:
+    get:
+      operationId: listCapabilityProjection
+      tags: [Capabilities]
+      summary: List Capability Projection
+      responses:
+        "200":
+          description: Public projection of the admitted Runtime capability tiers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CapabilityProjectionResponse"
   /api/v1/content:
     get:
       operationId: listPublishedContent
@@ -2440,6 +2453,48 @@ components:
         service:
           type: string
           enum: [api, database]
+    CapabilityProjection:
+      type: object
+      additionalProperties: false
+      required:
+        [capability_id, label, tier, source_system, runtime_active_rule_count,
+         judgment_rule_count, source_status]
+      properties:
+        capability_id:
+          type: string
+        label:
+          type: string
+        tier:
+          type: string
+          enum: [A, B, C]
+        source_system:
+          type: [string, "null"]
+        runtime_active_rule_count:
+          type: integer
+          minimum: 0
+        judgment_rule_count:
+          type: integer
+          minimum: 0
+        source_status:
+          type: string
+          enum: [available, unavailable]
+        user_decision_pending:
+          type: boolean
+          default: false
+    CapabilityProjectionResponse:
+      type: object
+      additionalProperties: false
+      required: [runtime_release_profile, source_status, capabilities]
+      properties:
+        runtime_release_profile:
+          type: string
+        source_status:
+          type: string
+          enum: [available, unavailable]
+        capabilities:
+          type: array
+          items:
+            $ref: "#/components/schemas/CapabilityProjection"
     ContentPublicItem:
       type: object
       additionalProperties: false

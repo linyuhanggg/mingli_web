@@ -484,12 +484,30 @@ export type ReadingVerificationSummary = {
   created_at: string;
 };
 
+export type CapabilityProjection = {
+  capability_id: string;
+  label: string;
+  tier: "A" | "B" | "C";
+  source_system: string | null;
+  runtime_active_rule_count: number;
+  judgment_rule_count: number;
+  source_status: "available" | "unavailable";
+  user_decision_pending?: boolean;
+};
+
+export type CapabilityProjectionResponse = {
+  runtime_release_profile: string;
+  source_status: "available" | "unavailable";
+  capabilities: CapabilityProjection[];
+};
+
 export type ReadingResultResponse = {
   reading_version_id: string;
   status: ReadingStatus;
   accepted_copy: string | null;
   fact_panel: ReadingFactPanel | null;
   view_model?: import("@/view-models/registry").ViewModel | null;
+  capability?: CapabilityProjection | null;
   verification: ReadingVerificationSummary | null;
   input_request: NeedInputRequest | null;
   document: ReadingDocumentV1 | null;

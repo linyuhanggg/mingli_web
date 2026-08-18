@@ -25,6 +25,7 @@ import type {
   ZiweiChartViewModel,
   ZiweiRelationshipViewModel,
 } from "@/view-models/registry";
+import type { CapabilityProjection } from "@/lib/api/contracts";
 import {
   formatBaziInterpretiveCandidateRows,
   formatLiuyaoRoleAdjudicationRows,
@@ -222,7 +223,13 @@ function fengshuiMissingLabel(value: string): string {
   return labels[value] ?? "其他关键资料";
 }
 
-function ZiweiChart({ view }: Readonly<{ view: ZiweiChartViewModel }>) {
+function ZiweiChart({
+  view,
+  showInterpretiveSections,
+}: Readonly<{
+  view: ZiweiChartViewModel;
+  showInterpretiveSections: boolean;
+}>) {
   const coreFacts = view.core_facts;
   const transformations = coreFacts?.transformations ?? [];
   const annualLayers = coreFacts?.annual_layers ?? [];
@@ -274,7 +281,7 @@ function ZiweiChart({ view }: Readonly<{ view: ZiweiChartViewModel }>) {
           </div>
         ) : null}
       </dl>
-      {interpretiveCandidates ? (
+      {showInterpretiveSections && interpretiveCandidates ? (
         <Table
           caption="命宫三方四正与古籍候选（非最终结论）"
           headers={["项目", "Runtime 输出"]}
@@ -286,7 +293,7 @@ function ZiweiChart({ view }: Readonly<{ view: ZiweiChartViewModel }>) {
           ]}
         />
       ) : null}
-      {coreFacts?.source_conditioned_patterns.length ? (
+      {showInterpretiveSections && coreFacts?.source_conditioned_patterns.length ? (
         <Table
           caption="古籍来源条件候选"
           headers={["规则", "来源", "命中条件", "状态"]}
@@ -347,7 +354,13 @@ function ZiweiChart({ view }: Readonly<{ view: ZiweiChartViewModel }>) {
   );
 }
 
-function QizhengChart({ view }: Readonly<{ view: QizhengChartViewModel }>) {
+function QizhengChart({
+  view,
+  showInterpretiveSections,
+}: Readonly<{
+  view: QizhengChartViewModel;
+  showInterpretiveSections: boolean;
+}>) {
   const coreFacts = view.core_facts;
   const annualTransformations = coreFacts?.annual_transformations ?? [];
   const requestedLimitLayers = coreFacts?.requested_limit_layers ?? [];
@@ -447,7 +460,7 @@ function QizhengChart({ view }: Readonly<{ view: QizhengChartViewModel }>) {
           rows={coreFacts.transformations.map((item) => [String(item.sequence), item.label, item.classical_body, item.year_stem])}
         />
       ) : null}
-      {coreFacts?.source_conditioned_patterns.length ? (
+      {showInterpretiveSections && coreFacts?.source_conditioned_patterns.length ? (
         <Table
           caption="古籍来源条件候选"
           headers={["规则", "来源", "命中条件", "状态"]}
@@ -488,7 +501,13 @@ function QizhengChart({ view }: Readonly<{ view: QizhengChartViewModel }>) {
   );
 }
 
-function LiuyaoChart({ view }: Readonly<{ view: LiuyaoChartViewModel }>) {
+function LiuyaoChart({
+  view,
+  showInterpretiveSections,
+}: Readonly<{
+  view: LiuyaoChartViewModel;
+  showInterpretiveSections: boolean;
+}>) {
   const coreRows = view.core_facts
     ? coreFactRows(view.core_facts as unknown as StructuredFactObject)
     : [];
@@ -518,7 +537,7 @@ function LiuyaoChart({ view }: Readonly<{ view: LiuyaoChartViewModel }>) {
             line.moving ? "动爻" : "静爻",
           ])}
       />
-      {roleAdjudicationRows.length ? (
+      {showInterpretiveSections && roleAdjudicationRows.length ? (
         <Table
           caption="六爻问题角色裁决"
           headers={["裁决项", "Runtime 输出"]}
@@ -533,7 +552,13 @@ function LiuyaoChart({ view }: Readonly<{ view: LiuyaoChartViewModel }>) {
   );
 }
 
-function MeihuaChart({ view }: Readonly<{ view: MeihuaChartViewModel }>) {
+function MeihuaChart({
+  view,
+  showInterpretiveSections,
+}: Readonly<{
+  view: MeihuaChartViewModel;
+  showInterpretiveSections: boolean;
+}>) {
   const relationPolarityLabels = {
     supportive: "用生体（支持体）",
     depleting: "体生用（体有耗）",
@@ -614,7 +639,7 @@ function MeihuaChart({ view }: Readonly<{ view: MeihuaChartViewModel }>) {
           rows={seasonalRows}
         />
       ) : null}
-      {relationCandidateRows.length ? (
+      {showInterpretiveSections && relationCandidateRows.length ? (
         <Table
           caption="体用关系来源裁定（未形成事件结论）"
           headers={["盘层", "位置", "关系", "月令状态", "来源极性", "裁定状态"]}
@@ -1560,7 +1585,14 @@ function RelationshipChart({ view }: Readonly<{ view: RelationshipViewModel }>) 
   );
 }
 
-export function RuntimeChart({ viewModel }: Readonly<{ viewModel: ViewModel }>) {
+export function RuntimeChart({
+  viewModel,
+  capability,
+}: Readonly<{
+  viewModel: ViewModel;
+  capability?: CapabilityProjection | null;
+}>) {
+  const showInterpretiveSections = capability ? capability.tier === "A" : true;
   switch (viewModel.schema_version) {
     case "bazi-relationship/v1":
     case "ziwei-relationship/v1":
@@ -1573,13 +1605,13 @@ export function RuntimeChart({ viewModel }: Readonly<{ viewModel: ViewModel }>) 
     case "wenshi-view/v1":
       return <WenshiChart view={viewModel} />;
     case "ziwei-chart/v1":
-      return <ZiweiChart view={viewModel} />;
+      return <ZiweiChart view={viewModel} showInterpretiveSections={showInterpretiveSections} />;
     case "qizheng-chart/v1":
-      return <QizhengChart view={viewModel} />;
+      return <QizhengChart view={viewModel} showInterpretiveSections={showInterpretiveSections} />;
     case "liuyao-chart/v1":
-      return <LiuyaoChart view={viewModel} />;
+      return <LiuyaoChart view={viewModel} showInterpretiveSections={showInterpretiveSections} />;
     case "meihua-chart/v1":
-      return <MeihuaChart view={viewModel} />;
+      return <MeihuaChart view={viewModel} showInterpretiveSections={showInterpretiveSections} />;
     case "luming-nayin-chart/v1":
       return <LumingNayinChart view={viewModel} />;
     case "rhythm-facts-view/v1":
