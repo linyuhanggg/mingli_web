@@ -26,6 +26,17 @@ const OUTPUT_ROOT = path.resolve(
 );
 const RUNTIME_OWNER_MODE = PRODUCT_DATA_BOUNDARY === "signed-runtime-release-owner-result";
 const REQUIRE_EVIDENCE_DRAWER = process.env.MINGLI_G5_REQUIRE_EVIDENCE_DRAWER === "1";
+const TARGET_KIND = process.env.MINGLI_G5_TARGET_KIND ?? "none";
+const TARGET_VALUES = {
+  none: null,
+  year: "2026",
+  month: "2026-08",
+  day: "2026-08-15",
+};
+if (!(TARGET_KIND in TARGET_VALUES)) {
+  throw new Error(`MINGLI_G5_TARGET_KIND must be one of ${Object.keys(TARGET_VALUES).join(", ")}`);
+}
+const TARGET_VALUE = TARGET_VALUES[TARGET_KIND];
 const RELEASE_MANIFEST_PATH = path.join(
   REPO_ROOT,
   ".runtime",
@@ -288,6 +299,16 @@ async function prepareProduct(page) {
   await page.getByLabel("出生分钟").selectOption("55");
   await page.getByRole("button", { name: "海外或找不到？直接输入" }).click();
   await page.getByLabel("出生地点").fill("北京市朝阳区");
+  if (TARGET_KIND !== "none") {
+    await page.getByText("高级排盘选项", { exact: true }).click();
+    await page.getByRole("group", { name: "目标时间层（可选，三选一）" }).scrollIntoViewIfNeeded();
+    const labels = {
+      year: "流年目标年份",
+      month: "流月目标月份",
+      day: "流日目标日期",
+    };
+    await page.getByLabel(labels[TARGET_KIND]).fill(TARGET_VALUE);
+  }
 
   const previewResponse = page.waitForResponse(
     (response) => response.request().method() === "POST"
@@ -444,6 +465,20 @@ async function run() {
           screenshot: path.relative(REPO_ROOT, screenshot),
         });
       }
+      if (TARGET_KIND !== "none") {
+        const expectedLayer = { year: "yearly", month: "monthly", day: "daily" }[TARGET_KIND];
+        for (const report of layerReports.filter((entry) => ["yearly", "monthly", "daily"].includes(entry.layer))) {
+          const expectedAvailable = report.layer === expectedLayer;
+          if (report.available !== expectedAvailable) {
+            failures.push(
+              `${viewport.width}px ${TARGET_KIND} target: ${report.layer} available=${report.available}, expected=${expectedAvailable}`,
+            );
+          }
+          if (!expectedAvailable && report.unitCount !== 0) {
+            failures.push(`${viewport.width}px ${TARGET_KIND} target: unavailable ${report.layer} rendered ${report.unitCount} units`);
+          }
+        }
+      }
       if (runtimeErrors.length > 0) failures.push(`${viewport.width}px product runtime errors: ${runtimeErrors.join(" | ")}`);
 
       let comparison = null;
@@ -516,6 +551,7 @@ async function run() {
     productBaseUrl: APP_BASE_URL,
     productRoute: PRODUCT_ROUTE,
     productDataBoundary: PRODUCT_DATA_BOUNDARY,
+    targetInput: { kind: TARGET_KIND, value: TARGET_VALUE },
     releaseManifestSha256,
     renderedCitations,
     readingVersionIds,

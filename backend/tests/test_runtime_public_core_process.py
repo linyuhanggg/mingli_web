@@ -89,6 +89,9 @@ async def test_real_runtime_projects_public_natal_and_divination_core() -> None:
     bazi_view = project_bazi_view_model(bazi_brief)
     assert isinstance(bazi_view, BaziChartV1)
     assert bazi_view.core_facts is not None
+    assert bazi_view.core_facts.year_layers is None
+    assert bazi_view.core_facts.month_layers is None
+    assert bazi_view.core_facts.day_layers is None
     source_patterns = bazi_view.core_facts.source_conditioned_patterns
     assert [pattern.local_rule_id for pattern in source_patterns] == [
         "DR-01-01",
@@ -355,6 +358,8 @@ async def test_real_runtime_projects_bazi_year_layer() -> None:
     assert view_model.core_facts is not None
     assert view_model.core_facts.year_layers is not None
     assert [item.year for item in view_model.core_facts.year_layers] == [2026]
+    assert view_model.core_facts.month_layers is None
+    assert view_model.core_facts.day_layers is None
 
 
 @pytest.mark.asyncio
@@ -437,6 +442,8 @@ async def test_real_runtime_projects_declared_month_and_day_layers() -> None:
     assert bazi_month_view.core_facts is not None
     assert bazi_month_view.core_facts.month_layers is not None
     assert [item.period for item in bazi_month_view.core_facts.month_layers] == ["2026-08"]
+    assert bazi_month_view.core_facts.year_layers is None
+    assert bazi_month_view.core_facts.day_layers is None
     assert next(
         layer for layer in bazi_month_view.time_layers if layer.layer_id == "month"
     ).available
@@ -456,6 +463,8 @@ async def test_real_runtime_projects_declared_month_and_day_layers() -> None:
     assert bazi_day_view.core_facts is not None
     assert bazi_day_view.core_facts.day_layers is not None
     assert [item.period for item in bazi_day_view.core_facts.day_layers] == ["2026-08-15"]
+    assert bazi_day_view.core_facts.year_layers is None
+    assert bazi_day_view.core_facts.month_layers is None
     assert next(layer for layer in bazi_day_view.time_layers if layer.layer_id == "day").available
 
     ziwei_month = await runtime.execute(

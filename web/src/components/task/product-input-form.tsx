@@ -1454,6 +1454,21 @@ function ProductSpecificNatalOptions({
   if (product.id === "bazi") return (
     <>
       <p className={styles.productNote}>八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则。</p>
+      <fieldset className={styles.fieldGroup}>
+        <legend>目标时间层（可选，三选一）</legend>
+        <p className={styles.productNote}>不填时只计算本命与大运；填写一项后计算对应的流年、流月或流日。</p>
+        <div className={styles.twoColumns}>
+          <Field htmlFor="bazi-target-year" label="流年目标年份" error={errors.targetYear?.message}>
+            <input id="bazi-target-year" inputMode="numeric" placeholder="例如 2026" {...register("targetYear")} />
+          </Field>
+          <Field htmlFor="bazi-target-month" label="流月目标月份" error={errors.targetMonth?.message}>
+            <input id="bazi-target-month" type="month" {...register("targetMonth")} />
+          </Field>
+        </div>
+        <Field htmlFor="bazi-target-date" label="流日目标日期" error={errors.targetDate?.message}>
+          <input id="bazi-target-date" type="date" {...register("targetDate")} />
+        </Field>
+      </fieldset>
     </>
   );
   if (product.id === "ziwei") return (

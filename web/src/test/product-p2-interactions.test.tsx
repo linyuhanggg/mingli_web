@@ -32,6 +32,18 @@ function submitButton(productId: string) {
 }
 
 describe("P2 product interaction contracts", () => {
+  it("exposes the three mutually exclusive Bazi temporal targets in advanced options", async () => {
+    const user = userEvent.setup();
+    render(<ProductInputForm product={getProductDefinition("bazi")} onConfirm={vi.fn()} />);
+
+    await user.click(screen.getByText("高级排盘选项"));
+
+    expect(screen.getByRole("group", { name: "目标时间层（可选，三选一）" })).toBeVisible();
+    expect(screen.getByLabelText("流年目标年份")).toHaveAttribute("inputmode", "numeric");
+    expect(screen.getByLabelText("流月目标月份")).toHaveAttribute("type", "month");
+    expect(screen.getByLabelText("流日目标日期")).toHaveAttribute("type", "date");
+  });
+
   it("opens the compact workbench menu from the keyboard and explains every disabled action", async () => {
     const user = userEvent.setup();
     const product = getProductDefinition("bazi");

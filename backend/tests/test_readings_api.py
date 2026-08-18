@@ -339,6 +339,44 @@ async def test_guest_starts_preview_reading_and_polls_a_queued_job(
 
 
 @pytest.mark.parametrize(
+    ("target", "expected_kind", "expected_boundary"),
+    [
+        ({"target_year": 2026}, "year", "2026"),
+        ({"target_month": "2026-08"}, "month", "2026-08"),
+        ({"target_date": "2026-08-15"}, "day", "2026-08-15"),
+    ],
+)
+async def test_guest_starts_targeted_bazi_preview_with_public_horizon_boundary(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+    target: dict[str, object],
+    expected_kind: str,
+    expected_boundary: str,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+
+    started = await client.post(
+        "/api/v1/readings/preview",
+        headers=headers,
+        json={
+            "profile_version_id": confirmed["profile_version_id"],
+            "dimension_ids": ["career"],
+            **target,
+        },
+    )
+
+    assert started.status_code == 201, started.text
+    assert started.json()["horizon"] == {
+        "kind_id": expected_kind,
+        "start": expected_boundary,
+        "end": expected_boundary,
+    }
+
+
+@pytest.mark.parametrize(
     "path, payload, expected_capability, expected_object",
     [
         (

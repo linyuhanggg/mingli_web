@@ -534,8 +534,35 @@ class Horizon(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     kind_id: str
-    start: date | None = None
-    end: date | None = None
+    start: str | None = None
+    end: str | None = None
+
+    @field_validator("start", "end", mode="before")
+    @classmethod
+    def _serialize_and_validate_boundary(cls, value: object) -> str | None:
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            raise ValueError("horizon boundaries must not include a time")
+        if isinstance(value, date):
+            return value.isoformat()
+        if not isinstance(value, str):
+            raise ValueError("horizon boundaries must be strings")
+        try:
+            if len(value) == 4:
+                year = int(value)
+                if not 1 <= year <= 9999:
+                    raise ValueError
+            elif len(value) == 7:
+                datetime.strptime(value, "%Y-%m")
+            elif len(value) == 10:
+                if date.fromisoformat(value).isoformat() != value:
+                    raise ValueError
+            else:
+                raise ValueError
+        except ValueError as error:
+            raise ValueError("horizon boundaries must use YYYY, YYYY-MM, or YYYY-MM-DD") from error
+        return value
 
 
 class ReadingVersionSummary(BaseModel):
