@@ -6,9 +6,9 @@ import textwrap
 from pathlib import Path
 
 import pytest
+from mingli_paths import MINGLI_CORE_SCRIPTS
 
 ROOT = Path(__file__).resolve().parents[2]
-RUNTIME_SCRIPTS = ROOT / ".runtime" / "v53-time-check-release" / "scripts"
 RUNTIME_PYTHON = Path(
     os.environ.get(
         "MINGLI_RUNTIME_TEST_PYTHON",
@@ -17,8 +17,8 @@ RUNTIME_PYTHON = Path(
 )
 
 pytestmark = pytest.mark.skipif(
-    not RUNTIME_PYTHON.is_file(),
-    reason="the dedicated Mingli Runtime Python is not installed",
+    not RUNTIME_PYTHON.is_file() or not MINGLI_CORE_SCRIPTS.is_dir(),
+    reason="the Mingli core source or dedicated Runtime Python is not installed",
 )
 
 
@@ -28,7 +28,7 @@ def _run_runtime_assertions(source: str) -> None:
         cwd=ROOT,
         env={
             **os.environ,
-            "PYTHONPATH": str(RUNTIME_SCRIPTS),
+            "PYTHONPATH": str(MINGLI_CORE_SCRIPTS),
             "PYTHONDONTWRITEBYTECODE": "1",
             "PYTHONPYCACHEPREFIX": "/dev/null",
         },
@@ -77,11 +77,11 @@ def test_calendar_contract_records_applied_true_solar_time() -> None:
         from reading_engine.calendar_core import normalize_calendar
 
         calendar = normalize_calendar(
-            "2000-10-18T05:10:00+08:00",
+            "1994-04-30T05:55:00+08:00",
             timezone_name="Asia/Shanghai",
-            location="synthetic-fujian-fixture",
-            longitude=119.12,
-            latitude=25.47,
+            location="synthetic-calendar-fixture",
+            longitude=120.0,
+            latitude=30.0,
             coordinate_source="synthetic-fixture",
             time_basis_policy="local_apparent_solar-v1",
             zi_hour_policy="midnight",
@@ -92,10 +92,10 @@ def test_calendar_contract_records_applied_true_solar_time() -> None:
         assert calendar["time_basis"]["total_correction_seconds"] != 0
         assert calendar["effective_datetime"] != calendar["civil_datetime"]
         assert calendar["ganzhi"] == {
-            "year": "庚辰",
-            "month": "丙戌",
-            "day": "己酉",
-            "hour": "丁卯",
+            "year": "甲戌",
+            "month": "戊辰",
+            "day": "丙戌",
+            "hour": "辛卯",
         }
         """
     )

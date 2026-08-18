@@ -78,6 +78,70 @@ def _brief() -> dict[str, object]:
     }
 
 
+def _ranked_brief() -> dict[str, object]:
+    brief = deepcopy(_brief())
+    for fact in brief["facts"]:
+        ref = str(fact["ref"])
+        if ref.endswith("/ranking_status"):
+            fact["value"] = "candidate_evidence_ranked"
+        elif ref.endswith("/event_matching_status"):
+            fact["value"] = "structured_evidence"
+    brief["facts"].extend(
+        [
+            {
+                "ref": "fact:/calculated/time-check/event_input_status",
+                "subject_ref": "profile-version:time-check-fixture",
+                "kind_id": "kind.fact",
+                "value": "structured_valid",
+                "display_text": "event_input_status",
+            },
+            {
+                "ref": "fact:/calculated/time-check/candidate_rankings",
+                "subject_ref": "profile-version:time-check-fixture",
+                "kind_id": "kind.fact",
+                "value": [
+                    {
+                        "candidate_id": f"candidate-{index + 1:02d}",
+                        "hour_branch": branch,
+                        "eligible": True,
+                        "evidence_score": 1,
+                        "matched_event_ids": ["event-1"],
+                        "elimination_reasons": [],
+                        "event_evidence": [
+                            {
+                                "event_id": "event-1",
+                                "matched": True,
+                                "evidence_score": 1,
+                                "relations": [
+                                    {
+                                        "natal_position": "day",
+                                        "natal_branch": "午",
+                                        "event_branch": "未",
+                                        "relation_type": "六合",
+                                    }
+                                ],
+                                "event_year_ten_god": "正官",
+                                "reasons": ["positive_branch_relation"],
+                            }
+                        ],
+                        "rank": index + 1,
+                    }
+                    for index, branch in enumerate(HOUR_BRANCHES)
+                ],
+                "display_text": "candidate_rankings",
+            },
+            {
+                "ref": "fact:/calculated/time-check/event_matches",
+                "subject_ref": "profile-version:time-check-fixture",
+                "kind_id": "kind.fact",
+                "value": [],
+                "display_text": "event_matches",
+            },
+        ]
+    )
+    return brief
+
+
 def test_time_check_projects_and_validates_exactly_twelve_candidate_facts() -> None:
     view_model = project_time_check_view_model(_brief())
 
@@ -96,6 +160,40 @@ def test_time_check_projects_and_validates_exactly_twelve_candidate_facts() -> N
     assert {"$ref": "#/$defs/timeCheckView"} in document_schema["properties"][
         "view_model"
     ]["oneOf"]
+
+
+def test_time_check_projects_typed_event_evidence() -> None:
+    view_model = project_time_check_view_model(_ranked_brief())
+
+    assert isinstance(view_model, TimeCheckViewV1)
+    evidence = view_model.candidate_rankings[0].event_evidence[0]
+    assert evidence.event_id == "event-1"
+    assert evidence.relations[0].natal_position == "day"
+    assert evidence.relations[0].relation_type == "六合"
+    assert evidence.reasons == ("positive_branch_relation",)
+
+
+def test_time_check_rejects_malformed_typed_event_evidence() -> None:
+    malformed = _ranked_brief()
+    ranking_fact = next(
+        fact
+        for fact in malformed["facts"]
+        if str(fact["ref"]).endswith("/candidate_rankings")
+    )
+    first_evidence = ranking_fact["value"][0]["event_evidence"][0]
+    del first_evidence["relations"][0]["event_branch"]
+    assert project_time_check_view_model(malformed) is None
+
+
+def test_time_check_rejects_non_object_ranking_rows_instead_of_dropping_them() -> None:
+    malformed = _ranked_brief()
+    ranking_fact = next(
+        fact
+        for fact in malformed["facts"]
+        if str(fact["ref"]).endswith("/candidate_rankings")
+    )
+    ranking_fact["value"].append("not-an-evidence-object")
+    assert project_time_check_view_model(malformed) is None
 
 
 def test_time_check_rejects_malformed_candidates_and_missing_required_facts() -> None:

@@ -17,6 +17,7 @@ from app.main import create_app
 from app.readings.repository import SqlReadingRepository
 from app.security.envelope import EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
+from mingli_paths import MINGLI_RUNTIME_RELEASE_ROOT
 from sqlalchemy import func, select
 from worker.readings import build_reading_worker
 
@@ -26,7 +27,7 @@ from test_reading_worker import MutableClock
 pytest_plugins = ("test_reading_worker",)
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE_RELEASE = ROOT / ".runtime" / "v53-time-check-release"
+SOURCE_RELEASE = MINGLI_RUNTIME_RELEASE_ROOT
 RUNTIME_PYTHON = Path(
     os.environ.get(
         "MINGLI_RUNTIME_TEST_PYTHON",

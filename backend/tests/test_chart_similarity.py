@@ -54,12 +54,12 @@ def _profile(subject_ref: str) -> ConfirmedProfileVersion:
         birth_datetime="2000-01-01T05:10:00+08:00",
         birth_datetime_or_four_pillars="2000-01-01T05:10:00+08:00",
         timezone="Asia/Shanghai",
-        location="福建省莆田市",
+        location="合成测试地点",
         gender="male",
         time_basis_policy="civil",
         zi_hour_policy="midnight",
-        longitude=119.1,
-        latitude=25.5,
+        longitude=120.0,
+        latitude=30.0,
         coordinate_source="fixture",
     )
 
