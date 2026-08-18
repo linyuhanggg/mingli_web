@@ -45,6 +45,63 @@ textarea:disabled {
   cursor: not-allowed;
 }
 
+/* ---------- 原生控件收口 ----------
+   select 与 date/time 之前完全走浏览器默认外观（系统三角、系统日历按钮），
+   在一套自绘的边框/圆角/字重里显得像没做完。这里统一到设计系统。
+   注意：模块里给 select 设背景必须用 background-color，
+   background 简写会连带清掉这里的箭头图形。 */
+
+select,
+input[type="date"],
+input[type="time"],
+input[type="month"],
+input[type="datetime-local"] {
+  appearance: none;
+}
+
+select {
+  padding-right: 2.5rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.75 6 6.25 11 1.75' stroke='%23525252' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  background-size: 12px 8px;
+  cursor: pointer;
+}
+
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+::-webkit-calendar-picker-indicator {
+  width: 1.05rem;
+  height: 1.05rem;
+  padding: 0;
+  margin-left: 0.35rem;
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity var(--duration-feedback) ease;
+}
+
+input:hover::-webkit-calendar-picker-indicator,
+input:focus::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
+::-webkit-datetime-edit {
+  font-variant-numeric: tabular-nums;
+}
+
+::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="time"]::-webkit-inner-spin-button,
+input[type="datetime-local"]::-webkit-inner-spin-button {
+  display: none;
+}
+
 ::selection {
   background: var(--color-surface-muted);
   color: var(--color-text);
@@ -60,7 +117,12 @@ h2,
 h3 {
   font-family: var(--font-sans);
   line-height: var(--line-height-title);
-  text-wrap: balance;
+  /* 中文没有词间空格，balance 会把标题在词中间劈开（如「都绑/定」「逐/项」）。
+     keep-all 让断行只发生在标点与空格处；单个分句仍超出行宽时由
+     overflow-wrap 兜底，避免溢出容器。 */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
 }
 
 h1,

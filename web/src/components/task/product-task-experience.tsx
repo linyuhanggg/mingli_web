@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronRight, Circle } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Status } from "@/components/ui/status";
@@ -9,6 +9,7 @@ import { WorkbenchShell } from "@/components/workbench/workbench-shell";
 import {
   confirmProfileDraft,
   createProfileDraft,
+  getCapabilityProjection,
   startFengshuiReading,
   startPhysiognomyReading,
   startCanwenReading,
@@ -26,12 +27,14 @@ import {
   startZiweiReading,
   uploadPhysiognomyMedia,
   type EventArtStartRequest,
+  type DaliurenStartRequest,
   type FengshuiStartRequest,
   type Gender,
   type HecanStartRequest,
   type LiuyaoStartRequest,
   type LumingNayinStartRequest,
   type CanwenStartRequest,
+  type CapabilityProjection,
   type MeihuaStartRequest,
   type PhysiognomyStartRequest,
   type PreviewStartRequest,
@@ -45,18 +48,19 @@ import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
 import type { ProductDefinition } from "@/products/catalog";
 
 import { ProductInputForm, type TaskFormValues } from "./product-input-form";
+import { BaziDeepTaskFlow } from "./bazi-deep-task-flow";
 import styles from "./task-shell.module.css";
 
-type TaskStage = "input" | "confirm" | "workbench";
+type TaskStage = "input" | "workbench";
 
+// 「输入确认」不再是独立一步：提交前摘要随填随现，长在录入面板底部。
 const steps: Array<{ id: TaskStage | "report"; label: string }> = [
-  { id: "input", label: "任务输入" },
-  { id: "confirm", label: "输入确认" },
+  { id: "input", label: "录入与核对" },
   { id: "workbench", label: "工作台" },
   { id: "report", label: "报告与追问" },
 ];
 
-const stageIndex: Record<TaskStage, number> = { input: 0, confirm: 1, workbench: 2 };
+const stageIndex: Record<TaskStage, number> = { input: 0, workbench: 1 };
 
 const RUNTIME_PRODUCT_IDS = new Set<ProductDefinition["id"]>([
   "bazi",
@@ -104,12 +108,18 @@ function TaskProgress({ product, stage }: { product: ProductDefinition; stage: T
   );
 }
 
-function ModulePlan({ product }: { product: ProductDefinition }) {
+function ModulePlan({
+  product,
+  capability,
+}: {
+  product: ProductDefinition;
+  capability: CapabilityProjection | null;
+}) {
   return (
     <aside className={styles.modulePlan} aria-labelledby={`${product.id}-module-plan`}>
       <div>
         <h2 id={`${product.id}-module-plan`}>{product.moduleTitle}</h2>
-        <p>以下是该产品的专属结果结构；提交前只展示结构，不填入虚构盘面。</p>
+        <p>提交后你会依次拿到这些内容。</p>
       </div>
       <ol>
         {product.modules.map((module, index) => (
@@ -119,7 +129,19 @@ function ModulePlan({ product }: { product: ProductDefinition }) {
           </li>
         ))}
       </ol>
-      {hasRuntimeStart(product) ? (
+      {capability?.tier === "B" ? (
+        <div data-capability-tier="B">
+          <Status
+            state="success"
+            title="确定性盘面与事实已开放"
+            description="当前只提供服务端生成的盘面事实与边界，不提供断语或空白占位。"
+          />
+        </div>
+      ) : capability?.tier === "C" ? (
+        <div data-capability-tier="C">
+          <Status state="unavailable" title="真实能力适配中" description={product.unavailableReason} />
+        </div>
+      ) : hasRuntimeStart(product) ? (
         <Status
           state="success"
           title="确定性盘面已接入"
@@ -132,67 +154,6 @@ function ModulePlan({ product }: { product: ProductDefinition }) {
   );
 }
 
-function readableSummary(values: TaskFormValues) {
-  const rows: Array<readonly [string, string]> = [
-    ["受测对象", values.subject || values.profile],
-    ["问题", values.issue],
-    ["日期", values.birthDate],
-    ["时间", values.unknownTime ? "时辰未知" : values.birthTime || values.eventTime],
-    ["地点", values.location],
-    ["模式 / 侧重", values.observationMode || values.focus || values.preference],
-    ["所选术数", values.arts.join("、")],
-    ["用户补充信息", values.observationNotes],
-    ["保存范围", values.saveToArchive ? "见相档案（需服务端确认）" : "仅本次任务"],
-  ];
-
-  return rows.filter((row) => Boolean(row[1]));
-}
-
-function InputConfirmation({
-  product,
-  values,
-  onBack,
-  onContinue,
-  busy,
-  error,
-  runtimeConnected,
-}: {
-  product: ProductDefinition;
-  values: TaskFormValues;
-  onBack: () => void;
-  onContinue: () => void;
-  busy: boolean;
-  error: string | null;
-  runtimeConnected: boolean;
-}) {
-  return (
-    <section className={styles.confirmPanel} aria-labelledby="task-confirm-title">
-      <div className={styles.confirmHeader}>
-        <span aria-hidden="true"><Check size={18} strokeWidth={2} /></span>
-        <div>
-          <h2 id="task-confirm-title">确认{product.name}输入</h2>
-          <p>这里只确认你刚填写的资料，不代表已经排盘或产生结论。</p>
-        </div>
-      </div>
-      <dl className={styles.confirmList}>
-        {readableSummary(values).map(([label, value]) => (
-          <div key={label}>
-            <dt>{label}</dt>
-            <dd>{value}</dd>
-          </div>
-        ))}
-      </dl>
-      {error ? <p className={styles.error} role="alert">{error}</p> : null}
-      <div className={styles.confirmActions}>
-        <button className={styles.secondaryButton} onClick={onBack} type="button">返回修改</button>
-        <button className={styles.primaryButton} disabled={busy} onClick={onContinue} type="button" aria-busy={busy}>
-          {busy ? "正在生成盘面…" : runtimeConnected ? "确认并生成盘面" : "确认并进入工作台"}
-        </button>
-      </div>
-    </section>
-  );
-}
-
 export function ProductTaskExperience({ product }: { product: ProductDefinition }) {
   const router = useRouter();
   const [stage, setStage] = useState<TaskStage>("input");
@@ -200,8 +161,28 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [capability, setCapability] = useState<CapabilityProjection | null>(null);
+  const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(null);
+  const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(null);
   const profileVersionRef = useRef<string | null>(null);
   const intentKeyRef = useRef<IntentKey | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    void getCapabilityProjection()
+      .then((response) => {
+        if (!active) return;
+        setCapability(
+          response.capabilities.find((item) => item.capability_id === product.id) ?? null,
+        );
+      })
+      .catch(() => {
+        // The task surface remains usable when the read-only status endpoint is unavailable.
+      });
+    return () => {
+      active = false;
+    };
+  }, [product.id]);
 
   async function startRuntimeReading(nextValues: TaskFormValues) {
     if (!hasRuntimeStart(product)) {
@@ -314,6 +295,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           });
           profileVersionId = profile.profile_version_id;
           profileVersionRef.current = profileVersionId;
+          if (product.id === "bazi") setBaziProfileVersionId(profileVersionId);
         }
 
         const payload: PreviewStartRequest = {
@@ -343,7 +325,12 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             : product.id === "ziwei"
               ? await startZiweiReading(payload, intent.key)
               : await startQizhengReading(payload, intent.key);
-        router.push(`/app/readings/${response.reading_version_id}`);
+        if (product.id === "bazi") {
+          setBaziPreviewReadingId(response.reading_version_id);
+          setStage("workbench");
+        } else {
+          router.push(`/app/readings/${response.reading_version_id}`);
+        }
         return;
       }
 
@@ -560,6 +547,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               progress: ["outcome"],
               people: ["relationship"],
               outcome: ["outcome"],
+              timing: ["timing"],
             };
       const payload: EventArtStartRequest = {
         event_datetime: eventDatetime,
@@ -570,15 +558,24 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         time_basis_policy: timeBasisPolicy,
         zi_hour_policy: "midnight",
       };
+      const daliurenPayload: DaliurenStartRequest = {
+        ...payload,
+        ...(nextValues.focus === "timing"
+          ? {
+              timing_start: nextValues.timingStart,
+              timing_end: nextValues.timingEnd,
+            }
+          : {}),
+      };
       const intent = stableKeyForIntent(intentKeyRef.current, {
         product: product.id,
-        payload,
+        payload: product.id === "qimen" ? payload : daliurenPayload,
       });
       intentKeyRef.current = intent;
       const response =
         product.id === "qimen"
           ? await startQimenReading(payload, intent.key)
-          : await startDaliurenReading(payload, intent.key);
+          : await startDaliurenReading(daliurenPayload, intent.key);
       router.push(`/app/readings/${response.reading_version_id}`);
     } catch (reason) {
       setSubmitError(reason instanceof Error ? reason.message : "盘面启动失败，请稍后重试。");
@@ -587,10 +584,12 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     }
   }
 
+  // 提交前摘要常驻在表单里（ProductInputForm 的 SubmitSummary），
+  // 因此这里不再插入一个独立的「输入确认」页，直接进入生成。
   function handleConfirm(nextValues: TaskFormValues) {
     setSubmitError(null);
     setValues(nextValues);
-    setStage("confirm");
+    void startRuntimeReading(nextValues);
   }
 
   return (
@@ -599,39 +598,43 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       {stage === "input" ? (
         <div className={styles.inputLayout}>
           <ProductInputForm
+            busy={busy}
             product={product}
             initialValues={values ?? undefined}
             onConfirm={handleConfirm}
             onPhotoChange={setPhotoFile}
+            submitError={submitError}
           />
-          <ModulePlan product={product} />
+          <ModulePlan product={product} capability={capability} />
         </div>
       ) : null}
-      {stage === "confirm" && values ? (
-        <div className={styles.inputLayout}>
-          <InputConfirmation
-            product={product}
-            values={values}
-            onBack={() => {
-              setValues((current) => (current ? { ...current, photoSelected: false } : current));
-              setPhotoFile(null);
-              profileVersionRef.current = null;
-              intentKeyRef.current = null;
-              setSubmitError(null);
-              setStage("input");
-            }}
-            onContinue={() => {
-              if (values) void startRuntimeReading(values);
-            }}
-            busy={busy}
-            error={submitError}
-            runtimeConnected={hasRuntimeStart(product)}
-          />
-          <ModulePlan product={product} />
-        </div>
+      {stage === "workbench" && product.id !== "bazi" ? (
+        <WorkbenchShell
+          product={product}
+          onBack={() => {
+            profileVersionRef.current = null;
+            setBaziProfileVersionId(null);
+            intentKeyRef.current = null;
+            setBaziPreviewReadingId(null);
+            setSubmitError(null);
+            setStage("input");
+          }}
+        />
       ) : null}
-      {stage === "workbench" ? (
-        <WorkbenchShell product={product} onBack={() => setStage("confirm")} />
+      {stage === "workbench" && product.id === "bazi" && baziPreviewReadingId ? (
+        <BaziDeepTaskFlow
+          onBack={() => {
+            profileVersionRef.current = null;
+            setBaziProfileVersionId(null);
+            intentKeyRef.current = null;
+            setBaziPreviewReadingId(null);
+            setSubmitError(null);
+            setStage("input");
+          }}
+          previewReadingId={baziPreviewReadingId}
+          profileVersionId={baziProfileVersionId ?? ""}
+          query={values?.issue.trim() || "请预览我的八字命盘。"}
+        />
       ) : null}
     </div>
   );

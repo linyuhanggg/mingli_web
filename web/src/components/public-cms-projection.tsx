@@ -15,6 +15,11 @@ export type PublicCmsSource =
 type PublicCmsProjectionProps = {
   readonly heading: string;
   readonly source: PublicCmsSource;
+  /**
+   * 内容页需要如实显示 loading/empty/error 状态面板。
+   * 首页这类以行动收尾的版面不需要——投影照常请求，没有内容时整块不渲染。
+   */
+  readonly silentWhenUnavailable?: boolean;
 };
 
 type ProjectionPayload = ContentPublicItem | ContentPublicResponse;
@@ -38,7 +43,7 @@ function isNotFound(error: unknown): boolean {
   );
 }
 
-export function PublicCmsProjection({ heading, source }: PublicCmsProjectionProps) {
+export function PublicCmsProjection({ heading, source, silentWhenUnavailable = false }: PublicCmsProjectionProps) {
   const headingId = useId();
   const [result, setResult] = useState<ProjectionResult | null>(null);
   const sourceUrl = (() => {
@@ -83,6 +88,7 @@ export function PublicCmsProjection({ heading, source }: PublicCmsProjectionProp
   const items = currentResult?.items ?? [];
 
   if (state !== "ready") {
+    if (silentWhenUnavailable) return null;
     return (
       <StatusPanel
         description={

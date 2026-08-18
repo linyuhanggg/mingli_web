@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 import { EditorialPage, editorialStyles as styles } from "@/components/editorial-page";
 import { StatusPanel } from "@/components/status-panel";
@@ -25,6 +27,11 @@ export default function PricingPage() {
             <li>有限白话概览与 3 条现实核对</li>
             <li>测试期可自助使用 Preview；付费向能力需运营开通</li>
           </ul>
+          <Link className={styles.cardAction} href="/bazi">
+            开始排盘
+            <ArrowRight aria-hidden="true" size={16} strokeWidth={1.75} />
+          </Link>
+          <p className={styles.cardActionNote}>测试期可自助完成，不产生任何扣款。</p>
         </article>
         <article className={styles.card}>
           <h2>个人命盘深度解读</h2>
@@ -34,6 +41,11 @@ export default function PricingPage() {
             <li>已接纳报告永久查看</li>
             <li>7 天内 3 次同盘追问</li>
           </ul>
+          <Link className={styles.cardAction} href="/bazi">
+            先建立命盘
+            <ArrowRight aria-hidden="true" size={16} strokeWidth={1.75} />
+          </Link>
+          <p className={styles.cardActionNote}>测试期不开放在线购买，付费轨由运营开通。</p>
         </article>
         <article className={styles.card}>
           <h2>一事一问 · 六爻</h2>
@@ -43,6 +55,11 @@ export default function PricingPage() {
             <li>事件报告永久查看</li>
             <li>72 小时内 2 次同盘追问</li>
           </ul>
+          <Link className={styles.cardAction} href="/liuyao">
+            去起卦
+            <ArrowRight aria-hidden="true" size={16} strokeWidth={1.75} />
+          </Link>
+          <p className={styles.cardActionNote}>测试期不开放在线购买，付费轨由运营开通。</p>
         </article>
       </section>
       <section className={styles.grid2}>

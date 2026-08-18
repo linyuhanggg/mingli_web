@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ComponentType } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -17,6 +17,8 @@ const mockRouterPush = vi.hoisted(() => vi.fn());
 const mockCreateProfileDraft = vi.hoisted(() => vi.fn());
 const mockConfirmProfileDraft = vi.hoisted(() => vi.fn());
 const mockStartPreviewReading = vi.hoisted(() => vi.fn());
+const mockPollReading = vi.hoisted(() => vi.fn());
+const mockGetCapabilityProjection = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", async (importOriginal) => ({
   ...(await importOriginal<typeof import("next/navigation")>()),
@@ -31,6 +33,8 @@ vi.mock("@/lib/api", async (importOriginal) => ({
   createProfileDraft: mockCreateProfileDraft,
   confirmProfileDraft: mockConfirmProfileDraft,
   startPreviewReading: mockStartPreviewReading,
+  pollReading: mockPollReading,
+  getCapabilityProjection: mockGetCapabilityProjection,
 }));
 
 type RouteExpectation = {
@@ -54,6 +58,16 @@ const routes: RouteExpectation[] = [
 
 afterEach(cleanup);
 
+mockGetCapabilityProjection.mockResolvedValue({
+  runtime_release_profile: "v53-time-check",
+  source_status: "available",
+  capabilities: [
+    { capability_id: "bazi", label: "八字", tier: "A", source_system: "bazi", runtime_active_rule_count: 24, judgment_rule_count: 19, source_status: "available" },
+    { capability_id: "ziwei", label: "紫微", tier: "B", source_system: "ziwei", runtime_active_rule_count: 2, judgment_rule_count: 0, source_status: "available" },
+    { capability_id: "qizheng", label: "七政四余", tier: "B", source_system: "xingming", runtime_active_rule_count: 3, judgment_rule_count: 0, source_status: "available" },
+  ],
+});
+
 describe("primary product route contract", () => {
   it.each(routes)("$name renders a real task surface instead of a placeholder", ({ Page, name, input, module }) => {
     render(<Page />);
@@ -64,7 +78,7 @@ describe("primary product route contract", () => {
     expect(screen.getAllByText(module).length).toBeGreaterThan(0);
     const runtimeConnected = ["八字", "紫微", "七政", "六爻", "奇门", "大六壬", "命盘合参", "问事合参"].includes(name);
     expect(document.querySelector(`[data-state="${runtimeConnected ? "success" : "unavailable"}"]`)).not.toBeNull();
-    expect(screen.getAllByText(/输入确认/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/提交后会发生什么/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/工作台/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/报告与追问/).length).toBeGreaterThan(0);
     expect(screen.queryByText("UI 演示数据")).not.toBeInTheDocument();
@@ -82,26 +96,35 @@ describe("primary product route contract", () => {
       created_at: "2026-08-14T00:00:00Z",
     });
     mockStartPreviewReading.mockResolvedValue({ reading_version_id: "reading-1" });
+    mockPollReading.mockResolvedValue({ status: "accepted" });
     render(<BaziPage />);
 
-    await user.click(screen.getByRole("button", { name: "检查输入" }));
+    const submit = () => screen.getByRole("button", { name: /^立即排盘（免费）/ });
+
+    await user.click(submit());
     expect(await screen.findByText("请填写受测对象")).toBeVisible();
 
     await user.type(screen.getByLabelText("受测对象"), "本人");
-    await user.type(screen.getByLabelText("出生日期"), "1990-05-06");
-    await user.type(screen.getByLabelText("出生时间"), "08:30");
-    await user.type(screen.getByLabelText("出生地点"), "江苏省常州市金坛区");
-    await user.selectOptions(screen.getByLabelText("性别"), "male");
-    await user.click(screen.getByRole("button", { name: "检查输入" }));
+    await user.selectOptions(screen.getByLabelText("出生年份"), "1990");
+    await user.selectOptions(screen.getByLabelText("出生月份"), "05");
+    await user.selectOptions(screen.getByLabelText("出生日期"), "06");
+    await user.selectOptions(screen.getByLabelText("出生小时"), "08");
+    await user.selectOptions(screen.getByLabelText("出生分钟"), "30");
+    await user.selectOptions(screen.getByLabelText("出生省份"), "江苏省");
+    await user.selectOptions(screen.getByLabelText("出生城市"), "常州市");
+    await user.selectOptions(screen.getByLabelText("出生区县"), "金坛区");
+    await user.click(screen.getByRole("radio", { name: "男" }));
+    expect(screen.getByText("江苏省 / 常州市 / 金坛区")).toBeVisible();
+    await user.click(submit());
 
-    expect(await screen.findByRole("heading", { name: "确认八字输入" })).toBeVisible();
-    expect(screen.getByText("江苏省常州市金坛区")).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "确认并生成盘面" }));
+    await waitFor(() => expect(mockStartPreviewReading).toHaveBeenCalled());
 
     expect(mockStartPreviewReading).toHaveBeenCalledWith(
       expect.objectContaining({ profile_version_id: "profile-version-1" }),
       expect.any(String),
     );
-    expect(mockRouterPush).toHaveBeenCalledWith("/app/readings/reading-1");
+    expect(await screen.findByRole("heading", { name: "八字工作台" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "免费确定性盘面" })).toBeVisible();
+    expect(mockRouterPush).not.toHaveBeenCalled();
   });
 });

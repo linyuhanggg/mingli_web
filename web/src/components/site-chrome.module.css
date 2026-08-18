@@ -69,10 +69,10 @@
   font-weight: 700;
 }
 
+/* 标语只保留在 footer。放进导航会让品牌块变成两行，且首页胶囊导航并不显示它，
+   同一个品牌在两种页面上长得不一样正是「像两个站」的来源之一。 */
 .brand small {
-  margin-top: var(--space-xs);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-meta);
+  display: none;
 }
 
 .versionPill {
@@ -620,7 +620,9 @@
 }
 
 :global(body:has(.liquid-home-prototype)) .headerInner {
-  width: min(68.75rem, calc(100% - 2rem));
+  /* 74.5rem = 页面容器 72.5rem + 左右各 1rem 内衬：胶囊内部的品牌与导航
+     因此落在与内页通栏导航完全相同的左右边线上，切页时不会横向跳动。 */
+  width: min(74.5rem, calc(100% - 2rem));
   min-height: 4.5rem;
   gap: 0.9rem;
   padding: 0.35rem 1rem;

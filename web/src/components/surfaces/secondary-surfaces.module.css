@@ -5,16 +5,20 @@
   color: var(--color-text);
 }
 
-.container {
-  width: min(100%, 74rem);
-}
+/* 这里原本把容器改成 74rem，比全站 --container-page(72.5rem) 宽 24px，
+   导致本页正文与导航、footer 不在同一条左右边线上。改回共用容器宽度。 */
 
 .header {
   display: grid;
   gap: 1rem;
-  max-width: 52rem;
   padding-bottom: clamp(2rem, 5vw, 3.5rem);
   border-bottom: 1px solid var(--color-border-strong);
+}
+
+/* 标题与引言仍限制阅读宽度，但分隔线跟随容器满宽，
+   不再出现「上面一条短线、下面一条长线」的错位。 */
+.header > * {
+  max-width: 52rem;
 }
 
 .eyebrow {
@@ -28,14 +32,13 @@
 }
 
 .header h1 {
-  max-width: 24ch;
+  max-width: 15em;
   margin: 0;
   font-family: var(--font-sans);
-  font-size: clamp(2.5rem, 6vw, 3.6rem);
+  font-size: clamp(2rem, 4.6vw, var(--font-size-hero));
   font-weight: 620;
-  letter-spacing: -0.035em;
-  line-height: 1.08;
-  text-wrap: balance;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
 }
 
 .intro {
@@ -174,11 +177,47 @@
 
 .entryHeading small {
   flex: 0 0 auto;
+  margin-left: auto;
   padding: 0.25rem 0.55rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
   color: var(--color-text-secondary);
   font-weight: 700;
+}
+
+/* 「已接…」和「适配中」原本长得完全一样，读者无法一眼分辨哪些真的能用。
+   同时用底色和边框形态区分，不只靠颜色。 */
+.entryHeading small[data-tone="ready"] {
+  border-color: transparent;
+  background: var(--surface-success);
+  color: var(--color-success);
+}
+
+.entryHeading small[data-tone="pending"] {
+  border-style: dashed;
+  border-color: var(--color-border-strong);
+  color: var(--color-text-muted);
+}
+
+.entryArrow {
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+  transition: transform var(--duration-feedback) var(--ease-out);
+}
+
+.entryGrid a:hover .entryArrow {
+  transform: translateX(3px);
+  color: var(--color-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entryArrow {
+    transition: none;
+  }
+
+  .entryGrid a:hover .entryArrow {
+    transform: none;
+  }
 }
 
 .sectionGrid {
@@ -302,7 +341,7 @@
   padding: 0.75rem 0.9rem;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-control);
-  background: var(--color-surface-subtle);
+  background-color: var(--color-surface-subtle);
   color: var(--color-text-secondary);
   font: inherit;
 }
@@ -460,4 +499,9 @@
   .field input {
     scroll-behavior: auto;
   }
+}
+
+/* 与 ui/base.css 的下拉箭头留出净空。 */
+.field select {
+  padding-right: 2.5rem;
 }

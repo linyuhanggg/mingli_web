@@ -17,13 +17,15 @@
 }
 
 .hero h1 {
-  max-width: 16ch;
+  /* ch 是「0」字符宽（≈0.58em），按拉丁文校准；中文每字 1em，16ch 实际只有
+     9 个汉字，还会随 Web 字体是否加载完成而变化。改用 em 与字号绑定。 */
+  max-width: 15em;
   margin: 0;
   font-family: var(--font-sans);
-  font-size: clamp(2.5rem, 5.5vw, var(--font-size-hero));
+  font-size: clamp(2rem, 4.6vw, var(--font-size-hero));
   font-weight: 580;
-  letter-spacing: -0.04em;
-  line-height: 1.04;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
 }
 
 .folio {
@@ -188,6 +190,9 @@
 
 .card,
 .prose {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   padding: clamp(1.5rem, 4vw, 2.5rem) 0;
   border-bottom: 1px solid var(--color-border-strong);
   transition: transform var(--duration-feedback) var(--ease-out);
@@ -205,7 +210,7 @@
 .card h3,
 .prose h2,
 .prose h3 {
-  max-width: 20ch;
+  max-width: 18em;
   margin: 0 0 0.75rem;
   font-family: var(--font-sans);
   font-weight: 620;
@@ -232,7 +237,9 @@
 .card ul,
 .prose ul,
 .prose ol {
-  margin: 1rem 0 0;
+  /* 底部留白配合 .cardAction 的 margin-top:auto，保证按钮被推到底部时
+     和最后一条要点之间仍有净空。 */
+  margin: 1rem 0 1.5rem;
   padding-left: 1.2rem;
   color: var(--color-text-secondary);
 }
@@ -249,6 +256,53 @@
   font-size: clamp(2.5rem, 6vw, 3rem);
   font-variant-numeric: tabular-nums;
   line-height: 1;
+}
+
+.cardAction {
+  display: inline-flex;
+  min-height: var(--target-min);
+  align-items: center;
+  gap: 0.5rem;
+  /* 各档要点行数不同；把动作推到卡片底部，三个按钮才在同一条基线上。 */
+  margin-top: auto;
+  padding: 0.7rem 1.15rem;
+  border: 1px solid var(--color-action);
+  border-radius: var(--radius-control);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+  transition:
+    background-color var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out);
+}
+
+.cardAction:hover {
+  background: var(--color-action-hover);
+  transform: translateY(-1px);
+}
+
+.cardAction:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+/* 测试期唯一能自助完成的动作是免费排盘，付费档只给入口不给假的「购买」。 */
+.card + .card .cardAction {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.card + .card .cardAction:hover {
+  background: var(--color-surface-subtle);
+}
+
+.card .cardActionNote {
+  max-width: none;
+  margin: 0.65rem 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
 }
 
 .notice {
@@ -290,7 +344,7 @@
 
 @media (min-width: 48rem) {
   .hero {
-    grid-template-columns: minmax(0, 1.25fr) minmax(20rem, 0.75fr);
+    grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.6fr);
     align-items: end;
   }
 

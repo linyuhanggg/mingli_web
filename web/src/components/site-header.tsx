@@ -29,6 +29,7 @@ import { Drawer } from "./ui";
 import styles from "./site-chrome.module.css";
 
 
+// 命盘合参、问事合参只在顶级「合参」菜单出现；放进「术数」会和它重复。
 const divinationGroups = [
   {
     label: "命",
@@ -37,7 +38,6 @@ const divinationGroups = [
       { href: "/ziwei", label: "紫微" },
       { href: "/qizheng", label: "七政" },
       { href: "/luming-nayin", label: "禄命纳音" },
-      { href: "/hecan", label: "命盘合参" },
     ],
   },
   {
@@ -48,7 +48,6 @@ const divinationGroups = [
       { href: "/daliuren", label: "大六壬" },
       { href: "/taiyi", label: "太乙" },
       { href: "/selection", label: "择日" },
-      { href: "/wenshi", label: "问事合参" },
     ],
   },
   {

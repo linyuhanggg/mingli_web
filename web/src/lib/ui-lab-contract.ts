@@ -260,6 +260,7 @@ export type UiLabSchemaSource = "view-model-registry" | "ui-lab-surface-schema";
 
 export type UiLabPreviewKind =
   | "product-input"
+  | "bazi-result"
   | "workbench"
   | "reading"
   | "relationship-status"
@@ -274,6 +275,7 @@ export function uiLabRendersProductionSurface(
 ): boolean {
   if (previewKind === "relationship-status") return false;
   if (state === "pristine") return true;
+  if (previewKind === "bazi-result") return state === "free-summary";
   return previewKind === "product-input" && state === "filled";
 }
 
@@ -323,6 +325,6 @@ export function uiLabRendersFullProductionPage(
 }
 
 export type UiLabProductPreview = {
-  readonly previewKind: "product-input" | "workbench" | "reading" | "relationship-status";
+  readonly previewKind: "product-input" | "bazi-result" | "workbench" | "reading" | "relationship-status";
   readonly productId: ProductId;
 };

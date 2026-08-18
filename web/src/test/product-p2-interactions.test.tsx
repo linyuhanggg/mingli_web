@@ -22,6 +22,15 @@ vi.mock("next/navigation", async (importOriginal) => ({
 
 afterEach(cleanup);
 
+function submitButton(productId: string) {
+  const labels: Record<string, RegExp> = {
+    liuyao: /^立即起卦 · 查看本卦与变卦$/,
+    wenshi: /^立即起卦 · 三术分别呈现$/,
+    jianxiang: /^开始观照 · 生成结构化观察$/,
+  };
+  return screen.getByRole("button", { name: labels[productId] ?? /^(立即|开始)/ });
+}
+
 describe("P2 product interaction contracts", () => {
   it("opens the compact workbench menu from the keyboard and explains every disabled action", async () => {
     const user = userEvent.setup();
@@ -132,7 +141,7 @@ describe("P2 product interaction contracts", () => {
     if (productId === "liuyao" || productId === "wenshi") {
       await user.type(screen.getByLabelText("事件地点"), "上海市");
     }
-    await user.click(screen.getByRole("button", { name: "检查输入" }));
+    await user.click(submitButton(productId));
 
     const lineInputs = ["初爻", "二爻", "三爻", "四爻", "五爻", "上爻"].map((name) => screen.getByLabelText(name));
     expect(onConfirm).not.toHaveBeenCalled();
@@ -140,8 +149,40 @@ describe("P2 product interaction contracts", () => {
     expect(lineInputs[0]).toHaveFocus();
 
     for (const input of lineInputs) await user.selectOptions(input, "young-yang");
-    await user.click(screen.getByRole("button", { name: "检查输入" }));
+    await user.click(submitButton(productId));
     expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it("requires a bounded timing window before Daliuren timing can be confirmed", async () => {
+    const user = userEvent.setup();
+    const onConfirm = vi.fn();
+    render(<ProductInputForm product={getProductDefinition("daliuren")} onConfirm={onConfirm} />);
+
+    await user.type(screen.getByLabelText("当前问题"), "这件事何时可能出现回应？");
+    await user.selectOptions(screen.getByLabelText("判断侧重"), "timing");
+    fireEvent.change(screen.getByLabelText("事件时间"), {
+      target: { value: "2026-08-14T10:00" },
+    });
+    await user.type(screen.getByLabelText("事件地点"), "上海市");
+    await user.click(submitButton("daliuren"));
+
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(await screen.findByText("请选择应期观察开始日期")).toBeVisible();
+
+    fireEvent.change(screen.getByLabelText("应期观察开始"), {
+      target: { value: "2026-08-15" },
+    });
+    fireEvent.change(screen.getByLabelText("应期观察结束"), {
+      target: { value: "2026-09-14" },
+    });
+    await user.click(submitButton("daliuren"));
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onConfirm.mock.calls[0][0]).toMatchObject({
+      focus: "timing",
+      timingStart: "2026-08-15",
+      timingEnd: "2026-09-14",
+    });
   });
 
   it("uploads only after confirmation, requires a photo, and exposes quality/delete boundaries", async () => {
@@ -152,7 +193,7 @@ describe("P2 product interaction contracts", () => {
 
     expect(screen.getByRole("status", { name: "相机采集待接入" })).toBeVisible();
     await user.click(screen.getByRole("checkbox", { name: /照片处理独立同意/ }));
-    await user.click(screen.getByRole("button", { name: "检查输入" }));
+    await user.click(submitButton("jianxiang"));
     expect(onConfirm).not.toHaveBeenCalled();
     expect(await screen.findByText("请选择一张照片")).toBeVisible();
 
@@ -170,7 +211,7 @@ describe("P2 product interaction contracts", () => {
     await user.type(screen.getByLabelText("受测对象"), "本人");
     await user.type(screen.getByLabelText("用户补充信息"), "左侧步态需要结合本人补充");
     await user.click(screen.getByRole("checkbox", { name: /保存到见相档案/ }));
-    await user.click(screen.getByRole("button", { name: "检查输入" }));
+    await user.click(submitButton("jianxiang"));
     expect(onConfirm).toHaveBeenCalledTimes(1);
     expect(onConfirm.mock.calls[0][0]).toMatchObject({
       observationNotes: "左侧步态需要结合本人补充",

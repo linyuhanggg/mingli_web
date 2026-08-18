@@ -93,14 +93,12 @@ describe("public shell navigation", () => {
       "紫微",
       "七政",
       "禄命纳音",
-      "命盘合参",
       "卦",
       "六爻",
       "奇门",
       "大六壬",
       "太乙",
       "择日",
-      "问事合参",
       "相",
       "见相",
       "风水",
@@ -108,6 +106,9 @@ describe("public shell navigation", () => {
       expect(within(menu).getByText(label, { exact: true })).toBeVisible();
     }
     expect(within(menu).queryByText("多盘问答")).not.toBeInTheDocument();
+    // 两个合参只属于顶级「合参」菜单，不在「术数」里重复出现
+    expect(within(menu).queryByText("命盘合参", { exact: true })).not.toBeInTheDocument();
+    expect(within(menu).queryByText("问事合参", { exact: true })).not.toBeInTheDocument();
 
     await user.keyboard("{Escape}");
     await user.click(within(navigation).getByRole("button", { name: "更多" }));

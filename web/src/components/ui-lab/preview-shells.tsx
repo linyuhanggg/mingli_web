@@ -1,6 +1,7 @@
 "use client";
 
 import { ReadingShell } from "@/components/reading/reading-shell";
+import { BaziChart } from "@/components/readings/bazi-chart";
 import { AccountSurface, AuthSurface, CommerceSurface, PublicContentSurface } from "@/components/surfaces";
 import { ProductInputForm, type TaskFormValues } from "@/components/task/product-input-form";
 import { Status } from "@/components/ui/status";
@@ -16,6 +17,7 @@ import {
   type UiLabState,
 } from "@/lib/ui-lab-contract";
 import { getProductDefinition, type ProductId } from "@/products/catalog";
+import { buildBaziChartViewFromViewModel } from "@/lib/reading-display";
 
 import styles from "./ui-lab.module.css";
 
@@ -45,6 +47,8 @@ const filledTaskValuesBase: TaskFormValues = {
   issue: "这件事未来三个月应如何安排？",
   focus: "action",
   eventTime: "2026-08-14T09:00",
+  timingStart: "",
+  timingEnd: "",
   divinationMethod: "coins",
   meihuaCastingMethod: "time",
   meihuaNumber: "",
@@ -127,6 +131,14 @@ function ProductionSurface({ fixture, state }: Pick<PreviewShellProps, "fixture"
         />
       );
     }
+    case "bazi-result":
+      return (
+        <BaziChart
+          chart={buildBaziChartViewFromViewModel(fixture.viewModel)}
+          evidence={fixture.evidence}
+          title="八字结果页验收切片"
+        />
+      );
     case "workbench": {
       const product = getProductDefinition(fixture.productId);
       return <WorkbenchShell onBack={() => undefined} product={product} />;

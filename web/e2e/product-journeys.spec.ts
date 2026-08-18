@@ -11,6 +11,19 @@ async function capture(page: Page, testInfo: TestInfo, name: string) {
   await page.screenshot({ path: resolve(directory, `${name}.png`), fullPage: true });
 }
 
+async function fillBaziInput(page: Page) {
+  await page.getByLabel("受测对象").fill("本人");
+  await page.getByLabel("出生年份").selectOption("1990");
+  await page.getByLabel("出生月份").selectOption("05");
+  await page.getByLabel("出生日期").selectOption("06");
+  await page.getByLabel("出生小时").selectOption("08");
+  await page.getByLabel("出生分钟").selectOption("30");
+  await page.getByLabel("出生省份").selectOption("江苏省");
+  await page.getByLabel("出生城市").selectOption("常州市");
+  await page.getByLabel("出生区县").selectOption("金坛区");
+  await page.getByRole("radio", { name: "男" }).check();
+}
+
 test("home task selector enters the bazi task and stays in its workbench", async ({ page }, testInfo) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { level: 1, name: "选择要解决的事" })).toBeVisible();
@@ -22,14 +35,11 @@ test("home task selector enters the bazi task and stays in its workbench", async
   await page.locator('main a[href="/bazi"]').click();
   await expect(page).toHaveURL(/\/bazi$/);
   await expect(page.getByRole("form", { name: "八字任务输入" })).toBeVisible();
-  await page.getByLabel("受测对象").fill("本人");
-  await page.getByLabel("出生日期").fill("1990-05-06");
-  await page.getByLabel("出生时间").fill("08:30");
-  await page.getByLabel("出生地点").fill("江苏省常州市金坛区");
-  await page.getByRole("button", { name: "检查输入" }).click();
-  await expect(page.getByRole("heading", { name: "确认八字输入" })).toBeVisible();
+  await fillBaziInput(page);
+  // 提交前摘要长在表单里，不再是独立一步
+  await expect(page.getByRole("region", { name: "提交前摘要" })).toBeVisible();
   await expect(page).toHaveURL(/\/bazi$/);
-  await page.getByRole("button", { name: "确认并进入工作台" }).click();
+  await page.getByRole("button", { name: /^立即排盘（免费）/ }).click();
   await expect(page.getByRole("heading", { name: "八字工作台" })).toBeVisible();
   await expect(page.getByRole("status", { name: "盘面尚未生成" })).toBeVisible();
   await expect(page).toHaveURL(/\/bazi$/);
@@ -48,12 +58,8 @@ test("bazi workbench changes from one column to two columns at the frozen deskto
   ]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/bazi", { waitUntil: "domcontentloaded" });
-    await page.getByLabel("受测对象").fill("本人");
-    await page.getByLabel("出生日期").fill("1990-05-06");
-    await page.getByLabel("出生时间").fill("08:30");
-    await page.getByLabel("出生地点").fill("江苏省常州市金坛区");
-    await page.getByRole("button", { name: "检查输入" }).click();
-    await page.getByRole("button", { name: "确认并进入工作台" }).click();
+    await fillBaziInput(page);
+    await page.getByRole("button", { name: /^立即排盘（免费）/ }).click();
 
     const workspace = page.locator('[data-layout="workbench-workspace"]');
     await expect(workspace).toBeVisible();
@@ -102,7 +108,7 @@ test("jianxiang keeps media local and exposes consent, delete, and confirmation 
   await expect(page.getByRole("status", { name: "相机采集待接入" })).toBeVisible();
 
   await page.getByRole("checkbox", { name: /照片处理独立同意/ }).check();
-  await page.getByRole("button", { name: "检查输入" }).click();
+  await page.getByRole("button", { name: /^开始观照/ }).click();
   await expect(page.getByText("请选择一张照片")).toBeVisible();
   await expect(page.locator("#jianxiang-file")).toBeFocused();
 
@@ -121,8 +127,8 @@ test("jianxiang keeps media local and exposes consent, delete, and confirmation 
   await page.getByLabel("受测对象").fill("本人");
   await page.getByLabel("用户补充信息").fill("左侧步态需要结合本人补充");
   await page.getByRole("checkbox", { name: /保存到见相档案/ }).check();
-  await page.getByRole("button", { name: "检查输入" }).click();
-  await expect(page.getByRole("heading", { name: "确认见相输入" })).toBeVisible();
+  await page.getByRole("button", { name: /^开始观照/ }).click();
+  await expect(page.getByRole("region", { name: "提交前摘要" })).toBeVisible();
   await expect(page.getByText("左侧步态需要结合本人补充")).toBeVisible();
   await expect(page.getByText("见相档案（需服务端确认）")).toBeVisible();
 });

@@ -89,6 +89,7 @@ const EXPECTED_ROUTE_PATTERNS = [
   "/privacy",
   "/terms",
   "/bazi",
+  "/_ui-lab/bazi-result",
   "/bazi/hepan",
   "/ziwei",
   "/ziwei/hepan",

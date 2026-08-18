@@ -2,12 +2,18 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, Info, Upload } from "lucide-react";
-import { useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useForm, useWatch, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { z } from "zod";
 
 import { Status } from "@/components/ui/status";
 import { IanaTimeZoneOptions } from "@/components/iana-timezone-options";
+import {
+  CHINA_TIME_ZONE,
+  joinLocation,
+  loadDivisions,
+  type ProvinceCityAreas,
+} from "@/lib/china-division";
 import { isIanaTimeZone } from "@/lib/iana-timezones";
 import type { ProductDefinition } from "@/products/catalog";
 
@@ -32,6 +38,8 @@ const taskSchemaBase = z.object({
   issue: z.string(),
   focus: z.string(),
   eventTime: z.string(),
+  timingStart: z.string(),
+  timingEnd: z.string(),
   divinationMethod: z.string(),
   meihuaCastingMethod: z.string(),
   meihuaNumber: z.string(),
@@ -77,7 +85,9 @@ const defaultValues: TaskFormValues = {
   unknownTime: false,
   location: "",
   timezone: "Asia/Shanghai",
-  gender: "unspecified",
+  // 不给默认值：分段控件“两个都没选中”是可见状态，而下拉停在“暂不指定”
+  // 看起来像已经答过，用户直到提交才知道它非法。
+  gender: "",
   timeStandard: "civil",
   longitude: "",
   latitude: "",
@@ -85,6 +95,8 @@ const defaultValues: TaskFormValues = {
   issue: "",
   focus: "",
   eventTime: "",
+  timingStart: "",
+  timingEnd: "",
   divinationMethod: "coins",
   meihuaCastingMethod: "time",
   meihuaNumber: "",
@@ -134,6 +146,8 @@ const taskErrorFields: Record<string, { id: string; label: string }> = {
   issue: { id: "issue", label: "当前问题" },
   focus: { id: "focus", label: "判断侧重" },
   eventTime: { id: "event-time", label: "事件时间" },
+  timingStart: { id: "timing-start", label: "应期观察开始" },
+  timingEnd: { id: "timing-end", label: "应期观察结束" },
   meihuaCastingMethod: { id: "meihua-casting-method", label: "梅花起卦方式" },
   meihuaNumber: { id: "meihua-number", label: "起卦数字" },
   meihuaCount: { id: "meihua-count", label: "声数" },
@@ -180,7 +194,7 @@ function schemaFor(product: ProductDefinition) {
   return taskSchemaBase.superRefine((values, context) => {
     if (product.group === "natal") {
       if (!values.subject.trim()) context.addIssue({ code: "custom", path: ["subject"], message: "请填写受测对象" });
-      if (!values.birthDate) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择出生日期" });
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(values.birthDate)) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择完整出生日期" });
       if (!values.unknownTime && !values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间，或勾选时辰未知" });
       if (!values.location.trim()) context.addIssue({ code: "custom", path: ["location"], message: "请填写出生地点" });
 
@@ -191,8 +205,8 @@ function schemaFor(product: ProductDefinition) {
         if (values.unknownTime) {
           context.addIssue({ code: "custom", path: ["birthTime"], message: "当前核心盘面需要明确出生时间" });
         }
-        if (values.gender === "unspecified") {
-          context.addIssue({ code: "custom", path: ["gender"], message: "请确认性别后再建立盘面档案" });
+        if (values.gender !== "male" && values.gender !== "female") {
+          context.addIssue({ code: "custom", path: ["gender"], message: "请选择性别后再建立盘面档案" });
         }
         if (!values.timezone.trim()) {
           context.addIssue({ code: "custom", path: ["timezone"], message: "请选择出生时区" });
@@ -253,6 +267,26 @@ function schemaFor(product: ProductDefinition) {
         if (!values.location.trim()) context.addIssue({ code: "custom", path: ["location"], message: "请填写事件地点" });
         if (!values.timezone.trim()) context.addIssue({ code: "custom", path: ["timezone"], message: "请选择事件时区" });
         else if (!isIanaTimeZone(values.timezone)) context.addIssue({ code: "custom", path: ["timezone"], message: "请选择有效的 IANA 事件时区" });
+      }
+
+      if (product.id === "daliuren" && values.focus === "timing") {
+        if (!values.timingStart) {
+          context.addIssue({ code: "custom", path: ["timingStart"], message: "请选择应期观察开始日期" });
+        }
+        if (!values.timingEnd) {
+          context.addIssue({ code: "custom", path: ["timingEnd"], message: "请选择应期观察结束日期" });
+        }
+        if (values.timingStart && values.timingEnd) {
+          if (values.timingEnd < values.timingStart) {
+            context.addIssue({ code: "custom", path: ["timingEnd"], message: "应期观察结束日期不能早于开始日期" });
+          } else {
+            const start = new Date(`${values.timingStart}T00:00:00Z`);
+            const end = new Date(`${values.timingEnd}T00:00:00Z`);
+            if (end.getTime() - start.getTime() > 30 * 24 * 60 * 60 * 1000) {
+              context.addIssue({ code: "custom", path: ["timingEnd"], message: "应期观察范围最多包含 31 天" });
+            }
+          }
+        }
       }
 
       if (product.id === "selection") {
@@ -414,6 +448,328 @@ function Field({ label, htmlFor, help, error, children }: FieldProps) {
   );
 }
 
+/** 二选一的分段控件：比下拉少一次点击，且两个选项同时可见。 */
+function SegmentedField({
+  legend,
+  name,
+  value,
+  options,
+  required,
+  error,
+  help,
+  onChange,
+}: {
+  legend: string;
+  name: string;
+  value: string;
+  options: ReadonlyArray<{ value: string; label: string; disabled?: boolean }>;
+  required?: boolean;
+  error?: string;
+  help?: string;
+  onChange: (next: string) => void;
+}) {
+  return (
+    <fieldset className={styles.field} id={name} tabIndex={-1}>
+      <legend>
+        {legend}
+        {required ? <span className={styles.requiredMark}>必填</span> : null}
+      </legend>
+      <div className={styles.segmented} role="group">
+        {options.map((option) => (
+          <label
+            className={styles.segment}
+            data-selected={value === option.value ? "true" : "false"}
+            key={option.value}
+          >
+            <input
+              checked={value === option.value}
+              disabled={option.disabled}
+              name={name}
+              onChange={() => onChange(option.value)}
+              type="radio"
+              value={option.value}
+            />
+            <span>{option.label}</span>
+          </label>
+        ))}
+      </div>
+      {help ? <p>{help}</p> : null}
+      {error ? <p className={styles.error} role="alert">{error}</p> : null}
+    </fieldset>
+  );
+}
+
+const YEAR_MAX = new Date().getFullYear();
+const YEARS = Array.from({ length: YEAR_MAX - 1900 + 1 }, (_, index) => YEAR_MAX - index);
+const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
+const HOURS = Array.from({ length: 24 }, (_, index) => index);
+const MINUTES = Array.from({ length: 60 }, (_, index) => index);
+
+function pad(value: number) {
+  return String(value).padStart(2, "0");
+}
+
+function daysInMonth(year: string, month: string) {
+  const y = Number(year);
+  const m = Number(month);
+  if (!y || !m) return 31;
+  return new Date(y, m, 0).getDate();
+}
+
+/** 年 / 月 / 日 三列选择，比原生 date 控件少一次弹层，也不受浏览器差异影响。 */
+function BirthDateParts({
+  id,
+  value,
+  error,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  error?: string;
+  onChange: (next: string) => void;
+}) {
+  const [year = "", month = "", day = ""] = value.split("-");
+  const max = daysInMonth(year, month);
+  const commit = (nextYear: string, nextMonth: string, nextDay: string) => {
+    const clamped = nextDay ? Math.min(Number(nextDay), daysInMonth(nextYear, nextMonth)) : "";
+    onChange(`${nextYear}-${nextMonth}-${clamped === "" ? "" : pad(clamped)}`);
+  };
+
+  return (
+    <fieldset className={styles.field} id={id} tabIndex={-1}>
+      <legend>
+        出生日期<span className={styles.requiredMark}>必填</span>
+      </legend>
+      <div className={styles.dateParts}>
+        <select
+          aria-label="出生年份"
+          onChange={(event) => commit(event.target.value, month, day)}
+          value={year}
+        >
+          <option value="">年</option>
+          {YEARS.map((item) => (
+            <option key={item} value={String(item)}>{item}</option>
+          ))}
+        </select>
+        <select
+          aria-label="出生月份"
+          onChange={(event) => commit(year, event.target.value, day)}
+          value={month}
+        >
+          <option value="">月</option>
+          {MONTHS.map((item) => (
+            <option key={item} value={pad(item)}>{item}</option>
+          ))}
+        </select>
+        <select
+          aria-label="出生日期"
+          onChange={(event) => commit(year, month, event.target.value)}
+          value={day}
+        >
+          <option value="">日</option>
+          {Array.from({ length: max }, (_, index) => index + 1).map((item) => (
+            <option key={item} value={pad(item)}>{item}</option>
+          ))}
+        </select>
+      </div>
+      {error ? <p className={styles.error} role="alert">{error}</p> : null}
+    </fieldset>
+  );
+}
+
+const SHICHEN = [
+  "子", "丑", "丑", "寅", "寅", "卯", "卯", "辰", "辰", "巳", "巳", "午",
+  "午", "未", "未", "申", "申", "酉", "酉", "戌", "戌", "亥", "亥", "子",
+] as const;
+
+/**
+ * 只把用户选的民用钟表时间标注成对应时段，方便核对是否填错上午/下午。
+ * 真太阳时换算、早晚子时与换日规则仍然只由服务端 Runtime 判定。
+ */
+function shichenLabel(hour: number) {
+  const name = SHICHEN[hour];
+  if (name === "子") {
+    return { name, range: "23:00–01:00", note: "夜子/早子的归属由服务端按规则确定" };
+  }
+  const start = (Math.floor((hour + 1) / 2) * 2 - 1 + 24) % 24;
+  return { name, range: `${pad(start)}:00–${pad((start + 2) % 24)}:00`, note: "" };
+}
+
+/**
+ * 省 / 市 / 区县三级联动。选中国内地点时时区自动推导为 Asia/Shanghai，
+ * 不再让用户单独填一次 IANA 时区；海外或查不到时切换成直接输入。
+ */
+function BirthPlaceParts({
+  id,
+  value,
+  error,
+  onChange,
+  onTimeZone,
+}: {
+  id: string;
+  value: string;
+  error?: string;
+  onChange: (next: string) => void;
+  onTimeZone: (zone: string) => void;
+}) {
+  const [divisions, setDivisions] = useState<ProvinceCityAreas | null>(null);
+  const [manual, setManual] = useState(false);
+  const [province, setProvince] = useState("");
+  const [city, setCity] = useState("");
+
+  useEffect(() => {
+    if (manual) return;
+    let cancelled = false;
+    void loadDivisions().then((data) => {
+      if (!cancelled) setDivisions(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [manual]);
+
+  const cities = province && divisions ? Object.keys(divisions[province] ?? {}) : [];
+  const areas = province && city && divisions ? (divisions[province]?.[city] ?? []) : [];
+
+  const commit = (nextProvince: string, nextCity: string, nextArea: string) => {
+    onChange(joinLocation(nextProvince, nextCity, nextArea));
+    if (nextProvince) onTimeZone(CHINA_TIME_ZONE);
+  };
+
+  return (
+    <fieldset className={styles.field} id={id} tabIndex={-1}>
+      <legend>
+        出生地点<span className={styles.requiredMark}>必填</span>
+      </legend>
+      {manual ? (
+        <>
+          <input
+            aria-label="出生地点"
+            onChange={(event) => onChange(event.target.value)}
+            placeholder="例如 Tokyo, Japan"
+            value={value}
+          />
+          <button className={styles.placeSwitch} onClick={() => setManual(false)} type="button">
+            回到省 / 市 / 区县选择
+          </button>
+        </>
+      ) : (
+        <>
+          <div className={styles.placeParts}>
+            <select
+              aria-label="出生省份"
+              onChange={(event) => {
+                setProvince(event.target.value);
+                setCity("");
+                commit(event.target.value, "", "");
+              }}
+              value={province}
+            >
+              <option value="">省 / 直辖市</option>
+              {divisions
+                ? Object.keys(divisions).map((item) => (
+                    <option key={item} value={item}>{item}</option>
+                  ))
+                : null}
+            </select>
+            <select
+              aria-label="出生城市"
+              disabled={!province}
+              onChange={(event) => {
+                setCity(event.target.value);
+                commit(province, event.target.value, "");
+              }}
+              value={city}
+            >
+              <option value="">城市</option>
+              {cities.map((item) => (
+                <option key={item} value={item}>{item}</option>
+              ))}
+            </select>
+            <select
+              aria-label="出生区县"
+              disabled={!city}
+              onChange={(event) => commit(province, city, event.target.value)}
+              value={value.split(" / ")[2] ?? ""}
+            >
+              <option value="">区 / 县</option>
+              {areas.map((item) => (
+                <option key={item} value={item}>{item}</option>
+              ))}
+            </select>
+          </div>
+          <button className={styles.placeSwitch} onClick={() => setManual(true)} type="button">
+            海外或找不到？直接输入
+          </button>
+        </>
+      )}
+      {error ? <p className={styles.error} role="alert">{error}</p> : null}
+    </fieldset>
+  );
+}
+
+function BirthTimeParts({
+  id,
+  value,
+  disabled,
+  error,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  disabled?: boolean;
+  error?: string;
+  onChange: (next: string) => void;
+}) {
+  const [hour = "", minute = ""] = value.split(":");
+  const commit = (nextHour: string, nextMinute: string) => {
+    if (!nextHour) {
+      onChange("");
+      return;
+    }
+    onChange(`${nextHour}:${nextMinute || "00"}`);
+  };
+  const readout = hour === "" ? null : shichenLabel(Number(hour));
+
+  return (
+    <fieldset className={styles.field} disabled={disabled} id={id} tabIndex={-1}>
+      <legend>
+        出生时间<span className={styles.requiredMark}>必填</span>
+      </legend>
+      <div className={styles.timeParts}>
+        <select
+          aria-label="出生小时"
+          onChange={(event) => commit(event.target.value, minute)}
+          value={hour}
+        >
+          <option value="">时</option>
+          {HOURS.map((item) => (
+            <option key={item} value={pad(item)}>{pad(item)}</option>
+          ))}
+        </select>
+        <select
+          aria-label="出生分钟"
+          onChange={(event) => commit(hour, event.target.value)}
+          value={minute}
+        >
+          <option value="">分</option>
+          {MINUTES.map((item) => (
+            <option key={item} value={pad(item)}>{pad(item)}</option>
+          ))}
+        </select>
+      </div>
+      {readout ? (
+        <p className={styles.timeReadout}>
+          民用钟表 <strong>{hour}:{minute || "00"}</strong> 属 <strong>{readout.name}时</strong>
+          <span>（{readout.range}{readout.note ? `；${readout.note}` : ""}）</span>
+        </p>
+      ) : null}
+      {disabled ? <p>已标记时辰未知，不需要填写具体时间。</p> : null}
+      {error ? <p className={styles.error} role="alert">{error}</p> : null}
+    </fieldset>
+  );
+}
+
 function ChoiceGroup({
   id,
   legend,
@@ -442,11 +798,15 @@ export function ProductInputForm({
   initialValues,
   onConfirm,
   onPhotoChange,
+  busy = false,
+  submitError = null,
 }: {
   product: ProductDefinition;
   initialValues?: TaskFormValues;
   onConfirm: (values: TaskFormValues) => void;
   onPhotoChange?: (file: File | null) => void;
+  busy?: boolean;
+  submitError?: string | null;
 }) {
   const schema = useMemo(() => schemaFor(product), [product]);
   const {
@@ -462,6 +822,14 @@ export function ProductInputForm({
     shouldFocusError: false,
   });
   const unknownTime = useWatch({ control, name: "unknownTime" });
+  const calendar = useWatch({ control, name: "calendar" });
+  const gender = useWatch({ control, name: "gender" });
+  const birthDate = useWatch({ control, name: "birthDate" });
+  const birthTime = useWatch({ control, name: "birthTime" });
+  const timeStandard = useWatch({ control, name: "timeStandard" });
+  const location = useWatch({ control, name: "location" });
+  const summaryValues = useWatch({ control }) as TaskFormValues;
+  const focus = useWatch({ control, name: "focus" });
   const meihuaCastingMethod = useWatch({ control, name: "meihuaCastingMethod" });
   const observationMode = useWatch({ control, name: "observationMode" });
   const observationRegion = useWatch({ control, name: "observationRegion" });
@@ -538,46 +906,84 @@ export function ProductInputForm({
             <input id={`${product.id}-subject`} aria-describedby={errors.subject ? `${product.id}-subject-error` : `${product.id}-subject-help`} autoComplete="name" {...register("subject")} />
           </Field>
           <div className={styles.twoColumns}>
-            <Field htmlFor={`${product.id}-calendar`} label="历法">
-              <select id={`${product.id}-calendar`} {...register("calendar")}>
-                <option value="gregorian">公历</option>
-                <option disabled={["bazi", "luming-nayin", "ziwei", "qizheng"].includes(product.id)} value="lunar">农历</option>
-              </select>
-            </Field>
-            <Field htmlFor={`${product.id}-gender`} label="性别">
-              <select id={`${product.id}-gender`} {...register("gender")}>
-                <option value="unspecified">暂不指定</option>
-                <option value="female">女</option>
-                <option value="male">男</option>
-              </select>
-            </Field>
+            <SegmentedField
+              error={errors.calendar?.message}
+              legend="历法"
+              name={`${product.id}-calendar`}
+              onChange={(next) => setValue("calendar", next, { shouldDirty: true })}
+              options={[
+                { value: "gregorian", label: "公历" },
+                {
+                  value: "lunar",
+                  label: "农历",
+                  disabled: ["bazi", "luming-nayin", "ziwei", "qizheng"].includes(product.id),
+                },
+              ]}
+              value={calendar}
+            />
+            <SegmentedField
+              error={errors.gender?.message}
+              legend="性别"
+              name={`${product.id}-gender`}
+              onChange={(next) => setValue("gender", next, { shouldDirty: true })}
+              options={[
+                { value: "male", label: "男" },
+                { value: "female", label: "女" },
+              ]}
+              required
+              value={gender}
+            />
           </div>
-          <div className={styles.twoColumns}>
-            <Field htmlFor={`${product.id}-birth-date`} label="出生日期" error={errors.birthDate?.message}>
-              <input id={`${product.id}-birth-date`} type="date" aria-describedby={errors.birthDate ? `${product.id}-birth-date-error` : undefined} {...register("birthDate")} />
-            </Field>
-            <Field htmlFor={`${product.id}-birth-time`} label="出生时间" error={errors.birthTime?.message} help={unknownTime ? "已标记时辰未知，不会要求填写具体时间。" : "请按当时民用钟表时间填写。"}>
-              <input id={`${product.id}-birth-time`} type="time" disabled={unknownTime} aria-describedby={errors.birthTime ? `${product.id}-birth-time-error` : `${product.id}-birth-time-help`} {...register("birthTime")} />
-            </Field>
+          {/* 年/月/日 + 时/分 并成一行，和青囊的「诞辰之候」一样一眼填完。 */}
+          <div className={styles.dateTimeRow}>
+            <BirthDateParts
+              error={errors.birthDate?.message}
+              id={`${product.id}-birth-date`}
+              onChange={(next) => setValue("birthDate", next, { shouldDirty: true })}
+              value={birthDate}
+            />
+            <BirthTimeParts
+              disabled={unknownTime}
+              error={errors.birthTime?.message}
+              id={`${product.id}-birth-time`}
+              onChange={(next) => setValue("birthTime", next, { shouldDirty: true })}
+              value={birthTime}
+            />
           </div>
-          <label className={styles.checkRow}>
-            <input id={`${product.id}-unknown-time`} type="checkbox" {...register("unknownTime")} />
-            <span><strong>未知时辰</strong><small>后续只开放支持未知时辰的能力，并明确精度边界。</small></span>
-          </label>
-          <Field htmlFor={`${product.id}-location`} label="出生地点" error={errors.location?.message} help="用于确定时区与地方时口径；当前只做输入确认。">
-            <input id={`${product.id}-location`} aria-describedby={errors.location ? `${product.id}-location-error` : `${product.id}-location-help`} autoComplete="address-level2" placeholder="省 / 市 / 区县" {...register("location")} />
-          </Field>
-          <Field htmlFor={`${product.id}-timezone`} label="出生时区" error={errors.timezone?.message} help="主动确认出生地的 IANA 时区，不读取设备位置。">
-            <input id={`${product.id}-timezone`} aria-describedby={errors.timezone ? `${product.id}-timezone-error` : `${product.id}-timezone-help`} autoComplete="off" list={`${product.id}-timezone-options`} placeholder="例如 Asia/Shanghai" {...register("timezone")} />
-            <IanaTimeZoneOptions id={`${product.id}-timezone-options`} />
-          </Field>
-          <Field htmlFor={`${product.id}-time-standard`} label="时间口径" help="默认民用钟表时间；当地视太阳时由确定性脚本换算。">
-            <select id={`${product.id}-time-standard`} {...register("timeStandard")}>
-              <option value="civil">民用钟表时间</option>
-              <option value="local-apparent-solar">当地视太阳时</option>
-            </select>
-          </Field>
-          <ProductSpecificNatalOptions errors={errors} product={product} register={register} />
+          <BirthPlaceParts
+            error={errors.location?.message}
+            id={`${product.id}-location`}
+            onChange={(next) => setValue("location", next, { shouldDirty: true })}
+            onTimeZone={(zone) => setValue("timezone", zone, { shouldDirty: true })}
+            value={location}
+          />
+
+          {/* 时区、时间口径和未知时辰都有可用默认值，放进折叠区；
+              主流程只保留真正必须由用户提供的资料。 */}
+          <details className={styles.advanced}>
+            <summary>高级排盘选项</summary>
+            <div className={styles.advancedBody}>
+              <label className={styles.checkRow}>
+                <input id={`${product.id}-unknown-time`} type="checkbox" {...register("unknownTime")} />
+                <span><strong>不知道出生时辰</strong><small>只有支持未知时辰的能力会开放，精度边界会写明。</small></span>
+              </label>
+              <SegmentedField
+                legend="时间口径"
+                name={`${product.id}-time-standard`}
+                onChange={(next) => setValue("timeStandard", next, { shouldDirty: true })}
+                options={[
+                  { value: "civil", label: "民用钟表时间" },
+                  { value: "local-apparent-solar", label: "当地视太阳时" },
+                ]}
+                value={timeStandard}
+              />
+              <Field htmlFor={`${product.id}-timezone`} label="出生时区" error={errors.timezone?.message} help="选中国内地点后自动填好；海外地点请自行确认。">
+                <input id={`${product.id}-timezone`} aria-describedby={errors.timezone ? `${product.id}-timezone-error` : `${product.id}-timezone-help`} autoComplete="off" list={`${product.id}-timezone-options`} placeholder="例如 Asia/Shanghai" {...register("timezone")} />
+                <IanaTimeZoneOptions id={`${product.id}-timezone-options`} />
+              </Field>
+              <ProductSpecificNatalOptions errors={errors} product={product} register={register} />
+            </div>
+          </details>
         </fieldset>
       ) : null}
 
@@ -594,7 +1000,7 @@ export function ProductInputForm({
                 {product.id === "liuyao" ? <><option value="coins">三枚硬币</option><option value="manual">手动记录</option></> : null}
                 {product.id === "meihua" ? <><option value="outcome">结果观察</option><option value="state">状态变化</option></> : null}
                 {product.id === "qimen" ? <><option value="action">行动选择</option><option value="situation">局势判断</option><option value="timing">时机观察</option></> : null}
-                {product.id === "daliuren" ? <><option value="progress">事情进展</option><option value="people">人事关系</option><option value="outcome">结果观察</option></> : null}
+                {product.id === "daliuren" ? <><option value="progress">事情进展</option><option value="people">人事关系</option><option value="outcome">结果观察</option><option value="timing">应期观察</option></> : null}
                 {product.id === "taiyi" ? <><option value="outcome">年度结果</option><option value="timing">时间节律</option><option value="location">空间范围</option><option value="state">结构状态</option></> : null}
                 {product.id === "selection" ? <><option value="timing">时间排序</option><option value="state">候选状态</option><option value="location">方位条件</option></> : null}
               </select>
@@ -604,6 +1010,16 @@ export function ProductInputForm({
             <Field htmlFor={`${product.id}-event-time`} label={product.id === "wenshi" ? "同一事件时空" : product.id === "taiyi" ? "参考时间" : "事件时间"} error={errors.eventTime?.message} help="默认使用你明确选择的当地时间，不读取设备位置。">
               <input id={`${product.id}-event-time`} type="datetime-local" aria-describedby={errors.eventTime ? `${product.id}-event-time-error` : `${product.id}-event-time-help`} {...register("eventTime")} />
             </Field>
+          ) : null}
+          {product.id === "daliuren" && focus === "timing" ? (
+            <div className={styles.twoColumns}>
+              <Field htmlFor="daliuren-timing-start" label="应期观察开始" error={errors.timingStart?.message} help="用于激活大六壬已核验的候选日期规则。">
+                <input id="daliuren-timing-start" type="date" {...register("timingStart")} />
+              </Field>
+              <Field htmlFor="daliuren-timing-end" label="应期观察结束" error={errors.timingEnd?.message} help="范围最多 31 天；候选日期不是现实保证。">
+                <input id="daliuren-timing-end" type="date" {...register("timingEnd")} />
+              </Field>
+            </div>
           ) : null}
           {["liuyao", "meihua", "qimen", "daliuren", "wenshi", "taiyi", "selection"].includes(product.id) ? (
             <>
@@ -896,9 +1312,133 @@ export function ProductInputForm({
         </fieldset>
       ) : null}
 
-      <button className={styles.primaryButton} type="submit">检查输入</button>
-      <p className={styles.submitNote}>{["bazi", "luming-nayin", "ziwei", "qizheng", "hecan", "canwen", "liuyao", "meihua", "qimen", "daliuren", "taiyi", "selection", "fengshui", "wenshi"].includes(product.id) ? "确认后会提交到对应 Runtime 盘面服务，并跳转到私有结果页；只生成确定性盘面，不在浏览器计算。" : "检查只发生在当前页面。继续后会在工作台明确显示未接入能力，不扣权益。"}</p>
+      <SubmitSummary product={product} values={summaryValues} />
+
+      {submitError ? <p className={styles.error} role="alert">{submitError}</p> : null}
+
+      <button aria-busy={busy} className={styles.primaryButton} disabled={busy} type="submit">
+        {busy ? "正在生成盘面…" : submitLabel(product)}
+      </button>
+      <details className={styles.submitBoundary}>
+        <summary>提交后会发生什么</summary>
+        <p>
+          {RUNTIME_SUBMIT_IDS.includes(product.id)
+            ? "资料提交到对应 Runtime 盘面服务并跳转到私有结果页；盘面在服务端确定性生成，不在浏览器计算。深读、追问和导出仍按各术单独开放。"
+            : "检查只发生在当前页面。继续后会在工作台明确显示未接入能力，不扣权益。"}
+        </p>
+      </details>
     </form>
+  );
+}
+
+const RUNTIME_SUBMIT_IDS = [
+  "bazi", "luming-nayin", "ziwei", "qizheng", "hecan", "canwen", "liuyao",
+  "meihua", "qimen", "daliuren", "taiyi", "selection", "fengshui", "wenshi",
+];
+
+const SUBMIT_LABELS: Record<string, string> = {
+  bazi: "立即排盘（免费）· 查看八字四柱",
+  ziwei: "立即排盘（免费）· 查看十二宫",
+  qizheng: "立即排盘（免费）· 查看星盘",
+  "luming-nayin": "立即排盘（免费）· 查看禄命纳音",
+  liuyao: "立即起卦 · 查看本卦与变卦",
+  meihua: "立即起卦 · 查看本卦与体用",
+  qimen: "立即起局 · 查看九宫",
+  daliuren: "立即起课 · 查看四课三传",
+  taiyi: "立即起局 · 查看年度结构",
+  selection: "立即排候选 · 查看日期排序",
+  wenshi: "立即起卦 · 三术分别呈现",
+  hecan: "立即合参 · 各术分别呈现",
+  canwen: "立即合参 · 各术分别呈现",
+  jianxiang: "开始观照 · 生成结构化观察",
+  fengshui: "立即起盘 · 查看形势与理气",
+};
+
+function submitLabel(product: ProductDefinition) {
+  return SUBMIT_LABELS[product.id] ?? `立即排盘 · 查看${product.moduleTitle}`;
+}
+
+const VALUE_LABELS: Record<string, string> = {
+  gregorian: "公历", lunar: "农历",
+  male: "男", female: "女",
+  civil: "民用钟表时间", "local-apparent-solar": "当地视太阳时",
+  coins: "三枚硬币", manual: "手动记录",
+  outcome: "结果观察", state: "状态变化", action: "行动选择",
+  situation: "局势判断", timing: "时机观察", progress: "事情进展",
+  people: "人事关系", location: "空间范围",
+  face: "面相", palm: "手相", posture: "体态", combined: "综合观照",
+};
+
+function label(value: string) {
+  return VALUE_LABELS[value] ?? value;
+}
+
+/**
+ * 提交前摘要常驻在表单底部，随填随更新——METIS 的「输入确认」也是这样长在同一页上，
+ * 而不是把用户推到一个独立步骤。
+ */
+function SubmitSummary({ product, values }: { product: ProductDefinition; values: TaskFormValues }) {
+  // 历法、时区、时间口径都有默认值；用户一个字都没填时不该先冒出一张摘要。
+  const started = Boolean(
+    values.subject.trim() ||
+      values.birthDate ||
+      values.issue.trim() ||
+      values.observationNotes.trim() ||
+      values.photoSelected,
+  );
+  if (!started) return null;
+
+  const rows: Array<readonly [string, string]> = [];
+
+  if (product.group === "natal") {
+    rows.push(["受测对象", values.subject]);
+    rows.push(["历法", label(values.calendar)]);
+    rows.push(["性别", values.gender ? label(values.gender) : ""]);
+    rows.push(["出生日期", values.birthDate]);
+    rows.push([
+      "出生时间",
+      values.unknownTime
+        ? "时辰未知"
+        : values.birthTime
+          ? `${values.birthTime}（${shichenLabel(Number(values.birthTime.split(":")[0])).name}时）`
+          : "",
+    ]);
+    rows.push(["出生地点", values.location]);
+    rows.push(["出生时区", values.timezone]);
+    rows.push(["时间口径", label(values.timeStandard)]);
+  } else {
+    rows.push(["受测对象", values.subject]);
+    rows.push(["问题", values.issue]);
+    if (values.focus) rows.push(["侧重", label(values.focus)]);
+    if (product.id === "daliuren" && values.focus === "timing") {
+      rows.push(["应期观察开始", values.timingStart]);
+      rows.push(["应期观察结束", values.timingEnd]);
+    }
+    if (product.id === "jianxiang") {
+      rows.push(["观照模式", label(values.observationMode)]);
+      rows.push(["用户补充信息", values.observationNotes]);
+      rows.push(["保存范围", values.saveToArchive ? "见相档案（需服务端确认）" : "仅本次任务"]);
+    }
+    rows.push(["事件时间", values.eventTime]);
+    rows.push(["事件地点", values.location]);
+    rows.push(["事件时区", values.timezone]);
+  }
+
+  const filled = rows.filter(([, value]) => Boolean(value));
+  if (filled.length === 0) return null;
+
+  return (
+    <section aria-label="提交前摘要" className={styles.submitSummary}>
+      <h3>即将提交</h3>
+      <dl>
+        {filled.map(([key, value]) => (
+          <div key={key}>
+            <dt>{key}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 
@@ -913,20 +1453,17 @@ function ProductSpecificNatalOptions({
 }) {
   if (product.id === "bazi") return (
     <>
-      <p className={styles.productNote}>八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则；目标时间层只选一个。</p>
-      <TemporalTargetFields errors={errors} productId="bazi" register={register} supportsDay />
+      <p className={styles.productNote}>八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则。</p>
     </>
   );
   if (product.id === "ziwei") return (
     <>
-      <p className={styles.productNote}>紫微专有：后续会单独确认闰月、命宫起法与四化版本；目标时间层只选一个。</p>
-      <TemporalTargetFields errors={errors} productId="ziwei" register={register} />
+      <p className={styles.productNote}>紫微专有：后续会单独确认闰月、命宫起法与四化版本。</p>
     </>
   );
   if (product.id === "qizheng") return (
     <>
       <p className={styles.productNote}>七政专有：地点将用于经纬度与时区校准，并保留坐标来源。</p>
-      <TemporalTargetFields errors={errors} productId="qizheng" register={register} supportsDay />
       <div className={styles.twoColumns}>
         <Field htmlFor="qizheng-longitude" label="出生经度" error={errors.longitude?.message} help="东经为正，西经为负。">
           <input id="qizheng-longitude" inputMode="decimal" {...register("longitude")} />
@@ -941,63 +1478,6 @@ function ProductSpecificNatalOptions({
     </>
   );
   return null;
-}
-
-function TargetYearField({
-  errors,
-  productId,
-  register,
-}: {
-  errors: FieldErrors<TaskFormValues>;
-  productId: "bazi" | "ziwei" | "qizheng";
-  register: UseFormRegister<TaskFormValues>;
-}) {
-  return (
-    <Field
-      htmlFor={`${productId}-target-year`}
-      label="流年目标年份（可选）"
-      error={errors.targetYear?.message}
-      help="填写后会请求 Runtime 的精确流年层；留空只生成原来的本命盘。"
-    >
-      <input
-        id={`${productId}-target-year`}
-        type="number"
-        min="1800"
-        max="2199"
-        step="1"
-        inputMode="numeric"
-        {...register("targetYear")}
-      />
-    </Field>
-  );
-}
-
-function TemporalTargetFields({
-  errors,
-  productId,
-  register,
-  supportsDay = false,
-}: {
-  errors: FieldErrors<TaskFormValues>;
-  productId: "bazi" | "ziwei" | "qizheng";
-  register: UseFormRegister<TaskFormValues>;
-  supportsDay?: boolean;
-}) {
-  return (
-    <>
-      <TargetYearField errors={errors} productId={productId} register={register} />
-      <div className={styles.twoColumns}>
-        <Field htmlFor={`${productId}-target-month`} label="流月目标月份（可选）" error={errors.targetMonth?.message} help="填写后请求 Runtime 的精确月份层；与年份、日期互斥。">
-          <input id={`${productId}-target-month`} type="month" {...register("targetMonth")} />
-        </Field>
-        {supportsDay ? (
-          <Field htmlFor={`${productId}-target-date`} label="流日目标日期（可选）" error={errors.targetDate?.message} help="填写后请求 Runtime 的精确日期层；与年份、月份互斥。">
-            <input id={`${productId}-target-date`} type="date" {...register("targetDate")} />
-          </Field>
-        ) : null}
-      </div>
-    </>
-  );
 }
 
 const lineNames = ["初爻", "二爻", "三爻", "四爻", "五爻", "上爻"] as const;

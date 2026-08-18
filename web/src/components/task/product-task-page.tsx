@@ -30,8 +30,8 @@ export function ProductTaskPage({ productId }: { productId: ProductId }) {
                   <dd>{product.suitableFor}</dd>
                 </div>
                 <div>
-                  <dt>当前边界</dt>
-                  <dd>支持的单术会进入私有结果页生成确定性盘面；深读、合参与见相能力仍按阶段开放。</dd>
+                  <dt>现在能拿到</dt>
+                  <dd>可复现、可核对的确定性盘面；深度解读、合参与见相仍在分阶段开放。</dd>
                 </div>
               </dl>
             </div>

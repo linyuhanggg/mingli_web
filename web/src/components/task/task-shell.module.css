@@ -234,13 +234,171 @@
 
 .field {
   display: grid;
+  min-width: 0;
   gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 .field > label,
+.field > legend,
 .choiceGroup legend {
+  padding: 0;
   font-size: var(--font-size-label);
   font-weight: 720;
+}
+
+/* 必填在字段上就说明白，不靠提交后的错误摘要补课。 */
+.requiredMark {
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  vertical-align: 1px;
+}
+
+/* 二选一用分段控件：两个选项同时可见，比下拉少一次点击。 */
+.segmented {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: var(--space-sm);
+}
+
+.segment {
+  position: relative;
+  display: flex;
+  min-height: var(--target-min);
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: var(--font-size-label);
+  font-weight: 650;
+  text-align: center;
+  transition:
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease;
+}
+
+.segment input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.segment[data-selected="true"] {
+  border-color: var(--color-action);
+  background: var(--color-action);
+  color: var(--color-on-action);
+}
+
+.segment:has(input:disabled) {
+  border-color: var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.segment:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* 年/月/日、时/分：分列选择，不用原生日期弹层。 */
+.dateParts {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+.timeParts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+/* 只标注民用钟表时间落在哪个时段，方便核对上午/下午填反；
+   真太阳时与早晚子时仍由服务端判定。 */
+.timeReadout {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+}
+
+.timeReadout strong {
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.timeReadout span {
+  color: var(--color-text-muted);
+}
+
+/* 提交前摘要常驻表单底部，随填随更新，取代独立的「输入确认」步骤。 */
+.submitSummary {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+}
+
+.submitSummary h3 {
+  margin: 0;
+  font-size: var(--font-size-label);
+  font-weight: 720;
+}
+
+.submitSummary dl {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.submitSummary dl > div {
+  display: grid;
+  grid-template-columns: minmax(5rem, auto) minmax(0, 1fr);
+  gap: var(--space-md);
+  font-size: var(--font-size-aux);
+}
+
+.submitSummary dt {
+  color: var(--color-text-secondary);
+}
+
+.submitSummary dd {
+  margin: 0;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+/* 边界说明从主视线降到折叠区：需要时能查，填表时不挡路。 */
+.submitBoundary > summary {
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: var(--font-size-aux);
+}
+
+.submitBoundary > summary:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.submitBoundary p {
+  margin: var(--space-sm) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+  line-height: var(--line-height-body);
 }
 
 .field input,
@@ -252,7 +410,7 @@
   padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-control);
-  background: var(--color-surface);
+  background-color: var(--color-surface);
   color: var(--color-text);
 }
 
@@ -264,7 +422,7 @@
 .field input:disabled,
 .field select:disabled,
 .lineProcess select:disabled {
-  background: var(--color-surface-muted);
+  background-color: var(--color-surface-muted);
   color: var(--color-text-muted);
 }
 
@@ -583,4 +741,81 @@
   .secondaryButton {
     width: 100%;
   }
+}
+
+/* 与 ui/base.css 的下拉箭头留出净空（模块的 padding 简写会覆盖基础层）。 */
+.field select,
+.lineProcess select {
+  padding-right: 2.5rem;
+}
+
+/* 年月日 + 时分并成一行（青囊「诞辰之候」同款）。 */
+.dateTimeRow {
+  display: grid;
+  gap: var(--space-md);
+}
+
+/* 省 / 市 / 区县三级联动。 */
+.placeParts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.placeSwitch {
+  justify-self: end;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  font-size: var(--font-size-aux);
+}
+
+.placeSwitch:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+.placeSwitch:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+/* 高级排盘选项：有可用默认值的字段收进来，主流程只留必须填的。 */
+.advanced {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-md);
+}
+
+.advanced > summary {
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.advanced > summary:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.advancedBody {
+  display: grid;
+  gap: var(--space-lg);
+  padding-top: var(--space-lg);
+}
+
+@media (min-width: 40rem) {
+  .dateTimeRow {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+/* 年/月/日、时/分、省/市/区都是窄列，箭头留白按比例收窄，避免文字被截断。 */
+.dateParts select,
+.timeParts select,
+.placeParts select {
+  padding-right: 1.9rem;
+  background-position: right 0.6rem center;
 }

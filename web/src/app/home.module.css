@@ -38,7 +38,9 @@
 
 .hero {
   display: grid;
-  width: min(100%, 45rem);
+  /* 48rem = 768px：容器宽 1160 时左边缘落在 532px，正好是下方三列卡片网格
+     第二列的左边线。首屏与全站共用同一条竖直参考线，滚动时不再左右跳动。 */
+  width: min(100%, 48rem);
   gap: 1.4rem;
 }
 
@@ -98,15 +100,25 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm) 0;
-  margin: 0.35rem 0 0;
-  color: var(--home-ink-muted);
-  font-size: var(--font-size-aux);
+  margin: 0.9rem 0 0;
+  color: var(--home-ink-soft);
+  font-size: var(--font-size-label);
   font-variant-numeric: tabular-nums;
 }
 
 .heroProof span {
-  padding-inline: var(--space-md);
-  border-left: 1px solid var(--home-line);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding-inline: var(--space-lg);
+  border-left: 1px solid var(--home-line-strong);
+}
+
+.heroProof strong {
+  color: var(--home-ink);
+  font-size: var(--font-size-card);
+  font-weight: 720;
+  letter-spacing: -0.02em;
 }
 
 .heroProof span:first-child {
@@ -208,8 +220,10 @@
   position: absolute;
   top: clamp(6.6rem, 14vh, 9.25rem);
   left: clamp(1rem, 6.5vw, 7.5rem);
-  width: clamp(19rem, 34vw, 32rem);
-  height: clamp(31rem, 49vw, 41rem);
+  /* 收窄到右边缘 ≈ 497px，与标题列左边线 532px 留出净空；
+     同时降低符箓对主标题的视觉争夺。 */
+  width: clamp(17rem, 28vw, 26rem);
+  height: clamp(27rem, 40vw, 34rem);
 }
 
 .talismanLayer {
@@ -620,13 +634,14 @@
 }
 
 @media (min-width: 48rem) and (max-width: 64rem) {
+  /* 66% 让标题列左边缘同样落在下方卡片网格第二列上（768 与 1024 实测各差 1px）。 */
   .hero {
-    width: min(56%, 35rem);
+    width: min(66%, 40rem);
   }
 
   .talismanStage {
     left: 1rem;
-    width: 40vw;
+    width: 32vw;
   }
 
   .quickStartGrid {
@@ -677,9 +692,20 @@
   }
 
   .hero h1 {
-    max-width: 11ch;
-    font-size: clamp(2.5rem, 12vw, 3.25rem);
+    /* 窄屏放不下整句时必然折行；balance 让「五十五部古籍为证」摊成 4+4，
+       而不是 6+2 留下「为证」这种两字孤行。 */
+    max-width: none;
+    font-size: clamp(2.5rem, 10.4vw, 3.25rem);
     line-height: 1.12;
+    text-wrap: balance;
+  }
+
+  /* ≤384px 放不下「五十五部古籍为证」两行以内，字阶下限又冻结在 40px；
+     只给第二句设上限，逼它摊成 4+4，而不是 7+1 留一个「证」独占一行。 */
+  @media (max-width: 24rem) {
+    .hero h1 span + span {
+      max-width: 4.6em;
+    }
   }
 
   .heroSub {
@@ -803,6 +829,128 @@
   .card:hover .cardIcon,
   .crossCard:hover .cardIcon,
   .observationAction:hover {
+    transform: none;
+  }
+}
+
+/* ---------- 命盘主入口卡 ---------- */
+
+.leadCard {
+  display: grid;
+  gap: var(--space-md);
+  align-items: center;
+  padding: var(--space-xl);
+  border: 1px solid var(--home-line-strong);
+  border-radius: var(--radius-panel);
+  background: var(--home-paper-surface);
+  color: var(--home-ink);
+  transition:
+    border-color var(--duration-feedback) ease,
+    box-shadow var(--duration-feedback) ease,
+    transform var(--duration-feedback) var(--ease-out);
+}
+
+.leadCard:hover {
+  border-color: var(--home-ink);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.leadCard:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.leadCardBody {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.leadCardEyebrow {
+  color: var(--home-ink-muted);
+  font-size: var(--font-size-meta);
+  font-weight: 730;
+  letter-spacing: 0.08em;
+}
+
+.leadCard strong {
+  font-size: var(--font-size-section);
+  font-weight: 740;
+  letter-spacing: -0.02em;
+}
+
+.leadCardSummary {
+  max-width: 46ch;
+  color: var(--home-ink-soft);
+  line-height: var(--line-height-body);
+}
+
+.leadCardAction {
+  display: inline-flex;
+  min-height: var(--target-min);
+  width: fit-content;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: var(--radius-control);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  font-weight: 700;
+}
+
+.leadCard:hover .leadCardAction {
+  background: var(--color-action-hover);
+}
+
+/* ---------- 收尾行动区 ---------- */
+
+.closing {
+  display: grid;
+  gap: var(--space-lg);
+  padding: clamp(1.75rem, 5vw, 3rem);
+  border: 1px solid var(--home-line-strong);
+  border-radius: var(--radius-panel);
+  background: var(--home-paper-surface);
+}
+
+.closing h2 {
+  margin: 0 0 0.5rem;
+  font-size: var(--font-size-section);
+  font-weight: 720;
+  letter-spacing: -0.02em;
+}
+
+.closing p {
+  max-width: 52ch;
+  margin: 0;
+  color: var(--home-ink-soft);
+  line-height: var(--line-height-body);
+}
+
+.closingActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+@media (min-width: 48rem) {
+  .leadCard,
+  .closing {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .closing {
+    align-items: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leadCard {
+    transition: none;
+  }
+
+  .leadCard:hover {
     transform: none;
   }
 }

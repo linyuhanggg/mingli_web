@@ -122,7 +122,7 @@
   padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-control);
-  background: var(--color-surface);
+  background-color: var(--color-surface);
 }
 
 .person p,
@@ -300,4 +300,10 @@
   .twoColumns {
     grid-template-columns: 1fr;
   }
+}
+
+/* 与 ui/base.css 的下拉箭头留出净空。 */
+.person select,
+.relationshipField select {
+  padding-right: 2.5rem;
 }

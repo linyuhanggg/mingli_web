@@ -30,8 +30,9 @@ const EVENT_ENTRIES = [
   PRODUCT_CATALOG.daliuren,
 ] as const;
 
-// 命盘区梯度：主入口（白面强边）→ 标准卡 → 浅面卡。
-const NATAL_TIERS = [styles.cardLead, "", styles.cardTail] as const;
+// 命盘区梯度：八字单列主卡，其余三术并列；末位用浅面卡收尾。
+const [leadNatal, ...restNatal] = NATAL_PRODUCTS;
+const NATAL_TIERS = ["", "", styles.cardTail] as const;
 
 // 合参卡的主理/参证边界一句话（DESIGN §8.3 / §8.4）。
 const CROSS_BOUNDARIES: Partial<Record<ProductDefinition["id"], string>> = {
@@ -118,9 +119,15 @@ export default function HomePage() {
                 </ButtonLink>
               </div>
               <p className={styles.heroProof}>
-                <span>13 个术数体系</span>
-                <span>55 部古籍</span>
-                <span>1328 条证据索引</span>
+                <span>
+                  <strong>13</strong> 个术数体系
+                </span>
+                <span>
+                  <strong>55</strong> 部古籍
+                </span>
+                <span>
+                  <strong>1328</strong> 条证据索引
+                </span>
               </p>
             </div>
           </Container>
@@ -170,8 +177,21 @@ export default function HomePage() {
               <h2 id="home-natal">命盘</h2>
               <p>从出生资料开始，观察长期结构与时间层。</p>
             </div>
+            {/* 八字是主入口，单独占一整行；其余三个命盘术数并列在下面一行。
+                四张同宽卡片会让「从哪进」这个问题没有答案。 */}
+            <a className={styles.leadCard} href={leadNatal.href}>
+              <span className={styles.leadCardBody}>
+                <span className={styles.leadCardEyebrow}>最常用的入口</span>
+                <strong>{leadNatal.name}</strong>
+                <span className={styles.leadCardSummary}>{leadNatal.summary}</span>
+              </span>
+              <span className={styles.leadCardAction}>
+                开始排盘
+                <ArrowRight aria-hidden="true" size={16} strokeWidth={1.75} />
+              </span>
+            </a>
             <div className={styles.cardGrid}>
-              {NATAL_PRODUCTS.map((product, index) => (
+              {restNatal.map((product, index) => (
                 <TaskCard key={product.id} product={product} tier={NATAL_TIERS[index] ?? ""} />
               ))}
             </div>
@@ -246,7 +266,28 @@ export default function HomePage() {
             </div>
           </section>
 
-          <PublicCmsProjection heading="已发布公告" source={{ kind: "index", prefix: "notice" }} />
+          {/* 有已发布公告才出现；没有内容时不用一块「暂不可用」灰框结束整页。 */}
+          <PublicCmsProjection
+            heading="已发布公告"
+            silentWhenUnavailable
+            source={{ kind: "index", prefix: "notice" }}
+          />
+
+          {/* 宣传页以行动收尾。 */}
+          <section aria-labelledby="home-closing" className={styles.closing}>
+            <div>
+              <h2 id="home-closing">先拿到一张可核对的盘</h2>
+              <p>不需要注册。填出生资料就能得到确定性四柱；要保存、跨设备或深读时再登录。</p>
+            </div>
+            <div className={styles.closingActions}>
+              <ButtonLink className={styles.heroPrimary} href="/bazi">
+                开始排盘
+              </ButtonLink>
+              <ButtonLink className={styles.heroSecondary} href="/methodology" variant="secondary">
+                方法与边界
+              </ButtonLink>
+            </div>
+          </section>
         </Container>
       </main>
     </PublicPageShell>

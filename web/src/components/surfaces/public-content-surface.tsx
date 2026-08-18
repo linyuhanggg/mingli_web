@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -101,7 +102,15 @@ export function PublicContentSurface({ surface, contentSource }: PublicContentSu
                 <Link href={entry.href}>
                   <span className={styles.entryHeading}>
                     <strong>{entry.title}</strong>
-                    <small>{entry.status}</small>
+                    <small data-tone={entry.status.startsWith("已接") ? "ready" : "pending"}>
+                      {entry.status}
+                    </small>
+                    <ArrowRight
+                      aria-hidden="true"
+                      className={styles.entryArrow}
+                      size={17}
+                      strokeWidth={1.75}
+                    />
                   </span>
                   <span>{entry.description}</span>
                 </Link>

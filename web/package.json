@@ -20,6 +20,7 @@
     "@fontsource-variable/noto-sans-sc": "5.3.0",
     "@fontsource-variable/noto-serif-sc": "5.3.0",
     "@hookform/resolvers": "5.7.1",
+    "china-division": "^2.7.0",
     "clsx": "2.1.1",
     "lucide-react": "1.30.0",
     "motion": "13.0.0",

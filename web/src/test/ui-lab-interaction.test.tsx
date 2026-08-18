@@ -43,7 +43,7 @@ describe("Web UI Lab interactions", () => {
     renderLab();
 
     const routeButtons = screen.getAllByRole("button", { name: /^预览路由 / });
-    expect(routeButtons).toHaveLength(55);
+    expect(routeButtons).toHaveLength(56);
 
     await user.click(screen.getByRole("button", { name: "预览路由 /auth/register" }));
     expect(screen.getByRole("heading", { name: "注册按验证、设密码、同意政策推进。" })).toBeVisible();
@@ -78,7 +78,7 @@ describe("Web UI Lab interactions", () => {
     renderLab();
 
     expect(screen.getByRole("form", { name: "八字任务输入" })).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "检查输入" }));
+    await user.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
 
     expect(screen.getByRole("heading", { name: "请先修正以下输入" })).toBeVisible();
     expect(screen.getByLabelText("受测对象")).toHaveFocus();
@@ -92,7 +92,11 @@ describe("Web UI Lab interactions", () => {
 
     expect(screen.getByRole("form", { name: "八字任务输入" })).toBeVisible();
     expect(screen.getByLabelText("受测对象")).toHaveValue("演示受测人");
-    expect(screen.getByLabelText("出生日期")).toHaveValue("1992-06-18");
+    expect(screen.getByLabelText("出生年份")).toHaveValue("1992");
+    expect(screen.getByLabelText("出生月份")).toHaveValue("06");
+    expect(screen.getByLabelText("出生日期")).toHaveValue("18");
+    expect(screen.getByLabelText("出生小时")).toHaveValue("08");
+    expect(screen.getByLabelText("出生分钟")).toHaveValue("30");
   });
 
   it("blocks non-test identities from an internal-test capability", async () => {

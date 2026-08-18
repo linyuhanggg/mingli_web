@@ -55,7 +55,7 @@ test("public task forms announce a validation summary and focus the first invali
   page,
 }) => {
   await page.goto("/bazi", { waitUntil: "domcontentloaded" });
-  await page.getByRole("button", { name: "检查输入" }).click();
+  await page.getByRole("button", { name: /^立即排盘（免费）/ }).click();
 
   const summary = page.getByRole("alert", { name: "请先修正以下输入" });
   await expect(summary).toBeVisible();

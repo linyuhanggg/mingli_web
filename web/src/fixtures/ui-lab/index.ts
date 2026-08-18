@@ -16,7 +16,13 @@ import type {
   UiLabSchemaVersion,
   UiLabSurfaceSchemaVersion,
 } from "@/lib/ui-lab-contract";
+import type { ReadingEvidence } from "@/lib/api/contracts";
 import type { ProductId } from "@/products/catalog";
+import type { BaziChartViewModel } from "@/view-models/registry";
+import {
+  BAZI_EVIDENCE_RESULT_EVIDENCE,
+  BAZI_EVIDENCE_RESULT_VIEW_MODEL,
+} from "@/fixtures/bazi-evidence-result";
 import {
   VIEW_MODEL_FIXTURES,
   type ViewModelFixture,
@@ -43,6 +49,15 @@ type RegisteredViewModelFixtureBase = UiLabFixtureBase & {
 
 type ProductViewModelFixture = RegisteredViewModelFixtureBase & {
   readonly previewKind: "product-input" | "workbench";
+};
+
+type BaziResultFixture = UiLabFixtureBase & {
+  readonly previewKind: "bazi-result";
+  readonly productId: "bazi";
+  readonly schemaVersion: "bazi-chart/v1";
+  readonly schemaSource: "view-model-registry";
+  readonly viewModel: BaziChartViewModel;
+  readonly evidence: ReadonlyArray<ReadingEvidence>;
 };
 
 export type UiLabRelationshipFixture = RegisteredViewModelFixtureBase & {
@@ -86,6 +101,7 @@ type PublicContentFixture = UiLabFixtureBase & {
 
 export type UiLabFixture =
   | ProductViewModelFixture
+  | BaziResultFixture
   | UiLabRelationshipFixture
   | ReadingFixture
   | AccountFixture
@@ -278,6 +294,19 @@ export const UI_LAB_FIXTURES = [
     schemaVersion: "bazi-chart/v1",
     schemaSource: "view-model-registry",
     viewModel: VIEW_MODEL_FIXTURES["bazi-chart/v1"],
+  },
+  {
+    id: "bazi-result-evidence",
+    category: "product",
+    routePattern: "/_ui-lab/bazi-result",
+    title: "八字结果页（G1/G3 可核验证据切片）",
+    description: "开发验收 Fixture：直接渲染生产 BaziChart，固定完整 bazi-chart/v1、Runtime 时间事实与 verified_exact 古籍原文。",
+    previewKind: "bazi-result",
+    productId: "bazi",
+    schemaVersion: "bazi-chart/v1",
+    schemaSource: "view-model-registry",
+    viewModel: BAZI_EVIDENCE_RESULT_VIEW_MODEL,
+    evidence: BAZI_EVIDENCE_RESULT_EVIDENCE,
   },
   {
     id: "bazi-hepan",
