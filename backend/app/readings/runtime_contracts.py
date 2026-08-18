@@ -160,7 +160,7 @@ class Described:
     protocol_version: str
     manifest_digest: str
     capabilities: tuple[Mapping[str, object], ...]
-    transition_ids: tuple[Literal["correct", "restart"], ...] = ()
+    transition_ids: tuple[Literal["correct", "restart"], ...] | None = None
     kind: Literal["described"] = "described"
 
     def __post_init__(self) -> None:
@@ -172,13 +172,15 @@ class Described:
         _validate_schema(RESULT_SCHEMA, self.to_dict())
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             "kind": self.kind,
             "protocol_version": self.protocol_version,
             "manifest_digest": self.manifest_digest,
             "capabilities": [_thaw_object(item) for item in self.capabilities],
-            "transition_ids": list(self.transition_ids),
         }
+        if self.transition_ids is not None:
+            payload["transition_ids"] = list(self.transition_ids)
+        return payload
 
 
 @dataclass(frozen=True, slots=True)
@@ -286,9 +288,13 @@ def result_from_dict(payload: Mapping[str, object]) -> MingliResult:
                 cast(Mapping[str, object], item)
                 for item in cast(list[object], payload["capabilities"])
             ),
-            transition_ids=tuple(
-                cast(Literal["correct", "restart"], item)
-                for item in cast(list[object], payload.get("transition_ids", []))
+            transition_ids=(
+                None
+                if payload.get("transition_ids") is None
+                else tuple(
+                    cast(Literal["correct", "restart"], item)
+                    for item in cast(list[object], payload["transition_ids"])
+                )
             ),
         )
     if kind == "prepared":
