@@ -4,6 +4,7 @@ import importlib
 import json
 import os
 import shutil
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -14,6 +15,7 @@ from app.adapters.model import FakeModelGateway
 from app.adapters.runtime import build_runtime_startup_gate
 from app.config import _RUNTIME_RELEASE_PROFILES, Settings
 from app.main import create_app
+from app.readings.models import ReadingJobRecord, ReadingVersion, RuntimeRelease
 from app.readings.repository import SqlReadingRepository
 from app.security.envelope import EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
@@ -22,6 +24,7 @@ from sqlalchemy import func, select
 from worker.readings import build_reading_worker
 
 # isort: split
+from test_bazi_deep_vertical import _ExtractiveModel
 from test_reading_worker import MutableClock
 
 pytest_plugins = ("test_reading_worker",)
@@ -121,6 +124,174 @@ async def _create_v53_profile(client: AsyncClient, headers: dict[str, str]) -> d
     )
     assert confirmed.status_code == 201, confirmed.text
     return cast(dict[str, object], confirmed.json())
+
+
+class _FreePreviewExtractiveModel(_ExtractiveModel):
+    """Exercise preview-v1 with three distinct exact public-source blocks."""
+
+    async def generate(self, request: Any) -> Any:
+        three_block_contract = replace(request.output_contract, min_blocks=3)
+        return await super().generate(
+            replace(request, output_contract=three_block_contract)
+        )
+
+
+def _write_stage_m_evidence(
+    output_root: Path,
+    result_payload: dict[str, object],
+    citations: list[str],
+) -> None:
+    output_root.mkdir(parents=True, exist_ok=True)
+    (output_root / "vertical-result.json").write_text(
+        json.dumps(result_payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_root / "citations.txt").write_text(
+        "\n".join(citations) + "\n",
+        encoding="utf-8",
+    )
+
+
+async def test_bazi_free_preview_api_to_postgres_worker_accepted_document(
+    postgres_worker_database: Any,
+    tmp_path: Path,
+) -> None:
+    if not RUNTIME_PYTHON_AVAILABLE:
+        pytest.skip("the dedicated Mingli Runtime Python is not installed")
+    database_url = os.environ.get("MINGLI_TEST_POSTGRES_URL", "")
+    release_root = _copy_admitted_release(tmp_path)
+    settings = _settings(tmp_path, release_root, database_url)
+    await _create_v53_release(postgres_worker_database, settings)
+
+    application = create_app(
+        settings=settings,
+        database=postgres_worker_database,
+        readiness_probe=_ready,
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as client:
+        started_guest = await client.post("/api/v1/guest-sessions")
+        assert started_guest.status_code == 201, started_guest.text
+        headers = {"X-CSRF-Token": started_guest.json()["csrf_token"]}
+        profile = await _create_v53_profile(client, headers)
+        started = await client.post(
+            "/api/v1/readings/preview",
+            headers={**headers, "Idempotency-Key": "bazi-free-real-start"},
+            json={
+                "profile_version_id": profile["profile_version_id"],
+                "dimension_ids": ["career"],
+            },
+        )
+        assert started.status_code == 201, started.text
+        assert started.json()["product_id"] == "bazi"
+        assert started.json()["delivery_state"] == "not_required"
+        version_id = UUID(started.json()["reading_version_id"])
+
+        gate = build_runtime_startup_gate(settings)
+        await gate.startup()
+        worker = build_reading_worker(
+            settings=settings,
+            database=postgres_worker_database,
+            worker_id="bazi-free-postgres-vertical",
+            runtime=gate.runtime,
+            model=_FreePreviewExtractiveModel(),
+        )
+        assert [await worker.run_once() for _ in range(3)] == [True, True, True]
+        assert await worker.run_once() is False
+
+        result = await client.get(
+            f"/api/v1/readings/{version_id}/result",
+            headers=headers,
+        )
+        assert result.status_code == 200, result.text
+        result_payload = result.json()
+        release_profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
+        assert result_payload["status"] == "accepted"
+        assert result_payload["view_model"]["schema_version"] == "bazi-chart/v1"
+        assert result_payload["document"]["schema_version"] == "reading-document/v1"
+        assert result_payload["document"]["view_model"] == result_payload["view_model"]
+        assert result_payload["document"]["versions"]["runtime_release"] == (
+            f"{release_profile['release_name']}@5.3"
+        )
+
+        citations = [
+            item["excerpt"]
+            for item in result_payload["fact_panel"]["evidence"]
+            if item.get("verification_status") == "verified_exact"
+            and isinstance(item.get("excerpt"), str)
+            and item["excerpt"]
+        ]
+        assert len(citations) == 7
+
+        evidence_root = os.environ.get("MINGLI_STAGE_M_EVIDENCE_DIR")
+        if evidence_root:
+            _write_stage_m_evidence(Path(evidence_root), result_payload, citations)
+
+    async with postgres_worker_database.sessions() as session:
+        repository = SqlReadingRepository(
+            session,
+            EnvelopeCipher.from_settings(settings),
+        )
+        version = await session.get(ReadingVersion, version_id)
+        assert version is not None and version.status == "accepted"
+        runtime_release = await session.get(RuntimeRelease, version.runtime_release_id)
+        release_profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
+        assert runtime_release is not None
+        assert runtime_release.release_manifest_digest == release_profile[
+            "release_manifest_sha256"
+        ]
+        assert runtime_release.source_commit == release_profile["source_commit"]
+        job = await session.scalar(
+            select(ReadingJobRecord).where(
+                ReadingJobRecord.reading_version_id == version_id
+            )
+        )
+        assert job is not None and job.status == "complete"
+        brief = await repository.load_fact_brief(version_id)
+        candidate = await repository.load_successful_candidate(str(job.id))
+        accepted_copy = await repository.load_accepted_copy(version_id)
+        document = await repository.load_reading_document(version_id)
+        assert brief is not None and candidate is not None
+        assert accepted_copy is not None and document is not None
+
+        brief_payload = brief.to_dict()
+        public_sources = {
+            **{
+                str(item["ref"]): str(item["display_text"])
+                for item in brief_payload["facts"]
+            },
+            **{
+                str(item["ref"]): str(item["public_text"])
+                for item in brief_payload["findings"]
+                if isinstance(item.get("public_text"), str)
+            },
+            **{
+                str(item["kind_id"]): str(item["public_text"])
+                for item in brief_payload["limits"]
+                if isinstance(item.get("public_text"), str)
+            },
+        }
+        assert len(candidate.blocks) == 3
+        source_refs: list[str] = []
+        source_texts: list[str] = []
+        for block in candidate.blocks:
+            refs = [*block.fact_refs, *block.finding_refs, *block.limit_kind_ids]
+            assert len(refs) == 1
+            assert block.text == public_sources[refs[0]]
+            source_refs.append(refs[0])
+            source_texts.append(block.text)
+        assert len(source_refs) == len(set(source_refs))
+        assert len(source_texts) == len(set(source_texts))
+        assert tuple(claim.text for claim in document.claims) == tuple(source_texts)
+        assert accepted_copy == "\n\n".join(
+            [*source_texts, "AI 辅助生成，仅供传统文化参考。"]
+        )
+
+
+async def _ready() -> None:
+    return None
 
 
 async def test_time_check_api_to_postgres_worker_document_and_web_result(

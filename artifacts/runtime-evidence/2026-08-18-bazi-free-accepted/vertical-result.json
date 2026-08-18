@@ -1,0 +1,4146 @@
+{
+  "reading_version_id": "12c19ca2-5e22-416e-8ff3-1908a644f84f",
+  "status": "accepted",
+  "accepted_copy": "出生时间或四柱：1994-04-30T05:55:00+08:00\n\n坐标来源：synthetic-fixture\n\n性别：female\n\nAI 辅助生成，仅供传统文化参考。",
+  "fact_panel": {
+    "claim_scopes": [
+      {
+        "allowed_kind_ids": [
+          "kind.fact",
+          "kind.tendency"
+        ],
+        "certainty_ceiling_id": "certainty.tendency",
+        "dimension_id": "career",
+        "evidence_refs": [
+          "evidence:bazi/bazi/sanming-tonghui#R-01-02",
+          "evidence:bazi/bazi/sanming-tonghui#R-02-04",
+          "evidence:bazi/bazi/yuanhai-ziping#YR-M01",
+          "evidence:bazi/bazi/ziping-zhenquan#ZPR-01",
+          "evidence:bazi/bazi/ditiansui-chanwei#DR-01-01",
+          "evidence:bazi/bazi/qiongtong-baojian#QR-02-01",
+          "evidence:bazi/bazi/qiongtong-baojian#QTB-M01"
+        ],
+        "fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/branch_relations",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/calendar_normalization",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/dimension_fact_scope",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/element_inventory",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/four_pillars",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/hidden_stems",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/interpretive_candidates",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/luck_cycles",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/nayin",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/san_yuan",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/seasonal_profile",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/shensha_auxiliary",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/source_conditioned_patterns",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/ten_gods",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/tiaohou_markers",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/twelve_growth_stages",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/xunkong"
+        ],
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db"
+      }
+    ],
+    "evidence": [
+      {
+        "evidence_ref": "evidence:bazi/bazi/sanming-tonghui#R-01-02",
+        "excerpt": "故五者流行而更轉順則相生逆則相尅",
+        "locator": "fulltext.md#L34",
+        "ref": "evidence:bazi/bazi/sanming-tonghui#R-01-02",
+        "rule_id": "bazi/sanming-tonghui#R-01-02",
+        "source_title": "三命通会",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master"
+        ],
+        "verbatim_citations": [
+          {
+            "locator": "fulltext.md#L34",
+            "source_title": "三命通会",
+            "verbatim_excerpt": "故五者流行而更轉順則相生逆則相尅",
+            "verification_status": "verified_exact"
+          }
+        ],
+        "verbatim_excerpt": "故五者流行而更轉順則相生逆則相尅",
+        "verification_status": "verified_exact"
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/sanming-tonghui#R-02-04",
+        "excerpt": "盛徳乘時曰旺如春木旺旺則生火火乃木之子子乗父業故火相木用水生生我者父母今子嗣得時登髙明顯赫之地而生我者當知退矣故水休休者羙之無極休然無事之義火能尅金金乃木之鬼被火尅制不能施設故金囚火能生土土為木之財財為隠藏之物草木發生土散氣塵所以春木尅土則死夏火旺火生土則土相木生火則木休水尅火則水因火尅金則金死六月土旺土生金則金相火生土則火休木尅土則木囚土尅水則水死秋金旺金生水則水相土生金則土休火尅金則火囚金尅木則木死冬水旺水生木則木相金生水則金休土尅水則土囚水尅火則火死",
+        "locator": "fulltext.md#L636",
+        "ref": "evidence:bazi/bazi/sanming-tonghui#R-02-04",
+        "rule_id": "bazi/sanming-tonghui#R-02-04",
+        "source_title": "三命通会",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ],
+        "verbatim_citations": [
+          {
+            "locator": "fulltext.md#L636",
+            "source_title": "三命通会",
+            "verbatim_excerpt": "盛徳乘時曰旺如春木旺旺則生火火乃木之子子乗父業故火相木用水生生我者父母今子嗣得時登髙明顯赫之地而生我者當知退矣故水休休者羙之無極休然無事之義火能尅金金乃木之鬼被火尅制不能施設故金囚火能生土土為木之財財為隠藏之物草木發生土散氣塵所以春木尅土則死夏火旺火生土則土相木生火則木休水尅火則水因火尅金則金死六月土旺土生金則金相火生土則火休木尅土則木囚土尅水則水死秋金旺金生水則水相土生金則土休火尅金則火囚金尅木則木死冬水旺水生木則木相金生水則金休土尅水則土囚水尅火則火死",
+            "verification_status": "verified_exact"
+          }
+        ],
+        "verbatim_excerpt": "盛徳乘時曰旺如春木旺旺則生火火乃木之子子乗父業故火相木用水生生我者父母今子嗣得時登髙明顯赫之地而生我者當知退矣故水休休者羙之無極休然無事之義火能尅金金乃木之鬼被火尅制不能施設故金囚火能生土土為木之財財為隠藏之物草木發生土散氣塵所以春木尅土則死夏火旺火生土則土相木生火則木休水尅火則水因火尅金則金死六月土旺土生金則金相火生土則火休木尅土則木囚土尅水則水死秋金旺金生水則水相土生金則土休火尅金則火囚金尅木則木死冬水旺水生木則木相金生水則金休土尅水則土囚水尅火則火死",
+        "verification_status": "verified_exact"
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/yuanhai-ziping#YR-M01",
+        "excerpt": "以日为主，年为本，月为提纲，时为辅佐。",
+        "locator": "fulltext.md#L109",
+        "ref": "evidence:bazi/bazi/yuanhai-ziping#YR-M01",
+        "rule_id": "bazi/yuanhai-ziping#YR-M01",
+        "source_title": "渊海子平",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ],
+        "verbatim_citations": [
+          {
+            "locator": "fulltext.md#L109",
+            "source_title": "渊海子平",
+            "verbatim_excerpt": "以日为主，年为本，月为提纲，时为辅佐。",
+            "verification_status": "verified_exact"
+          }
+        ],
+        "verbatim_excerpt": "以日为主，年为本，月为提纲，时为辅佐。",
+        "verification_status": "verified_exact"
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/ziping-zhenquan#ZPR-01",
+        "excerpt": "八字用神，專求月令，以日干配月令地支，而生尅不同，格局分焉。",
+        "locator": "fulltext.md#L179",
+        "ref": "evidence:bazi/bazi/ziping-zhenquan#ZPR-01",
+        "rule_id": "bazi/ziping-zhenquan#ZPR-01",
+        "source_title": "子平真诠",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ],
+        "verbatim_citations": [
+          {
+            "locator": "fulltext.md#L179",
+            "source_title": "子平真诠",
+            "verbatim_excerpt": "八字用神，專求月令，以日干配月令地支，而生尅不同，格局分焉。",
+            "verification_status": "verified_exact"
+          }
+        ],
+        "verbatim_excerpt": "八字用神，專求月令，以日干配月令地支，而生尅不同，格局分焉。",
+        "verification_status": "verified_exact"
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/ditiansui-chanwei#DR-01-01",
+        "excerpt": "干为天元，支为地元，支中所藏为人元。",
+        "locator": "fulltext.md#L11",
+        "ref": "evidence:bazi/bazi/ditiansui-chanwei#DR-01-01",
+        "rule_id": "bazi/ditiansui-chanwei#DR-01-01",
+        "source_title": "滴天髓阐微",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/four_pillars",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/hidden_stems",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/interpretive_candidates",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/ten_gods"
+        ],
+        "verbatim_citations": [
+          {
+            "locator": "fulltext.md#L11",
+            "source_title": "滴天髓阐微",
+            "verbatim_excerpt": "干为天元，支为地元，支中所藏为人元。",
+            "verification_status": "verified_exact"
+          }
+        ],
+        "verbatim_excerpt": "干为天元，支为地元，支中所藏为人元。",
+        "verification_status": "verified_exact"
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/qiongtong-baojian#QR-02-01",
+        "excerpt": "正月用壬，庚辛为助。二月耑用壬水。三月土重晦光，取甲佐之为妙",
+        "locator": "fulltext.md#L319",
+        "ref": "evidence:bazi/bazi/qiongtong-baojian#QR-02-01",
+        "rule_id": "bazi/qiongtong-baojian#QR-02-01",
+        "source_title": "穷通宝鉴",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ],
+        "verbatim_citations": [
+          {
+            "locator": "fulltext.md#L319",
+            "source_title": "穷通宝鉴",
+            "verbatim_excerpt": "正月用壬，庚辛为助。二月耑用壬水。三月土重晦光，取甲佐之为妙",
+            "verification_status": "verified_exact"
+          }
+        ],
+        "verbatim_excerpt": "正月用壬，庚辛为助。二月耑用壬水。三月土重晦光，取甲佐之为妙",
+        "verification_status": "verified_exact"
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/qiongtong-baojian#QTB-M01",
+        "excerpt": "土无常性，视四时所乘，欲使相济得所，勿令太过弗及。",
+        "locator": "fulltext.md#L9",
+        "ref": "evidence:bazi/bazi/qiongtong-baojian#QTB-M01",
+        "rule_id": "bazi/qiongtong-baojian#QTB-M01",
+        "source_title": "穷通宝鉴",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ],
+        "verbatim_citations": [
+          {
+            "locator": "fulltext.md#L9",
+            "source_title": "穷通宝鉴",
+            "verbatim_excerpt": "土无常性，视四时所乘，欲使相济得所，勿令太过弗及。",
+            "verification_status": "verified_exact"
+          }
+        ],
+        "verbatim_excerpt": "土无常性，视四时所乘，欲使相济得所，勿令太过弗及。",
+        "verification_status": "verified_exact"
+      }
+    ],
+    "facts": [
+      {
+        "display_text": "branch_relations：[{\"branches\":[\"戌\",\"辰\"],\"positions\":[\"year\",\"month\"],\"type\":\"六冲\"},{\"branches\":[\"戌\",\"卯\"],\"positions\":[\"year\",\"hour\"],\"type\":\"六合\"},{\"branches\":[\"辰\",\"戌\"],\"positions\":[\"month\",\"day\"],\"type\":\"六冲\"},{\"branch…",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/branch_relations",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": [
+          {
+            "branches": [
+              "戌",
+              "辰"
+            ],
+            "positions": [
+              "year",
+              "month"
+            ],
+            "type": "六冲"
+          },
+          {
+            "branches": [
+              "戌",
+              "卯"
+            ],
+            "positions": [
+              "year",
+              "hour"
+            ],
+            "type": "六合"
+          },
+          {
+            "branches": [
+              "辰",
+              "戌"
+            ],
+            "positions": [
+              "month",
+              "day"
+            ],
+            "type": "六冲"
+          },
+          {
+            "branches": [
+              "辰",
+              "卯"
+            ],
+            "positions": [
+              "month",
+              "hour"
+            ],
+            "type": "六害"
+          },
+          {
+            "branches": [
+              "戌",
+              "卯"
+            ],
+            "positions": [
+              "day",
+              "hour"
+            ],
+            "type": "六合"
+          }
+        ]
+      },
+      {
+        "display_text": "历法与真太阳时：{\"algorithm_version\":\"sxtwl-2.0.7/exact-jie-boundary-v1.2\",\"calendar_convention\":{\"day_rollover\":\"civil_midnight\",\"hour_basis\":\"local_apparent_solar-v1\",\"id\":\"east-asian-civil-jieqi-v1\",\"month_bounda…",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/calendar_normalization",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "algorithm_version": "sxtwl-2.0.7/exact-jie-boundary-v1.2",
+          "calendar_convention": {
+            "day_rollover": "civil_midnight",
+            "hour_basis": "local_apparent_solar-v1",
+            "id": "east-asian-civil-jieqi-v1",
+            "month_boundary": "exact Jie instant",
+            "version": "1.0.2",
+            "year_boundary": "exact Li Chun instant",
+            "zi_hour_policy": "midnight"
+          },
+          "changed_pillars": [],
+          "day_boundary": {
+            "correction_crossed_date": false,
+            "zi_policy_advanced_day_pillar": false
+          },
+          "effective_datetime": "1994-04-30T05:54:54+08:00",
+          "solar_terms": {
+            "month_switch_policy": "exact Jie instant",
+            "next": {
+              "datetime": "1994-05-06T01:54:05.030823+08:00",
+              "index": 9,
+              "instant_utc": "1994-05-05T17:54:05.030823+00:00",
+              "is_month_boundary_jie": true,
+              "name": "立夏"
+            },
+            "previous": {
+              "datetime": "1994-04-20T15:36:00.337830+08:00",
+              "index": 8,
+              "instant_utc": "1994-04-20T07:36:00.337830+00:00",
+              "is_month_boundary_jie": false,
+              "name": "谷雨"
+            }
+          },
+          "status": "calculated",
+          "time_basis": {
+            "algorithm": {
+              "id": "astronomy-engine-apparent-solar-eot-v1",
+              "source": "astronomy-engine apparent solar hour angle; equation_of_time = apparent_solar_time - mean_solar_time",
+              "uncertainty_seconds": 30,
+              "version": "astronomy-engine-2.1.19"
+            },
+            "boundary": {
+              "correction_changes_hour_branch": false,
+              "distance_seconds": 3294,
+              "within_uncertainty": false
+            },
+            "equation_of_time_seconds": 163,
+            "longitude_correction_seconds": -169,
+            "policy": "local_apparent_solar-v1",
+            "standard_meridian_degrees": 120.0,
+            "total_correction_seconds": -6
+          },
+          "true_solar_time": {
+            "equation_of_time_seconds": 163,
+            "longitude_correction_seconds": -169,
+            "policy": "local_apparent_solar-v1",
+            "status": "apparent_solar_applied",
+            "total_correction_seconds": -6
+          }
+        }
+      },
+      {
+        "display_text": "day_master：{\"element\":\"火\",\"polarity\":\"阳\",\"stem\":\"丙\"}",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "element": "火",
+          "polarity": "阳",
+          "stem": "丙"
+        }
+      },
+      {
+        "display_text": "dimension_fact_scope：{\"career\":{\"base_calculation_digest\":\"844ec8d84fa2f4c8c4d951ec728d0459ed75dcc3b3a7c20a3d59de172908e111\",\"scope\":\"calculated_natal_chart\"}}",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/dimension_fact_scope",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "career": {
+            "base_calculation_digest": "844ec8d84fa2f4c8c4d951ec728d0459ed75dcc3b3a7c20a3d59de172908e111",
+            "scope": "calculated_natal_chart"
+          }
+        }
+      },
+      {
+        "display_text": "element_inventory：{\"hidden_stem_occurrence_counts\":{\"土\":3,\"木\":2,\"水\":1,\"火\":2,\"金\":2},\"scope\":\"inventory only; these counts do not determine 旺衰 or 用神\",\"visible_stem_branch_counts\":{\"土\":4,\"木\":2,\"火\":1,\"金\":1}}",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/element_inventory",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "hidden_stem_occurrence_counts": {
+            "土": 3,
+            "木": 2,
+            "水": 1,
+            "火": 2,
+            "金": 2
+          },
+          "scope": "inventory only; these counts do not determine 旺衰 or 用神",
+          "visible_stem_branch_counts": {
+            "土": 4,
+            "木": 2,
+            "火": 1,
+            "金": 1
+          }
+        }
+      },
+      {
+        "display_text": "four_pillars：{\"day\":\"丙戌\",\"hour\":\"辛卯\",\"month\":\"戊辰\",\"year\":\"甲戌\"}",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/four_pillars",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "day": "丙戌",
+          "hour": "辛卯",
+          "month": "戊辰",
+          "year": "甲戌"
+        }
+      },
+      {
+        "display_text": "hidden_stems：{\"day\":{\"branch\":\"戌\",\"stems\":[\"戊\",\"辛\",\"丁\"]},\"hour\":{\"branch\":\"卯\",\"stems\":[\"乙\"]},\"month\":{\"branch\":\"辰\",\"stems\":[\"戊\",\"乙\",\"癸\"]},\"year\":{\"branch\":\"戌\",\"stems\":[\"戊\",\"辛\",\"丁\"]}}",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/hidden_stems",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "day": {
+            "branch": "戌",
+            "stems": [
+              "戊",
+              "辛",
+              "丁"
+            ]
+          },
+          "hour": {
+            "branch": "卯",
+            "stems": [
+              "乙"
+            ]
+          },
+          "month": {
+            "branch": "辰",
+            "stems": [
+              "戊",
+              "乙",
+              "癸"
+            ]
+          },
+          "year": {
+            "branch": "戌",
+            "stems": [
+              "戊",
+              "辛",
+              "丁"
+            ]
+          }
+        }
+      },
+      {
+        "display_text": "interpretive_candidates：{\"following_and_transformation\":{\"boundary\":\"a combination or one-sided inventory does not prove following or transformation\",\"branch_formation_candidates\":[],\"hard_verdict\":null,\"status\":\"requires_c…",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/interpretive_candidates",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "following_and_transformation": {
+            "boundary": "a combination or one-sided inventory does not prove following or transformation",
+            "branch_formation_candidates": [],
+            "hard_verdict": null,
+            "status": "requires_classical_adjudication",
+            "stem_combination_candidates": [
+              {
+                "candidate_element": "水",
+                "status": "combination_present_conditions_unadjudicated",
+                "stems": [
+                  "丙",
+                  "辛"
+                ],
+                "with_position": "hour"
+              }
+            ]
+          },
+          "reasoning_tools": {
+            "conflict_arbitration": {
+              "caveats": [
+                "the primary layer is selected only from an explicit question focus; a generic request cannot choose a lineage silently",
+                "preserving a disagreement is not a numerical vote and does not produce a strong/weak, success/failure, or useful-god verdict",
+                "Shensha remains auxiliary and cannot override pattern, strength/flow, Tiaohou, Ten Gods, or timing layers"
+              ],
+              "confidence_bucket": "low",
+              "confidence_ceiling": "low",
+              "output": {
+                "downgraded_layers": [],
+                "focus": null,
+                "hard_verdict": null,
+                "layers": {
+                  "pattern_layer": {
+                    "main_qi": "戊",
+                    "main_qi_ten_god": "食神",
+                    "status": "candidate_only"
+                  },
+                  "strength_flow_layer": {
+                    "evidence_lean": "mixed",
+                    "seasonal_state": "休",
+                    "status": "bounded_evidence_synthesis"
+                  },
+                  "tiaohou_layer": {
+                    "coverage_status": "partial_visible_or_hidden",
+                    "rule_id": "QR-02-01",
+                    "status": "adjudicated_seasonal_priority"
+                  }
+                },
+                "policy_id": "bazi.question-focus-routing-v1",
+                "policy_status": "product_contract_not_classical_verdict",
+                "preserved_disagreements": [
+                  {
+                    "between": [
+                      "pattern_layer",
+                      "strength_flow_layer"
+                    ],
+                    "policy": "preserve_both_views",
+                    "primary_when": "pattern questions use pattern_layer; strength/flow questions use strength_flow_layer"
+                  },
+                  {
+                    "between": [
+                      "tiaohou_layer",
+                      "strength_flow_layer"
+                    ],
+                    "policy": "preserve_both_views",
+                    "primary_when": "climate_extreme questions may use tiaohou_layer; otherwise strength_flow_layer remains primary"
+                  }
+                ],
+                "selected_primary_view": null,
+                "status": "requires_question_specific_adjudication"
+              },
+              "schema_version": "mingli-bazi-reasoning-tool-v2",
+              "tool_id": "bazi.tool.conflict_arbitration",
+              "tool_kind": "decision_stack_conflict_policy",
+              "visibility_class": "on_demand"
+            },
+            "domain_work": {
+              "caveats": [
+                "broad role indicators cannot identify an exact profession or employer",
+                "presence is not favorability; strength, structure, combinations, and timing must be checked",
+                "one lineage does not count as independent corroboration of itself"
+              ],
+              "confidence_bucket": "medium",
+              "confidence_ceiling": "medium",
+              "output": {
+                "branch_relations": [
+                  {
+                    "branches": [
+                      "戌",
+                      "辰"
+                    ],
+                    "positions": [
+                      "year",
+                      "month"
+                    ],
+                    "type": "六冲"
+                  },
+                  {
+                    "branches": [
+                      "戌",
+                      "卯"
+                    ],
+                    "positions": [
+                      "year",
+                      "hour"
+                    ],
+                    "type": "六合"
+                  },
+                  {
+                    "branches": [
+                      "辰",
+                      "戌"
+                    ],
+                    "positions": [
+                      "month",
+                      "day"
+                    ],
+                    "type": "六冲"
+                  },
+                  {
+                    "branches": [
+                      "辰",
+                      "卯"
+                    ],
+                    "positions": [
+                      "month",
+                      "hour"
+                    ],
+                    "type": "六害"
+                  },
+                  {
+                    "branches": [
+                      "戌",
+                      "卯"
+                    ],
+                    "positions": [
+                      "day",
+                      "hour"
+                    ],
+                    "type": "六合"
+                  }
+                ],
+                "domain": "work",
+                "element_inventory": {
+                  "hidden_stem_occurrence_counts": {
+                    "土": 3,
+                    "木": 2,
+                    "水": 1,
+                    "火": 2,
+                    "金": 2
+                  },
+                  "scope": "inventory only; these counts do not determine 旺衰 or 用神",
+                  "visible_stem_branch_counts": {
+                    "土": 4,
+                    "木": 2,
+                    "火": 1,
+                    "金": 1
+                  }
+                },
+                "gender": "female",
+                "palace_anchor": null,
+                "palace_value": null,
+                "primary_ten_god_roles": [
+                  "正官",
+                  "七杀",
+                  "正印",
+                  "偏印",
+                  "食神",
+                  "伤官",
+                  "正财",
+                  "偏财"
+                ],
+                "role_counts": {
+                  "偏印": 1,
+                  "正印": 2,
+                  "正官": 1,
+                  "正财": 3,
+                  "食神": 4
+                },
+                "role_occurrences": [
+                  {
+                    "layer": "visible_stem",
+                    "position": "year",
+                    "stem": "甲",
+                    "ten_god": "偏印"
+                  },
+                  {
+                    "layer": "visible_stem",
+                    "position": "month",
+                    "stem": "戊",
+                    "ten_god": "食神"
+                  },
+                  {
+                    "layer": "visible_stem",
+                    "position": "hour",
+                    "stem": "辛",
+                    "ten_god": "正财"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "year",
+                    "stem": "戊",
+                    "ten_god": "食神"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "year",
+                    "stem": "辛",
+                    "ten_god": "正财"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "month",
+                    "stem": "戊",
+                    "ten_god": "食神"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "month",
+                    "stem": "乙",
+                    "ten_god": "正印"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "month",
+                    "stem": "癸",
+                    "ten_god": "正官"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "day",
+                    "stem": "戊",
+                    "ten_god": "食神"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "day",
+                    "stem": "辛",
+                    "ten_god": "正财"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "hour",
+                    "stem": "乙",
+                    "ten_god": "正印"
+                  }
+                ],
+                "status": "indicators_only"
+              },
+              "schema_version": "mingli-bazi-reasoning-tool-v2",
+              "tool_id": "bazi.tool.domain.work",
+              "tool_kind": "domain_rule_router",
+              "visibility_class": "on_demand"
+            },
+            "month_structure_candidate": {
+              "caveats": [
+                "month main qi opens a structure candidate but does not prove structure success",
+                "透干、会支、合化、成败救应 and exceptions still require adjudication"
+              ],
+              "confidence_bucket": "medium",
+              "confidence_ceiling": "medium",
+              "output": {
+                "main_qi_visible": true,
+                "month_main_qi": "戊",
+                "month_main_qi_ten_god": "食神",
+                "special_month_role": null,
+                "status": "candidate_only",
+                "visible_positions": [
+                  "month"
+                ]
+              },
+              "schema_version": "mingli-bazi-reasoning-tool-v2",
+              "tool_id": "bazi.tool.month_structure_candidate",
+              "tool_kind": "rule_applicability",
+              "visibility_class": "on_demand"
+            },
+            "strength_evidence": {
+              "caveats": [
+                "this is an evidence lean, not a categorical strong/weak verdict",
+                "hidden-stem occurrences are not weighted qi scores",
+                "transformation, following structures, and full flow may override the lean"
+              ],
+              "confidence_bucket": "low",
+              "confidence_ceiling": "medium",
+              "output": {
+                "day_master_element": "火",
+                "evidence_lean": "mixed",
+                "month_command_element": "土",
+                "month_order_adjudication": {
+                  "day_master_element": "火",
+                  "decision_scope": "bazi_month_order_seasonal_state",
+                  "month_command_element": "土",
+                  "seasonal_state": "休",
+                  "status": "adjudicated_month_order_state",
+                  "unresolved_checks": [
+                    "全局根气、生扶、克泄与合化",
+                    "从格、化气及旺极衰极的反向取用",
+                    "整个日主强弱、唯一用神与现实吉凶应期"
+                  ],
+                  "useful_god_verdict": null,
+                  "whole_chart_strength_verdict": null
+                },
+                "oppose_evidence_groups": [
+                  "month_season",
+                  "visible_role_balance"
+                ],
+                "resource_branch_positions": [
+                  "month",
+                  "hour"
+                ],
+                "resource_element": "木",
+                "same_element_root_positions": [
+                  "year",
+                  "day"
+                ],
+                "seasonal_state": "休",
+                "seasonal_state_table": {
+                  "土": "旺",
+                  "木": "囚",
+                  "水": "死",
+                  "火": "休",
+                  "金": "相"
+                },
+                "status": "bounded_evidence_synthesis",
+                "support_evidence_groups": [
+                  "same_element_roots",
+                  "resource_in_branches"
+                ],
+                "visible_pressure_role_count": 2,
+                "visible_support_role_count": 1
+              },
+              "schema_version": "mingli-bazi-reasoning-tool-v2",
+              "tool_id": "bazi.tool.strength_evidence",
+              "tool_kind": "disputed_rule_synthesis",
+              "visibility_class": "on_demand"
+            },
+            "tiaohou_candidates": {
+              "caveats": [
+                "Qiongtong seasonal combinations are typical candidates, not a unique 用神 verdict",
+                "this rule has a verified source/applicability binding but still requires strength/structure reconciliation",
+                "透干、藏支、缺失 only describe availability; they do not establish favorability or life outcomes"
+              ],
+              "confidence_bucket": "medium",
+              "confidence_ceiling": "medium",
+              "output": {
+                "coverage_status": "partial_visible_or_hidden",
+                "day_stem": "丙",
+                "hard_verdict": null,
+                "matches": [
+                  {
+                    "element": "水",
+                    "hidden_positions": [],
+                    "priority": 1,
+                    "status": "missing",
+                    "stem": "壬",
+                    "visible_positions": []
+                  },
+                  {
+                    "element": "木",
+                    "hidden_positions": [],
+                    "priority": 2,
+                    "status": "visible",
+                    "stem": "甲",
+                    "visible_positions": [
+                      "year"
+                    ]
+                  }
+                ],
+                "month_branch": "辰",
+                "priority_stems": [
+                  "壬",
+                  "甲"
+                ],
+                "rule_id": "QR-02-01",
+                "season": "spring",
+                "status": "adjudicated_seasonal_priority",
+                "verification_status": "verified"
+              },
+              "schema_version": "mingli-bazi-reasoning-tool-v2",
+              "tool_id": "bazi.tool.tiaohou_candidates",
+              "tool_kind": "seasonal_adjustment_candidate",
+              "visibility_class": "on_demand"
+            },
+            "ziping_month_pattern_adjudication": {
+              "caveats": [
+                "the adjudicated result is only the Ziping month-command pattern entry",
+                "pattern success, rescue, body strength, useful-god selection, timing, and life outcomes remain unresolved",
+                "other Bazi lineages remain separate and cannot be overwritten by this result"
+              ],
+              "confidence_bucket": "high",
+              "confidence_ceiling": "high",
+              "output": {
+                "decision_scope": "ziping_month_command_pattern_entry",
+                "exception_branch": null,
+                "hard_verdict": null,
+                "month_branch": "辰",
+                "month_main_qi": "戊",
+                "month_main_qi_ten_god": "食神",
+                "pattern_entry": "食神",
+                "pattern_label": "食神格入口",
+                "school": "ziping_zhenquan_month_command",
+                "status": "adjudicated_pattern_entry",
+                "unresolved_checks": [
+                  "格局成败与救应",
+                  "顺逆配合与相神",
+                  "旺衰、调候与行运"
+                ]
+              },
+              "schema_version": "mingli-bazi-reasoning-tool-v2",
+              "tool_id": "bazi.tool.ziping_month_pattern_adjudication",
+              "tool_kind": "source_bound_pattern_entry_adjudication",
+              "visibility_class": "auto_injected"
+            }
+          },
+          "salience_signals": [
+            {
+              "basis": {
+                "branch": "戌",
+                "count": 2,
+                "element": "土",
+                "positions": [
+                  "year",
+                  "day"
+                ]
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.repeated-branch:戌",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "branches": [
+                  "戌",
+                  "辰"
+                ],
+                "positions": [
+                  "year",
+                  "month"
+                ],
+                "type": "六冲"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.branch-relation:六冲:year-month",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "branches": [
+                  "戌",
+                  "卯"
+                ],
+                "positions": [
+                  "year",
+                  "hour"
+                ],
+                "type": "六合"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.branch-relation:六合:year-hour",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "branches": [
+                  "辰",
+                  "戌"
+                ],
+                "positions": [
+                  "month",
+                  "day"
+                ],
+                "type": "六冲"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.branch-relation:六冲:month-day",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "branches": [
+                  "辰",
+                  "卯"
+                ],
+                "positions": [
+                  "month",
+                  "hour"
+                ],
+                "type": "六害"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.branch-relation:六害:month-hour",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "branches": [
+                  "戌",
+                  "卯"
+                ],
+                "positions": [
+                  "day",
+                  "hour"
+                ],
+                "type": "六合"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.branch-relation:六合:day-hour",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "day_element": "火",
+                "day_stem": "丙",
+                "main_qi": "戊",
+                "main_qi_element": "土",
+                "main_qi_ten_god": "食神",
+                "month_branch": "辰",
+                "month_qi": "土承木余气",
+                "season": "季春"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.seasonal-anchor:辰",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "main_qi": "戊",
+                "main_qi_ten_god": "食神",
+                "visible_positions": [
+                  "month"
+                ]
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.month-qi-transparent:戊",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "candidate_element": "水",
+                "status": "combination_present_conditions_unadjudicated",
+                "stems": [
+                  "丙",
+                  "辛"
+                ],
+                "with_position": "hour"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.stem-combination:丙辛:hour",
+              "status": "mechanical_candidate"
+            }
+          ],
+          "strength": {
+            "all_element_occurrences": {
+              "土": 7,
+              "木": 4,
+              "水": 1,
+              "火": 3,
+              "金": 3
+            },
+            "boundary": "counts and season are inputs, not a strong/weak verdict",
+            "day_element": "火",
+            "hard_verdict": null,
+            "month_command_element": "土",
+            "month_order_adjudication": {
+              "day_master_element": "火",
+              "decision_scope": "bazi_month_order_seasonal_state",
+              "month_command_element": "土",
+              "seasonal_state": "休",
+              "status": "adjudicated_month_order_state",
+              "unresolved_checks": [
+                "全局根气、生扶、克泄与合化",
+                "从格、化气及旺极衰极的反向取用",
+                "整个日主强弱、唯一用神与现实吉凶应期"
+              ],
+              "useful_god_verdict": null,
+              "whole_chart_strength_verdict": null
+            },
+            "resource_element": "木",
+            "resource_occurrences": 4,
+            "same_element_occurrences": 3,
+            "seasonal_state": "休",
+            "seasonal_state_source_rule_id": "bazi/sanming-tonghui#R-02-04",
+            "status": "evidence_only"
+          },
+          "structure": {
+            "boundary": "month command opens a candidate; success, failure, and rescue require classical adjudication",
+            "hard_verdict": null,
+            "main_qi_visible": true,
+            "month_main_qi": "戊",
+            "month_main_qi_ten_god": "食神",
+            "status": "candidate_only",
+            "visible_positions": [
+              "month"
+            ]
+          }
+        }
+      },
+      {
+        "display_text": "luck_cycles：{\"approximate_start_datetime\":\"2002-08-16T16:15:47+08:00\",\"boundary_term\":{\"datetime\":\"1994-04-05T08:31:47.604218+08:00\",\"index\":7,\"instant_utc\":\"1994-04-05T00:31:47.604218+00:00\",\"is_month_boundary_…",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/luck_cycles",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "approximate_start_datetime": "2002-08-16T16:15:47+08:00",
+          "boundary_term": {
+            "datetime": "1994-04-05T08:31:47.604218+08:00",
+            "index": 7,
+            "instant_utc": "1994-04-05T00:31:47.604218+00:00",
+            "is_month_boundary_jie": true,
+            "name": "清明"
+          },
+          "cycles": [
+            {
+              "end_age_years": 18.297,
+              "pillar": "丁卯",
+              "sequence": 1,
+              "start_age_years": 8.297
+            },
+            {
+              "end_age_years": 28.297,
+              "pillar": "丙寅",
+              "sequence": 2,
+              "start_age_years": 18.297
+            },
+            {
+              "end_age_years": 38.297,
+              "pillar": "乙丑",
+              "sequence": 3,
+              "start_age_years": 28.297
+            },
+            {
+              "end_age_years": 48.297,
+              "pillar": "甲子",
+              "sequence": 4,
+              "start_age_years": 38.297
+            },
+            {
+              "end_age_years": 58.297,
+              "pillar": "癸亥",
+              "sequence": 5,
+              "start_age_years": 48.297
+            },
+            {
+              "end_age_years": 68.297,
+              "pillar": "壬戌",
+              "sequence": 6,
+              "start_age_years": 58.297
+            },
+            {
+              "end_age_years": 78.297,
+              "pillar": "辛酉",
+              "sequence": 7,
+              "start_age_years": 68.297
+            },
+            {
+              "end_age_years": 88.297,
+              "pillar": "庚申",
+              "sequence": 8,
+              "start_age_years": 78.297
+            },
+            {
+              "end_age_years": 98.297,
+              "pillar": "己未",
+              "sequence": 9,
+              "start_age_years": 88.297
+            },
+            {
+              "end_age_years": 108.297,
+              "pillar": "戊午",
+              "sequence": 10,
+              "start_age_years": 98.297
+            }
+          ],
+          "direction": "reverse",
+          "direction_rule": "阳年男/阴年女顺，阴年男/阳年女逆；阴阳取年干",
+          "interval_days": 24.891116,
+          "start_age_rule": "距顺逆方向最近节令，三日折一年",
+          "start_age_years": 8.297039,
+          "status": "calculated"
+        }
+      },
+      {
+        "display_text": "month_command：{\"branch\":\"辰\",\"label\":\"辰月\",\"main_qi\":\"戊\",\"main_qi_element\":\"土\"}",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "branch": "辰",
+          "label": "辰月",
+          "main_qi": "戊",
+          "main_qi_element": "土"
+        }
+      },
+      {
+        "display_text": "nayin：{\"day\":\"屋上土\",\"hour\":\"松柏木\",\"month\":\"大林木\",\"year\":\"山头火\"}",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/nayin",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "day": "屋上土",
+          "hour": "松柏木",
+          "month": "大林木",
+          "year": "山头火"
+        }
+      },
+      {
+        "display_text": "san_yuan：{\"boundary\":\"胎元、命宫、身宫位置事实；不能单独推出格局、旺衰、吉凶或事件结论\",\"ming_gong\":\"甲戌\",\"shen_gong\":\"庚午\",\"source\":\"lunar-typescript-auxiliary\",\"source_dependency_id\":\"bazi.chart.san-yuan-lunar-typescript-v1\",\"tai_yuan\":\"己未\"}",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/san_yuan",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "boundary": "胎元、命宫、身宫位置事实；不能单独推出格局、旺衰、吉凶或事件结论",
+          "ming_gong": "甲戌",
+          "shen_gong": "庚午",
+          "source": "lunar-typescript-auxiliary",
+          "source_dependency_id": "bazi.chart.san-yuan-lunar-typescript-v1",
+          "tai_yuan": "己未"
+        }
+      },
+      {
+        "display_text": "seasonal_profile：{\"moisture\":\"湿\",\"month_qi\":\"土承木余气\",\"season\":\"季春\",\"temperature\":\"温\"}",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/seasonal_profile",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "moisture": "湿",
+          "month_qi": "土承木余气",
+          "season": "季春",
+          "temperature": "温"
+        }
+      },
+      {
+        "display_text": "shensha_auxiliary：{\"boundary\":\"no Shensha item may override month command, structure, strength, Tiaohou, Ten Gods, or luck/transit facts\",\"calculated_items\":[{\"anchor_branches\":[\"戌\",\"戌\"],\"anchor_positions\":[\"year\",\"da…",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/shensha_auxiliary",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "boundary": "no Shensha item may override month command, structure, strength, Tiaohou, Ten Gods, or luck/transit facts",
+          "calculated_items": [
+            {
+              "anchor_branches": [
+                "戌",
+                "戌"
+              ],
+              "anchor_positions": [
+                "year",
+                "day"
+              ],
+              "id": "taohua",
+              "matched_positions": [
+                "hour"
+              ],
+              "name": "桃花",
+              "rule_version": "sanming-year-day-branch-yima-taohua-v1",
+              "source_dependency_id": "bazi.shensha.yima-taohua-auxiliary",
+              "status": "auxiliary_match",
+              "target_branch": "卯"
+            }
+          ],
+          "cannot_override": [
+            "month_command",
+            "structure",
+            "strength",
+            "tiaohou",
+            "ten_gods",
+            "luck_cycles",
+            "transit_facts"
+          ],
+          "evaluated_rules": [
+            {
+              "anchor_branch": "戌",
+              "anchor_position": "year",
+              "id": "yima",
+              "matched": false,
+              "name": "驿马",
+              "target_branch": "申"
+            },
+            {
+              "anchor_branch": "戌",
+              "anchor_position": "year",
+              "id": "taohua",
+              "matched": true,
+              "name": "桃花",
+              "target_branch": "卯"
+            },
+            {
+              "anchor_branch": "戌",
+              "anchor_position": "day",
+              "id": "yima",
+              "matched": false,
+              "name": "驿马",
+              "target_branch": "申"
+            },
+            {
+              "anchor_branch": "戌",
+              "anchor_position": "day",
+              "id": "taohua",
+              "matched": true,
+              "name": "桃花",
+              "target_branch": "卯"
+            }
+          ],
+          "may_override": [],
+          "precedence": "auxiliary_only",
+          "source_dependency_id": "bazi.shensha.yima-taohua-auxiliary",
+          "status": "calculated_auxiliary_layer",
+          "temporal_scope": "natal"
+        }
+      },
+      {
+        "display_text": "source_conditioned_patterns：[{\"fact_paths\":[\"fact:/chart_facts/output/four_pillars/day\",\"fact:/chart_facts/output/four_pillars/hour\",\"fact:/chart_facts/output/four_pillars/month\",\"fact:/chart_facts/output/four_pillars/year\",\"fa…",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/source_conditioned_patterns",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": [
+          {
+            "fact_paths": [
+              "fact:/chart_facts/output/four_pillars/day",
+              "fact:/chart_facts/output/four_pillars/hour",
+              "fact:/chart_facts/output/four_pillars/month",
+              "fact:/chart_facts/output/four_pillars/year",
+              "fact:/chart_facts/output/hidden_stems/day/branch",
+              "fact:/chart_facts/output/hidden_stems/day/stems/0",
+              "fact:/chart_facts/output/hidden_stems/day/stems/1",
+              "fact:/chart_facts/output/hidden_stems/day/stems/2",
+              "fact:/chart_facts/output/hidden_stems/hour/branch",
+              "fact:/chart_facts/output/hidden_stems/hour/stems/0",
+              "fact:/chart_facts/output/hidden_stems/month/branch",
+              "fact:/chart_facts/output/hidden_stems/month/stems/0",
+              "fact:/chart_facts/output/hidden_stems/month/stems/1",
+              "fact:/chart_facts/output/hidden_stems/month/stems/2",
+              "fact:/chart_facts/output/hidden_stems/year/branch",
+              "fact:/chart_facts/output/hidden_stems/year/stems/0",
+              "fact:/chart_facts/output/hidden_stems/year/stems/1",
+              "fact:/chart_facts/output/hidden_stems/year/stems/2",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/1/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/1/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/2/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/2/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/hour/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/hour/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/1/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/1/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/2/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/2/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/1/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/1/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/2/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/2/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/1/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/1/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/2/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/2/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/hour/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/hour/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/1/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/1/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/2/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/2/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/1/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/1/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/2/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/2/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/day/0/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/day/0/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/day/1/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/day/1/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/day/2/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/day/2/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/hour/0/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/hour/0/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/month/0/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/month/0/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/month/1/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/month/1/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/month/2/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/month/2/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/year/0/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/year/0/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/year/1/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/year/1/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/year/2/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/year/2/ten_god"
+            ],
+            "local_rule_id": "DR-01-01",
+            "predicate_audit": [
+              "/four_pillars:nonempty:()",
+              "/hidden_stems:nonempty:()"
+            ],
+            "rule_id": "bazi/ditiansui-chanwei#DR-01-01",
+            "source_anchor": "rules.md#L12-L20",
+            "source_dependency_id": "bazi.source-conditioned-patterns",
+            "source_pack": "bazi/ditiansui-chanwei",
+            "status": "predicate_matched_not_verdict",
+            "title": "DR-01-01 三元一统"
+          },
+          {
+            "fact_paths": [
+              "fact:/chart_facts/output/day_master/stem",
+              "fact:/chart_facts/output/month_command/branch"
+            ],
+            "local_rule_id": "QR-02-01",
+            "predicate_audit": [
+              "/day_master/stem:eq:丙",
+              "/month_command/branch:in:('寅', '卯', '辰')"
+            ],
+            "rule_id": "bazi/qiongtong-baojian#QR-02-01",
+            "source_anchor": "fulltext.md L317-L382",
+            "source_dependency_id": "bazi.source-conditioned-patterns",
+            "source_pack": "bazi/qiongtong-baojian",
+            "status": "predicate_matched_not_verdict",
+            "title": "QR-02-01 — 三春丙火"
+          },
+          {
+            "fact_paths": [
+              "fact:/chart_facts/output/day_master/stem",
+              "fact:/chart_facts/output/month_command/branch"
+            ],
+            "local_rule_id": "QTB-M01",
+            "predicate_audit": [
+              "/day_master/stem:nonempty:()",
+              "/month_command/branch:nonempty:()"
+            ],
+            "rule_id": "bazi/qiongtong-baojian#QTB-M01",
+            "source_anchor": "rules.md#L14-L21",
+            "source_dependency_id": "bazi.source-conditioned-patterns",
+            "source_pack": "bazi/qiongtong-baojian",
+            "status": "predicate_matched_not_verdict",
+            "title": "QTB-M01 四时乘气方法"
+          },
+          {
+            "fact_paths": [
+              "fact:/chart_facts/output/day_master/element"
+            ],
+            "local_rule_id": "R-01-02",
+            "predicate_audit": [
+              "/output/day_master/element:nonempty:()"
+            ],
+            "rule_id": "bazi/sanming-tonghui#R-01-02",
+            "source_anchor": "rules.md#L18-L25",
+            "source_dependency_id": "bazi.source-conditioned-patterns",
+            "source_pack": "bazi/sanming-tonghui",
+            "status": "predicate_matched_not_verdict",
+            "title": "R-01-02 五行生克次序"
+          },
+          {
+            "fact_paths": [
+              "fact:/chart_facts/output/day_master/element",
+              "fact:/chart_facts/output/month_command/main_qi_element"
+            ],
+            "local_rule_id": "R-02-04",
+            "predicate_audit": [
+              "/output/day_master/element:nonempty:()",
+              "/output/month_command/main_qi_element:nonempty:()"
+            ],
+            "rule_id": "bazi/sanming-tonghui#R-02-04",
+            "source_anchor": "rules.md#L66-L73",
+            "source_dependency_id": "bazi.source-conditioned-patterns",
+            "source_pack": "bazi/sanming-tonghui",
+            "status": "predicate_matched_not_verdict",
+            "title": "R-02-04 五行旺相休囚死"
+          },
+          {
+            "fact_paths": [
+              "fact:/chart_facts/output/day_master/stem",
+              "fact:/chart_facts/output/month_command/branch"
+            ],
+            "local_rule_id": "ZPR-01",
+            "predicate_audit": [
+              "/output/day_master/stem:nonempty:()",
+              "/output/month_command/branch:nonempty:()"
+            ],
+            "rule_id": "bazi/ziping-zhenquan#ZPR-01",
+            "source_anchor": "fulltext.md L173-L188",
+            "source_dependency_id": "bazi.source-conditioned-patterns",
+            "source_pack": "bazi/ziping-zhenquan",
+            "status": "predicate_matched_not_verdict",
+            "title": "ZPR-01: 以月令求用神"
+          }
+        ]
+      },
+      {
+        "display_text": "ten_gods：{\"heavenly_stems\":{\"day\":{\"stem\":\"丙\",\"ten_god\":\"日主\"},\"hour\":{\"stem\":\"辛\",\"ten_god\":\"正财\"},\"month\":{\"stem\":\"戊\",\"ten_god\":\"食神\"},\"year\":{\"stem\":\"甲\",\"ten_god\":\"偏印\"}},\"hidden_stems\":{\"day\":[{\"stem\":\"戊\",\"ten…",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/ten_gods",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "heavenly_stems": {
+            "day": {
+              "stem": "丙",
+              "ten_god": "日主"
+            },
+            "hour": {
+              "stem": "辛",
+              "ten_god": "正财"
+            },
+            "month": {
+              "stem": "戊",
+              "ten_god": "食神"
+            },
+            "year": {
+              "stem": "甲",
+              "ten_god": "偏印"
+            }
+          },
+          "hidden_stems": {
+            "day": [
+              {
+                "stem": "戊",
+                "ten_god": "食神"
+              },
+              {
+                "stem": "辛",
+                "ten_god": "正财"
+              },
+              {
+                "stem": "丁",
+                "ten_god": "劫财"
+              }
+            ],
+            "hour": [
+              {
+                "stem": "乙",
+                "ten_god": "正印"
+              }
+            ],
+            "month": [
+              {
+                "stem": "戊",
+                "ten_god": "食神"
+              },
+              {
+                "stem": "乙",
+                "ten_god": "正印"
+              },
+              {
+                "stem": "癸",
+                "ten_god": "正官"
+              }
+            ],
+            "year": [
+              {
+                "stem": "戊",
+                "ten_god": "食神"
+              },
+              {
+                "stem": "辛",
+                "ten_god": "正财"
+              },
+              {
+                "stem": "丁",
+                "ten_god": "劫财"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "display_text": "tiaohou_markers：{\"applicability_identity\":{\"day_stem\":\"丙\",\"month_branch\":\"辰\",\"source_dependency_id\":\"bazi.seasonal-tiaohou.day-master-month\"},\"markers\":[\"温\",\"湿\"],\"moisture\":\"湿\",\"scope\":\"month-level climate anchors o…",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/tiaohou_markers",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "applicability_identity": {
+            "day_stem": "丙",
+            "month_branch": "辰",
+            "source_dependency_id": "bazi.seasonal-tiaohou.day-master-month"
+          },
+          "markers": [
+            "温",
+            "湿"
+          ],
+          "moisture": "湿",
+          "scope": "month-level climate anchors only; not a 调候用神 conclusion",
+          "temperature": "温"
+        }
+      },
+      {
+        "display_text": "twelve_growth_stages：{\"day\":{\"boundary\":\"十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论\",\"branch\":\"戌\",\"direction\":\"forward\",\"position\":\"day\",\"source_dependency_id\":\"bazi.chart.twelve-growth-stages-v1\",\"stage\":\"墓\",\"stage_index\":9,\"stem\":\"丙…",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/twelve_growth_stages",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "day": {
+            "boundary": "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论",
+            "branch": "戌",
+            "direction": "forward",
+            "position": "day",
+            "source_dependency_id": "bazi.chart.twelve-growth-stages-v1",
+            "stage": "墓",
+            "stage_index": 9,
+            "stem": "丙"
+          },
+          "hour": {
+            "boundary": "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论",
+            "branch": "卯",
+            "direction": "reverse",
+            "position": "hour",
+            "source_dependency_id": "bazi.chart.twelve-growth-stages-v1",
+            "stage": "绝",
+            "stage_index": 10,
+            "stem": "辛"
+          },
+          "month": {
+            "boundary": "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论",
+            "branch": "辰",
+            "direction": "forward",
+            "position": "month",
+            "source_dependency_id": "bazi.chart.twelve-growth-stages-v1",
+            "stage": "冠带",
+            "stage_index": 3,
+            "stem": "戊"
+          },
+          "year": {
+            "boundary": "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论",
+            "branch": "戌",
+            "direction": "forward",
+            "position": "year",
+            "source_dependency_id": "bazi.chart.twelve-growth-stages-v1",
+            "stage": "养",
+            "stage_index": 12,
+            "stem": "甲"
+          }
+        }
+      },
+      {
+        "display_text": "xunkong：{\"boundary\":\"按日柱所属旬计算旬空事实；不能单独推出吉凶、六亲或事件结论\",\"branches\":[\"午\",\"未\"],\"day_pillar\":\"丙戌\",\"source_dependency_id\":\"bazi.chart.xunkong-sexagenary-v1\",\"xun\":\"甲申\"}",
+        "kind_id": "kind.fact",
+        "ref": "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/xunkong",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "value": {
+          "boundary": "按日柱所属旬计算旬空事实；不能单独推出吉凶、六亲或事件结论",
+          "branches": [
+            "午",
+            "未"
+          ],
+          "day_pillar": "丙戌",
+          "source_dependency_id": "bazi.chart.xunkong-sexagenary-v1",
+          "xun": "甲申"
+        }
+      }
+    ],
+    "findings": [
+      {
+        "data": {
+          "following_and_transformation": {
+            "boundary": "a combination or one-sided inventory does not prove following or transformation",
+            "branch_formation_candidates": [],
+            "hard_verdict": null,
+            "status": "requires_classical_adjudication",
+            "stem_combination_candidates": [
+              {
+                "candidate_element": "水",
+                "status": "combination_present_conditions_unadjudicated",
+                "stems": [
+                  "丙",
+                  "辛"
+                ],
+                "with_position": "hour"
+              }
+            ]
+          },
+          "reasoning_tools": {
+            "conflict_arbitration": {
+              "caveats": [
+                "the primary layer is selected only from an explicit question focus; a generic request cannot choose a lineage silently",
+                "preserving a disagreement is not a numerical vote and does not produce a strong/weak, success/failure, or useful-god verdict",
+                "Shensha remains auxiliary and cannot override pattern, strength/flow, Tiaohou, Ten Gods, or timing layers"
+              ],
+              "confidence_bucket": "low",
+              "confidence_ceiling": "low",
+              "output": {
+                "downgraded_layers": [],
+                "focus": null,
+                "hard_verdict": null,
+                "layers": {
+                  "pattern_layer": {
+                    "main_qi": "戊",
+                    "main_qi_ten_god": "食神",
+                    "status": "candidate_only"
+                  },
+                  "strength_flow_layer": {
+                    "evidence_lean": "mixed",
+                    "seasonal_state": "休",
+                    "status": "bounded_evidence_synthesis"
+                  },
+                  "tiaohou_layer": {
+                    "coverage_status": "partial_visible_or_hidden",
+                    "rule_id": "QR-02-01",
+                    "status": "adjudicated_seasonal_priority"
+                  }
+                },
+                "policy_id": "bazi.question-focus-routing-v1",
+                "policy_status": "product_contract_not_classical_verdict",
+                "preserved_disagreements": [
+                  {
+                    "between": [
+                      "pattern_layer",
+                      "strength_flow_layer"
+                    ],
+                    "policy": "preserve_both_views",
+                    "primary_when": "pattern questions use pattern_layer; strength/flow questions use strength_flow_layer"
+                  },
+                  {
+                    "between": [
+                      "tiaohou_layer",
+                      "strength_flow_layer"
+                    ],
+                    "policy": "preserve_both_views",
+                    "primary_when": "climate_extreme questions may use tiaohou_layer; otherwise strength_flow_layer remains primary"
+                  }
+                ],
+                "selected_primary_view": null,
+                "status": "requires_question_specific_adjudication"
+              },
+              "schema_version": "mingli-bazi-reasoning-tool-v2",
+              "tool_id": "bazi.tool.conflict_arbitration",
+              "tool_kind": "decision_stack_conflict_policy",
+              "visibility_class": "on_demand"
+            },
+            "domain_work": {
+              "caveats": [
+                "broad role indicators cannot identify an exact profession or employer",
+                "presence is not favorability; strength, structure, combinations, and timing must be checked",
+                "one lineage does not count as independent corroboration of itself"
+              ],
+              "confidence_bucket": "medium",
+              "confidence_ceiling": "medium",
+              "output": {
+                "branch_relations": [
+                  {
+                    "branches": [
+                      "戌",
+                      "辰"
+                    ],
+                    "positions": [
+                      "year",
+                      "month"
+                    ],
+                    "type": "六冲"
+                  },
+                  {
+                    "branches": [
+                      "戌",
+                      "卯"
+                    ],
+                    "positions": [
+                      "year",
+                      "hour"
+                    ],
+                    "type": "六合"
+                  },
+                  {
+                    "branches": [
+                      "辰",
+                      "戌"
+                    ],
+                    "positions": [
+                      "month",
+                      "day"
+                    ],
+                    "type": "六冲"
+                  },
+                  {
+                    "branches": [
+                      "辰",
+                      "卯"
+                    ],
+                    "positions": [
+                      "month",
+                      "hour"
+                    ],
+                    "type": "六害"
+                  },
+                  {
+                    "branches": [
+                      "戌",
+                      "卯"
+                    ],
+                    "positions": [
+                      "day",
+                      "hour"
+                    ],
+                    "type": "六合"
+                  }
+                ],
+                "domain": "work",
+                "element_inventory": {
+                  "hidden_stem_occurrence_counts": {
+                    "土": 3,
+                    "木": 2,
+                    "水": 1,
+                    "火": 2,
+                    "金": 2
+                  },
+                  "scope": "inventory only; these counts do not determine 旺衰 or 用神",
+                  "visible_stem_branch_counts": {
+                    "土": 4,
+                    "木": 2,
+                    "火": 1,
+                    "金": 1
+                  }
+                },
+                "gender": "female",
+                "palace_anchor": null,
+                "palace_value": null,
+                "primary_ten_god_roles": [
+                  "正官",
+                  "七杀",
+                  "正印",
+                  "偏印",
+                  "食神",
+                  "伤官",
+                  "正财",
+                  "偏财"
+                ],
+                "role_counts": {
+                  "偏印": 1,
+                  "正印": 2,
+                  "正官": 1,
+                  "正财": 3,
+                  "食神": 4
+                },
+                "role_occurrences": [
+                  {
+                    "layer": "visible_stem",
+                    "position": "year",
+                    "stem": "甲",
+                    "ten_god": "偏印"
+                  },
+                  {
+                    "layer": "visible_stem",
+                    "position": "month",
+                    "stem": "戊",
+                    "ten_god": "食神"
+                  },
+                  {
+                    "layer": "visible_stem",
+                    "position": "hour",
+                    "stem": "辛",
+                    "ten_god": "正财"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "year",
+                    "stem": "戊",
+                    "ten_god": "食神"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "year",
+                    "stem": "辛",
+                    "ten_god": "正财"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "month",
+                    "stem": "戊",
+                    "ten_god": "食神"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "month",
+                    "stem": "乙",
+                    "ten_god": "正印"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "month",
+                    "stem": "癸",
+                    "ten_god": "正官"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "day",
+                    "stem": "戊",
+                    "ten_god": "食神"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "day",
+                    "stem": "辛",
+                    "ten_god": "正财"
+                  },
+                  {
+                    "layer": "hidden_stem",
+                    "position": "hour",
+                    "stem": "乙",
+                    "ten_god": "正印"
+                  }
+                ],
+                "status": "indicators_only"
+              },
+              "schema_version": "mingli-bazi-reasoning-tool-v2",
+              "tool_id": "bazi.tool.domain.work",
+              "tool_kind": "domain_rule_router",
+              "visibility_class": "on_demand"
+            },
+            "month_structure_candidate": {
+              "caveats": [
+                "month main qi opens a structure candidate but does not prove structure success",
+                "透干、会支、合化、成败救应 and exceptions still require adjudication"
+              ],
+              "confidence_bucket": "medium",
+              "confidence_ceiling": "medium",
+              "output": {
+                "main_qi_visible": true,
+                "month_main_qi": "戊",
+                "month_main_qi_ten_god": "食神",
+                "special_month_role": null,
+                "status": "candidate_only",
+                "visible_positions": [
+                  "month"
+                ]
+              },
+              "schema_version": "mingli-bazi-reasoning-tool-v2",
+              "tool_id": "bazi.tool.month_structure_candidate",
+              "tool_kind": "rule_applicability",
+              "visibility_class": "on_demand"
+            },
+            "strength_evidence": {
+              "caveats": [
+                "this is an evidence lean, not a categorical strong/weak verdict",
+                "hidden-stem occurrences are not weighted qi scores",
+                "transformation, following structures, and full flow may override the lean"
+              ],
+              "confidence_bucket": "low",
+              "confidence_ceiling": "medium",
+              "output": {
+                "day_master_element": "火",
+                "evidence_lean": "mixed",
+                "month_command_element": "土",
+                "month_order_adjudication": {
+                  "day_master_element": "火",
+                  "decision_scope": "bazi_month_order_seasonal_state",
+                  "month_command_element": "土",
+                  "seasonal_state": "休",
+                  "status": "adjudicated_month_order_state",
+                  "unresolved_checks": [
+                    "全局根气、生扶、克泄与合化",
+                    "从格、化气及旺极衰极的反向取用",
+                    "整个日主强弱、唯一用神与现实吉凶应期"
+                  ],
+                  "useful_god_verdict": null,
+                  "whole_chart_strength_verdict": null
+                },
+                "oppose_evidence_groups": [
+                  "month_season",
+                  "visible_role_balance"
+                ],
+                "resource_branch_positions": [
+                  "month",
+                  "hour"
+                ],
+                "resource_element": "木",
+                "same_element_root_positions": [
+                  "year",
+                  "day"
+                ],
+                "seasonal_state": "休",
+                "seasonal_state_table": {
+                  "土": "旺",
+                  "木": "囚",
+                  "水": "死",
+                  "火": "休",
+                  "金": "相"
+                },
+                "status": "bounded_evidence_synthesis",
+                "support_evidence_groups": [
+                  "same_element_roots",
+                  "resource_in_branches"
+                ],
+                "visible_pressure_role_count": 2,
+                "visible_support_role_count": 1
+              },
+              "schema_version": "mingli-bazi-reasoning-tool-v2",
+              "tool_id": "bazi.tool.strength_evidence",
+              "tool_kind": "disputed_rule_synthesis",
+              "visibility_class": "on_demand"
+            },
+            "tiaohou_candidates": {
+              "caveats": [
+                "Qiongtong seasonal combinations are typical candidates, not a unique 用神 verdict",
+                "this rule has a verified source/applicability binding but still requires strength/structure reconciliation",
+                "透干、藏支、缺失 only describe availability; they do not establish favorability or life outcomes"
+              ],
+              "confidence_bucket": "medium",
+              "confidence_ceiling": "medium",
+              "output": {
+                "coverage_status": "partial_visible_or_hidden",
+                "day_stem": "丙",
+                "hard_verdict": null,
+                "matches": [
+                  {
+                    "element": "水",
+                    "hidden_positions": [],
+                    "priority": 1,
+                    "status": "missing",
+                    "stem": "壬",
+                    "visible_positions": []
+                  },
+                  {
+                    "element": "木",
+                    "hidden_positions": [],
+                    "priority": 2,
+                    "status": "visible",
+                    "stem": "甲",
+                    "visible_positions": [
+                      "year"
+                    ]
+                  }
+                ],
+                "month_branch": "辰",
+                "priority_stems": [
+                  "壬",
+                  "甲"
+                ],
+                "rule_id": "QR-02-01",
+                "season": "spring",
+                "status": "adjudicated_seasonal_priority",
+                "verification_status": "verified"
+              },
+              "schema_version": "mingli-bazi-reasoning-tool-v2",
+              "tool_id": "bazi.tool.tiaohou_candidates",
+              "tool_kind": "seasonal_adjustment_candidate",
+              "visibility_class": "on_demand"
+            },
+            "ziping_month_pattern_adjudication": {
+              "caveats": [
+                "the adjudicated result is only the Ziping month-command pattern entry",
+                "pattern success, rescue, body strength, useful-god selection, timing, and life outcomes remain unresolved",
+                "other Bazi lineages remain separate and cannot be overwritten by this result"
+              ],
+              "confidence_bucket": "high",
+              "confidence_ceiling": "high",
+              "output": {
+                "decision_scope": "ziping_month_command_pattern_entry",
+                "exception_branch": null,
+                "hard_verdict": null,
+                "month_branch": "辰",
+                "month_main_qi": "戊",
+                "month_main_qi_ten_god": "食神",
+                "pattern_entry": "食神",
+                "pattern_label": "食神格入口",
+                "school": "ziping_zhenquan_month_command",
+                "status": "adjudicated_pattern_entry",
+                "unresolved_checks": [
+                  "格局成败与救应",
+                  "顺逆配合与相神",
+                  "旺衰、调候与行运"
+                ]
+              },
+              "schema_version": "mingli-bazi-reasoning-tool-v2",
+              "tool_id": "bazi.tool.ziping_month_pattern_adjudication",
+              "tool_kind": "source_bound_pattern_entry_adjudication",
+              "visibility_class": "auto_injected"
+            }
+          },
+          "salience_signals": [
+            {
+              "basis": {
+                "branch": "戌",
+                "count": 2,
+                "element": "土",
+                "positions": [
+                  "year",
+                  "day"
+                ]
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.repeated-branch:戌",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "branches": [
+                  "戌",
+                  "辰"
+                ],
+                "positions": [
+                  "year",
+                  "month"
+                ],
+                "type": "六冲"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.branch-relation:六冲:year-month",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "branches": [
+                  "戌",
+                  "卯"
+                ],
+                "positions": [
+                  "year",
+                  "hour"
+                ],
+                "type": "六合"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.branch-relation:六合:year-hour",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "branches": [
+                  "辰",
+                  "戌"
+                ],
+                "positions": [
+                  "month",
+                  "day"
+                ],
+                "type": "六冲"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.branch-relation:六冲:month-day",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "branches": [
+                  "辰",
+                  "卯"
+                ],
+                "positions": [
+                  "month",
+                  "hour"
+                ],
+                "type": "六害"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.branch-relation:六害:month-hour",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "branches": [
+                  "戌",
+                  "卯"
+                ],
+                "positions": [
+                  "day",
+                  "hour"
+                ],
+                "type": "六合"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.branch-relation:六合:day-hour",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "day_element": "火",
+                "day_stem": "丙",
+                "main_qi": "戊",
+                "main_qi_element": "土",
+                "main_qi_ten_god": "食神",
+                "month_branch": "辰",
+                "month_qi": "土承木余气",
+                "season": "季春"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.seasonal-anchor:辰",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "main_qi": "戊",
+                "main_qi_ten_god": "食神",
+                "visible_positions": [
+                  "month"
+                ]
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.month-qi-transparent:戊",
+              "status": "mechanical_candidate"
+            },
+            {
+              "basis": {
+                "candidate_element": "水",
+                "status": "combination_present_conditions_unadjudicated",
+                "stems": [
+                  "丙",
+                  "辛"
+                ],
+                "with_position": "hour"
+              },
+              "boundary": "a mechanical candidate highlights structure only; it cannot justify a final conclusion on its own",
+              "hard_verdict": null,
+              "signal_id": "bazi.salience.stem-combination:丙辛:hour",
+              "status": "mechanical_candidate"
+            }
+          ],
+          "strength": {
+            "all_element_occurrences": {
+              "土": 7,
+              "木": 4,
+              "水": 1,
+              "火": 3,
+              "金": 3
+            },
+            "boundary": "counts and season are inputs, not a strong/weak verdict",
+            "day_element": "火",
+            "hard_verdict": null,
+            "month_command_element": "土",
+            "month_order_adjudication": {
+              "day_master_element": "火",
+              "decision_scope": "bazi_month_order_seasonal_state",
+              "month_command_element": "土",
+              "seasonal_state": "休",
+              "status": "adjudicated_month_order_state",
+              "unresolved_checks": [
+                "全局根气、生扶、克泄与合化",
+                "从格、化气及旺极衰极的反向取用",
+                "整个日主强弱、唯一用神与现实吉凶应期"
+              ],
+              "useful_god_verdict": null,
+              "whole_chart_strength_verdict": null
+            },
+            "resource_element": "木",
+            "resource_occurrences": 4,
+            "same_element_occurrences": 3,
+            "seasonal_state": "休",
+            "seasonal_state_source_rule_id": "bazi/sanming-tonghui#R-02-04",
+            "status": "evidence_only"
+          },
+          "structure": {
+            "boundary": "month command opens a candidate; success, failure, and rescue require classical adjudication",
+            "hard_verdict": null,
+            "main_qi_visible": true,
+            "month_main_qi": "戊",
+            "month_main_qi_ten_god": "食神",
+            "status": "candidate_only",
+            "visible_positions": [
+              "month"
+            ]
+          }
+        },
+        "dimension_ids": [
+          "career"
+        ],
+        "evidence_refs": [],
+        "fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/interpretive_candidates"
+        ],
+        "kind_id": "finding.interpretive_candidates",
+        "limit_kind_ids": [
+          "limit.interpretive_verdict_unavailable"
+        ],
+        "ref": "finding:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/bazi/interpretive_candidates",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "support_mode": "exact"
+      },
+      {
+        "data": {
+          "claim_unit_id": "bazi.month-order-state-v1",
+          "day_element": "火",
+          "hard_verdict": null,
+          "month_command_element": "土",
+          "seasonal_state": "休"
+        },
+        "dimension_ids": [
+          "career"
+        ],
+        "evidence_refs": [
+          "evidence:bazi/bazi/sanming-tonghui#R-02-04"
+        ],
+        "fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/interpretive_candidates",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ],
+        "kind_id": "kind.tendency",
+        "limit_kind_ids": [],
+        "public_text": "月令主气五行为土，日主五行火在该月令状态表中为“休”；这只确定月令季节状态，整盘身强身弱仍未裁定。",
+        "ref": "finding:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/bazi/public-claim/month-order-state",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "support_mode": "exact"
+      },
+      {
+        "data": {
+          "claim_unit_id": "bazi.ziping-pattern-entry-v1",
+          "hard_verdict": null,
+          "pattern_label": "食神格入口",
+          "status": "adjudicated_pattern_entry"
+        },
+        "dimension_ids": [
+          "career"
+        ],
+        "evidence_refs": [
+          "evidence:bazi/bazi/ziping-zhenquan#ZPR-01"
+        ],
+        "fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/interpretive_candidates",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ],
+        "kind_id": "kind.tendency",
+        "limit_kind_ids": [],
+        "public_text": "子平月令入口按日干与月令主气的关系确定为“食神格入口”；这里只确定格局入口，格局成败、救应、旺衰和行运仍未裁定。",
+        "ref": "finding:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/bazi/public-claim/ziping-pattern-entry",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "support_mode": "exact"
+      },
+      {
+        "data": {
+          "claim_unit_id": "bazi.tiaohou-priority-v1",
+          "day_stem": "丙",
+          "hard_verdict": null,
+          "month_branch": "辰",
+          "priority_stems": [
+            "壬",
+            "甲"
+          ]
+        },
+        "dimension_ids": [
+          "career"
+        ],
+        "evidence_refs": [
+          "evidence:bazi/bazi/qiongtong-baojian#QR-02-01"
+        ],
+        "fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/interpretive_candidates",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ],
+        "kind_id": "kind.tendency",
+        "limit_kind_ids": [],
+        "public_text": "按丙日主、辰月的已核验调候规则，候选次序为“壬、甲”；当前只记录候选与显藏缺失，唯一用神或吉凶仍未裁定。",
+        "ref": "finding:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/bazi/public-claim/tiaohou-priority",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "support_mode": "exact"
+      }
+    ],
+    "limits": [
+      {
+        "detail_ids": [
+          "whole_chart_strength",
+          "pattern_success_or_failure",
+          "favorable_and_unfavorable_gods",
+          "real_world_outcome"
+        ],
+        "kind_id": "limit.interpretive_verdict_unavailable",
+        "public_text": "当前只发布可复核候选事实；整盘旺衰、格局成败、喜用忌神与现实吉凶尚未裁定，不得当作定论",
+        "scope_refs": [
+          "overview",
+          "career",
+          "money",
+          "relationship",
+          "health",
+          "outcome"
+        ]
+      }
+    ],
+    "prior_answer": null,
+    "question": "请预览我的本命格局。",
+    "request_view": {
+      "capability_ids": [
+        "bazi"
+      ],
+      "dimension_ids": [
+        "career"
+      ],
+      "horizon": {
+        "end": null,
+        "kind_id": "life",
+        "start": null
+      },
+      "object_id": "natal",
+      "subject_refs": [
+        "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db"
+      ]
+    },
+    "vocabulary": [
+      {
+        "description": null,
+        "id": "career",
+        "label": "事业"
+      },
+      {
+        "description": null,
+        "id": "kind.fact",
+        "label": "事实陈述"
+      },
+      {
+        "description": null,
+        "id": "kind.tendency",
+        "label": "倾向判断"
+      },
+      {
+        "description": null,
+        "id": "certainty.tendency",
+        "label": "倾向性上限"
+      },
+      {
+        "description": null,
+        "id": "limit.interpretive_verdict_unavailable",
+        "label": "当前只发布可复核候选事实；整盘旺衰、格局成败、喜用忌神与现实吉凶尚未裁定，不得当作定论"
+      },
+      {
+        "description": null,
+        "id": "finding.interpretive_candidates",
+        "label": "候选解读材料"
+      }
+    ]
+  },
+  "view_model": {
+    "schema_version": "bazi-chart/v1",
+    "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+    "pillars": [
+      {
+        "position": "year",
+        "stem": "甲",
+        "branch": "戌"
+      },
+      {
+        "position": "month",
+        "stem": "戊",
+        "branch": "辰"
+      },
+      {
+        "position": "day",
+        "stem": "丙",
+        "branch": "戌"
+      },
+      {
+        "position": "hour",
+        "stem": "辛",
+        "branch": "卯"
+      }
+    ],
+    "element_balance": [
+      {
+        "element": "wood",
+        "value": 2.0,
+        "display_text": "木 · 可见干支计数 2（不等同旺衰裁决）"
+      },
+      {
+        "element": "fire",
+        "value": 1.0,
+        "display_text": "火 · 可见干支计数 1（不等同旺衰裁决）"
+      },
+      {
+        "element": "earth",
+        "value": 4.0,
+        "display_text": "土 · 可见干支计数 4（不等同旺衰裁决）"
+      },
+      {
+        "element": "metal",
+        "value": 1.0,
+        "display_text": "金 · 可见干支计数 1（不等同旺衰裁决）"
+      }
+    ],
+    "time_layers": [
+      {
+        "layer_id": "life",
+        "label": "本命",
+        "available": true,
+        "unavailable_reason": null
+      },
+      {
+        "layer_id": "year",
+        "label": "流年",
+        "available": false,
+        "unavailable_reason": "本次结果只返回本命四柱，尚未返回逐年盘面。"
+      },
+      {
+        "layer_id": "month",
+        "label": "流月",
+        "available": false,
+        "unavailable_reason": "本次结果只返回本命四柱，尚未返回逐月盘面。"
+      },
+      {
+        "layer_id": "day",
+        "label": "流日",
+        "available": false,
+        "unavailable_reason": "本次结果只返回本命四柱，尚未返回逐日盘面。"
+      }
+    ],
+    "core_facts": {
+      "day_master": {
+        "stem": "丙",
+        "element": "fire",
+        "polarity": "阳"
+      },
+      "hidden_stems": [
+        {
+          "position": "year",
+          "branch": "戌",
+          "stems": [
+            "戊",
+            "辛",
+            "丁"
+          ]
+        },
+        {
+          "position": "month",
+          "branch": "辰",
+          "stems": [
+            "戊",
+            "乙",
+            "癸"
+          ]
+        },
+        {
+          "position": "day",
+          "branch": "戌",
+          "stems": [
+            "戊",
+            "辛",
+            "丁"
+          ]
+        },
+        {
+          "position": "hour",
+          "branch": "卯",
+          "stems": [
+            "乙"
+          ]
+        }
+      ],
+      "ten_gods": {
+        "heavenly_stems": [
+          {
+            "position": "year",
+            "layer": "heavenly_stem",
+            "stem": "甲",
+            "ten_god": "偏印"
+          },
+          {
+            "position": "month",
+            "layer": "heavenly_stem",
+            "stem": "戊",
+            "ten_god": "食神"
+          },
+          {
+            "position": "day",
+            "layer": "heavenly_stem",
+            "stem": "丙",
+            "ten_god": "日主"
+          },
+          {
+            "position": "hour",
+            "layer": "heavenly_stem",
+            "stem": "辛",
+            "ten_god": "正财"
+          }
+        ],
+        "hidden_stems": [
+          {
+            "position": "year",
+            "layer": "hidden_stem",
+            "stem": "戊",
+            "ten_god": "食神"
+          },
+          {
+            "position": "year",
+            "layer": "hidden_stem",
+            "stem": "辛",
+            "ten_god": "正财"
+          },
+          {
+            "position": "year",
+            "layer": "hidden_stem",
+            "stem": "丁",
+            "ten_god": "劫财"
+          },
+          {
+            "position": "month",
+            "layer": "hidden_stem",
+            "stem": "戊",
+            "ten_god": "食神"
+          },
+          {
+            "position": "month",
+            "layer": "hidden_stem",
+            "stem": "乙",
+            "ten_god": "正印"
+          },
+          {
+            "position": "month",
+            "layer": "hidden_stem",
+            "stem": "癸",
+            "ten_god": "正官"
+          },
+          {
+            "position": "day",
+            "layer": "hidden_stem",
+            "stem": "戊",
+            "ten_god": "食神"
+          },
+          {
+            "position": "day",
+            "layer": "hidden_stem",
+            "stem": "辛",
+            "ten_god": "正财"
+          },
+          {
+            "position": "day",
+            "layer": "hidden_stem",
+            "stem": "丁",
+            "ten_god": "劫财"
+          },
+          {
+            "position": "hour",
+            "layer": "hidden_stem",
+            "stem": "乙",
+            "ten_god": "正印"
+          }
+        ]
+      },
+      "nayin": [
+        {
+          "position": "year",
+          "name": "山头火"
+        },
+        {
+          "position": "month",
+          "name": "大林木"
+        },
+        {
+          "position": "day",
+          "name": "屋上土"
+        },
+        {
+          "position": "hour",
+          "name": "松柏木"
+        }
+      ],
+      "twelve_growth_stages": [
+        {
+          "position": "year",
+          "stem": "甲",
+          "branch": "戌",
+          "stage": "养",
+          "stage_index": 12,
+          "direction": "forward",
+          "source_dependency_id": "bazi.chart.twelve-growth-stages-v1",
+          "boundary": "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论"
+        },
+        {
+          "position": "month",
+          "stem": "戊",
+          "branch": "辰",
+          "stage": "冠带",
+          "stage_index": 3,
+          "direction": "forward",
+          "source_dependency_id": "bazi.chart.twelve-growth-stages-v1",
+          "boundary": "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论"
+        },
+        {
+          "position": "day",
+          "stem": "丙",
+          "branch": "戌",
+          "stage": "墓",
+          "stage_index": 9,
+          "direction": "forward",
+          "source_dependency_id": "bazi.chart.twelve-growth-stages-v1",
+          "boundary": "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论"
+        },
+        {
+          "position": "hour",
+          "stem": "辛",
+          "branch": "卯",
+          "stage": "绝",
+          "stage_index": 10,
+          "direction": "reverse",
+          "source_dependency_id": "bazi.chart.twelve-growth-stages-v1",
+          "boundary": "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论"
+        }
+      ],
+      "xunkong": {
+        "day_pillar": "丙戌",
+        "xun": "甲申",
+        "branches": [
+          "午",
+          "未"
+        ],
+        "source_dependency_id": "bazi.chart.xunkong-sexagenary-v1",
+        "boundary": "按日柱所属旬计算旬空事实；不能单独推出吉凶、六亲或事件结论"
+      },
+      "san_yuan": {
+        "tai_yuan": "己未",
+        "ming_gong": "甲戌",
+        "shen_gong": "庚午",
+        "source": "lunar-typescript-auxiliary",
+        "source_dependency_id": "bazi.chart.san-yuan-lunar-typescript-v1",
+        "boundary": "胎元、命宫、身宫位置事实；不能单独推出格局、旺衰、吉凶或事件结论"
+      },
+      "month_command": {
+        "branch": "辰",
+        "label": "辰月",
+        "main_qi": "戊",
+        "main_qi_element": "earth"
+      },
+      "seasonal_profile": {
+        "season": "季春",
+        "month_qi": "土承木余气",
+        "temperature": "温",
+        "moisture": "湿"
+      },
+      "tiaohou_markers": {
+        "temperature": "温",
+        "moisture": "湿",
+        "markers": [
+          "温",
+          "湿"
+        ],
+        "day_stem": "丙",
+        "month_branch": "辰",
+        "scope": "month-level climate anchors only; not a 调候用神 conclusion"
+      },
+      "element_inventory": {
+        "visible_stem_branch_counts": [
+          {
+            "element": "wood",
+            "value": 2
+          },
+          {
+            "element": "fire",
+            "value": 1
+          },
+          {
+            "element": "earth",
+            "value": 4
+          },
+          {
+            "element": "metal",
+            "value": 1
+          }
+        ],
+        "hidden_stem_occurrence_counts": [
+          {
+            "element": "wood",
+            "value": 2
+          },
+          {
+            "element": "fire",
+            "value": 2
+          },
+          {
+            "element": "earth",
+            "value": 3
+          },
+          {
+            "element": "metal",
+            "value": 2
+          },
+          {
+            "element": "water",
+            "value": 1
+          }
+        ],
+        "scope": "inventory only; these counts do not determine 旺衰 or 用神"
+      },
+      "interpretive_candidates": null,
+      "source_conditioned_patterns": [
+        {
+          "rule_id": "bazi/ditiansui-chanwei#DR-01-01",
+          "local_rule_id": "DR-01-01",
+          "title": "DR-01-01 三元一统",
+          "source_pack": "bazi/ditiansui-chanwei",
+          "source_anchor": "rules.md#L12-L20",
+          "status": "predicate_matched_not_verdict",
+          "fact_paths": [
+            "fact:/chart_facts/output/four_pillars/day",
+            "fact:/chart_facts/output/four_pillars/hour",
+            "fact:/chart_facts/output/four_pillars/month",
+            "fact:/chart_facts/output/four_pillars/year",
+            "fact:/chart_facts/output/hidden_stems/day/branch",
+            "fact:/chart_facts/output/hidden_stems/day/stems/0",
+            "fact:/chart_facts/output/hidden_stems/day/stems/1",
+            "fact:/chart_facts/output/hidden_stems/day/stems/2",
+            "fact:/chart_facts/output/hidden_stems/hour/branch",
+            "fact:/chart_facts/output/hidden_stems/hour/stems/0",
+            "fact:/chart_facts/output/hidden_stems/month/branch",
+            "fact:/chart_facts/output/hidden_stems/month/stems/0",
+            "fact:/chart_facts/output/hidden_stems/month/stems/1",
+            "fact:/chart_facts/output/hidden_stems/month/stems/2",
+            "fact:/chart_facts/output/hidden_stems/year/branch",
+            "fact:/chart_facts/output/hidden_stems/year/stems/0",
+            "fact:/chart_facts/output/hidden_stems/year/stems/1",
+            "fact:/chart_facts/output/hidden_stems/year/stems/2",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/0/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/0/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/1/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/1/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/2/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/2/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/hour/0/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/hour/0/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/0/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/0/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/1/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/1/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/2/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/2/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/0/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/0/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/1/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/1/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/2/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/2/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/0/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/0/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/1/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/1/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/2/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/2/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/hour/0/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/hour/0/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/0/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/0/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/1/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/1/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/2/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/2/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/0/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/0/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/1/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/1/ten_god",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/2/stem",
+            "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/2/ten_god",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/day/0/stem",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/day/0/ten_god",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/day/1/stem",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/day/1/ten_god",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/day/2/stem",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/day/2/ten_god",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/hour/0/stem",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/hour/0/ten_god",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/month/0/stem",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/month/0/ten_god",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/month/1/stem",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/month/1/ten_god",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/month/2/stem",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/month/2/ten_god",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/year/0/stem",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/year/0/ten_god",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/year/1/stem",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/year/1/ten_god",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/year/2/stem",
+            "fact:/chart_facts/output/ten_gods/hidden_stems/year/2/ten_god"
+          ],
+          "predicate_audit": [
+            "/four_pillars:nonempty:()",
+            "/hidden_stems:nonempty:()"
+          ],
+          "evidence_ref": "evidence:bazi/bazi/ditiansui-chanwei#DR-01-01"
+        },
+        {
+          "rule_id": "bazi/qiongtong-baojian#QR-02-01",
+          "local_rule_id": "QR-02-01",
+          "title": "QR-02-01 — 三春丙火",
+          "source_pack": "bazi/qiongtong-baojian",
+          "source_anchor": "fulltext.md L317-L382",
+          "status": "predicate_matched_not_verdict",
+          "fact_paths": [
+            "fact:/chart_facts/output/day_master/stem",
+            "fact:/chart_facts/output/month_command/branch"
+          ],
+          "predicate_audit": [
+            "/day_master/stem:eq:丙",
+            "/month_command/branch:in:('寅', '卯', '辰')"
+          ],
+          "evidence_ref": "evidence:bazi/bazi/qiongtong-baojian#QR-02-01"
+        },
+        {
+          "rule_id": "bazi/qiongtong-baojian#QTB-M01",
+          "local_rule_id": "QTB-M01",
+          "title": "QTB-M01 四时乘气方法",
+          "source_pack": "bazi/qiongtong-baojian",
+          "source_anchor": "rules.md#L14-L21",
+          "status": "predicate_matched_not_verdict",
+          "fact_paths": [
+            "fact:/chart_facts/output/day_master/stem",
+            "fact:/chart_facts/output/month_command/branch"
+          ],
+          "predicate_audit": [
+            "/day_master/stem:nonempty:()",
+            "/month_command/branch:nonempty:()"
+          ],
+          "evidence_ref": "evidence:bazi/bazi/qiongtong-baojian#QTB-M01"
+        },
+        {
+          "rule_id": "bazi/sanming-tonghui#R-01-02",
+          "local_rule_id": "R-01-02",
+          "title": "R-01-02 五行生克次序",
+          "source_pack": "bazi/sanming-tonghui",
+          "source_anchor": "rules.md#L18-L25",
+          "status": "predicate_matched_not_verdict",
+          "fact_paths": [
+            "fact:/chart_facts/output/day_master/element"
+          ],
+          "predicate_audit": [
+            "/output/day_master/element:nonempty:()"
+          ],
+          "evidence_ref": "evidence:bazi/bazi/sanming-tonghui#R-01-02"
+        },
+        {
+          "rule_id": "bazi/sanming-tonghui#R-02-04",
+          "local_rule_id": "R-02-04",
+          "title": "R-02-04 五行旺相休囚死",
+          "source_pack": "bazi/sanming-tonghui",
+          "source_anchor": "rules.md#L66-L73",
+          "status": "predicate_matched_not_verdict",
+          "fact_paths": [
+            "fact:/chart_facts/output/day_master/element",
+            "fact:/chart_facts/output/month_command/main_qi_element"
+          ],
+          "predicate_audit": [
+            "/output/day_master/element:nonempty:()",
+            "/output/month_command/main_qi_element:nonempty:()"
+          ],
+          "evidence_ref": "evidence:bazi/bazi/sanming-tonghui#R-02-04"
+        },
+        {
+          "rule_id": "bazi/ziping-zhenquan#ZPR-01",
+          "local_rule_id": "ZPR-01",
+          "title": "ZPR-01: 以月令求用神",
+          "source_pack": "bazi/ziping-zhenquan",
+          "source_anchor": "fulltext.md L173-L188",
+          "status": "predicate_matched_not_verdict",
+          "fact_paths": [
+            "fact:/chart_facts/output/day_master/stem",
+            "fact:/chart_facts/output/month_command/branch"
+          ],
+          "predicate_audit": [
+            "/output/day_master/stem:nonempty:()",
+            "/output/month_command/branch:nonempty:()"
+          ],
+          "evidence_ref": "evidence:bazi/bazi/ziping-zhenquan#ZPR-01"
+        }
+      ],
+      "branch_relations": [
+        {
+          "relation_type": "六冲",
+          "positions": [
+            "year",
+            "month"
+          ],
+          "branches": [
+            "戌",
+            "辰"
+          ]
+        },
+        {
+          "relation_type": "六合",
+          "positions": [
+            "year",
+            "hour"
+          ],
+          "branches": [
+            "戌",
+            "卯"
+          ]
+        },
+        {
+          "relation_type": "六冲",
+          "positions": [
+            "month",
+            "day"
+          ],
+          "branches": [
+            "辰",
+            "戌"
+          ]
+        },
+        {
+          "relation_type": "六害",
+          "positions": [
+            "month",
+            "hour"
+          ],
+          "branches": [
+            "辰",
+            "卯"
+          ]
+        },
+        {
+          "relation_type": "六合",
+          "positions": [
+            "day",
+            "hour"
+          ],
+          "branches": [
+            "戌",
+            "卯"
+          ]
+        }
+      ],
+      "shensha_auxiliary": {
+        "status": "calculated_auxiliary_layer",
+        "temporal_scope": "natal",
+        "precedence": "auxiliary_only",
+        "evaluated_rules": [
+          {
+            "rule_id": "yima",
+            "name": "驿马",
+            "anchor_position": "year",
+            "anchor_branch": "戌",
+            "target_branch": "申",
+            "matched": false
+          },
+          {
+            "rule_id": "taohua",
+            "name": "桃花",
+            "anchor_position": "year",
+            "anchor_branch": "戌",
+            "target_branch": "卯",
+            "matched": true
+          },
+          {
+            "rule_id": "yima",
+            "name": "驿马",
+            "anchor_position": "day",
+            "anchor_branch": "戌",
+            "target_branch": "申",
+            "matched": false
+          },
+          {
+            "rule_id": "taohua",
+            "name": "桃花",
+            "anchor_position": "day",
+            "anchor_branch": "戌",
+            "target_branch": "卯",
+            "matched": true
+          }
+        ],
+        "calculated_items": [
+          {
+            "item_id": "taohua",
+            "name": "桃花",
+            "target_branch": "卯",
+            "anchor_positions": [
+              "year",
+              "day"
+            ],
+            "anchor_branches": [
+              "戌",
+              "戌"
+            ],
+            "matched_positions": [
+              "hour"
+            ],
+            "status": "auxiliary_match"
+          }
+        ],
+        "cannot_override": [
+          "month_command",
+          "structure",
+          "strength",
+          "tiaohou",
+          "ten_gods",
+          "luck_cycles",
+          "transit_facts"
+        ],
+        "boundary": "no Shensha item may override month command, structure, strength, Tiaohou, Ten Gods, or luck/transit facts"
+      },
+      "luck_cycles": {
+        "status": "calculated",
+        "direction": "reverse",
+        "direction_rule": "阳年男/阴年女顺，阴年男/阳年女逆；阴阳取年干",
+        "start_age_rule": "距顺逆方向最近节令，三日折一年",
+        "boundary_term": {
+          "name": "清明",
+          "index": 7,
+          "is_month_boundary_jie": true,
+          "datetime": "1994-04-05T08:31:47.604218+08:00",
+          "instant_utc": "1994-04-05T00:31:47.604218+00:00"
+        },
+        "interval_days": 24.891116,
+        "start_age_years": 8.297039,
+        "approximate_start_datetime": "2002-08-16T16:15:47+08:00",
+        "cycles": [
+          {
+            "sequence": 1,
+            "pillar": "丁卯",
+            "start_age_years": 8.297,
+            "end_age_years": 18.297
+          },
+          {
+            "sequence": 2,
+            "pillar": "丙寅",
+            "start_age_years": 18.297,
+            "end_age_years": 28.297
+          },
+          {
+            "sequence": 3,
+            "pillar": "乙丑",
+            "start_age_years": 28.297,
+            "end_age_years": 38.297
+          },
+          {
+            "sequence": 4,
+            "pillar": "甲子",
+            "start_age_years": 38.297,
+            "end_age_years": 48.297
+          },
+          {
+            "sequence": 5,
+            "pillar": "癸亥",
+            "start_age_years": 48.297,
+            "end_age_years": 58.297
+          },
+          {
+            "sequence": 6,
+            "pillar": "壬戌",
+            "start_age_years": 58.297,
+            "end_age_years": 68.297
+          },
+          {
+            "sequence": 7,
+            "pillar": "辛酉",
+            "start_age_years": 68.297,
+            "end_age_years": 78.297
+          },
+          {
+            "sequence": 8,
+            "pillar": "庚申",
+            "start_age_years": 78.297,
+            "end_age_years": 88.297
+          },
+          {
+            "sequence": 9,
+            "pillar": "己未",
+            "start_age_years": 88.297,
+            "end_age_years": 98.297
+          },
+          {
+            "sequence": 10,
+            "pillar": "戊午",
+            "start_age_years": 98.297,
+            "end_age_years": 108.297
+          }
+        ],
+        "unavailable": []
+      },
+      "calendar_normalization": {
+        "status": "calculated",
+        "algorithm_version": "sxtwl-2.0.7/exact-jie-boundary-v1.2",
+        "time_basis": {
+          "policy": "local_apparent_solar-v1",
+          "standard_meridian_degrees": 120.0,
+          "longitude_correction_seconds": -169.0,
+          "equation_of_time_seconds": 163.0,
+          "total_correction_seconds": -6.0,
+          "algorithm": {
+            "id": "astronomy-engine-apparent-solar-eot-v1",
+            "version": "astronomy-engine-2.1.19",
+            "source": "astronomy-engine apparent solar hour angle; equation_of_time = apparent_solar_time - mean_solar_time",
+            "uncertainty_seconds": 30.0
+          },
+          "boundary": {
+            "distance_seconds": 3294.0,
+            "correction_changes_hour_branch": false,
+            "within_uncertainty": false
+          }
+        },
+        "true_solar_time": {
+          "status": "apparent_solar_applied",
+          "policy": "local_apparent_solar-v1",
+          "longitude_correction_seconds": -169.0,
+          "equation_of_time_seconds": 163.0,
+          "total_correction_seconds": -6.0
+        },
+        "calendar_convention": {
+          "id": "east-asian-civil-jieqi-v1",
+          "version": "1.0.2",
+          "year_boundary": "exact Li Chun instant",
+          "month_boundary": "exact Jie instant",
+          "day_rollover": "civil_midnight",
+          "hour_basis": "local_apparent_solar-v1",
+          "zi_hour_policy": "midnight"
+        },
+        "effective_datetime": "1994-04-30T05:54:54+08:00",
+        "day_boundary": {
+          "correction_crossed_date": false,
+          "zi_policy_advanced_day_pillar": false
+        },
+        "changed_pillars": [],
+        "solar_terms": {
+          "previous": {
+            "name": "谷雨",
+            "index": 8,
+            "is_month_boundary_jie": false,
+            "datetime": "1994-04-20T15:36:00.337830+08:00",
+            "instant_utc": "1994-04-20T07:36:00.337830+00:00"
+          },
+          "next": {
+            "name": "立夏",
+            "index": 9,
+            "is_month_boundary_jie": true,
+            "datetime": "1994-05-06T01:54:05.030823+08:00",
+            "instant_utc": "1994-05-05T17:54:05.030823+00:00"
+          },
+          "month_switch_policy": "exact Jie instant"
+        }
+      },
+      "year_layers": null,
+      "month_layers": null,
+      "day_layers": null
+    }
+  },
+  "capability": {
+    "capability_id": "bazi",
+    "label": "八字",
+    "tier": "A",
+    "source_system": "bazi",
+    "runtime_active_rule_count": 24,
+    "judgment_rule_count": 19,
+    "source_status": "available",
+    "user_decision_pending": false
+  },
+  "verification": null,
+  "input_request": null,
+  "document": {
+    "schema_version": "reading-document/v1",
+    "document_id": "reading-version:12c19ca2-5e22-416e-8ff3-1908a644f84f",
+    "reading_version_id": "12c19ca2-5e22-416e-8ff3-1908a644f84f",
+    "accepted_copy_ref": "accepted-copy:9c3f7f7c-d557-435f-83f3-dfa412675ab9",
+    "product_version": "bazi-reading/v1",
+    "presentation_contract_version": "bazi-presentation/v1",
+    "view_model": {
+      "schema_version": "bazi-chart/v1",
+      "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+      "pillars": [
+        {
+          "position": "year",
+          "stem": "甲",
+          "branch": "戌"
+        },
+        {
+          "position": "month",
+          "stem": "戊",
+          "branch": "辰"
+        },
+        {
+          "position": "day",
+          "stem": "丙",
+          "branch": "戌"
+        },
+        {
+          "position": "hour",
+          "stem": "辛",
+          "branch": "卯"
+        }
+      ],
+      "element_balance": [
+        {
+          "element": "wood",
+          "value": 2.0,
+          "display_text": "木 · 可见干支计数 2（不等同旺衰裁决）"
+        },
+        {
+          "element": "fire",
+          "value": 1.0,
+          "display_text": "火 · 可见干支计数 1（不等同旺衰裁决）"
+        },
+        {
+          "element": "earth",
+          "value": 4.0,
+          "display_text": "土 · 可见干支计数 4（不等同旺衰裁决）"
+        },
+        {
+          "element": "metal",
+          "value": 1.0,
+          "display_text": "金 · 可见干支计数 1（不等同旺衰裁决）"
+        }
+      ],
+      "time_layers": [
+        {
+          "layer_id": "life",
+          "label": "本命",
+          "available": true,
+          "unavailable_reason": null
+        },
+        {
+          "layer_id": "year",
+          "label": "流年",
+          "available": false,
+          "unavailable_reason": "本次结果只返回本命四柱，尚未返回逐年盘面。"
+        },
+        {
+          "layer_id": "month",
+          "label": "流月",
+          "available": false,
+          "unavailable_reason": "本次结果只返回本命四柱，尚未返回逐月盘面。"
+        },
+        {
+          "layer_id": "day",
+          "label": "流日",
+          "available": false,
+          "unavailable_reason": "本次结果只返回本命四柱，尚未返回逐日盘面。"
+        }
+      ],
+      "core_facts": {
+        "day_master": {
+          "stem": "丙",
+          "element": "fire",
+          "polarity": "阳"
+        },
+        "hidden_stems": [
+          {
+            "position": "year",
+            "branch": "戌",
+            "stems": [
+              "戊",
+              "辛",
+              "丁"
+            ]
+          },
+          {
+            "position": "month",
+            "branch": "辰",
+            "stems": [
+              "戊",
+              "乙",
+              "癸"
+            ]
+          },
+          {
+            "position": "day",
+            "branch": "戌",
+            "stems": [
+              "戊",
+              "辛",
+              "丁"
+            ]
+          },
+          {
+            "position": "hour",
+            "branch": "卯",
+            "stems": [
+              "乙"
+            ]
+          }
+        ],
+        "ten_gods": {
+          "heavenly_stems": [
+            {
+              "position": "year",
+              "layer": "heavenly_stem",
+              "stem": "甲",
+              "ten_god": "偏印"
+            },
+            {
+              "position": "month",
+              "layer": "heavenly_stem",
+              "stem": "戊",
+              "ten_god": "食神"
+            },
+            {
+              "position": "day",
+              "layer": "heavenly_stem",
+              "stem": "丙",
+              "ten_god": "日主"
+            },
+            {
+              "position": "hour",
+              "layer": "heavenly_stem",
+              "stem": "辛",
+              "ten_god": "正财"
+            }
+          ],
+          "hidden_stems": [
+            {
+              "position": "year",
+              "layer": "hidden_stem",
+              "stem": "戊",
+              "ten_god": "食神"
+            },
+            {
+              "position": "year",
+              "layer": "hidden_stem",
+              "stem": "辛",
+              "ten_god": "正财"
+            },
+            {
+              "position": "year",
+              "layer": "hidden_stem",
+              "stem": "丁",
+              "ten_god": "劫财"
+            },
+            {
+              "position": "month",
+              "layer": "hidden_stem",
+              "stem": "戊",
+              "ten_god": "食神"
+            },
+            {
+              "position": "month",
+              "layer": "hidden_stem",
+              "stem": "乙",
+              "ten_god": "正印"
+            },
+            {
+              "position": "month",
+              "layer": "hidden_stem",
+              "stem": "癸",
+              "ten_god": "正官"
+            },
+            {
+              "position": "day",
+              "layer": "hidden_stem",
+              "stem": "戊",
+              "ten_god": "食神"
+            },
+            {
+              "position": "day",
+              "layer": "hidden_stem",
+              "stem": "辛",
+              "ten_god": "正财"
+            },
+            {
+              "position": "day",
+              "layer": "hidden_stem",
+              "stem": "丁",
+              "ten_god": "劫财"
+            },
+            {
+              "position": "hour",
+              "layer": "hidden_stem",
+              "stem": "乙",
+              "ten_god": "正印"
+            }
+          ]
+        },
+        "nayin": [
+          {
+            "position": "year",
+            "name": "山头火"
+          },
+          {
+            "position": "month",
+            "name": "大林木"
+          },
+          {
+            "position": "day",
+            "name": "屋上土"
+          },
+          {
+            "position": "hour",
+            "name": "松柏木"
+          }
+        ],
+        "twelve_growth_stages": [
+          {
+            "position": "year",
+            "stem": "甲",
+            "branch": "戌",
+            "stage": "养",
+            "stage_index": 12,
+            "direction": "forward",
+            "source_dependency_id": "bazi.chart.twelve-growth-stages-v1",
+            "boundary": "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论"
+          },
+          {
+            "position": "month",
+            "stem": "戊",
+            "branch": "辰",
+            "stage": "冠带",
+            "stage_index": 3,
+            "direction": "forward",
+            "source_dependency_id": "bazi.chart.twelve-growth-stages-v1",
+            "boundary": "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论"
+          },
+          {
+            "position": "day",
+            "stem": "丙",
+            "branch": "戌",
+            "stage": "墓",
+            "stage_index": 9,
+            "direction": "forward",
+            "source_dependency_id": "bazi.chart.twelve-growth-stages-v1",
+            "boundary": "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论"
+          },
+          {
+            "position": "hour",
+            "stem": "辛",
+            "branch": "卯",
+            "stage": "绝",
+            "stage_index": 10,
+            "direction": "reverse",
+            "source_dependency_id": "bazi.chart.twelve-growth-stages-v1",
+            "boundary": "十二长生位置事实；不能单独推出旺衰、格局、用神或事件结论"
+          }
+        ],
+        "xunkong": {
+          "day_pillar": "丙戌",
+          "xun": "甲申",
+          "branches": [
+            "午",
+            "未"
+          ],
+          "source_dependency_id": "bazi.chart.xunkong-sexagenary-v1",
+          "boundary": "按日柱所属旬计算旬空事实；不能单独推出吉凶、六亲或事件结论"
+        },
+        "san_yuan": {
+          "tai_yuan": "己未",
+          "ming_gong": "甲戌",
+          "shen_gong": "庚午",
+          "source": "lunar-typescript-auxiliary",
+          "source_dependency_id": "bazi.chart.san-yuan-lunar-typescript-v1",
+          "boundary": "胎元、命宫、身宫位置事实；不能单独推出格局、旺衰、吉凶或事件结论"
+        },
+        "month_command": {
+          "branch": "辰",
+          "label": "辰月",
+          "main_qi": "戊",
+          "main_qi_element": "earth"
+        },
+        "seasonal_profile": {
+          "season": "季春",
+          "month_qi": "土承木余气",
+          "temperature": "温",
+          "moisture": "湿"
+        },
+        "tiaohou_markers": {
+          "temperature": "温",
+          "moisture": "湿",
+          "markers": [
+            "温",
+            "湿"
+          ],
+          "day_stem": "丙",
+          "month_branch": "辰",
+          "scope": "month-level climate anchors only; not a 调候用神 conclusion"
+        },
+        "element_inventory": {
+          "visible_stem_branch_counts": [
+            {
+              "element": "wood",
+              "value": 2
+            },
+            {
+              "element": "fire",
+              "value": 1
+            },
+            {
+              "element": "earth",
+              "value": 4
+            },
+            {
+              "element": "metal",
+              "value": 1
+            }
+          ],
+          "hidden_stem_occurrence_counts": [
+            {
+              "element": "wood",
+              "value": 2
+            },
+            {
+              "element": "fire",
+              "value": 2
+            },
+            {
+              "element": "earth",
+              "value": 3
+            },
+            {
+              "element": "metal",
+              "value": 2
+            },
+            {
+              "element": "water",
+              "value": 1
+            }
+          ],
+          "scope": "inventory only; these counts do not determine 旺衰 or 用神"
+        },
+        "interpretive_candidates": null,
+        "source_conditioned_patterns": [
+          {
+            "rule_id": "bazi/ditiansui-chanwei#DR-01-01",
+            "local_rule_id": "DR-01-01",
+            "title": "DR-01-01 三元一统",
+            "source_pack": "bazi/ditiansui-chanwei",
+            "source_anchor": "rules.md#L12-L20",
+            "status": "predicate_matched_not_verdict",
+            "fact_paths": [
+              "fact:/chart_facts/output/four_pillars/day",
+              "fact:/chart_facts/output/four_pillars/hour",
+              "fact:/chart_facts/output/four_pillars/month",
+              "fact:/chart_facts/output/four_pillars/year",
+              "fact:/chart_facts/output/hidden_stems/day/branch",
+              "fact:/chart_facts/output/hidden_stems/day/stems/0",
+              "fact:/chart_facts/output/hidden_stems/day/stems/1",
+              "fact:/chart_facts/output/hidden_stems/day/stems/2",
+              "fact:/chart_facts/output/hidden_stems/hour/branch",
+              "fact:/chart_facts/output/hidden_stems/hour/stems/0",
+              "fact:/chart_facts/output/hidden_stems/month/branch",
+              "fact:/chart_facts/output/hidden_stems/month/stems/0",
+              "fact:/chart_facts/output/hidden_stems/month/stems/1",
+              "fact:/chart_facts/output/hidden_stems/month/stems/2",
+              "fact:/chart_facts/output/hidden_stems/year/branch",
+              "fact:/chart_facts/output/hidden_stems/year/stems/0",
+              "fact:/chart_facts/output/hidden_stems/year/stems/1",
+              "fact:/chart_facts/output/hidden_stems/year/stems/2",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/1/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/1/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/2/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/day/2/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/hour/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/hour/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/1/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/1/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/2/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/month/2/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/1/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/1/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/2/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/fact_refs/1/value/hidden_stems/year/2/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/1/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/1/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/2/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/day/2/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/hour/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/hour/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/1/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/1/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/2/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/month/2/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/0/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/0/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/1/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/1/ten_god",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/2/stem",
+              "fact:/chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/fact_refs/3/value/hidden_stems/year/2/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/day/0/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/day/0/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/day/1/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/day/1/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/day/2/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/day/2/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/hour/0/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/hour/0/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/month/0/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/month/0/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/month/1/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/month/1/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/month/2/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/month/2/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/year/0/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/year/0/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/year/1/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/year/1/ten_god",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/year/2/stem",
+              "fact:/chart_facts/output/ten_gods/hidden_stems/year/2/ten_god"
+            ],
+            "predicate_audit": [
+              "/four_pillars:nonempty:()",
+              "/hidden_stems:nonempty:()"
+            ],
+            "evidence_ref": "evidence:bazi/bazi/ditiansui-chanwei#DR-01-01"
+          },
+          {
+            "rule_id": "bazi/qiongtong-baojian#QR-02-01",
+            "local_rule_id": "QR-02-01",
+            "title": "QR-02-01 — 三春丙火",
+            "source_pack": "bazi/qiongtong-baojian",
+            "source_anchor": "fulltext.md L317-L382",
+            "status": "predicate_matched_not_verdict",
+            "fact_paths": [
+              "fact:/chart_facts/output/day_master/stem",
+              "fact:/chart_facts/output/month_command/branch"
+            ],
+            "predicate_audit": [
+              "/day_master/stem:eq:丙",
+              "/month_command/branch:in:('寅', '卯', '辰')"
+            ],
+            "evidence_ref": "evidence:bazi/bazi/qiongtong-baojian#QR-02-01"
+          },
+          {
+            "rule_id": "bazi/qiongtong-baojian#QTB-M01",
+            "local_rule_id": "QTB-M01",
+            "title": "QTB-M01 四时乘气方法",
+            "source_pack": "bazi/qiongtong-baojian",
+            "source_anchor": "rules.md#L14-L21",
+            "status": "predicate_matched_not_verdict",
+            "fact_paths": [
+              "fact:/chart_facts/output/day_master/stem",
+              "fact:/chart_facts/output/month_command/branch"
+            ],
+            "predicate_audit": [
+              "/day_master/stem:nonempty:()",
+              "/month_command/branch:nonempty:()"
+            ],
+            "evidence_ref": "evidence:bazi/bazi/qiongtong-baojian#QTB-M01"
+          },
+          {
+            "rule_id": "bazi/sanming-tonghui#R-01-02",
+            "local_rule_id": "R-01-02",
+            "title": "R-01-02 五行生克次序",
+            "source_pack": "bazi/sanming-tonghui",
+            "source_anchor": "rules.md#L18-L25",
+            "status": "predicate_matched_not_verdict",
+            "fact_paths": [
+              "fact:/chart_facts/output/day_master/element"
+            ],
+            "predicate_audit": [
+              "/output/day_master/element:nonempty:()"
+            ],
+            "evidence_ref": "evidence:bazi/bazi/sanming-tonghui#R-01-02"
+          },
+          {
+            "rule_id": "bazi/sanming-tonghui#R-02-04",
+            "local_rule_id": "R-02-04",
+            "title": "R-02-04 五行旺相休囚死",
+            "source_pack": "bazi/sanming-tonghui",
+            "source_anchor": "rules.md#L66-L73",
+            "status": "predicate_matched_not_verdict",
+            "fact_paths": [
+              "fact:/chart_facts/output/day_master/element",
+              "fact:/chart_facts/output/month_command/main_qi_element"
+            ],
+            "predicate_audit": [
+              "/output/day_master/element:nonempty:()",
+              "/output/month_command/main_qi_element:nonempty:()"
+            ],
+            "evidence_ref": "evidence:bazi/bazi/sanming-tonghui#R-02-04"
+          },
+          {
+            "rule_id": "bazi/ziping-zhenquan#ZPR-01",
+            "local_rule_id": "ZPR-01",
+            "title": "ZPR-01: 以月令求用神",
+            "source_pack": "bazi/ziping-zhenquan",
+            "source_anchor": "fulltext.md L173-L188",
+            "status": "predicate_matched_not_verdict",
+            "fact_paths": [
+              "fact:/chart_facts/output/day_master/stem",
+              "fact:/chart_facts/output/month_command/branch"
+            ],
+            "predicate_audit": [
+              "/output/day_master/stem:nonempty:()",
+              "/output/month_command/branch:nonempty:()"
+            ],
+            "evidence_ref": "evidence:bazi/bazi/ziping-zhenquan#ZPR-01"
+          }
+        ],
+        "branch_relations": [
+          {
+            "relation_type": "六冲",
+            "positions": [
+              "year",
+              "month"
+            ],
+            "branches": [
+              "戌",
+              "辰"
+            ]
+          },
+          {
+            "relation_type": "六合",
+            "positions": [
+              "year",
+              "hour"
+            ],
+            "branches": [
+              "戌",
+              "卯"
+            ]
+          },
+          {
+            "relation_type": "六冲",
+            "positions": [
+              "month",
+              "day"
+            ],
+            "branches": [
+              "辰",
+              "戌"
+            ]
+          },
+          {
+            "relation_type": "六害",
+            "positions": [
+              "month",
+              "hour"
+            ],
+            "branches": [
+              "辰",
+              "卯"
+            ]
+          },
+          {
+            "relation_type": "六合",
+            "positions": [
+              "day",
+              "hour"
+            ],
+            "branches": [
+              "戌",
+              "卯"
+            ]
+          }
+        ],
+        "shensha_auxiliary": {
+          "status": "calculated_auxiliary_layer",
+          "temporal_scope": "natal",
+          "precedence": "auxiliary_only",
+          "evaluated_rules": [
+            {
+              "rule_id": "yima",
+              "name": "驿马",
+              "anchor_position": "year",
+              "anchor_branch": "戌",
+              "target_branch": "申",
+              "matched": false
+            },
+            {
+              "rule_id": "taohua",
+              "name": "桃花",
+              "anchor_position": "year",
+              "anchor_branch": "戌",
+              "target_branch": "卯",
+              "matched": true
+            },
+            {
+              "rule_id": "yima",
+              "name": "驿马",
+              "anchor_position": "day",
+              "anchor_branch": "戌",
+              "target_branch": "申",
+              "matched": false
+            },
+            {
+              "rule_id": "taohua",
+              "name": "桃花",
+              "anchor_position": "day",
+              "anchor_branch": "戌",
+              "target_branch": "卯",
+              "matched": true
+            }
+          ],
+          "calculated_items": [
+            {
+              "item_id": "taohua",
+              "name": "桃花",
+              "target_branch": "卯",
+              "anchor_positions": [
+                "year",
+                "day"
+              ],
+              "anchor_branches": [
+                "戌",
+                "戌"
+              ],
+              "matched_positions": [
+                "hour"
+              ],
+              "status": "auxiliary_match"
+            }
+          ],
+          "cannot_override": [
+            "month_command",
+            "structure",
+            "strength",
+            "tiaohou",
+            "ten_gods",
+            "luck_cycles",
+            "transit_facts"
+          ],
+          "boundary": "no Shensha item may override month command, structure, strength, Tiaohou, Ten Gods, or luck/transit facts"
+        },
+        "luck_cycles": {
+          "status": "calculated",
+          "direction": "reverse",
+          "direction_rule": "阳年男/阴年女顺，阴年男/阳年女逆；阴阳取年干",
+          "start_age_rule": "距顺逆方向最近节令，三日折一年",
+          "boundary_term": {
+            "name": "清明",
+            "index": 7,
+            "is_month_boundary_jie": true,
+            "datetime": "1994-04-05T08:31:47.604218+08:00",
+            "instant_utc": "1994-04-05T00:31:47.604218+00:00"
+          },
+          "interval_days": 24.891116,
+          "start_age_years": 8.297039,
+          "approximate_start_datetime": "2002-08-16T16:15:47+08:00",
+          "cycles": [
+            {
+              "sequence": 1,
+              "pillar": "丁卯",
+              "start_age_years": 8.297,
+              "end_age_years": 18.297
+            },
+            {
+              "sequence": 2,
+              "pillar": "丙寅",
+              "start_age_years": 18.297,
+              "end_age_years": 28.297
+            },
+            {
+              "sequence": 3,
+              "pillar": "乙丑",
+              "start_age_years": 28.297,
+              "end_age_years": 38.297
+            },
+            {
+              "sequence": 4,
+              "pillar": "甲子",
+              "start_age_years": 38.297,
+              "end_age_years": 48.297
+            },
+            {
+              "sequence": 5,
+              "pillar": "癸亥",
+              "start_age_years": 48.297,
+              "end_age_years": 58.297
+            },
+            {
+              "sequence": 6,
+              "pillar": "壬戌",
+              "start_age_years": 58.297,
+              "end_age_years": 68.297
+            },
+            {
+              "sequence": 7,
+              "pillar": "辛酉",
+              "start_age_years": 68.297,
+              "end_age_years": 78.297
+            },
+            {
+              "sequence": 8,
+              "pillar": "庚申",
+              "start_age_years": 78.297,
+              "end_age_years": 88.297
+            },
+            {
+              "sequence": 9,
+              "pillar": "己未",
+              "start_age_years": 88.297,
+              "end_age_years": 98.297
+            },
+            {
+              "sequence": 10,
+              "pillar": "戊午",
+              "start_age_years": 98.297,
+              "end_age_years": 108.297
+            }
+          ],
+          "unavailable": []
+        },
+        "calendar_normalization": {
+          "status": "calculated",
+          "algorithm_version": "sxtwl-2.0.7/exact-jie-boundary-v1.2",
+          "time_basis": {
+            "policy": "local_apparent_solar-v1",
+            "standard_meridian_degrees": 120.0,
+            "longitude_correction_seconds": -169.0,
+            "equation_of_time_seconds": 163.0,
+            "total_correction_seconds": -6.0,
+            "algorithm": {
+              "id": "astronomy-engine-apparent-solar-eot-v1",
+              "version": "astronomy-engine-2.1.19",
+              "source": "astronomy-engine apparent solar hour angle; equation_of_time = apparent_solar_time - mean_solar_time",
+              "uncertainty_seconds": 30.0
+            },
+            "boundary": {
+              "distance_seconds": 3294.0,
+              "correction_changes_hour_branch": false,
+              "within_uncertainty": false
+            }
+          },
+          "true_solar_time": {
+            "status": "apparent_solar_applied",
+            "policy": "local_apparent_solar-v1",
+            "longitude_correction_seconds": -169.0,
+            "equation_of_time_seconds": 163.0,
+            "total_correction_seconds": -6.0
+          },
+          "calendar_convention": {
+            "id": "east-asian-civil-jieqi-v1",
+            "version": "1.0.2",
+            "year_boundary": "exact Li Chun instant",
+            "month_boundary": "exact Jie instant",
+            "day_rollover": "civil_midnight",
+            "hour_basis": "local_apparent_solar-v1",
+            "zi_hour_policy": "midnight"
+          },
+          "effective_datetime": "1994-04-30T05:54:54+08:00",
+          "day_boundary": {
+            "correction_crossed_date": false,
+            "zi_policy_advanced_day_pillar": false
+          },
+          "changed_pillars": [],
+          "solar_terms": {
+            "previous": {
+              "name": "谷雨",
+              "index": 8,
+              "is_month_boundary_jie": false,
+              "datetime": "1994-04-20T15:36:00.337830+08:00",
+              "instant_utc": "1994-04-20T07:36:00.337830+00:00"
+            },
+            "next": {
+              "name": "立夏",
+              "index": 9,
+              "is_month_boundary_jie": true,
+              "datetime": "1994-05-06T01:54:05.030823+08:00",
+              "instant_utc": "1994-05-05T17:54:05.030823+00:00"
+            },
+            "month_switch_policy": "exact Jie instant"
+          }
+        },
+        "year_layers": null,
+        "month_layers": null,
+        "day_layers": null
+      }
+    },
+    "answer_summary": "出生时间或四柱：1994-04-30T05:55:00+08:00",
+    "subject_summaries": [
+      {
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "label": "本人"
+      }
+    ],
+    "themes": [
+      {
+        "theme_id": "career",
+        "label": "事业"
+      }
+    ],
+    "claims": [
+      {
+        "claim_id": "fake-block-0",
+        "section_id": "overview",
+        "text": "出生时间或四柱：1994-04-30T05:55:00+08:00",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "dimension_id": "career",
+        "claim_kind_id": "kind.fact",
+        "certainty_id": "certainty.tendency",
+        "fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/input/birth_datetime_or_four_pillars"
+        ],
+        "finding_refs": [],
+        "evidence_refs": [],
+        "limit_refs": [],
+        "verification": {
+          "enabled": true
+        }
+      },
+      {
+        "claim_id": "fake-block-1",
+        "section_id": "overview",
+        "text": "坐标来源：synthetic-fixture",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "dimension_id": "career",
+        "claim_kind_id": "kind.fact",
+        "certainty_id": "certainty.tendency",
+        "fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/input/coordinate_source"
+        ],
+        "finding_refs": [],
+        "evidence_refs": [],
+        "limit_refs": [],
+        "verification": {
+          "enabled": true
+        }
+      },
+      {
+        "claim_id": "fake-block-2",
+        "section_id": "overview",
+        "text": "性别：female",
+        "subject_ref": "profile-version:6b107a89-d0fa-4883-962b-59a40581c2db",
+        "dimension_id": "career",
+        "claim_kind_id": "kind.fact",
+        "certainty_id": "certainty.tendency",
+        "fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/input/gender"
+        ],
+        "finding_refs": [],
+        "evidence_refs": [],
+        "limit_refs": [],
+        "verification": {
+          "enabled": true
+        }
+      }
+    ],
+    "evidence": [
+      {
+        "evidence_ref": "evidence:bazi/bazi/sanming-tonghui#R-01-02",
+        "title": "三命通会 · fulltext.md#L34",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master"
+        ]
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/sanming-tonghui#R-02-04",
+        "title": "三命通会 · fulltext.md#L636",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ]
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/yuanhai-ziping#YR-M01",
+        "title": "渊海子平 · fulltext.md#L109",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ]
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/ziping-zhenquan#ZPR-01",
+        "title": "子平真诠 · fulltext.md#L179",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ]
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/ditiansui-chanwei#DR-01-01",
+        "title": "滴天髓阐微 · fulltext.md#L11",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/four_pillars",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/hidden_stems",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/interpretive_candidates",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/ten_gods"
+        ]
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/qiongtong-baojian#QR-02-01",
+        "title": "穷通宝鉴 · fulltext.md#L319",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ]
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/qiongtong-baojian#QTB-M01",
+        "title": "穷通宝鉴 · fulltext.md#L9",
+        "supports_fact_refs": [
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/day_master",
+          "fact:profile-version:6b107a89-d0fa-4883-962b-59a40581c2db/calculated/bazi/month_command"
+        ]
+      }
+    ],
+    "boundaries": [
+      {
+        "limit_ref": "limit.interpretive_verdict_unavailable",
+        "text": "当前只发布可复核候选事实；整盘旺衰、格局成败、喜用忌神与现实吉凶尚未裁定，不得当作定论"
+      },
+      {
+        "limit_ref": "contract:disclosure",
+        "text": "AI 辅助生成，仅供传统文化参考。"
+      }
+    ],
+    "actions": {
+      "correction": {
+        "enabled": true
+      },
+      "follow_up": {
+        "enabled": false
+      },
+      "export": {
+        "enabled": true
+      },
+      "share": {
+        "enabled": true
+      }
+    },
+    "versions": {
+      "runtime_release": "mingli-master-portable-core@5.3",
+      "view_model_schema": "bazi-chart/v1",
+      "reading_document_schema": "reading-document/v1"
+    }
+  }
+}
