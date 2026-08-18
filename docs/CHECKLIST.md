@@ -1085,6 +1085,7 @@ P12 门禁顺序：备案/许可主要约束 P12-007 的中国大陆公开生产
 
 | 日期 | 变更 | 批准 |
 |---|---|---|
+| 2026-08-19 | 八字已保存档案复用修复：出生类产品页现在读取 owner-scoped `ProfileVersion` 列表并默认选择最近档案，直接用既有 `profile_version_id` 排盘；只有明确选择「重新录入并建立新档案」才显示出生表单并执行 draft/confirm。新增组件回归 `11 passed`，系统 Chrome + production build 在 360/768/1024/1440 下将新旧两条路径合跑 `8 passed`，已有档案路径无 profile 写入、无横向溢出，原无档案路径与支付 fail-closed 未回归。完整 `make check` 当次实测退出码 `0`：Backend `1066 passed / 132 skipped`、Ruff 全通过、mypy `147 source files` 无错误、Web `82 files / 519 passed`、Admin `33 files / 123 passed`，两端 lint/typecheck 与 production build 全绿。证据：`docs/releases/evidence/2026-08-19-bazi-saved-profile-reuse/README.md`、`artifacts/browser-evidence/2026-08-19-bazi-saved-profile-reuse/`。浏览器登录态使用受控 API 数据，不计入 R5 阶段 Q 正常路由；未 push、未上传、未部署。 | 证据就绪，待用户验收 |
 | 2026-08-13 | 结束完整 `grill-me`；冻结自有算法 + 青囊产品模式 + METIS 表现层、UI-first、完整 Admin、密码、商业、邀请和唯一文档纪律 | 用户明确确认 |
 | 2026-08-13 | `main` 冻结为唯一开发基线；旧 UI 分支只取证，不整体合并 | 用户明确确认 |
 | 2026-08-13 | 旧 FateRadar 名称与墨绿金视觉退出当前产品 | 用户明确确认 |

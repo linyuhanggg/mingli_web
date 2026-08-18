@@ -2,7 +2,7 @@
 
 import { Check, ChevronRight, Circle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Status } from "@/components/ui/status";
 import { WorkbenchShell } from "@/components/workbench/workbench-shell";
@@ -10,6 +10,7 @@ import {
   confirmProfileDraft,
   createProfileDraft,
   getCapabilityProjection,
+  listProfiles,
   startFengshuiReading,
   startPhysiognomyReading,
   startCanwenReading,
@@ -38,6 +39,7 @@ import {
   type MeihuaStartRequest,
   type PhysiognomyStartRequest,
   type PreviewStartRequest,
+  type ProfileSummary,
   type TimeBasisPolicy,
   type SelectionStartRequest,
   type TaiyiStartRequest,
@@ -162,6 +164,8 @@ function ModulePlan({
 
 export function ProductTaskExperience({ product }: { product: ProductDefinition }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedProfileVersionId = searchParams.get("profile") ?? "";
   const [stage, setStage] = useState<TaskStage>("input");
   const [values, setValues] = useState<TaskFormValues | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -170,6 +174,13 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [capability, setCapability] = useState<CapabilityProjection | null>(null);
   const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(null);
   const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(null);
+  const [savedProfiles, setSavedProfiles] = useState<ProfileSummary[]>([]);
+  const [savedProfilesLoading, setSavedProfilesLoading] = useState(
+    product.group === "natal",
+  );
+  const [savedProfilesError, setSavedProfilesError] = useState<string | null>(null);
+  const [selectedProfileVersionId, setSelectedProfileVersionId] = useState("");
+  const [savedProfilesAttempt, setSavedProfilesAttempt] = useState(0);
   const profileVersionRef = useRef<string | null>(null);
   const intentKeyRef = useRef<IntentKey | null>(null);
 
@@ -189,6 +200,51 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       active = false;
     };
   }, [product.id]);
+
+  useEffect(() => {
+    if (product.group !== "natal") return;
+
+    let active = true;
+    void listProfiles()
+      .then(({ profiles }) => {
+        if (!active) return;
+        setSavedProfiles(profiles);
+        setSelectedProfileVersionId((current) => {
+          if (
+            requestedProfileVersionId &&
+            profiles.some(
+              (profile) => profile.profile_version_id === requestedProfileVersionId,
+            )
+          ) {
+            return requestedProfileVersionId;
+          }
+          if (
+            current &&
+            profiles.some((profile) => profile.profile_version_id === current)
+          ) {
+            return current;
+          }
+          return profiles[0]?.profile_version_id ?? "";
+        });
+      })
+      .catch((reason: unknown) => {
+        if (!active) return;
+        setSavedProfiles([]);
+        setSelectedProfileVersionId("");
+        setSavedProfilesError(
+          reason instanceof Error && reason.message
+            ? reason.message
+            : "读取已保存资料失败，请重试。",
+        );
+      })
+      .finally(() => {
+        if (active) setSavedProfilesLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [product.group, requestedProfileVersionId, savedProfilesAttempt]);
 
   async function startRuntimeReading(nextValues: TaskFormValues) {
     if (!hasRuntimeStart(product)) {
@@ -280,7 +336,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         return;
       }
       if (product.group === "natal") {
-        let profileVersionId = profileVersionRef.current;
+        let profileVersionId = selectedProfileVersionId || profileVersionRef.current;
         if (!profileVersionId) {
           const draft = await createProfileDraft(nextValues.subject.trim());
           const profile = await confirmProfileDraft(draft.draft_id, {
@@ -300,9 +356,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             coordinate_source: nextValues.coordinateSource.trim() || undefined,
           });
           profileVersionId = profile.profile_version_id;
-          profileVersionRef.current = profileVersionId;
-          if (product.id === "bazi") setBaziProfileVersionId(profileVersionId);
         }
+        profileVersionRef.current = profileVersionId;
+        if (product.id === "bazi") setBaziProfileVersionId(profileVersionId);
 
         const payload: PreviewStartRequest = {
           profile_version_id: profileVersionId,
@@ -605,10 +661,24 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         <div className={styles.inputLayout}>
           <ProductInputForm
             busy={busy}
+            onProfileVersionChange={(profileVersionId) => {
+              setSelectedProfileVersionId(profileVersionId);
+              profileVersionRef.current = profileVersionId || null;
+              intentKeyRef.current = null;
+            }}
             product={product}
+            profileLookupError={savedProfilesError}
+            profileLookupPending={savedProfilesLoading}
+            profiles={savedProfiles}
+            selectedProfileVersionId={selectedProfileVersionId}
             initialValues={values ?? undefined}
             onConfirm={handleConfirm}
             onPhotoChange={setPhotoFile}
+            onRetryProfiles={() => {
+              setSavedProfilesLoading(true);
+              setSavedProfilesError(null);
+              setSavedProfilesAttempt((value) => value + 1);
+            }}
             submitError={submitError}
           />
           <ModulePlan product={product} capability={capability} />

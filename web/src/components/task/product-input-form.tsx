@@ -8,6 +8,7 @@ import { z } from "zod";
 
 import { Status } from "@/components/ui/status";
 import { IanaTimeZoneOptions } from "@/components/iana-timezone-options";
+import { formatProfileOption, type ProfileSummary } from "@/lib/api";
 import {
   CHINA_TIME_ZONE,
   joinLocation,
@@ -189,28 +190,28 @@ function taskErrorField(productId: string, fieldName: string, errors?: FieldErro
   return { ...field, id: `${productId}-${field.id}` };
 }
 
-function schemaFor(product: ProductDefinition) {
+function schemaFor(product: ProductDefinition, usesSavedProfile = false) {
   const profileVersionIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return taskSchemaBase.superRefine((values, context) => {
     if (product.group === "natal") {
-      if (!values.subject.trim()) context.addIssue({ code: "custom", path: ["subject"], message: "请填写受测对象" });
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(values.birthDate)) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择完整出生日期" });
-      if (!values.unknownTime && !values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间，或勾选时辰未知" });
-      if (!values.location.trim()) context.addIssue({ code: "custom", path: ["location"], message: "请填写出生地点" });
+      if (!usesSavedProfile && !values.subject.trim()) context.addIssue({ code: "custom", path: ["subject"], message: "请填写受测对象" });
+      if (!usesSavedProfile && !/^\d{4}-\d{2}-\d{2}$/.test(values.birthDate)) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择完整出生日期" });
+      if (!usesSavedProfile && !values.unknownTime && !values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间，或勾选时辰未知" });
+      if (!usesSavedProfile && !values.location.trim()) context.addIssue({ code: "custom", path: ["location"], message: "请填写出生地点" });
 
       if (["bazi", "luming-nayin", "ziwei", "qizheng"].includes(product.id)) {
-        if (values.calendar !== "gregorian") {
+        if (!usesSavedProfile && values.calendar !== "gregorian") {
           context.addIssue({ code: "custom", path: ["calendar"], message: "当前排盘服务需要公历日期" });
         }
-        if (values.unknownTime) {
+        if (!usesSavedProfile && values.unknownTime) {
           context.addIssue({ code: "custom", path: ["birthTime"], message: "当前核心盘面需要明确出生时间" });
         }
-        if (values.gender !== "male" && values.gender !== "female") {
+        if (!usesSavedProfile && values.gender !== "male" && values.gender !== "female") {
           context.addIssue({ code: "custom", path: ["gender"], message: "请选择性别后再建立盘面档案" });
         }
-        if (!values.timezone.trim()) {
+        if (!usesSavedProfile && !values.timezone.trim()) {
           context.addIssue({ code: "custom", path: ["timezone"], message: "请选择出生时区" });
-        } else if (!isIanaTimeZone(values.timezone)) {
+        } else if (!usesSavedProfile && !isIanaTimeZone(values.timezone)) {
           context.addIssue({ code: "custom", path: ["timezone"], message: "请选择有效的 IANA 出生时区" });
         }
         const temporalTargetValues = [values.targetYear, values.targetMonth, values.targetDate].filter((value) => value.trim());
@@ -243,7 +244,7 @@ function schemaFor(product: ProductDefinition) {
         }
       }
 
-      if (product.id === "qizheng") {
+      if (product.id === "qizheng" && !usesSavedProfile) {
         const longitude = Number(values.longitude);
         const latitude = Number(values.latitude);
         if (!values.longitude.trim() || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
@@ -870,6 +871,12 @@ export function ProductInputForm({
   initialValues,
   onConfirm,
   onPhotoChange,
+  profiles = [],
+  selectedProfileVersionId = "",
+  onProfileVersionChange,
+  profileLookupPending = false,
+  profileLookupError = null,
+  onRetryProfiles,
   busy = false,
   submitError = null,
 }: {
@@ -877,11 +884,21 @@ export function ProductInputForm({
   initialValues?: TaskFormValues;
   onConfirm: (values: TaskFormValues) => void;
   onPhotoChange?: (file: File | null) => void;
+  profiles?: readonly ProfileSummary[];
+  selectedProfileVersionId?: string;
+  onProfileVersionChange?: (profileVersionId: string) => void;
+  profileLookupPending?: boolean;
+  profileLookupError?: string | null;
+  onRetryProfiles?: () => void;
   busy?: boolean;
   submitError?: string | null;
 }) {
-  const schema = useMemo(() => schemaFor(product), [product]);
+  const schema = useMemo(
+    () => schemaFor(product, Boolean(selectedProfileVersionId)),
+    [product, selectedProfileVersionId],
+  );
   const {
+    clearErrors,
     control,
     formState: { errors },
     handleSubmit,
@@ -909,6 +926,24 @@ export function ProductInputForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [captureState, setCaptureState] = useState<JianxiangCaptureState>("empty");
   const [photoName, setPhotoName] = useState("");
+  const selectedProfile = profiles.find(
+    (profile) => profile.profile_version_id === selectedProfileVersionId,
+  );
+  useEffect(() => {
+    if (!selectedProfileVersionId) return;
+    clearErrors([
+      "subject",
+      "calendar",
+      "birthDate",
+      "birthTime",
+      "location",
+      "timezone",
+      "gender",
+      "longitude",
+      "latitude",
+      "coordinateSource",
+    ]);
+  }, [clearErrors, selectedProfileVersionId]);
   const validationErrors = Object.keys(errors)
     .map((fieldName) => taskErrorField(product.id, fieldName, errors))
     .filter((field): field is { id: string; label: string } => Boolean(field));
@@ -972,6 +1007,66 @@ export function ProductInputForm({
       ) : null}
 
       {product.group === "natal" ? (
+        <fieldset className={styles.fieldGroup}>
+          <legend>排盘资料</legend>
+          {profileLookupPending ? (
+            <Status
+              state="loading"
+              title="正在读取已保存资料"
+              description="读取完成后会默认选择最近确认的档案，不需要重复填写出生信息。"
+            />
+          ) : null}
+          {profileLookupError ? (
+            <>
+              <Status
+                state="error"
+                title="暂时无法读取已保存资料"
+                description="可以重试读取，也可以继续重新录入并建立新档案。"
+              />
+              {onRetryProfiles ? (
+                <button
+                  className={styles.secondaryButton}
+                  onClick={onRetryProfiles}
+                  type="button"
+                >
+                  重新读取已保存资料
+                </button>
+              ) : null}
+            </>
+          ) : null}
+          {!profileLookupPending && profiles.length > 0 ? (
+            <Field
+              help="默认选择最近确认的档案；只有资料发生变化时才需要重新录入。"
+              htmlFor={`${product.id}-saved-profile`}
+              label="排盘资料"
+            >
+              <select
+                id={`${product.id}-saved-profile`}
+                onChange={(event) => onProfileVersionChange?.(event.currentTarget.value)}
+                value={selectedProfileVersionId}
+              >
+                {profiles.map((profile) => (
+                  <option key={profile.profile_version_id} value={profile.profile_version_id}>
+                    {formatProfileOption(profile)}
+                  </option>
+                ))}
+                <option value="">重新录入并建立新档案</option>
+              </select>
+            </Field>
+          ) : null}
+          {selectedProfile ? (
+            <p className={styles.productNote}>
+              本次将直接使用已保存的不可变档案版本；如出生资料有变化，请选择重新录入。
+            </p>
+          ) : !profileLookupPending ? (
+            <p className={styles.productNote}>
+              本次将核对出生资料并建立新的不可变档案版本。
+            </p>
+          ) : null}
+        </fieldset>
+      ) : null}
+
+      {product.group === "natal" && !selectedProfileVersionId && !profileLookupPending ? (
         <fieldset className={styles.fieldGroup}>
           <legend>出生资料</legend>
           <Field htmlFor={`${product.id}-subject`} label="受测对象" error={errors.subject?.message} help="可以填写“本人”或便于自己识别的称呼。">
@@ -1392,12 +1487,25 @@ export function ProductInputForm({
         </fieldset>
       ) : null}
 
-      <SubmitSummary product={product} values={summaryValues} />
+      <SubmitSummary
+        product={product}
+        profileLabel={selectedProfile ? formatProfileOption(selectedProfile) : null}
+        values={summaryValues}
+      />
 
       {submitError ? <p className={styles.error} role="alert">{submitError}</p> : null}
 
-      <button aria-busy={busy} className={styles.primaryButton} disabled={busy} type="submit">
-        {busy ? "正在生成盘面…" : submitLabel(product)}
+      <button
+        aria-busy={busy || profileLookupPending}
+        className={styles.primaryButton}
+        disabled={busy || profileLookupPending}
+        type="submit"
+      >
+        {profileLookupPending
+          ? "正在读取已保存资料…"
+          : busy
+            ? "正在生成盘面…"
+            : submitLabel(product)}
       </button>
       <details className={styles.submitBoundary}>
         <summary>提交后会发生什么</summary>
@@ -1457,9 +1565,18 @@ function label(value: string) {
  * 提交前摘要常驻在表单底部，随填随更新——METIS 的「输入确认」也是这样长在同一页上，
  * 而不是把用户推到一个独立步骤。
  */
-function SubmitSummary({ product, values }: { product: ProductDefinition; values: TaskFormValues }) {
+function SubmitSummary({
+  product,
+  profileLabel,
+  values,
+}: {
+  product: ProductDefinition;
+  profileLabel: string | null;
+  values: TaskFormValues;
+}) {
   // 历法、时区、时间口径都有默认值；用户一个字都没填时不该先冒出一张摘要。
   const started = Boolean(
+    profileLabel ||
     values.subject.trim() ||
       values.birthDate ||
       values.issue.trim() ||
@@ -1470,7 +1587,9 @@ function SubmitSummary({ product, values }: { product: ProductDefinition; values
 
   const rows: Array<readonly [string, string]> = [];
 
-  if (product.group === "natal") {
+  if (product.group === "natal" && profileLabel) {
+    rows.push(["排盘资料", profileLabel]);
+  } else if (product.group === "natal") {
     rows.push(["受测对象", values.subject]);
     rows.push(["历法", label(values.calendar)]);
     rows.push(["性别", values.gender ? label(values.gender) : ""]);

@@ -88,6 +88,10 @@ test("bazi deep checkout stays fail-closed at the unavailable gateway", async ({
       });
       return;
     }
+    if (method === "GET" && path === "/api/v1/profiles") {
+      await json(route, { profiles: [] });
+      return;
+    }
     if (method === "POST" && path === "/api/v1/profiles/drafts") {
       await json(route, { draft_id: "draft-1", status: "draft" }, 201);
       return;
@@ -235,10 +239,8 @@ test("bazi deep checkout stays fail-closed at the unavailable gateway", async ({
       };
     }));
   expect(readingSections.map((section) => section.title)).toEqual([
-    "判断",
-    "盘面证据",
-    "事实",
-    "依据与边界",
+    "排盘结果",
+    "阅读说明",
     "复核与追问",
   ]);
   expect(

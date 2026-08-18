@@ -1,7 +1,9 @@
 import { ArrowLeft } from "lucide-react";
+import { Suspense } from "react";
 
 import { Container } from "@/components/container";
 import { PublicPageShell } from "@/components/public-page-shell";
+import { Status } from "@/components/ui/status";
 import { getProductDefinition, type ProductId } from "@/products/catalog";
 
 import { ProductTaskExperience } from "./product-task-experience";
@@ -36,7 +38,17 @@ export function ProductTaskPage({ productId }: { productId: ProductId }) {
               </dl>
             </div>
           </header>
-          <ProductTaskExperience product={product} />
+          <Suspense
+            fallback={(
+              <Status
+                state="loading"
+                title={`正在准备${product.name}录入`}
+                description="正在确认页面参数与已保存资料，请稍候。"
+              />
+            )}
+          >
+            <ProductTaskExperience product={product} />
+          </Suspense>
         </Container>
       </main>
     </PublicPageShell>

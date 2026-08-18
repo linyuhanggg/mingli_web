@@ -1,7 +1,7 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ComponentType } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import BaziPage from "@/app/bazi/page";
 import DaliurenPage from "@/app/daliuren/page";
@@ -19,6 +19,7 @@ const mockConfirmProfileDraft = vi.hoisted(() => vi.fn());
 const mockStartPreviewReading = vi.hoisted(() => vi.fn());
 const mockPollReading = vi.hoisted(() => vi.fn());
 const mockGetCapabilityProjection = vi.hoisted(() => vi.fn());
+const mockListProfiles = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", async (importOriginal) => ({
   ...(await importOriginal<typeof import("next/navigation")>()),
@@ -35,6 +36,7 @@ vi.mock("@/lib/api", async (importOriginal) => ({
   startPreviewReading: mockStartPreviewReading,
   pollReading: mockPollReading,
   getCapabilityProjection: mockGetCapabilityProjection,
+  listProfiles: mockListProfiles,
 }));
 
 type RouteExpectation = {
@@ -67,14 +69,17 @@ mockGetCapabilityProjection.mockResolvedValue({
     { capability_id: "qizheng", label: "七政四余", tier: "B", source_system: "xingming", runtime_active_rule_count: 3, judgment_rule_count: 0, source_status: "available" },
   ],
 });
+beforeEach(() => {
+  mockListProfiles.mockReset().mockResolvedValue({ profiles: [] });
+});
 
 describe("primary product route contract", () => {
-  it.each(routes)("$name renders a real task surface instead of a placeholder", ({ Page, name, input, module }) => {
+  it.each(routes)("$name renders a real task surface instead of a placeholder", async ({ Page, name, input, module }) => {
     render(<Page />);
 
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("form", { name: `${name}任务输入` })).toBeVisible();
-    expect(screen.getAllByText(input).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(input)).length).toBeGreaterThan(0);
     expect(screen.getAllByText(module).length).toBeGreaterThan(0);
     const runtimeConnected = ["八字", "紫微", "七政", "六爻", "奇门", "大六壬", "命盘合参", "问事合参"].includes(name);
     expect(document.querySelector(`[data-state="${runtimeConnected ? "success" : "unavailable"}"]`)).not.toBeNull();
@@ -99,9 +104,9 @@ describe("primary product route contract", () => {
     mockPollReading.mockResolvedValue({ status: "accepted" });
     render(<BaziPage />);
 
-    const submit = () => screen.getByRole("button", { name: /^立即排盘（免费）/ });
+    const submit = await screen.findByRole("button", { name: /^立即排盘（免费）/ });
 
-    await user.click(submit());
+    await user.click(submit);
     expect(await screen.findByText("请填写受测对象")).toBeVisible();
 
     await user.type(screen.getByLabelText("受测对象"), "本人");
@@ -115,7 +120,7 @@ describe("primary product route contract", () => {
     await user.selectOptions(screen.getByLabelText("出生区县"), "金坛区");
     await user.click(screen.getByRole("radio", { name: "男" }));
     expect(screen.getByText("江苏省 / 常州市 / 金坛区")).toBeVisible();
-    await user.click(submit());
+    await user.click(submit);
 
     await waitFor(() => expect(mockStartPreviewReading).toHaveBeenCalled());
 
@@ -126,5 +131,43 @@ describe("primary product route contract", () => {
     expect(await screen.findByRole("heading", { name: "八字工作台" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "免费确定性盘面" })).toBeVisible();
     expect(mockRouterPush).not.toHaveBeenCalled();
+  });
+
+  it("reuses the newest saved profile on bazi without asking for birth data again", async () => {
+    const savedProfileVersionId = "22222222-2222-4222-8222-222222222222";
+    mockCreateProfileDraft.mockClear();
+    mockConfirmProfileDraft.mockClear();
+    mockStartPreviewReading.mockReset().mockResolvedValue({
+      reading_version_id: "reading-from-saved-profile",
+    });
+    mockListProfiles.mockReset().mockResolvedValue({
+      profiles: [
+        {
+          profile_id: "11111111-1111-4111-8111-111111111111",
+          profile_version_id: savedProfileVersionId,
+          subject_ref: `profile-version:${savedProfileVersionId}`,
+          version: 3,
+          created_at: "2026-08-19T01:30:00Z",
+        },
+      ],
+    });
+    const user = userEvent.setup();
+
+    render(<BaziPage />);
+
+    const profileSelect = await screen.findByRole("combobox", { name: "排盘资料" });
+    expect(profileSelect).toHaveValue(savedProfileVersionId);
+    expect(screen.queryByLabelText("出生年份")).not.toBeInTheDocument();
+    expect(screen.getByText(/直接使用已保存的不可变档案版本/)).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+
+    await waitFor(() => expect(mockStartPreviewReading).toHaveBeenCalledTimes(1));
+    expect(mockStartPreviewReading).toHaveBeenCalledWith(
+      expect.objectContaining({ profile_version_id: savedProfileVersionId }),
+      expect.any(String),
+    );
+    expect(mockCreateProfileDraft).not.toHaveBeenCalled();
+    expect(mockConfirmProfileDraft).not.toHaveBeenCalled();
   });
 });
