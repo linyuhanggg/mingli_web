@@ -28,6 +28,11 @@ export type ProductDefinition = {
   inputLead: string;
   moduleTitle: string;
   modules: readonly string[];
+  /**
+   * `modules` 中当前结果页不会渲染的槽位（§19.2：缺字段时该区块整体不渲染）。
+   * 录入页据此标注「待接入」，避免对用户作出交付不了的承诺（§17）。
+   */
+  pendingModules?: readonly string[];
   unavailableReason: string;
 };
 
@@ -49,9 +54,10 @@ export const PRODUCT_CATALOG = {
       "神煞与特殊宫位",
       "旺衰贡献",
       "格局、喜忌与病药依据",
-      "大运、流年与关键流月",
+      "大运；流年、流月、流日需指定目标时间",
       "四柱图与五行力量",
     ],
+    pendingModules: ["旺衰贡献", "格局、喜忌与病药依据"],
     unavailableReason: "八字深读、追问和导出仍在接入；本命与指定年/月/日事实已由 Runtime 生成。",
   },
   "luming-nayin": {

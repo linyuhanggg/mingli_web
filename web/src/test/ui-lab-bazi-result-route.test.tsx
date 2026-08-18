@@ -29,7 +29,7 @@ describe("direct UI Lab bazi result route", () => {
     );
     expect(screen.getByText("不代表 Runtime 已发布")).toBeVisible();
     expect(screen.getByRole("heading", { name: "八字结果页验收切片" })).toBeVisible();
-    expect(screen.getByText("有效时刻")).toBeVisible();
+    expect(screen.getByText("排盘采用时刻")).toBeVisible();
     expect(screen.getByText("命中古法 1 条 · 可核验")).toBeVisible();
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
     expect(screen.queryByText("页面与场景")).not.toBeInTheDocument();

@@ -102,6 +102,22 @@ describe("formatReadingFact", () => {
     );
   });
 
+  it("hides unknown structured and truncated Runtime payloads instead of printing JSON or English keys", () => {
+    const presentations = formatReadingFacts([
+      fact(
+        'branch_relations: [{"branches":["辰","戌"],"positions":["year","month"],"type":"六冲"}]',
+      ),
+      fact(
+        'interpretive_candidates: {"following_and_transformation":{"boundary":"a combination does not prove transformation"...',
+      ),
+      fact(
+        'luck_cycles: {"approximate_start_datetime":"2007-07-17T17:55:59+08:00"...',
+      ),
+    ]);
+
+    expect(presentations).toEqual([]);
+  });
+
   it("renders every weekly period marker instead of dropping days after the first", () => {
     const presentation = formatReadingFact(
       fact("周期确定性标记：已由服务端计算", {
@@ -309,6 +325,8 @@ describe("buildBaziChartView", () => {
       hour: "辛卯",
     });
     expect(chart.dayMaster).toContain("丙");
+    expect(chart.dayMaster).toBe("丙（火·阳）");
+    expect(chart.dayMaster).not.toContain("fire");
     expect(chart.monthCommand).toContain("主气 戊");
     expect(chart.coreFacts?.twelve_growth_stages?.[0]?.stage).toBe("养");
     expect(chart.coreFacts?.xunkong?.branches).toEqual(["午", "未"]);

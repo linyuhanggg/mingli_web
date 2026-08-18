@@ -128,6 +128,20 @@ describe("buildBaziWorkspaceView", () => {
     );
   });
 
+  it("localizes the server luck status before it reaches the tabs", () => {
+    const chart = {
+      pillars: FOUR_PILLARS,
+      coreFacts: {
+        luck_cycles: { status: "calculated" },
+      },
+      highlights: [],
+    } as unknown as BaziChartView;
+
+    const facts = baziWorkspaceFactsFromChart(chart);
+    expect(facts.decadalSummary).toBe("状态：已计算");
+    expect(facts.decadalSummary).not.toContain("calculated");
+  });
+
   it("builds the basis only from provided public facts", () => {
     const view = buildBaziWorkspaceView({
       pillars: FOUR_PILLARS,

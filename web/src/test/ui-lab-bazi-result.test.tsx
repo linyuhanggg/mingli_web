@@ -61,7 +61,7 @@ describe("UI Lab bazi result evidence fixture", () => {
     const preview = within(screen.getByTestId("ui-lab-preview"));
     expect(preview.getByRole("heading", { name: "预览：八字结果页（G1/G3 可核验证据切片）" })).toBeVisible();
     expect(preview.getByRole("heading", { name: "八字结果页验收切片" })).toBeVisible();
-    expect(preview.getByText("有效时刻")).toBeVisible();
+    expect(preview.getByText("排盘采用时刻")).toBeVisible();
     expect(preview.getByText("该修正改变了时柱")).toBeVisible();
     expect(preview.getByText(/芒种/)).toBeVisible();
 

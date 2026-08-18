@@ -219,6 +219,19 @@ function labelForKey(key: string): string {
   return fieldLabels[key] ?? key.replaceAll("_", " ");
 }
 
+function isKnownPublicFactKey(key: string): boolean {
+  return (
+    Object.prototype.hasOwnProperty.call(fieldLabels, key) ||
+    key === "性别" ||
+    key === "出生时间" ||
+    key === "当前大运"
+  );
+}
+
+function hiddenFact(key: string): FactPresentation {
+  return { key, label: "", text: "", emphasis: "secondary" };
+}
+
 function structuredValueKey(fact: ReadingFact): string | null {
   const refKey = fact.ref.split("/").at(-1)?.trim() ?? "";
   if (STRUCTURED_VALUE_KEYS.has(refKey)) return refKey;
@@ -397,6 +410,7 @@ function formatKnownStructured(
   key: string,
   value: unknown,
 ): Omit<FactPresentation, "key"> | null {
+  if (!isKnownPublicFactKey(key)) return null;
   const label = labelForKey(key);
   if (value == null) {
     return { label, text: "未提供", emphasis: "secondary" };
@@ -495,13 +509,7 @@ function formatKnownStructured(
     };
   }
 
-  if (isPlainObject(value) || Array.isArray(value)) {
-    return {
-      label,
-      text: formatScalar(value),
-      emphasis: "secondary",
-    };
-  }
+  if (isPlainObject(value) || Array.isArray(value)) return null;
 
   return {
     label,
@@ -564,12 +572,7 @@ export function formatReadingFact(fact: ReadingFact, index = 0): FactPresentatio
     const split = splitDisplayText(display);
     if (split) {
       if (SENSITIVE_KEY.test(split.key)) {
-        return {
-          key: fallbackKey,
-          label: "公开事实",
-          text: "此项仅供服务端使用，不在页面展示。",
-          emphasis: "secondary",
-        };
+        return hiddenFact(fallbackKey);
       }
 
       const parsed = tryParseJson(split.rawValue);
@@ -579,6 +582,14 @@ export function formatReadingFact(fact: ReadingFact, index = 0): FactPresentatio
       );
       if (structured) {
         return { key: `${split.key}-${index}`, ...structured };
+      }
+
+      if (
+        !isKnownPublicFactKey(split.key) ||
+        parsed !== undefined ||
+        looksLikeRawDump(split.rawValue)
+      ) {
+        return hiddenFact(fallbackKey);
       }
 
       return {
@@ -621,20 +632,10 @@ export function formatReadingFact(fact: ReadingFact, index = 0): FactPresentatio
   }
 
   if (display) {
-    return {
-      key: fallbackKey,
-      label: labelForKey(kindKey || "公开事实"),
-      text: display.length > 160 ? `${display.slice(0, 160)}…` : display,
-      emphasis: "secondary",
-    };
+    return hiddenFact(fallbackKey);
   }
 
-  return {
-    key: fallbackKey,
-    label: "公开事实",
-    text: "服务端已返回事实，但暂无可用的公开摘要。",
-    emphasis: "secondary",
-  };
+  return hiddenFact(fallbackKey);
 }
 
 export function formatReadingFacts(facts: ReadingFact[]): FactPresentation[] {
@@ -1044,7 +1045,7 @@ export function buildBaziChartViewFromViewModel(
     coreFacts,
     timeLayers: viewModel.time_layers,
     dayMaster: coreFacts?.day_master
-      ? `${coreFacts.day_master.stem}（${coreFacts.day_master.element}·${coreFacts.day_master.polarity}）`
+      ? `${coreFacts.day_master.stem}（${BAZI_ELEMENT_LABELS[coreFacts.day_master.element] ?? "五行已记录"}·${coreFacts.day_master.polarity}）`
       : null,
     monthCommand: coreFacts?.month_command
       ? `${coreFacts.month_command.label} · 主气 ${coreFacts.month_command.main_qi}`

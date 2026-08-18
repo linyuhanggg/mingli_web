@@ -119,15 +119,21 @@ function ModulePlan({
     <aside className={styles.modulePlan} aria-labelledby={`${product.id}-module-plan`}>
       <div>
         <h2 id={`${product.id}-module-plan`}>{product.moduleTitle}</h2>
-        <p>提交后你会依次拿到这些内容。</p>
+        <p>
+          提交后按服务端实际返回的事实展示以下槽位；标注「待接入」的当前不会出现。
+        </p>
       </div>
       <ol>
-        {product.modules.map((module, index) => (
-          <li key={module}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            {module}
-          </li>
-        ))}
+        {product.modules.map((module, index) => {
+          const pending = product.pendingModules?.includes(module) ?? false;
+          return (
+            <li key={module} data-module-status={pending ? "pending" : "available"}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              {module}
+              {pending ? <em className={styles.modulePending}>待接入</em> : null}
+            </li>
+          );
+        })}
       </ol>
       {capability?.tier === "B" ? (
         <div data-capability-tier="B">
@@ -145,7 +151,7 @@ function ModulePlan({
         <Status
           state="success"
           title="确定性盘面已接入"
-          description="确认后由服务端 Runtime 生成盘面；深读、追问和导出仍按各术单独开放。"
+          description="确认后由服务端生成盘面；深读、追问和导出仍按各术单独开放。"
         />
       ) : (
         <Status state="unavailable" title="真实能力适配中" description={product.unavailableReason} />

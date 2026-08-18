@@ -318,7 +318,9 @@ describe("BaziChart evidence-first slice", () => {
   it("shows the exact G3 time facts returned by Runtime", () => {
     render(<BaziChart chart={chart} evidence={[]} />);
 
-    expect(screen.getByText("longitude_mean_solar-v1")).toBeVisible();
+    expect(screen.getByText("当地平太阳时")).toBeVisible();
+    expect(screen.queryByText("longitude_mean_solar-v1")).not.toBeInTheDocument();
+    expect(screen.queryByText("equation-of-time-v1")).not.toBeInTheDocument();
     expect(screen.getByText("120°")).toBeVisible();
     expect(screen.getByText("+480 秒")).toBeVisible();
     expect(screen.getByText("-120 秒")).toBeVisible();
@@ -326,8 +328,8 @@ describe("BaziChart evidence-first slice", () => {
     expect(screen.getByText("未跨时辰边界")).toBeVisible();
     expect(screen.getByText("晚子时按当日")).toBeVisible();
     expect(screen.queryByText("Runtime 未返回，页面不自行推算")).not.toBeInTheDocument();
-    expect(screen.getByText("有效时刻").parentElement).toHaveTextContent(
-      "2000-10-18T07:01:00+08:00",
+    expect(screen.getByText("排盘采用时刻").parentElement).toHaveTextContent(
+      "2000年10月18日 07:01",
     );
     expect(screen.getByText("日界状态").parentElement).toHaveTextContent(
       "修正跨越日界",
@@ -336,14 +338,15 @@ describe("BaziChart evidence-first slice", () => {
       "该修正改变了日柱、时柱",
     );
     expect(screen.getByText("前一节气").parentElement).toHaveTextContent(
-      "寒露 · 2000-10-08T07:38:00+08:00 · 月界节",
+      "寒露 · 2000年10月8日 07:38 · 月界节",
     );
     expect(screen.getByText("后一节气").parentElement).toHaveTextContent(
-      "霜降 · 2000-10-23T10:47:00+08:00",
+      "霜降 · 2000年10月23日 10:47",
     );
     expect(screen.getByText("换月口径").parentElement).toHaveTextContent(
-      "month-switch-at-jie-v1",
+      "按节气交接时刻换月",
     );
+    expect(screen.queryByText("month-switch-at-jie-v1")).not.toBeInTheDocument();
   });
 
   it("does not derive or placeholder G3 facts when Runtime omits them", () => {
@@ -357,8 +360,8 @@ describe("BaziChart evidence-first slice", () => {
 
     render(<BaziChart chart={chartWithoutG3} evidence={[]} />);
 
-    expect(screen.getByText("longitude_mean_solar-v1")).toBeVisible();
-    expect(screen.queryByText("有效时刻")).not.toBeInTheDocument();
+    expect(screen.getByText("当地平太阳时")).toBeVisible();
+    expect(screen.queryByText("排盘采用时刻")).not.toBeInTheDocument();
     expect(screen.queryByText("日界状态")).not.toBeInTheDocument();
     expect(screen.queryByText("变柱")).not.toBeInTheDocument();
     expect(screen.queryByText("前一节气")).not.toBeInTheDocument();
@@ -445,5 +448,30 @@ describe("BaziChart evidence-first slice", () => {
     expect(css).not.toMatch(/\.pillarCard:active[\s\S]{0,260}transform\s*:/);
     expect(css).toMatch(/\.board\s*\{[\s\S]*?min-width:\s*0/);
     expect(css).toMatch(/overflow-wrap:\s*anywhere/);
+  });
+
+  /**
+   * §21.3 第 1/2 级：盘面元素旁出现来源标记，悬停/聚焦可读到「有 N 条古法涉及此处」。
+   * 计数必须与 §19.1 抽屉同源——未解析引用的 pattern 不得产生标记。
+   */
+  it("marks pillars touched by verified citations and skips unresolved ones", () => {
+    render(<BaziChart chart={chart} evidence={evidence} />);
+
+    const dayPillar = screen.getByRole("button", { name: /日柱/ });
+    expect(within(dayPillar).getByText("有 1 条古法涉及此柱")).toBeTruthy();
+
+    // R-TEST-2 指向 evidence:missing，抽屉不展示它，盘面也不得为它计数。
+    const monthPillar = screen.getByRole("button", { name: /月柱/ });
+    expect(within(monthPillar).queryByText(/条古法涉及此柱/)).toBeNull();
+
+    // §17：内部引用不得进正文。
+    expect(dayPillar.textContent).not.toContain("fact:");
+    expect(dayPillar.textContent).not.toContain("day_master");
+  });
+
+  it("shows no source marker when the capability tier hides interpretive sections", () => {
+    render(<BaziChart chart={chart} evidence={evidence} showInterpretiveSections={false} />);
+
+    expect(screen.queryByText(/条古法涉及此柱/)).toBeNull();
   });
 });

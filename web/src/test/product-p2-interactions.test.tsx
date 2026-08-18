@@ -32,6 +32,18 @@ function submitButton(productId: string) {
 }
 
 describe("P2 product interaction contracts", () => {
+  it("keeps the birth date and time controls top-aligned after the time hint appears", () => {
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/task/task-shell.module.css"),
+      "utf8",
+    );
+
+    expect(css).toMatch(/\.dateTimeRow\s*\{[^}]*align-items:\s*start/s);
+    expect(css).toMatch(
+      /\.dateParts select,\s*\n\.timeParts select\s*\{[^}]*height:\s*var\(--target-min\)/s,
+    );
+  });
+
   it("exposes the three mutually exclusive Bazi temporal targets in advanced options", async () => {
     const user = userEvent.setup();
     render(<ProductInputForm product={getProductDefinition("bazi")} onConfirm={vi.fn()} />);

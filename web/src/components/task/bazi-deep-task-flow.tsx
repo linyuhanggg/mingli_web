@@ -479,7 +479,7 @@ export function BaziDeepTaskFlow({
         <section className={styles.section} aria-labelledby="bazi-free-result-title">
           <div className={styles.statusCopy}>
             <h2 id="bazi-free-result-title">免费确定性盘面</h2>
-            <p>盘面和事实来自服务端 Runtime；这里不展示深读内容。</p>
+            <p>盘面和事实由服务端排定；这里不展示尚未生成的深读内容。</p>
           </div>
           <div className={styles.result}>
             <ReadingResult readingId={previewReadingId} />

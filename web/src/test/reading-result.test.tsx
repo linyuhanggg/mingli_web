@@ -1222,6 +1222,14 @@ describe("Web interface regression guards", () => {
     );
     expect(factCss).toMatch(/overflow-x:\s*auto/);
     expect(factCss).toMatch(/max-width:\s*100%/);
+
+    const surfaceCss = readFileSync(
+      join(root, "src/components/app-surface.module.css"),
+      "utf8",
+    );
+    expect(surfaceCss).toMatch(
+      /\.readingSection\[data-layout="full-width-reading-section"\]\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/s,
+    );
   });
 
   it("does not disable paste or browser zoom in the touched surfaces", () => {
@@ -1244,6 +1252,74 @@ describe("Web interface regression guards", () => {
 });
 
 describe("bazi chart workspace", () => {
+  it("presents a Bazi preview as a Chinese chart instead of internal metadata or fake interpretation", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      if (String(url).endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            accepted_copy: "这是合同测试候选稿，不是正式命理解读。",
+            capability: baziCapabilityA,
+            fact_panel: {
+              ...factPanel(),
+              question: "请预览我的本命格局。",
+              facts: [
+                {
+                  ref: "fact:branch-relations",
+                  subject_ref: "profile-version:secret-profile-id",
+                  kind_id: "fact:branch_relations",
+                  value: null,
+                  display_text:
+                    'branch_relations: [{"branches":["辰","戌"],"positions":["year","month"],"type":"六冲"}]',
+                },
+              ],
+            },
+            view_model: {
+              schema_version: "bazi-chart/v1",
+              subject_ref: "profile-version:secret-profile-id",
+              pillars: [
+                { position: "year", stem: "庚", branch: "辰" },
+                { position: "month", stem: "丙", branch: "戌" },
+                { position: "day", stem: "己", branch: "酉" },
+                { position: "hour", stem: "丁", branch: "卯" },
+              ],
+              element_balance: [],
+              time_layers: [],
+              core_facts: null,
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          product_id: "bazi",
+          object_id: "natal",
+          dimension_ids: ["career"],
+          horizon: { kind_id: "life", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findAllByRole("heading", { name: "八字命盘" })).toHaveLength(2);
+    const workspaceSection = screen.getByRole("heading", { name: "排盘结果" }).closest("section");
+    expect(workspaceSection).toHaveAttribute("data-layout", "full-width-reading-section");
+    expect(screen.getByRole("heading", { name: "阅读说明" }).closest("section"))
+      .toHaveAttribute("data-layout", "full-width-reading-section");
+    expect(screen.getByText(/免费排盘预览/)).toBeVisible();
+    const visible = document.body.textContent ?? "";
+    expect(visible).not.toContain("这是合同测试候选稿");
+    expect(visible).not.toMatch(/branch relations|branch_relations|positions|year|month/i);
+    expect(visible).not.toContain("命理档案");
+    expect(visible).not.toContain("服务端目标日期");
+    expect(visible).not.toContain("长期范围");
+    expect(screen.queryByRole("heading", { name: "判断" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "事实" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "依据与边界" })).not.toBeInTheDocument();
+  });
+
   it("fails closed when the Bazi Runtime capability projection is missing", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
@@ -1270,7 +1346,7 @@ describe("bazi chart workspace", () => {
     expect(
       await screen.findByText("当前能力仍在适配中，暂不可用；未加载未确认的盘面或断法。"),
     ).toBeVisible();
-    expect(screen.queryByText("八字命盘")).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "排盘工作台" })).not.toBeInTheDocument();
     expect(screen.queryByText("全局强弱证据（未裁定）")).not.toBeInTheDocument();
   });
 
@@ -1487,7 +1563,7 @@ describe("bazi chart workspace", () => {
       await screen.findByRole("region", { name: "排盘工作台" }),
     ).toBeVisible();
     expect(screen.getByRole("article", { name: "解读正文" })).toBeVisible();
-    expect(screen.getByText("八字命盘")).toBeVisible();
+    expect(screen.getAllByText("八字命盘").length).toBeGreaterThan(0);
     expect(screen.getByText("年柱")).toBeVisible();
     expect(screen.getAllByText("庚辰").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/日主.*己/).length).toBeGreaterThan(0);
@@ -1501,12 +1577,14 @@ describe("bazi chart workspace", () => {
     expect(screen.getByText(/年柱 庚辰：养；月柱 丙戌：冠带/)).toBeVisible();
     expect(screen.getByText("旬空")).toBeVisible();
     expect(screen.getByText(/己酉 属 甲申 旬：午、未/)).toBeVisible();
-    expect(screen.getAllByText("当前结构更支持持续积累。").length).toBeGreaterThan(0);
+    expect(screen.queryByText("当前结构更支持持续积累。")).not.toBeInTheDocument();
     expect(screen.queryByText("杭州市西湖区")).not.toBeInTheDocument();
     expect(screen.queryByText("Asia/Shanghai")).not.toBeInTheDocument();
     expect(screen.queryByText("女")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "判断" })).toBeVisible();
-    expect(screen.getByRole("heading", { name: "事实" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "排盘结果" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "阅读说明" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "判断" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "事实" })).not.toBeInTheDocument();
 
     const year = screen.getByRole("button", { name: /年柱/ });
     const month = screen.getByRole("button", { name: /月柱/ });
@@ -1592,7 +1670,7 @@ describe("bazi chart workspace", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    expect(await screen.findByRole("heading", { name: "判断" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "排盘结果" })).toBeVisible();
     await user.click(screen.getByRole("button", { name: /年柱/ }));
 
     const drawer = screen.getByRole("region", { name: "聚焦详情" });
@@ -1600,10 +1678,10 @@ describe("bazi chart workspace", () => {
     expect(within(drawer).getByText("Asia/Shanghai")).toBeVisible();
     expect(within(drawer).getByText(/民用时|civil/)).toBeVisible();
     expect(within(drawer).getByText(/前端不进行本地排盘/)).toBeVisible();
-    expect(screen.getByText(acceptedCopyQuery)).toBeVisible();
+    expect(screen.queryByText(acceptedCopyQuery)).not.toBeInTheDocument();
   });
 
-  it("keeps conclusion summary before the chart workspace in document order", async () => {
+  it("keeps the chart workspace before its reading note in document order", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
       if (path.endsWith("/result")) {
@@ -1651,19 +1729,13 @@ describe("bazi chart workspace", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    const judgment = await screen.findByRole("heading", { name: "判断" });
-    const workspaceNode = screen.getByLabelText("排盘工作台");
-    const facts = screen.getByRole("heading", { name: "事实" });
-
+    const workspaceNode = await screen.findByLabelText("排盘工作台");
+    const note = screen.getByRole("heading", { name: "阅读说明" });
     expect(
-      judgment.compareDocumentPosition(workspaceNode) &
+      workspaceNode.compareDocumentPosition(note) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    expect(
-      workspaceNode.compareDocumentPosition(facts) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(screen.getByText(acceptedCopyQuery)).toBeVisible();
+    expect(screen.queryByText(acceptedCopyQuery)).not.toBeInTheDocument();
   });
 
 });

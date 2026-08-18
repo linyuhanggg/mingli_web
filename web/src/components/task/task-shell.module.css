@@ -317,12 +317,14 @@
 .dateParts {
   display: grid;
   grid-template-columns: 1.1fr 1fr 1fr;
+  align-items: start;
   gap: var(--space-sm);
 }
 
 .timeParts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
   gap: var(--space-sm);
 }
 
@@ -639,8 +641,9 @@
 
 .modulePlan li {
   display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr);
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
   gap: var(--space-sm);
+  align-items: baseline;
   padding: var(--space-sm) 0;
   border-bottom: 1px solid var(--color-border);
   font-size: var(--font-size-label);
@@ -649,6 +652,20 @@
 .modulePlan li span {
   color: var(--color-text-muted);
   font-size: var(--font-size-meta);
+}
+
+.modulePlan li[data-module-status="pending"] {
+  color: var(--color-text-secondary);
+}
+
+.modulePending {
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+  font-style: normal;
+  white-space: nowrap;
 }
 
 .confirmHeader {
@@ -752,6 +769,7 @@
 /* 年月日 + 时分并成一行（青囊「诞辰之候」同款）。 */
 .dateTimeRow {
   display: grid;
+  align-items: start;
   gap: var(--space-md);
 }
 
@@ -810,6 +828,12 @@
   .dateTimeRow {
     grid-template-columns: 3fr 2fr;
   }
+}
+
+/* 日期与时间控件固定高度，不随同一行里的时辰提示一起拉伸。 */
+.dateParts select,
+.timeParts select {
+  height: var(--target-min);
 }
 
 /* 年/月/日、时/分、省/市/区都是窄列，箭头留白按比例收窄，避免文字被截断。 */

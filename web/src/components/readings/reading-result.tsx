@@ -13,10 +13,7 @@ import {
   buildBaziChartView,
   buildBaziChartViewFromViewModel,
   formatCapabilityIds,
-  formatDimensionIds,
   formatHorizon,
-  formatObjectId,
-  splitAcceptedCopy,
 } from "@/lib/reading-display";
 import {
   extractFortunePeriodMarkers,
@@ -152,44 +149,15 @@ function ArchiveRail({
   summary: ReadingVersionSummary;
   result: ReadingResultResponse | null;
 }>) {
-  const scope = result?.fact_panel?.request_view ?? null;
   const meta = statusMeta(summary.status);
 
   return (
     <aside className={surface.evidenceRail} aria-labelledby="reading-summary-title">
       <div className={surface.rail}>
-        <h2 id="reading-summary-title">阅读档案</h2>
+        <h2 id="reading-summary-title">报告信息</h2>
         <dl className={surface.railMeta}>
           <div>
-            <dt>术法</dt>
-            <dd>
-              {scope
-                ? formatCapabilityIds(scope.capability_ids)
-                : formatCapabilityIds([summary.capability_id])}
-            </dd>
-          </div>
-          <div>
-            <dt>对象</dt>
-            <dd>
-              {scope
-                ? formatObjectId(scope.object_id)
-                : formatObjectId(summary.object_id)}
-            </dd>
-          </div>
-          <div>
-            <dt>主题</dt>
-            <dd>
-              {scope
-                ? formatDimensionIds(scope.dimension_ids)
-                : formatDimensionIds(summary.dimension_ids)}
-            </dd>
-          </div>
-          <div>
-            <dt>目标日期</dt>
-            <dd>{formatHorizon(summary.horizon)}</dd>
-          </div>
-          <div>
-            <dt>版本</dt>
+            <dt>报告版本</dt>
             <dd>v{summary.version}</dd>
           </div>
         </dl>
@@ -199,7 +167,7 @@ function ArchiveRail({
           </span>
         </p>
         <p className={surface.railNote}>
-          只展示服务端公开摘要；状态与正文分开保存，现实反馈独立记录，不会回写盘面。
+          这份报告保留当前版本，后续修改不会覆盖本次内容。
         </p>
       </div>
       {summary.status === "accepted" && result?.document?.actions.share.enabled === true ? (
@@ -385,7 +353,6 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
             ),
           }
         : result.fact_panel;
-    const copyParts = splitAcceptedCopy(result.accepted_copy);
     const question = result.fact_panel?.question ?? "本次解读";
     const scopeLabel =
       summary.product_id === "hecan"
@@ -480,7 +447,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
                 <div>
                   <h2 id="reading-runtime-chart-title">盘面事实</h2>
                   <p className={surface.inlineNote}>
-                    盘面来自服务端 Runtime ViewModel；浏览器只负责展示，不重新计算。
+                    盘面由服务端排定；浏览器只负责展示，不重新计算。
                   </p>
                   {capabilityTier === "B" ? (
                     <p className={surface.inlineNote} data-capability-tier="B">
@@ -556,82 +523,70 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
       <div className={surface.readingLayout}>
         <article className={surface.readingBody} aria-label="解读正文">
           <header className={surface.readingHeader}>
-            <h2>{copyParts.headline ?? question}</h2>
+            <h2>{productId === "bazi-deep" ? "八字深度解读" : "八字命盘"}</h2>
             <p>
-              {scopeLabel} · 目标日期 {formatHorizon(summary.horizon)} · 版本 v
-              {summary.version}
+              {productId === "bazi-deep"
+                ? "盘面事实与已接纳解读分开展示，便于逐项核对。"
+                : "四柱、日主、月令、大运与已返回的盘面事实。"}
             </p>
           </header>
 
-          <section
-            className={surface.readingSection}
-            aria-labelledby="reading-judgment-title"
-          >
-            <span className={surface.sectionIndex} aria-hidden="true">
-              01
-            </span>
-            <div>
-              <h2 id="reading-judgment-title">判断</h2>
-              <AcceptedCopy text={result.accepted_copy} />
-            </div>
-          </section>
-
+          {productId === "bazi-deep" ? (
             <section
               className={surface.readingSection}
-              aria-labelledby="reading-workspace-title"
+              data-layout="full-width-reading-section"
+              aria-labelledby="reading-judgment-title"
             >
-              <span className={surface.sectionIndex} aria-hidden="true">
-                02
-              </span>
               <div>
-                <h2 id="reading-workspace-title">盘面证据</h2>
-                {capabilityTier === "C" ? (
-                  <p className={surface.inlineNote} data-capability-tier="C">
-                    当前能力仍在适配中，暂不可用；未加载未确认的盘面或断法。
-                  </p>
-                ) : (
-                  <>
-                    <p className={surface.inlineNote}>
-                      先看结论，再点开盘面核对服务端公开事实；前端不本地排盘。
-                    </p>
-                    <BaziChart
-                      chart={chart!}
-                      title="八字命盘"
-                      evidence={result.fact_panel?.evidence ?? []}
-                      showInterpretiveSections={capabilityTier === "A"}
-                    />
-                  </>
-                )}
+                <h2 id="reading-judgment-title">深度解读</h2>
+                <AcceptedCopy text={result.accepted_copy} />
               </div>
             </section>
+          ) : null}
 
           <section
             className={surface.readingSection}
-            aria-labelledby="reading-fact-title"
+            data-layout="full-width-reading-section"
+            aria-labelledby="reading-workspace-title"
           >
-            <span className={surface.sectionIndex} aria-hidden="true">
-              03
-            </span>
             <div>
-              <h2 id="reading-fact-title">事实</h2>
-              <FactPanel panel={result.fact_panel} />
+              <h2 id="reading-workspace-title">排盘结果</h2>
+              {capabilityTier === "C" ? (
+                <p className={surface.inlineNote} data-capability-tier="C">
+                  当前能力仍在适配中，暂不可用；未加载未确认的盘面或断法。
+                </p>
+              ) : (
+                <>
+                  <p className={surface.inlineNote}>
+                    点击四柱可核对详细盘面；页面只展示系统已经计算并公开的事实。
+                  </p>
+                  <BaziChart
+                    chart={chart!}
+                    title="八字命盘"
+                    evidence={result.fact_panel?.evidence ?? []}
+                    showInterpretiveSections={capabilityTier === "A"}
+                  />
+                </>
+              )}
             </div>
           </section>
 
           <section
             className={surface.readingSection}
-            aria-labelledby="reading-evidence-title"
+            data-layout="full-width-reading-section"
+            aria-labelledby="reading-note-title"
           >
-            <span className={surface.sectionIndex} aria-hidden="true">
-              04
-            </span>
             <div>
-              <h2 id="reading-evidence-title">依据与边界</h2>
-              <EvidenceList
-                evidence={result.fact_panel?.evidence ?? null}
-                facts={result.fact_panel?.facts ?? []}
-                exactOnly
-              />
+              <h2 id="reading-note-title">阅读说明</h2>
+              {productId === "bazi-deep" ? (
+                <p className={surface.inlineNote}>
+                  深度解读只采用本次盘面与已接纳正文，不会把内部字段当作结论展示。
+                </p>
+              ) : (
+                <p className={surface.inlineNote}>
+                  当前是免费排盘预览，只提供命盘与确定性事实，尚未生成完整深度解读。
+                </p>
+              )}
               <LimitNotice limits={result.fact_panel?.limits ?? null} />
             </div>
           </section>
@@ -639,11 +594,9 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
           {isAccepted ? (
             <section
               className={surface.readingSection}
+              data-layout="full-width-reading-section"
               aria-labelledby="reading-review-title"
             >
-              <span className={surface.sectionIndex} aria-hidden="true">
-                05
-              </span>
               <div>
                 <h2 id="reading-review-title">复核与追问</h2>
                 <VerificationForm

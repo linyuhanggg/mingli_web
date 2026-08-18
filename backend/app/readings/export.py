@@ -9,12 +9,15 @@ from PIL import Image, ImageDraw, ImageFont
 from reportlab.lib.colors import HexColor  # type: ignore[import-untyped]
 from reportlab.lib.pagesizes import A4  # type: ignore[import-untyped]
 from reportlab.pdfbase import pdfmetrics  # type: ignore[import-untyped]
-from reportlab.pdfbase.ttfonts import TTFont  # type: ignore[import-untyped]
+from reportlab.pdfbase.cidfonts import UnicodeCIDFont  # type: ignore[import-untyped]
+from reportlab.pdfbase.ttfonts import TTFError, TTFont  # type: ignore[import-untyped]
 from reportlab.pdfgen import canvas  # type: ignore[import-untyped]
 
+from app.charts.contracts import BaziChartV1
 from app.readings.presentation import ReadingDocumentV1
 
 ExportFormat = Literal["png", "pdf"]
+ElementId = Literal["wood", "fire", "earth", "metal", "water"]
 
 _FONT_CANDIDATES = (
     Path("/System/Library/Fonts/Supplemental/Arial Unicode.ttf"),
@@ -46,6 +49,32 @@ _PRODUCT_LABELS = {
     "ziwei-relationship/v1": "紫微合盘",
     "qizheng-relationship/v1": "七政合盘",
 }
+_POSITION_LABELS = {
+    "year": "年柱",
+    "month": "月柱",
+    "day": "日柱",
+    "hour": "时柱",
+}
+_ELEMENT_LABELS: dict[ElementId, str] = {
+    "wood": "木",
+    "fire": "火",
+    "earth": "土",
+    "metal": "金",
+    "water": "水",
+}
+_REPORT_HEADINGS = frozenset(
+    {
+        "解读摘要",
+        "判断",
+        "四柱",
+        "盘面要点",
+        "五行计数",
+        "地支关系",
+        "大运",
+        "古籍依据",
+        "说明",
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,27 +110,121 @@ def _wrap(value: object, width: int) -> tuple[str, ...]:
     return tuple(text[index : index + width] for index in range(0, len(text), width))
 
 
-def _document_lines(document: ReadingDocumentV1) -> tuple[str, ...]:
-    label = _PRODUCT_LABELS.get(document.view_model.schema_version, "命理解读")
+def _safe_report_line(value: str) -> str:
+    """Keep punctuation inside the glyph set shared by PNG and CID-font PDFs."""
+    normalized = value.replace("•", "-")
+    if normalized.startswith("· "):
+        normalized = f"- {normalized[2:]}"
+    return normalized.replace(" · ", "：").replace("·", "，")
+
+
+def _bazi_document_lines(
+    document: ReadingDocumentV1,
+    chart: BaziChartV1,
+) -> tuple[str, ...]:
     lines: list[str] = [
-        "FateRadar · 私密报告",
-        label,
-        f"版本 {document.versions.view_model_schema}",
+        "私密报告",
+        "八字命盘报告",
         "",
-        "一句话回答",
+        "四柱",
     ]
+    for pillar in chart.pillars:
+        label = _POSITION_LABELS[pillar.position]
+        lines.append(f"{label} {pillar.stem}{pillar.branch}")
+
+    core = chart.core_facts
+    if core is not None:
+        lines.extend(("", "盘面要点"))
+        if core.day_master is not None:
+            element = _ELEMENT_LABELS[core.day_master.element]
+            lines.append(f"日主 {core.day_master.stem} · {core.day_master.polarity}{element}")
+        if core.month_command is not None:
+            lines.append(
+                f"月令 {core.month_command.branch} · 主气{core.month_command.main_qi}"
+                f"（{_ELEMENT_LABELS[core.month_command.main_qi_element]}）"
+            )
+        if core.seasonal_profile is not None:
+            lines.append(
+                f"时令 {core.seasonal_profile.season} · "
+                f"{core.seasonal_profile.temperature} · {core.seasonal_profile.moisture}"
+            )
+        if core.element_inventory is not None:
+            lines.extend(("", "五行计数"))
+            visible = {
+                item.element: item.value
+                for item in core.element_inventory.visible_stem_branch_counts
+            }
+            hidden = {
+                item.element: item.value
+                for item in core.element_inventory.hidden_stem_occurrence_counts
+            }
+            for element, label in _ELEMENT_LABELS.items():
+                lines.append(
+                    f"{label}：表层 {visible.get(element, 0)}，藏干 {hidden.get(element, 0)}"
+                )
+        if core.branch_relations:
+            lines.extend(("", "地支关系"))
+            for relation in core.branch_relations:
+                lines.append(f"{'、'.join(relation.branches)} · {relation.relation_type}")
+        if core.luck_cycles is not None:
+            lines.extend(("", "大运"))
+            direction = {"forward": "顺行", "reverse": "逆行"}.get(
+                core.luck_cycles.direction or "",
+                "方向未返回",
+            )
+            start_age = (
+                f"，约 {core.luck_cycles.start_age_years:g} 岁起运"
+                if core.luck_cycles.start_age_years is not None
+                else ""
+            )
+            lines.append(f"{direction}{start_age}")
+            for cycle in core.luck_cycles.cycles:
+                age = ""
+                if cycle.start_age_years is not None and cycle.end_age_years is not None:
+                    age = f" · {cycle.start_age_years:g} 至 {cycle.end_age_years:g} 岁"
+                lines.append(f"第 {cycle.sequence} 运 {cycle.pillar}{age}")
+
+    if document.product_version.startswith("bazi-deep"):
+        lines.extend(("", "解读摘要"))
+        lines.extend(_wrap(document.answer_summary, 34))
+        if document.claims:
+            lines.extend(("", "判断"))
+            for claim in document.claims:
+                lines.extend(_wrap(f"· {claim.text}", 34))
+    else:
+        lines.extend(("", "说明", "这是免费排盘预览，展示命盘与确定性事实，不含完整深度解读。"))
+
+    if document.evidence:
+        lines.extend(("", "古籍依据"))
+        for evidence in document.evidence:
+            lines.extend(_wrap(f"· {evidence.title}", 34))
+    if document.boundaries:
+        lines.extend(("", "说明"))
+        for boundary in document.boundaries:
+            lines.extend(_wrap(f"· {boundary.text}", 34))
+    return tuple(_safe_report_line(line) for line in lines)
+
+
+def _document_lines(document: ReadingDocumentV1) -> tuple[str, ...]:
+    if isinstance(document.view_model, BaziChartV1):
+        return _bazi_document_lines(document, document.view_model)
+
+    label = _PRODUCT_LABELS.get(document.view_model.schema_version, "命理解读")
+    lines: list[str] = ["私密报告", label, "", "解读摘要"]
     lines.extend(_wrap(document.answer_summary, 34))
-    lines.extend(("", "判断"))
-    for claim in document.claims:
-        lines.extend(_wrap(f"· {claim.text}", 34))
-    lines.extend(("", "依据"))
-    for evidence in document.evidence:
-        lines.extend(_wrap(f"· {evidence.title}", 34))
-    lines.extend(("", "边界"))
+    if document.claims:
+        lines.extend(("", "判断"))
+        for claim in document.claims:
+            lines.extend(_wrap(f"· {claim.text}", 34))
+    if document.evidence:
+        lines.extend(("", "古籍依据"))
+        for evidence in document.evidence:
+            lines.extend(_wrap(f"· {evidence.title}", 34))
+    if document.boundaries:
+        lines.extend(("", "说明"))
     for boundary in document.boundaries:
         lines.extend(_wrap(f"· {boundary.text}", 34))
-    lines.extend(("", "报告版本", f"{document.schema_version} · {document.document_id}"))
-    return tuple(lines)
+    return tuple(_safe_report_line(line) for line in lines)
 
 
 def _render_png(document: ReadingDocumentV1) -> bytes:
@@ -124,8 +247,9 @@ def _render_png(document: ReadingDocumentV1) -> bytes:
     draw.rectangle((72, 64, 1528, 78), fill="#1f4f4a")
     y = top
     for index, line in enumerate(lines):
+        is_heading = line in _REPORT_HEADINGS
         font = title_font if index in (0, 1) else body_font
-        fill = "#1f4f4a" if index in (0, 1, 4) else "#2d2b28"
+        fill = "#1f4f4a" if index in (0, 1) or is_heading else "#2d2b28"
         draw.text((126, y), line, font=font, fill=fill)
         y += line_height
     output = BytesIO()
@@ -135,15 +259,19 @@ def _render_png(document: ReadingDocumentV1) -> bytes:
 
 def _pdf_font_name() -> str:
     path = _font_path()
-    if path is None:
-        return "Helvetica"
-    name = "FateRadarCJK"
-    try:
-        if name not in pdfmetrics.getRegisteredFontNames():
-            pdfmetrics.registerFont(TTFont(name, str(path), subfontIndex=0))
-    except (OSError, TypeError, ValueError):
-        return "Helvetica"
-    return name
+    if path is not None:
+        name = "MingliReportCJK"
+        try:
+            if name not in pdfmetrics.getRegisteredFontNames():
+                pdfmetrics.registerFont(TTFont(name, str(path), subfontIndex=0))
+            return name
+        except (OSError, TTFError, TypeError, ValueError):
+            pass
+
+    fallback = "STSong-Light"
+    if fallback not in pdfmetrics.getRegisteredFontNames():
+        pdfmetrics.registerFont(UnicodeCIDFont(fallback))
+    return fallback
 
 
 def _render_pdf(document: ReadingDocumentV1) -> bytes:
@@ -160,7 +288,13 @@ def _render_pdf(document: ReadingDocumentV1) -> bytes:
             report.showPage()
             y = page_height - margin
         report.setFont(font_name, 19 if index in (0, 1) else 10.5)
-        report.setFillColor(HexColor("#1f4f4a" if index in (0, 1, 4) else "#2d2b28"))
+        report.setFillColor(
+            HexColor(
+                "#1f4f4a"
+                if index in (0, 1) or line in _REPORT_HEADINGS
+                else "#2d2b28"
+            )
+        )
         report.drawString(margin, y, line)
         y -= line_height if index not in (0, 1) else 26
     report.save()

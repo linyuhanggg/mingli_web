@@ -434,6 +434,14 @@
   animation: surface-enter var(--duration-page) var(--ease-out) both;
 }
 
+.readingSection[data-layout="full-width-reading-section"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.readingSection[data-layout="full-width-reading-section"] > * {
+  min-width: 0;
+}
+
 .readingSection:nth-of-type(1) {
   animation-delay: 0.02s;
 }

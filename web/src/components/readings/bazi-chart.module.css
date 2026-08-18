@@ -101,6 +101,36 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* §21.3 第 1 级：克制的来源标记，只在该柱确有已核验古法条目时出现。 */
+.pillarSourceMark {
+  margin-top: 0.3rem;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+
+.pillarCard:hover .pillarSourceMark,
+.pillarCard:focus-visible .pillarSourceMark,
+.pillarCard[data-selected="true"] .pillarSourceMark {
+  border-color: var(--color-action);
+  color: var(--color-text);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .factHighlight,
 .pillarStem[data-fact-highlight="true"],
 .pillarBranch[data-fact-highlight="true"] {

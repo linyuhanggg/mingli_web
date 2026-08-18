@@ -32,6 +32,12 @@ import {
   type WorkspaceLayer,
 } from "@/lib/chart-workspace";
 
+import {
+  countClassicalSourcesByPillar,
+  isPillarId,
+  type PillarSourceCounts,
+} from "@/lib/classical-source-markers";
+
 import { ChartWorkspaceShell } from "./chart-workspace-shell";
 
 import styles from "./bazi-chart.module.css";
@@ -47,6 +53,7 @@ function PillarGrid({
   detailId,
   onSelect,
   onTransientChange,
+  sourceCounts,
 }: Readonly<{
   cells: WorkspaceCell[];
   selectedId: string | null;
@@ -54,6 +61,7 @@ function PillarGrid({
   detailId: string;
   onSelect: (cellId: string | null) => void;
   onTransientChange: (cellId: string | null) => void;
+  sourceCounts: PillarSourceCounts | null;
 }>) {
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
   const [tabStopId, setTabStopId] = useState<string | null>(
@@ -102,6 +110,8 @@ function PillarGrid({
       {cells.map((cell, index) => {
         const stem = cell.value?.slice(0, 1) ?? "—";
         const branch = cell.value?.slice(1, 2) ?? "";
+        const sourceCount = isPillarId(cell.id) ? (sourceCounts?.[cell.id] ?? 0) : 0;
+        const sourceNote = sourceCount > 0 ? `有 ${sourceCount} 条古法涉及此柱` : null;
         return (
           <button
             key={cell.id}
@@ -143,6 +153,16 @@ function PillarGrid({
               {branch || "—"}
             </span>
             <span className={styles.pillarFull}>{cell.value ?? "—"}</span>
+            {sourceNote ? (
+              <span
+                className={styles.pillarSourceMark}
+                data-source-count={sourceCount}
+                title={sourceNote}
+              >
+                <span aria-hidden="true">典 {sourceCount}</span>
+                <span className={styles.visuallyHidden}>{sourceNote}</span>
+              </span>
+            ) : null}
           </button>
         );
       })}
@@ -163,7 +183,7 @@ function LayerNote({ layer }: Readonly<{ layer: WorkspaceLayer }>) {
       ) : null}
       <p className={styles.layerNoteText}>
         {layer.status === "ready"
-          ? "Runtime 已返回该时间层摘要；当前没有更多结构化事实可供展开。"
+          ? "服务端已返回该时间层摘要；当前没有更多结构化事实可供展开。"
           : "服务端尚未返回该时间层的逐柱结构，此层暂无可聚焦内容。"}
       </p>
     </div>
@@ -233,6 +253,48 @@ const LUCK_DIRECTION_LABELS: Readonly<Record<string, string>> = {
   reverse: "逆行",
 };
 
+const TIME_BASIS_POLICY_LABELS: Readonly<Record<string, string>> = {
+  civil: "民用钟表时间",
+  solar: "真太阳时",
+  "local_apparent_solar-v1": "当地真太阳时",
+  "longitude_mean_solar-v1": "当地平太阳时",
+};
+
+const ZI_HOUR_POLICY_LABELS: Readonly<Record<string, string>> = {
+  midnight: "按午夜换日",
+  substitute: "按晚子时口径换日",
+  solar: "按太阳时判断子时",
+};
+
+const MONTH_SWITCH_POLICY_LABELS: Readonly<Record<string, string>> = {
+  "exact Jie instant": "按节气交接时刻换月",
+  "month-switch-at-jie-v1": "按节气交接时刻换月",
+};
+
+const TIAOHOU_SCOPE_LABELS: Readonly<Record<string, string>> = {
+  "month-level climate anchors only": "仅作月令气候参照，不作调候结论",
+  "month-level climate anchors only; not a 调候用神 conclusion":
+    "仅作月令气候参照，不等于调候用神结论",
+};
+
+function visiblePolicyLabel(
+  value: string,
+  labels: Readonly<Record<string, string>>,
+): string {
+  if (labels[value]) return labels[value];
+  return /[\u3400-\u9fff]/u.test(value) ? value : "服务端已记录";
+}
+
+function formatServerDateTime(value: string): string {
+  const match = value.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/u,
+  );
+  if (!match) return value;
+  const [, year, month, day, hour, minute, second] = match;
+  const seconds = second && second !== "00" ? `:${second}` : "";
+  return `${year}年${Number(month)}月${Number(day)}日 ${hour}:${minute}${seconds}`;
+}
+
 function relationCategory(relationType: string): string {
   if (/[合会]/u.test(relationType)) return "合会";
   if (/冲/u.test(relationType)) return "冲";
@@ -294,7 +356,7 @@ function BranchRelationsPanel({
     <section className={styles.relationSection} aria-label="干支关系事实">
       <div className={styles.sectionHeading}>
         <h4>干支关系</h4>
-        <p>天干与地支按 Runtime 返回的柱位和关系事实展示；类别只作中性区分。</p>
+        <p>天干与地支按服务端返回的柱位和关系事实展示；类别只作中性区分。</p>
       </div>
       <div className={styles.relationViewport}>
         <div className={styles.relationDiagram}>
@@ -412,7 +474,7 @@ function ElementInventoryChart({
     <section className={styles.elementSection} aria-label="五行计数事实">
       <div className={styles.sectionHeading}>
         <h4>五行计数</h4>
-        <p>只展示 Runtime 返回的可见干支计数与藏干出现次数。</p>
+        <p>只展示服务端返回的可见干支计数与藏干出现次数。</p>
       </div>
       <div className={styles.elementChart}>
         {elements.map((element) => {
@@ -483,36 +545,40 @@ function LuckCycleSection({ facts }: Readonly<{ facts: LuckCycles }>) {
         ? ["缺少性别，无法计算顺逆与起运序列"]
         : [];
   const boundary = facts.boundary_term
-    ? `${facts.boundary_term.name} · ${facts.boundary_term.datetime}`
+    ? `${facts.boundary_term.name} · ${formatServerDateTime(facts.boundary_term.datetime)}`
     : "未返回";
 
   return (
     <section className={styles.luckSection} aria-label="大运事实">
       <div className={styles.sectionHeading}>
         <h4>大运</h4>
-        <p>完整展示 Runtime 大运状态、起运口径与序列，不在浏览器补算。</p>
+        <p>完整展示服务端返回的大运状态、起运口径与序列，不在浏览器补算。</p>
       </div>
       <dl className={styles.luckMeta}>
         <div>
           <dt>状态</dt>
           <dd data-status={facts.status}>
-            {LUCK_STATUS_LABELS[facts.status] ?? facts.status}
+            {LUCK_STATUS_LABELS[facts.status] ?? "状态已记录"}
           </dd>
         </div>
         <div>
           <dt>顺逆</dt>
-          <dd>{facts.direction ? LUCK_DIRECTION_LABELS[facts.direction] ?? facts.direction : "未返回"}</dd>
+          <dd>
+            {facts.direction
+              ? LUCK_DIRECTION_LABELS[facts.direction] ?? "顺逆已记录"
+              : "未返回"}
+          </dd>
         </div>
         {facts.direction_rule ? (
           <div>
             <dt>顺逆规则</dt>
-            <dd>{facts.direction_rule}</dd>
+            <dd>{visiblePolicyLabel(facts.direction_rule, {})}</dd>
           </div>
         ) : null}
         {facts.start_age_rule ? (
           <div>
             <dt>起运规则</dt>
-            <dd>{facts.start_age_rule}</dd>
+            <dd>{visiblePolicyLabel(facts.start_age_rule, {})}</dd>
           </div>
         ) : null}
         <div>
@@ -529,7 +595,11 @@ function LuckCycleSection({ facts }: Readonly<{ facts: LuckCycles }>) {
         </div>
         <div>
           <dt>约略起运时刻</dt>
-          <dd>{facts.approximate_start_datetime ?? "未返回"}</dd>
+          <dd>
+            {facts.approximate_start_datetime
+              ? formatServerDateTime(facts.approximate_start_datetime)
+              : "未返回"}
+          </dd>
         </div>
       </dl>
       <div className={styles.luckTableViewport}>
@@ -560,7 +630,7 @@ function LuckCycleSection({ facts }: Readonly<{ facts: LuckCycles }>) {
           <h5>未能计算的项目</h5>
           <ul>
             {unavailable.map((item, index) => (
-              <li key={`${item}-${index}`}>{item}</li>
+              <li key={`${item}-${index}`}>{visiblePolicyLabel(item, {})}</li>
             ))}
           </ul>
         </div>
@@ -670,7 +740,7 @@ function YearLayerBoard({
     <section className={styles.temporalSection} aria-label="流年事实">
       <div className={styles.sectionHeading}>
         <h4>流年事实</h4>
-        <p>逐年展示 Runtime 已返回的干支、十神、关系与分段事实。</p>
+        <p>逐年展示服务端已返回的干支、十神、关系与分段事实。</p>
       </div>
       <div className={styles.temporalTableViewport}>
         <table className={styles.temporalTable}>
@@ -757,7 +827,7 @@ function TemporalLayerBoard({
     <section className={styles.temporalSection} aria-label={`${label}事实`}>
       <div className={styles.sectionHeading}>
         <h4>{label}事实</h4>
-        <p>逐期展示 Runtime 已返回的时间、分段、结构和规则轨迹事实。</p>
+        <p>逐期展示服务端已返回的时间、分段、结构和规则轨迹事实。</p>
       </div>
       <div className={styles.temporalTableViewport}>
         <table className={styles.temporalTable}>
@@ -894,7 +964,7 @@ function FactElementMark({
       className={highlighted ? styles.factHighlight : undefined}
       data-fact-highlight={highlighted ? "true" : undefined}
     >
-      {ELEMENT_LABELS[element] ?? element}
+      {ELEMENT_LABELS[element] ?? "五行已记录"}
     </span>
   );
 }
@@ -930,16 +1000,12 @@ function TimeBasisFacts({
   if (!calendar) return null;
 
   const rows: Array<{ label: string; value: string }> = [];
-  const algorithm = calendar.time_basis.algorithm;
   const boundary = calendar.time_basis.boundary;
 
-  rows.push({ label: "策略 / policy", value: calendar.time_basis.policy });
-  if (algorithm.id) {
-    rows.push({
-      label: "算法 ID",
-      value: algorithm.version ? `${algorithm.id} v${algorithm.version}` : algorithm.id,
-    });
-  }
+  rows.push({
+    label: "采用时间",
+    value: visiblePolicyLabel(calendar.time_basis.policy, TIME_BASIS_POLICY_LABELS),
+  });
   if (typeof calendar.time_basis.standard_meridian_degrees === "number") {
     rows.push({
       label: "标准经线",
@@ -953,13 +1019,13 @@ function TimeBasisFacts({
   const total = formatSeconds(calendar.time_basis.total_correction_seconds);
   if (total) rows.push({ label: "总修正", value: total });
   if (calendar.effective_datetime) {
-    rows.push({ label: "有效时刻", value: calendar.effective_datetime });
+    rows.push({ label: "排盘采用时刻", value: formatServerDateTime(calendar.effective_datetime) });
   }
   rows.push({
     label: "真太阳时",
     value:
       TRUE_SOLAR_STATUS_LABELS[calendar.true_solar_time.status] ??
-      calendar.true_solar_time.status,
+      "状态已记录",
   });
   if (typeof boundary.correction_changes_hour_branch === "boolean") {
     rows.push({
@@ -977,7 +1043,7 @@ function TimeBasisFacts({
         : "修正未跨日界",
     });
     rows.push({
-      label: "子时换日",
+      label: "换日结果",
       value: calendar.day_boundary.zi_policy_advanced_day_pillar
         ? "晚子时策略推进日柱"
         : "晚子时策略未推进日柱",
@@ -1002,34 +1068,46 @@ function TimeBasisFacts({
     });
   }
   if (calendar.calendar_convention.zi_hour_policy) {
-    rows.push({ label: "晚子时", value: calendar.calendar_convention.zi_hour_policy });
+    rows.push({
+      label: "子时口径",
+      value: visiblePolicyLabel(
+        calendar.calendar_convention.zi_hour_policy,
+        ZI_HOUR_POLICY_LABELS,
+      ),
+    });
   }
   const solarTerms = calendar.solar_terms;
   if (solarTerms?.previous) {
     rows.push({
       label: "前一节气",
-      value: `${solarTerms.previous.name} · ${solarTerms.previous.datetime}${solarTerms.previous.is_month_boundary_jie ? " · 月界节" : ""}`,
+      value: `${solarTerms.previous.name} · ${formatServerDateTime(solarTerms.previous.datetime)}${solarTerms.previous.is_month_boundary_jie ? " · 月界节" : ""}`,
     });
   }
   if (solarTerms?.next) {
     rows.push({
       label: "后一节气",
-      value: `${solarTerms.next.name} · ${solarTerms.next.datetime}${solarTerms.next.is_month_boundary_jie ? " · 月界节" : ""}`,
+      value: `${solarTerms.next.name} · ${formatServerDateTime(solarTerms.next.datetime)}${solarTerms.next.is_month_boundary_jie ? " · 月界节" : ""}`,
     });
   }
   if (solarTerms?.month_switch_policy) {
-    rows.push({ label: "换月口径", value: solarTerms.month_switch_policy });
+    rows.push({
+      label: "换月口径",
+      value: visiblePolicyLabel(
+        solarTerms.month_switch_policy,
+        MONTH_SWITCH_POLICY_LABELS,
+      ),
+    });
   }
 
   return (
     <section className={styles.timeBasis} aria-labelledby="bazi-time-basis-title">
       <div className={styles.sectionHeading}>
         <h4 id="bazi-time-basis-title">时间口径</h4>
-        <p>只显示 Runtime 返回的有效时刻、修正与边界。</p>
+        <p>只显示服务端排盘采用的时刻、修正与边界。</p>
       </div>
       <dl className={styles.timeBasisList}>
-        {rows.map((row) => (
-          <div key={row.label}>
+        {rows.map((row, index) => (
+          <div key={`${row.label}-${index}`}>
             <dt>{row.label}</dt>
             <dd>{row.value}</dd>
           </div>
@@ -1252,7 +1330,7 @@ function BaziCoreFactSummary({
       content: (
         <>
           <FactMark value={facts.day_master.stem} selection={selection} />
-          {` · ${ELEMENT_LABELS[facts.day_master.element] ?? facts.day_master.element} · ${facts.day_master.polarity}`}
+          {` · ${ELEMENT_LABELS[facts.day_master.element] ?? "五行已记录"} · ${facts.day_master.polarity}`}
         </>
       ),
     });
@@ -1330,7 +1408,7 @@ function BaziCoreFactSummary({
       content: (
         <>
           {facts.month_command.label} · 主气 <FactMark value={facts.month_command.main_qi} selection={selection} />
-          （{ELEMENT_LABELS[facts.month_command.main_qi_element] ?? facts.month_command.main_qi_element}）
+          （{ELEMENT_LABELS[facts.month_command.main_qi_element] ?? "五行已记录"}）
         </>
       ),
     });
@@ -1344,7 +1422,7 @@ function BaziCoreFactSummary({
   if (facts.tiaohou_markers) {
     rows.push({
       label: "调候标记",
-      content: `${facts.tiaohou_markers.markers.join("、")} · ${facts.tiaohou_markers.scope}`,
+      content: `${facts.tiaohou_markers.markers.join("、")} · ${visiblePolicyLabel(facts.tiaohou_markers.scope, TIAOHOU_SCOPE_LABELS)}`,
     });
   }
   if (facts.shensha_auxiliary) {
@@ -1378,7 +1456,7 @@ function BaziCoreFactSummary({
       <TimeBasisFacts calendar={facts.calendar_normalization} />
       {rows.length > 0 ? (
         <details className={styles.coreFacts} open>
-          <summary>Runtime 已计算事实</summary>
+          <summary>服务端已计算事实</summary>
           <dl className={styles.coreFactsList}>
             {rows.map((row) => (
               <div key={row.label}>
@@ -1388,7 +1466,7 @@ function BaziCoreFactSummary({
             ))}
           </dl>
           <p className={styles.coreFactsNote}>
-            这里只展示 Runtime 已返回的计算事实、证据与候选；页面不在浏览器重新排盘，也不把候选或辅助标记升级成结论。
+            这里只展示服务端已返回的计算事实、证据与候选；页面不在浏览器重新排盘，也不把候选或辅助标记升级成结论。
           </p>
         </details>
       ) : null}
@@ -1431,6 +1509,15 @@ export function BaziChart({
   );
   const [selectedCellId, setSelectedCellId] = useState<string | null>(null);
   const [transientCellId, setTransientCellId] = useState<string | null>(null);
+
+  // §21.3 第 1/2 级：只统计抽屉真正会展示的、已核验的条目，标记数与抽屉计数同源。
+  const pillarSourceCounts = useMemo<PillarSourceCounts | null>(() => {
+    if (!showInterpretiveSections) return null;
+    const patterns = chart.coreFacts?.source_conditioned_patterns ?? [];
+    const resolved = resolveBaziEvidence(patterns, evidence);
+    if (resolved.length === 0) return null;
+    return countClassicalSourcesByPillar(resolved.map((item) => item.pattern));
+  }, [chart.coreFacts, evidence, showInterpretiveSections]);
 
   const detail = useMemo(
     () =>
@@ -1491,7 +1578,7 @@ export function BaziChart({
     return (
       <div className={styles.board}>
         <div className={styles.brandBlock}>
-          <p className={styles.brand}>命理工具</p>
+          <p className={styles.brand}>八字命盘</p>
           <p className={styles.brandSub}>
             {chart.dayMaster ? `日主 ${chart.dayMaster}` : "八字本命"}
           </p>
@@ -1509,6 +1596,7 @@ export function BaziChart({
           onSelect={(cellId) =>
             setSelectedCellId((current) => (current === cellId ? null : cellId))
           }
+          sourceCounts={pillarSourceCounts}
         />
 
         {workspaceView.highlights.length > 0 ? (

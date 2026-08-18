@@ -307,6 +307,12 @@ export function resolveBaziFocusDetail(
 export function baziWorkspaceFactsFromChart(
   chart: BaziChartView,
 ): BaziWorkspaceFacts {
+  const luckStatusLabels: Readonly<Record<string, string>> = {
+    calculated: "已计算",
+    sequence_only: "仅返回大运序列",
+    not_calculated_missing_gender: "缺少性别，暂未计算",
+  };
+
   return {
     pillars: chart.pillars
       ? {
@@ -330,7 +336,7 @@ export function baziWorkspaceFactsFromChart(
     calendarSummary: chart.calendarSummary,
     decadalReady: Boolean(chart.coreFacts?.luck_cycles),
     decadalSummary: chart.coreFacts?.luck_cycles
-      ? `状态：${chart.coreFacts.luck_cycles.status}`
+      ? `状态：${luckStatusLabels[chart.coreFacts.luck_cycles.status] ?? "已记录"}`
       : null,
     yearlyReady: Boolean(
       chart.coreFacts?.year_layers?.length ||

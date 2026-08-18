@@ -200,7 +200,7 @@ function schemaFor(product: ProductDefinition) {
 
       if (["bazi", "luming-nayin", "ziwei", "qizheng"].includes(product.id)) {
         if (values.calendar !== "gregorian") {
-          context.addIssue({ code: "custom", path: ["calendar"], message: "当前 Runtime 接口需要公历日期" });
+          context.addIssue({ code: "custom", path: ["calendar"], message: "当前排盘服务需要公历日期" });
         }
         if (values.unknownTime) {
           context.addIssue({ code: "custom", path: ["birthTime"], message: "当前核心盘面需要明确出生时间" });
@@ -1234,7 +1234,7 @@ export function ProductInputForm({
           </Field>
           <fieldset className={styles.fieldGroup}>
             <legend>已核对的结构化观察</legend>
-            <p>原图不会被 Runtime 读取；请只提交你已经核对、且能说明可见程度的观察，不让系统从照片自动猜测。</p>
+            <p>原图不会被排盘服务读取；请只提交你已经核对、且能说明可见程度的观察，不让系统从照片自动猜测。</p>
             <div className={styles.twoColumns}>
               <Field htmlFor="jianxiang-observation-region" label="观察部位" error={errors.observationRegion?.message}>
                 <select
@@ -1403,7 +1403,7 @@ export function ProductInputForm({
         <summary>提交后会发生什么</summary>
         <p>
           {RUNTIME_SUBMIT_IDS.includes(product.id)
-            ? "资料提交到对应 Runtime 盘面服务并跳转到私有结果页；盘面在服务端确定性生成，不在浏览器计算。深读、追问和导出仍按各术单独开放。"
+            ? "资料提交到对应的服务端排盘服务并跳转到私有结果页；盘面在服务端确定性生成，不在浏览器计算。深读、追问和导出仍按各术单独开放。"
             : "检查只发生在当前页面。继续后会在工作台明确显示未接入能力，不扣权益。"}
         </p>
       </details>

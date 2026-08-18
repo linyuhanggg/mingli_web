@@ -155,7 +155,7 @@ describe("reading detail component", () => {
     expect(screen.getByRole("region", { name: "复核与追问" })).toBeInTheDocument();
   });
 
-  it("keeps a sticky evidence rail on desktop and one natural column on mobile", async () => {
+  it("keeps a compact report rail on desktop and one natural column on mobile", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       if (String(url).endsWith("/result")) return jsonResponse(readingResult());
       return jsonResponse(readingSummary("accepted"));
@@ -165,13 +165,15 @@ describe("reading detail component", () => {
     render(<ReadingDetailPage />);
 
     const rail = await screen.findByRole("complementary", {
-      name: "阅读档案",
+      name: "报告信息",
     });
-    expect(within(rail).getByText("术法")).toBeInTheDocument();
-    expect(within(rail).getByText("日运与周运")).toBeInTheDocument();
-    expect(within(rail).getByText(/2026年8月10日/)).toBeInTheDocument();
+    expect(within(rail).getByText("报告版本")).toBeInTheDocument();
+    expect(within(rail).getByText("v1")).toBeInTheDocument();
     expect(within(rail).getByText("已交付")).toBeInTheDocument();
-    expect(within(rail).getByText(/现实反馈/)).toBeInTheDocument();
+    expect(within(rail).getByText(/不会覆盖本次内容/)).toBeInTheDocument();
+    expect(within(rail).queryByText("术法")).not.toBeInTheDocument();
+    expect(within(rail).queryByText("对象")).not.toBeInTheDocument();
+    expect(within(rail).queryByText("主题")).not.toBeInTheDocument();
 
     const appSurface = read(join(root, "src/components/app-surface.module.css"));
     const baseLayout = ruleFor(appSurface, ".readingLayout");

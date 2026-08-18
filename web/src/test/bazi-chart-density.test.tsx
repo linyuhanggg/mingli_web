@@ -198,7 +198,7 @@ describe("BaziChart fact-density workspace", () => {
     const luckPanel = screen.getByRole("tabpanel", { name: /大运/ });
     const luckTable = within(luckPanel).getByRole("table", { name: "完整大运序列" });
     expect(within(luckTable).getByRole("row", { name: /4 庚戌 31 41/ })).toBeVisible();
-    expect(within(luckPanel).getByText("夏至 · 1992-06-21T12:14:00+08:00")).toBeVisible();
+    expect(within(luckPanel).getByText("夏至 · 1992年6月21日 12:14")).toBeVisible();
     expect(within(luckPanel).getByText("顺行")).toBeVisible();
     expect(within(luckPanel).getByText("已计算")).toHaveAttribute("data-status", "calculated");
 

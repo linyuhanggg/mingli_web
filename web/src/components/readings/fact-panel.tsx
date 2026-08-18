@@ -1,11 +1,5 @@
 import type { ReadingFactPanel } from "@/lib/api";
-import {
-  formatCapabilityIds,
-  formatDimensionIds,
-  formatHorizon,
-  formatObjectId,
-  formatReadingFacts,
-} from "@/lib/reading-display";
+import { formatReadingFacts } from "@/lib/reading-display";
 
 import styles from "./fact-panel.module.css";
 
@@ -89,37 +83,6 @@ export function FactPanel({
         </div>
       ) : null}
 
-      {panel.request_view ? (
-        <div className={styles.block}>
-          <h3 className={styles.heading}>解读范围</h3>
-          <dl className={styles.requestList}>
-            <div className={styles.row}>
-              <dt className={styles.term}>术法</dt>
-              <dd className={styles.desc}>
-                {formatCapabilityIds(panel.request_view.capability_ids)}
-              </dd>
-            </div>
-            <div className={styles.row}>
-              <dt className={styles.term}>对象</dt>
-              <dd className={styles.desc}>
-                {formatObjectId(panel.request_view.object_id)}
-              </dd>
-            </div>
-            <div className={styles.row}>
-              <dt className={styles.term}>主题</dt>
-              <dd className={styles.desc}>
-                {formatDimensionIds(panel.request_view.dimension_ids)}
-              </dd>
-            </div>
-            <div className={styles.row}>
-              <dt className={styles.term}>服务端目标日期</dt>
-              <dd className={styles.desc}>
-                {formatHorizon(panel.request_view.horizon)}
-              </dd>
-            </div>
-          </dl>
-        </div>
-      ) : null}
     </div>
   );
 }
