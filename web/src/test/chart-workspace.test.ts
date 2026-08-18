@@ -27,6 +27,15 @@ describe("buildBaziWorkspaceView", () => {
     expect(view.layers.find((layer) => layer.id === "decadal")?.status).toBe(
       "unavailable",
     );
+    expect(view.layers.find((layer) => layer.id === "yearly")?.status).toBe(
+      "unavailable",
+    );
+    expect(view.layers.find((layer) => layer.id === "monthly")?.status).toBe(
+      "unavailable",
+    );
+    expect(view.layers.find((layer) => layer.id === "daily")?.status).toBe(
+      "unavailable",
+    );
   });
 
   it("maps bazi pillars into focusable cells with stable ids", () => {
@@ -67,6 +76,12 @@ describe("buildBaziWorkspaceView", () => {
     expect(view.layers.find((layer) => layer.id === "yearly")?.status).toBe(
       "unavailable",
     );
+    expect(view.layers.find((layer) => layer.id === "monthly")?.status).toBe(
+      "unavailable",
+    );
+    expect(view.layers.find((layer) => layer.id === "daily")?.status).toBe(
+      "unavailable",
+    );
     expect(view.cells.find((cell) => cell.id === "hour")?.value).toBeNull();
     expect(view.cells.find((cell) => cell.id === "hour")?.badges).toContain(
       "时辰未知",
@@ -83,6 +98,33 @@ describe("buildBaziWorkspaceView", () => {
     );
     expect(view.layers.find((layer) => layer.id === "decadal")?.summary).toContain(
       "丙午大运",
+    );
+  });
+
+  it("keeps each returned temporal layer ready with an itemized summary", () => {
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      decadalReady: true,
+      decadalSummary: "状态：not_calculated_missing_gender",
+      yearlyReady: true,
+      yearlySummary: "2026 丙午（2 个节气分段）",
+      monthlyReady: true,
+      monthlySummary: "2026-08（2 个节气分段）",
+      dailyReady: true,
+      dailySummary: "2026-08-15（1 个日界分段）",
+    });
+    expect(view.layers.map((layer) => layer.status)).toEqual([
+      "ready",
+      "ready",
+      "ready",
+      "ready",
+      "ready",
+    ]);
+    expect(view.layers.find((layer) => layer.id === "decadal")?.summary).toContain(
+      "not_calculated_missing_gender",
+    );
+    expect(view.layers.find((layer) => layer.id === "daily")?.summary).toContain(
+      "2026-08-15",
     );
   });
 

@@ -22,6 +22,7 @@ import type {
   BaziCoreFacts,
   BaziInterpretiveCandidates,
   BaziSourcePattern,
+  BaziTemporalLayer,
 } from "@/view-models/registry";
 import {
   baziWorkspaceFactsFromChart,
@@ -162,7 +163,7 @@ function LayerNote({ layer }: Readonly<{ layer: WorkspaceLayer }>) {
       ) : null}
       <p className={styles.layerNoteText}>
         {layer.status === "ready"
-          ? "Runtime 已返回该时间层事实；当前页面先展示年度汇总，未在浏览器重新排盘。"
+          ? "Runtime 已返回该时间层摘要；当前没有更多结构化事实可供展开。"
           : "服务端尚未返回该时间层的逐柱结构，此层暂无可聚焦内容。"}
       </p>
     </div>
@@ -184,6 +185,43 @@ const POSITION_LABELS: Record<string, string> = {
   hour: "时柱",
 };
 
+type PillarPosition = "year" | "month" | "day" | "hour";
+
+const PILLAR_POSITIONS: ReadonlyArray<PillarPosition> = [
+  "year",
+  "month",
+  "day",
+  "hour",
+];
+
+const STEM_ELEMENTS: Readonly<Record<string, string>> = {
+  甲: "wood",
+  乙: "wood",
+  丙: "fire",
+  丁: "fire",
+  戊: "earth",
+  己: "earth",
+  庚: "metal",
+  辛: "metal",
+  壬: "water",
+  癸: "water",
+};
+
+const BRANCH_ELEMENTS: Readonly<Record<string, string>> = {
+  子: "water",
+  丑: "earth",
+  寅: "wood",
+  卯: "wood",
+  辰: "earth",
+  巳: "fire",
+  午: "fire",
+  未: "earth",
+  申: "metal",
+  酉: "metal",
+  戌: "earth",
+  亥: "water",
+};
+
 const LUCK_STATUS_LABELS: Readonly<Record<string, string>> = {
   calculated: "已计算",
   sequence_only: "仅返回序列",
@@ -194,6 +232,589 @@ const LUCK_DIRECTION_LABELS: Readonly<Record<string, string>> = {
   forward: "顺行",
   reverse: "逆行",
 };
+
+function relationCategory(relationType: string): string {
+  if (/[合会]/u.test(relationType)) return "合会";
+  if (/冲/u.test(relationType)) return "冲";
+  if (/刑/u.test(relationType)) return "刑";
+  if (/害/u.test(relationType)) return "害";
+  if (/破/u.test(relationType)) return "破";
+  return "其他";
+}
+
+function relationHighlightsSelection(
+  relation: Readonly<{ positions: ReadonlyArray<string>; branches: ReadonlyArray<string> }>,
+  selection: PillarSelection,
+): boolean {
+  return Boolean(
+    selection &&
+      (relation.positions.includes(selection.position) ||
+        relation.branches.includes(selection.branch)),
+  );
+}
+
+function BranchRelationsPanel({
+  facts,
+  pillars,
+  selection,
+}: Readonly<{
+  facts: BaziCoreFacts;
+  pillars: BaziChartView["pillars"];
+  selection: PillarSelection;
+}>) {
+  const relations = facts.branch_relations ?? [];
+  if (relations.length === 0) return null;
+
+  const pillarCells = PILLAR_POSITIONS.map((position) => {
+    const value = pillars?.[position] ?? null;
+    return {
+      position,
+      stem: value?.slice(0, 1) ?? "未返回",
+      branch: value?.slice(1, 2) ?? "未返回",
+    };
+  });
+
+  const relationLines = relations.flatMap((relation, relationIndex) => {
+    const positions = relation.positions.filter(
+      (position): position is PillarPosition =>
+        PILLAR_POSITIONS.includes(position as PillarPosition),
+    );
+    if (positions.length < 2) return [];
+    const highlighted = relationHighlightsSelection(relation, selection);
+    return positions.slice(1).map((target, pairIndex) => ({
+      id: `${relationIndex}-${pairIndex}`,
+      relationType: relation.relation_type,
+      source: positions[0],
+      target,
+      highlighted,
+    }));
+  });
+
+  return (
+    <section className={styles.relationSection} aria-label="干支关系事实">
+      <div className={styles.sectionHeading}>
+        <h4>干支关系</h4>
+        <p>天干与地支按 Runtime 返回的柱位和关系事实展示；类别只作中性区分。</p>
+      </div>
+      <div className={styles.relationViewport}>
+        <div className={styles.relationDiagram}>
+          <div className={styles.relationRow}>
+            <span className={styles.relationRowLabel}>天干</span>
+            {pillarCells.map((cell) => (
+              <span className={styles.relationCell} key={`stem-${cell.position}`}>
+                <FactMark value={cell.stem} selection={selection} />
+              </span>
+            ))}
+          </div>
+          <svg
+            className={styles.relationSvg}
+            viewBox="0 0 400 80"
+            preserveAspectRatio="none"
+            role="img"
+            aria-label="地支关系连线"
+          >
+            <title>地支关系连线</title>
+            {relationLines.map((line) => {
+              const sourceIndex = PILLAR_POSITIONS.indexOf(line.source);
+              const targetIndex = PILLAR_POSITIONS.indexOf(line.target);
+              return (
+                <line
+                  key={line.id}
+                  className={styles.relationLine}
+                  data-category={relationCategory(line.relationType)}
+                  data-fact-highlight={line.highlighted ? "true" : undefined}
+                  data-relation-type={line.relationType}
+                  x1={sourceIndex * 100 + 50}
+                  y1="14"
+                  x2={targetIndex * 100 + 50}
+                  y2="66"
+                />
+              );
+            })}
+          </svg>
+          <div className={styles.relationRow}>
+            <span className={styles.relationRowLabel}>地支</span>
+            {pillarCells.map((cell) => (
+              <span className={styles.relationCell} key={`branch-${cell.position}`}>
+                <FactMark value={cell.branch} selection={selection} />
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className={styles.relationTableViewport}>
+        <table className={styles.relationTable}>
+          <caption>地支关系事实</caption>
+          <thead>
+            <tr>
+              <th scope="col">关系类型</th>
+              <th scope="col">柱位</th>
+              <th scope="col">地支</th>
+              <th scope="col">类别</th>
+            </tr>
+          </thead>
+          <tbody>
+            {relations.map((relation, index) => {
+              const highlighted = relationHighlightsSelection(relation, selection);
+              return (
+                <tr key={`${relation.relation_type}-${index}`}>
+                  <th scope="row">
+                    <span
+                      className={styles.relationTag}
+                      data-category={relationCategory(relation.relation_type)}
+                      data-fact-highlight={highlighted ? "true" : undefined}
+                    >
+                      {relation.relation_type}
+                    </span>
+                  </th>
+                  <td>{relation.positions.map((position) => POSITION_LABELS[position] ?? position).join("、")}</td>
+                  <td>
+                    <FactMarks values={relation.branches} selection={selection} />
+                  </td>
+                  <td>{relationCategory(relation.relation_type)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function ElementInventoryChart({
+  facts,
+  selection,
+}: Readonly<{
+  facts: BaziCoreFacts;
+  selection: PillarSelection;
+}>) {
+  const inventory = facts.element_inventory;
+  if (!inventory) return null;
+
+  const elements = Array.from(
+    new Set([
+      ...inventory.visible_stem_branch_counts.map((item) => item.element),
+      ...inventory.hidden_stem_occurrence_counts.map((item) => item.element),
+    ]),
+  );
+  if (elements.length === 0) return null;
+
+  const maxCount = Math.max(
+    1,
+    ...elements.flatMap((element) => [
+      inventory.visible_stem_branch_counts.find((item) => item.element === element)?.value ?? 0,
+      inventory.hidden_stem_occurrence_counts.find((item) => item.element === element)?.value ?? 0,
+    ]),
+  );
+
+  return (
+    <section className={styles.elementSection} aria-label="五行计数事实">
+      <div className={styles.sectionHeading}>
+        <h4>五行计数</h4>
+        <p>只展示 Runtime 返回的可见干支计数与藏干出现次数。</p>
+      </div>
+      <div className={styles.elementChart}>
+        {elements.map((element) => {
+          const visible = inventory.visible_stem_branch_counts.find(
+            (item) => item.element === element,
+          )?.value;
+          const hidden = inventory.hidden_stem_occurrence_counts.find(
+            (item) => item.element === element,
+          )?.value;
+          const highlighted = Boolean(selection?.elements.includes(element));
+          const count = Math.max(visible ?? 0, hidden ?? 0);
+          return (
+            <div
+              className={styles.elementRow}
+              data-fact-highlight={highlighted ? "true" : undefined}
+              key={element}
+            >
+              <div className={styles.elementLabel}>
+                <FactElementMark element={element} selection={selection} />
+              </div>
+              <div className={styles.elementBarTrack} aria-hidden="true">
+                <span
+                  className={styles.elementBar}
+                  style={{ width: `${(count / maxCount) * 100}%` }}
+                />
+              </div>
+              <span className={styles.elementCount}>
+                {visible ?? "未返回"} / {hidden ?? "未返回"}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <div className={styles.elementTableViewport}>
+        <table className={styles.elementTable}>
+          <caption>五行计数</caption>
+          <thead>
+            <tr>
+              <th scope="col">五行</th>
+              <th scope="col">可见干支计数</th>
+              <th scope="col">藏干出现次数</th>
+            </tr>
+          </thead>
+          <tbody>
+            {elements.map((element) => (
+              <tr key={`count-${element}`}>
+                <th scope="row">
+                  <FactElementMark element={element} selection={selection} />
+                </th>
+                <td>{inventory.visible_stem_branch_counts.find((item) => item.element === element)?.value ?? "未返回"}</td>
+                <td>{inventory.hidden_stem_occurrence_counts.find((item) => item.element === element)?.value ?? "未返回"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+type LuckCycles = NonNullable<BaziCoreFacts["luck_cycles"]>;
+
+function LuckCycleSection({ facts }: Readonly<{ facts: LuckCycles }>) {
+  const unavailable =
+    facts.unavailable.length > 0
+      ? facts.unavailable
+      : facts.status === "not_calculated_missing_gender"
+        ? ["缺少性别，无法计算顺逆与起运序列"]
+        : [];
+  const boundary = facts.boundary_term
+    ? `${facts.boundary_term.name} · ${facts.boundary_term.datetime}`
+    : "未返回";
+
+  return (
+    <section className={styles.luckSection} aria-label="大运事实">
+      <div className={styles.sectionHeading}>
+        <h4>大运</h4>
+        <p>完整展示 Runtime 大运状态、起运口径与序列，不在浏览器补算。</p>
+      </div>
+      <dl className={styles.luckMeta}>
+        <div>
+          <dt>状态</dt>
+          <dd data-status={facts.status}>
+            {LUCK_STATUS_LABELS[facts.status] ?? facts.status}
+          </dd>
+        </div>
+        <div>
+          <dt>顺逆</dt>
+          <dd>{facts.direction ? LUCK_DIRECTION_LABELS[facts.direction] ?? facts.direction : "未返回"}</dd>
+        </div>
+        {facts.direction_rule ? (
+          <div>
+            <dt>顺逆规则</dt>
+            <dd>{facts.direction_rule}</dd>
+          </div>
+        ) : null}
+        {facts.start_age_rule ? (
+          <div>
+            <dt>起运规则</dt>
+            <dd>{facts.start_age_rule}</dd>
+          </div>
+        ) : null}
+        <div>
+          <dt>起运岁数</dt>
+          <dd>{facts.start_age_years ?? "未返回"}</dd>
+        </div>
+        <div>
+          <dt>边界节气</dt>
+          <dd>{boundary}</dd>
+        </div>
+        <div>
+          <dt>间隔天数</dt>
+          <dd>{facts.interval_days ?? "未返回"}</dd>
+        </div>
+        <div>
+          <dt>约略起运时刻</dt>
+          <dd>{facts.approximate_start_datetime ?? "未返回"}</dd>
+        </div>
+      </dl>
+      <div className={styles.luckTableViewport}>
+        <table className={styles.luckTable}>
+          <caption>完整大运序列</caption>
+          <thead>
+            <tr>
+              <th scope="col">序号</th>
+              <th scope="col">大运</th>
+              <th scope="col">起始岁数</th>
+              <th scope="col">结束岁数</th>
+            </tr>
+          </thead>
+          <tbody>
+            {facts.cycles.map((cycle) => (
+              <tr key={`${cycle.sequence}-${cycle.pillar}`}>
+                <th scope="row">{cycle.sequence}</th>
+                <td>{cycle.pillar}</td>
+                <td>{cycle.start_age_years ?? "未返回"}</td>
+                <td>{cycle.end_age_years ?? "未返回"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {unavailable.length > 0 ? (
+        <div className={styles.unavailableFacts}>
+          <h5>未能计算的项目</h5>
+          <ul>
+            {unavailable.map((item, index) => (
+              <li key={`${item}-${index}`}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+const TEMPORAL_FACT_LABELS: Readonly<Record<string, string>> = {
+  active_transits: "当前行运",
+  structural_changes: "结构变化",
+  seasonal_tiaohou_delta: "季节调候变化",
+  shensha_auxiliary: "神煞辅助",
+  active_luck_cycle: "当前大运",
+  calendar_normalization: "历法归一化",
+};
+
+function formatRecordValue(value: unknown, depth = 0): string {
+  if (value === null || value === undefined) return "未返回";
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    return value.length > 0
+      ? value.map((item) => formatRecordValue(item, depth + 1)).join("；")
+      : "0 项";
+  }
+  if (depth >= 2) return "已返回结构";
+  return Object.entries(value)
+    .map(([key, item]) => `${key}：${formatRecordValue(item, depth + 1)}`)
+    .join("；");
+}
+
+function TemporalFactList({
+  label,
+  facts,
+}: Readonly<{
+  label: string;
+  facts: Readonly<Record<string, unknown>> | null | undefined;
+}>) {
+  if (!facts) return null;
+  const entries = Object.entries(facts);
+  if (entries.length === 0) return null;
+  return (
+    <div className={styles.temporalFactBlock}>
+      <h5>{label}</h5>
+      <dl className={styles.temporalFactList}>
+        {entries.map(([key, value]) => (
+          <div key={key}>
+            <dt>{TEMPORAL_FACT_LABELS[key] ?? key}</dt>
+            <dd>{formatRecordValue(value)}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+function TemporalSegmentTable({
+  segments,
+}: Readonly<{
+  segments: ReadonlyArray<Readonly<Record<string, unknown>>>;
+}>) {
+  if (segments.length === 0) return null;
+  return (
+    <div className={styles.temporalTableViewport}>
+      <table className={styles.temporalTable}>
+        <caption>分段事实</caption>
+        <thead>
+          <tr>
+            <th scope="col">开始</th>
+            <th scope="col">结束</th>
+            <th scope="col">干支</th>
+            <th scope="col">天干十神</th>
+            <th scope="col">藏干十神</th>
+            <th scope="col">地支关系</th>
+          </tr>
+        </thead>
+        <tbody>
+          {segments.map((segment, index) => (
+            <tr key={`${String(segment.ganzhi ?? "segment")}-${index}`}>
+              <td>{formatRecordValue(segment.start_inclusive)}</td>
+              <td>{formatRecordValue(segment.end_exclusive)}</td>
+              <td>{formatRecordValue(segment.ganzhi)}</td>
+              <td>{formatRecordValue(segment.stem_ten_god)}</td>
+              <td>{formatRecordValue(segment.branch_hidden_ten_gods)}</td>
+              <td>{formatRecordValue(segment.branch_relations)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+type BaziYearLayer = NonNullable<BaziCoreFacts["year_layers"]>[number];
+
+function YearLayerBoard({
+  layers,
+  selection,
+}: Readonly<{
+  layers: ReadonlyArray<BaziYearLayer>;
+  selection: PillarSelection;
+}>) {
+  if (layers.length === 0) return null;
+  return (
+    <section className={styles.temporalSection} aria-label="流年事实">
+      <div className={styles.sectionHeading}>
+        <h4>流年事实</h4>
+        <p>逐年展示 Runtime 已返回的干支、十神、关系与分段事实。</p>
+      </div>
+      <div className={styles.temporalTableViewport}>
+        <table className={styles.temporalTable}>
+          <caption>完整流年事实</caption>
+          <thead>
+            <tr>
+              <th scope="col">年份</th>
+              <th scope="col">干支</th>
+              <th scope="col">天干十神</th>
+              <th scope="col">藏干十神</th>
+              <th scope="col">地支关系</th>
+              <th scope="col">结构状态</th>
+              <th scope="col">分段</th>
+            </tr>
+          </thead>
+          <tbody>
+            {layers.map((layer) => (
+              <tr key={layer.year}>
+                <th scope="row">{layer.year}</th>
+                <td>
+                  <FactMark value={layer.ganzhi.slice(0, 1)} selection={selection} />
+                  <FactMark value={layer.ganzhi.slice(1, 2)} selection={selection} />
+                </td>
+                <td>
+                  <FactMark
+                    value={layer.stem_ten_god}
+                    highlightValue={layer.ganzhi.slice(0, 1)}
+                    selection={selection}
+                  />
+                </td>
+                <td>
+                  {layer.branch_hidden_ten_gods.map((item, index) => (
+                    <span key={`${item.stem}-${index}`}>
+                      {index > 0 ? "；" : null}
+                      <FactMark value={item.stem} selection={selection} /> ·{" "}
+                      <FactMark
+                        value={item.ten_god}
+                        highlightValue={item.stem}
+                        selection={selection}
+                      />
+                    </span>
+                  ))}
+                </td>
+                <td>
+                  {layer.branch_relations.length > 0
+                    ? layer.branch_relations
+                        .map((item) => `${item.relation_type}（${item.natal_branch}·${item.transit_branch}）`)
+                        .join("；")
+                    : "未返回"}
+                </td>
+                <td>{layer.structural_changes.status}</td>
+                <td>{layer.ganzhi_segments.length}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {layers.map((layer) => (
+        <details className={styles.temporalDetail} key={`detail-${layer.year}`} open>
+          <summary>{layer.year} {layer.ganzhi} · 分段事实</summary>
+          <TemporalSegmentTable segments={layer.ganzhi_segments} />
+          <div className={styles.temporalFactGrid}>
+            <TemporalFactList label="当前大运" facts={layer.active_luck_cycle} />
+            <TemporalFactList label="季节作用" facts={layer.seasonal_effect} />
+            <TemporalFactList label="调候作用" facts={layer.tiaohou_effect} />
+            <TemporalFactList label="季节调候变化" facts={layer.seasonal_tiaohou_delta} />
+            <TemporalFactList label="历法归一化" facts={layer.calendar_normalization} />
+          </div>
+        </details>
+      ))}
+    </section>
+  );
+}
+
+function TemporalLayerBoard({
+  label,
+  layers,
+}: Readonly<{
+  label: string;
+  layers: ReadonlyArray<BaziTemporalLayer>;
+}>) {
+  if (layers.length === 0) return null;
+  return (
+    <section className={styles.temporalSection} aria-label={`${label}事实`}>
+      <div className={styles.sectionHeading}>
+        <h4>{label}事实</h4>
+        <p>逐期展示 Runtime 已返回的时间、分段、结构和规则轨迹事实。</p>
+      </div>
+      <div className={styles.temporalTableViewport}>
+        <table className={styles.temporalTable}>
+          <caption>{label}总览</caption>
+          <thead>
+            <tr>
+              <th scope="col">周期</th>
+              <th scope="col">年份</th>
+              <th scope="col">月份</th>
+              <th scope="col">日期</th>
+              <th scope="col">代表时刻</th>
+              <th scope="col">分段</th>
+            </tr>
+          </thead>
+          <tbody>
+            {layers.map((layer) => (
+              <tr key={layer.period}>
+                <th scope="row">{layer.period}</th>
+                <td>{layer.year}</td>
+                <td>{layer.month ?? "未返回"}</td>
+                <td>{layer.date ?? "未返回"}</td>
+                <td>{layer.representative_instant ?? "未返回"}</td>
+                <td>{layer.ganzhi_segments.length}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {layers.map((layer) => (
+        <details className={styles.temporalDetail} key={`detail-${layer.period}`} open>
+          <summary>{layer.period} · 分段与时间层事实</summary>
+          <TemporalSegmentTable segments={layer.ganzhi_segments} />
+          <div className={styles.temporalFactGrid}>
+            <TemporalFactList label="当前行运" facts={layer.active_transits} />
+            <TemporalFactList label="结构变化" facts={layer.structural_changes} />
+            <TemporalFactList label="季节调候变化" facts={layer.seasonal_tiaohou_delta} />
+            <TemporalFactList label="神煞辅助" facts={layer.shensha_auxiliary} />
+            <TemporalFactList label="当前大运" facts={layer.active_luck_cycle} />
+            <TemporalFactList label="历法归一化" facts={layer.calendar_normalization} />
+          </div>
+          {layer.rule_trace.length > 0 ? (
+            <div className={styles.temporalFactBlock}>
+              <h5>规则轨迹</h5>
+              <ul className={styles.ruleTraceList}>
+                {layer.rule_trace.map((item, index) => (
+                  <li key={`${String(item.rule_id ?? "rule")}-${index}`}>
+                    {formatRecordValue(item)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </details>
+      ))}
+    </section>
+  );
+}
 
 const PREDICATE_AUDIT_LABELS: Readonly<Record<string, string>> = {
   "/day_master/stem:eq:甲": "日主天干为甲",
@@ -217,16 +838,24 @@ const CHANGED_PILLAR_LABELS: Readonly<Record<"year" | "month" | "day" | "hour", 
 };
 
 type PillarSelection = Readonly<{
+  position: PillarPosition;
   stem: string;
   branch: string;
+  elements: ReadonlyArray<string>;
 }> | null;
 
 function FactMark({
   value,
   selection,
-}: Readonly<{ value: string; selection: PillarSelection }>) {
+  highlightValue = value,
+}: Readonly<{
+  value: string;
+  selection: PillarSelection;
+  highlightValue?: string;
+}>) {
   const highlighted = Boolean(
-    selection && (value === selection.stem || value === selection.branch),
+    selection &&
+      (highlightValue === selection.stem || highlightValue === selection.branch),
   );
   return (
     <span
@@ -253,6 +882,41 @@ function FactMarks({
       <FactMark value={value} selection={selection} />
     </span>
   ));
+}
+
+function FactElementMark({
+  element,
+  selection,
+}: Readonly<{ element: string; selection: PillarSelection }>) {
+  const highlighted = Boolean(selection?.elements.includes(element));
+  return (
+    <span
+      className={highlighted ? styles.factHighlight : undefined}
+      data-fact-highlight={highlighted ? "true" : undefined}
+    >
+      {ELEMENT_LABELS[element] ?? element}
+    </span>
+  );
+}
+
+function pillarElements(
+  value: string | null | undefined,
+  position: PillarPosition,
+  hiddenStems: BaziCoreFacts["hidden_stems"] | undefined,
+): ReadonlyArray<string> {
+  if (!value) return [];
+  const hiddenStemValues =
+    hiddenStems?.find((item) => item.position === position)?.stems ?? [];
+  return Array.from(
+    new Set(
+      [
+        STEM_ELEMENTS[value.slice(0, 1)],
+        BRANCH_ELEMENTS[value.slice(1, 2)],
+        ...hiddenStemValues.map((stem) => STEM_ELEMENTS[stem]),
+      ]
+        .filter((element): element is string => Boolean(element)),
+    ),
+  );
 }
 
 function formatSeconds(value: number | null): string | null {
@@ -569,12 +1233,16 @@ function BaziEvidenceDrawer({
 
 function BaziCoreFactSummary({
   facts,
+  pillars,
   selection,
   evidence,
+  showInterpretiveSections,
 }: Readonly<{
   facts: BaziCoreFacts | null | undefined;
+  pillars: BaziChartView["pillars"];
   selection: PillarSelection;
   evidence: ReadonlyArray<ReadingEvidence>;
+  showInterpretiveSections: boolean;
 }>) {
   if (!facts) return null;
   const rows: Array<{ label: string; content: ReactNode }> = [];
@@ -611,7 +1279,13 @@ function BaziCoreFactSummary({
       content: tenGods.map((item, index) => (
         <span key={`${item.layer}-${item.position}-${item.stem}-${index}`}>
           {index > 0 ? "；" : null}
-          {item.layer === "hidden_stem" ? "藏干" : "天干"} · {POSITION_LABELS[item.position] ?? item.position} <FactMark value={item.stem} selection={selection} /> · {item.ten_god}
+          {item.layer === "hidden_stem" ? "藏干" : "天干"} · {POSITION_LABELS[item.position] ?? item.position}{" "}
+          <FactMark value={item.stem} selection={selection} /> ·{" "}
+          <FactMark
+            value={item.ten_god}
+            highlightValue={item.stem}
+            selection={selection}
+          />
         </span>
       )),
     });
@@ -673,25 +1347,6 @@ function BaziCoreFactSummary({
       content: `${facts.tiaohou_markers.markers.join("、")} · ${facts.tiaohou_markers.scope}`,
     });
   }
-  if (facts.element_inventory) {
-    rows.push({
-      label: "五行计数",
-      content: facts.element_inventory.visible_stem_branch_counts
-        .map((item) => `${ELEMENT_LABELS[item.element] ?? item.element}${item.value}`)
-        .join("、"),
-    });
-  }
-  if (facts.branch_relations?.length) {
-    rows.push({
-      label: "地支关系",
-      content: facts.branch_relations.map((item, index) => (
-        <span key={`${item.relation_type}-${index}`}>
-          {index > 0 ? "；" : null}
-          {item.relation_type}（<FactMarks values={item.branches} selection={selection} />）
-        </span>
-      )),
-    });
-  }
   if (facts.shensha_auxiliary) {
     rows.push({
       label: "神煞辅助",
@@ -705,57 +1360,19 @@ function BaziCoreFactSummary({
         : "本命未命中已声明的辅助项",
     });
   }
-  if (facts.luck_cycles) {
-    const cycles = facts.luck_cycles.cycles.slice(0, 3).map((item) => item.pillar).join("、");
-    const status = LUCK_STATUS_LABELS[facts.luck_cycles.status] ?? facts.luck_cycles.status;
-    const direction = facts.luck_cycles.direction
-      ? LUCK_DIRECTION_LABELS[facts.luck_cycles.direction] ?? facts.luck_cycles.direction
-      : null;
-    rows.push({
-      label: "大运",
-      content: [status, direction, cycles ? `序列 ${cycles}` : null]
-        .filter((value): value is string => Boolean(value))
-        .join(" · "),
-    });
-  }
-  if (facts.year_layers?.length) {
-    rows.push({
-      label: "流年",
-      content: facts.year_layers.map((item, index) => (
-        <span key={`${item.year}-${item.ganzhi}-${index}`}>
-          {index > 0 ? "；" : null}
-          {item.year} {item.ganzhi} · {item.stem_ten_god} · 立春分段 {item.ganzhi_segments.length} 段 · 大运 {typeof item.active_luck_cycle.status === "string" ? LUCK_STATUS_LABELS[item.active_luck_cycle.status] ?? item.active_luck_cycle.status : "已返回"}
-        </span>
-      )),
-    });
-  }
-  if (facts.month_layers?.length) {
-    rows.push({
-      label: "流月",
-      content: facts.month_layers.map((item, index) => {
-        const ganzhi = item.ganzhi_segments
-          .map((segment) => (typeof segment.ganzhi === "string" ? segment.ganzhi : null))
-          .filter((value): value is string => Boolean(value))
-          .join("、");
-        return <span key={`${item.period}-${index}`}>{index > 0 ? "；" : null}{item.period} · {ganzhi || "分段事实"} · {item.ganzhi_segments.length} 段</span>;
-      }),
-    });
-  }
-  if (facts.day_layers?.length) {
-    rows.push({
-      label: "流日",
-      content: facts.day_layers.map((item, index) => {
-        const ganzhi = item.ganzhi_segments
-          .map((segment) => (typeof segment.ganzhi === "string" ? segment.ganzhi : null))
-          .filter((value): value is string => Boolean(value))
-          .join("、");
-        return <span key={`${item.period}-${index}`}>{index > 0 ? "；" : null}{item.period} · {ganzhi || "分段事实"} · {item.ganzhi_segments.length} 段</span>;
-      }),
-    });
-  }
   const sourcePatterns = facts.source_conditioned_patterns ?? [];
   const hasEvidence = resolveBaziEvidence(sourcePatterns, evidence).length > 0;
-  if (!rows.length && !facts.calendar_normalization && !facts.interpretive_candidates && !hasEvidence) return null;
+  const hasStructuredFacts = Boolean(
+    facts.element_inventory || facts.branch_relations?.length || facts.luck_cycles ||
+      facts.year_layers?.length || facts.month_layers?.length || facts.day_layers?.length,
+  );
+  if (
+    !rows.length &&
+    !facts.calendar_normalization &&
+    !facts.interpretive_candidates &&
+    !hasEvidence &&
+    !hasStructuredFacts
+  ) return null;
   return (
     <>
       <TimeBasisFacts calendar={facts.calendar_normalization} />
@@ -775,11 +1392,14 @@ function BaziCoreFactSummary({
           </p>
         </details>
       ) : null}
-      <BaziCandidateSection candidates={facts.interpretive_candidates} />
-      <BaziEvidenceDrawer
-        patterns={sourcePatterns}
-        evidence={evidence}
-      />
+      <ElementInventoryChart facts={facts} selection={selection} />
+      <BranchRelationsPanel facts={facts} pillars={pillars} selection={selection} />
+      {showInterpretiveSections ? (
+        <BaziCandidateSection candidates={facts.interpretive_candidates} />
+      ) : null}
+      {showInterpretiveSections ? (
+        <BaziEvidenceDrawer patterns={sourcePatterns} evidence={evidence} />
+      ) : null}
     </>
   );
 }
@@ -793,10 +1413,12 @@ export function BaziChart({
   chart,
   title = "八字命盘",
   evidence = [],
+  showInterpretiveSections = true,
 }: Readonly<{
   chart: BaziChartView;
   title?: string;
   evidence?: ReadonlyArray<ReadingEvidence>;
+  showInterpretiveSections?: boolean;
 }>) {
   const detailId = `bazi-focus-${useId()}`;
   const view = useMemo(
@@ -821,13 +1443,50 @@ export function BaziChart({
   const selectedValue = workspaceView.cells.find(
     (cell) => cell.id === activeSelectionId,
   )?.value;
-  const selection: PillarSelection = selectedValue
-    ? { stem: selectedValue.slice(0, 1), branch: selectedValue.slice(1, 2) }
+  const selectedPosition = PILLAR_POSITIONS.find(
+    (position) => position === activeSelectionId,
+  );
+  const selection: PillarSelection = selectedValue && selectedPosition
+    ? {
+      position: selectedPosition,
+      stem: selectedValue.slice(0, 1),
+      branch: selectedValue.slice(1, 2),
+      elements: pillarElements(
+        selectedValue,
+        selectedPosition,
+        chart.coreFacts?.hidden_stems,
+      ),
+    }
     : null;
 
   function renderBoard(layer: WorkspaceLayer) {
-    if (layer.id !== "natal") {
-      return <LayerNote layer={layer} />;
+    if (layer.id === "decadal") {
+      return chart.coreFacts?.luck_cycles ? (
+        <LuckCycleSection facts={chart.coreFacts.luck_cycles} />
+      ) : (
+        <LayerNote layer={layer} />
+      );
+    }
+    if (layer.id === "yearly") {
+      return chart.coreFacts?.year_layers?.length ? (
+        <YearLayerBoard layers={chart.coreFacts.year_layers} selection={selection} />
+      ) : (
+        <LayerNote layer={layer} />
+      );
+    }
+    if (layer.id === "monthly") {
+      return chart.coreFacts?.month_layers?.length ? (
+        <TemporalLayerBoard label="流月" layers={chart.coreFacts.month_layers} />
+      ) : (
+        <LayerNote layer={layer} />
+      );
+    }
+    if (layer.id === "daily") {
+      return chart.coreFacts?.day_layers?.length ? (
+        <TemporalLayerBoard label="流日" layers={chart.coreFacts.day_layers} />
+      ) : (
+        <LayerNote layer={layer} />
+      );
     }
     return (
       <div className={styles.board}>
@@ -868,8 +1527,10 @@ export function BaziChart({
 
         <BaziCoreFactSummary
           facts={chart.coreFacts}
+          pillars={chart.pillars}
           selection={selection}
           evidence={evidence}
+          showInterpretiveSections={showInterpretiveSections}
         />
       </div>
     );

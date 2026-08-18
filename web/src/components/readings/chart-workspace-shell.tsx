@@ -68,19 +68,25 @@ export function ChartWorkspaceShell({
       />
 
       <div className={styles.body}>
-        {view.layers.map((layer) => {
-          const active = layer.id === activeLayer.id;
-          return (
-            <div
-              key={layer.id}
-              id={`${layerIdPrefix}-panel-${layer.id}`}
-              role="tabpanel"
-              aria-labelledby={`${layerIdPrefix}-tab-${layer.id}`}
-              hidden={!active}
-              tabIndex={active ? 0 : -1}
-            >
-              {active ? (
-                <div className={styles.board} role="group" aria-label={boardLabel}>
+        <div className={styles.layerPanels}>
+          {view.layers.map((layer) => {
+            const active = layer.id === activeLayer.id;
+            return (
+              <div
+                key={layer.id}
+                id={`${layerIdPrefix}-panel-${layer.id}`}
+                role="tabpanel"
+                aria-labelledby={`${layerIdPrefix}-tab-${layer.id}`}
+                aria-hidden={!active}
+                data-active={active}
+                className={styles.layerPanel}
+                tabIndex={active ? 0 : -1}
+              >
+                <div
+                  className={styles.board}
+                  role="group"
+                  aria-label={`${boardLabel} · ${layer.label}`}
+                >
                   {layer.status === "empty" ? (
                     <p className={styles.emptyState}>
                       {layer.summary ?? "服务端尚未返回可展示的结构"}
@@ -89,10 +95,10 @@ export function ChartWorkspaceShell({
                     renderBoard(layer)
                   )}
                 </div>
-              ) : null}
-            </div>
-          );
-        })}
+              </div>
+            );
+          })}
+        </div>
         <FocusDetailDrawer id={detailId} detail={detail} onClose={onCloseDetail} />
       </div>
     </section>

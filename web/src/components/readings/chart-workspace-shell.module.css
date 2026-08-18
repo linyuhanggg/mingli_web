@@ -62,9 +62,35 @@
   align-items: start;
 }
 
+.layerPanels {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+.layerPanel {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  visibility: hidden;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.layerPanel[data-active="true"] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
+}
+
 .board {
   min-width: 0;
-  transition: opacity var(--duration-feedback) ease;
 }
 
 .emptyState {
@@ -83,7 +109,8 @@
     animation: none;
   }
 
-  .board {
+  .layerPanel {
     transition: none;
+    transform: none;
   }
 }

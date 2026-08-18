@@ -75,7 +75,7 @@
 .pillarCard[data-selected="true"] {
   border-color: var(--color-action);
   background: var(--color-surface-muted);
-  box-shadow: inset 0 0 0 1px var(--color-action);
+  font-weight: 700;
 }
 
 .pillarLabel {
@@ -104,10 +104,9 @@
 .factHighlight,
 .pillarStem[data-fact-highlight="true"],
 .pillarBranch[data-fact-highlight="true"] {
+  border: 1px solid var(--color-action);
   border-radius: 0.2rem;
   background: var(--color-surface-muted);
-  box-shadow: inset 0 -2px 0 var(--color-action);
-  color: var(--color-action);
   font-weight: 750;
 }
 
@@ -442,6 +441,377 @@
   line-height: 1.55;
 }
 
+.relationSection,
+.elementSection,
+.luckSection,
+.temporalSection {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.relationViewport,
+.relationTableViewport,
+.elementTableViewport,
+.luckTableViewport,
+.temporalTableViewport {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.relationDiagram {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 34rem;
+  padding: 0.75rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+}
+
+.relationRow {
+  display: grid;
+  grid-template-columns: 4rem repeat(4, minmax(5rem, 1fr));
+  align-items: center;
+  min-height: 2.2rem;
+}
+
+.relationRowLabel {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 750;
+}
+
+.relationCell {
+  display: grid;
+  min-width: 0;
+  justify-items: center;
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  font-weight: 650;
+}
+
+.relationSvg {
+  display: block;
+  width: calc(100% - 4rem);
+  min-width: 30rem;
+  height: 3.1rem;
+  margin-left: 4rem;
+  overflow: visible;
+}
+
+.relationLine {
+  fill: none;
+  stroke: var(--color-border-strong);
+  stroke-width: 2;
+}
+
+.relationLine[data-category="合会"] {
+  stroke: var(--color-border-strong);
+}
+
+.relationLine[data-category="冲"] {
+  stroke: var(--color-text-secondary);
+  stroke-dasharray: 5 3;
+}
+
+.relationLine[data-category="刑"],
+.relationLine[data-category="害"],
+.relationLine[data-category="破"],
+.relationLine[data-category="其他"] {
+  stroke: var(--color-border-strong);
+}
+
+.relationLine[data-fact-highlight="true"] {
+  stroke-width: 3;
+}
+
+.relationTable,
+.elementTable,
+.luckTable,
+.temporalTable {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  line-height: 1.5;
+}
+
+.elementTable,
+.luckTable {
+  min-width: 30rem;
+}
+
+.temporalTable {
+  min-width: 54rem;
+}
+
+.relationTable caption,
+.elementTable caption,
+.luckTable caption,
+.temporalTable caption {
+  margin-bottom: 0.45rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 750;
+  text-align: left;
+}
+
+.relationTable th,
+.relationTable td,
+.elementTable th,
+.elementTable td,
+.luckTable th,
+.luckTable td,
+.temporalTable th,
+.temporalTable td {
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.relationTable thead th,
+.elementTable thead th,
+.luckTable thead th,
+.temporalTable thead th {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 750;
+}
+
+.relationTable tbody th,
+.elementTable tbody th,
+.luckTable tbody th,
+.temporalTable tbody th {
+  font-weight: 700;
+}
+
+.relationTag {
+  display: inline-block;
+  padding: 0.12rem 0.35rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+  font-weight: 700;
+}
+
+.relationTag[data-category="合会"] {
+  border-color: var(--color-border-strong);
+}
+
+.relationTag[data-category="冲"] {
+  border-style: dashed;
+}
+
+.relationTag[data-fact-highlight="true"] {
+  border-color: var(--color-action);
+  background: var(--color-surface-muted);
+  font-weight: 800;
+}
+
+.elementChart {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+}
+
+.elementRow {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) minmax(5rem, auto);
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.25rem 0.35rem;
+  border: 1px solid transparent;
+  border-radius: 0.3rem;
+}
+
+.elementRow[data-fact-highlight="true"] {
+  border-color: var(--color-action);
+  background: var(--color-surface-muted);
+  font-weight: 750;
+}
+
+.elementLabel {
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.elementBarTrack {
+  min-width: 0;
+  height: 0.65rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-canvas);
+}
+
+.elementBar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-action-hover);
+}
+
+.elementCount {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.luckMeta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem 0.8rem;
+  margin: 0;
+}
+
+.luckMeta > div {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, auto) minmax(0, 1fr);
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+}
+
+.luckMeta dt,
+.luckMeta dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.luckMeta dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.luckMeta dd {
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+}
+
+.unavailableFacts {
+  padding: 0.7rem 0.8rem;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+}
+
+.unavailableFacts h5 {
+  margin: 0 0 0.35rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}
+
+.unavailableFacts ul,
+.ruleTraceList {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.unavailableFacts li,
+.ruleTraceList li {
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.temporalSection {
+  gap: 0.9rem;
+}
+
+.temporalDetail {
+  display: grid;
+  gap: 0.7rem;
+  min-width: 0;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.temporalDetail summary {
+  color: var(--color-action);
+  font-size: var(--font-size-label);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.temporalFactGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.temporalFactBlock {
+  min-width: 0;
+  padding: 0.65rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+}
+
+.temporalFactBlock h5 {
+  margin: 0 0 0.45rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 750;
+}
+
+.temporalFactList {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.temporalFactList > div {
+  display: grid;
+  grid-template-columns: minmax(5rem, auto) minmax(0, 1fr);
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.temporalFactList dt,
+.temporalFactList dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.temporalFactList dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.temporalFactList dd {
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  line-height: 1.55;
+}
+
 @container (min-width: 34rem) {
   .pillarGrid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -456,7 +826,18 @@
 
 @container (max-width: 33.99rem) {
   .timeBasisList,
-  .candidateGroups {
+  .candidateGroups,
+  .luckMeta,
+  .temporalFactGrid {
     grid-template-columns: 1fr;
+  }
+
+  .elementRow {
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+  }
+
+  .elementCount {
+    grid-column: 2;
+    text-align: left;
   }
 }

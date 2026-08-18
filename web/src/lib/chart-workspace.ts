@@ -9,7 +9,12 @@ import type { BaziChartView } from "./reading-display";
  * server did not provide renders as "unavailable" or "empty" with honest copy.
  */
 
-export type WorkspaceLayerId = "natal" | "decadal" | "yearly";
+export type WorkspaceLayerId =
+  | "natal"
+  | "decadal"
+  | "yearly"
+  | "monthly"
+  | "daily";
 export type WorkspaceLayerStatus = "ready" | "unavailable" | "empty";
 export type WorkspaceCellKind = "pillar" | "palace" | "meta";
 export type WorkspaceHighlightTone = "neutral" | "emphasis" | "caution";
@@ -84,8 +89,14 @@ export interface BaziWorkspaceFacts {
   targetDay?: string | null;
   targetPeriod?: string | null;
   calendarSummary?: string | null;
+  decadalReady?: boolean;
+  decadalSummary?: string | null;
   yearlyReady?: boolean;
   yearlySummary?: string | null;
+  monthlyReady?: boolean;
+  monthlySummary?: string | null;
+  dailyReady?: boolean;
+  dailySummary?: string | null;
   highlights?: BaziWorkspaceHighlightFacts[] | null;
 }
 
@@ -155,10 +166,16 @@ function buildLayers(facts: BaziWorkspaceFacts): WorkspaceLayer[] {
   const natalStatus: WorkspaceLayerStatus = hasAnyPillarValue(facts.pillars)
     ? "ready"
     : "empty";
-  const decadalStatus: WorkspaceLayerStatus = hasText(facts.activeLuck)
+  const decadalStatus: WorkspaceLayerStatus = facts.decadalReady || hasText(facts.activeLuck)
     ? "ready"
     : "unavailable";
   const yearlyStatus: WorkspaceLayerStatus = facts.yearlyReady
+    ? "ready"
+    : "unavailable";
+  const monthlyStatus: WorkspaceLayerStatus = facts.monthlyReady
+    ? "ready"
+    : "unavailable";
+  const dailyStatus: WorkspaceLayerStatus = facts.dailyReady
     ? "ready"
     : "unavailable";
 
@@ -176,15 +193,27 @@ function buildLayers(facts: BaziWorkspaceFacts): WorkspaceLayer[] {
       id: "decadal",
       label: "大运",
       status: decadalStatus,
-      summary: hasText(facts.activeLuck)
-        ? `当前大运 ${facts.activeLuck}`
-        : "此时间层未生成",
+      summary:
+        facts.decadalSummary ??
+        (hasText(facts.activeLuck) ? `当前大运 ${facts.activeLuck}` : "此时间层未生成"),
     },
     {
       id: "yearly",
       label: "流年",
       status: yearlyStatus,
       summary: facts.yearlySummary ?? "此时间层未生成",
+    },
+    {
+      id: "monthly",
+      label: "流月",
+      status: monthlyStatus,
+      summary: facts.monthlySummary ?? "此时间层未生成",
+    },
+    {
+      id: "daily",
+      label: "流日",
+      status: dailyStatus,
+      summary: facts.dailySummary ?? "此时间层未生成",
     },
   ];
 }
@@ -299,12 +328,41 @@ export function baziWorkspaceFactsFromChart(
     targetDay: chart.targetDay,
     targetPeriod: chart.targetPeriod,
     calendarSummary: chart.calendarSummary,
-    yearlyReady: chart.timeLayers?.some(
-      (layer) => layer.layer_id === "year" && layer.available,
+    decadalReady: Boolean(chart.coreFacts?.luck_cycles),
+    decadalSummary: chart.coreFacts?.luck_cycles
+      ? `状态：${chart.coreFacts.luck_cycles.status}`
+      : null,
+    yearlyReady: Boolean(
+      chart.coreFacts?.year_layers?.length ||
+        chart.timeLayers?.some(
+          (layer) => layer.layer_id === "year" && layer.available,
+        ),
     ),
     yearlySummary: chart.coreFacts?.year_layers?.length
       ? chart.coreFacts.year_layers
           .map((item) => `${item.year} ${item.ganzhi}（${item.ganzhi_segments.length} 个节气分段）`)
+          .join("；")
+      : null,
+    monthlyReady: Boolean(
+      chart.coreFacts?.month_layers?.length ||
+        chart.timeLayers?.some(
+          (layer) => layer.layer_id === "month" && layer.available,
+        ),
+    ),
+    monthlySummary: chart.coreFacts?.month_layers?.length
+      ? chart.coreFacts.month_layers
+          .map((item) => `${item.period}（${item.ganzhi_segments.length} 个节气分段）`)
+          .join("；")
+      : null,
+    dailyReady: Boolean(
+      chart.coreFacts?.day_layers?.length ||
+        chart.timeLayers?.some(
+          (layer) => layer.layer_id === "day" && layer.available,
+        ),
+    ),
+    dailySummary: chart.coreFacts?.day_layers?.length
+      ? chart.coreFacts.day_layers
+          .map((item) => `${item.period}（${item.ganzhi_segments.length} 个日界分段）`)
           .join("；")
       : null,
     highlights: chart.highlights.map((highlight) => ({

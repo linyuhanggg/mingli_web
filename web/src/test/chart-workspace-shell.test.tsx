@@ -108,11 +108,13 @@ describe("ChartWorkspaceShell", () => {
     render(<WorkspaceFixture view={view} />);
 
     const tabs = screen.getAllByRole("tab");
-    expect(tabs).toHaveLength(3);
+    expect(tabs).toHaveLength(5);
     expect(tabs[0]).toHaveTextContent("本命");
     expect(tabs[1]).toHaveTextContent("大运");
     expect(tabs[1]).toHaveTextContent("当前大运 丙午大运");
     expect(tabs[2]).toHaveTextContent("流年");
+    expect(tabs[3]).toHaveTextContent("流月");
+    expect(tabs[4]).toHaveTextContent("流日");
     expect(screen.getByRole("tab", { name: /^本命/ })).toHaveAttribute(
       "aria-selected",
       "true",
@@ -143,6 +145,8 @@ describe("ChartWorkspaceShell", () => {
     expect(tabs[0]).toHaveAttribute("tabindex", "0");
     expect(tabs[1]).toHaveAttribute("tabindex", "-1");
     expect(tabs[2]).toHaveAttribute("tabindex", "-1");
+    expect(tabs[3]).toHaveAttribute("tabindex", "-1");
+    expect(tabs[4]).toHaveAttribute("tabindex", "-1");
   });
 
   it("moves and activates tabs with arrows, Home, and End while skipping disabled layers", async () => {
@@ -195,6 +199,8 @@ describe("ChartWorkspaceShell", () => {
     expect(yearly).toHaveAttribute("aria-disabled", "true");
     expect(yearly).not.toHaveAttribute("aria-selected", "true");
     expect(within(yearly).getByText("未生成")).toBeVisible();
+    expect(screen.getByRole("tab", { name: /流月/ })).toBeDisabled();
+    expect(screen.getByRole("tab", { name: /流日/ })).toBeDisabled();
     expect(screen.getByRole("tab", { name: /^大运/ })).toBeDisabled();
   });
 
