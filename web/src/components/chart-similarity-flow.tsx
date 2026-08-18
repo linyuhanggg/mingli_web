@@ -112,7 +112,7 @@ export function ChartSimilarityFlow() {
 
   return (
     <div className={styles.wrap}>
-      <h2>比较两份命盘的八字四柱事实</h2>
+      <h1>比较两份命盘的八字四柱事实</h1>
       <p className={styles.lead}>
         选择两份已经确认的档案版本，由服务端 Runtime 逐柱比较年、月、日、时四柱原值。
       </p>

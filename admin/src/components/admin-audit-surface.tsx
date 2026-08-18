@@ -17,6 +17,49 @@ const COLUMNS: TableColumn[] = [
   { key: "createdAt", header: "发生时间", sortable: true },
 ];
 
+const ACTION_LABELS: Record<string, string> = {
+  "physiognomy_media.accepted": "相法媒体已接收",
+  "physiognomy_media.deleted": "相法媒体已删除",
+  "physiognomy_media.expired": "相法媒体已过期",
+  "entitlement.adjusted": "权益已调整",
+  "admin.login": "管理员已登录",
+  "admin.logout": "管理员已退出",
+  "admin.bootstrap_created": "初始管理员已创建",
+  "privacy.closure.execute": "隐私关闭已执行",
+  "referral.appeal.created": "推荐申诉已创建",
+  "referral.appeal.risk_signal.recorded": "推荐申诉风险信号已记录",
+  "referral.appeal.decided": "推荐申诉已裁定",
+  "referral.appeal.approval.recorded": "推荐申诉批准已记录",
+  "referral.appeal.corrected": "推荐申诉已更正",
+  "support_case.created": "支持工单已创建",
+  "device_session.revoked": "设备会话已撤销",
+  "staff.created": "员工已创建",
+  "staff.status.updated": "员工状态已更新",
+  "staff.role.updated": "员工角色已更新",
+  "staff.password.reset": "员工密码已重置",
+  "cms.draft.created": "内容草稿已创建",
+  "cms.draft.edited": "内容草稿已编辑",
+  "cms.revision.previewed": "内容版本已预览",
+  "cms.revision.scheduled": "内容版本已排期",
+  "cms.revision.published": "内容版本已发布",
+  "cms.revision.withdrawn": "内容版本已撤回",
+  "cms.revision.archived": "内容版本已归档",
+  "cms.revision.restored": "内容版本已恢复",
+  "staff.session.revoked": "员工会话已撤销",
+  "payment.reconciliation.run": "支付对账已执行",
+  "referral.campaign.created": "推荐活动已创建",
+  "referral.campaign.state_changed": "推荐活动状态已变更",
+  "referral.code.created": "推荐码已创建",
+  "referral.reward_slot.created": "推荐奖励位已创建",
+  "catalog.family.created": "商品族已创建",
+  "catalog.version.created": "商品版本已创建",
+  "catalog.offer.created": "商品报价已创建",
+  "catalog.version.published": "商品版本已发布",
+  "catalog.version.retired": "商品版本已退役",
+  "catalog.offer.enabled_changed": "商品报价启用状态已变更",
+  "notification.retry": "通知重试已触发",
+};
+
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat("zh-CN", {
     dateStyle: "medium",
@@ -35,7 +78,9 @@ function objectSummary(event: AdminAuditEvent): string {
 
 function resultSummary(event: AdminAuditEvent): string {
   const status = event.metadata.status;
-  if (typeof status === "string" && status) return status;
+  if (status === "success") return "成功";
+  if (status === "failed") return "失败";
+  if (status === "pending") return "待处理";
   if (event.action.endsWith("retry")) return "已记录重试";
   return "已记录";
 }
@@ -43,7 +88,7 @@ function resultSummary(event: AdminAuditEvent): string {
 function rowsFor(events: readonly AdminAuditEvent[]): TableRow[] {
   return events.map((event) => ({
     id: event.id,
-    action: event.action,
+    action: ACTION_LABELS[event.action] ?? "未公开审计动作",
     actor: event.actor,
     object: objectSummary(event),
     result: resultSummary(event),

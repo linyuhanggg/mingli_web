@@ -45,10 +45,12 @@ describe("AdminCapabilitiesSurface", () => {
     render(<AdminCapabilitiesSurface role="ops" />);
 
     expect(await screen.findByText("八字")).toBeVisible();
-    expect(screen.getByText("PUBLIC")).toBeVisible();
-    expect(screen.getByText("INTERNAL_TEST")).toBeVisible();
-    expect(screen.getByText("runtime_health：unverified")).toBeVisible();
+    expect(screen.getByText("公开")).toBeVisible();
+    expect(screen.getByText("内部测试")).toBeVisible();
+    expect(screen.getByText("未核验")).toBeVisible();
+    expect(screen.getByText("本命格局预览、八字深度解读")).toBeVisible();
     expect(screen.getByText("生产准入：未验证")).toBeVisible();
+    expect(document.body).not.toHaveTextContent(/PUBLIC|INTERNAL_TEST|runtime_health|profile_preview|bazi_deep/);
     expect(screen.queryByText(/api.?key/i)).not.toBeInTheDocument();
     expect(adminFetchMock).toHaveBeenCalledWith(
       "/api/v1/admin/capabilities?limit=100",

@@ -111,7 +111,7 @@ export function RhythmFactsFlow() {
 
   return (
     <div className={styles.wrap}>
-      <h2>查看本命音律事实</h2>
+      <h1>查看本命音律事实</h1>
       <p className={styles.lead}>
         从已确认档案读取 Runtime 计算的四柱纳音；本页只展示纳音事实，不把它扩写成姓名学、吉凶或性格结论。
       </p>

@@ -1,0 +1,110 @@
+{
+  "schema": "mingli.ui-lab-state-evidence/v1",
+  "generatedAt": "2026-08-18T21:01:44.284Z",
+  "project": "1024",
+  "route": "/_ui-lab",
+  "environment": "development-only",
+  "fixtureOnly": true,
+  "countedAsNormalPass": false,
+  "failures": [],
+  "states": [
+    {
+      "state": "loading",
+      "canonicalState": "loading",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "pageOverflowPx": 0,
+      "fixtureOnly": true,
+      "countedAsNormalPass": false,
+      "screenshot": "1024/loading.jpg"
+    },
+    {
+      "state": "empty",
+      "canonicalState": "empty",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "pageOverflowPx": 0,
+      "fixtureOnly": true,
+      "countedAsNormalPass": false,
+      "screenshot": "1024/empty.jpg"
+    },
+    {
+      "state": "failed",
+      "canonicalState": "error",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "pageOverflowPx": 0,
+      "fixtureOnly": true,
+      "countedAsNormalPass": false,
+      "screenshot": "1024/failed.jpg"
+    },
+    {
+      "state": "generating",
+      "canonicalState": "processing",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "pageOverflowPx": 0,
+      "fixtureOnly": true,
+      "countedAsNormalPass": false,
+      "screenshot": "1024/generating.jpg"
+    },
+    {
+      "state": "unavailable",
+      "canonicalState": "unavailable",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "pageOverflowPx": 0,
+      "fixtureOnly": true,
+      "countedAsNormalPass": false,
+      "screenshot": "1024/unavailable.jpg"
+    },
+    {
+      "state": "unauthorized",
+      "canonicalState": "unauthorized",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "pageOverflowPx": 0,
+      "fixtureOnly": true,
+      "countedAsNormalPass": false,
+      "screenshot": "1024/unauthorized.jpg"
+    },
+    {
+      "state": "locked",
+      "canonicalState": "locked",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "pageOverflowPx": 0,
+      "fixtureOnly": true,
+      "countedAsNormalPass": false,
+      "screenshot": "1024/locked.jpg"
+    }
+  ],
+  "workbenchLayout": {
+    "viewportWidth": 1024,
+    "expectedTwoColumn": true,
+    "isTwoColumn": true,
+    "boardPaneWidthPx": 520,
+    "rightReadingPaneWidthPx": 430,
+    "productionComponents": [
+      "WorkbenchShell",
+      "ReadingShell"
+    ],
+    "fixtureOnly": true,
+    "countedAsNormalPass": false,
+    "screenshot": "1024/workbench-layout.jpg"
+  }
+}

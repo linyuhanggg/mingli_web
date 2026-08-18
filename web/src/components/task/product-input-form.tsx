@@ -435,6 +435,78 @@ const OBSERVATION_OPTIONS: Record<string, Record<string, readonly string[]>> = {
   combined: { ...FACE_DESCRIPTOR_OPTIONS, ...PALM_DESCRIPTOR_OPTIONS, ...POSTURE_DESCRIPTOR_OPTIONS },
 };
 
+const OBSERVATION_REGION_LABELS: Record<string, string> = {
+  forehead: "额头",
+  left_eyebrow: "左眉",
+  right_eyebrow: "右眉",
+  left_eye: "左眼",
+  right_eye: "右眼",
+  nose: "鼻部",
+  mouth: "口唇",
+  chin: "下巴",
+  jawline: "下颌线",
+  left_ear: "左耳",
+  right_ear: "右耳",
+  left_cheek: "左脸颊",
+  right_cheek: "右脸颊",
+  complexion: "面部肤色",
+  left_palm: "左掌",
+  right_palm: "右掌",
+  life_line: "生命线",
+  head_line: "智慧线",
+  heart_line: "感情线",
+  fate_line: "事业线",
+  head_posture: "头部姿态",
+  shoulder_line: "肩线",
+  spine_curve: "脊柱曲线",
+  walking_gait: "行走姿态",
+  sitting_posture: "坐姿",
+};
+
+const OBSERVATION_DESCRIPTOR_LABELS: Record<string, string> = {
+  region_visible: "部位可见",
+  relative_width_broad: "相对较宽",
+  relative_width_narrow: "相对较窄",
+  contour_rounded: "轮廓圆润",
+  contour_flat: "轮廓平缓",
+  line_straight: "线形较直",
+  line_curved: "线形弯曲",
+  density_even: "密度均匀",
+  density_sparse_visible: "可见密度偏疏",
+  aperture_open: "开合较大",
+  aperture_narrow: "开合较窄",
+  alignment_level: "基本平齐",
+  bridge_straight: "鼻梁较直",
+  tip_rounded: "鼻头圆润",
+  lip_line_straight: "唇线较直",
+  lip_line_curved: "唇线弯曲",
+  mouth_closed: "嘴唇闭合",
+  mouth_open: "嘴唇张开",
+  contour_square: "轮廓方正",
+  contour_pointed: "轮廓偏尖",
+  outline_rounded: "外缘圆润",
+  outline_angular: "外缘有棱角",
+  outline_visible: "外缘可见",
+  partially_visible: "部分可见",
+  contour_full_relative: "相对饱满",
+  contour_flat_relative: "相对平缓",
+  ridge_visible: "掌纹可见",
+  texture_even_visible: "可见纹理均匀",
+  line_continuous: "线条连续",
+  line_discontinuous: "线条不连续",
+  line_deep_visible: "可见线条较深",
+  line_shallow_visible: "可见线条较浅",
+  level: "水平",
+  forward_tilt: "前倾",
+  backward_tilt: "后仰",
+  uneven: "不平齐",
+  aligned: "基本挺直",
+  curved: "有弯曲",
+  steady: "稳定",
+  upright: "直立",
+  forward_lean: "前倾",
+};
+
 function Field({ label, htmlFor, help, error, children }: FieldProps) {
   const helpId = help ? `${htmlFor}-help` : undefined;
   const errorId = error ? `${htmlFor}-error` : undefined;
@@ -1174,12 +1246,20 @@ export function ProductInputForm({
                     },
                   })}
                 >
-                  {Object.keys(observationOptions).map((region) => <option key={region} value={region}>{region}</option>)}
+                  {Object.keys(observationOptions).map((region) => (
+                    <option key={region} value={region}>
+                      {OBSERVATION_REGION_LABELS[region] ?? "未公开观察部位"}
+                    </option>
+                  ))}
                 </select>
               </Field>
               <Field htmlFor="jianxiang-observation-descriptor" label="观察描述" error={errors.observationDescriptor?.message}>
                 <select id="jianxiang-observation-descriptor" {...register("observationDescriptor")}>
-                  {(observationOptions[observationRegion] ?? ["region_visible"]).map((descriptor) => <option key={descriptor} value={descriptor}>{descriptor}</option>)}
+                  {(observationOptions[observationRegion] ?? ["region_visible"]).map((descriptor) => (
+                    <option key={descriptor} value={descriptor}>
+                      {OBSERVATION_DESCRIPTOR_LABELS[descriptor] ?? "未公开观察描述"}
+                    </option>
+                  ))}
                 </select>
               </Field>
             </div>

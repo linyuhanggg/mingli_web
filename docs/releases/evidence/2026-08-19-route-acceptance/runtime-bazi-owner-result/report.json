@@ -1,0 +1,2191 @@
+{
+  "generatedAt": "2026-08-18T20:57:52.026Z",
+  "gitSha": "working-tree@ba41648e7f30f030b46f61704ecd35f11b9fe081",
+  "productBaseUrl": "http://127.0.0.1:3000",
+  "productRoute": "/bazi",
+  "productDataBoundary": "signed-runtime-release-owner-result",
+  "targetInput": {
+    "kind": "none",
+    "value": null
+  },
+  "releaseManifestSha256": "c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b",
+  "renderedCitations": [
+    "干为天元，支为地元，支中所藏为人元。",
+    "正月用壬，庚辛为助。二月耑用壬水。三月土重晦光，取甲佐之为妙",
+    "土无常性，视四时所乘，欲使相济得所，勿令太过弗及。",
+    "故五者流行而更轉順則相生逆則相尅",
+    "盛徳乘時曰旺如春木旺旺則生火火乃木之子子乗父業故火相木用水生生我者父母今子嗣得時登髙明顯赫之地而生我者當知退矣故水休休者羙之無極休然無事之義火能尅金金乃木之鬼被火尅制不能施設故金囚火能生土土為木之財財為隠藏之物草木發生土散氣塵所以春木尅土則死夏火旺火生土則土相木生火則木休水尅火則水因火尅金則金死六月土旺土生金則金相火生土則火休木尅土則木囚土尅水則水死秋金旺金生水則水相土生金則土休火尅金則火囚金尅木則木死冬水旺水生木則木相金生水則金休土尅水則土囚水尅火則火死",
+    "八字用神，專求月令，以日干配月令地支，而生尅不同，格局分焉。"
+  ],
+  "readingVersionIds": [
+    "54611102-0c62-4b2b-bf53-aa88c96f8b5c",
+    "7d0eedb3-f8ac-41c9-889b-8668b5a41cc4",
+    "f4e7ffc3-095f-4318-a850-5305028c8a6b",
+    "42945f73-5128-42bb-aa88-f667d8742bc6"
+  ],
+  "referenceBoundary": "local-qingnang-site-mirror-client-preview",
+  "ok": true,
+  "failures": [],
+  "results": [
+    {
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "source": "signed-runtime-release-owner-result",
+      "readingVersionId": "54611102-0c62-4b2b-bf53-aa88c96f8b5c",
+      "evidenceDrawerRendered": true,
+      "evidenceDrawer": {
+        "rendered": true,
+        "name": "命中古法 6 条 · 可核验",
+        "defaultCollapsed": true,
+        "keyboardOpened": true,
+        "collapsedAccessibility": {
+          "role": "DisclosureTriangle",
+          "focusable": true,
+          "focused": false,
+          "expanded": false
+        },
+        "focusedAccessibility": {
+          "role": "DisclosureTriangle",
+          "focusable": true,
+          "focused": true,
+          "expanded": false
+        },
+        "expandedAccessibility": {
+          "role": "DisclosureTriangle",
+          "focusable": true,
+          "focused": true,
+          "expanded": true
+        },
+        "cards": [
+          {
+            "title": "DR-01-01 三元一统",
+            "quotes": [
+              "干为天元，支为地元，支中所藏为人元。"
+            ],
+            "applicability": "/four_pillars:nonempty:()；/hidden_stems:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "滴天髓阐微",
+                "locator": "fulltext.md#L11"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "QR-02-01 — 三春丙火",
+            "quotes": [
+              "正月用壬，庚辛为助。二月耑用壬水。三月土重晦光，取甲佐之为妙"
+            ],
+            "applicability": "日主天干为丙；/month_command/branch:in:('寅', '卯', '辰')",
+            "sources": [
+              {
+                "sourceTitle": "穷通宝鉴",
+                "locator": "fulltext.md#L319"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "QTB-M01 四时乘气方法",
+            "quotes": [
+              "土无常性，视四时所乘，欲使相济得所，勿令太过弗及。"
+            ],
+            "applicability": "日主天干已返回；/month_command/branch:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "穷通宝鉴",
+                "locator": "fulltext.md#L9"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "R-01-02 五行生克次序",
+            "quotes": [
+              "故五者流行而更轉順則相生逆則相尅"
+            ],
+            "applicability": "/output/day_master/element:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "三命通会",
+                "locator": "fulltext.md#L34"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "R-02-04 五行旺相休囚死",
+            "quotes": [
+              "盛徳乘時曰旺如春木旺旺則生火火乃木之子子乗父業故火相木用水生生我者父母今子嗣得時登髙明顯赫之地而生我者當知退矣故水休休者羙之無極休然無事之義火能尅金金乃木之鬼被火尅制不能施設故金囚火能生土土為木之財財為隠藏之物草木發生土散氣塵所以春木尅土則死夏火旺火生土則土相木生火則木休水尅火則水因火尅金則金死六月土旺土生金則金相火生土則火休木尅土則木囚土尅水則水死秋金旺金生水則水相土生金則土休火尅金則火囚金尅木則木死冬水旺水生木則木相金生水則金休土尅水則土囚水尅火則火死"
+            ],
+            "applicability": "/output/day_master/element:nonempty:()；/output/month_command/main_qi_element:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "三命通会",
+                "locator": "fulltext.md#L636"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "ZPR-01: 以月令求用神",
+            "quotes": [
+              "八字用神，專求月令，以日干配月令地支，而生尅不同，格局分焉。"
+            ],
+            "applicability": "/output/day_master/stem:nonempty:()；/output/month_command/branch:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "子平真诠",
+                "locator": "fulltext.md#L179"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          }
+        ]
+      },
+      "layerReports": [
+        {
+          "layer": "natal",
+          "available": true,
+          "status": "ready",
+          "missingRuntimeField": null,
+          "layout": {
+            "innerWidth": 360,
+            "scrollWidth": 360,
+            "bodyScrollWidth": 360
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 59,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/360/mingli-natal.png"
+        },
+        {
+          "layer": "decadal",
+          "available": true,
+          "status": "ready",
+          "missingRuntimeField": null,
+          "layout": {
+            "innerWidth": 360,
+            "scrollWidth": 360,
+            "bodyScrollWidth": 360
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 18,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/360/mingli-decadal.png"
+        },
+        {
+          "layer": "yearly",
+          "available": false,
+          "status": "unavailable",
+          "missingRuntimeField": "core_facts.year_layers",
+          "layout": {
+            "innerWidth": 360,
+            "scrollWidth": 360,
+            "bodyScrollWidth": 360
+          },
+          "overflow": 0,
+          "minFontSizePx": null,
+          "truncatedCount": 0,
+          "unitCount": 0,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/360/mingli-yearly.png"
+        },
+        {
+          "layer": "monthly",
+          "available": false,
+          "status": "unavailable",
+          "missingRuntimeField": "core_facts.month_layers",
+          "layout": {
+            "innerWidth": 360,
+            "scrollWidth": 360,
+            "bodyScrollWidth": 360
+          },
+          "overflow": 0,
+          "minFontSizePx": null,
+          "truncatedCount": 0,
+          "unitCount": 0,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/360/mingli-monthly.png"
+        },
+        {
+          "layer": "daily",
+          "available": false,
+          "status": "unavailable",
+          "missingRuntimeField": "core_facts.day_layers",
+          "layout": {
+            "innerWidth": 360,
+            "scrollWidth": 360,
+            "bodyScrollWidth": 360
+          },
+          "overflow": 0,
+          "minFontSizePx": null,
+          "truncatedCount": 0,
+          "unitCount": 0,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/360/mingli-daily.png"
+        }
+      ],
+      "density": null,
+      "comparison": null
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "source": "signed-runtime-release-owner-result",
+      "readingVersionId": "7d0eedb3-f8ac-41c9-889b-8668b5a41cc4",
+      "evidenceDrawerRendered": true,
+      "evidenceDrawer": {
+        "rendered": true,
+        "name": "命中古法 6 条 · 可核验",
+        "defaultCollapsed": true,
+        "keyboardOpened": true,
+        "collapsedAccessibility": {
+          "role": "DisclosureTriangle",
+          "focusable": true,
+          "focused": false,
+          "expanded": false
+        },
+        "focusedAccessibility": {
+          "role": "DisclosureTriangle",
+          "focusable": true,
+          "focused": true,
+          "expanded": false
+        },
+        "expandedAccessibility": {
+          "role": "DisclosureTriangle",
+          "focusable": true,
+          "focused": true,
+          "expanded": true
+        },
+        "cards": [
+          {
+            "title": "DR-01-01 三元一统",
+            "quotes": [
+              "干为天元，支为地元，支中所藏为人元。"
+            ],
+            "applicability": "/four_pillars:nonempty:()；/hidden_stems:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "滴天髓阐微",
+                "locator": "fulltext.md#L11"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "QR-02-01 — 三春丙火",
+            "quotes": [
+              "正月用壬，庚辛为助。二月耑用壬水。三月土重晦光，取甲佐之为妙"
+            ],
+            "applicability": "日主天干为丙；/month_command/branch:in:('寅', '卯', '辰')",
+            "sources": [
+              {
+                "sourceTitle": "穷通宝鉴",
+                "locator": "fulltext.md#L319"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "QTB-M01 四时乘气方法",
+            "quotes": [
+              "土无常性，视四时所乘，欲使相济得所，勿令太过弗及。"
+            ],
+            "applicability": "日主天干已返回；/month_command/branch:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "穷通宝鉴",
+                "locator": "fulltext.md#L9"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "R-01-02 五行生克次序",
+            "quotes": [
+              "故五者流行而更轉順則相生逆則相尅"
+            ],
+            "applicability": "/output/day_master/element:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "三命通会",
+                "locator": "fulltext.md#L34"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "R-02-04 五行旺相休囚死",
+            "quotes": [
+              "盛徳乘時曰旺如春木旺旺則生火火乃木之子子乗父業故火相木用水生生我者父母今子嗣得時登髙明顯赫之地而生我者當知退矣故水休休者羙之無極休然無事之義火能尅金金乃木之鬼被火尅制不能施設故金囚火能生土土為木之財財為隠藏之物草木發生土散氣塵所以春木尅土則死夏火旺火生土則土相木生火則木休水尅火則水因火尅金則金死六月土旺土生金則金相火生土則火休木尅土則木囚土尅水則水死秋金旺金生水則水相土生金則土休火尅金則火囚金尅木則木死冬水旺水生木則木相金生水則金休土尅水則土囚水尅火則火死"
+            ],
+            "applicability": "/output/day_master/element:nonempty:()；/output/month_command/main_qi_element:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "三命通会",
+                "locator": "fulltext.md#L636"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "ZPR-01: 以月令求用神",
+            "quotes": [
+              "八字用神，專求月令，以日干配月令地支，而生尅不同，格局分焉。"
+            ],
+            "applicability": "/output/day_master/stem:nonempty:()；/output/month_command/branch:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "子平真诠",
+                "locator": "fulltext.md#L179"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          }
+        ]
+      },
+      "layerReports": [
+        {
+          "layer": "natal",
+          "available": true,
+          "status": "ready",
+          "missingRuntimeField": null,
+          "layout": {
+            "innerWidth": 768,
+            "scrollWidth": 768,
+            "bodyScrollWidth": 768
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 59,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/768/mingli-natal.png"
+        },
+        {
+          "layer": "decadal",
+          "available": true,
+          "status": "ready",
+          "missingRuntimeField": null,
+          "layout": {
+            "innerWidth": 768,
+            "scrollWidth": 768,
+            "bodyScrollWidth": 768
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 18,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/768/mingli-decadal.png"
+        },
+        {
+          "layer": "yearly",
+          "available": false,
+          "status": "unavailable",
+          "missingRuntimeField": "core_facts.year_layers",
+          "layout": {
+            "innerWidth": 768,
+            "scrollWidth": 768,
+            "bodyScrollWidth": 768
+          },
+          "overflow": 0,
+          "minFontSizePx": null,
+          "truncatedCount": 0,
+          "unitCount": 0,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/768/mingli-yearly.png"
+        },
+        {
+          "layer": "monthly",
+          "available": false,
+          "status": "unavailable",
+          "missingRuntimeField": "core_facts.month_layers",
+          "layout": {
+            "innerWidth": 768,
+            "scrollWidth": 768,
+            "bodyScrollWidth": 768
+          },
+          "overflow": 0,
+          "minFontSizePx": null,
+          "truncatedCount": 0,
+          "unitCount": 0,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/768/mingli-monthly.png"
+        },
+        {
+          "layer": "daily",
+          "available": false,
+          "status": "unavailable",
+          "missingRuntimeField": "core_facts.day_layers",
+          "layout": {
+            "innerWidth": 768,
+            "scrollWidth": 768,
+            "bodyScrollWidth": 768
+          },
+          "overflow": 0,
+          "minFontSizePx": null,
+          "truncatedCount": 0,
+          "unitCount": 0,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/768/mingli-daily.png"
+        }
+      ],
+      "density": {
+        "methodVersion": "visible-structured-row-v1",
+        "productCount": 77,
+        "referenceCount": 33,
+        "productUnits": [
+          {
+            "kind": "table-row",
+            "text": "木 2 2",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "火 1 2",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "土 4 3",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "金 1 2",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "六冲 年柱、月柱 戌、辰 冲",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "六合 年柱、时柱 戌、卯 合会",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "六冲 月柱、日柱 辰、戌 冲",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "六害 月柱、时柱 辰、卯 害",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "六合 日柱、时柱 戌、卯 合会",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "采用时间 民用钟表时间",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "标准经线 120°",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "经度修正 0 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "均时差 0 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "总修正 0 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "排盘采用时刻 1994年4月30日 05:55",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "真太阳时 未应用真太阳时",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "时辰边界 未跨时辰边界",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "日界状态 修正未跨日界",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "换日结果 晚子时策略未推进日柱",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "变柱 该修正未改变四柱",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "边界距离 3300 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "不确定区间 不在不确定区间",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "子时口径 按午夜换日",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "前一节气 谷雨 · 1994年4月20日 15:36",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "后一节气 立夏 · 1994年5月6日 01:54:05 · 月界节",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "换月口径 按节气交接时刻换月",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "日主 丙 · 火 · 阳",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "藏干 年柱 戌：戊、辛、丁；月柱 辰：戊、乙、癸；日柱 戌：戊、辛、丁；时柱 卯：乙",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "十神 天干 · 年柱 甲 · 偏印；天干 · 月柱 戊 · 食神；天干 · 日柱 丙 · 日主；天干 · 时柱 辛 · 正财；藏干 · 年柱 戊 · 食神；藏干 · 年柱 辛 · 正财；藏干 · 年柱 丁 · 劫财；藏干 · 月柱 戊 · 食神；藏干 · 月柱 乙 · 正印；藏干 · 月柱 癸 · 正官；藏干 · 日柱 戊 · 食神；藏干 · 日柱 辛 · 正财；藏干 · 日柱 丁 · 劫财；藏干 · 时柱 乙 · 正印",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "纳音 年柱 山头火；月柱 大林木；日柱 屋上土；时柱 松柏木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "十二长生 年柱 甲戌：养；月柱 戊辰：冠带；日柱 丙戌：墓；时柱 辛卯：绝",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "旬空 丙戌 属 甲申 旬：午、未",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "三垣 胎元 己未 · 命宫 甲戌 · 身宫 庚午",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "月令 辰月 · 主气 戊（土）",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "季节 季春 · 土承木余气 · 温 · 湿",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "调候标记 温、湿 · 仅作月令气候参照，不等于调候用神结论",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "神煞辅助 桃花（hour）",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 /four_pillars:nonempty:()；/hidden_stems:nonempty:()",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 滴天髓阐微 · fulltext.md#L11",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 日主天干为丙；/month_command/branch:in:('寅', '卯', '辰')",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 穷通宝鉴 · fulltext.md#L319",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 日主天干已返回；/month_command/branch:nonempty:()",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 穷通宝鉴 · fulltext.md#L9",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 /output/day_master/element:nonempty:()",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 三命通会 · fulltext.md#L34",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 /output/day_master/element:nonempty:()；/output/month_command/main_qi_element:nonempty:()",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 三命通会 · fulltext.md#L636",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 /output/day_master/stem:nonempty:()；/output/month_command/branch:nonempty:()",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 子平真诠 · fulltext.md#L179",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "滴天髓阐微 · fulltext.md#L11",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "穷通宝鉴 · fulltext.md#L319",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "穷通宝鉴 · fulltext.md#L9",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "三命通会 · fulltext.md#L34",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "三命通会 · fulltext.md#L636",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "子平真诠 · fulltext.md#L179",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "年柱 甲 戌 甲戌",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "月柱 戊 辰 戊辰",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "日柱 丙 戌 丙戌",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "时柱 辛 卯 辛卯",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "1 己巳 1.9442 11.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "2 庚午 11.9442 21.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "3 辛未 21.9442 31.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "4 壬申 31.9442 41.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "5 癸酉 41.9442 51.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "6 甲戌 51.9442 61.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "7 乙亥 61.9442 71.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "8 丙子 71.9442 81.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "9 丁丑 81.9442 91.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "10 戊寅 91.9442 101.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "状态 已计算",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "顺逆 顺行",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "顺逆规则 阳年男/阴年女顺，阴年男/阳年女逆；阴阳取年干",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "起运规则 距顺逆方向最近节令，三日折一年",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "起运岁数 1.944232",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "边界节气 立夏 · 1994年5月6日 01:54:05",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "间隔天数 5.832697",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "约略起运时刻 1996年4月9日 08:42:27",
+            "fontSizePx": 16,
+            "truncated": false
+          }
+        ],
+        "referenceUnits": [
+          {
+            "kind": "grid-cell",
+            "text": "公历 1994-04-30 05:55",
+            "fontSizePx": 14,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "农历 一九九四年三月二十 🐕 狗年",
+            "fontSizePx": 14,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "节气 清明 → 立夏",
+            "fontSizePx": 14,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "星期 周六",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "四象方位 白虎",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "星宿·值日 胃土彘",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "星宿吉凶 吉",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "年柱 甲 主星 · 偏印 戌 副星 · 食神",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "月柱 戊 主星 · 食神 辰 副星 · 食神",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "日主 日柱 丙 主星 · 日主 戌 副星 · 食神",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "时柱 辛 主星 · 正财 卯 副星 · 正印",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "戊土 辛金 丁火",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "戊土 乙木 癸水",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "乙木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "食神 正财 劫财",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "食神 正印 正官",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "正印",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "山头火",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "大林木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "屋上土",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "松柏木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "申酉",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "戌亥",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "午未",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "冠带",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "沐浴",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "国印贵人 德秀贵人 华盖",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "德秀贵人 金舆",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "国印贵人 德秀贵人 华盖 童子煞",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "太极贵人 德秀贵人 天医 桃花 阴差阳错",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "悬停神煞查看释义 · 点击固定",
+            "fontSizePx": 11,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "特殊宫位 先天三宫 命宫 甲 戌 主本性与运势基调 身宫 壬 申 主中晚归宿与心向 胎元 己 未 主受胎根基与父母缘 命宫取月令与生时，身宫取月令与时支；胎元为生月前三月之干支",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "五行力量 分布雷达 木 2 火 1 土 4 金 1 水 0 主气 土 4/8 次气 木 2/8 食伤旺秀 · 创造表达盛",
+            "fontSizePx": 16,
+            "truncated": false
+          }
+        ],
+        "referenceLayout": {
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "bodyScrollWidth": 768
+        },
+        "referenceScreenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/768/qingnang-result.png"
+      },
+      "comparison": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/comparison-768.png"
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "source": "signed-runtime-release-owner-result",
+      "readingVersionId": "f4e7ffc3-095f-4318-a850-5305028c8a6b",
+      "evidenceDrawerRendered": true,
+      "evidenceDrawer": {
+        "rendered": true,
+        "name": "命中古法 6 条 · 可核验",
+        "defaultCollapsed": true,
+        "keyboardOpened": true,
+        "collapsedAccessibility": {
+          "role": "DisclosureTriangle",
+          "focusable": true,
+          "focused": false,
+          "expanded": false
+        },
+        "focusedAccessibility": {
+          "role": "DisclosureTriangle",
+          "focusable": true,
+          "focused": true,
+          "expanded": false
+        },
+        "expandedAccessibility": {
+          "role": "DisclosureTriangle",
+          "focusable": true,
+          "focused": true,
+          "expanded": true
+        },
+        "cards": [
+          {
+            "title": "DR-01-01 三元一统",
+            "quotes": [
+              "干为天元，支为地元，支中所藏为人元。"
+            ],
+            "applicability": "/four_pillars:nonempty:()；/hidden_stems:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "滴天髓阐微",
+                "locator": "fulltext.md#L11"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "QR-02-01 — 三春丙火",
+            "quotes": [
+              "正月用壬，庚辛为助。二月耑用壬水。三月土重晦光，取甲佐之为妙"
+            ],
+            "applicability": "日主天干为丙；/month_command/branch:in:('寅', '卯', '辰')",
+            "sources": [
+              {
+                "sourceTitle": "穷通宝鉴",
+                "locator": "fulltext.md#L319"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "QTB-M01 四时乘气方法",
+            "quotes": [
+              "土无常性，视四时所乘，欲使相济得所，勿令太过弗及。"
+            ],
+            "applicability": "日主天干已返回；/month_command/branch:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "穷通宝鉴",
+                "locator": "fulltext.md#L9"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "R-01-02 五行生克次序",
+            "quotes": [
+              "故五者流行而更轉順則相生逆則相尅"
+            ],
+            "applicability": "/output/day_master/element:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "三命通会",
+                "locator": "fulltext.md#L34"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "R-02-04 五行旺相休囚死",
+            "quotes": [
+              "盛徳乘時曰旺如春木旺旺則生火火乃木之子子乗父業故火相木用水生生我者父母今子嗣得時登髙明顯赫之地而生我者當知退矣故水休休者羙之無極休然無事之義火能尅金金乃木之鬼被火尅制不能施設故金囚火能生土土為木之財財為隠藏之物草木發生土散氣塵所以春木尅土則死夏火旺火生土則土相木生火則木休水尅火則水因火尅金則金死六月土旺土生金則金相火生土則火休木尅土則木囚土尅水則水死秋金旺金生水則水相土生金則土休火尅金則火囚金尅木則木死冬水旺水生木則木相金生水則金休土尅水則土囚水尅火則火死"
+            ],
+            "applicability": "/output/day_master/element:nonempty:()；/output/month_command/main_qi_element:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "三命通会",
+                "locator": "fulltext.md#L636"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "ZPR-01: 以月令求用神",
+            "quotes": [
+              "八字用神，專求月令，以日干配月令地支，而生尅不同，格局分焉。"
+            ],
+            "applicability": "/output/day_master/stem:nonempty:()；/output/month_command/branch:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "子平真诠",
+                "locator": "fulltext.md#L179"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          }
+        ]
+      },
+      "layerReports": [
+        {
+          "layer": "natal",
+          "available": true,
+          "status": "ready",
+          "missingRuntimeField": null,
+          "layout": {
+            "innerWidth": 1024,
+            "scrollWidth": 1024,
+            "bodyScrollWidth": 1024
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 59,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/1024/mingli-natal.png"
+        },
+        {
+          "layer": "decadal",
+          "available": true,
+          "status": "ready",
+          "missingRuntimeField": null,
+          "layout": {
+            "innerWidth": 1024,
+            "scrollWidth": 1024,
+            "bodyScrollWidth": 1024
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 18,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/1024/mingli-decadal.png"
+        },
+        {
+          "layer": "yearly",
+          "available": false,
+          "status": "unavailable",
+          "missingRuntimeField": "core_facts.year_layers",
+          "layout": {
+            "innerWidth": 1024,
+            "scrollWidth": 1024,
+            "bodyScrollWidth": 1024
+          },
+          "overflow": 0,
+          "minFontSizePx": null,
+          "truncatedCount": 0,
+          "unitCount": 0,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/1024/mingli-yearly.png"
+        },
+        {
+          "layer": "monthly",
+          "available": false,
+          "status": "unavailable",
+          "missingRuntimeField": "core_facts.month_layers",
+          "layout": {
+            "innerWidth": 1024,
+            "scrollWidth": 1024,
+            "bodyScrollWidth": 1024
+          },
+          "overflow": 0,
+          "minFontSizePx": null,
+          "truncatedCount": 0,
+          "unitCount": 0,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/1024/mingli-monthly.png"
+        },
+        {
+          "layer": "daily",
+          "available": false,
+          "status": "unavailable",
+          "missingRuntimeField": "core_facts.day_layers",
+          "layout": {
+            "innerWidth": 1024,
+            "scrollWidth": 1024,
+            "bodyScrollWidth": 1024
+          },
+          "overflow": 0,
+          "minFontSizePx": null,
+          "truncatedCount": 0,
+          "unitCount": 0,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/1024/mingli-daily.png"
+        }
+      ],
+      "density": null,
+      "comparison": null
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "source": "signed-runtime-release-owner-result",
+      "readingVersionId": "42945f73-5128-42bb-aa88-f667d8742bc6",
+      "evidenceDrawerRendered": true,
+      "evidenceDrawer": {
+        "rendered": true,
+        "name": "命中古法 6 条 · 可核验",
+        "defaultCollapsed": true,
+        "keyboardOpened": true,
+        "collapsedAccessibility": {
+          "role": "DisclosureTriangle",
+          "focusable": true,
+          "focused": false,
+          "expanded": false
+        },
+        "focusedAccessibility": {
+          "role": "DisclosureTriangle",
+          "focusable": true,
+          "focused": true,
+          "expanded": false
+        },
+        "expandedAccessibility": {
+          "role": "DisclosureTriangle",
+          "focusable": true,
+          "focused": true,
+          "expanded": true
+        },
+        "cards": [
+          {
+            "title": "DR-01-01 三元一统",
+            "quotes": [
+              "干为天元，支为地元，支中所藏为人元。"
+            ],
+            "applicability": "/four_pillars:nonempty:()；/hidden_stems:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "滴天髓阐微",
+                "locator": "fulltext.md#L11"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "QR-02-01 — 三春丙火",
+            "quotes": [
+              "正月用壬，庚辛为助。二月耑用壬水。三月土重晦光，取甲佐之为妙"
+            ],
+            "applicability": "日主天干为丙；/month_command/branch:in:('寅', '卯', '辰')",
+            "sources": [
+              {
+                "sourceTitle": "穷通宝鉴",
+                "locator": "fulltext.md#L319"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "QTB-M01 四时乘气方法",
+            "quotes": [
+              "土无常性，视四时所乘，欲使相济得所，勿令太过弗及。"
+            ],
+            "applicability": "日主天干已返回；/month_command/branch:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "穷通宝鉴",
+                "locator": "fulltext.md#L9"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "R-01-02 五行生克次序",
+            "quotes": [
+              "故五者流行而更轉順則相生逆則相尅"
+            ],
+            "applicability": "/output/day_master/element:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "三命通会",
+                "locator": "fulltext.md#L34"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "R-02-04 五行旺相休囚死",
+            "quotes": [
+              "盛徳乘時曰旺如春木旺旺則生火火乃木之子子乗父業故火相木用水生生我者父母今子嗣得時登髙明顯赫之地而生我者當知退矣故水休休者羙之無極休然無事之義火能尅金金乃木之鬼被火尅制不能施設故金囚火能生土土為木之財財為隠藏之物草木發生土散氣塵所以春木尅土則死夏火旺火生土則土相木生火則木休水尅火則水因火尅金則金死六月土旺土生金則金相火生土則火休木尅土則木囚土尅水則水死秋金旺金生水則水相土生金則土休火尅金則火囚金尅木則木死冬水旺水生木則木相金生水則金休土尅水則土囚水尅火則火死"
+            ],
+            "applicability": "/output/day_master/element:nonempty:()；/output/month_command/main_qi_element:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "三命通会",
+                "locator": "fulltext.md#L636"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          },
+          {
+            "title": "ZPR-01: 以月令求用神",
+            "quotes": [
+              "八字用神，專求月令，以日干配月令地支，而生尅不同，格局分焉。"
+            ],
+            "applicability": "/output/day_master/stem:nonempty:()；/output/month_command/branch:nonempty:()",
+            "sources": [
+              {
+                "sourceTitle": "子平真诠",
+                "locator": "fulltext.md#L179"
+              }
+            ],
+            "boundary": "只呈现条件命中，不作断语。"
+          }
+        ]
+      },
+      "layerReports": [
+        {
+          "layer": "natal",
+          "available": true,
+          "status": "ready",
+          "missingRuntimeField": null,
+          "layout": {
+            "innerWidth": 1440,
+            "scrollWidth": 1440,
+            "bodyScrollWidth": 1440
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 59,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/1440/mingli-natal.png"
+        },
+        {
+          "layer": "decadal",
+          "available": true,
+          "status": "ready",
+          "missingRuntimeField": null,
+          "layout": {
+            "innerWidth": 1440,
+            "scrollWidth": 1440,
+            "bodyScrollWidth": 1440
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 18,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/1440/mingli-decadal.png"
+        },
+        {
+          "layer": "yearly",
+          "available": false,
+          "status": "unavailable",
+          "missingRuntimeField": "core_facts.year_layers",
+          "layout": {
+            "innerWidth": 1440,
+            "scrollWidth": 1440,
+            "bodyScrollWidth": 1440
+          },
+          "overflow": 0,
+          "minFontSizePx": null,
+          "truncatedCount": 0,
+          "unitCount": 0,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/1440/mingli-yearly.png"
+        },
+        {
+          "layer": "monthly",
+          "available": false,
+          "status": "unavailable",
+          "missingRuntimeField": "core_facts.month_layers",
+          "layout": {
+            "innerWidth": 1440,
+            "scrollWidth": 1440,
+            "bodyScrollWidth": 1440
+          },
+          "overflow": 0,
+          "minFontSizePx": null,
+          "truncatedCount": 0,
+          "unitCount": 0,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/1440/mingli-monthly.png"
+        },
+        {
+          "layer": "daily",
+          "available": false,
+          "status": "unavailable",
+          "missingRuntimeField": "core_facts.day_layers",
+          "layout": {
+            "innerWidth": 1440,
+            "scrollWidth": 1440,
+            "bodyScrollWidth": 1440
+          },
+          "overflow": 0,
+          "minFontSizePx": null,
+          "truncatedCount": 0,
+          "unitCount": 0,
+          "screenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/1440/mingli-daily.png"
+        }
+      ],
+      "density": {
+        "methodVersion": "visible-structured-row-v1",
+        "productCount": 77,
+        "referenceCount": 33,
+        "productUnits": [
+          {
+            "kind": "table-row",
+            "text": "木 2 2",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "火 1 2",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "土 4 3",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "金 1 2",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "六冲 年柱、月柱 戌、辰 冲",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "六合 年柱、时柱 戌、卯 合会",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "六冲 月柱、日柱 辰、戌 冲",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "六害 月柱、时柱 辰、卯 害",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "六合 日柱、时柱 戌、卯 合会",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "采用时间 民用钟表时间",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "标准经线 120°",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "经度修正 0 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "均时差 0 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "总修正 0 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "排盘采用时刻 1994年4月30日 05:55",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "真太阳时 未应用真太阳时",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "时辰边界 未跨时辰边界",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "日界状态 修正未跨日界",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "换日结果 晚子时策略未推进日柱",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "变柱 该修正未改变四柱",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "边界距离 3300 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "不确定区间 不在不确定区间",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "子时口径 按午夜换日",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "前一节气 谷雨 · 1994年4月20日 15:36",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "后一节气 立夏 · 1994年5月6日 01:54:05 · 月界节",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "换月口径 按节气交接时刻换月",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "日主 丙 · 火 · 阳",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "藏干 年柱 戌：戊、辛、丁；月柱 辰：戊、乙、癸；日柱 戌：戊、辛、丁；时柱 卯：乙",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "十神 天干 · 年柱 甲 · 偏印；天干 · 月柱 戊 · 食神；天干 · 日柱 丙 · 日主；天干 · 时柱 辛 · 正财；藏干 · 年柱 戊 · 食神；藏干 · 年柱 辛 · 正财；藏干 · 年柱 丁 · 劫财；藏干 · 月柱 戊 · 食神；藏干 · 月柱 乙 · 正印；藏干 · 月柱 癸 · 正官；藏干 · 日柱 戊 · 食神；藏干 · 日柱 辛 · 正财；藏干 · 日柱 丁 · 劫财；藏干 · 时柱 乙 · 正印",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "纳音 年柱 山头火；月柱 大林木；日柱 屋上土；时柱 松柏木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "十二长生 年柱 甲戌：养；月柱 戊辰：冠带；日柱 丙戌：墓；时柱 辛卯：绝",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "旬空 丙戌 属 甲申 旬：午、未",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "三垣 胎元 己未 · 命宫 甲戌 · 身宫 庚午",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "月令 辰月 · 主气 戊（土）",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "季节 季春 · 土承木余气 · 温 · 湿",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "调候标记 温、湿 · 仅作月令气候参照，不等于调候用神结论",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "神煞辅助 桃花（hour）",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 /four_pillars:nonempty:()；/hidden_stems:nonempty:()",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 滴天髓阐微 · fulltext.md#L11",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 日主天干为丙；/month_command/branch:in:('寅', '卯', '辰')",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 穷通宝鉴 · fulltext.md#L319",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 日主天干已返回；/month_command/branch:nonempty:()",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 穷通宝鉴 · fulltext.md#L9",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 /output/day_master/element:nonempty:()",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 三命通会 · fulltext.md#L34",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 /output/day_master/element:nonempty:()；/output/month_command/main_qi_element:nonempty:()",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 三命通会 · fulltext.md#L636",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 /output/day_master/stem:nonempty:()；/output/month_command/branch:nonempty:()",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 子平真诠 · fulltext.md#L179",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "滴天髓阐微 · fulltext.md#L11",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "穷通宝鉴 · fulltext.md#L319",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "穷通宝鉴 · fulltext.md#L9",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "三命通会 · fulltext.md#L34",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "三命通会 · fulltext.md#L636",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "子平真诠 · fulltext.md#L179",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "年柱 甲 戌 甲戌",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "月柱 戊 辰 戊辰",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "日柱 丙 戌 丙戌",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "时柱 辛 卯 辛卯",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "1 己巳 1.9442 11.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "2 庚午 11.9442 21.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "3 辛未 21.9442 31.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "4 壬申 31.9442 41.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "5 癸酉 41.9442 51.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "6 甲戌 51.9442 61.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "7 乙亥 61.9442 71.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "8 丙子 71.9442 81.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "9 丁丑 81.9442 91.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "10 戊寅 91.9442 101.9442",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "状态 已计算",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "顺逆 顺行",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "顺逆规则 阳年男/阴年女顺，阴年男/阳年女逆；阴阳取年干",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "起运规则 距顺逆方向最近节令，三日折一年",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "起运岁数 1.944232",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "边界节气 立夏 · 1994年5月6日 01:54:05",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "间隔天数 5.832697",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "约略起运时刻 1996年4月9日 08:42:27",
+            "fontSizePx": 16,
+            "truncated": false
+          }
+        ],
+        "referenceUnits": [
+          {
+            "kind": "grid-cell",
+            "text": "公历 1994-04-30 05:55",
+            "fontSizePx": 14,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "农历 一九九四年三月二十 🐕 狗年",
+            "fontSizePx": 14,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "节气 清明 → 立夏",
+            "fontSizePx": 14,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "星期 周六",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "四象方位 白虎",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "星宿·值日 胃土彘",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "星宿吉凶 吉",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "年柱 甲 主星 · 偏印 戌 副星 · 食神",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "月柱 戊 主星 · 食神 辰 副星 · 食神",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "日主 日柱 丙 主星 · 日主 戌 副星 · 食神",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "时柱 辛 主星 · 正财 卯 副星 · 正印",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "戊土 辛金 丁火",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "戊土 乙木 癸水",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "乙木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "食神 正财 劫财",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "食神 正印 正官",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "正印",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "山头火",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "大林木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "屋上土",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "松柏木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "申酉",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "戌亥",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "午未",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "冠带",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "沐浴",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "国印贵人 德秀贵人 华盖",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "德秀贵人 金舆",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "国印贵人 德秀贵人 华盖 童子煞",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "太极贵人 德秀贵人 天医 桃花 阴差阳错",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "悬停神煞查看释义 · 点击固定",
+            "fontSizePx": 11,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "特殊宫位 先天三宫 命宫 甲 戌 主本性与运势基调 身宫 壬 申 主中晚归宿与心向 胎元 己 未 主受胎根基与父母缘 命宫取月令与生时，身宫取月令与时支；胎元为生月前三月之干支",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "五行力量 分布雷达 木 2 火 1 土 4 金 1 水 0 主气 土 4/8 次气 木 2/8 食伤旺秀 · 创造表达盛",
+            "fontSizePx": 16,
+            "truncated": false
+          }
+        ],
+        "referenceLayout": {
+          "innerWidth": 1440,
+          "scrollWidth": 1440,
+          "bodyScrollWidth": 1440
+        },
+        "referenceScreenshot": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/1440/qingnang-result.png"
+      },
+      "comparison": "docs/releases/evidence/2026-08-19-route-acceptance/runtime-bazi-owner-result/comparison-1440.png"
+    }
+  ]
+}

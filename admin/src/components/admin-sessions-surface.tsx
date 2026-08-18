@@ -153,7 +153,7 @@ export function AdminSessionsSurface({ role }: { role?: StaffRole }) {
     ) : state === "empty" ? (
       <Status state="empty" title="暂无员工会话" description="员工登录后，这里会显示可撤销的会话元数据。" />
     ) : (
-      <Status state="success" title="员工会话已接入" description="列表不包含 token_hash、csrf_token_hash 或其他秘密材料。" />
+      <Status state="success" title="员工会话已接入" description="列表只展示会话元数据，不包含会话密钥或防伪校验材料。" />
     );
 
   return (

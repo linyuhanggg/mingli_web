@@ -111,7 +111,7 @@ export function FiveElementsFactsFlow() {
 
   return (
     <div className={styles.wrap}>
-      <h2>查看五行事实与调候依据</h2>
+      <h1>查看五行事实与调候依据</h1>
       <p className={styles.lead}>
         从已确认档案版本出发，读取服务端 Runtime 的五行库存、季节画像和调候适用性身份。
       </p>

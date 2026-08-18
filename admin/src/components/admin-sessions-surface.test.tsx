@@ -50,7 +50,7 @@ describe("AdminSessionsSurface", () => {
 
     expect(await screen.findByText("ops@example.com")).toBeVisible();
     expect(screen.getByText("有效")).toBeVisible();
-    expect(screen.queryByText("token_hash")).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/token_hash|csrf_token_hash/);
     await user.type(screen.getByLabelText("会话强退原因"), "撤销异常员工登录");
     await user.click(screen.getByRole("button", { name: "撤销会话" }));
 

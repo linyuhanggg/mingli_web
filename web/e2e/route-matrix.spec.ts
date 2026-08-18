@@ -45,20 +45,25 @@ const WEB_ROUTES = [
   "/checkout/demo-order",
   "/daily",
   "/daliuren",
+  "/fengshui",
   "/hecan",
   "/invite/demo-code",
   "/jianxiang",
   "/library",
   "/library/demo-article",
   "/liuyao",
+  "/luming-nayin",
+  "/meihua",
   "/methodology",
   "/pricing",
   "/privacy",
   "/qimen",
   "/qizheng",
   "/qizheng/hepan",
+  "/selection",
   "/share/demo-share",
   "/support",
+  "/taiyi",
   "/terms",
   "/tools",
   "/tools/chart-similarity",
@@ -79,8 +84,63 @@ type RouteEvidenceRecord = {
   httpStatus: number | null;
   viewport: { width: number; height: number };
   states: string[];
+  canonicalStates: string[];
+  layout: {
+    documentScrollWidth: number;
+    bodyScrollWidth: number;
+    overflowPx: number;
+    workbenchRightPaneWidthPx: number | null;
+  };
+  accessibility: {
+    h1Count: number;
+    focusableCount: number;
+    skipLinkCount: number;
+    skipLinkText: string | null;
+    skipLinkFirstFocused: boolean;
+    skipLinkFocusIndicatorVisible: boolean;
+    skipLinkObscured: boolean;
+    skipTarget: string | null;
+    skipTargetFocused: boolean;
+  };
+  reducedMotion: {
+    longRunningAnimations: number;
+    contentPreserved: boolean;
+    textLengthBefore: number;
+    textLengthAfter: number;
+  };
+  forbiddenSurface: {
+    fixtureMarkers: string[];
+    rawJsonMarkers: string[];
+    snakeCaseMarkers: string[];
+    oldBrandMarkers: string[];
+  };
+  failures: string[];
   screenshot: string;
 };
+
+const CANONICAL_STATE_ALIASES: Record<string, string> = {
+  empty: "empty",
+  error: "error",
+  forbidden: "unauthorized",
+  generating: "processing",
+  loading: "loading",
+  locked: "locked",
+  "need-login": "unauthorized",
+  pending: "processing",
+  preparing: "processing",
+  processing: "processing",
+  queued: "processing",
+  submitting: "processing",
+  unauthorized: "unauthorized",
+  unavailable: "unavailable",
+  validating: "processing",
+};
+
+function canonicalStates(states: string[]): string[] {
+  return Array.from(
+    new Set(states.map((state) => CANONICAL_STATE_ALIASES[state]).filter(Boolean)),
+  ).sort();
+}
 
 function routeEvidenceFileName(route: string, index: number): string {
   const label =
@@ -94,9 +154,11 @@ function routeEvidenceFileName(route: string, index: number): string {
 test("public and private route matrix has no critical browser failures or horizontal overflow", async ({
   page,
 }, testInfo) => {
+  test.setTimeout(15 * 60_000);
   let currentRoute = "";
   const browserErrors: string[] = [];
   const criticalHttpErrors: string[] = [];
+  const failures: string[] = [];
   const evidenceRoot = process.env.ROUTE_EVIDENCE_DIR
     ? resolve(process.env.ROUTE_EVIDENCE_DIR)
     : undefined;
@@ -118,9 +180,13 @@ test("public and private route matrix has no critical browser failures or horizo
 
   for (const route of WEB_ROUTES) {
     currentRoute = route;
+    const routeFailures: string[] = [];
     const response = await page.goto(route, { waitUntil: "domcontentloaded" });
-    expect(response, `${route} did not return a response`).not.toBeNull();
-    expect(response?.ok(), `${route} returned HTTP ${response?.status()}`).toBe(true);
+    await page.waitForLoadState("networkidle", { timeout: 5_000 }).catch(() => undefined);
+    if (!response) routeFailures.push(`${route}: document response missing`);
+    if (response && !response.ok()) {
+      routeFailures.push(`${route}: document HTTP ${response.status()}`);
+    }
     await expect(page.locator("body")).toBeVisible();
     const dimensions = await page.evaluate(() => ({
       viewport: window.innerWidth,
@@ -128,10 +194,109 @@ test("public and private route matrix has no critical browser failures or horizo
       document: document.documentElement.scrollWidth,
       body: document.body.scrollWidth,
     }));
-    expect(
-      Math.max(dimensions.document, dimensions.body),
-      `${route} overflows ${dimensions.viewport}px viewport`,
-    ).toBeLessThanOrEqual(dimensions.viewport);
+    const overflowPx = Math.max(dimensions.document, dimensions.body) - dimensions.viewport;
+    if (overflowPx > 1) routeFailures.push(`${route}: page overflow ${overflowPx}px`);
+
+    const h1Count = await page.locator("h1:visible").count();
+    if (h1Count !== 1) routeFailures.push(`${route}: expected one visible h1, found ${h1Count}`);
+
+    const skipLinks = page.locator('a[href^="#"]').filter({ hasText: /跳到/ });
+    const skipLinkCount = await skipLinks.count();
+    let skipLinkText: string | null = null;
+    let skipLinkFirstFocused = false;
+    let skipLinkFocusIndicatorVisible = false;
+    let skipLinkObscured = false;
+    let skipTarget: string | null = null;
+    let skipTargetFocused = false;
+    if (skipLinkCount === 1) {
+      const skipLink = skipLinks.first();
+      skipLinkText = (await skipLink.textContent())?.replace(/\s+/g, " ").trim() ?? null;
+      skipTarget = await skipLink.getAttribute("href");
+      await page.keyboard.press("Tab");
+      await page.waitForTimeout(200);
+      const focusState = await skipLink.evaluate((element) => {
+        const style = getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        const centerX = Math.min(window.innerWidth - 1, Math.max(0, rect.left + rect.width / 2));
+        const centerY = Math.min(window.innerHeight - 1, Math.max(0, rect.top + rect.height / 2));
+        const top = document.elementFromPoint(centerX, centerY);
+        return {
+          focused: document.activeElement === element,
+          indicator:
+            (style.outlineStyle !== "none" && Number.parseFloat(style.outlineWidth) >= 2)
+            || style.boxShadow !== "none",
+          obscured: Boolean(top && top !== element && !element.contains(top) && !top.contains(element)),
+        };
+      });
+      skipLinkFirstFocused = focusState.focused;
+      skipLinkFocusIndicatorVisible = focusState.indicator;
+      skipLinkObscured = focusState.obscured;
+      if (!skipLinkFirstFocused) routeFailures.push(`${route}: Skip Link is not first keyboard focus`);
+      if (!skipLinkFocusIndicatorVisible) routeFailures.push(`${route}: Skip Link lacks a visible focus indicator`);
+      if (skipLinkObscured) routeFailures.push(`${route}: Skip Link focus is obscured`);
+      if (skipLinkFirstFocused && skipTarget) {
+        await page.keyboard.press("Enter");
+        skipTargetFocused = await page.evaluate((selector) => {
+          const target = document.querySelector(selector);
+          return Boolean(target && document.activeElement === target);
+        }, skipTarget);
+        if (!skipTargetFocused) routeFailures.push(`${route}: Skip Link target did not receive focus`);
+      }
+    } else {
+      routeFailures.push(`${route}: expected one Skip Link, found ${skipLinkCount}`);
+    }
+
+    const focusableCount = await page.locator(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ).count();
+    if (focusableCount === 0) routeFailures.push(`${route}: no keyboard-reachable controls`);
+
+    const workbenchRightPaneWidthPx = await page.evaluate(() => {
+      const workspace = document.querySelector('[data-layout="workbench-workspace"]');
+      if (!(workspace instanceof HTMLElement) || workspace.children.length < 2) return null;
+      const first = workspace.children[0].getBoundingClientRect();
+      const second = workspace.children[1].getBoundingClientRect();
+      const isTwoColumn = Math.abs(first.top - second.top) <= 2 && second.left > first.left;
+      return isTwoColumn ? Math.round(second.width * 100) / 100 : null;
+    });
+    if (workbenchRightPaneWidthPx !== null && workbenchRightPaneWidthPx < 360) {
+      routeFailures.push(`${route}: workbench reading pane ${workbenchRightPaneWidthPx}px below 360px`);
+    }
+
+    const forbiddenSurface = await page.evaluate(() => {
+      const text = document.body.innerText;
+      const unique = (values: string[]) => Array.from(new Set(values)).slice(0, 12);
+      return {
+        fixtureMarkers: unique(text.match(/UI 演示数据|演示 Fixture|\bfixture\b/gi) ?? []),
+        rawJsonMarkers: unique(text.match(/raw\s*json|(?:^|\n)\s*[\[{]\s*["'][A-Za-z0-9_-]+["']\s*:/gim) ?? []),
+        snakeCaseMarkers: unique(text.match(/\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b/g) ?? []),
+        oldBrandMarkers: unique(text.match(/\bFateRadar\b|fateradar\.[a-z.]+/gi) ?? []),
+      };
+    });
+    for (const [kind, matches] of Object.entries(forbiddenSurface)) {
+      if (matches.length > 0) routeFailures.push(`${route}: ${kind} ${matches.join(", ")}`);
+    }
+
+    const textLengthBefore = await page.locator("body").innerText().then((text) => text.length);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.waitForTimeout(60);
+    const reducedMotion = await page.evaluate((before) => {
+      const after = document.body.innerText.length;
+      return {
+        longRunningAnimations: document.getAnimations().filter((animation) => {
+          const duration = animation.effect?.getComputedTiming().duration;
+          return typeof duration === "number" && duration > 50;
+        }).length,
+        contentPreserved: after === before,
+        textLengthBefore: before,
+        textLengthAfter: after,
+      };
+    }, textLengthBefore);
+    if (reducedMotion.longRunningAnimations > 0) {
+      routeFailures.push(`${route}: ${reducedMotion.longRunningAnimations} long animations under reduced motion`);
+    }
+    if (!reducedMotion.contentPreserved) routeFailures.push(`${route}: content changed under reduced motion`);
+    await page.emulateMedia({ reducedMotion: "no-preference" });
 
     if (evidenceRoot) {
       const screenshotPath = resolve(
@@ -157,13 +322,34 @@ test("public and private route matrix has no critical browser failures or horizo
         httpStatus: response?.status() ?? null,
         viewport: { width: dimensions.viewport, height: dimensions.height },
         states,
+        canonicalStates: canonicalStates(states),
+        layout: {
+          documentScrollWidth: dimensions.document,
+          bodyScrollWidth: dimensions.body,
+          overflowPx,
+          workbenchRightPaneWidthPx,
+        },
+        accessibility: {
+          h1Count,
+          focusableCount,
+          skipLinkCount,
+          skipLinkText,
+          skipLinkFirstFocused,
+          skipLinkFocusIndicatorVisible,
+          skipLinkObscured,
+          skipTarget,
+          skipTargetFocused,
+        },
+        reducedMotion,
+        forbiddenSurface,
+        failures: routeFailures,
         screenshot: relative(evidenceRoot, screenshotPath),
       });
     }
+    failures.push(...routeFailures);
   }
 
-  expect(browserErrors, browserErrors.join("\n")).toEqual([]);
-  expect(criticalHttpErrors, criticalHttpErrors.join("\n")).toEqual([]);
+  failures.push(...browserErrors, ...criticalHttpErrors);
 
   if (process.env.ROUTE_EVIDENCE_DIR) {
     const generatedAt = new Date().toISOString();
@@ -181,10 +367,23 @@ test("public and private route matrix has no critical browser failures or horizo
           test: {
             file: relative(process.cwd(), testInfo.file),
             name: testInfo.title,
-            checks: ["http-200", "critical-browser-errors", "horizontal-overflow"],
+            checks: [
+              "http-200",
+              "critical-browser-errors",
+              "horizontal-overflow<=1px",
+              "workbench-right-pane>=360px",
+              "one-visible-h1",
+              "skip-link-first-focus",
+              "focus-indicator-visible",
+              "focused-content-unobscured",
+              "keyboard-target-reachable",
+              "reduced-motion-static-content-preserved",
+              "forbidden-surface-markers-absent",
+            ],
           },
           baseURL: process.env.BASE_URL ?? "http://127.0.0.1:3000",
           project: testInfo.project.name,
+          failures,
           routes: evidenceRecords,
         },
         null,
@@ -197,16 +396,13 @@ test("public and private route matrix has no critical browser failures or horizo
       "ROUTE_EVIDENCE_DIR requires a route evidence manifest",
     ).toBe(true);
   }
+  expect(failures, failures.join("\n")).toEqual([]);
 });
 
-test("tool routes expose readonly input contracts without pretending to submit", async ({
+test("placeholder tool routes expose readonly input contracts without pretending to submit", async ({
   page,
 }) => {
   const tools = [
-    { route: "/tools/time-check", title: "寻时定盘", fields: ["已知时间范围", "可核对事件"] },
-    { route: "/tools/chart-similarity", title: "同盘匹配", fields: ["已保存盘面", "比较侧重"] },
-    { route: "/tools/rhythm", title: "本命音律", fields: ["本命资料", "音律侧重"] },
-    { route: "/tools/five-elements", title: "五行事实与调候", fields: ["已确认盘面", "关注主题"] },
     { route: "/tools/dream", title: "解梦", fields: ["梦境内容", "现实背景"] },
     { route: "/tools/name", title: "姓名分析", fields: ["姓名", "使用场景"] },
   ] as const;
@@ -321,21 +517,10 @@ test("account explains the password-first identity flow", async ({ page }) => {
   await page.goto("/account", { waitUntil: "domcontentloaded" });
   const main = page.locator("#private-main");
 
-  await expect(main).toContainText("密码主登录");
+  await expect(main).toContainText("密码是默认登录方式");
   await expect(main).toContainText("OTP 快捷登录");
-
-  const otpHeading = main.getByRole("heading", { level: 2, name: "OTP 快捷登录" });
-  const unavailableState = main.getByText("暂时无法确认登录状态");
-  await expect
-    .poll(async () => (await otpHeading.count()) > 0 || (await unavailableState.count()) > 0)
-    .toBe(true);
-
-  if (await otpHeading.count()) {
-    await expect(main).toContainText("OTP 用于注册验证、快捷登录和找回密码");
-    await expect(main).toContainText("OTP 核验后设置密码");
-  } else {
-    await expect(unavailableState).toBeVisible();
-  }
+  await expect(main).toContainText("OTP 用于注册验证、快捷登录和找回密码");
+  await expect(main).toContainText("OTP 核验后设置密码");
 
   await expect(main).not.toContainText("首次邮箱验证自动注册");
   await expect(main).not.toContainText("已有邮箱直接登录");

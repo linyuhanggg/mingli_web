@@ -338,7 +338,7 @@ export function buildLiveAdminCatalogViewModel(
     capabilityState: "UI_PREBUILT",
     ...copyForRoute(route),
     columns: getAdminCatalogColumns(route),
-    notice: "真实平台数据与写服务尚未接入；此页不会注入 UI 演示数据。",
+    notice: "真实平台数据与写服务尚未接入；此页不会生成示例记录。",
     records: [],
   };
 }

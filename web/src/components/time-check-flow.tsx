@@ -205,7 +205,7 @@ export function TimeCheckFlow() {
 
   return (
     <div className={styles.wrap}>
-      <h2>围绕未知时辰生成候选事实</h2>
+      <h1>围绕未知时辰生成候选事实</h1>
       <p className={styles.lead}>
         选择已确认的出生档案，提交已知时间范围和可核对事件。服务端 Runtime 会用现有八字核心逐个生成十二个候选时辰；本页不在浏览器排盘。
       </p>

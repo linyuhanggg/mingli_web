@@ -32,7 +32,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={ui.loginWrap}>
+    <>
+      <a
+        className={ui.loginSkip}
+        href="#admin-login-main"
+        onClick={(event) => {
+          event.preventDefault();
+          document.getElementById("admin-login-main")?.focus();
+        }}
+      >
+        跳到主要内容
+      </a>
+      <main id="admin-login-main" className={ui.loginWrap} tabIndex={-1}>
       <div className={`${ui.paper} ${ui.loginCard}`}>
         <div className={ui.loginHead}>
           <div style={{ marginBottom: "0.75rem" }}>
@@ -73,6 +84,7 @@ export default function LoginPage() {
           </Button>
         </form>
       </div>
-    </div>
+      </main>
+    </>
   );
 }

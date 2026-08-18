@@ -35,10 +35,11 @@ describe("AdminAuditSurface", () => {
 
     render(<AdminAuditSurface role="superadmin" />);
 
-    expect(await screen.findByText("catalog.version.published")).toBeVisible();
+    expect(await screen.findByText("商品版本已发布")).toBeVisible();
     expect(screen.getByText("ops@example.com")).toBeVisible();
     expect(screen.getByText("version-1")).toBeVisible();
     expect(screen.getByText("脱敏读取")).toBeVisible();
+    expect(document.body).not.toHaveTextContent("catalog.version.published");
     expect(screen.queryByText("do-not-expose")).not.toBeInTheDocument();
     expect(adminFetchMock).toHaveBeenCalledWith("/api/v1/admin/audit");
   });

@@ -242,6 +242,27 @@
   margin: 0 auto;
 }
 
+.loginSkip {
+  position: fixed;
+  left: 1rem;
+  top: 0.75rem;
+  z-index: 100;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.8rem;
+  border-radius: var(--radius-control);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  transform: translateY(-160%);
+}
+
+.loginSkip:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 .loginWrap {
   min-height: 100vh;
   display: grid;

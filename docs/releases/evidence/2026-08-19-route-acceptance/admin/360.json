@@ -1,0 +1,1851 @@
+{
+  "schema": "mingli.route-evidence/v1",
+  "app": "admin",
+  "gitCommit": "ba41648e7f30f030b46f61704ecd35f11b9fe081",
+  "generatedAt": "2026-08-18T20:43:52.673Z",
+  "reviewedAt": "2026-08-19T04:45:00+08:00",
+  "reviewStatus": "reviewed",
+  "test": {
+    "file": "e2e/route-matrix.spec.ts",
+    "name": "Admin route catalog has no critical browser failures or horizontal overflow",
+    "checks": [
+      "http-200",
+      "critical-browser-errors",
+      "horizontal-overflow<=1px",
+      "one-visible-h1",
+      "skip-link-first-focus",
+      "focus-indicator-visible",
+      "focused-content-unobscured",
+      "keyboard-target-reachable",
+      "reduced-motion-static-content-preserved",
+      "forbidden-surface-markers-absent"
+    ]
+  },
+  "baseURL": "http://127.0.0.1:3001",
+  "project": "360",
+  "failures": [],
+  "routes": [
+    {
+      "requestedRoute": "/",
+      "finalPath": "/dashboard",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed"
+      ],
+      "canonicalStates": [],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 37,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 117,
+        "textLengthAfter": 117
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/001-home.jpg"
+    },
+    {
+      "requestedRoute": "/login",
+      "finalPath": "/login",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [],
+      "canonicalStates": [],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 4,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主要内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#admin-login-main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 54,
+        "textLengthAfter": 54
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/002-login.jpg"
+    },
+    {
+      "requestedRoute": "/dashboard",
+      "finalPath": "/dashboard",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed"
+      ],
+      "canonicalStates": [],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 37,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 117,
+        "textLengthAfter": 117
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/003-dashboard.jpg"
+    },
+    {
+      "requestedRoute": "/users",
+      "finalPath": "/users",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 41,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 225,
+        "textLengthAfter": 225
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/004-users.jpg"
+    },
+    {
+      "requestedRoute": "/users/demo",
+      "finalPath": "/users/demo",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "error"
+      ],
+      "canonicalStates": [
+        "error"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 37,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 186,
+        "textLengthAfter": 186
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/005-users-demo.jpg"
+    },
+    {
+      "requestedRoute": "/subjects",
+      "finalPath": "/subjects",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 40,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 269,
+        "textLengthAfter": 269
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/006-subjects.jpg"
+    },
+    {
+      "requestedRoute": "/subjects/demo",
+      "finalPath": "/subjects/demo",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "error"
+      ],
+      "canonicalStates": [
+        "error"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 37,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 206,
+        "textLengthAfter": 206
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/007-subjects-demo.jpg"
+    },
+    {
+      "requestedRoute": "/data-rights",
+      "finalPath": "/data-rights",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 43,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 193,
+        "textLengthAfter": 193
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/008-data-rights.jpg"
+    },
+    {
+      "requestedRoute": "/support-cases",
+      "finalPath": "/support-cases",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 49,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 265,
+        "textLengthAfter": 265
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/009-support-cases.jpg"
+    },
+    {
+      "requestedRoute": "/products",
+      "finalPath": "/products",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 56,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 456,
+        "textLengthAfter": 456
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/010-products.jpg"
+    },
+    {
+      "requestedRoute": "/products/demo/versions",
+      "finalPath": "/products/demo/versions",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 49,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 439,
+        "textLengthAfter": 439
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/011-products-demo-versions.jpg"
+    },
+    {
+      "requestedRoute": "/capabilities",
+      "finalPath": "/capabilities",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "ready",
+        "success"
+      ],
+      "canonicalStates": [],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 41,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 787,
+        "textLengthAfter": 787
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/012-capabilities.jpg"
+    },
+    {
+      "requestedRoute": "/cms/pages",
+      "finalPath": "/cms/pages",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 54,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 357,
+        "textLengthAfter": 357
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/013-cms-pages.jpg"
+    },
+    {
+      "requestedRoute": "/cms/daily",
+      "finalPath": "/cms/daily",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 54,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 357,
+        "textLengthAfter": 357
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/014-cms-daily.jpg"
+    },
+    {
+      "requestedRoute": "/cms/tools",
+      "finalPath": "/cms/tools",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 54,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 357,
+        "textLengthAfter": 357
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/015-cms-tools.jpg"
+    },
+    {
+      "requestedRoute": "/cms/library",
+      "finalPath": "/cms/library",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 54,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 361,
+        "textLengthAfter": 361
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/016-cms-library.jpg"
+    },
+    {
+      "requestedRoute": "/cms/help",
+      "finalPath": "/cms/help",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 54,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 353,
+        "textLengthAfter": 353
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/017-cms-help.jpg"
+    },
+    {
+      "requestedRoute": "/cms/policies",
+      "finalPath": "/cms/policies",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 54,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 359,
+        "textLengthAfter": 359
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/018-cms-policies.jpg"
+    },
+    {
+      "requestedRoute": "/charts",
+      "finalPath": "/charts",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 45,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 216,
+        "textLengthAfter": 216
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/019-charts.jpg"
+    },
+    {
+      "requestedRoute": "/readings",
+      "finalPath": "/readings",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 45,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 216,
+        "textLengthAfter": 216
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/020-readings.jpg"
+    },
+    {
+      "requestedRoute": "/readings/demo",
+      "finalPath": "/readings/demo",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "error"
+      ],
+      "canonicalStates": [
+        "error"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 37,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 115,
+        "textLengthAfter": 115
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/021-readings-demo.jpg"
+    },
+    {
+      "requestedRoute": "/reading-jobs",
+      "finalPath": "/reading-jobs",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 45,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 192,
+        "textLengthAfter": 192
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/022-reading-jobs.jpg"
+    },
+    {
+      "requestedRoute": "/verifications",
+      "finalPath": "/verifications",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 42,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 198,
+        "textLengthAfter": 198
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/023-verifications.jpg"
+    },
+    {
+      "requestedRoute": "/observations",
+      "finalPath": "/observations",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "unavailable"
+      ],
+      "canonicalStates": [
+        "unavailable"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 41,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 258,
+        "textLengthAfter": 258
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/024-observations.jpg"
+    },
+    {
+      "requestedRoute": "/runtime",
+      "finalPath": "/runtime",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "ready",
+        "success"
+      ],
+      "canonicalStates": [],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 44,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 401,
+        "textLengthAfter": 401
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/025-runtime.jpg"
+    },
+    {
+      "requestedRoute": "/model-profiles",
+      "finalPath": "/model-profiles",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 46,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 334,
+        "textLengthAfter": 334
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/026-model-profiles.jpg"
+    },
+    {
+      "requestedRoute": "/orders",
+      "finalPath": "/orders",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 42,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 166,
+        "textLengthAfter": 166
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/027-orders.jpg"
+    },
+    {
+      "requestedRoute": "/payments",
+      "finalPath": "/payments",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 43,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 180,
+        "textLengthAfter": 180
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/028-payments.jpg"
+    },
+    {
+      "requestedRoute": "/refunds",
+      "finalPath": "/refunds",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 42,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 166,
+        "textLengthAfter": 166
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/029-refunds.jpg"
+    },
+    {
+      "requestedRoute": "/reconciliation",
+      "finalPath": "/reconciliation",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 52,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 320,
+        "textLengthAfter": 320
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/030-reconciliation.jpg"
+    },
+    {
+      "requestedRoute": "/entitlements",
+      "finalPath": "/entitlements",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 52,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 274,
+        "textLengthAfter": 274
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/031-entitlements.jpg"
+    },
+    {
+      "requestedRoute": "/referrals",
+      "finalPath": "/referrals",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 41,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 200,
+        "textLengthAfter": 200
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/032-referrals.jpg"
+    },
+    {
+      "requestedRoute": "/referrals/demo",
+      "finalPath": "/referrals/demo",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "error"
+      ],
+      "canonicalStates": [
+        "error"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 37,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 91,
+        "textLengthAfter": 91
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/033-referrals-demo.jpg"
+    },
+    {
+      "requestedRoute": "/appeals",
+      "finalPath": "/appeals",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 40,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 177,
+        "textLengthAfter": 177
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/034-appeals.jpg"
+    },
+    {
+      "requestedRoute": "/staff",
+      "finalPath": "/staff",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "ready",
+        "success"
+      ],
+      "canonicalStates": [],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 57,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 528,
+        "textLengthAfter": 528
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/035-staff.jpg"
+    },
+    {
+      "requestedRoute": "/sessions",
+      "finalPath": "/sessions",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "ready",
+        "success"
+      ],
+      "canonicalStates": [],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 49,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 596,
+        "textLengthAfter": 596
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/036-sessions.jpg"
+    },
+    {
+      "requestedRoute": "/notifications",
+      "finalPath": "/notifications",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "empty"
+      ],
+      "canonicalStates": [
+        "empty"
+      ],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 44,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 262,
+        "textLengthAfter": 262
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/037-notifications.jpg"
+    },
+    {
+      "requestedRoute": "/audit",
+      "finalPath": "/audit",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "ready",
+        "success"
+      ],
+      "canonicalStates": [],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 42,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 570,
+        "textLengthAfter": 570
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/038-audit.jpg"
+    },
+    {
+      "requestedRoute": "/settings",
+      "finalPath": "/settings",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "ready",
+        "success"
+      ],
+      "canonicalStates": [],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 37,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 270,
+        "textLengthAfter": 270
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/039-settings.jpg"
+    },
+    {
+      "requestedRoute": "/health",
+      "finalPath": "/health",
+      "httpStatus": 200,
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "states": [
+        "closed",
+        "ready",
+        "success"
+      ],
+      "canonicalStates": [],
+      "layout": {
+        "documentScrollWidth": 360,
+        "bodyScrollWidth": 360,
+        "overflowPx": 0
+      },
+      "accessibility": {
+        "h1Count": 1,
+        "focusableCount": 37,
+        "skipLinkCount": 1,
+        "skipLinkText": "跳到主内容",
+        "skipLinkFirstFocused": true,
+        "skipLinkFocusIndicatorVisible": true,
+        "skipLinkObscured": false,
+        "skipTarget": "#main",
+        "skipTargetFocused": true
+      },
+      "reducedMotion": {
+        "longRunningAnimations": 0,
+        "contentPreserved": true,
+        "textLengthBefore": 220,
+        "textLengthAfter": 220
+      },
+      "forbiddenSurface": {
+        "fixtureMarkers": [],
+        "rawJsonMarkers": [],
+        "snakeCaseMarkers": [],
+        "oldBrandMarkers": []
+      },
+      "failures": [],
+      "screenshot": "360/screenshots/040-health.jpg"
+    }
+  ]
+}
