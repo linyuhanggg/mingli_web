@@ -13,7 +13,12 @@ from app.commerce.catalog import CatalogService
 from app.commerce.models import FulfillmentRecord, ProductOffer, ProductVersion
 from app.commerce.service import CommerceService
 from app.config import _RUNTIME_RELEASE_PROFILES, Settings
-from app.readings.models import ReadingJobRecord, ReadingRoot, ReadingVersion
+from app.readings.models import (
+    GenerationAttempt,
+    ReadingJobRecord,
+    ReadingRoot,
+    ReadingVersion,
+)
 from app.readings.repository import SqlReadingRepository
 from app.security.envelope import EnvelopeCipher
 from sqlalchemy import select
@@ -106,19 +111,19 @@ async def _payment_for_offer(
 
 
 async def _seed_v53_runtime_release(database: Any, settings: Settings) -> None:
-    profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
+    release_profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
     async with database.sessions() as session:
         repository = SqlReadingRepository(
             session,
             EnvelopeCipher.from_settings(settings),
         )
         await repository.create_runtime_release(
-            name=profile["release_name"],
+            name=release_profile["release_name"],
             version="5.3",
-            source_commit=profile["source_commit"],
-            release_manifest_digest=profile["release_manifest_sha256"],
+            source_commit=release_profile["source_commit"],
+            release_manifest_digest=release_profile["release_manifest_sha256"],
             protocol_version="mingli-portable-interface-v2",
-            describe_manifest_digest=profile["manifest_digest"],
+            describe_manifest_digest=release_profile["manifest_digest"],
             image_digest=None,
             production_ready=True,
         )
@@ -404,7 +409,7 @@ async def test_bazi_deep_real_runtime_worker_delivers_result(
     state_root = tmp_path / "runtime-state"
     state_root.mkdir(mode=0o700)
     state_root.chmod(0o700)
-    profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
+    release_profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
     runtime_settings = test_settings.model_copy(
         update={
             "runtime_adapter": "one-shot",
@@ -417,15 +422,15 @@ async def test_bazi_deep_real_runtime_worker_delivers_result(
             "runtime_python_path": RUNTIME_PYTHON,
             "runtime_release_root": MINGLI_RUNTIME_RELEASE_ROOT,
             "runtime_state_root": state_root,
-            "runtime_expected_manifest_digest": profile["manifest_digest"],
-            "runtime_expected_capability_shape_sha256": profile[
+            "runtime_expected_manifest_digest": release_profile["manifest_digest"],
+            "runtime_expected_capability_shape_sha256": release_profile[
                 "capability_shape_sha256"
             ],
         }
     )
 
     guest_headers = await create_guest(client)
-    profile = await create_confirmed_profile(client, guest_headers)
+    confirmed_profile = await create_confirmed_profile(client, guest_headers)
     login = await login_current_guest(
         client,
         guest_headers,
@@ -436,7 +441,7 @@ async def test_bazi_deep_real_runtime_worker_delivers_result(
     started = await client.post(
         "/api/v1/readings/bazi-deep",
         headers={**user_headers, "Idempotency-Key": "bazi-deep-real-start"},
-        json={"profile_version_id": profile["profile_version_id"]},
+        json={"profile_version_id": confirmed_profile["profile_version_id"]},
     )
     assert started.status_code == 201, started.text
     version_id = UUID(started.json()["reading_version_id"])
@@ -474,13 +479,29 @@ async def test_bazi_deep_real_runtime_worker_delivers_result(
         runtime=gate.runtime,
         model=_ExtractiveModel(),
     )
-    for _ in range(5):
-        assert await worker.run_once() is True
+    for iteration in range(5):
+        processed = await worker.run_once()
         async with database.sessions() as session:
             job = await session.scalar(
                 select(ReadingJobRecord).where(
                     ReadingJobRecord.reading_version_id == version_id
                 )
+            )
+            version = await session.get(ReadingVersion, version_id)
+            attempts = list(
+                await session.scalars(
+                    select(GenerationAttempt)
+                    .where(GenerationAttempt.reading_version_id == version_id)
+                    .order_by(GenerationAttempt.attempt_number)
+                )
+            )
+            assert processed is True, (
+                f"real worker had no claim at iteration {iteration + 1}; "
+                f"job_status={None if job is None else job.status!r}, "
+                f"available_at={None if job is None else job.available_at!r}, "
+                f"version_status={None if version is None else version.status!r}, "
+                "guard_errors="
+                f"{[tuple(attempt.guard_errors) for attempt in attempts]!r}"
             )
             if job is not None and job.status == "complete":
                 break
@@ -492,7 +513,7 @@ async def test_bazi_deep_real_runtime_worker_delivers_result(
     assert result.json()["status"] == "accepted"
     assert result.json()["document"] is not None
     assert result.json()["document"]["versions"]["runtime_release"] == (
-        "mingli-master-portable-core-v53-time-check@5.3"
+        f"{release_profile['release_name']}@5.3"
     )
     assert result.json()["view_model"]["schema_version"] == "bazi-chart/v1"
     summary = await client.get(f"/api/v1/readings/{version_id}")

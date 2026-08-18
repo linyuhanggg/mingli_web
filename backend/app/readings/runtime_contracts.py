@@ -160,6 +160,7 @@ class Described:
     protocol_version: str
     manifest_digest: str
     capabilities: tuple[Mapping[str, object], ...]
+    transition_ids: tuple[Literal["correct", "restart"], ...] = ()
     kind: Literal["described"] = "described"
 
     def __post_init__(self) -> None:
@@ -176,6 +177,7 @@ class Described:
             "protocol_version": self.protocol_version,
             "manifest_digest": self.manifest_digest,
             "capabilities": [_thaw_object(item) for item in self.capabilities],
+            "transition_ids": list(self.transition_ids),
         }
 
 
@@ -283,6 +285,10 @@ def result_from_dict(payload: Mapping[str, object]) -> MingliResult:
             capabilities=tuple(
                 cast(Mapping[str, object], item)
                 for item in cast(list[object], payload["capabilities"])
+            ),
+            transition_ids=tuple(
+                cast(Literal["correct", "restart"], item)
+                for item in cast(list[object], payload.get("transition_ids", []))
             ),
         )
     if kind == "prepared":

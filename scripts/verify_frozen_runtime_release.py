@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Verify a release root matches the frozen mingli-master 5.1 portable core.
+"""Verify a release root matches the admitted mingli-master V53 portable core.
 
-Always use the signed 217-file release root + .mingli-release-manifest.json.
+Always use the signed 220-file release root + .mingli-release-manifest.json.
 Never treat a dirty skill worktree as the production source.
 """
 
@@ -13,15 +13,15 @@ import json
 import sys
 from pathlib import Path
 
-FROZEN_SOURCE_COMMIT = "494ce0bba174a77800daf9b9c38ce9c9166d9a94"
+FROZEN_SOURCE_COMMIT = "403fbc259564c3dfdb57bfa10d492a8f4f9a7e0a"
 FROZEN_RELEASE_NAME = "mingli-master-portable-core"
 FROZEN_MANIFEST_SHA256 = (
-    "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
+    "7996b03356de9918484b83cdf84677b4e2946b1b55d7f0c504dd40cfd5ee7ca6"
 )
-EXPECTED_FILE_COUNT = 217
+EXPECTED_FILE_COUNT = 220
 EXPECTED_REFERENCE_PACKS = 55
 EXPECTED_EVIDENCE = 1328
-EXPECTED_PROVIDERS = 13
+EXPECTED_PROVIDERS = 14
 
 
 def _sha256_file(path: Path) -> str:

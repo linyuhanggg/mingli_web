@@ -109,6 +109,7 @@ print(json.dumps({
     "protocol_version": "mingli-portable-interface-v2",
     "manifest_digest": "0" * 64,
     "capabilities": [],
+    "transition_ids": ["correct", "restart"],
 }, separators=(",", ":")))
 """,
     )
@@ -119,6 +120,7 @@ print(json.dumps({
     result = await adapter.execute(Describe())
 
     assert isinstance(result, Described)
+    assert result.transition_ids == ("correct", "restart")
     assert json.loads(launcher.with_suffix(".stdin").read_bytes()) == {"kind": "describe"}
     assert launcher.with_suffix(".stdin").read_bytes().endswith(b"\n")
 
@@ -154,13 +156,22 @@ async def test_process_adapter_decodes_the_entire_result_union(tmp_path: Path) -
         ),
     )
     for index, (command, expected, result_type) in enumerate(commands_and_results):
+        wire_result = expected.to_dict()
+        if isinstance(expected, Accepted):
+            wire_result.update(terminal=True, completion_committed=True)
+        elif isinstance(expected, Stopped):
+            wire_result.update(
+                continuation_allowed=expected.reason == "need_input",
+                terminal=expected.reason != "need_input",
+                completion_committed=False,
+            )
         launcher = _write_executable(
             tmp_path / f"runtime-fixture-{index}",
             f"""#!/usr/bin/env python3
 import json
 import sys
 sys.stdin.buffer.read()
-sys.stdout.write({json.dumps(expected.to_dict(), ensure_ascii=False)!r} + "\\n")
+sys.stdout.write({json.dumps(wire_result, ensure_ascii=False)!r} + "\\n")
 """,
         )
         state_root = tmp_path / f"state-{index}"

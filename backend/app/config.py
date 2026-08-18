@@ -36,7 +36,7 @@ _V52_RELATIONSHIP_DESCRIBE_MANIFEST_DIGEST = (
     "6118c5f525c87b9cbde95b4d51c945be18bfd18fff8e03306da9fa748b87d917"
 )
 _V53_TIME_CHECK_DESCRIBE_MANIFEST_DIGEST = (
-    "3f8863b313f62a2b773720c98193486a096f6dfbf8ba3335f8b1819e596e8ad1"
+    "3403992cb31aebea19e69ec3b1280a5ef02718c5f9ca3e3f94448ef7b039facc"
 )
 _FROZEN_CAPABILITY_SHAPE_SHA256 = "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
 _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
@@ -72,13 +72,13 @@ _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
     "v53-time-check": {
         "manifest_digest": _V53_TIME_CHECK_DESCRIBE_MANIFEST_DIGEST,
         "capability_shape_sha256": (
-            "3bf92ce5d12005be6d50c01a76161e1754f49c210d6c064cb6a0e91d95db19ed"
+            "fb9da7fa1969e449e91222a0f10a2076da2e8cca43d1083b531aa218ff31e042"
         ),
         "release_manifest_sha256": (
-            "495dcd1d97ab3b5e9dabcafbf5103cf8af4d7845b735a314ec5efe2c2ccdd962"
+            "7996b03356de9918484b83cdf84677b4e2946b1b55d7f0c504dd40cfd5ee7ca6"
         ),
-        "release_name": "mingli-master-portable-core-v53-time-check",
-        "source_commit": "local-v53-core-source-20260817",
+        "release_name": "mingli-master-portable-core",
+        "source_commit": "403fbc259564c3dfdb57bfa10d492a8f4f9a7e0a",
     },
 }
 _P0_MODEL_PROVIDER = "deepseek"

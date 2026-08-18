@@ -356,6 +356,13 @@
         "capabilities": {
           "type": "array",
           "items": { "$ref": "#/$defs/capabilityView" }
+        },
+        "transition_ids": {
+          "type": "array",
+          "items": {
+            "enum": ["correct", "restart"]
+          },
+          "uniqueItems": true
         }
       }
     },
@@ -376,7 +383,9 @@
       "properties": {
         "kind": { "const": "accepted" },
         "state_token": { "$ref": "#/$defs/nonEmptyText" },
-        "public_copy": { "$ref": "#/$defs/nonEmptyText" }
+        "public_copy": { "$ref": "#/$defs/nonEmptyText" },
+        "terminal": { "const": true },
+        "completion_committed": { "const": true }
       }
     },
     "stopped": {
@@ -400,7 +409,10 @@
         "reason": { "const": "need_input" },
         "public_copy": { "$ref": "#/$defs/nonEmptyText" },
         "state_token": { "$ref": "#/$defs/nonEmptyText" },
-        "input_request": { "$ref": "#/$defs/inputRequest" }
+        "input_request": { "$ref": "#/$defs/inputRequest" },
+        "continuation_allowed": { "const": true },
+        "terminal": { "const": false },
+        "completion_committed": { "const": false }
       }
     },
     "stoppedTerminal": {
@@ -418,7 +430,10 @@
         "reason": { "enum": ["unsupported", "conflict", "error"] },
         "public_copy": { "$ref": "#/$defs/nonEmptyText" },
         "state_token": { "$ref": "#/$defs/nullableText" },
-        "input_request": { "type": "null" }
+        "input_request": { "type": "null" },
+        "continuation_allowed": { "const": false },
+        "terminal": { "const": true },
+        "completion_committed": { "const": false }
       }
     }
   }
