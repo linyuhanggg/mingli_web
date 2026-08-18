@@ -88,6 +88,28 @@ async def test_real_runtime_projects_public_natal_and_divination_core() -> None:
     bazi_brief = bazi.to_dict()["brief"]
     bazi_view = project_bazi_view_model(bazi_brief)
     assert isinstance(bazi_view, BaziChartV1)
+    assert bazi_view.core_facts is not None
+    source_patterns = bazi_view.core_facts.source_conditioned_patterns
+    assert [pattern.local_rule_id for pattern in source_patterns] == [
+        "DR-01-01",
+        "QR-02-01",
+        "QTB-M01",
+        "R-01-02",
+        "R-02-04",
+        "ZPR-01",
+    ]
+    assert all(pattern.fact_paths for pattern in source_patterns)
+    assert all(pattern.predicate_audit for pattern in source_patterns)
+    assert [
+        pattern.local_rule_id
+        for pattern in source_patterns
+        if pattern.evidence_ref is not None
+    ] == ["QR-02-01", "QTB-M01", "R-01-02", "R-02-04", "ZPR-01"]
+    assert [
+        pattern.local_rule_id
+        for pattern in source_patterns
+        if pattern.evidence_ref is None
+    ] == ["DR-01-01"]
     bazi_values = {
         str(item["ref"]).split("/calculated/bazi/", 1)[1]: item.get("value")
         for item in bazi_brief["facts"]

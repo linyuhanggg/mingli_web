@@ -25,6 +25,7 @@ const OUTPUT_ROOT = path.resolve(
     ?? "artifacts/browser-evidence/2026-08-18-bazi-g5-density",
 );
 const RUNTIME_OWNER_MODE = PRODUCT_DATA_BOUNDARY === "signed-runtime-release-owner-result";
+const REQUIRE_EVIDENCE_DRAWER = process.env.MINGLI_G5_REQUIRE_EVIDENCE_DRAWER === "1";
 const RELEASE_MANIFEST_PATH = path.join(
   REPO_ROOT,
   ".runtime",
@@ -199,14 +200,76 @@ async function selectLayer(page, layer) {
   return { available: true, status: status ?? "ready" };
 }
 
+function accessibilityProperties(node) {
+  return Object.fromEntries(
+    (node?.properties ?? []).map((property) => [property.name, property.value?.value]),
+  );
+}
+
+async function evidenceDisclosureState(session, name) {
+  const tree = await session.send("Accessibility.getFullAXTree");
+  const node = tree.nodes.find((candidate) => candidate.name?.value === name);
+  const properties = accessibilityProperties(node);
+  return {
+    role: node?.role?.value ?? null,
+    focusable: properties.focusable ?? false,
+    focused: properties.focused ?? false,
+    expanded: properties.expanded ?? null,
+  };
+}
+
 async function openEvidenceDrawer(page) {
   const drawer = page.locator("details").filter({ hasText: "命中古法" }).first();
   if ((await drawer.count()) === 0) {
-    if (RUNTIME_OWNER_MODE) return false;
+    if (RUNTIME_OWNER_MODE) return { rendered: false };
     throw new Error("verified-exact evidence drawer missing");
   }
-  if (!(await drawer.getAttribute("open"))) await drawer.locator("summary").click();
-  return true;
+  const summary = drawer.locator("summary");
+  const name = (await summary.textContent())?.trim() ?? "";
+  const defaultCollapsed = (await drawer.getAttribute("open")) === null;
+  const session = await page.context().newCDPSession(page);
+  const collapsedAccessibility = await evidenceDisclosureState(session, name);
+  await summary.focus();
+  const focusedAccessibility = await evidenceDisclosureState(session, name);
+  await summary.press("Enter");
+  await drawer.evaluate((element) => {
+    if (!(element instanceof HTMLDetailsElement) || !element.open) {
+      throw new Error("evidence drawer did not open from keyboard");
+    }
+  });
+  const expandedAccessibility = await evidenceDisclosureState(session, name);
+  await session.detach();
+  const cards = await drawer.locator("article").evaluateAll((articles) =>
+    articles.map((article) => {
+      const rows = [...article.querySelectorAll("dl > div")];
+      const rowText = (label) => {
+        const row = rows.find((candidate) => candidate.querySelector("dt")?.textContent?.trim() === label);
+        return row?.querySelector("dd")?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+      };
+      return {
+        title: article.querySelector("h5")?.textContent?.trim() ?? "",
+        quotes: [...article.querySelectorAll('section[aria-label$="原文"] blockquote')]
+          .map((quote) => quote.textContent?.trim() ?? "")
+          .filter(Boolean),
+        applicability: rowText("为什么适用于这张盘"),
+        sources: [...article.querySelectorAll("ul li")].map((item) => {
+          const parts = [...item.querySelectorAll("span")].map((part) => part.textContent?.trim() ?? "");
+          return { sourceTitle: parts[0] ?? "", locator: parts[1] ?? "" };
+        }),
+        boundary: article.querySelector("p")?.textContent?.trim() ?? "",
+      };
+    }),
+  );
+  return {
+    rendered: true,
+    name,
+    defaultCollapsed,
+    keyboardOpened: true,
+    collapsedAccessibility,
+    focusedAccessibility,
+    expandedAccessibility,
+    cards,
+  };
 }
 
 async function prepareProduct(page) {
@@ -314,7 +377,39 @@ async function run() {
       if (readingVersionId) readingVersionIds.push(readingVersionId);
       const root = page.locator('[aria-label="排盘工作台"]');
       await root.waitFor();
-      const evidenceDrawerRendered = await openEvidenceDrawer(page);
+      const evidenceDrawer = await openEvidenceDrawer(page);
+      const evidenceDrawerRendered = evidenceDrawer.rendered;
+      if (REQUIRE_EVIDENCE_DRAWER) {
+        if (!evidenceDrawerRendered) {
+          failures.push(`${viewport.width}px evidence drawer missing`);
+        } else {
+          if (!evidenceDrawer.defaultCollapsed) failures.push(`${viewport.width}px evidence drawer is not collapsed by default`);
+          if (!evidenceDrawer.keyboardOpened) failures.push(`${viewport.width}px evidence drawer is not keyboard operable`);
+          if (
+            evidenceDrawer.collapsedAccessibility.role !== "DisclosureTriangle"
+            || evidenceDrawer.collapsedAccessibility.expanded !== false
+          ) failures.push(`${viewport.width}px collapsed evidence accessibility state is incorrect`);
+          if (
+            !evidenceDrawer.focusedAccessibility.focusable
+            || !evidenceDrawer.focusedAccessibility.focused
+          ) failures.push(`${viewport.width}px evidence summary is not keyboard focusable`);
+          if (evidenceDrawer.expandedAccessibility.expanded !== true) {
+            failures.push(`${viewport.width}px expanded evidence accessibility state is incorrect`);
+          }
+          if (evidenceDrawer.cards.length === 0) failures.push(`${viewport.width}px evidence drawer has no rendered cards`);
+          for (const [index, card] of evidenceDrawer.cards.entries()) {
+            if (!card.title || !card.quotes.length || !card.applicability || !card.sources.length) {
+              failures.push(`${viewport.width}px evidence card ${index + 1} is incomplete`);
+            }
+            if (/所以你|(^|[，。；])主|宜|忌/.test(card.applicability)) {
+              failures.push(`${viewport.width}px evidence card ${index + 1} applicability exceeds predicate scope`);
+            }
+            if (card.sources.some((source) => !source.sourceTitle || !source.locator)) {
+              failures.push(`${viewport.width}px evidence card ${index + 1} source anchor is incomplete`);
+            }
+          }
+        }
+      }
 
       const layerReports = [];
       const allUnits = [];
@@ -391,6 +486,7 @@ async function run() {
         source: RUNTIME_OWNER_MODE ? "signed-runtime-release-owner-result" : "synthetic-ui-lab-fixture",
         readingVersionId,
         evidenceDrawerRendered,
+        evidenceDrawer,
         layerReports,
         density,
         comparison,
@@ -405,6 +501,15 @@ async function run() {
   const releaseManifestSha256 = RUNTIME_OWNER_MODE
     ? createHash("sha256").update(readFileSync(RELEASE_MANIFEST_PATH)).digest("hex")
     : null;
+  const renderedCitations = [...new Set(
+    results.flatMap((entry) => entry.evidenceDrawer?.cards?.flatMap((card) => card.quotes) ?? []),
+  )];
+  if (RUNTIME_OWNER_MODE && REQUIRE_EVIDENCE_DRAWER && renderedCitations.length === 0) {
+    failures.push("rendered evidence citation extraction returned zero lines");
+  }
+  if (renderedCitations.length > 0) {
+    writeFileSync(path.join(OUTPUT_ROOT, "citations.txt"), `${renderedCitations.join("\n")}\n`);
+  }
   const report = {
     generatedAt: new Date().toISOString(),
     gitSha: process.env.MINGLI_G5_GIT_SHA ?? null,
@@ -412,6 +517,7 @@ async function run() {
     productRoute: PRODUCT_ROUTE,
     productDataBoundary: PRODUCT_DATA_BOUNDARY,
     releaseManifestSha256,
+    renderedCitations,
     readingVersionIds,
     referenceBoundary: "local-qingnang-site-mirror-client-preview",
     ok: failures.length === 0,

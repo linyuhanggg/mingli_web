@@ -256,11 +256,14 @@ describe("BaziChart evidence-first slice", () => {
     const user = userEvent.setup();
     render(<BaziChart chart={chart} evidence={evidence} />);
 
-    expect(screen.getByText("命中古法 1 条 · 可核验")).toBeVisible();
+    const summary = screen.getByText("命中古法 1 条 · 可核验");
+    const drawer = summary.closest("details");
+    expect(drawer).not.toHaveAttribute("open");
     expect(screen.queryByText("未解析引用不应显示")).not.toBeInTheDocument();
 
-    await user.click(screen.getByText("命中古法 1 条 · 可核验"));
+    await user.click(summary);
 
+    expect(drawer).toHaveAttribute("open");
     expect(screen.getByText("第一段逐字原文。")).toBeVisible();
     expect(screen.getByText("第二段逐字原文。")).toBeVisible();
     expect(screen.getByText("原文")).toBeVisible();
@@ -269,6 +272,7 @@ describe("BaziChart evidence-first slice", () => {
     expect(screen.getAllByText(/L10-L12|L20-L21/)).toHaveLength(2);
     expect(screen.getByText("日主天干为丙")).toBeVisible();
     expect(screen.getByText("/unknown/path:exists:()")).toBeVisible();
+    expect(screen.queryByText("/day_master/stem")).not.toBeInTheDocument();
   });
 
   it("does not expose a legacy rule summary as an ancient citation", () => {

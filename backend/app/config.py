@@ -75,10 +75,10 @@ _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
             "fb9da7fa1969e449e91222a0f10a2076da2e8cca43d1083b531aa218ff31e042"
         ),
         "release_manifest_sha256": (
-            "7996b03356de9918484b83cdf84677b4e2946b1b55d7f0c504dd40cfd5ee7ca6"
+            "c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b"
         ),
         "release_name": "mingli-master-portable-core",
-        "source_commit": "403fbc259564c3dfdb57bfa10d492a8f4f9a7e0a",
+        "source_commit": "663543e65ae037843b03dca1dec9486293affc9d",
     },
 }
 _P0_MODEL_PROVIDER = "deepseek"
