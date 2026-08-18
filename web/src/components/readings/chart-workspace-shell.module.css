@@ -65,11 +65,13 @@
 .layerPanels {
   display: grid;
   min-width: 0;
+  overflow-x: clip;
   grid-template-columns: minmax(0, 1fr);
   align-items: start;
 }
 
 .layerPanel {
+  display: none;
   grid-column: 1;
   grid-row: 1;
   min-width: 0;
@@ -83,6 +85,7 @@
 }
 
 .layerPanel[data-active="true"] {
+  display: block;
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);

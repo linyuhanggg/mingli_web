@@ -3,7 +3,96 @@ import type {
   BaziCoreFacts,
   BaziInterpretiveCandidates,
   BaziChartViewModel,
+  BaziTemporalLayer,
 } from "@/view-models/registry";
+
+const temporalSegment = {
+  start_inclusive: "2026-08-01T00:00:00+08:00",
+  end_exclusive: "2026-08-16T00:00:00+08:00",
+  ganzhi: "丙午",
+  stem_ten_god: "比肩",
+  branch_hidden_ten_gods: [{ stem: "丁", ten_god: "劫财" }],
+  branch_relations: [
+    {
+      relation_type: "寅午半合",
+      natal_position: "month",
+      natal_branch: "午",
+      transit_branch: "寅",
+    },
+  ],
+  seasonal_effect: { status: "returned", season: "夏" },
+  tiaohou_effect: { status: "returned", marker: "火旺" },
+  structural_changes: {
+    status: "mechanical_candidates_only" as const,
+    transit_pillar: "丙午",
+    stem_ten_god: "比肩",
+    branch_relations: [],
+    hard_verdict: null,
+  },
+  seasonal_tiaohou_delta: { status: "returned", temperature: "热" },
+  shensha_auxiliary: { status: "returned", calculated_items: [] },
+};
+
+const monthLayer: BaziTemporalLayer = {
+  granularity: "month",
+  period: "2026-08",
+  year: 2026,
+  month: 8,
+  date: null,
+  ganzhi_segments: [temporalSegment],
+  active_transits: { status: "returned", pillar: "丙午" },
+  structural_changes: temporalSegment.structural_changes,
+  seasonal_tiaohou_delta: temporalSegment.seasonal_tiaohou_delta,
+  shensha_auxiliary: temporalSegment.shensha_auxiliary,
+  active_luck_cycle: { status: "calculated", pillar: "丁未" },
+  calendar_normalization: { status: "calculated", policy: "month-switch-at-jie-v1" },
+  representative_instant: "2026-08-08T12:00:00+08:00",
+  rule_trace: [
+    {
+      rule_id: "fixture.bazi.month.2026-08",
+      source_dependency_id: "ui-lab-fixture",
+      operation: "project",
+    },
+  ],
+};
+
+const dayLayer: BaziTemporalLayer = {
+  ...monthLayer,
+  granularity: "day",
+  period: "2026-08-15",
+  date: "2026-08-15",
+  representative_instant: "2026-08-15T12:00:00+08:00",
+  rule_trace: [
+    {
+      rule_id: "fixture.bazi.day.2026-08-15",
+      source_dependency_id: "ui-lab-fixture",
+      operation: "project",
+    },
+  ],
+};
+
+const yearLayer: NonNullable<BaziCoreFacts["year_layers"]>[number] = {
+  year: 2026,
+  ganzhi: "丙午",
+  stem_ten_god: "比肩",
+  branch_hidden_ten_gods: [{ stem: "丁", ten_god: "劫财" }],
+  branch_relations: temporalSegment.branch_relations,
+  structural_changes: temporalSegment.structural_changes,
+  shensha_auxiliary: temporalSegment.shensha_auxiliary,
+  active_luck_cycle: { status: "calculated", pillar: "丁未" },
+  seasonal_effect: temporalSegment.seasonal_effect,
+  tiaohou_effect: temporalSegment.tiaohou_effect,
+  seasonal_tiaohou_delta: temporalSegment.seasonal_tiaohou_delta,
+  calendar_normalization: { status: "calculated", policy: "year-at-lichun-v1" },
+  rule_trace: [
+    {
+      rule_id: "fixture.bazi.year.2026",
+      source_dependency_id: "ui-lab-fixture",
+      operation: "project",
+    },
+  ],
+  ganzhi_segments: [temporalSegment],
+};
 
 const calendarNormalization: NonNullable<BaziCoreFacts["calendar_normalization"]> = {
   status: "calculated",
@@ -289,13 +378,19 @@ const coreFacts: BaziCoreFacts = {
     cycles: [
       { sequence: 1, pillar: "丁未", start_age_years: 1, end_age_years: 11 },
       { sequence: 2, pillar: "戊申", start_age_years: 11, end_age_years: 21 },
+      { sequence: 3, pillar: "己酉", start_age_years: 21, end_age_years: 31 },
+      { sequence: 4, pillar: "庚戌", start_age_years: 31, end_age_years: 41 },
+      { sequence: 5, pillar: "辛亥", start_age_years: 41, end_age_years: 51 },
+      { sequence: 6, pillar: "壬子", start_age_years: 51, end_age_years: 61 },
+      { sequence: 7, pillar: "癸丑", start_age_years: 61, end_age_years: 71 },
+      { sequence: 8, pillar: "甲寅", start_age_years: 71, end_age_years: 81 },
     ],
     unavailable: [],
   },
   calendar_normalization: calendarNormalization,
-  year_layers: [],
-  month_layers: [],
-  day_layers: [],
+  year_layers: [yearLayer],
+  month_layers: [monthLayer],
+  day_layers: [dayLayer],
 };
 
 export const BAZI_EVIDENCE_RESULT_VIEW_MODEL: BaziChartViewModel = {
@@ -318,8 +413,20 @@ export const BAZI_EVIDENCE_RESULT_VIEW_MODEL: BaziChartViewModel = {
     {
       layer_id: "year",
       label: "流年",
-      available: false,
-      unavailable_reason: "本验收切片只固定本命四柱与时间口径事实。",
+      available: true,
+      unavailable_reason: null,
+    },
+    {
+      layer_id: "month",
+      label: "流月",
+      available: true,
+      unavailable_reason: null,
+    },
+    {
+      layer_id: "day",
+      label: "流日",
+      available: true,
+      unavailable_reason: null,
     },
   ],
   core_facts: coreFacts,

@@ -1,0 +1,1748 @@
+{
+  "generatedAt": "2026-08-18T04:58:40.065Z",
+  "gitSha": "ac6f77c610a05a15cd7c526c0ad8868c630ae851",
+  "productBaseUrl": "http://127.0.0.1:3000",
+  "productRoute": "/_ui-lab/bazi-result",
+  "productDataBoundary": "synthetic-ui-lab-fixture-not-runtime-release",
+  "referenceBoundary": "local-qingnang-site-mirror-client-preview",
+  "ok": true,
+  "failures": [],
+  "results": [
+    {
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "source": "synthetic-ui-lab-fixture",
+      "layerReports": [
+        {
+          "layer": "natal",
+          "layout": {
+            "innerWidth": 360,
+            "scrollWidth": 360,
+            "bodyScrollWidth": 360
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 49,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/360/mingli-natal.png"
+        },
+        {
+          "layer": "decadal",
+          "layout": {
+            "innerWidth": 360,
+            "scrollWidth": 360,
+            "bodyScrollWidth": 360
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 16,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/360/mingli-decadal.png"
+        },
+        {
+          "layer": "yearly",
+          "layout": {
+            "innerWidth": 360,
+            "scrollWidth": 360,
+            "bodyScrollWidth": 360
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 9,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/360/mingli-yearly.png"
+        },
+        {
+          "layer": "monthly",
+          "layout": {
+            "innerWidth": 360,
+            "scrollWidth": 360,
+            "bodyScrollWidth": 360
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 13,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/360/mingli-monthly.png"
+        },
+        {
+          "layer": "daily",
+          "layout": {
+            "innerWidth": 360,
+            "scrollWidth": 360,
+            "bodyScrollWidth": 360
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 14,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/360/mingli-daily.png"
+        }
+      ],
+      "density": null,
+      "comparison": null
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "source": "synthetic-ui-lab-fixture",
+      "layerReports": [
+        {
+          "layer": "natal",
+          "layout": {
+            "innerWidth": 768,
+            "scrollWidth": 768,
+            "bodyScrollWidth": 768
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 49,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/768/mingli-natal.png"
+        },
+        {
+          "layer": "decadal",
+          "layout": {
+            "innerWidth": 768,
+            "scrollWidth": 768,
+            "bodyScrollWidth": 768
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 16,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/768/mingli-decadal.png"
+        },
+        {
+          "layer": "yearly",
+          "layout": {
+            "innerWidth": 768,
+            "scrollWidth": 768,
+            "bodyScrollWidth": 768
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 9,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/768/mingli-yearly.png"
+        },
+        {
+          "layer": "monthly",
+          "layout": {
+            "innerWidth": 768,
+            "scrollWidth": 768,
+            "bodyScrollWidth": 768
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 13,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/768/mingli-monthly.png"
+        },
+        {
+          "layer": "daily",
+          "layout": {
+            "innerWidth": 768,
+            "scrollWidth": 768,
+            "bodyScrollWidth": 768
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 14,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/768/mingli-daily.png"
+        }
+      ],
+      "density": {
+        "methodVersion": "visible-structured-row-v1",
+        "productCount": 84,
+        "referenceCount": 33,
+        "productUnits": [
+          {
+            "kind": "table-row",
+            "text": "木 2 2",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "火 3 2",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "土 2 3",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "金 1 1",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "水 1 2",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "寅午半合 日柱、月柱 寅、午 合会",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "策略 / policy longitude_mean_solar-v1",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "算法 ID equation-of-time-v1 v1",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "标准经线 120°",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "经度修正 +42 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "均时差 -96 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "总修正 -54 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "有效时刻 1992-06-18T08:37:12+08:00",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "真太阳时 经度平太阳时已应用",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "时辰边界 跨时辰边界",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "日界状态 修正未跨日界",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "子时换日 晚子时策略未推进日柱",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "变柱 该修正改变了时柱",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "边界距离 1648 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "不确定区间 不在不确定区间",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "晚子时 晚子时按当日",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "前一节气 芒种 · 1992-06-05T17:12:00+08:00 · 月界节",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "后一节气 夏至 · 1992-06-21T12:14:00+08:00",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "换月口径 month-switch-at-jie-v1",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "日主 丙 · 火 · 阳",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "藏干 年柱 申：庚、壬、戊；月柱 午：丁、己；日柱 寅：甲、丙、戊；时柱 辰：戊、乙、癸",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "十神 天干 · 年柱 壬 · 七杀；天干 · 月柱 丙 · 日主；天干 · 日柱 丙 · 日主；天干 · 时柱 壬 · 七杀；藏干 · 年柱 庚 · 偏财；藏干 · 年柱 壬 · 七杀；藏干 · 月柱 丁 · 劫财；藏干 · 月柱 己 · 伤官；藏干 · 日柱 甲 · 偏印；藏干 · 时柱 乙 · 正印",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "纳音 年柱 剑锋金；月柱 天河水；日柱 炉中火；时柱 长流水",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "十二长生 年柱 丙申：病；月柱 丙午：帝旺",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "旬空 丙寅 属 甲子旬 旬：戌、亥",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "三垣 胎元 丁未 · 命宫 戊申 · 身宫 庚戌",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "月令 午月 · 主气 丁（火）",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "季节 夏 · 午火 · 热 · 燥",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "调候标记 火旺 · 候选标记，不作调候结论。",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "神煞辅助 天乙贵人（）",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "证据边界 只裁定月令季节状态；不输出全局身强身弱、喜忌或用神结论。",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 日主天干为丙；/four_pillars/month:eq:丙午",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 《三命通会》 · 卷二·L12-L15 《三命通会》 · 卷二·L31-L34",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "同类 2 项；生扶 木 1 项",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "月令状态 旺",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "元素计数：木2、火3、土2、金1、水1",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "结构候选：月令主气 丁 · 劫财；主气可见：是；可见位置：月柱；结构候选仍待经典裁定。；候选，待裁定",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "合化 / 从格候选：天干 0 项，地支成局 0 项；合化与从格候选不升级为结论。；候选，待裁定",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "《三命通会》 · 卷二·L12-L15",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "《三命通会》 · 卷二·L31-L34",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "年柱 壬 申 壬申",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "月柱 丙 午 丙午",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "日柱 丙 寅 丙寅",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "时柱 壬 辰 壬辰",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "1 丁未 1 11",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "2 戊申 11 21",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "3 己酉 21 31",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "4 庚戌 31 41",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "5 辛亥 41 51",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "6 壬子 51 61",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "7 癸丑 61 71",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "8 甲寅 71 81",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "状态 已计算",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "顺逆 顺行",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "顺逆规则 阳年生男顺行",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "起运规则 以节气间隔折算",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "起运岁数 1",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "边界节气 夏至 · 1992-06-21T12:14:00+08:00",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "间隔天数 3",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "约略起运时刻 1993-06-18T00:00:00+08:00",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "2026 丙午 比肩 丁 · 劫财 寅午半合（午·寅） mechanical_candidates_only 1",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "2026-08-01T00:00:00+08:00 2026-08-16T00:00:00+08:00 丙午 比肩 stem：丁；ten_god：劫财 relation_type：寅午半合；natal_position：month；natal_branch：午；transit_branch：寅",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "status calculated",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "pillar 丁未",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "status returned",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "season 夏",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "marker 火旺",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "temperature 热",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "policy year-at-lichun-v1",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "pillar 丙午",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "status mechanical_candidates_only",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "transit_pillar 丙午",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "stem_ten_god 比肩",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "branch_relations 0 项",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "calculated_items 0 项",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "policy month-switch-at-jie-v1",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "rule_id：fixture.bazi.month.2026-08；source_dependency_id：ui-lab-fixture；operation：project",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "2026-08-15 2026 8 2026-08-15 2026-08-15T12:00:00+08:00 1",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "rule_id：fixture.bazi.day.2026-08-15；source_dependency_id：ui-lab-fixture；operation：project",
+            "fontSizePx": 13,
+            "truncated": false
+          }
+        ],
+        "referenceUnits": [
+          {
+            "kind": "grid-cell",
+            "text": "公历 1994-04-30 05:55",
+            "fontSizePx": 14,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "农历 一九九四年三月二十 🐕 狗年",
+            "fontSizePx": 14,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "节气 清明 → 立夏",
+            "fontSizePx": 14,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "星期 周六",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "四象方位 白虎",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "星宿·值日 胃土彘",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "星宿吉凶 吉",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "年柱 甲 主星 · 偏印 戌 副星 · 食神",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "月柱 戊 主星 · 食神 辰 副星 · 食神",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "日主 日柱 丙 主星 · 日主 戌 副星 · 食神",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "时柱 辛 主星 · 正财 卯 副星 · 正印",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "戊土 辛金 丁火",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "戊土 乙木 癸水",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "乙木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "食神 正财 劫财",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "食神 正印 正官",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "正印",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "山头火",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "大林木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "屋上土",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "松柏木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "申酉",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "戌亥",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "午未",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "冠带",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "沐浴",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "国印贵人 德秀贵人 华盖",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "德秀贵人 金舆",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "国印贵人 德秀贵人 华盖 童子煞",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "太极贵人 德秀贵人 天医 桃花 阴差阳错",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "悬停神煞查看释义 · 点击固定",
+            "fontSizePx": 11,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "特殊宫位 先天三宫 命宫 甲 戌 主本性与运势基调 身宫 壬 申 主中晚归宿与心向 胎元 己 未 主受胎根基与父母缘 命宫取月令与生时，身宫取月令与时支；胎元为生月前三月之干支",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "五行力量 分布雷达 木 2 火 1 土 4 金 1 水 0 主气 土 4/8 次气 木 2/8 食伤旺秀 · 创造表达盛",
+            "fontSizePx": 16,
+            "truncated": false
+          }
+        ],
+        "referenceLayout": {
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "bodyScrollWidth": 768
+        },
+        "referenceScreenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/768/qingnang-result.png"
+      },
+      "comparison": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/comparison-768.png"
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "source": "synthetic-ui-lab-fixture",
+      "layerReports": [
+        {
+          "layer": "natal",
+          "layout": {
+            "innerWidth": 1024,
+            "scrollWidth": 1024,
+            "bodyScrollWidth": 1024
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 49,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/1024/mingli-natal.png"
+        },
+        {
+          "layer": "decadal",
+          "layout": {
+            "innerWidth": 1024,
+            "scrollWidth": 1024,
+            "bodyScrollWidth": 1024
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 16,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/1024/mingli-decadal.png"
+        },
+        {
+          "layer": "yearly",
+          "layout": {
+            "innerWidth": 1024,
+            "scrollWidth": 1024,
+            "bodyScrollWidth": 1024
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 9,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/1024/mingli-yearly.png"
+        },
+        {
+          "layer": "monthly",
+          "layout": {
+            "innerWidth": 1024,
+            "scrollWidth": 1024,
+            "bodyScrollWidth": 1024
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 13,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/1024/mingli-monthly.png"
+        },
+        {
+          "layer": "daily",
+          "layout": {
+            "innerWidth": 1024,
+            "scrollWidth": 1024,
+            "bodyScrollWidth": 1024
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 14,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/1024/mingli-daily.png"
+        }
+      ],
+      "density": null,
+      "comparison": null
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "source": "synthetic-ui-lab-fixture",
+      "layerReports": [
+        {
+          "layer": "natal",
+          "layout": {
+            "innerWidth": 1440,
+            "scrollWidth": 1440,
+            "bodyScrollWidth": 1440
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 49,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/1440/mingli-natal.png"
+        },
+        {
+          "layer": "decadal",
+          "layout": {
+            "innerWidth": 1440,
+            "scrollWidth": 1440,
+            "bodyScrollWidth": 1440
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 16,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/1440/mingli-decadal.png"
+        },
+        {
+          "layer": "yearly",
+          "layout": {
+            "innerWidth": 1440,
+            "scrollWidth": 1440,
+            "bodyScrollWidth": 1440
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 9,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/1440/mingli-yearly.png"
+        },
+        {
+          "layer": "monthly",
+          "layout": {
+            "innerWidth": 1440,
+            "scrollWidth": 1440,
+            "bodyScrollWidth": 1440
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 13,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/1440/mingli-monthly.png"
+        },
+        {
+          "layer": "daily",
+          "layout": {
+            "innerWidth": 1440,
+            "scrollWidth": 1440,
+            "bodyScrollWidth": 1440
+          },
+          "overflow": 0,
+          "minFontSizePx": 13,
+          "truncatedCount": 0,
+          "unitCount": 14,
+          "screenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/1440/mingli-daily.png"
+        }
+      ],
+      "density": {
+        "methodVersion": "visible-structured-row-v1",
+        "productCount": 84,
+        "referenceCount": 33,
+        "productUnits": [
+          {
+            "kind": "table-row",
+            "text": "木 2 2",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "火 3 2",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "土 2 3",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "金 1 1",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "水 1 2",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "寅午半合 日柱、月柱 寅、午 合会",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "策略 / policy longitude_mean_solar-v1",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "算法 ID equation-of-time-v1 v1",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "标准经线 120°",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "经度修正 +42 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "均时差 -96 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "总修正 -54 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "有效时刻 1992-06-18T08:37:12+08:00",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "真太阳时 经度平太阳时已应用",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "时辰边界 跨时辰边界",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "日界状态 修正未跨日界",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "子时换日 晚子时策略未推进日柱",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "变柱 该修正改变了时柱",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "边界距离 1648 秒",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "不确定区间 不在不确定区间",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "晚子时 晚子时按当日",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "前一节气 芒种 · 1992-06-05T17:12:00+08:00 · 月界节",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "后一节气 夏至 · 1992-06-21T12:14:00+08:00",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "换月口径 month-switch-at-jie-v1",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "日主 丙 · 火 · 阳",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "藏干 年柱 申：庚、壬、戊；月柱 午：丁、己；日柱 寅：甲、丙、戊；时柱 辰：戊、乙、癸",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "十神 天干 · 年柱 壬 · 七杀；天干 · 月柱 丙 · 日主；天干 · 日柱 丙 · 日主；天干 · 时柱 壬 · 七杀；藏干 · 年柱 庚 · 偏财；藏干 · 年柱 壬 · 七杀；藏干 · 月柱 丁 · 劫财；藏干 · 月柱 己 · 伤官；藏干 · 日柱 甲 · 偏印；藏干 · 时柱 乙 · 正印",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "纳音 年柱 剑锋金；月柱 天河水；日柱 炉中火；时柱 长流水",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "十二长生 年柱 丙申：病；月柱 丙午：帝旺",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "旬空 丙寅 属 甲子旬 旬：戌、亥",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "三垣 胎元 丁未 · 命宫 戊申 · 身宫 庚戌",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "月令 午月 · 主气 丁（火）",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "季节 夏 · 午火 · 热 · 燥",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "调候标记 火旺 · 候选标记，不作调候结论。",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "神煞辅助 天乙贵人（）",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "证据边界 只裁定月令季节状态；不输出全局身强身弱、喜忌或用神结论。",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "为什么适用于这张盘 日主天干为丙；/four_pillars/month:eq:丙午",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "可回溯出处 《三命通会》 · 卷二·L12-L15 《三命通会》 · 卷二·L31-L34",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "同类 2 项；生扶 木 1 项",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "月令状态 旺",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "元素计数：木2、火3、土2、金1、水1",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "结构候选：月令主气 丁 · 劫财；主气可见：是；可见位置：月柱；结构候选仍待经典裁定。；候选，待裁定",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "合化 / 从格候选：天干 0 项，地支成局 0 项；合化与从格候选不升级为结论。；候选，待裁定",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "《三命通会》 · 卷二·L12-L15",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "《三命通会》 · 卷二·L31-L34",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "年柱 壬 申 壬申",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "月柱 丙 午 丙午",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "日柱 丙 寅 丙寅",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "pillar",
+            "text": "时柱 壬 辰 壬辰",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "1 丁未 1 11",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "2 戊申 11 21",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "3 己酉 21 31",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "4 庚戌 31 41",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "5 辛亥 41 51",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "6 壬子 51 61",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "7 癸丑 61 71",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "8 甲寅 71 81",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "状态 已计算",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "顺逆 顺行",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "顺逆规则 阳年生男顺行",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "起运规则 以节气间隔折算",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "起运岁数 1",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "边界节气 夏至 · 1992-06-21T12:14:00+08:00",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "间隔天数 3",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "约略起运时刻 1993-06-18T00:00:00+08:00",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "2026 丙午 比肩 丁 · 劫财 寅午半合（午·寅） mechanical_candidates_only 1",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "2026-08-01T00:00:00+08:00 2026-08-16T00:00:00+08:00 丙午 比肩 stem：丁；ten_god：劫财 relation_type：寅午半合；natal_position：month；natal_branch：午；transit_branch：寅",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "status calculated",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "pillar 丁未",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "status returned",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "season 夏",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "marker 火旺",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "temperature 热",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "policy year-at-lichun-v1",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "pillar 丙午",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "status mechanical_candidates_only",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "transit_pillar 丙午",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "stem_ten_god 比肩",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "branch_relations 0 项",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "calculated_items 0 项",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "definition",
+            "text": "policy month-switch-at-jie-v1",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "rule_id：fixture.bazi.month.2026-08；source_dependency_id：ui-lab-fixture；operation：project",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "table-row",
+            "text": "2026-08-15 2026 8 2026-08-15 2026-08-15T12:00:00+08:00 1",
+            "fontSizePx": 13,
+            "truncated": false
+          },
+          {
+            "kind": "list-item",
+            "text": "rule_id：fixture.bazi.day.2026-08-15；source_dependency_id：ui-lab-fixture；operation：project",
+            "fontSizePx": 13,
+            "truncated": false
+          }
+        ],
+        "referenceUnits": [
+          {
+            "kind": "grid-cell",
+            "text": "公历 1994-04-30 05:55",
+            "fontSizePx": 14,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "农历 一九九四年三月二十 🐕 狗年",
+            "fontSizePx": 14,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "节气 清明 → 立夏",
+            "fontSizePx": 14,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "星期 周六",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "四象方位 白虎",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "星宿·值日 胃土彘",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "星宿吉凶 吉",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "年柱 甲 主星 · 偏印 戌 副星 · 食神",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "月柱 戊 主星 · 食神 辰 副星 · 食神",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "日主 日柱 丙 主星 · 日主 戌 副星 · 食神",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "时柱 辛 主星 · 正财 卯 副星 · 正印",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "戊土 辛金 丁火",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "戊土 乙木 癸水",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "乙木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "食神 正财 劫财",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "食神 正印 正官",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "正印",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "山头火",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "大林木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "屋上土",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "松柏木",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "申酉",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "戌亥",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "午未",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "冠带",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "沐浴",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "国印贵人 德秀贵人 华盖",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "德秀贵人 金舆",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "国印贵人 德秀贵人 华盖 童子煞",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "太极贵人 德秀贵人 天医 桃花 阴差阳错",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "悬停神煞查看释义 · 点击固定",
+            "fontSizePx": 11,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "特殊宫位 先天三宫 命宫 甲 戌 主本性与运势基调 身宫 壬 申 主中晚归宿与心向 胎元 己 未 主受胎根基与父母缘 命宫取月令与生时，身宫取月令与时支；胎元为生月前三月之干支",
+            "fontSizePx": 16,
+            "truncated": false
+          },
+          {
+            "kind": "grid-cell",
+            "text": "五行力量 分布雷达 木 2 火 1 土 4 金 1 水 0 主气 土 4/8 次气 木 2/8 食伤旺秀 · 创造表达盛",
+            "fontSizePx": 16,
+            "truncated": false
+          }
+        ],
+        "referenceLayout": {
+          "innerWidth": 1440,
+          "scrollWidth": 1440,
+          "bodyScrollWidth": 1440
+        },
+        "referenceScreenshot": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/1440/qingnang-result.png"
+      },
+      "comparison": "artifacts/browser-evidence/2026-08-18-bazi-g5-density/comparison-1440.png"
+    }
+  ]
+}
