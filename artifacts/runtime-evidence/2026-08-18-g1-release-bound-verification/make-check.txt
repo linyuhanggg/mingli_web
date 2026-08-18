@@ -1,0 +1,239 @@
+uv run --directory backend pytest tests ../tests/contract -q
+........................................................................ [  6%]
+.............................s.......................................... [ 12%]
+........................................................................ [ 18%]
+........................................................................ [ 24%]
+........................................................................ [ 30%]
+........................................................................ [ 36%]
+..........................ssss.....ssssss............................... [ 42%]
+........................................................................ [ 48%]
+........................................................................ [ 54%]
+...........................................................sssssssssssss [ 60%]
+sssssssssss.....................................sssssssssssss........... [ 66%]
+........................................................................ [ 72%]
+...............ss....................................................... [ 78%]
+.........................sssssssssssssssssssssssssssssssssssssssssssssss [ 84%]
+ssssssssssssssssss..........................sssssssss................... [ 90%]
+....s..sssss..ss........................................................ [ 96%]
+...........................................                              [100%]
+1063 passed, 132 skipped in 89.54s (0:01:29)
+uv run --project backend ruff check --config backend/pyproject.toml backend tests
+All checks passed!
+uv run --project backend mypy --config-file backend/pyproject.toml backend/app backend/worker
+Success: no issues found in 147 source files
+npm --prefix web test
+
+> mingli-web@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.10 /Volumes/Lexar/code/mingli_web/web
+
+
+ Test Files  80 passed (80)
+      Tests  501 passed (501)
+   Start at  21:20:06
+   Duration  12.52s (transform 4.87s, setup 5.51s, import 22.28s, tests 36.41s, environment 34.05s)
+
+npm --prefix web run lint
+
+> mingli-web@0.1.0 lint
+> eslint . --max-warnings=0
+
+npm --prefix web run typecheck
+
+> mingli-web@0.1.0 typecheck
+> tsc --noEmit
+
+npm --prefix admin test
+
+> mingli-admin@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.10 /Volumes/Lexar/code/mingli_web/admin
+
+
+ Test Files  33 passed (33)
+      Tests  123 passed (123)
+   Start at  21:20:27
+   Duration  5.45s (transform 1.96s, setup 4.02s, import 11.69s, tests 10.76s, environment 15.52s)
+
+npm --prefix admin run lint
+
+> mingli-admin@0.1.0 lint
+> eslint . --max-warnings=0
+
+npm --prefix admin run typecheck
+
+> mingli-admin@0.1.0 typecheck
+> tsc --noEmit
+
+npm --prefix admin run build
+
+> mingli-admin@0.1.0 build
+> next build
+
+▲ Next.js 16.3.0 (Turbopack)
+✓ Running next.config.ts took 77ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1577ms
+  Running TypeScript ...
+  Finished TypeScript in 963ms ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/38) ...
+  Generating static pages using 9 workers (9/38)
+  Generating static pages using 9 workers (18/38)
+  Generating static pages using 9 workers (28/38)
+✓ Generating static pages using 9 workers (38/38) in 515ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /_ui-lab
+├ ƒ /[...segments]
+├ ○ /appeals
+├ ○ /audit
+├ ○ /capabilities
+├ ○ /charts
+├ ○ /cms/daily
+├ ○ /cms/help
+├ ○ /cms/library
+├ ○ /cms/pages
+├ ○ /cms/policies
+├ ○ /cms/tools
+├ ○ /dashboard
+├ ○ /data-rights
+├ ○ /entitlements
+├ ○ /health
+├ ○ /login
+├ ○ /model-profiles
+├ ○ /notifications
+├ ○ /observations
+├ ○ /orders
+├ ○ /payments
+├ ○ /products
+├ ƒ /products/[id]/versions
+├ ○ /reading-jobs
+├ ○ /readings
+├ ƒ /readings/[id]
+├ ○ /reconciliation
+├ ○ /referrals
+├ ƒ /referrals/[id]
+├ ○ /refunds
+├ ○ /runtime
+├ ○ /sessions
+├ ○ /settings
+├ ○ /staff
+├ ○ /subjects
+├ ƒ /subjects/[id]
+├ ○ /support-cases
+├ ○ /users
+├ ƒ /users/[id]
+└ ○ /verifications
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+npm --prefix web run build
+
+> mingli-web@0.1.0 build
+> next build
+
+▲ Next.js 16.3.0 (Turbopack)
+✓ Running next.config.ts took 74ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.6s
+  Running TypeScript ...
+  Finished TypeScript in 1458ms ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/35) ...
+  Generating static pages using 9 workers (8/35)
+  Generating static pages using 9 workers (17/35)
+  Generating static pages using 9 workers (26/35)
+✓ Generating static pages using 9 workers (35/35) in 564ms
+  Finalizing page optimization ...
+
+Route (app)                         Revalidate  Expire
+┌ ○ /                                       1m      1y
+├ ○ /_not-found
+├ ○ /_ui-lab
+├ ○ /_ui-lab/bazi-result
+├ ○ /about                                  1m      1y
+├ ƒ /account
+├ ƒ /account/data-rights
+├ ƒ /account/entitlements
+├ ƒ /account/history
+├ ƒ /account/history/[rootId]
+├ ƒ /account/invitations
+├ ƒ /account/invites
+├ ƒ /account/notifications
+├ ƒ /account/orders
+├ ƒ /account/profiles
+├ ƒ /account/profiles/[profileId]
+├ ƒ /account/settings
+├ ƒ /account/settings/preferences
+├ ƒ /account/settings/privacy-data
+├ ƒ /account/settings/security
+├ ƒ /app
+├ ƒ /app/ask/liuyao
+├ ƒ /app/bazi
+├ ƒ /app/fortune/today
+├ ƒ /app/fortune/week
+├ ƒ /app/profile/new
+├ ƒ /app/profiles
+├ ƒ /app/readings
+├ ƒ /app/readings/[readingId]
+├ ○ /arts
+├ ƒ /auth/consent
+├ ƒ /auth/login
+├ ƒ /auth/recover
+├ ƒ /auth/register
+├ ƒ /auth/set-password
+├ ƒ /auth/verify
+├ ○ /bazi
+├ ○ /bazi/hepan
+├ ○ /canwen
+├ ƒ /checkout
+├ ƒ /checkout/[orderId]
+├ ○ /daily
+├ ○ /daliuren
+├ ○ /fengshui
+├ ○ /hecan
+├ ƒ /invite/[code]
+├ ○ /jianxiang
+├ ○ /library
+├ ƒ /library/[slug]
+├ ○ /liuyao
+├ ○ /luming-nayin
+├ ○ /manifest.webmanifest
+├ ○ /meihua
+├ ○ /methodology                            1m      1y
+├ ○ /pricing
+├ ○ /privacy                                1m      1y
+├ ○ /qimen
+├ ○ /qizheng
+├ ○ /qizheng/hepan
+├ ○ /robots.txt
+├ ○ /selection
+├ ƒ /share/[shareId]
+├ ○ /support                                1m      1y
+├ ○ /taiyi
+├ ○ /terms                                  1m      1y
+├ ○ /tools
+├ ƒ /tools/[tool]
+├ ○ /wenshi
+├ ƒ /workbench/[handle]
+├ ○ /ziwei
+└ ○ /ziwei/hepan
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+EXIT_CODE=0

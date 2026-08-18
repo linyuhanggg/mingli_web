@@ -134,6 +134,26 @@ Mac mini `native-full` 是唯一强制 Runtime Gate；正常开发、合并、�
 
 上述字段要么整组存在并全部闭合，要么整组不公开。多条已核验引文必须按 Runtime 顺序全部透传，不能只挑第一条；任一 citation 缺字段、状态不对或与顶层冲突时，Backend 与 Web 都 fail closed。八字结果页只把该原子组当古籍原文，旧的 summary-only evidence 仍可供未迁移产品作一般“依据”，但不得标成原文或可核验。
 
+核验环境冻结为两部分，采用 C+B 路线：签名 Runtime release 自带的 `references/index/evidence-rules.jsonl` 负责第 1–3 步——页面 `excerpt` 逐字等于对应 `evidence_ref` 规则的 `verbatim_quote`、该字符串的 `verbatim_quote_sha256` 正确、`path + sha256 + anchor` 锁定语料版本与位置；独立授权安装的 `mingli-master` 全文语料负责第 4 步——实际读取该书该行，判定 `verified_exact`。第 1–3 步通过不能冒充第 4 步，只有两部分都通过才满足 G1 的 100%。
+
+签名 release 本身不内置 `references/fulltext`。这是既有发布合同：Core `.gitignore` 排除全文，README 明示全文不进入发布包，`test_v51_release_surface.py` 锁住该边界。选择 C+B 的原因是全文再分发授权，不是文件体积；取得明确授权前，全文不得进入 release。核验机把独立语料安装在 `~/.codex/skills/mingli-master`，也可用 `--root <mingli-master-root>` 明确指定。
+
+```bash
+# 第 1–3 步：只读签名 release，不读外部全文
+python3 -B scripts/verify_citation.py \
+  --mode release-bound \
+  --release-root .runtime/v53-time-check-release \
+  --file <页面-evidence.json> \
+  --citations-file <引文清单>.txt
+
+# 第 4 步：读取独立授权全文；退出码必须为 0，且每条均为 verified_exact
+PYTHONDONTWRITEBYTECODE=1 \
+PYTHONPATH=.runtime/backups/2026-08-18-g1-resign/runtime-extras \
+~/.local/share/mingli-master/venv/bin/python -B scripts/verify_citation.py \
+  --root ~/.codex/skills/mingli-master \
+  --file <引文清单>.txt
+```
+
 这里区分源码和发布物：工作树中的 Provider、Schema、Projector 或 Web 已完成，不代表安装中的签名 Runtime 已经提供这些字段。只有重新生成完整 Release、验签、通过原生门禁并被 Backend 准入后，才可记录为 Runtime 已发布；此前消费者必须把可选字段缺失当成“该 Release 未提供”，不能在浏览器补算或用摘要兜底冒充逐字证据。
 
 ### 3.5 八字事业深读的 P0 抽取合同

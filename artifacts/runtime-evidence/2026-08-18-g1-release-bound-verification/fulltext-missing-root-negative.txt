@@ -1,0 +1,9 @@
+找不到独立授权的 mingli-master 全文库。已检查：
+  - .runtime/v53-time-check-release/references/fulltext
+请安装全文语料，或用 --root <mingli-master-root> 指定其根目录。
+可直接复制的复核命令：
+PYTHONDONTWRITEBYTECODE=1 \
+PYTHONPATH=.runtime/backups/2026-08-18-g1-resign/runtime-extras \
+~/.local/share/mingli-master/venv/bin/python -B scripts/verify_citation.py --root <mingli-master-root> --file <引文清单>.txt
+
+EXIT_CODE=1

@@ -1,0 +1,79 @@
+{
+  "chain": {
+    "guest_session_created": true,
+    "profile_version_id": "2cdb91ff-c44a-41ea-82bd-7d73ffc0d47b",
+    "preview_status_code": 201,
+    "reading_version_id": "591dff12-eb17-4d67-930a-f1edd5701f4b",
+    "worker_processed": true,
+    "owner_result_status_code": 200
+  },
+  "release": {
+    "release_root": ".runtime/v53-time-check-release",
+    "release_name": "mingli-master-portable-core",
+    "source_commit": "403fbc259564c3dfdb57bfa10d492a8f4f9a7e0a",
+    "release_manifest_sha256": "7996b03356de9918484b83cdf84677b4e2946b1b55d7f0c504dd40cfd5ee7ca6",
+    "describe_manifest_digest": "3403992cb31aebea19e69ec3b1280a5ef02718c5f9ca3e3f94448ef7b039facc",
+    "capability_shape_sha256": "fb9da7fa1969e449e91222a0f10a2076da2e8cca43d1083b531aa218ff31e042"
+  },
+  "result": {
+    "status": "prepared",
+    "view_model_schema_version": "bazi-chart/v1",
+    "capability_tier": "A",
+    "runtime_active_rule_count": 24,
+    "judgment_rule_count": 19,
+    "fact_count": 19,
+    "evidence_count": 7,
+    "finding_count": 4,
+    "evidence": [
+      {
+        "evidence_ref": "evidence:bazi/bazi/sanming-tonghui#R-01-02",
+        "source_title": "三命通会",
+        "locator": "fulltext.md#L35",
+        "excerpt": "故五者流行而更轉順則相生逆則相尅",
+        "verification_status": "verified_exact"
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/sanming-tonghui#R-02-04",
+        "source_title": "三命通会",
+        "locator": "fulltext.md#L636",
+        "excerpt": "盛徳乘時曰旺如春木旺旺則生火火乃木之子子乗父業故火相木用水生生我者父母今子嗣得時登髙明顯赫之地而生我者當知退矣故水休休者羙之無極休然無事之義火能尅金金乃木之鬼被火尅制不能施設故金囚火能生土土為木之財財為隠藏之物草木發生土散氣塵所以春木尅土則死夏火旺火生土則土相木生火則木休水尅火則水因火尅金則金死六月土旺土生金則金相火生土則火休木尅土則木囚土尅水則水死秋金旺金生水則水相土生金則土休火尅金則火囚金尅木則木死冬水旺水生木則木相金生水則金休土尅水則土囚水尅火則火死",
+        "verification_status": "verified_exact"
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/yuanhai-ziping#YR-M01",
+        "source_title": "渊海子平",
+        "locator": "fulltext.md#L109",
+        "excerpt": "以日为主，年为本，月为提纲，时为辅佐。",
+        "verification_status": "verified_exact"
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/ziping-zhenquan#ZPR-01",
+        "source_title": "子平真诠",
+        "locator": "fulltext.md#L179",
+        "excerpt": "八字用神，專求月令，以日干配月令地支，而生尅不同，格局分焉。",
+        "verification_status": "verified_exact"
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/ditiansui-chanwei#DR-01-01",
+        "source_title": "滴天髓阐微",
+        "locator": "fulltext.md#L11",
+        "excerpt": "干为天元，支为地元，支中所藏为人元。",
+        "verification_status": "verified_exact"
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/qiongtong-baojian#QR-02-01",
+        "source_title": "穷通宝鉴",
+        "locator": "fulltext.md#L319",
+        "excerpt": "正月用壬，庚辛为助。二月耑用壬水。三月土重晦光，取甲佐之为妙",
+        "verification_status": "verified_exact"
+      },
+      {
+        "evidence_ref": "evidence:bazi/bazi/qiongtong-baojian#QTB-M01",
+        "source_title": "穷通宝鉴",
+        "locator": "fulltext.md#L9",
+        "excerpt": "土无常性，视四时所乘，欲使相济得所，勿令太过弗及。",
+        "verification_status": "verified_exact"
+      }
+    ]
+  }
+}

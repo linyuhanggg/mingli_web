@@ -1,0 +1,38 @@
+发行绑定索引：1328 条规则 / 7 条页面引文
+
+❌ release_binding_failed  evidence:bazi/bazi/sanming-tonghui#R-01-02
+   页面 excerpt 与对应规则的 verbatim_quote 不逐字相等
+   · locator=fulltext.md#L34
+
+✅ verified_release_bound  evidence:bazi/bazi/sanming-tonghui#R-02-04
+   发行记录已闭合第 1–3 步；未读取外部全文，不代表第 4 步 verified_exact
+   · references/fulltext/bazi/sanming-tonghui/fulltext.md  sha256=0f78de8e47b7cd1dc199d6488c5fdf40d01819e589b0f50e78273541e8c14ed7
+   · locator=fulltext.md#L636
+
+✅ verified_release_bound  evidence:bazi/bazi/yuanhai-ziping#YR-M01
+   发行记录已闭合第 1–3 步；未读取外部全文，不代表第 4 步 verified_exact
+   · references/fulltext/bazi/yuanhai-ziping/fulltext.md  sha256=a09dc8706d654ddfcb8b88843dde9fc01e792487b066c3faa9232c5df3e4918a
+   · locator=fulltext.md#L109
+
+✅ verified_release_bound  evidence:bazi/bazi/ziping-zhenquan#ZPR-01
+   发行记录已闭合第 1–3 步；未读取外部全文，不代表第 4 步 verified_exact
+   · references/fulltext/bazi/ziping-zhenquan/fulltext.md  sha256=a00b705357cca35178e6062eced8eb0622274751ff4fc4aaa424a655bfffe4d7
+   · locator=fulltext.md#L179
+
+✅ verified_release_bound  evidence:bazi/bazi/ditiansui-chanwei#DR-01-01
+   发行记录已闭合第 1–3 步；未读取外部全文，不代表第 4 步 verified_exact
+   · references/fulltext/bazi/ditiansui-chanwei/fulltext.md  sha256=8e27b47b0155cbe4a4ce4e7d250435e786f203f2caf81f95440526eecf0d17db
+   · locator=fulltext.md#L11
+
+✅ verified_release_bound  evidence:bazi/bazi/qiongtong-baojian#QR-02-01
+   发行记录已闭合第 1–3 步；未读取外部全文，不代表第 4 步 verified_exact
+   · references/fulltext/bazi/qiongtong-baojian/fulltext.md  sha256=fce5e9215be146435c533b15647849c03321577128e6fb7ac19258dc8b55cbaf
+   · locator=fulltext.md#L319
+
+✅ verified_release_bound  evidence:bazi/bazi/qiongtong-baojian#QTB-M01
+   发行记录已闭合第 1–3 步；未读取外部全文，不代表第 4 步 verified_exact
+   · references/fulltext/bazi/qiongtong-baojian/fulltext.md  sha256=fce5e9215be146435c533b15647849c03321577128e6fb7ac19258dc8b55cbaf
+   · locator=fulltext.md#L9
+
+
+EXIT_CODE=1

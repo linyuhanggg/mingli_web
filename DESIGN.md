@@ -699,11 +699,36 @@ B 档是**只做前两层的完整页**：
 ### G1 · 引文可核验率 100%
 
 页面出现的每一条古籍引用，抽取后经 `scripts/verify_citation.py` 校验必须全部返回
-`verified_exact`：
+`verified_exact`。核验链分四步，前 3 步与第 4 步不能互相冒充：
+
+1. 页面 `excerpt` 逐字等于其 `evidence_ref` 指向的签名发行记录 `verbatim_quote`；
+2. `sha256(verbatim_quote.encode("utf-8"))` 等于记录的 `verbatim_quote_sha256`；
+3. 记录的 `path + sha256` 锁定语料文件版本，`anchor` 与页面 `locator` 一致；
+4. 独立全文语料中，该原文确实位于该书该行。
+
+第 1–3 步只依赖签名 release，以 ref 绑定的 `release-bound` 模式判定；它不读取全文，返回
+`verified_release_bound` 只能说明发行记录绑定闭合，不能单独通过 G1：
 
 ```bash
-python3 scripts/verify_citation.py --file <引文清单>.txt   # 退出码必须为 0
+python3 -B scripts/verify_citation.py \
+  --mode release-bound \
+  --release-root .runtime/v53-time-check-release \
+  --file <页面-evidence.json> \
+  --citations-file <引文清单>.txt                         # 退出码必须为 0
 ```
+
+第 4 步必须读取独立授权的 `mingli-master` 全文语料。默认安装位置为
+`~/.codex/skills/mingli-master`；也可用 `--root` 指定。可直接复核：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 \
+PYTHONPATH=.runtime/backups/2026-08-18-g1-resign/runtime-extras \
+~/.local/share/mingli-master/venv/bin/python -B scripts/verify_citation.py \
+  --root ~/.codex/skills/mingli-master \
+  --file <引文清单>.txt                                  # 退出码必须为 0
+```
+
+签名 release 不内置 `references/fulltext`。C+B 路线是再分发授权边界，不是体积优化；取得明确授权前，全文不得进入 release。缺少独立语料时必须 fail closed。G1 的 100% 与 `verified_exact` 要求不变：页面全部引文须先通过第 1–3 步，并在已安装的独立全文上全部通过第 4 步。
 
 参考站实测反例：青囊八字页标注「偏财源活，最宜食伤生扶；忌比劫劫夺。」出自
 《子平真诠·论财》，在该书全文库中 `not_found`，四个关键词组零命中，

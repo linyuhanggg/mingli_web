@@ -1,0 +1,11 @@
+python3 scripts/check_mingli_core_workspace.py
+core_source=/Volumes/Lexar/code/mingli_web/core/mingli-master
+core_branch=codex/mingli-v53-time-check-source-20260817
+runtime_release=/Volumes/Lexar/code/mingli_web/.runtime/v53-time-check-release
+managed_files=220
+missing_files=0
+drifted_files=0
+unsigned_files=0
+source_sync_ready=yes
+
+EXIT_CODE=0
