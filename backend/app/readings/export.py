@@ -110,11 +110,13 @@ def _wrap(value: object, width: int) -> tuple[str, ...]:
     return tuple(text[index : index + width] for index in range(0, len(text), width))
 
 
-def _safe_report_line(value: str) -> str:
+def _safe_report_line(value: str, *, preserve_middle_dot: bool = False) -> str:
     """Keep punctuation inside the glyph set shared by PNG and CID-font PDFs."""
     normalized = value.replace("•", "-")
     if normalized.startswith("· "):
         normalized = f"- {normalized[2:]}"
+    if preserve_middle_dot:
+        return normalized
     return normalized.replace(" · ", "：").replace("·", "，")
 
 
@@ -122,34 +124,47 @@ def _bazi_document_lines(
     document: ReadingDocumentV1,
     chart: BaziChartV1,
 ) -> tuple[str, ...]:
-    lines: list[str] = [
-        "私密报告",
-        "八字命盘报告",
-        "",
-        "四柱",
-    ]
+    lines: list[tuple[str, bool]] = []
+
+    def add(value: str, *, preserve_middle_dot: bool = False) -> None:
+        lines.append((value, preserve_middle_dot))
+
+    def add_many(*values: str) -> None:
+        for value in values:
+            add(value)
+
+    def add_wrapped(
+        value: object,
+        width: int,
+        *,
+        preserve_middle_dot: bool = False,
+    ) -> None:
+        for line in _wrap(value, width):
+            add(line, preserve_middle_dot=preserve_middle_dot)
+
+    add_many("私密报告", "八字命盘报告", "", "四柱")
     for pillar in chart.pillars:
         label = _POSITION_LABELS[pillar.position]
-        lines.append(f"{label} {pillar.stem}{pillar.branch}")
+        add(f"{label} {pillar.stem}{pillar.branch}")
 
     core = chart.core_facts
     if core is not None:
-        lines.extend(("", "盘面要点"))
+        add_many("", "盘面要点")
         if core.day_master is not None:
             element = _ELEMENT_LABELS[core.day_master.element]
-            lines.append(f"日主 {core.day_master.stem} · {core.day_master.polarity}{element}")
+            add(f"日主 {core.day_master.stem} · {core.day_master.polarity}{element}")
         if core.month_command is not None:
-            lines.append(
+            add(
                 f"月令 {core.month_command.branch} · 主气{core.month_command.main_qi}"
                 f"（{_ELEMENT_LABELS[core.month_command.main_qi_element]}）"
             )
         if core.seasonal_profile is not None:
-            lines.append(
+            add(
                 f"时令 {core.seasonal_profile.season} · "
                 f"{core.seasonal_profile.temperature} · {core.seasonal_profile.moisture}"
             )
         if core.element_inventory is not None:
-            lines.extend(("", "五行计数"))
+            add_many("", "五行计数")
             visible = {
                 item.element: item.value
                 for item in core.element_inventory.visible_stem_branch_counts
@@ -159,15 +174,15 @@ def _bazi_document_lines(
                 for item in core.element_inventory.hidden_stem_occurrence_counts
             }
             for element, label in _ELEMENT_LABELS.items():
-                lines.append(
+                add(
                     f"{label}：表层 {visible.get(element, 0)}，藏干 {hidden.get(element, 0)}"
                 )
         if core.branch_relations:
-            lines.extend(("", "地支关系"))
+            add_many("", "地支关系")
             for relation in core.branch_relations:
-                lines.append(f"{'、'.join(relation.branches)} · {relation.relation_type}")
+                add(f"{'、'.join(relation.branches)} · {relation.relation_type}")
         if core.luck_cycles is not None:
-            lines.extend(("", "大运"))
+            add_many("", "大运")
             direction = {"forward": "顺行", "reverse": "逆行"}.get(
                 core.luck_cycles.direction or "",
                 "方向未返回",
@@ -177,32 +192,35 @@ def _bazi_document_lines(
                 if core.luck_cycles.start_age_years is not None
                 else ""
             )
-            lines.append(f"{direction}{start_age}")
+            add(f"{direction}{start_age}")
             for cycle in core.luck_cycles.cycles:
                 age = ""
                 if cycle.start_age_years is not None and cycle.end_age_years is not None:
                     age = f" · {cycle.start_age_years:g} 至 {cycle.end_age_years:g} 岁"
-                lines.append(f"第 {cycle.sequence} 运 {cycle.pillar}{age}")
+                add(f"第 {cycle.sequence} 运 {cycle.pillar}{age}")
 
     if document.product_version.startswith("bazi-deep"):
-        lines.extend(("", "解读摘要"))
-        lines.extend(_wrap(document.answer_summary, 34))
+        add_many("", "解读摘要")
+        add_wrapped(document.answer_summary, 34)
         if document.claims:
-            lines.extend(("", "判断"))
+            add_many("", "判断")
             for claim in document.claims:
-                lines.extend(_wrap(f"· {claim.text}", 34))
+                add_wrapped(f"· {claim.text}", 34)
     else:
-        lines.extend(("", "说明", "这是免费排盘预览，展示命盘与确定性事实，不含完整深度解读。"))
+        add_many("", "说明", "这是免费排盘预览，展示命盘与确定性事实，不含完整深度解读。")
 
     if document.evidence:
-        lines.extend(("", "古籍依据"))
+        add_many("", "古籍依据")
         for evidence in document.evidence:
-            lines.extend(_wrap(f"· {evidence.title}", 34))
+            add_wrapped(f"· {evidence.title}", 34, preserve_middle_dot=True)
     if document.boundaries:
-        lines.extend(("", "说明"))
+        add_many("", "说明")
         for boundary in document.boundaries:
-            lines.extend(_wrap(f"· {boundary.text}", 34))
-    return tuple(_safe_report_line(line) for line in lines)
+            add_wrapped(f"· {boundary.text}", 34)
+    return tuple(
+        _safe_report_line(line, preserve_middle_dot=preserve_middle_dot)
+        for line, preserve_middle_dot in lines
+    )
 
 
 def _document_lines(document: ReadingDocumentV1) -> tuple[str, ...]:
@@ -210,21 +228,42 @@ def _document_lines(document: ReadingDocumentV1) -> tuple[str, ...]:
         return _bazi_document_lines(document, document.view_model)
 
     label = _PRODUCT_LABELS.get(document.view_model.schema_version, "命理解读")
-    lines: list[str] = ["私密报告", label, "", "解读摘要"]
-    lines.extend(_wrap(document.answer_summary, 34))
+    lines: list[tuple[str, bool]] = []
+
+    def add(value: str, *, preserve_middle_dot: bool = False) -> None:
+        lines.append((value, preserve_middle_dot))
+
+    def add_many(*values: str) -> None:
+        for value in values:
+            add(value)
+
+    def add_wrapped(
+        value: object,
+        width: int,
+        *,
+        preserve_middle_dot: bool = False,
+    ) -> None:
+        for line in _wrap(value, width):
+            add(line, preserve_middle_dot=preserve_middle_dot)
+
+    add_many("私密报告", label, "", "解读摘要")
+    add_wrapped(document.answer_summary, 34)
     if document.claims:
-        lines.extend(("", "判断"))
+        add_many("", "判断")
         for claim in document.claims:
-            lines.extend(_wrap(f"· {claim.text}", 34))
+            add_wrapped(f"· {claim.text}", 34)
     if document.evidence:
-        lines.extend(("", "古籍依据"))
+        add_many("", "古籍依据")
         for evidence in document.evidence:
-            lines.extend(_wrap(f"· {evidence.title}", 34))
+            add_wrapped(f"· {evidence.title}", 34, preserve_middle_dot=True)
     if document.boundaries:
-        lines.extend(("", "说明"))
+        add_many("", "说明")
     for boundary in document.boundaries:
-        lines.extend(_wrap(f"· {boundary.text}", 34))
-    return tuple(_safe_report_line(line) for line in lines)
+        add_wrapped(f"· {boundary.text}", 34)
+    return tuple(
+        _safe_report_line(line, preserve_middle_dot=preserve_middle_dot)
+        for line, preserve_middle_dot in lines
+    )
 
 
 def _render_png(document: ReadingDocumentV1) -> bytes:

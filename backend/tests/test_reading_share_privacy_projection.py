@@ -8,6 +8,7 @@ from typing import Any
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from test_reading_delivery import (
     _accepted_graph,
     _document_payload,

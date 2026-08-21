@@ -314,6 +314,7 @@ class CommerceService:
         channel_transaction_id: str | None,
         payment_succeeded: bool,
         verified: bool,
+        now: datetime | None = None,
     ) -> tuple[Payment | None, bool]:
         """Apply one verified provider event without replaying the ledger grant."""
         if not verified:
@@ -325,6 +326,7 @@ class CommerceService:
             raise CommerceError("notification channel and event id are required")
         if payment_succeeded and normalized_transaction_id is None:
             raise CommerceError("successful payment notification needs a transaction id")
+        processed_at = now or datetime.now(UTC)
 
         provider_status = "succeeded" if payment_succeeded else "pending"
         receipt = await self.session.scalar(
@@ -355,7 +357,7 @@ class CommerceService:
                 payment_attempt_id=attempt_id,
             )
             receipt.processing_status = "ignored"
-            receipt.processed_at = datetime.now(UTC)
+            receipt.processed_at = processed_at
             await self.session.flush()
             return None, False
 
@@ -365,10 +367,11 @@ class CommerceService:
             channel=normalized_channel,
             channel_transaction_id=normalized_transaction_id or "",
             verified=True,
+            now=processed_at,
         )
         receipt.payment_id = payment.id
         receipt.processing_status = "processed"
-        receipt.processed_at = datetime.now(UTC)
+        receipt.processed_at = processed_at
         await self.session.flush()
         return payment, created
 
@@ -469,6 +472,11 @@ class CommerceService:
             raise CommerceError("delivered fulfillment is immutable")
         if fulfillment.status == "released":
             raise CommerceError("released fulfillment cannot bind a job")
+        if (
+            fulfillment.reading_version_ref == reading_version_ref
+            and fulfillment.reading_job_ref == normalized_job_ref
+        ):
+            return fulfillment, False
         if job.status in {"failed", "canceled", "stopped", "runtime_unknown"}:
             raise CommerceError("terminal Reading Job cannot be fulfilled")
         if fulfillment.reading_version_ref is not None:
@@ -1029,6 +1037,8 @@ class CommerceService:
     ) -> tuple[Refund, bool]:
         if not verified:
             raise CommerceError("refund channel verification is required")
+        if not channel.strip() or not channel_refund_id.strip() or not reason.strip():
+            raise CommerceError("refund channel, reference and reason are required")
         existing = await self.session.scalar(
             select(Refund).where(
                 Refund.channel == channel,
@@ -1042,8 +1052,8 @@ class CommerceService:
         payment = await self.session.get(Payment, payment_id)
         if payment is None or payment.status != "confirmed":
             raise CommerceError("payment is not refundable")
-        if not reason.strip() or not channel_refund_id.strip():
-            raise CommerceError("refund reference and reason are required")
+        if payment.channel != channel:
+            raise CommerceError("refund channel does not match payment")
         order = await self.session.get(Order, payment.order_id)
         if order is None:
             raise CommerceError("order is missing")

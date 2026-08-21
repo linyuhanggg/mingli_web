@@ -9,6 +9,7 @@ from app.readings.presentation.builder import (
     ReadingDocumentContext,
 )
 from app.readings.runtime_contracts import Prepared, ReadingBrief
+
 from orchestrator_fakes import make_candidate
 from test_narrative_guard import build_brief
 
@@ -38,6 +39,7 @@ def _ziwei_brief() -> ReadingBrief:
         }
     ]
     payload["evidence"][0]["supports_fact_refs"] = [fact_ref]
+    payload["evidence"][0]["locator"] = "fulltext.md#L11"
     payload["findings"][0]["fact_refs"] = [fact_ref]
     payload["claim_scopes"][0]["fact_refs"] = [fact_ref]
     payload["request_view"] = {
@@ -94,6 +96,8 @@ def test_builder_projects_typed_runtime_facts_into_an_immutable_document() -> No
     assert document.product_version == "ziwei-reading/v7"
     assert document.presentation_contract_version == "ziwei-presentation/v7"
     assert document.claims[0].fact_refs == ("fact:calculated/ziwei/palaces",)
+    assert document.evidence[0].title == "《测试古籍》 · 第 11 行"
+    assert "fulltext.md#L11" not in document.evidence[0].title
     assert document.boundaries[-1].text == "AI 辅助生成，仅供传统文化参考。"
     assert document.actions.follow_up.enabled is False
     assert "/input/" not in repr(document.model_dump(mode="json"))

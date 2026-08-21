@@ -22,7 +22,12 @@ from app.identity.otp import (
     hash_identity,
     normalize_destination,
 )
-from app.identity.policy import require_current_policy_version
+from app.identity.policy import (
+    LOGIN_CONSENT_CONTEXTS,
+    InvalidPolicyVersion,
+    has_current_policy_keys,
+    require_current_policy_version,
+)
 from app.identity.repository import IdentityRepository
 from app.identity.security import hash_token, new_opaque_token
 from app.security.envelope import EnvelopeCipher
@@ -172,6 +177,19 @@ class AuthService:
         )
 
     async def verify_otp(self, challenge_id: UUID, code: str) -> CreatedDeviceSession:
+        peeked = await self.challenge_store.peek_active(challenge_id)
+        if peeked is not None:
+            found = await self.repository.find_identity(
+                provider=peeked.address.channel,
+                provider_subject_hash=peeked.provider_subject_hash,
+            )
+            if found is not None:
+                keys = await self.repository.current_consent_keys(
+                    found[0].id,
+                    contexts=LOGIN_CONSENT_CONTEXTS,
+                )
+                if not has_current_policy_keys(keys):
+                    raise InvalidPolicyVersion("policy version is not current")
         challenge = await self.challenge_store.verify(challenge_id, code)
         now = datetime.now(UTC)
         user, identity, is_new_user = await self.repository.resolve_identity(
@@ -207,6 +225,9 @@ class AuthService:
         if credential is None or not verify_password(password, credential.password_hash):
             raise InvalidPassword("invalid credentials")
         await self._store_destination(identity, address.normalized)
+        keys = await self.repository.current_consent_keys(user.id, contexts=LOGIN_CONSENT_CONTEXTS)
+        if not has_current_policy_keys(keys):
+            raise InvalidPolicyVersion("policy version is not current")
         return await self._create_device_session(
             user=user,
             identity=identity,

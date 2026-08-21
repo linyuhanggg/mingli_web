@@ -147,12 +147,25 @@ class CatalogService:
         if product is None:
             raise CatalogError("product version not found")
         if product.status == "retired":
+            await self._disable_offers_for_version(product.id)
+            await self.session.flush()
             return product
         if product.status != "active":
             raise CatalogError("only an active product version can be retired")
         product.status = "retired"
+        await self._disable_offers_for_version(product.id)
         await self.session.flush()
         return product
+
+    async def _disable_offers_for_version(self, product_version_id: UUID) -> None:
+        offers = await self.session.scalars(
+            select(ProductOffer).where(
+                ProductOffer.product_version_id == product_version_id,
+                ProductOffer.enabled.is_(True),
+            )
+        )
+        for offer in offers:
+            offer.enabled = False
 
     async def set_offer_enabled(
         self,

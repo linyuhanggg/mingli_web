@@ -21,13 +21,14 @@ from app.security.envelope import EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
 from sqlalchemy import select
+from worker.readings import build_reading_worker
+
 from test_profiles_api import (
     assert_private_headers,
     create_confirmed_profile,
     create_guest,
     login_current_guest,
 )
-from worker.readings import build_reading_worker
 
 ACCEPTED_COPY = "本命格局以稳定积累为主线。\n\n本解读仅供传统文化参考，不构成现实决策保证。"
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import hmac
 import math
 import re
 from collections.abc import Callable, Mapping, Sequence
@@ -15,6 +17,9 @@ MAX_MEDIA_BYTES = 10 * 1024 * 1024
 MIN_PIXEL_AXIS = 640
 GUEST_RETENTION = timedelta(hours=24)
 USER_RETENTION = timedelta(days=7)
+SIGNED_DOWNLOAD_MIN_TTL = timedelta(minutes=1)
+SIGNED_DOWNLOAD_MAX_TTL = timedelta(hours=1)
+_LOCAL_SIGNED_DOWNLOAD_KEY = b"mingli-local-fake-private-media-download"
 _PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 _HEIC_BRANDS = {b"heic", b"heix", b"hevc", b"hevx", b"mif1", b"msf1"}
 _MEDIA_TYPES = {"image/jpeg", "image/png", "image/heic"}
@@ -203,6 +208,14 @@ class MediaNotReadyError(PhysiognomyMediaError):
     """The asset is no longer available for a Runtime input."""
 
 
+class SignedDownloadInvalidError(PhysiognomyMediaError):
+    """The signed download token is malformed or has a bad signature."""
+
+
+class SignedDownloadExpiredError(PhysiognomyMediaError):
+    """The signed download token is past its TTL."""
+
+
 class UnsupportedObservationModeError(PhysiognomyMediaError):
     """The current Runtime release does not support this observation mode."""
 
@@ -231,6 +244,21 @@ class PhysiognomyMediaAsset:
     expires_at: datetime
     status: MediaStatus = "ready"
     deleted_at: datetime | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class SignedDownloadTicket:
+    asset_id: str
+    token: str
+    expires_at: datetime
+    content_type: str
+
+
+@dataclass(frozen=True, slots=True)
+class SignedDownloadPayload:
+    asset_id: str
+    content_type: str
+    payload: bytes
 
 
 class PrivateMediaStore(Protocol):
@@ -325,10 +353,15 @@ class PhysiognomyMediaAdapter:
         *,
         store: PrivateMediaStore,
         audit_sink: Callable[[MediaAuditEvent], None] | None = None,
+        signing_key: bytes | None = None,
     ) -> None:
         self.store = store
         self.audit_sink = audit_sink
+        self._signing_key = (
+            bytes(signing_key) if signing_key is not None else _LOCAL_SIGNED_DOWNLOAD_KEY
+        )
         self._assets: dict[str, PhysiognomyMediaAsset] = {}
+        self._signed_downloads: dict[str, datetime] = {}
 
     def ingest(
         self,
@@ -522,9 +555,112 @@ class PhysiognomyMediaAdapter:
             physiognomy_spec=spec,
         )
 
+    def issue_signed_download(
+        self,
+        asset_id: str,
+        *,
+        owner_kind: OwnerKind,
+        owner_id: UUID,
+        ttl: timedelta,
+        now: datetime,
+    ) -> SignedDownloadTicket:
+        asset = self.get(asset_id)
+        if asset.owner_kind != owner_kind or asset.owner_id != owner_id:
+            raise MediaNotFoundError("physiognomy media asset not found")
+        if asset.status != "ready":
+            raise MediaNotReadyError("physiognomy media is no longer available")
+        if ttl < SIGNED_DOWNLOAD_MIN_TTL or ttl > SIGNED_DOWNLOAD_MAX_TTL:
+            raise MediaValidationError(
+                "signed download ttl must be between 1 minute and 1 hour"
+            )
+        issued_at = _aware_utc(now)
+        expires_at = min(issued_at + ttl, asset.expires_at)
+        if expires_at <= issued_at:
+            raise MediaNotReadyError("physiognomy media is no longer available")
+        expires_unix = int(expires_at.timestamp())
+        token = ".".join(
+            (
+                "v1",
+                asset.asset_id,
+                str(expires_unix),
+                self._signature(asset, expires_unix),
+            )
+        )
+        self._signed_downloads[token] = expires_at
+        return SignedDownloadTicket(
+            asset_id=asset.asset_id,
+            token=token,
+            expires_at=expires_at,
+            content_type=asset.content_type,
+        )
+
+    def download_signed(
+        self,
+        token: str,
+        *,
+        now: datetime,
+        owner_kind: OwnerKind | None = None,
+        owner_id: UUID | None = None,
+    ) -> SignedDownloadPayload:
+        asset_id, expires_unix, signature = parse_signed_download_token(token)
+        asset = self.get(asset_id)
+        if (
+            owner_kind is not None
+            and owner_id is not None
+            and (asset.owner_kind != owner_kind or asset.owner_id != owner_id)
+        ):
+            raise MediaNotFoundError("physiognomy media asset not found")
+        expected = self._signature(asset, expires_unix)
+        if len(signature) != len(expected) or not hmac.compare_digest(signature, expected):
+            raise SignedDownloadInvalidError("signed download token is invalid")
+        current = _aware_utc(now)
+        expires_at = datetime.fromtimestamp(expires_unix, tz=UTC)
+        if expires_at <= current:
+            raise SignedDownloadExpiredError("signed download token has expired")
+        if asset.status != "ready" or asset.expires_at <= current:
+            raise MediaNotReadyError("physiognomy media is no longer available")
+        payload = self.store.read(asset.object_key)
+        return SignedDownloadPayload(
+            asset_id=asset.asset_id,
+            content_type=asset.content_type,
+            payload=payload,
+        )
+
+    def purge_expired_signed_downloads(self, *, now: datetime) -> tuple[str, ...]:
+        current = _aware_utc(now)
+        expired = tuple(
+            token
+            for token, expires_at in self._signed_downloads.items()
+            if expires_at <= current
+        )
+        for token in expired:
+            self._signed_downloads.pop(token, None)
+        return expired
+
+    def _signature(self, asset: PhysiognomyMediaAsset, expires_unix: int) -> str:
+        message = (
+            f"v1|{asset.asset_id}|{asset.owner_kind}|{asset.owner_id}|{expires_unix}"
+        )
+        return hmac.new(
+            self._signing_key,
+            message.encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
+
     def _audit(self, event: MediaAuditEvent) -> None:
         if self.audit_sink is not None:
             self.audit_sink(event)
+
+
+def parse_signed_download_token(token: str) -> tuple[str, int, str]:
+    parts = token.split(".")
+    if len(parts) != 4 or parts[0] != "v1" or not parts[1] or not parts[3]:
+        raise SignedDownloadInvalidError("signed download token is invalid")
+    try:
+        expires_unix = int(parts[2])
+    except ValueError as error:
+        raise SignedDownloadInvalidError("signed download token is invalid") from error
+    return parts[1], expires_unix, parts[3]
 
 
 def _aware_utc(value: datetime) -> datetime:

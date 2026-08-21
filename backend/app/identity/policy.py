@@ -24,3 +24,11 @@ def require_policy_key(policy_key: str) -> str:
     if normalized not in CURRENT_POLICY_KEYS:
         raise InvalidPolicyKey("policy key is not supported")
     return normalized
+
+
+LOGIN_CONSENT_CONTEXTS: Final = frozenset({"registration", "reaccept"})
+PURCHASE_CONSENT_CONTEXT: Final = "purchase"
+
+
+def has_current_policy_keys(policy_keys: set[str]) -> bool:
+    return policy_keys >= CURRENT_POLICY_KEYS

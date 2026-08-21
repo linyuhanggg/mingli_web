@@ -279,10 +279,11 @@ class ProfileService:
             raise ProfileAuthorizationPayloadError(
                 "a self profile cannot be marked as authorized for another person"
             )
-        if payload.is_minor and not payload.minor_guardian_confirmed:
-            raise MinorGuardianConfirmationRequiredError(
-                "guardian confirmation for a minor profile is required"
+        if payload.subject_type == "self" and payload.photo_authorization_confirmed:
+            raise ProfileAuthorizationPayloadError(
+                "a self profile cannot be marked as authorized for another person's photo"
             )
+        # P6-004 user correction: do not reject minors without guardian confirmation.
 
     @staticmethod
     def _validate_version_authorization(payload: ProfileVersionRequest) -> None:

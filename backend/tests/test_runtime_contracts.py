@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+
 from mingli_paths import MINGLI_CORE_ROOT, MINGLI_CORE_SCRIPTS
 
 

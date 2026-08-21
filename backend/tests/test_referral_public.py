@@ -289,6 +289,19 @@ async def test_existing_account_does_not_lock_a_new_invitation_and_self_is_visib
     )
     assert verified.status_code == 200, verified.text
     owner_id = UUID(verified.json()["user_id"])
+    from app.identity.policy import CURRENT_POLICY_VERSION
+
+    for policy_key in ("privacy", "terms"):
+        accepted = await client.post(
+            "/api/v1/auth/consents",
+            headers={"X-CSRF-Token": verified.json()["csrf_token"]},
+            json={
+                "policy_key": policy_key,
+                "policy_version": CURRENT_POLICY_VERSION,
+                "context": "reaccept",
+            },
+        )
+        assert accepted.status_code == 201, accepted.text
 
     now = datetime.now(UTC).replace(microsecond=0)
     async with database.sessions() as session:

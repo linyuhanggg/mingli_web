@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from test_reading_repository import create_reading_graph
 
 
@@ -302,3 +303,33 @@ async def test_png_and_pdf_exports_are_encrypted_short_lived_and_rebuildable(
             ttl=timedelta(hours=2),
         )
         assert (await service.load_export(rebuilt.token)).payload.startswith(b"\x89PNG")
+
+
+@pytest.mark.asyncio
+async def test_create_export_fail_closes_when_reading_document_is_missing(
+    delivery_database: Any,
+) -> None:
+    dependencies = importlib.import_module("app.api.dependencies")
+    delivery = importlib.import_module("app.readings.delivery")
+    async with delivery_database.sessions() as session, session.begin():
+        repository, _profile, version, _job, cipher, _copy_row = await _accepted_graph(session)
+        assert await repository.load_reading_document(version.id) is None
+        root_model = importlib.import_module("app.readings.models").ReadingRoot
+        root = await session.get(root_model, version.reading_root_id)
+        assert root is not None and root.owner_user_id is not None
+        owner = dependencies.Owner(
+            kind="user",
+            id=root.owner_user_id,
+            csrf_token_hash="unused",
+        )
+        service = delivery.ReadingDeliveryService(session, cipher)
+        with pytest.raises(
+            delivery.ReadingDocumentUnavailableError,
+            match="ReadingDocument is not available",
+        ):
+            await service.create_export(
+                owner,
+                version_id=version.id,
+                export_format="png",
+                ttl=timedelta(hours=2),
+            )

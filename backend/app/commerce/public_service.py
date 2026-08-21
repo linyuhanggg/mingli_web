@@ -18,6 +18,8 @@ from app.commerce.models import (
     ProductVersion,
 )
 from app.commerce.service import CommerceService
+from app.identity.policy import PURCHASE_CONSENT_CONTEXT, has_current_policy_keys
+from app.identity.repository import IdentityRepository
 from app.readings.models import ReadingJobRecord, ReadingRoot, ReadingVersion
 
 BAZI_DEEP_PRODUCT_ID = "bazi-deep"
@@ -40,6 +42,10 @@ class PublicCheckoutConflict(PublicCheckoutError):
 
 class PublicCheckoutGatewayError(PublicCheckoutError):
     """The injected payment gateway could not create a checkout."""
+
+
+class PublicCheckoutConsentRequired(PublicCheckoutError):
+    """Owner is missing a current purchase ConsentRecord."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,6 +93,13 @@ class PublicCheckoutService:
             reading_version_id=reading_version_id,
         )
         offer, product, _family = await self._enabled_bazi_offer()
+
+        keys = await IdentityRepository(self.session).current_consent_keys(
+            owner_user_id,
+            contexts=frozenset({PURCHASE_CONSENT_CONTEXT}),
+        )
+        if not has_current_policy_keys(keys):
+            raise PublicCheckoutConsentRequired("purchase consent is not current")
 
         key_hash = _key_hash(normalized_key)
         existing = await self.session.execute(

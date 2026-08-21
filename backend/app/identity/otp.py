@@ -301,3 +301,16 @@ class InMemoryOtpChallengeStore:
             challenge.consumed_at = now
             self._last_issued_at.pop(challenge.provider_subject_hash, None)
             return challenge
+
+
+    async def peek_active(self, challenge_id: UUID) -> OtpChallenge | None:
+        now = datetime.now(UTC)
+        async with self._lock:
+            challenge = self._challenges.get(challenge_id)
+            if (
+                challenge is None
+                or challenge.consumed_at is not None
+                or challenge.expires_at <= now
+            ):
+                return None
+            return challenge

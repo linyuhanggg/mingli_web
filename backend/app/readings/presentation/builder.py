@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from uuid import UUID
@@ -59,12 +60,42 @@ _THEME_LABELS = {
     "state": "状态",
     "timing": "时机",
 }
+_FULLTEXT_LINE_LOCATOR = re.compile(
+    r"(?:^|/)fulltext\.md#L(?P<line>\d+)(?:-L(?P<end_line>\d+))?$",
+    re.IGNORECASE,
+)
 
 
 def _strings(value: object) -> tuple[str, ...]:
     if not isinstance(value, (list, tuple)):
         return ()
     return tuple(item for item in value if isinstance(item, str) and item.strip())
+
+
+def _public_source_title(value: object) -> str:
+    if not isinstance(value, str) or not value.strip():
+        return "依据"
+    title = value.strip()
+    if title.startswith("《") and title.endswith("》"):
+        return title
+    return f"《{title}》"
+
+
+def _public_locator(value: object) -> str | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    locator = value.strip()
+    match = _FULLTEXT_LINE_LOCATOR.fullmatch(locator)
+    if match is not None:
+        end_line = match.group("end_line")
+        if end_line is None:
+            return f"第 {match.group('line')} 行"
+        return f"第 {match.group('line')} 至 {end_line} 行"
+    # Paths, file anchors, and rule IDs are runtime locators rather than
+    # user-facing source labels. Plain labels such as "卷三" remain useful.
+    if "/" in locator or "#" in locator or "." in locator:
+        return None
+    return locator
 
 
 def _subject_summaries(
@@ -122,11 +153,9 @@ def _evidence(brief: Mapping[str, object]) -> tuple[EvidenceCard, ...]:
         evidence_ref = raw.get("ref")
         if not isinstance(evidence_ref, str) or not evidence_ref.strip():
             continue
-        title = raw.get("source_title") or raw.get("title") or evidence_ref
-        if not isinstance(title, str) or not title.strip():
-            title = evidence_ref
-        locator = raw.get("locator")
-        if isinstance(locator, str) and locator.strip():
+        title = _public_source_title(raw.get("source_title") or raw.get("title"))
+        locator = _public_locator(raw.get("locator"))
+        if locator is not None:
             title = f"{title} · {locator}"
         result.append(
             EvidenceCard(

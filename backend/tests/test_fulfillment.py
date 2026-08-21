@@ -568,3 +568,175 @@ async def test_failed_fulfillment_releases_reserved_unit_once(database: Any) -> 
         )
         assert projection.reserved == 0
         assert projection.released == 1
+
+
+@pytest.mark.asyncio
+async def test_fulfillment_second_key_on_same_order_reuses_one_reserve(
+    database: Any,
+) -> None:
+    async with database.sessions() as session:
+        service, user, payment = await _paid_order(session, suffix="same-order-key")
+
+        first, created = await service.reserve_fulfillment(
+            payment_id=payment.id,
+            idempotency_key="fulfillment-first-key",
+        )
+        replay, replayed = await service.reserve_fulfillment(
+            payment_id=payment.id,
+            idempotency_key="fulfillment-second-key",
+        )
+
+        assert created is True
+        assert replayed is False
+        assert replay.id == first.id
+        projection = await service.ledger.project(
+            entitlement_id=f"order:{payment.order_id}",
+            owner_user_id=user.id,
+        )
+        assert projection.reserved == 1
+        events = await session.scalars(
+            select(EntitlementEventRecord).where(
+                EntitlementEventRecord.entitlement_id == f"order:{payment.order_id}",
+                EntitlementEventRecord.kind == "RESERVE",
+            )
+        )
+        assert len(list(events)) == 1
+
+
+@pytest.mark.asyncio
+async def test_reading_service_queues_awaiting_job_and_replays(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    async with database.sessions() as session:
+        _commerce, user, payment = await _paid_order(session, suffix="awaiting-bind")
+        version, job = await _reading_job_for_user(session, user)
+        job.status = "awaiting_fulfillment"
+        await session.flush()
+        reading_service = ReadingService(session, test_settings)
+        owner = Owner(kind="user", id=user.id, csrf_token_hash="")
+        first = await reading_service.bind_paid_fulfillment(
+            owner,
+            reading_version_id=version.id,
+            payment_id=payment.id,
+            idempotency_key="awaiting-bind-1",
+        )
+        replay = await reading_service.bind_paid_fulfillment(
+            owner,
+            reading_version_id=version.id,
+            payment_id=payment.id,
+            idempotency_key="awaiting-bind-1",
+        )
+
+        assert first.created is True
+        assert replay.created is False
+        assert first.fulfillment_id == replay.fulfillment_id
+        await session.refresh(job)
+        assert job.status == "queued"
+
+
+@pytest.mark.asyncio
+async def test_bind_replays_after_job_becomes_terminal(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    async with database.sessions() as session:
+        commerce, user, payment = await _paid_order(session, suffix="terminal-replay")
+        version, job = await _reading_job_for_user(session, user)
+        fulfillment, _ = await commerce.reserve_fulfillment(
+            payment_id=payment.id,
+            idempotency_key="terminal-replay-1",
+        )
+        bound, created = await commerce.bind_fulfillment_job(
+            fulfillment_id=fulfillment.id,
+            reading_version_ref=str(version.id),
+            reading_job_ref=str(job.id),
+        )
+        job.status = "stopped"
+        await session.flush()
+        rebound, rebound_created = await commerce.bind_fulfillment_job(
+            fulfillment_id=fulfillment.id,
+            reading_version_ref=str(version.id),
+            reading_job_ref=str(job.id),
+        )
+        reading_replay = await ReadingService(session, test_settings).bind_paid_fulfillment(
+            Owner(kind="user", id=user.id, csrf_token_hash=""),
+            reading_version_id=version.id,
+            payment_id=payment.id,
+            idempotency_key="terminal-replay-1",
+        )
+
+        assert created is True
+        assert rebound_created is False
+        assert rebound.id == bound.id
+        assert rebound.status == "running"
+        assert reading_replay.created is False
+        assert reading_replay.fulfillment_id == bound.id
+        projection = await commerce.ledger.project(
+            entitlement_id=f"order:{payment.order_id}",
+            owner_user_id=user.id,
+        )
+        assert projection.reserved == 1
+
+
+@pytest.mark.asyncio
+async def test_deliver_for_job_requires_accepted_document(database: Any) -> None:
+    async with database.sessions() as session:
+        service, user, payment = await _paid_order(session, suffix="no-document")
+        version, job = await _reading_job_for_user(session, user)
+        fulfillment, _ = await service.reserve_fulfillment(
+            payment_id=payment.id,
+            idempotency_key="no-document-1",
+        )
+        await service.bind_fulfillment_job(
+            fulfillment_id=fulfillment.id,
+            reading_version_ref=str(version.id),
+            reading_job_ref=str(job.id),
+        )
+
+        with pytest.raises(CommerceError, match="Accepted Copy and ReadingDocument"):
+            await service.deliver_fulfillment_for_job(reading_job_ref=str(job.id))
+
+        projection = await service.ledger.project(
+            entitlement_id=f"order:{payment.order_id}",
+            owner_user_id=user.id,
+        )
+        assert projection.consumed == 0
+        assert projection.reserved == 1
+
+
+@pytest.mark.asyncio
+async def test_release_for_job_does_not_rewrite_reason(database: Any) -> None:
+    async with database.sessions() as session:
+        service, user, payment = await _paid_order(session, suffix="job-release")
+        version, job = await _reading_job_for_user(session, user)
+        fulfillment, _ = await service.reserve_fulfillment(
+            payment_id=payment.id,
+            idempotency_key="job-release-1",
+        )
+        await service.bind_fulfillment_job(
+            fulfillment_id=fulfillment.id,
+            reading_version_ref=str(version.id),
+            reading_job_ref=str(job.id),
+        )
+
+        first, created = await service.release_fulfillment_for_job(
+            reading_job_ref=str(job.id),
+            reason="Runtime failed",
+        )
+        replay, replayed = await service.release_fulfillment_for_job(
+            reading_job_ref=str(job.id),
+            reason="replay must not rewrite",
+        )
+
+        assert first is not None and replay is not None
+        assert created is True
+        assert replayed is False
+        assert first.id == replay.id == fulfillment.id
+        assert first.failure_reason == "Runtime failed"
+        projection = await service.ledger.project(
+            entitlement_id=f"order:{payment.order_id}",
+            owner_user_id=user.id,
+        )
+        assert projection.reserved == 0
+        assert projection.released == 1

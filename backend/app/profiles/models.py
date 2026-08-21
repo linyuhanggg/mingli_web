@@ -98,10 +98,6 @@ class ProfileVersionAuthorization(Base):
             "OR (subject_type = 'other' AND authorization_confirmed = true)",
             name="authorization_matches_subject",
         ),
-        CheckConstraint(
-            "is_minor = false OR minor_guardian_confirmed = true",
-            name="minor_guardian_confirmed",
-        ),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)

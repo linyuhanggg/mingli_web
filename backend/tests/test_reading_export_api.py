@@ -7,6 +7,7 @@ from app.readings.presentation import build_reading_document
 from app.readings.repository import SqlReadingRepository
 from app.security.envelope import EnvelopeCipher
 from httpx import AsyncClient
+
 from test_profiles_api import assert_private_headers, create_confirmed_profile, create_guest
 from test_reading_delivery import _document_payload, _presentation_contract
 from test_readings_api import (

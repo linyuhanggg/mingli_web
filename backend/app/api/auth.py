@@ -175,6 +175,8 @@ async def verify_otp(
         raise ApiProblem(status=400, title="Invalid or expired code") from error
     except OtpRateLimited as error:
         raise ApiProblem(status=429, title="Too many verification attempts") from error
+    except InvalidPolicyVersion as error:
+        raise ApiProblem(status=400, title="Policy version is not current") from error
 
     return await _finish_device_login(
         request,
@@ -207,6 +209,8 @@ async def password_login(
         raise ApiProblem(status=400, title="Invalid destination", detail=str(error)) from error
     except InvalidPassword as error:
         raise ApiProblem(status=401, title="Invalid credentials") from error
+    except InvalidPolicyVersion as error:
+        raise ApiProblem(status=400, title="Policy version is not current") from error
     return await _finish_device_login(
         request,
         response,

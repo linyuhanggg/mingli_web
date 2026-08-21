@@ -5,6 +5,7 @@ from pathlib import Path
 from app.readings.export import _document_lines, _pdf_font_name, render_reading_export
 from app.readings.presentation import ReadingDocumentV1, build_reading_document
 from reportlab.pdfbase.ttfonts import TTFError
+
 from test_reading_delivery import _document_payload, _presentation_contract
 
 
@@ -23,6 +24,31 @@ def _preview_document() -> ReadingDocumentV1:
     ]
     contract = _presentation_contract().model_copy(
         update={"product_version": "bazi-reading/v1"}
+    )
+    return build_reading_document(contract, payload)
+
+
+def _deep_document_with_evidence_label() -> ReadingDocumentV1:
+    payload = _document_payload(
+        "44444444-4444-4444-8444-444444444444",
+        "accepted-copy:fixture",
+    )
+    payload["product_version"] = "bazi-deep/v1"
+    payload["answer_summary"] = "摘要 · 应转换为冒号。"
+    payload["claims"] = [
+        {
+            **payload["claims"][0],  # type: ignore[index]
+            "text": "判断内容 · 应转换为冒号。",
+        }
+    ]
+    payload["evidence"] = [
+        {
+            **payload["evidence"][0],  # type: ignore[index]
+            "title": "《测试古籍》 · 第 11 行",
+        }
+    ]
+    contract = _presentation_contract().model_copy(
+        update={"product_version": "bazi-deep/v1"}
     )
     return build_reading_document(contract, payload)
 
@@ -46,6 +72,23 @@ def test_bazi_preview_export_uses_a_dedicated_chinese_report_without_fake_copy()
     assert "命理档案" not in joined
     assert "·" not in joined
     assert "•" not in joined
+
+
+def test_png_and_pdf_exports_preserve_middle_dot_only_on_evidence_rows() -> None:
+    document = _deep_document_with_evidence_label()
+
+    lines = _document_lines(document)
+    evidence_lines = [line for line in lines if "《测试古籍》" in line]
+    non_evidence_lines = [line for line in lines if "《测试古籍》" not in line]
+
+    assert evidence_lines == ["- 《测试古籍》 · 第 11 行"]
+    assert all("fulltext.md#L" not in line for line in lines)
+    assert "摘要：应转换为冒号。" in lines
+    assert "判断内容：应转换为冒号。" in "\n".join(non_evidence_lines)
+    assert all(" · " not in line for line in non_evidence_lines)
+
+    assert render_reading_export(document, "png").payload.startswith(b"\x89PNG")
+    assert render_reading_export(document, "pdf").payload.startswith(b"%PDF-")
 
 
 def test_pdf_uses_a_chinese_font_even_when_no_local_font_file_exists(monkeypatch) -> None:

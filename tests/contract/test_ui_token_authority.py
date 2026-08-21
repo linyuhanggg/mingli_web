@@ -64,7 +64,12 @@ SERIF_FAMILY_RE = re.compile(
 )
 FONT_DOMAIN_USE_RE = re.compile(r"var\(\s*--font-domain")
 GRADIENT_RE = re.compile(r"(?:linear|radial|conic)-gradient\s*\(")
-GLASS_RE = re.compile(r"backdrop-filter\s*:")
+GLASS_SURFACE_RE = re.compile(
+    r"backdrop-filter\s*:"
+    r"|background(?:-color|-image)?\s*:[^;{}]*"
+    r"var\(\s*--(?:home|paper)-glass(?:-strong)?\b",
+    re.IGNORECASE,
+)
 INFINITE_ANIM_RE = re.compile(r"animation(?:-name)?\s*:[^;]*infinite", re.IGNORECASE)
 ORBIT_RE = re.compile(r"archive-orbit|hero-orbit|time-ring|outerRingSpin", re.IGNORECASE)
 COLOR_LITERAL_RE = re.compile(
@@ -117,6 +122,21 @@ WEB_START_SCRIPT = ROOT / "web" / "scripts" / "start-standalone.mjs"
 ADMIN_START_SCRIPT = ROOT / "admin" / "scripts" / "start-standalone.mjs"
 WEB_NEXT_CONFIG = ROOT / "web" / "next.config.ts"
 ADMIN_NEXT_CONFIG = ROOT / "admin" / "next.config.ts"
+HOME_CSS_REL = "web/src/app/home.module.css"
+HOME_GRADIENT_SELECTORS = {
+    ".spotlight",
+    ".heroPrimary::before",
+    ".quickStartEntry::after",
+    ".card::after",
+    ".crossCard::after",
+    ".leadCard::after",
+}
+HOME_GLASS_SELECTORS = {
+    ".heroSecondary",
+    ".crossCard",
+    ".auxGrid",
+    ".hero",
+}
 
 
 def _iter_app_css() -> list[Path]:
@@ -209,6 +229,10 @@ def _rule_body(relative_path: str, expected_selector: str) -> str:
     matches = _rule_bodies(relative_path, expected_selector)
     assert matches, f"expected {relative_path}: {expected_selector} rule"
     return "\n".join(matches)
+
+
+def _selector_parts(selector: str) -> set[str]:
+    return {part.strip() for part in selector.split(",") if part.strip()}
 
 
 def test_shared_tokens_file_is_the_only_semantic_source() -> None:
@@ -338,11 +362,35 @@ def test_business_css_does_not_scatter_hardcoded_colors() -> None:
 
 def test_gradients_and_glass_effects_are_banned() -> None:
     violations: list[str] = []
-    for path in _iter_app_css() + [TOKENS_CSS, ROOT / "ui" / "base.css"]:
+    for path in _iter_app_css():
+        rel = str(path.relative_to(ROOT))
+        source = path.read_text(encoding="utf-8")
+        if rel == HOME_CSS_REL:
+            for selector, body in _iter_rule_blocks(source):
+                has_gradient = GRADIENT_RE.search(body) is not None
+                has_glass = GLASS_SURFACE_RE.search(body) is not None
+                if not has_gradient and not has_glass:
+                    continue
+                if has_gradient:
+                    violations.extend(
+                        f"{rel}: {part}: homepage gradient is not approved"
+                        for part in sorted(_selector_parts(selector) - HOME_GRADIENT_SELECTORS)
+                    )
+                if has_glass:
+                    violations.extend(
+                        f"{rel}: {part}: homepage glass is not approved"
+                        for part in sorted(_selector_parts(selector) - HOME_GLASS_SELECTORS)
+                    )
+            continue
+        for line_no, line in enumerate(source.splitlines(), start=1):
+            if GRADIENT_RE.search(line) or GLASS_SURFACE_RE.search(line):
+                violations.append(f"{rel}:{line_no}:{line.strip()}")
+
+    for path in (TOKENS_CSS, ROOT / "ui" / "base.css"):
         if not path.is_file():
             continue
         for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-            if GRADIENT_RE.search(line) or GLASS_RE.search(line):
+            if GRADIENT_RE.search(line) or GLASS_SURFACE_RE.search(line):
                 violations.append(f"{path.relative_to(ROOT)}:{line_no}:{line.strip()}")
     assert violations == []
 
@@ -465,11 +513,6 @@ def test_real_dark_ancestor_descendants_use_inverse_text() -> None:
             "web/src/components/dashboard-hub.module.css",
             ".continueCard",
             ".continueCopy .kicker",
-        ),
-        (
-            "web/src/app/home.module.css",
-            ".observation",
-            ".observation p",
         ),
         (
             "web/src/components/private-shell.module.css",

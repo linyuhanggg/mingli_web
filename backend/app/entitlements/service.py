@@ -26,6 +26,22 @@ _ACTION_TO_CAPABILITY = {
 
 OwnerKind = Literal["user", "guest"]
 
+FORMAL_CAPABILITY_PREFIX = "capability:"
+
+
+def formal_capability_entitlement_id(capability_id: str) -> str:
+    return f"{FORMAL_CAPABILITY_PREFIX}{capability_id}"
+
+
+def formal_grant_covers_capability(
+    *,
+    entitlement_id: str,
+    target_refs: set[str],
+    capability_id: str,
+) -> bool:
+    aliases = {capability_id, formal_capability_entitlement_id(capability_id)}
+    return entitlement_id in aliases or bool(target_refs & aliases)
+
 
 class EntitlementDeniedError(RuntimeError):
     """Caller may not start this paid reading action under dogfood gates."""
@@ -56,9 +72,15 @@ class EntitlementService:
         capability_id = paid_capability_for_action(action)
         if capability_id is None:
             return
+        kind: OwnerKind = owner.kind
+        if kind == "user" and await self.has_available_formal_grant(
+            owner_user_id=owner.id,
+            capability_id=capability_id,
+        ):
+            # Formal ledger GRANT takes over; do not fall through to dogfood.
+            return
         if not self.gates_enabled:
             return
-        kind: OwnerKind = owner.kind
         if kind != "user":
             raise EntitlementDeniedError(
                 "Paid reading requires a signed-in account",
@@ -76,6 +98,41 @@ class EntitlementService:
                     "Dogfood access is operator-granted only; there is no self-serve checkout."
                 ),
             )
+
+    async def has_available_formal_grant(
+        self,
+        *,
+        owner_user_id: UUID,
+        capability_id: str,
+    ) -> bool:
+        """True when the commercial ledger still has an available GRANT for this capability."""
+        from app.commerce.repository import CommerceRepository
+
+        repository = CommerceRepository(self.session)
+        events = await repository.list_events(owner_user_id=owner_user_id, limit=500)
+        inspected: set[str] = set()
+        for event in events:
+            if event.entitlement_id in inspected:
+                continue
+            inspected.add(event.entitlement_id)
+            projection = await repository.project(
+                entitlement_id=event.entitlement_id,
+                owner_user_id=owner_user_id,
+            )
+            if projection.available < 1:
+                continue
+            target_refs = {
+                row.target_ref
+                for row in events
+                if row.entitlement_id == event.entitlement_id and row.target_ref
+            }
+            if formal_grant_covers_capability(
+                entitlement_id=event.entitlement_id,
+                target_refs=target_refs,
+                capability_id=capability_id,
+            ):
+                return True
+        return False
 
     async def grant_capabilities(
         self,

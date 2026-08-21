@@ -94,6 +94,18 @@ async def test_repeat_login_resolves_the_same_user(
     database: Any,
 ) -> None:
     first, csrf_headers = await login_with_phone(client)
+    policy = __import__("app.identity.policy", fromlist=["CURRENT_POLICY_VERSION"])
+    for policy_key in ("privacy", "terms"):
+        recorded = await client.post(
+            "/api/v1/auth/consents",
+            headers=csrf_headers,
+            json={
+                "policy_key": policy_key,
+                "policy_version": policy.CURRENT_POLICY_VERSION,
+                "context": "reaccept",
+            },
+        )
+        assert recorded.status_code == 201, recorded.text
     logout = await client.post("/api/v1/auth/logout", headers=csrf_headers)
     assert logout.status_code == 204
 

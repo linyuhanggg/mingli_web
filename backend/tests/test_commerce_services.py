@@ -5,9 +5,11 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from app.commerce.models import (
     NotificationOutbox,
+    Payment,
     ProductFamily,
     ProductOffer,
     ProductVersion,
+    Refund,
 )
 from app.commerce.service import CommerceError, CommerceService
 from app.identity.models import User
@@ -16,6 +18,7 @@ from app.referrals.models import ReferralRewardReservation
 from app.referrals.policy import ReferralState
 from app.referrals.service import ReferralService
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 
 async def product_fixture(session):  # type: ignore[no-untyped-def]
@@ -696,3 +699,406 @@ async def test_notification_preferences_gate_external_outbox_channels(database) 
         )
         assert stored is not None
         assert stored.email_enabled is True
+
+
+async def test_channel_transaction_cannot_bind_another_order(database) -> None:  # type: ignore[no-untyped-def]
+    async with database.sessions() as session:
+        first_user, first_offer = await product_fixture(session)
+        service = CommerceService(session)
+        first_order = await service.create_order(
+            owner_user_id=first_user.id,
+            offer_id=first_offer.id,
+            purchase_target_ref="reading-target-bound-txn-first",
+        )
+        first_attempt, _ = await service.create_payment_attempt(
+            order_id=first_order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-bound-txn-first",
+        )
+        await service.confirm_payment(
+            order_id=first_order.id,
+            attempt_id=first_attempt.id,
+            channel="closed",
+            channel_transaction_id="tx-shared-across-orders",
+            verified=True,
+        )
+
+        second_user = User()
+        second_family = ProductFamily(key="bazi-bound-txn", label="八字深读")
+        session.add_all([second_user, second_family])
+        await session.flush()
+        second_product = ProductVersion(
+            family_id=second_family.id,
+            version="v1",
+            price_minor=9900,
+            currency="CNY",
+            contract_version="reading-document-v1",
+            status="active",
+        )
+        session.add(second_product)
+        await session.flush()
+        second_offer = ProductOffer(
+            product_version_id=second_product.id,
+            channel="closed",
+            channel_sku="bazi-bound-txn-v1",
+            price_minor=9900,
+            currency="CNY",
+            enabled=True,
+        )
+        session.add(second_offer)
+        await session.flush()
+        second_order = await service.create_order(
+            owner_user_id=second_user.id,
+            offer_id=second_offer.id,
+            purchase_target_ref="reading-target-bound-txn-second",
+        )
+        second_attempt, _ = await service.create_payment_attempt(
+            order_id=second_order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-bound-txn-second",
+        )
+        with pytest.raises(CommerceError, match="already bound"):
+            await service.confirm_payment(
+                order_id=second_order.id,
+                attempt_id=second_attempt.id,
+                channel="closed",
+                channel_transaction_id="tx-shared-across-orders",
+                verified=True,
+            )
+        second_projection = await service.ledger.project(
+            entitlement_id=f"order:{second_order.id}",
+            owner_user_id=second_user.id,
+        )
+        assert second_projection.granted == 0
+        assert second_order.status == "payment_pending"
+
+
+async def test_refunded_order_rejects_a_late_payment_attempt(database) -> None:  # type: ignore[no-untyped-def]
+    async with database.sessions() as session:
+        user, offer = await product_fixture(session)
+        service = CommerceService(session)
+        order = await service.create_order(
+            owner_user_id=user.id,
+            offer_id=offer.id,
+            purchase_target_ref="reading-target-refunded-late",
+        )
+        first_attempt, _ = await service.create_payment_attempt(
+            order_id=order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-refunded-first",
+        )
+        late_attempt, _ = await service.create_payment_attempt(
+            order_id=order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-refunded-late",
+        )
+        payment, _ = await service.confirm_payment(
+            order_id=order.id,
+            attempt_id=first_attempt.id,
+            channel="closed",
+            channel_transaction_id="tx-refunded-first",
+            verified=True,
+        )
+        await service.refund_payment(
+            payment_id=payment.id,
+            channel="closed",
+            channel_refund_id="refund-late-attempt",
+            reason="用户撤回",
+            verified=True,
+        )
+        with pytest.raises(CommerceError, match="refunded"):
+            await service.confirm_payment(
+                order_id=order.id,
+                attempt_id=late_attempt.id,
+                channel="closed",
+                channel_transaction_id="tx-refunded-late",
+                verified=True,
+            )
+        projection = await service.ledger.project(
+            entitlement_id=f"order:{order.id}",
+            owner_user_id=user.id,
+        )
+        assert projection.granted == 1
+        assert projection.expired == 1
+
+
+async def test_paid_or_refunded_order_is_not_payable(database) -> None:  # type: ignore[no-untyped-def]
+    async with database.sessions() as session:
+        user, offer = await product_fixture(session)
+        service = CommerceService(session)
+        order = await service.create_order(
+            owner_user_id=user.id,
+            offer_id=offer.id,
+            purchase_target_ref="reading-target-not-payable",
+        )
+        attempt, _ = await service.create_payment_attempt(
+            order_id=order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-not-payable",
+        )
+        payment, _ = await service.confirm_payment(
+            order_id=order.id,
+            attempt_id=attempt.id,
+            channel="closed",
+            channel_transaction_id="tx-not-payable",
+            verified=True,
+        )
+        with pytest.raises(CommerceError, match="not payable"):
+            await service.create_payment_attempt(
+                order_id=order.id,
+                channel="closed",
+                idempotency_key="payment-attempt-after-paid",
+            )
+        await service.refund_payment(
+            payment_id=payment.id,
+            channel="closed",
+            channel_refund_id="refund-not-payable",
+            reason="用户撤回",
+            verified=True,
+        )
+        with pytest.raises(CommerceError, match="not payable"):
+            await service.create_payment_attempt(
+                order_id=order.id,
+                channel="closed",
+                idempotency_key="payment-attempt-after-refunded",
+            )
+
+
+async def test_refund_requires_verification_and_matching_channel(
+    database,
+) -> None:  # type: ignore[no-untyped-def]
+    async with database.sessions() as session:
+        user, offer = await product_fixture(session)
+        service = CommerceService(session)
+        order = await service.create_order(
+            owner_user_id=user.id,
+            offer_id=offer.id,
+            purchase_target_ref="reading-target-refund-channel",
+        )
+        attempt, _ = await service.create_payment_attempt(
+            order_id=order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-refund-channel",
+        )
+        payment, _ = await service.confirm_payment(
+            order_id=order.id,
+            attempt_id=attempt.id,
+            channel="closed",
+            channel_transaction_id="tx-refund-channel",
+            verified=True,
+        )
+        with pytest.raises(CommerceError, match="verification"):
+            await service.refund_payment(
+                payment_id=payment.id,
+                channel="closed",
+                channel_refund_id="refund-unverified",
+                reason="用户撤回",
+                verified=False,
+            )
+        with pytest.raises(CommerceError, match="channel"):
+            await service.refund_payment(
+                payment_id=payment.id,
+                channel="other-channel",
+                channel_refund_id="refund-wrong-channel",
+                reason="用户撤回",
+                verified=True,
+            )
+        assert payment.status == "confirmed"
+        assert order.status == "paid"
+        projection = await service.ledger.project(
+            entitlement_id=f"order:{order.id}",
+            owner_user_id=user.id,
+        )
+        assert projection.granted == 1
+        assert projection.expired == 0
+
+
+async def test_confirm_payment_rejects_foreign_attempt_and_empty_transaction(
+    database,
+) -> None:  # type: ignore[no-untyped-def]
+    async with database.sessions() as session:
+        user, offer = await product_fixture(session)
+        service = CommerceService(session)
+        first_order = await service.create_order(
+            owner_user_id=user.id,
+            offer_id=offer.id,
+            purchase_target_ref="reading-target-foreign-attempt-a",
+        )
+        second_order = await service.create_order(
+            owner_user_id=user.id,
+            offer_id=offer.id,
+            purchase_target_ref="reading-target-foreign-attempt-b",
+        )
+        first_attempt, _ = await service.create_payment_attempt(
+            order_id=first_order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-foreign-a",
+        )
+        second_attempt, _ = await service.create_payment_attempt(
+            order_id=second_order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-foreign-b",
+        )
+        with pytest.raises(CommerceError, match="does not belong"):
+            await service.confirm_payment(
+                order_id=first_order.id,
+                attempt_id=second_attempt.id,
+                channel="closed",
+                channel_transaction_id="tx-foreign-attempt",
+                verified=True,
+            )
+        with pytest.raises(CommerceError, match="transaction id"):
+            await service.confirm_payment(
+                order_id=first_order.id,
+                attempt_id=first_attempt.id,
+                channel="closed",
+                channel_transaction_id="   ",
+                verified=True,
+            )
+        assert first_order.status == "payment_pending"
+        assert first_attempt.status == "pending"
+
+
+async def test_payment_and_refund_unique_constraints_are_enforced(
+    database,
+) -> None:  # type: ignore[no-untyped-def]
+    async with database.sessions() as session:
+        user, offer = await product_fixture(session)
+        service = CommerceService(session)
+        first_order = await service.create_order(
+            owner_user_id=user.id,
+            offer_id=offer.id,
+            purchase_target_ref="reading-target-unique-first",
+        )
+        first_attempt, _ = await service.create_payment_attempt(
+            order_id=first_order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-unique-first",
+        )
+        first_payment, _ = await service.confirm_payment(
+            order_id=first_order.id,
+            attempt_id=first_attempt.id,
+            channel="closed",
+            channel_transaction_id="tx-unique-first",
+            verified=True,
+        )
+        session.add(
+            Payment(
+                order_id=first_order.id,
+                attempt_id=first_attempt.id,
+                channel="closed",
+                channel_transaction_id="tx-unique-second-attempt-row",
+                amount_minor=first_order.amount_minor,
+                currency=first_order.currency,
+                status="confirmed",
+                confirmed_at=datetime.now(UTC),
+            )
+        )
+        with pytest.raises(IntegrityError):
+            await session.flush()
+        await session.rollback()
+
+    async with database.sessions() as session:
+        user, offer = await product_fixture(session)
+        service = CommerceService(session)
+        first_order = await service.create_order(
+            owner_user_id=user.id,
+            offer_id=offer.id,
+            purchase_target_ref="reading-target-unique-txn-first",
+        )
+        first_attempt, _ = await service.create_payment_attempt(
+            order_id=first_order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-unique-txn-first",
+        )
+        await service.confirm_payment(
+            order_id=first_order.id,
+            attempt_id=first_attempt.id,
+            channel="closed",
+            channel_transaction_id="tx-unique-shared",
+            verified=True,
+        )
+        second_order = await service.create_order(
+            owner_user_id=user.id,
+            offer_id=offer.id,
+            purchase_target_ref="reading-target-unique-txn-second",
+        )
+        second_attempt, _ = await service.create_payment_attempt(
+            order_id=second_order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-unique-txn-second",
+        )
+        session.add(
+            Payment(
+                order_id=second_order.id,
+                attempt_id=second_attempt.id,
+                channel="closed",
+                channel_transaction_id="tx-unique-shared",
+                amount_minor=second_order.amount_minor,
+                currency=second_order.currency,
+                status="confirmed",
+                confirmed_at=datetime.now(UTC),
+            )
+        )
+        with pytest.raises(IntegrityError):
+            await session.flush()
+        await session.rollback()
+
+    async with database.sessions() as session:
+        user, offer = await product_fixture(session)
+        service = CommerceService(session)
+        first_order = await service.create_order(
+            owner_user_id=user.id,
+            offer_id=offer.id,
+            purchase_target_ref="reading-target-unique-refund-first",
+        )
+        first_attempt, _ = await service.create_payment_attempt(
+            order_id=first_order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-unique-refund-first",
+        )
+        first_payment, _ = await service.confirm_payment(
+            order_id=first_order.id,
+            attempt_id=first_attempt.id,
+            channel="closed",
+            channel_transaction_id="tx-unique-refund-first",
+            verified=True,
+        )
+        await service.refund_payment(
+            payment_id=first_payment.id,
+            channel="closed",
+            channel_refund_id="refund-unique-shared",
+            reason="用户撤回",
+            verified=True,
+        )
+        second_order = await service.create_order(
+            owner_user_id=user.id,
+            offer_id=offer.id,
+            purchase_target_ref="reading-target-unique-refund-second",
+        )
+        second_attempt, _ = await service.create_payment_attempt(
+            order_id=second_order.id,
+            channel="closed",
+            idempotency_key="payment-attempt-unique-refund-second",
+        )
+        second_payment, _ = await service.confirm_payment(
+            order_id=second_order.id,
+            attempt_id=second_attempt.id,
+            channel="closed",
+            channel_transaction_id="tx-unique-refund-second",
+            verified=True,
+        )
+        session.add(
+            Refund(
+                payment_id=second_payment.id,
+                channel="closed",
+                channel_refund_id="refund-unique-shared",
+                amount_minor=second_payment.amount_minor,
+                currency=second_payment.currency,
+                reason="错误回调",
+                status="confirmed",
+                confirmed_at=datetime.now(UTC),
+            )
+        )
+        with pytest.raises(IntegrityError):
+            await session.flush()

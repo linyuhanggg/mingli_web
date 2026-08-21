@@ -19,9 +19,10 @@ from app.readings.models import ReadingJobRecord, ReadingVersion, RuntimeRelease
 from app.readings.repository import SqlReadingRepository
 from app.security.envelope import EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
-from mingli_paths import MINGLI_RUNTIME_RELEASE_ROOT
 from sqlalchemy import func, select
 from worker.readings import build_reading_worker
+
+from mingli_paths import MINGLI_RUNTIME_RELEASE_ROOT
 
 # isort: split
 from test_bazi_deep_vertical import _ExtractiveModel

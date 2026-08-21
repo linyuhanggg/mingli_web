@@ -219,8 +219,9 @@ async def test_other_person_profile_version_requires_authorization_and_differenc
         assert len(list(await session.scalars(select(ProfileVersion)))) == 1
 
 
-async def test_minor_profile_version_requires_guardian_confirmation(
+async def test_minor_profile_version_does_not_require_guardian_confirmation(
     client: AsyncClient,
+    database: Any,
 ) -> None:
     headers = await create_guest(client)
     confirmed = await create_confirmed_profile(client, headers)
@@ -243,8 +244,28 @@ async def test_minor_profile_version_requires_guardian_confirmation(
         },
     )
 
-    assert response.status_code == 400
-    assert response.json()["title"] == "Minor guardian confirmation is required"
+    assert response.status_code == 201, response.text
+    assert response.json()["profile_id"] == confirmed["profile_id"]
+    assert response.json()["version"] == 2
+    assert response.json()["profile_version_id"] != confirmed["profile_version_id"]
+
+    from app.profiles.models import ProfileVersion, ProfileVersionAuthorization
+
+    async with database.sessions() as session:
+        versions = list(
+            await session.scalars(
+                select(ProfileVersion).order_by(ProfileVersion.version)
+            )
+        )
+        authorization = await session.scalar(
+            select(ProfileVersionAuthorization).where(
+                ProfileVersionAuthorization.profile_version_id == versions[1].id
+            )
+        )
+    assert [version.version for version in versions] == [1, 2]
+    assert authorization is not None
+    assert authorization.is_minor is True
+    assert authorization.minor_guardian_confirmed is False
 
 
 async def test_profile_version_history_returns_all_versions_without_payloads(

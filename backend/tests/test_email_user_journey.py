@@ -14,6 +14,7 @@ from uuid import UUID
 
 import pytest
 from app.identity.models import DeviceSession, LoginIdentity, User
+from app.identity.policy import CURRENT_POLICY_VERSION
 from app.main import create_app
 from app.security.envelope import EncryptedPayload, EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
@@ -88,6 +89,29 @@ async def email_login(
     return verified, verified.json()
 
 
+async def register_email(
+    client: AsyncClient,
+    headers: dict[str, str],
+    *,
+    destination: str = EMAIL_RAW,
+    password: str = "journey-password-ok",
+) -> tuple[Any, dict[str, Any]]:
+    challenge = await request_email_otp(client, headers, destination=destination)
+    assert challenge["development_code"] == FAKE_OTP_CODE
+    registered = await client.post(
+        "/api/v1/auth/register",
+        headers=headers,
+        json={
+            "challenge_id": challenge["challenge_id"],
+            "code": FAKE_OTP_CODE,
+            "password": password,
+            "policy_version": CURRENT_POLICY_VERSION,
+        },
+    )
+    assert registered.status_code == 200, registered.text
+    return registered, registered.json()
+
+
 async def create_confirmed_profile(
     client: AsyncClient,
     headers: dict[str, str],
@@ -153,8 +177,8 @@ async def test_email_registration_login_full_journey(
     assert client.cookies["mingli_guest"]
     assert client.cookies["mingli_csrf"] == guest_headers["X-CSRF-Token"]
 
-    # 2. Email OTP with the Fake code; first login creates the account.
-    first_response, first = await email_login(client, guest_headers)
+    # 2. Full registration records current policy consent; verify_otp does not.
+    first_response, first = await register_email(client, guest_headers)
     first_user_id = UUID(first["user_id"])
     device_headers = {"X-CSRF-Token": first["csrf_token"]}
     assert first["csrf_token"] != guest_headers["X-CSRF-Token"]
@@ -318,6 +342,41 @@ async def test_email_registration_login_full_journey(
     assert len(device_sessions) == 2
 
     # The first device session still works alongside the second one.
+    still_ok = await client.get("/api/v1/account")
+    assert still_ok.status_code == 200
+    assert UUID(still_ok.json()["user_id"]) == first_user_id
+
+
+async def test_otp_verify_existing_user_without_consent_is_rejected(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    guest_headers = await create_guest(client)
+    first_response, first = await email_login(client, guest_headers)
+    assert first_response.status_code == 200
+    first_user_id = UUID(first["user_id"])
+
+    second_app = create_app(settings=test_settings, database=database)
+    async with AsyncClient(
+        transport=ASGITransport(app=second_app),
+        base_url="https://testserver",
+    ) as second_client:
+        second_guest = await create_guest(second_client)
+        challenge = await request_email_otp(
+            second_client,
+            second_guest,
+            destination=EMAIL_NORMALIZED,
+        )
+        verified = await verify_email_otp(
+            second_client,
+            second_guest,
+            challenge["challenge_id"],
+        )
+        assert verified.status_code == 400, verified.text
+        assert verified.json()["title"] == "Policy version is not current"
+        assert "mingli_session" not in second_client.cookies
+
     still_ok = await client.get("/api/v1/account")
     assert still_ok.status_code == 200
     assert UUID(still_ok.json()["user_id"]) == first_user_id

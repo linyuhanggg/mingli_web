@@ -23,6 +23,7 @@ from app.commerce.public_schemas import (
 )
 from app.commerce.public_service import (
     PublicCheckoutConflict,
+    PublicCheckoutConsentRequired,
     PublicCheckoutGatewayError,
     PublicCheckoutNotFound,
     PublicCheckoutResult,
@@ -74,6 +75,8 @@ def _problem(error: Exception) -> ApiProblem:
         return ApiProblem(status=409, title="Checkout is not available")
     if isinstance(error, PublicCheckoutGatewayError):
         return ApiProblem(status=503, title="Payment gateway unavailable")
+    if isinstance(error, PublicCheckoutConsentRequired):
+        return ApiProblem(status=400, title="Policy version is not current")
     return ApiProblem(status=500, title="Checkout failed")
 
 
@@ -103,7 +106,12 @@ async def create_bazi_deep_checkout(
             reading_version_id=payload.reading_version_id,
             idempotency_key=idempotency_key,
         )
-    except (PublicCheckoutNotFound, PublicCheckoutConflict, PublicCheckoutGatewayError) as error:
+    except (
+        PublicCheckoutNotFound,
+        PublicCheckoutConflict,
+        PublicCheckoutGatewayError,
+        PublicCheckoutConsentRequired,
+    ) as error:
         raise _problem(error) from error
     await session.commit()
     mark_private(response)

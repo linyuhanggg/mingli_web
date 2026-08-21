@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import cast
 from uuid import UUID
 
@@ -19,15 +19,25 @@ from app.media.physiognomy import (
     PhysiognomyMediaAsset,
     PhysiognomyRuntimeInput,
     PrivateMediaStore,
+    SignedDownloadInvalidError,
+    SignedDownloadPayload,
+    SignedDownloadTicket,
+    parse_signed_download_token,
 )
 
 
 class PhysiognomyMediaService:
     """Persist private media metadata and keep Runtime media-blind."""
 
-    def __init__(self, session: AsyncSession, store: PrivateMediaStore) -> None:
+    def __init__(
+        self,
+        session: AsyncSession,
+        store: PrivateMediaStore,
+        *,
+        signing_key: bytes | None = None,
+    ) -> None:
         self.session = session
-        self.adapter = PhysiognomyMediaAdapter(store=store)
+        self.adapter = PhysiognomyMediaAdapter(store=store, signing_key=signing_key)
 
     async def ingest(
         self,
@@ -149,6 +159,54 @@ class PhysiognomyMediaService:
             record.deleted_at = current
             expired.append(str(record.id))
         return tuple(expired)
+
+    async def issue_signed_download(
+        self,
+        *,
+        owner_kind: OwnerKind,
+        owner_id: UUID,
+        asset_id: UUID,
+        ttl: timedelta,
+        now: datetime,
+    ) -> SignedDownloadTicket:
+        record = await self._record_for_owner(owner_kind, owner_id, asset_id)
+        asset = self._asset_from_record(record)
+        if asset.status != "ready":
+            raise MediaNotReadyError("physiognomy media is no longer available")
+        self.adapter.restore(asset)
+        return self.adapter.issue_signed_download(
+            asset.asset_id,
+            owner_kind=owner_kind,
+            owner_id=owner_id,
+            ttl=ttl,
+            now=now,
+        )
+
+    async def download_owned(
+        self,
+        *,
+        owner_kind: OwnerKind,
+        owner_id: UUID,
+        token: str,
+        now: datetime,
+    ) -> SignedDownloadPayload:
+        try:
+            asset_id, _expires_unix, _signature = parse_signed_download_token(token)
+            parsed_id = UUID(asset_id)
+        except (SignedDownloadInvalidError, ValueError) as error:
+            raise SignedDownloadInvalidError("signed download token is invalid") from error
+        record = await self._record_for_owner(owner_kind, owner_id, parsed_id)
+        asset = self._asset_from_record(record)
+        self.adapter.restore(asset)
+        return self.adapter.download_signed(
+            token,
+            now=now,
+            owner_kind=owner_kind,
+            owner_id=owner_id,
+        )
+
+    async def purge_expired_signed_downloads(self, *, now: datetime) -> tuple[str, ...]:
+        return self.adapter.purge_expired_signed_downloads(now=now)
 
     async def _record_for_owner(
         self,

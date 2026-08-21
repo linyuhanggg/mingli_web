@@ -411,10 +411,6 @@ class ReadingService:
         )
         if job is None:
             raise ReadingNotFoundError("Reading Job not found")
-        if job.status in {"failed", "canceled", "stopped", "runtime_unknown"}:
-            raise ReadingFulfillmentUnavailableError(
-                "Paid fulfillment cannot bind to a terminal Reading Job"
-            )
 
         payment = await self.session.scalar(
             select(Payment)
@@ -430,6 +426,23 @@ class ReadingService:
                 "Paid fulfillment cannot bind to this Reading Job"
             )
         await self._validate_paid_target(root, version, order)
+        if job.status in {"failed", "canceled", "stopped", "runtime_unknown"}:
+            already_bound = await self.session.scalar(
+                select(FulfillmentRecord).where(
+                    FulfillmentRecord.reading_job_ref == str(job.id)
+                )
+            )
+            if already_bound is None or already_bound.payment_id != payment.id:
+                raise ReadingFulfillmentUnavailableError(
+                    "Paid fulfillment cannot bind to a terminal Reading Job"
+                )
+            return FulfillmentBindingResult(
+                fulfillment_id=already_bound.id,
+                reading_version_id=version.id,
+                reading_job_id=job.id,
+                status=already_bound.status,
+                created=False,
+            )
 
         commerce = CommerceService(self.session)
         try:

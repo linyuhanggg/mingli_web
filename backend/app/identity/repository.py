@@ -201,3 +201,20 @@ class IdentityRepository:
 
     def add_consent_record(self, record: ConsentRecord) -> None:
         self.session.add(record)
+
+    async def current_consent_keys(
+        self,
+        user_id: UUID,
+        *,
+        contexts: frozenset[str],
+    ) -> set[str]:
+        from app.identity.policy import CURRENT_POLICY_VERSION
+
+        rows = await self.session.scalars(
+            select(ConsentRecord).where(
+                ConsentRecord.user_id == user_id,
+                ConsentRecord.policy_version == CURRENT_POLICY_VERSION,
+                ConsentRecord.context.in_(tuple(contexts)),
+            )
+        )
+        return {row.policy_key for row in rows}

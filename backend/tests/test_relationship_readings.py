@@ -7,6 +7,7 @@ from app.adapters.runtime import FakeMingliRuntimeAdapter
 from app.readings.models import ReadingRoot, ReadingVersion
 from app.readings.runtime_contracts import Prepare, Prepared, ReadingBrief
 from httpx import AsyncClient
+
 from test_profiles_api import create_confirmed_profile, create_guest
 from test_readings_api import run_worker_once, seed_runtime_release
 

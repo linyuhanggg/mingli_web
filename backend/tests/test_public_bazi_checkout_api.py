@@ -15,7 +15,8 @@ from app.commerce.models import (
 )
 from app.commerce.public_service import PublicCheckoutService
 from app.commerce.service import CommerceService
-from app.identity.models import User
+from app.identity.models import ConsentRecord, User
+from app.identity.policy import CURRENT_POLICY_VERSION
 from app.readings.models import (
     ReadingJobRecord,
     ReadingRoot,
@@ -134,6 +135,21 @@ async def _seed_target(
         )
 
 
+
+async def _record_purchase_consent(client: AsyncClient, headers: dict[str, str]) -> None:
+    for policy_key in ("privacy", "terms"):
+        response = await client.post(
+            "/api/v1/auth/consents",
+            headers=headers,
+            json={
+                "policy_key": policy_key,
+                "policy_version": CURRENT_POLICY_VERSION,
+                "context": "purchase",
+            },
+        )
+        assert response.status_code == 201, response.text
+
+
 @pytest.mark.asyncio
 async def test_checkout_requires_the_reading_owner_and_bazi_deep_product(
     client: AsyncClient,
@@ -245,6 +261,7 @@ async def test_fake_gateway_is_unavailable_and_target_is_server_derived(
     )
     assert response.status_code == 400
 
+    await _record_purchase_consent(client, headers)
     response = await client.post(
         "/api/v1/commerce/checkout",
         headers={**headers, "Idempotency-Key": "fake-gateway-2"},
@@ -270,6 +287,7 @@ async def test_checkout_idempotency_replays_one_order_and_attempt(
 ) -> None:
     owner_id, headers = await _login(client, "checkout-replay@example.com")
     target = await _seed_target(database, owner_user_id=owner_id)
+    await _record_purchase_consent(client, headers)
     payload = {"reading_version_id": str(target.version.id)}
     request_headers = {**headers, "Idempotency-Key": "replay-checkout-1"}
     first = await client.post("/api/v1/commerce/checkout", headers=request_headers, json=payload)
@@ -290,6 +308,7 @@ async def test_checkout_status_exposes_payment_id_only_after_local_confirmation(
 ) -> None:
     owner_id, headers = await _login(client, "checkout-status@example.com")
     target = await _seed_target(database, owner_user_id=owner_id)
+    await _record_purchase_consent(client, headers)
     created = await client.post(
         "/api/v1/commerce/checkout",
         headers={**headers, "Idempotency-Key": "status-checkout-1"},
@@ -333,6 +352,7 @@ async def test_status_does_not_turn_an_unbound_provider_query_into_payment(
 ) -> None:
     owner_id, headers = await _login(client, "checkout-query-boundary@example.com")
     target = await _seed_target(database, owner_user_id=owner_id)
+    await _record_purchase_consent(client, headers)
     created = await client.post(
         "/api/v1/commerce/checkout",
         headers={**headers, "Idempotency-Key": "query-boundary-1"},
@@ -362,3 +382,77 @@ async def test_status_does_not_turn_an_unbound_provider_query_into_payment(
     assert result.payment is None
     assert result.gateway_status == "pending"
     assert gateway.query_calls == 0
+
+
+@pytest.mark.asyncio
+async def test_checkout_rejects_without_purchase_consent(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    owner_id, headers = await _login(client, "checkout-no-consent@example.com")
+    target = await _seed_target(database, owner_user_id=owner_id)
+    response = await client.post(
+        "/api/v1/commerce/checkout",
+        headers={**headers, "Idempotency-Key": "no-purchase-consent-1"},
+        json={"reading_version_id": str(target.version.id)},
+    )
+    assert response.status_code == 400
+    assert response.json()["title"] == "Policy version is not current"
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count(Order.id))) == 0
+
+
+@pytest.mark.asyncio
+async def test_checkout_accepts_after_record_consent(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    owner_id, headers = await _login(client, "checkout-with-consent@example.com")
+    target = await _seed_target(database, owner_user_id=owner_id)
+    await _record_purchase_consent(client, headers)
+    response = await client.post(
+        "/api/v1/commerce/checkout",
+        headers={**headers, "Idempotency-Key": "with-purchase-consent-1"},
+        json={"reading_version_id": str(target.version.id)},
+    )
+    assert response.status_code in {200, 201}, response.text
+    async with database.sessions() as session:
+        consents = list(
+            await session.scalars(
+                select(ConsentRecord).where(
+                    ConsentRecord.user_id == owner_id,
+                    ConsentRecord.context == "purchase",
+                    ConsentRecord.policy_version == CURRENT_POLICY_VERSION,
+                )
+            )
+        )
+        assert {record.policy_key for record in consents} == {"privacy", "terms"}
+        assert await session.scalar(select(func.count(Order.id))) == 1
+
+
+@pytest.mark.asyncio
+async def test_checkout_rejects_stale_purchase_consent(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    owner_id, headers = await _login(client, "checkout-stale-consent@example.com")
+    target = await _seed_target(database, owner_user_id=owner_id)
+    await _record_purchase_consent(client, headers)
+    async with database.sessions() as session:
+        consents = list(
+            await session.scalars(
+                select(ConsentRecord).where(ConsentRecord.context == "purchase")
+            )
+        )
+        for record in consents:
+            record.policy_version = "old-policy-v0.0"
+        await session.commit()
+    response = await client.post(
+        "/api/v1/commerce/checkout",
+        headers={**headers, "Idempotency-Key": "stale-purchase-consent-1"},
+        json={"reading_version_id": str(target.version.id)},
+    )
+    assert response.status_code == 400
+    assert response.json()["title"] == "Policy version is not current"
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count(Order.id))) == 0
