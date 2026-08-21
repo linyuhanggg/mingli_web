@@ -73,11 +73,9 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
         setProfiles(data.profiles);
         setLoading(false);
       })
-      .catch((reason) => {
+      .catch(() => {
         if (!active) return;
-        setError(
-          reason instanceof Error ? reason.message : "档案加载失败，请稍后重试。",
-        );
+        setError("读取失败，请重试");
         setLoading(false);
       });
     return () => {
@@ -112,10 +110,8 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
           ? await startTodayReading(payload, intent.key)
           : await startWeekReading(payload, intent.key);
       router.push(`/app/readings/${response.reading_version_id}`);
-    } catch (reason) {
-      setSubmitError(
-        reason instanceof Error ? reason.message : "解读启动失败，请稍后重试。",
-      );
+    } catch {
+      setSubmitError("读取失败，请重试");
     } finally {
       busyRef.current = false;
       setBusy(false);
@@ -127,9 +123,6 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
   return (
     <div className={styles.wrap}>
       <h2>开始解读</h2>
-      <p className={styles.lead}>
-        目标日期由服务端确认；选择已确认档案版本后启动解读，不在此处生成结果。
-      </p>
       <p className={styles.scopeNotice}>
         <strong>当前算法范围：事业与工作。</strong>
         其他主题还未在今日 / 近七日入口开放，界面不会暗中换范围。
@@ -157,7 +150,7 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
       {!loading && !error && profiles.length === 0 ? (
         <div className={styles.state}>
           <p>还没有可用的档案。请先建立一份确认的出生资料。</p>
-          <ButtonLink href="/app/profile/new">去建档</ButtonLink>
+          <ButtonLink href="/account/profiles">去建档</ButtonLink>
         </div>
       ) : null}
 
@@ -201,7 +194,7 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
               </p>
             ) : null}
             <p className={formControls.hint} id="fortune-profile-help">
-              解读从该档案版本出发，结果按版本留痕。
+              请选择已确认的出生档案。
             </p>
           </div>
 

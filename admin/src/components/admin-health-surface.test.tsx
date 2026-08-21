@@ -23,7 +23,9 @@ describe("AdminHealthSurface", () => {
 
     render(<AdminHealthSurface role="ops" />);
 
-    expect(await screen.findByText("依赖已就绪")).toBeVisible();
+    expect(await screen.findByText("database")).toBeVisible();
+    expect(screen.queryByText("依赖已就绪")).not.toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: /已就绪/ })).not.toBeInTheDocument();
     expect(screen.getByText("database")).toBeVisible();
     expect(adminFetchMock).toHaveBeenCalledWith("/api/v1/health/ready");
   });
@@ -37,7 +39,7 @@ describe("AdminHealthSurface", () => {
 
     render(<AdminHealthSurface role="ops" />);
 
-    expect(await screen.findByText("依赖未就绪")).toBeVisible();
+    expect(await screen.findByRole("status", { name: "平台数据暂时不可用。" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "健康检查面" })).toBeVisible();
     expect(screen.queryByText("依赖已就绪")).not.toBeInTheDocument();
   });

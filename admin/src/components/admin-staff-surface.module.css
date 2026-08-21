@@ -51,67 +51,11 @@
   gap: var(--space-xs);
 }
 
-.roleField select,
-.reasonField textarea {
-  width: 100%;
-  min-height: 2.75rem;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-control);
-  background: var(--color-canvas);
-  color: var(--color-text);
-  font: inherit;
-}
+.workbenchField {
+  --field-control-height: var(--target-min);
+  --field-textarea-height: 5.5rem;
 
-.roleField select:focus-visible,
-.reasonField textarea:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-.reasonField {
-  display: grid;
   max-width: 68ch;
-  gap: 0.35rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-label);
-  font-weight: 700;
-}
-
-.passwordField {
-  display: grid;
-  max-width: 68ch;
-  gap: 0.35rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-label);
-  font-weight: 700;
-}
-
-.passwordField input,
-.reasonField textarea,
-.inputField input,
-.inputField select {
-  width: 100%;
-  min-height: 2.75rem;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-control);
-  background: var(--color-canvas);
-  color: var(--color-text);
-  font: inherit;
-}
-
-.passwordField input:focus-visible,
-.reasonField textarea:focus-visible,
-.inputField input:focus-visible,
-.inputField select:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-.reasonField textarea {
-  min-height: 5.5rem;
-  resize: vertical;
 }
 
 .createForm {
@@ -126,14 +70,6 @@
   gap: var(--space-md);
 }
 
-.inputField {
-  display: grid;
-  gap: 0.35rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-label);
-  font-weight: 700;
-}
-
 .inlineAlert {
   margin: 0;
   padding: 0.75rem 0.85rem;
@@ -142,17 +78,6 @@
   background: var(--surface-danger);
   color: var(--color-danger);
   font-weight: 700;
-}
-
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 @media (max-width: 47.99rem) {

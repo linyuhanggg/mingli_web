@@ -16,27 +16,13 @@ export function ProductTaskPage({ productId }: { productId: ProductId }) {
     <PublicPageShell>
       <main className={styles.main} id="main-content" tabIndex={-1}>
         <Container className={styles.container}>
-          <header className={styles.hero}>
+          <header className={styles.pageLine}>
             <a className={styles.backLink} href="/arts">
               <ArrowLeft aria-hidden="true" size={16} strokeWidth={1.8} />
-              术数总览
+              返回
             </a>
-            <div className={styles.heroCopy}>
-              <div>
-                <h1>{product.name}：{product.headline}</h1>
-                <p>{product.summary}</p>
-              </div>
-              <dl className={styles.boundarySummary}>
-                <div>
-                  <dt>适合处理</dt>
-                  <dd>{product.suitableFor}</dd>
-                </div>
-                <div>
-                  <dt>现在能拿到</dt>
-                  <dd>可复现、可核对的确定性盘面；深度解读、合参与见相仍在分阶段开放。</dd>
-                </div>
-              </dl>
-            </div>
+            <h1>{product.name}</h1>
+            <p>{product.summary}</p>
           </header>
           <Suspense
             fallback={(

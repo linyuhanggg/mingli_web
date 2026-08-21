@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
@@ -8,6 +9,7 @@ import {
   ApiError,
   bindReadingFulfillment,
   createBaziDeepCheckout,
+  recordConsent,
   createIdempotencyKey,
   getBaziDeepCheckout,
   pollReading,
@@ -16,12 +18,32 @@ import {
   type ReadingStatus,
 } from "@/lib/api";
 import { useOptionalAccountSession } from "@/components/account-session-context";
+import { CURRENT_POLICY_VERSION } from "@/lib/policy";
 import { ReadingResult } from "@/components/readings/reading-result";
 import { Status } from "@/components/ui/status";
 
 import styles from "./bazi-deep-task-flow.module.css";
 
 const POLL_MS = 2_000;
+
+function isStalePolicyVersion(reason: unknown): boolean {
+  return (
+    reason instanceof ApiError
+    && reason.status === 400
+    && reason.message === "Policy version is not current"
+  );
+}
+
+async function recordPurchaseConsents(): Promise<void> {
+  for (const policy_key of ["privacy", "terms"] as const) {
+    await recordConsent({
+      policy_key,
+      policy_version: CURRENT_POLICY_VERSION,
+      context: "purchase",
+    });
+  }
+}
+
 
 /**
  * These are product-facing states. They intentionally do not reuse internal
@@ -111,7 +133,7 @@ function statusDescription(state: BaziDeepTaskState): { title: string; text: str
     case "checkout_pending":
       return { title: "等待支付确认", text: "请完成服务端提供的支付步骤；只有后端确认 Payment 后才会绑定深读。" };
     case "checkout_unavailable":
-      return { title: "支付入口暂不可用", text: "当前支付适配器没有返回可用结账，不会创建成功付款，也不会启动深读履约。" };
+      return { title: "支付暂时不可用", text: "当前支付适配器没有返回可用结账，不会创建成功付款，也不会启动深读履约。" };
     case "checkout_failed":
       return { title: "支付会话未完成", text: "结账会话没有完成确认；可以稍后重试，当前没有读取深读结果。" };
     case "queued":
@@ -123,6 +145,10 @@ function statusDescription(state: BaziDeepTaskState): { title: string; text: str
     case "failed":
       return { title: "任务暂未完成", text: "没有展示未确认的深读内容；可按页面提示重试或稍后恢复。" };
   }
+}
+
+function errorHttpStatus(error: unknown): number | null {
+  return error instanceof ApiError ? error.status : null;
 }
 
 function readableError(error: unknown): string {
@@ -158,12 +184,14 @@ export function BaziDeepTaskFlow({
   query,
   onBack,
 }: BaziDeepTaskFlowProps) {
+  const router = useRouter();
   const session = useOptionalAccountSession();
   const [state, setState] = useState<BaziDeepTaskState>("preview_loading");
   const [deepReadingId, setDeepReadingId] = useState<string | null>(null);
   const [checkoutOrderId, setCheckoutOrderId] = useState<string | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
   const [retryKey, setRetryKey] = useState(0);
   const deepStartKeyRef = useRef<string | null>(null);
   const checkoutStartKeyRef = useRef<string | null>(null);
@@ -188,6 +216,7 @@ export function BaziDeepTaskFlow({
         const summary = await pollReading(previewReadingId);
         if (cancelled) return;
         setError(null);
+    setErrorStatus(null);
         const nextState = stateForReadingStatus(summary.status, "preview");
         setState(nextState);
         if (summary.status === "accepted" || isTerminalStatus(summary.status)) return;
@@ -195,6 +224,7 @@ export function BaziDeepTaskFlow({
       } catch (reason) {
         if (cancelled) return;
         setState("failed");
+        setErrorStatus(errorHttpStatus(reason));
         setError(readableError(reason));
       }
     }
@@ -224,6 +254,7 @@ export function BaziDeepTaskFlow({
     if (bindingPaymentKeyRef.current === bindingKey) return true;
     bindingPaymentKeyRef.current = bindingKey;
     setError(null);
+    setErrorStatus(null);
     setState("awaiting_fulfillment");
     try {
       const fulfillmentKey = fulfillmentKeyRef.current ?? createIdempotencyKey();
@@ -239,7 +270,8 @@ export function BaziDeepTaskFlow({
     } catch (reason) {
       if (!mountedRef.current) return false;
       setState("failed");
-      setError(readableError(reason));
+      setErrorStatus(errorHttpStatus(reason));
+        setError(readableError(reason));
       return false;
     }
   }, []);
@@ -252,6 +284,7 @@ export function BaziDeepTaskFlow({
       return;
     }
     setError(null);
+    setErrorStatus(null);
     setCheckoutUrl(null);
     setState("awaiting_fulfillment");
     try {
@@ -266,6 +299,9 @@ export function BaziDeepTaskFlow({
       );
       if (!mountedRef.current) return;
       setDeepReadingId(deep.reading_version_id);
+
+      await recordPurchaseConsents();
+      if (!mountedRef.current) return;
 
       const checkoutKey = checkoutStartKeyRef.current ?? createIdempotencyKey();
       checkoutStartKeyRef.current = checkoutKey;
@@ -297,7 +333,12 @@ export function BaziDeepTaskFlow({
       }
     } catch (reason) {
       if (!mountedRef.current) return;
+      if (isStalePolicyVersion(reason)) {
+        router.replace("/auth/consent");
+        return;
+      }
       setState("checkout_failed");
+      setErrorStatus(errorHttpStatus(reason));
       setError(readableError(reason));
     }
   }
@@ -345,6 +386,7 @@ export function BaziDeepTaskFlow({
       } catch (reason) {
         if (cancelled) return;
         setState("checkout_failed");
+        setErrorStatus(errorHttpStatus(reason));
         setError(readableError(reason));
       }
     }
@@ -368,6 +410,7 @@ export function BaziDeepTaskFlow({
         const summary = await pollReading(readingId);
         if (cancelled) return;
         setError(null);
+    setErrorStatus(null);
         const nextState = summary.delivery_state
           ? stateForDeliveryState(summary.delivery_state, state)
           : summary.status === "input_ready"
@@ -384,6 +427,7 @@ export function BaziDeepTaskFlow({
       } catch (reason) {
         if (cancelled) return;
         setState("failed");
+        setErrorStatus(errorHttpStatus(reason));
         setError(readableError(reason));
       }
     }
@@ -403,6 +447,7 @@ export function BaziDeepTaskFlow({
 
   function retry() {
     setError(null);
+    setErrorStatus(null);
     if (checkoutOrderId) {
       bindingPaymentKeyRef.current = null;
       setState("checkout_pending");
@@ -436,13 +481,37 @@ export function BaziDeepTaskFlow({
           <Status state="processing" title={phase.title} description={phase.text} />
         ) : null}
         {accessState === "failed" ? (
-          <>
-            <Status state="error" title={phase.title} description={error ?? phase.text} />
-            <div className={styles.actionRow}>
-              <button className={styles.primaryAction} onClick={retry} type="button">重试状态读取</button>
-              <button className={styles.secondaryAction} onClick={onBack} type="button">返回修改资料</button>
-            </div>
-          </>
+          <Status
+            actions={
+              errorStatus === 401 || errorStatus === 403 ? (
+                <Link href="/auth/login">登录后继续</Link>
+              ) : (
+                <>
+                  <button onClick={retry} type="button">重试状态读取</button>
+                  <button data-variant="secondary" onClick={onBack} type="button">返回修改资料</button>
+                </>
+              )
+            }
+            description={error ?? phase.text}
+            state={
+              errorStatus === 401 || errorStatus === 403
+                ? "unauthorized"
+                : errorStatus === 404
+                  ? "empty"
+                  : errorStatus === 503
+                    ? "unavailable"
+                    : "error"
+            }
+            title={
+              errorStatus === 401 || errorStatus === 403
+                ? "需要登录才能看这份结果"
+                : errorStatus === 404
+                  ? "还没有可展示的盘面"
+                  : errorStatus === 503
+                    ? "结果服务暂时不可用，不会展示未确认内容"
+                    : phase.title
+            }
+          />
         ) : null}
         {accessState === "awaiting_fulfillment" ? (
           <Status state="processing" title={phase.title} description={phase.text} />
@@ -451,7 +520,12 @@ export function BaziDeepTaskFlow({
           <Status state="processing" title={phase.title} description={phase.text} />
         ) : null}
         {accessState === "checkout_unavailable" ? (
-          <Status state="unavailable" title={phase.title} description={error ?? phase.text} />
+          <Status
+            actions={<Link href="/pricing">查看交付说明</Link>}
+            description={error ?? phase.text}
+            state="unavailable"
+            title={phase.title}
+          />
         ) : null}
         {accessState === "checkout_failed" ? (
           <Status state="error" title={phase.title} description={error ?? phase.text} />
@@ -493,10 +567,12 @@ export function BaziDeepTaskFlow({
 
       {accessState === "unauthenticated" ? (
         <section className={styles.section} aria-labelledby="bazi-deep-login-title">
-          <Status state="unauthorized" title="深读需要登录" description={statusDescription("unauthenticated").text} />
-          <div className={styles.actionRow}>
-            <Link className={styles.primaryAction} href="/auth/login">登录后继续</Link>
-          </div>
+          <Status
+            actions={<Link href="/auth/login">登录后继续</Link>}
+            description={statusDescription("unauthenticated").text}
+            state="unauthorized"
+            title="深读需要登录"
+          />
         </section>
       ) : null}
 
@@ -534,12 +610,18 @@ export function BaziDeepTaskFlow({
 
       {accessState === "checkout_unavailable" ? (
         <section className={styles.section} aria-labelledby="bazi-checkout-unavailable-title">
-          <Status state="unavailable" title="支付入口暂不可用" description={error ?? statusDescription("checkout_unavailable").text} />
+          <Status
+            actions={(
+              <>
+                <button onClick={retry} type="button">重新检查支付</button>
+                <Link data-variant="secondary" href="/pricing">查看交付说明</Link>
+              </>
+            )}
+            description={error ?? statusDescription("checkout_unavailable").text}
+            state="unavailable"
+            title="支付暂时不可用"
+          />
           <p className={styles.securityNote}>当前 Fake/不可用适配器不会被当成成功付款；请稍后重试或查看交付说明。</p>
-          <div className={styles.actionRow}>
-            <button className={styles.primaryAction} onClick={retry} type="button">重新检查支付</button>
-            <Link className={styles.secondaryAction} href="/pricing">查看交付说明</Link>
-          </div>
         </section>
       ) : null}
 

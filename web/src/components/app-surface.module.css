@@ -393,7 +393,7 @@
 }
 
 .readingHeader {
-  padding-bottom: 2rem;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--color-border-strong);
 }
 
@@ -401,10 +401,10 @@
   max-width: 14ch;
   margin: 0.8rem 0 0;
   font-family: var(--font-sans);
-  font-size: clamp(2.5rem, 5.5vw, var(--font-size-hero));
-  font-weight: 560;
-  letter-spacing: -0.04em;
-  line-height: 1.04;
+  font-size: var(--font-size-page);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 .readingHeader h2 {
@@ -419,7 +419,7 @@
 
 .readingHeader p {
   max-width: 64ch;
-  margin: 1rem 0 0;
+  margin: 12px 0 0;
   color: var(--color-text-secondary);
   font-size: var(--font-size-label);
   font-weight: 720;
@@ -428,8 +428,8 @@
 .readingSection {
   display: grid;
   grid-template-columns: 2.25rem minmax(0, 1fr);
-  gap: 1rem;
-  padding-block: clamp(2rem, 5vw, 3.5rem);
+  gap: 12px;
+  padding-block: clamp(12px, 1.5vw, 16px);
   border-bottom: 1px solid var(--color-border);
   animation: surface-enter var(--duration-page) var(--ease-out) both;
 }
@@ -474,7 +474,7 @@
 
 .readingSection p {
   max-width: 68ch;
-  margin: 0.8rem 0 0;
+  margin: 12px 0 0;
   color: var(--color-text-secondary);
 }
 

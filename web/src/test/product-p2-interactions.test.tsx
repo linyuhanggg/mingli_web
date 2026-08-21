@@ -9,9 +9,24 @@ import { RelationshipTaskPage } from "@/components/relationship/relationship-tas
 import { WorkbenchShell } from "@/components/workbench/workbench-shell";
 import { getProductDefinition } from "@/products/catalog";
 
+const relationshipMocks = vi.hoisted(() => ({
+  confirmProfileDraft: vi.fn().mockResolvedValue({
+    profile_id: "profile-p2",
+    profile_version_id: "version-p2",
+    subject_ref: "profile-version:version-p2",
+    version: 1,
+    created_at: "2026-08-15T00:00:00Z",
+  }),
+  createProfileDraft: vi.fn().mockResolvedValue({ draft_id: "draft-p2", status: "draft" }),
+  startBaziRelationshipReading: vi.fn().mockResolvedValue({ reading_version_id: "reading-p2" }),
+  startQizhengRelationshipReading: vi.fn().mockResolvedValue({ reading_version_id: "reading-p2" }),
+  startZiweiRelationshipReading: vi.fn().mockResolvedValue({ reading_version_id: "reading-p2" }),
+}));
+
 vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api")>()),
   getAccount: vi.fn(() => new Promise(() => undefined)),
+  ...relationshipMocks,
 }));
 
 vi.mock("next/navigation", async (importOriginal) => ({
@@ -42,6 +57,65 @@ describe("P2 product interaction contracts", () => {
     expect(css).toMatch(
       /\.dateParts select,\s*\n\.timeParts select\s*\{[^}]*height:\s*var\(--target-min\)/s,
     );
+  });
+
+  it("keeps the shared input first screen to a 30px page line and a centered 496px form", () => {
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/task/task-shell.module.css"),
+      "utf8",
+    );
+    const tokens = readFileSync(
+      resolve(process.cwd(), "../ui/tokens.css"),
+      "utf8",
+    );
+
+    expect(tokens).toMatch(/--font-size-page:\s*30px/);
+    expect(tokens).toMatch(/--container-form:\s*31rem/);
+    expect(css).toMatch(/\.pageLine h1\s*\{[^}]*font-size:\s*var\(--font-size-page\)/s);
+    expect(css).toMatch(/\.inputLayout\s*\{[^}]*justify-items:\s*center/s);
+    expect(css).toMatch(/\.formPanel[^{]*\{[^}]*max-width:\s*var\(--container-form\)/s);
+    expect(css).toMatch(/\.belowFold[^{]*\{[^}]*margin-top:\s*var\(--space-3xl\)/s);
+  });
+
+  it.each(["bazi", "ziwei", "qizheng", "luming-nayin"] as const)(
+    "disables unknown hour on %s with the frozen reason",
+    (productId) => {
+      render(<ProductInputForm product={getProductDefinition(productId)} onConfirm={vi.fn()} />);
+
+      const checkbox = screen.getByRole("checkbox", { name: /不知道出生时辰/ });
+      expect(checkbox).toBeVisible();
+      expect(checkbox).toBeDisabled();
+      expect(screen.getByText("请填写明确的出生时间。")).toBeVisible();
+      expect(screen.getByText("确认后生成盘面")).toBeVisible();
+      expect(screen.queryByText("确认后提交到对应计算服务")).not.toBeInTheDocument();
+      if (productId === "ziwei") {
+        expect(screen.queryByText(/后续会单独确认闰月、命宫起法与四化版本/)).not.toBeInTheDocument();
+      }
+    },
+  );
+
+  it("does not put the natal unknown-hour control on liuyao", () => {
+    render(<ProductInputForm product={getProductDefinition("liuyao")} onConfirm={vi.fn()} />);
+
+    expect(screen.queryByRole("checkbox", { name: /不知道出生时辰/ })).not.toBeInTheDocument();
+    expect(screen.getByText("确认后生成盘面")).toBeVisible();
+  });
+
+  it("puts time basis on the main natal form", () => {
+    render(<ProductInputForm product={getProductDefinition("bazi")} onConfirm={vi.fn()} />);
+
+    expect(screen.getByRole("group", { name: "时间口径" })).toBeVisible();
+    expect(screen.getByRole("group", { name: "出生资料" })).toBeVisible();
+  });
+
+  it("puts qizheng coordinates in 出生地点与坐标 on the main form", () => {
+    render(<ProductInputForm product={getProductDefinition("qizheng")} onConfirm={vi.fn()} />);
+
+    const group = screen.getByRole("group", { name: "出生地点与坐标" });
+    expect(group).toBeVisible();
+    expect(group).toHaveTextContent("出生经度");
+    expect(group).toHaveTextContent("出生纬度");
+    expect(group).toHaveTextContent("坐标来源");
   });
 
   it("exposes the three mutually exclusive Bazi temporal targets in advanced options", async () => {
@@ -87,15 +161,17 @@ describe("P2 product interaction contracts", () => {
     expect(trigger).toHaveFocus();
   });
 
-  it("rejects an empty relationship form, links errors, and focuses the first invalid field", async () => {
+  it("rejects an empty relationship form, links errors, and keeps a single generate action", async () => {
     const user = userEvent.setup();
     render(<RelationshipTaskPage productId="bazi" />);
 
-    await user.click(screen.getByRole("button", { name: "检查双方资料" }));
+    await user.click(screen.getByRole("button", { name: "生成合盘" }));
 
     const firstField = screen.getByLabelText("甲方受测对象");
     expect(await screen.findByRole("alert", { name: "请先修正双方资料" })).toBeVisible();
-    expect(screen.queryByText(/输入结构已检查/)).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "生成合盘" })).toHaveLength(1);
+    expect(screen.queryByRole("button", { name: "检查双方资料" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "创建档案并生成合盘" })).not.toBeInTheDocument();
     expect(firstField).toHaveAttribute("aria-invalid", "true");
     expect(firstField).toHaveFocus();
   });
@@ -119,36 +195,29 @@ describe("P2 product interaction contracts", () => {
     fireEvent.change(screen.getByLabelText("乙方出生日期"), { target: { value: "1992-03-04" } });
     fireEvent.change(screen.getByLabelText("乙方出生时间"), { target: { value: "09:45" } });
     await user.type(screen.getByLabelText("乙方出生地点"), "上海");
-    await user.click(screen.getByRole("button", { name: "检查双方资料" }));
+    await user.click(screen.getByRole("button", { name: "生成合盘" }));
 
-    expect(await screen.findByText(/输入结构已检查/)).toBeVisible();
     expect(screen.queryByRole("alert", { name: "请先修正双方资料" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /生成合盘/ })).toHaveLength(1);
   });
 
-  it("moves relationship tabs with arrows, Home, and End while keeping focus and selection together", async () => {
-    const user = userEvent.setup();
+  it("does not render the empty hepan workbench or region tabs on input", () => {
     render(<RelationshipTaskPage productId="qizheng" />);
 
-    const first = document.getElementById("qizheng-relationship-tab-0") as HTMLButtonElement;
-    const second = document.getElementById("qizheng-relationship-tab-1") as HTMLButtonElement;
-    const last = document.getElementById("qizheng-relationship-tab-2") as HTMLButtonElement;
-    first.focus();
-
-    await user.keyboard("{ArrowRight}");
-    expect(second).toHaveFocus();
-    expect(second).toHaveAttribute("aria-selected", "true");
-
-    await user.keyboard("{End}");
-    expect(last).toHaveFocus();
-    expect(last).toHaveAttribute("aria-selected", "true");
-
-    await user.keyboard("{Home}");
-    expect(first).toHaveFocus();
-    expect(first).toHaveAttribute("aria-selected", "true");
-
-    await user.keyboard("{ArrowLeft}");
-    expect(last).toHaveFocus();
-    expect(last).toHaveAttribute("aria-selected", "true");
+    expect(document.getElementById("qizheng-relationship-tab-0")).toBeNull();
+    expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
+    expect(screen.queryByText("甲方 / 乙方 / 关系区")).not.toBeInTheDocument();
+    expect(document.querySelector('[data-state="unavailable"]')).toBeNull();
+    expect(screen.queryByText(/待接入/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "检查双方资料" })).not.toBeInTheDocument();
+    expect(screen.queryByText("ViewModel")).not.toBeInTheDocument();
+    expect(screen.queryByText("Runtime")).not.toBeInTheDocument();
+    expect(screen.queryByText("ProfileVersion")).not.toBeInTheDocument();
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/relationship/relationship-task-page.module.css"),
+      "utf8",
+    );
+    expect(css).toMatch(/\.pageLine h1\s*\{[^}]*font-size:\s*var\(--font-size-page\)/s);
   });
 
   it.each(["liuyao", "wenshi"] as const)("requires all six line records before %s input can be confirmed", async (productId) => {
@@ -209,13 +278,19 @@ describe("P2 product interaction contracts", () => {
     });
   });
 
-  it("uploads only after confirmation, requires a photo, and exposes quality/delete boundaries", async () => {
+  it("uploads only after confirmation, requires a photo, and exposes delete/consent boundaries", async () => {
     const user = userEvent.setup();
     const onConfirm = vi.fn();
     const product = getProductDefinition("jianxiang");
     render(<ProductInputForm product={product} onConfirm={onConfirm} />);
 
-    expect(screen.getByRole("status", { name: "相机采集待接入" })).toBeVisible();
+    expect(screen.getByLabelText("观照模式")).toBeVisible();
+    expect(screen.getByRole("checkbox", { name: /照片处理独立同意/ })).toBeVisible();
+    expect(screen.getByLabelText("选择见相照片")).toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "当前不使用相机采集" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "服务端质量检查已接入" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "检查照片质量" })).not.toBeInTheDocument();
+
     await user.click(screen.getByRole("checkbox", { name: /照片处理独立同意/ }));
     await user.click(submitButton("jianxiang"));
     expect(onConfirm).not.toHaveBeenCalled();
@@ -225,7 +300,6 @@ describe("P2 product interaction contracts", () => {
     const file = new File(["local-image"], "face.jpg", { type: "image/jpeg" });
     await user.upload(fileInput, file);
     expect(screen.getByRole("status", { name: "已选择本地照片" })).toHaveTextContent("face.jpg");
-    expect(screen.getByRole("status", { name: "服务端质量检查已接入" })).toBeVisible();
 
     await user.click(screen.getByRole("button", { name: "删除本地照片" }));
     expect(screen.getByRole("status", { name: "本地照片已删除" })).toBeVisible();
@@ -243,6 +317,14 @@ describe("P2 product interaction contracts", () => {
       saveToArchive: true,
     });
     expect(onConfirm.mock.calls[0][0]).not.toHaveProperty("file");
+  });
+
+  it("does not use 待接入 as a Status title on the jianxiang capture panel", () => {
+    render(<ProductInputForm product={getProductDefinition("jianxiang")} onConfirm={vi.fn()} />);
+
+    expect(screen.queryByRole("status", { name: /待接入/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "当前不使用相机采集" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "服务端质量检查已接入" })).not.toBeInTheDocument();
   });
 
   it("reserves scroll space above every sticky reading anchor target", () => {

@@ -8,7 +8,7 @@ import {
   ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
-import { useId } from "react";
+import { useId, type ReactNode } from "react";
 
 import styles from "./status.module.css";
 
@@ -38,6 +38,7 @@ export type StatusProps = {
   state: StatusState;
   title?: string;
   description?: string;
+  actions?: ReactNode;
 };
 
 const copy: Record<StatusState, { title: string; description: string; icon: LucideIcon }> = {
@@ -85,7 +86,7 @@ const copy: Record<StatusState, { title: string; description: string; icon: Luci
 
 const busyStates: ReadonlySet<StatusState> = new Set(["loading", "processing"]);
 
-export function Status({ state, title, description }: StatusProps) {
+export function Status({ state, title, description, actions }: StatusProps) {
   const headingId = useId();
   const descriptionId = useId();
   const definition = copy[state];
@@ -115,6 +116,7 @@ export function Status({ state, title, description }: StatusProps) {
           {resolvedDescription}
         </p>
       </div>
+      {actions ? <div className={styles.actions}>{actions}</div> : null}
     </section>
   );
 }

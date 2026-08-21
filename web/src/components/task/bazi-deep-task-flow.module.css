@@ -1,7 +1,8 @@
 .flow {
   display: grid;
-  gap: var(--space-xl);
+  gap: var(--space-md);
   min-width: 0;
+  overflow-x: clip;
 }
 
 .toolbar {

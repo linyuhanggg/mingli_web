@@ -4,8 +4,12 @@ import { ReadingShell } from "@/components/reading/reading-shell";
 import { BaziChart } from "@/components/readings/bazi-chart";
 import { AccountSurface, AuthSurface, CommerceSurface, PublicContentSurface } from "@/components/surfaces";
 import { ProductInputForm, type TaskFormValues } from "@/components/task/product-input-form";
+import {
+  HepanSixStateSurface,
+  type HepanSurfaceState,
+} from "@/components/relationship/hepan-six-state-surface";
 import { Status } from "@/components/ui/status";
-import { WorkbenchShell } from "@/components/workbench/workbench-shell";
+import { WorkbenchShell, type WorkbenchSurfaceState } from "@/components/workbench/workbench-shell";
 import type { UiLabFixture, UiLabRelationshipFixture } from "@/fixtures/ui-lab";
 import {
   UI_LAB_STATE_DETAILS,
@@ -92,10 +96,20 @@ function filledTaskValues(productId: ProductId): TaskFormValues {
 
 function LabStatus({ state, title }: { readonly state: UiLabState; readonly title?: string }) {
   const details = UI_LAB_STATE_DETAILS[state];
+  const mapped = UI_LAB_STATUS_BY_STATE[state];
+  const pending = mapped === "unavailable";
+  const actions = mapped === "unauthorized"
+    ? <a href="/auth/login">登录后继续</a>
+    : mapped === "empty" || mapped === "error"
+      ? <a href="/bazi">返回八字录入</a>
+      : pending
+        ? <a data-variant="secondary" href="/arts">查看术数总览</a>
+        : null;
   return (
     <Status
-      description={details.description}
-      state={UI_LAB_STATUS_BY_STATE[state]}
+      actions={actions}
+      description={pending ? `${details.description} 当前能力待接入，不会伪造结果。` : details.description}
+      state={mapped}
       title={title ?? details.label}
     />
   );
@@ -161,11 +175,54 @@ function ProductionSurface({ fixture, state }: Pick<PreviewShellProps, "fixture"
   }
 }
 
+const WORKBENCH_SIX_STATES = new Set(["loading", "empty", "error", "processing", "unavailable", "unauthorized"]);
+const HEPAN_SIX_STATES = new Set(["loading", "empty", "error", "processing", "unavailable", "unauthorized"]);
+
 export function PreviewShell({ fixture, state, role, capabilityId }: PreviewShellProps) {
+  if (fixture.previewKind === "workbench") {
+    const product = getProductDefinition(fixture.productId);
+    const mapped = UI_LAB_STATUS_BY_STATE[state];
+    const surfaceState = state !== "pristine" && WORKBENCH_SIX_STATES.has(mapped)
+      ? mapped as WorkbenchSurfaceState
+      : undefined;
+    return (
+      <div className={styles.previewBodySurface} data-state={state}>
+        <WorkbenchShell
+          onBack={() => undefined}
+          product={product}
+          surfaceState={surfaceState}
+        />
+      </div>
+    );
+  }
+
+  if (fixture.previewKind === "relationship-status") {
+    const mapped = UI_LAB_STATUS_BY_STATE[state];
+    const surfaceState = state !== "pristine" && HEPAN_SIX_STATES.has(mapped)
+      ? mapped as HepanSurfaceState
+      : undefined;
+    const capabilityGate = state === "pristine"
+      ? uiLabCapabilityGate(fixture.previewKind, role, capabilityId)
+      : null;
+    return (
+      <div className={styles.previewBodySurface} data-state={state}>
+        {capabilityGate
+          ? <Status
+              description={capabilityGate.description}
+              state={capabilityGate.state}
+              title={capabilityGate.title}
+            />
+          : surfaceState
+            ? <HepanSixStateSurface state={surfaceState} />
+            : state === "pristine"
+              ? <RelationshipRegistryStatus fixture={fixture} />
+              : <LabStatus state={state} />}
+      </div>
+    );
+  }
+
   const rendersProductionSurface = uiLabRendersProductionSurface(fixture.previewKind, state);
-  const rendersRelationshipRegistry = fixture.previewKind === "relationship-status"
-    && state === "pristine";
-  const capabilityGate = (rendersProductionSurface || rendersRelationshipRegistry)
+  const capabilityGate = rendersProductionSurface
     ? uiLabCapabilityGate(fixture.previewKind, role, capabilityId)
     : null;
 
@@ -177,8 +234,6 @@ export function PreviewShell({ fixture, state, role, capabilityId }: PreviewShel
             state={capabilityGate.state}
             title={capabilityGate.title}
           />
-        : rendersRelationshipRegistry
-        ? <RelationshipRegistryStatus fixture={fixture} />
         : rendersProductionSurface
         ? <ProductionSurface fixture={fixture} state={state} />
         : <LabStatus state={state} />}

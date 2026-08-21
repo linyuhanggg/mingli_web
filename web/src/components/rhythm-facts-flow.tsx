@@ -65,9 +65,9 @@ export function RhythmFactsFlow() {
         }
         setLoading(false);
       })
-      .catch((reason) => {
+      .catch(() => {
         if (!active) return;
-        setError(reason instanceof Error ? reason.message : "档案加载失败，请稍后重试。");
+        setError("读取失败，请重试");
         setLoading(false);
       });
     return () => {
@@ -111,9 +111,9 @@ export function RhythmFactsFlow() {
 
   return (
     <div className={styles.wrap}>
-      <h1>查看本命音律事实</h1>
+      <h2>查看本命音律事实</h2>
       <p className={styles.lead}>
-        从已确认档案读取 Runtime 计算的四柱纳音；本页只展示纳音事实，不把它扩写成姓名学、吉凶或性格结论。
+        从已确认档案读取服务端计算的四柱纳音；本页只展示纳音事实，不把它扩写成姓名学、吉凶或性格结论。
       </p>
       <p className={styles.scopeNotice}>
         <strong>当前输出范围：四柱、纳音、禄命结构事实。</strong>
@@ -138,7 +138,7 @@ export function RhythmFactsFlow() {
       {!loading && !error && profiles.length === 0 ? (
         <div className={styles.state}>
           <p>还没有可用的档案。请先建立一份确认的出生资料。</p>
-          <ButtonLink href="/app/profile/new">去建档</ButtonLink>
+          <ButtonLink href="/account/profiles">去建档</ButtonLink>
         </div>
       ) : null}
 

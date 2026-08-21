@@ -1,0 +1,98 @@
+.main {
+  min-height: 70vh;
+  padding-block: var(--space-2xl) var(--space-3xl);
+  background: var(--color-canvas);
+  color: var(--color-text);
+}
+
+.column {
+  width: min(var(--container-form), calc(100% - 32px));
+  margin-inline: auto;
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.header {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.header h1 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-page);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.header p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  line-height: 1.5;
+}
+
+.status,
+.empty {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+}
+
+.list {
+  display: grid;
+  gap: var(--space-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list a {
+  color: var(--color-text);
+  font-weight: 650;
+  text-underline-offset: 0.25rem;
+}
+
+.filters {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.filters input,
+.filters select,
+.filters button,
+.back {
+  min-height: var(--target-min);
+  font: inherit;
+}
+
+.filters button,
+.back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-lg);
+  border: 1px solid var(--color-action);
+  border-radius: var(--radius-control);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  font-weight: 740;
+  cursor: pointer;
+}
+
+.filters button:focus-visible,
+.back:focus-visible,
+.list a:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filters button,
+  .back,
+  .list a {
+    transition: none;
+  }
+}

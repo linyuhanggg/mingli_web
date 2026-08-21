@@ -147,9 +147,9 @@ export function TimeCheckFlow() {
         }
         setLoading(false);
       })
-      .catch((reason) => {
+      .catch(() => {
         if (!active) return;
-        setError(reason instanceof Error ? reason.message : "档案加载失败，请稍后重试。");
+        setError("读取失败，请重试");
         setLoading(false);
       });
     return () => {
@@ -205,9 +205,9 @@ export function TimeCheckFlow() {
 
   return (
     <div className={styles.wrap}>
-      <h1>围绕未知时辰生成候选事实</h1>
+      <h2>围绕未知时辰生成候选事实</h2>
       <p className={styles.lead}>
-        选择已确认的出生档案，提交已知时间范围和可核对事件。服务端 Runtime 会用现有八字核心逐个生成十二个候选时辰；本页不在浏览器排盘。
+        选择已确认的出生档案，提交已知时间范围和可核对事件。服务端会用现有八字核心逐个生成十二个候选时辰；本页不在浏览器排盘。
       </p>
       <p className={styles.scopeNotice}>
         <strong>当前输出范围：十二候选、四柱原值、时间口径和有界候选证据排序。</strong>
@@ -232,7 +232,7 @@ export function TimeCheckFlow() {
       {!loading && !error && profiles.length === 0 ? (
         <div className={styles.state}>
           <p>还没有可用的档案。请先建立一份确认的出生资料。</p>
-          <ButtonLink href="/app/profile/new">去建档</ButtonLink>
+          <ButtonLink href="/account/profiles">去建档</ButtonLink>
         </div>
       ) : null}
 
@@ -319,7 +319,7 @@ export function TimeCheckFlow() {
             </div>
           </div>
           <p className={formControls.hint}>
-            可填写跨午夜范围，例如 22:00 到 02:00；Runtime 会保留完整十二候选并标记范围命中情况。
+            可填写跨午夜范围，例如 22:00 到 02:00；服务端会保留完整十二候选并标记范围命中情况。
           </p>
 
           <div className={formControls.field}>

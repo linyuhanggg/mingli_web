@@ -125,7 +125,7 @@ beforeEach(() => {
 });
 
 describe("reading detail component", () => {
-  it("renders the accepted manuscript with numbered sections in true reading order", async () => {
+  it("renders the accepted fortune result in the production reading order", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       if (String(url).endsWith("/result")) return jsonResponse(readingResult());
       return jsonResponse(readingSummary("accepted"));
@@ -135,19 +135,16 @@ describe("reading detail component", () => {
     render(<ReadingDetailPage />);
 
     const article = await screen.findByRole("article", { name: "解读正文" });
+    expect(within(article).getByRole("heading", { level: 1, name: "运势" })).toBeVisible();
     const level2 = within(article).getAllByRole("heading", { level: 2 });
     expect(level2.map((node) => node.textContent)).toEqual([
-      "近七日最值得关注什么？",
-      "判断",
+      "排盘结果",
       "事实",
+      "判断",
       "依据与边界",
+      "阅读说明",
       "复核与追问",
     ]);
-
-    const indices = within(article)
-      .getAllByText(/^0[1-4]$/)
-      .map((node) => node.textContent);
-    expect(indices).toEqual(["01", "02", "03", "04"]);
 
     expect(screen.getByRole("region", { name: "事实" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "判断" })).toBeInTheDocument();
@@ -191,8 +188,9 @@ describe("reading detail component", () => {
     const readingResultSource = read(
       join(root, READINGS_DIR, "reading-result.tsx"),
     );
-    expect(readingResultSource).toContain('role="status"');
-    expect(readingResultSource).toContain('role="alert"');
+    const statusSource = read(join(root, "src/components/ui/status.tsx"));
+    expect(readingResultSource).toContain("<Status");
+    expect(statusSource).toContain('role={state === "error" ? "alert" : "status"}');
     for (const label of [
       "准备解读",
       "事实已准备",

@@ -50,7 +50,7 @@ export function HomeAtmosphere() {
           <Image alt="" fill sizes="(max-width: 767px) 78vw, 36vw" src="/home/talisman-ghost.webp" />
         </div>
         <div className={`${styles.talismanLayer} ${styles.talismanFlame}`}>
-          <Image alt="" fill sizes="(max-width: 767px) 78vw, 36vw" src="/home/talisman-flame.webp" />
+          <Image alt="" fill priority sizes="(max-width: 767px) 78vw, 36vw" src="/home/talisman-flame.webp" />
         </div>
         <div className={`${styles.talismanLayer} ${styles.talismanInk}`}>
           <Image alt="" fill priority sizes="(max-width: 767px) 78vw, 36vw" src="/home/talisman-ink.webp" />

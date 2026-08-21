@@ -505,3 +505,70 @@
 .field select {
   padding-right: 2.5rem;
 }
+
+.authContainer {
+  max-width: var(--container-page);
+}
+
+.authHeader {
+  text-align: center;
+}
+
+.authHeader > * {
+  max-width: var(--container-form);
+  margin-inline: auto;
+}
+
+.authHeader h1 {
+  max-width: none;
+  font-size: var(--font-size-page);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.authHeader .intro {
+  font-size: var(--font-size-label);
+  line-height: 1.5;
+}
+
+.authContent {
+  padding-top: var(--space-lg);
+}
+
+.authStack {
+  display: grid;
+  gap: var(--space-md);
+  max-width: var(--container-form);
+  margin-inline: auto;
+}
+
+.authStack .form {
+  width: 100%;
+}
+
+.authStack .form button[type="submit"] {
+  width: 100%;
+  min-height: var(--target-submit);
+  border-color: var(--color-action);
+  background: var(--color-action);
+  color: var(--color-on-action);
+}
+
+.authStack .form button[type="submit"]:hover:not(:disabled) {
+  background: var(--color-action-hover);
+}
+
+.authLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-label);
+}
+
+.authLinks a {
+  color: var(--color-text-secondary);
+  font-weight: 650;
+}

@@ -21,7 +21,7 @@
   --table-cell-display: table-cell;
   --table-cell-columns: none;
   --table-cell-column: auto;
-  --table-cell-padding: 0.75rem 0.85rem;
+  --table-cell-padding: 0.5rem 0.75rem;
   --table-cell-border: 1px solid var(--color-border);
   --table-label-display: none;
   --table-selection-display: table-cell;
@@ -42,8 +42,23 @@
 
 .toolbar {
   display: var(--table-toolbar-display);
-  align-items: center;
+  align-items: end;
+  justify-content: space-between;
   gap: var(--space-sm);
+}
+
+.searchField,
+.facetField {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.searchField {
+  width: min(100%, 28rem);
+}
+
+.facetField {
+  justify-items: end;
 }
 
 .filterLabel {
@@ -161,6 +176,7 @@
   gap: var(--space-sm);
   min-width: 0;
   overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
 }
 
 .td[data-label]::before {
@@ -251,7 +267,7 @@
 
 .empty {
   display: var(--table-empty-display);
-  padding: var(--space-lg);
+  padding: var(--space-md);
   color: var(--color-text-secondary);
   text-align: center;
 }
@@ -342,6 +358,10 @@
   .detailButton {
     width: 100%;
   }
+
+  .facetField {
+    justify-items: start;
+  }
 }
 
 @container admin-preview (max-width: 47.99rem) {
@@ -389,6 +409,10 @@
 
   .detailButton {
     width: 100%;
+  }
+
+  .facetField {
+    justify-items: start;
   }
 }
 

@@ -43,6 +43,8 @@ describe("AdminNotificationsSurface", () => {
 
     expect(await screen.findByText("终态失败")).toBeVisible();
     expect(screen.getByText("provider timeout")).toBeVisible();
+    expect(screen.queryByText("通知投递状态已接入")).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-variant="compact"]')).toHaveLength(0);
     expect(screen.queryByText("隐藏内容")).not.toBeInTheDocument();
     await user.type(screen.getByLabelText("操作原因"), "供应商恢复，人工确认重试");
     await user.click(screen.getByRole("button", { name: "重新投递" }));
@@ -56,6 +58,7 @@ describe("AdminNotificationsSurface", () => {
       }),
     );
     expect(await screen.findByText("通知已重新排队，尝试次数保持不变。")).toBeVisible();
+    expect(document.querySelectorAll('[data-variant="compact"]')).toHaveLength(1);
   });
 
   it("does not expose retry controls to an ordinary role", async () => {
@@ -65,5 +68,18 @@ describe("AdminNotificationsSurface", () => {
 
     expect(await screen.findByText("暂无通知投递记录")).toBeVisible();
     expect(screen.queryByRole("button", { name: "重新投递" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "操作原因" })).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-variant="compact"]')).toHaveLength(1);
+  });
+
+  it("keeps a forbidden superadmin on the page without retry controls", async () => {
+    adminFetchMock.mockResolvedValueOnce({ ok: false, status: 403, title: "Forbidden" });
+
+    render(<AdminNotificationsSurface role="superadmin" />);
+
+    expect(await screen.findByText("无权限")).toBeVisible();
+    expect(screen.queryByRole("textbox", { name: "操作原因" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "重新投递" })).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-variant="compact"]')).toHaveLength(1);
   });
 });

@@ -53,7 +53,7 @@ function AccountSessionControlContent() {
       <StatusPanel
         state="loading"
         title="正在读取账户状态…"
-        description="正在确认当前设备会话，请稍候。"
+        description="正在确认登录状态，请稍候。"
       />
     );
   }
@@ -74,7 +74,7 @@ function AccountSessionControlContent() {
         <StatusPanel
           state="error"
           title="无法读取账户状态"
-          description={state.message}
+          description="读取失败，请重试"
         />
         <div className={styles.retryRow}>
           <button
@@ -131,7 +131,7 @@ function AccountSessionControlContent() {
         </button>
         {logoutBusy ? (
           <p className={styles.busyReason} id="logout-busy-reason" role="status">
-            正在撤销当前设备会话，操作完成前按钮已暂时锁定。
+            正在退出，请稍候。
           </p>
         ) : null}
       </div>

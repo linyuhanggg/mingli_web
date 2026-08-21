@@ -59,6 +59,16 @@ const divinationGroups = [
   },
 ] as const;
 
+const homepageProductHrefs = new Set([
+  "/bazi",
+  "/ziwei",
+  "/qizheng",
+  "/liuyao",
+  "/qimen",
+  "/daliuren",
+  "/jianxiang",
+]);
+
 const crossLinks = [
   {
     href: "/hecan",
@@ -104,7 +114,7 @@ function PublicAccountEntryContent({ pathname }: { pathname: string }) {
 
   const signedIn = state.status === "signedIn";
   const signedOut = state.status === "signedOut";
-  const href = "/account";
+  const href = signedOut ? "/auth/login" : "/account";
   const label = signedIn
     ? "已登录 · 我的首页"
     : signedOut
@@ -178,6 +188,12 @@ function menuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
 function MegaMenu() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() ?? "/";
+  const visibleGroups = pathname === "/"
+    ? divinationGroups.map((group) => ({
+        ...group,
+        items: group.items.filter((item) => homepageProductHrefs.has(item.href)),
+      }))
+    : divinationGroups;
 
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
@@ -213,7 +229,7 @@ function MegaMenu() {
             });
           }}
         >
-          {divinationGroups.map((group) => (
+              {visibleGroups.map((group) => (
             <section className={styles.megaGroup} key={group.label}>
               <h2>{group.label}</h2>
               <div className={styles.megaLinks}>
@@ -355,7 +371,7 @@ function MoreMenu() {
   );
 }
 
-function MobileNavigation({ pathname }: { pathname: string }) {
+export function MobileNavigation({ pathname }: { pathname: string }) {
   const [open, setOpen] = useState(false);
   const historyEntryRef = useRef(false);
 
@@ -421,7 +437,11 @@ function MobileNavigation({ pathname }: { pathname: string }) {
   );
 
   return (
-    <nav aria-label="移动底栏" className={styles.mobileBottomBar}>
+    <nav
+      aria-label="移动底栏"
+      className={styles.mobileBottomBar}
+      data-home-chrome={pathname === "/" ? "true" : undefined}
+    >
       {mobileLinks.slice(0, 1).map(({ href, label, icon: Icon }) => (
         <Link
           aria-current={isRouteActive(pathname, href) ? "page" : undefined}
@@ -509,7 +529,7 @@ export function SiteHeader() {
       <a className={styles.skipLink} href="#main-content">
         跳到主要内容
       </a>
-      <header className={styles.header}>
+      <header className={styles.header} data-home-chrome={pathname === "/" ? "true" : undefined}>
         <Container className={styles.headerInner}>
           <BrandMark />
           <SitePrimaryNavigation />
@@ -520,7 +540,6 @@ export function SiteHeader() {
           </div>
         </Container>
       </header>
-      <MobileNavigation pathname={pathname} />
     </>
   );
 }

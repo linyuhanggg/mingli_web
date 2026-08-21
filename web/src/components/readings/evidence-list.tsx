@@ -7,6 +7,26 @@ function isNonEmptyText(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function formatPublicEvidenceSource(
+  sourceTitle: string,
+  locator: string | null | undefined,
+): { title: string; locator: string | null } {
+  const lineMatch = locator?.match(
+    /(?:^|\/)fulltext\.md#L(\d+)(?:-L?(\d+))?$/i,
+  );
+  if (!lineMatch) {
+    return { title: sourceTitle, locator: locator || null };
+  }
+
+  const title = /^《.*》$/.test(sourceTitle)
+    ? sourceTitle
+    : `《${sourceTitle}》`;
+  const lineLabel = lineMatch[2]
+    ? `第 ${lineMatch[1]}–${lineMatch[2]} 行`
+    : `第 ${lineMatch[1]} 行`;
+  return { title, locator: lineLabel };
+}
+
 function isVerifiedExactEvidence(item: ReadingEvidence): boolean {
   if (
     !isNonEmptyText(item.ref) ||
@@ -52,6 +72,10 @@ export function EvidenceList({
   return items.length > 0 ? (
     <ul className={styles.list}>
       {items.map((item) => {
+        const publicSource = formatPublicEvidenceSource(
+          item.source_title,
+          item.locator,
+        );
         const supportedFacts = Array.from(
           new Set(
             item.supports_fact_refs
@@ -63,9 +87,9 @@ export function EvidenceList({
         return (
           <li className={styles.item} key={item.ref}>
             <p className={styles.source}>
-              {item.source_title}
-              {item.locator ? (
-                <span className={styles.locator}> · {item.locator}</span>
+              {publicSource.title}
+              {publicSource.locator ? (
+                <span className={styles.locator}> · {publicSource.locator}</span>
               ) : null}
             </p>
             {(exactOnly ? item.verbatim_excerpt : item.excerpt) ? (

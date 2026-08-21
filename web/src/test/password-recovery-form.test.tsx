@@ -47,6 +47,9 @@ describe("PasswordRecoveryForm", () => {
     const user = userEvent.setup();
 
     render(<PasswordRecoveryForm />);
+    expect(screen.getByText(/不会因为找回请求创建新账号/)).toBeVisible();
+    expect(screen.queryByText(/不覆盖历史事实/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/调试码/)).not.toBeInTheDocument();
     await user.type(screen.getByRole("textbox", { name: "手机或邮箱" }), "user@example.com");
     await user.click(screen.getByRole("button", { name: "发送验证码" }));
 

@@ -45,6 +45,17 @@ function fillPerson(
 }
 
 describe("relationship task wiring", () => {
+  it("keeps the default input to one generate action without leftover workbench copy", () => {
+    render(<RelationshipTaskPage productId="bazi" />);
+    expect(screen.getAllByRole("button", { name: "生成合盘" })).toHaveLength(1);
+    expect(screen.queryByRole("button", { name: "检查双方资料" })).not.toBeInTheDocument();
+    expect(document.querySelector('[data-state="unavailable"]')).toBeNull();
+    expect(screen.queryByText(/待接入/)).not.toBeInTheDocument();
+    expect(screen.queryByText("ViewModel")).not.toBeInTheDocument();
+    expect(screen.queryByText("Runtime")).not.toBeInTheDocument();
+    expect(screen.queryByText("ProfileVersion")).not.toBeInTheDocument();
+  });
+
   it("creates two profiles, starts the selected relationship product, and navigates to the result", async () => {
     const user = userEvent.setup();
     mocks.createProfileDraft
@@ -71,8 +82,7 @@ describe("relationship task wiring", () => {
       gender: "female",
     });
 
-    await user.click(screen.getByRole("button", { name: "检查双方资料" }));
-    await user.click(screen.getByRole("button", { name: "创建档案并生成合盘" }));
+    await user.click(screen.getByRole("button", { name: "生成合盘" }));
 
     await waitFor(() => expect(mocks.startBaziRelationshipReading).toHaveBeenCalledTimes(1));
     expect(mocks.createProfileDraft).toHaveBeenNthCalledWith(1, "甲");

@@ -63,7 +63,9 @@ async function reachCodePhase(
   await screen.findByText("安全会话已建立");
   await user.type(screen.getByRole("textbox", { name: "邮箱地址" }), email);
   await user.click(screen.getByRole("button", { name: "发送验证码" }));
-  await screen.findByText("调试码（仅开发/测试环境）：246810");
+  await screen.findByLabelText("六位验证码");
+  expect(screen.queryByText(/调试码/)).not.toBeInTheDocument();
+  expect(screen.queryByText("246810")).not.toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledTimes(2);
 }
 
@@ -268,7 +270,7 @@ it("verifying adopts the device CSRF, routes to /account, and never leaks the Us
     expect(replaceMock).toHaveBeenCalledWith("/account");
   });
   expect(await screen.findByText("登录成功")).toBeVisible();
-  expect(screen.getByText(/正在进入 \/account/)).toBeVisible();
+  expect(screen.getByText("登录成功。")).toBeVisible();
 
   expect(screen.queryByText(/User ID/)).not.toBeInTheDocument();
   expect(screen.queryByText(/2ec4dc6c-3e6e-4aef-ae3b-c900b3f1d239/)).not.toBeInTheDocument();
@@ -401,9 +403,9 @@ describe("otp form a11y css contract", () => {
     expect(locked).not.toContain("var(--color-text-muted)");
   });
 
-  it("keeps 44px+ controls: 48px inputs and 44px buttons", () => {
+  it("keeps 48px inputs and a 48px primary submit", () => {
     expect(ruleFor(css, ".field input")).toContain("min-height: 3rem");
-    expect(ruleFor(css, ".submit")).toContain("min-height: 2.75rem");
+    expect(ruleFor(css, ".submit")).toContain("min-height: var(--target-submit)");
     expect(ruleFor(css, ".secondary")).toContain("min-height: 2.75rem");
   });
 

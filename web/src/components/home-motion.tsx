@@ -2,13 +2,68 @@
 
 import type { ReactNode } from "react";
 
-import { Reveal, Stagger, StaggerItem } from "./motion-primitives";
+import { motion } from "motion/react";
+import { useSyncExternalStore } from "react";
 
-export function HomeHeroMotion({ children }: { children: ReactNode }) {
+import {
+  easeOutExpo,
+  motionDurations,
+  useSafeReducedMotion,
+} from "./motion-primitives";
+
+function subscribeToMount() {
+  return () => undefined;
+}
+
+function getClientMounted() {
+  return true;
+}
+
+function getServerMounted() {
+  return false;
+}
+
+function useHydratedReducedMotion() {
+  const mounted = useSyncExternalStore(subscribeToMount, getClientMounted, getServerMounted);
+  const reduceMotion = useSafeReducedMotion();
+  return mounted && reduceMotion;
+}
+
+export function HomeHeroMotion({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  const reduceMotion = useHydratedReducedMotion();
+
+  if (reduceMotion) return <div className={className}>{children}</div>;
+
   return (
-    <Reveal as="div" immediate y={12} delay={0.02}>
+    <motion.div
+      className={className}
+      initial="hidden"
+      animate="shown"
+      variants={{ shown: { transition: { staggerChildren: 0.06 } }, hidden: {} }}
+    >
       {children}
-    </Reveal>
+    </motion.div>
+  );
+}
+
+export function HomeHeroItemMotion({ children }: { children: ReactNode }) {
+  const reduceMotion = useHydratedReducedMotion();
+
+  if (reduceMotion) return <div>{children}</div>;
+
+  return (
+    <motion.div
+      variants={{ hidden: { opacity: 0, y: 12 }, shown: { opacity: 1, y: 0 } }}
+      transition={{ duration: motionDurations.entrance, ease: easeOutExpo }}
+    >
+      {children}
+    </motion.div>
   );
 }
 
@@ -16,15 +71,46 @@ export function HomeSectionMotion({
   children,
   className,
   delay = 0,
+  dividerClassName,
 }: {
   children: ReactNode;
   className?: string;
   delay?: number;
+  dividerClassName?: string;
 }) {
+  const reduceMotion = useHydratedReducedMotion();
+
+  if (reduceMotion) {
+    return (
+      <div className={className}>
+        {dividerClassName ? <span aria-hidden="true" className={dividerClassName} /> : null}
+        {children}
+      </div>
+    );
+  }
+
   return (
-    <Reveal as="div" className={className} delay={delay} y={12}>
-      {children}
-    </Reveal>
+    <motion.div
+      className={className}
+      initial="hidden"
+      whileInView="shown"
+      viewport={{ once: true, amount: 0.2 }}
+    >
+      {dividerClassName ? (
+        <motion.span
+          aria-hidden="true"
+          className={dividerClassName}
+          variants={{ hidden: { scaleX: 0 }, shown: { scaleX: 1 } }}
+          transition={{ duration: 0.5, delay, ease: easeOutExpo }}
+        />
+      ) : null}
+      <motion.div
+        variants={{ hidden: { opacity: 0, y: 12 }, shown: { opacity: 1, y: 0 } }}
+        transition={{ duration: motionDurations.entrance, delay, ease: easeOutExpo }}
+      >
+        {children}
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -35,15 +121,28 @@ export function HomeTaskGridMotion({
   children: ReactNode;
   className?: string;
 }) {
+  const reduceMotion = useHydratedReducedMotion();
+
+  if (reduceMotion) return <div className={className}>{children}</div>;
+
   return (
-    <Stagger className={className} stagger={0.07} delayChildren={0.06}>
+    <motion.div
+      className={className}
+      initial="hidden"
+      whileInView="shown"
+      viewport={{ once: true, amount: 0.2 }}
+      variants={{
+        shown: { transition: { staggerChildren: 0.06, delayChildren: 0.06 } },
+        hidden: {},
+      }}
+    >
       {children}
-    </Stagger>
+    </motion.div>
   );
 }
 
 export function HomeTaskItemMotion({ children }: { children: ReactNode }) {
-  return <StaggerItem as="div">{children}</StaggerItem>;
+  return <HomeHeroItemMotion>{children}</HomeHeroItemMotion>;
 }
 
 export function HomeLedgerMotion({
@@ -53,15 +152,20 @@ export function HomeLedgerMotion({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <Stagger className={className} stagger={0.06} delayChildren={0.05}>
-      {children}
-    </Stagger>
-  );
+  return <HomeTaskGridMotion className={className}>{children}</HomeTaskGridMotion>;
 }
 
 export function HomeLedgerItemMotion({ children }: { children: ReactNode }) {
-  return <StaggerItem as="article">{children}</StaggerItem>;
+  const reduceMotion = useHydratedReducedMotion();
+  if (reduceMotion) return <article>{children}</article>;
+  return (
+    <motion.article
+      variants={{ hidden: { opacity: 0, y: 12 }, shown: { opacity: 1, y: 0 } }}
+      transition={{ duration: motionDurations.entrance, ease: easeOutExpo }}
+    >
+      {children}
+    </motion.article>
+  );
 }
 
 export function HomeStepsMotion({
@@ -71,13 +175,30 @@ export function HomeStepsMotion({
   children: ReactNode;
   className?: string;
 }) {
+  const reduceMotion = useHydratedReducedMotion();
+  if (reduceMotion) return <ol className={className}>{children}</ol>;
   return (
-    <Stagger as="ol" className={className} stagger={0.06} delayChildren={0.04}>
+    <motion.ol
+      className={className}
+      initial="hidden"
+      whileInView="shown"
+      viewport={{ once: true, amount: 0.2 }}
+      variants={{ shown: { transition: { staggerChildren: 0.06, delayChildren: 0.04 } }, hidden: {} }}
+    >
       {children}
-    </Stagger>
+    </motion.ol>
   );
 }
 
 export function HomeStepItemMotion({ children }: { children: ReactNode }) {
-  return <StaggerItem as="li">{children}</StaggerItem>;
+  const reduceMotion = useHydratedReducedMotion();
+  if (reduceMotion) return <li>{children}</li>;
+  return (
+    <motion.li
+      variants={{ hidden: { opacity: 0, y: 12 }, shown: { opacity: 1, y: 0 } }}
+      transition={{ duration: motionDurations.entrance, ease: easeOutExpo }}
+    >
+      {children}
+    </motion.li>
+  );
 }

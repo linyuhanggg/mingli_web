@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fireEvent } from "@testing-library/react";
 import { useState } from "react";
+import { vi } from "vitest";
 
 import {
   Button,
@@ -414,6 +415,23 @@ describe("Status", () => {
       "data-state",
       "locked",
     );
+  });
+
+  it("renders clickable recovery actions without changing live-region semantics", async () => {
+    const user = userEvent.setup();
+    const onRetry = vi.fn();
+    render(
+      <Status
+        actions={<button onClick={onRetry} type="button">重试</button>}
+        description="这次请求没有成功。"
+        state="error"
+        title="出现错误"
+      />,
+    );
+    const alert = screen.getByRole("alert", { name: "出现错误" });
+    expect(alert).toHaveAttribute("data-state", "error");
+    await user.click(screen.getByRole("button", { name: "重试" }));
+    expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
   it("keeps the icon decorative for screen readers", () => {

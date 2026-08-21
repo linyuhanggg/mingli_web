@@ -34,14 +34,23 @@ describe("product directory and relationship routes", () => {
     ["八字", BaziRelationshipPage],
     ["紫微", ZiweiRelationshipPage],
     ["七政", QizhengRelationshipPage],
-  ] as const)("%s relationship route has two people and a relationship workspace", (name, Page) => {
+  ] as const)("%s relationship route keeps two people, relationship, and one generate action", (name, Page) => {
     render(<Page />);
+    expect(screen.getByRole("link", { name: "返回" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 1, name: `${name}双人合盘` })).toBeVisible();
     expect(screen.getByRole("form", { name: `${name}双人合盘输入` })).toBeVisible();
     expect(screen.getByRole("group", { name: "甲方资料" })).toBeVisible();
     expect(screen.getByRole("group", { name: "乙方资料" })).toBeVisible();
     expect(screen.getByLabelText("关系类型")).toBeVisible();
-    expect(screen.getByText("甲方 / 乙方 / 关系区")).toBeVisible();
-    expect(document.querySelector('[data-state="processing"]')).not.toBeNull();
+    expect(screen.getByRole("button", { name: "生成合盘" })).toBeEnabled();
+    expect(screen.getAllByRole("button", { name: "生成合盘" })).toHaveLength(1);
+    expect(screen.queryByRole("button", { name: "检查双方资料" })).not.toBeInTheDocument();
+    expect(screen.queryByText("甲方 / 乙方 / 关系区")).not.toBeInTheDocument();
+    expect(document.querySelector('[data-state="unavailable"]')).toBeNull();
+    expect(screen.queryByText(/待接入/)).not.toBeInTheDocument();
+    expect(screen.queryByText("ViewModel")).not.toBeInTheDocument();
+    expect(screen.queryByText("Runtime")).not.toBeInTheDocument();
+    expect(screen.queryByText("ProfileVersion")).not.toBeInTheDocument();
     expect(screen.queryByText("页面已预制")).not.toBeInTheDocument();
   });
 

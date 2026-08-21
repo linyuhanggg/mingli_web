@@ -17,6 +17,14 @@ import {
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/auth/login",
+  useRouter: () => ({
+    replace: vi.fn(),
+    push: vi.fn(),
+    prefetch: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+  }),
 }));
 
 const requestJsonMock = vi.hoisted(() => vi.fn());
@@ -267,48 +275,34 @@ describe("secondary surface families", () => {
     expect(screen.getByText("今日公开内容")).toBeVisible();
   });
 
-  it("renders published tool projections from the tools index", async () => {
-    requestJsonMock.mockResolvedValue({
-      items: [
-        {
-          content_key: "tools.time-check",
-          locale: "zh-CN",
-          revision: 4,
-          body: "寻时定盘的公开说明",
-          created_at: "2026-08-14T03:00:00Z",
-        },
-      ],
-    });
-
+  it("keeps the tools index on product language without CMS keys or pending-as-success", async () => {
     render(<ToolsPage />);
 
-    expect(await screen.findByText("寻时定盘的公开说明")).toBeVisible();
-    expect(screen.getByRole("link", { name: "阅读 tools.time-check" })).toHaveAttribute(
-      "href",
-      "/tools/time-check",
-    );
+    expect(screen.getByRole("heading", { level: 1, name: "工具" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "寻时定盘" })).toHaveAttribute("href", "/tools/time-check");
+    expect(screen.getByRole("link", { name: "同盘匹配" })).toHaveAttribute("href", "/tools/chart-similarity");
+    expect(screen.queryByRole("link", { name: "解梦" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "姓名分析" })).not.toBeInTheDocument();
+    expect(screen.getByText("解梦")).toBeVisible();
+    expect(screen.getAllByText("尚未开放").length).toBeGreaterThan(0);
+    expect(screen.queryByText("待接入")).not.toBeInTheDocument();
+    expect(screen.queryByText(/tools\.time-check|阅读 tools/)).not.toBeInTheDocument();
     expect(screen.queryByRole("status", { name: "工具能力暂不可用" })).not.toBeInTheDocument();
-    expect(requestJsonMock).toHaveBeenCalledWith(
+    expect(requestJsonMock).not.toHaveBeenCalledWith(
       "/api/v1/content?prefix=tools.&locale=zh-CN&limit=100",
     );
   });
 
-  it("keeps a tool detail in its product language after its projection loads", async () => {
-    requestJsonMock.mockResolvedValue({
-      content_key: "tools.name",
-      locale: "zh-CN",
-      revision: 4,
-      body: "姓名分析的公开说明",
-      created_at: "2026-08-14T03:00:00Z",
-    });
-
+  it("keeps a tool detail in its product language without CMS projection copy", async () => {
     const page = await ToolDetailPage({ params: Promise.resolve({ tool: "name" }) });
     render(page);
 
     expect(await screen.findByRole("heading", { level: 1, name: "姓名分析" })).toBeVisible();
     expect(screen.queryByRole("heading", { level: 1, name: "公开知识文章" })).not.toBeInTheDocument();
-    expect(screen.getByText("姓名分析的公开说明")).toBeVisible();
-    expect(requestJsonMock).toHaveBeenCalledWith("/api/v1/content/tools.name");
+    expect(screen.queryByText("姓名分析的公开说明")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("姓名")).toHaveAttribute("readonly");
+    expect(screen.getByRole("button", { name: "提交暂未开放" })).toBeDisabled();
+    expect(requestJsonMock).not.toHaveBeenCalledWith("/api/v1/content/tools.name");
   });
 
   it("does not project CMS content into an unknown tool route", async () => {

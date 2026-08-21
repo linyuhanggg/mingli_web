@@ -2,6 +2,7 @@
   display: grid;
   gap: var(--space-md);
   min-width: 0;
+  overflow-x: clip;
 }
 
 .toolbar {
@@ -80,7 +81,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   background: var(--color-surface);
-  box-shadow: var(--shadow-overlay);
+  box-shadow: none;
 }
 
 .moreMenuItem {
@@ -227,4 +228,16 @@
   .board {
     padding: var(--space-md);
   }
+}
+
+.pendingMark {
+  margin-left: 0.15rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+  font-weight: 650;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
 }

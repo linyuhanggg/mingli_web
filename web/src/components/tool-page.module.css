@@ -1,0 +1,160 @@
+.main {
+  min-height: 70vh;
+  padding-block: var(--space-2xl) var(--space-3xl);
+  background: var(--color-canvas);
+  color: var(--color-text);
+}
+
+.column {
+  width: min(var(--container-form), calc(100% - 32px));
+  margin-inline: auto;
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.header {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.header h1 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-page);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.header p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  line-height: 1.5;
+}
+
+.list {
+  display: grid;
+  gap: var(--space-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list a,
+.back {
+  color: var(--color-text);
+  font-weight: 650;
+  text-underline-offset: 0.25rem;
+}
+
+.closed {
+  display: inline-flex;
+  min-height: var(--target-min);
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 650;
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.unavailable {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.field label {
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.field input,
+.field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.field textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.field p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  line-height: 1.5;
+}
+
+.form input,
+.form textarea,
+.form button,
+.backButton {
+  min-height: var(--target-min);
+  font: inherit;
+}
+
+.form button,
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-lg);
+  border: 1px solid var(--color-action);
+  border-radius: var(--radius-control);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  font-weight: 740;
+  cursor: pointer;
+}
+
+.form button {
+  width: 100%;
+}
+
+.form button:disabled,
+.backButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.form a:focus-visible,
+.list a:focus-visible,
+.back:focus-visible,
+.form button:focus-visible,
+.backButton:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list a,
+  .back,
+  .form button,
+  .backButton {
+    transition: none;
+  }
+}

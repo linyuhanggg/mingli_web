@@ -10,6 +10,7 @@ import {
 } from "react";
 import clsx from "clsx";
 
+import { Segmented, type SegmentedOption } from "./segmented";
 import styles from "./table.module.css";
 
 
@@ -26,6 +27,12 @@ export type TableRow = {
   [key: string]: unknown;
 };
 
+export type TableFilter = {
+  label: string;
+  rowKey: string;
+  options: readonly SegmentedOption[];
+};
+
 export type TableProps = {
   caption: string;
   columns: TableColumn[];
@@ -33,6 +40,8 @@ export type TableProps = {
   /** Provide an accessible text filter when set. */
   filterLabel?: string;
   filterPlaceholder?: string;
+  /** Optional exact-match filter rendered as accessible status chips. */
+  filter?: TableFilter;
   /** Enable row selection with a select-all checkbox in the header. */
   selectable?: boolean;
   onSelectionChange?: (ids: string[]) => void;
@@ -63,6 +72,7 @@ export function Table({
   rows,
   filterLabel,
   filterPlaceholder,
+  filter: facet,
   selectable = false,
   onSelectionChange,
   pageSize,
@@ -73,19 +83,26 @@ export function Table({
   const filterId = useId();
   const [sort, setSort] = useState<{ key: string; direction: SortDirection } | null>(null);
   const [filter, setFilter] = useState("");
+  const [facetValue, setFacetValue] = useState(facet?.options[0]?.value ?? "");
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [page, setPage] = useState(1);
   const selectAllRef = useRef<HTMLInputElement>(null);
+  const activeFacetValue = facet?.options.some((option) => option.value === facetValue)
+    ? facetValue
+    : facet?.options[0]?.value ?? "";
 
   const filtered = useMemo(() => {
     const query = filter.trim().toLowerCase();
-    if (!query) return rows;
-    return rows.filter(
-      (row) =>
+    return rows.filter((row) => {
+      const matchesFacet =
+        !facet || !activeFacetValue || toText(row[facet.rowKey]) === activeFacetValue;
+      const matchesQuery =
+        !query ||
         row.id.toLowerCase().includes(query) ||
-        columns.some((column) => toText(row[column.key]).toLowerCase().includes(query)),
-    );
-  }, [rows, columns, filter]);
+        columns.some((column) => toText(row[column.key]).toLowerCase().includes(query));
+      return matchesFacet && matchesQuery;
+    });
+  }, [rows, columns, facet, activeFacetValue, filter]);
 
   const sorted = useMemo(() => {
     if (!sort) return filtered;
@@ -145,25 +162,41 @@ export function Table({
 
   return (
     <div className={styles.root} data-responsive-table="summary-rows">
-      {filterLabel ? (
+      {filterLabel || facet ? (
         <div className={styles.toolbar}>
-          <label className={styles.filterLabel} htmlFor={filterId}>
-            筛选
-          </label>
-          <input
-            id={filterId}
-            className={styles.filter}
-            type="search"
-            name="table-filter"
-            autoComplete="off"
-            aria-label={filterLabel}
-            placeholder={filterPlaceholder}
-            value={filter}
-            onChange={(event) => {
-              setFilter(event.target.value);
-              setPage(1);
-            }}
-          />
+          {filterLabel ? (
+            <label className={styles.searchField} htmlFor={filterId}>
+              <span className={styles.filterLabel}>{filterLabel}</span>
+              <input
+                id={filterId}
+                className={styles.filter}
+                type="search"
+                name="table-filter"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder={filterPlaceholder}
+                value={filter}
+                onChange={(event) => {
+                  setFilter(event.target.value);
+                  setPage(1);
+                }}
+              />
+            </label>
+          ) : null}
+          {facet ? (
+            <div className={styles.facetField}>
+              <span className={styles.filterLabel}>{facet.label}</span>
+              <Segmented
+                aria-label={facet.label}
+                options={[...facet.options]}
+                value={activeFacetValue}
+                onValueChange={(value) => {
+                  setFacetValue(value);
+                  setPage(1);
+                }}
+              />
+            </div>
+          ) : null}
         </div>
       ) : null}
       <div className={styles.scroller}>

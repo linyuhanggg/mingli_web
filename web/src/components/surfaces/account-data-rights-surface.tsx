@@ -6,7 +6,7 @@ import {
   AccountSessionBoundary,
   useAccountSession,
 } from "@/components/account-session-context";
-import { AppPageHeader } from "@/components/app-page-header";
+import { AccountSectionShell } from "@/components/account-section-shell";
 import {
   cancelAccountClosure,
   exportAccountData,
@@ -153,7 +153,7 @@ function DataRightsContent() {
         <div className={surface.sectionHeader}>
           <div>
             <h2 id="data-export-title">数据导出</h2>
-            <p>导出由服务端生成 JSON 文件；完整 payload 不会写入页面、localStorage 或日志。</p>
+            <p>导出一份你的账户资料。</p>
           </div>
         </div>
         <button className={surface.button} disabled={busy} onClick={() => void handleExport()} type="button">
@@ -208,18 +208,18 @@ function DataRightsContent() {
   );
 }
 
-export function AccountDataRightsSurface() {
+export function AccountDataRightsSurface({
+  title = "隐私与数据",
+}: {
+  readonly title?: string;
+}) {
   return (
     <AccountSessionBoundary>
-      <div className={styles.accountPage}>
-        <AppPageHeader
-          description="导出、删除和注销都由服务端授权并保留明确状态；未登录时不读取任何数据权利记录。"
-          title="隐私与数据权利"
-        />
-        <section aria-label="个人中心 · 隐私与数据" className={styles.accountPanel}>
+      <AccountSectionShell intro="导出资料，或申请注销账号。" title={title}>
+        <section aria-label="隐私与数据" className={styles.accountPanel}>
           <DataRightsContent />
         </section>
-      </div>
+      </AccountSectionShell>
     </AccountSessionBoundary>
   );
 }

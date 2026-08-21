@@ -86,14 +86,23 @@ function resultSummary(event: AdminAuditEvent): string {
 }
 
 function rowsFor(events: readonly AdminAuditEvent[]): TableRow[] {
-  return events.map((event) => ({
-    id: event.id,
-    action: ACTION_LABELS[event.action] ?? "未公开审计动作",
-    actor: event.actor,
-    object: objectSummary(event),
-    result: resultSummary(event),
-    createdAt: formatDate(event.created_at),
-  }));
+  return events.map((event) => {
+    const result = resultSummary(event);
+    return {
+      id: event.id,
+      action: ACTION_LABELS[event.action] ?? "未公开审计动作",
+      actor: event.actor,
+      object: objectSummary(event),
+      result,
+      createdAt: formatDate(event.created_at),
+      filterCategory:
+        result === "失败"
+          ? "失败"
+          : event.action === "admin.login" || event.action === "admin.logout"
+            ? "登录"
+            : "写操作",
+    };
+  });
 }
 
 export function AdminAuditSurface({ role }: { role?: StaffRole }) {
@@ -130,23 +139,21 @@ export function AdminAuditSurface({ role }: { role?: StaffRole }) {
   const rows = useMemo(() => rowsFor(data.events), [data.events]);
   const notice =
     state === "loading" ? (
-      <Status state="loading" title="正在读取审计日志…" description="只显示服务端允许展示的审计事实。" />
+      <Status compact state="loading" title="正在读取审计日志…" description="只显示服务端允许展示的审计事实。" />
     ) : state === "forbidden" ? (
-      <Status state="locked" title="无权限" description="全局员工审计只允许超级管理员查看。" />
+      <Status compact state="locked" title="无权限" description="全局员工审计只允许超级管理员查看。" />
     ) : state === "unavailable" ? (
-      <Status state="unavailable" title="审计平台暂不可用" description="页面保留只读结构，不显示假审计结果。" />
+      <Status compact state="unavailable" title="审计平台暂不可用" description="页面保留只读结构，不显示假审计结果。" />
     ) : state === "error" ? (
-      <Status state="error" title="审计日志读取失败" description={error ?? "请求失败，请重试。"} />
+      <Status compact state="error" title="审计日志读取失败" description={error ?? "请求失败，请重试。"} />
     ) : state === "empty" ? (
-      <Status state="empty" title="暂无审计事件" description="管理员成功写入或会话事件产生后，这里会显示可追溯事实。" />
-    ) : (
-      <Status state="success" title="审计日志已接入" description="元数据按允许键脱敏展示，不包含通知 payload 或其他任意内容。" />
-    );
+      <Status compact state="empty" title="暂无审计事件" description="管理员成功写入或会话事件产生后，这里会显示可追溯事实。" />
+    ) : null;
 
   return (
     <div className={styles.stack} data-state={state} data-staff-role={effectiveRole ?? "session"}>
       {notice}
-      {state === "ready" || state === "empty" ? (
+      {state === "ready" ? (
         <section className={styles.panel} aria-labelledby="audit-list-title">
           <div className={styles.heading}>
             <div>
@@ -161,8 +168,18 @@ export function AdminAuditSurface({ role }: { role?: StaffRole }) {
             rows={rows}
             filterLabel="筛选审计事件"
             filterPlaceholder="例如：动作、操作人或对象…"
+            filter={{
+              label: "按审计类型或结果筛选",
+              rowKey: "filterCategory",
+              options: [
+                { value: "", label: "全部" },
+                { value: "登录", label: "登录" },
+                { value: "写操作", label: "写操作" },
+                { value: "失败", label: "失败" },
+              ],
+            }}
             pageSize={20}
-            emptyState="当前没有审计事件"
+            emptyState="没有符合筛选条件的审计事件"
           />
         </section>
       ) : null}

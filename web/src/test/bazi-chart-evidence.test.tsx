@@ -268,11 +268,45 @@ describe("BaziChart evidence-first slice", () => {
     expect(screen.getByText("第二段逐字原文。")).toBeVisible();
     expect(screen.getByText("原文")).toBeVisible();
     expect(screen.getByText("可回溯出处")).toBeVisible();
-    expect(screen.getAllByText("测试古籍")).toHaveLength(2);
-    expect(screen.getAllByText(/L10-L12|L20-L21/)).toHaveLength(2);
+    expect(screen.getAllByText("测试古籍")).toHaveLength(3);
+    expect(screen.getAllByText(/L10-L12|L20-L21/)).toHaveLength(3);
     expect(screen.getByText("日主天干为丙")).toBeVisible();
     expect(screen.getByText("/unknown/path:exists:()")).toBeVisible();
     expect(screen.queryByText("/day_master/stem")).not.toBeInTheDocument();
+  });
+
+  it("links each matched predicate to the traceable source in one connected view", async () => {
+    const user = userEvent.setup();
+    render(<BaziChart chart={chart} evidence={evidence} />);
+
+    await user.click(screen.getByText("命中古法 1 条 · 可核验"));
+
+    const graph = screen.getByRole("group", { name: "测试古法命中命中链路" });
+    expect(graph).toBeVisible();
+
+    const predicates = within(graph).getAllByRole("listitem", {
+      name: /适用条件/,
+    });
+    expect(predicates).toHaveLength(2);
+    expect(predicates[0]).toHaveTextContent("日主天干为丙");
+    expect(predicates[1]).toHaveTextContent("/unknown/path:exists:()");
+
+    const source = within(graph).getByRole("group", { name: "可回溯出处" });
+    expect(within(source).getAllByRole("listitem")).toHaveLength(2);
+    expect(source).toHaveTextContent("测试古籍");
+    expect(source).toHaveTextContent("L10-L12");
+    expect(source).toHaveTextContent("L20-L21");
+  });
+
+  it("keeps internal fact paths out of the connected view body text", async () => {
+    const user = userEvent.setup();
+    render(<BaziChart chart={chart} evidence={evidence} />);
+
+    await user.click(screen.getByText("命中古法 1 条 · 可核验"));
+
+    const graph = screen.getByRole("group", { name: "测试古法命中命中链路" });
+    expect(graph).not.toHaveTextContent("/day_master/stem:eq:");
+    expect(within(graph).queryByText("/day_master/stem")).not.toBeInTheDocument();
   });
 
   it("does not expose a legacy rule summary as an ancient citation", () => {
@@ -473,5 +507,32 @@ describe("BaziChart evidence-first slice", () => {
     render(<BaziChart chart={chart} evidence={evidence} showInterpretiveSections={false} />);
 
     expect(screen.queryByText(/条古法涉及此柱/)).toBeNull();
+  });
+
+  /**
+   * §21.3 第 3 级：点击带有来源标记的盘面元素，展开 §19.1 引文卡。
+   * 点柱仍负责锁定聚焦；有已核验古法时同时打开抽屉并标出该柱条目。
+   */
+  it("opens the evidence drawer from a marked pillar and focuses its citation", async () => {
+    const user = userEvent.setup();
+    render(<BaziChart chart={chart} evidence={evidence} />);
+
+    const summary = screen.getByText("命中古法 1 条 · 可核验");
+    const drawer = summary.closest("details");
+    expect(drawer).not.toHaveAttribute("open");
+
+    await user.click(screen.getByRole("button", { name: /日柱/ }));
+
+    expect(drawer).toHaveAttribute("open");
+    expect(screen.getByText("第一段逐字原文。")).toBeVisible();
+    const focused = document.querySelector('[data-focused="true"]');
+    expect(focused).not.toBeNull();
+    expect(focused).toHaveTextContent("测试古法命中");
+
+    const focus = screen.getByRole("region", { name: "聚焦详情" });
+    expect(within(focus).getByText("藏干")).toBeVisible();
+    expect(within(focus).getByText("甲、丙、戊")).toBeVisible();
+    expect(within(focus).getByText("测试古法命中 · 测试古籍 L10-L12")).toBeVisible();
+    expect(within(focus).queryByText(/暂无与该柱直接关联的公开依据/)).toBeNull();
   });
 });

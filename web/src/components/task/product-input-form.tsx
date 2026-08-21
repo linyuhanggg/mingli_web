@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, Info, Upload } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useForm, useWatch, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { z } from "zod";
@@ -181,30 +182,43 @@ function firstLineErrorIndex(lineErrors: FieldErrors<TaskFormValues>["lines"]) {
   return index < 0 ? 0 : index;
 }
 
+function productFieldLabel(productId: string, fieldName: string, fallback: string) {
+  if (productId === "fengshui" && fieldName === "location") return "空间所在地点";
+  if (productId === "liuyao" || productId === "meihua") {
+    if (fieldName === "location") return "事件地点";
+    if (fieldName === "timezone") return "事件时区";
+  }
+  if (productId === "liuyao" && fieldName === "focus") return "起卦方式";
+  return fallback;
+}
+
 function taskErrorField(productId: string, fieldName: string, errors?: FieldErrors<TaskFormValues>) {
   const field = taskErrorFields[fieldName];
   if (!field) return null;
   if (fieldName === "lines") {
     return { ...field, id: `${productId}-line-${firstLineErrorIndex(errors?.lines)}` };
   }
-  return { ...field, id: `${productId}-${field.id}` };
+  return {
+    ...field,
+    id: `${productId}-${field.id}`,
+    label: productFieldLabel(productId, fieldName, field.label),
+  };
 }
 
 function schemaFor(product: ProductDefinition, usesSavedProfile = false) {
-  const profileVersionIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return taskSchemaBase.superRefine((values, context) => {
     if (product.group === "natal") {
       if (!usesSavedProfile && !values.subject.trim()) context.addIssue({ code: "custom", path: ["subject"], message: "请填写受测对象" });
       if (!usesSavedProfile && !/^\d{4}-\d{2}-\d{2}$/.test(values.birthDate)) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择完整出生日期" });
-      if (!usesSavedProfile && !values.unknownTime && !values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间，或勾选时辰未知" });
+      if (!usesSavedProfile && !values.unknownTime && !values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间" });
       if (!usesSavedProfile && !values.location.trim()) context.addIssue({ code: "custom", path: ["location"], message: "请填写出生地点" });
 
       if (["bazi", "luming-nayin", "ziwei", "qizheng"].includes(product.id)) {
         if (!usesSavedProfile && values.calendar !== "gregorian") {
-          context.addIssue({ code: "custom", path: ["calendar"], message: "当前排盘服务需要公历日期" });
+          context.addIssue({ code: "custom", path: ["calendar"], message: "请填写公历出生日期。" });
         }
         if (!usesSavedProfile && values.unknownTime) {
-          context.addIssue({ code: "custom", path: ["birthTime"], message: "当前核心盘面需要明确出生时间" });
+          context.addIssue({ code: "custom", path: ["birthTime"], message: "请填写明确的出生时间。" });
         }
         if (!usesSavedProfile && values.gender !== "male" && values.gender !== "female") {
           context.addIssue({ code: "custom", path: ["gender"], message: "请选择性别后再建立盘面档案" });
@@ -261,7 +275,13 @@ function schemaFor(product: ProductDefinition, usesSavedProfile = false) {
 
     if (product.group === "event" || product.id === "wenshi") {
       if (!values.issue.trim()) context.addIssue({ code: "custom", path: ["issue"], message: "请写清当前问题" });
-      if (product.group === "event" && !values.focus) context.addIssue({ code: "custom", path: ["focus"], message: "请选择场景或侧重" });
+      if (product.group === "event" && !values.focus) {
+        context.addIssue({
+          code: "custom",
+          path: ["focus"],
+          message: product.id === "liuyao" ? "请选择起卦方式" : "请选择场景或侧重",
+        });
+      }
       if (product.id !== "selection" && !values.eventTime) context.addIssue({ code: "custom", path: ["eventTime"], message: "请选择事件时空" });
 
       if (["liuyao", "meihua", "qimen", "daliuren", "wenshi", "taiyi", "selection"].includes(product.id)) {
@@ -351,24 +371,32 @@ function schemaFor(product: ProductDefinition, usesSavedProfile = false) {
     }
 
     if (product.id === "hecan") {
-      if (!values.profile.trim()) {
-        context.addIssue({ code: "custom", path: ["profile"], message: "请输入已确认 ProfileVersion ID" });
-      } else if (!profileVersionIdPattern.test(values.profile.trim())) {
-        context.addIssue({ code: "custom", path: ["profile"], message: "请输入有效的 ProfileVersion UUID" });
+      if (!usesSavedProfile) {
+        if (!values.subject.trim()) context.addIssue({ code: "custom", path: ["subject"], message: "请填写受测对象" });
+        if (values.calendar !== "gregorian") context.addIssue({ code: "custom", path: ["calendar"], message: "请填写公历出生日期。" });
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(values.birthDate)) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择完整出生日期" });
+        if (!values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间" });
+        if (!values.location.trim()) context.addIssue({ code: "custom", path: ["location"], message: "请填写出生地点" });
+        if (values.gender !== "male" && values.gender !== "female") context.addIssue({ code: "custom", path: ["gender"], message: "请选择性别后再建立立命档案" });
+        if (!isIanaTimeZone(values.timezone)) context.addIssue({ code: "custom", path: ["timezone"], message: "请选择有效的 IANA 出生时区" });
       }
       if (values.arts.length < 2) context.addIssue({ code: "custom", path: ["arts"], message: "至少选择两术" });
-      if (!values.arts.includes("八字")) context.addIssue({ code: "custom", path: ["arts"], message: "当前结构接入要求八字为主术，请至少再选择一术" });
+      if (!values.arts.includes("八字")) context.addIssue({ code: "custom", path: ["arts"], message: "请以八字为主理，至少再选择一术" });
     }
 
     if (product.id === "canwen") {
       if (!values.issue.trim()) context.addIssue({ code: "custom", path: ["issue"], message: "请写清当前问题" });
-      if (!values.profile.trim()) {
-        context.addIssue({ code: "custom", path: ["profile"], message: "请输入已确认 ProfileVersion ID" });
-      } else if (!profileVersionIdPattern.test(values.profile.trim())) {
-        context.addIssue({ code: "custom", path: ["profile"], message: "请输入有效的 ProfileVersion UUID" });
+      if (!usesSavedProfile) {
+        if (!values.subject.trim()) context.addIssue({ code: "custom", path: ["subject"], message: "请填写受测对象" });
+        if (values.calendar !== "gregorian") context.addIssue({ code: "custom", path: ["calendar"], message: "请填写公历出生日期。" });
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(values.birthDate)) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择完整出生日期" });
+        if (!values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间" });
+        if (!values.location.trim()) context.addIssue({ code: "custom", path: ["location"], message: "请填写出生地点" });
+        if (values.gender !== "male" && values.gender !== "female") context.addIssue({ code: "custom", path: ["gender"], message: "请选择性别后再建立立命档案" });
+        if (!isIanaTimeZone(values.timezone)) context.addIssue({ code: "custom", path: ["timezone"], message: "请选择有效的 IANA 出生时区" });
       }
       if (values.arts.length < 2) context.addIssue({ code: "custom", path: ["arts"], message: "至少选择两术" });
-      if (!values.arts.includes("八字")) context.addIssue({ code: "custom", path: ["arts"], message: "当前结构接入要求八字为主术，请至少再选择一术" });
+      if (!values.arts.includes("八字")) context.addIssue({ code: "custom", path: ["arts"], message: "请以八字为主理，至少再选择一术" });
     }
 
     if (product.id === "liuyao" || product.id === "wenshi") {
@@ -393,7 +421,7 @@ type FieldProps = {
   children: React.ReactNode;
 };
 
-type JianxiangCaptureState = "empty" | "selected" | "quality-unavailable" | "deleted";
+type JianxiangCaptureState = "empty" | "selected" | "deleted";
 
 const FACE_DESCRIPTOR_OPTIONS: Record<string, readonly string[]> = {
   forehead: ["region_visible", "relative_width_broad", "relative_width_narrow", "contour_rounded", "contour_flat"],
@@ -876,9 +904,11 @@ export function ProductInputForm({
   onProfileVersionChange,
   profileLookupPending = false,
   profileLookupError = null,
+  profileLookupSignedOut = false,
   onRetryProfiles,
   busy = false,
   submitError = null,
+  submitErrorState = "unavailable",
 }: {
   product: ProductDefinition;
   initialValues?: TaskFormValues;
@@ -889,9 +919,11 @@ export function ProductInputForm({
   onProfileVersionChange?: (profileVersionId: string) => void;
   profileLookupPending?: boolean;
   profileLookupError?: string | null;
+  profileLookupSignedOut?: boolean;
   onRetryProfiles?: () => void;
   busy?: boolean;
   submitError?: string | null;
+  submitErrorState?: "unavailable" | "error";
 }) {
   const schema = useMemo(
     () => schemaFor(product, Boolean(selectedProfileVersionId)),
@@ -906,7 +938,7 @@ export function ProductInputForm({
     setValue,
   } = useForm<TaskFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: initialValues ?? defaultValues,
+    defaultValues: { ...(initialValues ?? defaultValues), unknownTime: false },
     mode: "onSubmit",
     shouldFocusError: false,
   });
@@ -979,15 +1011,26 @@ export function ProductInputForm({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const isCompactBaziInput = product.id === "bazi";
+  const usesCrossProfile = product.id === "hecan" || product.id === "canwen";
+
   return (
-    <form aria-label={`${product.name}任务输入`} className={styles.formPanel} noValidate onSubmit={handleSubmit(onConfirm, handleInvalid)}>
-      <div className={styles.formHeader}>
-        <div>
-          <h2>{product.name}任务输入</h2>
-          <p>只填写本任务需要的资料。带“必填”的项目会在本机先检查。</p>
+    <form
+      aria-label={`${product.name}任务输入`}
+      className={styles.formPanel}
+      data-compact-natal={isCompactBaziInput ? "true" : undefined}
+      noValidate
+      onSubmit={handleSubmit((values) => onConfirm({ ...values, unknownTime: false }), handleInvalid)}
+    >
+      {!isCompactBaziInput ? (
+        <div className={styles.formHeader}>
+          <div>
+            <h2>{product.name}任务输入</h2>
+            <p>只填写本任务需要的资料。带“必填”的项目会在本机先检查。</p>
+          </div>
+          <span><Info aria-hidden="true" size={16} /> {confirmHint(product.id)}</span>
         </div>
-        <span><Info aria-hidden="true" size={16} /> {["bazi", "luming-nayin", "ziwei", "qizheng", "liuyao", "meihua", "qimen", "daliuren", "taiyi", "selection", "wenshi", "jianxiang", "fengshui"].includes(product.id) ? "确认后提交到对应计算服务" : "当前不会提交到计算服务"}</span>
-      </div>
+      ) : null}
 
       {validationErrors.length > 0 ? (
         <div
@@ -1006,22 +1049,15 @@ export function ProductInputForm({
         </div>
       ) : null}
 
-      {product.group === "natal" ? (
+      {product.group === "natal" && (profiles.length > 0 || profileLookupError) ? (
         <fieldset className={styles.fieldGroup}>
           <legend>排盘资料</legend>
-          {profileLookupPending ? (
-            <Status
-              state="loading"
-              title="正在读取已保存资料"
-              description="读取完成后会默认选择最近确认的档案，不需要重复填写出生信息。"
-            />
-          ) : null}
           {profileLookupError ? (
             <>
               <Status
-                state="error"
+                state="unavailable"
                 title="暂时无法读取已保存资料"
-                description="可以重试读取，也可以继续重新录入并建立新档案。"
+                description="可以重试读取，也可以继续填写新资料。"
               />
               {onRetryProfiles ? (
                 <button
@@ -1066,28 +1102,115 @@ export function ProductInputForm({
         </fieldset>
       ) : null}
 
-      {product.group === "natal" && !selectedProfileVersionId && !profileLookupPending ? (
+      {usesCrossProfile ? (
         <fieldset className={styles.fieldGroup}>
-          <legend>出生资料</legend>
-          <Field htmlFor={`${product.id}-subject`} label="受测对象" error={errors.subject?.message} help="可以填写“本人”或便于自己识别的称呼。">
-            <input id={`${product.id}-subject`} aria-describedby={errors.subject ? `${product.id}-subject-error` : `${product.id}-subject-help`} autoComplete="name" {...register("subject")} />
-          </Field>
-          <div className={styles.twoColumns}>
-            <SegmentedField
-              error={errors.calendar?.message}
-              legend="历法"
-              name={`${product.id}-calendar`}
-              onChange={(next) => setValue("calendar", next, { shouldDirty: true })}
-              options={[
-                { value: "gregorian", label: "公历" },
-                {
-                  value: "lunar",
-                  label: "农历",
-                  disabled: ["bazi", "luming-nayin", "ziwei", "qizheng"].includes(product.id),
-                },
-              ]}
-              value={calendar}
+          <legend>立命资料</legend>
+          <p className={styles.productNote}>合参前需要一份已确认的立命档案。</p>
+          {profileLookupPending ? (
+            <Status
+              state="loading"
+              title="正在读取已确认档案…"
+              description="读取完成后可直接选择档案，页面不会要求填写内部编号。"
             />
+          ) : null}
+          {profileLookupError ? (
+            <>
+              <Status
+                state="unavailable"
+                title="暂时无法读取已保存资料"
+                description="可以重试，也可以填写出生资料建立新档案。"
+              />
+              {onRetryProfiles ? (
+                <button className={styles.secondaryButton} onClick={onRetryProfiles} type="button">
+                  重新读取已保存资料
+                </button>
+              ) : null}
+            </>
+          ) : null}
+          {!profileLookupPending && profiles.length > 0 ? (
+            <Field
+              help="选择一份已确认的立命档案。出生资料以服务端确认版本为准，不会用称呼或占位文字代替。"
+              htmlFor={`${product.id}-saved-profile`}
+              label="立命资料"
+            >
+              <select
+                aria-describedby={`${product.id}-saved-profile-help`}
+                id={`${product.id}-saved-profile`}
+                onChange={(event) => onProfileVersionChange?.(event.currentTarget.value)}
+                value={selectedProfileVersionId}
+              >
+                {profiles.map((profile) => (
+                  <option key={profile.profile_version_id} value={profile.profile_version_id}>
+                    {formatProfileOption(profile)}
+                  </option>
+                ))}
+                <option value="">重新录入并建立新档案</option>
+              </select>
+            </Field>
+          ) : null}
+          {selectedProfile ? (
+            <p className={styles.productNote}>
+              本次将使用已确认的立命档案：{formatProfileOption(selectedProfile)}。
+            </p>
+          ) : !profileLookupPending ? (
+            <>
+              {profileLookupSignedOut ? (
+                <p className={styles.productNote}>
+                  <Link href={`/auth/login?returnTo=/${product.id}`}>登录后选择已有档案</Link>
+                  ，或直接填写出生资料建立新档案。
+                </p>
+              ) : null}
+              <p className={styles.productNote}>填写后会在服务端确认一份不可变档案，再用来合参。</p>
+            </>
+          ) : null}
+        </fieldset>
+      ) : null}
+
+      {(product.group === "natal" || usesCrossProfile) && !selectedProfileVersionId && !profileLookupPending ? (
+        <fieldset className={styles.fieldGroup}>
+          <legend>{usesCrossProfile ? "出生资料（建立新档案）" : "出生资料"}</legend>
+          <Field
+            htmlFor={`${product.id}-subject`}
+            label="受测对象"
+            error={errors.subject?.message}
+            help={isCompactBaziInput ? undefined : "可以填写“本人”或便于自己识别的称呼。"}
+          >
+            <input
+              id={`${product.id}-subject`}
+              aria-describedby={
+                errors.subject
+                  ? `${product.id}-subject-error`
+                  : isCompactBaziInput
+                    ? undefined
+                    : `${product.id}-subject-help`
+              }
+              autoComplete="name"
+              {...register("subject")}
+            />
+          </Field>
+          <div className={isCompactBaziInput ? undefined : styles.twoColumns}>
+            {!isCompactBaziInput ? (
+              <SegmentedField
+                error={errors.calendar?.message}
+                help={
+                  product.id === "luming-nayin"
+                    ? "请填写公历出生日期。"
+                    : undefined
+                }
+                legend="历法"
+                name={`${product.id}-calendar`}
+                onChange={(next) => setValue("calendar", next, { shouldDirty: true })}
+                options={[
+                  { value: "gregorian", label: "公历" },
+                  {
+                    value: "lunar",
+                    label: "农历",
+                    disabled: ["bazi", "luming-nayin", "ziwei", "qizheng"].includes(product.id),
+                  },
+                ]}
+                value={calendar}
+              />
+            ) : null}
             <SegmentedField
               error={errors.gender?.message}
               legend="性别"
@@ -1117,23 +1240,42 @@ export function ProductInputForm({
               value={birthTime}
             />
           </div>
-          <BirthPlaceParts
-            error={errors.location?.message}
-            id={`${product.id}-location`}
-            onChange={(next) => setValue("location", next, { shouldDirty: true })}
-            onTimeZone={(zone) => setValue("timezone", zone, { shouldDirty: true })}
-            value={location}
-          />
+          {product.id !== "qizheng" ? (
+            <BirthPlaceParts
+              error={errors.location?.message}
+              id={`${product.id}-location`}
+              onChange={(next) => setValue("location", next, { shouldDirty: true })}
+              onTimeZone={(zone) => setValue("timezone", zone, { shouldDirty: true })}
+              value={location}
+            />
+          ) : (
+            <fieldset className={styles.fieldGroup}>
+              <legend>出生地点与坐标</legend>
+              <p className={styles.productNote}>七政专有：地点将用于经纬度与时区校准，并保留坐标来源。</p>
+              <BirthPlaceParts
+                error={errors.location?.message}
+                id={`${product.id}-location`}
+                onChange={(next) => setValue("location", next, { shouldDirty: true })}
+                onTimeZone={(zone) => setValue("timezone", zone, { shouldDirty: true })}
+                value={location}
+              />
+              <div className={styles.twoColumns}>
+                <Field htmlFor="qizheng-longitude" label="出生经度" error={errors.longitude?.message} help="东经为正，西经为负。">
+                  <input id="qizheng-longitude" inputMode="decimal" {...register("longitude")} />
+                </Field>
+                <Field htmlFor="qizheng-latitude" label="出生纬度" error={errors.latitude?.message} help="北纬为正，南纬为负。">
+                  <input id="qizheng-latitude" inputMode="decimal" {...register("latitude")} />
+                </Field>
+              </div>
+              <Field htmlFor="qizheng-coordinate-source" label="坐标来源" error={errors.coordinateSource?.message} help="例如城市地理编码、用户确认。">
+                <input id="qizheng-coordinate-source" {...register("coordinateSource")} />
+              </Field>
+            </fieldset>
+          )}
 
-          {/* 时区、时间口径和未知时辰都有可用默认值，放进折叠区；
-              主流程只保留真正必须由用户提供的资料。 */}
           <details className={styles.advanced}>
             <summary>高级排盘选项</summary>
             <div className={styles.advancedBody}>
-              <label className={styles.checkRow}>
-                <input id={`${product.id}-unknown-time`} type="checkbox" {...register("unknownTime")} />
-                <span><strong>不知道出生时辰</strong><small>只有支持未知时辰的能力会开放，精度边界会写明。</small></span>
-              </label>
               <SegmentedField
                 legend="时间口径"
                 name={`${product.id}-time-standard`}
@@ -1168,8 +1310,16 @@ export function ProductInputForm({
                 {product.id === "meihua" ? <><option value="outcome">结果观察</option><option value="state">状态变化</option></> : null}
                 {product.id === "qimen" ? <><option value="action">行动选择</option><option value="situation">局势判断</option><option value="timing">时机观察</option></> : null}
                 {product.id === "daliuren" ? <><option value="progress">事情进展</option><option value="people">人事关系</option><option value="outcome">结果观察</option><option value="timing">应期观察</option></> : null}
-                {product.id === "taiyi" ? <><option value="outcome">年度结果</option><option value="timing">时间节律</option><option value="location">空间范围</option><option value="state">结构状态</option></> : null}
-                {product.id === "selection" ? <><option value="timing">时间排序</option><option value="state">候选状态</option><option value="location">方位条件</option></> : null}
+                {product.id === "taiyi"
+                  ? TAIYI_FOCUS_OPTIONS.map(([value, optionLabel]) => (
+                      <option key={value} value={value}>{optionLabel}</option>
+                    ))
+                  : null}
+                {product.id === "selection"
+                  ? SELECTION_FOCUS_OPTIONS.map(([value, optionLabel]) => (
+                      <option key={value} value={value}>{optionLabel}</option>
+                    ))
+                  : null}
               </select>
             </Field>
           ) : null}
@@ -1381,12 +1531,7 @@ export function ProductInputForm({
           </label>
           <div className={styles.capturePanel}>
             <div><Camera aria-hidden="true" size={22} /><strong>拍摄或上传照片</strong></div>
-            <p id="jianxiang-file-help">相机被拒绝时始终可选文件。确认后文件才会上传到本次私有会话，并按页面显示的期限自动过期。</p>
-            <Status state="unavailable" title="相机采集待接入" description="当前环境不会请求相机权限；请使用本地文件入口，拒绝权限不影响任务输入。" />
-            <Status state="success" title="服务端质量检查已接入" description="确认后服务端会读取容器尺寸和格式；不满足条件时不会建立资产。" />
-            {captureState === "quality-unavailable" ? (
-              <Status state="unavailable" title="照片质量检查待接入" description="当前页面只记录本地选择；确认后才由服务端检查容器尺寸和格式。" />
-            ) : null}
+            <p id="jianxiang-file-help">确认后文件才会上传到本次私有会话，并按页面显示的期限自动过期。</p>
             {captureState === "selected" ? (
               <p aria-label="已选择本地照片" aria-live="polite" role="status">已选择本地照片：{photoName}</p>
             ) : captureState === "deleted" ? (
@@ -1400,10 +1545,7 @@ export function ProductInputForm({
                 <Upload aria-hidden="true" size={16} /> {photoName ? "重新选择照片" : "选择见相照片"}
               </label>
               {photoName ? (
-                <>
-                  <button className={styles.secondaryButton} onClick={() => setCaptureState("quality-unavailable")} type="button">检查照片质量</button>
-                  <button className={styles.secondaryButton} onClick={clearPhoto} type="button">删除本地照片</button>
-                </>
+                <button className={styles.secondaryButton} onClick={clearPhoto} type="button">删除本地照片</button>
               ) : null}
             </div>
             <input
@@ -1464,10 +1606,7 @@ export function ProductInputForm({
               <textarea id="canwen-issue" rows={4} {...register("issue")} />
             </Field>
           ) : null}
-          <Field htmlFor={`${product.id}-profile`} label="立命资料" error={errors.profile?.message} help="请输入已确认 ProfileVersion ID（UUID）；不会用名称或占位文字代替真实出生档案。">
-            <input id={`${product.id}-profile`} aria-describedby={errors.profile ? `${product.id}-profile-error` : `${product.id}-profile-help`} {...register("profile")} />
-          </Field>
-          <ChoiceGroup id={`${product.id}-arts`} legend={product.id === "hecan" ? "至少选择两术（八字为主术，至少再选一术）" : "选择命盘"} help={product.id === "hecan" ? "当前结构接入固定八字为主术，再从紫微、七政中选择；各术结果不会被平均成一段话。" : "当前结构接入固定八字为主术，再选择需要参证的命盘。"} error={errors.arts?.message}>
+          <ChoiceGroup id={`${product.id}-arts`} legend={product.id === "hecan" ? "至少选择两术（八字为主理，至少再选一术）" : "选择命盘"} help={product.id === "hecan" ? "八字为主理，再从紫微、七政中选择。没有结果就说没有可展示的互证。" : "八字为主理，再选择需要参证的命盘。没有结果就说没有可展示的互证。"} error={errors.arts?.message}>
             {(["八字", "紫微", "七政"] as const).map((art) => (
               <label className={styles.choiceCard} key={art}>
                 <input type="checkbox" value={art} {...register("arts")} />
@@ -1487,25 +1626,29 @@ export function ProductInputForm({
         </fieldset>
       ) : null}
 
-      <SubmitSummary
-        product={product}
-        profileLabel={selectedProfile ? formatProfileOption(selectedProfile) : null}
-        values={summaryValues}
-      />
+      {!isCompactBaziInput ? (
+        <SubmitSummary
+          product={product}
+          profileLabel={selectedProfile ? formatProfileOption(selectedProfile) : null}
+          values={summaryValues}
+        />
+      ) : null}
 
-      {submitError ? <p className={styles.error} role="alert">{submitError}</p> : null}
+      {submitError ? (
+        submitErrorState === "error" ? (
+          <p className={styles.error} role="alert">{submitError}</p>
+        ) : (
+          <Status state="unavailable" title={submitError} />
+        )
+      ) : null}
 
       <button
-        aria-busy={busy || profileLookupPending}
+        aria-busy={busy}
         className={styles.primaryButton}
-        disabled={busy || profileLookupPending}
+        disabled={busy}
         type="submit"
       >
-        {profileLookupPending
-          ? "正在读取已保存资料…"
-          : busy
-            ? "正在生成盘面…"
-            : submitLabel(product)}
+        {busy ? "正在生成盘面…" : submitLabel(product)}
       </button>
       <details className={styles.submitBoundary}>
         <summary>提交后会发生什么</summary>
@@ -1546,6 +1689,16 @@ function submitLabel(product: ProductDefinition) {
   return SUBMIT_LABELS[product.id] ?? `立即排盘 · 查看${product.moduleTitle}`;
 }
 
+function confirmHint(productId: string) {
+  if (productId === "hecan" || productId === "canwen") {
+    return "确认后生成";
+  }
+  if (RUNTIME_SUBMIT_IDS.includes(productId) || productId === "jianxiang") {
+    return "确认后生成盘面";
+  }
+  return "确认后生成";
+}
+
 const VALUE_LABELS: Record<string, string> = {
   gregorian: "公历", lunar: "农历",
   male: "男", female: "女",
@@ -1557,8 +1710,33 @@ const VALUE_LABELS: Record<string, string> = {
   face: "面相", palm: "手相", posture: "体态", combined: "综合观照",
 };
 
+const TAIYI_FOCUS_OPTIONS = [
+  ["outcome", "年度结果"],
+  ["timing", "时间节律"],
+  ["location", "空间范围"],
+  ["state", "结构状态"],
+] as const;
+
+const SELECTION_FOCUS_OPTIONS = [
+  ["timing", "时间排序"],
+  ["state", "候选状态"],
+  ["location", "方位条件"],
+] as const;
+
 function label(value: string) {
   return VALUE_LABELS[value] ?? value;
+}
+
+function focusLabel(productId: string, value: string) {
+  const productOptions = productId === "taiyi"
+    ? TAIYI_FOCUS_OPTIONS
+    : productId === "selection"
+      ? SELECTION_FOCUS_OPTIONS
+      : null;
+  if (productOptions) {
+    return productOptions.find(([optionValue]) => optionValue === value)?.[1] ?? value;
+  }
+  return label(value);
 }
 
 /**
@@ -1587,7 +1765,20 @@ function SubmitSummary({
 
   const rows: Array<readonly [string, string]> = [];
 
-  if (product.group === "natal" && profileLabel) {
+  const usesCrossProfile = product.id === "hecan" || product.id === "canwen";
+
+  if (usesCrossProfile && profileLabel) {
+    rows.push(["立命资料", profileLabel]);
+    if (values.issue.trim()) rows.push(["问题", values.issue]);
+  } else if (usesCrossProfile) {
+    rows.push([
+      "立命资料",
+      values.subject.trim() && values.birthDate
+        ? `新建档案（${values.subject.trim()} · ${values.birthDate}）`
+        : "",
+    ]);
+    if (values.issue.trim()) rows.push(["问题", values.issue]);
+  } else if (product.group === "natal" && profileLabel) {
     rows.push(["排盘资料", profileLabel]);
   } else if (product.group === "natal") {
     rows.push(["受测对象", values.subject]);
@@ -1608,7 +1799,7 @@ function SubmitSummary({
   } else {
     rows.push(["受测对象", values.subject]);
     rows.push(["问题", values.issue]);
-    if (values.focus) rows.push(["侧重", label(values.focus)]);
+    if (values.focus) rows.push(["侧重", focusLabel(product.id, values.focus)]);
     if (product.id === "daliuren" && values.focus === "timing") {
       rows.push(["应期观察开始", values.timingStart]);
       rows.push(["应期观察结束", values.timingEnd]);
@@ -1670,27 +1861,8 @@ function ProductSpecificNatalOptions({
       </fieldset>
     </>
   );
-  if (product.id === "ziwei") return (
-    <>
-      <p className={styles.productNote}>紫微专有：后续会单独确认闰月、命宫起法与四化版本。</p>
-    </>
-  );
-  if (product.id === "qizheng") return (
-    <>
-      <p className={styles.productNote}>七政专有：地点将用于经纬度与时区校准，并保留坐标来源。</p>
-      <div className={styles.twoColumns}>
-        <Field htmlFor="qizheng-longitude" label="出生经度" error={errors.longitude?.message} help="东经为正，西经为负。">
-          <input id="qizheng-longitude" inputMode="decimal" {...register("longitude")} />
-        </Field>
-        <Field htmlFor="qizheng-latitude" label="出生纬度" error={errors.latitude?.message} help="北纬为正，南纬为负。">
-          <input id="qizheng-latitude" inputMode="decimal" {...register("latitude")} />
-        </Field>
-      </div>
-      <Field htmlFor="qizheng-coordinate-source" label="坐标来源" error={errors.coordinateSource?.message} help="例如城市地理编码、用户确认。">
-        <input id="qizheng-coordinate-source" {...register("coordinateSource")} />
-      </Field>
-    </>
-  );
+  if (product.id === "ziwei") return null;
+  if (product.id === "qizheng") return null;
   return null;
 }
 

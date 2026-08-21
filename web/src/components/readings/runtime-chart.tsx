@@ -271,7 +271,7 @@ function ZiweiChart({
         {coreFacts?.active_major_limit ? (
           <div>
             <dt>当前大限事实</dt>
-            <dd>{Object.keys(coreFacts.active_major_limit).length} 个 Runtime 字段</dd>
+            <dd>已返回当前大限</dd>
           </div>
         ) : null}
         {coreFacts?.chinese_date ? (
@@ -284,7 +284,7 @@ function ZiweiChart({
       {showInterpretiveSections && interpretiveCandidates ? (
         <Table
           caption="命宫三方四正与古籍候选（非最终结论）"
-          headers={["项目", "Runtime 输出"]}
+          headers={["项目", "盘面输出"]}
           rows={[
             ["状态", String(interpretiveCandidates.status ?? "candidate_only")],
             ["命中候选", String(Array.isArray(interpretiveCandidates.matched_rules) ? interpretiveCandidates.matched_rules.length : 0)],
@@ -349,7 +349,7 @@ function ZiweiChart({
           ])}
         />
       ) : null}
-      <p className={styles.note}>只展示 Runtime 返回的宫位、星曜、大限与四化事实，不在浏览器追加判断。</p>
+      <p className={styles.note}>只展示已返回的宫位、星曜、大限与四化事实，不在浏览器追加判断。</p>
     </div>
   );
 }
@@ -383,13 +383,13 @@ function QizhengChart({
           {coreFacts.ephemeris ? (
             <div>
               <dt>星历事实</dt>
-              <dd>{Object.keys(coreFacts.ephemeris).length} 个 Runtime 字段</dd>
+              <dd>已返回星历事实</dd>
             </div>
           ) : null}
           {coreFacts.conventions ? (
             <div>
               <dt>计算口径</dt>
-              <dd>{Object.keys(coreFacts.conventions).length} 个 Runtime 字段</dd>
+              <dd>已返回计算口径</dd>
             </div>
           ) : null}
         </dl>
@@ -496,7 +496,7 @@ function QizhengChart({
           ])}
         />
       ) : null}
-      <p className={styles.note}>盘面只保留计算位置；Runtime 未返回相位时，页面不自行补算。</p>
+      <p className={styles.note}>盘面只保留计算位置；未返回相位时，页面不自行补算。</p>
     </div>
   );
 }
@@ -540,14 +540,14 @@ function LiuyaoChart({
       {showInterpretiveSections && roleAdjudicationRows.length ? (
         <Table
           caption="六爻问题角色裁决"
-          headers={["裁决项", "Runtime 输出"]}
+          headers={["裁决项", "服务端输出"]}
           rows={roleAdjudicationRows}
         />
       ) : null}
       {coreRows.length ? (
         <Table caption="六爻结构事实" headers={["事实项", "状态"]} rows={coreRows} />
       ) : null}
-      <p className={styles.note}>卦象与爻位由 Runtime 固定；求财角色、唯一可见妻财爻，以及妻财两现时唯一发动的一爻可由核验规则裁定。月令仅显示旺相/休囚季节带；页面不自行排序同动静候选，也不补写综合旺衰、成败或应期。</p>
+      <p className={styles.note}>卦象与爻位由服务端固定；求财角色、唯一可见妻财爻，以及妻财两现时唯一发动的一爻可由核验规则裁定。月令仅显示旺相/休囚季节带；页面不自行排序同动静候选，也不补写综合旺衰、成败或应期。</p>
     </div>
   );
 }
@@ -795,7 +795,7 @@ function FortuneFactsChart({ view }: Readonly<{ view: FortuneFactsViewModel }>) 
         />
       ) : null}
       <p className={styles.note}>
-        这里只展示 Runtime 日运与周期事实，不追加具体事件、吉凶或人生判断。
+        这里只展示已返回的日运与周期事实，不追加具体事件、吉凶或人生判断。
       </p>
     </div>
   );
@@ -1091,7 +1091,7 @@ function QimenChart({ view }: Readonly<{ view: QimenChartViewModel }>) {
           `${pattern.identity_adjudication.source_ref.rule_id} · ${pattern.identity_adjudication.source_ref.pack}`,
         ])}
       />
-      <p className={styles.note}>中宫缺项按 Runtime 空值显示；已核验格局只裁定格局身份，页面不自行追加格局强弱、事项吉凶、成败或应期。</p>
+      <p className={styles.note}>中宫缺项按服务端空值显示；已核验格局只裁定格局身份，页面不自行追加格局强弱、事项吉凶、成败或应期。</p>
     </div>
   );
 }
@@ -1457,7 +1457,11 @@ function CanwenChart({ view }: Readonly<{ view: CanwenViewModel }>) {
           {dimension.disagreements.map((item) => <p className={styles.note} key={item}>{item}</p>)}
         </div>
       ))}
-      <p className={styles.note}>这里只展示 Runtime 已声明的共同事实范围；没有把不同术数的原始字段拼成吉凶或实质性互证结论。</p>
+      {view.dimensions.some((dimension) => dimension.signals.length > 0 || dimension.convergence.length > 0 || dimension.disagreements.length > 0) ? (
+        <p className={styles.note}>八字为主理。</p>
+      ) : (
+        <p className={styles.note}>没有可展示的互证</p>
+      )}
     </div>
   );
 }
@@ -1494,7 +1498,11 @@ function HecanChart({ view }: Readonly<{ view: HecanViewModel }>) {
           {dimension.disagreements.map((item) => <p className={styles.note} key={item}>{item}</p>)}
         </div>
       ))}
-      <p className={styles.note}>这里只展示 Runtime 已声明的共同事实范围；实质互证、分歧判断和整合深读仍需后续证据合同。</p>
+      {view.dimensions.some((dimension) => dimension.signals.length > 0 || dimension.convergence.length > 0 || dimension.disagreements.length > 0) ? (
+        <p className={styles.note}>八字为主理。</p>
+      ) : (
+        <p className={styles.note}>没有可展示的互证</p>
+      )}
     </div>
   );
 }

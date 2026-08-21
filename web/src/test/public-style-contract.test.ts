@@ -41,12 +41,17 @@ describe("public visual contract", () => {
     expect(ruleFor(homeCss, ".main")).toMatch(/background:\s*var\(--home-paper\)/);
     expect(ruleFor(homeCss, ".card")).toMatch(/border:\s*1px solid var\(--home-line\)/);
     expect(ruleFor(homeCss, ".card")).toMatch(/background:\s*var\(--home-paper-surface\)/);
-    expect(ruleFor(homeCss, ".observation p")).toMatch(
-      /color:\s*color-mix\(in srgb, var\(--color-text-inverse\) 72%, transparent\)/,
+    expect(ruleFor(homeCss, ".observation")).toMatch(
+      /background:\s*var\(--home-paper-surface\)/,
     );
+    expect(ruleFor(homeCss, ".observation p")).toMatch(
+      /color:\s*var\(--home-ink-soft\)/,
+    );
+    expect(ruleFor(homeCss, ".spotlight")).toMatch(/radial-gradient/);
+    expect(ruleFor(homeCss, ".heroPrimary::before")).toMatch(/radial-gradient/);
     expect(homeCss).toContain("--home-gold");
     expect(homeCss).not.toMatch(/terracotta|moss|amber/);
-    expect(homeCss).not.toMatch(/priceCard|methodCard|linear-gradient|radial-gradient/);
+    expect(homeCss).not.toMatch(/priceCard|methodCard|linear-gradient|conic-gradient/);
   });
 
   it("keeps public navigation flat and every public link at least 44px tall", () => {

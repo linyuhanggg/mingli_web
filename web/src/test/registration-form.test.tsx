@@ -56,6 +56,8 @@ describe("RegistrationForm", () => {
 
     const submit = screen.getByRole("button", { name: "注册并登录" });
     expect(submit).toBeDisabled();
+    expect(screen.getByRole("link", { name: "隐私政策" })).toHaveAttribute("href", "/privacy");
+    expect(screen.getByRole("link", { name: "服务条款" })).toHaveAttribute("href", "/terms");
     await user.click(screen.getByRole("checkbox", { name: "我已阅读并同意隐私政策" }));
     await user.click(screen.getByRole("checkbox", { name: "我已阅读并同意服务条款" }));
     expect(submit).toBeEnabled();

@@ -22,13 +22,13 @@ export default function MethodologyPage() {
       <ol className={styles.pipeline} aria-label="标准解读链">
         {[
           "输入确认",
-          "Profile Version",
-          "prepare",
-          "Fact Brief",
+          "档案版本",
+          "计算事实",
+          "事实简报",
           "候选成稿",
           "校验",
-          "complete",
-          "Accepted",
+          "提交核心",
+          "已接纳正文",
         ].map((step) => (
           <li key={step}>{step}</li>
         ))}
@@ -51,13 +51,13 @@ export default function MethodologyPage() {
         <article className={styles.prose}>
           <h2>证据不靠模型补</h2>
           <p>
-            每个事实声明必须回指 Fact Brief；古籍只有真正命中且能定位时才展示，零命中就保持零。
+            每个事实声明必须回指事实简报；古籍只有真正命中且能定位时才展示，零命中就保持零。
           </p>
         </article>
         <article className={styles.prose}>
-          <h2>Accepted 后原样交付</h2>
+          <h2>接纳后原样交付</h2>
           <p>
-            候选稿先过结构、事实、隐私和内容安全合同，之后才交给核心 complete。已接纳正文不会被二次改写；更正会产生新的解读版本。
+            候选稿先过结构、事实、隐私和内容安全合同，之后才交给核心完成接纳。已接纳正文不会被二次改写；更正会产生新的解读版本。
           </p>
         </article>
       </section>

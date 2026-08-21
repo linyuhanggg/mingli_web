@@ -7,7 +7,9 @@ import type { ComponentPropsWithoutRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SiteHeader } from "@/components/site-header";
+import { ApiError } from "@/lib/api";
 
+const { getAccountMock } = vi.hoisted(() => ({ getAccountMock: vi.fn() }));
 
 type TestLinkProps = ComponentPropsWithoutRef<"a"> & {
   href: string;
@@ -35,12 +37,14 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api")>()),
-  getAccount: vi.fn(() => new Promise(() => undefined)),
+  getAccount: getAccountMock,
 }));
 
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/");
+  getAccountMock.mockReset();
+  getAccountMock.mockImplementation(() => new Promise(() => undefined));
 });
 
 afterEach(() => {
@@ -51,6 +55,7 @@ afterEach(() => {
 describe("public shell navigation", () => {
   it("exposes the frozen desktop entry set and grouped divination menu", async () => {
     const user = userEvent.setup();
+    getAccountMock.mockRejectedValueOnce(new ApiError("未登录", 401));
     render(<SiteHeader />);
 
     const navigation = screen.getByRole("navigation", { name: "主导航" });
@@ -68,9 +73,14 @@ describe("public shell navigation", () => {
       "href",
       "/library",
     );
-    expect(
-      screen.getAllByRole("link").find((link) => link.getAttribute("href") === "/account"),
-    ).toBeDefined();
+    expect(screen.getByRole("link", { name: "正在确认登录状态" })).toHaveAttribute(
+      "href",
+      "/account",
+    );
+    expect(await screen.findByRole("link", { name: "登录" })).toHaveAttribute(
+      "href",
+      "/auth/login",
+    );
 
     await user.click(within(navigation).getByRole("button", { name: "合参" }));
     const crossMenu = screen.getByRole("menu", { name: "合参菜单" });
@@ -287,14 +297,18 @@ describe("public shell responsive and cache contracts", () => {
   });
 
   it("backs every shell destination with either a product surface or a public page", () => {
-    for (const route of [
-      "/about",
-      "/daily",
-      "/library",
-      "/tools",
-    ]) {
+    const publicPageWrappers = {
+      "/about": ["EditorialPage"],
+      "/daily": ["DailyPageView"],
+      "/library": ["LibraryIndexView"],
+      "/tools": ["ToolsPageFrame", "ToolsIndexView"],
+    } as const;
+
+    for (const [route, wrappers] of Object.entries(publicPageWrappers)) {
       const source = readFileSync(resolve(process.cwd(), `src/app${route}/page.tsx`), "utf8");
-      expect(source).toMatch(/EditorialPage|PublicPageShell|SecondarySurface|PublicContentSurface/);
+      for (const wrapper of wrappers) {
+        expect(source, `${route} must render ${wrapper}`).toContain(wrapper);
+      }
     }
 
     for (const route of [

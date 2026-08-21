@@ -10,6 +10,7 @@ type SecondarySurfaceFrameProps = {
   readonly title: string;
   readonly intro: string;
   readonly children: ReactNode;
+  readonly variant?: "default" | "auth";
 };
 
 export function SecondarySurfaceFrame({
@@ -17,16 +18,18 @@ export function SecondarySurfaceFrame({
   title,
   intro,
   children,
+  variant = "default",
 }: SecondarySurfaceFrameProps) {
+  const auth = variant === "auth";
   return (
     <PublicPageShell>
       <main className={styles.main} id="main-content" tabIndex={-1}>
-        <Container className={styles.container}>
-          <header aria-label={eyebrow} className={styles.header}>
+        <Container className={auth ? `${styles.container} ${styles.authContainer}` : styles.container}>
+          <header aria-label={eyebrow} className={auth ? `${styles.header} ${styles.authHeader}` : styles.header}>
             <h1>{title}</h1>
             <p className={styles.intro}>{intro}</p>
           </header>
-          <div className={styles.content}>{children}</div>
+          <div className={auth ? `${styles.content} ${styles.authContent}` : styles.content}>{children}</div>
         </Container>
       </main>
     </PublicPageShell>

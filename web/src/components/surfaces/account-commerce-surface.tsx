@@ -6,7 +6,7 @@ import {
   AccountSessionBoundary,
   useAccountSession,
 } from "@/components/account-session-context";
-import { AppPageHeader } from "@/components/app-page-header";
+import { AccountSectionShell } from "@/components/account-section-shell";
 import {
   ApiError,
   listAccountEntitlements,
@@ -70,7 +70,7 @@ function eventLabel(kind: AccountEntitlement["events"][number]["kind"]): string 
 
 function readableError(error: unknown): string {
   if (error instanceof Error && error.message) return error.message;
-  return "账户商业事实暂时无法读取，请稍后重试。";
+  return "暂时无法读取，请稍后重试。";
 }
 
 function OrderCard({ order }: { readonly order: AccountOrder }) {
@@ -94,7 +94,7 @@ function EntitlementCard({ entitlement }: { readonly entitlement: AccountEntitle
     <li className={styles.item}>
       <div className={styles.itemHeader}>
         <h3>{entitlement.label}</h3>
-        <span className={styles.statusTag}>追加式账本</span>
+        <span className={styles.statusTag}>权益</span>
       </div>
       <dl className={styles.stats}>
         <div><dt>可用</dt><dd>{entitlement.available}</dd></div>
@@ -104,7 +104,7 @@ function EntitlementCard({ entitlement }: { readonly entitlement: AccountEntitle
       </dl>
       {entitlement.events.length ? (
         <div className={styles.eventBlock}>
-          <div className={styles.eventHeader}><h4>账本事件</h4><span>只读</span></div>
+          <div className={styles.eventHeader}><h4>变更记录</h4><span>只读</span></div>
           <ul className={styles.eventList}>
             {entitlement.events.map((event) => (
               <li key={`${event.kind}-${event.occurred_at}`}>
@@ -170,7 +170,7 @@ function CommerceContent({ kind }: { readonly kind: CommerceKind }) {
   }, [attempt, kind, userId]);
 
   if (state.status === "checking") {
-    return <StatusPanel state="loading" title="正在确认账户…" description="正在确认账户商业事实访问权限。" />;
+    return <StatusPanel state="loading" title="正在确认账户…" description="正在确认账户。" />;
   }
 
   if (state.status === "error") {
@@ -181,7 +181,7 @@ function CommerceContent({ kind }: { readonly kind: CommerceKind }) {
     return (
       <SecondaryStatus
         action={{ href: "/auth/login", label: "前往登录" }}
-        description="登录后才能查看自己的订单、履约状态和追加式权益账本。"
+        description={kind === "orders" ? "登录后才能查看订单。" : "登录后才能查看权益。"}
         state="need-login"
         title="需要登录"
       />
@@ -195,7 +195,7 @@ function CommerceContent({ kind }: { readonly kind: CommerceKind }) {
         actionLabel="重新登录"
         state="error"
         title="登录已过期"
-        description="登录状态已失效，账户商业事实暂时无法读取。"
+        description="登录已失效，请重新登录后再查看。"
       />
     );
   }
@@ -217,15 +217,15 @@ function CommerceContent({ kind }: { readonly kind: CommerceKind }) {
           <h2 id={`account-${kind}-title`}>{kind === "orders" ? "订单" : "权益"}</h2>
           <p>
             {kind === "orders"
-              ? "只显示当前账户的订单和履约状态，不展示支付渠道内部标识。"
-              : "权益来自服务端追加式账本，不在浏览器维护可变余额。"}
+              ? "只显示当前账户的订单。"
+              : "只显示当前账户的权益。"}
           </p>
         </div>
       </div>
       {loading ? <StatusPanel state="loading" title="正在读取…" description="只会读取当前账户的服务端事实。" /> : null}
       {!loading && error ? (
         <>
-          <StatusPanel state="error" title="无法读取账户事实" description={error} />
+          <StatusPanel state="error" title="无法读取" description={error} />
           <div className={secondary.actionRow}>
             <button className={surface.secondaryButton} onClick={retry} type="button">重试</button>
           </div>
@@ -254,13 +254,12 @@ function CommerceContent({ kind }: { readonly kind: CommerceKind }) {
 export function AccountCommerceSurface({ kind }: { readonly kind: CommerceKind }) {
   return (
     <AccountSessionBoundary>
-      <div className={secondary.accountPage}>
-        <AppPageHeader
-          description="账户商业事实来自服务端持久化记录；当前页面只读，不虚构支付或余额状态。"
-          title={kind === "orders" ? "订单与履约" : "账户权益"}
-        />
+      <AccountSectionShell
+        intro={kind === "orders" ? "查看你的订单。" : "查看你的权益。"}
+        title={kind === "orders" ? "订单" : "权益"}
+      >
         <CommerceContent kind={kind} />
-      </div>
+      </AccountSectionShell>
     </AccountSessionBoundary>
   );
 }

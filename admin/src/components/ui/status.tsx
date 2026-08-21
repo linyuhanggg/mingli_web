@@ -38,6 +38,7 @@ export type StatusProps = {
   state: StatusState;
   title?: string;
   description?: string;
+  compact?: boolean;
 };
 
 const copy: Record<StatusState, { title: string; description: string; icon: LucideIcon }> = {
@@ -48,7 +49,7 @@ const copy: Record<StatusState, { title: string; description: string; icon: Luci
   },
   empty: {
     title: "暂无内容",
-    description: "完成第一步后，这里会显示新的记录。",
+    description: "还没有可展示的记录。",
     icon: Inbox,
   },
   error: {
@@ -85,7 +86,7 @@ const copy: Record<StatusState, { title: string; description: string; icon: Luci
 
 const busyStates: ReadonlySet<StatusState> = new Set(["loading", "processing"]);
 
-export function Status({ state, title, description }: StatusProps) {
+export function Status({ state, title, description, compact = false }: StatusProps) {
   const headingId = useId();
   const descriptionId = useId();
   const definition = copy[state];
@@ -96,8 +97,9 @@ export function Status({ state, title, description }: StatusProps) {
 
   return (
     <section
-      className={`${styles.panel} ${styles[state]}`}
+      className={`${styles.panel} ${styles[state]} ${compact ? styles.compact : ""}`}
       data-state={state}
+      data-variant={compact ? "compact" : "panel"}
       role={state === "error" ? "alert" : "status"}
       aria-atomic="true"
       aria-busy={isBusy || undefined}
@@ -105,7 +107,7 @@ export function Status({ state, title, description }: StatusProps) {
       aria-describedby={descriptionId}
     >
       <span aria-hidden="true" className={styles.icon}>
-        <Icon aria-hidden="true" size={24} strokeWidth={1.75} />
+        <Icon aria-hidden="true" size={compact ? 16 : 24} strokeWidth={1.75} />
       </span>
       <div>
         <h2 className={styles.title} id={headingId}>

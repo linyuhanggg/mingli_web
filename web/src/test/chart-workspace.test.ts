@@ -242,6 +242,20 @@ describe("resolveBaziFocusDetail", () => {
     );
   });
 
+  it("fills pillar sources from extras and drops the empty-basis disclaimer", () => {
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      timezone: "Asia/Shanghai",
+    });
+    const detail = resolveBaziFocusDetail(view, "day", {
+      facts: [{ label: "藏干", text: "甲、丙、戊" }],
+      sources: ["测试古法命中 · 测试古籍 L10-L12"],
+    });
+    expect(detail?.facts).toContainEqual({ label: "藏干", text: "甲、丙、戊" });
+    expect(detail?.sources).toEqual(["测试古法命中 · 测试古籍 L10-L12"]);
+    expect(detail?.limits.join("")).not.toContain("暂无与该柱直接关联的公开依据");
+  });
+
   it("returns null for unknown cell ids", () => {
     const view = buildBaziWorkspaceView({ pillars: FOUR_PILLARS });
     expect(resolveBaziFocusDetail(view, "unknown-palace")).toBeNull();

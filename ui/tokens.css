@@ -46,6 +46,31 @@
   --shadow-float: 0 4px 16px rgb(0 0 0 / 8%);
   --shadow-overlay: 0 16px 48px rgb(0 0 0 / 14%);
 
+  /* 首页宣纸剧场调色板。DESIGN.md §6 只对首页范围授予该例外；
+     Admin、工作台、账户区与结果页继续使用上方 Direction C 中性语义色。
+     这些名字只应被 home.module.css 与其装饰层引用。 */
+  --paper-canvas: #efe6d6;
+  --paper-surface: rgb(255 249 238 / 82%);
+  --paper-soft: rgb(239 230 214 / 94%);
+  --paper-veil: rgb(255 249 238 / 36%);
+  --paper-glass: rgb(255 249 238 / 58%);
+  --paper-glass-strong: rgb(255 249 238 / 88%);
+  --paper-text: #16110c;
+  --paper-text-soft: #5a4e42;
+  --paper-text-muted: #8a7b6a;
+  --paper-highlight: #fffaf3;
+  --paper-line: rgb(22 17 12 / 12%);
+  --paper-line-strong: rgb(22 17 12 / 18%);
+  --paper-cinnabar: #9a3b2f;
+  --paper-cinnabar-glow: rgb(154 59 47 / 55%);
+  --paper-gold: #c4a15a;
+  --paper-gold-line: rgb(196 161 90 / 42%);
+  --paper-gold-wash: rgb(196 161 90 / 18%);
+  --paper-shine: rgb(255 248 230 / 38%);
+  --paper-shadow: 0 22px 60px rgb(22 17 12 / 12%);
+  --paper-shadow-lifted: 0 22px 50px rgb(22 17 12 / 12%);
+  --paper-shadow-action: 0 16px 40px rgb(22 17 12 / 18%);
+
   --font-sans: "Noto Sans SC Variable", ui-sans-serif, -apple-system,
     BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
     "Microsoft YaHei", sans-serif;

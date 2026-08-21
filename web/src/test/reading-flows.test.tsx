@@ -313,7 +313,7 @@ describe("split fortune start endpoints", () => {
       "/api/v1/guest-sessions",
       "/api/v1/profiles",
     ]);
-    expect(screen.getByText(/目标日期由服务端确认/)).toBeVisible();
+    expect(screen.queryByText(/fortune 事实面板|不在此处生成结果|结果按版本留痕/)).not.toBeInTheDocument();
     expect(screen.getByText(/当前算法范围：事业与工作/)).toBeVisible();
     await user.selectOptions(select, profiles.profiles[0].profile_version_id);
     await user.click(screen.getByRole("button", { name: /开始今日解读/ }));
@@ -435,6 +435,21 @@ describe("split fortune start endpoints", () => {
     await waitFor(() => expect(routerPush).toHaveBeenCalled());
   });
 });
+
+  it("sends empty-state 去建档 to /account/profiles and freezes submit errors", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path === "/api/v1/guest-sessions") return guestSession();
+      if (path === "/api/v1/profiles") return jsonResponse({ profiles: [] });
+      return problemResponse("Unexpected request", 500);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<FortuneFlow mode="today" />);
+    const create = await screen.findByRole("link", { name: "去建档" });
+    expect(create).toHaveAttribute("href", "/account/profiles");
+    expect(screen.queryByText(/fortune 事实面板|不在此处生成结果|结果按版本留痕/)).not.toBeInTheDocument();
+  });
 
 describe("Liuyao contract", () => {
   it("submits six manual tosses bottom-up with confirmed event time, timezone, and location", async () => {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { BaziChart } from "@/components/readings/bazi-chart";
+import { BaziResultSixStates } from "@/components/ui-lab/bazi-result-six-states";
 import {
   BAZI_EVIDENCE_RESULT_EVIDENCE,
   BAZI_EVIDENCE_RESULT_VIEW_MODEL,
@@ -24,11 +25,13 @@ export default function BaziResultLabPage() {
         <span>不代表 Runtime 已发布</span>
       </div>
       <section aria-label="八字结果页生产组件" className={styles.chart}>
-        <BaziChart
-          chart={buildBaziChartViewFromViewModel(BAZI_EVIDENCE_RESULT_VIEW_MODEL)}
-          evidence={BAZI_EVIDENCE_RESULT_EVIDENCE}
-          title="八字结果页验收切片"
-        />
+        <BaziResultSixStates>
+          <BaziChart
+            chart={buildBaziChartViewFromViewModel(BAZI_EVIDENCE_RESULT_VIEW_MODEL)}
+            evidence={BAZI_EVIDENCE_RESULT_EVIDENCE}
+            title="八字结果页验收切片"
+          />
+        </BaziResultSixStates>
       </section>
     </main>
   );

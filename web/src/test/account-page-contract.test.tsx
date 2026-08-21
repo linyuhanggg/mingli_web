@@ -78,30 +78,16 @@ describe("account home contract", () => {
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
 
-  it("keeps guest data private while exposing the six existing account routes", async () => {
+  it("keeps guest data private without the six-grid or OTP form", async () => {
     const { container } = render(<AccountPage />);
 
-    expect(await screen.findByRole("heading", { level: 2, name: "游客模式" })).toBeVisible();
-    const navigation = screen.getByRole("navigation", { name: "我的账户入口" });
-    const routes = [
-      ["受测人档案", "/account/profiles"],
-      ["推演历史", "/account/history"],
-      ["订单与权益", "/account/orders"],
-      ["通知", "/account/notifications"],
-      ["账户设置", "/account/settings"],
-      ["邀请有礼", "/account/invites"],
-    ] as const;
-
-    for (const [label, href] of routes) {
-      expect(within(navigation).getByRole("link", { name: new RegExp(`^${label}`) })).toHaveAttribute(
-        "href",
-        href,
-      );
-    }
-
-    expect(screen.getByRole("heading", { level: 2, name: "登录后开始使用" })).toBeVisible();
-    expect(await screen.findByLabelText("邮箱地址")).toBeVisible();
-    expect(screen.getByRole("heading", { level: 2, name: "账户边界" })).toBeVisible();
+    expect(await screen.findByRole("heading", { level: 2, name: "未登录" })).toBeVisible();
+    expect(screen.getByText("登录后才能看档案和历史")).toBeVisible();
+    expect(screen.getByRole("link", { name: "登录" })).toHaveAttribute("href", "/auth/login");
+    expect(screen.getByRole("link", { name: "用验证码登录" })).toHaveAttribute("href", "/auth/verify");
+    expect(screen.queryByRole("navigation", { name: "我的账户入口" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("邮箱地址")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "账户边界" })).not.toBeInTheDocument();
     expect(container).not.toHaveTextContent("4f9c3d6a-2f5e-4a8b-9c1d-3e7a5b9f2c41");
     expect(container).not.toHaveTextContent("q***@example.com");
   });
@@ -158,7 +144,7 @@ describe("account home contract", () => {
     const fetchMock = stubApiFetch(401, { title: "Authentication required" });
     render(<AccountPage />);
 
-    await screen.findByRole("heading", { level: 2, name: "游客模式" });
+    await screen.findByRole("heading", { level: 2, name: "未登录" });
     expect(fetchMock.mock.calls.some(([input]) => String(input).includes("/api/v1/account/history"))).toBe(false);
   });
 
@@ -184,14 +170,14 @@ describe("account home contract", () => {
     expect(screen.queryByText(/@example\.com/)).not.toBeInTheDocument();
 
     resolveAccount?.(jsonResponse({ title: "Authentication required" }, 401));
-    expect(await screen.findByRole("heading", { level: 2, name: "游客模式" })).toBeVisible();
+    expect(await screen.findByRole("heading", { level: 2, name: "未登录" })).toBeVisible();
   });
 
   it("shows an honest retry state when the account probe fails", async () => {
     stubApiFetch(502, { title: "服务暂时不可用" });
     render(<AccountPage />);
 
-    expect(await screen.findByRole("heading", { level: 2, name: "账户状态暂不可读" })).toBeVisible();
+    expect((await screen.findAllByRole("heading", { level: 2, name: "读取失败，请重试" })).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "重新读取账户状态" })).toBeEnabled();
     expect(screen.queryByText(/4f9c3d6a/)).not.toBeInTheDocument();
   });

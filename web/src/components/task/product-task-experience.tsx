@@ -9,7 +9,7 @@ import { WorkbenchShell } from "@/components/workbench/workbench-shell";
 import {
   confirmProfileDraft,
   createProfileDraft,
-  getCapabilityProjection,
+  ApiError,
   listProfiles,
   startFengshuiReading,
   startPhysiognomyReading,
@@ -35,7 +35,6 @@ import {
   type LiuyaoStartRequest,
   type LumingNayinStartRequest,
   type CanwenStartRequest,
-  type CapabilityProjection,
   type MeihuaStartRequest,
   type PhysiognomyStartRequest,
   type PreviewStartRequest,
@@ -47,6 +46,7 @@ import {
 } from "@/lib/api";
 import { localDateTimeWithOffset } from "@/lib/date-time";
 import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
+import { mapStartReadingFailure } from "@/lib/start-reading-error";
 import type { ProductDefinition } from "@/products/catalog";
 
 import { ProductInputForm, type TaskFormValues } from "./product-input-form";
@@ -86,6 +86,10 @@ function hasRuntimeStart(product: ProductDefinition): boolean {
   return RUNTIME_PRODUCT_IDS.has(product.id);
 }
 
+function usesSavedProfiles(product: ProductDefinition): boolean {
+  return product.group === "natal" || product.id === "hecan" || product.id === "canwen";
+}
+
 function TaskProgress({ product, stage }: { product: ProductDefinition; stage: TaskStage }) {
   const current = stageIndex[stage];
 
@@ -110,104 +114,39 @@ function TaskProgress({ product, stage }: { product: ProductDefinition; stage: T
   );
 }
 
-function ModulePlan({
-  product,
-  capability,
-}: {
-  product: ProductDefinition;
-  capability: CapabilityProjection | null;
-}) {
-  return (
-    <aside className={styles.modulePlan} aria-labelledby={`${product.id}-module-plan`}>
-      <div>
-        <h2 id={`${product.id}-module-plan`}>{product.moduleTitle}</h2>
-        <p>
-          提交后按服务端实际返回的事实展示以下槽位；标注「待接入」的当前不会出现。
-        </p>
-      </div>
-      <ol>
-        {product.modules.map((module, index) => {
-          const pending = product.pendingModules?.includes(module) ?? false;
-          return (
-            <li key={module} data-module-status={pending ? "pending" : "available"}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              {module}
-              {pending ? <em className={styles.modulePending}>待接入</em> : null}
-            </li>
-          );
-        })}
-      </ol>
-      {capability?.tier === "B" ? (
-        <div data-capability-tier="B">
-          <Status
-            state="success"
-            title="确定性盘面与事实已开放"
-            description="当前只提供服务端生成的盘面事实与边界，不提供断语或空白占位。"
-          />
-        </div>
-      ) : capability?.tier === "C" ? (
-        <div data-capability-tier="C">
-          <Status state="unavailable" title="真实能力适配中" description={product.unavailableReason} />
-        </div>
-      ) : hasRuntimeStart(product) ? (
-        <Status
-          state="success"
-          title="确定性盘面已接入"
-          description="确认后由服务端生成盘面；深读、追问和导出仍按各术单独开放。"
-        />
-      ) : (
-        <Status state="unavailable" title="真实能力适配中" description={product.unavailableReason} />
-      )}
-    </aside>
-  );
-}
-
 export function ProductTaskExperience({ product }: { product: ProductDefinition }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedProfileVersionId = searchParams.get("profile") ?? "";
+  const shouldLoadProfiles = usesSavedProfiles(product);
   const [stage, setStage] = useState<TaskStage>("input");
   const [values, setValues] = useState<TaskFormValues | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitErrorState, setSubmitErrorState] = useState<"unavailable" | "error">("unavailable");
   const [busy, setBusy] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [capability, setCapability] = useState<CapabilityProjection | null>(null);
   const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(null);
   const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(null);
   const [savedProfiles, setSavedProfiles] = useState<ProfileSummary[]>([]);
   const [savedProfilesLoading, setSavedProfilesLoading] = useState(
-    product.group === "natal",
+    shouldLoadProfiles,
   );
   const [savedProfilesError, setSavedProfilesError] = useState<string | null>(null);
+  const [savedProfilesSignedOut, setSavedProfilesSignedOut] = useState(false);
   const [selectedProfileVersionId, setSelectedProfileVersionId] = useState("");
   const [savedProfilesAttempt, setSavedProfilesAttempt] = useState(0);
   const profileVersionRef = useRef<string | null>(null);
   const intentKeyRef = useRef<IntentKey | null>(null);
 
   useEffect(() => {
-    let active = true;
-    void getCapabilityProjection()
-      .then((response) => {
-        if (!active) return;
-        setCapability(
-          response.capabilities.find((item) => item.capability_id === product.id) ?? null,
-        );
-      })
-      .catch(() => {
-        // The task surface remains usable when the read-only status endpoint is unavailable.
-      });
-    return () => {
-      active = false;
-    };
-  }, [product.id]);
-
-  useEffect(() => {
-    if (product.group !== "natal") return;
+    if (!shouldLoadProfiles) return;
 
     let active = true;
     void listProfiles()
       .then(({ profiles }) => {
         if (!active) return;
+        setSavedProfilesError(null);
+        setSavedProfilesSignedOut(false);
         setSavedProfiles(profiles);
         setSelectedProfileVersionId((current) => {
           if (
@@ -231,6 +170,12 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         if (!active) return;
         setSavedProfiles([]);
         setSelectedProfileVersionId("");
+        if (reason instanceof ApiError && reason.status === 401) {
+          setSavedProfilesSignedOut(true);
+          setSavedProfilesError(null);
+          return;
+        }
+        setSavedProfilesSignedOut(false);
         setSavedProfilesError(
           reason instanceof Error && reason.message
             ? reason.message
@@ -244,7 +189,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     return () => {
       active = false;
     };
-  }, [product.group, requestedProfileVersionId, savedProfilesAttempt]);
+  }, [shouldLoadProfiles, requestedProfileVersionId, savedProfilesAttempt]);
 
   async function startRuntimeReading(nextValues: TaskFormValues) {
     if (!hasRuntimeStart(product)) {
@@ -397,13 +342,32 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       }
 
       if (product.id === "hecan" || product.id === "canwen") {
+        let profileVersionId = selectedProfileVersionId || profileVersionRef.current;
+        if (!profileVersionId) {
+          const draft = await createProfileDraft(nextValues.subject.trim());
+          const profile = await confirmProfileDraft(draft.draft_id, {
+            birth_datetime: localDateTimeWithOffset(
+              `${nextValues.birthDate}T${nextValues.birthTime}`,
+              nextValues.timezone,
+            ),
+            timezone: nextValues.timezone,
+            location: nextValues.location.trim(),
+            gender: nextValues.gender as Gender,
+            time_basis_policy: (
+              nextValues.timeStandard === "local-apparent-solar" ? "solar" : "civil"
+            ) as TimeBasisPolicy,
+            zi_hour_policy: "midnight",
+          });
+          profileVersionId = profile.profile_version_id;
+        }
+        profileVersionRef.current = profileVersionId;
         const artByLabel: Record<string, "bazi" | "ziwei" | "qizheng"> = {
           八字: "bazi",
           紫微: "ziwei",
           七政: "qizheng",
         };
         const payload = {
-          profile_version_id: nextValues.profile.trim(),
+          profile_version_id: profileVersionId,
           selected_art_ids: nextValues.arts
             .map((art) => artByLabel[art])
             .filter((art): art is "bazi" | "ziwei" | "qizheng" => Boolean(art)),
@@ -640,7 +604,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           : await startDaliurenReading(daliurenPayload, intent.key);
       router.push(`/app/readings/${response.reading_version_id}`);
     } catch (reason) {
-      setSubmitError(reason instanceof Error ? reason.message : "盘面启动失败，请稍后重试。");
+      const mapped = mapStartReadingFailure(reason);
+      setSubmitErrorState(mapped.state);
+      setSubmitError(mapped.title);
     } finally {
       setBusy(false);
     }
@@ -655,10 +621,10 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   }
 
   return (
-    <div className={styles.experience} data-product={product.id}>
-      <TaskProgress product={product} stage={stage} />
+    <div className={styles.experience} data-product={product.id} data-stage={stage}>
+      {stage !== "input" ? <TaskProgress product={product} stage={stage} /> : null}
       {stage === "input" ? (
-        <div className={styles.inputLayout}>
+        <div className={styles.inputLayout} data-input-region="first-screen">
           <ProductInputForm
             busy={busy}
             onProfileVersionChange={(profileVersionId) => {
@@ -669,6 +635,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             product={product}
             profileLookupError={savedProfilesError}
             profileLookupPending={savedProfilesLoading}
+            profileLookupSignedOut={savedProfilesSignedOut}
             profiles={savedProfiles}
             selectedProfileVersionId={selectedProfileVersionId}
             initialValues={values ?? undefined}
@@ -677,11 +644,12 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             onRetryProfiles={() => {
               setSavedProfilesLoading(true);
               setSavedProfilesError(null);
+              setSavedProfilesSignedOut(false);
               setSavedProfilesAttempt((value) => value + 1);
             }}
             submitError={submitError}
+            submitErrorState={submitErrorState}
           />
-          <ModulePlan product={product} capability={capability} />
         </div>
       ) : null}
       {stage === "workbench" && product.id !== "bazi" ? (
@@ -695,6 +663,24 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             setSubmitError(null);
             setStage("input");
           }}
+        />
+      ) : null}
+      {stage === "workbench" && product.id === "bazi" && !baziPreviewReadingId ? (
+        <Status
+          actions={(
+            <button
+              type="button"
+              onClick={() => {
+                setSubmitError(null);
+                setStage("input");
+              }}
+            >
+              返回录入
+            </button>
+          )}
+          description="当前没有已确认的八字任务句柄，不会伪造盘面。"
+          state="empty"
+          title="还没有可恢复的盘面"
         />
       ) : null}
       {stage === "workbench" && product.id === "bazi" && baziPreviewReadingId ? (

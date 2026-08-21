@@ -43,19 +43,18 @@ type RouteExpectation = {
   Page: ComponentType;
   name: string;
   input: RegExp;
-  module: RegExp;
 };
 
 const routes: RouteExpectation[] = [
-  { Page: BaziPage, name: "八字", input: /出生日期/, module: /四柱与五行力量/ },
-  { Page: ZiweiPage, name: "紫微", input: /出生资料/, module: /十二宫与四化/ },
-  { Page: QizhengPage, name: "七政", input: /出生地点/, module: /星盘与十一曜/ },
-  { Page: LiuyaoPage, name: "六爻", input: /起卦方式/, module: /六次过程与本卦变卦/ },
-  { Page: QimenPage, name: "奇门", input: /场景侧重/, module: /九宫与值符值使/ },
-  { Page: DaliurenPage, name: "大六壬", input: /判断侧重/, module: /四课三传/ },
-  { Page: JianxiangPage, name: "见相", input: /独立同意/, module: /结构化观察与证据充足度/ },
-  { Page: HecanPage, name: "命盘合参", input: /至少选择两术/, module: /互证、分歧与缺失/ },
-  { Page: WenshiPage, name: "问事合参", input: /同一问题与时空/, module: /六爻、大六壬与奇门/ },
+  { Page: BaziPage, name: "八字", input: /出生日期/ },
+  { Page: ZiweiPage, name: "紫微", input: /出生资料/ },
+  { Page: QizhengPage, name: "七政", input: /出生地点/ },
+  { Page: LiuyaoPage, name: "六爻", input: /起卦方式/ },
+  { Page: QimenPage, name: "奇门", input: /场景侧重/ },
+  { Page: DaliurenPage, name: "大六壬", input: /判断侧重/ },
+  { Page: JianxiangPage, name: "见相", input: /独立同意/ },
+  { Page: HecanPage, name: "命盘合参", input: /至少选择两术/ },
+  { Page: WenshiPage, name: "问事合参", input: /同一问题与时空/ },
 ];
 
 afterEach(cleanup);
@@ -74,18 +73,15 @@ beforeEach(() => {
 });
 
 describe("primary product route contract", () => {
-  it.each(routes)("$name renders a real task surface instead of a placeholder", async ({ Page, name, input, module }) => {
+  it.each(routes)("$name renders a real task surface instead of a placeholder", async ({ Page, name, input }) => {
     render(<Page />);
 
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("form", { name: `${name}任务输入` })).toBeVisible();
     expect((await screen.findAllByText(input)).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(module).length).toBeGreaterThan(0);
-    const runtimeConnected = ["八字", "紫微", "七政", "六爻", "奇门", "大六壬", "命盘合参", "问事合参"].includes(name);
-    expect(document.querySelector(`[data-state="${runtimeConnected ? "success" : "unavailable"}"]`)).not.toBeNull();
     expect(screen.getAllByText(/提交后会发生什么/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/工作台/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/报告与追问/).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("navigation", { name: `${name}任务进度` })).not.toBeInTheDocument();
+    expect(screen.queryByText("标「待接入」的现在不会出现")).not.toBeInTheDocument();
     expect(screen.queryByText("UI 演示数据")).not.toBeInTheDocument();
     expect(screen.queryByText("页面已预制")).not.toBeInTheDocument();
   });

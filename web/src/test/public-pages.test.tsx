@@ -95,10 +95,31 @@ describe("public contract pages", () => {
     const pipeline = within(main).getByRole("list", { name: "标准解读链" });
 
     expect(within(pipeline).getAllByRole("listitem")).toHaveLength(8);
-    expect(within(pipeline).getByText("prepare")).toBeVisible();
-    expect(within(pipeline).getByText("Fact Brief")).toBeVisible();
+    for (const step of [
+      "输入确认",
+      "档案版本",
+      "计算事实",
+      "事实简报",
+      "候选成稿",
+      "校验",
+      "提交核心",
+      "已接纳正文",
+    ]) {
+      expect(within(pipeline).getByText(step)).toBeVisible();
+    }
+    for (const internalLabel of [
+      "Profile Version",
+      "prepare",
+      "Fact Brief",
+      "complete",
+      "Accepted",
+    ]) {
+      expect(within(main).queryByText(new RegExp(internalLabel, "i"))).not.toBeInTheDocument();
+    }
+    expect(within(main).getByRole("heading", { name: "接纳后原样交付" })).toBeVisible();
+    expect(within(main).getByText(/交给核心完成接纳/)).toBeVisible();
     expect(within(main).getByText(/零命中就保持零/)).toBeVisible();
-    expect(within(main).getByText(/已接纳正文/)).toBeVisible();
+    expect(within(main).getByText(/已接纳正文不会被二次改写/)).toBeVisible();
     expect(within(main).getByText(/模型不能自行算盘/)).toBeVisible();
   });
 

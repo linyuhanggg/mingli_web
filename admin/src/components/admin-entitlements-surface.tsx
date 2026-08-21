@@ -3,7 +3,16 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { useAdminStaff } from "@/components/admin-shell";
-import { Button, Status, Table, type TableColumn, type TableRow } from "@/components/ui";
+import {
+  Button,
+  Dialog,
+  DialogFooter,
+  Field,
+  Status,
+  Table,
+  type TableColumn,
+  type TableRow,
+} from "@/components/ui";
 import { adminFetch, type StaffRole } from "@/lib/api";
 import type {
   AdminEntitlementAction,
@@ -43,6 +52,14 @@ function kindCopy(value: string): string {
   }[value] ?? value;
 }
 
+function actionCopy(value: AdminEntitlementAction): string {
+  return {
+    grant: "发放",
+    compensate: "补偿",
+    revoke: "撤回",
+  }[value];
+}
+
 export function AdminEntitlementsSurface({ role }: { role?: StaffRole }) {
   const sessionStaff = useAdminStaff();
   const effectiveRole = role ?? sessionStaff?.role;
@@ -52,6 +69,7 @@ export function AdminEntitlementsSurface({ role }: { role?: StaffRole }) {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [ownerUserId, setOwnerUserId] = useState("");
   const [entitlementId, setEntitlementId] = useState("");
   const [action, setAction] = useState<AdminEntitlementAction>("grant");
@@ -108,8 +126,7 @@ export function AdminEntitlementsSurface({ role }: { role?: StaffRole }) {
     };
   }, []);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function submit() {
     if (!canAdjust) return;
     setSubmitting(true);
     setError(null);
@@ -135,7 +152,6 @@ export function AdminEntitlementsSurface({ role }: { role?: StaffRole }) {
       return;
     }
     setResult(response.data.created ? "权益账本事件已追加" : "权益账本事件已幂等重放");
-    await load();
     setSubmitting(false);
   }
 
@@ -171,10 +187,6 @@ export function AdminEntitlementsSurface({ role }: { role?: StaffRole }) {
   return (
     <div className={styles.stack} data-state={state} data-staff-role={effectiveRole ?? "session"}>
       {notice}
-      {result ? <Status state="success" title={result} description="服务端已返回追加结果，页面随后重新读取最近事件。" /> : null}
-      {error && state !== "error" && state !== "forbidden" && state !== "unavailable" ? (
-        <Status state="error" title="权益命令失败" description={error} />
-      ) : null}
       {state === "ready" || state === "empty" ? (
         <section className={styles.panel} aria-labelledby="entitlements-title">
           <div className={styles.heading}>
@@ -194,7 +206,13 @@ export function AdminEntitlementsSurface({ role }: { role?: StaffRole }) {
             emptyState="当前没有权益账本事件"
           />
           {canAdjust ? (
-            <form className={styles.form} onSubmit={(event) => void submit(event)}>
+            <form
+              className={styles.form}
+              onSubmit={(event: FormEvent<HTMLFormElement>) => {
+                event.preventDefault();
+                setConfirmOpen(true);
+              }}
+            >
               <label className={styles.field}>
                 <span>用户 ID</span>
                 <input aria-label="用户 ID" value={ownerUserId} onChange={(event) => setOwnerUserId(event.target.value)} required />
@@ -215,10 +233,6 @@ export function AdminEntitlementsSurface({ role }: { role?: StaffRole }) {
                 <span>数量</span>
                 <input aria-label="数量" type="number" min="1" value={quantity} onChange={(event) => setQuantity(event.target.value)} required />
               </label>
-              <label className={`${styles.field} ${styles.wide}`}>
-                <span>操作原因</span>
-                <input aria-label="操作原因" value={reason} onChange={(event) => setReason(event.target.value)} required />
-              </label>
               <label className={styles.field}>
                 <span>来源编号</span>
                 <input aria-label="来源编号" value={sourceRef} onChange={(event) => setSourceRef(event.target.value)} required />
@@ -228,7 +242,75 @@ export function AdminEntitlementsSurface({ role }: { role?: StaffRole }) {
                 <input aria-label="目标编号（可选）" value={targetRef} onChange={(event) => setTargetRef(event.target.value)} />
               </label>
               <div className={styles.actions}>
-                <Button type="submit" loading={submitting}>追加账本事件</Button>
+                <Dialog
+                  open={confirmOpen}
+                  onOpenChange={(open) => {
+                    setConfirmOpen(open);
+                    if (open) {
+                      setReason("");
+                      setResult(null);
+                      setError(null);
+                      return;
+                    }
+                    if (result) void load();
+                    setReason("");
+                    setResult(null);
+                    setError(null);
+                  }}
+                  title={`追加权益事件 · ${ownerUserId || "未选择用户"}`}
+                  description="账本事件只追加、不改写历史；确认后将记录对象、来源、原因与操作员工。"
+                  trigger={
+                    <Button
+                      type="submit"
+                      disabled={
+                        !ownerUserId.trim() ||
+                        !entitlementId.trim() ||
+                        !sourceRef.trim() ||
+                        Number(quantity) < 1
+                      }
+                    >
+                      复核并追加
+                    </Button>
+                  }
+                >
+                  <dl className={styles.impactSummary}>
+                    <div><dt>影响对象</dt><dd>{ownerUserId}</dd></div>
+                    <div><dt>权益与动作</dt><dd>{entitlementId} · {actionCopy(action)} · {quantity}</dd></div>
+                    <div><dt>来源编号</dt><dd>{sourceRef}</dd></div>
+                    <div><dt>审计结果</dt><dd>追加不可变账本事件并记录操作原因</dd></div>
+                  </dl>
+                  <Field
+                    label="操作原因"
+                    description="至少 4 个字；请说明业务依据，不要填写秘密信息。"
+                    required
+                  >
+                    <input
+                      type="text"
+                      name="entitlement-adjustment-reason"
+                      autoComplete="off"
+                      value={reason}
+                      onChange={(event) => setReason(event.target.value)}
+                      minLength={4}
+                    />
+                  </Field>
+                  {error ? <Status state="error" title="权益命令失败" description={error} /> : null}
+                  {result ? <Status state="success" title="审计已完成" description={result} /> : null}
+                  <DialogFooter>
+                    <Button variant="ghost" type="button" onClick={() => setConfirmOpen(false)}>取消</Button>
+                    <Button
+                      type="button"
+                      loading={submitting}
+                      disabled={reason.trim().length < 4 || Boolean(result)}
+                      aria-describedby="entitlement-confirm-help"
+                      onClick={() => void submit()}
+                    >
+                      确认并记录审计
+                    </Button>
+                  </DialogFooter>
+                  <p className={styles.submitHelp} id="entitlement-confirm-help">
+                    {result ? "操作已完成，可关闭确认层。" : "填写至少 4 个字的原因后可确认。"}
+                  </p>
+                </Dialog>
               </div>
             </form>
           ) : null}

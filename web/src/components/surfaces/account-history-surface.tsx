@@ -1,7 +1,7 @@
 "use client";
 
 import { AccountSessionBoundary, useAccountSession } from "@/components/account-session-context";
-import { AppPageHeader } from "@/components/app-page-header";
+import { AccountSectionShell } from "@/components/account-section-shell";
 import { ReadingResult } from "@/components/readings/reading-result";
 import { ReadingHistory } from "@/components/reading-history";
 import { StatusPanel } from "@/components/status-panel";
@@ -21,7 +21,7 @@ function AccountHistoryContent({ readingId }: AccountHistorySurfaceProps) {
       <StatusPanel
         state="loading"
         title="正在确认历史访问权限"
-        description="先确认当前账户会话，再读取属于你的 ReadingRoot 和版本摘要。"
+        description="正在确认账户。"
       />
     );
   }
@@ -40,7 +40,7 @@ function AccountHistoryContent({ readingId }: AccountHistorySurfaceProps) {
     return (
       <SecondaryStatus
         action={{ href: "/auth/login", label: "前往登录" }}
-        description="登录后才能查看属于你的真实推演历史；当前不会加载任务、盘面或报告。"
+        description="登录后才能查看历史。"
         state="need-login"
         title="需要登录"
       />
@@ -55,22 +55,17 @@ export function AccountHistorySurface({ readingId }: AccountHistorySurfaceProps)
 
   return (
     <AccountSessionBoundary>
-      <div className={styles.accountPage}>
-        <AppPageHeader
-          description={
-            detail
-              ? "这份详情只在当前账户拥有对应 ReadingVersion 时展示。"
-              : "历史按 ReadingRoot 和 ReadingVersion 组织；列表只展示服务端公开摘要。"
-          }
-          title={detail ? "一份任务的版本与交付记录" : "任务、版本与报告历史"}
-        />
+      <AccountSectionShell
+        intro={detail ? "查看这份任务的版本。" : "查看你的任务和报告。"}
+        title={detail ? "历史详情" : "历史"}
+      >
         <section
-          aria-label={detail ? "个人中心 · 历史详情" : "个人中心 · 推演历史"}
+          aria-label={detail ? "历史详情" : "历史"}
           className={styles.accountPanel}
         >
           <AccountHistoryContent readingId={readingId} />
         </section>
-      </div>
+      </AccountSectionShell>
     </AccountSessionBoundary>
   );
 }

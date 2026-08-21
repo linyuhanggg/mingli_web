@@ -66,12 +66,12 @@
 }
 
 .unauthorized {
-  border-color: var(--color-info);
-  background: var(--surface-info);
+  border-style: dashed;
+  background: var(--color-surface-subtle);
 }
 
 .unauthorized .icon {
-  color: var(--color-info);
+  color: var(--color-text-secondary);
 }
 
 .locked {
@@ -94,4 +94,35 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  grid-column: 1 / -1;
+}
+
+.actions :global(a),
+.actions :global(button) {
+  display: inline-flex;
+  min-height: var(--target-min);
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid var(--color-action);
+  border-radius: var(--radius-control);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.actions :global(a[data-variant="secondary"]),
+.actions :global(button[data-variant="secondary"]) {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
 }

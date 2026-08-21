@@ -8,7 +8,7 @@ export default function TodayFortunePage() {
     <div className={styles.page}>
       <AppPageHeader
         title="今日解读"
-        description="从已确认档案启动今天的 fortune 事实面板；目标日期和时区由服务端确认。"
+        description="选一份已确认的出生档案，查看今天的事业与工作节奏。"
       />
       <FortuneFlow mode="today" />
     </div>

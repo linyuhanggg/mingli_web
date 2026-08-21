@@ -138,7 +138,7 @@ export function ProfileArchive() {
           description="登录状态已失效，档案暂时无法读取；重新登录后可回到这里。"
         />
         <div className={styles.retryRow}>
-          <Link className={surface.secondaryButton} href="/account">
+          <Link className={surface.secondaryButton} href="/auth/login">
             重新登录
           </Link>
         </div>

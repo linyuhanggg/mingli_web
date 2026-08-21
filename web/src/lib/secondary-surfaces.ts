@@ -130,7 +130,7 @@ const plannedTools = [
   {
     slug: "five-elements",
     title: "五行事实与调候",
-    description: "展示服务端五行库存与调候适用性事实；旺衰、喜忌、用神结论仍未接通。",
+    description: "展示服务端五行库存与调候适用性事实。旺衰、喜忌、用神没有可展示的结论。",
     form: {
       fields: [
         { id: "five-elements-chart", label: "已确认盘面", type: "text", hint: "必须绑定服务端确认的版本化盘面。" },
@@ -141,22 +141,22 @@ const plannedTools = [
   {
     slug: "dream",
     title: "解梦",
-    description: "先说明问题和现实背景；内容服务接通前不拼接临时解释。",
+    description: "尚未开放。没有可展示的解梦结论。",
     form: {
       fields: [
-        { id: "dream-content", label: "梦境内容", type: "textarea", hint: "输入结构预制；当前不会生成解释。" },
-        { id: "dream-context", label: "现实背景", type: "textarea", hint: "只在正式服务接通并说明保存边界后提交。" },
+        { id: "dream-content", label: "梦境内容", type: "textarea", hint: "尚未开放，当前不会生成解释。" },
+        { id: "dream-context", label: "现实背景", type: "textarea", hint: "尚未开放，当前不会提交或保存。" },
       ],
     },
   },
   {
     slug: "name",
     title: "姓名分析",
-    description: "只处理用户明确提交的输入；确定性规则接通前不输出结论。",
+    description: "尚未开放。没有可展示的姓名结论。",
     form: {
       fields: [
-        { id: "name-value", label: "姓名", type: "text", hint: "输入结构预制；当前不会保存或输出分析。" },
-        { id: "name-context", label: "使用场景", type: "text", hint: "输入结构预制；正式规则接通后再定义范围。" },
+        { id: "name-value", label: "姓名", type: "text", hint: "尚未开放，当前不会保存或输出分析。" },
+        { id: "name-context", label: "使用场景", type: "text", hint: "尚未开放，当前不会输出姓名结论。" },
       ],
     },
   },
@@ -259,7 +259,7 @@ export function getToolSurface(slug: string): PublicContentSurfaceSpec {
     form: {
       fields: tool.form.fields,
       submitLabel: "提交暂未开放",
-      disabledReason: "工具服务尚未接通，字段只用于展示正式输入结构，不会提交或保存资料。",
+      disabledReason: "尚未开放。当前不会提交或保存资料。",
     },
     action: { href: "/tools", label: "返回工具总览" },
   };
@@ -294,8 +294,8 @@ const policyLinks = [
 export const authSurfaces = {
   login: {
     eyebrow: "登录",
-    title: "登录后继续原来的任务。",
-    intro: "密码主登录、OTP 快捷登录和游客任务接管尚未接通。当前页面不会提交账号、密码或验证码。",
+    title: "登录",
+    intro: "登录后进入账户",
     state: "unavailable",
     statusTitle: "登录暂不可用",
     statusDescription: "身份服务接通前，登录表单只展示永久标签和流程边界，不会创建会话。",
@@ -309,8 +309,8 @@ export const authSurfaces = {
   },
   register: {
     eyebrow: "注册",
-    title: "注册按验证、设密码、同意政策推进。",
-    intro: "服务端必须先验证手机或邮箱，再保存密码哈希和政策版本。当前不会收集注册资料。",
+    title: "注册",
+    intro: "先验证手机或邮箱，再设密码并同意政策。",
     state: "unavailable",
     statusTitle: "注册暂不可用",
     statusDescription: "OTP、密码设置、政策版本和身份冲突处理接通后再开放。",
@@ -335,8 +335,8 @@ export const authSurfaces = {
   },
   verify: {
     eyebrow: "验证身份",
-    title: "验证完成后才建立会话。",
-    intro: "验证码发送与验证必须由身份服务完成，网址本身不代表验证成功。",
+    title: "验证身份",
+    intro: "验证后进入账户",
     state: "unavailable",
     statusTitle: "验证暂不可用",
     statusDescription: "请等待验证码服务接通，并从登录或注册入口开始。",
@@ -354,8 +354,8 @@ export const authSurfaces = {
   },
   setPassword: {
     eyebrow: "设置密码",
-    title: "设置密码前必须先确认身份。",
-    intro: "正式流程只保存不可逆密码哈希。当前页面没有有效验证上下文，不会接收密码。",
+    title: "设置密码",
+    intro: "为当前账户设置密码。",
     state: "unavailable",
     statusTitle: "密码设置暂不可用",
     statusDescription: "身份验证、密码哈希和会话撤销能力接通后再开放。",
@@ -380,8 +380,8 @@ export const authSurfaces = {
   },
   recover: {
     eyebrow: "找回账号",
-    title: "恢复访问，不覆盖历史事实。",
-    intro: "账号找回需要验证码、密码重设和设备会话撤销。当前不会收集手机或邮箱。",
+    title: "找回账号",
+    intro: "用已验证的手机或邮箱重设密码。成功后其他已登录设备会退出。",
     state: "unavailable",
     statusTitle: "账号找回暂不可用",
     statusDescription: "身份恢复服务接通后再开放。",
@@ -391,8 +391,8 @@ export const authSurfaces = {
   },
   consent: {
     eyebrow: "政策同意",
-    title: "每次同意都绑定具体政策版本。",
-    intro: "正式流程会保存政策版本与确认时间；当前没有有效注册或购买上下文，不会记录同意。",
+    title: "政策同意",
+    intro: "请分别确认隐私政策和服务条款。",
     state: "unavailable",
     statusTitle: "政策确认暂不可用",
     statusDescription: "政策版本与服务端同意记录接通后再开放。",
@@ -541,12 +541,12 @@ export const accountSurfaces = {
 
 export const commerceSurfaces = {
   checkout: {
-    eyebrow: "订单确认",
-    title: "购买前先确认真实商品与交付范围",
-    intro: "当前没有可购买的真实 Offer。页面不会创建订单、展示占位价格或把客户端操作写成付款成功。",
+    eyebrow: "结账",
+    title: "结账",
+    intro: "当前没有可购买的商品。",
     state: "unavailable",
     statusTitle: "测试期未开放",
-    statusDescription: "真实商品版本、支付渠道、退款确认和权益账本接通后再开放购买。",
+    statusDescription: "购买尚未开放。",
     facts: [
       "客户端回跳不代表到账",
       "支付、权益授予、生成与交付分别确认",
@@ -555,12 +555,12 @@ export const commerceSurfaces = {
     relatedLinks: policyLinks,
   },
   order: {
-    eyebrow: "结账",
-    title: "订单快照必须来自服务端",
-    intro: "页面不会根据网址中的订单标识猜测商品、金额、支付或退款状态。",
+    eyebrow: "订单",
+    title: "订单",
+    intro: "查看这份订单。",
     state: "unavailable",
     statusTitle: "测试期未开放",
-    statusDescription: "订单读取、访问控制和真实支付事实尚未接通。当前不会声称订单存在或已经付款。",
+    statusDescription: "当前不会声称订单存在或已经付款。",
     facts: [
       "没有服务端订单快照就不展示金额",
       "没有渠道确认就不展示支付成功",

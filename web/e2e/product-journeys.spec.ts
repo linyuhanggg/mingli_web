@@ -24,26 +24,24 @@ async function fillBaziInput(page: Page) {
   await page.getByRole("radio", { name: "男" }).check();
 }
 
-test("home task selector enters the bazi task and stays in its workbench", async ({ page }, testInfo) => {
+test("home task selector reaches and submits the bazi task", async ({ page }, testInfo) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("heading", { level: 1, name: "选择要解决的事" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "十三术同根，五十五部古籍为证" })).toBeVisible();
   await expect(page.getByRole("region", { name: "命盘" })).toBeVisible();
   await expect(page.getByRole("region", { name: "事件判断" })).toBeVisible();
-  await expect(page.getByRole("region", { name: "跨术与观照" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "见相" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "合参" })).toBeVisible();
   await capture(page, testInfo, "home-task-selector");
 
-  await page.locator('main a[href="/bazi"]').click();
+  await page.getByRole("main").getByRole("link", { name: "开始排盘", exact: true }).first().click();
   await expect(page).toHaveURL(/\/bazi$/);
   await expect(page.getByRole("form", { name: "八字任务输入" })).toBeVisible();
   await fillBaziInput(page);
   // 提交前摘要长在表单里，不再是独立一步
-  await expect(page.getByRole("region", { name: "提交前摘要" })).toBeVisible();
   await expect(page).toHaveURL(/\/bazi$/);
   await page.getByRole("button", { name: /^立即排盘（免费）/ }).click();
-  await expect(page.getByRole("heading", { name: "八字工作台" })).toBeVisible();
-  await expect(page.getByRole("status", { name: "盘面尚未生成" })).toBeVisible();
   await expect(page).toHaveURL(/\/bazi$/);
-  await capture(page, testInfo, "bazi-workbench-unavailable");
+  await capture(page, testInfo, "bazi-after-submit");
 });
 
 test("bazi workbench changes from one column to two columns at the frozen desktop boundary", async ({
@@ -105,7 +103,10 @@ test("canwen route redirects to hecan after the merge into 命盘合参", async 
 
 test("jianxiang keeps media local and exposes consent, delete, and confirmation boundaries", async ({ page }) => {
   await page.goto("/jianxiang", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("status", { name: "相机采集待接入" })).toBeVisible();
+  await expect(page.getByLabel("观照模式")).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: /照片处理独立同意/ })).toBeVisible();
+  await expect(page.getByRole("status", { name: "当前不使用相机采集" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "检查照片质量" })).toHaveCount(0);
 
   await page.getByRole("checkbox", { name: /照片处理独立同意/ }).check();
   await page.getByRole("button", { name: /^开始观照/ }).click();
@@ -116,8 +117,6 @@ test("jianxiang keeps media local and exposes consent, delete, and confirmation 
   const file = { name: "face.jpg", mimeType: "image/jpeg", buffer: Buffer.from("local-image") };
   await fileInput.setInputFiles(file);
   await expect(page.getByRole("status", { name: "已选择本地照片" })).toContainText("face.jpg");
-  await page.getByRole("button", { name: "检查照片质量" }).click();
-  await expect(page.getByRole("status", { name: "照片质量检查待接入" })).toBeVisible();
 
   await page.getByRole("button", { name: "删除本地照片" }).click();
   await expect(page.getByRole("status", { name: "本地照片已删除" })).toBeVisible();
@@ -133,12 +132,15 @@ test("jianxiang keeps media local and exposes consent, delete, and confirmation 
   await expect(page.getByText("见相档案（需服务端确认）")).toBeVisible();
 });
 
-test("relationship routes expose two parties and a separate relationship area", async ({ page }, testInfo) => {
+test("relationship routes expose two parties, relationship, and one generate action", async ({ page }, testInfo) => {
   await page.goto("/bazi/hepan", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("link", { name: "返回" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "八字双人合盘" })).toBeVisible();
   await expect(page.getByRole("form", { name: "八字双人合盘输入" })).toBeVisible();
   await expect(page.getByRole("group", { name: "甲方资料" })).toBeVisible();
   await expect(page.getByRole("group", { name: "乙方资料" })).toBeVisible();
   await expect(page.getByLabel("关系类型")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "甲方 / 乙方 / 关系区" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "生成合盘" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "甲方 / 乙方 / 关系区" })).toHaveCount(0);
   await capture(page, testInfo, "bazi-relationship-input");
 });

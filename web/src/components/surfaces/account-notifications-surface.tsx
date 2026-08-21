@@ -7,7 +7,7 @@ import {
   AccountSessionBoundary,
   useAccountSession,
 } from "@/components/account-session-context";
-import { AppPageHeader } from "@/components/app-page-header";
+import { AccountSectionShell } from "@/components/account-section-shell";
 import {
   ApiError,
   deleteAccountNotification,
@@ -84,7 +84,7 @@ function NotificationsContent() {
   }, [attempt, filter, userId]);
 
   if (state.status === "checking") {
-    return <StatusPanel state="loading" title="正在确认账户…" description="正在确认站内通知访问权限。" />;
+    return <StatusPanel state="loading" title="正在确认账户…" description="正在确认账户。" />;
   }
 
   if (state.status === "error") {
@@ -95,7 +95,7 @@ function NotificationsContent() {
     return (
       <SecondaryStatus
         action={{ href: "/auth/login", label: "前往登录" }}
-        description="登录后才能查看属于你的站内通知；当前不会加载任务、退款、导出或安全记录。"
+        description="登录后才能查看通知。"
         state="need-login"
         title="需要登录"
       />
@@ -109,7 +109,7 @@ function NotificationsContent() {
         actionLabel="重新登录"
         state="error"
         title="登录已过期"
-        description="登录状态已失效，通知暂时无法读取。"
+        description="登录已失效，请重新登录后再查看。"
       />
     );
   }
@@ -178,7 +178,7 @@ function NotificationsContent() {
       <div className={surface.sectionHeader}>
         <div>
           <h2 id="account-notifications-title">通知列表</h2>
-          <p>只显示服务端确认的站内状态；邮件、短信投递内容和内部 payload 不会出现在这里。</p>
+          <p>只显示站内通知。</p>
         </div>
         <span aria-live="polite" className={surface.metaLine}>未读 {unreadCount}</span>
       </div>
@@ -280,15 +280,11 @@ function NotificationsContent() {
 export function AccountNotificationsSurface() {
   return (
     <AccountSessionBoundary>
-      <div className={secondary.accountPage}>
-        <AppPageHeader
-          description="任务、退款、导出和账户安全状态由服务端确认后进入站内通知；未登录时不读取任何通知。"
-          title="通知"
-        />
-        <section aria-label="个人中心 · 通知" className={secondary.accountPanel}>
+      <AccountSectionShell intro="查看任务、账号和订单通知。" title="通知">
+        <section aria-label="通知" className={secondary.accountPanel}>
           <NotificationsContent />
         </section>
-      </div>
+      </AccountSectionShell>
     </AccountSessionBoundary>
   );
 }

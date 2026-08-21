@@ -42,6 +42,9 @@ describe("PasswordLoginForm", () => {
     const user = userEvent.setup();
 
     render(<PasswordLoginForm />);
+    expect(screen.getByText("密码不会保存在这台设备上。")).toBeVisible();
+    expect(screen.queryByText(/浏览器存储/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/继续原来的任务/)).not.toBeInTheDocument();
     await user.type(screen.getByRole("textbox", { name: "手机或邮箱" }), "user@example.com");
     await user.type(screen.getByLabelText("密码"), "correct-password");
     await user.click(screen.getByRole("button", { name: "登录" }));

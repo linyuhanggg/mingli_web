@@ -35,7 +35,7 @@ describe("AdminOverviewPage", () => {
     expect(within(kpis).getByText("1")).toBeVisible();
     expect(within(kpis).getByText("失败解读")).toBeVisible();
     expect(screen.getByText("退款审批队列")).toBeVisible();
-    expect(screen.queryByRole("status", { name: "总览数据待接入" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "总览暂时不可用。" })).not.toBeInTheDocument();
   });
 
   it("does not render stub zeroes as normal business KPIs", async () => {
@@ -51,7 +51,7 @@ describe("AdminOverviewPage", () => {
 
     render(<AdminOverviewPage />);
 
-    expect(await screen.findByRole("status", { name: "总览数据待接入" })).toBeVisible();
+    expect(await screen.findByRole("status", { name: "总览暂时不可用。" })).toBeVisible();
     expect(screen.queryByText("待审退款")).not.toBeInTheDocument();
     expect(screen.queryByText(/退款审批队列/)).not.toBeInTheDocument();
   });

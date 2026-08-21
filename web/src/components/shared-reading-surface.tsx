@@ -8,8 +8,6 @@ import {
   type ReadingShareDocument,
 } from "@/lib/api";
 
-import { StatusPanel } from "./status-panel";
-import { SecondarySurfaceFrame } from "./surfaces/secondary-surface-frame";
 import styles from "./surfaces/secondary-surfaces.module.css";
 
 type SharedReadingSurfaceProps = {
@@ -69,12 +67,15 @@ function SharedReadingDocument({ document }: { document: ReadingShareDocument })
           <p>暂无额外边界说明。</p>
         )}
       </section>
-
-      <p className={styles.policyPreview}>
-        此页面只展示分享快照中的公开字段；分享链接过期或被撤销后，服务端不再返回正文。
-      </p>
     </>
   );
+}
+
+function unavailableCopy(reason: unknown): string {
+  if (reason instanceof ApiError && [404, 410].includes(reason.status)) {
+    return "分享已过期、被撤销，或不存在。";
+  }
+  return "分享暂时无法读取，请稍后重试。";
 }
 
 export function SharedReadingSurface({ token }: SharedReadingSurfaceProps) {
@@ -90,14 +91,7 @@ export function SharedReadingSurface({ token }: SharedReadingSurfaceProps) {
         if (!cancelled) setDocument(next);
       })
       .catch((reason: unknown) => {
-        if (cancelled) return;
-        if (reason instanceof ApiError && [404, 410].includes(reason.status)) {
-          setError("分享已过期、被撤销，或不存在。");
-        } else if (reason instanceof Error && reason.message) {
-          setError(reason.message);
-        } else {
-          setError("分享暂时无法读取，请稍后重试。");
-        }
+        if (!cancelled) setError(unavailableCopy(reason));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -108,37 +102,21 @@ export function SharedReadingSurface({ token }: SharedReadingSurfaceProps) {
     };
   }, [token]);
 
-  return (
-    <SecondarySurfaceFrame
-      eyebrow="分享"
-      intro="这是由服务端生成的短时分享快照；页面不会重新计算盘面，也不会读取分享者账户。"
-      title="分享中的解读"
-    >
-      {loading ? (
-        <StatusPanel
-          state="loading"
-          title="正在读取分享"
-          description="服务端正在确认分享快照是否仍在有效期内。"
-        />
-      ) : error ? (
-        <StatusPanel
-          state="error"
-          title="分享不可用"
-          description={error}
-          actionHref="/"
-          actionLabel="返回首页"
-        />
-      ) : document ? (
-        <SharedReadingDocument document={document} />
-      ) : (
-        <StatusPanel
-          state="error"
-          title="分享不可用"
-          description="服务端没有返回分享内容。"
-          actionHref="/"
-          actionLabel="返回首页"
-        />
-      )}
-    </SecondarySurfaceFrame>
-  );
+  if (loading) {
+    return <p role="status">正在读取分享。</p>;
+  }
+
+  if (error || document === null) {
+    return (
+      <section aria-labelledby="share-unavailable" role="alert">
+        <h2 id="share-unavailable">分享不可用</h2>
+        <p>{error ?? "分享已过期、被撤销，或不存在。"}</p>
+        <form action="/">
+          <button type="submit">返回首页</button>
+        </form>
+      </section>
+    );
+  }
+
+  return <SharedReadingDocument document={document} />;
 }

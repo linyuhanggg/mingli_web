@@ -42,6 +42,8 @@ describe("AdminStaffSurface", () => {
 
     expect(await screen.findByText("analyst@example.com")).toBeVisible();
     expect(screen.getByText("在职")).toBeVisible();
+    expect(screen.queryByText("员工目录已接入")).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-variant="compact"]')).toHaveLength(0);
     expect(screen.queryByText("not-returned")).not.toBeInTheDocument();
     await user.type(
       screen.getByRole("textbox", { name: "员工变更原因" }),
@@ -58,6 +60,7 @@ describe("AdminStaffSurface", () => {
       }),
     );
     expect(await screen.findByText("员工状态已更新")).toBeVisible();
+    expect(document.querySelectorAll('[data-variant="compact"]')).toHaveLength(1);
 
     await user.selectOptions(screen.getByLabelText("角色 analyst@example.com"), "finance");
     await user.click(screen.getByRole("button", { name: "保存角色 analyst@example.com" }));
@@ -80,6 +83,17 @@ describe("AdminStaffSurface", () => {
     expect(await screen.findByText("analyst@example.com")).toBeVisible();
     expect(screen.queryByRole("button", { name: "停用 analyst@example.com" })).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: "员工变更原因" })).not.toBeInTheDocument();
+  });
+
+  it("keeps a forbidden superadmin on the page without staff write controls", async () => {
+    adminFetchMock.mockResolvedValueOnce({ ok: false, status: 403, title: "Forbidden" });
+
+    render(<AdminStaffSurface role="superadmin" />);
+
+    expect(await screen.findByText("无权限")).toBeVisible();
+    expect(screen.queryByRole("textbox", { name: "员工变更原因" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "创建员工账号" })).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-variant="compact"]')).toHaveLength(1);
   });
 
   it("resets a staff password without rendering the secret", async () => {

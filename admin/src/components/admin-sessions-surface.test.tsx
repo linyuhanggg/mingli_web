@@ -51,8 +51,12 @@ describe("AdminSessionsSurface", () => {
     expect(await screen.findByText("ops@example.com")).toBeVisible();
     expect(screen.getByText("有效")).toBeVisible();
     expect(document.body).not.toHaveTextContent(/token_hash|csrf_token_hash/);
-    await user.type(screen.getByLabelText("会话强退原因"), "撤销异常员工登录");
     await user.click(screen.getByRole("button", { name: "撤销会话" }));
+    const dialog = screen.getByRole("dialog", { name: "撤销会话 · ops@example.com" });
+    expect(dialog).toHaveTextContent("session-1");
+    expect(screen.getByRole("button", { name: "确认并记录审计" })).toBeDisabled();
+    await user.type(screen.getByLabelText(/会话强退原因/), "撤销异常员工登录");
+    await user.click(screen.getByRole("button", { name: "确认并记录审计" }));
 
     expect(adminFetchMock).toHaveBeenNthCalledWith(
       2,

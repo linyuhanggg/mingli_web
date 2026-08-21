@@ -195,25 +195,25 @@ function buildLayers(facts: BaziWorkspaceFacts): WorkspaceLayer[] {
       status: decadalStatus,
       summary:
         facts.decadalSummary ??
-        (hasText(facts.activeLuck) ? `当前大运 ${facts.activeLuck}` : "此时间层未生成"),
+        (hasText(facts.activeLuck) ? `当前大运 ${facts.activeLuck}` : "尚未返回大运"),
     },
     {
       id: "yearly",
       label: "流年",
       status: yearlyStatus,
-      summary: facts.yearlySummary ?? "此时间层未生成",
+      summary: facts.yearlySummary ?? "需指定目标时间",
     },
     {
       id: "monthly",
       label: "流月",
       status: monthlyStatus,
-      summary: facts.monthlySummary ?? "此时间层未生成",
+      summary: facts.monthlySummary ?? "需指定目标时间",
     },
     {
       id: "daily",
       label: "流日",
       status: dailyStatus,
-      summary: facts.dailySummary ?? "此时间层未生成",
+      summary: facts.dailySummary ?? "需指定目标时间",
     },
   ];
 }
@@ -278,6 +278,10 @@ export function buildBaziWorkspaceView(facts: BaziWorkspaceFacts): ChartWorkspac
 export function resolveBaziFocusDetail(
   view: ChartWorkspaceView,
   cellId: string,
+  extras?: {
+    facts?: Array<{ label: string; text: string }>;
+    sources?: string[];
+  },
 ): WorkspaceFocusDetail | null {
   const cell = view.cells.find((candidate) => candidate.id === cellId);
   if (!cell) return null;
@@ -287,15 +291,30 @@ export function resolveBaziFocusDetail(
     .filter((row) => relatedKeys.has(row.key))
     .map((row) => ({ label: row.label, text: row.text }));
 
+  const extraFacts = extras?.facts ?? [];
+  const extraSources = extras?.sources ?? [];
+  const facts = [...relatedFacts];
+  for (const fact of extraFacts) {
+    if (!facts.some((row) => row.label === fact.label && row.text === fact.text)) {
+      facts.push(fact);
+    }
+  }
+
+  const limits = [
+    "此处仅重述服务端已公开的四柱与口径事实，前端不进行本地排盘或星曜推算。",
+  ];
+  if (extraFacts.length === 0 && extraSources.length === 0) {
+    limits.push(
+      "暂无与该柱直接关联的公开依据；请以下方依据卡标注的“支持事实”为准。",
+    );
+  }
+
   return {
     id: cell.id,
     title: cell.value ? `${cell.label} · ${cell.value}` : cell.label,
-    facts: relatedFacts,
-    limits: [
-      "此处仅重述服务端已公开的四柱与口径事实，前端不进行本地排盘或星曜推算。",
-      "暂无与该柱直接关联的公开依据；请以下方依据卡标注的“支持事实”为准。",
-    ],
-    sources: [],
+    facts,
+    limits,
+    sources: extraSources,
     proseExcerpt: null,
   };
 }

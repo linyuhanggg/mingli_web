@@ -324,9 +324,9 @@ describe("private P0 surfaces", () => {
       ).toBeVisible();
     });
     expect(screen.getByText(/最近 50 条解读版本/)).toBeVisible();
-    expect(screen.getByRole("link", { name: "发起解读" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "去排盘" })).toHaveAttribute(
       "href",
-      "/app",
+      "/bazi",
     );
   });
 

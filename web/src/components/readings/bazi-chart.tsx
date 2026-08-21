@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  Fragment,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -35,6 +35,8 @@ import {
 import {
   countClassicalSourcesByPillar,
   isPillarId,
+  resolvePillarForFactPath,
+  type PillarId,
   type PillarSourceCounts,
 } from "@/lib/classical-source-markers";
 
@@ -157,10 +159,9 @@ function PillarGrid({
               <span
                 className={styles.pillarSourceMark}
                 data-source-count={sourceCount}
-                title={sourceNote}
               >
                 <span aria-hidden="true">典 {sourceCount}</span>
-                <span className={styles.visuallyHidden}>{sourceNote}</span>
+                <span className={styles.pillarSourceHint}>{sourceNote}</span>
               </span>
             ) : null}
           </button>
@@ -891,6 +892,7 @@ const PREDICATE_AUDIT_LABELS: Readonly<Record<string, string>> = {
   "/day_master/stem:eq:丙": "日主天干为丙",
   "/day_master/stem:nonempty:()": "日主天干已返回",
   "/four_pillars/year:eq:庚辰": "年柱为庚辰",
+  "/four_pillars/month:eq:丙午": "月柱为丙午",
   "/calendar_normalization/ganzhi/year:nonempty": "年柱干支已返回",
 };
 
@@ -1187,6 +1189,56 @@ function isNonEmptyText(value: string | null | undefined): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function formatPublicEvidenceSource(
+  sourceTitle: string,
+  locator: string,
+): { title: string; locator: string; isLineLocator: boolean } {
+  const lineMatch = locator.match(
+    /(?:^|\/)fulltext\.md#L(\d+)(?:-L?(\d+))?$/i,
+  );
+  if (!lineMatch) {
+    return { title: sourceTitle, locator, isLineLocator: false };
+  }
+
+  const title = /^《.*》$/.test(sourceTitle)
+    ? sourceTitle
+    : `《${sourceTitle}》`;
+  const lineLabel = lineMatch[2]
+    ? `第 ${lineMatch[1]}–${lineMatch[2]} 行`
+    : `第 ${lineMatch[1]} 行`;
+  return { title, locator: lineLabel, isLineLocator: true };
+}
+
+function pickFirstVerifiedExactCitation(
+  evidence: ReadonlyArray<ReadingEvidence>,
+): { source_title: string; locator: string } | null {
+  for (const item of evidence) {
+    const matched = item.verbatim_citations?.find(
+      (citation) =>
+        citation.verification_status === "verified_exact" &&
+        isNonEmptyText(citation.source_title) &&
+        isNonEmptyText(citation.locator),
+    );
+    if (matched) {
+      return {
+        source_title: matched.source_title,
+        locator: matched.locator,
+      };
+    }
+    if (
+      item.verification_status === "verified_exact" &&
+      isNonEmptyText(item.source_title) &&
+      isNonEmptyText(item.locator)
+    ) {
+      return {
+        source_title: item.source_title,
+        locator: item.locator,
+      };
+    }
+  }
+  return null;
+}
+
 function verifiedExactCitations(
   pattern: BaziSourcePattern,
   item: ReadingEvidence,
@@ -1245,23 +1297,225 @@ function resolveBaziEvidence(
     .filter((item): item is ResolvedBaziEvidence => item !== null);
 }
 
+type EvidenceEdge = Readonly<{
+  key: string;
+  d: string;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}>;
+
+/**
+ * §21.3 第三级：把每条命中条件与可回溯出处画成一条链路。
+ * 连线是量测后绘制的三次贝塞尔，纯装饰（aria-hidden，无动效、无发光、无渐变，
+ * 符合 §3/§15/§21.6）；节点内容全部是真实可选中文本；
+ * `fact_paths` 按 §19.1 只进 title，不进正文。
+ * 窄屏堆叠时不绘线，节点纵向排列。
+ */
+function BaziEvidenceGraph({
+  citations,
+  pattern,
+}: Readonly<{
+  citations: ReadonlyArray<VerifiedExactCitation>;
+  pattern: BaziSourcePattern;
+}>) {
+  const groupId = useId();
+  const factsLabelId = `${groupId}-facts`;
+  const sourceLabelId = `${groupId}-source`;
+
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const factRefs = useRef<Array<HTMLLIElement | null>>([]);
+  const sourceRef = useRef<HTMLDivElement | null>(null);
+  const [edges, setEdges] = useState<ReadonlyArray<EvidenceEdge>>([]);
+  const [canvasSize, setCanvasSize] = useState<Readonly<{ w: number; h: number }>>({
+    w: 0,
+    h: 0,
+  });
+
+  useLayoutEffect(() => {
+    const canvas = canvasRef.current;
+    const source = sourceRef.current;
+    if (!canvas || !source) return;
+
+    const measure = () => {
+      const canvasBox = canvas.getBoundingClientRect();
+      const sourceBox = source.getBoundingClientRect();
+      if (canvasBox.width === 0 || canvasBox.height === 0) {
+        setEdges([]);
+        return;
+      }
+
+      const targetX = sourceBox.left - canvasBox.left;
+      const targetY = sourceBox.top - canvasBox.top + sourceBox.height / 2;
+
+      const next: EvidenceEdge[] = [];
+      factRefs.current.forEach((node, index) => {
+        if (!node) return;
+        const box = node.getBoundingClientRect();
+        const x1 = box.right - canvasBox.left;
+        const y1 = box.top - canvasBox.top + box.height / 2;
+        // 节点与出处仍在同一列（窄屏堆叠）时不画线
+        if (targetX - x1 < 16) return;
+        const bend = (targetX - x1) * 0.55;
+        next.push({
+          key: `${index}`,
+          d: `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${targetX - bend} ${targetY}, ${targetX} ${targetY}`,
+          x1,
+          y1,
+          x2: targetX,
+          y2: targetY,
+        });
+      });
+
+      setCanvasSize({ w: canvasBox.width, h: canvasBox.height });
+      setEdges(next);
+    };
+
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [citations, pattern]);
+
+  return (
+    <div
+      aria-label={`${pattern.title}命中链路`}
+      className={styles.evidenceGraph}
+      role="group"
+    >
+      <div className={styles.evidenceGraphCanvas} ref={canvasRef}>
+        {edges.length > 0 ? (
+          <svg
+            aria-hidden="true"
+            className={styles.evidenceGraphEdges}
+            focusable="false"
+            viewBox={`0 0 ${canvasSize.w} ${canvasSize.h}`}
+          >
+            {edges.map((edge) => (
+              <g key={edge.key}>
+                <path className={styles.evidenceGraphEdge} d={edge.d} />
+                <circle className={styles.evidenceGraphDot} cx={edge.x1} cy={edge.y1} r="2.5" />
+              </g>
+            ))}
+            <circle
+              className={styles.evidenceGraphDotTarget}
+              cx={edges[0].x2}
+              cy={edges[0].y2}
+              r="3"
+            />
+          </svg>
+        ) : null}
+
+        <dl className={styles.evidenceGraphColumns}>
+          <div className={styles.evidenceGraphFacts}>
+            <dt id={factsLabelId}>为什么适用于这张盘</dt>
+            <dd>
+              <ul aria-labelledby={factsLabelId} className={styles.evidenceGraphNodes}>
+                {pattern.predicate_audit.map((audit, index) => (
+                  <li
+                    aria-label={`适用条件 ${index + 1}`}
+                    className={styles.evidenceGraphNode}
+                    key={`${audit}-${index}`}
+                    ref={(node) => {
+                      factRefs.current[index] = node;
+                    }}
+                    title={pattern.fact_paths[index] ?? undefined}
+                  >
+                    {readablePredicateAudit(audit)}
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </div>
+          <div className={styles.evidenceGraphSource}>
+            <dt id={sourceLabelId}>可回溯出处</dt>
+            <dd>
+              <div
+                aria-labelledby={sourceLabelId}
+                className={styles.evidenceGraphSourceNode}
+                ref={sourceRef}
+                role="group"
+              >
+                <ul className={styles.evidenceSources}>
+                  {citations.map((citation, index) => {
+                    const publicSource = formatPublicEvidenceSource(
+                      citation.source_title,
+                      citation.locator,
+                    );
+                    return (
+                      <li key={`${citation.source_title}-${citation.locator}-${index}`}>
+                        <span>{publicSource.title}</span>
+                        {" · "}
+                        <span>{publicSource.locator}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  );
+}
+
+function patternTouchesPillar(
+  pattern: BaziSourcePattern,
+  pillar: PillarId | null,
+): boolean {
+  if (!pillar) return false;
+  return (pattern.fact_paths ?? []).some(
+    (path) => resolvePillarForFactPath(path) === pillar,
+  );
+}
+
 function BaziEvidenceDrawer({
   patterns,
   evidence,
+  open,
+  onOpenChange,
+  focusPillar,
 }: Readonly<{
   patterns: ReadonlyArray<BaziSourcePattern>;
   evidence: ReadonlyArray<ReadingEvidence>;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  focusPillar: PillarId | null;
 }>) {
   const resolved = resolveBaziEvidence(patterns, evidence);
+  const drawerRef = useRef<HTMLDetailsElement | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open || !focusPillar) return;
+    const node = drawerRef.current;
+    if (typeof node?.scrollIntoView === "function") {
+      node.scrollIntoView({ block: "nearest" });
+    }
+  }, [open, focusPillar]);
 
   if (resolved.length === 0) return null;
 
   return (
-    <details className={styles.evidenceDrawer}>
+    <details
+      ref={drawerRef}
+      className={styles.evidenceDrawer}
+      open={open}
+      onToggle={(event) => {
+        const next = event.currentTarget.open;
+        if (next !== open) onOpenChange(next);
+      }}
+    >
       <summary>命中古法 {resolved.length} 条 · 可核验</summary>
       <div className={styles.evidenceList}>
         {resolved.map(({ pattern, citations }) => (
-          <article className={styles.evidenceItem} key={pattern.evidence_ref}>
+          <article
+            className={styles.evidenceItem}
+            data-focused={patternTouchesPillar(pattern, focusPillar) ? "true" : undefined}
+            key={pattern.evidence_ref}
+          >
             <h5>{pattern.title}</h5>
             <section className={styles.evidenceQuotes} aria-label={`${pattern.title}原文`}>
               <h6>原文</h6>
@@ -1274,33 +1528,10 @@ function BaziEvidenceDrawer({
                 </blockquote>
               ))}
             </section>
-            <dl>
-              <div>
-                <dt>为什么适用于这张盘</dt>
-                <dd>
-                  {pattern.predicate_audit.map((audit, index) => (
-                    <Fragment key={`${audit}-${index}`}>
-                      {index > 0 ? "；" : null}
-                      <span>{readablePredicateAudit(audit)}</span>
-                    </Fragment>
-                  ))}
-                </dd>
-              </div>
-              <div>
-                <dt>可回溯出处</dt>
-                <dd>
-                  <ul className={styles.evidenceSources}>
-                    {citations.map((citation, index) => (
-                      <li key={`${citation.source_title}-${citation.locator}-${index}`}>
-                        <span>{citation.source_title}</span>
-                        {" · "}
-                        <span>{citation.locator}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </dd>
-              </div>
-            </dl>
+            <BaziEvidenceGraph
+              citations={citations}
+              pattern={pattern}
+            />
             <p>只呈现条件命中，不作断语。</p>
           </article>
         ))}
@@ -1315,12 +1546,18 @@ function BaziCoreFactSummary({
   selection,
   evidence,
   showInterpretiveSections,
+  evidenceDrawerOpen,
+  onEvidenceDrawerOpenChange,
+  evidenceFocusPillar,
 }: Readonly<{
   facts: BaziCoreFacts | null | undefined;
   pillars: BaziChartView["pillars"];
   selection: PillarSelection;
   evidence: ReadonlyArray<ReadingEvidence>;
   showInterpretiveSections: boolean;
+  evidenceDrawerOpen: boolean;
+  onEvidenceDrawerOpenChange: (open: boolean) => void;
+  evidenceFocusPillar: PillarId | null;
 }>) {
   if (!facts) return null;
   const rows: Array<{ label: string; content: ReactNode }> = [];
@@ -1382,18 +1619,30 @@ function BaziCoreFactSummary({
   if (facts.twelve_growth_stages?.length) {
     rows.push({
       label: "十二长生",
-      content: facts.twelve_growth_stages
-        .map(
-          (item) =>
-            `${POSITION_LABELS[item.position] ?? item.position} ${item.stem}${item.branch}：${item.stage}`,
-        )
-        .join("；"),
+      content: (
+        <>
+          {facts.twelve_growth_stages
+            .map((item) => {
+              const place = item.position === "day"
+                ? "日柱（自坐地势）"
+                : (POSITION_LABELS[item.position] ?? item.position);
+              return `${place} ${item.stem}${item.branch}：${item.stage}`;
+            })
+            .join("；")}
+          <span className={styles.termDef}>该柱天干在本柱地支上的生旺状态位</span>
+        </>
+      ),
     });
   }
   if (facts.xunkong) {
     rows.push({
       label: "旬空",
-      content: `${facts.xunkong.day_pillar} 属 ${facts.xunkong.xun} 旬：${facts.xunkong.branches.join("、")}`,
+      content: (
+        <>
+          {`${facts.xunkong.day_pillar} 属 ${facts.xunkong.xun} 旬：${facts.xunkong.branches.join("、")}`}
+          <span className={styles.termDef}>日柱所属那一旬中缺位的两个地支</span>
+        </>
+      ),
     });
   }
   if (facts.san_yuan) {
@@ -1476,10 +1725,81 @@ function BaziCoreFactSummary({
         <BaziCandidateSection candidates={facts.interpretive_candidates} />
       ) : null}
       {showInterpretiveSections ? (
-        <BaziEvidenceDrawer patterns={sourcePatterns} evidence={evidence} />
+        <BaziEvidenceDrawer
+          patterns={sourcePatterns}
+          evidence={evidence}
+          open={evidenceDrawerOpen}
+          onOpenChange={onEvidenceDrawerOpenChange}
+          focusPillar={evidenceFocusPillar}
+        />
       ) : null}
     </>
   );
+}
+
+function collectBaziFocusExtras(
+  chart: BaziChartView,
+  evidenceItems: ReadonlyArray<ReadingEvidence>,
+  pillar: PillarId,
+): { facts: Array<{ label: string; text: string }>; sources: string[] } {
+  const facts: Array<{ label: string; text: string }> = [];
+  const core = chart.coreFacts;
+  if (core) {
+    const hidden = core.hidden_stems?.find((item) => item.position === pillar);
+    if (hidden?.stems.length) {
+      facts.push({ label: "藏干", text: hidden.stems.join("、") });
+    }
+    const stemGods =
+      core.ten_gods?.heavenly_stems.filter((item) => item.position === pillar) ?? [];
+    if (stemGods.length) {
+      facts.push({
+        label: "十神",
+        text: stemGods.map((item) => `${item.stem} · ${item.ten_god}`).join("；"),
+      });
+    }
+    const hiddenGods =
+      core.ten_gods?.hidden_stems.filter((item) => item.position === pillar) ?? [];
+    if (hiddenGods.length) {
+      facts.push({
+        label: "藏干十神",
+        text: hiddenGods.map((item) => `${item.stem} · ${item.ten_god}`).join("；"),
+      });
+    }
+    const nayin = core.nayin?.find((item) => item.position === pillar);
+    if (nayin?.name) {
+      facts.push({ label: "纳音", text: nayin.name });
+    }
+    const stage = core.twelve_growth_stages?.find((item) => item.position === pillar);
+    if (stage?.stage) {
+      facts.push({
+        label: pillar === "day" ? "自坐地势" : "十二长生",
+        text: `${stage.stem}${stage.branch}：${stage.stage}`,
+      });
+    }
+    if (pillar === "day" && core.xunkong?.branches.length) {
+      facts.push({
+        label: "旬空",
+        text: `${core.xunkong.xun}：${core.xunkong.branches.join("、")}`,
+      });
+    }
+  }
+
+  const sources: string[] = [];
+  const patterns = core?.source_conditioned_patterns ?? [];
+  for (const { pattern, citations } of resolveBaziEvidence(patterns, evidenceItems)) {
+    if (!patternTouchesPillar(pattern, pillar)) continue;
+    for (const citation of citations) {
+      const publicSource = formatPublicEvidenceSource(
+        citation.source_title,
+        citation.locator,
+      );
+      const sourceSeparator = publicSource.isLineLocator ? " · " : " ";
+      sources.push(
+        `${pattern.title} · ${publicSource.title}${sourceSeparator}${publicSource.locator}`,
+      );
+    }
+  }
+  return { facts, sources };
 }
 
 /**
@@ -1509,6 +1829,18 @@ export function BaziChart({
   );
   const [selectedCellId, setSelectedCellId] = useState<string | null>(null);
   const [transientCellId, setTransientCellId] = useState<string | null>(null);
+  const [evidenceDrawerOpen, setEvidenceDrawerOpen] = useState(false);
+  const [evidenceFocusPillar, setEvidenceFocusPillar] = useState<PillarId | null>(null);
+  const firstScreenCitation = useMemo(
+    () => pickFirstVerifiedExactCitation(evidence),
+    [evidence],
+  );
+  const firstScreenPublicSource = firstScreenCitation
+    ? formatPublicEvidenceSource(
+        firstScreenCitation.source_title,
+        firstScreenCitation.locator,
+      )
+    : null;
 
   // §21.3 第 1/2 级：只统计抽屉真正会展示的、已核验的条目，标记数与抽屉计数同源。
   const pillarSourceCounts = useMemo<PillarSourceCounts | null>(() => {
@@ -1519,13 +1851,16 @@ export function BaziChart({
     return countClassicalSourcesByPillar(resolved.map((item) => item.pattern));
   }, [chart.coreFacts, evidence, showInterpretiveSections]);
 
-  const detail = useMemo(
-    () =>
-      selectedCellId
-        ? resolveBaziFocusDetail(workspaceView, selectedCellId)
-        : null,
-    [workspaceView, selectedCellId],
-  );
+  const detail = useMemo(() => {
+    if (!selectedCellId) return null;
+    const extras =
+      isPillarId(selectedCellId) && showInterpretiveSections
+        ? collectBaziFocusExtras(chart, evidence, selectedCellId)
+        : isPillarId(selectedCellId)
+          ? collectBaziFocusExtras(chart, [], selectedCellId)
+          : undefined;
+    return resolveBaziFocusDetail(workspaceView, selectedCellId, extras);
+  }, [workspaceView, selectedCellId, chart, evidence, showInterpretiveSections]);
   const activeSelectionId = selectedCellId ?? transientCellId;
   const selectedValue = workspaceView.cells.find(
     (cell) => cell.id === activeSelectionId,
@@ -1593,11 +1928,34 @@ export function BaziChart({
           transientId={transientCellId}
           detailId={detailId}
           onTransientChange={setTransientCellId}
-          onSelect={(cellId) =>
-            setSelectedCellId((current) => (current === cellId ? null : cellId))
-          }
+          onSelect={(cellId) => {
+            setSelectedCellId((current) => (current === cellId ? null : cellId));
+            if (
+              cellId &&
+              isPillarId(cellId) &&
+              (pillarSourceCounts?.[cellId] ?? 0) > 0
+            ) {
+              setEvidenceDrawerOpen(true);
+              setEvidenceFocusPillar(cellId);
+            }
+          }}
           sourceCounts={pillarSourceCounts}
         />
+
+        {firstScreenPublicSource ? (
+          <figure
+            className={styles.firstScreenCitation}
+            data-verification-status="verified_exact"
+          >
+            <figcaption>
+              {firstScreenPublicSource.title}
+              <span>
+                {firstScreenPublicSource.isLineLocator ? " · " : " "}
+                {firstScreenPublicSource.locator}
+              </span>
+            </figcaption>
+          </figure>
+        ) : null}
 
         {workspaceView.highlights.length > 0 ? (
           <div className={styles.highlights}>
@@ -1619,6 +1977,9 @@ export function BaziChart({
           selection={selection}
           evidence={evidence}
           showInterpretiveSections={showInterpretiveSections}
+          evidenceDrawerOpen={evidenceDrawerOpen}
+          onEvidenceDrawerOpenChange={setEvidenceDrawerOpen}
+          evidenceFocusPillar={evidenceFocusPillar}
         />
       </div>
     );

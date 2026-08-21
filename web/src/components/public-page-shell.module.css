@@ -5,6 +5,11 @@
   color: var(--color-text);
 }
 
+.shell[data-home-chrome="true"] {
+  background: var(--paper-canvas);
+  color: var(--paper-text);
+}
+
 @media (max-width: 47.999rem) {
   .shell {
     padding-bottom: calc(var(--nav-bottom) + env(safe-area-inset-bottom));

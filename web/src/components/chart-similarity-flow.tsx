@@ -56,9 +56,9 @@ export function ChartSimilarityFlow() {
         setRightProfileId(nextRight);
         setLoading(false);
       })
-      .catch((reason) => {
+      .catch(() => {
         if (!active) return;
-        setError(reason instanceof Error ? reason.message : "档案加载失败，请稍后重试。");
+        setError("读取失败，请重试");
         setLoading(false);
       });
     return () => {
@@ -112,9 +112,9 @@ export function ChartSimilarityFlow() {
 
   return (
     <div className={styles.wrap}>
-      <h1>比较两份命盘的八字四柱事实</h1>
+      <h2>比较两份命盘的八字四柱事实</h2>
       <p className={styles.lead}>
-        选择两份已经确认的档案版本，由服务端 Runtime 逐柱比较年、月、日、时四柱原值。
+        选择两份已经确认的档案版本，由服务端逐柱比较年、月、日、时四柱原值。
       </p>
       <p className={styles.scopeNotice}>
         <strong>当前只比较四柱原值，不生成相似度分数。</strong>
@@ -139,7 +139,7 @@ export function ChartSimilarityFlow() {
       {!loading && !error && profiles.length === 0 ? (
         <div className={styles.state}>
           <p>还没有可用的档案。请先建立并确认档案版本。</p>
-          <ButtonLink href="/app/profile/new">去建档</ButtonLink>
+          <ButtonLink href="/account/profiles">去建档</ButtonLink>
         </div>
       ) : null}
 

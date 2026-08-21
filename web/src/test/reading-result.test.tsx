@@ -287,6 +287,120 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     expect(screen.queryByRole("heading", { name: "分享" })).not.toBeInTheDocument();
   });
 
+  it("shows unavailable when GET /result 200 has no view_model or document", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path === `/api/v1/readings/${VERSION_ID}`) {
+        return jsonResponse(
+          readingSummary("accepted", {
+            capability_id: "bazi",
+            product_id: "bazi-relationship",
+          }),
+        );
+      }
+      if (path === `/api/v1/readings/${VERSION_ID}/result`) {
+        return jsonResponse(
+          readingResult({
+            accepted_copy: null,
+            view_model: null,
+            document: null,
+            fact_panel: null,
+            capability: {
+              ...baziCapabilityA,
+              source_status: "available",
+            },
+          }),
+        );
+      }
+      return problemResponse("Unexpected request", 500);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const unavailable = await screen.findByRole("status", {
+      name: "结果服务暂时不可用，不会展示未确认内容",
+    });
+    expect(unavailable).toHaveAttribute("data-state", "unavailable");
+    expect(screen.getByRole("button", { name: "重试" })).toBeEnabled();
+    expect(screen.queryByText("八字盘面")).not.toBeInTheDocument();
+    expect(screen.queryByText("relationship_signals")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "判断" })).not.toBeInTheDocument();
+  });
+
+  it("shows unavailable when GET /result 200 has no chart and capability source is unavailable", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            accepted_copy: null,
+            view_model: null,
+            document: null,
+            fact_panel: null,
+            capability: {
+              ...baziCapabilityA,
+              source_status: "unavailable",
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          product_id: "bazi-relationship",
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const unavailable = await screen.findByRole("status", {
+      name: "结果服务暂时不可用，不会展示未确认内容",
+    });
+    expect(unavailable).toHaveAttribute("data-state", "unavailable");
+    expect(screen.queryByText("八字盘面")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "重试" })).toBeEnabled();
+  });
+
+  it("shows unavailable when GET /result 200 is tier C with no chart payload", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            accepted_copy: null,
+            view_model: null,
+            document: null,
+            fact_panel: null,
+            capability: {
+              ...baziCapabilityA,
+              tier: "C",
+              source_status: "available",
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          product_id: "bazi",
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const unavailable = await screen.findByRole("status", {
+      name: "结果服务暂时不可用，不会展示未确认内容",
+    });
+    expect(unavailable).toHaveAttribute("data-state", "unavailable");
+    expect(screen.queryByRole("region", { name: "排盘工作台" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "重试" })).toBeEnabled();
+  });
+
   it("renders a typed Runtime chart while the narrative is still prepared", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
@@ -466,6 +580,80 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
       "href",
       "/app",
     );
+  });
+
+  it("maps a 401 poll error to an unauthorized state with a login action", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>().mockResolvedValue(problemResponse("登录状态已失效", 401)),
+    );
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByRole("status", { name: "需要登录才能看这份结果" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "登录后继续" })).toHaveAttribute("href", "/auth/login");
+    expect(screen.queryByRole("button", { name: "重试" })).not.toBeInTheDocument();
+  });
+
+  it("maps a 503 poll error to an unavailable pending state", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>().mockResolvedValue(problemResponse("结果服务暂不可用", 503)),
+    );
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByRole("status", { name: "结果服务暂时不可用，不会展示未确认内容" })).toBeVisible();
+    expect(screen.getByText("结果服务暂不可用")).toBeVisible();
+    expect(screen.getByRole("button", { name: "重试" })).toBeVisible();
+  });
+
+  it("maps a 404 result fetch to empty with a clickable retry, not error", async () => {
+    let resultCount = 0;
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        resultCount += 1;
+        return resultCount === 1
+          ? problemResponse("Reading not found", 404)
+          : jsonResponse(readingResult());
+      }
+      return jsonResponse(readingSummary("accepted"));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const empty = await screen.findByRole("status", { name: "还没有可展示的盘面" });
+    expect(empty).toBeVisible();
+    expect(empty).toHaveAttribute("data-state", "empty");
+    expect(empty).toHaveTextContent("这份结果不存在或不属于当前会话，不会用演示数据填满。");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "读取失败，请重试" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "待接入" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "Reading not found" })).not.toBeInTheDocument();
+    const retry = screen.getByRole("button", { name: "重试" });
+    expect(retry).toBeEnabled();
+    await user.click(retry);
+    expect(await screen.findByText(acceptedCopyQuery)).toBeVisible();
+    expect(resultCount).toBe(2);
+  });
+
+  it("maps a 404 poll error to empty instead of unavailable or error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>().mockResolvedValue(problemResponse("Reading not found", 404)),
+    );
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const empty = await screen.findByRole("status", { name: "还没有可展示的盘面" });
+    expect(empty).toHaveAttribute("data-state", "empty");
+    expect(empty).toHaveTextContent("这份结果不存在或不属于当前会话，不会用演示数据填满。");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "结果服务暂时不可用，不会展示未确认内容" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "重试" })).toBeEnabled();
   });
 
   it("turns a transient poll error into a manual retry and then fetches the result", async () => {
@@ -857,19 +1045,20 @@ describe("fortune period timeline", () => {
     });
     const facts = screen.getByRole("heading", { name: "事实" });
     expect(
-      judgment.compareDocumentPosition(timelineHeading) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(
       timelineHeading.compareDocumentPosition(facts) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    expect(within(timeline).getByText("02")).toBeInTheDocument();
-    expect(within(facts.closest("section")!).getByText("03")).toBeInTheDocument();
-    const evidence = screen.getByRole("heading", { name: "依据与边界" });
-    const review = screen.getByRole("heading", { name: "复核与追问" });
-    expect(within(evidence.closest("section")!).getByText("04")).toBeInTheDocument();
-    expect(within(review.closest("section")!).getByText("05")).toBeInTheDocument();
+    expect(
+      facts.compareDocumentPosition(judgment) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    const notes = screen.getByRole("heading", { name: "阅读说明" });
+    expect(
+      judgment.compareDocumentPosition(notes) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "依据与边界" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "复核与追问" })).toBeVisible();
     expect(screen.getByText("这一周宜先稳住手头节奏。")).toBeVisible();
     expect(screen.getAllByText("甲子")).toHaveLength(1);
   });
@@ -901,9 +1090,9 @@ describe("fortune period timeline", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    const facts = await screen.findByRole("region", { name: "事实" });
+    expect(await screen.findByRole("heading", { level: 1, name: "运势" })).toBeVisible();
     expect(screen.queryByRole("region", { name: "近七日周期" })).not.toBeInTheDocument();
-    expect(within(facts).getByText("02")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "事实" })).not.toBeInTheDocument();
     expect(document.body).not.toHaveTextContent(/第 1 日|第 1 项|公开标记已就绪/);
   });
 });

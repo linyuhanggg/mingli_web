@@ -46,7 +46,7 @@ describe("Web UI Lab interactions", () => {
     expect(routeButtons).toHaveLength(56);
 
     await user.click(screen.getByRole("button", { name: "预览路由 /auth/register" }));
-    expect(screen.getByRole("heading", { name: "注册按验证、设密码、同意政策推进。" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "注册" })).toBeVisible();
     expect(screen.getByText("auth-surface/v1")).toBeVisible();
 
     await user.click(screen.getByRole("button", { name: "预览路由 /tools/name" }));
@@ -153,7 +153,8 @@ describe("Web UI Lab interactions", () => {
     expect(screen.getByRole("form", { name: "登录表单" })).toBeVisible();
 
     await user.selectOptions(screen.getByRole("combobox", { name: "页面与场景" }), "checkout-order");
-    expect(screen.getByRole("heading", { name: "订单快照必须来自服务端" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "订单", level: 1 })).toBeVisible();
+    expect(screen.getByText("没有服务端订单快照就不展示金额")).toBeVisible();
 
     await user.selectOptions(screen.getByRole("combobox", { name: "页面与场景" }), "public-library");
     expect(screen.getByRole("heading", { name: "公开内容会标明来源、整理方式和更新时间。" })).toBeVisible();

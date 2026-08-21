@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 import { AdminShell } from "@/components/admin-shell";
 import { KpiChip } from "@/components/kpi-chip";
-import { StatusTag } from "@/components/status-tag";
 import { Status } from "@/components/ui";
 import { adminFetch, type AdminOverviewResponse } from "@/lib/api";
 
@@ -42,8 +41,8 @@ export function AdminOverviewPage() {
       ) : overview.kind === "stub" ? (
         <Status
           state="unavailable"
-          title="总览数据待接入"
-          description="后端当前返回占位合同；页面不会把 0 当作待办、订单或告警事实。"
+          title="总览暂时不可用。"
+          description="当前没有可展示的总览数字。"
         />
       ) : overview.kind === "error" ? (
         <Status
@@ -52,6 +51,9 @@ export function AdminOverviewPage() {
           description={overview.title}
         />
       ) : (
+        overview.data.kpis.length === 0 && overview.data.queues.length === 0 ? (
+          <Status state="empty" title="还没有可展示的总览" />
+        ) : (
         <div className={styles.stack}>
           <section aria-labelledby="overview-kpis-title">
             <h2 className="sr-only" id="overview-kpis-title">业务关键指标</h2>
@@ -69,7 +71,6 @@ export function AdminOverviewPage() {
           <section className={styles.queueSection} aria-labelledby="overview-queues-title">
             <div className={styles.sectionHeading}>
               <h2 id="overview-queues-title">工作队列</h2>
-              <StatusTag tone="pending">实时聚合</StatusTag>
             </div>
             {overview.data.queues.length === 0 ? (
               <p className={styles.empty}>当前没有待处理队列。</p>
@@ -85,6 +86,7 @@ export function AdminOverviewPage() {
             )}
           </section>
         </div>
+        )
       )}
     </AdminShell>
   );

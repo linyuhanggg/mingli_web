@@ -6,7 +6,7 @@ import {
   AccountSessionBoundary,
   useAccountSession,
 } from "@/components/account-session-context";
-import { AppPageHeader } from "@/components/app-page-header";
+import { AccountSectionShell } from "@/components/account-section-shell";
 
 import surface from "../app-surface.module.css";
 import { StatusPanel } from "../status-panel";
@@ -63,7 +63,7 @@ function SettingsContent() {
       <div className={surface.sectionHeader}>
         <div>
           <h2 id="account-settings-title">账号设置</h2>
-          <p>只列出已经接通的账户管理入口，不在这里猜测或生成支付、算法和身份事实。</p>
+          <p>选择一项继续。</p>
         </div>
       </div>
       <nav aria-label="账号设置分类">
@@ -85,13 +85,9 @@ function SettingsContent() {
 export function AccountSettingsSurface() {
   return (
     <AccountSessionBoundary>
-      <div className={secondary.accountPage}>
-        <AppPageHeader
-          description="账户设置只连接服务端已经存在的会话、通知和数据权利合同。"
-          title="设置"
-        />
+      <AccountSectionShell intro="管理登录设备、通知和数据权利。" title="设置">
         <SettingsContent />
-      </div>
+      </AccountSectionShell>
     </AccountSessionBoundary>
   );
 }

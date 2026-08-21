@@ -62,6 +62,39 @@ const KIND_COPY: Record<AdminCommerceKind, { title: string; empty: string; descr
   },
 };
 
+const STATUS_FILTERS = {
+  orders: {
+    label: "按订单状态筛选",
+    rowKey: "status",
+    options: [
+      { value: "", label: "全部" },
+      { value: "已创建", label: "新建订单" },
+      { value: "已支付", label: "已支付订单" },
+      { value: "已退款", label: "退款订单" },
+    ],
+  },
+  payments: {
+    label: "按支付状态筛选",
+    rowKey: "status",
+    options: [
+      { value: "", label: "全部" },
+      { value: "待处理", label: "待处理支付" },
+      { value: "已确认", label: "已确认支付" },
+      { value: "失败", label: "失败支付" },
+    ],
+  },
+  refunds: {
+    label: "按退款状态筛选",
+    rowKey: "status",
+    options: [
+      { value: "", label: "全部" },
+      { value: "待处理", label: "待处理退款" },
+      { value: "已确认", label: "已确认退款" },
+      { value: "失败", label: "失败退款" },
+    ],
+  },
+} as const;
+
 function formatDate(value: string | null): string {
   if (!value) return "—";
   return new Intl.DateTimeFormat("zh-CN", {
@@ -196,7 +229,7 @@ export function AdminCommerceSurface({
   return (
     <div className={styles.stack} data-state={state} data-staff-role={effectiveRole ?? "session"}>
       {notice}
-      {state !== "forbidden" ? <section className={styles.panel} aria-labelledby={`${kind}-title`}>
+      {state === "ready" ? <section className={styles.panel} aria-labelledby={`${kind}-title`}>
         <div className={styles.heading}>
           <div>
             <h2 id={`${kind}-title`}>{copy.title}</h2>
@@ -210,8 +243,9 @@ export function AdminCommerceSurface({
           rows={rows}
           filterLabel={`筛选${copy.title}`}
           filterPlaceholder="例如：编号、渠道、状态或金额…"
+          filter={STATUS_FILTERS[kind]}
           pageSize={20}
-          emptyState={state === "unavailable" ? "服务端商业事实暂不可用" : copy.empty}
+          emptyState={`没有符合筛选条件的${copy.title}`}
         />
       </section> : null}
     </div>

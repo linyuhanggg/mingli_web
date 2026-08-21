@@ -21,7 +21,6 @@ type Phase =
 
 type OtpChallenge = {
   challenge_id: string;
-  development_code?: string;
 };
 
 type DeviceSession = {
@@ -210,7 +209,7 @@ export function OtpForm() {
       <section className={styles.form} aria-live="polite">
         <p className={styles.success}>登录成功</p>
         <p className={styles.transition}>
-          正在进入 /account…设备会话已建立，不会再创建游客身份。
+          登录成功。
         </p>
       </section>
     );
@@ -296,9 +295,6 @@ export function OtpForm() {
 
       {phase === "code" && challenge ? (
         <form onSubmit={codeForm.handleSubmit(verifyCode)} noValidate aria-label="验证登录">
-          {challenge.development_code ? (
-            <p className={styles.hint}>调试码（仅开发/测试环境）：{challenge.development_code}</p>
-          ) : null}
           <p className={styles.codeMeta} role="status">
             {deliveryAttempt > 1
               ? `验证码已重新发送（第 ${deliveryAttempt} 次）至 ${submittedDestination}。`
@@ -323,7 +319,7 @@ export function OtpForm() {
               {...codeForm.register("code")}
             />
             <p className={styles.hint} id="otp-code-help">
-              验证码为六位数字；验证成功即建立当前设备会话。
+              验证码为六位数字。
             </p>
             {codeForm.formState.errors.code ? (
               <p className={styles.fieldError} id="otp-code-error" role="alert">

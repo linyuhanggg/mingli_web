@@ -7,6 +7,8 @@ const mockStartBaziDeepReading = vi.hoisted(() => vi.fn());
 const mockCreateBaziDeepCheckout = vi.hoisted(() => vi.fn());
 const mockGetBaziDeepCheckout = vi.hoisted(() => vi.fn());
 const mockBindReadingFulfillment = vi.hoisted(() => vi.fn());
+const mockRecordConsent = vi.hoisted(() => vi.fn());
+const mockReplace = vi.hoisted(() => vi.fn());
 const mockSessionStatus = vi.hoisted(() => ({ value: "signedOut" as "checking" | "signedOut" | "signedIn" }));
 
 vi.mock("@/lib/api", async (importOriginal) => ({
@@ -16,6 +18,11 @@ vi.mock("@/lib/api", async (importOriginal) => ({
   createBaziDeepCheckout: mockCreateBaziDeepCheckout,
   getBaziDeepCheckout: mockGetBaziDeepCheckout,
   bindReadingFulfillment: mockBindReadingFulfillment,
+  recordConsent: mockRecordConsent,
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: mockReplace, push: vi.fn(), prefetch: vi.fn(), refresh: vi.fn(), back: vi.fn(), forward: vi.fn() }),
 }));
 
 vi.mock("@/components/account-session-context", () => ({
@@ -95,6 +102,9 @@ beforeEach(() => {
   mockCreateBaziDeepCheckout.mockReset();
   mockGetBaziDeepCheckout.mockReset();
   mockBindReadingFulfillment.mockReset();
+  mockRecordConsent.mockReset();
+  mockRecordConsent.mockResolvedValue({});
+  mockReplace.mockReset();
 });
 
 afterEach(cleanup);
@@ -194,6 +204,17 @@ describe("Bazi deep task state contract", () => {
       { reading_version_id: "deep-1" },
       expect.any(String),
     ));
+    expect(mockRecordConsent).toHaveBeenNthCalledWith(1, {
+      policy_key: "privacy",
+      policy_version: "development-preview-v0.1",
+      context: "purchase",
+    });
+    expect(mockRecordConsent).toHaveBeenNthCalledWith(2, {
+      policy_key: "terms",
+      policy_version: "development-preview-v0.1",
+      context: "purchase",
+    });
+    expect(JSON.stringify(mockCreateBaziDeepCheckout.mock.calls[0]?.[0])).not.toMatch(/policy/);
     expect((await screen.findAllByText("等待支付确认")).length).toBeGreaterThan(0);
     await waitFor(() => expect(mockGetBaziDeepCheckout).toHaveBeenCalledWith("order-1"));
     releaseCheckout?.(checkoutConfirmed);
@@ -253,8 +274,30 @@ describe("Bazi deep task state contract", () => {
     );
 
     await userEvent.click(await screen.findByRole("button", { name: "开始安全结账" }));
-    expect((await screen.findAllByText("支付入口暂不可用")).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText("支付暂时不可用")).length).toBeGreaterThan(0);
     expect(mockBindReadingFulfillment).not.toHaveBeenCalled();
     expect(screen.queryByTestId("reading-result-deep-1")).not.toBeInTheDocument();
+  });
+
+  it("reaccepts on stale purchase policy instead of creating checkout", async () => {
+    mockSessionStatus.value = "signedIn";
+    mockPollReading.mockResolvedValue(previewSummary);
+    mockStartBaziDeepReading.mockResolvedValue({ ...deepSummary, status: "input_ready", delivery_state: "payment_required" });
+    const { ApiError } = await import("@/lib/api");
+    mockRecordConsent.mockRejectedValue(new ApiError("Policy version is not current", 400));
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole("button", { name: "开始安全结账" }));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/auth/consent"));
+    expect(mockCreateBaziDeepCheckout).not.toHaveBeenCalled();
+    expect(screen.queryByText("Policy version is not current")).not.toBeInTheDocument();
   });
 });

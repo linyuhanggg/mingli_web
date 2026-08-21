@@ -6,7 +6,7 @@ import {
   AccountSessionBoundary,
   useAccountSession,
 } from "@/components/account-session-context";
-import { AppPageHeader } from "@/components/app-page-header";
+import { AccountSectionShell } from "@/components/account-section-shell";
 import { revokeAllSessions } from "@/lib/api";
 
 import surface from "../app-surface.module.css";
@@ -61,7 +61,7 @@ function SecurityContent() {
       <div className={surface.sectionHeader}>
         <div>
           <h2 id="account-security-title">设备安全</h2>
-          <p>会话由服务端管理；这里不从浏览器存储推断设备或登录状态。</p>
+          <p>撤销后，当前设备也会退出。</p>
         </div>
       </div>
       <ul aria-label="已验证身份" className={surface.accountList}>
@@ -91,13 +91,9 @@ function SecurityContent() {
 export function AccountSecuritySurface() {
   return (
     <AccountSessionBoundary>
-      <div className={secondary.accountPage}>
-        <AppPageHeader
-          description="身份与设备会话只由服务端确认；高风险会话操作会清除当前登录。"
-          title="设备安全"
-        />
+      <AccountSectionShell intro="查看已验证身份，并可以退出全部设备。" title="设备安全">
         <SecurityContent />
-      </div>
+      </AccountSectionShell>
     </AccountSessionBoundary>
   );
 }

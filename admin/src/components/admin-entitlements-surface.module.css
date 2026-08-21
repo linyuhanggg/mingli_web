@@ -87,6 +87,36 @@
   gap: var(--space-sm);
 }
 
+.impactSummary {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+}
+
+.impactSummary div {
+  display: grid;
+  grid-template-columns: minmax(6rem, 0.35fr) minmax(0, 1fr);
+  gap: var(--space-sm);
+}
+
+.impactSummary dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.impactSummary dd,
+.submitHelp {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.submitHelp {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  text-align: right;
+}
+
 @media (max-width: 47.99rem) {
   .panel {
     padding: var(--space-md);

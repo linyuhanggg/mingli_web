@@ -45,29 +45,11 @@
   font-weight: 700;
 }
 
-.reasonField {
-  display: grid;
+.workbenchField {
+  --field-control-height: var(--target-min);
+  --field-textarea-height: 5.5rem;
+
   max-width: 68ch;
-  gap: 0.35rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-label);
-  font-weight: 700;
-}
-
-.reasonField textarea {
-  min-height: 5.5rem;
-  padding: 0.7rem 0.8rem;
-  resize: vertical;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-control);
-  background: var(--color-canvas);
-  color: var(--color-text);
-  font: inherit;
-}
-
-.reasonField textarea:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
 }
 
 .inlineAlert {

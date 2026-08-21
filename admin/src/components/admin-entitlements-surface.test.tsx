@@ -42,9 +42,12 @@ describe("AdminEntitlementsSurface", () => {
     expect(await screen.findByText("manual:case-1")).toBeVisible();
     await user.type(screen.getByLabelText("用户 ID"), "user-1");
     await user.type(screen.getByLabelText("权益 ID"), "manual:case-1");
-    await user.type(screen.getByLabelText("操作原因"), "客服补发体验次数");
     await user.type(screen.getByLabelText("来源编号"), "case-1-grant");
-    await user.click(screen.getByRole("button", { name: "追加账本事件" }));
+    await user.click(screen.getByRole("button", { name: "复核并追加" }));
+    expect(screen.getByRole("dialog", { name: "追加权益事件 · user-1" })).toHaveTextContent("manual:case-1");
+    expect(screen.getByRole("button", { name: "确认并记录审计" })).toBeDisabled();
+    await user.type(screen.getByLabelText(/操作原因/), "客服补发体验次数");
+    await user.click(screen.getByRole("button", { name: "确认并记录审计" }));
 
     expect(adminFetchMock).toHaveBeenNthCalledWith(
       2,
@@ -71,6 +74,6 @@ describe("AdminEntitlementsSurface", () => {
     render(<AdminEntitlementsSurface role="support" />);
 
     expect(await screen.findByText("暂无权益账本事件")).toBeVisible();
-    expect(screen.queryByRole("button", { name: "追加账本事件" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "复核并追加" })).not.toBeInTheDocument();
   });
 });

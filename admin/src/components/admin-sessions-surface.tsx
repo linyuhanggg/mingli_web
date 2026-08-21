@@ -3,7 +3,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAdminStaff } from "@/components/admin-shell";
-import { Button, Status, Table, type TableColumn, type TableRow } from "@/components/ui";
+import {
+  Button,
+  Dialog,
+  DialogFooter,
+  Field,
+  Status,
+  Table,
+  type TableColumn,
+  type TableRow,
+} from "@/components/ui";
 import { adminFetch, type StaffRole } from "@/lib/api";
 import type { AdminSession, AdminSessionsResponse } from "@/lib/admin-sessions";
 
@@ -40,6 +49,7 @@ export function AdminSessionsSurface({ role }: { role?: StaffRole }) {
   >("loading");
   const [data, setData] = useState<AdminSessionsResponse>({ sessions: [] });
   const [reason, setReason] = useState("");
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -109,11 +119,28 @@ export function AdminSessionsSurface({ role }: { role?: StaffRole }) {
         setPendingId(null);
         return;
       }
-      const refreshed = await loadSessions();
-      setResult(refreshed ? "会话已撤销" : "会话已撤销，但列表刷新失败；请重新读取。");
+      setResult("会话已撤销并记录审计；关闭确认层后会刷新列表。");
       setPendingId(null);
     },
-    [loadSessions, reason],
+    [reason],
+  );
+
+  const changeRevokeDialog = useCallback(
+    (open: boolean, item: AdminSession) => {
+      if (open) {
+        setSelectedSessionId(item.id);
+        setReason("");
+        setResult(null);
+        setError(null);
+        return;
+      }
+      setSelectedSessionId(null);
+      setReason("");
+      setError(null);
+      if (result) void loadSessions();
+      setResult(null);
+    },
+    [loadSessions, result],
   );
 
   const rows = useMemo<TableRow[]>(
@@ -125,20 +152,67 @@ export function AdminSessionsSurface({ role }: { role?: StaffRole }) {
         lastSeenAt: formatDate(item.last_seen_at),
         expiresAt: formatDate(item.expires_at),
         action:
-          item.status === "active" ? (
-            <Button
-              variant="destructive"
-              type="button"
-              loading={pendingId === item.id}
-              onClick={() => void revoke(item)}
+          effectiveRole === "superadmin" && item.status === "active" ? (
+            <Dialog
+              open={selectedSessionId === item.id}
+              onOpenChange={(open) => changeRevokeDialog(open, item)}
+              title={`撤销会话 · ${item.actor}`}
+              description="强退会立即使该员工的当前会话失效，且每次操作都会留下审计记录。"
+              trigger={<Button variant="destructive">撤销会话</Button>}
             >
-              撤销会话
-            </Button>
+              <dl className={styles.impactSummary}>
+                <div>
+                  <dt>影响对象</dt>
+                  <dd>{item.actor}</dd>
+                </div>
+                <div>
+                  <dt>会话编号</dt>
+                  <dd>{item.id}</dd>
+                </div>
+                <div>
+                  <dt>审计结果</dt>
+                  <dd>记录强退原因、操作员工与目标会话</dd>
+                </div>
+              </dl>
+              <Field
+                label="会话强退原因"
+                description="至少 4 个字，例如异常登录、人员离职或权限回收。"
+                required
+              >
+                <input
+                  type="text"
+                  name="session-revoke-reason"
+                  autoComplete="off"
+                  value={reason}
+                  onChange={(event) => setReason(event.target.value)}
+                  minLength={4}
+                />
+              </Field>
+              {error ? <Status state="error" title="会话强退失败" description={error} /> : null}
+              {result ? <Status state="success" title="会话已撤销" description={result} /> : null}
+              <DialogFooter>
+                <Button variant="ghost" type="button" onClick={() => changeRevokeDialog(false, item)}>
+                  取消
+                </Button>
+                <Button
+                  type="button"
+                  loading={pendingId === item.id}
+                  disabled={reason.trim().length < 4 || Boolean(result)}
+                  aria-describedby={`session-revoke-help-${item.id}`}
+                  onClick={() => void revoke(item)}
+                >
+                  确认并记录审计
+                </Button>
+              </DialogFooter>
+              <p className={styles.submitHelp} id={`session-revoke-help-${item.id}`}>
+                {result ? "操作已完成，可关闭确认层。" : "填写至少 4 个字的原因后可确认。"}
+              </p>
+            </Dialog>
           ) : (
             "—"
           ),
       })),
-    [data.sessions, pendingId, revoke],
+    [changeRevokeDialog, data.sessions, effectiveRole, error, pendingId, reason, result, revoke, selectedSessionId],
   );
 
   const notice =
@@ -159,7 +233,6 @@ export function AdminSessionsSurface({ role }: { role?: StaffRole }) {
   return (
     <div className={styles.stack} data-state={state} data-staff-role={effectiveRole ?? "session"}>
       {notice}
-      {result ? <Status state="success" title={result} description="强退命令已通过服务端 CSRF、角色和审计校验。" /> : null}
       {state === "ready" || state === "empty" ? (
         <section className={styles.panel} aria-labelledby="sessions-list-title">
           <div className={styles.heading}>
@@ -178,28 +251,6 @@ export function AdminSessionsSurface({ role }: { role?: StaffRole }) {
             pageSize={20}
             emptyState="当前没有员工会话"
           />
-        </section>
-      ) : null}
-      {effectiveRole === "superadmin" && state !== "forbidden" ? (
-        <section className={styles.panel} aria-labelledby="sessions-command-title">
-          <div className={styles.heading}>
-            <div>
-              <h2 id="sessions-command-title">会话强退</h2>
-              <p>只对有效会话提供强退操作；每次变更都记录员工审计事件。</p>
-            </div>
-            <span className={styles.badge}>需审计</span>
-          </div>
-          <label className={styles.reasonField} htmlFor="session-revoke-reason">
-            会话强退原因
-            <textarea
-              id="session-revoke-reason"
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
-              minLength={4}
-              placeholder="说明异常登录、人员离职或其他强退原因…"
-            />
-          </label>
-          {error ? <p className={styles.inlineAlert} role="alert">{error}</p> : null}
         </section>
       ) : null}
     </div>

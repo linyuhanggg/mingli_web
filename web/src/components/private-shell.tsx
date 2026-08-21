@@ -105,12 +105,14 @@ function SessionIdentityLink() {
     Icon = ShieldCheck;
   }
 
+  const href = state.status === "signedOut" ? "/auth/login" : "/account";
+
   return (
     <Link
       aria-label={accessibleName}
       className={styles.identityLink}
       data-state={visualState}
-      href="/account"
+      href={href}
     >
       <span className={styles.identityAvatar} aria-hidden="true">
         <Icon size={19} strokeWidth={1.75} />

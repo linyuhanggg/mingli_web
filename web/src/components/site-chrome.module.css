@@ -29,6 +29,26 @@
   color: var(--color-text);
 }
 
+.header[data-home-chrome="true"] {
+  border-bottom-color: var(--paper-line);
+  background: var(--paper-glass-strong);
+  color: var(--paper-text);
+  backdrop-filter: blur(16px) saturate(1.1);
+}
+
+.header[data-home-chrome="true"] :where(.brand, .navItem, .utilityLink) {
+  color: var(--paper-text);
+}
+
+.header[data-home-chrome="true"] .navItem::after {
+  background: var(--paper-text);
+}
+
+.header[data-home-chrome="true"] :where(.utilityLink) {
+  border-color: var(--paper-line-strong);
+  background: var(--paper-glass);
+}
+
 .headerInner {
   display: flex;
   min-height: var(--header-desktop);
@@ -381,6 +401,26 @@
   color: var(--color-text-inverse);
 }
 
+.footer[data-home-chrome="true"] {
+  border-top-color: var(--paper-line-strong);
+  background: var(--paper-text);
+  color: var(--paper-highlight);
+}
+
+.footer[data-home-chrome="true"] .footerCopy p,
+.footer[data-home-chrome="true"] .footerColumn h2,
+.footer[data-home-chrome="true"] .footerColumn a,
+.footer[data-home-chrome="true"] .legal {
+  color: var(--paper-highlight);
+}
+
+.footer[data-home-chrome="true"] .symbol,
+.footer[data-home-chrome="true"] .symbol span {
+  border-color: var(--paper-line-strong);
+  background: transparent;
+  color: var(--paper-highlight);
+}
+
 .footerTop {
   display: grid;
   gap: var(--space-2xl);
@@ -533,6 +573,21 @@
     background: var(--color-surface);
   }
 
+  .mobileBottomBar[data-home-chrome="true"] {
+    border-top-color: var(--paper-line-strong);
+    background: var(--paper-surface);
+  }
+
+  .mobileBottomBar[data-home-chrome="true"] .mobileNavItem {
+    color: var(--paper-text-soft);
+  }
+
+  .mobileBottomBar[data-home-chrome="true"] .mobileNavItem[aria-current="page"],
+  .mobileBottomBar[data-home-chrome="true"] .mobileNavItem[aria-expanded="true"] {
+    background: var(--paper-soft);
+    color: var(--paper-text);
+  }
+
   .mobileBottomBar .mobileNavItem {
     min-height: var(--target-min);
     flex-direction: column;
@@ -602,123 +657,12 @@
   }
 }
 
-/* `/` 首页专属液态玻璃壳；其他路由继续使用 Direction C 顶栏。 */
-:global(body:has(.liquid-home-prototype)) .header {
-  --home-nav-ink: var(--color-text);
-  --home-nav-muted: var(--color-text-secondary);
-  --home-nav-line: var(--color-border);
-  position: fixed;
-  top: 1rem;
-  right: 0;
-  left: 0;
-  min-height: 0;
-  overflow: visible;
-  border: 0;
-  background: transparent;
-  color: var(--home-nav-ink);
-  pointer-events: none;
-}
-
-:global(body:has(.liquid-home-prototype)) .headerInner {
-  /* 74.5rem = 页面容器 72.5rem + 左右各 1rem 内衬：胶囊内部的品牌与导航
-     因此落在与内页通栏导航完全相同的左右边线上，切页时不会横向跳动。 */
-  width: min(74.5rem, calc(100% - 2rem));
-  min-height: 4.5rem;
-  gap: 0.9rem;
-  padding: 0.35rem 1rem;
-  overflow: visible;
-  border: 1px solid var(--home-nav-line);
-  border-radius: 1.5rem;
-  background: var(--color-surface);
-  box-shadow: var(--shadow-overlay);
-  pointer-events: auto;
-}
-
-:global(body:has(.liquid-home-prototype)) .brand {
-  color: var(--home-nav-ink);
-}
-
-:global(body:has(.liquid-home-prototype)) .brandSymbolImage {
-  width: 1.35rem;
-  height: 2.9rem;
-}
-
-:global(body:has(.liquid-home-prototype)) .brand small,
-:global(body:has(.liquid-home-prototype)) .versionPill {
-  display: none;
-}
-
-:global(body:has(.liquid-home-prototype)) .brand strong {
-  font-size: var(--font-size-body);
-  font-weight: 740;
-}
-
-:global(body:has(.liquid-home-prototype)) .navItem {
-  color: var(--home-nav-muted);
-}
-
-:global(body:has(.liquid-home-prototype)) .navItem::after {
-  display: none;
-}
-
-:global(body:has(.liquid-home-prototype)) .navItem:hover,
-:global(body:has(.liquid-home-prototype)) .navItem[aria-current="page"],
-:global(body:has(.liquid-home-prototype)) .navItem[aria-expanded="true"] {
-  background: var(--color-surface-subtle);
-  color: var(--home-nav-ink);
-}
-
-:global(body:has(.liquid-home-prototype)) .utilityLink {
-  border-color: var(--color-border);
-  background: var(--color-surface-subtle);
-  color: var(--home-nav-ink);
-}
-
-:global(body:has(.liquid-home-prototype)) .utilityLink:hover,
-:global(body:has(.liquid-home-prototype)) .utilityLink[aria-current="page"] {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-muted);
-}
-
-:global(body:has(.liquid-home-prototype)) .megaMenu,
-:global(body:has(.liquid-home-prototype)) .moreMenu,
-:global(body:has(.liquid-home-prototype)) .crossMenu {
-  border-color: var(--color-border);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-overlay);
-}
-
-@media (max-width: 47.999rem) {
-  :global(body:has(.liquid-home-prototype)) .header {
-    top: 0.5rem;
-  }
-
-  :global(body:has(.liquid-home-prototype)) .headerInner {
-    width: calc(100% - 1rem);
-    min-height: 3.75rem;
-    padding: 0.25rem 0.65rem;
-    border-radius: 1.125rem;
-  }
-
-  :global(body:has(.liquid-home-prototype)) .brandSymbolImage {
-    width: 1.1rem;
-    height: 2.4rem;
-  }
-
-  :global(body:has(.liquid-home-prototype)) .mobileBottomBar {
-    right: 0.5rem;
-    bottom: calc(0.5rem + env(safe-area-inset-bottom));
-    left: 0.5rem;
-    min-height: 4rem;
-    padding-bottom: var(--space-xs);
-    border: 1px solid var(--color-border);
-    border-radius: 1.125rem;
-    background: var(--color-surface);
-    box-shadow: var(--shadow-overlay);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
+  .header[data-home-chrome="true"] {
+    background: var(--paper-glass-strong);
+    backdrop-filter: none;
+  }
+
   .skipLink,
   .navItem,
   .navItem::after,

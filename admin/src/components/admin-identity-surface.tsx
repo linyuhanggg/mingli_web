@@ -33,6 +33,27 @@ const LIST_COLUMNS: Record<"users" | "subjects", TableColumn[]> = {
   ],
 };
 
+const LIST_FILTERS = {
+  users: {
+    label: "按用户状态筛选",
+    rowKey: "status",
+    options: [
+      { value: "", label: "全部" },
+      { value: "正常", label: "正常用户" },
+      { value: "已关闭", label: "已关闭用户" },
+    ],
+  },
+  subjects: {
+    label: "按 Subject 状态筛选",
+    rowKey: "status",
+    options: [
+      { value: "", label: "全部" },
+      { value: "正常", label: "正常 Subject" },
+      { value: "已删除", label: "已删除 Subject" },
+    ],
+  },
+} as const;
+
 type SurfaceState = "loading" | "ready" | "empty" | "error" | "forbidden" | "unavailable";
 
 function formatDate(value: string): string {
@@ -400,7 +421,7 @@ export function AdminIdentitySurface({
         ) : (
           <DetailPlaceholder kind={kind} id={id} />
         )
-      ) : state !== "forbidden" ? (
+      ) : state === "ready" ? (
         <section className={styles.panel} aria-labelledby={`${kind}-title`}>
           <div className={styles.heading}>
             <div>
@@ -415,8 +436,9 @@ export function AdminIdentitySurface({
             rows={rows}
             filterLabel={`筛选${title}`}
             filterPlaceholder="例如：编号、状态或标签…"
+            filter={LIST_FILTERS[kind as "users" | "subjects"]}
             pageSize={20}
-            emptyState={state === "unavailable" ? "服务端事实暂不可用" : `当前没有${title}记录`}
+            emptyState={`没有符合筛选条件的${title}记录`}
           />
         </section>
       ) : null}

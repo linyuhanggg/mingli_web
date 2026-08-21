@@ -35,6 +35,31 @@
   line-height: var(--line-height-body);
 }
 
+.compact {
+  gap: var(--space-sm);
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-card);
+}
+
+.compact .icon {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0;
+  background: transparent;
+}
+
+.compact .title {
+  font-size: var(--font-size-label);
+  line-height: 1.4;
+}
+
+.compact .description {
+  margin-top: 0.125rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
 /* Busy states are neutral — a spinner, never a warning tint. */
 .loading .icon,
 .processing .icon {

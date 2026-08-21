@@ -33,11 +33,8 @@ function formatReadingTime(value: string): string {
   return Number.isNaN(date.getTime()) ? value : dateTimeFormatter.format(date);
 }
 
-function errorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return "读取历史失败，请稍后重试。";
+function errorMessage(): string {
+  return "读取失败，请重试";
 }
 
 function statusMeta(
@@ -124,7 +121,7 @@ export function ReadingHistory({
         if (!cancelled && err instanceof ApiError && err.status === 401) {
           setSessionExpired(true);
         } else if (!cancelled) {
-          setError(errorMessage(err));
+          setError(errorMessage());
         }
       })
       .finally(() => {
@@ -203,7 +200,7 @@ export function ReadingHistory({
           description="登录状态已失效，历史暂时无法读取；重新登录后可回到这里。"
         />
         <div className={styles.retryRow}>
-          <Link className={surface.secondaryButton} href="/account">
+          <Link className={surface.secondaryButton} href="/auth/login">
             重新登录
           </Link>
         </div>
@@ -217,8 +214,8 @@ export function ReadingHistory({
         state="empty"
         title="还没有可显示的解读"
         description="服务端最多返回最近 50 条解读版本；先发起一次，真实结果才会出现在这里。"
-        actionHref="/app"
-        actionLabel="发起解读"
+        actionHref="/bazi"
+        actionLabel="去排盘"
       />
     );
   }

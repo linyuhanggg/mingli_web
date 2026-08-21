@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
 
-import { PublicContentSurface } from "@/components/surfaces";
-import { publicContentSurfaces } from "@/lib/secondary-surfaces";
+import { LibraryIndexView } from "@/components/library-page";
 
-export const metadata: Metadata = { title: "知识内容", description: "公开文章与古籍来源索引。" };
+export const metadata: Metadata = { title: "知识内容", description: "只展示已发布的文章。" };
 
 export default function LibraryPage() {
-  return (
-    <PublicContentSurface
-      contentSource={{ kind: "index", prefix: "library.", hrefBase: "/library" }}
-      surface={publicContentSurfaces.library}
-    />
-  );
+  return <LibraryIndexView />;
 }

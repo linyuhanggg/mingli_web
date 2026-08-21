@@ -104,6 +104,11 @@ const routeMarkers: Record<string, string> = {
   "/account/settings/privacy-data": "AccountDataRightsSurface",
   "/account/data-rights": "AccountDataRightsSurface",
   "/account/settings/preferences": "NotificationPreferencesForm",
+  "/daily": "DailyPageView",
+  "/library": "LibraryIndexView",
+  "/library/[slug]": "LibraryArticleView",
+  "/tools": "ToolsIndexView",
+  "/tools/[tool]": "ToolBoundaryView",
 };
 
 describe("secondary product route inventory", () => {

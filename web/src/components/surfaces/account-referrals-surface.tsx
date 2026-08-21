@@ -6,7 +6,7 @@ import {
   AccountSessionBoundary,
   useAccountSession,
 } from "@/components/account-session-context";
-import { AppPageHeader } from "@/components/app-page-header";
+import { AccountSectionShell } from "@/components/account-section-shell";
 import {
   ApiError,
   listAccountReferrals,
@@ -86,7 +86,7 @@ function CampaignCard({ campaign }: { readonly campaign: AccountReferralCampaign
         <div className={styles.rewardBlock}>
           <div className={styles.rewardHeader}>
             <h4>奖励记录</h4>
-            <span>金额和数量以账户账本为准</span>
+            <span>金额和数量以账户记录为准</span>
           </div>
           <ul className={styles.rewardList}>
             {campaign.rewards.map((reward) => (
@@ -139,7 +139,7 @@ function ReferralsContent() {
   }, [attempt, userId]);
 
   if (state.status === "checking") {
-    return <StatusPanel state="loading" title="正在确认账户…" description="正在确认邀请进度访问权限。" />;
+    return <StatusPanel state="loading" title="正在确认账户…" description="正在确认账户。" />;
   }
 
   if (state.status === "error") {
@@ -150,7 +150,7 @@ function ReferralsContent() {
     return (
       <SecondaryStatus
         action={{ href: "/auth/login", label: "前往登录" }}
-        description="登录后才能查看属于你的邀请码、邀请进度和奖励状态。"
+        description="登录后才能查看邀请。"
         state="need-login"
         title="需要登录"
       />
@@ -164,7 +164,7 @@ function ReferralsContent() {
         actionLabel="重新登录"
         state="error"
         title="登录已过期"
-        description="登录状态已失效，邀请进度暂时无法读取。"
+        description="登录已失效，请重新登录后再查看。"
       />
     );
   }
@@ -175,7 +175,7 @@ function ReferralsContent() {
       <div className={surface.sectionHeader}>
         <div>
           <h2 id="account-referrals-title">邀请进度</h2>
-          <p>只显示服务端确认的活动、邀请码和状态；不在浏览器生成归因或奖励。</p>
+          <p>只显示已确认的活动和邀请码。</p>
         </div>
       </div>
       {loading ? (
@@ -224,13 +224,9 @@ function ReferralsContent() {
 export function AccountReferralsSurface() {
   return (
     <AccountSessionBoundary>
-      <div className={secondary.accountPage}>
-        <AppPageHeader
-          description="邀请活动状态来自服务端账本；公开归因入口接通前，不会在页面猜测或补算结果。"
-          title="邀请"
-        />
+      <AccountSectionShell intro="查看你的邀请活动。" title="邀请">
         <ReferralsContent />
-      </div>
+      </AccountSectionShell>
     </AccountSessionBoundary>
   );
 }

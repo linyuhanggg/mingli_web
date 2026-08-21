@@ -16,6 +16,14 @@ export type DialogProps = {
   children: ReactNode;
 };
 
+export type DialogFooterProps = {
+  children: ReactNode;
+};
+
+export function DialogFooter({ children }: DialogFooterProps) {
+  return <div className={styles.footer}>{children}</div>;
+}
+
 export function Dialog({
   open,
   onOpenChange,

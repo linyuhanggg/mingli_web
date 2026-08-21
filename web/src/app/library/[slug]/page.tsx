@@ -1,5 +1,8 @@
-import { PublicContentSurface } from "@/components/surfaces";
-import { publicContentSurfaces } from "@/lib/secondary-surfaces";
+import type { Metadata } from "next";
+
+import { LibraryArticleView } from "@/components/library-page";
+
+export const metadata: Metadata = { title: "知识内容", description: "只展示已发布的文章。" };
 
 export default async function LibraryArticlePage({
   params,
@@ -7,10 +10,5 @@ export default async function LibraryArticlePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  return (
-    <PublicContentSurface
-      contentSource={{ kind: "item", contentKey: `library.${slug}` }}
-      surface={publicContentSurfaces.article}
-    />
-  );
+  return <LibraryArticleView slug={slug} />;
 }

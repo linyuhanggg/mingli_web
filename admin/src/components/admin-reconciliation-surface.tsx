@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAdminStaff } from "@/components/admin-shell";
-import { Button, Drawer, Status, Table, type TableColumn, type TableRow } from "@/components/ui";
+import { Button, Drawer, Field, Status, Table, type TableColumn, type TableRow } from "@/components/ui";
 import { adminFetch, type StaffRole } from "@/lib/api";
 import type {
   AdminReconciliationPaymentDraft,
@@ -23,6 +23,12 @@ const RUN_COLUMNS: TableColumn[] = [
 ];
 
 const OPERATOR_ROLES: ReadonlySet<StaffRole> = new Set(["finance", "ops", "superadmin"]);
+const SNAPSHOT_STATUS_LABELS = {
+  pending: "待处理",
+  succeeded: "已成功",
+  failed: "已失败",
+  refunded: "已退款",
+} as const;
 
 const EMPTY_PAYMENT: AdminReconciliationPaymentDraft = {
   transaction_id: "",
@@ -71,6 +77,10 @@ export function AdminReconciliationSurface({ role }: { role?: StaffRole }) {
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [channelError, setChannelError] = useState<string | undefined>();
+  const [reasonError, setReasonError] = useState<string | undefined>();
+  const channelRef = useRef<HTMLInputElement>(null);
+  const reasonRef = useRef<HTMLTextAreaElement>(null);
 
   const loadRuns = useCallback(async () => {
     const response = await adminFetch<AdminReconciliationResponse>("/api/v1/admin/reconciliation");
@@ -137,10 +147,22 @@ export function AdminReconciliationSurface({ role }: { role?: StaffRole }) {
     const normalizedReason = reason.trim();
     const activePayments = payments.filter((item) => item.transaction_id.trim());
     const activeRefunds = refunds.filter((item) => item.refund_id.trim());
-    if (!channel.trim() || normalizedReason.length < 4) {
-      setError("请填写渠道和至少 4 个字的对账原因。");
+    if (!channel.trim()) {
+      const message = "请填写对账渠道。";
+      setChannelError(message);
+      setError(message);
+      channelRef.current?.focus();
       return;
     }
+    if (normalizedReason.length < 4) {
+      const message = "请填写至少 4 个字的对账原因。";
+      setReasonError(message);
+      setError(message);
+      reasonRef.current?.focus();
+      return;
+    }
+    setChannelError(undefined);
+    setReasonError(undefined);
     setPending(true);
     setError(null);
     setResult(null);
@@ -178,26 +200,24 @@ export function AdminReconciliationSurface({ role }: { role?: StaffRole }) {
     setSelectedRun(data.runs.find((run) => run.id === row.id) ?? null);
   }
 
-  const stateNotice =
-    state === "loading" ? (
-      <Status state="loading" title="正在读取对账批次…" description="只显示服务端已经保存的对账事实。" />
+  const stateNotice = result ? (
+    <Status compact state="success" title={result} description="本次命令已通过服务端权限、CSRF 和审计边界。" />
+  ) : state === "loading" ? (
+      <Status compact state="loading" title="正在读取对账批次…" description="只显示服务端已经保存的对账事实。" />
     ) : state === "forbidden" ? (
-      <Status state="locked" title="无权限" description="对账只允许财务、运营或超级管理员访问。" />
+      <Status compact state="locked" title="无权限" description="对账只允许财务、运营或超级管理员访问。" />
     ) : state === "unavailable" ? (
-      <Status state="unavailable" title="对账平台暂不可用" description="页面保留只读结构，不显示假差异或假金额。" />
+      <Status compact state="unavailable" title="对账平台暂不可用" description="页面保留只读结构，不显示假差异或假金额。" />
     ) : state === "error" ? (
-      <Status state="error" title="对账读取失败" description={error ?? "请求失败，请重试。"} />
+      <Status compact state="error" title="对账读取失败" description={error ?? "请求失败，请重试。"} />
     ) : state === "empty" ? (
-      <Status state="empty" title="暂无对账批次" description="完成一次已验签快照对账后，这里会显示批次和差异。" />
-    ) : (
-      <Status state="success" title="对账事实已接入" description="列表只展示服务端批次；差异详情可逐批查看。" />
-    );
+      <Status compact state="empty" title="暂无对账批次" description="完成一次已验签快照对账后，这里会显示批次和差异。" />
+    ) : null;
 
   return (
     <div className={styles.stack} data-state={state} data-staff-role={effectiveRole ?? "session"}>
       {stateNotice}
-      {result ? <Status state="success" title={result} description="本次命令已通过服务端权限、CSRF 和审计边界。" /> : null}
-      <section className={styles.panel} aria-labelledby="reconciliation-list-title">
+      {state === "ready" ? <section className={styles.panel} aria-labelledby="reconciliation-list-title">
         <div className={styles.heading}>
           <div>
             <h2 id="reconciliation-list-title">对账批次</h2>
@@ -211,14 +231,23 @@ export function AdminReconciliationSurface({ role }: { role?: StaffRole }) {
           rows={rows}
           filterLabel="筛选对账批次"
           filterPlaceholder="例如：渠道、状态或批次编号…"
+          filter={{
+            label: "按对账结果筛选",
+            rowKey: "status",
+            options: [
+              { value: "", label: "全部" },
+              { value: "已匹配", label: "已匹配" },
+              { value: "有差异", label: "有差异" },
+            ],
+          }}
           pageSize={10}
-          emptyState="当前没有已保存的对账批次"
+          emptyState="没有符合筛选条件的对账批次"
           onRowActivate={rows.length > 0 ? openRun : undefined}
           rowActionLabel="查看差异"
         />
-      </section>
+      </section> : null}
 
-      {canOperate ? (
+      {canOperate && state === "ready" ? (
         <section className={styles.panel} aria-labelledby="reconciliation-command-title">
           <div className={styles.heading}>
             <div>
@@ -228,48 +257,67 @@ export function AdminReconciliationSurface({ role }: { role?: StaffRole }) {
             <span className={styles.badge}>需审计</span>
           </div>
           <div className={styles.formGrid}>
-            <label>
-              渠道
-              <input value={channel} onChange={(event) => setChannel(event.target.value)} required />
-            </label>
-            <label className={styles.wideField}>
-              操作原因
+            <Field
+              className={styles.workbenchField}
+              label="渠道"
+              description="填写已验签快照所属的渠道适配器。"
+              error={channelError}
+              required
+            >
+              <input
+                ref={channelRef}
+                name="reconciliationChannel"
+                autoComplete="off"
+                value={channel}
+                onChange={(event) => {
+                  setChannel(event.target.value);
+                  if (event.target.value.trim()) setChannelError(undefined);
+                }}
+              />
+            </Field>
+            <Field
+              className={`${styles.workbenchField} ${styles.wideField}`}
+              label="操作原因"
+              description="至少 4 个字；原因会随本次对账写入审计。"
+              error={reasonError}
+              required
+            >
               <textarea
+                ref={reasonRef}
+                name="reconciliationReason"
+                autoComplete="off"
                 value={reason}
-                onChange={(event) => setReason(event.target.value)}
+                onChange={(event) => {
+                  setReason(event.target.value);
+                  if (event.target.value.trim().length >= 4) setReasonError(undefined);
+                }}
                 minLength={4}
-                required
                 placeholder="说明本次对账的来源和业务原因…"
               />
-            </label>
+            </Field>
           </div>
 
           <fieldset className={styles.snapshotGroup}>
             <legend>支付快照</legend>
             {payments.map((item, index) => (
               <div className={styles.snapshotRow} key={`payment-${index}`}>
-                <label>
-                  交易号
-                  <input value={item.transaction_id} onChange={(event) => updatePayment(index, "transaction_id", event.target.value)} />
-                </label>
-                <label>
-                  状态
-                  <select value={item.status} onChange={(event) => updatePayment(index, "status", event.target.value)}>
-                    <option value="pending">pending</option>
-                    <option value="succeeded">succeeded</option>
-                    <option value="failed">failed</option>
-                    <option value="refunded">refunded</option>
+                <Field className={styles.workbenchField} label="交易号">
+                  <input name={`payments.${index}.transaction_id`} autoComplete="off" value={item.transaction_id} onChange={(event) => updatePayment(index, "transaction_id", event.target.value)} />
+                </Field>
+                <Field className={styles.workbenchField} label="状态">
+                  <select name={`payments.${index}.status`} autoComplete="off" value={item.status} onChange={(event) => updatePayment(index, "status", event.target.value)}>
+                    {Object.entries(SNAPSHOT_STATUS_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
                   </select>
-                </label>
-                <label>
-                  金额（分）
-                  <input type="number" min={0} value={item.amount_minor} onChange={(event) => updatePayment(index, "amount_minor", event.target.value)} />
-                </label>
-                <label>
-                  币种
-                  <input maxLength={3} value={item.currency} onChange={(event) => updatePayment(index, "currency", event.target.value)} />
-                </label>
-                <Button variant="ghost" type="button" onClick={() => setPayments((current) => current.filter((_, itemIndex) => itemIndex !== index))} disabled={payments.length === 1}>
+                </Field>
+                <Field className={styles.workbenchField} label="金额（分）">
+                  <input name={`payments.${index}.amount_minor`} autoComplete="off" type="number" min={0} value={item.amount_minor} onChange={(event) => updatePayment(index, "amount_minor", event.target.value)} />
+                </Field>
+                <Field className={styles.workbenchField} label="币种">
+                  <input name={`payments.${index}.currency`} autoComplete="off" maxLength={3} value={item.currency} onChange={(event) => updatePayment(index, "currency", event.target.value)} />
+                </Field>
+                <Button aria-label={`移除支付快照 ${index + 1}`} variant="ghost" type="button" onClick={() => setPayments((current) => current.filter((_, itemIndex) => itemIndex !== index))} disabled={payments.length === 1}>
                   移除
                 </Button>
               </div>
@@ -283,31 +331,28 @@ export function AdminReconciliationSurface({ role }: { role?: StaffRole }) {
             <legend>退款快照</legend>
             {refunds.map((item, index) => (
               <div className={styles.snapshotRow} key={`refund-${index}`}>
-                <label>
-                  退款号
-                  <input value={item.refund_id} onChange={(event) => updateRefund(index, "refund_id", event.target.value)} />
-                </label>
-                <label>
-                  支付交易号
-                  <input value={item.payment_transaction_id} onChange={(event) => updateRefund(index, "payment_transaction_id", event.target.value)} />
-                </label>
-                <label>
-                  状态
-                  <select value={item.status} onChange={(event) => updateRefund(index, "status", event.target.value)}>
-                    <option value="pending">pending</option>
-                    <option value="succeeded">succeeded</option>
-                    <option value="failed">failed</option>
+                <Field className={styles.workbenchField} label="退款号">
+                  <input name={`refunds.${index}.refund_id`} autoComplete="off" value={item.refund_id} onChange={(event) => updateRefund(index, "refund_id", event.target.value)} />
+                </Field>
+                <Field className={styles.workbenchField} label="支付交易号">
+                  <input name={`refunds.${index}.payment_transaction_id`} autoComplete="off" value={item.payment_transaction_id} onChange={(event) => updateRefund(index, "payment_transaction_id", event.target.value)} />
+                </Field>
+                <Field className={styles.workbenchField} label="状态">
+                  <select name={`refunds.${index}.status`} autoComplete="off" value={item.status} onChange={(event) => updateRefund(index, "status", event.target.value)}>
+                    {Object.entries(SNAPSHOT_STATUS_LABELS)
+                      .filter(([value]) => value !== "refunded")
+                      .map(([value, label]) => (
+                        <option key={value} value={value}>{label}</option>
+                      ))}
                   </select>
-                </label>
-                <label>
-                  金额（分）
-                  <input type="number" min={0} value={item.amount_minor} onChange={(event) => updateRefund(index, "amount_minor", event.target.value)} />
-                </label>
-                <label>
-                  币种
-                  <input maxLength={3} value={item.currency} onChange={(event) => updateRefund(index, "currency", event.target.value)} />
-                </label>
-                <Button variant="ghost" type="button" onClick={() => setRefunds((current) => current.filter((_, itemIndex) => itemIndex !== index))}>
+                </Field>
+                <Field className={styles.workbenchField} label="金额（分）">
+                  <input name={`refunds.${index}.amount_minor`} autoComplete="off" type="number" min={0} value={item.amount_minor} onChange={(event) => updateRefund(index, "amount_minor", event.target.value)} />
+                </Field>
+                <Field className={styles.workbenchField} label="币种">
+                  <input name={`refunds.${index}.currency`} autoComplete="off" maxLength={3} value={item.currency} onChange={(event) => updateRefund(index, "currency", event.target.value)} />
+                </Field>
+                <Button aria-label={`移除退款快照 ${index + 1}`} variant="ghost" type="button" onClick={() => setRefunds((current) => current.filter((_, itemIndex) => itemIndex !== index))}>
                   移除
                 </Button>
               </div>

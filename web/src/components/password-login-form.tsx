@@ -6,6 +6,7 @@ import { useState } from "react";
 import { adoptCsrfToken, ApiError, loginWithPassword } from "@/lib/api";
 
 import { useOptionalAccountSession } from "./account-session-context";
+import authStyles from "./auth-shell.module.css";
 import styles from "./surfaces/secondary-surfaces.module.css";
 
 function channelFor(destination: string): "phone" | "email" {
@@ -90,14 +91,14 @@ export function PasswordLoginForm() {
         </div>
       </div>
       <p className={styles.field} id="password-login-help">
-        登录成功后会接管当前游客任务；密码只发送给身份服务，不会写入浏览器存储。
+        密码不会保存在这台设备上。
       </p>
       {error ? (
         <p className={styles.disabledReason} role="alert">
           {error}
         </p>
       ) : null}
-      <button disabled={busy} type="submit">
+      <button className={authStyles.submit} disabled={busy} type="submit">
         {busy ? "正在登录…" : "登录"}
       </button>
     </form>

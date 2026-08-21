@@ -1,26 +1,67 @@
 .main {
-  --home-paper: var(--color-canvas);
-  --home-paper-surface: var(--color-surface);
-  --home-paper-soft: var(--color-surface-subtle);
-  --home-glass: var(--color-surface);
-  --home-glass-strong: var(--color-surface);
-  --home-ink: var(--color-text);
-  --home-ink-soft: var(--color-text-secondary);
-  --home-ink-muted: var(--color-text-muted);
-  --home-line: var(--color-border);
-  --home-line-strong: var(--color-border-strong);
-  --home-cinnabar: var(--color-accent);
-  --home-gold: var(--color-accent);
-  --home-shadow: var(--shadow-overlay);
+  /* 首页剧场：宣纸、朱砂、淡金、光标追光。取值来自 ui/tokens.css 的
+     --paper-* 组（DESIGN.md §6 首页例外），此处只做本页语义别名。 */
+  --home-paper: var(--paper-canvas);
+  --home-paper-surface: var(--paper-surface);
+  --home-paper-soft: var(--paper-soft);
+  --home-glass: var(--paper-glass);
+  --home-glass-strong: var(--paper-glass-strong);
+  --home-ink: var(--paper-text);
+  --home-ink-soft: var(--paper-text-soft);
+  --home-ink-muted: var(--paper-text-muted);
+  --home-line: var(--paper-line);
+  --home-line-strong: var(--paper-line-strong);
+  --home-cinnabar: var(--paper-cinnabar);
+  --home-gold: var(--paper-gold);
+  --home-shadow: var(--paper-shadow);
+  --home-mx: 72%;
+  --home-my: 28%;
+  --home-px: 0;
+  --home-py: 0;
   min-height: 100vh;
   overflow: clip;
   background: var(--home-paper);
   color: var(--home-ink);
 }
 
+.stage {
+  position: relative;
+}
+
+.spotlight,
+.grain {
+  pointer-events: none;
+}
+
+.spotlight {
+  position: fixed;
+  z-index: 8;
+  inset: 0;
+  background: radial-gradient(
+    28rem 28rem at var(--home-mx) var(--home-my),
+    var(--paper-gold-wash),
+    transparent 62%
+  );
+  mix-blend-mode: multiply;
+}
+
+.grain {
+  position: fixed;
+  z-index: 9;
+  inset: 0;
+  opacity: 0.14;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+.stage[data-reduced="true"] .spotlight,
+.stage[data-reduced="true"] .grain {
+  display: none;
+}
+
 .heroStage {
   position: relative;
-  min-height: clamp(44rem, 78vh, 49rem);
+  min-height: 100svh;
   overflow: clip;
   isolation: isolate;
 }
@@ -29,30 +70,45 @@
   position: relative;
   z-index: 1;
   display: flex;
-  min-height: clamp(44rem, 78vh, 49rem);
+  min-height: 100svh;
   align-items: center;
   justify-content: flex-end;
-  padding-top: 6.75rem;
-  padding-bottom: 2.5rem;
+  padding-top: calc(var(--header-desktop) + var(--space-xl));
+  padding-bottom: 3rem;
 }
 
 .hero {
   display: grid;
-  /* 48rem = 768px：容器宽 1160 时左边缘落在 532px，正好是下方三列卡片网格
-     第二列的左边线。首屏与全站共用同一条竖直参考线，滚动时不再左右跳动。 */
-  width: min(100%, 48rem);
-  gap: 1.4rem;
+  width: min(100%, 46rem);
+  gap: 1.15rem;
+}
+
+.heroKicker {
+  margin: 0;
+  color: var(--home-cinnabar);
+  font-size: 0.78rem;
+  font-weight: 720;
+  letter-spacing: 0.08em;
 }
 
 .hero h1 {
   max-width: none;
   margin: 0;
   color: var(--home-ink);
-  font-size: clamp(3rem, 5.2vw, 4rem);
-  font-weight: 760;
-  letter-spacing: -0.04em;
-  line-height: 1.16;
+  font-size: clamp(3rem, 5.5vw, var(--font-size-hero));
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
   text-wrap: balance;
+}
+
+.hero h1 span {
+  display: block;
+  overflow: hidden;
+}
+
+.hero h1 span::after {
+  content: none;
 }
 
 .hero h1 span {
@@ -82,13 +138,40 @@
 
 .heroPrimary,
 .heroSecondary {
-  min-height: 3.5rem;
-  padding-inline: 1.55rem;
-  border-radius: 0.875rem;
+  min-height: 3.9rem;
+  padding-inline: 1.9rem;
+  border-radius: 999px;
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s ease,
+    background-color 0.35s ease,
+    color 0.35s ease;
 }
 
 .heroPrimary {
-  box-shadow: var(--shadow-float);
+  position: relative;
+  overflow: hidden;
+  border-color: var(--color-action);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  box-shadow: none;
+}
+
+.heroPrimary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--home-mx) var(--home-my),
+    var(--paper-cinnabar-glow),
+    transparent 48%
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.heroPrimary:hover::before {
+  opacity: 1;
 }
 
 .heroSecondary {
@@ -100,24 +183,24 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm) 0;
-  margin: 0.9rem 0 0;
+  margin: 0.55rem 0 0;
   color: var(--home-ink-soft);
-  font-size: var(--font-size-label);
+  font-size: var(--font-size-meta);
   font-variant-numeric: tabular-nums;
 }
 
 .heroProof span {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.35rem;
-  padding-inline: var(--space-lg);
-  border-left: 1px solid var(--home-line-strong);
+  gap: 0.3rem;
+  padding-inline: var(--space-md);
+  border-left: 1px solid var(--home-line);
 }
 
 .heroProof strong {
-  color: var(--home-ink);
-  font-size: var(--font-size-card);
-  font-weight: 720;
+  color: var(--home-ink-soft);
+  font-size: var(--font-size-label);
+  font-weight: 680;
   letter-spacing: -0.02em;
 }
 
@@ -200,15 +283,29 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+  animation: atmosphereEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes atmosphereEnter {
+  from {
+    opacity: 0.72;
+    transform: scale(1.04);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .inkPlane {
   position: absolute;
-  inset: -2.5%;
-  transform: scale(1.045);
+  inset: -4%;
+  transform: scale(1.08);
   transform-origin: center;
+  translate: calc(var(--home-px) * -22px) calc(var(--home-py) * -16px);
   animation: inkDrift 28s linear both;
-  will-change: transform, opacity;
+  will-change: transform, opacity, translate;
 }
 
 .inkBackdrop {
@@ -220,10 +317,9 @@
   position: absolute;
   top: clamp(6.6rem, 14vh, 9.25rem);
   left: clamp(1rem, 6.5vw, 7.5rem);
-  /* 收窄到右边缘 ≈ 497px，与标题列左边线 532px 留出净空；
-     同时降低符箓对主标题的视觉争夺。 */
   width: clamp(17rem, 28vw, 26rem);
   height: clamp(27rem, 40vw, 34rem);
+  translate: calc(var(--home-px) * 28px) calc(var(--home-py) * 20px);
 }
 
 .talismanLayer {
@@ -264,16 +360,15 @@
 .quickStart {
   position: relative;
   z-index: 2;
-  border-block: 1px solid var(--color-border);
-  background: var(--home-glass-strong);
-  box-shadow: var(--shadow-float);
+  border-block: 1px solid var(--home-line);
+  background: var(--home-glass);
 }
 
 .quickStartInner {
   display: grid;
   gap: 1.25rem;
-  padding-top: 1.55rem;
-  padding-bottom: 1.75rem;
+  padding-top: 2.4rem;
+  padding-bottom: 2rem;
 }
 
 .quickStartHead {
@@ -293,13 +388,18 @@
 
 .quickStartHead p {
   margin: 0;
-  color: var(--home-ink-muted);
+  color: var(--home-ink-soft);
   font-size: var(--font-size-aux);
 }
 
 .quickStartGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.quickStartGrid > * {
+  min-width: 0;
+  height: 100%;
 }
 
 .quickStartEntry {
@@ -315,7 +415,8 @@
     transform var(--duration-feedback) var(--ease-out);
 }
 
-.quickStartEntry + .quickStartEntry {
+.quickStartEntry + .quickStartEntry,
+.quickStartGrid > * + * {
   border-left: 1px solid var(--home-line);
 }
 
@@ -348,7 +449,7 @@
 
 .quickStartEntry small {
   max-width: 18rem;
-  color: var(--home-ink-muted);
+  color: var(--home-ink-soft);
   font-size: var(--font-size-aux);
   line-height: var(--line-height-body);
 }
@@ -360,6 +461,15 @@
   gap: 3.75rem;
   padding-top: 4.5rem;
   padding-bottom: var(--space-3xl);
+}
+
+.paperDivider {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin-bottom: var(--space-xl);
+  background: var(--home-line-strong);
+  transform-origin: left center;
 }
 
 .mechanism ul {
@@ -385,7 +495,7 @@
 }
 
 .mechanism span {
-  color: var(--home-ink-muted);
+  color: var(--home-ink-soft);
   font-size: var(--font-size-aux);
   line-height: var(--line-height-body);
 }
@@ -413,7 +523,7 @@
 .sectionHead p {
   max-width: 32em;
   margin: 0;
-  color: var(--home-ink-muted);
+  color: var(--home-ink-soft);
   font-size: var(--font-size-aux);
   text-align: right;
 }
@@ -421,6 +531,12 @@
 .cardGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.natalRestGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-md);
 }
 
@@ -432,7 +548,7 @@
   align-content: start;
   padding: var(--space-lg);
   border: 1px solid var(--home-line);
-  border-radius: 0.875rem;
+  border-radius: var(--radius-panel);
   background: var(--home-paper-surface);
   color: var(--home-ink);
   transition:
@@ -443,9 +559,9 @@
 
 .card:hover,
 .crossCard:hover {
-  border-color: transparent;
-  box-shadow: var(--shadow-float);
-  transform: translateY(-3px);
+  border-color: var(--home-line-strong);
+  box-shadow: none;
+  transform: translateY(-2px);
 }
 
 .cardLead {
@@ -501,10 +617,11 @@
   justify-content: space-between;
   gap: var(--space-xl);
   padding: var(--space-xl);
+  border: 1px solid var(--home-line-strong);
   border-radius: 1rem;
-  background: var(--color-surface-inverse);
-  box-shadow: var(--home-shadow);
-  color: var(--color-text-inverse);
+  background: var(--home-paper-surface);
+  box-shadow: none;
+  color: var(--home-ink);
 }
 
 .observationCopy {
@@ -513,7 +630,7 @@
 
 .eyebrowInverse {
   margin: 0 0 var(--space-sm);
-  color: color-mix(in srgb, var(--color-text-inverse) 58%, transparent);
+  color: var(--home-cinnabar);
   font-size: var(--font-size-meta);
   font-weight: 680;
 }
@@ -527,7 +644,7 @@
 .observation p {
   max-width: 36em;
   margin: var(--space-sm) 0 0;
-  color: color-mix(in srgb, var(--color-text-inverse) 72%, transparent);
+  color: var(--home-ink-soft);
   font-size: var(--font-size-label);
   line-height: var(--line-height-body);
 }
@@ -540,8 +657,8 @@
   gap: var(--space-sm);
   padding: 0 var(--space-lg);
   border-radius: var(--radius-control);
-  background: var(--color-surface);
-  color: var(--home-ink);
+  background: var(--home-ink);
+  color: var(--paper-highlight);
   font-size: var(--font-size-label);
   font-weight: 700;
   transition:
@@ -577,7 +694,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   overflow: hidden;
   border: 1px solid var(--home-line);
-  border-radius: 1rem;
+  border-radius: var(--radius-panel);
   background: var(--home-glass-strong);
 }
 
@@ -616,7 +733,7 @@
 }
 
 .auxBody small {
-  color: var(--home-ink-muted);
+  color: var(--home-ink-soft);
   font-size: var(--font-size-meta);
 }
 
@@ -657,55 +774,55 @@
   }
 }
 
+@media (min-width: 48rem) {
+  .quickStart {
+    margin-top: -12.5rem;
+  }
+}
+
 @media (max-width: 47.999rem) {
+  .quickStart {
+    margin-top: 0;
+  }
+
   .heroStage,
   .heroFrame {
-    min-height: 49rem;
+    min-height: 32.5rem;
   }
 
   .heroFrame {
     align-items: flex-end;
-    padding-top: 5.5rem;
-    padding-bottom: 1.75rem;
+    padding-top: calc(var(--header-mobile) + var(--space-lg));
+    padding-bottom: 1rem;
   }
 
   .inkBackdrop {
-    object-position: 58% center;
+    object-position: 64% center;
   }
 
   .talismanStage {
-    top: 5.25rem;
+    top: 1rem;
     left: 50%;
-    width: min(88vw, 24rem);
-    height: 29rem;
+    width: min(48vw, 12rem);
+    height: 11rem;
     transform: translateX(-50%);
   }
 
   .hero {
     width: 100%;
     gap: 1rem;
-    padding: 1.2rem;
-    border: 1px solid var(--color-border);
-    border-radius: 1.25rem;
+    padding: 1rem 0 0;
+    border-top: 1px solid var(--home-line-strong);
+    border-radius: 0;
     background: var(--home-glass-strong);
-    box-shadow: var(--shadow-overlay);
+    box-shadow: none;
   }
 
   .hero h1 {
-    /* 窄屏放不下整句时必然折行；balance 让「五十五部古籍为证」摊成 4+4，
-       而不是 6+2 留下「为证」这种两字孤行。 */
     max-width: none;
-    font-size: clamp(2.5rem, 10.4vw, 3.25rem);
-    line-height: 1.12;
+    font-size: 2.5rem;
+    line-height: 1.15;
     text-wrap: balance;
-  }
-
-  /* ≤384px 放不下「五十五部古籍为证」两行以内，字阶下限又冻结在 40px；
-     只给第二句设上限，逼它摊成 4+4，而不是 7+1 留一个「证」独占一行。 */
-  @media (max-width: 24rem) {
-    .hero h1 span + span {
-      max-width: 4.6em;
-    }
   }
 
   .heroSub {
@@ -737,8 +854,9 @@
   }
 
   .quickStartInner {
-    padding-top: 1.4rem;
-    padding-bottom: 1.4rem;
+    gap: var(--space-sm);
+    padding-top: var(--space-sm);
+    padding-bottom: var(--space-sm);
   }
 
   .quickStartHead,
@@ -753,8 +871,14 @@
     text-align: left;
   }
 
+  .quickStartHead p,
+  .quickStartEntry small {
+    display: none;
+  }
+
   .quickStartGrid,
   .cardGrid,
+  .natalRestGrid,
   .crossGrid,
   .auxGrid,
   .mechanism ul {
@@ -762,7 +886,8 @@
   }
 
   .quickStartEntry {
-    min-height: 6.5rem;
+    min-height: var(--target-min);
+    padding-block: var(--space-sm);
     padding-inline: var(--space-sm);
   }
 
@@ -793,6 +918,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .atmosphere,
   .inkPlane,
   .talismanLayer {
     animation: none;
@@ -952,5 +1078,65 @@
 
   .leadCard:hover {
     transform: none;
+  }
+}
+
+.chapter {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--home-cinnabar);
+  font-size: 0.72rem;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+}
+
+.quickIndex {
+  color: var(--home-gold);
+  font-size: 0.72rem;
+  font-weight: 760;
+  letter-spacing: 0.18em;
+}
+
+.heroActions > span,
+.closingActions > span {
+  display: inline-flex;
+}
+
+.quickStartGrid {
+  align-items: stretch;
+}
+
+.quickStartEntry {
+  border-top: 1px solid transparent;
+  background: transparent;
+}
+
+@media (hover: none) {
+  .spotlight {
+    display: none;
+  }
+
+  .quickStartEntry,
+  .card,
+  .crossCard,
+  .leadCard {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spotlight,
+  .grain {
+    display: none;
+  }
+
+  .quickStartEntry,
+  .card,
+  .crossCard,
+  .leadCard,
+  .heroPrimary,
+  .heroSecondary {
+    transform: none;
+    transition: none;
   }
 }

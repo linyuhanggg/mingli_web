@@ -198,7 +198,7 @@ describe("ChartWorkspaceShell", () => {
     expect(yearly).toBeDisabled();
     expect(yearly).toHaveAttribute("aria-disabled", "true");
     expect(yearly).not.toHaveAttribute("aria-selected", "true");
-    expect(within(yearly).getByText("未生成")).toBeVisible();
+    expect(within(yearly).getByText("需指定目标时间")).toBeVisible();
     expect(screen.getByRole("tab", { name: /流月/ })).toBeDisabled();
     expect(screen.getByRole("tab", { name: /流日/ })).toBeDisabled();
     expect(screen.getByRole("tab", { name: /^大运/ })).toBeDisabled();

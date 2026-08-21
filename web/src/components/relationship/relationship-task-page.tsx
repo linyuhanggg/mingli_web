@@ -1,15 +1,19 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Check, UsersRound } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useState } from "react";
 import { useForm, type FieldError, type UseFormRegister } from "react-hook-form";
 import { z } from "zod";
 
 import { Container } from "@/components/container";
 import { PublicPageShell } from "@/components/public-page-shell";
-import { Status } from "@/components/ui/status";
+import {
+  HepanSixStateSurface,
+  isHepanSurfaceState,
+  type HepanSurfaceState,
+} from "@/components/relationship/hepan-six-state-surface";
 import { ReadingResult } from "@/components/readings/reading-result";
 import {
   confirmProfileDraft,
@@ -30,12 +34,6 @@ import { getProductDefinition, type ProductId } from "@/products/catalog";
 import styles from "./relationship-task-page.module.css";
 
 type RelationshipProductId = Extract<ProductId, "bazi" | "ziwei" | "qizheng">;
-
-const relationshipModules: Record<RelationshipProductId, readonly string[]> = {
-  bazi: ["甲方四柱与时间口径", "乙方四柱与时间口径", "十神互动、五行结构与关系主题"],
-  ziwei: ["甲方十二宫与命宫摘要", "乙方十二宫与命宫摘要", "关系宫位、四化互动与时间层"],
-  qizheng: ["甲方星盘与宿度", "乙方星盘与宿度", "关系宫位、星曜互动与限法边界"],
-};
 
 const relationshipSchema = z.object({
   aName: z.string().trim().min(1, "请填写甲方受测对象"),
@@ -469,16 +467,21 @@ function PersonFields({
   );
 }
 
-export function RelationshipTaskPage({ productId }: { productId: RelationshipProductId }) {
+export function RelationshipTaskPage({
+  productId,
+  surfaceState,
+}: {
+  productId: RelationshipProductId;
+  surfaceState?: HepanSurfaceState;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const readingId = searchParams.get("reading");
+  const requestedSurface = surfaceState ?? searchParams.get("surface");
+  const pageState = isHepanSurfaceState(requestedSurface) ? requestedSurface : undefined;
   const product = getProductDefinition(productId);
-  const [checked, setChecked] = useState(false);
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [activeRegion, setActiveRegion] = useState<0 | 1 | 2>(0);
-  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const {
     formState: { errors },
     handleSubmit,
@@ -491,11 +494,6 @@ export function RelationshipTaskPage({ productId }: { productId: RelationshipPro
   });
   const validationErrors = (Object.keys(errors) as Array<keyof RelationshipFormValues>)
     .map((fieldName) => relationshipErrorFields[fieldName]);
-
-  const handleCheck = () => {
-    setSubmitError(null);
-    setChecked(true);
-  };
 
   const handleCreateReading = async (values: RelationshipFormValues) => {
     if (busy) return;
@@ -530,17 +528,25 @@ export function RelationshipTaskPage({ productId }: { productId: RelationshipPro
     }
   };
 
-  const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
-    let nextIndex: number | null = null;
-    if (event.key === "ArrowRight") nextIndex = (index + 1) % 3;
-    if (event.key === "ArrowLeft") nextIndex = (index + 2) % 3;
-    if (event.key === "Home") nextIndex = 0;
-    if (event.key === "End") nextIndex = 2;
-    if (nextIndex === null) return;
-    event.preventDefault();
-    setActiveRegion(nextIndex as 0 | 1 | 2);
-    tabRefs.current[nextIndex]?.focus();
-  };
+  if (pageState && !readingId) {
+    return (
+      <PublicPageShell>
+        <main className={styles.main} id="main-content" tabIndex={-1} data-page-state={pageState}>
+          <Container className={styles.container}>
+            <header className={styles.pageLine}>
+              <a className={styles.backLink} href={product.href}>
+                <ArrowLeft aria-hidden="true" size={16} strokeWidth={1.8} />
+                返回
+              </a>
+              <h1>{product.name}双人合盘</h1>
+              <p>没有结果时不会用演示数据填满。</p>
+            </header>
+            <HepanSixStateSurface onRetry={() => router.replace(`/${productId}/hepan`)} state={pageState} />
+          </Container>
+        </main>
+      </PublicPageShell>
+    );
+  }
 
   return (
     <PublicPageShell>
@@ -548,30 +554,33 @@ export function RelationshipTaskPage({ productId }: { productId: RelationshipPro
         <Container className={styles.container}>
           {readingId ? (
             <>
-              <header className={styles.hero}>
-                <a href={`/${productId}/hepan`}><ArrowLeft aria-hidden="true" size={16} /> 返回合盘输入</a>
-                <div><UsersRound aria-hidden="true" size={27} strokeWidth={1.6} /><h1>{product.name}双人合盘结果</h1></div>
-                <p>当前产品路由内展示服务端生成的双方结构事实。</p>
+              <header className={styles.pageLine}>
+                <a className={styles.backLink} href={`/${productId}/hepan`}>
+                  <ArrowLeft aria-hidden="true" size={16} strokeWidth={1.8} />
+                  返回
+                </a>
+                <h1>{product.name}双人合盘结果</h1>
+                <p>查看这份合盘。</p>
               </header>
               <ReadingResult readingId={readingId} />
             </>
           ) : null}
           {readingId ? null : (
           <>
-          <header className={styles.hero}>
-            <a href={product.href}><ArrowLeft aria-hidden="true" size={16} /> 返回{product.name}</a>
-            <div><UsersRound aria-hidden="true" size={27} strokeWidth={1.6} /><h1>{product.name}双人合盘</h1></div>
-            <p>甲乙双方盘面与关系区分开呈现，不把合盘塞进单盘小卡，也不混入命盘合参。</p>
+          <header className={styles.pageLine}>
+            <a className={styles.backLink} href={product.href}>
+              <ArrowLeft aria-hidden="true" size={16} strokeWidth={1.8} />
+              返回
+            </a>
+            <h1>{product.name}双人合盘</h1>
+            <p>填写双方资料和关系。</p>
           </header>
 
           <form
             aria-label={`${product.name}双人合盘输入`}
             className={styles.form}
             noValidate
-            onSubmit={handleSubmit(
-              handleCheck,
-              () => setChecked(false),
-            )}
+            onSubmit={handleSubmit(handleCreateReading)}
           >
             {validationErrors.length > 0 ? (
               <div
@@ -645,61 +654,11 @@ export function RelationshipTaskPage({ productId }: { productId: RelationshipPro
               </select>
               <p>关系类型会绑定到本次任务，变更后创建新任务。</p>
             </div>
-            <button className={styles.primaryButton} type="submit">检查双方资料</button>
-            {checked ? (
-              <>
-                <p className={styles.checked} role="status"><Check aria-hidden="true" size={17} /> 输入结构已检查；双方资料会分别保存为不可变 ProfileVersion。</p>
-                {submitError ? <p className={styles.formError} role="alert">{submitError}</p> : null}
-                <button
-                  className={styles.primaryButton}
-                  disabled={busy}
-                  onClick={() => void handleSubmit(handleCreateReading)()}
-                  type="button"
-                >
-                  {busy ? "正在创建双方档案并生成合盘…" : "创建档案并生成合盘"}
-                </button>
-              </>
-            ) : null}
+            {submitError ? <p className={styles.formError} role="alert">{submitError}</p> : null}
+            <button className={styles.primaryButton} disabled={busy} type="submit">
+              {busy ? "正在生成合盘…" : "生成合盘"}
+            </button>
           </form>
-
-          <section className={styles.workspace} aria-labelledby={`${product.id}-relationship-workspace`}>
-            <div className={styles.workspaceHeading}>
-              <div><h2 id={`${product.id}-relationship-workspace`}>甲方 / 乙方 / 关系区</h2><p>桌面三段并列；平板和手机可按区切换。</p></div>
-              <span>无结果数据</span>
-            </div>
-            <div className={styles.tabs} role="tablist" aria-label="合盘区域">
-              {(["甲方", "乙方", "关系"] as const).map((label, index) => (
-                <button
-                  aria-controls={`${product.id}-relationship-region-${index}`}
-                  aria-selected={activeRegion === index}
-                  id={`${product.id}-relationship-tab-${index}`}
-                  key={label}
-                  onClick={() => setActiveRegion(index as 0 | 1 | 2)}
-                  onKeyDown={(event) => handleTabKeyDown(event, index)}
-                  ref={(node) => { tabRefs.current[index] = node; }}
-                  role="tab"
-                  tabIndex={activeRegion === index ? 0 : -1}
-                  type="button"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className={styles.moduleGrid}>
-              {relationshipModules[productId].map((module, index) => (
-                <article
-                  aria-labelledby={`${product.id}-relationship-tab-${index}`}
-                  data-active={activeRegion === index}
-                  id={`${product.id}-relationship-region-${index}`}
-                  key={module}
-                  role="tabpanel"
-                >
-                  <span>{index === 0 ? "甲方" : index === 1 ? "乙方" : "关系"}</span><h3>{module}</h3><p>等待双方真实 {product.name} ViewModel。</p>
-                </article>
-              ))}
-            </div>
-            <Status state="processing" title={`${product.name}双人任务接线已完成`} description="确认后由 Runtime 分别计算双方命盘；只有 Runtime 原生关系事实存在时才展示跨盘信号，页面不在浏览器计算。" />
-          </section>
           </>
           )}
         </Container>

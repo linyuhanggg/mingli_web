@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 
 import { useOptionalAccountSession } from "./account-session-context";
+import authStyles from "./auth-shell.module.css";
 import styles from "./surfaces/secondary-surfaces.module.css";
 
 function channelFor(destination: string): "phone" | "email" {
@@ -22,7 +23,6 @@ export function PasswordRecoveryForm() {
   const accountSession = useOptionalAccountSession();
   const [destination, setDestination] = useState("");
   const [challengeId, setChallengeId] = useState("");
-  const [developmentCode, setDevelopmentCode] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -45,7 +45,6 @@ export function PasswordRecoveryForm() {
         destination: normalizedDestination,
       });
       setChallengeId(challenge.challenge_id);
-      setDevelopmentCode(challenge.development_code ?? "");
     } catch {
       setError("验证码发送失败，请稍后重试。");
     } finally {
@@ -103,13 +102,9 @@ export function PasswordRecoveryForm() {
         onSubmit={submitRecovery}
         noValidate
       >
-        {developmentCode ? (
-          <p className={styles.field}>
-            调试码（仅开发/测试环境）：{developmentCode}
-          </p>
-        ) : null}
+
         <p className={styles.field} id="password-recovery-code-help">
-          验证码已发送；找回成功会撤销其他设备会话。
+          验证码已发送；成功后其他已登录设备会退出。
         </p>
         <div className={styles.fields}>
           <div className={styles.field}>
@@ -150,7 +145,7 @@ export function PasswordRecoveryForm() {
           </div>
         </div>
         {error ? <p className={styles.disabledReason} role="alert">{error}</p> : null}
-        <button disabled={busy} type="submit">
+        <button className={authStyles.submit} disabled={busy} type="submit">
           {busy ? "正在重设…" : "重设密码并登录"}
         </button>
       </form>
@@ -182,7 +177,7 @@ export function PasswordRecoveryForm() {
         </p>
       </div>
       {error ? <p className={styles.disabledReason} role="alert">{error}</p> : null}
-      <button disabled={busy} type="submit">
+      <button className={authStyles.submit} disabled={busy} type="submit">
         {busy ? "正在发送…" : "发送验证码"}
       </button>
     </form>

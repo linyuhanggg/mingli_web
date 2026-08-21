@@ -255,7 +255,7 @@ describe("identity-first application shell", () => {
     const loginLink = await screen.findByRole("link", {
       name: "当前为游客模式，登录或注册",
     });
-    expect(loginLink).toHaveAttribute("href", "/account");
+    expect(loginLink).toHaveAttribute("href", "/auth/login");
     expect(screen.getByText("游客模式")).toBeVisible();
     expect(screen.getByText("登录或注册")).toBeVisible();
   });
@@ -288,66 +288,32 @@ describe("personal center", () => {
     );
   });
 
-  it("shows the email login flow only when the device is signed out", async () => {
+  it("keeps signed-out account to identity plus a login action", async () => {
     render(<AccountPage />);
 
     expect(
       screen.getByRole("heading", { level: 1, name: "我的" }),
     ).toBeVisible();
-    expect(await screen.findByRole("heading", { level: 2, name: "游客模式" })).toBeVisible();
-    expect(screen.getByLabelText("邮箱地址")).toBeVisible();
+    expect(await screen.findByRole("heading", { level: 2, name: "未登录" })).toBeVisible();
+    expect(screen.getByText("登录后才能看档案和历史")).toBeVisible();
+    expect(screen.getByRole("link", { name: "登录" })).toHaveAttribute("href", "/auth/login");
+    expect(screen.getByRole("link", { name: "用验证码登录" })).toHaveAttribute("href", "/auth/verify");
+    expect(screen.queryByLabelText("邮箱地址")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "退出当前设备" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "我的账户入口" })).not.toBeInTheDocument();
   });
 
-  it("confirms the shared session before routing to the personal home without a duplicate probe", async () => {
-    const user = userEvent.setup();
-    api.getAccount.mockReset();
-    api.getAccount
-      .mockRejectedValueOnce(new ApiError("Authentication required", 401))
-      .mockResolvedValue(signedInAccount);
-    vi.stubGlobal(
-      "fetch",
-      vi.fn<typeof fetch>(async (input) => {
-        const url = String(input);
-        if (url.includes("/api/v1/auth/otp/request")) {
-          return new Response(
-            JSON.stringify({
-              challenge_id: "967ea7cc-7b77-4db3-8d27-5a897679791f",
-              development_code: "246810",
-            }),
-            { status: 202, headers: { "content-type": "application/json" } },
-          );
-        }
-        return new Response(
-          JSON.stringify({
-            csrf_token: "device-csrf-token-with-at-least-32-characters",
-          }),
-          { status: 200, headers: { "content-type": "application/json" } },
-        );
-      }),
-    );
-
+  it("does not embed OTP or show a development code on the account page", async () => {
     render(
       <AccountSessionProvider>
         <AccountPage />
       </AccountSessionProvider>,
     );
-    await screen.findByText("安全会话已建立");
-    const email = await screen.findByLabelText("邮箱地址");
-    await user.type(email, "user@example.com");
-    await user.click(screen.getByRole("button", { name: "发送验证码" }));
-    const code = await screen.findByLabelText("六位验证码");
-    await user.type(code, "246810");
-    await user.click(screen.getByRole("button", { name: "验证并登录" }));
-
-    await waitFor(() => {
-      expect(navigation.replace).toHaveBeenCalledWith("/account");
-    });
-    expect(api.getAccount).toHaveBeenCalledTimes(2);
-    expect(
-      screen.getByRole("heading", { level: 2, name: "q***@example.com" }),
-    ).toBeVisible();
+    expect(await screen.findByRole("heading", { level: 2, name: "未登录" })).toBeVisible();
     expect(screen.queryByLabelText("邮箱地址")).not.toBeInTheDocument();
+    expect(screen.queryByText(/调试码/)).not.toBeInTheDocument();
+    expect(screen.queryByText("246810")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "登录" })).toHaveAttribute("href", "/auth/login");
   });
 });
 
@@ -369,7 +335,7 @@ describe("public account entry", () => {
     render(<SiteHeader />);
 
     const accountLink = await screen.findByRole("link", { name: "登录" });
-    expect(accountLink).toHaveAttribute("href", "/account");
+    expect(accountLink).toHaveAttribute("href", "/auth/login");
   });
 
   it("names checking and unknown public identity states instead of collapsing them into account", async () => {

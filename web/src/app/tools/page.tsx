@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
 
-import { PublicContentSurface } from "@/components/surfaces";
-import { publicContentSurfaces } from "@/lib/secondary-surfaces";
+import { ToolsIndexView, ToolsPageFrame } from "@/components/tool-page";
 
-export const metadata: Metadata = { title: "工具", description: "命理辅助工具总览。" };
+export const metadata: Metadata = { title: "工具", description: "只展示已经开放的入口。" };
 
 export default function ToolsPage() {
   return (
-    <PublicContentSurface
-      contentSource={{ kind: "index", prefix: "tools.", hrefBase: "/tools" }}
-      surface={publicContentSurfaces.tools}
-    />
+    <ToolsPageFrame intro="只展示已经开放的入口。" title="工具">
+      <ToolsIndexView />
+    </ToolsPageFrame>
   );
 }

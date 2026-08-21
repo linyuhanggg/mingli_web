@@ -74,6 +74,10 @@ describe("responsive public home", () => {
     ).toBeUndefined();
     expect(within(main).queryByText("多盘问答")).not.toBeInTheDocument();
     expect(within(main).queryByText("三术合参")).not.toBeInTheDocument();
+    expect(
+      within(main).queryByRole("link", { name: /禄命纳音/ }),
+      "禄命纳音 is an internal module, not a homepage natal entry",
+    ).toBeNull();
 
     // 分区：命盘 / 事件判断 / 合参 / 辅助
     expect(within(main).getByRole("region", { name: "命盘" })).toBeVisible();

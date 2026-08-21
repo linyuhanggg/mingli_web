@@ -190,7 +190,7 @@ describe("ProfileArchive", () => {
     expect(await screen.findByText("登录已过期")).toBeVisible();
     expect(screen.getByRole("link", { name: "重新登录" })).toHaveAttribute(
       "href",
-      "/account",
+      "/auth/login",
     );
     expect(screen.queryByRole("button", { name: "重试" })).not.toBeInTheDocument();
   });
@@ -246,8 +246,8 @@ describe("ReadingHistory", () => {
       ).toBeInTheDocument(),
     );
     expect(
-      screen.getByRole("link", { name: "发起解读" }),
-    ).toHaveAttribute("href", "/app");
+      screen.getByRole("link", { name: "去排盘" }),
+    ).toHaveAttribute("href", "/bazi");
   });
 
   it("surfaces load failures and recovers after retry", async () => {
@@ -278,7 +278,7 @@ describe("ReadingHistory", () => {
     expect(await screen.findByText("登录已过期")).toBeVisible();
     expect(screen.getByRole("link", { name: "重新登录" })).toHaveAttribute(
       "href",
-      "/account",
+      "/auth/login",
     );
     expect(screen.queryByRole("button", { name: "重试" })).not.toBeInTheDocument();
   });

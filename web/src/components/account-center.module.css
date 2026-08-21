@@ -41,7 +41,7 @@
   margin-top: 0.2rem;
   color: var(--color-text);
   font-family: var(--font-sans);
-  font-size: var(--font-size-page);
+  font-size: var(--font-size-card);
   font-weight: 620;
   letter-spacing: -0.025em;
   line-height: 1.18;
@@ -226,36 +226,6 @@
   color: var(--color-border-strong);
 }
 
-.boundaryNote {
-  display: grid;
-  gap: 0.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
-}
-
-.boundaryNote h2 {
-  margin: 0;
-  color: var(--color-text);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-card);
-  font-weight: 620;
-  letter-spacing: -0.015em;
-  line-height: 1.25;
-}
-
-.boundaryNote p {
-  max-width: 62ch;
-  margin: 0;
-  font-size: var(--font-size-label);
-  line-height: 1.6;
-}
-
-.boundaryNoteDetail {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-meta) !important;
-}
-
 .statusStack {
   display: grid;
   justify-items: start;
@@ -299,4 +269,54 @@
   .primaryShortcut:hover {
     transform: none;
   }
+}
+
+.identityCardGuest {
+  gap: 0.75rem;
+  padding: 1rem 1.15rem;
+}
+
+.identityGuestRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.identityGuestRow h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-card);
+  font-weight: 620;
+  letter-spacing: -0.025em;
+  line-height: 1.18;
+}
+
+.guestLogin {
+  display: inline-flex;
+  min-height: var(--target-submit);
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-lg);
+  border: 1px solid var(--color-action);
+  border-radius: var(--radius-control);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  font-weight: 740;
+  text-decoration: none;
+}
+
+.guestLogin:hover {
+  background: var(--color-action-hover);
+}
+
+.guestSecondary {
+  margin: var(--space-sm) 0 0;
+  font-size: var(--font-size-label);
+}
+
+.guestSecondary a {
+  color: var(--color-text-secondary);
+  font-weight: 650;
 }

@@ -110,7 +110,7 @@ describe("AdminCatalogSurface", () => {
 
     render(<AdminCatalogSurface model={buildLiveAdminCatalogViewModel(route!)} role="support" />);
 
-    expect(screen.getByRole("status", { name: "平台数据待接入" })).toBeVisible();
+    expect(screen.getByRole("status", { name: "平台数据暂时不可用。" })).toBeVisible();
     expect(screen.getByRole("searchbox", { name: "筛选用户与身份" })).toBeVisible();
     expect(screen.getByRole("table", { name: "用户与身份列表" })).toBeVisible();
     expect(screen.getByText("没有可显示的真实记录")).toBeVisible();

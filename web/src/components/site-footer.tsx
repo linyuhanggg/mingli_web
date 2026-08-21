@@ -44,9 +44,9 @@ function FooterLinkGroup({
   );
 }
 
-export function SiteFooter() {
+export function SiteFooter({ home = false }: { home?: boolean }) {
   return (
-    <footer className={styles.footer}>
+    <footer className={styles.footer} data-home-chrome={home ? "true" : undefined}>
       <Container>
         <div className={styles.footerTop}>
           <div className={styles.footerCopy}>
@@ -57,7 +57,9 @@ export function SiteFooter() {
               <strong>命理工具</strong>
             </div>
             <p>
-              中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。
+              {home
+                ? "先形成可复现的盘面事实，再沿古籍证据展开有依据、有边界、可核对的说明。"
+                : "中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。"}
             </p>
           </div>
           <div className={styles.footerColumns}>

@@ -65,9 +65,9 @@ export function FiveElementsFactsFlow() {
         }
         setLoading(false);
       })
-      .catch((reason) => {
+      .catch(() => {
         if (!active) return;
-        setError(reason instanceof Error ? reason.message : "档案加载失败，请稍后重试。");
+        setError("读取失败，请重试");
         setLoading(false);
       });
     return () => {
@@ -111,12 +111,12 @@ export function FiveElementsFactsFlow() {
 
   return (
     <div className={styles.wrap}>
-      <h1>查看五行事实与调候依据</h1>
+      <h2>查看五行事实与调候依据</h2>
       <p className={styles.lead}>
-        从已确认档案版本出发，读取服务端 Runtime 的五行库存、季节画像和调候适用性身份。
+        从已确认档案版本出发，读取服务端的五行库存、季节画像和调候适用性身份。
       </p>
       <p className={styles.scopeNotice}>
-        <strong>当前只展示事实，不输出旺衰、喜忌或用神结论。</strong>
+        <strong>当前只展示事实。旺衰、喜忌、用神没有可展示的结论。</strong>
         五行计数不等于力量裁决；调候标记也不会单独生成用神判断。
       </p>
 
@@ -138,7 +138,7 @@ export function FiveElementsFactsFlow() {
       {!loading && !error && profiles.length === 0 ? (
         <div className={styles.state}>
           <p>还没有可用的档案。请先建立一份确认的出生资料。</p>
-          <ButtonLink href="/app/profile/new">去建档</ButtonLink>
+          <ButtonLink href="/account/profiles">去建档</ButtonLink>
         </div>
       ) : null}
 

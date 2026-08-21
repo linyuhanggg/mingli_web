@@ -93,7 +93,9 @@ export function TimeLayerTabs({
               <span className={styles.tabStatus}>暂无结构</span>
             ) : null}
             {unavailable ? (
-              <span className={styles.tabStatus}>未生成</span>
+              <span className={styles.tabStatus}>
+                {layer.summary ?? "暂不可用"}
+              </span>
             ) : null}
           </button>
         );

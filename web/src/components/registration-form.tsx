@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -12,6 +13,7 @@ import {
 import { CURRENT_POLICY_VERSION } from "@/lib/policy";
 
 import { useOptionalAccountSession } from "./account-session-context";
+import authStyles from "./auth-shell.module.css";
 import styles from "./surfaces/secondary-surfaces.module.css";
 
 function channelFor(destination: string): "phone" | "email" {
@@ -23,7 +25,6 @@ export function RegistrationForm() {
   const accountSession = useOptionalAccountSession();
   const [destination, setDestination] = useState("");
   const [challengeId, setChallengeId] = useState("");
-  const [developmentCode, setDevelopmentCode] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -48,7 +49,6 @@ export function RegistrationForm() {
         destination: normalizedDestination,
       });
       setChallengeId(challenge.challenge_id);
-      setDevelopmentCode(challenge.development_code ?? "");
     } catch {
       setError("验证码发送失败，请稍后重试。");
     } finally {
@@ -111,11 +111,7 @@ export function RegistrationForm() {
         onSubmit={register}
         noValidate
       >
-        {developmentCode ? (
-          <p className={styles.field}>
-            调试码（仅开发/测试环境）：{developmentCode}
-          </p>
-        ) : null}
+
         <p className={styles.field} id="registration-consent-help">
           注册会保存当前开发预览政策版本；两份政策必须分别同意。
         </p>
@@ -163,7 +159,7 @@ export function RegistrationForm() {
               onChange={(event) => setPrivacyAccepted(event.target.checked)}
               type="checkbox"
             />
-            我已阅读并同意隐私政策
+            我已阅读并同意<Link href="/privacy">隐私政策</Link>
           </label>
           <label>
             <input
@@ -172,11 +168,11 @@ export function RegistrationForm() {
               onChange={(event) => setTermsAccepted(event.target.checked)}
               type="checkbox"
             />
-            我已阅读并同意服务条款
+            我已阅读并同意<Link href="/terms">服务条款</Link>
           </label>
         </div>
         {error ? <p className={styles.disabledReason} role="alert">{error}</p> : null}
-        <button disabled={!canSubmit} type="submit">
+        <button className={authStyles.submit} disabled={!canSubmit} type="submit">
           {busy ? "正在注册…" : "注册并登录"}
         </button>
       </form>
@@ -208,7 +204,7 @@ export function RegistrationForm() {
         </p>
       </div>
       {error ? <p className={styles.disabledReason} role="alert">{error}</p> : null}
-      <button disabled={busy} type="submit">
+      <button className={authStyles.submit} disabled={busy} type="submit">
         {busy ? "正在发送…" : "发送验证码"}
       </button>
     </form>

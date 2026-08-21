@@ -42,12 +42,10 @@ export function AdminHealthSurface({ role }: { role?: StaffRole }) {
     state === "loading" ? (
       <Status state="loading" title="正在检查依赖…" description="只等待 readiness API 返回真实事实。" />
     ) : state === "unavailable" ? (
-      <Status state="unavailable" title="依赖未就绪" description={error ?? "服务依赖暂不可用；没有可核验的正常状态。"} />
+      <Status state="unavailable" title="平台数据暂时不可用。" description={error ?? "当前没有可核验的检查结果。"} />
     ) : state === "error" ? (
       <Status state="error" title="健康检查失败" description={error ?? "请求失败，请重试。"} />
-    ) : (
-      <Status state="success" title="依赖已就绪" description="以下内容来自 API readiness 响应，不是页面生成的 KPI。" />
-    );
+    ) : null;
 
   return (
     <div className={styles.stack} data-state={state} data-staff-role={effectiveRole ?? "session"}>
@@ -56,7 +54,7 @@ export function AdminHealthSurface({ role }: { role?: StaffRole }) {
         <div className={styles.heading}>
           <div>
             <h2 id="health-title">健康检查面</h2>
-            <p>当前只接入 API live/ready 的数据库 readiness；Worker、Runtime、支付和通知 SLO 仍需独立接入。</p>
+            <p>只展示已返回的检查事实。</p>
           </div>
           <span className={styles.badge}>真实响应</span>
         </div>

@@ -528,7 +528,7 @@ it("renders Runtime Qizheng core facts and keeps absent aspects absent", () => {
   expect(screen.getByText("xingxue-dated-mean-ziqi-v1")).toBeVisible();
   expect(screen.getByText("十干变换事实")).toBeVisible();
   expect(screen.getByText("GR-01-01 · 起八字法")).toBeVisible();
-  expect(screen.getByText(/Runtime 未返回相位/)).toBeVisible();
+  expect(screen.getByText(/未返回相位时，页面不自行补算/)).toBeVisible();
 });
 
 it("renders time-check event evidence without turning an unmatched row into a verdict", () => {

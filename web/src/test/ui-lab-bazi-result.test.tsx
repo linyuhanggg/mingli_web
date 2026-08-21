@@ -70,8 +70,8 @@ describe("UI Lab bazi result evidence fixture", () => {
 
     expect(preview.getByText("木得春令，气势自舒。原文第一条。")).toBeVisible();
     expect(preview.getByText("丙火得木相生，先看月令而后论全局。原文第二条。")).toBeVisible();
-    expect(preview.getAllByText("《三命通会》")).toHaveLength(2);
-    expect(preview.getByText("卷二·L12-L15")).toBeVisible();
+    expect(preview.getAllByText("《三命通会》")).toHaveLength(3);
+    expect(preview.getAllByText("卷二·L12-L15").length).toBeGreaterThan(0);
     expect(preview.getByText("卷二·L31-L34")).toBeVisible();
   });
 });

@@ -136,9 +136,7 @@ describe("AdminIdentitySurface", () => {
     unmount();
 
     render(<AdminIdentitySurface kind="users" role="support" />);
-    expect(await screen.findByRole("columnheader", { name: "身份" })).toBeVisible();
-    expect(screen.getByRole("columnheader", { name: "会话" })).toBeVisible();
-    expect(screen.getByRole("columnheader", { name: "同意" })).toBeVisible();
-    expect(screen.getByRole("table", { name: "用户与身份" })).toBeVisible();
+    expect(await screen.findByRole("status", { name: "身份平台暂不可用" })).toBeVisible();
+    expect(screen.queryByRole("table", { name: "用户与身份" })).not.toBeInTheDocument();
   });
 });

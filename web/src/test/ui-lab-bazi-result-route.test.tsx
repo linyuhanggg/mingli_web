@@ -1,4 +1,5 @@
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 
 import BaziResultLabPage, { metadata } from "@/app/%5Fui-lab/bazi-result/page";
@@ -35,3 +36,22 @@ describe("direct UI Lab bazi result route", () => {
     expect(screen.queryByText("页面与场景")).not.toBeInTheDocument();
   });
 });
+
+  it("lets reviewers open each of the six honest result states", async () => {
+    const user = userEvent.setup();
+    render(<BaziResultLabPage />);
+
+    const nav = screen.getByRole("navigation", { name: "结果页六态" });
+    expect(nav).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "unauthorized" }));
+    expect(screen.getByRole("status", { name: "需要登录才能看这份结果" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "登录后继续" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "八字结果页验收切片" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "unavailable" }));
+    expect(screen.getByRole("status", { name: "结果服务暂时不可用，不会展示未确认内容" })).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "已返回事实" }));
+    expect(screen.getByRole("heading", { name: "八字结果页验收切片" })).toBeVisible();
+  });

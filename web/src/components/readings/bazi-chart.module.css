@@ -20,8 +20,6 @@
   color: var(--color-text-secondary);
   font-size: var(--font-size-aux);
   font-weight: 780;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
 }
 
 .brandSub {
@@ -38,6 +36,28 @@
   font-size: var(--font-size-label);
 }
 
+.firstScreenCitation {
+  margin: 0;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+}
+
+.firstScreenCitation figcaption {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+  font-weight: 750;
+}
+
+.firstScreenCitation figcaption span {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+
 .pillarGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -45,6 +65,7 @@
 }
 
 .pillarCard {
+  position: relative;
   display: grid;
   gap: 0.15rem;
   justify-items: center;
@@ -103,6 +124,9 @@
 
 /* §21.3 第 1 级：克制的来源标记，只在该柱确有已核验古法条目时出现。 */
 .pillarSourceMark {
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
   margin-top: 0.3rem;
   padding: 0.05rem 0.35rem;
   border: 1px solid var(--color-border-strong);
@@ -111,6 +135,20 @@
   font-size: var(--font-size-meta);
   font-variant-numeric: tabular-nums;
   line-height: 1.5;
+}
+
+.pillarSourceHint {
+  max-width: 8.5rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  line-height: 1.4;
+  opacity: 0;
+}
+
+.pillarCard:hover .pillarSourceHint,
+.pillarCard:focus-visible .pillarSourceHint,
+.pillarCard[data-selected="true"] .pillarSourceHint {
+  opacity: 1;
 }
 
 .pillarCard:hover .pillarSourceMark,
@@ -256,6 +294,14 @@
   font-size: var(--font-size-aux);
   line-height: 1.55;
   overflow-wrap: anywhere;
+}
+
+.termDef {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  line-height: 1.5;
 }
 
 .coreFactsNote {
@@ -421,6 +467,10 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.evidenceItem[data-focused="true"] {
+  background: var(--color-surface-muted);
+}
+
 .evidenceItem h5,
 .evidenceItem h6,
 .evidenceItem p {
@@ -454,6 +504,129 @@
   font-size: var(--font-size-aux);
   line-height: 1.7;
   overflow-wrap: anywhere;
+}
+
+/*
+ * 命中链路（§21.3 第三级）。
+ * 曲线由 BaziEvidenceGraph 量测节点锚点后绘制，这里只负责节点的尺寸与层级：
+ * 条件节点贴住通道右缘、出处节点贴住左缘，中间留出画曲线的通道。
+ */
+.evidenceGraph {
+  min-width: 0;
+  margin-top: 0.7rem;
+}
+
+.evidenceGraphCanvas {
+  position: relative;
+  min-width: 0;
+}
+
+.evidenceGraphEdges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.evidenceGraphEdge {
+  fill: none;
+  stroke: var(--color-text-muted);
+  stroke-width: 1.25;
+}
+
+.evidenceGraphDot {
+  fill: var(--color-text-muted);
+}
+
+.evidenceGraphDotTarget {
+  fill: var(--color-accent);
+}
+
+.evidenceGraph > .evidenceGraphCanvas > .evidenceGraphColumns {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  margin: 0;
+}
+
+.evidenceGraphColumns > .evidenceGraphFacts,
+.evidenceGraphColumns > .evidenceGraphSource {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.evidenceGraphColumns > .evidenceGraphFacts > dd,
+.evidenceGraphColumns > .evidenceGraphSource > dd {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+}
+
+.evidenceGraphNodes {
+  display: grid;
+  gap: 0.4rem;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.evidenceGraphNode {
+  min-width: 0;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.evidenceGraphSourceNode {
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-control);
+  background: var(--surface-info);
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 48rem) {
+  .evidenceGraph > .evidenceGraphCanvas > .evidenceGraphColumns {
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+    column-gap: 5rem;
+  }
+
+  .evidenceGraphColumns > .evidenceGraphFacts {
+    max-width: 20rem;
+  }
+
+  .evidenceGraphColumns > .evidenceGraphSource {
+    max-width: 30rem;
+  }
+
+  .evidenceGraphNodes {
+    width: auto;
+    gap: 1.1rem;
+    justify-items: start;
+  }
+
+  .evidenceGraphNode {
+    min-width: 7rem;
+  }
 }
 
 .evidenceSources {

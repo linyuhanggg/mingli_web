@@ -1,3 +1,4 @@
+/* Result pages stay on the canvas; no homepage glass or page-level overflow. */
 .statusCard {
   padding: clamp(1.2rem, 3vw, 1.6rem) clamp(1.2rem, 4vw, 2rem);
   border: 1px solid var(--color-border);
@@ -55,29 +56,24 @@
 .retryButton,
 .restartLink {
   display: inline-flex;
-  min-height: 2.75rem;
+  min-height: var(--target-min);
   align-items: center;
   justify-content: center;
   padding: 0.65rem 1.1rem;
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-action);
   border-radius: var(--radius-control);
-  background: var(--color-canvas);
-  color: var(--color-action);
+  background: var(--color-action);
+  color: var(--color-on-action);
   font-size: var(--font-size-body);
   font-weight: 700;
   cursor: pointer;
   text-decoration: none;
-  transition:
-    border-color var(--duration-feedback) ease,
-    background-color var(--duration-feedback) ease,
-    transform var(--duration-feedback) var(--ease-out);
 }
 
 .retryButton:hover,
 .restartLink:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface);
-  transform: translateY(-2px);
+  border-color: var(--color-action-hover);
+  background: var(--color-action-hover);
 }
 
 .retryButton:active,

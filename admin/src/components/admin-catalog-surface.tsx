@@ -53,13 +53,7 @@ function StateNotice({ model }: { model: AdminCatalogViewModelV1 }) {
   const noun = surfaceName(model);
   switch (model.state) {
     case "ready":
-      return (
-        <Status
-          state="success"
-          title={model.source === "fixture" ? `${noun}演示已就绪` : `${noun}已就绪`}
-          description={model.notice}
-        />
-      );
+      return null;
     case "loading":
       return <Status state="loading" title={`正在读取${noun}…`} description={model.notice} />;
     case "empty":
@@ -72,7 +66,7 @@ function StateNotice({ model }: { model: AdminCatalogViewModelV1 }) {
       return <Status state="unavailable" title="维护中" description="当前页面暂时停止新操作，历史记录仍保留。" />;
     case "unavailable":
     default:
-      return <Status state="unavailable" title="平台数据待接入" description={model.notice} />;
+      return <Status state="unavailable" title="平台数据暂时不可用。" description={model.notice} />;
   }
 }
 
@@ -184,7 +178,7 @@ function OperationsSurface({ model }: { model: AdminCatalogViewModelV1 }) {
       <dl className={styles.details}>
         <div>
           <dt>数据通道</dt>
-          <dd>{model.source === "fixture" ? "UI 演示数据" : "真实平台适配待接入"}</dd>
+          <dd>{model.source === "fixture" ? "UI 演示数据" : "当前没有可展示的连接状态。"}</dd>
         </div>
         <div>
           <dt>能力状态</dt>
@@ -215,11 +209,11 @@ function HealthSurface({ model }: { model: AdminCatalogViewModelV1 }) {
       <dl className={styles.details}>
         <div>
           <dt>检查来源</dt>
-          <dd>{model.source === "fixture" ? "UI 演示数据" : "健康检查 API 尚未接入"}</dd>
+          <dd>{model.source === "fixture" ? "UI 演示数据" : "当前没有可展示的检查结果。"}</dd>
         </div>
         <div>
           <dt>检查范围</dt>
-          <dd>Runtime、Provider、任务队列与依赖服务</dd>
+          <dd>任务队列与依赖服务</dd>
         </div>
         <div>
           <dt>当前结论</dt>
@@ -354,7 +348,7 @@ export function AdminCatalogSurface({
     model.source !== "fixture"
       ? isProductCatalogRoute
         ? "服务端 Catalog 读取与带审计写命令已接入；当前页面写表单尚未接入，控件保持只读。"
-        : "真实平台写服务尚未接入；控件保持只读，并保留服务端 RBAC 边界。"
+        : "当前不能写入；控件保持只读。"
       : !roleAllowsWrite || configuredWriteState === "无权限"
         ? "当前角色不能执行此写操作；按钮保持可见，由服务端继续拒绝。"
         : configuredWriteState === "只读"

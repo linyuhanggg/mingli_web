@@ -1,7 +1,8 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import BaziPage from "@/app/bazi/page";
+import LiuyaoPage from "@/app/liuyao/page";
 import { PRODUCT_CATALOG } from "@/products/catalog";
 
 const mockGetCapabilityProjection = vi.hoisted(() => vi.fn());
@@ -17,6 +18,7 @@ vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api")>()),
   getAccount: vi.fn(() => new Promise(() => undefined)),
   getCapabilityProjection: mockGetCapabilityProjection,
+  listProfiles: vi.fn().mockResolvedValue({ profiles: [] }),
 }));
 
 mockGetCapabilityProjection.mockResolvedValue({
@@ -38,44 +40,30 @@ mockGetCapabilityProjection.mockResolvedValue({
 afterEach(cleanup);
 
 /**
- * §17 禁止正常产品路由出现假成功。录入页的模块清单是一份对用户的交付承诺，
- * 真实 Runtime 结果页当前不渲染「旺衰贡献」与「格局、喜忌与病药依据」两个槽位
- * （§19.2：缺字段时该区块整体不渲染），所以清单不得把它们写成必然拿到的内容。
+ * 录入屏不再挂完整 ModulePlan / 「待接入」徽章。
+ * 目录里未交付的槽位仍不得写成必然拿到的内容。
  */
 describe("bazi module plan honesty", () => {
-  it("marks slots the result page cannot deliver as pending instead of promising them", () => {
+  it("does not hang ModulePlan or 待接入 badges on the input screen", () => {
     render(<BaziPage />);
 
-    const plan = screen.getByRole("complementary", { name: /四柱与五行力量/ });
-
-    for (const label of ["旺衰贡献", "格局、喜忌与病药依据"]) {
-      const item = within(plan).getByText(label).closest("li");
-      expect(item, `${label} 应在模块清单中`).not.toBeNull();
-      expect(
-        item?.getAttribute("data-module-status"),
-        `${label} 当前结果页不渲染，必须标为 pending`,
-      ).toBe("pending");
-      expect(item?.textContent).toContain("待接入");
-    }
+    expect(screen.queryByRole("complementary", { name: /四柱与五行力量/ })).not.toBeInTheDocument();
+    expect(screen.queryByText("待接入")).not.toBeInTheDocument();
+    expect(screen.queryByText("标「待接入」的现在不会出现")).not.toBeInTheDocument();
   });
 
-  it("keeps delivered slots unmarked", () => {
-    render(<BaziPage />);
+  it("does not hang ModulePlan or 待接入 badges on liuyao input either", () => {
+    render(<LiuyaoPage />);
 
-    const plan = screen.getByRole("complementary", { name: /四柱与五行力量/ });
-
-    for (const label of ["年月日时四柱", "四柱图与五行力量"]) {
-      const item = within(plan).getByText(label).closest("li");
-      expect(item?.getAttribute("data-module-status")).toBe("available");
-      expect(item?.textContent).not.toContain("待接入");
-    }
+    expect(screen.queryByRole("complementary", { name: /六次过程与本卦变卦/ })).not.toBeInTheDocument();
+    expect(screen.queryByText("待接入")).not.toBeInTheDocument();
+    expect(screen.getByText("确认后生成盘面")).toBeVisible();
   });
 
   it("does not promise every slot unconditionally", () => {
     render(<BaziPage />);
 
-    const plan = screen.getByRole("complementary", { name: /四柱与五行力量/ });
-    expect(within(plan).queryByText("提交后你会依次拿到这些内容。")).toBeNull();
+    expect(screen.queryByText("提交后你会依次拿到这些内容。")).toBeNull();
   });
 
   it("states the target-time condition for temporal layers", () => {

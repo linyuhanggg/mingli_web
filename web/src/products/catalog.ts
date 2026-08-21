@@ -42,8 +42,8 @@ export const PRODUCT_CATALOG = {
     name: "八字",
     href: "/bazi",
     group: "natal",
-    headline: "从出生资料建立四柱",
-    summary: "确认历法、时间与地点口径，查看四柱、五行与可用时间层。",
+    headline: "排一张可核对的盘",
+    summary: "填出生资料，先拿到四柱和可回溯的依据。",
     suitableFor: "长期结构、阶段节奏与个人资料建档",
     inputLead: "出生日期",
     moduleTitle: "四柱与五行力量",
@@ -66,7 +66,7 @@ export const PRODUCT_CATALOG = {
     href: "/luming-nayin",
     group: "natal",
     headline: "查看四柱与纳音关系",
-    summary: "沿用已确认出生资料，单独呈现禄命、纳音、三元和关系事实。",
+    summary: "填出生资料，先拿到四柱纳音和可回溯的依据。",
     suitableFor: "四柱纳音、禄命锚点与基础关系核对",
     inputLead: "出生资料",
     moduleTitle: "四柱纳音与禄命关系",
@@ -295,7 +295,7 @@ export const PRODUCT_CATALOG = {
   },
 } as const satisfies Record<ProductId, ProductDefinition>;
 
-export const NATAL_PRODUCTS = [PRODUCT_CATALOG.bazi, PRODUCT_CATALOG["luming-nayin"], PRODUCT_CATALOG.ziwei, PRODUCT_CATALOG.qizheng] as const;
+export const NATAL_PRODUCTS = [PRODUCT_CATALOG.bazi, PRODUCT_CATALOG.ziwei, PRODUCT_CATALOG.qizheng] as const;
 export const EVENT_PRODUCTS = [PRODUCT_CATALOG.liuyao, PRODUCT_CATALOG.meihua, PRODUCT_CATALOG.qimen, PRODUCT_CATALOG.daliuren, PRODUCT_CATALOG.taiyi, PRODUCT_CATALOG.selection] as const;
 export const OBSERVATION_PRODUCTS = [PRODUCT_CATALOG.jianxiang, PRODUCT_CATALOG.fengshui] as const;
 // 2026-08-14 起多盘问答并入命盘合参（DESIGN §8.5）：

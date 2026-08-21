@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { AccountSessionBoundary, useAccountSession } from "@/components/account-session-context";
-import { AppPageHeader } from "@/components/app-page-header";
+import { AccountSectionShell } from "@/components/account-section-shell";
 import {
   ApiError,
   listProfileVersions,
@@ -80,7 +80,7 @@ function ProfileVersionHistory({ profileId }: AccountProfileDetailSurfaceProps) 
       <StatusPanel
         state="loading"
         title="正在读取档案版本"
-        description="服务端正在返回这份 SubjectProfile 的不可变版本摘要。"
+        description="正在读取这份档案。"
       />
     );
   }
@@ -101,7 +101,7 @@ function ProfileVersionHistory({ profileId }: AccountProfileDetailSurfaceProps) 
       <StatusPanel
         state="error"
         title="登录已过期"
-        description="登录状态已失效，档案版本暂时无法读取；重新登录后可回到这里。"
+        description="登录已失效，请重新登录后再查看。"
         actionHref="/auth/login"
         actionLabel="重新登录"
       />
@@ -113,7 +113,7 @@ function ProfileVersionHistory({ profileId }: AccountProfileDetailSurfaceProps) 
       <StatusPanel
         state="empty"
         title="还没有可显示的版本"
-        description="服务端没有返回属于当前账户的档案版本；不会根据网址补出资料。"
+        description="这份档案还没有可显示的版本。"
         actionHref="/account/profiles"
         actionLabel="返回档案列表"
       />
@@ -125,7 +125,7 @@ function ProfileVersionHistory({ profileId }: AccountProfileDetailSurfaceProps) 
       <div className={surface.sectionHeader}>
         <div>
           <h2 id="profile-version-history-title">档案版本历史</h2>
-          <p>这里只展示服务端返回的版本号和确认时间，不展示出生资料正文。</p>
+          <p>只展示版本号和确认时间。</p>
         </div>
       </div>
       <ul className={profileStyles.profileList}>
@@ -155,7 +155,7 @@ function AccountProfileDetailContent({ profileId }: AccountProfileDetailSurfaceP
       <StatusPanel
         state="loading"
         title="正在确认档案访问权限"
-        description="先确认当前账户会话，再读取属于你的 ProfileVersion 历史。"
+        description="正在确认账户。"
       />
     );
   }
@@ -174,7 +174,7 @@ function AccountProfileDetailContent({ profileId }: AccountProfileDetailSurfaceP
     return (
       <SecondaryStatus
         action={{ href: "/auth/login", label: "前往登录" }}
-        description="登录后才能查看属于当前账户的档案版本；不会根据网址猜测资料。"
+        description="登录后才能查看档案。"
         state="need-login"
         title="需要登录"
       />
@@ -187,15 +187,11 @@ function AccountProfileDetailContent({ profileId }: AccountProfileDetailSurfaceP
 export function AccountProfileDetailSurface({ profileId }: AccountProfileDetailSurfaceProps) {
   return (
     <AccountSessionBoundary>
-      <div className={styles.accountPage}>
-        <AppPageHeader
-          description="网址中的标识只用于请求服务端所有权校验，不会被用来推断或公开出生资料。"
-          title="档案版本与授权边界"
-        />
-        <section aria-label="个人中心 · 档案详情" className={styles.accountPanel}>
+      <AccountSectionShell intro="查看这份档案的版本。" title="档案">
+        <section aria-label="档案详情" className={styles.accountPanel}>
           <AccountProfileDetailContent profileId={profileId} />
         </section>
-      </div>
+      </AccountSectionShell>
     </AccountSessionBoundary>
   );
 }

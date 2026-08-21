@@ -1,11 +1,20 @@
-import { Container } from "@/components/container";
+import type { Metadata } from "next";
+
 import { ChartSimilarityFlow } from "@/components/chart-similarity-flow";
 import { FiveElementsFactsFlow } from "@/components/five-elements-facts-flow";
 import { RhythmFactsFlow } from "@/components/rhythm-facts-flow";
 import { TimeCheckFlow } from "@/components/time-check-flow";
-import { PublicContentSurface } from "@/components/surfaces";
-import { PublicPageShell } from "@/components/public-page-shell";
-import { getToolContentSource, getToolSurface } from "@/lib/secondary-surfaces";
+import { ToolBoundaryView, ToolsPageFrame } from "@/components/tool-page";
+import { getToolSurface } from "@/lib/secondary-surfaces";
+
+export const metadata: Metadata = { title: "工具", description: "只展示这项工具已经开放的能力。" };
+
+const connected = {
+  "time-check": TimeCheckFlow,
+  "chart-similarity": ChartSimilarityFlow,
+  rhythm: RhythmFactsFlow,
+  "five-elements": FiveElementsFactsFlow,
+} as const;
 
 export default async function ToolDetailPage({
   params,
@@ -13,54 +22,17 @@ export default async function ToolDetailPage({
   params: Promise<{ tool: string }>;
 }) {
   const { tool } = await params;
-  if (tool === "five-elements") {
-    return (
-      <PublicPageShell>
-        <main id="main-content" tabIndex={-1}>
-          <Container>
-            <FiveElementsFactsFlow />
-          </Container>
-        </main>
-      </PublicPageShell>
-    );
-  }
-  if (tool === "rhythm") {
-    return (
-      <PublicPageShell>
-        <main id="main-content" tabIndex={-1}>
-          <Container>
-            <RhythmFactsFlow />
-          </Container>
-        </main>
-      </PublicPageShell>
-    );
-  }
-  if (tool === "chart-similarity") {
-    return (
-      <PublicPageShell>
-        <main id="main-content" tabIndex={-1}>
-          <Container>
-            <ChartSimilarityFlow />
-          </Container>
-        </main>
-      </PublicPageShell>
-    );
-  }
-  if (tool === "time-check") {
-    return (
-      <PublicPageShell>
-        <main id="main-content" tabIndex={-1}>
-          <Container>
-            <TimeCheckFlow />
-          </Container>
-        </main>
-      </PublicPageShell>
-    );
-  }
+  const surface = getToolSurface(tool);
+  const Connected = tool in connected ? connected[tool as keyof typeof connected] : null;
+
   return (
-    <PublicContentSurface
-      contentSource={getToolContentSource(tool)}
-      surface={getToolSurface(tool)}
-    />
+    <ToolsPageFrame
+      backHref="/tools"
+      backLabel="返回工具"
+      intro={surface.intro}
+      title={surface.title}
+    >
+      {Connected ? <Connected /> : <ToolBoundaryView slug={tool} />}
+    </ToolsPageFrame>
   );
 }

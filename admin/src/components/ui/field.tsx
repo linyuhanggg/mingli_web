@@ -54,15 +54,17 @@ export function Field({
 
   return (
     <div className={clsx(styles.field, className)}>
-      <label className={styles.label} htmlFor={controlId}>
-        {label}
+      <div className={styles.labelRow}>
+        <label className={styles.label} htmlFor={controlId}>
+          {label}
+        </label>
         {required ? (
           <span className={styles.required} aria-hidden="true">
             {" "}
             *
           </span>
         ) : null}
-      </label>
+      </div>
       {description ? (
         <p className={styles.description} id={descriptionId}>
           {description}

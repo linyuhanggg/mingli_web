@@ -56,10 +56,11 @@ describe("AdminReconciliationSurface", () => {
     render(<AdminReconciliationSurface role="finance" />);
 
     expect(await screen.findByRole("button", { name: "查看差异 run-1" })).toBeVisible();
+    expect(screen.queryByText("对账事实已接入")).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-variant="compact"]')).toHaveLength(0);
     await user.click(screen.getByRole("button", { name: "查看差异 run-1" }));
     expect(screen.getByText("provider_only")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "关闭" }));
-    expect(screen.getByText("对账事实已接入")).toBeVisible();
     expect(screen.getByRole("button", { name: "执行并记录对账" })).toBeEnabled();
 
     await user.type(screen.getByLabelText("操作原因"), "核对测试渠道到账事实");
@@ -87,6 +88,7 @@ describe("AdminReconciliationSurface", () => {
       }),
     );
     expect(await screen.findByText("对账批次已完成，差异事实已保存。")).toBeVisible();
+    expect(document.querySelectorAll('[data-variant="compact"]')).toHaveLength(1);
   });
 
   it("keeps the command form away from a support role", async () => {
@@ -96,5 +98,17 @@ describe("AdminReconciliationSurface", () => {
 
     expect(await screen.findByText("暂无对账批次")).toBeVisible();
     expect(screen.queryByRole("button", { name: "执行并记录对账" })).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-variant="compact"]')).toHaveLength(1);
+  });
+
+  it("keeps a forbidden operator on the page without reconciliation controls", async () => {
+    adminFetchMock.mockResolvedValueOnce({ ok: false, status: 403, title: "Forbidden" });
+
+    render(<AdminReconciliationSurface role="finance" />);
+
+    expect(await screen.findByText("无权限")).toBeVisible();
+    expect(screen.queryByRole("button", { name: "执行并记录对账" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("渠道")).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-variant="compact"]')).toHaveLength(1);
   });
 });

@@ -1,0 +1,104 @@
+.main {
+  min-height: 70vh;
+  padding-block: var(--space-2xl) var(--space-3xl);
+  background: var(--color-canvas);
+  color: var(--color-text);
+}
+
+.column {
+  display: grid;
+  gap: var(--space-lg);
+  width: min(var(--container-form), calc(100% - 32px));
+  margin-inline: auto;
+}
+
+.header {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.header h1 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-page);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.header p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+}
+
+.note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  line-height: 1.5;
+}
+
+.links ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.links a {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  font-weight: 650;
+  text-underline-offset: 0.25rem;
+}
+
+.links a:hover {
+  color: var(--color-text);
+}
+
+.links a:focus-visible,
+.submit:focus-visible,
+.column :global(button[type="submit"]):focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.column :global(button[type="submit"]),
+button.submit {
+  display: inline-flex;
+  width: 100%;
+  min-height: var(--target-submit);
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-lg);
+  border: 1px solid var(--color-action);
+  border-radius: var(--radius-control);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  font: inherit;
+  font-weight: 740;
+  cursor: pointer;
+}
+
+.column :global(button[type="submit"]:hover:not(:disabled)),
+button.submit:hover:not(:disabled) {
+  background: var(--color-action-hover);
+}
+
+.column :global(button[type="submit"]:disabled),
+button.submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .links a,
+  .column :global(button[type="submit"]),
+  button.submit {
+    transition: none;
+  }
+}

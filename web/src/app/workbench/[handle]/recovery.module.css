@@ -11,23 +11,11 @@
   padding-bottom: var(--space-3xl);
 }
 
-.container > header {
-  display: flex;
-  align-items: start;
-  gap: var(--space-md);
-}
-
-.container h1,
 .container h2,
 .container p {
   margin: 0;
 }
 
-.container h1 {
-  font-size: clamp(2.5rem, 5vw, var(--font-size-hero));
-}
-
-.container header p,
 .handle p {
   margin-top: var(--space-sm);
   color: var(--color-text-secondary);
@@ -55,12 +43,15 @@
 
 .homeLink {
   display: inline-flex;
-  width: fit-content;
-  min-height: var(--target-min);
+  width: 100%;
+  min-height: var(--target-submit);
   align-items: center;
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--color-border-strong);
+  justify-content: center;
+  padding: var(--space-sm) var(--space-lg);
+  border: 1px solid var(--color-action);
   border-radius: var(--radius-control);
+  background: var(--color-action);
+  color: var(--color-on-action);
   font-size: var(--font-size-label);
-  font-weight: 680;
+  font-weight: 740;
 }

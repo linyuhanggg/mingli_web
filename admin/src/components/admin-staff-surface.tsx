@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import { useAdminStaff } from "@/components/admin-shell";
-import { Button, Status, Table, type TableColumn, type TableRow } from "@/components/ui";
+import { Button, Field, Status, Table, type TableColumn, type TableRow } from "@/components/ui";
 import { adminFetch, type StaffRole } from "@/lib/api";
 import type { AdminStaff, AdminStaffResponse } from "@/lib/admin-staff";
 
@@ -17,7 +17,6 @@ const COLUMNS: TableColumn[] = [
   { key: "displayName", header: "显示名称", sortable: true },
   { key: "status", header: "状态", sortable: true },
   { key: "lastLogin", header: "最近登录", sortable: true },
-  { key: "action", header: "操作" },
 ];
 
 const ROLE_OPTIONS: readonly { value: StaffRole; label: string }[] = [
@@ -51,6 +50,7 @@ export function AdminStaffSurface({ role }: { role?: StaffRole }) {
   >("loading");
   const [data, setData] = useState<AdminStaffResponse>({ staff: [] });
   const [roleDraft, setRoleDraft] = useState<Record<string, StaffRole>>({});
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [createEmail, setCreateEmail] = useState("");
@@ -61,6 +61,21 @@ export function AdminStaffSurface({ role }: { role?: StaffRole }) {
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reasonError, setReasonError] = useState<string | undefined>();
+  const [passwordError, setPasswordError] = useState<string | undefined>();
+  const [createErrors, setCreateErrors] = useState<{
+    email?: string;
+    displayName?: string;
+    password?: string;
+    reason?: string;
+  }>({});
+  const [createSummary, setCreateSummary] = useState<string | null>(null);
+  const reasonRef = useRef<HTMLTextAreaElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const createEmailRef = useRef<HTMLInputElement>(null);
+  const createDisplayNameRef = useRef<HTMLInputElement>(null);
+  const createPasswordRef = useRef<HTMLInputElement>(null);
+  const createReasonRef = useRef<HTMLTextAreaElement>(null);
 
   const loadStaff = useCallback(async () => {
     const response = await adminFetch<AdminStaffResponse>("/api/v1/admin/staff");
@@ -109,13 +124,21 @@ export function AdminStaffSurface({ role }: { role?: StaffRole }) {
   const update = useCallback(
     async (item: AdminStaff, kind: "status" | "role" | "password") => {
       if (reason.trim().length < 4) {
-        setError("请填写至少 4 个字的员工变更原因。");
+        const message = "请填写至少 4 个字的员工变更原因。";
+        setReasonError(message);
+        setError(message);
+        reasonRef.current?.focus();
         return;
       }
       if (kind === "password" && newPassword.length < 8) {
-        setError("新密码至少需要 8 个字符。");
+        const message = "新密码至少需要 8 个字符。";
+        setPasswordError(message);
+        setError(message);
+        passwordRef.current?.focus();
         return;
       }
+      setReasonError(undefined);
+      setPasswordError(undefined);
       const key = `${kind}:${item.id}`;
       setPendingKey(key);
       setError(null);
@@ -168,21 +191,35 @@ export function AdminStaffSurface({ role }: { role?: StaffRole }) {
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (!createEmail.trim() || !createEmail.includes("@")) {
-        setError("请填写有效的员工邮箱。");
+        const message = "请填写有效的员工邮箱。";
+        setCreateErrors({ email: message });
+        setCreateSummary(message);
+        createEmailRef.current?.focus();
         return;
       }
       if (!createDisplayName.trim()) {
-        setError("请填写员工显示名称。");
+        const message = "请填写员工显示名称。";
+        setCreateErrors({ displayName: message });
+        setCreateSummary(message);
+        createDisplayNameRef.current?.focus();
         return;
       }
       if (createPassword.length < 8) {
-        setError("新员工初始密码至少需要 8 个字符。");
+        const message = "新员工初始密码至少需要 8 个字符。";
+        setCreateErrors({ password: message });
+        setCreateSummary(message);
+        createPasswordRef.current?.focus();
         return;
       }
       if (createReason.trim().length < 4) {
-        setError("请填写至少 4 个字的创建员工原因。");
+        const message = "请填写至少 4 个字的创建员工原因。";
+        setCreateErrors({ reason: message });
+        setCreateSummary(message);
+        createReasonRef.current?.focus();
         return;
       }
+      setCreateErrors({});
+      setCreateSummary(null);
       setPendingKey("create");
       setError(null);
       setResult(null);
@@ -197,7 +234,7 @@ export function AdminStaffSurface({ role }: { role?: StaffRole }) {
         }),
       });
       if (!response.ok) {
-        setError(response.title);
+        setCreateSummary(response.title);
         setPendingKey(null);
         return;
       }
@@ -227,83 +264,32 @@ export function AdminStaffSurface({ role }: { role?: StaffRole }) {
         status: statusCopy(item.status),
         lastLogin: formatDate(item.last_login_at),
         sessions: item.unrevoked_session_count,
-        action:
-          effectiveRole === "superadmin" ? (
-            <div className={styles.actionStack}>
-              <Button
-                variant="destructive"
-                type="button"
-                loading={pendingKey === `status:${item.id}`}
-                aria-label={`${item.status === "active" ? "停用" : "恢复"} ${item.email}`}
-                onClick={() => void update(item, "status")}
-              >
-                {item.status === "active" ? "停用员工" : "恢复员工"}
-              </Button>
-              <label className={styles.roleField}>
-                <span className={styles.srOnly}>角色 {item.email}</span>
-                <select
-                  aria-label={`角色 ${item.email}`}
-                  value={roleDraft[item.id] ?? item.role}
-                  onChange={(event) =>
-                    setRoleDraft((current) => ({
-                      ...current,
-                      [item.id]: event.target.value as StaffRole,
-                    }))
-                  }
-                >
-                  {ROLE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <Button
-                variant="secondary"
-                type="button"
-                loading={pendingKey === `role:${item.id}`}
-                aria-label={`保存角色 ${item.email}`}
-                onClick={() => void update(item, "role")}
-              >
-                保存角色
-              </Button>
-              <Button
-                variant="secondary"
-                type="button"
-                loading={pendingKey === `password:${item.id}`}
-                aria-label={`重置密码 ${item.email}`}
-                onClick={() => void update(item, "password")}
-              >
-                重置密码
-              </Button>
-            </div>
-          ) : (
-            "—"
-          ),
       })),
-    [data.staff, effectiveRole, pendingKey, roleDraft, update],
+    [data.staff],
+  );
+  const selectedStaff = useMemo(
+    () => data.staff.find((item) => item.id === selectedStaffId) ?? data.staff[0] ?? null,
+    [data.staff, selectedStaffId],
   );
 
-  const notice =
-    state === "loading" ? (
-      <Status state="loading" title="正在读取员工目录…" description="只显示角色、状态和会话计数，不展示密码材料。" />
+  const notice = result ? (
+    <Status compact state="success" title={result} description="变更已通过服务端角色、CSRF 和审计校验。" />
+  ) : state === "loading" ? (
+      <Status compact state="loading" title="正在读取员工目录…" description="只显示角色、状态和会话计数，不展示密码材料。" />
     ) : state === "forbidden" ? (
-      <Status state="locked" title="无权限" description="员工目录与角色管理只允许超级管理员访问。" />
+      <Status compact state="locked" title="无权限" description="员工目录与角色管理只允许超级管理员访问。" />
     ) : state === "unavailable" ? (
-      <Status state="unavailable" title="员工平台暂不可用" description="页面保留只读结构，不显示虚假的员工状态。" />
+      <Status compact state="unavailable" title="员工平台暂不可用" description="页面保留只读结构，不显示虚假的员工状态。" />
     ) : state === "error" ? (
-      <Status state="error" title="员工目录读取失败" description={error ?? "请求失败，请重试。"} />
+      <Status compact state="error" title="员工目录读取失败" description={error ?? "请求失败，请重试。"} />
     ) : state === "empty" ? (
-      <Status state="empty" title="暂无员工账号" description="员工账号创建后，这里会显示可审计的角色和状态。" />
-    ) : (
-      <Status state="success" title="员工目录已接入" description="密码哈希、会话 token 和其他秘密材料不进入 Admin 响应。" />
-    );
+      <Status compact state="empty" title="暂无员工账号" description="员工账号创建后，这里会显示可审计的角色和状态。" />
+    ) : null;
 
   return (
     <div className={styles.stack} data-state={state} data-staff-role={effectiveRole ?? "session"}>
       {notice}
-      {result ? <Status state="success" title={result} description="变更已通过服务端角色、CSRF 和审计校验。" /> : null}
-      {state !== "forbidden" ? <section className={styles.panel} aria-labelledby="staff-list-title">
+      {state === "ready" ? <section className={styles.panel} aria-labelledby="staff-list-title">
         <div className={styles.heading}>
           <div>
             <h2 id="staff-list-title">员工与角色</h2>
@@ -317,46 +303,131 @@ export function AdminStaffSurface({ role }: { role?: StaffRole }) {
           rows={rows}
           filterLabel="筛选员工目录"
           filterPlaceholder="例如：邮箱、角色或状态…"
+          filter={{
+            label: "按员工状态筛选",
+            rowKey: "status",
+            options: [
+              { value: "", label: "全部" },
+              { value: "在职", label: "在职员工" },
+              { value: "已停用", label: "停用员工" },
+            ],
+          }}
           pageSize={20}
-          emptyState={state === "unavailable" ? "服务端员工事实暂不可用" : "当前没有员工账号"}
+          emptyState="没有符合筛选条件的员工账号"
+          onRowActivate={(row) => setSelectedStaffId(row.id)}
+          rowActionLabel="处理"
         />
       </section> : null}
-      {effectiveRole === "superadmin" && state !== "forbidden" ? (
+      {effectiveRole === "superadmin" && state === "ready" ? (
         <section className={styles.panel} aria-labelledby="staff-command-title">
           <div className={styles.heading}>
             <div>
-              <h2 id="staff-command-title">员工变更原因</h2>
+              <h2 id="staff-command-title">处理所选员工</h2>
               <p>停用、恢复和角色调整必须填写原因；密码只用于服务端哈希，不会进入响应或审计。</p>
             </div>
             <span className={styles.badge}>需审计</span>
           </div>
-          <label className={styles.reasonField} htmlFor="staff-change-reason">
-            员工变更原因
+          <Field
+            className={styles.workbenchField}
+            label="员工变更原因"
+            description="至少 4 个字；原因会随停用、恢复、角色或密码操作写入审计。"
+            error={reasonError}
+            required
+          >
             <textarea
+              ref={reasonRef}
               id="staff-change-reason"
+              name="staffChangeReason"
+              autoComplete="off"
               value={reason}
-              onChange={(event) => setReason(event.target.value)}
+              onChange={(event) => {
+                setReason(event.target.value);
+                if (event.target.value.trim().length >= 4) setReasonError(undefined);
+              }}
               minLength={4}
               placeholder="说明离岗、职责调整或恢复值班原因…"
             />
-          </label>
-          <label className={styles.passwordField} htmlFor="staff-new-password">
-            新密码
+          </Field>
+          <Field
+            className={styles.workbenchField}
+            label="新密码"
+            description="仅重置密码时填写，至少 8 个字符；不会回显到列表或审计。"
+            error={passwordError}
+          >
             <input
+              ref={passwordRef}
               id="staff-new-password"
+              name="staffNewPassword"
               type="password"
               value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
+              onChange={(event) => {
+                setNewPassword(event.target.value);
+                if (event.target.value.length >= 8) setPasswordError(undefined);
+              }}
               minLength={8}
               maxLength={200}
               autoComplete="new-password"
               placeholder="至少 8 个字符；不会回显到列表或审计"
             />
-          </label>
+          </Field>
+          {selectedStaff ? (
+            <p aria-live="polite">当前处理员工：{selectedStaff.display_name} · {selectedStaff.email}</p>
+          ) : null}
+          {selectedStaff ? (
+            <div className={styles.actionStack}>
+              <Button
+                variant="destructive"
+                type="button"
+                loading={pendingKey === `status:${selectedStaff.id}`}
+                aria-label={`${selectedStaff.status === "active" ? "停用" : "恢复"} ${selectedStaff.email}`}
+                onClick={() => void update(selectedStaff, "status")}
+              >
+                {selectedStaff.status === "active" ? "停用员工" : "恢复员工"}
+              </Button>
+              <Field className={styles.workbenchField} label={`目标角色 · ${selectedStaff.email}`}>
+                <select
+                  aria-label={`角色 ${selectedStaff.email}`}
+                  name="staffTargetRole"
+                  autoComplete="off"
+                  value={roleDraft[selectedStaff.id] ?? selectedStaff.role}
+                  onChange={(event) =>
+                    setRoleDraft((current) => ({
+                      ...current,
+                      [selectedStaff.id]: event.target.value as StaffRole,
+                    }))
+                  }
+                >
+                  {ROLE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Button
+                variant="secondary"
+                type="button"
+                loading={pendingKey === `role:${selectedStaff.id}`}
+                aria-label={`保存角色 ${selectedStaff.email}`}
+                onClick={() => void update(selectedStaff, "role")}
+              >
+                保存角色
+              </Button>
+              <Button
+                variant="secondary"
+                type="button"
+                loading={pendingKey === `password:${selectedStaff.id}`}
+                aria-label={`重置密码 ${selectedStaff.email}`}
+                onClick={() => void update(selectedStaff, "password")}
+              >
+                重置密码
+              </Button>
+            </div>
+          ) : null}
           {error ? <p className={styles.inlineAlert} role="alert">{error}</p> : null}
         </section>
       ) : null}
-      {effectiveRole === "superadmin" && state !== "forbidden" ? (
+      {effectiveRole === "superadmin" && state === "ready" ? (
         <section className={styles.panel} aria-labelledby="staff-create-title">
           <div className={styles.heading}>
             <div>
@@ -365,37 +436,54 @@ export function AdminStaffSurface({ role }: { role?: StaffRole }) {
             </div>
             <span className={styles.badge}>需审计</span>
           </div>
-          <form className={styles.createForm} onSubmit={(event) => void createStaff(event)}>
+          <form className={styles.createForm} noValidate onSubmit={(event) => void createStaff(event)}>
             <div className={styles.fieldGrid}>
-              <label className={styles.inputField} htmlFor="new-staff-email">
-                新员工邮箱
+              <Field className={styles.workbenchField} label="新员工邮箱" error={createErrors.email} required>
                 <input
+                  ref={createEmailRef}
                   id="new-staff-email"
+                  name="newStaffEmail"
                   type="email"
                   value={createEmail}
-                  onChange={(event) => setCreateEmail(event.target.value)}
+                  onChange={(event) => {
+                    setCreateEmail(event.target.value);
+                    if (event.target.value.includes("@")) {
+                      setCreateErrors((current) => ({ ...current, email: undefined }));
+                      setCreateSummary(null);
+                    }
+                  }}
                   autoComplete="off"
+                  spellCheck={false}
                   required
                   placeholder="例如：operator@example.com"
                 />
-              </label>
-              <label className={styles.inputField} htmlFor="new-staff-display-name">
-                新员工显示名称
+              </Field>
+              <Field className={styles.workbenchField} label="新员工显示名称" error={createErrors.displayName} required>
                 <input
+                  ref={createDisplayNameRef}
                   id="new-staff-display-name"
+                  name="newStaffDisplayName"
                   type="text"
                   value={createDisplayName}
-                  onChange={(event) => setCreateDisplayName(event.target.value)}
+                  onChange={(event) => {
+                    setCreateDisplayName(event.target.value);
+                    if (event.target.value.trim()) {
+                      setCreateErrors((current) => ({ ...current, displayName: undefined }));
+                      setCreateSummary(null);
+                    }
+                  }}
                   maxLength={120}
+                  autoComplete="off"
                   required
                   placeholder="例如：运营值班"
                 />
-              </label>
+              </Field>
             </div>
-            <label className={styles.inputField} htmlFor="new-staff-role">
-              新员工角色
+            <Field className={styles.workbenchField} label="新员工角色">
               <select
                 id="new-staff-role"
+                name="newStaffRole"
+                autoComplete="off"
                 aria-label="新员工角色"
                 value={createRole}
                 onChange={(event) => setCreateRole(event.target.value as StaffRole)}
@@ -406,32 +494,60 @@ export function AdminStaffSurface({ role }: { role?: StaffRole }) {
                   </option>
                 ))}
               </select>
-            </label>
-            <label className={styles.passwordField} htmlFor="new-staff-password">
-              新员工初始密码
+            </Field>
+            <Field
+              className={styles.workbenchField}
+              label="新员工初始密码"
+              description="至少 8 个字符；创建后不会再次显示。"
+              error={createErrors.password}
+              required
+            >
               <input
+                ref={createPasswordRef}
                 id="new-staff-password"
+                name="newStaffPassword"
                 type="password"
                 value={createPassword}
-                onChange={(event) => setCreatePassword(event.target.value)}
+                onChange={(event) => {
+                  setCreatePassword(event.target.value);
+                  if (event.target.value.length >= 8) {
+                    setCreateErrors((current) => ({ ...current, password: undefined }));
+                    setCreateSummary(null);
+                  }
+                }}
                 minLength={8}
                 maxLength={200}
                 autoComplete="new-password"
                 required
                 placeholder="至少 8 个字符；创建后不会再次显示"
               />
-            </label>
-            <label className={styles.reasonField} htmlFor="new-staff-reason">
-              创建员工原因
+            </Field>
+            <Field
+              className={styles.workbenchField}
+              label="创建员工原因"
+              description="至少 4 个字；原因会和创建操作一起写入审计。"
+              error={createErrors.reason}
+              required
+            >
               <textarea
+                ref={createReasonRef}
                 id="new-staff-reason"
+                name="newStaffReason"
+                autoComplete="off"
                 value={createReason}
-                onChange={(event) => setCreateReason(event.target.value)}
+                onChange={(event) => {
+                  setCreateReason(event.target.value);
+                  if (event.target.value.trim().length >= 4) {
+                    setCreateErrors((current) => ({ ...current, reason: undefined }));
+                    setCreateSummary(null);
+                  }
+                }}
                 minLength={4}
                 required
                 placeholder="说明新增账号的岗位和排班原因…"
               />
-            </label>
+            </Field>
+            {createSummary ? <p className={styles.inlineAlert} role="alert">{createSummary}</p> : null}
             <Button type="submit" loading={pendingKey === "create"}>
               创建员工账号
             </Button>
