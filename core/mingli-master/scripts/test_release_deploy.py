@@ -354,6 +354,11 @@ class ReleaseDeployTests(unittest.TestCase):
                 "verified": True,
                 "failures": [],
             }),
+            patch.object(
+                release_deploy,
+                "extra_gate_pathspecs",
+                return_value=((), ()),
+            ),
             patch.object(release_deploy, "tracked_release_files", return_value=self.files),
             patch.object(release_deploy, "source_commit", return_value="abc123"),
             patch.object(release_deploy, "build_committed_manifest", return_value=manifest),
@@ -410,6 +415,106 @@ class ReleaseDeployTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "mode mismatch"):
             release_deploy.verify_destination(self.destination, manifest)
+
+    def _init_git(self, repo: Path) -> None:
+        subprocess.run(["git", "init", "-q", str(repo)], check=True)
+        subprocess.run(
+            ["git", "-C", str(repo), "config", "user.name", "Test"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(repo), "config", "user.email", "test@example.invalid"],
+            check=True,
+        )
+
+    def _parent_repo_source(self) -> Path:
+        repo = self.root / "parent"
+        source = repo / "core" / "mingli-master"
+        source.mkdir(parents=True)
+        (source / "scripts").mkdir()
+        (source / "SKILL.md").write_text("release\n", encoding="utf-8")
+        (source / "scripts" / "runner.py").write_text(
+            "print('v2')\n", encoding="utf-8"
+        )
+        closure = source / release_deploy.RUNTIME_CLOSURE_RELATIVE
+        closure.parent.mkdir(parents=True, exist_ok=True)
+        closure.write_text(
+            json.dumps(
+                {
+                    "schema_version": release_deploy.RUNTIME_CLOSURE_SCHEMA,
+                    "files": [
+                        "SKILL.md",
+                        release_deploy.RUNTIME_CLOSURE_RELATIVE,
+                        "scripts/runner.py",
+                    ],
+                    "patterns": [],
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        sibling = repo / "web" / "page.tsx"
+        sibling.parent.mkdir(parents=True)
+        sibling.write_text("dirty sibling\n", encoding="utf-8")
+        self._init_git(repo)
+        subprocess.run(["git", "-C", str(repo), "add", "core"], check=True)
+        subprocess.run(
+            ["git", "-C", str(repo), "commit", "-qm", "source"],
+            check=True,
+        )
+        return source
+
+    def test_require_clean_source_on_parent_git_ignores_sibling_paths(self) -> None:
+        source = self._parent_repo_source()
+        release_deploy.require_clean_source(source)
+
+        (source / "scripts" / "runner.py").write_text("dirty\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "must be clean"):
+            release_deploy.require_clean_source(source)
+
+    def test_require_clean_source_can_limit_pathspecs_to_release_files(self) -> None:
+        source = self._parent_repo_source()
+        (source / "unrelated.md").write_text("unrelated dirty\n", encoding="utf-8")
+        release_deploy.require_clean_source(
+            source,
+            pathspecs=[
+                "SKILL.md",
+                "scripts/runner.py",
+                release_deploy.RUNTIME_CLOSURE_RELATIVE,
+            ],
+        )
+
+        (source / "scripts" / "runner.py").write_text("dirty\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "must be clean"):
+            release_deploy.require_clean_source(
+                source,
+                pathspecs=["SKILL.md", "scripts/runner.py"],
+            )
+
+    def test_tracked_release_files_and_committed_modes_use_source_prefix_in_parent_repo(
+        self,
+    ) -> None:
+        source = self._parent_repo_source()
+        runner = source / "scripts" / "runner.py"
+        runner.chmod(0o755)
+        subprocess.run(["git", "-C", str(source), "add", "scripts/runner.py"], check=True)
+        subprocess.run(
+            ["git", "-C", str(source), "commit", "-qm", "mode"],
+            check=True,
+        )
+        files = release_deploy.tracked_release_files(source)
+        self.assertEqual(
+            files,
+            [
+                "SKILL.md",
+                release_deploy.RUNTIME_CLOSURE_RELATIVE,
+                "scripts/runner.py",
+            ],
+        )
+        commit = release_deploy.source_commit(source)
+        modes = release_deploy.committed_release_modes(source, files, commit)
+        self.assertEqual(modes["scripts/runner.py"], 0o755)
+        self.assertEqual(len(commit), 40)
 
 
 class ReleaseSourceVerificationTests(unittest.TestCase):

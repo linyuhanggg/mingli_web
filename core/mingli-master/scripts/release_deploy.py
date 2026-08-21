@@ -64,9 +64,35 @@ def _safe_release_pattern(raw: object) -> str:
     return path.as_posix()
 
 
+def _git_scope(source: Path) -> tuple[Path, str]:
+    """Return (repo_root, posix prefix of source inside the repo).
+
+    prefix is empty when source is the git root; otherwise it ends with '/'.
+    The source may be a subdirectory of a parent repository.
+    """
+
+    root = Path(
+        subprocess.run(
+            ["git", "-C", str(source), "rev-parse", "--show-toplevel"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+    )
+    prefix = subprocess.run(
+        ["git", "-C", str(source), "rev-parse", "--show-prefix"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    if prefix and not prefix.endswith("/"):
+        prefix += "/"
+    return root, prefix
+
+
 def _git_tracked_paths(source: Path) -> set[str]:
     result = subprocess.run(
-        ["git", "-C", str(source), "ls-files", "-z"],
+        ["git", "-C", str(source), "ls-files", "-z", "--", "."],
         check=True,
         capture_output=True,
     )
@@ -75,6 +101,37 @@ def _git_tracked_paths(source: Path) -> set[str]:
         for item in result.stdout.split(b"\0")
         if item
     }
+
+
+def _repo_relative_pathspecs(
+    source: Path,
+    source_pathspecs: Iterable[str],
+) -> list[str]:
+    _, prefix = _git_scope(source)
+    specs: list[str] = []
+    for raw in source_pathspecs:
+        spec = PurePosixPath(str(raw)).as_posix().lstrip("/")
+        if not spec or spec.startswith("/") or ".." in PurePosixPath(spec).parts:
+            raise ValueError(f"unsafe release path: {raw!r}")
+        specs.append(f"{prefix}{spec}" if prefix else spec)
+    return specs
+
+
+def extra_gate_pathspecs(source: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Gate scripts that must be committed with the release, even if not shipped."""
+
+    source_extras = tuple(
+        relative
+        for relative in ("scripts/release_deploy.py", "scripts/test_release_deploy.py")
+        if (source / relative).is_file()
+    )
+    repo_root, _prefix = _git_scope(source)
+    repo_extras = tuple(
+        relative
+        for relative in ("scripts/check_mingli_core_workspace.py",)
+        if (repo_root / relative).is_file()
+    )
+    return source_extras, repo_extras
 
 
 def _runtime_closure(source: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
@@ -152,9 +209,42 @@ def source_commit(source: Path) -> str:
     return result.stdout.strip()
 
 
-def require_clean_source(source: Path) -> None:
+def require_clean_source(
+    source: Path,
+    pathspecs: Iterable[str] | None = None,
+    extra_repo_pathspecs: Iterable[str] = (),
+) -> None:
+    """Fail if the selected source paths (not the whole parent tree) are dirty.
+
+    When pathspecs is omitted, the entire source prefix is checked. Callers that
+    ship a runtime closure should pass those files plus extra_gate_pathspecs so
+    unrelated dirty files in the source tree do not block a faithful sign.
+    """
+
+    repo_root, prefix = _git_scope(source)
+    specs: list[str] = []
+    if pathspecs is None:
+        specs.append(prefix.rstrip("/") if prefix else ".")
+    else:
+        specs.extend(_repo_relative_pathspecs(source, pathspecs))
+    for raw in extra_repo_pathspecs:
+        spec = PurePosixPath(str(raw)).as_posix().lstrip("/")
+        if not spec or spec.startswith("/") or ".." in PurePosixPath(spec).parts:
+            raise ValueError(f"unsafe release path: {raw!r}")
+        specs.append(spec)
+    if not specs:
+        raise ValueError("source worktree must be clean before deployment")
     result = subprocess.run(
-        ["git", "-C", str(source), "status", "--porcelain", "--untracked-files=all"],
+        [
+            "git",
+            "-C",
+            str(repo_root),
+            "status",
+            "--porcelain",
+            "--untracked-files=all",
+            "--",
+            *specs,
+        ],
         check=True,
         capture_output=True,
         text=True,
@@ -198,6 +288,7 @@ def committed_release_modes(
     commit: str,
 ) -> dict[str, int]:
     expected = {_safe_relative_path(path) for path in relative_paths}
+    _, prefix = _git_scope(source)
     result = subprocess.run(
         ["git", "-C", str(source), "ls-tree", "-rz", "--full-tree", "-r", commit],
         check=True,
@@ -210,6 +301,10 @@ def committed_release_modes(
         metadata, encoded_path = raw.split(b"\t", 1)
         git_mode, object_type, _ = metadata.split(b" ", 2)
         relative = encoded_path.decode("utf-8")
+        if prefix:
+            if not relative.startswith(prefix):
+                continue
+            relative = relative[len(prefix) :]
         if relative not in expected:
             continue
         if object_type != b"blob" or git_mode not in {b"100644", b"100755"}:
@@ -914,7 +1009,13 @@ def main(argv: list[str] | None = None) -> int:
     destinations = [_deployment_destination(path) for path in args.destination]
     if len(set(destinations)) != len(destinations):
         raise ValueError("duplicate deployment destination")
-    require_clean_source(source)
+    release_files = tracked_release_files(source)
+    source_extras, repo_extras = extra_gate_pathspecs(source)
+    require_clean_source(
+        source,
+        pathspecs=list(dict.fromkeys([*release_files, *source_extras])),
+        extra_repo_pathspecs=repo_extras,
+    )
     source_verification = _verify_release_sources(source, args.research_root)
     if not source_verification["verified"]:
         raise ValueError(
@@ -923,7 +1024,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     manifest = build_committed_manifest(
         source,
-        tracked_release_files(source),
+        release_files,
         source_commit(source),
     )
 

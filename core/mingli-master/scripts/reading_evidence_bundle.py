@@ -31,7 +31,11 @@ RETRIEVAL_PROFILE = "applicability-first-semantic-bm25-v1"
 ROOT = Path(__file__).resolve().parents[1]
 MAX_RULES_PER_PACK = 2
 SOURCE_CONDITIONED_METHODOLOGY_FALLBACK_RULE_IDS = frozenset(
-    {"bazi/ditiansui-chanwei#DR-01-01"}
+    {
+        "bazi/ditiansui-chanwei#DR-01-01",
+        "bazi/sanming-tonghui#R-01-02",
+        "bazi/yuanhai-ziping#YR-M01",
+    }
 )
 
 

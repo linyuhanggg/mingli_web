@@ -25,6 +25,23 @@ RUNTIME_ROOT = Path(
 ).expanduser()
 
 
+def _git_worktree_root(root: Path) -> Path | None:
+    inside = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "--is-inside-work-tree"],
+        capture_output=True,
+        text=True,
+    )
+    if inside.returncode != 0 or inside.stdout.strip() != "true":
+        return None
+    toplevel = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "--show-toplevel"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return Path(toplevel.stdout.strip())
+
+
 def _git_branch(root: Path) -> str:
     completed = subprocess.run(
         ["git", "-C", str(root), "branch", "--show-current"],
@@ -44,11 +61,13 @@ def _sha256(path: Path) -> str:
 
 
 def main() -> int:
-    if not (CORE_ROOT / ".git").exists():
+    git_root = _git_worktree_root(CORE_ROOT) if CORE_ROOT.is_dir() else None
+    if git_root is None:
         print(f"core_source=missing_or_not_git:{CORE_ROOT}")
         return 1
 
     print(f"core_source={CORE_ROOT}")
+    print(f"core_git_root={git_root}")
     print(f"core_branch={_git_branch(CORE_ROOT)}")
 
     manifest_path = RUNTIME_ROOT / ".mingli-release-manifest.json"
