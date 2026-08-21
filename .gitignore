@@ -46,6 +46,12 @@ core/mingli-master/
 
 # Regenerable tool output; never treat these snapshots as product authority
 /snapshots/
+/test-results/
+# Generated e2e screenshots, and build caches a runner leaked into the repo
+# by resolving $TMPDIR relative to the workspace.
+/web/artifacts/
+/web/var/
+/admin/var/
 .qoder/repowiki/
 .qoder/better-harness/
 .qoder/worktrees/
@@ -57,6 +63,9 @@ metis/
 
 # qingnang.cc 本地镜像与研究产物（212MB，不进入版本库）
 qingnang/
+
+# Agent 运行时协调状态：本机 issue id 映射等，不是产品需求或证据
+created-issues.json
 
 # design-sync（claude.ai/design 同步）：暂存脚本、构建产物与机器状态
 .ds-sync/
