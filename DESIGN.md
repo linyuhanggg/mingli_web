@@ -1,15 +1,17 @@
 ---
 name: Direction C UI Contract
-status: accepted
+status: revisable-baseline
 frozen_at: 2026-08-13
-revised_at: 2026-08-18
-revision_basis: docs/redesign/2026-08-14-direction-c-decision.md; docs/redesign/2026-08-16-homepage-liquid-glass-prototype-decision.md; docs/redesign/2026-08-17-ux-differentiation-spec.md（已并入 §19–§22）; docs/redesign/2026-08-17-bazi-result-page-dev-spec.md（已并入 §8、§17、§19–§22）
+revised_at: 2026-08-20
+revision_basis: docs/redesign/2026-08-14-direction-c-decision.md; docs/redesign/2026-08-16-homepage-liquid-glass-prototype-decision.md; docs/redesign/2026-08-17-ux-differentiation-spec.md（已并入 §19–§22）; docs/redesign/2026-08-17-bazi-result-page-dev-spec.md（已并入 §8、§17、§19–§22）; 2026-08-19 项目经理 §2.1 审美裁定; 2026-08-20 用户关于 UI/UX 用户测试闭环的裁定
 scope: web-and-admin
 ---
 
-# UI、组件、交互与响应式权威合同
+# UI、组件、交互与响应式基线合同
 
-本文是公共 Web、用户区、产品工作台、`/_ui-lab` 与独立 Admin 的唯一视觉合同。
+本文是公共 Web、用户区、产品工作台、`/_ui-lab` 与独立 Admin 的现有设计基线与技术约束合同。
+
+> **2026-08-20 执行修订：**本文对数据真实性、状态完整性、响应式、可访问性和组件技术边界的约束继续有效；视觉风格、信息层级与 UX 方案改为可修订基线，不再以“符合本文”单独判定 UI 完成。当前用户目标、真实浏览器中的用户测试结论，以及项目经理接受的 `UI_UX_HANDOFF` 可以推翻本文既有的审美或交互细节。新方案验收后应回写本文，但在回写前不得用旧条款阻止已批准的 UI/UX 改进。
 
 2026-08-18 修订：原 `docs/redesign/2026-08-17-ux-differentiation-spec.md` 与 `docs/redesign/2026-08-17-bazi-result-page-dev-spec.md` 的有效规则已分别并入本文 §8、§17、§19–§22；两份独立文件只保留当时的决策过程，**不再作为并行合同或当前实现说明**。八字字段形状以版本化 Presentation Contract 为准，开发范围与完成状态只看 `docs/CHECKLIST.md`。
 
@@ -40,7 +42,7 @@ scope: web-and-admin
 
 ## 2. 当前视觉方向
 
-2026-08-14 起，视觉方向冻结为**方向 C「现代 SaaS 锐感」**（决策记录：`docs/redesign/2026-08-14-direction-c-decision.md`）。浅灰底、纯白面、单一蓝色点缀、紧字距排版、细线与小圆角分层，靠网格精度、字阶对比和克制的微交互出质感，不靠装饰。除下述 `/` 首页试点外，Direction C 仍是公共页、账户、工作台和 Admin 的默认且唯一合同。
+2026-08-14 曾接受的视觉方向为**方向 C「现代 SaaS 锐感」**（决策记录：`docs/redesign/2026-08-14-direction-c-decision.md`）。浅灰底、纯白面、单一蓝色点缀、紧字距排版、细线与小圆角分层，靠网格精度、字阶对比和克制的微交互出质感，不靠装饰。除下述 `/` 首页试点外，Direction C 是公共页、账户、工作台和 Admin 的当前默认基线；经用户测试闭环和项目经理接受后可以修订或替换。
 
 2026-08-16 用户批准以[首页动态水墨 + 液态玻璃原型决策](./docs/redesign/2026-08-16-homepage-liquid-glass-prototype-decision.md)及其视觉真值为 `/` 首页专属表现层例外。该批准只冻结视觉方向并授权开始动态原型，不代表代码实现已经 `USER_ACCEPTED`；实现仍须完成真实浏览器验收。
 
@@ -49,6 +51,24 @@ scope: web-and-admin
 旧 `FateRadar` 名称、东方编辑档案叙事、深墨绿、暖象牙、金色、陶土色、星轨和时间仪表全部废弃，不得出现在新页面、演示 Fixture、截图或权威文案中；仅 `/` 首页可按 §6.3 使用暖宣纸、淡金与经批准的东方品牌装饰。宋体（`--font-domain`）维持仅限盘面大字的既有边界。
 
 品牌层必须隔离为少量可替换 Token。
+
+## 2.1 项目经理审美裁定（2026-08-19）
+
+裁定人：项目经理。用户已授权为了好看修改本文；前端只实现，不擅自改合同。产品地图、路由和未冻结品牌名不在本裁定范围。P4-007 用户逐页批准仍是上线门禁，本裁定不代替验收。
+
+1. 方向 C 继续是唯一默认合同，不新开方向。
+2. 质感只允许来自网格对齐、字阶对比、1px 边界和克制微交互。禁止用装饰冒充质感。
+3. `/` 首页液态玻璃与水墨不得外溢到账户、工作台、结果页或 Admin。
+4. 结果页主视觉是可核验引文和盘面事实，不是卡片皮肤、徽章墙或彩色状态条。
+5. 廉价感禁则：多层软阴影、大圆角堆叠、把蓝按钮当主操作（主操作走 `--color-action` 黑）、空英雄区、彩虹状态色。
+6. 密度跟 METIS：信息先于呼吸感。宁紧不空，但页面级不准横向溢出。
+7. `/bazi` 成功态第一屏必须同时有盘面事实（四柱/日主/月令）和一条已核验引文（书名/行号）。没有已核验引文时只留盘面事实，禁止空标题英雄区撑高度。
+8. 结果页章节间隙约 12–16px，去掉空英雄区大底垫。
+9. 用户可见状态文案（正式页与 `/_ui-lab/bazi-result` 共用），禁止「待接入」当标题，不要优先展示英文 `ApiError.message`：
+   - unauthorized：需要登录才能看这份结果
+   - unavailable：结果服务暂时不可用，不会展示未确认内容
+   - empty：还没有可展示的盘面
+   - error：读取失败，请重试
 
 ## 3. 设计 Token
 
@@ -194,6 +214,7 @@ scope: web-and-admin
 - 允许首页顶栏采用液态玻璃处理，并在 Hero 与少量内容面使用克制的玻璃表面；玻璃不是全页卡片语言，不得削弱文字、焦点、导航状态或 CTA 的对比度与可读性；
 - 首页 Hero 必须保留主标「十三术同根，五十五部古籍为证」、主 CTA「开始排盘」与次 CTA「命盘合参」；其余内容仍必须来自已有真实能力和已冻结产品地图；
 - 本例外取代首页范围内“暖象牙/淡金、玄学装饰、玻璃拟态一律禁止”的旧表述；其他路由继续执行 Direction C 默认禁令。
+- 2026-08-19：产品录入页（`/bazi` 等）可继承宣纸底色与克制暖色，让首页到任务页不断成另一套皮肤；不得把符箓、水墨动效或液态玻璃顶栏推广到录入、工作台、账户或 Admin。
 
 ## 7. 用户任务壳层
 

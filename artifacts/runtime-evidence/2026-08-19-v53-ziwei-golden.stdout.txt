@@ -1,0 +1,9 @@
+inspector=c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b
+files=220
+ziwei_cu_signed=[]
+ziwei_cu_core=[]
+impl_files_identical=True
+ziwei_packs={'ziwei/feixing-ziwei-doushu-yuanzhi': {'n': 14, 'active': 0}, 'ziwei/taiwei-fu': {'n': 21, 'active': 1}, 'ziwei/ziwei-doushu-quanshu': {'n': 60, 'active': 1}}
+runtime_active_rules=['ziwei/taiwei-fu#TR-01', 'ziwei/ziwei-doushu-quanshu#ZW-M01']
+golden_fixture_in_signed=False
+golden_fixture_cases=32

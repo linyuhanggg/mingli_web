@@ -1,0 +1,7 @@
+inspector=c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b
+files=220
+signed_convergence_files=0 hits=0 paths=[]
+core_convergence_files=0 hits=0 paths=[]
+signed_disagreements_files=['resources/runtime/providers/physiognomy.json', 'scripts/bazi_reasoning_tools.py', 'scripts/liuren_fact_adapter.py', 'scripts/reading_engine/physiognomy.py', 'scripts/reading_engine/providers.py']
+core_disagreements_extra=['scripts/test_liuren_fact_adapter.py', 'scripts/test_v51_physiognomy_completion.py', 'scripts/fixtures/kintaiyi_taiyi_fixture_generator.py']
+brief_convergence=0 brief_disagreements=0

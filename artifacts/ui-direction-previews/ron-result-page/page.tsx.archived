@@ -1,0 +1,260 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+
+import {
+  BAZI_EVIDENCE_RESULT_EVIDENCE,
+  BAZI_EVIDENCE_RESULT_VIEW_MODEL,
+} from "@/fixtures/bazi-evidence-result";
+
+import { EvidenceGraph } from "./evidence-graph";
+import { PillarFan, type PillarCard } from "./pillar-fan";
+import styles from "./page.module.css";
+
+export const metadata: Metadata = {
+  title: "RON 风格视觉原型",
+  description: "仅用于比较视觉方向的八字结果页原型，不是生产合同。",
+  robots: { index: false, follow: false },
+};
+
+const POSITION_LABELS: Record<string, string> = {
+  year: "年柱",
+  month: "月柱",
+  day: "日柱",
+  hour: "时柱",
+};
+
+const ELEMENT_LABELS: Record<string, string> = {
+  wood: "木",
+  fire: "火",
+  earth: "土",
+  metal: "金",
+  water: "水",
+};
+
+const FACT_PATH_TITLES: Record<string, string> = {
+  "/day_master/stem": "日主天干",
+  "/four_pillars/month": "月柱干支",
+};
+
+export default function RonDesignPrototypePage() {
+  if (process.env.NODE_ENV === "production") notFound();
+
+  const viewModel = BAZI_EVIDENCE_RESULT_VIEW_MODEL;
+  const facts = viewModel.core_facts;
+  if (!facts) notFound();
+
+  const pattern = facts.source_conditioned_patterns?.[0];
+  const evidence = BAZI_EVIDENCE_RESULT_EVIDENCE[0];
+  const cycles = facts.luck_cycles?.cycles ?? [];
+  const activeCyclePillar = facts.year_layers?.[0]?.active_luck_cycle?.pillar ?? null;
+
+  const cards: readonly PillarCard[] = viewModel.pillars.map((pillar) => {
+    const hidden = facts.hidden_stems?.find((item) => item.position === pillar.position);
+    const tenGod = facts.ten_gods?.heavenly_stems?.find(
+      (item) => item.position === pillar.position,
+    );
+    const nayin = facts.nayin?.find((item) => item.position === pillar.position);
+
+    return {
+      position: pillar.position,
+      label: POSITION_LABELS[pillar.position] ?? pillar.position,
+      stem: pillar.stem,
+      branch: pillar.branch,
+      tenGod: tenGod?.ten_god ?? "—",
+      hiddenStems: hidden?.stems?.join(" · ") ?? "—",
+      nayin: nayin?.name ?? "—",
+      isDayMaster: pillar.position === "day",
+    };
+  });
+
+  const maxElement = viewModel.element_balance.reduce(
+    (max, item) => Math.max(max, item.value),
+    1,
+  );
+
+  const graphFacts = (pattern?.fact_paths ?? []).map((path) => ({
+    id: path,
+    title: FACT_PATH_TITLES[path] ?? path,
+    path,
+  }));
+
+  return (
+    <main className={styles.root} id="main-content">
+      <div className={styles.shell}>
+        <div aria-label="演示数据边界" className={styles.boundary} role="note">
+          <strong>视觉原型 · 非生产皮肤</strong>
+          <span>
+            数据取自 `/_ui-lab` 八字验收 Fixture，不代表 Runtime 已发布；DESIGN.md 冻结的
+            Direction C 仍是所有正式路由的唯一皮肤。
+          </span>
+        </div>
+
+        <header className={styles.hero}>
+          <div className={styles.chipRow}>
+            <span className={styles.chip}>八字 · 确定性盘面</span>
+            <span className={`${styles.chip} ${styles.chipNeutral}`}>
+              {viewModel.schema_version}
+            </span>
+            <span className={`${styles.chip} ${styles.chipNeutral}`}>
+              日主 {facts.day_master?.stem}（{facts.month_command?.label} 当令）
+            </span>
+          </div>
+          <h1 className={styles.title}>每一句都能翻回原书第几行</h1>
+          <p className={styles.lede}>
+            这一屏用 RON 的暗底 + 荧光绿 + 玻璃面语言重排八字结果页：四柱以牌面展开，
+            事实路径与古籍锚点用连线显式相连，原文逐字透传。所有断法边界照原样保留。
+          </p>
+        </header>
+
+        <section aria-labelledby="ron-pillars-title" className={styles.section}>
+          <div className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle} id="ron-pillars-title">
+              四柱
+            </h2>
+            <p className={styles.sectionNote}>
+              天干十神、藏干与纳音均为 Runtime 事实，不含任何强弱或吉凶判断。
+            </p>
+          </div>
+          <PillarFan cards={cards} />
+        </section>
+
+        {pattern && evidence ? (
+          <section aria-labelledby="ron-evidence-title" className={styles.section}>
+            <div className={styles.sectionHead}>
+              <h2 className={styles.sectionTitle} id="ron-evidence-title">
+                命中链路
+              </h2>
+              <p className={styles.sectionNote}>
+                规则 {pattern.rule_id} · 状态 {pattern.status}（命中谓词，非断语）
+              </p>
+            </div>
+            <div className={styles.graphCard}>
+              <EvidenceGraph
+                facts={graphFacts}
+                source={{
+                  title: evidence.source_title ?? "",
+                  anchor: evidence.locator ?? "",
+                  pack: pattern.source_pack,
+                }}
+              />
+              <ul className={styles.graphList}>
+                {(pattern.predicate_audit ?? []).map((audit) => (
+                  <li className={styles.graphItem} key={audit}>
+                    <span className={styles.graphPath}>{audit}</span>
+                    <span className={styles.graphMeta}>
+                      来源包 {pattern.source_pack} · 锚点 {pattern.source_anchor}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        ) : null}
+
+        {evidence ? (
+          <section aria-labelledby="ron-quote-title" className={styles.section}>
+            <div className={styles.quoteCard}>
+              <div className={styles.quoteHead}>
+                <h2 className={styles.quoteTitle} id="ron-quote-title">
+                  {pattern?.title ?? "古籍命中"}
+                </h2>
+                <span className={styles.chip}>
+                  {evidence.verification_status === "verified_exact"
+                    ? "逐字核验通过"
+                    : (evidence.verification_status ?? "未核验")}
+                </span>
+              </div>
+              <div className={styles.quoteList}>
+                {(evidence.verbatim_citations ?? []).map((citation) => (
+                  <figure className={styles.quote} key={citation.locator}>
+                    <blockquote className={styles.quoteText}>
+                      {citation.verbatim_excerpt}
+                    </blockquote>
+                    <figcaption className={styles.quoteCite}>
+                      {citation.source_title} · {citation.locator}
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        {cycles.length > 0 ? (
+          <section aria-labelledby="ron-luck-title" className={styles.section}>
+            <div className={styles.sectionHead}>
+              <h2 className={styles.sectionTitle} id="ron-luck-title">
+                大运
+              </h2>
+              <p className={styles.sectionNote}>
+                {facts.luck_cycles?.direction_rule} · 起运 {facts.luck_cycles?.start_age_years} 岁
+              </p>
+            </div>
+            <ol className={styles.luckTrack}>
+              {cycles.map((cycle) => (
+                <li
+                  className={
+                    cycle.pillar === activeCyclePillar
+                      ? `${styles.luckCell} ${styles.luckCellActive}`
+                      : styles.luckCell
+                  }
+                  key={cycle.sequence}
+                >
+                  <span className={styles.luckPillar}>{cycle.pillar}</span>
+                  <span className={styles.luckAge}>
+                    {cycle.start_age_years}–{cycle.end_age_years} 岁
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : null}
+
+        <section aria-labelledby="ron-element-title" className={styles.section}>
+          <div className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle} id="ron-element-title">
+              五行计数
+            </h2>
+            <p className={styles.sectionNote}>
+              {facts.element_inventory?.scope} · 计数事实，不加权、不求总分
+            </p>
+          </div>
+          <dl className={styles.elementList}>
+            {viewModel.element_balance.map((item) => (
+              <div className={styles.elementRow} key={item.element}>
+                <dt className={styles.elementName}>
+                  {ELEMENT_LABELS[item.element] ?? item.element}
+                </dt>
+                <dd className={styles.elementBar}>
+                  <span
+                    className={styles.elementFill}
+                    style={{ "--ratio": item.value / maxElement } as React.CSSProperties}
+                  />
+                </dd>
+                <dd className={styles.elementValue}>{item.display_text}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <section aria-labelledby="ron-limit-title" className={styles.section}>
+          <h2 className={styles.sectionTitle} id="ron-limit-title">
+            断法边界
+          </h2>
+          <ul className={styles.limits}>
+            <li className={styles.limitItem}>
+              {facts.interpretive_candidates?.strength?.boundary}
+            </li>
+            <li className={styles.limitItem}>
+              {facts.interpretive_candidates?.structure?.boundary}
+            </li>
+            <li className={styles.limitItem}>
+              {facts.interpretive_candidates?.following_and_transformation?.boundary}
+            </li>
+            <li className={styles.limitItem}>{facts.shensha_auxiliary?.boundary}</li>
+          </ul>
+        </section>
+      </div>
+    </main>
+  );
+}

@@ -1,0 +1,44 @@
+START 2026年 8月19日 星期三 19时24分30秒 CST
+CMD /Users/yuhanglin/.grok/bin/grok -p <meihua-prompt> --model grok-4.6 --effort medium --cwd /Volumes/Lexar/code/mingli_web --output-format plain --always-approve
+先核对准入哈希和仓库状态，再实跑对照签名制品与工作树里的梅花实现。仓库有未提交改动，我不碰合同。接着对照既有黄金样例脚本、准入钉和签名制品结构。对照已有黄金脚本和梅花路径，先把签名树与工作树的文件清单跑出来。先扫两边的梅花路径和规则索引，再把计数写进可复跑脚本。规则包已定位。接下来把 brief、CU、SOURCE_ROUTE 和夹具 id 的计数都写进脚本，禁止手算。把计数脚本写进允许的路径，再实跑产出数字。数字已落地。补一眼夹具是否还有漏计 id，以及 `ADAPTER_VERSION` 的实际字段名。夹具还有 `{id: ...}` 形态没算进去，补计数后再实跑。准入已核对：`pin_ok=True`，inspector `c451de5e…` / source `663543e…` / 220 文件；`turns.py` 无 V52 关系层。未改合同、未覆盖 `.runtime`、未 resign。
+
+## 1. 签名制品里梅花有什么
+
+- **Provider**：`meihua` / `mingli-master.meihua.v1`，entrypoint `reading_engine.providers:MeihuaProvider`，adapter `1.1.0`
+- **Output 12**：`upper_trigram` `lower_trigram` `moving_lines` `primary_hexagram` `mutual_hexagram` `changed_hexagram` `body_use` `body_relation_facts` `seasonal_strength` `interpretive_candidates` `casting_method` `source_conditioned_patterns`
+- **finding_bindings 2**：`body_use` / `body_relations`（finding kind，不是 CU）
+- **正式规则包 1 套**：`divination/meihua-yishu`，n=34 / runtime_active=4 / verified=4  
+  正式 4 条：`MR-01-01` `MR-04-01` `MR-04-02` `MR-04-04`  
+  其余 30 条 inactive（unverified 6 + unscoped 24）
+- **SOURCE_ROUTE** 另挂 `divination/zhouyi-zhezhong`、`divination/huangji-jingshi`，是共用古籍，不是梅花专用包
+- **CU**：`meihua.*` = `[]`（制品全部 CU 仍是 3 条八字）
+- **黄金样例**：签名树无 `meihua-v51.yaml`
+
+## 2. 工作树有没有未进签名的梅花实现
+
+没有。`meihua.py` / `meihua.json` / 源表 / `rules.md` / `quote-index.md` 与制品字节相同；`MeihuaProvider` 类文本相同。`unsigned_impl_n=0`。
+
+core-only **10** 份：6 书目笔记 + 3 test/audit + 1 夹具。夹具 `meihua-v51.yaml` 有 **38** 个 oracle id（yaml block 10 + inline 28；replay 20），是测试 oracle，不是未签名实现。
+
+## 3. brief / evidence 会不会带上黄金样例
+
+不会。`brief.py` 梅花 token hits=0。38 个夹具 id + `meihua-v51` 在 `brief.py`、签名 `meihua.py`、`evidence-rules.jsonl` 命中和都是 **0**。夹具不在签名树。4 条 MR-* 可以进选择器，那是正式规则，不是黄金样例。
+
+---
+
+复跑：
+
+```bash
+python3 /Volumes/Lexar/code/mingli_web/artifacts/runtime-evidence/2026-08-19-v53-meihua-golden.py
+```
+
+### 三行结论（脚本 stdout）
+
+```
+CONCLUSION_1 provider=meihua/mingli-master.meihua.v1 outputs=12 finding_bindings=2 CU=[] packs={'divination/meihua-yishu': 'n=34/active=4/verified=4'} runtime_active=4 verified=4 golden_in_signed=False
+CONCLUSION_2 impl_all_identical=True MeihuaProvider_identical=True core_only=10 unsigned_impl_n=0 core_fixture_all=38 yaml_block=10 inline=28 replay_cases=20
+CONCLUSION_3 brief_meihua_hits=0 brief_fixture_hits_sum=0 meihua_py_fixture_hits_sum=0 evidence_fixture_hits_sum=0 finding_bindings_are_cu=False
+```
+
+关键实跑数字：`pin_ok=True` inspector=`c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b` files=220 evidence_rules_total=1328 meihua_rule_rows=34 scope_binding_meihua_hits=0 v52_mix=False
+EXIT:0

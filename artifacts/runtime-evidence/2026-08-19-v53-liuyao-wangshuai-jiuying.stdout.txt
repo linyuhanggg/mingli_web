@@ -1,0 +1,9 @@
+inspector=c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b
+files=220
+signed_claim_units=['bazi.month-order-state-v1', 'bazi.ziping-pattern-entry-v1', 'bazi.tiaohou-priority-v1']
+core_claim_units=['bazi.month-order-state-v1', 'bazi.day-master-root-support-v1', 'bazi.ziping-pattern-entry-v1', 'bazi.tiaohou-priority-v1']
+liuyao_cu_signed=[]
+liuyao_cu_core=[]
+liuyao.py_identical=True
+liuyao.json_identical=True
+liuyao_finding_bindings=['dimension_candidates', 'line_relations']

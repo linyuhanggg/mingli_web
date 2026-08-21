@@ -1,0 +1,48 @@
+START 2026年 8月19日 星期三 19时52分02秒 CST
+CMD /Users/yuhanglin/.grok/bin/grok -p <zeri-prompt> --model grok-4.6 --reasoning-effort high --cwd /Volumes/Lexar/code/mingli_web --output-format plain --always-approve
+先核对准入钉死的哈希与仓库合同，再实跑择日对照，不改合同、不覆盖 `.runtime`。接着拉 nmem 上下文、仓库合同和准入哈希，对照已有 V53 证据格式。已有太乙/风水对照模板和准入钉。先读脚本与择日制品结构，再按同一口径实跑。先盘点择日路径与夹具，避开寻时/运势/太乙/风水，再写可复跑脚本。路径里有 `model-selection` 这种假阳性。接着核对 `SelectionProvider`、夹具 id 和 scope 绑定。夹具结构比较复杂，先扫清 id 分区，再按风水脚本口径写可复跑脚本。结构已齐：签名 4 套 `selection/*`，夹具只在工作树。开始写可复跑脚本并实跑。夹具 id 解析被单字母 `a`/`b` 污染了，先按分区把真实样例 id 核清楚再改脚本。夹具解析被截断，且 `model_selection` 被误算进择日。先独立复核规则包数字，再修正脚本。准入已钉死：`pin_ok=True`，inspector=`c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b`，source=`663543e65ae037843b03dca1dec9486293affc9d`，220/220，`v52_mix=False`。未改合同、未覆盖 `.runtime`、未 resign。
+
+复跑：
+
+```bash
+python3 -B /Volumes/Lexar/code/mingli_web/artifacts/runtime-evidence/2026-08-19-v53-zeri-golden.py
+```
+
+## 三问
+
+**1. 签名制品里择日有什么？**  
+有正式 provider，没有黄金样例，没有择日 CU。
+
+- Provider：`selection` / `mingli-master.selection.v1`，adapter `1.3.0`，evidence_profile `selection`
+- Output 10 + extension 1（`bounded_ranked_candidate_facts`），finding_bindings=0
+- 规则包 4 套 `selection/*`，1328 行里择日 68 行：`donggong-zeri` 10/0/0、`xieji-bianfang-shu` 18/1/1、`xingli-kaoyuan` 20/1/1、`yuqia-ji` 20/0/0
+- runtime_active=verified=2：`XR-18`、`KR-05`；scope `route:selection` 只有 `KR-05`
+- SOURCE_ROUTE 正式两包 `xieji`+`xingli`；民俗对照 `yuqia`+`donggong`
+- CU=`[]`；签名树无 `selection-v51.yaml`
+- 与寻时/运势/太乙/风水路径 overlap=0
+
+**2. 工作树有没有未进签名的择日实现？**  
+没有。`unsigned_impl_n=0`，`hash_mismatch_n=0`，`SelectionProvider` 类文本相同。core-only=34，全是笔记 27 / 测试 6 / 夹具 1。`providers.py` 整文件不同只因工作树多一条八字 CU，不是择日。`model_selection` 未计入。
+
+**3. 现有 brief / evidence 会不会带上黄金样例？**  
+不会。brief 不加载 fixtures；333 个夹具 id 在 `brief.py` / `evidence_rules.py` / `selection.py` / `evidence-rules.jsonl` / scope 的命中和都是 0。
+
+## 三行结论
+
+1. 签名有 `selection`/`mingli-master.selection.v1`、10 output+1 extension、0 finding_bindings、4 专用规则包（68/2/2）、scope `route:selection`=1（仅 KR-05）、无 `selection.*` CU、无黄金夹具。
+2. 工作树无未进签名的择日实现（impl 哈希全同，core-only=34 全是笔记/测试/夹具，unsigned_impl_n=0）。
+3. brief/evidence 不会带上黄金样例（333 个夹具 id 命中和=0，brief 不加载 fixtures）。
+
+## 实跑数字
+
+| 项 | 数 |
+|---|---|
+| pin | inspector c451de5e… / source 663543e… / 220 / pin_ok=True |
+| packs | 4 套，68 行，active=2，verified=2，inactive=66 |
+| outputs | 10 + extension 1 |
+| CU | selection.*=0；制品 CU 仍是 3 条八字 |
+| scope | route:selection=1（KR-05）；XR-18 不在 scope |
+| 夹具 | 签名=无；工作树 333 id（30+222+30+5+8+7+30+1） |
+| core-only | 34（27+1+6），unsigned_impl_n=0 |
+| brief/evidence 夹具命中 | 0 / 0 / 0 / 0 |
+EXIT:0

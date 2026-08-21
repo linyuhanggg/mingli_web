@@ -1,0 +1,25 @@
+START 2026年 8月19日 星期三 20时55分09秒 CST
+CMD /Users/yuhanglin/.grok/bin/grok -p <wenshi-prompt> --model grok-4.6 --reasoning-effort medium --cwd /Volumes/Lexar/code/mingli_web --output-format plain --always-approve
+先核对准入哈希和工作记忆，再只读对照签名制品与工作树里的问事实现。对照脚本已有成例。先读准入钉、问事相关制品和最近一份 golden 脚本，再按同一口径实跑。签名树里几乎没有 `wenshi`/`canwen` 字面。接着按 provider 清单和合参脚本口径把问事从合盘/合参/寻时里拆开。产品层在 web/backend，核心签名树可能没有独立 provider。先实跑计数，再写可复跑脚本。数字已经齐了。接下来按合盘脚本同一口径写可复跑对照，并实跑出 stdout。准入已核对：`pin_ok=True`，inspector `c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b`，source `663543e65ae037843b03dca1dec9486293affc9d`，220 文件。未混 V52。
+
+**1. 签名制品里没有问事 provider / CU / 规则包。**  
+14 个 provider 无 `wenshi`/`canwen`；问事 CU=`[]`；规则包 `pack_n=0` `active=0` `verified=0`；真值合计 **0**。裸「问事」raw=**2**、residual=**0**（只在六壬秘本「所问事项」）。单术 `liuyao`/`qimen`/`liuren` 未算进问事。
+
+**2. 工作树没有未进签名的问事实现。**  
+真值合计 **0**；`unsigned_impl_n=0`。含裸「问事」的 core-only **7** 份全是笔记/测试，residual=**0**。`providers.py` 哈希不同，但两边问事真值都是 0；多出的 CU 是 `bazi.day-master-root-support-v1`，不是问事。
+
+**3. 现有 brief / evidence 不会带上黄金夹具。**  
+brief / evidence_py / evidence-rules 真值与 12 条 host 黄金 id 命中和=**0**；两份 V53 prepare 的 wenshi/canwen/黄金 id 均为 **0**；不读 `references/fixtures`。
+
+复跑：
+
+```bash
+python3 -B artifacts/runtime-evidence/2026-08-19-v53-wenshi-golden.py
+```
+
+```
+CONCLUSION_1 pin_ok=True v52_mix=False provider=[] CU=[] packs={} pack_n=0 signed_true_total=0 signed_问事_residual=0 providers_n=14 excluded_hecan_line_rows=14 v52_is_other=True
+CONCLUSION_2 unsigned_impl_n=0 core_true_total=0 core_问事_residual=0 core_only_generic_n=7 kind={'book_notes': 5, 'test_or_audit': 2}
+CONCLUSION_3 brief_true=0 brief_golden_ids=0 evidence_jsonl_true=0 evidence_jsonl_golden_ids=0 prepare_true=0 prepare_gold=0 golden_id_n=12
+```
+EXIT:0

@@ -1,0 +1,42 @@
+START 2026年 8月19日 星期三 19时42分54秒 CST
+CMD /Users/yuhanglin/.grok/bin/grok -p <fengshui-prompt> --model grok-4.6 --reasoning-effort high --cwd /Volumes/Lexar/code/mingli_web --output-format plain --always-approve
+先核对准入哈希和工作记忆，再对照签名制品与工作树里的风水实现。先拉工作记忆和仓库合同，再核对签名制品准入钉。工作记忆里已有太乙/梅花对照模板；接下来读现成脚本和签名制品结构，按同一口径核对准入。模板已经对齐。接下来扫签名树和工作树里的风水路径，确认 provider、规则包和夹具口径。签名树 35 份、工作树 124 份已定位。接着读 provider、规则路由和黄金夹具结构，避免把「神峰」混进风水。结构已经齐了：签名有 provider、动态 SOURCE_ROUTE、8 条 scope；夹具只在工作树。接下来按既有黄金脚本口径写对照并实跑。确认神峰通考是八字包、不得算进风水。正在写入可复跑对照脚本。脚本已跑通。接下来从 stdout 抽出关键字段，并独立复核规则包与夹具计数。准入 `pin_ok=True`：inspector `c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b` / source `663543e65ae037843b03dca1dec9486293affc9d` / 220 文件；`v52_mix_in_v53_turns=False`。八字《神峰通考》5 行已排除。
+
+**1. 签名制品里风水有哪些正式规则包 / 黄金样例 / CU / provider / output？**  
+有 provider `fengshui` / `mingli-master.fengshui.v1`（adapter `1.0.0`）。11 个 output + 1 个 extension `observed_spatial_scope`；`finding_bindings=0`；无 `fengshui.*` CU；签名树无 `fengshui-v51.yaml`。正式规则包 16 套 `fengshui/*`（179 行 / runtime_active 8 / verified 8），与 scope `route: fengshui` 的 8 条是同一集合。SOURCE_ROUTE 静态 `packs=[]`。
+
+**2. 工作树源码有没有未进签名的风水实现？**  
+没有。`unsigned_impl_n=0`，`hash_mismatch_n=0`，`FengshuiProvider` 类文本相同。core-only 89 份全是笔记/测试/夹具（81+5+3）。
+
+**3. 现有 brief / evidence 会不会带上黄金样例？**  
+不会。56 个夹具 id 在 `brief.py` / `evidence_rules.py` / 签名 `fengshui.py` / `evidence-rules.jsonl` / scope 的命中和都是 0。
+
+---
+
+### 三行结论
+
+1. 签名有 `fengshui`/`mingli-master.fengshui.v1`、11 output+1 extension、0 finding_bindings、16 专用规则包（179/8/8）、scope `route:fengshui`=8、无 `fengshui.*` CU、无黄金夹具。
+2. 工作树无未进签名的风水实现（impl 哈希全同，core-only=89 全是笔记/测试/夹具，unsigned_impl_n=0）。
+3. brief/evidence 不会带上黄金样例（夹具 id 命中和=0，brief 不加载 fixtures）。
+
+### 实跑数字
+
+| 项 | 值 |
+|---|---|
+| pin | inspector `c451de5e…` / source `663543e…` / 220 / `pin_ok=True` |
+| provider | `fengshui` / `mingli-master.fengshui.v1` / adapter `1.0.0` |
+| output | 11 + extension 1 |
+| CU | `fengshui.*=[]`；制品 CU 仍是 3 条八字 |
+| 规则包 | 16 套，179/8/8；inactive_unverified=171 |
+| 黄金夹具 | 签名 `False`；工作树 56 id（4+24+21+7）+ 8 条无 id 八宅卦例 |
+| 工作树 | signed_path=35，core_path=124，core_only=89，unsigned_impl=0 |
+| brief/evidence | fixture hits sum=0 / 0 / 0 / 0 |
+
+8 条 active/verified：`hanlong-jing#R-01` `huangdi-zhaijing#HDZJ-R006` `xuexin-fu#XXF-R01` `yangzhai-sanyao#YZS-R005` `yangzhai-shishu#YZS-R003` `yangzhai-shishu#YZS-R014` `yilong-jing#R-05` `zangshu#R-02`。
+
+复跑：
+
+```bash
+python3 -B /Volumes/Lexar/code/mingli_web/artifacts/runtime-evidence/2026-08-19-v53-fengshui-golden.py
+```
+EXIT:0

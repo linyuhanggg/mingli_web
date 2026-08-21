@@ -1,0 +1,75 @@
+=== IDENTITY ===
+core_head=663543e65ae037843b03dca1dec9486293affc9d
+core_subject=fix(runtime): preserve bazi pattern audit
+core_dirty_count=5
+signed_manifest_sha256=c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b
+signed_source_commit=663543e65ae037843b03dca1dec9486293affc9d
+signed_n_files=220
+path_b_name=_semantic_terms extra-token injection
+path_b_file=/.runtime/v53-time-check-release/scripts/reading_evidence_bundle.py:_semantic_terms
+path_b_cite=reading_evidence_bundle.py:96:_semantic_terms
+=== PATHS ===
+path_a_joined='验证八字核心盘面 career'
+path_a_tokens=['career', '验', '证', '八', '字', '核', '心', '盘', '面', '验证', '证八', '八字', '字核', '核心', '心盘', '盘面']
+path_a_token_n=16
+goal_evidence_questions=['验证八字核心盘面']
+goal_question_dimensions=['career']
+plan_semantic_term_projections=[]
+fact_index_n=1225
+semantic_terms_n=1227
+semantic_terms_non_fact=['验证八字核心盘面', 'career']
+named_patterns_or_board_predicates_n=0
+path_b_token_n=9579
+path_b_unique_n=414
+path_b_extra_unique_n=398
+path_b_extra_cjk=['土', '木', '水', '火', '金', '偏', '印', '正', '官', '财', '食', '神', '面土', '土木', '木水', '水火', '火金', '金土', '木火', '金偏', '偏印', '印正', '正印', '正官', '官正', '正财', '财食', '食神', '神土']
+=== 1994_PREPARE ===
+prepared=/tmp/mingli-oneshot-v53-time-check-20260819/503de6c92e75c6f742aa637c2ec71dcc367b597bb69f1280fe1aefe1d58a384b/readings-v51/readings/9ecec297703f4b8f87d1373010f1ab7a/prepared/000001.json
+prepare_stdout=/tmp/mingli-oneshot-v53-time-check-20260819/out/prepare.stdout.json
+scp_matched_n=6
+scp_matched_ids=['bazi/ditiansui-chanwei#DR-01-01', 'bazi/qiongtong-baojian#QR-02-01', 'bazi/qiongtong-baojian#QTB-M01', 'bazi/sanming-tonghui#R-01-02', 'bazi/sanming-tonghui#R-02-04', 'bazi/ziping-zhenquan#ZPR-01']
+evidence_n=5
+evidence_ids=['bazi/sanming-tonghui#R-01-02', 'bazi/sanming-tonghui#R-02-04', 'bazi/ziping-zhenquan#ZPR-01', 'bazi/qiongtong-baojian#QR-02-01', 'bazi/qiongtong-baojian#QTB-M01']
+=== FOCUS_TABLE ===
+rule_id	path_a_overlap	path_a_bm25	path_b_overlap	path_b_bm25	in_1994_evidence
+bazi/sanming-tonghui#R-01-02	∅	0.000000	土 木 木火 水 火 金	47.057852	YES
+bazi/sanming-tonghui#R-02-04	∅	0.000000	神	0.657969	YES
+bazi/qiongtong-baojian#QR-02-01	∅	0.000000	土 正 水 火	17.505201	YES
+bazi/ditiansui-chanwei#DR-01-01	∅	0.000000	∅	0.000000	NO
+=== CONTRIBUTING_FACT_PATHS ===
+token=土 n=8
+  /chart_facts/output/element_inventory/hidden_stem_occurrence_counts/土
+  /chart_facts/output/element_inventory/visible_stem_branch_counts/土
+  /chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/output/seasonal_state_table/土
+  /chart_facts/output/interpretive_candidates/strength/all_element_occurrences/土
+token=木 n=8
+  /chart_facts/output/element_inventory/hidden_stem_occurrence_counts/木
+  /chart_facts/output/element_inventory/visible_stem_branch_counts/木
+  /chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/output/seasonal_state_table/木
+  /chart_facts/output/interpretive_candidates/strength/all_element_occurrences/木
+token=水 n=5
+  /chart_facts/output/element_inventory/hidden_stem_occurrence_counts/水
+  /chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/output/seasonal_state_table/水
+  /chart_facts/output/interpretive_candidates/strength/all_element_occurrences/水
+token=火 n=8
+  /chart_facts/output/element_inventory/hidden_stem_occurrence_counts/火
+  /chart_facts/output/element_inventory/visible_stem_branch_counts/火
+  /chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/output/seasonal_state_table/火
+  /chart_facts/output/interpretive_candidates/strength/all_element_occurrences/火
+token=金 n=8
+  /chart_facts/output/element_inventory/hidden_stem_occurrence_counts/金
+  /chart_facts/output/element_inventory/visible_stem_branch_counts/金
+  /chart_facts/output/interpretive_candidates/reasoning_tools/strength_evidence/output/seasonal_state_table/金
+  /chart_facts/output/interpretive_candidates/strength/all_element_occurrences/金
+token=正 n=3
+  /chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/output/role_counts/正印
+  /chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/output/role_counts/正官
+  /chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/output/role_counts/正财
+token=神 n=1
+  /chart_facts/output/interpretive_candidates/reasoning_tools/domain_work/output/role_counts/食神
+=== WHY_DR_01_01 ===
+dr_rule_text=滴天髓阐微 tongshen/01-tiandao 三元一统 tongshen/01-tiandao 基础理论 干为天元，支为地元，支中所藏为人元；论命三元一统，以日干为我，旁参支藏。
+dr_path_a_overlap=∅
+dr_path_b_overlap=∅
+dr_path_b_bm25=0.000000
+dr_reason=injected extra CJK are 五行/十神 keys (土 木 水 火 金 偏 印 正 官 财 食 神 + cross-term bigrams); DR-01-01 quote has none of those tokens, so pack BM25 stays 0 and _rank_rules drops the only ditiansui-chanwei match

@@ -1,0 +1,9 @@
+inspector=c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b
+files=220
+qizheng_cu_signed=[]
+qizheng_cu_core=[]
+impl_files_identical=True
+xingming_packs={'xingming/guotian-jing': {'n': 32, 'active': 1}, 'xingming/xingming-suyuan': {'n': 46, 'active': 1}, 'xingming/xingxue-dacheng': {'n': 9, 'active': 1}}
+runtime_active_rules=['xingming/guotian-jing#GR-01-01', 'xingming/xingming-suyuan#XR-M01', 'xingming/xingxue-dacheng#XXDC-M01']
+golden_fixture_in_signed=False
+golden_fixture_cases=30

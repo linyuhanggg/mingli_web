@@ -1,0 +1,35 @@
+{
+  "kind": "prepare",
+  "query": "验证八字核心盘面",
+  "intent": {
+    "subject_refs": [
+      "profile-version:public-core-synthetic"
+    ],
+    "object_id": "natal",
+    "dimension_ids": [
+      "career"
+    ],
+    "horizon": {
+      "kind_id": "life",
+      "start": null,
+      "end": null
+    },
+    "capability_id": "bazi",
+    "comparisons": []
+  },
+  "facts": {
+    "profile-version:public-core-synthetic": {
+      "birth_datetime_or_four_pillars": "1994-04-30T05:55:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "location": "福建省福州市",
+      "gender": "male",
+      "time_basis_policy": "local_apparent_solar-v1",
+      "zi_hour_policy": "midnight",
+      "longitude": 119.2965,
+      "latitude": 26.0745,
+      "coordinate_source": "synthetic-fixture"
+    }
+  },
+  "state_token": null,
+  "transition": null
+}

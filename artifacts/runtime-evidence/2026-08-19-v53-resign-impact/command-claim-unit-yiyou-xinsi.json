@@ -1,0 +1,40 @@
+{
+  "kind": "prepare",
+  "query": "请排出本命四柱。",
+  "intent": {
+    "subject_refs": [
+      "profile-version:claim-unit-yiyou-xinsi"
+    ],
+    "object_id": "natal",
+    "dimension_ids": [
+      "overview"
+    ],
+    "horizon": {
+      "kind_id": "life",
+      "start": null,
+      "end": null
+    },
+    "capability_id": "bazi",
+    "comparisons": []
+  },
+  "facts": {
+    "profile-version:claim-unit-yiyou-xinsi": {
+      "birth_datetime_or_four_pillars": [
+        "乙酉",
+        "辛巳",
+        "丙午",
+        "癸巳"
+      ],
+      "timezone": "Asia/Shanghai",
+      "location": "合成测试地点",
+      "gender": "male",
+      "time_basis_policy": "local_apparent_solar-v1",
+      "zi_hour_policy": "midnight",
+      "longitude": 121.0,
+      "latitude": 31.0,
+      "coordinate_source": "synthetic-fixture"
+    }
+  },
+  "state_token": null,
+  "transition": null
+}

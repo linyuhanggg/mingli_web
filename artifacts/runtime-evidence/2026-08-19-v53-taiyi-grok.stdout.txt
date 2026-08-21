@@ -1,0 +1,41 @@
+START 2026年 8月19日 星期三 19时32分15秒 CST
+CMD /Users/yuhanglin/.grok/bin/grok -p <taiyi-prompt> --model grok-4.6 --reasoning-effort high --cwd /Volumes/Lexar/code/mingli_web --output-format plain --always-approve
+先核对签名制品哈希和工作树现状，再按你钉死的三个问题实跑对照，不改合同、不覆盖 `.runtime`。先拉记忆和准入哈希，再对照签名制品与工作树的太乙路径。梅花对照脚本可复用。接下来读模板、准入钉和签名/工作树里的太乙路径。梅花脚本可直接套。先扫签名制品和工作树里的太乙路径、provider、规则包和夹具，再写对照脚本。六壬神名也会命中「太乙」，必须分开计数。接着读 provider、夹具和 evidence 结构，避免把别的术混进来。证据索引结构已清楚。正在写对照脚本，按签名树实跑计数，六壬神名「太乙」单独剔除。脚本已跑通。接下来独立复核准入哈希、规则包计数和夹具数字，再写结论。准入 `pin_ok=True`：inspector=`c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b`，source=`663543e65ae037843b03dca1dec9486293affc9d`，manifest/walk=220/220，`v52_mix_in_v53_turns=False`。未改合同、未覆盖 `.runtime`、未 resign。
+
+复跑：
+
+```bash
+python3 /Volumes/Lexar/code/mingli_web/artifacts/runtime-evidence/2026-08-19-v53-taiyi-golden.py
+```
+
+## 三行结论
+
+1. 签名有 `taiyi`/`mingli-master.taiyi.v1`、12 output+1 extension、0 finding_bindings、1 规则包 `san-shi/taiyi-shenshu`（26/15/15）、无 `taiyi.*` CU、无黄金夹具。
+2. 工作树无未进签名的太乙实现（impl 哈希全同，core-only=12 全是笔记/测试/夹具，`unsigned_impl_n=0`）。
+3. brief/evidence 不会带上黄金样例（夹具 id 命中和=0）。
+
+## 三问（实跑数字）
+
+**1. 签名制品里太乙有什么？**
+
+| 项 | 实跑 |
+|---|---|
+| provider | `taiyi` / `mingli-master.taiyi.v1`，entrypoint `TaiyiProvider`，adapter `5.2.0`，profile `taiyi` |
+| output | 12：`calendar` `epoch` `cycle` `board` `taiyi_position` `wenchang_tianmu` `shiji_kemu` `host_guest_counts` `four_generals` `long_cycle_deities` `board_predicates` `scope_contract` |
+| extension | 1：`calculated_annual_board_scope` |
+| finding_bindings | 0 |
+| 规则包 | 仅 `san-shi/taiyi-shenshu`，1328 条里命中 26；active=15 / verified=15 |
+| active 规则 | `TR-01` `TR-03` `TR-04` `TR-05` `TR-10` + `TY-P01`…`TY-P10` |
+| CU | `taiyi.*` = `[]`；制品全部 CU 仍是 3 条八字 |
+| 黄金夹具 | 签名树无 `taiyi-v51.yaml` / `kintaiyi-taiyi-v51.yaml` |
+
+`SOURCE_DEPENDENCIES` 6 个 `taiyi.calendar.*` 等是源表依赖 id，不是 CU。六壬神名「太乙」已剔除（liuren 字面=1，liuren pack 行=61）。
+
+**2. 工作树有没有未进签名的太乙实现？**
+
+没有。`taiyi.py` / `taiyi.json` / 源表 / `rules.md` / `quote-index.md` / `TaiyiProvider` 与制品字节相同。core-only=12：5 笔记 + 3 test + 1 audit + 1 夹具生成器 + 2 夹具（`taiyi-v51` 44 id = epoch 4 + 对照 30 + 历法边界 10；`kintaiyi` raw 72；合计 116）。`unsigned_impl_n=0`。
+
+**3. 现有 brief / evidence 会不会带上黄金样例？**
+
+不会。`brief.py` 太乙 token hits=0。116 个夹具 id 在 `brief.py`、签名 `taiyi.py`、`evidence-rules.jsonl` 的命中和都是 0。夹具不在签名树，进不了 `ReadingBrief`。15 条 TR-*/TY-P* 可以进证据选择器，那是正式规则，不是黄金样例。
+EXIT:0

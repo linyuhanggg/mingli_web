@@ -1,0 +1,9 @@
+inspector=c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b
+files=220
+liuren_cu_signed=[]
+liuren_cu_core=[]
+impl_files_identical=True
+liuren_packs={'san-shi/daliuren-daquan': {'n': 18, 'active': 10}, 'san-shi/liuren-miben': {'n': 23, 'active': 3}, 'san-shi/liuren-zhiyin': {'n': 20, 'active': 10}}
+runtime_active_count=23
+runtime_active_rules=['san-shi/daliuren-daquan#DLR-02', 'san-shi/daliuren-daquan#DLR-03', 'san-shi/daliuren-daquan#DLR-04', 'san-shi/daliuren-daquan#DLR-05', 'san-shi/daliuren-daquan#DLR-06', 'san-shi/daliuren-daquan#DLR-07', 'san-shi/daliuren-daquan#DLR-08', 'san-shi/daliuren-daquan#DLR-09', 'san-shi/daliuren-daquan#DLR-10', 'san-shi/daliuren-daquan#DLR-17', 'san-shi/liuren-miben#LM-R01', 'san-shi/liuren-miben#LM-R20', 'san-shi/liuren-miben#LM-R21', 'san-shi/liuren-zhiyin#LR-02', 'san-shi/liuren-zhiyin#LR-03', 'san-shi/liuren-zhiyin#LR-04', 'san-shi/liuren-zhiyin#LR-05', 'san-shi/liuren-zhiyin#LR-06', 'san-shi/liuren-zhiyin#LR-07', 'san-shi/liuren-zhiyin#LR-08', 'san-shi/liuren-zhiyin#LR-17', 'san-shi/liuren-zhiyin#LR-18', 'san-shi/liuren-zhiyin#LR-19']
+golden_fixture_in_signed=False

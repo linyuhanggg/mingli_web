@@ -1,0 +1,105 @@
+=== IDENTITY ===
+core_head=663543e65ae037843b03dca1dec9486293affc9d
+core_subject=fix(runtime): preserve bazi pattern audit
+core_dirty_count=5
+signed_manifest_sha256=c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b
+signed_source_commit=663543e65ae037843b03dca1dec9486293affc9d
+signed_n_files=220
+runtime_active_bazi=24
+eligible_source_conditioned=24
+career_joined='验证八字核心盘面 career'
+career_tokens=['career', '验', '证', '八', '字', '核', '心', '盘', '面', '验证', '证八', '八字', '字核', '核心', '心盘', '盘面']
+career_cjk=['八', '八字', '字', '字核', '心', '心盘', '核', '核心', '盘', '盘面', '证', '证八', '面', '验', '验证']
+overview_joined='请排出本命四柱。 overview'
+overview_tokens=['overview', '请', '排', '出', '本', '命', '四', '柱', '请排', '排出', '出本', '本命', '命四', '四柱']
+overview_cjk=['出', '出本', '命', '命四', '四', '四柱', '排', '排出', '本', '本命', '柱', '请', '请排']
+=== CAREER_NEVER_EVIDENCE (制品里有、career 永远进不了 evidence[]) ===
+never_count=19
+never_ids=
+  bazi/ditiansui-chanwei#DR-01-01	bazi/ditiansui-chanwei	career_cjk=∅	career_bm25=0.000000	overview_cjk=['命']	overview_bm25=2.238598
+  bazi/qiongtong-baojian#QR-01-01	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=∅	overview_bm25=0.000000
+  bazi/qiongtong-baojian#QR-01-02	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=['四']	overview_bm25=1.241730
+  bazi/qiongtong-baojian#QR-01-05	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=∅	overview_bm25=0.000000
+  bazi/qiongtong-baojian#QR-02-01	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=∅	overview_bm25=0.000000
+  bazi/qiongtong-baojian#QR-02-02	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=['四']	overview_bm25=1.313168
+  bazi/qiongtong-baojian#QR-02-04	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=∅	overview_bm25=0.000000
+  bazi/qiongtong-baojian#QR-03-01	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=∅	overview_bm25=0.000000
+  bazi/qiongtong-baojian#QR-03-04	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=∅	overview_bm25=0.000000
+  bazi/qiongtong-baojian#QR-03-06	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=∅	overview_bm25=0.000000
+  bazi/qiongtong-baojian#QR-03-07	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=∅	overview_bm25=0.000000
+  bazi/qiongtong-baojian#QR-04-01	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=∅	overview_bm25=0.000000
+  bazi/qiongtong-baojian#QR-04-02	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=['四']	overview_bm25=1.362147
+  bazi/qiongtong-baojian#QR-05-02	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=['四']	overview_bm25=1.313168
+  bazi/qiongtong-baojian#QR-05-04	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=∅	overview_bm25=0.000000
+  bazi/qiongtong-baojian#QR-05-08	bazi/qiongtong-baojian	career_cjk=∅	career_bm25=0.000000	overview_cjk=∅	overview_bm25=0.000000
+  bazi/sanming-tonghui#R-01-02	bazi/sanming-tonghui	career_cjk=∅	career_bm25=0.000000	overview_cjk=['命']	overview_bm25=3.076188
+  bazi/sanming-tonghui#R-02-04	bazi/sanming-tonghui	career_cjk=∅	career_bm25=0.000000	overview_cjk=['命', '本']	overview_bm25=5.258599
+  bazi/yuanhai-ziping#YR-M01	bazi/yuanhai-ziping	career_cjk=∅	career_bm25=0.000000	overview_cjk=['四', '四柱', '本', '柱']	overview_bm25=10.954831
+=== CHART 1994-career ===
+prepare=/tmp/mingli-oneshot-v53-time-check-20260819/out/prepare.stdout.json
+facts=28
+evidence_n=5
+evidence_ids=['bazi/sanming-tonghui#R-01-02', 'bazi/sanming-tonghui#R-02-04', 'bazi/ziping-zhenquan#ZPR-01', 'bazi/qiongtong-baojian#QR-02-01', 'bazi/qiongtong-baojian#QTB-M01']
+findings_n=4
+claim_units=['bazi.month-order-state-v1', 'bazi.ziping-pattern-entry-v1', 'bazi.tiaohou-priority-v1']
+predicate_matched_n=6
+predicate_matched_ids=['bazi/ditiansui-chanwei#DR-01-01', 'bazi/qiongtong-baojian#QR-02-01', 'bazi/qiongtong-baojian#QTB-M01', 'bazi/sanming-tonghui#R-01-02', 'bazi/sanming-tonghui#R-02-04', 'bazi/ziping-zhenquan#ZPR-01']
+rematch_runtime_active_predicate_matched_n=7
+rematch_extra_vs_prepare_patterns=['bazi/yuanhai-ziping#YR-M01']
+rematch_missing_vs_prepare_patterns=[]
+table_header=rule_id	pack	career_cjk	career_bm25	in_brief_evidence	overview_cjk	overview_bm25
+  bazi/ditiansui-chanwei#DR-01-01	bazi/ditiansui-chanwei	∅	0.000000	NO	['命']	0.287682
+  bazi/qiongtong-baojian#QR-02-01	bazi/qiongtong-baojian	∅	0.000000	YES	∅	0.000000
+  bazi/qiongtong-baojian#QTB-M01	bazi/qiongtong-baojian	['盘']	0.706392	YES	['四', '四柱', '柱']	2.580190
+  bazi/sanming-tonghui#R-01-02	bazi/sanming-tonghui	∅	0.000000	YES	['命']	0.270801
+  bazi/sanming-tonghui#R-02-04	bazi/sanming-tonghui	∅	0.000000	YES	['命', '本']	0.908847
+  bazi/yuanhai-ziping#YR-M01	bazi/yuanhai-ziping	∅	0.000000	NO	['四', '四柱', '本', '柱']	1.274021
+  bazi/ziping-zhenquan#ZPR-01	bazi/ziping-zhenquan	['八', '八字', '字']	0.863046	YES	∅	0.000000
+career_drop_on_this_chart=['bazi/ditiansui-chanwei#DR-01-01', 'bazi/yuanhai-ziping#YR-M01']
+=== CHART 1992-career ===
+prepare=/tmp/mingli-oneshot-v53-fixture2-20260819/out/prepare.stdout.json
+facts=28
+evidence_n=5
+evidence_ids=['bazi/sanming-tonghui#R-01-02', 'bazi/sanming-tonghui#R-02-04', 'bazi/ziping-zhenquan#ZPR-01', 'bazi/qiongtong-baojian#QR-01-07', 'bazi/qiongtong-baojian#QTB-M01']
+findings_n=4
+claim_units=['bazi.month-order-state-v1', 'bazi.ziping-pattern-entry-v1', 'bazi.tiaohou-priority-v1']
+predicate_matched_n=6
+predicate_matched_ids=['bazi/ditiansui-chanwei#DR-01-01', 'bazi/qiongtong-baojian#QR-01-07', 'bazi/qiongtong-baojian#QTB-M01', 'bazi/sanming-tonghui#R-01-02', 'bazi/sanming-tonghui#R-02-04', 'bazi/ziping-zhenquan#ZPR-01']
+rematch_runtime_active_predicate_matched_n=7
+rematch_extra_vs_prepare_patterns=['bazi/yuanhai-ziping#YR-M01']
+rematch_missing_vs_prepare_patterns=[]
+table_header=rule_id	pack	career_cjk	career_bm25	in_brief_evidence	overview_cjk	overview_bm25
+  bazi/ditiansui-chanwei#DR-01-01	bazi/ditiansui-chanwei	∅	0.000000	NO	['命']	0.287682
+  bazi/qiongtong-baojian#QR-01-07	bazi/qiongtong-baojian	['八']	0.673437	YES	∅	0.000000
+  bazi/qiongtong-baojian#QTB-M01	bazi/qiongtong-baojian	['盘']	0.714046	YES	['四', '四柱', '柱']	2.602432
+  bazi/sanming-tonghui#R-01-02	bazi/sanming-tonghui	∅	0.000000	YES	['命']	0.270801
+  bazi/sanming-tonghui#R-02-04	bazi/sanming-tonghui	∅	0.000000	YES	['命', '本']	0.908847
+  bazi/yuanhai-ziping#YR-M01	bazi/yuanhai-ziping	∅	0.000000	NO	['四', '四柱', '本', '柱']	1.274021
+  bazi/ziping-zhenquan#ZPR-01	bazi/ziping-zhenquan	['八', '八字', '字']	0.863046	YES	∅	0.000000
+career_drop_on_this_chart=['bazi/ditiansui-chanwei#DR-01-01', 'bazi/yuanhai-ziping#YR-M01']
+=== CHART yiyou-overview ===
+prepare=/Volumes/Lexar/code/mingli_web/.runtime/oneshot-20260819-claim-unit/prepare-out.json
+facts=28
+evidence_n=6
+evidence_ids=['bazi/sanming-tonghui#R-01-02', 'bazi/sanming-tonghui#R-02-04', 'bazi/yuanhai-ziping#YR-M01', 'bazi/ditiansui-chanwei#DR-01-01', 'bazi/qiongtong-baojian#QR-02-02', 'bazi/qiongtong-baojian#QTB-M01']
+findings_n=3
+claim_units=['bazi.month-order-state-v1', 'bazi.tiaohou-priority-v1']
+predicate_matched_n=6
+predicate_matched_ids=['bazi/ditiansui-chanwei#DR-01-01', 'bazi/qiongtong-baojian#QR-02-02', 'bazi/qiongtong-baojian#QTB-M01', 'bazi/sanming-tonghui#R-01-02', 'bazi/sanming-tonghui#R-02-04', 'bazi/ziping-zhenquan#ZPR-01']
+rematch=skipped_no_stored_calculation
+table_header=rule_id	pack	career_cjk	career_bm25	in_brief_evidence	overview_cjk	overview_bm25
+  bazi/ditiansui-chanwei#DR-01-01	bazi/ditiansui-chanwei	∅	0.000000	YES	['命']	0.287682
+  bazi/qiongtong-baojian#QR-02-02	bazi/qiongtong-baojian	∅	0.000000	YES	['四']	0.177733
+  bazi/qiongtong-baojian#QTB-M01	bazi/qiongtong-baojian	['盘']	0.711518	YES	['四', '四柱', '柱']	1.731328
+  bazi/sanming-tonghui#R-01-02	bazi/sanming-tonghui	∅	0.000000	YES	['命']	0.270801
+  bazi/sanming-tonghui#R-02-04	bazi/sanming-tonghui	∅	0.000000	YES	['命', '本']	0.908847
+  bazi/ziping-zhenquan#ZPR-01	bazi/ziping-zhenquan	['八', '八字', '字']	0.863046	NO	∅	0.000000
+career_drop_on_this_chart=[]
+=== CLAIM_UNITS ===
+core=['bazi.month-order-state-v1', 'bazi.ziping-pattern-entry-v1', 'bazi.tiaohou-priority-v1', 'bazi.day-master-root-support-v1']
+signed=['bazi.month-order-state-v1', 'bazi.ziping-pattern-entry-v1', 'bazi.tiaohou-priority-v1']
+table_header=claim	源码有	制品有	1994	1992	乙酉
+  month-order	有	有	有	有	有
+  ziping	有	有	有	有	无	随盘
+  tiaohou	有	有	有	有	有
+  day-master-root	有	无	无	无	无	三盘皆无

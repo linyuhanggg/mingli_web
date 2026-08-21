@@ -1,0 +1,41 @@
+=== IDENTITY ===
+signed_root=/Volumes/Lexar/code/mingli_web/.runtime/v53-time-check-release
+core_root=/Volumes/Lexar/code/mingli_web/core/mingli-master
+signed_manifest_path=/Volumes/Lexar/code/mingli_web/.runtime/v53-time-check-release/.mingli-release-manifest.json
+signed_manifest_sha256=c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b
+signed_manifest_bytes=39343
+signed_source_commit=663543e65ae037843b03dca1dec9486293affc9d
+signed_n_files=220
+signed_schema_version=3
+signed_release=mingli-master-portable-core
+describe_kind=described
+describe_manifest_digest=3403992cb31aebea19e69ec3b1280a5ef02718c5f9ca3e3f94448ef7b039facc
+describe_n_capabilities=14
+describe_capability_ids=['bazi', 'fengshui', 'fortune', 'liuren', 'liuyao', 'luming-nayin', 'meihua', 'physiognomy', 'qimen', 'selection', 'taiyi', 'time-check', 'xingming', 'ziwei']
+signed_provider_json_files=['bazi.json', 'fengshui.json', 'fortune.json', 'liuren.json', 'liuyao.json', 'luming-nayin.json', 'meihua.json', 'physiognomy.json', 'qimen.json', 'selection.json', 'taiyi.json', 'time-check.json', 'xingming.json', 'ziwei.json']
+signed_provider_json_count=14
+=== CLAIM_UNITS ===
+signed_providers_claim_unit_ids=['bazi.month-order-state-v1', 'bazi.ziping-pattern-entry-v1', 'bazi.tiaohou-priority-v1']
+core_providers_claim_unit_ids=['bazi.month-order-state-v1', 'bazi.ziping-pattern-entry-v1', 'bazi.tiaohou-priority-v1', 'bazi.day-master-root-support-v1']
+signed_only=[]
+core_only=['bazi.day-master-root-support-v1']
+signed_has_bazi.day-master-root-support-v1=NO
+signed_providers_text_has_root=NO
+core_providers_text_has_root=YES
+=== PREPARE_1994_CAREER ===
+prepare_path=/tmp/mingli-oneshot-v53-time-check-20260819/out/prepare.stdout.json
+prepare_kind=prepared
+prepare_query=验证八字核心盘面
+prepare_dimension_ids=['career']
+prepare_n_facts=28
+prepare_calculated_bazi=['branch_relations', 'calendar_normalization', 'day_master', 'dimension_fact_scope', 'element_inventory', 'four_pillars', 'hidden_stems', 'interpretive_candidates', 'luck_cycles', 'month_command', 'nayin', 'san_yuan', 'seasonal_profile', 'shensha_auxiliary', 'source_conditioned_patterns', 'ten_gods', 'tiaohou_markers', 'twelve_growth_stages', 'xunkong']
+prepare_n_evidence=5
+prepare_evidence_rule_ids=['bazi/sanming-tonghui#R-01-02', 'bazi/sanming-tonghui#R-02-04', 'bazi/ziping-zhenquan#ZPR-01', 'bazi/qiongtong-baojian#QR-02-01', 'bazi/qiongtong-baojian#QTB-M01']
+prepare_evidence_has_bazi/ditiansui-chanwei#DR-01-01=NO
+prepare_findings_claim_unit_ids=['bazi.month-order-state-v1', 'bazi.ziping-pattern-entry-v1', 'bazi.tiaohou-priority-v1']
+prepare_findings_has_root=NO
+prepare_facts_has_relationship_signals=NO
+=== RELATIONSHIP_LAYER ===
+signed_turns_has_relationship_signals=NO
+core_turns_has_relationship_signals=NO
+signed_turns_has__append_runtime_relationship=NO

@@ -1,0 +1,36 @@
+{
+  "kind": "prepare",
+  "query": "出生时间更正了，请按更正后的资料重新说主结论。",
+  "intent": {
+    "subject_refs": [
+      "subject:synthetic"
+    ],
+    "object_id": "natal",
+    "dimension_ids": [
+      "career"
+    ],
+    "horizon": {
+      "kind_id": "year",
+      "start": null,
+      "end": null
+    },
+    "capability_id": "bazi",
+    "comparisons": []
+  },
+  "facts": {
+    "subject:synthetic": {
+      "birth_datetime": "1992-08-17T14:30:00",
+      "birth_datetime_or_four_pillars": "1992-08-17T14:30:00",
+      "timezone": "Asia/Shanghai",
+      "location": "上海",
+      "gender": "female",
+      "time_basis_policy": "civil",
+      "zi_hour_policy": "midnight",
+      "longitude": 121.4737,
+      "latitude": 31.2304,
+      "coordinate_source": "synthetic-fixture"
+    }
+  },
+  "state_token": "<first Prepare token from answer-bazi-correction>",
+  "transition": "correct"
+}

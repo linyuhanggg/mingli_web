@@ -1,0 +1,47 @@
+START 2026年 8月19日 星期三 20时29分55秒 CST
+CMD /Users/yuhanglin/.grok/bin/grok -p <hepan-prompt> --model grok-4.6 --reasoning-effort high --cwd /Volumes/Lexar/code/mingli_web --output-format plain --always-approve
+先核对准入哈希和现有证据，再对照签名制品与工作树里的合盘关系，不改仓库、不混进 V52。接着拉记忆、准入钉和现有 V53 证据，确认对照范围后再实跑计数。已有太乙/风水/见相对照模板和一份 hepan grok 草稿。先读模板、准入钉和现有 hepan 材料，再写可复跑脚本。模板已对齐。下一步扫签名树、工作树和 V52 关系制品，确认合盘关系的真实落点后再写计数脚本。签名树没有合盘路径；V52 有独立 `v52-relationship-release`。接下来对照 V52 关系制品形状，并在工作树里按同类实现搜。V52 关系层在 `turns.py` 后处理，不是独立 provider。接着核 V53/工作树有没有这套符号，以及 brief 会不会带上 V52。对照口径已经钉死。开始写可复跑脚本，只输出签名树、工作树和 V52 对照数字，不把 V52 加进 V53。脚本已跑出数字。接着抽样复核 合盘 / CU / V52 对照，再写 md。**1. 签名制品没有合盘关系 provider / CU / 规则包。**  
+14 个 provider 里没有 `hepan` / `relationship` / `bazi-relationship`；合盘 CU=`[]`；专用规则包 `pack_n=0`；`turns.py` 无 `relationship_signals`；签名树真值 token 合计 **0**。
+
+**2. 工作树没有未进签名的合盘关系实现。**  
+`turns.py` 与制品字节相同；`unsigned_impl_n=0`；core-only 只有 7 份笔记/审计。
+
+**3. 现有 brief / evidence 不会带上 V52 关系或黄金夹具。**  
+真值与 45 条黄金 signal id 命中都是 **0**；两份 V53 prepare 无 `relationship_signals`。V52 `bef3df25` 是另一份 217 文件制品，未混进 V53。
+
+复跑：
+
+```bash
+python3 -B /Volumes/Lexar/code/mingli_web/artifacts/runtime-evidence/2026-08-19-v53-hepan-golden.py
+```
+
+### 三行结论
+
+1. 签名无合盘 provider/CU/规则包（14 provider 无 hepan，CU=`[]`，packs=0，turns 无 `relationship_signals`，真值合计 0）；V52 `bef3df25` 是另一份制品。
+2. 工作树无未进签名的合盘实现（turns 哈希相同，core-only=7 全是笔记/审计，`unsigned_impl_n=0`）。
+3. brief/evidence 不会带上 V52 关系或黄金夹具（真值/45 条 golden id 命中和=0，prepare 无 `relationship_signals`，不加载 fixtures、不读 V52 路径）。
+
+### 实跑数字
+
+| 项 | 数 |
+|---|---|
+| `pin_ok` | True |
+| inspector | `c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b` |
+| source | `663543e65ae037843b03dca1dec9486293affc9d` |
+| manifest / walk | 220 / 220 |
+| `v52_mix_in_v53_turns` | False |
+| V52 对照（不计入 V53） | inspector `bef3df25…` / source `da46e7c0…` / 217 文件 / turns 真值 21 |
+| 签名 provider | 14，合盘 provider=`[]` |
+| 签名 CU | 3 条八字；合盘 CU=`[]` |
+| evidence-rules | 1328 行；合盘 pack=0 / active=0 / verified=0 |
+| 签名真值 token 合计 | 0（`合盘=0` `relationship_signals=0`） |
+| 工作树 core-only | 7（笔记 5 + 审计 2）；`unsigned_impl_n=0` |
+| 工作树真值 | `合盘` 6 + `bazi-relationship` 6 = 12，全在笔记/审计字符串 |
+| `turns_hash_same` | True |
+| brief / evidence_py / jsonl 真值 | 0 / 0 / 0 |
+| 45 条黄金 id 命中 | brief=0 evidence_py=0 jsonl=0 |
+| prepare `relationship_signals` | 两份均为 0 |
+| 未混入的陷阱（签名） | `source_relationships=25` `branch_relations=43` `disagreements=31` `合参=48` `convergence=0` |
+
+未改合同、未覆盖 `.runtime`、未 resign。证据在 `artifacts/runtime-evidence/2026-08-19-v53-hepan-golden.md` / `.py` / `.stdout.txt`。
+EXIT:0

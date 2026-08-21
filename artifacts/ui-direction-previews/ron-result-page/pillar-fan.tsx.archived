@@ -1,0 +1,82 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+import styles from "./page.module.css";
+
+export type PillarCard = {
+  readonly position: string;
+  readonly label: string;
+  readonly stem: string;
+  readonly branch: string;
+  readonly tenGod: string;
+  readonly hiddenStems: string;
+  readonly nayin: string;
+  readonly isDayMaster: boolean;
+};
+
+const LIFT_BY_INDEX = ["18px", "-6px", "-6px", "18px"] as const;
+
+export function PillarFan({ cards }: { readonly cards: readonly PillarCard[] }) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setOpen(true), 360);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className={styles.fanBoard}>
+      <div className={open ? `${styles.fanGrid} ${styles.fanOpen}` : styles.fanGrid}>
+        {cards.map((card, index) => (
+          <article
+            key={card.position}
+            className={
+              card.isDayMaster
+                ? `${styles.pillar} ${styles.pillarDayMaster}`
+                : styles.pillar
+            }
+            style={
+              {
+                "--i": index,
+                "--lift": LIFT_BY_INDEX[index] ?? "0px",
+                zIndex: index + 1,
+              } as React.CSSProperties
+            }
+          >
+            <header className={styles.pillarHead}>
+              <span className={styles.pillarLabel}>{card.label}</span>
+              {card.isDayMaster ? <span className={styles.pillarBadge}>日主</span> : null}
+            </header>
+            <p className={styles.ganzhi}>
+              <span>{card.stem}</span>
+              <span className={styles.ganzhiBranch}>{card.branch}</span>
+            </p>
+            <dl className={styles.pillarRows}>
+              <div className={styles.pillarRow}>
+                <dt>天干十神</dt>
+                <dd>{card.tenGod}</dd>
+              </div>
+              <div className={styles.pillarRow}>
+                <dt>藏干</dt>
+                <dd>{card.hiddenStems}</dd>
+              </div>
+              <div className={styles.pillarRow}>
+                <dt>纳音</dt>
+                <dd>{card.nayin}</dd>
+              </div>
+            </dl>
+          </article>
+        ))}
+      </div>
+      <button
+        aria-pressed={!open}
+        className={styles.fanToggle}
+        onClick={() => setOpen((value) => !value)}
+        type="button"
+      >
+        {open ? "收拢牌面" : "展开四柱"}
+      </button>
+    </div>
+  );
+}

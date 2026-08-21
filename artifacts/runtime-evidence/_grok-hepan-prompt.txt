@@ -1,0 +1,19 @@
+只读对照：P10-004 合盘关系 / hepan / relationship。
+
+对照：
+- 签名制品：/Volumes/Lexar/code/mingli_web/.runtime/v53-time-check-release
+- 工作树：/Volumes/Lexar/code/mingli_web/core/mingli-master
+准入钉死 inspector c451de5e / source 663543e / 220 文件，先核对哈希。
+V53 准入无 bazi-relationship。V52 关系制品（bef3df25 一类）禁止混进 V53 计数。
+
+只回答三个问题，必须实跑数字，禁止心算：
+1. 签名制品里有没有合盘关系 provider / CU / 规则包
+2. 工作树源码有没有未进签名的合盘关系实现
+3. 现有 brief / evidence 会不会带上 V52 关系或黄金夹具
+
+约束：
+- 不改仓库合同，不覆盖 .runtime，不 resign，不发明 CU，不把 V52 关系混进 V53
+- 只允许写 artifacts/runtime-evidence/2026-08-19-v53-hepan-golden.md 和同名 .py / .stdout.txt
+- 一条可复跑命令 + 实跑数字
+- 完成后把三行结论和实跑数字打印到 stdout
+- 合盘关系可能叫 hepan / relationship / bazi-relationship / 合盘 / 关系。不要和三术合参 convergence、见相 disagreements 混算。

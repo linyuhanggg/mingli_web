@@ -1,0 +1,28 @@
+START 2026年 8月19日 星期三 20时10分15秒 CST
+CMD /Users/yuhanglin/.grok/bin/grok -p <jianxiang-prompt> --model grok-4.6 --reasoning-effort high --cwd /Volumes/Lexar/code/mingli_web --output-format plain --always-approve
+先核对准入哈希和仓库合同，再按见相别名实跑签名制品与工作树对照。先拉记忆和准入钉，再摸签名制品与既有对照脚本的结构。已有太乙/风水对照模板和见相 grok 草稿。先读模板与准入钉，再按同样口径写可复跑脚本。接着摸见相签名文件、夹具和 scope 绑定，避免把八字/风水/择日/合参算进去。结构已经摸清。接下来按风水对照脚本的口径写见相可复跑脚本，数字一律实跑。脚本已跑通。接下来独立复核规则包、夹具 id 和准入哈希，避免只信脚本自己的计数。准入 `pin_ok=True`：inspector `c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b` / source `663543e65ae037843b03dca1dec9486293affc9d` / 220 文件；未混 V52。八字 273、风水 179、择日 68、合参 0 已分开，未计入见相。
+
+复跑：
+
+```bash
+python3 -B /Volumes/Lexar/code/mingli_web/artifacts/runtime-evidence/2026-08-19-v53-jianxiang-golden.py
+```
+
+**1. 签名制品里见相有哪些正式规则包 / 黄金样例 / CU / provider / output？**
+
+签名有 provider `physiognomy` / `mingli-master.physiognomy.v1`，adapter `1.1.0`，9 output + 1 extension `visible_observation_scope`，finding_bindings=0。规则包 4 套 `physiognomy/*`（90/3/3）：`bingjian` 31/0/0、`liuzhuang-xiangfa` 5/1/1=`LZ-R01`、`mayi-shenxiang` 5/1/1=`MR-02`、`shenxiang-quanbian` 49/1/1=`SR-02-04`。SOURCE_ROUTE 静态 `packs=[]`，SOURCE_PRIORITY 只有后三包（无 `bingjian`）。scope `route:physiognomy`=3，与 verified 同一集合。无 `physiognomy.*` CU；签名树无 `physiognomy-v51.yaml`。
+
+**2. 工作树有没有未进签名的见相实现？**
+
+没有。`physiognomy.py` / json / 源表 / 4 套 rules+quote-index 与制品字节相同，`unsigned_impl_n=0`。core-only 37 份全是笔记/测试/夹具（22+3+12），夹具 26 个 case_id（21 complete + 5 boundary），不是未签名实现。
+
+**3. 现有 brief / evidence 会不会带上黄金样例？**
+
+不会。`brief.py` / `evidence_rules.py` 不读 fixtures；26 个夹具 id 在 brief/evidence-rules/physiognomy.py/jsonl/scope 命中和=0。源表只把 3 个 boundary id 写成算法样本指针，不进 ReadingBrief。
+
+三行结论：
+
+1. 签名有 `physiognomy`/`mingli-master.physiognomy.v1`、9 output+1 extension、0 finding_bindings、4 专用规则包（90/3/3）、scope `route:physiognomy`=3、无 `physiognomy.*` CU、无黄金夹具。
+2. 工作树无未进签名的见相实现（impl 哈希全同，core-only=37 全是笔记/测试/夹具，unsigned_impl_n=0）。
+3. brief/evidence 不会带上黄金样例（夹具 id 命中和=0，brief 不加载 fixtures）。
+EXIT:0

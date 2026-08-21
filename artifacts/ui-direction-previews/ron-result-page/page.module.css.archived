@@ -1,0 +1,658 @@
+/*
+ * RON 风格视觉原型（仅 /_ui-lab，非生产合同）。
+ * DESIGN.md §2/§3/§17 冻结的 Direction C 仍是生产页面唯一皮肤；
+ * 本文件的暗底、荧光绿、玻璃面与发光描边不得扩散到任何正式路由。
+ */
+
+.root {
+  --ron-void: #070b09;
+  --ron-void-2: #0b110e;
+  --ron-panel: rgb(255 255 255 / 4%);
+  --ron-panel-strong: rgb(255 255 255 / 7%);
+  --ron-hairline: rgb(255 255 255 / 11%);
+  --ron-hairline-strong: rgb(255 255 255 / 22%);
+  --ron-ink: #f1f5f2;
+  --ron-ink-2: rgb(241 245 242 / 66%);
+  --ron-ink-3: rgb(241 245 242 / 44%);
+  --ron-jade: #21e07e;
+  --ron-jade-soft: #8df7c2;
+  --ron-jade-wash: rgb(33 224 126 / 12%);
+  --ron-jade-line: rgb(33 224 126 / 38%);
+  --ron-fan-gap: 14px;
+
+  position: relative;
+  min-height: 100dvh;
+  padding: var(--space-page-mobile);
+  overflow: clip;
+  background:
+    radial-gradient(90% 46% at 50% -6%, rgb(33 224 126 / 7%) 0%, transparent 66%),
+    linear-gradient(180deg, var(--ron-void-2) 0%, var(--ron-void) 40%);
+  color: var(--ron-ink);
+  font-family: var(--font-sans);
+}
+
+.root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 3.5%) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 3.5%) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(85% 60% at 50% 0%, #000 0%, transparent 78%);
+  pointer-events: none;
+}
+
+.shell {
+  position: relative;
+  width: min(100%, var(--container-page));
+  min-width: 0;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+  padding-block: var(--space-xl) var(--space-3xl);
+}
+
+/* ---------- 演示边界 ---------- */
+
+.boundary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.75rem;
+  min-width: 0;
+  min-height: var(--target-min);
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--ron-hairline);
+  border-radius: var(--radius-control);
+  background: var(--ron-panel);
+  color: var(--ron-ink-2);
+  font-size: var(--font-size-aux);
+  line-height: 1.5;
+}
+
+.boundary strong {
+  color: var(--ron-jade-soft);
+  font-weight: 700;
+}
+
+.boundary span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--ron-jade-line);
+  border-radius: var(--radius-pill);
+  background: var(--ron-jade-wash);
+  color: var(--ron-jade-soft);
+  font-size: var(--font-size-meta);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.chipNeutral {
+  border-color: var(--ron-hairline);
+  background: var(--ron-panel);
+  color: var(--ron-ink-2);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-page);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: var(--line-height-title);
+}
+
+.lede {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--ron-ink-2);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+/* ---------- 分区 ---------- */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm) var(--space-md);
+  min-width: 0;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: var(--font-size-section);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: var(--line-height-title);
+}
+
+.sectionNote {
+  min-width: 0;
+  color: var(--ron-ink-3);
+  font-size: var(--font-size-aux);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- 四柱扇形卡 ---------- */
+
+.fanBoard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--space-lg) var(--space-md);
+  border: 1px solid var(--ron-hairline);
+  border-radius: var(--radius-panel);
+  background:
+    radial-gradient(75% 100% at 50% 0%, rgb(33 224 126 / 9%) 0%, transparent 70%),
+    var(--ron-panel);
+}
+
+.fanGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ron-fan-gap);
+  min-width: 0;
+  perspective: 1400px;
+}
+
+.pillar {
+  --fan: 1;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: 0.9rem 0.85rem 1rem;
+  border: 1px solid var(--ron-hairline);
+  border-radius: var(--radius-panel);
+  background: linear-gradient(165deg, rgb(255 255 255 / 9%) 0%, rgb(255 255 255 / 3%) 100%);
+  backdrop-filter: blur(10px);
+  transform-origin: 50% 130%;
+  will-change: transform;
+}
+
+.pillarDayMaster {
+  border-color: var(--ron-jade-line);
+  background:
+    linear-gradient(165deg, rgb(33 224 126 / 20%) 0%, rgb(33 224 126 / 5%) 100%);
+  box-shadow: 0 0 0 1px rgb(33 224 126 / 18%), 0 12px 34px rgb(33 224 126 / 14%);
+}
+
+.pillarHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.pillarLabel {
+  color: var(--ron-ink-3);
+  font-size: var(--font-size-meta);
+  letter-spacing: 0.08em;
+}
+
+.pillarBadge {
+  color: var(--ron-jade-soft);
+  font-size: var(--font-size-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.ganzhi {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  min-width: 0;
+  font-family: var(--font-domain);
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.ganzhiBranch {
+  color: var(--ron-ink-2);
+}
+
+.pillarRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  min-width: 0;
+  font-size: var(--font-size-meta);
+  line-height: 1.5;
+}
+
+.pillarRow {
+  display: flex;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.pillarRow dt {
+  flex: none;
+  color: var(--ron-ink-3);
+}
+
+.pillarRow dd {
+  margin: 0;
+  min-width: 0;
+  color: var(--ron-ink-2);
+  overflow-wrap: anywhere;
+}
+
+.fanToggle {
+  display: none;
+}
+
+/* ---------- 证据连线画布 ---------- */
+
+.graphCard {
+  position: relative;
+  padding: var(--space-md);
+  border: 1px solid var(--ron-hairline);
+  border-radius: var(--radius-panel);
+  background: var(--ron-panel);
+}
+
+.graphSvg {
+  display: none;
+}
+
+.graphList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: 0;
+  min-width: 0;
+  list-style: none;
+  padding: 0;
+}
+
+.graphItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--ron-hairline);
+  border-left: 2px solid var(--ron-jade-line);
+  border-radius: var(--radius-control);
+  background: rgb(255 255 255 / 3%);
+}
+
+.graphPath {
+  min-width: 0;
+  color: var(--ron-ink);
+  font-family: ui-monospace, "SFMono-Regular", "Menlo", monospace;
+  font-size: var(--font-size-meta);
+  overflow-wrap: anywhere;
+}
+
+.graphMeta {
+  min-width: 0;
+  color: var(--ron-ink-3);
+  font-size: var(--font-size-meta);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- 古籍原文卡 ---------- */
+
+.quoteCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-width: 0;
+  padding: var(--space-lg) var(--space-md);
+  border: 1px solid var(--ron-hairline);
+  border-radius: var(--radius-panel);
+  background: linear-gradient(160deg, rgb(255 255 255 / 7%) 0%, rgb(255 255 255 / 2.5%) 100%);
+  backdrop-filter: blur(12px);
+}
+
+.quoteHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.quoteTitle {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--font-size-card);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.quoteList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin: 0;
+  min-width: 0;
+}
+
+.quote {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--ron-jade);
+}
+
+.quoteText {
+  margin: 0;
+  min-width: 0;
+  max-width: 62ch;
+  font-family: var(--font-domain);
+  font-size: var(--font-size-emphasis);
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.quoteCite {
+  min-width: 0;
+  color: var(--ron-ink-3);
+  font-size: var(--font-size-aux);
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- 大运轨道 ---------- */
+
+.luckTrack {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.luckCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  min-height: var(--target-min);
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--ron-hairline);
+  border-radius: var(--radius-control);
+  background: rgb(255 255 255 / 3%);
+}
+
+.luckCellActive {
+  border-color: var(--ron-jade-line);
+  background: var(--ron-jade-wash);
+  box-shadow: inset 0 0 0 1px rgb(33 224 126 / 16%);
+}
+
+.luckPillar {
+  font-family: var(--font-domain);
+  font-size: var(--font-size-emphasis);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.luckAge {
+  color: var(--ron-ink-3);
+  font-size: var(--font-size-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 五行计数 ---------- */
+
+.elementList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.elementRow {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.elementName {
+  color: var(--ron-ink-2);
+  font-size: var(--font-size-label);
+}
+
+.elementBar {
+  position: relative;
+  height: 8px;
+  min-width: 0;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 7%);
+  overflow: hidden;
+}
+
+.elementFill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: calc(var(--ratio) * 100%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgb(33 224 126 / 55%) 0%, var(--ron-jade) 100%);
+}
+
+.elementValue {
+  color: var(--ron-ink-3);
+  font-size: var(--font-size-meta);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  white-space: nowrap;
+}
+
+/* ---------- 边界声明 ---------- */
+
+.limits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  min-width: 0;
+  padding: var(--space-md);
+  border: 1px dashed var(--ron-hairline-strong);
+  border-radius: var(--radius-panel);
+  list-style: none;
+}
+
+.limitItem {
+  display: flex;
+  gap: 0.6rem;
+  min-width: 0;
+  color: var(--ron-ink-2);
+  font-size: var(--font-size-aux);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.limitItem::before {
+  content: "—";
+  flex: none;
+  color: var(--ron-jade);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- 断点 ---------- */
+
+@media (min-width: 48rem) {
+  .root {
+    padding: var(--space-page-tablet);
+  }
+
+  .title {
+    font-size: 40px;
+  }
+
+  .fanBoard {
+    padding: var(--space-2xl) var(--space-xl);
+  }
+
+  .fanGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .pillar {
+    --fan: 0;
+
+    transform:
+      translateX(calc((1.5 - var(--i)) * (100% + var(--ron-fan-gap)) * (1 - var(--fan))))
+      translateY(calc((1 - var(--fan)) * var(--lift, 0px)))
+      rotate(calc((var(--i) - 1.5) * (1 - var(--fan)) * 7deg));
+    transition: transform 620ms var(--ease-out), box-shadow var(--duration-feedback) linear;
+  }
+
+  .fanOpen .pillar {
+    --fan: 1;
+  }
+
+  .fanToggle {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: var(--target-min);
+    margin-top: var(--space-xl);
+    padding: 0.55rem 1.1rem;
+    border: 1px solid var(--ron-hairline-strong);
+    border-radius: var(--radius-pill);
+    background: var(--ron-panel-strong);
+    color: var(--ron-ink);
+    font-family: inherit;
+    font-size: var(--font-size-label);
+    cursor: pointer;
+    transition: border-color var(--duration-feedback) linear,
+      background-color var(--duration-feedback) linear;
+  }
+
+  .fanToggle:hover {
+    border-color: var(--ron-jade-line);
+    background: var(--ron-jade-wash);
+  }
+
+  .fanToggle:focus-visible {
+    outline: 2px solid var(--ron-jade);
+    outline-offset: 3px;
+  }
+
+  .graphSvg {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-bottom: var(--space-md);
+  }
+
+  .graphList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quoteCard {
+    padding: var(--space-xl);
+  }
+}
+
+@media (min-width: 64rem) {
+  .root {
+    padding: var(--space-page-desktop);
+  }
+
+  .ganzhi {
+    font-size: 42px;
+  }
+}
+
+@media (min-width: 90rem) {
+  .root {
+    padding: var(--space-page-wide);
+  }
+}
+
+/* ---------- 动效降级 ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .pillar {
+    --fan: 1;
+
+    transition: none;
+  }
+
+  .fanOpen .pillar {
+    --fan: 1;
+  }
+
+  .flowDash {
+    animation: none;
+  }
+}
+
+.flowDash {
+  animation: ronDash 2.4s linear infinite;
+}
+
+@keyframes ronDash {
+  to {
+    stroke-dashoffset: -28;
+  }
+}

@@ -1,0 +1,9 @@
+inspector=c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b
+files=220
+qimen_cu_signed=[]
+qimen_cu_core=[]
+impl_files_identical=True
+qimen_packs={'san-shi/qimen-dunjia-tongzhi': {'n': 38, 'active': 38}, 'san-shi/qimen-faqiao': {'n': 2, 'active': 2}}
+runtime_active_count=40
+runtime_active_rules=['san-shi/qimen-dunjia-tongzhi#QM-P01', 'san-shi/qimen-dunjia-tongzhi#QM-P02', 'san-shi/qimen-dunjia-tongzhi#QM-P03', 'san-shi/qimen-dunjia-tongzhi#QM-P04', 'san-shi/qimen-dunjia-tongzhi#QM-P05', 'san-shi/qimen-dunjia-tongzhi#QM-P06', 'san-shi/qimen-dunjia-tongzhi#QM-P07', 'san-shi/qimen-dunjia-tongzhi#QM-P08', 'san-shi/qimen-dunjia-tongzhi#QM-P09', 'san-shi/qimen-dunjia-tongzhi#QM-P10', 'san-shi/qimen-dunjia-tongzhi#QM-P11', 'san-shi/qimen-dunjia-tongzhi#QM-P12', 'san-shi/qimen-dunjia-tongzhi#QM-P13', 'san-shi/qimen-dunjia-tongzhi#QM-P14', 'san-shi/qimen-dunjia-tongzhi#QM-P15', 'san-shi/qimen-dunjia-tongzhi#QM-P16', 'san-shi/qimen-dunjia-tongzhi#QM-P17', 'san-shi/qimen-dunjia-tongzhi#QM-P18', 'san-shi/qimen-dunjia-tongzhi#QM-P19', 'san-shi/qimen-dunjia-tongzhi#QM-P20', 'san-shi/qimen-dunjia-tongzhi#QM-P21', 'san-shi/qimen-dunjia-tongzhi#QM-P22', 'san-shi/qimen-dunjia-tongzhi#QM-P23', 'san-shi/qimen-dunjia-tongzhi#QM-P24', 'san-shi/qimen-dunjia-tongzhi#QM-P25', 'san-shi/qimen-dunjia-tongzhi#QM-P27', 'san-shi/qimen-dunjia-tongzhi#QM-P28', 'san-shi/qimen-dunjia-tongzhi#QM-P29', 'san-shi/qimen-dunjia-tongzhi#QM-P30', 'san-shi/qimen-dunjia-tongzhi#QM-P31', 'san-shi/qimen-dunjia-tongzhi#QM-P32', 'san-shi/qimen-dunjia-tongzhi#QM-P33', 'san-shi/qimen-dunjia-tongzhi#QM-P34', 'san-shi/qimen-dunjia-tongzhi#QM-P35', 'san-shi/qimen-dunjia-tongzhi#QM-P37', 'san-shi/qimen-dunjia-tongzhi#QM-P38', 'san-shi/qimen-dunjia-tongzhi#QM-P39', 'san-shi/qimen-dunjia-tongzhi#QM-P40', 'san-shi/qimen-faqiao#QM-P26', 'san-shi/qimen-faqiao#QM-P36']
+golden_fixture_in_signed={'qimen-v51.yaml': False, 'qimen-go-v51.yaml': False, 'qimen-pattern-contract-v51.yaml': False}

@@ -1,0 +1,116 @@
+import styles from "./page.module.css";
+
+export type GraphFactNode = {
+  readonly id: string;
+  readonly title: string;
+  readonly path: string;
+};
+
+export type GraphSourceNode = {
+  readonly title: string;
+  readonly anchor: string;
+  readonly pack: string;
+};
+
+/**
+ * 事实路径 → 古籍锚点的连线示意图。
+ * 纯装饰：真正可读的内容由下方 predicate_audit 列表承担，故 aria-hidden。
+ */
+export function EvidenceGraph({
+  facts,
+  source,
+}: {
+  readonly facts: readonly GraphFactNode[];
+  readonly source: GraphSourceNode;
+}) {
+  const rowY = [76, 210];
+
+  return (
+    <svg
+      aria-hidden="true"
+      className={styles.graphSvg}
+      focusable="false"
+      preserveAspectRatio="xMidYMid meet"
+      viewBox="0 0 720 300"
+    >
+      <defs>
+        <linearGradient id="ronEdge" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%" stopColor="rgb(33 224 126 / 25%)" />
+          <stop offset="100%" stopColor="rgb(33 224 126 / 85%)" />
+        </linearGradient>
+      </defs>
+
+      {facts.slice(0, 2).map((fact, index) => (
+        <path
+          key={`edge-${fact.id}`}
+          className={styles.flowDash}
+          d={`M 244 ${rowY[index]} C 330 ${rowY[index]}, 380 144, 460 144`}
+          fill="none"
+          stroke="url(#ronEdge)"
+          strokeDasharray="6 8"
+          strokeLinecap="round"
+          strokeWidth="1.5"
+        />
+      ))}
+
+      {facts.slice(0, 2).map((fact, index) => (
+        <g key={fact.id}>
+          <rect
+            fill="rgb(255 255 255 / 5%)"
+            height="80"
+            rx="12"
+            stroke="rgb(255 255 255 / 14%)"
+            width="228"
+            x="16"
+            y={rowY[index] - 40}
+          />
+          <text
+            fill="#f1f5f2"
+            fontSize="16"
+            fontWeight="600"
+            x="36"
+            y={rowY[index] - 8}
+          >
+            {fact.title}
+          </text>
+          <text
+            fill="rgb(241 245 242 / 50%)"
+            fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+            fontSize="13"
+            x="36"
+            y={rowY[index] + 18}
+          >
+            {fact.path}
+          </text>
+          <circle cx="244" cy={rowY[index]} fill="#21e07e" r="4" />
+        </g>
+      ))}
+
+      <rect
+        fill="rgb(33 224 126 / 10%)"
+        height="104"
+        rx="14"
+        stroke="rgb(33 224 126 / 42%)"
+        width="244"
+        x="460"
+        y="92"
+      />
+      <circle cx="460" cy="144" fill="#21e07e" r="4" />
+      <text fill="#8df7c2" fontSize="12" letterSpacing="0.08em" x="482" y="120">
+        古籍锚点
+      </text>
+      <text fill="#f1f5f2" fontSize="18" fontWeight="600" x="482" y="150">
+        {source.title}
+      </text>
+      <text
+        fill="rgb(241 245 242 / 62%)"
+        fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+        fontSize="13"
+        x="482"
+        y="176"
+      >
+        {source.anchor}
+      </text>
+    </svg>
+  );
+}
