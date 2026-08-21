@@ -1,0 +1,97 @@
+schema_version: mingli-fortune-provider-fixtures-v1
+fixture_version: 1.0.1
+system: fortune
+provider_contract:
+  provider_id: mingli-master.fortune.v6
+  provider_version: fortune-public-v6-mechanism-stack
+  adapter_name: mingli-master.near_time_fortune_adapter
+  adapter_version: 2.2.1
+  algorithm_dependency_id: fortune.bounded-target-period-over-bazi
+  algorithm_dependency_version: fortune-v6-one-explicit-period
+  declared_horizons: [day]
+  declared_extension_outputs: [target_period, target_period_facts]
+  scope: one explicit civil day over the verified natal Bazi fact identity
+
+natal_profiles:
+  shanghai-male-2000:
+    birth_datetime: '2000-10-18T06:45:00'
+    timezone: Asia/Shanghai
+    location: 上海
+    gender: male
+
+oracle_policy:
+  status: independent_readable_government_calendar_oracle
+  projection: civil date to lunar year/month/day/leap state
+  limitation: HKO calendar rows validate calendar primitives only; they do not validate Fortune judgments
+  provider_execution: every case must call FortuneProvider.calculate and FortuneProvider.extend twice
+  mutation_policy: fixture identity, source artifact identity, oracle value, horizon, and provider digest mismatches fail closed
+
+oracle_sources:
+  hko-2024:
+    publisher: Hong Kong Observatory
+    dataset: Gregorian-Lunar calendar conversion table
+    artifact_path: vendor/hko-calendar/nongli_calendar_2024.csv
+    artifact_sha256: f2d67d5407e433bcaebbfd048bc54e4ab5c12bfb65a91b4e00af52db11278175
+    role: government-published independent calendar oracle; not a Fortune interpretation oracle
+  hko-2025:
+    publisher: Hong Kong Observatory
+    dataset: Gregorian-Lunar calendar conversion table
+    artifact_path: vendor/hko-calendar/nongli_calendar_2025.csv
+    artifact_sha256: d2c5d752f370d3e583bde4950845fb6b4bfce1e1551da913ad14d655014fb32c
+    role: government-published independent calendar oracle; not a Fortune interpretation oracle
+  hko-2026:
+    publisher: Hong Kong Observatory
+    dataset: Gregorian-Lunar calendar conversion table
+    artifact_path: vendor/hko-calendar/nongli_calendar_2026.csv
+    artifact_sha256: 8b2892b0e04faa632f09ea36ffee29e67b4427b85a18708d907d88d8be452b98
+    role: government-published independent calendar oracle; not a Fortune interpretation oracle
+
+boundary_oracles:
+  exact_li_chun:
+    source_path: scripts/test_v51_calendar_ephemeris_core.py
+    source_sha256: d3ac75229fa44580bef03f75e178fc729d3a60644c919479a88250930de41f5b
+    source_anchor: test_year_and_month_pillars_switch_at_the_exact_li_chun_instant
+    role: pre-existing shared-calendar exact-instant boundary regression
+  civil_midnight:
+    source_path: references/fixtures/qimen-v51.yaml
+    source_sha256: 14c3f8a5dba09454acafdf332bf5eb9fc72359aa82ab5eeeb11d4a49c59f07ce
+    source_anchor: midnight-before and midnight-at
+    role: independently frozen provider-boundary cases for midnight day rollover
+
+cases:
+  - {id: fortune-hko-2024-01-01, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-01-01T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 2', expected_chinese_year_ganzhi: 癸卯, expected_lunar: {year: 2023, month: 11, day: 20, is_leap_month: false}}
+  - {id: fortune-hko-2024-02-03, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-02-03T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 35', expected_chinese_year_ganzhi: 癸卯, expected_lunar: {year: 2023, month: 12, day: 24, is_leap_month: false}}
+  - {id: fortune-hko-2024-02-04, category: solar_term_day, profile_id: shanghai-male-2000, reference_datetime: '2024-02-04T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 36', expected_chinese_year_ganzhi: 癸卯, expected_lunar: {year: 2023, month: 12, day: 25, is_leap_month: false}}
+  - {id: fortune-hko-2024-02-05, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-02-05T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 37', expected_chinese_year_ganzhi: 癸卯, expected_lunar: {year: 2023, month: 12, day: 26, is_leap_month: false}}
+  - {id: fortune-hko-2024-02-09, category: lunar_new_year_boundary, profile_id: shanghai-male-2000, reference_datetime: '2024-02-09T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 41', expected_chinese_year_ganzhi: 癸卯, expected_lunar: {year: 2023, month: 12, day: 30, is_leap_month: false}}
+  - {id: fortune-hko-2024-02-10, category: lunar_new_year_boundary, profile_id: shanghai-male-2000, reference_datetime: '2024-02-10T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 42', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 1, day: 1, is_leap_month: false}}
+  - {id: fortune-hko-2024-02-11, category: lunar_new_year_boundary, profile_id: shanghai-male-2000, reference_datetime: '2024-02-11T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 43', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 1, day: 2, is_leap_month: false}}
+  - {id: fortune-hko-2024-03-19, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-03-19T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 80', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 2, day: 10, is_leap_month: false}}
+  - {id: fortune-hko-2024-03-20, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-03-20T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 81', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 2, day: 11, is_leap_month: false}}
+  - {id: fortune-hko-2024-03-21, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-03-21T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 82', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 2, day: 12, is_leap_month: false}}
+  - {id: fortune-hko-2024-05-04, category: solar_term_day, profile_id: shanghai-male-2000, reference_datetime: '2024-05-04T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 126', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 3, day: 26, is_leap_month: false}}
+  - {id: fortune-hko-2024-05-05, category: solar_term_day, profile_id: shanghai-male-2000, reference_datetime: '2024-05-05T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 127', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 3, day: 27, is_leap_month: false}}
+  - {id: fortune-hko-2024-05-06, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-05-06T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 128', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 3, day: 28, is_leap_month: false}}
+  - {id: fortune-hko-2024-06-20, category: solar_term_day, profile_id: shanghai-male-2000, reference_datetime: '2024-06-20T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 173', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 5, day: 15, is_leap_month: false}}
+  - {id: fortune-hko-2024-06-21, category: solar_term_day, profile_id: shanghai-male-2000, reference_datetime: '2024-06-21T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 174', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 5, day: 16, is_leap_month: false}}
+  - {id: fortune-hko-2024-06-22, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-06-22T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 175', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 5, day: 17, is_leap_month: false}}
+  - {id: fortune-hko-2024-08-06, category: solar_term_day, profile_id: shanghai-male-2000, reference_datetime: '2024-08-06T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 220', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 7, day: 3, is_leap_month: false}}
+  - {id: fortune-hko-2024-08-07, category: solar_term_day, profile_id: shanghai-male-2000, reference_datetime: '2024-08-07T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 221', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 7, day: 4, is_leap_month: false}}
+  - {id: fortune-hko-2024-08-08, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-08-08T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 222', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 7, day: 5, is_leap_month: false}}
+  - {id: fortune-hko-2024-09-16, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-09-16T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 261', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 8, day: 14, is_leap_month: false}}
+  - {id: fortune-hko-2024-09-17, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-09-17T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 262', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 8, day: 15, is_leap_month: false}}
+  - {id: fortune-hko-2024-09-18, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-09-18T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 263', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 8, day: 16, is_leap_month: false}}
+  - {id: fortune-hko-2024-11-06, category: solar_term_day, profile_id: shanghai-male-2000, reference_datetime: '2024-11-06T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 312', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 10, day: 6, is_leap_month: false}}
+  - {id: fortune-hko-2024-11-07, category: solar_term_day, profile_id: shanghai-male-2000, reference_datetime: '2024-11-07T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 313', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 10, day: 7, is_leap_month: false}}
+  - {id: fortune-hko-2024-11-08, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2024-11-08T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 314', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 10, day: 8, is_leap_month: false}}
+  - {id: fortune-hko-2025-01-28, category: lunar_new_year_boundary, profile_id: shanghai-male-2000, reference_datetime: '2025-01-28T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2025, source_anchor: 'CSV row 29', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 12, day: 29, is_leap_month: false}}
+  - {id: fortune-hko-2025-01-29, category: lunar_new_year_boundary, profile_id: shanghai-male-2000, reference_datetime: '2025-01-29T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2025, source_anchor: 'CSV row 30', expected_chinese_year_ganzhi: 乙巳, expected_lunar: {year: 2025, month: 1, day: 1, is_leap_month: false}}
+  - {id: fortune-hko-2025-01-30, category: lunar_new_year_boundary, profile_id: shanghai-male-2000, reference_datetime: '2025-01-30T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2025, source_anchor: 'CSV row 31', expected_chinese_year_ganzhi: 乙巳, expected_lunar: {year: 2025, month: 1, day: 2, is_leap_month: false}}
+  - {id: fortune-hko-2025-07-24, category: leap_month_boundary, profile_id: shanghai-male-2000, reference_datetime: '2025-07-24T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2025, source_anchor: 'CSV row 206', expected_chinese_year_ganzhi: 乙巳, expected_lunar: {year: 2025, month: 6, day: 30, is_leap_month: false}}
+  - {id: fortune-hko-2026-07-24, category: published_calendar, profile_id: shanghai-male-2000, reference_datetime: '2026-07-24T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2026, source_anchor: 'CSV row 206', expected_chinese_year_ganzhi: 丙午, expected_lunar: {year: 2026, month: 6, day: 11, is_leap_month: false}}
+  - {id: fortune-hko-2024-02-29, category: leap_day, profile_id: shanghai-male-2000, reference_datetime: '2024-02-29T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 61', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 1, day: 20, is_leap_month: false}}
+  - {id: fortune-hko-2025-07-25, category: leap_month_boundary, profile_id: shanghai-male-2000, reference_datetime: '2025-07-25T12:00:00+08:00', horizon: {kind: day}, source_id: hko-2025, source_anchor: 'CSV row 207', expected_chinese_year_ganzhi: 乙巳, expected_lunar: {year: 2025, month: 6, day: 1, is_leap_month: true}}
+  - {id: fortune-lichun-before, category: solar_term_boundary, profile_id: shanghai-male-2000, reference_datetime: '2024-02-04T16:26:53.122558+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 36', expected_chinese_year_ganzhi: 癸卯, expected_lunar: {year: 2023, month: 12, day: 25, is_leap_month: false}, expected_active_transits: {year: 癸卯, month: 乙丑, day: 戊戌}}
+  - {id: fortune-lichun-at, category: solar_term_boundary, profile_id: shanghai-male-2000, reference_datetime: '2024-02-04T16:26:53.122559+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 36', expected_chinese_year_ganzhi: 癸卯, expected_lunar: {year: 2023, month: 12, day: 25, is_leap_month: false}, expected_active_transits: {year: 甲辰, month: 丙寅, day: 戊戌}}
+  - {id: fortune-midnight-before, category: day_rollover, profile_id: shanghai-male-2000, reference_datetime: '2024-02-10T23:59:59+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 42', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 1, day: 1, is_leap_month: false}, expected_active_transits: {day: 甲辰}}
+  - {id: fortune-midnight-at, category: day_rollover, profile_id: shanghai-male-2000, reference_datetime: '2024-02-11T00:00:00+08:00', horizon: {kind: day}, source_id: hko-2024, source_anchor: 'CSV row 43', expected_chinese_year_ganzhi: 甲辰, expected_lunar: {year: 2024, month: 1, day: 2, is_leap_month: false}, expected_active_transits: {day: 乙巳}}

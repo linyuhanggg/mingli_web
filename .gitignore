@@ -37,12 +37,18 @@ tmp/
 .idea/
 .vscode/
 
-# Local signed runtime install for real adapter smoke
+# Local signed runtime install for real adapter smoke. Generated, not source.
 .runtime/
 
-# Independent mingli-master Git checkout. Synology syncs this visible directory;
-# the website repository does not vendor the core's Git history or source files.
-core/mingli-master/
+# core/mingli-master is transplanted source from mingli-master-skill and belongs
+# in this repository. Keep only leftover clone metadata and local-only inputs out.
+core/.mingli-master-skill.git/
+core/mingli-master/.git/
+core/mingli-master/.work/
+core/mingli-master/.benchmarks/
+core/mingli-master/references/fulltext/
+core/mingli-master/references/regression/replays/
+core/mingli-master/references/regression/reacceptance-replay-log.md
 
 # Regenerable tool output; never treat these snapshots as product authority
 /snapshots/

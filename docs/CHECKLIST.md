@@ -176,7 +176,7 @@ fortune 等其余 Provider → 每日、工具或未来产品；必须另有明�
 | `/arts` | 完整术数总览与适用边界 | index |
 | `/daily` | 每日确定性信息与运营内容 | index |
 | `/tools` | 六项工具总览 | index |
-| `/tools/time-check` | 寻时定盘流程 | 十二时辰事实与结构化事件证据排序已接；完整古法校时、候选淘汰和结论仍未接 |
+| `/tools/time-check` | 寻时定盘流程 | 十二时辰事实、结构化事件证据排序、古法校时淘汰与定盘结论已在 core 接通并投影到 time-check-view/v1；签名 Runtime 未重签，页面视觉未改 |
 | `/tools/chart-similarity` | 八字四柱同盘事实比较 | 两份确认档案 + Runtime 四柱比较 |
 | `/tools/rhythm` | 本命音律流程 | index，未接能力诚实标记 |
 | `/tools/five-elements` | 五行事实与调候流程（不含旺衰/喜忌/用神结论） | index，已接有界事实切片 |
@@ -898,8 +898,9 @@ P2 的 18 项与 P3 的 12 项全部停在 `IN_PROGRESS`，原因不是缺证据
 
 平台层与算法层已推得很深：13 个 V51 Provider 完成真实 `Provider → Prepared → Worker → Accepted → typed ReadingDocument` 闭环，V53 寻时定盘通过 14 能力真实矩阵，V52 完成八字/紫微/七政关系 Worker 闭环。以下是仍未完成的产品能力，不受 P4-007 阻塞的部分可以并行推进：
 
-- 寻时定盘的完整古法校时、候选淘汰与结论规则（事实层与结构化事件证据排序已通过，完整定盘未接）
-- 解梦、姓名分析两项工具的正式来源规则与 Provider（当前无正式输入/输出合同与规则包）
+- 寻时定盘：core 源码已接古法校时淘汰与定盘结论（已知范围唯一即可定盘；≥2 条结构化事件按时支/命宫/小运净极性淘汰），`time-check-view/v1` 已投影 `rectification_status` / `rectification_conclusion`（无 outcome/verdict）。签名 `.runtime/v53-time-check-release` 未重签，页面视觉未改，故公开预览仍是旧制品。
+- 解梦仍无正式输入/输出合同与规则包。姓名分析已冻结 `name-analysis-input/v1`、`name-analysis-view/v1` 与《五行精纪》五音姓氏来源规则（只钉每表首姓，不自选康熙/五格/吉凶）；尚未写 Provider，未进 catalog/签名 Runtime，页面视觉未改。
+- 解梦工具的正式来源规则与 Provider
 - 三术合参的实质互证与分歧裁决（`convergence` / `disagreements` 仍为空，当前只有信号层与范围投影）
 - 见相的手相、体态、综合三模式（当前只支持 `face` scope）
 - 各术深读、追问、导出在真实产品与真实 Worker 上的完整交付

@@ -1,0 +1,165 @@
+{
+  "reference_pack": "daliuren-daquan",
+  "version": "1.0.0-evidence-rebuild",
+  "source_book": "大六壬大全 / 六壬大全",
+  "darwin_compatible": true,
+  "evaluation_status": "not_run",
+  "test_cases": [
+    {
+      "id": "should-trigger-direct-overcome-01",
+      "type": "should_trigger",
+      "prompt": "adapter 给出四课：有一个下克上，同时还有两个上克下。按《大六壬大全》先取哪个，课名叫什么？",
+      "expected_behavior": "调用 DLR-02，先取唯一的下克上所对应上神并标重审；忽略上克下候选，引用 DLQ-006、DLQ-007、DLQ-027。",
+      "required_evidence": ["DLQ-006", "DLQ-007", "DLQ-027"],
+      "forbidden_behavior": ["把下克上叫元首", "按三个候选一起投票", "不经 adapter 手排中末传"]
+    },
+    {
+      "id": "should-trigger-multiple-overcomes-02",
+      "type": "should_trigger",
+      "prompt": "两个下贼候选都与日干比，怎么继续取传？只给我最终支就行。",
+      "expected_behavior": "调用 DLR-03 后转 DLR-04；要求 adapter 输出每个涉害路径、深度、孟仲季和复等 tie-break，不能只报最终支。",
+      "required_evidence": ["DLQ-029", "DLQ-030", "DLQ-031", "DLQ-032"],
+      "forbidden_behavior": ["语言模型手数涉害", "省略候选淘汰轨迹"]
+    },
+    {
+      "id": "should-trigger-maoxing-yang-03",
+      "type": "should_trigger",
+      "prompt": "四课完整、无克无遥，日干为阳。请按昴星法列出初中末字段来源。",
+      "expected_behavior": "调用 DLR-06：初传取地盘酉上神，中传取支上神，末传取干上神；标 yang_up，不靠‘虎视’别名反推。",
+      "required_evidence": ["DLQ-011", "DLQ-034"],
+      "forbidden_behavior": ["阴日酉下规则", "把中末顺序写反", "凭文本手排实际支"]
+    },
+    {
+      "id": "should-trigger-maoxing-yin-04",
+      "type": "should_trigger",
+      "prompt": "四课完整、无克无遥，日干为阴；引擎只输出‘虎视’两个字，没有酉下字段。能继续吗？",
+      "expected_behavior": "调用 DLR-06 并停止；说明阴日应取酉下、中传干上、末传支上，但当前缺明确盘面字段，且虎视别名有内部冲突。",
+      "required_evidence": ["DLQ-035"],
+      "forbidden_behavior": ["仅凭虎视名称继续", "把阳日分支套入"]
+    },
+    {
+      "id": "should-trigger-biezhe-yin-05",
+      "type": "should_trigger",
+      "prompt": "阴日三课无克无遥，支前三合是亥，亥上又是另一神，但没有声明别责口径。初传取哪一个？",
+      "expected_behavior": "调用 DLR-07，返回 unresolved_biezhe_yin；并列支本身与其上神，引用 DLQ-037、DLQ-038，不静默选边。",
+      "required_evidence": ["DLQ-037", "DLQ-038"],
+      "forbidden_behavior": ["无 profile 强行取亥", "无 profile 强行取亥上神"]
+    },
+    {
+      "id": "should-trigger-bazhuan-06",
+      "type": "should_trigger",
+      "prompt": "乙辰日干支寄宫看起来同位，我想按八专顺数三，是否可以？",
+      "expected_behavior": "调用 DLR-08 并拒绝进入八专；本书八专五日不含乙辰，引用 DLQ-040。",
+      "required_evidence": ["DLQ-040"],
+      "forbidden_behavior": ["沿用旧 pack 的八日列表", "直接顺数三"]
+    },
+    {
+      "id": "should-trigger-fuyin-self-punishment-07",
+      "type": "should_trigger",
+      "prompt": "adapter 已确认伏吟无克，初传和次传都遇自刑，末传怎么处理？",
+      "expected_behavior": "调用 DLR-09；先按刚柔确定初传与次传，次传复自刑时末传取冲，要求输出刑冲 trace。",
+      "required_evidence": ["DLQ-014", "DLQ-042"],
+      "forbidden_behavior": ["仍取自刑为末", "不给刑冲来源"]
+    },
+    {
+      "id": "should-trigger-fanyin-well-rail-08",
+      "type": "should_trigger",
+      "prompt": "反吟无克，当前 adapter 没有井栏测试和 source trace，能按 normalized 第 70 行补出来吗？",
+      "expected_behavior": "调用 DLR-10，返回 unresolved_fanyin_well_rail；指出 L70 后半损坏，必须有 WYG 校定与 golden tests。",
+      "required_evidence": ["DLQ-015", "DLQ-043"],
+      "forbidden_behavior": ["从损坏行自由补算法", "改走昴星或别责"]
+    },
+    {
+      "id": "should-trigger-guiren-profile-09",
+      "type": "should_trigger",
+      "prompt": "不用告诉我口径，直接按《大全》把天乙贵人和十二天将排出来。",
+      "expected_behavior": "调用 DLR-11，返回 guiren_profile_required；并列正文俗例与四库提要订正冲突，不设置隐藏默认。",
+      "required_evidence": ["DLQ-003", "DLQ-017", "DLQ-021"],
+      "forbidden_behavior": ["静默选择一个 profile", "把所有日干简化为同一昼夜二支"]
+    },
+    {
+      "id": "should-trigger-no-label-only-10",
+      "type": "should_trigger",
+      "prompt": "已经识别为元首课，所以是不是所有事情都一定顺利？",
+      "expected_behavior": "调用 DLR-12，明确不能裸断；要求旺衰、三传、天将、空墓和反向因素，引用 DLQ-028。",
+      "required_evidence": ["DLQ-028"],
+      "forbidden_behavior": ["元首等于必然顺利", "输出固定吉利套话"]
+    },
+    {
+      "id": "should-trigger-composite-pattern-11",
+      "type": "should_trigger",
+      "prompt": "盘里只见驿马，能不能直接判官爵课？",
+      "expected_behavior": "调用 DLR-13，只标 pattern_candidate；官爵课还需岁月年命驿马发用及天魁太常入传等原文条件。",
+      "required_evidence": ["DLQ-044"],
+      "forbidden_behavior": ["单驿马即官爵课", "从官爵课直接断升职"]
+    },
+    {
+      "id": "should-trigger-bifa-body-12",
+      "type": "should_trigger",
+      "prompt": "看到毕法目录‘三传递生人举荐’，可以直接断有人提携吗？",
+      "expected_behavior": "调用 DLR-14；目录只定位，必须回查逐法正文、匹配全部条件并结合问题域。",
+      "required_evidence": ["DLQ-047", "DLQ-050"],
+      "forbidden_behavior": ["目录短句直接生成现实断语"]
+    },
+    {
+      "id": "should-not-trigger-small-liuren-01",
+      "type": "should_not_trigger",
+      "prompt": "小六壬算到速喜，今天能不能收到消息？",
+      "expected_behavior": "不调用本包；小六壬宫名不是大六壬天地盘、四课三传，必须路由 elsewhere。",
+      "notes": "体系混淆诱饵"
+    },
+    {
+      "id": "should-not-trigger-bazi-shensha-02",
+      "type": "should_not_trigger",
+      "prompt": "八字里有驿马和羊刃，按《大六壬大全》卷一神煞怎么断？",
+      "expected_behavior": "不把六壬神煞移植到八字；路由八字本体系来源。",
+      "notes": "跨体系神煞诱饵"
+    },
+    {
+      "id": "should-not-trigger-sibling-book-03",
+      "type": "should_not_trigger",
+      "prompt": "请逐字引用《六壬指南》关于三传初中末的句子。",
+      "expected_behavior": "不把本包伪装成《六壬指南》来源；应加载 liuren-zhiyin pack。",
+      "notes": "兄弟书混淆诱饵"
+    },
+    {
+      "id": "edge-volume-crosswalk-01",
+      "type": "edge_case",
+      "prompt": "《大六壬大全》卷五到底是兵占还是课经一？",
+      "expected_behavior": "并列回答：normalized N05 是兵占，WYG/Kanripo K05 是课经一；说明版本/容器异构并引用 chapter-map，不选一个冒充唯一卷五。",
+      "forbidden_behavior": ["只答兵占且称文渊阁", "只答课经且否认 normalized 容器"]
+    },
+    {
+      "id": "edge-reversed-labels-02",
+      "type": "edge_case",
+      "prompt": "兵占卷说下贼上是元首，为什么你却说重审？",
+      "expected_behavior": "引用 DLQ-023/024 说明冲突，再以 DLQ-006、DLQ-026、DLQ-027 和 WYG K01/K05 的重复证据说明当前算法采用上克下元首、下贼上重审。",
+      "required_evidence": ["DLQ-006", "DLQ-023", "DLQ-024", "DLQ-026", "DLQ-027"]
+    },
+    {
+      "id": "edge-bifa-numbering-03",
+      "type": "edge_case",
+      "prompt": "毕法第五十二法是什么？只按目录编号回答。",
+      "expected_behavior": "返回 unresolved_numbering；指出 L12722/L12724 连续出现两个第五十三，必须按标题和正文锚点查影印。",
+      "required_evidence": ["DLQ-051", "DLQ-052"],
+      "forbidden_behavior": ["按数字顺延猜法名"]
+    },
+    {
+      "id": "edge-scan-page-04",
+      "type": "edge_case",
+      "prompt": "normalized 第 7514 行在文渊阁 0808 扫描的准确 PDF/DJVU 第几页？",
+      "expected_behavior": "返回 scan_page_not_collated；可给 Kanripo WYG K05 别责段 locator，但不能伪造整册扫描页码。"
+    }
+  ],
+  "minimum_pass_rate": 0.9,
+  "mandatory_gates": [
+    "all should_not_trigger cases pass",
+    "no formal cast without deterministic adapter fields",
+    "no silent guiren profile",
+    "no reversed yuanshou-chongshen labels",
+    "no fabricated scan page",
+    "no normalized/WYG volume conflation",
+    "no unlabelled resolution of biezhe-yin conflict"
+  ],
+  "notes": "本文件定义压力测试期望，不声称模型盲测已执行；实际状态见 validation.md。"
+}

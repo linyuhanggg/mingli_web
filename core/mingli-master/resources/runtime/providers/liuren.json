@@ -1,0 +1,377 @@
+{
+  "capability": {
+    "assumption_cost": 0,
+    "default_dimension_ids": [
+      "career",
+      "location",
+      "money",
+      "outcome",
+      "relationship",
+      "state",
+      "timing",
+      "work"
+    ],
+    "default_priority": 5,
+    "dimension_ids": [
+      "career",
+      "location",
+      "money",
+      "outcome",
+      "relationship",
+      "state",
+      "timing",
+      "work"
+    ],
+    "exact_horizon_ids": [],
+    "horizon_ids": [
+      "instant",
+      "day",
+      "month"
+    ],
+    "independent_lineage_id": "liuren",
+    "object_ids": [
+      "concrete_event"
+    ],
+    "required_input_groups": [
+      {
+        "any_of": [
+          "event_datetime_or_reference_datetime"
+        ]
+      },
+      {
+        "any_of": [
+          "timezone"
+        ]
+      }
+    ]
+  },
+  "claim_policy": {
+    "allowed_kind_ids": [
+      "kind.fact",
+      "kind.tendency"
+    ],
+    "certainty_ceiling_id": "certainty.tendency"
+  },
+  "display": {
+    "zh-CN": {
+      "description": "大六壬课式：依据事件时刻与坐标，输出三传/课象/类神等课结构事实。前提：必须提供 event_datetime_or_reference_datetime 与 timezone。边界：对象必须为具体事件（concrete_event）；不接受命盘/择日对象。与 qimen/meihua/liuyao 的选择依据：liuren 以课式起算、时间主导；qimen 以盘局起算、空间主导；meihua/liuyao 以卦象起算。同一事件问「应期/类神」选 liuren；问「方位/格局」选 qimen；问「成卦」选 meihua/liuyao。",
+      "name": "大六壬"
+    }
+  },
+  "entrypoint": "reading_engine.providers:LiurenProvider",
+  "evidence_profile_id": "liuren",
+  "id": "liuren",
+  "input_fields": {
+    "coordinate_accuracy_meters": {
+      "display": {
+        "zh-CN": "坐标精度(米)"
+      },
+      "request_slot": "metadata.coordinate_accuracy_meters",
+      "type": "number"
+    },
+    "coordinate_source": {
+      "display": {
+        "zh-CN": "坐标来源"
+      },
+      "request_slot": "metadata.coordinate_source",
+      "type": "string"
+    },
+    "event_datetime_or_reference_datetime": {
+      "display": {
+        "zh-CN": "事件时间或参考时间"
+      },
+      "request_slot": "event_datetime",
+      "type": "datetime"
+    },
+    "latitude": {
+      "display": {
+        "zh-CN": "纬度"
+      },
+      "request_slot": "metadata.latitude",
+      "type": "number"
+    },
+    "longitude": {
+      "display": {
+        "zh-CN": "经度"
+      },
+      "request_slot": "metadata.longitude",
+      "type": "number"
+    },
+    "time_basis_policy": {
+      "display": {
+        "zh-CN": "时间口径"
+      },
+      "request_slot": "metadata.time_basis_policy",
+      "type": "string"
+    },
+    "target_relative": {
+      "choices": [
+        {"display": {"zh-CN": "兄弟"}, "id": "兄弟"},
+        {"display": {"zh-CN": "子孙"}, "id": "子孙"},
+        {"display": {"zh-CN": "妻财"}, "id": "妻财"},
+        {"display": {"zh-CN": "官鬼"}, "id": "官鬼"},
+        {"display": {"zh-CN": "父母"}, "id": "父母"}
+      ],
+      "description": {
+        "zh-CN": "工作/事业问题需明确指定要观察的六亲类神；不填写时只输出结构事实，不激活事业专项规则。"
+      },
+      "display": {
+        "zh-CN": "工作/事业类神"
+      },
+      "request_slot": "metadata.target_relative",
+      "type": "string"
+    },
+    "timezone": {
+      "display": {
+        "zh-CN": "时区"
+      },
+      "request_slot": "timezone",
+      "type": "string"
+    },
+    "zi_hour_policy": {
+      "display": {
+        "zh-CN": "子时策略"
+      },
+      "request_slot": "metadata.zi_hour_policy",
+      "type": "string"
+    }
+  },
+  "runtime_capability": {
+    "assumption_cost": 0,
+    "default_priority": 5,
+    "dimensions": [
+      "career",
+      "location",
+      "money",
+      "outcome",
+      "relationship",
+      "state",
+      "timing",
+      "work"
+    ],
+    "exact_horizons": [],
+    "extension_output_bindings": [
+      {
+        "json_pointers": [
+          "/fact_extension/facts/dimension_facts"
+        ],
+        "name": "dimension_facts"
+      },
+      {
+        "json_pointers": [
+          "/fact_extension/facts/timing/candidates"
+        ],
+        "name": "timing_candidates"
+      }
+    ],
+    "extension_outputs": [
+      "dimension_facts",
+      "timing_candidates"
+    ],
+    "finding_bindings": [
+      {
+        "id": "dimension_facts",
+        "json_pointers": [
+          "/fact_extension/facts/dimension_facts"
+        ],
+        "kind_id": "finding.dimension_facts",
+        "support_fact_ids": [
+          "dimension_facts"
+        ]
+      },
+      {
+        "dimension_ids": [
+          "timing"
+        ],
+        "id": "timing",
+        "json_pointers": [
+          "/fact_extension/facts/timing"
+        ],
+        "kind_id": "finding.timing_candidates",
+        "support_fact_ids": [
+          "timing_candidates"
+        ]
+      }
+    ],
+    "horizons": [
+      "instant",
+      "day",
+      "month"
+    ],
+    "independent_lineage": "liuren",
+    "limit_bindings": [
+      {
+        "detail_ids": [
+          "unbounded_horizon_no_exact_date"
+        ],
+        "equals": "unbounded_horizon_no_exact_date",
+        "json_pointer": "/fact_extension/facts/timing/status",
+        "kind_id": "limit.horizon_boundary",
+        "scope_refs": [
+          "timing"
+        ]
+      }
+    ],
+    "mode": "calculation",
+    "objects": [
+      "concrete_event"
+    ],
+    "output_bindings": [
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/four_lessons"
+        ],
+        "name": "four_lessons"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/three_transmissions"
+        ],
+        "name": "three_transmissions"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/transmission_method"
+        ],
+        "name": "lesson_method"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/month_general"
+        ],
+        "name": "month_general"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/xunkong"
+        ],
+        "name": "xunkong"
+      }
+    ],
+    "outputs": [
+      "four_lessons",
+      "three_transmissions",
+      "lesson_method",
+      "month_general",
+      "xunkong"
+    ],
+    "required_inputs": [
+      "event_datetime_or_reference_datetime",
+      "timezone"
+    ],
+    "system": "liuren"
+  },
+  "schema_version": "provider-manifest-v1",
+  "terms": {
+    "career": {
+      "display": {
+        "zh-CN": "事业"
+      }
+    },
+    "certainty.tendency": {
+      "display": {
+        "zh-CN": "倾向性上限"
+      }
+    },
+    "concrete_event": {
+      "display": {
+        "zh-CN": "具体事项"
+      }
+    },
+    "day": {
+      "display": {
+        "zh-CN": "日"
+      }
+    },
+    "finding.dimension_facts": {
+      "display": {
+        "zh-CN": "维度解读材料"
+      }
+    },
+    "finding.timing_candidates": {
+      "display": {
+        "zh-CN": "时间候选材料"
+      }
+    },
+    "instant": {
+      "display": {
+        "zh-CN": "当下"
+      }
+    },
+    "kind.fact": {
+      "display": {
+        "zh-CN": "事实陈述"
+      }
+    },
+    "kind.tendency": {
+      "display": {
+        "zh-CN": "倾向判断"
+      }
+    },
+    "limit.horizon_boundary": {
+      "display": {
+        "zh-CN": "未给出可计算的日期范围，不能给出具体日期候选"
+      }
+    },
+    "limit.source_gap": {
+      "display": {
+        "zh-CN": "本轮没有命中可引用的古籍条文，只能基于确定性事实描述"
+      }
+    },
+    "location": {
+      "display": {
+        "zh-CN": "方位地点"
+      }
+    },
+    "money": {
+      "display": {
+        "zh-CN": "财务"
+      }
+    },
+    "month": {
+      "display": {
+        "zh-CN": "月"
+      }
+    },
+    "outcome": {
+      "display": {
+        "zh-CN": "结果成败"
+      }
+    },
+    "relationship": {
+      "display": {
+        "zh-CN": "人际感情"
+      }
+    },
+    "state": {
+      "display": {
+        "zh-CN": "当前状态"
+      }
+    },
+    "timing": {
+      "display": {
+        "zh-CN": "时机应期"
+      }
+    },
+    "work": {
+      "display": {
+        "zh-CN": "工作事务"
+      }
+    }
+  },
+  "time_semantics": {
+    "coordinates_required_policies": [
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "default_policy": "civil",
+    "input_time": "event_datetime",
+    "role": "pillar_clock",
+    "supported_policies": [
+      "civil",
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "unsupported_fallback": "need_input"
+  }
+}

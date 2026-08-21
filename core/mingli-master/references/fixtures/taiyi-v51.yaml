@@ -1,0 +1,76 @@
+schema_version: mingli-taiyi-fixtures-v1
+version: 1.0.0
+profile_id: taiyi-jinjing-annual-yang-board-v1
+source_table_sha256: a5ade0bfb7bcdf89aeb0862d5992fd6fb340d640ab1a593c6381cd480df5c393
+
+source_cycle_contract:
+  accumulated_years: [1, 360]
+  expected_bureaus: 72
+  expected_ji: 6
+  expected_zi_yuan: 5
+  expected_governance_states: [理天, 理地, 理人]
+  primary_source_rows: 72
+  source_anchor: references/fulltext/san-shi/taiyi-shenshu/fulltext.md#L493-L505
+
+epoch_cases:
+  - {id: tang-jiazi-anchor, lunar_year: 724, expected_accumulated_year: 1937281, expected_cycle_position: 121, expected_ji: 3, expected_zi_yuan: 2, expected_bureau: 49}
+  - {id: first-ce-year, lunar_year: 1, expected_accumulated_year: 1936558, expected_cycle_position: 118, expected_ji: 2, expected_zi_yuan: 2, expected_bureau: 46}
+  - {id: cycle-start-1900, lunar_year: 1900, expected_accumulated_year: 1938457, expected_cycle_position: 217, expected_ji: 4, expected_zi_yuan: 4, expected_bureau: 1}
+  - {id: modern-2024, lunar_year: 2024, expected_accumulated_year: 1938581, expected_cycle_position: 341, expected_ji: 6, expected_zi_yuan: 5, expected_bureau: 53}
+
+external_reference:
+  repository: https://github.com/kentang2017/kintaiyi
+  commit: 68892c6bfe3a9635ff4a19a5f14559fff1adf4ab
+  license: MIT
+  canonical_cases_sha256: 15051753ab6a63e7656e0665f853e4b501376ff91233eb4100855ef5eb113c6d
+  role: frozen engineering comparison, not classical authority
+  known_excluded_primary_differences: [30, 44, 66]
+
+external_reference_cases:
+  - {id: kintaiyi-1900, lunar_year: 1900, bureau: 1, expected: {taiyi: 乾, tianmu: 武德, tianmu_position: 申, host_count: 7, host_general: 7, host_assistant: 1, shiji: 坤, guest_count: 13, guest_general: 3, guest_assistant: 9, jishen: 寅}}
+  - {id: kintaiyi-1901, lunar_year: 1901, bureau: 2, expected: {taiyi: 乾, tianmu: 太簇, tianmu_position: 酉, host_count: 6, host_general: 6, host_assistant: 8, shiji: 戌, guest_count: 1, guest_general: 1, guest_assistant: 3, jishen: 丑}}
+  - {id: kintaiyi-1902, lunar_year: 1902, bureau: 3, expected: {taiyi: 乾, tianmu: 陰主, tianmu_position: 戌, host_count: 1, host_general: 1, host_assistant: 3, shiji: 亥, guest_count: 40, guest_general: 4, guest_assistant: 2, jishen: 子}}
+  - {id: kintaiyi-1903, lunar_year: 1903, bureau: 4, expected: {taiyi: 午, tianmu: 陰德, tianmu_position: 乾, host_count: 25, host_general: 5, host_assistant: 5, shiji: 丑, guest_count: 17, guest_general: 7, guest_assistant: 1, jishen: 亥}}
+  - {id: kintaiyi-1904, lunar_year: 1904, bureau: 5, expected: {taiyi: 午, tianmu: 陰德, tianmu_position: 乾, host_count: 25, host_general: 5, host_assistant: 5, shiji: 寅, guest_count: 14, guest_general: 4, guest_assistant: 2, jishen: 戌}}
+  - {id: kintaiyi-1905, lunar_year: 1905, bureau: 6, expected: {taiyi: 午, tianmu: 大義, tianmu_position: 亥, host_count: 25, host_general: 5, host_assistant: 5, shiji: 辰, guest_count: 10, guest_general: 1, guest_assistant: 3, jishen: 酉}}
+  - {id: kintaiyi-1906, lunar_year: 1906, bureau: 7, expected: {taiyi: 艮, tianmu: 地主, tianmu_position: 子, host_count: 8, host_general: 8, host_assistant: 4, shiji: 巳, guest_count: 25, guest_general: 5, guest_assistant: 5, jishen: 申}}
+  - {id: kintaiyi-1907, lunar_year: 1907, bureau: 8, expected: {taiyi: 艮, tianmu: 陽德, tianmu_position: 丑, host_count: 1, host_general: 1, host_assistant: 3, shiji: 坤, guest_count: 22, guest_general: 2, guest_assistant: 6, jishen: 未}}
+  - {id: kintaiyi-1908, lunar_year: 1908, bureau: 9, expected: {taiyi: 艮, tianmu: 和德, tianmu_position: 艮, host_count: 3, host_general: 3, host_assistant: 9, shiji: 酉, guest_count: 15, guest_general: 5, guest_assistant: 5, jishen: 午}}
+  - {id: kintaiyi-1909, lunar_year: 1909, bureau: 10, expected: {taiyi: 卯, tianmu: 呂申, tianmu_position: 寅, host_count: 1, host_general: 1, host_assistant: 3, shiji: 乾, guest_count: 12, guest_general: 2, guest_assistant: 6, jishen: 巳}}
+  - {id: kintaiyi-1910, lunar_year: 1910, bureau: 11, expected: {taiyi: 卯, tianmu: 高叢, tianmu_position: 卯, host_count: 4, host_general: 4, host_assistant: 2, shiji: 丑, guest_count: 4, guest_general: 4, guest_assistant: 2, jishen: 辰}}
+  - {id: kintaiyi-1911, lunar_year: 1911, bureau: 12, expected: {taiyi: 卯, tianmu: 太陽, tianmu_position: 辰, host_count: 37, host_general: 7, host_assistant: 1, shiji: 寅, guest_count: 1, guest_general: 1, guest_assistant: 3, jishen: 卯}}
+  - {id: kintaiyi-1912, lunar_year: 1912, bureau: 13, expected: {taiyi: 酉, tianmu: 大炅, tianmu_position: 巽, host_count: 18, host_general: 8, host_assistant: 4, shiji: 辰, guest_count: 19, guest_general: 9, guest_assistant: 7, jishen: 寅}}
+  - {id: kintaiyi-1913, lunar_year: 1913, bureau: 14, expected: {taiyi: 酉, tianmu: 大神, tianmu_position: 巳, host_count: 10, host_general: 1, host_assistant: 3, shiji: 午, guest_count: 9, guest_general: 9, guest_assistant: 7, jishen: 丑}}
+  - {id: kintaiyi-1914, lunar_year: 1914, bureau: 15, expected: {taiyi: 酉, tianmu: 大威, tianmu_position: 午, host_count: 9, host_general: 9, host_assistant: 7, shiji: 坤, guest_count: 7, guest_general: 7, guest_assistant: 1, jishen: 子}}
+  - {id: kintaiyi-1915, lunar_year: 1915, bureau: 16, expected: {taiyi: 坤, tianmu: 天道, tianmu_position: 未, host_count: 1, host_general: 1, host_assistant: 3, shiji: 酉, guest_count: 33, guest_general: 3, guest_assistant: 9, jishen: 亥}}
+  - {id: kintaiyi-1916, lunar_year: 1916, bureau: 17, expected: {taiyi: 坤, tianmu: 大武, tianmu_position: 坤, host_count: 7, host_general: 7, host_assistant: 1, shiji: 亥, guest_count: 27, guest_general: 7, guest_assistant: 1, jishen: 戌}}
+  - {id: kintaiyi-1917, lunar_year: 1917, bureau: 18, expected: {taiyi: 坤, tianmu: 大武, tianmu_position: 坤, host_count: 7, host_general: 7, host_assistant: 1, shiji: 子, guest_count: 26, guest_general: 6, guest_assistant: 8, jishen: 酉}}
+  - {id: kintaiyi-1918, lunar_year: 1918, bureau: 19, expected: {taiyi: 子, tianmu: 武德, tianmu_position: 申, host_count: 8, host_general: 8, host_assistant: 4, shiji: 艮, guest_count: 32, guest_general: 2, guest_assistant: 6, jishen: 申}}
+  - {id: kintaiyi-1919, lunar_year: 1919, bureau: 20, expected: {taiyi: 子, tianmu: 太簇, tianmu_position: 酉, host_count: 7, host_general: 7, host_assistant: 1, shiji: 辰, guest_count: 26, guest_general: 6, guest_assistant: 8, jishen: 未}}
+  - {id: kintaiyi-1920, lunar_year: 1920, bureau: 21, expected: {taiyi: 子, tianmu: 陰主, tianmu_position: 戌, host_count: 2, host_general: 2, host_assistant: 6, shiji: 巳, guest_count: 17, guest_general: 7, guest_assistant: 1, jishen: 午}}
+  - {id: kintaiyi-1921, lunar_year: 1921, bureau: 22, expected: {taiyi: 巽, tianmu: 陰德, tianmu_position: 乾, host_count: 16, host_general: 6, host_assistant: 8, shiji: 未, guest_count: 30, guest_general: 3, guest_assistant: 9, jishen: 巳}}
+  - {id: kintaiyi-1922, lunar_year: 1922, bureau: 23, expected: {taiyi: 巽, tianmu: 陰德, tianmu_position: 乾, host_count: 16, host_general: 6, host_assistant: 8, shiji: 申, guest_count: 23, guest_general: 3, guest_assistant: 9, jishen: 辰}}
+  - {id: kintaiyi-1923, lunar_year: 1923, bureau: 24, expected: {taiyi: 巽, tianmu: 大義, tianmu_position: 亥, host_count: 16, host_general: 6, host_assistant: 8, shiji: 戌, guest_count: 17, guest_general: 7, guest_assistant: 1, jishen: 卯}}
+  - {id: kintaiyi-1924, lunar_year: 1924, bureau: 25, expected: {taiyi: 乾, tianmu: 地主, tianmu_position: 子, host_count: 39, host_general: 9, host_assistant: 7, shiji: 亥, guest_count: 40, guest_general: 4, guest_assistant: 2, jishen: 寅}}
+  - {id: kintaiyi-1925, lunar_year: 1925, bureau: 26, expected: {taiyi: 乾, tianmu: 陽德, tianmu_position: 丑, host_count: 32, host_general: 2, host_assistant: 6, shiji: 艮, guest_count: 31, guest_general: 1, guest_assistant: 3, jishen: 丑}}
+  - {id: kintaiyi-1926, lunar_year: 1926, bureau: 27, expected: {taiyi: 乾, tianmu: 和德, tianmu_position: 艮, host_count: 31, host_general: 1, host_assistant: 3, shiji: 卯, guest_count: 28, guest_general: 8, guest_assistant: 4, jishen: 子}}
+  - {id: kintaiyi-1927, lunar_year: 1927, bureau: 28, expected: {taiyi: 午, tianmu: 呂申, tianmu_position: 寅, host_count: 14, host_general: 4, host_assistant: 2, shiji: 巽, guest_count: 9, guest_general: 9, guest_assistant: 7, jishen: 亥}}
+  - {id: kintaiyi-1928, lunar_year: 1928, bureau: 29, expected: {taiyi: 午, tianmu: 高叢, tianmu_position: 卯, host_count: 13, host_general: 3, host_assistant: 9, shiji: 未, guest_count: 39, guest_general: 9, guest_assistant: 7, jishen: 戌}}
+  - {id: kintaiyi-1930, lunar_year: 1930, bureau: 31, expected: {taiyi: 艮, tianmu: 大炅, tianmu_position: 巽, host_count: 33, host_general: 3, host_assistant: 9, shiji: 戌, guest_count: 10, guest_general: 1, guest_assistant: 3, jishen: 申}}
+
+known_comparator_difference_cases:
+  - {bureau: 30, field: shiji, primary_expected: 申, comparator_value: 丑, source_anchor: L499}
+  - {bureau: 44, field: host_count, primary_expected: 33, comparator_value: 23, source_anchor: L500}
+  - {bureau: 66, field: shiji, primary_expected: 申, comparator_value: 丑, source_anchor: L504}
+
+calendar_boundary_cases:
+  - {id: before-lunar-new-year, category: lunar_year_boundary, datetime: "2024-02-09T23:59:59", timezone: Asia/Shanghai, location: 上海, expected_lunar_year: 2023, expected_bureau: 52}
+  - {id: at-lunar-new-year, category: lunar_year_boundary, datetime: "2024-02-10T00:00:00", timezone: Asia/Shanghai, location: 上海, expected_lunar_year: 2024, expected_bureau: 53}
+  - {id: before-li-chun, category: solar_term_boundary_no_board_change, datetime: "2024-02-04T16:26:53", timezone: Asia/Shanghai, location: 上海, expected_lunar_year: 2023, expected_bureau: 52}
+  - {id: after-li-chun, category: solar_term_boundary_no_board_change, datetime: "2024-02-04T16:26:54", timezone: Asia/Shanghai, location: 上海, expected_lunar_year: 2023, expected_bureau: 52}
+  - {id: before-midnight, category: day_rollover_no_board_change, datetime: "2024-06-20T23:59:59", timezone: Asia/Shanghai, location: 上海, expected_lunar_year: 2024, expected_bureau: 53}
+  - {id: at-midnight, category: day_rollover_no_board_change, datetime: "2024-06-21T00:00:00", timezone: Asia/Shanghai, location: 上海, expected_lunar_year: 2024, expected_bureau: 53}
+  - {id: leap-second-month, category: leap_month_no_board_change, datetime: "2023-03-22T12:00:00", timezone: Asia/Shanghai, location: 上海, expected_lunar_year: 2023, expected_lunar_month: 2, expected_leap: true, expected_bureau: 52}
+  - {id: regular-third-month, category: post_leap_month_no_board_change, datetime: "2023-04-20T12:00:00", timezone: Asia/Shanghai, location: 上海, expected_lunar_year: 2023, expected_lunar_month: 3, expected_leap: false, expected_bureau: 52}
+  - {id: before-winter-solstice, category: solar_term_boundary_no_board_change, datetime: "2024-12-21T17:20:00", timezone: Asia/Shanghai, location: 上海, expected_lunar_year: 2024, expected_bureau: 53}
+  - {id: after-winter-solstice, category: solar_term_boundary_no_board_change, datetime: "2024-12-21T17:21:00", timezone: Asia/Shanghai, location: 上海, expected_lunar_year: 2024, expected_bureau: 53}

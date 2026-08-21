@@ -150,6 +150,8 @@ def test_time_check_projects_and_validates_exactly_twelve_candidate_facts() -> N
     assert tuple(item.hour_branch for item in view_model.candidates) == HOUR_BRANCHES
     assert view_model.ranking_status == "not_ranked"
     assert view_model.event_matching_status == "not_calculated"
+    assert view_model.rectification_status is None
+    assert view_model.rectification_conclusion is None
 
     view_schema = json.loads(VIEW_SCHEMA_PATH.read_text(encoding="utf-8"))
     Draft202012Validator.check_schema(view_schema)
@@ -162,6 +164,41 @@ def test_time_check_projects_and_validates_exactly_twelve_candidate_facts() -> N
     ]["oneOf"]
 
 
+def _rectification_facts(
+    *,
+    status: str,
+    selected_candidate_id: str | None,
+    remaining_candidate_ids: list[str],
+    basis: str,
+    extra: dict[str, object] | None = None,
+) -> list[dict[str, object]]:
+    conclusion: dict[str, object] = {
+        "status": status,
+        "selected_candidate_id": selected_candidate_id,
+        "remaining_candidate_ids": remaining_candidate_ids,
+        "basis": basis,
+        "rule_ids": ["bazi/sanming-tonghui#R-02-06"],
+    }
+    if extra:
+        conclusion.update(extra)
+    return [
+        {
+            "ref": "fact:/calculated/time-check/rectification_status",
+            "subject_ref": "profile-version:time-check-fixture",
+            "kind_id": "kind.fact",
+            "value": status,
+            "display_text": "rectification_status",
+        },
+        {
+            "ref": "fact:/calculated/time-check/rectification_conclusion",
+            "subject_ref": "profile-version:time-check-fixture",
+            "kind_id": "kind.fact",
+            "value": conclusion,
+            "display_text": "rectification_conclusion",
+        },
+    ]
+
+
 def test_time_check_projects_typed_event_evidence() -> None:
     view_model = project_time_check_view_model(_ranked_brief())
 
@@ -171,6 +208,8 @@ def test_time_check_projects_typed_event_evidence() -> None:
     assert evidence.relations[0].natal_position == "day"
     assert evidence.relations[0].relation_type == "六合"
     assert evidence.reasons == ("positive_branch_relation",)
+    assert view_model.rectification_status is None
+    assert view_model.rectification_conclusion is None
 
 
 def test_time_check_rejects_malformed_typed_event_evidence() -> None:
@@ -194,6 +233,58 @@ def test_time_check_rejects_non_object_ranking_rows_instead_of_dropping_them() -
     )
     ranking_fact["value"].append("not-an-evidence-object")
     assert project_time_check_view_model(malformed) is None
+
+
+def test_time_check_projects_rectification_conclusion_without_outcome() -> None:
+    brief = deepcopy(_brief())
+    brief["facts"].extend(
+        _rectification_facts(
+            status="hour_determined",
+            selected_candidate_id="candidate-04",
+            remaining_candidate_ids=["candidate-04"],
+            basis="known_time_range_unique",
+        )
+    )
+    view_model = project_time_check_view_model(brief)
+
+    assert isinstance(view_model, TimeCheckViewV1)
+    assert view_model.rectification_status == "hour_determined"
+    assert view_model.rectification_conclusion is not None
+    assert view_model.rectification_conclusion.selected_candidate_id == "candidate-04"
+    assert view_model.rectification_conclusion.basis == "known_time_range_unique"
+    dumped = view_model.model_dump(mode="json")
+    assert "outcome" not in dumped
+    assert "verdict" not in dumped
+    assert "outcome" not in dumped["rectification_conclusion"]
+    assert "verdict" not in dumped["rectification_conclusion"]
+    view_schema = json.loads(VIEW_SCHEMA_PATH.read_text(encoding="utf-8"))
+    Draft202012Validator(view_schema).validate(dumped)
+
+
+def test_time_check_rejects_rectification_outcome_or_unpaired_facts() -> None:
+    with_outcome = deepcopy(_brief())
+    with_outcome["facts"].extend(
+        _rectification_facts(
+            status="hour_determined",
+            selected_candidate_id="candidate-04",
+            remaining_candidate_ids=["candidate-04"],
+            basis="known_time_range_unique",
+            extra={"outcome": "吉"},
+        )
+    )
+    assert project_time_check_view_model(with_outcome) is None
+
+    unpaired = deepcopy(_brief())
+    unpaired["facts"].append(
+        {
+            "ref": "fact:/calculated/time-check/rectification_status",
+            "subject_ref": "profile-version:time-check-fixture",
+            "kind_id": "kind.fact",
+            "value": "hour_determined",
+            "display_text": "rectification_status",
+        }
+    )
+    assert project_time_check_view_model(unpaired) is None
 
 
 def test_time_check_rejects_malformed_candidates_and_missing_required_facts() -> None:

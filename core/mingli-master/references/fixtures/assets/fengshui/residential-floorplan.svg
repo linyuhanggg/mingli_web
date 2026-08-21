@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
+  <rect width="640" height="480" fill="#f7f3ea"/>
+  <path d="M80 60H560V420H80ZM320 60V420M80 240H560" fill="none" stroke="#263238" stroke-width="10"/>
+  <path d="M292 420H348" stroke="#f7f3ea" stroke-width="14"/>
+  <path d="M320 240V295" stroke="#f7f3ea" stroke-width="14"/>
+  <text x="275" y="458" font-family="sans-serif" font-size="22">ENTRY S</text>
+</svg>

@@ -1,0 +1,177 @@
+schema_version: mingli-liuyao-jingfang-tables-v1
+profile_id: jingfang-eight-palace-najia-v1
+version: 1.0.0
+line_order: bottom_up
+status: source_transcribed_and_independently_enumerated
+source:
+  title: 卜筮正宗
+  normalized_sha256: 651efe70d1bce36d1a18e9bf680a912ae3f556f2e66b16c137cd6efbfc9cb491
+  anchors:
+    casting: BSZZ-0123 through BSZZ-0134
+    eight_palaces: BSZZ-0135 through BSZZ-0207
+    najia: BSZZ-0214 through BSZZ-0231
+    shi_ying_and_six_spirits: BSZZ-0232 through BSZZ-0236
+    xunkong_and_month_break: BSZZ-0368 through BSZZ-0378
+    hidden_lines: BSZZ-0379 onward, eight-palace flying/hidden examples
+    advance_retreat: BSZZ-1011 through BSZZ-1012
+
+line_states:
+  6: {name: 老阴, main: 0, changed: 1, moving: true}
+  7: {name: 少阳, main: 1, changed: 1, moving: false}
+  8: {name: 少阴, main: 0, changed: 0, moving: false}
+  9: {name: 老阳, main: 1, changed: 0, moving: true}
+
+trigrams:
+  乾: {bits_bottom_up: '111', element: 金, inner_stem: 甲, inner_branches: [子, 寅, 辰], outer_stem: 壬, outer_branches: [午, 申, 戌]}
+  兑: {bits_bottom_up: '110', element: 金, inner_stem: 丁, inner_branches: [巳, 卯, 丑], outer_stem: 丁, outer_branches: [亥, 酉, 未]}
+  离: {bits_bottom_up: '101', element: 火, inner_stem: 己, inner_branches: [卯, 丑, 亥], outer_stem: 己, outer_branches: [酉, 未, 巳]}
+  震: {bits_bottom_up: '100', element: 木, inner_stem: 庚, inner_branches: [子, 寅, 辰], outer_stem: 庚, outer_branches: [午, 申, 戌]}
+  巽: {bits_bottom_up: '011', element: 木, inner_stem: 辛, inner_branches: [丑, 亥, 酉], outer_stem: 辛, outer_branches: [未, 巳, 卯]}
+  坎: {bits_bottom_up: '010', element: 水, inner_stem: 戊, inner_branches: [寅, 辰, 午], outer_stem: 戊, outer_branches: [申, 戌, 子]}
+  艮: {bits_bottom_up: '001', element: 土, inner_stem: 丙, inner_branches: [辰, 午, 申], outer_stem: 丙, outer_branches: [戌, 子, 寅]}
+  坤: {bits_bottom_up: '000', element: 土, inner_stem: 乙, inner_branches: [未, 巳, 卯], outer_stem: 癸, outer_branches: [丑, 亥, 酉]}
+
+palace_stages:
+  - {id: pure, change_pattern: [], shi_line: 6, ying_line: 3}
+  - {id: first, change_pattern: [1], shi_line: 1, ying_line: 4}
+  - {id: second, change_pattern: [1, 2], shi_line: 2, ying_line: 5}
+  - {id: third, change_pattern: [1, 2, 3], shi_line: 3, ying_line: 6}
+  - {id: fourth, change_pattern: [1, 2, 3, 4], shi_line: 4, ying_line: 1}
+  - {id: fifth, change_pattern: [1, 2, 3, 4, 5], shi_line: 5, ying_line: 2}
+  - {id: wandering_soul, change_pattern: [1, 2, 3, 5], shi_line: 4, ying_line: 1}
+  - {id: returning_soul, change_pattern: [5], shi_line: 3, ying_line: 6}
+
+palace_formula:
+  generation_names: [八纯, 一世, 二世, 三世, 四世, 五世, 游魂, 归魂]
+  shi_lines: [6, 1, 2, 3, 4, 5, 4, 3]
+  ying_lines: [3, 4, 5, 6, 1, 2, 1, 6]
+  note: each palace row applies palace_stages to the pure trigram from bottom to top
+
+palaces:
+  乾: {element: 金, names: [乾为天, 天风姤, 天山遯, 天地否, 风地观, 山地剥, 火地晋, 火天大有]}
+  兑: {element: 金, names: [兑为泽, 泽水困, 泽地萃, 泽山咸, 水山蹇, 地山谦, 雷山小过, 雷泽归妹]}
+  离: {element: 火, names: [离为火, 火山旅, 火风鼎, 火水未济, 山水蒙, 风水涣, 天水讼, 天火同人]}
+  震: {element: 木, names: [震为雷, 雷地豫, 雷水解, 雷风恒, 地风升, 水风井, 泽风大过, 泽雷随]}
+  巽: {element: 木, names: [巽为风, 风天小畜, 风火家人, 风雷益, 天雷无妄, 火雷噬嗑, 山雷颐, 山风蛊]}
+  坎: {element: 水, names: [坎为水, 水泽节, 水雷屯, 水火既济, 泽火革, 雷火丰, 地火明夷, 地水师]}
+  艮: {element: 土, names: [艮为山, 山火贲, 山天大畜, 山泽损, 火泽睽, 天泽履, 风泽中孚, 风山渐]}
+  坤: {element: 土, names: [坤为地, 地雷复, 地泽临, 地天泰, 雷天大壮, 泽天夬, 水天需, 水地比]}
+
+king_wen_numbers:
+  乾为天: 1
+  坤为地: 2
+  水雷屯: 3
+  山水蒙: 4
+  水天需: 5
+  天水讼: 6
+  地水师: 7
+  水地比: 8
+  风天小畜: 9
+  天泽履: 10
+  地天泰: 11
+  天地否: 12
+  天火同人: 13
+  火天大有: 14
+  地山谦: 15
+  雷地豫: 16
+  泽雷随: 17
+  山风蛊: 18
+  地泽临: 19
+  风地观: 20
+  火雷噬嗑: 21
+  山火贲: 22
+  山地剥: 23
+  地雷复: 24
+  天雷无妄: 25
+  山天大畜: 26
+  山雷颐: 27
+  泽风大过: 28
+  坎为水: 29
+  离为火: 30
+  泽山咸: 31
+  雷风恒: 32
+  天山遯: 33
+  雷天大壮: 34
+  火地晋: 35
+  地火明夷: 36
+  风火家人: 37
+  火泽睽: 38
+  水山蹇: 39
+  雷水解: 40
+  山泽损: 41
+  风雷益: 42
+  泽天夬: 43
+  天风姤: 44
+  泽地萃: 45
+  地风升: 46
+  泽水困: 47
+  水风井: 48
+  泽火革: 49
+  火风鼎: 50
+  震为雷: 51
+  艮为山: 52
+  风山渐: 53
+  雷泽归妹: 54
+  雷火丰: 55
+  火山旅: 56
+  巽为风: 57
+  兑为泽: 58
+  风水涣: 59
+  水泽节: 60
+  风泽中孚: 61
+  雷山小过: 62
+  水火既济: 63
+  火水未济: 64
+
+branch_elements: {子: 水, 丑: 土, 寅: 木, 卯: 木, 辰: 土, 巳: 火, 午: 火, 未: 土, 申: 金, 酉: 金, 戌: 土, 亥: 水}
+branch_clashes: {子: 午, 丑: 未, 寅: 申, 卯: 酉, 辰: 戌, 巳: 亥, 午: 子, 未: 丑, 申: 寅, 酉: 卯, 戌: 辰, 亥: 巳}
+branch_combinations: {子: 丑, 丑: 子, 寅: 亥, 卯: 戌, 辰: 酉, 巳: 申, 午: 未, 未: 午, 申: 巳, 酉: 辰, 戌: 卯, 亥: 寅}
+branch_relations:
+  clashes: {子: 午, 丑: 未, 寅: 申, 卯: 酉, 辰: 戌, 巳: 亥, 午: 子, 未: 丑, 申: 寅, 酉: 卯, 戌: 辰, 亥: 巳}
+  combinations: {子: 丑, 丑: 子, 寅: 亥, 卯: 戌, 辰: 酉, 巳: 申, 午: 未, 未: 午, 申: 巳, 酉: 辰, 戌: 卯, 亥: 寅}
+  trines: [[申, 子, 辰], [巳, 酉, 丑], [寅, 午, 戌], [亥, 卯, 未]]
+branch_trines: {申子辰: 水, 巳酉丑: 金, 寅午戌: 火, 亥卯未: 木}
+five_element_relations:
+  generates: {木: 火, 火: 土, 土: 金, 金: 水, 水: 木}
+  controls: {木: 土, 土: 水, 水: 火, 火: 金, 金: 木}
+  six_relatives:
+    same_as_palace: 兄弟
+    palace_generates_line: 子孙
+    line_generates_palace: 父母
+    palace_controls_line: 妻财
+    line_controls_palace: 官鬼
+xunkong:
+  甲子: [戌, 亥]
+  甲戌: [申, 酉]
+  甲申: [午, 未]
+  甲午: [辰, 巳]
+  甲辰: [寅, 卯]
+  甲寅: [子, 丑]
+six_spirit_start:
+  甲: 青龙
+  乙: 青龙
+  丙: 朱雀
+  丁: 朱雀
+  戊: 勾陈
+  己: 螣蛇
+  庚: 白虎
+  辛: 白虎
+  壬: 玄武
+  癸: 玄武
+six_spirit_cycle: [青龙, 朱雀, 勾陈, 螣蛇, 白虎, 玄武]
+six_spirits:
+  start_by_day_stem: {甲: 青龙, 乙: 青龙, 丙: 朱雀, 丁: 朱雀, 戊: 勾陈, 己: 螣蛇, 庚: 白虎, 辛: 白虎, 壬: 玄武, 癸: 玄武}
+  bottom_up_cycle: [青龙, 朱雀, 勾陈, 螣蛇, 白虎, 玄武]
+advance_pairs: [亥子, 丑辰, 寅卯, 辰未, 巳午, 未戌, 申酉, 戌丑]
+retreat_pairs: [子亥, 戌未, 酉申, 未辰, 午巳, 辰丑, 卯寅, 丑戌]
+fact_boundaries:
+  useful_spirit_selection: evidence_bound_adjudication
+  calculated_candidate_pool: visible_changed-moving_and_source-derived-hidden_six-relative-positions
+  query_word_matching: forbidden
+  six_spirits_are_verdicts: false
+  rules:
+    - six relatives are calculated against the main hexagram palace element
+    - changed-line Najia comes from the changed trigram but remains compared with its original moving line
+    - a hidden line is emitted only for a six-relative category absent from both the visible main plate and changed moving lines, then is taken from the pure palace plate
+    - month break is exact branch opposition to the shared calendar month command
+    - useful-spirit rows are candidates; final selection remains evidence-bound adjudication

@@ -1,0 +1,223 @@
+backlog:
+  id: shensha-distillation-backlog
+  version: v0.1
+  generated_at: "2026-07-05"
+  source_status: promoted_from_qoder_followup_and_current_D2_catalog
+  purpose: "Actionable backlog for shensha-related second-pass distillation, source refinement, and acquisition boundaries."
+  references:
+    source_book_matrix: references/matrices/shensha-source-book-matrix.yaml
+    name_disambiguation: references/matrices/shensha-name-disambiguation.yaml
+    entry_source_profile: references/matrices/shensha-entry-source-profile.yaml
+    quote_trace: references/matrices/shensha-quote-trace.yaml
+    bazi_core_stack: references/matrices/bazi-core-decision-stack.yaml
+    ss_b1_refinement: references/matrices/shensha-ss-b1-refinement.yaml
+    ss_b2_refinement: references/matrices/shensha-ss-b2-selection-refinement.yaml
+    ss_b3_refinement: references/matrices/shensha-ss-b3-liuren-refinement.yaml
+    ss_b4_refinement: references/matrices/shensha-ss-b4-ziwei-xingming-refinement.yaml
+    ss_b5_refinement: references/matrices/shensha-ss-b5-yangzhai-refinement.yaml
+    ss_b6_ocr_plan: references/matrices/shensha-ss-b6-minghai-ocr-plan.yaml
+    ss_b10_bibliography_plan: references/matrices/shensha-ss-b10-bibliography-plan.yaml
+  policy:
+    shensha_not_independent_oracle: true
+    ready_pack_required_for_rule_refinement: true
+    acquisition_only_not_for_interpretation: true
+    keep_fact_layer_before_application: true
+    no_cross_system_merge: true
+    keep_shensha_below_core_bazi_stack: true
+  batches:
+    - id: SS-B1
+      priority: P0
+      status: refined_v0.1
+      title: 八字/禄命高频神煞二次精修
+      systems: [bazi, luming-nayin]
+      source_packs:
+        - bazi/sanming-tonghui
+        - luming-nayin/wuxing-jingji
+        - luming-nayin/li-xuzhong-mingshu
+        - luming-nayin/luoluzi-sanming
+        - luming-nayin/yuzhao-shenying
+      target_entries:
+        - shensha-tianyi-guiren
+        - shensha-jinyu
+        - shensha-lushen-lucun
+        - shensha-yima-tianma
+        - shensha-xianchi-taohua
+        - shensha-kongwang
+        - shensha-luowang
+        - shensha-fuyin-fanyin
+        - shensha-baihu
+        - shensha-sangmen-diaoke
+      outputs:
+        - refinement_matrix: references/matrices/shensha-ss-b1-refinement.yaml
+        - update: references/matrices/shensha-entry-source-profile.yaml
+        - update: references/matrices/shensha-quote-trace.yaml
+        - maybe_update_pack_quote_index: true
+      acceptance:
+        - each_entry_has_book_priority_and_source_pack_role
+        - relevant_system_traces_are_first_line_quote_index_hit_or_explicit_needs_second_pass
+        - bazi_usage_remains_auxiliary_below_month_command_strength_tiaohou_tengods_luck
+    - id: SS-B2
+      priority: P0
+      status: refined_v0.1
+      title: 官方择日神煞起例与裁判
+      systems: [selection]
+      source_packs:
+        - selection/xingli-kaoyuan
+        - selection/xieji-bianfang-shu
+      support_packs:
+        - selection/yuqia-ji
+        - selection/donggong-zeri
+      outputs:
+        - refinement_matrix: references/matrices/shensha-ss-b2-selection-refinement.yaml
+        - strengthen_selection_fact_layer_fields
+        - preserve_origin_vs_adjudication_vs_folk_comparison
+      acceptance:
+        - selection_fact_layer_profile_loaded_before_judgment
+        - no_date_selected_from_single_shensha_or_huanghei_or_jianchu
+        - folk_almanac_sources_marked_comparison_only
+    - id: SS-B3
+      priority: P1
+      status: refined_v0.1
+      title: 六壬课内神煞与天将边界
+      systems: [san-shi/liuren]
+      source_packs:
+        - san-shi/daliuren-daquan
+        - san-shi/liuren-zhiyin
+        - san-shi/liuren-miben
+      outputs:
+        - refinement_matrix: references/matrices/shensha-ss-b3-liuren-refinement.yaml
+        - liuren_shensha_non_portability_tests
+        - source_profile_updates
+        - strengthen_liuren_fact_layer_and_gate_checks
+      acceptance:
+        - requires_four_lessons_three_transmissions_heavenly_generals_month_general_day_hour
+        - liuren_terms_not_merged_into_bazi_ziwei_selection
+    - id: SS-B4
+      priority: P1
+      status: refined_v0.1
+      title: 紫微/星命同名神煞消歧
+      systems: [ziwei, xingming]
+      source_packs:
+        - ziwei/ziwei-doushu-quanshu
+        - ziwei/taiwei-fu
+        - ziwei/feixing-ziwei-doushu-yuanzhi
+        - xingming/guotian-jing
+      outputs:
+        - refinement_matrix: references/matrices/shensha-ss-b4-ziwei-xingming-refinement.yaml
+        - star_minor_star_flowing_sha_boundaries
+        - xingming_adapter_requirement_notes
+        - ziwei_xingming_non_portability_tests
+      acceptance:
+        - yangren_qingyang_yima_tianma_taohua_xianchi_lu_lucun_hualu_not_merged
+        - xingming_requires_astronomical_adapter
+        - feixing_pack_kept_annotation_layer
+    - id: SS-B5
+      priority: P1
+      status: refined_v0.1
+      title: 阳宅/八宅游年九星与命盘神煞隔离
+      systems: [fengshui/yangzhai]
+      source_packs:
+        - fengshui/yangzhai-shishu
+        - fengshui/yangzhai-sanyao
+      outputs:
+        - refinement_matrix: references/matrices/shensha-ss-b5-yangzhai-refinement.yaml
+        - bazhai_younian_nine_stars_boundary
+        - yangzhai_fact_layer_requirements
+        - yangzhai_non_portability_tests
+      acceptance:
+        - requires_facing_house_gua_ming_gua_or_door_stove_bed_facts
+        - yangzhai_tianyi_wugui_liusha_jueming_not_added_to_bazi_inventory
+    - id: SS-B6
+      priority: P2
+      status: ocr_pipeline_initialized_v0.3
+      title: 星平会海/命海全编 OCR 校勘
+      systems: [xingming]
+      source_packs: []
+      source_leads:
+        - xingming/minghai-quanbian
+      source_status: image_only
+      distillation_allowed: false
+      outputs:
+        - ocr_plan: references/matrices/shensha-ss-b6-minghai-ocr-plan.yaml
+        - human_plan: references/matrices/shensha-ss-b6-minghai-ocr-plan.md
+      review_page_stubs:
+        batch: "review_batch_001+review_batch_002+review_batch_003"
+        pages: "013-026"
+        count: 14
+        status: all_in_review_not_reviewed
+        batches:
+          - id: review_batch_001
+            pages: "013-024"
+          - id: review_batch_002
+            pages: "025"
+          - id: review_batch_003
+            pages: "026"
+        draft_empty_count: 0
+        in_review_count: 14
+        reviewed_count: 0
+        validation: "OK in_review=14"
+      next_step: Continue reviewed-page transcription/manual collation to ocr_reviewed_complete; no rules before reviewed fulltext.
+    - id: SS-B7
+      priority: P2
+      status: acquisition_only
+      title: 七政全书大成表格 OCR
+      systems: [xingming]
+      source_leads:
+        - xingming/qizheng-quanshu-dacheng
+      source_status: image_only
+      distillation_allowed: false
+      next_step: table OCR/manual collation and adapter evaluation
+    - id: SS-B8
+      priority: P2
+      status: acquisition_only
+      title: 阳宅爱众篇获取/校勘
+      systems: [fengshui/yangzhai]
+      source_leads:
+        - fengshui/yangzhai-aizhong-pian
+      source_status: source_lead_only
+      distillation_allowed: false
+      next_step: create manifest, acquire scan, OCR/collate
+    - id: SS-B9
+      priority: P3
+      status: bibliographic_only
+      title: 葬法/墓葬神煞源流
+      systems: [fengshui/burial]
+      source_leads:
+        - fengshui/dahan-yuanling-mizangjing
+      source_status: source_lead_only
+      distillation_allowed: false
+      next_step: bibliographic verification only
+    - id: SS-B10
+      priority: P2
+      status: planned_v0.1
+      title: 神煞专门书籍与跨体系书目核验
+      systems: [bazi, luming-nayin, selection, san-shi, ziwei, xingming, fengshui]
+      ready_second_pass_packs:
+        - bazi/sanming-tonghui
+        - luming-nayin/wuxing-jingji
+        - luming-nayin/li-xuzhong-mingshu
+        - selection/xingli-kaoyuan
+        - selection/xieji-bianfang-shu
+        - san-shi/daliuren-daquan
+        - san-shi/liuren-zhiyin
+        - san-shi/liuren-miben
+        - ziwei/ziwei-doushu-quanshu
+        - xingming/guotian-jing
+      source_leads:
+        - xingming/minghai-quanbian
+        - xingming/qizheng-quanshu-dacheng
+        - san-shi/liuren-zhiyin-vol5-shensha-charts
+        - fengshui/yangzhai-aizhong-pian
+        - fengshui/dahan-yuanling-mizangjing
+        - selection/xiangji-tongshu
+        - selection/chongzheng-bimiu-tongshu
+        - selection/xieji-tongyi
+        - selection/jiugong-bagua-dunfa-mishu
+      distillation_allowed: false
+      outputs:
+        - bibliography_plan: references/matrices/shensha-ss-b10-bibliography-plan.yaml
+        - human_plan: references/matrices/shensha-ss-b10-bibliography-plan.md
+      next_step: "Only verify bibliography, manifests, source status, and OCR/acquisition plan; new tongshu/shensha-misc leads remain non-rule candidates until complete_text or ocr_reviewed_complete."
+  next_recommended_batch:
+    id: SS-B6
+    reason: "SS-B6 OCR pipeline is initialized but incomplete. Continue filling and validating reviewed-page stubs for 《星平会海/命海全编》; it remains non-distillation until source_status reaches ocr_reviewed_complete."

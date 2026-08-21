@@ -1,0 +1,26 @@
+{
+  "source_schema": "mingli-benchmark-source-lock-v1",
+  "dataset": "BaziQA",
+  "repository": "https://github.com/ChenJiangxi/BaziQA",
+  "paper": "https://arxiv.org/abs/2602.12889",
+  "commit": "8ea8222f8bd8ef8a6f1a5fb012344935a66e7686",
+  "captured_at": "2026-07-13",
+  "coverage": {
+    "contest_years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "questions": 200
+  },
+  "license_status": "readme_claims_mit_but_license_file_missing",
+  "vendoring_policy": "do_not_vendor_dataset_until_license_file_is_present_or_permission_is_confirmed",
+  "use_policy": "clone externally, import into ignored .benchmarks directory, and keep inputs separate from outcomes",
+  "limitations": [
+    "Competition answer keys are objective for benchmark scoring but are not scientific validation of Bazi.",
+    "The dataset tests multiple-choice inference and does not by itself test birth-to-chart calculation.",
+    "Questions from one person must remain in one split to avoid chart leakage."
+  ]
+}

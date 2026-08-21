@@ -1,0 +1,134 @@
+schema_version: mingli-liuren-fixtures-v51
+purpose: >-
+  Independently transcribed classical Daliuren plates, explicit Fuyin rows,
+  and shared-calendar boundaries for Task 7H provider completion.
+source:
+  path: references/fulltext/san-shi/daliuren-daquan/fulltext.md
+  sha256: 4c5ec0c8ea1f7b36deaf1db317cfa4407b090ad4ed909a3b8a431dced0a25d9d
+
+classical_cases:
+  - id: daquan-L6876
+    source_anchor: L6876-L6891
+    input: {day: 丁丑, hour: 庚子, month_general: 申}
+    expected: {source_method_label: 元首, primary_method: 元首, transmissions: 巳丑酉, four_lessons: [[卯, 丁], [亥, 卯], [酉, 丑], [巳, 酉]]}
+  - id: daquan-L6932
+    source_anchor: L6932-L6947
+    input: {day: 丙戌, hour: 癸巳, month_general: 申}
+    expected: {source_method_label: 重审, primary_method: 重审, transmissions: 申亥寅, four_lessons: [[申, 丙], [亥, 申], [丑, 戌], [辰, 丑]]}
+  - id: daquan-L6954
+    source_anchor: L6954-L6969
+    input: {day: 乙亥, hour: 庚辰, month_general: 酉}
+    expected: {source_method_label: 重审, primary_method: 重审, transmissions: 寅未子, four_lessons: [[酉, 乙], [寅, 酉], [辰, 亥], [酉, 辰]]}
+  - id: daquan-L7000
+    source_anchor: L7000-L7015
+    input: {day: 壬辰, hour: 乙巳, month_general: 辰}
+    expected: {source_method_label: 知一, primary_method: 比用, transmissions: 戌酉申, four_lessons: [[戌, 壬], [酉, 戌], [卯, 辰], [寅, 卯]]}
+  - id: daquan-L7082
+    source_anchor: L7082-L7097
+    input: {day: 丁卯, hour: 辛丑, month_general: 亥}
+    expected: {source_method_label: 涉害, primary_method: 涉害, transmissions: 亥酉未, four_lessons: [[巳, 丁], [卯, 巳], [丑, 卯], [亥, 丑]]}
+  - id: daquan-L7114
+    source_anchor: L7114-L7129
+    input: {day: 庚子, hour: 丙戌, month_general: 申}
+    expected: {source_method_label: 见机, primary_method: 涉害, method_subtype: 见机, transmissions: 午辰寅, four_lessons: [[午, 庚], [辰, 午], [戌, 子], [申, 戌]]}
+  - id: daquan-L7140
+    source_anchor: L7140-L7155
+    input: {day: 庚戌, hour: 庚辰, month_general: 申}
+    expected: {source_method_label: 察微, primary_method: 涉害, method_subtype: 察微, transmissions: 辰申子, four_lessons: [[子, 庚], [辰, 子], [寅, 戌], [午, 寅]]}
+  - id: daquan-L7166
+    source_anchor: L7166-L7181
+    input: {day: 甲午, hour: 戊辰, month_general: 午}
+    expected: {source_method_label: 缀瑕, primary_method: 涉害, method_subtype: 缀瑕, transmissions: 辰午申, four_lessons: [[辰, 甲], [午, 辰], [申, 午], [戌, 申]]}
+  - id: daquan-L7190
+    source_anchor: L7190-L7205
+    input: {day: 乙卯, hour: 戊寅, month_general: 子}
+    expected:
+      source_method_label: 比用
+      primary_method: 涉害
+      documented_label_variant: true
+      transmissions: 亥酉未
+      four_lessons: [[寅, 乙], [子, 寅], [丑, 卯], [亥, 丑]]
+  - id: daquan-L7272
+    source_anchor: L7272-L7287
+    input: {day: 壬辰, hour: 乙巳, month_general: 申}
+    expected: {source_method_label: 蒿矢, primary_method: 遥克, method_subtype: 蒿矢, transmissions: 戌丑辰, four_lessons: [[寅, 壬], [巳, 寅], [未, 辰], [戌, 未]]}
+  - id: daquan-L7298
+    source_anchor: L7298-L7313
+    input: {day: 壬申, hour: 戊申, month_general: 亥}
+    expected: {source_method_label: 弹射, primary_method: 遥克, method_subtype: 弹射, transmissions: 巳申亥, four_lessons: [[寅, 壬], [巳, 寅], [亥, 申], [寅, 亥]]}
+  - id: daquan-L7414
+    source_anchor: L7414-L7429
+    input: {day: 戊申, hour: 乙卯, month_general: 辰}
+    expected: {source_method_label: 虎视, primary_method: 昴星, method_subtype: 虎视, transmissions: 戌酉午, four_lessons: [[午, 戊], [未, 午], [酉, 申], [戌, 酉]]}
+  - id: daquan-L7440
+    source_anchor: L7436-L7455
+    input: {day: 丁丑, hour: 甲辰, month_general: 丑}
+    expected: {source_method_label: 昴星, primary_method: 昴星, transmissions: 子辰戌, four_lessons: [[辰, 丁], [丑, 辰], [戌, 丑], [未, 戌]]}
+  - id: daquan-L7518
+    source_anchor: L7512-L7533
+    input: {day: 丙辰, hour: 辛卯, month_general: 辰}
+    expected: {source_method_label: 别责, primary_method: 别责, transmissions: 亥午午, four_lessons: [[午, 丙], [未, 午], [巳, 辰], [午, 巳]]}
+  - id: daquan-L7560
+    source_anchor: L7560-L7575
+    input: {day: 甲寅, hour: 戊辰, month_general: 丑}
+    expected: {source_method_label: 八专, primary_method: 八专, transmissions: 丑亥亥, four_lessons: [[亥, 甲], [申, 亥], [亥, 寅], [申, 亥]]}
+  - id: daquan-L7584
+    source_anchor: L7584-L7599
+    input: {day: 丁未, hour: 辛丑, month_general: 辰}
+    expected: {source_method_label: 八专, primary_method: 八专, transmissions: 亥戌戌, four_lessons: [[戌, 丁], [丑, 戌], [戌, 未], [丑, 戌]]}
+  - id: daquan-L7608
+    source_anchor: L7608-L7623
+    input: {day: 己未, hour: 辛未, month_general: 酉}
+    expected: {source_method_label: 独足, primary_method: 八专, method_subtype: 独足, transmissions: 酉酉酉, four_lessons: [[酉, 己], [亥, 酉], [酉, 未], [亥, 酉]]}
+  - id: daquan-L7700
+    source_anchor: L7700-L7715
+    input: {day: 癸丑, hour: 戊午, month_general: 午}
+    expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 丑戌未, four_lessons: [[丑, 癸], [丑, 丑], [丑, 丑], [丑, 丑]]}
+  - id: daquan-L7726
+    source_anchor: L7726-L7741
+    input: {day: 丙辰, hour: 丙申, month_general: 申}
+    expected: {source_method_label: 自任, primary_method: 伏吟, method_subtype: 自任, transmissions: 巳申寅, four_lessons: [[巳, 丙], [巳, 巳], [辰, 辰], [辰, 辰]]}
+  - id: daquan-L7752
+    source_anchor: L7752-L7767
+    input: {day: 丁丑, hour: 丁未, month_general: 未}
+    expected: {source_method_label: 自信, primary_method: 伏吟, method_subtype: 自信, transmissions: 丑戌未, four_lessons: [[未, 丁], [未, 未], [丑, 丑], [丑, 丑]]}
+  - id: daquan-L7778
+    source_anchor: L7778-L7793
+    input: {day: 壬辰, hour: 己酉, month_general: 酉}
+    expected: {source_method_label: 杜传, primary_method: 伏吟, method_subtype: 杜传, transmissions: 亥辰戌, four_lessons: [[亥, 壬], [亥, 亥], [辰, 辰], [辰, 辰]]}
+  - id: daquan-L7878
+    source_anchor: L7878-L7893
+    input: {day: 庚戌, hour: 戊寅, month_general: 申}
+    expected: {source_method_label: 返吟, primary_method: 反吟, transmissions: 寅申寅, four_lessons: [[寅, 庚], [申, 寅], [辰, 戌], [戌, 辰]]}
+  - id: daquan-L7904
+    source_anchor: L7904-L7919
+    input: {day: 辛丑, hour: 癸巳, month_general: 亥}
+    expected: {source_method_label: 井栏射, primary_method: 反吟, method_subtype: 井栏射, transmissions: 亥未辰, four_lessons: [[辰, 辛], [戌, 辰], [未, 丑], [丑, 未]]}
+
+  # The source itself supplies these sixteen day/transmission rows under Fuyin.
+  - {id: daquan-L7774-a, source_anchor: L7774, input: {day: 壬午, hour: 庚子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 亥午子}}
+  - {id: daquan-L7774-b, source_anchor: L7774, input: {day: 乙亥, hour: 丙子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 辰亥巳}}
+  - {id: daquan-L7774-c, source_anchor: L7774, input: {day: 乙酉, hour: 丙子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 辰酉卯}}
+  - {id: daquan-L7774-d, source_anchor: L7774, input: {day: 丁卯, hour: 庚子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 卯子午}}
+  - {id: daquan-L7774-e, source_anchor: L7774, input: {day: 壬申, hour: 庚子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 亥申寅}}
+  - {id: daquan-L7774-f, source_anchor: L7774, input: {day: 壬戌, hour: 庚子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 亥戌未}}
+  - {id: daquan-L7774-g, source_anchor: L7774, input: {day: 壬子, hour: 庚子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 亥子卯}}
+  - {id: daquan-L7774-h, source_anchor: L7774, input: {day: 壬寅, hour: 庚子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 亥寅巳}}
+  - {id: daquan-L7774-i, source_anchor: L7774, input: {day: 乙丑, hour: 丙子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 辰丑戌}}
+  - {id: daquan-L7774-j, source_anchor: L7774, input: {day: 乙未, hour: 丙子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 辰未丑}}
+  - {id: daquan-L7774-k, source_anchor: L7774, input: {day: 乙巳, hour: 丙子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 辰巳申}}
+  - {id: daquan-L7774-l, source_anchor: L7774, input: {day: 乙卯, hour: 丙子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 辰卯子}}
+  - {id: daquan-L7774-m, source_anchor: L7774, input: {day: 丁酉, hour: 庚子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 酉未丑}}
+  - {id: daquan-L7774-n, source_anchor: L7774, input: {day: 辛酉, hour: 戊子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 酉戌未}}
+  - {id: daquan-L7774-o, source_anchor: L7774, input: {day: 丁亥, hour: 庚子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 亥未丑}}
+  - {id: daquan-L7774-p, source_anchor: L7774, input: {day: 辛亥, hour: 戊子, month_general: 子}, expected: {source_method_label: 伏吟, primary_method: 伏吟, transmissions: 亥戌未}}
+
+calendar_boundaries:
+  - {id: before-li-chun, category: solar_term_boundary, datetime: '2024-02-04T16:20:00', timezone: Asia/Shanghai, zi_hour_policy: midnight, expected_pillars: [癸卯, 乙丑, 戊戌, 庚申], expected_general: 子, expected_method: 元首, expected_transmissions: 寅午戌}
+  - {id: after-li-chun, category: solar_term_boundary, datetime: '2024-02-04T16:40:00', timezone: Asia/Shanghai, zi_hour_policy: midnight, expected_pillars: [甲辰, 丙寅, 戊戌, 庚申], expected_general: 子, expected_method: 元首, expected_transmissions: 寅午戌}
+  - {id: late-zi-current-day, category: day_rollover, datetime: '2024-01-15T23:30:00', timezone: Asia/Shanghai, zi_hour_policy: midnight, expected_pillars: [癸卯, 乙丑, 戊寅, 壬子], expected_general: 丑, expected_method: 重审, expected_transmissions: 辰巳午}
+  - {id: late-zi-next-day, category: day_rollover, datetime: '2024-01-15T23:30:00', timezone: Asia/Shanghai, zi_hour_policy: late-zi-next-day, expected_pillars: [癸卯, 乙丑, 己卯, 甲子], expected_general: 丑, expected_method: 重审, expected_transmissions: 辰巳午}
+  - {id: leap-lunar-month, category: leap_month, datetime: '2023-03-22T12:00:00', timezone: Asia/Shanghai, zi_hour_policy: midnight, expected_pillars: [癸卯, 乙卯, 己卯, 庚午], expected_general: 戌, expected_method: 涉害, expected_transmissions: 未亥卯}
+  - {id: new-york-dst, category: timezone_boundary, datetime: '2024-07-01T12:00:00', timezone: America/New_York, zi_hour_policy: midnight, expected_pillars: [甲辰, 庚午, 丙寅, 甲午], expected_general: 未, expected_method: 重审, expected_transmissions: 辰巳午}
+  - {id: historical-offset, category: timezone_boundary, datetime: '1880-01-01T12:00:00', timezone: America/New_York, zi_hour_policy: midnight, expected_pillars: [己卯, 丙子, 己丑, 庚午], expected_general: 丑, expected_method: 重审, expected_transmissions: 卯戌巳}
+  - {id: after-winter-solstice, category: solar_term_boundary, datetime: '2024-12-21T18:30:00', timezone: Asia/Shanghai, zi_hour_policy: midnight, expected_pillars: [甲辰, 丙子, 己未, 癸酉], expected_general: 丑, expected_method: 重审, expected_transmissions: 亥卯未}

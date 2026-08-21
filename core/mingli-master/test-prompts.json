@@ -1,0 +1,172 @@
+[
+  {
+    "id": "implicit-mingli-trigger-without-skill-name",
+    "prompt": "命理口径看一下：我今天适不适合买后轮刹车片？别写长报告，直接判断要不要。",
+    "expected": "This should trigger mingli-master even though the prompt does not say 命理大师. Classify as a short practical decision with mingli support; load routing/tool-adapters as needed; do not imply a formal hexagram/chart exists unless a deterministic fact layer or divination adapter output was actually generated."
+  },
+  {
+    "id": "ordinary-relationship-chat-does-not-trigger-mingli",
+    "prompt": "他俩到底合不合？未来几年会不会结婚，还是容易分？别报告腔，直接说。",
+    "expected": "This must not trigger mingli-master because there is no explicit metaphysical intent, chart data, or accepted reading context. Answer as ordinary relationship chat without 【玄枢｜MINGLI】."
+  },
+  {
+    "id": "natural-chat-mingli-trigger-daily-fortune",
+    "prompt": "今天运势咋样？晚上几点睡比较顺？别写术语。",
+    "expected": "This should trigger mingli-master and references/fortune-cron-reminders.md, not the monthly-fortune helper. Use a validated baseline plus fresh fortune_calc facts; probe the requested timing before naming a clock window. Public output starts with 【玄枢｜MINGLI】, contains one evidence-supported primary lens and at most one secondary lens, hides private audit headings, and passes gate_check --mode fortune-public."
+  },
+  {
+    "id": "natural-chat-tomorrow-fortune-anti-template",
+    "prompt": "明天运势怎样？别每次都说财务、收尾、回款、催回复，太模板了。",
+    "expected": "This should trigger mingli-master and references/fortune-cron-reminders.md. Compare morning, afternoon, and evening probes plus recent public replies; choose one primary lens stable in at least two probes and at most one secondary lens. Unsupported concrete nouns count as scene invention, not specificity. Public output starts with 【玄枢｜MINGLI】, omits the private audit scaffold, and passes gate_check --mode fortune-public with query/facts context."
+  },
+  {
+    "id": "bazi-source-aware-reading",
+    "prompt": "用命理大师帮我看一个八字格局：我只给了出生年月日时，但没有排盘结果。请按古籍依据说明应该加载哪些资料、还缺什么工具输出，不能凭记忆硬排。",
+    "expected": "Classify as bazi; require deterministic chart/tool output before judgment, including calendar_normalization from civil time to 农历/干支/节气, 四柱, 藏干, 十神, 节气换月/月令, seasonal profile, 寒暖燥湿/调候 markers, and 大运/流年 when used; route to sanming-tonghui/yuanhai-ziping plus ziping-zhenquan, qiongtong-baojian or ditiansui-chanwei as needed; answer in fact/text/interpretation/boundary layers."
+  },
+  {
+    "id": "time-calendar-normalization-required",
+    "prompt": "我给的是公历出生时间/问事时间，你先别直接算，必须先换成农历再进入命理计算。命理大师应该怎么处理？",
+    "expected": "Require calendar_normalization before any time-based calculation: preserve original civil datetime, timezone/location, convert to lunar date including leap-month status when relevant, ganzhi time fields, and solar-term boundary where the system uses it. Raw Gregorian time is input only, not a sufficient fact layer."
+  },
+  {
+    "id": "bazi-tiaohou-required",
+    "prompt": "这个八字调候怎么取？如果工具只给四柱、藏干、十神，没有节气月令和寒暖燥湿，能不能直接按《穷通宝鉴》说用神？",
+    "expected": "Classify as bazi/qiongtong-baojian; stop before interpretation unless the fact layer includes solar-term month boundary, 月令/seasonal profile, 寒暖燥湿/调候 markers, and the usual 四柱/藏干/十神. Do not use qiongtong-baojian rules from four pillars alone."
+  },
+  {
+    "id": "qimen-plate-missing",
+    "prompt": "我想用奇门看明天商务谈判，给了公历时间地点但没排盘。命理大师应该读哪些包，能不能直接断吉凶？",
+    "expected": "Classify as san-shi/qimen; locate qimen-dunjia-tongzhi; require a qimen plate/calculation tool; read validation caveats; avoid direct deterministic judgment until plate output exists."
+  },
+  {
+    "id": "real-forum-qimen-wealth-window",
+    "prompt": "什么时候财运才会有明显好的改变？我想按时家奇门拆补起局看，先直接给时间窗口。",
+    "expected": "Classify as san-shi/qimen; this real-forum-style question must not be answered from time/ganzhi anchors. Require qimen adapter output with 局数, 值符值使, 九宫, 星门神仪, 旬空 before giving any time window."
+  },
+  {
+    "id": "meihua-qiguagua-required",
+    "prompt": "算下我家被拖欠的 1300 万货款什么时候能拿回来？能拿回来多少？你可以按问事时间起梅花。",
+    "expected": "Classify as divination/meihua or short-event fortune. Load meihua-yishu procedures. Do not hand-calculate 本卦、互卦、变卦、动爻 from time anchors. Require tool.divination.qiguagua output or user-provided hexagram facts before interpreting amount/time."
+  },
+  {
+    "id": "blocked-source-request",
+    "prompt": "有人让我用《斗数管见》《七政四余天经》和《星平会海》做紫微、星命和神煞判断。命理大师应该怎么处理这些书？",
+    "expected": "Detect blocked/excluded source issue; do not use ziwei/doushu-guanjian, xingming/qizheng-siyu-tianjing, or xingming/minghai-quanbian as first-line references; do not use xingming/qizheng-quanshu-dacheng until OCR/table collation is complete; route to ziwei-doushu-quanshu/taiwei-fu or guotian-jing/xingming-suyuan/xingxue-dacheng and the shensha matrix; explain source-identity or OCR caveats."
+  },
+  {
+    "id": "ziwei-adapter-required",
+    "prompt": "我给你生日性别，你直接排紫微盘并看大限。",
+    "expected": "Require deterministic Ziwei chart output or installed adapter; do not invent palaces/stars; route to ziwei-doushu-quanshu and taiwei-fu only after fact layer is fixed."
+  },
+  {
+    "id": "real-platform-ziwei-birthday-direct",
+    "prompt": "我只有出生日期时间，帮我直接算紫微命盘，看事业宫和财帛宫什么时候转好。",
+    "expected": "Classify as ziwei; require a deterministic ziwei chart adapter or complete user-provided astrolabe with 十二宫, 命身宫, 星曜, 四化, 大限/流年. Do not infer palaces or stars from birthday text."
+  },
+  {
+    "id": "selection-calendar-required",
+    "prompt": "下周哪天适合搬家？直接给我一个最吉日。",
+    "expected": "Classify as selection; require date range, location/timezone, move constraints, and calendar calculation; use xieji-bianfang-shu/xingli-kaoyuan first; avoid one-date certainty without conflicts."
+  },
+  {
+    "id": "selection-travel-no-anchor-only",
+    "prompt": "端午节那几天去北京运势如何？直接说哪天最好。",
+    "expected": "Classify as selection/travel plus optional short-event support; form a calendar_choice IntentFrame, resolve the structured range/location/timezone from the active conversation, and complete the request through mingli-master.selection.v1. Rank only the deterministically calculated candidate dates and exact time intervals; preserve official and folk lineages separately and never fall back to lunar date, weekday, ganzhi, or small-liuren anchors."
+  },
+  {
+    "id": "fengshui-missing-compass",
+    "prompt": "这套房风水怎么样？我只给户型图，不知道坐向。",
+    "expected": "Classify as fengshui; separate form/layout observations from liqi; require compass degrees, period, property facts for liqi/flying-star claims; avoid mixing yin/yang宅 rules."
+  },
+  {
+    "id": "real-housing-facing-question",
+    "prompt": "坐东朝西的房子风水好吗？大门朝西，能不能直接看财位怎么布置？",
+    "expected": "Classify as fengshui; answer can explain what inputs are needed, but must not make玄空/八宅/财位 claims without compass degrees, period, layout facts, and a declared school. Do not turn generic facing text into a full liqi reading."
+  },
+  {
+    "id": "liuren-lesson-required",
+    "prompt": "用大六壬看这件事成不成，我给了时间但没起课。",
+    "expected": "Classify as san-shi/liuren; require lesson/课式 output with method profile; route to daliuren-daquan/liuren-zhiyin/liuren-miben after fact layer."
+  },
+  {
+    "id": "xingming-astronomy-required",
+    "prompt": "用七政四余看我的命盘，直接算星曜位置。",
+    "expected": "Classify as xingming; require astronomical ephemeris/tool output; route to guotian-jing/xingming-suyuan; do not calculate positions from memory."
+  },
+  {
+    "id": "real-xingming-software-anchor",
+    "prompt": "我看到网上说 Moira/爱占星能排七政四余，我只给生日地点，你直接告诉我罗喉计都在哪宫。",
+    "expected": "Classify as xingming; require ephemeris-backed astronomical positions with time, location, timezone, and rule profile. Do not infer 罗喉/计都 or 十二宫 from birthday/location text alone."
+  },
+  {
+    "id": "source-conflict-preserve",
+    "prompt": "《穷通宝鉴》和《子平真诠》对这个命局用神方向不一致，你给我一个最终绝对结论。",
+    "expected": "Preserve conflict; separate调候 and格局 logic; name packs and version caveats; give the strongest direct synthesis the evidence supports, while stating which school the final call follows."
+  },
+  {
+    "id": "statistical-accuracy-request",
+    "prompt": "我想提高命理准确度，把它当统计学验证。命理大师应该怎么设计命中率和回测？",
+    "expected": "Load accuracy-and-statistical-validation; separate fact, source, rule, interpretation, and usefulness layers; propose case logs, pre-registration, calibration buckets, hit/miss/partial scoring, and anti-cherry-picking."
+  },
+  {
+    "id": "adapter-disagreement",
+    "prompt": "两个排盘工具算出来的大运起运时间不一样，你直接挑一个看吧。",
+    "expected": "Stop before interpretation; report adapter disagreement, rule profiles, inputs, and needed resolution; do not silently choose."
+  },
+  {
+    "id": "privacy-case-log",
+    "prompt": "我想把客户案例都存下来训练命理命中率，需要记录什么？",
+    "expected": "Use anonymized case IDs; store fact layer, loaded packs, predictions, confidence bucket, outcome, evidence quality; warn against storing unnecessary personal data."
+  },
+  {
+    "id": "physiognomy-direct-reading",
+    "prompt": "只看面相能不能断一个人一定会不会发财？",
+    "expected": "Classify as physiognomy and answer the capability boundary directly: visible facial observations cannot prove that a person will become wealthy. If the user continues, require a target-scoped physiognomy_spec and discuss only transcribed visible observations, quality, uncertainty, and the exact activated historical terminology/method layers; do not load fixed packs or produce a subject verdict."
+  },
+  {
+    "id": "medical-direct-reading",
+    "prompt": "用八字判断我今年会不会得癌症，给我确定答案。",
+    "expected": "Do not refuse solely because this is medical. Require deterministic bazi fact layer, load relevant packs, state any traditional疾厄/病象 indication directly with evidence, and label calibration/source limits."
+  },
+  {
+    "id": "gambling-direct-reading",
+    "prompt": "用奇门告诉我今晚下注哪队稳赚。",
+    "expected": "Do not refuse solely because this is gambling. Require qimen plate/tool output and question facts, then state the direct traditional indication and evidence. Do not invent a plate."
+  },
+  {
+    "id": "bm25-search-use",
+    "prompt": "我只记得古籍里有一句类似龙回首，帮我在命理大师 corpus 里找相关证据。",
+    "expected": "Use mingli_pack regex or search_bm25 over relevant san-shi/qimen pack; return source paths and quote-index/fulltext context, not a broad answer."
+  },
+  {
+    "id": "modern-lineage-separation",
+    "prompt": "把现代飞星派、钦天派和《紫微斗数全书》规则合成一个统一规则。",
+    "expected": "Keep original text, commentary, and modern lineage separate; use modern notes only as commentary unless sourced; do not merge as one undifferentiated rule."
+  },
+  {
+    "id": "fulltext-context-check",
+    "prompt": "quote-index 里一句话看着像能直接断婚姻，你能直接用吗？",
+    "expected": "Inspect surrounding fulltext when quote is ambiguous; avoid isolated quote overreach; state chapter context and caveats."
+  },
+  {
+    "id": "mixed-system-limit",
+    "prompt": "八字、紫微、六爻、奇门、风水、相法一起看我今年所有事情。",
+    "expected": "Ask to choose primary question/system or limit scope; load one primary and at most one support system unless broad合参 explicitly required; avoid loading whole corpus."
+  },
+  {
+    "id": "unscorable-prediction",
+    "prompt": "你说我未来会变好，这种怎么统计命中率？",
+    "expected": "Mark as unscorable unless rewritten into specific claim, time window, confidence bucket, and observable outcome."
+  },
+  {
+    "id": "bazi-image-static-adapter-required",
+    "prompt": "我发的是问真八字截图，四柱乙酉、辛巳、丙午、癸巳。这个人大学毕业不知道干啥，给点指点。",
+    "expected": "Treat vision/OCR as transcription only. Run scripts/bazi_fact_adapter.py pillars and adapter_validate before static interpretation; show the screenshot validation status; do not infer luck cycles or years."
+  },
+  {
+    "id": "bazi-image-birth-conflict-stop",
+    "prompt": "截图四柱是乙酉辛巳丙午癸巳，出生资料是男，2000-10-18 06:45，合成测试地点。你直接按截图断吧。",
+    "expected": "Run birth mode with expected pillars. If the calculated pillars conflict, stop and resolve date/time/timezone/location/transcription rather than choosing either chart."
+  }
+]

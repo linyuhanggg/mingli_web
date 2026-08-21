@@ -1,0 +1,310 @@
+schema_version: mingli-fengshui-source-tables-v1
+status: verified
+purpose: >-
+  Versioned mechanical compass normalization, source-transcribed Bazhai tables,
+  observation eligibility, and exact source-rule activation contracts for the
+  observation-driven Fengshui provider. The degree sectors are an engineering
+  convention, not a claim that the classical texts state decimal-degree bounds.
+
+selected_convention:
+  id: north-centered-half-open-24-mountains
+  version: 1.0.0
+  classification: engineering_measurement_convention
+  formula: floor((((corrected_true_degrees + 7.5) % 360) / 15))
+  raw_degree_domain: "finite real number in [0, 360); bool is invalid"
+  corrected_wrap_policy: explicit_only_after_declared_correction
+  sitting_policy: add_twelve_mountain_indices
+  boundary_policy: half_open_clockwise
+  north_reference_policy:
+    "true": correction_degrees_must_be_zero
+    magnetic: caller_supplies_signed_correction_degrees_and_source
+    grid: caller_supplies_signed_correction_degrees_and_source
+  no_external_declination_lookup: true
+  source_boundary: >-
+    The classical witnesses establish the 24 names and three-mountain trigram
+    groups. Equal 15-degree sectors, north at zero, and half-open allocation are
+    this version's auditable engineering convention.
+
+source_profiles:
+  yangzhai_shishu:
+    title: 阳宅十书
+    normalized_path: references/fulltext/fengshui/yangzhai-shishu/fulltext.md
+    sha256: 78ca6fcbc7dec7b361bf4b4922c6834bc4d1320495940d51cc11f411d348110a
+    anchors:
+      mountain_trigram_groups: L1835-L1839
+      east_west_groups: L767-L791; L1039-L1043; L1132-L1136
+      younian_mnemonics: L1238-L1255
+      partition_door_reset: L1582-L1594
+    exact_excerpts:
+      mountain_trigram_groups: 凡宅雖有二十四山，專以八山主之
+      younian_mnemonic_start: 乾六天五禍絕延生
+      partition_door_reset: 凡宅中有牆隔斷，牆間開有門
+  huangdi_zhaijing:
+    title: 黄帝宅经
+    normalized_path: references/fulltext/fengshui/huangdi-zhaijing/fulltext.md
+    sha256: 04a5901c4908f79dfb74dc5d6a29f9e820181e03c967cc41f947aca3d14939b6
+    anchors:
+      twenty_four_routes: L15-L20
+    exact_excerpts:
+      twenty_four_routes: 二十四路
+  yangzhai_sanyao:
+    title: 阳宅三要
+    normalized_path: references/fulltext/fengshui/yangzhai-sanyao/fulltext.md
+    sha256: 56128f671f3b75fc05f04987a9445a57cef9058825442349c0d216d3cc364735
+    source_role: secondary_bazhai_support_with_later_printing_caveat
+    anchors:
+      mountain_trigram_groups: L380-L381
+      door_younian_origin: L96-L108
+    exact_excerpts:
+      door_younian_origin: 乾门九星歌诀解
+  zangshu:
+    title: 葬书
+    normalized_path: references/fulltext/fengshui/zangshu/fulltext.md
+    sha256: 5d38da6ceee94042299ceaae7136a39cb915297bb1dcf7f98f2eac4bd1a7e0af
+    source_status: partial
+    rule_verification: false
+    evidence_role: observed_form_category_context_only
+    anchors:
+      terrain_water_wind: L25-L31
+    exact_excerpts:
+      terrain_water_wind: 夫氣行乎地中，其行也因地之勢，其聚也，因勢之止
+  hanlong_jing:
+    title: 撼龙经
+    normalized_path: references/fulltext/fengshui/hanlong-jing/fulltext.md
+    sha256: d988005dfb7f7de267f19f550472af7eff79c16b18132ff082ebad8836709fe4
+    source_status: partial
+    rule_verification: false
+    evidence_role: caller_observed_category_context_only
+    anchors:
+      highland_plainland: rules.md#R-01
+    exact_excerpts:
+      source_scope: 撼龍經專言山壠落脈形勢
+  yilong_jing:
+    title: 疑龙经
+    normalized_path: references/fulltext/fengshui/yilong-jing/fulltext.md
+    sha256: b1bb72819575888442a7d49607b2e49754bcd2821ca355480b531b0ee3ebbff3
+    source_status: partial
+    rule_verification: false
+    evidence_role: caller_observed_category_context_only
+    anchors:
+      hall_wind_water: L20
+    exact_excerpts:
+      hall_wind_water: 明堂惜水如惜血
+  xuexin_fu:
+    title: 雪心赋
+    normalized_path: references/fulltext/fengshui/xuexin-fu/fulltext.md
+    sha256: 5e27d9aaf634f59e97cc1afb39382ae328425c437041eeb31447b6ba2c8cef83
+    source_status: normalized_ready
+    evidence_role: observed_form_category_context_only
+    anchors:
+      water_mouth_and_hall: L25
+      interlocking_water: L62
+    exact_excerpts:
+      water_mouth_and_hall: 入山尋水口，登穴看明堂
+
+mountain_order_clockwise:
+  - {index: 0, mountain: 子, trigram: 坎, center_degrees: 0.0, opposite: 午}
+  - {index: 1, mountain: 癸, trigram: 坎, center_degrees: 15.0, opposite: 丁}
+  - {index: 2, mountain: 丑, trigram: 艮, center_degrees: 30.0, opposite: 未}
+  - {index: 3, mountain: 艮, trigram: 艮, center_degrees: 45.0, opposite: 坤}
+  - {index: 4, mountain: 寅, trigram: 艮, center_degrees: 60.0, opposite: 申}
+  - {index: 5, mountain: 甲, trigram: 震, center_degrees: 75.0, opposite: 庚}
+  - {index: 6, mountain: 卯, trigram: 震, center_degrees: 90.0, opposite: 酉}
+  - {index: 7, mountain: 乙, trigram: 震, center_degrees: 105.0, opposite: 辛}
+  - {index: 8, mountain: 辰, trigram: 巽, center_degrees: 120.0, opposite: 戌}
+  - {index: 9, mountain: 巽, trigram: 巽, center_degrees: 135.0, opposite: 乾}
+  - {index: 10, mountain: 巳, trigram: 巽, center_degrees: 150.0, opposite: 亥}
+  - {index: 11, mountain: 丙, trigram: 离, center_degrees: 165.0, opposite: 壬}
+  - {index: 12, mountain: 午, trigram: 离, center_degrees: 180.0, opposite: 子}
+  - {index: 13, mountain: 丁, trigram: 离, center_degrees: 195.0, opposite: 癸}
+  - {index: 14, mountain: 未, trigram: 坤, center_degrees: 210.0, opposite: 丑}
+  - {index: 15, mountain: 坤, trigram: 坤, center_degrees: 225.0, opposite: 艮}
+  - {index: 16, mountain: 申, trigram: 坤, center_degrees: 240.0, opposite: 寅}
+  - {index: 17, mountain: 庚, trigram: 兑, center_degrees: 255.0, opposite: 甲}
+  - {index: 18, mountain: 酉, trigram: 兑, center_degrees: 270.0, opposite: 卯}
+  - {index: 19, mountain: 辛, trigram: 兑, center_degrees: 285.0, opposite: 乙}
+  - {index: 20, mountain: 戌, trigram: 乾, center_degrees: 300.0, opposite: 辰}
+  - {index: 21, mountain: 乾, trigram: 乾, center_degrees: 315.0, opposite: 巽}
+  - {index: 22, mountain: 亥, trigram: 乾, center_degrees: 330.0, opposite: 巳}
+  - {index: 23, mountain: 壬, trigram: 坎, center_degrees: 345.0, opposite: 丙}
+
+bazhai:
+  profile_id: yangzhai-shishu-bazhai-v1
+  supported: true
+  origin_basis: door_trigram
+  unsupported_origin_bases: [sitting_trigram, fuyuan]
+  direction_order: [乾, 坎, 艮, 震, 巽, 离, 坤, 兑]
+  east_group: [坎, 离, 震, 巽]
+  west_group: [乾, 坤, 艮, 兑]
+  star_names:
+    伏: 伏位
+    六: 六煞
+    天: 天乙
+    五: 五鬼
+    禍: 祸害
+    絕: 绝命
+    延: 延年
+    生: 生气
+  source_mnemonics:
+    乾: 乾六天五禍絕延生
+    坎: 坎五天生延絕禍六
+    艮: 艮六絕禍生延天五
+    震: 震延生禍絕五天六
+    巽: 巽天五六禍生絕延
+    离: 离六五絕延禍生天
+    坤: 坤天延絕生禍五六
+    兑: 兑生禍延絕六五天
+  star_maps:
+    乾: {乾: 伏位, 坎: 六煞, 艮: 天乙, 震: 五鬼, 巽: 祸害, 离: 绝命, 坤: 延年, 兑: 生气}
+    坎: {乾: 六煞, 坎: 伏位, 艮: 五鬼, 震: 天乙, 巽: 生气, 离: 延年, 坤: 绝命, 兑: 祸害}
+    艮: {乾: 天乙, 坎: 五鬼, 艮: 伏位, 震: 六煞, 巽: 绝命, 离: 祸害, 坤: 生气, 兑: 延年}
+    震: {乾: 五鬼, 坎: 天乙, 艮: 六煞, 震: 伏位, 巽: 延年, 离: 生气, 坤: 祸害, 兑: 绝命}
+    巽: {乾: 祸害, 坎: 生气, 艮: 绝命, 震: 延年, 巽: 伏位, 离: 天乙, 坤: 五鬼, 兑: 六煞}
+    离: {乾: 绝命, 坎: 延年, 艮: 祸害, 震: 生气, 巽: 天乙, 离: 伏位, 坤: 六煞, 兑: 五鬼}
+    坤: {乾: 延年, 坎: 绝命, 艮: 生气, 震: 祸害, 巽: 五鬼, 离: 六煞, 坤: 伏位, 兑: 天乙}
+    兑: {乾: 生气, 坎: 祸害, 艮: 延年, 震: 绝命, 巽: 六煞, 离: 五鬼, 坤: 天乙, 兑: 伏位}
+
+school_profiles:
+  bazhai:
+    status: source_verified
+    output_namespace: liqi.bazhai
+    origin_basis: door_trigram
+    allowed_property_scopes: [residential]
+    allowed_source_packs:
+      - fengshui/yangzhai-shishu
+      - fengshui/yangzhai-sanyao
+      - fengshui/huangdi-zhaijing
+  xuankong:
+    status: unsupported_missing_complete_source_table
+  sanhe:
+    status: unsupported_missing_complete_source_table
+  mixed:
+    status: forbidden_school_mixing
+
+observation_contract:
+  accepted_source_types: [image_transcription, user_text, user_measurement, user_file]
+  allowed_kinds: [road, water, terrain, entrance, layout, enclosure, ridge, opening]
+  requested_variables_required_for_form: true
+  forbidden_source_tools: [vision_ocr, vision_only, llm]
+  image_required_fields: [asset_id, region_anchor, quality, uncertainty]
+  asset_required_fields: [asset_id, media_type, role, sha256]
+  region_anchor_profile: normalized_bbox_v1
+  quality_enums:
+    readability: [good, medium, low, unreadable]
+    lighting: [good, uneven, low, not_applicable]
+    scale: [known, approximate, unknown, caller_described]
+    viewpoint: [top_down, orthogonal, aerial, ground_level, oblique, caller_description, unknown]
+  source_quality_contracts:
+    image_transcription:
+      forbidden_lighting: [not_applicable]
+      forbidden_scale: [caller_described]
+      forbidden_viewpoint: [caller_description]
+    non_image:
+      allowed_sentinel_lighting: [not_applicable]
+      allowed_sentinel_scale: [caller_described]
+      allowed_sentinel_viewpoint: [caller_description]
+  image_claim_quality:
+    disallowed_lighting: [low]
+    precision_required_kinds: [road, entrance, layout, opening]
+    precision_allowed_scale: [known, approximate]
+    precision_allowed_viewpoint: [top_down, orthogonal, aerial]
+  low_quality_readability: [low, unreadable]
+  maximum_claim_uncertainty: 0.5
+  rule_activation:
+    road:
+      axis_toward_entrance:
+        - fengshui/yangzhai-shishu#YZS-R003
+    water:
+      observed_water:
+        - fengshui/huangdi-zhaijing#HDZJ-R006
+        - fengshui/yangzhai-shishu#YZS-R001
+      water_boundary_and_wind_shelter_observed:
+        - fengshui/zangshu#R-02
+      water_mouth_and_hall_observed:
+        - fengshui/xuexin-fu#XXF-R01
+      interlocking_water_pattern:
+        - fengshui/xuexin-fu#XXF-R04
+    terrain:
+      observed_terrain:
+        - fengshui/huangdi-zhaijing#HDZJ-R006
+        - fengshui/yangzhai-shishu#YZS-R001
+      highland_plainland_classification:
+        - fengshui/hanlong-jing#R-01
+      sheltered_open_hall:
+        - fengshui/yilong-jing#R-05
+        - fengshui/xuexin-fu#XXF-R01
+      water_boundary_and_wind_shelter_observed:
+        - fengshui/zangshu#R-02
+    entrance:
+      observed_entrance:
+        - fengshui/yangzhai-shishu#YZS-R014
+    layout:
+      observed_layout:
+        - fengshui/huangdi-zhaijing#HDZJ-R006
+        - fengshui/yangzhai-shishu#YZS-R014
+
+property_scope_profiles:
+  residential:
+    allowed_subprofiles: [form, liqi]
+    allowed_form_source_packs:
+      - fengshui/huangdi-zhaijing
+      - fengshui/yangzhai-shishu
+  site_general:
+    allowed_subprofiles: [form]
+    allowed_form_source_packs:
+      - fengshui/zangshu
+      - fengshui/hanlong-jing
+      - fengshui/yilong-jing
+      - fengshui/xuexin-fu
+  burial_cultural_study:
+    allowed_subprofiles: [form]
+    allowed_form_source_packs:
+      - fengshui/zangshu
+      - fengshui/hanlong-jing
+      - fengshui/yilong-jing
+      - fengshui/xuexin-fu
+
+layout_contract:
+  allowed_node_kinds: [entrance, door, room, zone]
+  allowed_boundaries: [open, connection, separating_wall_with_door]
+  node_observation_kinds:
+    entrance: [entrance, layout]
+    door: [entrance, layout]
+    room: [layout]
+    zone: [layout]
+  direction_measurement_proves_node_kinds: [entrance, door]
+  edge_observation_kinds:
+    open: [layout, entrance]
+    connection: [layout, entrance]
+    separating_wall_with_door: [layout]
+  direction_field: direction_measurement
+  forbidden_direction_fields: [direction_degrees]
+  non_directional_node_requires_accepted_observation: true
+  every_edge_requires_accepted_observation: true
+  partition_reset_requires_resolved_door_measurement: true
+  bazhai_origin_node_kinds: [entrance, door]
+
+compass_conflict_resolution:
+  confirmed_measurement_overrides_declared_orientation: true
+  retain_overridden_declaration_as_nonblocking_audit: true
+
+building_chronology_contract:
+  accepted_source_types: [user_text, user_measurement, user_file]
+
+calculated_rule_activation:
+  compass:
+    - fengshui/huangdi-zhaijing#HDZJ-R002
+  bazhai:
+    - fengshui/yangzhai-shishu#YZS-R007
+    - fengshui/yangzhai-sanyao#YZS-R005
+  partition_door_reset:
+    - fengshui/yangzhai-shishu#YZS-R006
+
+evidence_binding_contract:
+  version: 1.0.0
+  identity: source_pack_hash_local_rule_id
+  common_predicates:
+    - {path_suffix: /fact_layer_status, operator: eq, value: observation_driven_fengshui_facts}
+    - {path_suffix: /active_source_rule_ids, operator: descendant_eq, value: $rule_id}
+  unsupported_rules_remain_inactive: true
+  provider_must_never_emit_not_calculated_rule_ids: true

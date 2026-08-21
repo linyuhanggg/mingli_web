@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/inputs/name-analysis-input-v1.schema.json",
+  "title": "Name Analysis Input v1",
+  "description": "Formal intake for the name-analysis tool. Surname 五音 lookup is the only sourced method in v1. Stroke-count, 五格, 三才数理, and luck fields are forbidden.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "name", "usage_scene"],
+  "properties": {
+    "schema_version": {"const": "name-analysis-input/v1"},
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 16,
+      "pattern": "^[\\u3400-\\u9FFF\\uF900-\\uFAFF]{1,16}$"
+    },
+    "family_name": {
+      "type": ["string", "null"],
+      "pattern": "^[\\u3400-\\u9FFF\\uF900-\\uFAFF]{1,4}$"
+    },
+    "given_name": {
+      "type": ["string", "null"],
+      "pattern": "^[\\u3400-\\u9FFF\\uF900-\\uFAFF]{1,12}$"
+    },
+    "usage_scene": {
+      "enum": ["unspecified", "luming", "yangzhai"]
+    },
+    "subject_ref": {
+      "type": ["string", "null"],
+      "minLength": 1
+    }
+  }
+}

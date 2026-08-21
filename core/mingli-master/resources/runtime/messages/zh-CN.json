@@ -1,0 +1,37 @@
+{
+  "schema_version": "mingli-messages-v1",
+  "reasons": {
+    "need_input": "还需要：{labels}",
+    "need_focus": "这个问题可以从几个不同的方面来看，请先选择一个方面。",
+    "choose_capability": "有多种可用的方式，请先选择：{labels}",
+    "unsupported": "当前能力暂时不支持这个请求。",
+    "conflict": "这条记录已经推进到新的版本，请基于最新的结果继续。",
+    "error": "本次处理未完成，请稍后重试。"
+  },
+  "terms": {
+    "kind.fact": {
+      "label": "事实陈述",
+      "description": "来自确定性计算的事实，可以直接引用。"
+    },
+    "kind.tendency": {
+      "label": "倾向判断",
+      "description": "基于事实与出处的倾向性表述，不是确定性预言。"
+    },
+    "certainty.tendency": {
+      "label": "倾向性上限",
+      "description": "最多只能给出倾向性的判断，不能断言具体事件必然发生。"
+    },
+    "limit.source_gap": {
+      "label": "出处零命中",
+      "description": "本轮没有适用的文献出处，只能基于事实层表达，不得虚构引用。"
+    },
+    "limit.unresolved_time_boundary": {
+      "label": "时间边界尚未确定",
+      "description": "当前时间与坐标精度不足以唯一确定边界两侧的结果，需要更精确资料或同时保留两种可能。"
+    },
+    "limit.unsupported_dimension": {
+      "label": "范围不可答",
+      "description": "该方面在本轮无法可靠回答，应明确说明而不是猜测。"
+    }
+  }
+}

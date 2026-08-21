@@ -1,0 +1,5357 @@
+generated_at: '2026-07-05'
+version: v0.1
+source_status: generated_from_local_ready_pack_layers
+purpose: Mechanical trace audit for shensha entries. Anchors prove local source availability, not final interpretation.
+inputs:
+- references/matrices/shensha-name-disambiguation.yaml
+- references/matrices/shensha-entry-source-profile.yaml
+- references/books/*/*/{quote-index,terms,rules}.md
+policy:
+  use_ready_pack_layers_only: true
+  do_not_use_acquisition_only_sources: true
+  quote_index_hit_preferred: true
+  layer_hit_requires_human_second_pass_before_rule_promotion: true
+coverage_summary:
+  entry_count: 39
+  entry_status_counts:
+    all_systems_first_line_quote_index_hit: 39
+  system_status_counts:
+    first_line_quote_index_hit: 111
+entries:
+- id: shensha-baihu
+  name: 白虎
+  search_tokens:
+  - 白虎
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs:
+      - san-shi/liuren-zhiyin
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L68
+        matched_token: 白虎
+        quote_id: DL-Q0056
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L139
+        matched_token: 白虎
+        quote_id: DL-Q0127
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L140
+        matched_token: 白虎
+        quote_id: DL-Q0128
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L180
+        matched_token: 白虎
+        quote_id: DL-Q0168
+      - pack: san-shi/daliuren-daquan
+        layer: terms
+        line_ref: references/books/san-shi/daliuren-daquan/terms.md:L50
+        matched_token: 白虎
+        quote_id: LT-208
+      - pack: san-shi/daliuren-daquan
+        layer: terms
+        line_ref: references/books/san-shi/daliuren-daquan/terms.md:L70
+        matched_token: 白虎
+        quote_id: LT-311
+      - pack: san-shi/daliuren-daquan
+        layer: rules
+        line_ref: references/books/san-shi/daliuren-daquan/rules.md:L107
+        matched_token: 白虎
+      support_anchors: []
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/yuzhao-shenying
+      support_packs:
+      - luming-nayin/wuxing-jingji
+      first_line_anchors:
+      - pack: luming-nayin/yuzhao-shenying
+        layer: quote-index
+        line_ref: references/books/luming-nayin/yuzhao-shenying/quote-index.md:L59
+        matched_token: 白虎
+        quote_id: YZ-Q052
+      - pack: luming-nayin/yuzhao-shenying
+        layer: terms
+        line_ref: references/books/luming-nayin/yuzhao-shenying/terms.md:L30
+        matched_token: 白虎
+      - pack: luming-nayin/yuzhao-shenying
+        layer: terms
+        line_ref: references/books/luming-nayin/yuzhao-shenying/terms.md:L57
+        matched_token: 白虎
+      support_anchors: []
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/yuqia-ji
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L147
+        matched_token: 白虎
+        quote_id: XK-Q140
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L153
+        matched_token: 白虎
+        quote_id: XK-Q146
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L252
+        matched_token: 白虎
+        quote_id: XK-Q245
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L253
+        matched_token: 白虎
+        quote_id: XK-Q246
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L35
+        matched_token: 白虎
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L74
+        matched_token: 白虎
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L69
+        matched_token: 白虎
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L122
+        matched_token: 白虎
+      support_anchors:
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L470
+        matched_token: 白虎
+        quote_id: YQ-Q0463
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/taiwei-fu
+      support_packs:
+      - ziwei/feixing-ziwei-doushu-yuanzhi
+      - ziwei/ziwei-doushu-quanshu
+      first_line_anchors:
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L43
+        matched_token: 白虎
+        quote_id: TQ-36
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L36
+        matched_token: 白虎
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L39
+        matched_token: 白虎
+      - pack: ziwei/taiwei-fu
+        layer: rules
+        line_ref: references/books/ziwei/taiwei-fu/rules.md:L156
+        matched_token: 白虎
+      - pack: ziwei/taiwei-fu
+        layer: rules
+        line_ref: references/books/ziwei/taiwei-fu/rules.md:L157
+        matched_token: 白虎
+      support_anchors:
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: rules
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/rules.md:L49
+        matched_token: 白虎
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L84
+        matched_token: 白虎
+        quote_id: ZW-Q0078
+  acquisition_only: []
+- id: shensha-dajiangjun
+  name: 大将军
+  search_tokens:
+  - 大将军
+  - 博士
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/donggong-zeri
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L126
+        matched_token: 博士
+        quote_id: XK-Q119
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L33
+        matched_token: 大将军
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L38
+        matched_token: 博士
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L69
+        matched_token: 大将军
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L84
+        matched_token: 大将军
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L87
+        matched_token: 大将军
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L173
+        matched_token: 大将军
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1391
+        matched_token: 博士
+        quote_id: XJ-Q1384
+      support_anchors: []
+  acquisition_only: []
+- id: shensha-dexiu
+  name: 德秀
+  search_tokens:
+  - 德秀貴人
+  - 德秀贵人
+  - 德秀
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/mingli-yueyan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L391
+        matched_token: 德秀
+        quote_id: SM-Q379
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L397
+        matched_token: 德秀
+        quote_id: SM-Q385
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L164
+        matched_token: 德秀贵人
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L185
+        matched_token: 德秀贵人
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L274
+        matched_token: 德秀
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L276
+        matched_token: 德秀贵人
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L756
+        matched_token: 德秀
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L758
+        matched_token: 德秀
+      support_anchors:
+      - pack: bazi/mingli-yueyan
+        layer: quote-index
+        line_ref: references/books/bazi/mingli-yueyan/quote-index.md:L47
+        matched_token: 德秀
+        quote_id: MLY-Q043
+      - pack: bazi/mingli-yueyan
+        layer: quote-index
+        line_ref: references/books/bazi/mingli-yueyan/quote-index.md:L48
+        matched_token: 德秀
+        quote_id: MLY-Q044
+  acquisition_only: []
+- id: shensha-fuyin-fanyin
+  name: 伏吟/反吟
+  search_tokens:
+  - 伏吟
+  - 伏呤
+  - 反吟
+  - 返吟
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs:
+      - san-shi/liuren-zhiyin
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L32
+        matched_token: 伏吟
+        quote_id: DL-Q0020
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L33
+        matched_token: 返吟
+        quote_id: DL-Q0021
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L185
+        matched_token: 伏吟
+        quote_id: DL-Q0173
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L186
+        matched_token: 返吟
+        quote_id: DL-Q0174
+      - pack: san-shi/daliuren-daquan
+        layer: terms
+        line_ref: references/books/san-shi/daliuren-daquan/terms.md:L36
+        matched_token: 伏吟
+        quote_id: LT-108
+      - pack: san-shi/daliuren-daquan
+        layer: terms
+        line_ref: references/books/san-shi/daliuren-daquan/terms.md:L37
+        matched_token: 反吟
+        quote_id: LT-109
+      - pack: san-shi/daliuren-daquan
+        layer: terms
+        line_ref: references/books/san-shi/daliuren-daquan/terms.md:L65
+        matched_token: 伏吟
+        quote_id: LT-306
+      - pack: san-shi/daliuren-daquan
+        layer: terms
+        line_ref: references/books/san-shi/daliuren-daquan/terms.md:L66
+        matched_token: 反吟
+        quote_id: LT-307
+      support_anchors:
+      - pack: san-shi/liuren-zhiyin
+        layer: terms
+        line_ref: references/books/san-shi/liuren-zhiyin/terms.md:L15
+        matched_token: 伏吟
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/luoluzi-sanming
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/yuzhao-shenying
+      first_line_anchors:
+      - pack: luming-nayin/luoluzi-sanming
+        layer: quote-index
+        line_ref: references/books/luming-nayin/luoluzi-sanming/quote-index.md:L45
+        matched_token: 伏呤
+        quote_id: LZ-Q39
+      - pack: luming-nayin/luoluzi-sanming
+        layer: quote-index
+        line_ref: references/books/luming-nayin/luoluzi-sanming/quote-index.md:L78
+        matched_token: 伏呤
+        quote_id: LZ-Q72
+      - pack: luming-nayin/luoluzi-sanming
+        layer: terms
+        line_ref: references/books/luming-nayin/luoluzi-sanming/terms.md:L61
+        matched_token: 伏吟
+      - pack: luming-nayin/luoluzi-sanming
+        layer: terms
+        line_ref: references/books/luming-nayin/luoluzi-sanming/terms.md:L62
+        matched_token: 反吟
+      - pack: luming-nayin/luoluzi-sanming
+        layer: rules
+        line_ref: references/books/luming-nayin/luoluzi-sanming/rules.md:L225
+        matched_token: 伏吟
+      - pack: luming-nayin/luoluzi-sanming
+        layer: rules
+        line_ref: references/books/luming-nayin/luoluzi-sanming/rules.md:L228
+        matched_token: 伏吟
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L159
+        matched_token: 伏吟
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L350
+        matched_token: 伏吟
+      support_anchors: []
+  acquisition_only: []
+- id: shensha-guanfu-bingfu
+  name: 官符/病符
+  search_tokens:
+  - 天官符
+  - 官符杀
+  - 官府
+  - 官符
+  - 死符
+  - 病符
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs: []
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L249
+        matched_token: 病符
+        quote_id: DL-Q0237
+      support_anchors: []
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs: []
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L562
+        matched_token: 官符
+        quote_id: WX-Q550
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L566
+        matched_token: 官符
+        quote_id: WX-Q554
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L575
+        matched_token: 官符杀
+        quote_id: WX-Q563
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L576
+        matched_token: 死符
+        quote_id: WX-Q564
+      support_anchors: []
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/donggong-zeri
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L138
+        matched_token: 官府
+        quote_id: XK-Q131
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L141
+        matched_token: 死符
+        quote_id: XK-Q134
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L146
+        matched_token: 官府
+        quote_id: XK-Q139
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L147
+        matched_token: 官符
+        quote_id: XK-Q140
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L50
+        matched_token: 死符
+        quote_id: XJ-Q0043
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1490
+        matched_token: 天官符
+        quote_id: XJ-Q1483
+      - pack: selection/xieji-bianfang-shu
+        layer: terms
+        line_ref: references/books/selection/xieji-bianfang-shu/terms.md:L22
+        matched_token: 死符
+      - pack: selection/xieji-bianfang-shu
+        layer: rules
+        line_ref: references/books/selection/xieji-bianfang-shu/rules.md:L28
+        matched_token: 死符
+      support_anchors:
+      - pack: selection/donggong-zeri
+        layer: quote-index
+        line_ref: references/books/selection/donggong-zeri/quote-index.md:L125
+        matched_token: 官府
+        quote_id: DG-Q118
+      - pack: selection/donggong-zeri
+        layer: quote-index
+        line_ref: references/books/selection/donggong-zeri/quote-index.md:L138
+        matched_token: 官符
+        quote_id: DG-Q131
+      - pack: selection/donggong-zeri
+        layer: quote-index
+        line_ref: references/books/selection/donggong-zeri/quote-index.md:L150
+        matched_token: 官符
+        quote_id: DG-Q143
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/taiwei-fu
+      support_packs:
+      - ziwei/ziwei-doushu-quanshu
+      first_line_anchors:
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L46
+        matched_token: 官符
+        quote_id: TQ-39
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L47
+        matched_token: 官符
+        quote_id: TQ-40
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L106
+        matched_token: 官符
+      support_anchors:
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L22
+        matched_token: 官符
+        quote_id: ZW-Q0016
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L84
+        matched_token: 官府
+        quote_id: ZW-Q0078
+  acquisition_only: []
+- id: shensha-guchen-guasu
+  name: 孤辰/寡宿
+  search_tokens:
+  - 孤寡
+  - 孤辰
+  - 寡宿
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/mingli-yueyan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L186
+        matched_token: 孤寡
+        quote_id: SM-Q174
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L193
+        matched_token: 孤辰
+        quote_id: SM-Q181
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L715
+        matched_token: 孤寡
+        quote_id: SM-Q703
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L727
+        matched_token: 孤寡
+        quote_id: SM-Q715
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L174
+        matched_token: 孤寡
+      support_anchors: []
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs: []
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L41
+        matched_token: 寡宿
+        quote_id: DL-Q0029
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L49
+        matched_token: 寡宿
+        quote_id: DL-Q0037
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L64
+        matched_token: 孤辰
+        quote_id: DL-Q0052
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L78
+        matched_token: 孤辰
+        quote_id: DL-Q0066
+      support_anchors: []
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/luoluzi-sanming
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L559
+        matched_token: 寡宿
+        quote_id: WX-Q547
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L636
+        matched_token: 孤辰
+        quote_id: WX-Q624
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L126
+        matched_token: 孤辰
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L154
+        matched_token: 孤辰
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L155
+        matched_token: 寡宿
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L293
+        matched_token: 孤辰
+      support_anchors:
+      - pack: luming-nayin/luoluzi-sanming
+        layer: quote-index
+        line_ref: references/books/luming-nayin/luoluzi-sanming/quote-index.md:L69
+        matched_token: 孤辰
+        quote_id: LZ-Q63
+      - pack: luming-nayin/luoluzi-sanming
+        layer: terms
+        line_ref: references/books/luming-nayin/luoluzi-sanming/terms.md:L96
+        matched_token: 孤辰
+      - pack: luming-nayin/luoluzi-sanming
+        layer: terms
+        line_ref: references/books/luming-nayin/luoluzi-sanming/terms.md:L97
+        matched_token: 寡宿
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/yuqia-ji
+      first_line_anchors:
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1513
+        matched_token: 孤辰
+        quote_id: XJ-Q1506
+      - pack: selection/xieji-bianfang-shu
+        layer: terms
+        line_ref: references/books/selection/xieji-bianfang-shu/terms.md:L60
+        matched_token: 孤辰
+      - pack: selection/xieji-bianfang-shu
+        layer: rules
+        line_ref: references/books/selection/xieji-bianfang-shu/rules.md:L44
+        matched_token: 孤辰
+      support_anchors: []
+  acquisition_only: []
+- id: shensha-hongluan-tianxi
+  name: 红鸾/天喜
+  search_tokens:
+  - 喜神
+  - 天喜
+  - 紅鸞
+  - 红鸾
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/mingli-yueyan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L54
+        matched_token: 喜神
+        quote_id: SM-Q042
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L62
+        matched_token: 喜神
+        quote_id: SM-Q050
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L69
+        matched_token: 喜神
+        quote_id: SM-Q057
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L364
+        matched_token: 紅鸞
+        quote_id: SM-Q352
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L147
+        matched_token: 红鸾
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L182
+        matched_token: 红鸾
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L854
+        matched_token: 红鸾
+      support_anchors: []
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs: []
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L62
+        matched_token: 天喜
+        quote_id: DL-Q0050
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L69
+        matched_token: 天喜
+        quote_id: DL-Q0057
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L104
+        matched_token: 天喜
+        quote_id: DL-Q0092
+      support_anchors: []
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/feixing-ziwei-doushu-yuanzhi
+      support_packs:
+      - ziwei/ziwei-doushu-quanshu
+      first_line_anchors:
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: quote-index
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/quote-index.md:L14
+        matched_token: 紅鸞
+        quote_id: FZ-Q08
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: quote-index
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/quote-index.md:L18
+        matched_token: 天喜
+        quote_id: FZ-Q12
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: quote-index
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/quote-index.md:L23
+        matched_token: 紅鸞
+        quote_id: FZ-Q17
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: terms
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/terms.md:L18
+        matched_token: 天喜
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: rules
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/rules.md:L57
+        matched_token: 天喜
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: rules
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/rules.md:L59
+        matched_token: 天喜
+      support_anchors: []
+  acquisition_only: []
+- id: shensha-huangdao-heidao
+  name: 黄道/黑道
+  search_tokens:
+  - 六黄道
+  - 六黑道
+  - 黃道
+  - 黃黑
+  - 黄道
+  - 黑道
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/luoluzi-sanming
+      support_packs: []
+      first_line_anchors:
+      - pack: luming-nayin/luoluzi-sanming
+        layer: quote-index
+        line_ref: references/books/luming-nayin/luoluzi-sanming/quote-index.md:L76
+        matched_token: 黃黑
+        quote_id: LZ-Q70
+      - pack: luming-nayin/luoluzi-sanming
+        layer: quote-index
+        line_ref: references/books/luming-nayin/luoluzi-sanming/quote-index.md:L95
+        matched_token: 黃道
+        quote_id: LZ-Q89
+      - pack: luming-nayin/luoluzi-sanming
+        layer: terms
+        line_ref: references/books/luming-nayin/luoluzi-sanming/terms.md:L104
+        matched_token: 黃道
+      - pack: luming-nayin/luoluzi-sanming
+        layer: terms
+        line_ref: references/books/luming-nayin/luoluzi-sanming/terms.md:L105
+        matched_token: 黑道
+      support_anchors: []
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/yuqia-ji
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L56
+        matched_token: 黃道
+        quote_id: XK-Q049
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L253
+        matched_token: 六黑道
+        quote_id: XK-Q246
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L323
+        matched_token: 黄道
+        quote_id: XK-Q316
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L367
+        matched_token: 黄道
+        quote_id: XK-Q360
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L73
+        matched_token: 六黄道
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L74
+        matched_token: 六黑道
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L119
+        matched_token: 黄道
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L122
+        matched_token: 黄道
+      support_anchors:
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L28
+        matched_token: 黃道
+        quote_id: YQ-Q0021
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L29
+        matched_token: 黑道
+        quote_id: YQ-Q0022
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L142
+        matched_token: 黃道
+        quote_id: YQ-Q0135
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L154
+        matched_token: 黃道
+        quote_id: YQ-Q0147
+  acquisition_only: []
+- id: shensha-jianchu
+  name: 建除十二神
+  search_tokens:
+  - 建除十二神
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xieji-bianfang-shu
+      - selection/xingli-kaoyuan
+      support_packs:
+      - selection/yuqia-ji
+      - selection/donggong-zeri
+      first_line_anchors:
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L53
+        matched_token: 建除十二神
+        quote_id: XJ-Q0046
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L54
+        matched_token: 建除十二神
+        quote_id: XJ-Q0047
+      - pack: selection/xieji-bianfang-shu
+        layer: terms
+        line_ref: references/books/selection/xieji-bianfang-shu/terms.md:L33
+        matched_token: 建除十二神
+      - pack: selection/xieji-bianfang-shu
+        layer: rules
+        line_ref: references/books/selection/xieji-bianfang-shu/rules.md:L34
+        matched_token: 建除十二神
+      - pack: selection/xieji-bianfang-shu
+        layer: rules
+        line_ref: references/books/selection/xieji-bianfang-shu/rules.md:L36
+        matched_token: 建除十二神
+      - pack: selection/xieji-bianfang-shu
+        layer: rules
+        line_ref: references/books/selection/xieji-bianfang-shu/rules.md:L39
+        matched_token: 建除十二神
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L59
+        matched_token: 建除十二神
+      support_anchors: []
+  acquisition_only: []
+- id: shensha-jiangxing-huagai
+  name: 将星/华盖
+  search_tokens:
+  - 华盖贵神
+  - 華蓋貴神
+  - 华盖
+  - 将星
+  - 將星
+  - 華蓋
+  - 軒蓋
+  - 轩盖
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/yuanhai-ziping
+      - bazi/mingli-yueyan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L150
+        matched_token: 將星
+        quote_id: SM-Q138
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L162
+        matched_token: 華蓋
+        quote_id: SM-Q150
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L392
+        matched_token: 將星
+        quote_id: SM-Q380
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L177
+        matched_token: 将星
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L178
+        matched_token: 华盖
+      support_anchors:
+      - pack: bazi/yuanhai-ziping
+        layer: terms
+        line_ref: references/books/bazi/yuanhai-ziping/terms.md:L92
+        matched_token: 华盖
+      - pack: bazi/yuanhai-ziping
+        layer: rules
+        line_ref: references/books/bazi/yuanhai-ziping/rules.md:L278
+        matched_token: 华盖
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs: []
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L203
+        matched_token: 华盖
+        quote_id: DL-Q0191
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L222
+        matched_token: 华盖
+        quote_id: DL-Q0210
+      support_anchors: []
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/li-xuzhong-mingshu
+      - luming-nayin/luoluzi-sanming
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L34
+        matched_token: 華蓋
+        quote_id: WX-Q022
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L430
+        matched_token: 华盖
+        quote_id: WX-Q418
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L436
+        matched_token: 华盖
+        quote_id: WX-Q424
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L460
+        matched_token: 華蓋
+        quote_id: WX-Q448
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L81
+        matched_token: 华盖
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L126
+        matched_token: 华盖
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L146
+        matched_token: 华盖
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L149
+        matched_token: 华盖
+      support_anchors:
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: terms
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/terms.md:L42
+        matched_token: 华盖贵神
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: rules
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/rules.md:L458
+        matched_token: 华盖
+      - pack: luming-nayin/luoluzi-sanming
+        layer: quote-index
+        line_ref: references/books/luming-nayin/luoluzi-sanming/quote-index.md:L13
+        matched_token: 將星
+        quote_id: LZ-Q07
+      - pack: luming-nayin/luoluzi-sanming
+        layer: terms
+        line_ref: references/books/luming-nayin/luoluzi-sanming/terms.md:L26
+        matched_token: 将星
+      - pack: luming-nayin/luoluzi-sanming
+        layer: rules
+        line_ref: references/books/luming-nayin/luoluzi-sanming/rules.md:L73
+        matched_token: 将星
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/ziwei-doushu-quanshu
+      support_packs:
+      - ziwei/taiwei-fu
+      first_line_anchors:
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L102
+        matched_token: 将星
+        quote_id: ZW-Q0096
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L19
+        matched_token: 将星
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L95
+        matched_token: 将星
+      support_anchors: []
+  acquisition_only: []
+- id: shensha-jiesha-wangshen-zaisha
+  name: 劫煞/亡神/灾煞
+  search_tokens:
+  - 三煞
+  - 亡神
+  - 刼煞
+  - 劫煞
+  - 岁煞
+  - 災煞
+  - 灾煞
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/mingli-yueyan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L169
+        matched_token: 亡神
+        quote_id: SM-Q157
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L170
+        matched_token: 刼煞
+        quote_id: SM-Q158
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L171
+        matched_token: 刼煞
+        quote_id: SM-Q159
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L172
+        matched_token: 刼煞
+        quote_id: SM-Q160
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L165
+        matched_token: 劫煞
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L166
+        matched_token: 亡神
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L171
+        matched_token: 灾煞
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L186
+        matched_token: 劫煞
+      support_anchors:
+      - pack: bazi/mingli-yueyan
+        layer: quote-index
+        line_ref: references/books/bazi/mingli-yueyan/quote-index.md:L44
+        matched_token: 劫煞
+        quote_id: MLY-Q040
+      - pack: bazi/mingli-yueyan
+        layer: quote-index
+        line_ref: references/books/bazi/mingli-yueyan/quote-index.md:L45
+        matched_token: 劫煞
+        quote_id: MLY-Q041
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs: []
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L45
+        matched_token: 岁煞
+        quote_id: DL-Q0033
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L47
+        matched_token: 劫煞
+        quote_id: DL-Q0035
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L50
+        matched_token: 亡神
+        quote_id: DL-Q0038
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L51
+        matched_token: 岁煞
+        quote_id: DL-Q0039
+      support_anchors: []
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/luoluzi-sanming
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L40
+        matched_token: 亡神
+        quote_id: WX-Q028
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L589
+        matched_token: 亡神
+        quote_id: WX-Q577
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L100
+        matched_token: 亡神
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L101
+        matched_token: 劫煞
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L102
+        matched_token: 亡神
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L194
+        matched_token: 亡神
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L197
+        matched_token: 亡神
+      support_anchors:
+      - pack: luming-nayin/luoluzi-sanming
+        layer: terms
+        line_ref: references/books/luming-nayin/luoluzi-sanming/terms.md:L99
+        matched_token: 亡神
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xieji-bianfang-shu
+      - selection/xingli-kaoyuan
+      support_packs:
+      - selection/donggong-zeri
+      first_line_anchors:
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L68
+        matched_token: 刼煞
+        quote_id: XJ-Q0061
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1352
+        matched_token: 刼煞
+        quote_id: XJ-Q1345
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1377
+        matched_token: 劫煞
+        quote_id: XJ-Q1370
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1421
+        matched_token: 劫煞
+        quote_id: XJ-Q1414
+      - pack: selection/xieji-bianfang-shu
+        layer: terms
+        line_ref: references/books/selection/xieji-bianfang-shu/terms.md:L23
+        matched_token: 三煞
+      - pack: selection/xieji-bianfang-shu
+        layer: terms
+        line_ref: references/books/selection/xieji-bianfang-shu/terms.md:L74
+        matched_token: 三煞
+      - pack: selection/xieji-bianfang-shu
+        layer: terms
+        line_ref: references/books/selection/xieji-bianfang-shu/terms.md:L101
+        matched_token: 三煞
+      - pack: selection/xieji-bianfang-shu
+        layer: rules
+        line_ref: references/books/selection/xieji-bianfang-shu/rules.md:L23
+        matched_token: 三煞
+      support_anchors:
+      - pack: selection/donggong-zeri
+        layer: terms
+        line_ref: references/books/selection/donggong-zeri/terms.md:L14
+        matched_token: 三煞
+    xingming:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - xingming/guotian-jing
+      support_packs: []
+      first_line_anchors:
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L112
+        matched_token: 亡神
+        quote_id: GX-Q0106
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L626
+        matched_token: 亡神
+        quote_id: GX-Q0620
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L631
+        matched_token: 亡神
+        quote_id: GX-Q0625
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L801
+        matched_token: 亡神
+        quote_id: GX-Q0795
+      - pack: xingming/guotian-jing
+        layer: terms
+        line_ref: references/books/xingming/guotian-jing/terms.md:L154
+        matched_token: 亡神
+      - pack: xingming/guotian-jing
+        layer: terms
+        line_ref: references/books/xingming/guotian-jing/terms.md:L156
+        matched_token: 亡神
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L170
+        matched_token: 亡神
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L171
+        matched_token: 亡神
+      support_anchors: []
+  acquisition_only:
+  - xingming/minghai-quanbian
+- id: shensha-jinshen-qisha
+  name: 金神七煞
+  search_tokens:
+  - 金神七煞
+  - 七煞方
+  - 金神
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs: []
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L46
+        matched_token: 金神
+        quote_id: DL-Q0034
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L56
+        matched_token: 金神
+        quote_id: DL-Q0044
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L71
+        matched_token: 金神
+        quote_id: DL-Q0059
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L87
+        matched_token: 金神
+        quote_id: DL-Q0075
+      support_anchors: []
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/donggong-zeri
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L149
+        matched_token: 金神
+        quote_id: XK-Q142
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L37
+        matched_token: 金神七煞
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L69
+        matched_token: 金神七煞
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L75
+        matched_token: 金神七煞
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L78
+        matched_token: 金神七煞
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L173
+        matched_token: 金神七煞
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1492
+        matched_token: 金神
+        quote_id: XJ-Q1485
+      - pack: selection/xieji-bianfang-shu
+        layer: terms
+        line_ref: references/books/selection/xieji-bianfang-shu/terms.md:L25
+        matched_token: 金神
+      support_anchors:
+      - pack: selection/donggong-zeri
+        layer: quote-index
+        line_ref: references/books/selection/donggong-zeri/quote-index.md:L158
+        matched_token: 金神七煞
+        quote_id: DG-Q151
+      - pack: selection/donggong-zeri
+        layer: terms
+        line_ref: references/books/selection/donggong-zeri/terms.md:L30
+        matched_token: 金神七煞
+      - pack: selection/donggong-zeri
+        layer: terms
+        line_ref: references/books/selection/donggong-zeri/terms.md:L42
+        matched_token: 金神七煞
+      - pack: selection/donggong-zeri
+        layer: rules
+        line_ref: references/books/selection/donggong-zeri/rules.md:L45
+        matched_token: 金神七煞
+      - pack: selection/donggong-zeri
+        layer: rules
+        line_ref: references/books/selection/donggong-zeri/rules.md:L47
+        matched_token: 金神七煞
+      - pack: selection/donggong-zeri
+        layer: rules
+        line_ref: references/books/selection/donggong-zeri/rules.md:L51
+        matched_token: 金神
+  acquisition_only: []
+- id: shensha-jinyu
+  name: 金舆
+  search_tokens:
+  - 金舆捧栉
+  - 金舆贵人
+  - 金輿捧櫛
+  - 金輿貴人
+  - 金轝貴人
+  - 金舆
+  - 金輿
+  - 金轝
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/yuanhai-ziping
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L156
+        matched_token: 金轝
+        quote_id: SM-Q144
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L158
+        matched_token: 金轝
+        quote_id: SM-Q146
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L504
+        matched_token: 金轝
+        quote_id: SM-Q492
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L180
+        matched_token: 金舆贵人
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L234
+        matched_token: 金舆
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L236
+        matched_token: 金舆贵人
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L239
+        matched_token: 金舆
+      support_anchors: []
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/li-xuzhong-mingshu
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L35
+        matched_token: 金輿
+        quote_id: WX-Q023
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L464
+        matched_token: 金輿
+        quote_id: WX-Q452
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L82
+        matched_token: 金舆
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L154
+        matched_token: 金舆
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L157
+        matched_token: 金舆
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L158
+        matched_token: 金舆
+      support_anchors: []
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/taiwei-fu
+      support_packs:
+      - ziwei/ziwei-doushu-quanshu
+      first_line_anchors:
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L36
+        matched_token: 金輿捧櫛
+        quote_id: TQ-29
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L89
+        matched_token: 金舆捧栉
+      support_anchors: []
+  acquisition_only: []
+- id: shensha-kongwang
+  name: 空亡
+  search_tokens:
+  - 截路空亡
+  - 天中
+  - 旬空
+  - 空亡
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/yuanhai-ziping
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L108
+        matched_token: 空亡
+        quote_id: SM-Q096
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L111
+        matched_token: 空亡
+        quote_id: SM-Q099
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L172
+        matched_token: 空亡
+        quote_id: SM-Q160
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L195
+        matched_token: 空亡
+        quote_id: SM-Q183
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L168
+        matched_token: 旬空
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L218
+        matched_token: 空亡
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L220
+        matched_token: 旬空
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L223
+        matched_token: 空亡
+      support_anchors:
+      - pack: bazi/yuanhai-ziping
+        layer: quote-index
+        line_ref: references/books/bazi/yuanhai-ziping/quote-index.md:L37
+        matched_token: 空亡
+        quote_id: YH-Q025
+      - pack: bazi/yuanhai-ziping
+        layer: terms
+        line_ref: references/books/bazi/yuanhai-ziping/terms.md:L93
+        matched_token: 旬空
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/li-xuzhong-mingshu
+      - luming-nayin/luoluzi-sanming
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L42
+        matched_token: 空亡
+        quote_id: WX-Q030
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L189
+        matched_token: 空亡
+        quote_id: WX-Q177
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L202
+        matched_token: 空亡
+        quote_id: WX-Q190
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L212
+        matched_token: 空亡
+        quote_id: WX-Q200
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L100
+        matched_token: 空亡
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L105
+        matched_token: 空亡
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L126
+        matched_token: 空亡
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L149
+        matched_token: 空亡
+      support_anchors:
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L72
+        matched_token: 截路空亡
+        quote_id: LX-Q065
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L83
+        matched_token: 空亡
+        quote_id: LX-Q076
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: terms
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/terms.md:L43
+        matched_token: 截路空亡
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: rules
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/rules.md:L458
+        matched_token: 截路空亡
+      - pack: luming-nayin/luoluzi-sanming
+        layer: quote-index
+        line_ref: references/books/luming-nayin/luoluzi-sanming/quote-index.md:L37
+        matched_token: 空亡
+        quote_id: LZ-Q31
+      - pack: luming-nayin/luoluzi-sanming
+        layer: terms
+        line_ref: references/books/luming-nayin/luoluzi-sanming/terms.md:L47
+        matched_token: 空亡
+    xingming:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - xingming/guotian-jing
+      support_packs: []
+      first_line_anchors:
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L585
+        matched_token: 空亡
+        quote_id: GX-Q0579
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L598
+        matched_token: 空亡
+        quote_id: GX-Q0592
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L802
+        matched_token: 空亡
+        quote_id: GX-Q0796
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L804
+        matched_token: 空亡
+        quote_id: GX-Q0798
+      - pack: xingming/guotian-jing
+        layer: terms
+        line_ref: references/books/xingming/guotian-jing/terms.md:L142
+        matched_token: 空亡
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L162
+        matched_token: 空亡
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L163
+        matched_token: 空亡
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L226
+        matched_token: 空亡
+      support_anchors: []
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/taiwei-fu
+      support_packs:
+      - ziwei/ziwei-doushu-quanshu
+      first_line_anchors:
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L14
+        matched_token: 空亡
+        quote_id: TQ-07
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L17
+        matched_token: 空亡
+        quote_id: TQ-10
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L47
+        matched_token: 空亡
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L73
+        matched_token: 空亡
+      - pack: ziwei/taiwei-fu
+        layer: rules
+        line_ref: references/books/ziwei/taiwei-fu/rules.md:L33
+        matched_token: 空亡
+      - pack: ziwei/taiwei-fu
+        layer: rules
+        line_ref: references/books/ziwei/taiwei-fu/rules.md:L36
+        matched_token: 空亡
+      - pack: ziwei/taiwei-fu
+        layer: rules
+        line_ref: references/books/ziwei/taiwei-fu/rules.md:L37
+        matched_token: 空亡
+      - pack: ziwei/taiwei-fu
+        layer: rules
+        line_ref: references/books/ziwei/taiwei-fu/rules.md:L172
+        matched_token: 空亡
+      support_anchors:
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L12
+        matched_token: 空亡
+        quote_id: ZW-Q0006
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L62
+        matched_token: 空亡
+        quote_id: ZW-Q0056
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L63
+        matched_token: 空亡
+        quote_id: ZW-Q0057
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L80
+        matched_token: 旬空
+        quote_id: ZW-Q0074
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L37
+        matched_token: 空亡
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L306
+        matched_token: 空亡
+  acquisition_only:
+  - xingming/minghai-quanbian
+- id: shensha-kuigang
+  name: 魁罡
+  search_tokens:
+  - 天罡
+  - 河魁
+  - 魁罡
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/shenfeng-tongkao
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L395
+        matched_token: 魁罡
+        quote_id: SM-Q383
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L396
+        matched_token: 天罡
+        quote_id: SM-Q384
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L802
+        matched_token: 魁罡
+        quote_id: SM-Q790
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L895
+        matched_token: 魁罡
+        quote_id: SM-Q883
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L106
+        matched_token: 魁罡
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L418
+        matched_token: 魁罡
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L420
+        matched_token: 魁罡
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L423
+        matched_token: 魁罡
+      support_anchors:
+      - pack: bazi/shenfeng-tongkao
+        layer: quote-index
+        line_ref: references/books/bazi/shenfeng-tongkao/quote-index.md:L26
+        matched_token: 魁罡
+        quote_id: SF-Q020
+      - pack: bazi/shenfeng-tongkao
+        layer: quote-index
+        line_ref: references/books/bazi/shenfeng-tongkao/quote-index.md:L136
+        matched_token: 魁罡
+        quote_id: SF-Q130
+      - pack: bazi/shenfeng-tongkao
+        layer: rules
+        line_ref: references/books/bazi/shenfeng-tongkao/rules.md:L4
+        matched_token: 魁罡
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/li-xuzhong-mingshu
+      support_packs:
+      - luming-nayin/yuzhao-shenying
+      first_line_anchors:
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L31
+        matched_token: 魁罡
+        quote_id: LX-Q024
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L54
+        matched_token: 魁罡
+        quote_id: LX-Q047
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: terms
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/terms.md:L91
+        matched_token: 魁罡
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: rules
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/rules.md:L176
+        matched_token: 魁罡
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: rules
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/rules.md:L337
+        matched_token: 魁罡
+      support_anchors:
+      - pack: luming-nayin/yuzhao-shenying
+        layer: quote-index
+        line_ref: references/books/luming-nayin/yuzhao-shenying/quote-index.md:L17
+        matched_token: 魁罡
+        quote_id: YZ-Q010
+      - pack: luming-nayin/yuzhao-shenying
+        layer: quote-index
+        line_ref: references/books/luming-nayin/yuzhao-shenying/quote-index.md:L37
+        matched_token: 天罡
+        quote_id: YZ-Q030
+      - pack: luming-nayin/yuzhao-shenying
+        layer: quote-index
+        line_ref: references/books/luming-nayin/yuzhao-shenying/quote-index.md:L44
+        matched_token: 天罡
+        quote_id: YZ-Q037
+      - pack: luming-nayin/yuzhao-shenying
+        layer: quote-index
+        line_ref: references/books/luming-nayin/yuzhao-shenying/quote-index.md:L53
+        matched_token: 魁罡
+        quote_id: YZ-Q046
+      - pack: luming-nayin/yuzhao-shenying
+        layer: terms
+        line_ref: references/books/luming-nayin/yuzhao-shenying/terms.md:L36
+        matched_token: 天罡
+      - pack: luming-nayin/yuzhao-shenying
+        layer: terms
+        line_ref: references/books/luming-nayin/yuzhao-shenying/terms.md:L42
+        matched_token: 河魁
+  acquisition_only: []
+- id: shensha-luowang
+  name: 天罗/地网
+  search_tokens:
+  - 地網
+  - 地网
+  - 天罗
+  - 天羅
+  - 罗网
+  - 羅網
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/mingli-yueyan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L194
+        matched_token: 地網
+        quote_id: SM-Q182
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L197
+        matched_token: 羅網
+        quote_id: SM-Q185
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L895
+        matched_token: 地網
+        quote_id: SM-Q883
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L175
+        matched_token: 地网
+      support_anchors: []
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/luoluzi-sanming
+      support_packs:
+      - luming-nayin/wuxing-jingji
+      first_line_anchors:
+      - pack: luming-nayin/luoluzi-sanming
+        layer: quote-index
+        line_ref: references/books/luming-nayin/luoluzi-sanming/quote-index.md:L46
+        matched_token: 地網
+        quote_id: LZ-Q40
+      - pack: luming-nayin/luoluzi-sanming
+        layer: terms
+        line_ref: references/books/luming-nayin/luoluzi-sanming/terms.md:L69
+        matched_token: 地網
+      - pack: luming-nayin/luoluzi-sanming
+        layer: rules
+        line_ref: references/books/luming-nayin/luoluzi-sanming/rules.md:L217
+        matched_token: 地网
+      - pack: luming-nayin/luoluzi-sanming
+        layer: rules
+        line_ref: references/books/luming-nayin/luoluzi-sanming/rules.md:L220
+        matched_token: 地网
+      - pack: luming-nayin/luoluzi-sanming
+        layer: rules
+        line_ref: references/books/luming-nayin/luoluzi-sanming/rules.md:L221
+        matched_token: 罗网
+      support_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L635
+        matched_token: 地網
+        quote_id: WX-Q623
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L642
+        matched_token: 地網
+        quote_id: WX-Q630
+  acquisition_only: []
+- id: shensha-lushen-lucun
+  name: 禄/禄神/禄存/化禄
+  search_tokens:
+  - 临官禄
+  - 人元禄
+  - 地元禄
+  - 天元禄
+  - 化祿
+  - 化禄
+  - 天祿
+  - 天禄
+  - 干祿
+  - 干禄
+  - 祿存
+  - 祿神
+  - 禄存
+  - 禄神
+  - 祿
+  - 禄
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/yuanhai-ziping
+      - bazi/ziping-zhenquan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L26
+        matched_token: 祿
+        quote_id: SM-Q014
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L28
+        matched_token: 祿
+        quote_id: SM-Q016
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L42
+        matched_token: 祿
+        quote_id: SM-Q030
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L43
+        matched_token: 祿
+        quote_id: SM-Q031
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L41
+        matched_token: 禄
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L42
+        matched_token: 禄
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L67
+        matched_token: 禄
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L70
+        matched_token: 禄
+      support_anchors:
+      - pack: bazi/yuanhai-ziping
+        layer: quote-index
+        line_ref: references/books/bazi/yuanhai-ziping/quote-index.md:L34
+        matched_token: 禄
+        quote_id: YH-Q022
+      - pack: bazi/yuanhai-ziping
+        layer: quote-index
+        line_ref: references/books/bazi/yuanhai-ziping/quote-index.md:L61
+        matched_token: 禄
+        quote_id: YH-Q049
+      - pack: bazi/yuanhai-ziping
+        layer: quote-index
+        line_ref: references/books/bazi/yuanhai-ziping/quote-index.md:L81
+        matched_token: 禄
+        quote_id: YH-Q069
+      - pack: bazi/yuanhai-ziping
+        layer: terms
+        line_ref: references/books/bazi/yuanhai-ziping/terms.md:L49
+        matched_token: 禄
+      - pack: bazi/yuanhai-ziping
+        layer: terms
+        line_ref: references/books/bazi/yuanhai-ziping/terms.md:L81
+        matched_token: 禄
+      - pack: bazi/yuanhai-ziping
+        layer: terms
+        line_ref: references/books/bazi/yuanhai-ziping/terms.md:L82
+        matched_token: 禄
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/li-xuzhong-mingshu
+      - luming-nayin/luoluzi-sanming
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L14
+        matched_token: 祿
+        quote_id: WX-Q002
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L15
+        matched_token: 祿
+        quote_id: WX-Q003
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L72
+        matched_token: 祿
+        quote_id: WX-Q060
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L76
+        matched_token: 祿
+        quote_id: WX-Q064
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L3
+        matched_token: 禄
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L56
+        matched_token: 禄
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L67
+        matched_token: 禄
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L69
+        matched_token: 干禄
+      support_anchors:
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L9
+        matched_token: 祿
+        quote_id: LX-Q002
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L10
+        matched_token: 祿
+        quote_id: LX-Q003
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L11
+        matched_token: 祿
+        quote_id: LX-Q004
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L12
+        matched_token: 祿
+        quote_id: LX-Q005
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: terms
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/terms.md:L4
+        matched_token: 禄
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: terms
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/terms.md:L25
+        matched_token: 干禄
+    xingming:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - xingming/guotian-jing
+      support_packs: []
+      first_line_anchors:
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L11
+        matched_token: 人元禄
+        quote_id: GX-Q0005
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L111
+        matched_token: 禄神
+        quote_id: GX-Q0105
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L112
+        matched_token: 禄
+        quote_id: GX-Q0106
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L123
+        matched_token: 禄
+        quote_id: GX-Q0117
+      - pack: xingming/guotian-jing
+        layer: terms
+        line_ref: references/books/xingming/guotian-jing/terms.md:L130
+        matched_token: 天禄
+      - pack: xingming/guotian-jing
+        layer: terms
+        line_ref: references/books/xingming/guotian-jing/terms.md:L194
+        matched_token: 禄
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L105
+        matched_token: 天禄
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L106
+        matched_token: 天禄
+      support_anchors: []
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/ziwei-doushu-quanshu
+      support_packs:
+      - ziwei/taiwei-fu
+      first_line_anchors:
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L19
+        matched_token: 化祿
+        quote_id: ZW-Q0013
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L20
+        matched_token: 祿
+        quote_id: ZW-Q0014
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L22
+        matched_token: 祿存
+        quote_id: ZW-Q0016
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L27
+        matched_token: 祿
+        quote_id: ZW-Q0021
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L12
+        matched_token: 禄
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L27
+        matched_token: 禄存
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L29
+        matched_token: 化禄
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L54
+        matched_token: 禄
+      support_anchors:
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L16
+        matched_token: 祿
+        quote_id: TQ-09
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L19
+        matched_token: 祿
+        quote_id: TQ-12
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L25
+        matched_token: 祿
+        quote_id: TQ-18
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L35
+        matched_token: 祿
+        quote_id: TQ-28
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L27
+        matched_token: 禄
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L41
+        matched_token: 禄
+  acquisition_only:
+  - xingming/minghai-quanbian
+- id: shensha-rigui-ride
+  name: 日贵/日德
+  search_tokens:
+  - 日德格
+  - 日贵格
+  - 日德
+  - 日貴
+  - 日贵
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/yuanhai-ziping
+      - bazi/shenfeng-tongkao
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L392
+        matched_token: 日貴
+        quote_id: SM-Q380
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L394
+        matched_token: 日貴
+        quote_id: SM-Q382
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L395
+        matched_token: 日德
+        quote_id: SM-Q383
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L959
+        matched_token: 日貴
+        quote_id: SM-Q947
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L107
+        matched_token: 日贵
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L108
+        matched_token: 日德
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L734
+        matched_token: 日德
+      support_anchors:
+      - pack: bazi/yuanhai-ziping
+        layer: quote-index
+        line_ref: references/books/bazi/yuanhai-ziping/quote-index.md:L36
+        matched_token: 日贵
+        quote_id: YH-Q024
+      - pack: bazi/yuanhai-ziping
+        layer: quote-index
+        line_ref: references/books/bazi/yuanhai-ziping/quote-index.md:L37
+        matched_token: 日德
+        quote_id: YH-Q025
+      - pack: bazi/shenfeng-tongkao
+        layer: quote-index
+        line_ref: references/books/bazi/shenfeng-tongkao/quote-index.md:L24
+        matched_token: 日贵格
+        quote_id: SF-Q018
+      - pack: bazi/shenfeng-tongkao
+        layer: quote-index
+        line_ref: references/books/bazi/shenfeng-tongkao/quote-index.md:L25
+        matched_token: 日德格
+        quote_id: SF-Q019
+      - pack: bazi/shenfeng-tongkao
+        layer: rules
+        line_ref: references/books/bazi/shenfeng-tongkao/rules.md:L4
+        matched_token: 日贵
+  acquisition_only: []
+- id: shensha-sangmen-diaoke
+  name: 丧门/吊客
+  search_tokens:
+  - 丧吊
+  - 丧门
+  - 吊客
+  - 喪弔
+  - 喪門
+  - 弔客
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs:
+      - san-shi/liuren-miben
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L49
+        matched_token: 吊客
+        quote_id: DL-Q0037
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L63
+        matched_token: 吊客
+        quote_id: DL-Q0051
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L77
+        matched_token: 吊客
+        quote_id: DL-Q0065
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L106
+        matched_token: 吊客
+        quote_id: DL-Q0094
+      support_anchors:
+      - pack: san-shi/liuren-miben
+        layer: rules
+        line_ref: references/books/san-shi/liuren-miben/rules.md:L121
+        matched_token: 丧门
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/luoluzi-sanming
+      support_packs: []
+      first_line_anchors:
+      - pack: luming-nayin/luoluzi-sanming
+        layer: quote-index
+        line_ref: references/books/luming-nayin/luoluzi-sanming/quote-index.md:L72
+        matched_token: 喪弔
+        quote_id: LZ-Q66
+      - pack: luming-nayin/luoluzi-sanming
+        layer: terms
+        line_ref: references/books/luming-nayin/luoluzi-sanming/terms.md:L90
+        matched_token: 丧吊
+      - pack: luming-nayin/luoluzi-sanming
+        layer: rules
+        line_ref: references/books/luming-nayin/luoluzi-sanming/rules.md:L249
+        matched_token: 丧吊
+      - pack: luming-nayin/luoluzi-sanming
+        layer: rules
+        line_ref: references/books/luming-nayin/luoluzi-sanming/rules.md:L252
+        matched_token: 丧吊
+      - pack: luming-nayin/luoluzi-sanming
+        layer: rules
+        line_ref: references/books/luming-nayin/luoluzi-sanming/rules.md:L253
+        matched_token: 丧吊
+      support_anchors: []
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/ziwei-doushu-quanshu
+      support_packs:
+      - ziwei/feixing-ziwei-doushu-yuanzhi
+      - ziwei/taiwei-fu
+      first_line_anchors:
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L100
+        matched_token: 丧门
+        quote_id: ZW-Q0094
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L101
+        matched_token: 丧门
+        quote_id: ZW-Q0095
+      support_anchors:
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: rules
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/rules.md:L49
+        matched_token: 喪門
+  acquisition_only: []
+- id: shensha-sanqi-guiren
+  name: 三奇贵人
+  search_tokens:
+  - 三奇贵人
+  - 人中三奇
+  - 地下三奇
+  - 天上三奇
+  - 三奇
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/shenfeng-tongkao
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L163
+        matched_token: 三奇
+        quote_id: SM-Q151
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L160
+        matched_token: 三奇
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L217
+        matched_token: 三奇
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L242
+        matched_token: 三奇贵人
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L244
+        matched_token: 人中三奇
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L247
+        matched_token: 三奇贵人
+      support_anchors: []
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs: []
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L30
+        matched_token: 三奇
+        quote_id: WX-Q018
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L417
+        matched_token: 地下三奇
+        quote_id: WX-Q405
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L418
+        matched_token: 三奇
+        quote_id: WX-Q406
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L515
+        matched_token: 三奇
+        quote_id: WX-Q503
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L75
+        matched_token: 三奇
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L93
+        matched_token: 三奇
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L130
+        matched_token: 三奇
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L133
+        matched_token: 三奇
+      support_anchors: []
+  acquisition_only: []
+- id: shensha-sanxing-liuhai
+  name: 三刑/六害
+  search_tokens:
+  - 三刑
+  - 六害
+  - 刑害
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/ziping-zhenquan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L152
+        matched_token: 六害
+        quote_id: SM-Q140
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L153
+        matched_token: 三刑
+        quote_id: SM-Q141
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L311
+        matched_token: 刑害
+        quote_id: SM-Q299
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L382
+        matched_token: 三刑
+        quote_id: SM-Q370
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L63
+        matched_token: 三刑
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L64
+        matched_token: 六害
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L130
+        matched_token: 六害
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L135
+        matched_token: 六害
+      support_anchors: []
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/yuzhao-shenying
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L40
+        matched_token: 三刑
+        quote_id: WX-Q028
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L41
+        matched_token: 六害
+        quote_id: WX-Q029
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L85
+        matched_token: 刑害
+        quote_id: WX-Q073
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L212
+        matched_token: 刑害
+        quote_id: WX-Q200
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L100
+        matched_token: 三刑
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L103
+        matched_token: 三刑
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L104
+        matched_token: 六害
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L202
+        matched_token: 三刑
+      support_anchors:
+      - pack: luming-nayin/yuzhao-shenying
+        layer: terms
+        line_ref: references/books/luming-nayin/yuzhao-shenying/terms.md:L55
+        matched_token: 三刑
+      - pack: luming-nayin/yuzhao-shenying
+        layer: rules
+        line_ref: references/books/luming-nayin/yuzhao-shenying/rules.md:L170
+        matched_token: 三刑
+      - pack: luming-nayin/yuzhao-shenying
+        layer: rules
+        line_ref: references/books/luming-nayin/yuzhao-shenying/rules.md:L172
+        matched_token: 三刑
+    xingming:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - xingming/guotian-jing
+      support_packs: []
+      first_line_anchors:
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L610
+        matched_token: 三刑
+        quote_id: GX-Q0604
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L615
+        matched_token: 六害
+        quote_id: GX-Q0609
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L616
+        matched_token: 六害
+        quote_id: GX-Q0610
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L620
+        matched_token: 三刑
+        quote_id: GX-Q0614
+      - pack: xingming/guotian-jing
+        layer: terms
+        line_ref: references/books/xingming/guotian-jing/terms.md:L154
+        matched_token: 三刑
+      - pack: xingming/guotian-jing
+        layer: terms
+        line_ref: references/books/xingming/guotian-jing/terms.md:L156
+        matched_token: 三刑
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L169
+        matched_token: 三刑
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L170
+        matched_token: 三刑
+      support_anchors: []
+  acquisition_only:
+  - xingming/minghai-quanbian
+- id: shensha-shie-dabai
+  name: 十恶大败
+  search_tokens:
+  - 十恶大败
+  - 十惡大敗
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/mingli-yueyan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L195
+        matched_token: 十惡大敗
+        quote_id: SM-Q183
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L176
+        matched_token: 十恶大败
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L322
+        matched_token: 十恶大败
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L324
+        matched_token: 十恶大败
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L327
+        matched_token: 十恶大败
+      support_anchors:
+      - pack: bazi/mingli-yueyan
+        layer: quote-index
+        line_ref: references/books/bazi/mingli-yueyan/quote-index.md:L48
+        matched_token: 十恶大败
+        quote_id: MLY-Q044
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xieji-bianfang-shu
+      - selection/xingli-kaoyuan
+      support_packs:
+      - selection/yuqia-ji
+      first_line_anchors:
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1512
+        matched_token: 十惡大敗
+        quote_id: XJ-Q1505
+      - pack: selection/xieji-bianfang-shu
+        layer: terms
+        line_ref: references/books/selection/xieji-bianfang-shu/terms.md:L57
+        matched_token: 十恶大败
+      - pack: selection/xieji-bianfang-shu
+        layer: rules
+        line_ref: references/books/selection/xieji-bianfang-shu/rules.md:L44
+        matched_token: 十恶大败
+      - pack: selection/xieji-bianfang-shu
+        layer: rules
+        line_ref: references/books/selection/xieji-bianfang-shu/rules.md:L68
+        matched_token: 十恶大败
+      - pack: selection/xieji-bianfang-shu
+        layer: rules
+        line_ref: references/books/selection/xieji-bianfang-shu/rules.md:L132
+        matched_token: 十恶大败
+      support_anchors:
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L67
+        matched_token: 十惡大敗
+        quote_id: YQ-Q0060
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L143
+        matched_token: 十惡大敗
+        quote_id: YQ-Q0136
+      - pack: selection/yuqia-ji
+        layer: terms
+        line_ref: references/books/selection/yuqia-ji/terms.md:L27
+        matched_token: 十恶大败
+      - pack: selection/yuqia-ji
+        layer: rules
+        line_ref: references/books/selection/yuqia-ji/rules.md:L70
+        matched_token: 十恶大败
+      - pack: selection/yuqia-ji
+        layer: rules
+        line_ref: references/books/selection/yuqia-ji/rules.md:L73
+        matched_token: 十恶大败
+      - pack: selection/yuqia-ji
+        layer: rules
+        line_ref: references/books/selection/yuqia-ji/rules.md:L127
+        matched_token: 十恶大败
+  acquisition_only: []
+- id: shensha-side-fei-lijue
+  name: 四废/四离/四绝
+  search_tokens:
+  - 四废
+  - 四廢
+  - 四离
+  - 四絕
+  - 四绝
+  - 四離
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs: []
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L46
+        matched_token: 四废
+        quote_id: DL-Q0034
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L54
+        matched_token: 四废
+        quote_id: DL-Q0042
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L61
+        matched_token: 四废
+        quote_id: DL-Q0049
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L82
+        matched_token: 四废
+        quote_id: DL-Q0070
+      support_anchors: []
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/yuqia-ji
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L212
+        matched_token: 四廢
+        quote_id: XK-Q205
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L244
+        matched_token: 四離
+        quote_id: XK-Q237
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L326
+        matched_token: 四廢
+        quote_id: XK-Q319
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L333
+        matched_token: 四廢
+        quote_id: XK-Q326
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L65
+        matched_token: 四废
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L66
+        matched_token: 四离
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L110
+        matched_token: 四废
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L113
+        matched_token: 四废
+      support_anchors:
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L140
+        matched_token: 四廢
+        quote_id: YQ-Q0133
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L143
+        matched_token: 四廢
+        quote_id: YQ-Q0136
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L172
+        matched_token: 四絕
+        quote_id: YQ-Q0165
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L173
+        matched_token: 四離
+        quote_id: YQ-Q0166
+  acquisition_only: []
+- id: shensha-taiji-guiren
+  name: 太极贵人
+  search_tokens:
+  - 太极贵人
+  - 太極貴人
+  - 太极贵
+  - 太極貴
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/ziping-zhenquan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L165
+        matched_token: 太極貴
+        quote_id: SM-Q153
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L162
+        matched_token: 太极贵人
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L183
+        matched_token: 太极贵人
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L250
+        matched_token: 太极贵人
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L252
+        matched_token: 太极贵人
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L255
+        matched_token: 太极贵人
+      support_anchors: []
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs: []
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L722
+        matched_token: 太極貴
+        quote_id: WX-Q710
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L293
+        matched_token: 太极贵人
+      support_anchors: []
+  acquisition_only: []
+- id: shensha-taisui
+  name: 太岁/岁君/岁破
+  search_tokens:
+  - 太岁
+  - 太歲
+  - 岁君
+  - 岁破
+  - 岁神
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/yuanhai-ziping
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L162
+        matched_token: 太歲
+        quote_id: SM-Q150
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L814
+        matched_token: 太歲
+        quote_id: SM-Q802
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L828
+        matched_token: 太歲
+        quote_id: SM-Q816
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L864
+        matched_token: 太歲
+        quote_id: SM-Q852
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L51
+        matched_token: 太岁
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L218
+        matched_token: 太岁
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L82
+        matched_token: 太岁
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L84
+        matched_token: 太岁
+      support_anchors:
+      - pack: bazi/yuanhai-ziping
+        layer: quote-index
+        line_ref: references/books/bazi/yuanhai-ziping/quote-index.md:L18
+        matched_token: 太岁
+        quote_id: YH-Q006
+      - pack: bazi/yuanhai-ziping
+        layer: quote-index
+        line_ref: references/books/bazi/yuanhai-ziping/quote-index.md:L19
+        matched_token: 太岁
+        quote_id: YH-Q007
+      - pack: bazi/yuanhai-ziping
+        layer: terms
+        line_ref: references/books/bazi/yuanhai-ziping/terms.md:L73
+        matched_token: 太岁
+      - pack: bazi/yuanhai-ziping
+        layer: rules
+        line_ref: references/books/bazi/yuanhai-ziping/rules.md:L170
+        matched_token: 太岁
+      - pack: bazi/yuanhai-ziping
+        layer: rules
+        line_ref: references/books/bazi/yuanhai-ziping/rules.md:L172
+        matched_token: 太岁
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs:
+      - san-shi/taiyi-shenshu
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L35
+        matched_token: 岁君
+        quote_id: DL-Q0023
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L107
+        matched_token: 岁神
+        quote_id: DL-Q0095
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L152
+        matched_token: 太岁
+        quote_id: DL-Q0140
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L196
+        matched_token: 太岁
+        quote_id: DL-Q0184
+      support_anchors:
+      - pack: san-shi/taiyi-shenshu
+        layer: terms
+        line_ref: references/books/san-shi/taiyi-shenshu/terms.md:L17
+        matched_token: 太岁
+        quote_id: TT-003
+      - pack: san-shi/taiyi-shenshu
+        layer: rules
+        line_ref: references/books/san-shi/taiyi-shenshu/rules.md:L26
+        matched_token: 太岁
+      - pack: san-shi/taiyi-shenshu
+        layer: rules
+        line_ref: references/books/san-shi/taiyi-shenshu/rules.md:L29
+        matched_token: 太岁
+      - pack: san-shi/taiyi-shenshu
+        layer: rules
+        line_ref: references/books/san-shi/taiyi-shenshu/rules.md:L31
+        matched_token: 太岁
+      - pack: san-shi/taiyi-shenshu
+        layer: rules
+        line_ref: references/books/san-shi/taiyi-shenshu/rules.md:L32
+        matched_token: 太岁
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/donggong-zeri
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L32
+        matched_token: 太岁
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L34
+        matched_token: 太岁
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L35
+        matched_token: 太岁
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L36
+        matched_token: 太岁
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L66
+        matched_token: 太岁
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L69
+        matched_token: 太岁
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L87
+        matched_token: 太岁
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L179
+        matched_token: 太歲
+        quote_id: XJ-Q0172
+      support_anchors: []
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/ziwei-doushu-quanshu
+      support_packs:
+      - ziwei/taiwei-fu
+      first_line_anchors:
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L33
+        matched_token: 太岁
+        quote_id: ZW-Q0027
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L42
+        matched_token: 太岁
+        quote_id: ZW-Q0036
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L50
+        matched_token: 太岁
+        quote_id: ZW-Q0044
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L84
+        matched_token: 太岁
+        quote_id: ZW-Q0078
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L66
+        matched_token: 太岁
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L334
+        matched_token: 太岁
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L336
+        matched_token: 太岁
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L348
+        matched_token: 太岁
+      support_anchors:
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L37
+        matched_token: 太岁
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L105
+        matched_token: 太岁
+  acquisition_only: []
+- id: shensha-tiande-yuede
+  name: 天德/月德
+  search_tokens:
+  - 天德合
+  - 天月德
+  - 月德合
+  - 天德
+  - 月德
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/mingli-yueyan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L208
+        matched_token: 天德
+        quote_id: SM-Q196
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L859
+        matched_token: 天德
+        quote_id: SM-Q847
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L161
+        matched_token: 天德
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L758
+        matched_token: 天月德
+      support_anchors: []
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs:
+      - san-shi/liuren-zhiyin
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L274
+        matched_token: 天德
+        quote_id: DL-Q0262
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L275
+        matched_token: 月德
+        quote_id: DL-Q0263
+      support_anchors:
+      - pack: san-shi/liuren-zhiyin
+        layer: quote-index
+        line_ref: references/books/san-shi/liuren-zhiyin/quote-index.md:L46
+        matched_token: 天德
+        quote_id: LZ-Q040
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/yuzhao-shenying
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L254
+        matched_token: 天德
+        quote_id: WX-Q242
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L291
+        matched_token: 天德
+        quote_id: WX-Q279
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L295
+        matched_token: 月德
+        quote_id: WX-Q283
+      support_anchors:
+      - pack: luming-nayin/yuzhao-shenying
+        layer: quote-index
+        line_ref: references/books/luming-nayin/yuzhao-shenying/quote-index.md:L8
+        matched_token: 天德合
+        quote_id: YZ-Q001
+      - pack: luming-nayin/yuzhao-shenying
+        layer: quote-index
+        line_ref: references/books/luming-nayin/yuzhao-shenying/quote-index.md:L38
+        matched_token: 月德
+        quote_id: YZ-Q031
+      - pack: luming-nayin/yuzhao-shenying
+        layer: quote-index
+        line_ref: references/books/luming-nayin/yuzhao-shenying/quote-index.md:L39
+        matched_token: 月德
+        quote_id: YZ-Q032
+      - pack: luming-nayin/yuzhao-shenying
+        layer: quote-index
+        line_ref: references/books/luming-nayin/yuzhao-shenying/quote-index.md:L40
+        matched_token: 月德
+        quote_id: YZ-Q033
+      - pack: luming-nayin/yuzhao-shenying
+        layer: terms
+        line_ref: references/books/luming-nayin/yuzhao-shenying/terms.md:L32
+        matched_token: 天德
+      - pack: luming-nayin/yuzhao-shenying
+        layer: terms
+        line_ref: references/books/luming-nayin/yuzhao-shenying/terms.md:L54
+        matched_token: 月德
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/yuqia-ji
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L157
+        matched_token: 天德
+        quote_id: XK-Q150
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L158
+        matched_token: 月德
+        quote_id: XK-Q151
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L159
+        matched_token: 天德合
+        quote_id: XK-Q152
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L181
+        matched_token: 天德
+        quote_id: XK-Q174
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L46
+        matched_token: 天德
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L47
+        matched_token: 天德合
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L48
+        matched_token: 天德
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L49
+        matched_token: 月德合
+      support_anchors:
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L28
+        matched_token: 天月德
+        quote_id: YQ-Q0021
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L113
+        matched_token: 天德合
+        quote_id: YQ-Q0106
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L130
+        matched_token: 天月德
+        quote_id: YQ-Q0123
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L134
+        matched_token: 天德
+        quote_id: YQ-Q0127
+      - pack: selection/yuqia-ji
+        layer: rules
+        line_ref: references/books/selection/yuqia-ji/rules.md:L127
+        matched_token: 天德
+  acquisition_only: []
+- id: shensha-tianxing
+  name: 天刑
+  search_tokens:
+  - 黑道天刑
+  - 刑星
+  - 天刑
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs: []
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L46
+        matched_token: 天刑
+        quote_id: DL-Q0034
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L61
+        matched_token: 天刑
+        quote_id: DL-Q0049
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L68
+        matched_token: 天刑
+        quote_id: DL-Q0056
+      support_anchors: []
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs: []
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L253
+        matched_token: 天刑
+        quote_id: XK-Q246
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L74
+        matched_token: 天刑
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L122
+        matched_token: 天刑
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1353
+        matched_token: 天刑
+        quote_id: XJ-Q1346
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1371
+        matched_token: 天刑
+        quote_id: XJ-Q1364
+      - pack: selection/xieji-bianfang-shu
+        layer: terms
+        line_ref: references/books/selection/xieji-bianfang-shu/terms.md:L49
+        matched_token: 天刑
+      support_anchors: []
+    xingming:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - xingming/guotian-jing
+      support_packs: []
+      first_line_anchors:
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L11
+        matched_token: 天刑
+        quote_id: GX-Q0005
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L304
+        matched_token: 天刑
+        quote_id: GX-Q0298
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L305
+        matched_token: 天刑
+        quote_id: GX-Q0299
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L309
+        matched_token: 刑星
+        quote_id: GX-Q0303
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L113
+        matched_token: 天刑
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L114
+        matched_token: 天刑
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L115
+        matched_token: 天刑
+      support_anchors: []
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/ziwei-doushu-quanshu
+      support_packs:
+      - ziwei/feixing-ziwei-doushu-yuanzhi
+      first_line_anchors:
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L51
+        matched_token: 天刑
+        quote_id: ZW-Q0045
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L41
+        matched_token: 天刑
+      support_anchors:
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: quote-index
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/quote-index.md:L15
+        matched_token: 天刑
+        quote_id: FZ-Q09
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: terms
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/terms.md:L21
+        matched_token: 天刑
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: rules
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/rules.md:L65
+        matched_token: 天刑
+  acquisition_only:
+  - xingming/minghai-quanbian
+- id: shensha-tianyi-guiren
+  name: 天乙贵人
+  search_tokens:
+  - 天乙貴人
+  - 天乙貴神
+  - 天乙贵人
+  - 天乙贵神
+  - 貴人
+  - 貴神
+  - 贵人
+  - 贵神
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/ziping-zhenquan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L59
+        matched_token: 貴人
+        quote_id: SM-Q047
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L161
+        matched_token: 天乙貴人
+        quote_id: SM-Q149
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L162
+        matched_token: 貴人
+        quote_id: SM-Q150
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L163
+        matched_token: 貴人
+        quote_id: SM-Q151
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L66
+        matched_token: 贵人
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L159
+        matched_token: 天乙贵人
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L161
+        matched_token: 贵人
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L162
+        matched_token: 贵人
+      support_anchors: []
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs:
+      - san-shi/liuren-zhiyin
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L118
+        matched_token: 贵神
+        quote_id: DL-Q0106
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L124
+        matched_token: 天乙贵人
+        quote_id: DL-Q0112
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L125
+        matched_token: 贵人
+        quote_id: DL-Q0113
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L151
+        matched_token: 贵神
+        quote_id: DL-Q0139
+      - pack: san-shi/daliuren-daquan
+        layer: terms
+        line_ref: references/books/san-shi/daliuren-daquan/terms.md:L39
+        matched_token: 贵神
+      - pack: san-shi/daliuren-daquan
+        layer: terms
+        line_ref: references/books/san-shi/daliuren-daquan/terms.md:L43
+        matched_token: 天乙贵人
+        quote_id: LT-201
+      - pack: san-shi/daliuren-daquan
+        layer: rules
+        line_ref: references/books/san-shi/daliuren-daquan/rules.md:L102
+        matched_token: 贵神
+      - pack: san-shi/daliuren-daquan
+        layer: rules
+        line_ref: references/books/san-shi/daliuren-daquan/rules.md:L106
+        matched_token: 贵神
+      support_anchors:
+      - pack: san-shi/liuren-zhiyin
+        layer: terms
+        line_ref: references/books/san-shi/liuren-zhiyin/terms.md:L19
+        matched_token: 天乙贵人
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/li-xuzhong-mingshu
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L159
+        matched_token: 天乙貴神
+        quote_id: WX-Q147
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L250
+        matched_token: 贵神
+        quote_id: WX-Q238
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L254
+        matched_token: 贵神
+        quote_id: WX-Q242
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L257
+        matched_token: 贵人
+        quote_id: WX-Q245
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L57
+        matched_token: 贵神
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L63
+        matched_token: 贵神
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L67
+        matched_token: 贵神
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L68
+        matched_token: 天乙贵神
+      support_anchors:
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L68
+        matched_token: 貴神
+        quote_id: LX-Q061
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L69
+        matched_token: 貴神
+        quote_id: LX-Q062
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L70
+        matched_token: 貴神
+        quote_id: LX-Q063
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L71
+        matched_token: 貴神
+        quote_id: LX-Q064
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: terms
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/terms.md:L36
+        matched_token: 贵神
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: terms
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/terms.md:L40
+        matched_token: 天乙贵神
+  acquisition_only: []
+- id: shensha-tianyi-medical
+  name: 天医
+  search_tokens:
+  - 八宅天医
+  - 八宅天醫
+  - 天乙巨門
+  - 天乙巨门
+  - 巨門土星
+  - 巨门土星
+  - 天乙星
+  - 地医
+  - 地醫
+  - 天医
+  - 天巫
+  - 天醫
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    fengshui:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - fengshui/yangzhai-shishu
+      support_packs:
+      - fengshui/yangzhai-sanyao
+      first_line_anchors:
+      - pack: fengshui/yangzhai-shishu
+        layer: quote-index
+        line_ref: references/books/fengshui/yangzhai-shishu/quote-index.md:L16
+        matched_token: 天乙星
+        quote_id: YZS-Q021
+      - pack: fengshui/yangzhai-shishu
+        layer: terms
+        line_ref: references/books/fengshui/yangzhai-shishu/terms.md:L12
+        matched_token: 天乙巨门
+      - pack: fengshui/yangzhai-shishu
+        layer: rules
+        line_ref: references/books/fengshui/yangzhai-shishu/rules.md:L13
+        matched_token: 天乙巨门
+      support_anchors:
+      - pack: fengshui/yangzhai-sanyao
+        layer: quote-index
+        line_ref: references/books/fengshui/yangzhai-sanyao/quote-index.md:L78
+        matched_token: 巨门土星
+        quote_id: YZS-Q074
+      - pack: fengshui/yangzhai-sanyao
+        layer: quote-index
+        line_ref: references/books/fengshui/yangzhai-sanyao/quote-index.md:L177
+        matched_token: 天乙巨门
+        quote_id: YZS-Q173
+      - pack: fengshui/yangzhai-sanyao
+        layer: quote-index
+        line_ref: references/books/fengshui/yangzhai-sanyao/quote-index.md:L183
+        matched_token: 天乙巨门
+        quote_id: YZS-Q179
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs: []
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L40
+        matched_token: 地医
+        quote_id: DL-Q0028
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L48
+        matched_token: 地医
+        quote_id: DL-Q0036
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L57
+        matched_token: 天医
+        quote_id: DL-Q0045
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L67
+        matched_token: 天医
+        quote_id: DL-Q0055
+      support_anchors: []
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/yuqia-ji
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L168
+        matched_token: 天醫
+        quote_id: XK-Q161
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L179
+        matched_token: 天巫
+        quote_id: XK-Q172
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L336
+        matched_token: 天巫
+        quote_id: XK-Q329
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L369
+        matched_token: 天巫
+        quote_id: XK-Q362
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L123
+        matched_token: 天巫
+        quote_id: XJ-Q0116
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L125
+        matched_token: 天醫
+        quote_id: XJ-Q0118
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1375
+        matched_token: 天巫
+        quote_id: XJ-Q1368
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1376
+        matched_token: 天巫
+        quote_id: XJ-Q1369
+      support_anchors:
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L312
+        matched_token: 天醫
+        quote_id: YQ-Q0305
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L498
+        matched_token: 巨門土星
+        quote_id: YQ-Q0491
+  acquisition_only:
+  - fengshui/yangzhai-aizhong-pian
+- id: shensha-twelve-generals
+  name: 青龙/朱雀/六合/勾陈/玄武/太常/太阴/天后
+  search_tokens:
+  - 十二天将
+  - 十干支神
+  - 六合
+  - 勾陈
+  - 天后
+  - 太常
+  - 太阴
+  - 朱雀
+  - 玄武
+  - 青龙
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs:
+      - san-shi/liuren-zhiyin
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L44
+        matched_token: 勾陈
+        quote_id: DL-Q0032
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L47
+        matched_token: 玄武
+        quote_id: DL-Q0035
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L50
+        matched_token: 勾陈
+        quote_id: DL-Q0038
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L52
+        matched_token: 朱雀
+        quote_id: DL-Q0040
+      - pack: san-shi/daliuren-daquan
+        layer: terms
+        line_ref: references/books/san-shi/daliuren-daquan/terms.md:L45
+        matched_token: 朱雀
+        quote_id: LT-203
+      - pack: san-shi/daliuren-daquan
+        layer: terms
+        line_ref: references/books/san-shi/daliuren-daquan/terms.md:L46
+        matched_token: 六合
+        quote_id: LT-204
+      - pack: san-shi/daliuren-daquan
+        layer: terms
+        line_ref: references/books/san-shi/daliuren-daquan/terms.md:L47
+        matched_token: 勾陈
+        quote_id: LT-205
+      - pack: san-shi/daliuren-daquan
+        layer: terms
+        line_ref: references/books/san-shi/daliuren-daquan/terms.md:L48
+        matched_token: 青龙
+        quote_id: LT-206
+      support_anchors:
+      - pack: san-shi/liuren-zhiyin
+        layer: terms
+        line_ref: references/books/san-shi/liuren-zhiyin/terms.md:L20
+        matched_token: 十二天将
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/yuzhao-shenying
+      support_packs:
+      - luming-nayin/wuxing-jingji
+      first_line_anchors:
+      - pack: luming-nayin/yuzhao-shenying
+        layer: quote-index
+        line_ref: references/books/luming-nayin/yuzhao-shenying/quote-index.md:L48
+        matched_token: 天后
+        quote_id: YZ-Q041
+      - pack: luming-nayin/yuzhao-shenying
+        layer: quote-index
+        line_ref: references/books/luming-nayin/yuzhao-shenying/quote-index.md:L51
+        matched_token: 六合
+        quote_id: YZ-Q044
+      - pack: luming-nayin/yuzhao-shenying
+        layer: quote-index
+        line_ref: references/books/luming-nayin/yuzhao-shenying/quote-index.md:L53
+        matched_token: 天后
+        quote_id: YZ-Q046
+      - pack: luming-nayin/yuzhao-shenying
+        layer: terms
+        line_ref: references/books/luming-nayin/yuzhao-shenying/terms.md:L24
+        matched_token: 青龙
+      - pack: luming-nayin/yuzhao-shenying
+        layer: terms
+        line_ref: references/books/luming-nayin/yuzhao-shenying/terms.md:L25
+        matched_token: 六合
+      - pack: luming-nayin/yuzhao-shenying
+        layer: terms
+        line_ref: references/books/luming-nayin/yuzhao-shenying/terms.md:L26
+        matched_token: 朱雀
+      - pack: luming-nayin/yuzhao-shenying
+        layer: terms
+        line_ref: references/books/luming-nayin/yuzhao-shenying/terms.md:L28
+        matched_token: 勾陈
+      - pack: luming-nayin/yuzhao-shenying
+        layer: rules
+        line_ref: references/books/luming-nayin/yuzhao-shenying/rules.md:L74
+        matched_token: 六合
+      support_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L90
+        matched_token: 六合
+        quote_id: WX-Q078
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L158
+        matched_token: 六合
+        quote_id: WX-Q146
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L305
+        matched_token: 勾陈
+        quote_id: WX-Q293
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L391
+        matched_token: 六合
+        quote_id: WX-Q379
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L76
+        matched_token: 六合
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      support_packs:
+      - selection/xieji-bianfang-shu
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L169
+        matched_token: 六合
+        quote_id: XK-Q162
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L178
+        matched_token: 天后
+        quote_id: XK-Q171
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L253
+        matched_token: 朱雀
+        quote_id: XK-Q246
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L369
+        matched_token: 天后
+        quote_id: XK-Q362
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L22
+        matched_token: 六合
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L34
+        matched_token: 太阴
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L52
+        matched_token: 六合
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L73
+        matched_token: 青龙
+      support_anchors:
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L121
+        matched_token: 天后
+        quote_id: XJ-Q0114
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L241
+        matched_token: 朱雀
+        quote_id: XJ-Q0234
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1351
+        matched_token: 天后
+        quote_id: XJ-Q1344
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L1353
+        matched_token: 朱雀
+        quote_id: XJ-Q1346
+      - pack: selection/xieji-bianfang-shu
+        layer: terms
+        line_ref: references/books/selection/xieji-bianfang-shu/terms.md:L19
+        matched_token: 太阴
+      - pack: selection/xieji-bianfang-shu
+        layer: terms
+        line_ref: references/books/selection/xieji-bianfang-shu/terms.md:L48
+        matched_token: 青龙
+  acquisition_only: []
+- id: shensha-wenchang
+  name: 文昌
+  search_tokens:
+  - 文昌
+  - 文星
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/yuanhai-ziping
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L315
+        matched_token: 文星
+        quote_id: SM-Q303
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L504
+        matched_token: 文星
+        quote_id: SM-Q492
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L24
+        matched_token: 文星
+      support_anchors: []
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/li-xuzhong-mingshu
+      support_packs:
+      - luming-nayin/wuxing-jingji
+      first_line_anchors:
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L76
+        matched_token: 文星
+        quote_id: LX-Q069
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L78
+        matched_token: 文星
+        quote_id: LX-Q071
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L79
+        matched_token: 文星
+        quote_id: LX-Q072
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: terms
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/terms.md:L41
+        matched_token: 文星
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: rules
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/rules.md:L458
+        matched_token: 文星
+      support_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L286
+        matched_token: 文昌
+        quote_id: WX-Q274
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L287
+        matched_token: 文星
+        quote_id: WX-Q275
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/ziwei-doushu-quanshu
+      support_packs:
+      - ziwei/taiwei-fu
+      first_line_anchors:
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L22
+        matched_token: 文昌
+        quote_id: ZW-Q0016
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L23
+        matched_token: 文昌
+        quote_id: ZW-Q0017
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L27
+        matched_token: 文星
+        quote_id: ZW-Q0021
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L31
+        matched_token: 文昌
+        quote_id: ZW-Q0025
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L21
+        matched_token: 文昌
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L81
+        matched_token: 文昌
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L109
+        matched_token: 文昌
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L111
+        matched_token: 文昌
+      support_anchors:
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L37
+        matched_token: 文昌
+        quote_id: TQ-30
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L27
+        matched_token: 文昌
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L28
+        matched_token: 文星
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L56
+        matched_token: 文昌
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L83
+        matched_token: 文星
+      - pack: ziwei/taiwei-fu
+        layer: rules
+        line_ref: references/books/ziwei/taiwei-fu/rules.md:L105
+        matched_token: 文昌
+  acquisition_only: []
+- id: shensha-xianchi-taohua
+  name: 咸池/桃花
+  search_tokens:
+  - 犯水桃花
+  - 桃花煞
+  - 咸池
+  - 天姚
+  - 桃花
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/mingli-yueyan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L151
+        matched_token: 咸池
+        quote_id: SM-Q139
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L197
+        matched_token: 咸池
+        quote_id: SM-Q185
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L200
+        matched_token: 咸池
+        quote_id: SM-Q188
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L774
+        matched_token: 桃花煞
+        quote_id: SM-Q762
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L179
+        matched_token: 咸池
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L588
+        matched_token: 咸池
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L591
+        matched_token: 桃花
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L854
+        matched_token: 桃花
+      support_anchors: []
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs:
+      - san-shi/liuren-miben
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L44
+        matched_token: 咸池
+        quote_id: DL-Q0032
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L70
+        matched_token: 咸池
+        quote_id: DL-Q0058
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L87
+        matched_token: 咸池
+        quote_id: DL-Q0075
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L111
+        matched_token: 咸池
+        quote_id: DL-Q0099
+      support_anchors: []
+    xingming:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - xingming/guotian-jing
+      support_packs: []
+      first_line_anchors:
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L571
+        matched_token: 咸池
+        quote_id: GX-Q0565
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L576
+        matched_token: 咸池
+        quote_id: GX-Q0570
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L792
+        matched_token: 咸池
+        quote_id: GX-Q0786
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L793
+        matched_token: 桃花
+        quote_id: GX-Q0787
+      - pack: xingming/guotian-jing
+        layer: terms
+        line_ref: references/books/xingming/guotian-jing/terms.md:L149
+        matched_token: 咸池
+      - pack: xingming/guotian-jing
+        layer: terms
+        line_ref: references/books/xingming/guotian-jing/terms.md:L150
+        matched_token: 桃花煞
+      - pack: xingming/guotian-jing
+        layer: terms
+        line_ref: references/books/xingming/guotian-jing/terms.md:L151
+        matched_token: 咸池
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L154
+        matched_token: 咸池
+      support_anchors: []
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/ziwei-doushu-quanshu
+      support_packs:
+      - ziwei/feixing-ziwei-doushu-yuanzhi
+      - ziwei/taiwei-fu
+      first_line_anchors:
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L25
+        matched_token: 桃花
+        quote_id: ZW-Q0019
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L32
+        matched_token: 桃花
+        quote_id: ZW-Q0026
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L52
+        matched_token: 天姚
+        quote_id: ZW-Q0046
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L12
+        matched_token: 桃花
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L15
+        matched_token: 桃花
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L42
+        matched_token: 天姚
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L90
+        matched_token: 桃花
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L46
+        matched_token: 桃花
+      support_anchors:
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: quote-index
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/quote-index.md:L19
+        matched_token: 桃花煞
+        quote_id: FZ-Q13
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: terms
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/terms.md:L19
+        matched_token: 桃花煞
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: rules
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/rules.md:L57
+        matched_token: 咸池
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: rules
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/rules.md:L59
+        matched_token: 咸池
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L22
+        matched_token: 桃花
+        quote_id: TQ-15
+      - pack: ziwei/taiwei-fu
+        layer: quote-index
+        line_ref: references/books/ziwei/taiwei-fu/quote-index.md:L33
+        matched_token: 犯水桃花
+        quote_id: TQ-26
+  acquisition_only:
+  - xingming/minghai-quanbian
+- id: shensha-xuetang-ciguan
+  name: 学堂/词馆
+  search_tokens:
+  - 学堂词馆
+  - 学堂
+  - 學堂
+  - 詞館
+  - 词馆
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/yuanhai-ziping
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L166
+        matched_token: 學堂
+        quote_id: SM-Q154
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L315
+        matched_token: 學堂
+        quote_id: SM-Q303
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L431
+        matched_token: 學堂
+        quote_id: SM-Q419
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L490
+        matched_token: 學堂
+        quote_id: SM-Q478
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L163
+        matched_token: 学堂
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L184
+        matched_token: 学堂词馆
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L258
+        matched_token: 学堂词馆
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L260
+        matched_token: 学堂词馆
+      support_anchors: []
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/li-xuzhong-mingshu
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L36
+        matched_token: 學堂
+        quote_id: WX-Q024
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L212
+        matched_token: 學堂
+        quote_id: WX-Q200
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L250
+        matched_token: 学堂
+        quote_id: WX-Q238
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L465
+        matched_token: 學堂
+        quote_id: WX-Q453
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L83
+        matched_token: 学堂
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L162
+        matched_token: 学堂
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L165
+        matched_token: 学堂
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L166
+        matched_token: 学堂
+      support_anchors: []
+  acquisition_only: []
+- id: shensha-yangren
+  name: 羊刃/阳刃
+  search_tokens:
+  - 擎羊
+  - 流羊
+  - 羊刃
+  - 阳刃
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/shenfeng-tongkao
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L62
+        matched_token: 羊刃
+        quote_id: SM-Q050
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L63
+        matched_token: 羊刃
+        quote_id: SM-Q051
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L67
+        matched_token: 羊刃
+        quote_id: SM-Q055
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L68
+        matched_token: 羊刃
+        quote_id: SM-Q056
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L100
+        matched_token: 羊刃
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L167
+        matched_token: 羊刃
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L216
+        matched_token: 羊刃
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L210
+        matched_token: 羊刃
+      support_anchors:
+      - pack: bazi/shenfeng-tongkao
+        layer: quote-index
+        line_ref: references/books/bazi/shenfeng-tongkao/quote-index.md:L136
+        matched_token: 羊刃
+        quote_id: SF-Q130
+      - pack: bazi/shenfeng-tongkao
+        layer: quote-index
+        line_ref: references/books/bazi/shenfeng-tongkao/quote-index.md:L166
+        matched_token: 羊刃
+        quote_id: SF-Q160
+      - pack: bazi/shenfeng-tongkao
+        layer: quote-index
+        line_ref: references/books/bazi/shenfeng-tongkao/quote-index.md:L263
+        matched_token: 羊刃
+        quote_id: SF-Q257
+      - pack: bazi/shenfeng-tongkao
+        layer: quote-index
+        line_ref: references/books/bazi/shenfeng-tongkao/quote-index.md:L264
+        matched_token: 羊刃
+        quote_id: SF-Q258
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/li-xuzhong-mingshu
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L561
+        matched_token: 羊刃
+        quote_id: WX-Q549
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L563
+        matched_token: 羊刃
+        quote_id: WX-Q551
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L575
+        matched_token: 羊刃
+        quote_id: WX-Q563
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L578
+        matched_token: 羊刃
+        quote_id: WX-Q566
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L107
+        matched_token: 阳刃
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L153
+        matched_token: 阳刃
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L234
+        matched_token: 阳刃
+      - pack: luming-nayin/wuxing-jingji
+        layer: rules
+        line_ref: references/books/luming-nayin/wuxing-jingji/rules.md:L237
+        matched_token: 阳刃
+      support_anchors:
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L68
+        matched_token: 羊刃
+        quote_id: LX-Q061
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L69
+        matched_token: 羊刃
+        quote_id: LX-Q062
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L72
+        matched_token: 羊刃
+        quote_id: LX-Q065
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: quote-index
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/quote-index.md:L77
+        matched_token: 羊刃
+        quote_id: LX-Q070
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: terms
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/terms.md:L45
+        matched_token: 羊刃
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: terms
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/terms.md:L47
+        matched_token: 羊刃
+    xingming:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - xingming/guotian-jing
+      support_packs: []
+      first_line_anchors:
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L112
+        matched_token: 阳刃
+        quote_id: GX-Q0106
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L494
+        matched_token: 阳刃
+        quote_id: GX-Q0488
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L503
+        matched_token: 阳刃
+        quote_id: GX-Q0497
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L513
+        matched_token: 阳刃
+        quote_id: GX-Q0507
+      - pack: xingming/guotian-jing
+        layer: terms
+        line_ref: references/books/xingming/guotian-jing/terms.md:L145
+        matched_token: 阳刃
+      - pack: xingming/guotian-jing
+        layer: terms
+        line_ref: references/books/xingming/guotian-jing/terms.md:L147
+        matched_token: 阳刃
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L146
+        matched_token: 阳刃
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L147
+        matched_token: 阳刃
+      support_anchors: []
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/ziwei-doushu-quanshu
+      support_packs:
+      - ziwei/taiwei-fu
+      - ziwei/feixing-ziwei-doushu-yuanzhi
+      first_line_anchors:
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L43
+        matched_token: 擎羊
+        quote_id: ZW-Q0037
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L45
+        matched_token: 擎羊
+        quote_id: ZW-Q0039
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L60
+        matched_token: 羊刃
+        quote_id: ZW-Q0054
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L74
+        matched_token: 擎羊
+        quote_id: ZW-Q0068
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L33
+        matched_token: 擎羊
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L87
+        matched_token: 擎羊
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L105
+        matched_token: 擎羊
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L137
+        matched_token: 擎羊
+      support_anchors:
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L36
+        matched_token: 擎羊
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L37
+        matched_token: 擎羊
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L39
+        matched_token: 擎羊
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L85
+        matched_token: 擎羊
+      - pack: ziwei/taiwei-fu
+        layer: rules
+        line_ref: references/books/ziwei/taiwei-fu/rules.md:L157
+        matched_token: 擎羊
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: terms
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/terms.md:L20
+        matched_token: 擎羊
+  acquisition_only:
+  - xingming/minghai-quanbian
+- id: shensha-yima-tianma
+  name: 驿马/天马
+  search_tokens:
+  - 天馬
+  - 天马
+  - 岁驿
+  - 月驿
+  - 驿马
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/yuanhai-ziping
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L160
+        matched_token: 天馬
+        quote_id: SM-Q148
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L158
+        matched_token: 驿马
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L196
+        matched_token: 驿马
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L702
+        matched_token: 驿马
+      support_anchors:
+      - pack: bazi/yuanhai-ziping
+        layer: terms
+        line_ref: references/books/bazi/yuanhai-ziping/terms.md:L90
+        matched_token: 驿马
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs:
+      - san-shi/liuren-zhiyin
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L60
+        matched_token: 天马
+        quote_id: DL-Q0048
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L65
+        matched_token: 驿马
+        quote_id: DL-Q0053
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L84
+        matched_token: 天马
+        quote_id: DL-Q0072
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L93
+        matched_token: 驿马
+        quote_id: DL-Q0081
+      support_anchors:
+      - pack: san-shi/liuren-zhiyin
+        layer: quote-index
+        line_ref: references/books/san-shi/liuren-zhiyin/quote-index.md:L43
+        matched_token: 天馬
+        quote_id: LZ-Q037
+    luming_nayin:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - luming-nayin/wuxing-jingji
+      support_packs:
+      - luming-nayin/li-xuzhong-mingshu
+      first_line_anchors:
+      - pack: luming-nayin/wuxing-jingji
+        layer: quote-index
+        line_ref: references/books/luming-nayin/wuxing-jingji/quote-index.md:L369
+        matched_token: 天馬
+        quote_id: WX-Q357
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L70
+        matched_token: 驿马
+      - pack: luming-nayin/wuxing-jingji
+        layer: terms
+        line_ref: references/books/luming-nayin/wuxing-jingji/terms.md:L71
+        matched_token: 驿马
+      support_anchors:
+      - pack: luming-nayin/li-xuzhong-mingshu
+        layer: terms
+        line_ref: references/books/luming-nayin/li-xuzhong-mingshu/terms.md:L89
+        matched_token: 驿马
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xieji-bianfang-shu
+      - selection/xingli-kaoyuan
+      support_packs:
+      - selection/yuqia-ji
+      first_line_anchors:
+      - pack: selection/xieji-bianfang-shu
+        layer: rules
+        line_ref: references/books/selection/xieji-bianfang-shu/rules.md:L76
+        matched_token: 天马
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L329
+        matched_token: 天馬
+        quote_id: XK-Q322
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L332
+        matched_token: 天馬
+        quote_id: XK-Q325
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L333
+        matched_token: 天馬
+        quote_id: XK-Q326
+      support_anchors:
+      - pack: selection/yuqia-ji
+        layer: rules
+        line_ref: references/books/selection/yuqia-ji/rules.md:L136
+        matched_token: 天马
+      - pack: selection/yuqia-ji
+        layer: rules
+        line_ref: references/books/selection/yuqia-ji/rules.md:L145
+        matched_token: 驿马
+    xingming:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - xingming/guotian-jing
+      support_packs: []
+      first_line_anchors:
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L11
+        matched_token: 天马
+        quote_id: GX-Q0005
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L111
+        matched_token: 驿马
+        quote_id: GX-Q0105
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L139
+        matched_token: 驿马
+        quote_id: GX-Q0133
+      - pack: xingming/guotian-jing
+        layer: quote-index
+        line_ref: references/books/xingming/guotian-jing/quote-index.md:L384
+        matched_token: 天马
+        quote_id: GX-Q0378
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L130
+        matched_token: 天马
+      - pack: xingming/guotian-jing
+        layer: rules
+        line_ref: references/books/xingming/guotian-jing/rules.md:L131
+        matched_token: 天马
+      support_anchors: []
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/ziwei-doushu-quanshu
+      support_packs:
+      - ziwei/taiwei-fu
+      first_line_anchors:
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L38
+        matched_token: 驿马
+        quote_id: ZW-Q0032
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: terms
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/terms.md:L28
+        matched_token: 天马
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L130
+        matched_token: 天马
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L132
+        matched_token: 天马
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L133
+        matched_token: 天马
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: rules
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/rules.md:L248
+        matched_token: 天马
+      support_anchors:
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L47
+        matched_token: 天马
+      - pack: ziwei/taiwei-fu
+        layer: terms
+        line_ref: references/books/ziwei/taiwei-fu/terms.md:L85
+        matched_token: 天马
+      - pack: ziwei/taiwei-fu
+        layer: rules
+        line_ref: references/books/ziwei/taiwei-fu/rules.md:L36
+        matched_token: 天马
+      - pack: ziwei/taiwei-fu
+        layer: rules
+        line_ref: references/books/ziwei/taiwei-fu/rules.md:L37
+        matched_token: 天马
+      - pack: ziwei/taiwei-fu
+        layer: rules
+        line_ref: references/books/ziwei/taiwei-fu/rules.md:L52
+        matched_token: 天马
+  acquisition_only:
+  - xingming/minghai-quanbian
+- id: shensha-you-nian-jiuxing
+  name: 游年九星/天乙巨门
+  search_tokens:
+  - 天乙巨门
+  - 游年九星
+  - 五鬼
+  - 伏位
+  - 六煞
+  - 延年
+  - 生气
+  - 祸害
+  - 绝命
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    fengshui:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - fengshui/yangzhai-shishu
+      support_packs:
+      - fengshui/yangzhai-sanyao
+      first_line_anchors:
+      - pack: fengshui/yangzhai-shishu
+        layer: quote-index
+        line_ref: references/books/fengshui/yangzhai-shishu/quote-index.md:L17
+        matched_token: 五鬼
+        quote_id: YZS-Q010
+      - pack: fengshui/yangzhai-shishu
+        layer: terms
+        line_ref: references/books/fengshui/yangzhai-shishu/terms.md:L6
+        matched_token: 伏位
+      - pack: fengshui/yangzhai-shishu
+        layer: terms
+        line_ref: references/books/fengshui/yangzhai-shishu/terms.md:L9
+        matched_token: 五鬼
+      - pack: fengshui/yangzhai-shishu
+        layer: terms
+        line_ref: references/books/fengshui/yangzhai-shishu/terms.md:L10
+        matched_token: 生气
+      - pack: fengshui/yangzhai-shishu
+        layer: terms
+        line_ref: references/books/fengshui/yangzhai-shishu/terms.md:L11
+        matched_token: 延年
+      - pack: fengshui/yangzhai-shishu
+        layer: rules
+        line_ref: references/books/fengshui/yangzhai-shishu/rules.md:L13
+        matched_token: 天乙巨门
+      support_anchors:
+      - pack: fengshui/yangzhai-sanyao
+        layer: quote-index
+        line_ref: references/books/fengshui/yangzhai-sanyao/quote-index.md:L77
+        matched_token: 伏位
+        quote_id: YZS-Q073
+      - pack: fengshui/yangzhai-sanyao
+        layer: quote-index
+        line_ref: references/books/fengshui/yangzhai-sanyao/quote-index.md:L78
+        matched_token: 五鬼
+        quote_id: YZS-Q074
+      - pack: fengshui/yangzhai-sanyao
+        layer: quote-index
+        line_ref: references/books/fengshui/yangzhai-sanyao/quote-index.md:L79
+        matched_token: 延年
+        quote_id: YZS-Q075
+      - pack: fengshui/yangzhai-sanyao
+        layer: quote-index
+        line_ref: references/books/fengshui/yangzhai-sanyao/quote-index.md:L82
+        matched_token: 六煞
+        quote_id: YZS-Q078
+      - pack: fengshui/yangzhai-sanyao
+        layer: terms
+        line_ref: references/books/fengshui/yangzhai-sanyao/terms.md:L10
+        matched_token: 游年九星
+      - pack: fengshui/yangzhai-sanyao
+        layer: terms
+        line_ref: references/books/fengshui/yangzhai-sanyao/terms.md:L11
+        matched_token: 延年
+  acquisition_only:
+  - fengshui/yangzhai-aizhong-pian
+- id: shensha-yuanchen-dahao
+  name: 元辰/大耗/小耗
+  search_tokens:
+  - 元辰
+  - 大耗
+  - 小耗
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    bazi:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - bazi/sanming-tonghui
+      support_packs:
+      - bazi/mingli-yueyan
+      first_line_anchors:
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L189
+        matched_token: 元辰
+        quote_id: SM-Q177
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L197
+        matched_token: 元辰
+        quote_id: SM-Q185
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L534
+        matched_token: 大耗
+        quote_id: SM-Q522
+      - pack: bazi/sanming-tonghui
+        layer: quote-index
+        line_ref: references/books/bazi/sanming-tonghui/quote-index.md:L727
+        matched_token: 元辰
+        quote_id: SM-Q715
+      - pack: bazi/sanming-tonghui
+        layer: terms
+        line_ref: references/books/bazi/sanming-tonghui/terms.md:L169
+        matched_token: 元辰
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L282
+        matched_token: 元辰
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L284
+        matched_token: 元辰
+      - pack: bazi/sanming-tonghui
+        layer: rules
+        line_ref: references/books/bazi/sanming-tonghui/rules.md:L287
+        matched_token: 元辰
+      support_anchors: []
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/yuqia-ji
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L143
+        matched_token: 大耗
+        quote_id: XK-Q136
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L144
+        matched_token: 小耗
+        quote_id: XK-Q137
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L208
+        matched_token: 大耗
+        quote_id: XK-Q201
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L209
+        matched_token: 大耗
+        quote_id: XK-Q202
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L64
+        matched_token: 大耗
+      - pack: selection/xieji-bianfang-shu
+        layer: quote-index
+        line_ref: references/books/selection/xieji-bianfang-shu/quote-index.md:L50
+        matched_token: 小耗
+        quote_id: XJ-Q0043
+      - pack: selection/xieji-bianfang-shu
+        layer: terms
+        line_ref: references/books/selection/xieji-bianfang-shu/terms.md:L62
+        matched_token: 大耗
+      - pack: selection/xieji-bianfang-shu
+        layer: rules
+        line_ref: references/books/selection/xieji-bianfang-shu/rules.md:L52
+        matched_token: 大耗
+      support_anchors:
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L350
+        matched_token: 大耗
+        quote_id: YQ-Q0343
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L371
+        matched_token: 小耗
+        quote_id: YQ-Q0364
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L374
+        matched_token: 小耗
+        quote_id: YQ-Q0367
+    ziwei:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - ziwei/feixing-ziwei-doushu-yuanzhi
+      support_packs:
+      - ziwei/ziwei-doushu-quanshu
+      first_line_anchors:
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: quote-index
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/quote-index.md:L14
+        matched_token: 大耗
+        quote_id: FZ-Q08
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: quote-index
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/quote-index.md:L23
+        matched_token: 大耗
+        quote_id: FZ-Q17
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: terms
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/terms.md:L18
+        matched_token: 大耗
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: rules
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/rules.md:L49
+        matched_token: 大耗
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: rules
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/rules.md:L57
+        matched_token: 大耗
+      - pack: ziwei/feixing-ziwei-doushu-yuanzhi
+        layer: rules
+        line_ref: references/books/ziwei/feixing-ziwei-doushu-yuanzhi/rules.md:L59
+        matched_token: 大耗
+      support_anchors:
+      - pack: ziwei/ziwei-doushu-quanshu
+        layer: quote-index
+        line_ref: references/books/ziwei/ziwei-doushu-quanshu/quote-index.md:L84
+        matched_token: 大耗
+        quote_id: ZW-Q0078
+  acquisition_only: []
+- id: shensha-yuekong-mucang-jieshen
+  name: 月空/母仓/解神
+  search_tokens:
+  - 母仓日
+  - 月空
+  - 母仓
+  - 解神
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs: []
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L73
+        matched_token: 解神
+        quote_id: DL-Q0061
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L93
+        matched_token: 解神
+        quote_id: DL-Q0081
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L96
+        matched_token: 解神
+        quote_id: DL-Q0084
+      support_anchors: []
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/yuqia-ji
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L160
+        matched_token: 月空
+        quote_id: XK-Q153
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L183
+        matched_token: 解神
+        quote_id: XK-Q176
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L50
+        matched_token: 月空
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L51
+        matched_token: 母仓
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L53
+        matched_token: 解神
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L93
+        matched_token: 月空
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L96
+        matched_token: 月空
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L173
+        matched_token: 母仓
+      support_anchors:
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L130
+        matched_token: 月空
+        quote_id: YQ-Q0123
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L142
+        matched_token: 月空
+        quote_id: YQ-Q0135
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L223
+        matched_token: 月空
+        quote_id: YQ-Q0216
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L229
+        matched_token: 月空
+        quote_id: YQ-Q0222
+      - pack: selection/yuqia-ji
+        layer: rules
+        line_ref: references/books/selection/yuqia-ji/rules.md:L127
+        matched_token: 母仓
+  acquisition_only: []
+- id: shensha-yuepo-yueyan
+  name: 月破/月厌/月害
+  search_tokens:
+  - 受死
+  - 月厌
+  - 月厭
+  - 月害
+  - 月破
+  entry_trace_status: all_systems_first_line_quote_index_hit
+  systems:
+    liuren:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - san-shi/daliuren-daquan
+      support_packs: []
+      first_line_anchors:
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L51
+        matched_token: 受死
+        quote_id: DL-Q0039
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L54
+        matched_token: 月厌
+        quote_id: DL-Q0042
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L59
+        matched_token: 受死
+        quote_id: DL-Q0047
+      - pack: san-shi/daliuren-daquan
+        layer: quote-index
+        line_ref: references/books/san-shi/daliuren-daquan/quote-index.md:L66
+        matched_token: 月破
+        quote_id: DL-Q0054
+      support_anchors: []
+    selection:
+      trace_status: first_line_quote_index_hit
+      first_line_packs:
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      support_packs:
+      - selection/yuqia-ji
+      first_line_anchors:
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L184
+        matched_token: 月厭
+        quote_id: XK-Q177
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L195
+        matched_token: 月厭
+        quote_id: XK-Q188
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L201
+        matched_token: 月破
+        quote_id: XK-Q194
+      - pack: selection/xingli-kaoyuan
+        layer: quote-index
+        line_ref: references/books/selection/xingli-kaoyuan/quote-index.md:L205
+        matched_token: 月害
+        quote_id: XK-Q198
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L60
+        matched_token: 月破
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L61
+        matched_token: 月厌
+      - pack: selection/xingli-kaoyuan
+        layer: terms
+        line_ref: references/books/selection/xingli-kaoyuan/terms.md:L62
+        matched_token: 月害
+      - pack: selection/xingli-kaoyuan
+        layer: rules
+        line_ref: references/books/selection/xingli-kaoyuan/rules.md:L101
+        matched_token: 月厌
+      support_anchors:
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L29
+        matched_token: 月厭
+        quote_id: YQ-Q0022
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L128
+        matched_token: 受死
+        quote_id: YQ-Q0121
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L152
+        matched_token: 月厭
+        quote_id: YQ-Q0145
+      - pack: selection/yuqia-ji
+        layer: quote-index
+        line_ref: references/books/selection/yuqia-ji/quote-index.md:L270
+        matched_token: 月厭
+        quote_id: YQ-Q0263
+      - pack: selection/yuqia-ji
+        layer: rules
+        line_ref: references/books/selection/yuqia-ji/rules.md:L73
+        matched_token: 受死
+      - pack: selection/yuqia-ji
+        layer: rules
+        line_ref: references/books/selection/yuqia-ji/rules.md:L127
+        matched_token: 受死
+  acquisition_only: []

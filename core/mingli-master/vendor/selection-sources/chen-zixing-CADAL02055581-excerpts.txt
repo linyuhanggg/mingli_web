@@ -1,0 +1,9 @@
+source_url: https://www.shidianguji.com/zh/book/CADAL02055581/chapter/1lw9omhzyp4ax
+witness: CADAL02055581 digitized classical edition
+accessed_at: 2026-07-24
+
+lineId 3603, 三丧大墓
+三丧大墓：春辰日，夏未日，秋戍日，冬丑日，
+
+lines 1475-1477, 土禁凶日
+土禁凶日，春亥夏寅，秋巳、冬申，

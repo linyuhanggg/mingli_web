@@ -1,0 +1,539 @@
+{
+  "capability": {
+    "assumption_cost": 0,
+    "default_dimension_ids": [
+      "career",
+      "health",
+      "location",
+      "outcome",
+      "overview",
+      "relationship",
+      "state",
+      "timing"
+    ],
+    "default_priority": 10,
+    "dimension_ids": [
+      "career",
+      "health",
+      "location",
+      "outcome",
+      "overview",
+      "relationship",
+      "state",
+      "timing"
+    ],
+    "exact_horizon_ids": [],
+    "horizon_ids": [
+      "day",
+      "month",
+      "year",
+      "life"
+    ],
+    "independent_lineage_id": "bazi",
+    "object_ids": [
+      "natal",
+      "near_time_personal"
+    ],
+    "required_input_groups": [
+      {
+        "any_of": [
+          "birth_datetime_or_four_pillars"
+        ]
+      }
+    ]
+  },
+  "claim_policy": {
+    "allowed_kind_ids": [
+      "kind.fact",
+      "kind.tendency"
+    ],
+    "certainty_ceiling_id": "certainty.tendency"
+  },
+  "display": {
+    "zh-CN": {
+      "description": "本命与近时个人计算：根据出生时刻（公历、出生地经度或真太阳时坐标之一）计算四柱天干地支，并以四柱为基本单元输出事实层结果。前提：必须提供 birth_datetime_or_four_pillars；其余字段视需要可补充。边界：不接受未声明方法的事件性提问、不接受已排好的命盘作为对象。与 ziwei/xingming/luming-nayin 的选择依据：四柱属于时间-地支派系，若提问围绕「年/月/日/时支」或大运流年，请选本能力；若围绕宫位星曜请选 ziwei；若围绕七政四余星曜请选 xingming；若仅需五行纳音基础事实请选 luming-nayin。",
+      "name": "八字"
+    }
+  },
+  "entrypoint": "reading_engine.providers:BaziProvider",
+  "fact_contract": "fact_contracts.bazi:BaziFactContract",
+  "evidence_profile_id": "bazi",
+  "id": "bazi",
+  "input_fields": {
+    "birth_datetime_or_four_pillars": {
+      "display": {
+        "zh-CN": "出生时间或四柱"
+      },
+      "request_slot": {
+        "list": "chart_data.four_pillars",
+        "mapping": "chart_data",
+        "string": "birth_data.birth_datetime"
+      },
+      "type": "structured"
+    },
+    "coordinate_accuracy_meters": {
+      "display": {
+        "zh-CN": "坐标精度(米)"
+      },
+      "request_slot": "birth_data.coordinate_accuracy_meters",
+      "type": "number"
+    },
+    "coordinate_source": {
+      "display": {
+        "zh-CN": "坐标来源"
+      },
+      "request_slot": "birth_data.coordinate_source",
+      "type": "string"
+    },
+    "gender": {
+      "display": {
+        "zh-CN": "性别"
+      },
+      "request_slot": "birth_data.gender",
+      "type": "string"
+    },
+    "latitude": {
+      "display": {
+        "zh-CN": "纬度"
+      },
+      "request_slot": "birth_data.latitude",
+      "type": "number"
+    },
+    "location": {
+      "display": {
+        "zh-CN": "出生地"
+      },
+      "request_slot": "location",
+      "type": "string"
+    },
+    "longitude": {
+      "display": {
+        "zh-CN": "经度"
+      },
+      "request_slot": "birth_data.longitude",
+      "type": "number"
+    },
+    "time_basis_policy": {
+      "display": {
+        "zh-CN": "时间口径"
+      },
+      "request_slot": "birth_data.time_basis_policy",
+      "type": "string"
+    },
+    "timezone": {
+      "display": {
+        "zh-CN": "时区"
+      },
+      "request_slot": "timezone",
+      "type": "string"
+    },
+    "zi_hour_policy": {
+      "display": {
+        "zh-CN": "子时策略"
+      },
+      "request_slot": "birth_data.zi_hour_policy",
+      "type": "string"
+    }
+  },
+  "runtime_capability": {
+    "assumption_cost": 0,
+    "default_priority": 10,
+    "dimensions": [
+      "career",
+      "health",
+      "location",
+      "outcome",
+      "overview",
+      "relationship",
+      "state",
+      "timing"
+    ],
+    "exact_horizons": [],
+    "extension_output_bindings": [
+      {
+        "horizons": [
+          "year"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/year_layers"
+        ],
+        "name": "year_layers"
+      },
+      {
+        "horizons": [
+          "month"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/month_layers"
+        ],
+        "name": "month_layers"
+      },
+      {
+        "horizons": [
+          "day"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/day_layers"
+        ],
+        "name": "day_layers"
+      },
+      {
+        "horizons": [
+          "life"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/dimension_fact_scope"
+        ],
+        "name": "dimension_fact_scope"
+      }
+    ],
+    "extension_outputs": [
+      "year_layers",
+      "month_layers",
+      "day_layers",
+      "dimension_fact_scope"
+    ],
+    "finding_bindings": [
+      {
+        "id": "interpretive_candidates",
+        "json_pointers": [
+          "/facts/chart_facts/output/interpretive_candidates"
+        ],
+        "kind_id": "finding.interpretive_candidates",
+        "support_fact_ids": [
+          "interpretive_candidates"
+        ]
+      }
+    ],
+    "limit_bindings": [
+      {
+        "detail_ids": [
+          "whole_chart_strength",
+          "pattern_success_or_failure",
+          "favorable_and_unfavorable_gods",
+          "real_world_outcome"
+        ],
+        "equals": "requires_classical_adjudication",
+        "json_pointer": "/facts/chart_facts/output/interpretive_candidates/following_and_transformation/status",
+        "kind_id": "limit.interpretive_verdict_unavailable",
+        "scope_refs": [
+          "overview",
+          "career",
+          "money",
+          "relationship",
+          "health",
+          "outcome"
+        ]
+      },
+      {
+        "detail_ids": [
+          "start_age",
+          "calendar_year_mapping",
+          "active_cycle",
+          "precise_timing"
+        ],
+        "equals": "sequence_only",
+        "json_pointer": "/facts/chart_facts/output/luck_cycles/status",
+        "kind_id": "limit.partial_luck_timing",
+        "scope_refs": [
+          "timing"
+        ]
+      },
+      {
+        "detail_ids": [
+          "direction",
+          "sequence",
+          "start_age",
+          "calendar_year_mapping",
+          "active_cycle",
+          "precise_timing"
+        ],
+        "equals": "not_calculated_missing_gender",
+        "json_pointer": "/facts/chart_facts/output/luck_cycles/status",
+        "kind_id": "limit.partial_luck_no_gender",
+        "scope_refs": [
+          "timing"
+        ]
+      }
+    ],
+    "horizons": [
+      "day",
+      "month",
+      "year",
+      "life"
+    ],
+    "independent_lineage": "bazi",
+    "mode": "calculation",
+    "objects": [
+      "natal",
+      "near_time_personal"
+    ],
+    "output_bindings": [
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/four_pillars"
+        ],
+        "name": "four_pillars"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/hidden_stems"
+        ],
+        "name": "hidden_stems"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/ten_gods"
+        ],
+        "name": "ten_gods"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/day_master"
+        ],
+        "name": "day_master"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/month_command"
+        ],
+        "name": "month_command"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/seasonal_profile"
+        ],
+        "name": "seasonal_profile"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/tiaohou_markers"
+        ],
+        "name": "tiaohou_markers"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/element_inventory"
+        ],
+        "name": "element_inventory"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/branch_relations"
+        ],
+        "name": "branch_relations"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/shensha_auxiliary"
+        ],
+        "name": "shensha_auxiliary"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/nayin"
+        ],
+        "name": "nayin"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/twelve_growth_stages"
+        ],
+        "name": "twelve_growth_stages"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/xunkong"
+        ],
+        "name": "xunkong"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/san_yuan"
+        ],
+        "name": "san_yuan"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/interpretive_candidates"
+        ],
+        "name": "interpretive_candidates"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/source_conditioned_patterns"
+        ],
+        "name": "source_conditioned_patterns"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/luck_cycles"
+        ],
+        "name": "luck_cycles"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/public_calendar_normalization"
+        ],
+        "name": "calendar_normalization"
+      }
+    ],
+    "outputs": [
+      "four_pillars",
+      "hidden_stems",
+      "ten_gods",
+      "day_master",
+      "month_command",
+      "seasonal_profile",
+      "tiaohou_markers",
+      "element_inventory",
+      "branch_relations",
+      "shensha_auxiliary",
+      "nayin",
+      "twelve_growth_stages",
+      "xunkong",
+      "san_yuan",
+      "interpretive_candidates",
+      "source_conditioned_patterns",
+      "luck_cycles",
+      "calendar_normalization"
+    ],
+    "required_inputs": [
+      "birth_datetime_or_four_pillars"
+    ],
+    "system": "bazi"
+  },
+  "schema_version": "provider-manifest-v1",
+  "terms": {
+    "calendar_normalization": {
+      "display": {
+        "zh-CN": "历法与真太阳时"
+      }
+    },
+    "career": {
+      "display": {
+        "zh-CN": "事业"
+      }
+    },
+    "certainty.tendency": {
+      "display": {
+        "zh-CN": "倾向性上限"
+      }
+    },
+    "day": {
+      "display": {
+        "zh-CN": "日"
+      }
+    },
+    "finding.interpretive_candidates": {
+      "display": {
+        "zh-CN": "候选解读材料"
+      }
+    },
+    "health": {
+      "display": {
+        "zh-CN": "健康"
+      }
+    },
+    "kind.fact": {
+      "display": {
+        "zh-CN": "事实陈述"
+      }
+    },
+    "kind.tendency": {
+      "display": {
+        "zh-CN": "倾向判断"
+      }
+    },
+    "life": {
+      "display": {
+        "zh-CN": "一生"
+      }
+    },
+    "limit.source_gap": {
+      "display": {
+        "zh-CN": "本轮没有命中可引用的古籍条文，只能基于确定性事实描述"
+      }
+    },
+    "limit.interpretive_verdict_unavailable": {
+      "display": {
+        "zh-CN": "当前只发布可复核候选事实；整盘旺衰、格局成败、喜用忌神与现实吉凶尚未裁定，不得当作定论"
+      }
+    },
+    "limit.partial_luck_no_gender": {
+      "display": {
+        "zh-CN": "本轮未提供性别，只能输出静态盘面；大运顺逆与排序、起运岁数、对应公历年份、当前大运与具体应期均不可得"
+      }
+    },
+    "limit.partial_luck_timing": {
+      "display": {
+        "zh-CN": "本轮只能确定大运的顺逆与干支排序；起运岁数、对应公历年份、当前大运与具体应期不可得"
+      }
+    },
+    "location": {
+      "display": {
+        "zh-CN": "方位地点"
+      }
+    },
+    "month": {
+      "display": {
+        "zh-CN": "月"
+      }
+    },
+    "natal": {
+      "display": {
+        "zh-CN": "本命"
+      }
+    },
+    "near_time_personal": {
+      "display": {
+        "zh-CN": "近期个人运势"
+      }
+    },
+    "outcome": {
+      "display": {
+        "zh-CN": "结果成败"
+      }
+    },
+    "overview": {
+      "display": {
+        "zh-CN": "整体总览"
+      }
+    },
+    "relationship": {
+      "display": {
+        "zh-CN": "人际感情"
+      }
+    },
+    "state": {
+      "display": {
+        "zh-CN": "当前状态"
+      }
+    },
+    "timing": {
+      "display": {
+        "zh-CN": "时机应期"
+      }
+    },
+    "year": {
+      "display": {
+        "zh-CN": "年"
+      }
+    }
+  },
+  "time_semantics": {
+    "coordinates_required_policies": [
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "default_policy": "local_apparent_solar-v1",
+    "input_time": "birth_data.birth_datetime",
+    "role": "pillar_clock",
+    "supported_policies": [
+      "civil",
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "unsupported_fallback": "need_input"
+  }
+}

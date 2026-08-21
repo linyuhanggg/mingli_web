@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/name-analysis-view-v1.schema.json",
+  "title": "Name Analysis ViewModel v1",
+  "description": "Facts-only projection for surname 五音 identity from 《五行精纪》. No luck, personality, 康熙笔画, 五格, or 三才数理 verdict.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "subject_ref",
+    "normalized",
+    "surname_wuyin",
+    "given_name_wuyin",
+    "seasonal_markers",
+    "source_identity",
+    "active_source_rule_ids",
+    "source_dependency_ids",
+    "source_status",
+    "source_gaps",
+    "limitations",
+    "hard_verdict"
+  ],
+  "properties": {
+    "schema_version": {"const": "name-analysis-view/v1"},
+    "subject_ref": {"$ref": "#/$defs/text"},
+    "normalized": {"$ref": "#/$defs/normalizedName"},
+    "surname_wuyin": {
+      "oneOf": [
+        {"$ref": "#/$defs/wuyinMatch"},
+        {"type": "null"}
+      ]
+    },
+    "given_name_wuyin": {"type": "null"},
+    "seasonal_markers": {
+      "oneOf": [
+        {"$ref": "#/$defs/seasonalMarkers"},
+        {"type": "null"}
+      ]
+    },
+    "source_identity": {"$ref": "#/$defs/sourceIdentity"},
+    "active_source_rule_ids": {"$ref": "#/$defs/stringArray"},
+    "source_dependency_ids": {"$ref": "#/$defs/stringArray"},
+    "source_status": {
+      "enum": [
+        "exact_rule_bound",
+        "ambiguous",
+        "unmatched",
+        "unavailable"
+      ]
+    },
+    "source_gaps": {"$ref": "#/$defs/stringArray"},
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/text"}
+    },
+    "hard_verdict": {"type": "null"}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1},
+    "stringArray": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+    "tone": {"enum": ["宫", "商", "角", "徵", "羽"]},
+    "element": {"enum": ["wood", "fire", "earth", "metal", "water"]},
+    "normalizedName": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family_name", "given_name", "graphemes", "script"],
+      "properties": {
+        "family_name": {"$ref": "#/$defs/text"},
+        "given_name": {"type": ["string", "null"], "minLength": 1},
+        "graphemes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/text"}
+        },
+        "script": {"const": "hanzi"}
+      }
+    },
+    "wuyinMatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grapheme",
+        "lookup_key",
+        "tone",
+        "element",
+        "match_status",
+        "source_rule_id"
+      ],
+      "properties": {
+        "grapheme": {"$ref": "#/$defs/text"},
+        "lookup_key": {"$ref": "#/$defs/text"},
+        "tone": {
+          "oneOf": [
+            {"$ref": "#/$defs/tone"},
+            {"type": "null"}
+          ]
+        },
+        "element": {
+          "oneOf": [
+            {"$ref": "#/$defs/element"},
+            {"type": "null"}
+          ]
+        },
+        "match_status": {"enum": ["exact", "ambiguous", "unmatched"]},
+        "source_rule_id": {"$ref": "#/$defs/text"}
+      }
+    },
+    "seasonalMarkers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "wang_branches",
+        "de_branches",
+        "hard_verdict",
+        "source_rule_id",
+        "boundary"
+      ],
+      "properties": {
+        "status": {"const": "identity_only"},
+        "wang_branches": {"$ref": "#/$defs/stringArray"},
+        "de_branches": {"$ref": "#/$defs/stringArray"},
+        "hard_verdict": {"type": "null"},
+        "source_rule_id": {"$ref": "#/$defs/text"},
+        "boundary": {"$ref": "#/$defs/text"}
+      }
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_pack",
+        "source_dependency_id",
+        "source_rule_id",
+        "source_anchor"
+      ],
+      "properties": {
+        "source_pack": {"const": "luming-nayin/wuxing-jingji"},
+        "source_dependency_id": {"$ref": "#/$defs/text"},
+        "source_rule_id": {"$ref": "#/$defs/text"},
+        "source_anchor": {"$ref": "#/$defs/text"}
+      }
+    }
+  }
+}

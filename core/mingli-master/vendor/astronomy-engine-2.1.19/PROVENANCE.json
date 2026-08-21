@@ -1,0 +1,15 @@
+{
+  "artifact": "astronomy-engine-2.1.19.tar.gz",
+  "distribution_sha256": "95b797b87b659adc0602a6a205143ce5a10451664e80650bb7cd8ba3c8f1f02b",
+  "data_files": [],
+  "data_model": "versioned_coefficients_embedded_in_distribution",
+  "license": "MIT",
+  "license_path_in_distribution": "astronomy-engine-2.1.19/LICENSE",
+  "license_sha256": "b4d9dd0fd80fce3879c4cd9e3754364f74fc5ec046f33276475ba3876785c8b7",
+  "package_index": "https://pypi.org/project/astronomy-engine/2.1.19/",
+  "reviewed_upstream_commit": "61dc07020aaa6885d2c7f688a4d82beaf6edb9ef",
+  "source_kind": "PyPI sdist",
+  "upstream": "https://github.com/cosinekitty/astronomy/tree/v2.1.19",
+  "upstream_tag_object": "03084ee684bdcc490273fe85f9df4f1c8fb66199",
+  "version": "2.1.19"
+}

@@ -1,0 +1,101 @@
+# 紫微斗数全书 — 章节地图（D2）
+
+> 覆盖口径：维基文库当前三卷本《紫微斗数全书》。MediaWiki raw/API 已核验 `/卷四` 不存在；四卷本风险保留在 manifest，不在本 pack 中冒称已取得。
+
+| slug | title | digest_status | function | source_anchor | verified | section_id |
+|---|---|---|---|---|---|---|
+| sec-0001-sec-0001 | 紫微斗數全書卷一 | done | 卷级总目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L98-L99 | true | ZW-S0001 |
+| sec-0002-sec-0002 | 羅序 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L100-L105 | true | ZW-S0002 |
+| sec-0003-sec-0003 | 太微賦 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L106-L156 | true | ZW-S0003 |
+| sec-0004-sec-0004 | 形性賦 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L157-L191 | true | ZW-S0004 |
+| sec-0005-sec-0005 | 星垣論 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L192-L202 | true | ZW-S0005 |
+| sec-0006-sec-0006 | 斗數準繩 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L203-L218 | true | ZW-S0006 |
+| sec-0007-sec-0007 | 斗數發微論 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L219-L241 | true | ZW-S0007 |
+| sec-0008-sec-0008 | 重補斗數彀率 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L242-L264 | true | ZW-S0008 |
+| sec-0009-sec-0009 | 增補太微賦 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L265-L301 | true | ZW-S0009 |
+| sec-0010-sec-0010 | 諸星問答論 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L302-L303 | true | ZW-S0010 |
+| sec-0011-sec-0011 | 問紫微所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L304-L337 | true | ZW-S0011 |
+| sec-0012-sec-0012 | 問天機所主如何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L338-L352 | true | ZW-S0012 |
+| sec-0013-sec-0013 | 問太陽所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L353-L366 | true | ZW-S0013 |
+| sec-0014-sec-0014 | 問武曲星所主為何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L367-L371 | true | ZW-S0014 |
+| sec-0015-sec-0015 | 問天同星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L372-L376 | true | ZW-S0015 |
+| sec-0016-sec-0016 | 問廉貞所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L377-L384 | true | ZW-S0016 |
+| sec-0017-sec-0017 | 問天府所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L385-L393 | true | ZW-S0017 |
+| sec-0018-sec-0018 | 問太陰星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L394-L398 | true | ZW-S0018 |
+| sec-0019-sec-0019 | 問貪狼所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L399-L403 | true | ZW-S0019 |
+| sec-0020-sec-0020 | 問巨門所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L404-L408 | true | ZW-S0020 |
+| sec-0021-sec-0021 | 問天相星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L409-L418 | true | ZW-S0021 |
+| sec-0022-sec-0022 | 問天梁星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L419-L429 | true | ZW-S0022 |
+| sec-0023-sec-0023 | 問七殺星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L430-L439 | true | ZW-S0023 |
+| sec-0024-sec-0024 | 問破軍所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L440-L443 | true | ZW-S0024 |
+| sec-0025-sec-0025 | 問文昌星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L444-L452 | true | ZW-S0025 |
+| sec-0026-sec-0026 | 问文曲星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L453-L458 | true | ZW-S0026 |
+| sec-0027-sec-0027 | 问流年昌曲若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L459-L468 | true | ZW-S0027 |
+| sec-0028-sec-0028 | 问左辅所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L469-L472 | true | ZW-S0028 |
+| sec-0029-sec-0029 | 问右弼所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L473-L483 | true | ZW-S0029 |
+| sec-0030-sec-0030 | 问天魁天钺星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L484-L492 | true | ZW-S0030 |
+| sec-0031-sec-0031 | 问禄存星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L493-L506 | true | ZW-S0031 |
+| sec-0032-sec-0032 | 问天马星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L507-L510 | true | ZW-S0032 |
+| sec-0033-sec-0033 | 问化禄星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L511-L514 | true | ZW-S0033 |
+| sec-0034-sec-0034 | 问化权星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L515-L518 | true | ZW-S0034 |
+| sec-0035-sec-0035 | 问化科星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L519-L522 | true | ZW-S0035 |
+| sec-0036-sec-0036 | 问化忌星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L523-L527 | true | ZW-S0036 |
+| sec-0037-sec-0037 | 问擎羊星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L528-L531 | true | ZW-S0037 |
+| sec-0038-sec-0038 | 问陀罗星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L532-L535 | true | ZW-S0038 |
+| sec-0039-sec-0039 | 羊陀二星总论 | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L536-L547 | true | ZW-S0039 |
+| sec-0040-sec-0040 | 问火星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L548-L559 | true | ZW-S0040 |
+| sec-0041-sec-0041 | 问铃星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L560-L572 | true | ZW-S0041 |
+| sec-0042-sec-0042 | 羊陀火铃四星总论 | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L573-L580 | true | ZW-S0042 |
+| sec-0043-sec-0043 | 问天空地劫所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L581-L588 | true | ZW-S0043 |
+| sec-0044-sec-0044 | 问天伤天使所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L589-L594 | true | ZW-S0044 |
+| sec-0045-sec-0045 | 问天刑星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L595-L604 | true | ZW-S0045 |
+| sec-0046-sec-0046 | 问天姚星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L605-L614 | true | ZW-S0046 |
+| sec-0047-sec-0047 | 问天哭天虚二星所主若何？ | done | 问答/细目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L615-L618 | true | ZW-S0047 |
+| sec-0048-sec-0048 | 斗数骨髓赋 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L619-L705 | true | ZW-S0048 |
+| sec-0049-sec-0049 | 女命骨髓赋 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L706-L825 | true | ZW-S0049 |
+| sec-0050-sec-0050 | 定富贵贫贱十等论 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L826-L838 | true | ZW-S0050 |
+| sec-0051-sec-0051 | 十二宫诸星得地合格诀 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L839-L853 | true | ZW-S0051 |
+| sec-0052-sec-0052 | 十二宫诸星失陷破格诀 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L854-L865 | true | ZW-S0052 |
+| sec-0053-sec-0053 | 十二宫诸星得地富贵论 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L866-L879 | true | ZW-S0053 |
+| sec-0054-sec-0054 | 十二宫诸星失陷贫贱论 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L880-L888 | true | ZW-S0054 |
+| sec-0055-sec-0055 | 定富局 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L889-L897 | true | ZW-S0055 |
+| sec-0056-sec-0056 | 定贵局 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L898-L927 | true | ZW-S0056 |
+| sec-0057-sec-0057 | 定贫贱局 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L928-L938 | true | ZW-S0057 |
+| sec-0058-sec-0058 | 定杂局 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L939-L949 | true | ZW-S0058 |
+| sec-0059-sec-0059 | 紫微斗数全书卷二 | done | 卷级总目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L950-L951 | true | ZW-S0059 |
+| sec-0060-sec-0060 | 安身命例 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L952-L1509 | true | ZW-S0060 |
+| sec-0061-sec-0061 | 一 命宫 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L1510-L2260 | true | ZW-S0061 |
+| sec-0062-sec-0062 | 二兄弟 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2261-L2285 | true | ZW-S0062 |
+| sec-0063-sec-0063 | 三妻妾 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2286-L2311 | true | ZW-S0063 |
+| sec-0064-sec-0064 | 四子女 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2312-L2346 | true | ZW-S0064 |
+| sec-0065-sec-0065 | 五财帛 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2347-L2378 | true | ZW-S0065 |
+| sec-0066-sec-0066 | 六疾厄 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2379-L2404 | true | ZW-S0066 |
+| sec-0067-sec-0067 | 七迁移 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2405-L2431 | true | ZW-S0067 |
+| sec-0068-sec-0068 | 八奴仆 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2432-L2458 | true | ZW-S0068 |
+| sec-0069-sec-0069 | 九官禄 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2459-L2508 | true | ZW-S0069 |
+| sec-0070-sec-0070 | 十田宅 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2509-L2534 | true | ZW-S0070 |
+| sec-0071-sec-0071 | 十一福德 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2535-L2564 | true | ZW-S0071 |
+| sec-0072-sec-0072 | 十二父母 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2565-L2599 | true | ZW-S0072 |
+| sec-0073-sec-0073 | 紫微斗数全书卷三 | done | 卷级总目 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2600-L2601 | true | ZW-S0073 |
+| sec-0074-sec-0074 | 谈星要论 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2602-L2622 | true | ZW-S0074 |
+| sec-0075-sec-0075 | 论人命入格 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2623-L2636 | true | ZW-S0075 |
+| sec-0076-sec-0076 | 论格星数高下 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2637-L2672 | true | ZW-S0076 |
+| sec-0077-sec-0077 | 论男女命同异 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2673-L2677 | true | ZW-S0077 |
+| sec-0078-sec-0078 | 论小儿命 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2678-L2684 | true | ZW-S0078 |
+| sec-0079-sec-0079 | 定小儿生时诀 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2685-L2690 | true | ZW-S0079 |
+| sec-0080-sec-0080 | 论人生时安命吉凶 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2691-L2694 | true | ZW-S0080 |
+| sec-0081-sec-0081 | 论人生时要审的确 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2695-L2698 | true | ZW-S0081 |
+| sec-0082-sec-0082 | 论小儿克亲 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2699-L2702 | true | ZW-S0082 |
+| sec-0083-sec-0083 | 论命先贫后富 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2703-L2708 | true | ZW-S0083 |
+| sec-0084-sec-0084 | 论大限十年祸福何如 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2709-L2712 | true | ZW-S0084 |
+| sec-0085-sec-0085 | 论二限太岁吉凶 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2713-L2716 | true | ZW-S0085 |
+| sec-0086-sec-0086 | 论行限分南北斗 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2717-L2722 | true | ZW-S0086 |
+| sec-0087-sec-0087 | 论流年太岁吉凶星杀 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2723-L2726 | true | ZW-S0087 |
+| sec-0088-sec-0088 | 论阴骘延寿 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2727-L2730 | true | ZW-S0088 |
+| sec-0089-sec-0089 | 论羊陀迭并 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2731-L2734 | true | ZW-S0089 |
+| sec-0090-sec-0090 | 论七杀重逢 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2735-L2739 | true | ZW-S0090 |
+| sec-0091-sec-0091 | 论大小限星辰过十二宫遇十二支所忌诀 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2740-L2752 | true | ZW-S0091 |
+| sec-0092-sec-0092 | 论立命行限宫歌 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2753-L2903 | true | ZW-S0092 |
+| sec-0093-sec-0093 | 论诸星同垣各司所宜分别富贵贫贱夭寿 | done | 分篇/论题 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2904-L3277 | true | ZW-S0093 |
+
+**统计**：93 个章节/细目单元，全部 `done`；底本范围为当前三卷 Wikisource normalized source。

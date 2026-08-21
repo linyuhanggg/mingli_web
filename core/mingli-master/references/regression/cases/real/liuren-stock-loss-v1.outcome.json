@@ -1,0 +1,21 @@
+{
+  "outcome_schema": "mingli-blind-case-outcome-v1",
+  "case_id": "liuren-stock-loss-v1",
+  "outcome": {
+    "dimension": "profit_or_loss",
+    "label": "loss",
+    "scoring_polarity": "oppose",
+    "status": "reported",
+    "evidence_quality": "single_direct_report"
+  },
+  "provenance": {
+    "source_kind": "synthetic_fixture_label",
+    "contains_production_identifiers": false,
+    "captured_after_prediction": true,
+    "sanitized": true
+  },
+  "limitations": [
+    "No brokerage statement was inspected.",
+    "The outcome is suitable for regression and leakage testing, not for a scientific accuracy claim."
+  ]
+}

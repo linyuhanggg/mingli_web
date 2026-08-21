@@ -222,6 +222,84 @@ def test_time_check_evidence_names_a_zero_signal_event() -> None:
     )
 
 
+def test_time_check_classical_rectification_concludes_unique_range_and_eliminates() -> None:
+    _run_runtime_assertions(
+        """
+        from reading_engine.providers import TimeCheckProvider
+
+        conclusion = TimeCheckProvider._range_only_conclusion(
+            [
+                {
+                    "candidate_id": "hour-子",
+                    "within_known_time_range": False,
+                },
+                {
+                    "candidate_id": "hour-卯",
+                    "within_known_time_range": True,
+                },
+            ]
+        )
+        assert conclusion["status"] == "hour_determined"
+        assert conclusion["selected_candidate_id"] == "hour-卯"
+        assert conclusion["basis"] == "known_time_range_unique"
+        assert "outcome" not in conclusion
+        assert "verdict" not in conclusion
+
+        zi = {
+            "candidate_id": "hour-子",
+            "hour_branch": "子",
+            "within_known_time_range": True,
+            "four_pillars": {
+                "year": "甲子",
+                "month": "甲辰",
+                "day": "甲辰",
+                "hour": "甲子",
+            },
+            "day_master": {"stem": "丙"},
+        }
+        wu = {
+            "candidate_id": "hour-午",
+            "hour_branch": "午",
+            "within_known_time_range": True,
+            "four_pillars": {
+                "year": "甲子",
+                "month": "甲辰",
+                "day": "甲辰",
+                "hour": "甲午",
+            },
+            "day_master": {"stem": "丙"},
+        }
+        events = (
+            {
+                "event_id": "move-2014",
+                "domain": "location",
+                "occurred_at": "2014-06-01T12:00:00+08:00",
+                "year_pillar": "甲午",
+            },
+            {
+                "event_id": "move-2026",
+                "domain": "location",
+                "occurred_at": "2026-06-01T12:00:00+08:00",
+                "year_pillar": "丙午",
+            },
+        )
+        rows, matches = TimeCheckProvider._rank_candidates([zi, wu], events)
+        ranked, _matches, rectified = TimeCheckProvider._apply_classical_rectification(
+            [zi, wu],
+            rows,
+            matches,
+            events,
+        )
+        zi_row = next(row for row in ranked if row["candidate_id"] == "hour-子")
+        wu_row = next(row for row in ranked if row["candidate_id"] == "hour-午")
+        assert zi_row["elimination_reasons"] == ["no_hour_support_for_structured_events"]
+        assert wu_row["elimination_reasons"] == []
+        assert rectified["status"] == "hour_determined"
+        assert rectified["selected_candidate_id"] == "hour-午"
+        """
+    )
+
+
 def test_time_check_does_not_match_events_to_eliminated_candidates() -> None:
     _run_runtime_assertions(
         """

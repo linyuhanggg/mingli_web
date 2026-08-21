@@ -1,0 +1,105 @@
+{
+  "case_schema": "mingli-blind-case-input-v1",
+  "case_id": "liuren-stock-loss-v1",
+  "visibility": "synthetic_regression_fixture",
+  "system": "liuren",
+  "question": "某位亲属的股票是亏了还是赚了？",
+  "requested_dimensions": [
+    "profit_or_loss"
+  ],
+  "cast": {
+    "civil_datetime": "2026-07-12T18:45:31+08:00",
+    "timezone": "Asia/Shanghai",
+    "location_policy": "civil_china_standard_time"
+  },
+  "fact_snapshot": {
+    "schema_version": "mingli-liuren-fact-v1",
+    "fact_layer_status": "deterministic_liuren_chart",
+    "calendar_normalization": {
+      "ganzhi": {
+        "year": "丙午",
+        "month": "乙未",
+        "day": "丁亥",
+        "hour": "己酉"
+      }
+    },
+    "output": {
+      "day_hour": {
+        "day": "丁亥",
+        "hour": "己酉"
+      },
+      "month_general": {
+        "branch": "未",
+        "name": "小吉"
+      },
+      "transmission_method": {
+        "primary": "遥克",
+        "use_method": "弹射"
+      },
+      "four_lessons": [
+        {
+          "lesson": 1,
+          "lower": "丁",
+          "upper": "巳",
+          "relation": "比和"
+        },
+        {
+          "lesson": 2,
+          "lower": "巳",
+          "upper": "卯",
+          "relation": "上生下"
+        },
+        {
+          "lesson": 3,
+          "lower": "亥",
+          "upper": "酉",
+          "relation": "上生下"
+        },
+        {
+          "lesson": 4,
+          "lower": "酉",
+          "upper": "未",
+          "relation": "上生下"
+        }
+      ],
+      "three_transmissions": [
+        {
+          "stage": "initial",
+          "branch": "酉",
+          "six_relative": "妻财",
+          "heavenly_general": "贵人",
+          "season_strength": "相",
+          "is_xunkong": false
+        },
+        {
+          "stage": "middle",
+          "branch": "未",
+          "six_relative": "子孙",
+          "heavenly_general": "太阴",
+          "season_strength": "旺",
+          "is_xunkong": true
+        },
+        {
+          "stage": "final",
+          "branch": "巳",
+          "six_relative": "兄弟",
+          "heavenly_general": "太常",
+          "season_strength": "休",
+          "is_xunkong": false
+        }
+      ],
+      "xunkong": {
+        "xun": "甲申",
+        "branches": [
+          "午",
+          "未"
+        ]
+      }
+    }
+  },
+  "provenance": {
+    "source_kind": "synthetic_regression_fixture",
+    "contains_production_identifiers": false,
+    "answer_isolated": true
+  }
+}

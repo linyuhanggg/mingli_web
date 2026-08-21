@@ -1,0 +1,241 @@
+{
+  "capability": {
+    "assumption_cost": 0,
+    "default_dimension_ids": [
+      "current_state",
+      "direction",
+      "location",
+      "state"
+    ],
+    "default_priority": 5,
+    "dimension_ids": [
+      "current_state",
+      "direction",
+      "location",
+      "state"
+    ],
+    "exact_horizon_ids": [],
+    "horizon_ids": [
+      "instant"
+    ],
+    "independent_lineage_id": "fengshui",
+    "object_ids": [
+      "spatial_observation"
+    ],
+    "required_input_groups": [
+      {
+        "any_of": [
+          "fengshui_spec"
+        ]
+      }
+    ]
+  },
+  "claim_policy": {
+    "allowed_kind_ids": [
+      "kind.fact",
+      "kind.tendency"
+    ],
+    "certainty_ceiling_id": "certainty.tendency"
+  },
+  "display": {
+    "zh-CN": {
+      "description": "宅局观察：依据已采集的宅局事实（朝向、布局、外部环境）输出当前状态类事实。前提：必须提供 fengshui_spec（结构化宅局输入）；不读取环境变量或家目录。边界：不输出预测、应期、吉凶推断；不接受单张照片作为唯一依据。与 physiognomy 的选择依据：fengshui 适用于宅/空间/朝向对象，physiognomy 适用于人体可见观察对象；两者均不接不相关对象。",
+      "name": "风水"
+    }
+  },
+  "entrypoint": "reading_engine.providers:FengshuiProvider",
+  "evidence_profile_id": "fengshui",
+  "id": "fengshui",
+  "input_fields": {
+    "fengshui_spec": {
+      "display": {
+        "zh-CN": "现场观察资料"
+      },
+      "request_slot": "chart_data.fengshui_spec",
+      "type": "object"
+    }
+  },
+  "runtime_capability": {
+    "assumption_cost": 0,
+    "default_priority": 5,
+    "dimensions": [
+      "current_state",
+      "direction",
+      "location",
+      "state"
+    ],
+    "exact_horizons": [],
+    "extension_output_bindings": [
+      {
+        "horizons": [
+          "instant"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/compass",
+          "/fact_extension/facts/form",
+          "/fact_extension/facts/liqi",
+          "/fact_extension/facts/conflicts",
+          "/fact_extension/facts/uncertainties",
+          "/fact_extension/facts/critical_missing"
+        ],
+        "name": "observed_spatial_scope"
+      }
+    ],
+    "extension_outputs": [
+      "observed_spatial_scope"
+    ],
+    "horizons": [
+      "instant"
+    ],
+    "independent_lineage": "fengshui",
+    "mode": "observation_driven_ready",
+    "objects": [
+      "spatial_observation"
+    ],
+    "output_bindings": [
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/observation_provenance"
+        ],
+        "name": "observation_provenance"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/compass"
+        ],
+        "name": "compass"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/building_chronology"
+        ],
+        "name": "building_chronology"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/layout_graph"
+        ],
+        "name": "layout_graph"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/form"
+        ],
+        "name": "form"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/liqi"
+        ],
+        "name": "liqi"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/active_source_rule_ids"
+        ],
+        "name": "active_source_rule_ids"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/conflicts"
+        ],
+        "name": "conflicts"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/uncertainties"
+        ],
+        "name": "uncertainties"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/critical_missing"
+        ],
+        "name": "critical_missing"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/source_conditioned_patterns"
+        ],
+        "name": "source_conditioned_patterns"
+      }
+    ],
+    "outputs": [
+      "observation_provenance",
+      "compass",
+      "building_chronology",
+      "layout_graph",
+      "form",
+      "liqi",
+      "active_source_rule_ids",
+      "conflicts",
+      "uncertainties",
+      "critical_missing",
+      "source_conditioned_patterns"
+    ],
+    "required_inputs": [
+      "fengshui_spec"
+    ],
+    "system": "fengshui"
+  },
+  "schema_version": "provider-manifest-v1",
+  "terms": {
+    "certainty.tendency": {
+      "display": {
+        "zh-CN": "倾向性上限"
+      }
+    },
+    "current_state": {
+      "display": {
+        "zh-CN": "现状"
+      }
+    },
+    "direction": {
+      "display": {
+        "zh-CN": "方向"
+      }
+    },
+    "instant": {
+      "display": {
+        "zh-CN": "当下"
+      }
+    },
+    "kind.fact": {
+      "display": {
+        "zh-CN": "事实陈述"
+      }
+    },
+    "kind.tendency": {
+      "display": {
+        "zh-CN": "倾向判断"
+      }
+    },
+    "limit.source_gap": {
+      "display": {
+        "zh-CN": "本轮没有命中可引用的古籍条文，只能基于确定性事实描述"
+      }
+    },
+    "location": {
+      "display": {
+        "zh-CN": "方位地点"
+      }
+    },
+    "spatial_observation": {
+      "display": {
+        "zh-CN": "空间观察"
+      }
+    },
+    "state": {
+      "display": {
+        "zh-CN": "当前状态"
+      }
+    }
+  },
+  "time_semantics": {
+    "default_policy": "civil",
+    "input_time": null,
+    "role": "not_applicable",
+    "supported_policies": [],
+    "unsupported_fallback": "not_applicable"
+  }
+}

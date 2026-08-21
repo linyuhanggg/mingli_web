@@ -1,0 +1,414 @@
+{
+  "schema_version": "mingli-liuren-executable-rules-v1",
+  "rules": {
+    "wealth_present_miben": {
+      "activation_id": "liuren.wealth.present.miben",
+      "rule_id": "LM-R20",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R20",
+          "quote_id": "LM-Q072"
+        }
+      ],
+      "dimensions": [
+        "money_receipt"
+      ],
+      "polarity": "support",
+      "weight_class": "primary",
+      "dependency_group": "wealth_receipt_availability"
+    },
+    "wealth_present_zhiyin": {
+      "activation_id": "liuren.wealth.present.zhiyin",
+      "rule_id": "LR-15",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-15",
+          "quote_id": "LZ-Q050"
+        }
+      ],
+      "dimensions": [
+        "money_receipt"
+      ],
+      "polarity": "support",
+      "weight_class": "primary",
+      "dependency_group": "wealth_receipt_availability"
+    },
+    "wealth_void_miben": {
+      "activation_id": "liuren.wealth.void",
+      "rule_id": "LM-R20",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R20",
+          "quote_id": "LM-Q072"
+        },
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R10",
+          "quote_id": "LM-Q051"
+        }
+      ],
+      "dimensions": [
+        "money_receipt"
+      ],
+      "polarity": "oppose",
+      "weight_class": "primary",
+      "dependency_group": "wealth_receipt_availability"
+    },
+    "wealth_void_zhiyin": {
+      "activation_id": "liuren.wealth.void.zhiyin",
+      "rule_id": "LR-15",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-15",
+          "quote_id": "LZ-Q050"
+        }
+      ],
+      "dimensions": [
+        "money_receipt"
+      ],
+      "polarity": "oppose",
+      "weight_class": "primary",
+      "dependency_group": "wealth_receipt_availability"
+    },
+    "wealth_absent_scope": {
+      "activation_id": "liuren.wealth.absent.scope",
+      "rule_id": "MINGLI-LR-SCOPE-02",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R20",
+          "quote_id": "LM-Q072"
+        },
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-15",
+          "quote_id": "LZ-Q050"
+        }
+      ],
+      "dimensions": [
+        "money_receipt"
+      ],
+      "polarity": "uncertain",
+      "weight_class": "primary",
+      "dependency_group": "wealth_receipt_scope",
+      "stop_conditions": [
+        "No wife-wealth relative appears in the three transmissions, so these encoded receipt rules do not provide a directional receipt verdict.",
+        "Continue to explain the visible process and timing candidates without inventing a yes/no result."
+      ]
+    },
+    "profit_loss_scope": {
+      "activation_id": "liuren.profit_loss.requires_cost_basis",
+      "rule_id": "MINGLI-LR-SCOPE-01",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R20",
+          "quote_id": "LM-Q072"
+        },
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-15",
+          "quote_id": "LZ-Q050"
+        }
+      ],
+      "dimensions": [
+        "profit_or_loss"
+      ],
+      "polarity": "uncertain",
+      "weight_class": "decisive",
+      "dependency_group": "profit_loss_scope",
+      "stop_conditions": [
+        "The current distilled rules address seeking or receiving wealth, not mark-to-market profit versus cost basis.",
+        "Do not turn a final-stage sibling relative into a realized loss without a dedicated applicable rule."
+      ]
+    },
+    "day_stem_overcomes_branch": {
+      "activation_id": "liuren.subject_object.day_overcomes_branch",
+      "rule_id": "LR-17",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-17",
+          "quote_id": "LZ-Q054"
+        }
+      ],
+      "dimensions": ["outcome"],
+      "polarity": "support",
+      "weight_class": "primary",
+      "dependency_group": "liuren.subject_object_relation",
+      "confidence_ceiling": "medium"
+    },
+    "day_branch_overcomes_stem": {
+      "activation_id": "liuren.subject_object.branch_overcomes_day",
+      "rule_id": "LR-17",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-17",
+          "quote_id": "LZ-Q054"
+        }
+      ],
+      "dimensions": ["outcome"],
+      "polarity": "oppose",
+      "weight_class": "primary",
+      "dependency_group": "liuren.subject_object_relation",
+      "confidence_ceiling": "medium"
+    },
+    "transmissions_generate_day": {
+      "activation_id": "liuren.transmissions.all_generate_day",
+      "rule_id": "LR-18",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-18",
+          "quote_id": "LZ-Q055"
+        }
+      ],
+      "dimensions": ["outcome"],
+      "polarity": "support",
+      "weight_class": "primary",
+      "dependency_group": "liuren.transmissions_to_day",
+      "confidence_ceiling": "medium"
+    },
+    "transmissions_overcome_day": {
+      "activation_id": "liuren.transmissions.all_overcome_day",
+      "rule_id": "LR-18",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-18",
+          "quote_id": "LZ-Q055"
+        }
+      ],
+      "dimensions": ["outcome"],
+      "polarity": "oppose",
+      "weight_class": "primary",
+      "dependency_group": "liuren.transmissions_to_day",
+      "confidence_ceiling": "medium"
+    },
+    "initial_overcomes_final": {
+      "activation_id": "liuren.transmissions.initial_overcomes_final",
+      "rule_id": "LR-18",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-18",
+          "quote_id": "LZ-Q055"
+        }
+      ],
+      "dimensions": ["outcome"],
+      "polarity": "oppose",
+      "weight_class": "primary",
+      "dependency_group": "liuren.initial_final_relation",
+      "confidence_ceiling": "medium"
+    },
+    "final_overcomes_initial": {
+      "activation_id": "liuren.transmissions.final_overcomes_initial",
+      "rule_id": "LR-18",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-18",
+          "quote_id": "LZ-Q055"
+        }
+      ],
+      "dimensions": ["outcome"],
+      "polarity": "support",
+      "weight_class": "primary",
+      "dependency_group": "liuren.initial_final_relation",
+      "confidence_ceiling": "medium"
+    },
+    "message_target_present": {
+      "activation_id": "liuren.target.message.present",
+      "rule_id": "LM-R22",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R22",
+          "quote_id": "LM-Q074"
+        },
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-19",
+          "quote_id": "LZ-Q056"
+        }
+      ],
+      "dimensions": ["outcome"],
+      "polarity": "support",
+      "weight_class": "primary",
+      "dependency_group": "liuren.target.message.presence",
+      "confidence_ceiling": "medium"
+    },
+    "message_target_strong": {
+      "activation_id": "liuren.target.message.strong",
+      "rule_id": "LM-R22",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R22",
+          "quote_id": "LM-Q024"
+        },
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-19",
+          "quote_id": "LZ-Q056"
+        }
+      ],
+      "dimensions": ["outcome"],
+      "polarity": "support",
+      "weight_class": "primary",
+      "dependency_group": "liuren.target.message.strength",
+      "confidence_ceiling": "medium"
+    },
+    "message_target_weak": {
+      "activation_id": "liuren.target.message.weak",
+      "rule_id": "LM-R22",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R22",
+          "quote_id": "LM-Q024"
+        },
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-19",
+          "quote_id": "LZ-Q056"
+        }
+      ],
+      "dimensions": ["outcome"],
+      "polarity": "oppose",
+      "weight_class": "primary",
+      "dependency_group": "liuren.target.message.strength",
+      "confidence_ceiling": "medium"
+    },
+    "message_target_void": {
+      "activation_id": "liuren.target.message.void",
+      "rule_id": "LM-R22",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R22",
+          "quote_id": "LM-Q019"
+        },
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-19",
+          "quote_id": "LZ-Q056"
+        }
+      ],
+      "dimensions": ["outcome"],
+      "polarity": "oppose",
+      "weight_class": "primary",
+      "dependency_group": "liuren.target.message.availability",
+      "confidence_ceiling": "medium"
+    },
+    "work_target_present": {
+      "activation_id": "liuren.target.work.present",
+      "rule_id": "LR-19",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-19",
+          "quote_id": "LZ-Q056"
+        }
+      ],
+      "dimensions": ["work"],
+      "polarity": "support",
+      "weight_class": "primary",
+      "dependency_group": "liuren.target.work.presence",
+      "confidence_ceiling": "medium"
+    },
+    "middle_void_process": {
+      "activation_id": "liuren.process.middle_void",
+      "rule_id": "LM-R10",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R10",
+          "quote_id": "LM-Q051"
+        }
+      ],
+      "dimensions": [
+        "outcome",
+        "money_receipt",
+        "profit_or_loss"
+      ],
+      "polarity": "uncertain",
+      "weight_class": "supporting",
+      "dependency_group": "stage_void"
+    },
+    "timing_candidate_branch": {
+      "activation_id": "liuren.timing.candidate_branch",
+      "rule_id": "LM-R21",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R21",
+          "source_anchor": "fulltext.md#L3070-L3076"
+        }
+      ],
+      "dimensions": ["timing"],
+      "polarity": "uncertain",
+      "weight_class": "primary",
+      "dependency_group": "liuren.timing.initial-group-seasonal-upper",
+      "confidence_ceiling": "medium"
+    },
+    "state_general_landing_correspondence": {
+      "activation_id": "liuren.state.general_landing_correspondence",
+      "rule_id": "LM-R01",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R01",
+          "source_anchor": "fulltext.md#L82-L359"
+        },
+        {
+          "pack": "san-shi/liuren-miben",
+          "rule_id": "LM-R01",
+          "source_anchor": "fulltext.md#L600-L771"
+        }
+      ],
+      "dimensions": ["state"],
+      "polarity": "uncertain",
+      "weight_class": "supporting",
+      "dependency_group": "liuren.imagery.general-landing-correspondence",
+      "confidence_ceiling": "medium"
+    },
+    "relationship_day_stem_overcomes_branch": {
+      "activation_id": "liuren.relationship.day_overcomes_branch",
+      "rule_id": "LR-17",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-17",
+          "source_anchor": "fulltext.md#L557"
+        }
+      ],
+      "dimensions": ["relationship"],
+      "polarity": "support",
+      "weight_class": "primary",
+      "dependency_group": "liuren.subject_object_relation",
+      "confidence_ceiling": "medium"
+    },
+    "relationship_day_branch_overcomes_stem": {
+      "activation_id": "liuren.relationship.branch_overcomes_day",
+      "rule_id": "LR-17",
+      "source_refs": [
+        {
+          "pack": "san-shi/liuren-zhiyin",
+          "rule_id": "LR-17",
+          "source_anchor": "fulltext.md#L557"
+        }
+      ],
+      "dimensions": ["relationship"],
+      "polarity": "oppose",
+      "weight_class": "primary",
+      "dependency_group": "liuren.subject_object_relation",
+      "confidence_ceiling": "medium"
+    }
+  }
+}

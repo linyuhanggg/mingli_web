@@ -44,6 +44,22 @@
     },
     "ranking_status": {"enum": ["not_ranked", "candidate_evidence_ranked"]},
     "event_matching_status": {"enum": ["not_calculated", "structured_evidence"]},
+    "rectification_status": {
+      "type": ["string", "null"],
+      "enum": [
+        "hour_determined",
+        "no_valid_candidate",
+        "not_attempted",
+        "remaining_ambiguous",
+        null
+      ]
+    },
+    "rectification_conclusion": {
+      "oneOf": [
+        {"$ref": "#/$defs/rectificationConclusion"},
+        {"type": "null"}
+      ]
+    },
     "limitations": {
       "type": "array",
       "minItems": 1,
@@ -134,6 +150,25 @@
         "occurred_at": {"type": "string", "minLength": 1},
         "year_pillar": {"type": "string", "minLength": 2},
         "matched_candidate_ids": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "rectificationConclusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "remaining_candidate_ids", "basis"],
+      "properties": {
+        "status": {
+          "enum": [
+            "hour_determined",
+            "no_valid_candidate",
+            "not_attempted",
+            "remaining_ambiguous"
+          ]
+        },
+        "selected_candidate_id": {"type": ["string", "null"], "minLength": 1},
+        "remaining_candidate_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "basis": {"type": "string", "minLength": 1},
+        "rule_ids": {"type": "array", "items": {"type": "string", "minLength": 1}}
       }
     }
   }

@@ -1,0 +1,410 @@
+{
+  "capability": {
+    "assumption_cost": 0,
+    "default_dimension_ids": [
+      "career",
+      "health",
+      "location",
+      "outcome",
+      "relationship",
+      "state",
+      "timing"
+    ],
+    "default_priority": 5,
+    "dimension_ids": [
+      "career",
+      "health",
+      "location",
+      "outcome",
+      "relationship",
+      "state",
+      "timing"
+    ],
+    "exact_horizon_ids": [
+      "day",
+      "week"
+    ],
+    "horizon_ids": [
+      "day",
+      "week"
+    ],
+    "independent_lineage_id": "bazi",
+    "object_ids": [
+      "near_time_personal"
+    ],
+    "required_input_groups": [
+      {
+        "any_of": [
+          "birth_datetime"
+        ]
+      },
+      {
+        "any_of": [
+          "timezone"
+        ]
+      },
+      {
+        "any_of": [
+          "location"
+        ]
+      },
+      {
+        "any_of": [
+          "gender"
+        ]
+      },
+      {
+        "any_of": [
+          "reference_datetime"
+        ]
+      }
+    ]
+  },
+  "claim_policy": {
+    "allowed_kind_ids": [
+      "kind.fact",
+      "kind.tendency"
+    ],
+    "certainty_ceiling_id": "certainty.tendency"
+  },
+  "display": {
+    "zh-CN": {
+      "description": "日运/周运事实层计算：在已有本命基础上，针对给定参考日/周输出时势层事实。前提：必须提供 birth_datetime、timezone、location、gender、reference_datetime。边界：只覆盖日/周时势；不输出月度以上推演，不重算命盘。与 bazi/luming-nayin/ziwei 的选择依据：本能力是近时计算；bazi 适合长跨度（年/月/生命）大运流年；ziwei 适合本命结构；luming-nayin 仅给纳音层基础事实。fortune 与它们互为补充而非替代。",
+      "name": "日运"
+    }
+  },
+  "entrypoint": "reading_engine.providers:FortuneProvider",
+  "evidence_profile_id": "fortune",
+  "id": "fortune",
+  "input_fields": {
+    "birth_datetime": {
+      "display": {
+        "zh-CN": "出生时间"
+      },
+      "request_slot": "birth_data.birth_datetime",
+      "type": "datetime"
+    },
+    "coordinate_accuracy_meters": {
+      "display": {
+        "zh-CN": "坐标精度(米)"
+      },
+      "request_slot": "birth_data.coordinate_accuracy_meters",
+      "type": "number"
+    },
+    "coordinate_source": {
+      "display": {
+        "zh-CN": "坐标来源"
+      },
+      "request_slot": "birth_data.coordinate_source",
+      "type": "string"
+    },
+    "gender": {
+      "display": {
+        "zh-CN": "性别"
+      },
+      "request_slot": "birth_data.gender",
+      "type": "string"
+    },
+    "latitude": {
+      "display": {
+        "zh-CN": "纬度"
+      },
+      "request_slot": "birth_data.latitude",
+      "type": "number"
+    },
+    "location": {
+      "display": {
+        "zh-CN": "地点"
+      },
+      "request_slot": "location",
+      "type": "string"
+    },
+    "longitude": {
+      "display": {
+        "zh-CN": "经度"
+      },
+      "request_slot": "birth_data.longitude",
+      "type": "number"
+    },
+    "reference_datetime": {
+      "display": {
+        "zh-CN": "参考时间"
+      },
+      "request_slot": "reference_datetime",
+      "type": "datetime"
+    },
+    "time_basis_policy": {
+      "display": {
+        "zh-CN": "时间口径"
+      },
+      "request_slot": "birth_data.time_basis_policy",
+      "type": "string"
+    },
+    "timezone": {
+      "display": {
+        "zh-CN": "时区"
+      },
+      "request_slot": "timezone",
+      "type": "string"
+    },
+    "zi_hour_policy": {
+      "display": {
+        "zh-CN": "子时策略"
+      },
+      "request_slot": "birth_data.zi_hour_policy",
+      "type": "string"
+    }
+  },
+  "runtime_capability": {
+    "assumption_cost": 0,
+    "default_priority": 5,
+    "dimensions": [
+      "career",
+      "health",
+      "location",
+      "outcome",
+      "relationship",
+      "state",
+      "timing"
+    ],
+    "exact_horizons": [
+      "day",
+      "week"
+    ],
+    "extension_output_bindings": [
+      {
+        "horizons": [
+          "day",
+          "week"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/target_period"
+        ],
+        "name": "target_period"
+      },
+      {
+        "horizons": [
+          "day",
+          "week"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/available_periods"
+        ],
+        "name": "available_periods"
+      },
+      {
+        "horizons": [
+          "day",
+          "week"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/period_markers"
+        ],
+        "name": "period_markers"
+      }
+    ],
+    "extension_outputs": [
+      "target_period",
+      "available_periods",
+      "period_markers"
+    ],
+    "finding_bindings": [
+      {
+        "id": "period_markers",
+        "kind_id": "finding.period_markers",
+        "support_fact_ids": [
+          "period_markers"
+        ],
+        "horizons": [
+          "day",
+          "week"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/period_markers"
+        ]
+      }
+    ],
+    "request_view_horizon_binding": {
+      "json_pointer": "/fact_extension/facts/target_period"
+    },
+    "horizons": [
+      "day",
+      "week"
+    ],
+    "independent_lineage": "bazi",
+    "mode": "calculation",
+    "objects": [
+      "near_time_personal"
+    ],
+    "output_bindings": [
+      {
+        "json_pointers": [
+          "/facts/chart_facts/birth_fact_layer/natal_pillars",
+          "/facts/chart_facts/birth_fact_layer/four_pillars"
+        ],
+        "name": "natal_pillars"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/birth_fact_layer/active_luck_cycle"
+        ],
+        "name": "active_luck_cycle"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/birth_fact_layer/day_master"
+        ],
+        "name": "day_master"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/birth_fact_layer/month_command"
+        ],
+        "name": "month_command"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/target_date"
+        ],
+        "name": "target_day"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/public_calendar_normalization"
+        ],
+        "name": "calendar_normalization"
+      }
+    ],
+    "outputs": [
+      "natal_pillars",
+      "active_luck_cycle",
+      "day_master",
+      "month_command",
+      "target_day",
+      "calendar_normalization"
+    ],
+    "required_inputs": [
+      "birth_datetime",
+      "timezone",
+      "location",
+      "gender",
+      "reference_datetime"
+    ],
+    "system": "fortune"
+  },
+  "schema_version": "provider-manifest-v1",
+  "terms": {
+    "career": {
+      "display": {
+        "zh-CN": "事业"
+      }
+    },
+    "certainty.tendency": {
+      "display": {
+        "zh-CN": "倾向性上限"
+      }
+    },
+    "finding.period_markers": {
+      "display": {
+        "zh-CN": "周期解读材料"
+      }
+    },
+    "day": {
+      "display": {
+        "zh-CN": {
+          "description": "单个民用日。边界可以是 YYYY-MM-DD，也可以是完整 ISO-8601 时刻（含时区偏移或大写 Z）；带时区的时刻先换算到本能力的业务时区再取民用日期，不带时区的时刻按该业务时区解释。只给一个边界时，该边界就是锚点（只给 end 同样成立）；两个边界落在同一个民用日即表示该日；跨越两个不同民用日不属于本范围。",
+          "name": "日"
+        }
+      }
+    },
+    "week": {
+      "display": {
+        "zh-CN": {
+          "description": "连续七个民用日。边界可以留空（按参考时刻所在的那一周）、只给一个锚点（start 或 end 皆可），或两个边界归一化后落在同一个民用日——这三种都表示包含该锚点的完整一周。若给出两个不同的民用日边界，必须正好构成连续七日，否则本轮不作推演；三日、八日或倒序范围不会被自动扩大或截断。边界格式与「日」相同。",
+          "name": "周"
+        }
+      }
+    },
+    "available_periods": {
+      "display": {
+        "zh-CN": "已计算日期"
+      }
+    },
+    "target_period": {
+      "display": {
+        "zh-CN": "目标周期"
+      }
+    },
+    "period_markers": {
+      "display": {
+        "zh-CN": "周期确定性标记"
+      }
+    },
+    "health": {
+      "display": {
+        "zh-CN": "健康"
+      }
+    },
+    "kind.fact": {
+      "display": {
+        "zh-CN": "事实陈述"
+      }
+    },
+    "kind.tendency": {
+      "display": {
+        "zh-CN": "倾向判断"
+      }
+    },
+    "limit.source_gap": {
+      "display": {
+        "zh-CN": "本轮没有命中可引用的古籍条文，只能基于确定性事实描述"
+      }
+    },
+    "location": {
+      "display": {
+        "zh-CN": "方位地点"
+      }
+    },
+    "near_time_personal": {
+      "display": {
+        "zh-CN": "近期个人运势"
+      }
+    },
+    "outcome": {
+      "display": {
+        "zh-CN": "结果成败"
+      }
+    },
+    "relationship": {
+      "display": {
+        "zh-CN": "人际感情"
+      }
+    },
+    "state": {
+      "display": {
+        "zh-CN": "当前状态"
+      }
+    },
+    "timing": {
+      "display": {
+        "zh-CN": "时机应期"
+      }
+    }
+  },
+  "time_semantics": {
+    "coordinates_required_policies": [
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "default_policy": "civil",
+    "input_time": "reference_datetime",
+    "notes": "natal chart inherits the subject profile time-basis policy; the target/reference day is always civil",
+    "role": "civil_schedule",
+    "supported_policies": [
+      "civil",
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "unsupported_fallback": "need_input"
+  }
+}

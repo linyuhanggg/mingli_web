@@ -1,0 +1,341 @@
+{
+  "capability": {
+    "assumption_cost": 0,
+    "default_dimension_ids": [
+      "timing",
+      "state",
+      "location"
+    ],
+    "default_priority": 5,
+    "dimension_ids": [
+      "timing",
+      "state",
+      "location"
+    ],
+    "exact_horizon_ids": [],
+    "horizon_ids": [
+      "day",
+      "month",
+      "year"
+    ],
+    "independent_lineage_id": "selection",
+    "object_ids": [
+      "calendar_choice"
+    ],
+    "required_input_groups": [
+      {
+        "any_of": [
+          "event_profile"
+        ]
+      },
+      {
+        "any_of": [
+          "requested_actions"
+        ]
+      },
+      {
+        "any_of": [
+          "date_range"
+        ]
+      },
+      {
+        "any_of": [
+          "timezone"
+        ]
+      },
+      {
+        "any_of": [
+          "location"
+        ]
+      }
+    ]
+  },
+  "claim_policy": {
+    "allowed_kind_ids": [
+      "kind.fact",
+      "kind.tendency"
+    ],
+    "certainty_ceiling_id": "certainty.tendency"
+  },
+  "display": {
+    "zh-CN": {
+      "description": "择日候选日课：依据事件类型与候选时间窗，输出可用日课事实层比较。前提：必须提供 event_profile + requested_actions + date_range + timezone + location。边界：horizon 限定为 day/month/year；不接受即时/瞬时对象；时间策略限定为 civil。与 taiyi 的选择依据：selection 选具体日课；taiyi 看年度格局。两者时间尺度不可互换。",
+      "name": "择日"
+    }
+  },
+  "entrypoint": "reading_engine.providers:SelectionProvider",
+  "evidence_profile_id": "selection",
+  "id": "selection",
+  "input_fields": {
+    "date_range": {
+      "display": {
+        "zh-CN": "日期范围"
+      },
+      "request_slot": "chart_data.selection_spec.date_range",
+      "type": "object"
+    },
+    "event_profile": {
+      "display": {
+        "zh-CN": "事项类型"
+      },
+      "request_slot": "chart_data.selection_spec.event_profile",
+      "type": "string"
+    },
+    "directional_context": {
+      "display": {
+        "zh-CN": "方位上下文"
+      },
+      "request_slot": "chart_data.selection_spec.directional_context",
+      "type": "object"
+    },
+    "hard_constraints": {
+      "display": {
+        "zh-CN": "硬约束"
+      },
+      "request_slot": "chart_data.selection_spec.hard_constraints",
+      "type": "object"
+    },
+    "include_folk_comparison": {
+      "display": {
+        "zh-CN": "纳入民俗比较"
+      },
+      "request_slot": "chart_data.selection_spec.include_folk_comparison",
+      "type": "boolean"
+    },
+    "location": {
+      "display": {
+        "zh-CN": "地点"
+      },
+      "request_slot": "location",
+      "type": "string"
+    },
+    "participant_facts": {
+      "display": {
+        "zh-CN": "参与者事实"
+      },
+      "request_slot": "chart_data.selection_spec.participant_facts",
+      "type": "list"
+    },
+    "requested_actions": {
+      "display": {
+        "zh-CN": "拟办事项"
+      },
+      "request_slot": "chart_data.selection_spec.requested_actions",
+      "type": "list"
+    },
+    "requested_scopes": {
+      "display": {
+        "zh-CN": "请求范围"
+      },
+      "request_slot": "chart_data.selection_spec.requested_scopes",
+      "type": "list"
+    },
+    "time_basis_policy": {
+      "display": {
+        "zh-CN": "时间口径"
+      },
+      "request_slot": "metadata.time_basis_policy",
+      "type": "string"
+    },
+    "timezone": {
+      "display": {
+        "zh-CN": "时区"
+      },
+      "request_slot": "timezone",
+      "type": "string"
+    }
+  },
+  "runtime_capability": {
+    "assumption_cost": 0,
+    "default_priority": 5,
+    "dimensions": [
+      "timing",
+      "state",
+      "location"
+    ],
+    "exact_horizons": [],
+    "extension_output_bindings": [
+      {
+        "horizons": [
+          "day",
+          "month",
+          "year"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/event_profile",
+          "/fact_extension/facts/calendar_candidates",
+          "/fact_extension/facts/date_time_candidates",
+          "/fact_extension/facts/eligible_candidates",
+          "/fact_extension/facts/eligible_date_time_candidates",
+          "/fact_extension/facts/eliminations",
+          "/fact_extension/facts/ranking",
+          "/fact_extension/facts/lineage_policy",
+          "/fact_extension/facts/source_conditioned_patterns"
+        ],
+        "name": "bounded_ranked_candidate_facts"
+      }
+    ],
+    "extension_outputs": [
+      "bounded_ranked_candidate_facts"
+    ],
+    "horizons": [
+      "day",
+      "month",
+      "year"
+    ],
+    "independent_lineage": "selection",
+    "mode": "calculation",
+    "objects": [
+      "calendar_choice"
+    ],
+    "output_bindings": [
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/event_profile"
+        ],
+        "name": "event_profile"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/calendar_candidates"
+        ],
+        "name": "calendar_candidates"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/date_time_candidates"
+        ],
+        "name": "date_time_candidates"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/eligible_candidates"
+        ],
+        "name": "eligible_candidates"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/eligible_date_time_candidates"
+        ],
+        "name": "eligible_date_time_candidates"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/eliminations"
+        ],
+        "name": "eliminations"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/ranking"
+        ],
+        "name": "ranking"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/lineage_policy"
+        ],
+        "name": "lineage_policy"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/no_valid_candidate"
+        ],
+        "name": "no_valid_candidate"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/source_conditioned_patterns"
+        ],
+        "name": "source_conditioned_patterns"
+      }
+    ],
+    "outputs": [
+      "event_profile",
+      "calendar_candidates",
+      "date_time_candidates",
+      "eligible_candidates",
+      "eligible_date_time_candidates",
+      "eliminations",
+      "ranking",
+      "lineage_policy",
+      "no_valid_candidate",
+      "source_conditioned_patterns"
+    ],
+    "required_inputs": [
+      "event_profile",
+      "requested_actions",
+      "date_range",
+      "timezone",
+      "location"
+    ],
+    "system": "selection"
+  },
+  "schema_version": "provider-manifest-v1",
+  "terms": {
+    "calendar_choice": {
+      "display": {
+        "zh-CN": "择日选时"
+      }
+    },
+    "certainty.tendency": {
+      "display": {
+        "zh-CN": "倾向性上限"
+      }
+    },
+    "day": {
+      "display": {
+        "zh-CN": "日"
+      }
+    },
+    "kind.fact": {
+      "display": {
+        "zh-CN": "事实陈述"
+      }
+    },
+    "kind.tendency": {
+      "display": {
+        "zh-CN": "倾向判断"
+      }
+    },
+    "limit.source_gap": {
+      "display": {
+        "zh-CN": "本轮没有命中可引用的古籍条文，只能基于确定性事实描述"
+      }
+    },
+    "location": {
+      "display": {
+        "zh-CN": "方位地点"
+      }
+    },
+    "month": {
+      "display": {
+        "zh-CN": "月"
+      }
+    },
+    "state": {
+      "display": {
+        "zh-CN": "当前状态"
+      }
+    },
+    "timing": {
+      "display": {
+        "zh-CN": "时机应期"
+      }
+    },
+    "year": {
+      "display": {
+        "zh-CN": "年"
+      }
+    }
+  },
+  "time_semantics": {
+    "default_policy": "civil",
+    "input_time": "reference_datetime",
+    "role": "civil_schedule",
+    "supported_policies": [
+      "civil"
+    ],
+    "unsupported_fallback": "civil_only"
+  }
+}

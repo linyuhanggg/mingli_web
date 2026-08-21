@@ -1,0 +1,262 @@
+refinement:
+  id: shensha-ss-b3-liuren-refinement
+  version: v0.1
+  generated_at: "2026-07-05"
+  batch_id: SS-B3
+  source_status: distilled_from_ready_liuren_packs
+  purpose: "Second-pass refinement for liuren shensha, heavenly generals, and class-spirit boundaries. This is a routing, dependency, and fact-layer matrix, not an independent liuren oracle."
+  upstream_refs:
+    backlog: references/matrices/shensha-distillation-backlog.yaml
+    source_profile: references/matrices/shensha-entry-source-profile.yaml
+    quote_trace: references/matrices/shensha-quote-trace.yaml
+    source_book_matrix: references/matrices/shensha-source-book-matrix.yaml
+    tool_adapters: references/tool-adapters.md
+  policy:
+    shensha_layer: liuren_plate_fact_layer
+    requires_local_liuren_adapter_v2: true
+    no_llm_lesson_math: true
+    no_single_liuren_shensha_judgment: true
+    no_single_heavenly_general_judgment: true
+    liuren_terms_plate_internal_only: true
+    do_not_merge_with_bazi_ziwei_selection: true
+    daquan_primary: true
+    zhiyin_intro_and_shensha_guide: true
+    miben_support_only: true
+    rerun_gate_check_after_final_rewrite: true
+  source_layers:
+    primary_layer:
+      pack: san-shi/daliuren-daquan
+      role: liuren_integrated_authority
+      use_for:
+        - liuren_origin_methods
+        - heavenly_generals_and_class_spirits
+        - lesson_patterns
+        - bifa_and_kejing_source_navigation
+        - source_conflict_adjudication
+      anchor_rules: [LR-01, LR-02, LR-03, LR-04, LR-05, LR-06, LR-07, LR-08, LR-09, LR-10, LR-13, LR-15]
+      anchor_procedures: [LP-01, LP-02, LP-03, LP-04, LP-05]
+      boundary: "Primary liuren authority, but all concrete plates and judgments still require validated mingli-master.liuren_fact_adapter v2 output."
+    guide_layer:
+      pack: san-shi/liuren-zhiyin
+      role: liuren_intro_and_volume_four_shensha_guide
+      use_for:
+        - beginner_explanation
+        - heart_seal_and_palm_assignment_outline
+        - volume_four_shensha_guide
+        - no_isolated_shensha_principle
+      anchor_rules: [LR-01, LR-02, LR-03, LR-04, LR-05, LR-06]
+      anchor_procedures: [LP-01, LP-02, LP-03]
+      boundary: "Introductory and source-index layer; does not override daliuren-daquan."
+    support_layer:
+      pack: san-shi/liuren-miben
+      role: liuren_secret_text_and_class_image_support
+      use_for:
+        - month_general_class_images
+        - heavenly_general_class_images
+        - shensha_support_terms
+        - five_factor_and_three_transmission_support
+        - illness_or_robbery_historical_text_caveats
+      anchor_rules: [LM-R01, LM-R02, LM-R07, LM-R10, LM-R11, LM-R12, LM-R13, LM-R14, LM-R19]
+      anchor_procedures: [LM-P01, LM-P02, LM-P03, LM-P04, LM-P06]
+      boundary: "Supplemental class-image layer; CTP copied text has version caveats and never overrides daliuren-daquan."
+  required_fact_layer:
+    adapter: mingli-master.liuren_fact_adapter
+    minimum_version: "2.0.0"
+    required_status: deterministic_liuren_chart
+    base_fields:
+      - fact_layer_status
+      - adapter.rule_profile
+      - input.question
+      - calendar_normalization
+      - output.day_hour
+      - output.month_general
+      - output.earth_plate
+      - output.heaven_plate
+      - output.four_lessons
+      - output.three_transmissions
+      - output.transmission_method
+      - output.heavenly_generals
+      - output.xunkong
+      - source_trace
+      - conflicts
+      - warnings
+    interpretation_extensions_when_claimed:
+      - class_spirit_matches
+      - punish_clash_break_harm
+      - prosperity_decay_profile
+      - shensha_hits
+    extension_policy: "An extension is required only when the answer actually relies on that layer; absence forbids the claim rather than invalidating the core cast."
+    single_factor_not_sufficient:
+      - tianyi_guiren
+      - white_tiger
+      - green_dragon
+      - vermilion_bird
+      - black_tortoise
+      - twelve_heavenly_generals
+      - month_general
+      - any_single_liuren_shensha
+      - any_single_class_spirit
+    missing_fact_stop_message: "缺少六壬事实层：必须运行本地 liuren_fact_adapter v2，并取得 deterministic_liuren_chart、calendar_normalization、日辰、占时、月将、天地盘、四课三传、天将和 source_trace 后，才能解释六壬神煞或天将。"
+  target_entries:
+    - shensha-tianyi-guiren
+    - shensha-tiande-yuede
+    - shensha-yima-tianma
+    - shensha-xianchi-taohua
+    - shensha-hongluan-tianxi
+    - shensha-jiangxing-huagai
+    - shensha-jiesha-wangshen-zaisha
+    - shensha-guchen-guasu
+    - shensha-tianyi-medical
+    - shensha-taisui
+    - shensha-baihu
+    - shensha-guanfu-bingfu
+    - shensha-sangmen-diaoke
+    - shensha-tianxing
+    - shensha-yuepo-yueyan
+    - shensha-side-fei-lijue
+    - shensha-jinshen-qisha
+    - shensha-yuekong-mucang-jieshen
+    - shensha-twelve-generals
+    - shensha-fuyin-fanyin
+  entry_refinements:
+    - id: shensha-tianyi-guiren
+      name: "天乙贵人"
+      liuren_usage: heavenly_general_head_and_noble_spirit
+      source_layer_order: [primary_layer, guide_layer]
+      source_refs: [LR-10, LP-01, LP-02]
+      boundary: "六壬天乙/贵人为十二天将系统核心，不等于八字天乙贵人；昼夜贵人口径冲突另按星历考原/协纪订正。"
+    - id: shensha-tiande-yuede
+      name: "天德/月德"
+      liuren_usage: in_plate_auspicious_support
+      source_layer_order: [primary_layer, guide_layer]
+      source_refs: [LR-06, LR-10]
+      boundary: "只在六壬日辰、课传、神将、旺衰合参中作支持项；不得当择日天德/月德直接用。"
+    - id: shensha-yima-tianma
+      name: "驿马/天马"
+      liuren_usage: movement_or_travel_class_signal
+      source_layer_order: [primary_layer, guide_layer]
+      source_refs: [LR-10, LP-02]
+      boundary: "六壬课内动象/类神字段；不等于八字驿马、紫微天马或择日出行马星。"
+    - id: shensha-xianchi-taohua
+      name: "咸池/桃花"
+      liuren_usage: relationship_or_desire_class_signal
+      source_layer_order: [primary_layer, support_layer]
+      source_refs: [LR-10, LM-R13]
+      boundary: "只在课式类神与三传互动内使用；不能移植为八字桃花或紫微桃花星。"
+    - id: shensha-hongluan-tianxi
+      name: "红鸾/天喜"
+      liuren_usage: joy_or_marriage_support_signal
+      source_layer_order: [primary_layer]
+      source_refs: [LR-10]
+      boundary: "六壬课内喜庆支持项；不等于紫微红鸾天喜或婚嫁择日吉神。"
+    - id: shensha-jiangxing-huagai
+      name: "将星/华盖"
+      liuren_usage: authority_or_covering_class_signal
+      source_layer_order: [primary_layer]
+      source_refs: [LR-10]
+      boundary: "课内类象或神煞支持项；不升级为命局性格定论。"
+    - id: shensha-jiesha-wangshen-zaisha
+      name: "劫煞/亡神/灾煞"
+      liuren_usage: in_plate_obstruction_or_loss_signal
+      source_layer_order: [primary_layer]
+      source_refs: [LR-10, LP-02]
+      boundary: "只在课式刑冲克害、空亡、旺衰同参下说明风险象；不得单独断灾。"
+    - id: shensha-guchen-guasu
+      name: "孤辰/寡宿"
+      liuren_usage: separation_or_loneliness_signal
+      source_layer_order: [primary_layer]
+      source_refs: [LR-10]
+      boundary: "六壬课内离合辅助象；不用于八字婚姻 inventory。"
+    - id: shensha-tianyi-medical
+      name: "天医"
+      liuren_usage: illness_or_rescue_support_signal
+      source_layer_order: [primary_layer]
+      source_refs: [LR-10, LP-02]
+      boundary: "医事相关只能作传统文化参考；不等于八宅天乙巨门，也不能替代医疗判断。"
+    - id: shensha-taisui
+      name: "太岁/岁君/岁破"
+      liuren_usage: annual_spirit_or_time_context
+      source_layer_order: [primary_layer]
+      source_refs: [LR-10]
+      boundary: "六壬岁君/岁神只在课式时间背景内使用；不等于紫微流年太岁或择日太岁方。"
+    - id: shensha-baihu
+      name: "白虎"
+      liuren_usage: heavenly_general_and_class_spirit
+      source_layer_order: [primary_layer, guide_layer, support_layer]
+      source_refs: [LR-10, LM-R02, LM-R19]
+      boundary: "六壬白虎天将不等于择日白虎；见白虎不可直接断血光、疾病、丧服，必须看课传、日辰、旺衰、刑克。"
+    - id: shensha-guanfu-bingfu
+      name: "官符/病符"
+      liuren_usage: official_or_illness_support_signal
+      source_layer_order: [primary_layer]
+      source_refs: [LR-10]
+      boundary: "传统官讼/疾病象只作课内辅助；不作现代法律或医疗事实判断。"
+    - id: shensha-sangmen-diaoke
+      name: "丧门/吊客"
+      liuren_usage: illness_mourning_or_obstruction_signal
+      source_layer_order: [primary_layer, support_layer]
+      source_refs: [LR-10, LM-R19]
+      boundary: "敏感凶象必须依完整课式组合；不得单项断丧病寿夭。"
+    - id: shensha-tianxing
+      name: "天刑"
+      liuren_usage: punishment_or_injury_support_signal
+      source_layer_order: [primary_layer]
+      source_refs: [LR-10]
+      boundary: "六壬天刑只在课内刑伤象中使用；不等于紫微天刑、星命天刑或择日黑道天刑。"
+    - id: shensha-yuepo-yueyan
+      name: "月破/月厌/月害"
+      liuren_usage: month_relation_obstruction_signal
+      source_layer_order: [primary_layer]
+      source_refs: [LR-10]
+      boundary: "课内月将/月神关系字段；不从月破一项直接断个人运势或选日。"
+    - id: shensha-side-fei-lijue
+      name: "四废/四离/四绝"
+      liuren_usage: seasonal_or_calendar_context_signal
+      source_layer_order: [primary_layer]
+      source_refs: [LR-10]
+      boundary: "六壬中只能作为占时/节令背景的课内辅助；不等于择日四离四绝规则。"
+    - id: shensha-jinshen-qisha
+      name: "金神七煞"
+      liuren_usage: obstruction_or_metal_killing_support_signal
+      source_layer_order: [primary_layer]
+      source_refs: [LR-10]
+      boundary: "只在六壬课式 source trace 中出现时使用；不等于八字金神格或择日金神七煞。"
+    - id: shensha-yuekong-mucang-jieshen
+      name: "月空/母仓/解神"
+      liuren_usage: emptiness_storage_or_release_support_signal
+      source_layer_order: [primary_layer]
+      source_refs: [LR-10]
+      boundary: "课内辅助神煞，不迁移为八字贵人或择日单项吉神。"
+    - id: shensha-twelve-generals
+      name: "青龙/朱雀/六合/勾陈/玄武/太常/太阴/天后"
+      liuren_usage: core_heavenly_general_set
+      source_layer_order: [primary_layer, guide_layer, support_layer]
+      source_refs: [LR-10, LM-R02]
+      boundary: "六壬十二天将是课式核心事实层，不等于择日黄黑道十二神；单个天将不能独立定吉凶。"
+    - id: shensha-fuyin-fanyin
+      name: "伏吟/反吟"
+      liuren_usage: lesson_pattern_not_generic_shensha
+      source_layer_order: [primary_layer, guide_layer]
+      source_refs: [LR-08, LR-09, LR-03]
+      boundary: "六壬伏吟/反吟是课体/起例结果，不等于八字流年同柱重复；必须由课盘工具识别。"
+  reading_order:
+    source_building:
+      - shensha-name-disambiguation.yaml
+      - shensha-entry-source-profile.yaml
+      - shensha-quote-trace.yaml
+      - shensha-source-book-matrix.yaml
+      - shensha-ss-b3-liuren-refinement.yaml
+    liuren_interpretation:
+      - references/tool-adapters.md
+      - mingli-master.liuren_fact_adapter v2 output
+      - san-shi/daliuren-daquan
+      - san-shi/liuren-zhiyin
+      - san-shi/liuren-miben only if class-image support is needed
+  gate_examples:
+    reject:
+      - "只凭白虎天将就断必有血光。"
+      - "八字命盘有六壬天将青龙，所以财运一定好。"
+      - "择日白虎和六壬白虎可以合并看。"
+    allow:
+      - "缺少六壬四课三传、天将、月将、日辰、占时，不能解释白虎。"
+      - "六壬白虎天将只在课式内使用，不并入八字神煞清单。"

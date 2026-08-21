@@ -77,7 +77,7 @@ URL 中恢复输入或工作台的不透明标识。出生资料、问题正文�
 ## 算法、解读与报告
 
 **命理核心源码工作树（Mingli Core Source Checkout）**
-`core/mingli-master` 下可见、可同步、拥有独立 Git 历史的 `mingli-master` 权威源码。网站仓库不复制或直接 import 它；开发修改先进入该工作树，再经过发布门禁生成 Runtime Release。
+`core/mingli-master` 是从原版仓库 `mingli-master-skill` 移植进本仓库的权威算法源码，随 `mingli_web` 一起版本管理。网站不直接 import 它；开发修改先进入该目录，再经过发布门禁生成 Runtime Release。原版 skill 仓库的 Git 历史仍在 `mingli-master-skill`，不把移植时留下的嵌套 `.git` 当作本仓库历史。
 
 **算法运行时发布物（Runtime Release）**
 经过验签和原生全量回归、安装在 `.runtime` 或生产固定路径的完整 `mingli-master` 制品，包含 13 Provider、算法、古籍证据与协议资产。它是源码工作树的生成结果，不是编辑入口；任意工作树或散落目录不是发布物。

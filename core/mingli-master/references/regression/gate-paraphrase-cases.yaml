@@ -1,0 +1,123 @@
+# Gate paraphrase regression corpus (Section 7 of the accuracy-first refactor).
+#
+# Each case is a Chinese-natural-language variant of a v6 public.txt draft.
+# The 2026-07-11 acceptance test exposed that the gate was rejecting factually
+# consistent answers that used non-canonical phrasing. These cases lock the
+# accepted forms as regression, and pin known bad drafts as reject cases.
+#
+# fixture:
+#   query = "明天运势怎么样？"
+#   natal_pillars: 庚辰 / 丙戌 / 己酉 / 丁卯
+#   active_luck: 戊子
+#   target_day: 丁亥 (2026-07-12)
+#   primary_mechanism: day-multi-formation-01 (亥卯未 三合, nominal_element=木,
+#                       transformation_status=unadjudicated_requires_classical_conditions)
+#   direction_status: requires_classical_interpretive_adjudication
+
+schema_version: gate-paraphrase-cases-v1
+fixture_id: fortune-2026-07-12-hai-mao-wei
+
+should_pass:
+  - id: canonical-gold
+    label: "canonical valid_v6_formation_answer form"
+    text: |
+      【玄枢｜MINGLI】
+      时势：庚辰年、丙戌月、己酉日、丁卯时，行戊子运；2026年7月12日，丁亥日。
+      明天盘里的主要变化不是单看偏印，而是流日亥、原局时支卯、流月未三支齐为亥卯未三合木局。木对己土归官杀一类，因此明天盘面的约束与推动会更集中；但这里只确认完整支组出现，不把它直接判成合化成立；喜忌仍要结合全局，也不能硬编某件事一定发生。
+  - id: qi-jian-variant
+    label: "三支齐见变体"
+    text: |
+      【玄枢｜MINGLI】
+      时势：庚辰年、丙戌月、己酉日、丁卯时，行戊子运；2026年7月12日为丁亥日。
+      流日亥、原局时支卯、流月未三支齐见亥卯未三合木局。木对己土归官杀一类。明天推动与约束并行，是否化局仍未裁定，需结合全局。
+  - id: he-cheng-variant
+    label: "合成变体"
+    text: |
+      【玄枢｜MINGLI】
+      时势：庚辰年、丙戌月、己酉日、丁卯时，行戊子运；2026年7月12日为丁亥日。
+      主要机制：流日亥、原局时支卯与流月未合成亥卯未三合，其名义五行为木，对己土日主属官杀一类。是否化局仍要看全局条件，不能据此断具体事件。明天偏紧但可推进。
+
+should_fail:
+  # audit P2-1: real acceptance v2 draft is boilerplate advisory + stock scenes.
+  # After the audit fix, `宜做收口` etc. no longer count as a direct judgment
+  # and “收口｜排优先级｜定边界” are stock-scene leaks unless the query authorised them.
+  - id: acceptance-v2-real
+    label: "acceptance 2026-07-11 v2 real draft (audit P2-1: pinned as must-fail)"
+    text: |
+      【玄枢｜MINGLI】
+      时势：庚辰年、丙戌月、己酉日、丁卯时，现行戊子大运；2026年7月12日为丁亥日。
+      主要机制：丁亥日的亥，与原局卯、当月未构成亥卯未的完整三合支组。这只是跨层支组成立，是否化局仍需全局条件，不能据此断具体事件。
+
+      结论：明天宜做收口、筛选、排优先级；临时加码或情绪化硬碰，反而容易让节奏变乱。重点是先定边界，再动手。
+    expected_finding_codes:
+      - fortune_stock_scene_leak
+  # audit P2-1: real gpt-5.6-terra 2026-07-12 reply that maps 十神→生活场景.
+  - id: qoder-live-20260712-ten-god-scene
+    label: "real Qoder 2026-07-12 reply: 日干丁为偏印→思虑与内在判断"
+    text: |
+      【玄枢｜MINGLI】
+      时势：庚辰年、丙戌月、己酉日、丁卯时；现行戊子大运。明天为2026年7月12日，丁亥日。
+      主要机制：流日亥、命局时支卯、流月未齐见，构成亥卯未三合木的跨层支组；三支齐见不等于一定化局，仍须结合全局条件。日干丁为偏印，传统象意偏向思虑与内在判断。
+      结论：明天的主调是事情和想法容易集中到一起，外部节奏带来的要求感会更明显。
+    expected_finding_codes:
+      - fortune_ten_god_scene_mapping
+  # Real acceptance v1 draft (SHA256 cac5951b…): missing 时势 line.
+  - id: acceptance-v1-missing-time-basis
+    label: "acceptance 2026-07-11 v1 missing 时势"
+    text: |
+      【玄枢｜MINGLI】
+      明天是2026年7月12日，丁亥日。整体是"有推进力，但不宜硬顶"的一天。
+
+      丁亥日与原局卯、当月未形成亥卯未的跨层三合，外部规则、待办和他人节奏会更容易聚到你身上。适合把已经明确的事收口、定步骤、做筛选；不太适合临时加码、凭情绪拍板，尤其别把小分歧硬拗成输赢。
+
+      白天适合处理需要判断、整理、对齐口径的事项；晚上容易想得多，留一点空档比强撑效率更高。明天的关键不是抢速度，而是把边界和优先级先划清。
+    expected_finding_codes:
+      - fortune_public_missing_time_basis
+  - id: acceptance-delivery-meta
+    label: "acceptance final fallback meta-message"
+    text: |
+      【玄枢｜MINGLI】明天是2026年7月12日，丁亥日，已完成排算。但当前校验器连续两次未能识别计算结果中的主机制，按校验规则不能把未通过的解读当作正式运势发出。
+
+      这是本地运势校验链的问题，不是你资料缺失。
+    expected_finding_codes:
+      - fortune_public_missing_time_basis
+  - id: wrong-ten-god
+    label: "wrong ten-god named for target-day stem"
+    text: |
+      【玄枢｜MINGLI】
+      时势：庚辰年、丙戌月、己酉日、丁卯时，行戊子运；2026年7月12日为丁亥日。
+      丁火日干作正官，明天偏紧、约束大。流日亥、原局卯、流月未三合木局。
+    expected_finding_codes:
+      - fortune_ten_god_fact_mismatch
+  - id: hehua-established
+    label: "declares 合化 established without adjudication"
+    text: |
+      【玄枢｜MINGLI】
+      时势：庚辰年、丙戌月、己酉日、丁卯时，行戊子运；2026年7月12日为丁亥日。
+      流日亥、原局卯、流月未合成亥卯未三合，已经合化为木，转旺官杀。明天费力，压力大。
+    expected_finding_codes:
+      - fortune_unadjudicated_formation_transformation
+  - id: stock-scene-huikuan
+    label: "stock scene 回款 without user context"
+    text: |
+      【玄枢｜MINGLI】
+      时势：庚辰年、丙戌月、己酉日、丁卯时，行戊子运；2026年7月12日为丁亥日。
+      流日亥、原局卯、流月未三支齐为亥卯未三合木局。木对己土归官杀，明天偏紧。留意有一笔回款的落地节奏。
+    expected_finding_codes:
+      - fortune_stock_scene_leak
+  - id: mechanism-dump-no-direction
+    label: "mechanism enumeration without direction/boundary"
+    text: |
+      【玄枢｜MINGLI】
+      时势：庚辰年、丙戌月、己酉日、丁卯时，行戊子运；2026年7月12日，丁亥日。
+      流日亥、原局时支卯、流月未三支齐为亥卯未三合木局，木对己土归官杀一类。
+    expected_finding_codes:
+      - fortune_missing_directional_judgment
+  - id: conflicting-month-command
+    label: "conflicting month commands (酉戌月令)"
+    text: |
+      【玄枢｜MINGLI】
+      时势：庚辰年、丙戌月、己酉日、丁卯时，行戊子运；2026年7月12日为丁亥日。
+      原局是酉戌月令，流日亥、原局卯、流月未三合木局。明天偏紧。
+    expected_finding_codes:
+      - fortune_conflicting_month_command

@@ -1,0 +1,314 @@
+schema_version: mingli-v4-conversation-trajectories-v1
+purpose: >-
+  Complete caller-owned conversations whose assertions concern state transitions,
+  lineage, calculation reuse, and committed artifact properties. User language is
+  illustrative conversation data and is never parsed as an admission vocabulary.
+
+trajectories:
+  - id: daily-fortune-sufficient-facts
+    system: fortune
+    turns:
+      - user: 今天整个人像没开机，照我给的资料看看这一天怎么走。
+        request:
+          action: new
+          system: fortune
+          reference_datetime: "2026-07-22T09:30:00+08:00"
+          timezone: Asia/Shanghai
+          location: 上海
+          birth_data:
+            birth_datetime: "1990-01-01T12:00:00+08:00"
+            gender: female
+        expect:
+          result: accepted
+          action: new
+          query_source: turn
+          conflicting_evidence: true
+      - user: 把这个判断收窄到下午的节奏，沿用刚才那份事实。
+        request:
+          action: continue
+          use_current_reading: true
+        expect:
+          result: accepted
+          action: continue
+          query_source: turn
+          reading_identity: same
+          calculation: reused
+
+  - id: liuren-current-state
+    system: liuren
+    turns:
+      - user: 她眼下是停着、在路上，还是已经到了别处？
+        request:
+          action: new
+          system: liuren
+          reference_datetime: "2026-07-22T21:13:00+08:00"
+          timezone: Asia/Shanghai
+          goal:
+            subject: 她眼下的状态
+            requested_resolution: 给出一个主判断并列出反证
+        expect:
+          result: accepted
+          action: new
+          query_source: turn
+      - user: 刚才的课别动，只把落脚状态讲清楚。
+        request:
+          action: continue
+          use_current_reading: true
+        expect:
+          result: accepted
+          action: continue
+          query_source: turn
+          reading_identity: same
+          calculation: reused
+
+  - id: timing-follow-up
+    system: liuren
+    turns:
+      - user: 这笔尾款能不能顺利落袋？
+        request:
+          action: new
+          system: liuren
+          reference_datetime: "2026-07-22T20:10:00+08:00"
+          timezone: Asia/Shanghai
+        expect:
+          result: accepted
+          action: new
+          query_source: turn
+      - user: 顺着上一课，把时间落到最有可能的窗口。
+        restart_before: true
+        request:
+          action: continue
+          use_current_reading: true
+        expect:
+          result: accepted
+          action: continue
+          query_source: turn
+          reading_identity: same
+          calculation: reused
+
+  - id: amount-follow-up
+    system: liuren
+    turns:
+      - user: 合作方承诺的款项这轮会兑现吗？
+        request:
+          action: new
+          system: liuren
+          reference_datetime: "2026-07-22T18:30:00+08:00"
+          timezone: Asia/Shanghai
+        expect:
+          result: accepted
+          action: new
+          query_source: turn
+      - user: 课还是这一课，若只能给区间，金额大致落在哪里？
+        request:
+          action: continue
+          use_current_reading: true
+        expect:
+          result: accepted
+          action: continue
+          query_source: turn
+          reading_identity: same
+          calculation: reused
+
+  - id: why-follow-up
+    system: liuren
+    turns:
+      - user: 对方突然沉默，这件事还推得动吗？
+        request:
+          action: new
+          system: liuren
+          reference_datetime: "2026-07-22T17:45:00+08:00"
+          timezone: Asia/Shanghai
+        expect:
+          result: accepted
+          action: new
+          query_source: turn
+      - user: 我想听的是因果链：主证怎么压过反证的？
+        request:
+          action: continue
+          use_current_reading: true
+        expect:
+          result: accepted
+          action: continue
+          query_source: turn
+          reading_identity: same
+          calculation: reused
+          conflicting_evidence: true
+
+  - id: user-challenge
+    system: liuren
+    turns:
+      - user: 这场谈判最后能不能签下来？
+        request:
+          action: new
+          system: liuren
+          reference_datetime: "2026-07-22T16:20:00+08:00"
+          timezone: Asia/Shanghai
+        expect:
+          result: accepted
+          action: new
+          query_source: turn
+      - user: 你的主判断太快了；把相反证据也摆出来，再回答一次。
+        request:
+          action: continue
+          use_current_reading: true
+        expect:
+          result: accepted
+          action: continue
+          query_source: turn
+          reading_identity: same
+          calculation: reused
+          conflicting_evidence: true
+
+  - id: corrected-cast-input
+    system: liuren
+    turns:
+      - user: 按这个时刻看项目是否继续推进。
+        request:
+          action: new
+          system: liuren
+          reference_datetime: "2026-07-22T14:00:00+08:00"
+          timezone: Asia/Shanghai
+        expect:
+          result: accepted
+          action: new
+          query_source: turn
+      - user: 我刚才把时刻写错了，正确的是十四点二十分，请更正事实重算。
+        request:
+          action: correct
+          use_current_reading: true
+          reference_datetime: "2026-07-22T14:20:00+08:00"
+        expect:
+          result: accepted
+          action: correct
+          query_source: turn
+          reading_identity: same
+          calculation: refreshed
+
+  - id: pending-city-resume
+    system: fortune
+    turns:
+      - user: 用我的出生资料看看后天整体状态。
+        request:
+          action: new
+          system: fortune
+          reference_datetime: "2026-07-22T12:00:00+08:00"
+          timezone: Asia/Shanghai
+          birth_data:
+            birth_datetime: "1990-01-01T12:00:00+08:00"
+            gender: female
+        publish_question: 还差出生地；你按自己的说法告诉我城市即可。
+        expect:
+          result: need_user_fact
+          missing_facts: [location]
+      - user: 杭州。
+        restart_before: true
+        request:
+          action: resume
+          use_current_intake: true
+          location: 杭州
+        expect:
+          result: accepted
+          action: resume
+          query_source: root
+
+  - id: subject-change-explicit-recast
+    system: liuren
+    turns:
+      - user: 先看甲项目今天能否得到审批。
+        request:
+          action: new
+          system: liuren
+          reference_datetime: "2026-07-22T11:00:00+08:00"
+          timezone: Asia/Shanghai
+        expect:
+          result: accepted
+          action: new
+          query_source: turn
+      - user: 现在换成乙项目，重新起一课看它的审批。
+        request:
+          action: recast
+          system: liuren
+          use_current_reading: true
+          reference_datetime: "2026-07-22T11:30:00+08:00"
+          timezone: Asia/Shanghai
+        expect:
+          result: accepted
+          action: recast
+          query_source: turn
+          reading_identity: new_child
+          calculation: refreshed
+
+  - id: ordinary-chat-after-reading
+    system: liuren
+    turns:
+      - user: 看一下这次面谈能不能敲定。
+        request:
+          action: new
+          system: liuren
+          reference_datetime: "2026-07-22T10:20:00+08:00"
+          timezone: Asia/Shanghai
+        expect:
+          result: accepted
+          action: new
+          query_source: turn
+      - user: 顺便把 387 乘以 42 算出来。
+        invoke: false
+        expect:
+          result: passthrough
+
+  - id: primary-counter-evidence-conflict
+    system: liuren
+    turns:
+      - user: 主证看似有利，但空亡也很重，这事到底落不落地？
+        request:
+          action: new
+          system: liuren
+          reference_datetime: "2026-07-22T09:50:00+08:00"
+          timezone: Asia/Shanghai
+          goal:
+            requested_resolution: 对照主证、反证后给一个主判断
+            evidence_questions:
+              - 哪条规则构成主证
+              - 哪条规则限制主证
+        expect:
+          result: accepted
+          action: new
+          query_source: turn
+          conflicting_evidence: true
+      - user: 不要数书本票数，说明两条证据为什么冲突。
+        request:
+          action: continue
+          use_current_reading: true
+        expect:
+          result: accepted
+          action: continue
+          query_source: turn
+          reading_identity: same
+          calculation: reused
+          conflicting_evidence: true
+
+  - id: unfamiliar-colloquial-formulation
+    system: liuren
+    turns:
+      - user: 给这茬事儿号个脉，瞅瞅它是往前拱还是原地打转。
+        request:
+          action: new
+          system: liuren
+          reference_datetime: "2026-07-22T08:40:00+08:00"
+          timezone: Asia/Shanghai
+        expect:
+          result: accepted
+          action: new
+          query_source: turn
+      - user: 嚼细点儿，哪股劲是真推手，哪股只是虚晃？
+        restart_before: true
+        request:
+          action: continue
+          use_current_reading: true
+        expect:
+          result: accepted
+          action: continue
+          query_source: turn
+          reading_identity: same
+          calculation: reused

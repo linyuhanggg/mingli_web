@@ -292,25 +292,34 @@ def load_release_index(root: Path) -> dict[str, dict[str, Any]]:
     return records
 
 
+def _extract_release_evidence(payload: object) -> object | None:
+    if isinstance(payload, list):
+        return payload
+    if not isinstance(payload, dict):
+        return None
+    if isinstance(payload.get("evidence"), list):
+        return payload["evidence"]
+    result = payload.get("result")
+    if isinstance(result, dict) and isinstance(result.get("evidence"), list):
+        return result["evidence"]
+    fact_panel = payload.get("fact_panel")
+    if isinstance(fact_panel, dict) and isinstance(fact_panel.get("evidence"), list):
+        return fact_panel["evidence"]
+    return None
+
+
 def load_release_evidence(path: Path) -> list[dict[str, Any]]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         sys.exit(f"无法读取 release-bound evidence JSON：{path}：{exc}")
 
-    evidence: object
-    if isinstance(payload, list):
-        evidence = payload
-    elif isinstance(payload, dict) and isinstance(payload.get("evidence"), list):
-        evidence = payload["evidence"]
-    elif (
-        isinstance(payload, dict)
-        and isinstance(payload.get("result"), dict)
-        and isinstance(payload["result"].get("evidence"), list)
-    ):
-        evidence = payload["result"]["evidence"]
-    else:
-        sys.exit("release-bound evidence JSON 必须是 evidence 数组，或包含 result.evidence 数组")
+    evidence = _extract_release_evidence(payload)
+    if evidence is None:
+        sys.exit(
+            "release-bound evidence JSON 必须是 evidence 数组，"
+            "或包含 result.evidence / fact_panel.evidence 数组"
+        )
     if not evidence:
         sys.exit("release-bound evidence 清单为空")
     if not all(isinstance(item, dict) for item in evidence):

@@ -1,0 +1,218 @@
+schema_version: mingli-ziwei-fixtures-v51
+source_scope: >-
+  Frozen regression cases for the audited iztro 2.5.8 default/fix-leap/zh-CN
+  profile. The public 1970 chart is the independent benchmark; the remaining
+  cases freeze boundary behavior from the pinned MIT distribution and are
+  interpreted only through the separately identified classical packs.
+provider_contract:
+  system: ziwei
+  provider_class: reading_engine.providers.ZiweiProvider
+  provider_id: mingli-master.ziwei.iztro
+  provider_version: 1.2.0+iztro-2.5.8
+  minimum_fixture_cases: 30
+  timezone: Asia/Shanghai
+  location: 上海
+  required_boundary_categories:
+    - known_chart
+    - leap_month
+    - zi_hour
+    - direction
+    - limit_boundary
+    - temporal_transformations
+  algorithm_dependency_ids:
+    - ziwei.iztro.natal-palaces-stars-transformations
+    - ziwei.iztro.decadal-year-month-horoscope
+    - ziwei.iztro.leap-hour-major-limit-conventions
+    - ziwei.source-conditioned-patterns
+
+cases:
+  - id: known-public-1970
+    category: known_chart
+    input: {datetime: '1970-07-22T15:00:00', timezone: Asia/Shanghai, location: '北京，中国', gender: male}
+    oracle:
+      kind: fixed_independent_public_benchmark
+      source_dependency_id: ziwei.iztro.natal-palaces-stars-transformations
+      source_path: references/matrices/algorithm-source-dependencies.yaml
+      source_anchor: ziwei-public-benchmark-1970-07-22
+      independence: expected chart facts are stored outside ZiweiProvider and are never generated during audit
+    expected:
+      lunar: [6, 20, false]
+      ganzhi: [庚戌, 癸未, 癸卯, 庚申]
+      ming_shen: [亥, 卯]
+      five_elements_class: 土五局
+      transformations: [太阳禄@田宅, 武曲权@福德, 太阴科@父母, 天同忌@父母]
+      first_palace:
+        name: 田宅
+        earthly_branch: 寅
+        major_stars:
+          - {name: 太阳, brightness: 旺, mutagen: 禄}
+          - {name: 巨门, brightness: 庙, mutagen: ''}
+  - id: known-lunar-new-year-1984
+    category: known_chart
+    input: {datetime: '1984-02-02T06:00:00', gender: female}
+    expected:
+      lunar: [1, 1, false]
+      ming_shen: [亥, 巳]
+      five_elements_class: 火六局
+      transformations: [廉贞禄@福德, 破军权@迁移, 武曲科@迁移, 太阳忌@疾厄]
+  - id: known-1988
+    category: known_chart
+    input: {datetime: '1988-08-08T08:00:00', gender: male}
+    expected:
+      lunar: [6, 26, false]
+      ming_shen: [卯, 亥]
+      five_elements_class: 水二局
+      transformations: [贪狼禄@父母, 太阴权@命宫, 右弼科@福德, 天机忌@夫妻]
+  - id: known-before-lunar-year-1991
+    category: known_chart
+    input: {datetime: '1991-01-01T12:00:00', gender: female}
+    expected:
+      lunar: [11, 16, false]
+      ming_shen: [午, 午]
+      five_elements_class: 木三局
+      transformations: [太阳禄@命宫, 武曲权@兄弟, 太阴科@福德, 天同忌@夫妻]
+  - id: known-yin-year-1991
+    category: known_chart
+    input: {datetime: '1991-06-15T10:00:00', gender: male}
+    expected:
+      lunar: [5, 4, false]
+      ming_shen: [丑, 亥]
+      five_elements_class: 土五局
+      transformations: [巨门禄@仆役, 太阳权@子女, 文曲科@财帛, 文昌忌@官禄]
+  - id: known-leap-day-2000
+    category: known_chart
+    input: {datetime: '2000-02-29T12:00:00', gender: female}
+    expected:
+      lunar: [1, 25, false]
+      ming_shen: [申, 申]
+      five_elements_class: 水二局
+      transformations: [太阳禄@福德, 武曲权@父母, 太阴科@财帛, 天同忌@命宫]
+  - id: known-solstice-2012
+    category: known_chart
+    input: {datetime: '2012-12-21T18:00:00', gender: male}
+    expected:
+      lunar: [11, 9, false]
+      ming_shen: [卯, 酉]
+      five_elements_class: 金四局
+      transformations: [天梁禄@仆役, 紫微权@夫妻, 左辅科@兄弟, 武曲忌@迁移]
+  - id: known-lunar-new-year-2024
+    category: known_chart
+    input: {datetime: '2024-02-10T09:00:00', gender: female}
+    expected:
+      lunar: [1, 1, false]
+      ming_shen: [酉, 未]
+      five_elements_class: 金四局
+      transformations: [廉贞禄@迁移, 破军权@迁移, 武曲科@夫妻, 太阳忌@兄弟]
+
+  - id: leap-month-before
+    category: leap_month
+    input: {datetime: '2023-03-21T10:00:00', gender: female}
+    expected: {lunar: [2, 30, false], ming_shen: [戌, 申]}
+  - id: leap-month-first
+    category: leap_month
+    input: {datetime: '2023-03-22T10:00:00', gender: female}
+    expected: {lunar: [2, 1, true], ming_shen: [戌, 申]}
+  - id: leap-month-day-14
+    category: leap_month
+    input: {datetime: '2023-04-04T10:00:00', gender: female}
+    expected: {lunar: [2, 14, true], ming_shen: [戌, 申]}
+  - id: leap-month-day-15
+    category: leap_month
+    input: {datetime: '2023-04-05T10:00:00', gender: female}
+    expected: {lunar: [2, 15, true], ming_shen: [戌, 申]}
+  - id: leap-month-last
+    category: leap_month
+    input: {datetime: '2023-04-19T10:00:00', gender: female}
+    expected: {lunar: [2, 29, true], ming_shen: [亥, 酉]}
+  - id: leap-month-after
+    category: leap_month
+    input: {datetime: '2023-04-20T10:00:00', gender: female}
+    expected: {lunar: [3, 1, false], ming_shen: [亥, 酉]}
+
+  - id: zi-before-2300
+    category: zi_hour
+    input: {datetime: '2024-01-15T22:59:00', gender: male, zi_hour_policy: midnight}
+    expected: {engine_solar_date: '2024-1-15', day_pillar: 戊寅, time: 亥时, ming_shen: [寅, 子], time_index: 11}
+  - id: zi-midnight-at-2300
+    category: zi_hour
+    input: {datetime: '2024-01-15T23:00:00', gender: male, zi_hour_policy: midnight}
+    expected: {engine_solar_date: '2024-1-15', day_pillar: 戊寅, time: 晚子时, ming_shen: [丑, 丑], time_index: 12}
+  - id: zi-midnight-at-2359
+    category: zi_hour
+    input: {datetime: '2024-01-15T23:59:00', gender: male, zi_hour_policy: midnight}
+    expected: {engine_solar_date: '2024-1-15', day_pillar: 戊寅, time: 晚子时, ming_shen: [丑, 丑], time_index: 12}
+  - id: zi-late-next-at-2300
+    category: zi_hour
+    input: {datetime: '2024-01-15T23:00:00', gender: male, zi_hour_policy: late-zi-next-day}
+    expected: {engine_solar_date: '2024-1-15', day_pillar: 己卯, time: 晚子时, ming_shen: [丑, 丑], time_index: 12}
+  - id: zi-late-next-at-2359
+    category: zi_hour
+    input: {datetime: '2024-01-15T23:59:00', gender: male, zi_hour_policy: late-zi-next-day}
+    expected: {engine_solar_date: '2024-1-15', day_pillar: 己卯, time: 晚子时, ming_shen: [丑, 丑], time_index: 12}
+  - id: zi-next-day-early
+    category: zi_hour
+    input: {datetime: '2024-01-16T00:00:00', gender: male, zi_hour_policy: midnight}
+    expected: {engine_solar_date: '2024-1-16', day_pillar: 己卯, time: 早子时, ming_shen: [丑, 丑], time_index: 0}
+
+  - id: direction-yang-male
+    category: direction
+    input: {datetime: '1990-06-15T10:00:00', gender: male}
+    expected: {year_stem: 庚, year_polarity: yang, direction: forward, first_palaces: [命宫, 父母, 福德]}
+  - id: direction-yang-female
+    category: direction
+    input: {datetime: '1990-06-15T10:00:00', gender: female}
+    expected: {year_stem: 庚, year_polarity: yang, direction: reverse, first_palaces: [命宫, 兄弟, 夫妻]}
+  - id: direction-yin-male
+    category: direction
+    input: {datetime: '1993-06-15T10:00:00', gender: male}
+    expected: {year_stem: 癸, year_polarity: yin, direction: reverse, first_palaces: [命宫, 兄弟, 夫妻]}
+  - id: direction-yin-female
+    category: direction
+    input: {datetime: '1991-06-15T10:00:00', gender: female}
+    expected: {year_stem: 辛, year_polarity: yin, direction: forward, first_palaces: [命宫, 父母, 福德]}
+
+  - id: limit-male-before-cny
+    category: limit_boundary
+    input: {datetime: '1990-06-15T10:00:00', gender: male, target_date: '2025-01-28'}
+    expected: {index: 1, stem_branch: 己卯, natal_palace: 福德}
+  - id: limit-male-at-cny
+    category: limit_boundary
+    input: {datetime: '1990-06-15T10:00:00', gender: male, target_date: '2025-01-29'}
+    expected: {index: 2, stem_branch: 庚辰, natal_palace: 田宅}
+  - id: limit-female-before-cny
+    category: limit_boundary
+    input: {datetime: '1990-06-15T10:00:00', gender: female, target_date: '2025-01-28'}
+    expected: {index: 9, stem_branch: 丁亥, natal_palace: 夫妻}
+  - id: limit-female-at-cny
+    category: limit_boundary
+    input: {datetime: '1990-06-15T10:00:00', gender: female, target_date: '2025-01-29'}
+    expected: {index: 8, stem_branch: 丙戌, natal_palace: 子女}
+
+  - id: transforms-before-2025-cny
+    category: temporal_transformations
+    input: {datetime: '1990-06-15T10:00:00', gender: male, target_date: '2025-01-28'}
+    expected:
+      major: [武曲禄@兄弟, 贪狼权@父母, 天梁科@官禄, 文曲忌@财帛]
+      annual: [廉贞禄@疾厄, 破军权@子女, 武曲科@兄弟, 太阳忌@命宫]
+      monthly: [太阴禄@命宫, 天同权@夫妻, 天机科@福德, 巨门忌@福德]
+  - id: transforms-at-2025-cny
+    category: temporal_transformations
+    input: {datetime: '1990-06-15T10:00:00', gender: male, target_date: '2025-01-29'}
+    expected:
+      major: [太阳禄@命宫, 武曲权@兄弟, 太阴科@命宫, 天同忌@夫妻]
+      annual: [天机禄@福德, 天梁权@官禄, 紫微科@田宅, 太阴忌@命宫]
+      monthly: [贪狼禄@父母, 太阴权@命宫, 右弼科@仆役, 天机忌@福德]
+  - id: transforms-2026-07
+    category: temporal_transformations
+    input: {datetime: '1990-06-15T10:00:00', gender: male, target_date: '2026-07-15'}
+    expected:
+      major: [太阳禄@命宫, 武曲权@兄弟, 太阴科@命宫, 天同忌@夫妻]
+      annual: [天同禄@夫妻, 天机权@福德, 文昌科@官禄, 廉贞忌@疾厄]
+      monthly: [天机禄@福德, 天梁权@官禄, 紫微科@田宅, 太阴忌@命宫]
+  - id: transforms-2030-08
+    category: temporal_transformations
+    input: {datetime: '1990-06-15T10:00:00', gender: male, target_date: '2030-08-15'}
+    expected:
+      major: [太阳禄@命宫, 武曲权@兄弟, 太阴科@命宫, 天同忌@夫妻]
+      annual: [太阳禄@命宫, 武曲权@兄弟, 太阴科@命宫, 天同忌@夫妻]
+      monthly: [廉贞禄@疾厄, 破军权@子女, 武曲科@兄弟, 太阳忌@命宫]

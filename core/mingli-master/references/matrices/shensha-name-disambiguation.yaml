@@ -1,0 +1,744 @@
+generated_at: "2026-07-05"
+version: "v0.2"
+source_status: "derived_from_ready_packs"
+purpose: "Machine-readable disambiguation map for high-frequency shensha names across bazi, luming-nayin, selection, liuren, ziwei, xingming, and fengshui."
+source_book_matrix_ref: "references/matrices/shensha-source-book-matrix.yaml"
+entry_source_profile_ref: "references/matrices/shensha-entry-source-profile.yaml"
+
+policy:
+  not_independent_oracle: true
+  requires_fact_layer: true
+  do_not_merge_systems: true
+  default_bazi_weight: "secondary_to_geju_yueling_tiaohou_wangshuai_tengods"
+  default_selection_weight: "fact_layer_required"
+  default_liuren_weight: "plate_internal_only"
+  default_ziwei_weight: "star_palace_limit_only"
+  default_xingming_weight: "astronomical_chart_internal_only"
+  source_gate: "D2-ready packs only"
+  source_priority_overlay: "Use shensha-entry-source-profile.yaml for per-entry book_priority and source_pack_role."
+
+required_fact_layers:
+  bazi:
+    - "calendar_normalization"
+    - "four_pillars"
+    - "hidden_stems"
+    - "ten_gods"
+    - "month_order"
+    - "seasonal_tiaohou_profile"
+  selection:
+    - "candidate_dates"
+    - "jianchu"
+    - "huangdao_heidao"
+    - "yiji"
+    - "shensha"
+    - "conflicts"
+    - "directional_avoidance"
+  liuren:
+    - "four_lessons"
+    - "three_transmissions"
+    - "heaven_earth_plate"
+    - "twelve_generals"
+    - "day_stem_branch"
+    - "month_general"
+  ziwei:
+    - "twelve_palaces"
+    - "stars"
+    - "four_transformations"
+    - "major_limits"
+    - "annual_flow"
+  xingming:
+    - "xingming_astronomical_chart_adapter"
+    - "seven_luminaries_and_four_extras"
+    - "degree_positions"
+    - "house_or_palace_mapping"
+    - "modern_ephemeris_reconciliation"
+  fengshui:
+    - "site_or_house_orientation"
+    - "minggua_or_house_gua"
+    - "door_stove_bed_room_positions"
+    - "external_form_sha"
+    - "renovation_or_repair_use_case"
+
+entries:
+  - id: "shensha-tianyi-guiren"
+    name: "天乙贵人"
+    aliases: ["天乙贵神", "贵人", "贵神", "天乙貴人", "天乙貴神", "貴人", "貴神"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-03/tianyi-guiren"]
+        weight: "secondary"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-T39", "luming-nayin/li-xuzhong-mingshu: LX-02-02"]
+        weight: "source_history"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: LT-201", "san-shi/daliuren-daquan/rules.md: 天乙贵人口径订正"]
+        weight: "plate_core"
+    do_not_confuse:
+      - "八字天乙贵人不是六壬十二天将天乙贵人。"
+      - "六壬昼夜贵人口径按协纪/星历订正优先。"
+      - "八宅天乙巨门另属风水游年九星，不在本条计算。"
+
+  - id: "shensha-you-nian-jiuxing"
+    name: "游年九星/天乙巨门"
+    aliases: ["天乙巨门", "生气", "延年", "伏位", "五鬼", "六煞", "祸害", "绝命"]
+    source_status: "ready_pack_derived_with_acquisition_lead"
+    systems:
+      fengshui:
+        source_refs: ["fengshui/yangzhai-shishu: YZS-T005~YZS-T011", "fengshui/yangzhai-sanyao: 八宅游年九星", "acquisition_lead: 阳宅爱众篇"]
+        weight: "house_orientation_layer"
+    do_not_confuse:
+      - "八宅游年九星依宅向/命卦/门灶床房位起，不是八字神煞。"
+      - "天乙巨门不是八字天乙贵人，也不是六壬天乙天将。"
+      - "五鬼、六煞、绝命只在风水事实层内解释，不移植到命盘或课式。"
+
+  - id: "shensha-tiande-yuede"
+    name: "天德/月德"
+    aliases: ["天月德", "天德合", "月德合"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: 神煞组"]
+        weight: "secondary_good_symbol"
+      luming_nayin:
+        source_refs: ["luming-nayin/yuzhao-shenying: YZ-T41/YZ-T42"]
+        weight: "source_history"
+      selection:
+        source_refs: ["selection/xieji-bianfang-shu: 月神", "selection/xingli-kaoyuan: KR-11"]
+        weight: "selection_fact"
+      liuren:
+        source_refs: ["san-shi/liuren-zhiyin: LZ-Q040"]
+        weight: "plate_internal"
+    do_not_confuse:
+      - "八字贵神、择日月吉神、六壬月煞表不可互换算法。"
+
+  - id: "shensha-wenchang"
+    name: "文昌"
+    aliases: ["文星"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: 神煞/学堂词馆相关"]
+        weight: "learning_symbol"
+      luming_nayin:
+        source_refs: ["luming-nayin/li-xuzhong-mingshu: LX-T22 文星贵神"]
+        weight: "source_history"
+      ziwei:
+        source_refs: ["ziwei/ziwei-doushu-quanshu: ZW-T021", "ziwei/taiwei-fu: TT-F03"]
+        weight: "star_symbol"
+    do_not_confuse:
+      - "八字文昌不是紫微文昌星。"
+
+  - id: "shensha-taiji-guiren"
+    name: "太极贵人"
+    aliases: ["太极贵", "太極貴人", "太極貴"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-03/taiji-gui", "bazi/sanming-tonghui: R-03-08"]
+        weight: "wisdom_learning_symbol"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: 九流/华盖空亡 context mentions 太极贵人"]
+        weight: "source_history"
+    do_not_confuse:
+      - "太极贵人只作智慧、玄学、学习倾向的轻辅助，不等于学历或职业保证。"
+
+  - id: "shensha-sanqi-guiren"
+    name: "三奇贵人"
+    aliases: ["三奇", "天上三奇", "地下三奇", "人中三奇"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-03/sanqi", "bazi/sanming-tonghui: R-03-07"]
+        weight: "rare_pattern_auxiliary"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-T46"]
+        weight: "source_history"
+    do_not_confuse:
+      - "八字三奇贵人不是奇门遁甲三奇用法；必须满足顺排、不杂、不冲破等条件才可讨论。"
+
+  - id: "shensha-xuetang-ciguan"
+    name: "学堂/词馆"
+    aliases: ["学堂", "词馆", "學堂", "詞館", "学堂词馆"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-03/xuetang-ciguan", "bazi/sanming-tonghui: R-03-09"]
+        weight: "learning_writing_symbol"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-T54", "luming-nayin/wuxing-jingji: WX-05-07"]
+        weight: "source_history"
+    do_not_confuse:
+      - "学堂词馆是文章学业类辅助神煞，不可单独断考试、学历或才华上限。"
+
+  - id: "shensha-dexiu"
+    name: "德秀"
+    aliases: ["德秀贵人", "德秀貴人"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-03/dexiu", "bazi/sanming-tonghui: R-03-11"]
+        weight: "character_appearance_auxiliary"
+    do_not_confuse:
+      - "德秀只能作容貌、气质、品性类轻辅助，不可替代十神、格局和现实观察。"
+
+  - id: "shensha-jinyu"
+    name: "金舆"
+    aliases: ["金輿", "金轝", "金舆贵人", "金輿貴人", "金轝貴人", "金舆捧栉", "金輿捧櫛"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-03/jinyu", "bazi/sanming-tonghui: R-03-06"]
+        weight: "vehicle_mobility_good_symbol"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-T53", "luming-nayin/wuxing-jingji: WX-05-06"]
+        weight: "source_history"
+      ziwei:
+        source_refs: ["ziwei/taiwei-fu: TT-P11", "ziwei/taiwei-fu: TQ-29"]
+        weight: "palace_pattern_symbol"
+    do_not_confuse:
+      - "八字金舆是日干查支的轻吉神；紫微金舆捧栉是格局名，不能互换。"
+
+  - id: "shensha-lushen-lucun"
+    name: "禄/禄神/禄存/化禄"
+    aliases: ["禄", "祿", "禄神", "祿神", "干禄", "干祿", "临官禄", "天禄", "天祿", "禄存", "祿存", "化禄", "化祿", "天元禄", "地元禄", "人元禄"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: 福禄神/禄马官印/拱禄冲禄", "bazi/yuanhai-ziping: 禄/禄马"]
+        weight: "wealth_office_auxiliary"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-T40/WX-T42", "luming-nayin/li-xuzhong-mingshu: LX-T54", "luming-nayin/luoluzi-sanming: LZ-T45"]
+        weight: "source_history"
+      ziwei:
+        source_refs: ["ziwei/ziwei-doushu-quanshu: ZW-T021/ZW-T023/ZW-03-01", "ziwei/taiwei-fu: TT-L01/TT-L02"]
+        weight: "star_and_four_transformations"
+      xingming:
+        source_refs: ["xingming/guotian-jing: 禄神/天元禄/化禄"]
+        weight: "astronomical_chart_internal"
+    do_not_confuse:
+      - "八字干禄/禄神、禄命干禄、紫微禄存/化禄、星命禄神/天元禄/化禄不是同一算法。"
+      - "紫微化禄属于四化事实层；没有紫微盘和四化输出不得解释。"
+      - "星命禄神/化禄必须依星命天文排盘，不得并入八字干禄。"
+      - "风水九星禄存、八宅祸害禄存另属风水形峦或宅局语义，不在本条命盘神煞计算。"
+
+  - id: "shensha-yima-tianma"
+    name: "驿马/天马"
+    aliases: ["马", "天馬", "月驿", "岁驿"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-03/yima"]
+        weight: "movement_symbol"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-T41", "luming-nayin/li-xuzhong-mingshu: LX-T55"]
+        weight: "source_history"
+      selection:
+        source_refs: ["selection/xieji-bianfang-shu: XR-10 出行"]
+        weight: "selection_required_for_travel"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: DL-Q0053/DL-Q0072/DL-Q0188"]
+        weight: "plate_internal"
+      ziwei:
+        source_refs: ["ziwei/ziwei-doushu-quanshu: ZW-T022", "ziwei/taiwei-fu: TT-L03"]
+        weight: "star_symbol"
+      xingming:
+        source_refs: ["xingming/guotian-jing: 天马地驿"]
+        weight: "astronomical_chart_internal"
+    do_not_confuse:
+      - "八字驿马、择日出行天马、六壬课内天马、紫微天马星必须分开。"
+      - "星命天马地驿必须依星命天文排盘，不得并入八字驿马。"
+
+  - id: "shensha-xianchi-taohua"
+    name: "咸池/桃花"
+    aliases: ["桃花煞", "桃花", "天姚", "犯水桃花"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-02/xianchi"]
+        weight: "relationship_aesthetic_symbol"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: DL-Q0032/DL-Q0075/DL-Q0099"]
+        weight: "plate_internal"
+      ziwei:
+        source_refs: ["ziwei/taiwei-fu: TR-09", "ziwei/feixing-ziwei-doushu-yuanzhi: FZ-T15", "ziwei/ziwei-doushu-quanshu: ZW-T009/ZW-T036"]
+        weight: "star_combo_symbol"
+      xingming:
+        source_refs: ["xingming/guotian-jing: 咸池"]
+        weight: "astronomical_chart_internal"
+    do_not_confuse:
+      - "八字咸池不是紫微贪狼/天姚/咸池星曜象。"
+      - "星命咸池依七政四余盘，不按八字桃花起例使用。"
+      - "不得单凭桃花断感情事实。"
+
+  - id: "shensha-hongluan-tianxi"
+    name: "红鸾/天喜"
+    aliases: ["紅鸞", "喜神"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: 红鸾天印"]
+        weight: "relationship_good_symbol"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: DL-Q0050/DL-Q0057/DL-Q0092"]
+        weight: "plate_internal"
+      ziwei:
+        source_refs: ["ziwei/feixing-ziwei-doushu-yuanzhi: FZ-R05/FZ-R07"]
+        weight: "limit_event_symbol"
+    do_not_confuse:
+      - "红鸾/天喜只有在事实层出现且问题相关时使用。"
+
+  - id: "shensha-yangren"
+    name: "羊刃/阳刃"
+    aliases: ["阳刃", "擎羊", "流羊"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: R-03-03", "bazi/sanming-tonghui: R-06 阳刃格"]
+        weight: "structure_modifier"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-T94", "luming-nayin/li-xuzhong-mingshu: LX-T28"]
+        weight: "source_history"
+      ziwei:
+        source_refs: ["ziwei/taiwei-fu: TT-K01", "ziwei/feixing-ziwei-doushu-yuanzhi: FZ-T16"]
+        weight: "malefic_star_symbol"
+      xingming:
+        source_refs: ["xingming/guotian-jing: 阳刃"]
+        weight: "astronomical_chart_internal"
+    do_not_confuse:
+      - "八字羊刃格、卷三神煞羊刃、紫微擎羊/流羊不是同一层。"
+      - "星命阳刃只在星命盘内解释，不能移植到八字羊刃格。"
+
+  - id: "shensha-kongwang"
+    name: "空亡"
+    aliases: ["旬空", "天中", "截路空亡"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: R-03-04"]
+        weight: "secondary_condition"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-T66", "luming-nayin/li-xuzhong-mingshu: LX-T24"]
+        weight: "source_history"
+      ziwei:
+        source_refs: ["ziwei/taiwei-fu: TT-M06"]
+        weight: "palace_condition"
+      xingming:
+        source_refs: ["xingming/guotian-jing: 空亡"]
+        weight: "astronomical_chart_internal"
+    do_not_confuse:
+      - "空亡不必凶，逢冲合填实需另判。"
+      - "星命空亡与八字旬空/天中不是同一算法。"
+
+  - id: "shensha-jiangxing-huagai"
+    name: "将星/华盖"
+    aliases: ["将星", "將星", "华盖", "華蓋", "华盖贵神", "華蓋貴神", "轩盖", "軒蓋"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-02/jiangxing-huagai", "bazi/yuanhai-ziping: vol-04/lun-huagai"]
+        weight: "secondary_symbol"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-T52", "luming-nayin/wuxing-jingji: WX-05-05", "luming-nayin/li-xuzhong-mingshu: LX-T23", "luming-nayin/luoluzi-sanming: LZ-03-02"]
+        weight: "source_history"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: DL-Q0191", "san-shi/daliuren-daquan: DL-Q0210"]
+        weight: "plate_internal"
+      ziwei:
+        source_refs: ["ziwei/ziwei-doushu-quanshu: ZW-T013 uses 七杀 as 将星"]
+        weight: "star_semantics_only"
+    do_not_confuse:
+      - "八字将星/华盖取三合局中位或墓位；六壬轩盖/华盖是课体组合；紫微将星多为星曜语义。"
+      - "不可只见华盖就断孤僻、宗教或出家。"
+
+  - id: "shensha-jiesha-wangshen-zaisha"
+    name: "劫煞/亡神/灾煞"
+    aliases: ["刼煞", "亡神", "災煞", "岁煞", "三煞"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-03/jiesha-wangshen", "bazi/sanming-tonghui: R-03-14"]
+        weight: "secondary_malefic"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-T62/WX-T63"]
+        weight: "source_history"
+      selection:
+        source_refs: ["selection/xieji-bianfang-shu: XR-03", "selection/xieji-bianfang-shu: 三煞方"]
+        weight: "selection_directional_avoidance"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: 逐月神煞"]
+        weight: "plate_internal"
+      xingming:
+        source_refs: ["xingming/guotian-jing: 劫亡"]
+        weight: "astronomical_chart_internal"
+    do_not_confuse:
+      - "八字灾煞与择日三煞方算法不同。"
+      - "星命劫亡只在七政四余盘内使用。"
+
+  - id: "shensha-guchen-guasu"
+    name: "孤辰/寡宿"
+    aliases: ["孤寡"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-03/guchen-guasu"]
+        weight: "relationship_secondary"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-T95/WX-T96", "luming-nayin/luoluzi-sanming: LZ-T89/LZ-T90"]
+        weight: "source_history"
+      selection:
+        source_refs: ["selection/xieji-bianfang-shu: 嫁娶忌日"]
+        weight: "selection_marriage_avoidance"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: DL-Q0029/DL-Q0086"]
+        weight: "plate_internal"
+    do_not_confuse:
+      - "不得单凭孤辰寡宿断婚败。"
+
+  - id: "shensha-kuigang"
+    name: "魁罡"
+    aliases: ["天罡", "河魁"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: R-06-01"]
+        weight: "special_structure"
+      luming_nayin:
+        source_refs: ["luming-nayin/li-xuzhong-mingshu: LX-T57", "luming-nayin/yuzhao-shenying: YZ-T21/YZ-T27"]
+        weight: "source_history"
+    do_not_confuse:
+      - "年柱或支神魁罡不等同日魁罡格。"
+
+  - id: "shensha-shie-dabai"
+    name: "十恶大败"
+    aliases: ["十惡大敗"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: R-03-17"]
+        weight: "secondary_malefic"
+      selection:
+        source_refs: ["selection/xieji-bianfang-shu: 日神/通用忌"]
+        weight: "selection_avoidance"
+    do_not_confuse:
+      - "命盘日柱禁忌与择日通用凶日不可合并。"
+
+  - id: "shensha-rigui-ride"
+    name: "日贵/日德"
+    aliases: ["日貴", "日德", "日贵格", "日德格"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-06/rigui", "bazi/sanming-tonghui: vol-06/ride", "bazi/sanming-tonghui: R-06-21", "bazi/yuanhai-ziping: 论日贵/论日德"]
+        weight: "special_day_pillar_auxiliary"
+    do_not_confuse:
+      - "日贵/日德是特定日柱贵格参考，不等同普通天乙贵人或天月德神煞。"
+      - "张神峰对日贵、日德旧说有批判，遇到格局冲突时应读 bazi/shenfeng-tongkao 作反证。"
+
+  - id: "shensha-luowang"
+    name: "天罗/地网"
+    aliases: ["天羅", "地網", "罗网", "羅網"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: vol-03/tianluo-diwang"]
+        weight: "secondary_restraint_symbol"
+      luming_nayin:
+        source_refs: ["luming-nayin/luoluzi-sanming: LZ-T62"]
+        weight: "source_history"
+    do_not_confuse:
+      - "罗网不是择日黄黑道。"
+
+  - id: "shensha-yuanchen-dahao"
+    name: "元辰/大耗/小耗"
+    aliases: ["元辰", "大耗", "小耗"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: R-03-12"]
+        weight: "loss_change_symbol"
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: 月凶神", "selection/xieji-bianfang-shu: 大耗日"]
+        weight: "selection_avoidance"
+      ziwei:
+        source_refs: ["ziwei/feixing-ziwei-doushu-yuanzhi: FZ-T14"]
+        weight: "limit_event_symbol"
+    do_not_confuse:
+      - "不要每次运势都机械说财务耗损。"
+
+  - id: "shensha-tianyi-medical"
+    name: "天医"
+    aliases: ["天醫", "地医", "地醫", "天巫", "八宅天医", "八宅天醫", "天乙巨门", "天乙巨門", "天乙星", "巨门土星", "巨門土星"]
+    source_status: "ready_pack_derived"
+    systems:
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: XK-Q161", "selection/xingli-kaoyuan: XK-Q362", "selection/xieji-bianfang-shu: XJ-Q0118", "selection/yuqia-ji: YQ-Q0491"]
+        weight: "medical_selection_fact"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: DL-Q0028/DL-Q0045/DL-Q0055/DL-Q0072/DL-Q0082/DL-Q0097"]
+        weight: "plate_internal"
+      fengshui:
+        source_refs: ["fengshui/yangzhai-shishu: 八宅游年九星天医/天乙巨门 context", "fengshui/yangzhai-sanyao: 八宅 context"]
+        weight: "house_orientation_layer"
+    do_not_confuse:
+      - "择日天医用于求医、服药、祈禳等用事字段；六壬天医是课内神煞；八宅天医属于宅卦游年。"
+      - "八宅古籍常写天乙、天乙巨门或天乙星；回答时可说明其与后世八宅天医俗称的对应，但不得并入八字天乙贵人。"
+      - "不能把天医解释为现实医疗保证。"
+
+  - id: "shensha-taisui"
+    name: "太岁/岁君/岁破"
+    aliases: ["太歲", "岁神", "岁君", "岁破"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: 岁运/太岁相关"]
+        weight: "annual_context"
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: KR-08", "selection/xieji-bianfang-shu: 年神"]
+        weight: "selection_year_spirit"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: DL-Q0023"]
+        weight: "plate_context"
+      ziwei:
+        source_refs: ["ziwei/ziwei-doushu-quanshu: ZW-T060"]
+        weight: "annual_flow_context"
+    do_not_confuse:
+      - "各体系太岁都是年位/年君概念，但规则不能互换。"
+
+  - id: "shensha-baihu"
+    name: "白虎"
+    aliases: ["虎"]
+    source_status: "ready_pack_derived"
+    systems:
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: 年神/黑道", "selection/xieji-bianfang-shu: 年神"]
+        weight: "selection_malefic"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: LT-208"]
+        weight: "twelve_general_core"
+      ziwei:
+        source_refs: ["ziwei/taiwei-fu: 白虎相关", "ziwei/feixing-ziwei-doushu-yuanzhi: FZ-R04"]
+        weight: "malefic_symbol"
+      luming_nayin:
+        source_refs: ["luming-nayin/yuzhao-shenying: YZ-T15"]
+        weight: "source_history"
+    do_not_confuse:
+      - "六壬白虎天将不是择日白虎日/方。"
+
+  - id: "shensha-guanfu-bingfu"
+    name: "官符/病符"
+    aliases: ["官府", "官符杀", "病符", "死符", "天官符"]
+    source_status: "ready_pack_derived"
+    systems:
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: XK-Q131/XK-Q229/XK-Q245", "selection/xieji-bianfang-shu: XJ-Q0043", "selection/donggong-zeri: DG-Q131/DG-Q143"]
+        weight: "selection_malefic_or_avoidance"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: DL-Q0237"]
+        weight: "plate_internal"
+      ziwei:
+        source_refs: ["ziwei/taiwei-fu: TT-X05", "ziwei/ziwei-doushu-quanshu: ZW-Q0016/ZW-Q0078"]
+        weight: "annual_malefic_symbol"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-Q563/WX-Q565/WX-Q587/WX-Q588"]
+        weight: "source_history"
+    do_not_confuse:
+      - "官符/病符在择日、紫微、六壬、禄命中的层级不同；不能直接断现代诉讼或疾病事实。"
+
+  - id: "shensha-sangmen-diaoke"
+    name: "丧门/吊客"
+    aliases: ["喪門", "弔客", "丧吊", "喪弔"]
+    source_status: "ready_pack_derived"
+    systems:
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: 逐月神煞", "san-shi/liuren-miben: 病占"]
+        weight: "plate_internal"
+      ziwei:
+        source_refs: ["ziwei/ziwei-doushu-quanshu: ZW-Q0094/ZW-Q0095", "ziwei/feixing-ziwei-doushu-yuanzhi: FZ-R04", "ziwei/taiwei-fu: 流杀相关辅助"]
+        weight: "annual_malefic_symbol"
+      luming_nayin:
+        source_refs: ["luming-nayin/luoluzi-sanming: LZ-T83"]
+        weight: "source_history"
+    do_not_confuse:
+      - "没有课式/盘面触发时，不得裸断丧吊事件。"
+
+  - id: "shensha-tianxing"
+    name: "天刑"
+    aliases: ["刑星", "黑道天刑"]
+    source_status: "ready_pack_derived"
+    systems:
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: KR-14"]
+        weight: "black_path_malefic"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: 逐月神煞"]
+        weight: "plate_internal"
+      ziwei:
+        source_refs: ["ziwei/ziwei-doushu-quanshu: ZW-T035", "ziwei/feixing-ziwei-doushu-yuanzhi: FZ-T17"]
+        weight: "legal_injury_symbol"
+      xingming:
+        source_refs: ["xingming/guotian-jing: 天刑"]
+        weight: "astronomical_chart_internal"
+    do_not_confuse:
+      - "择日天刑、六壬天刑、紫微天刑星不是同一算法。"
+      - "星命天刑必须有星命天文事实层，不得借用择日黑道天刑。"
+
+  - id: "shensha-huangdao-heidao"
+    name: "黄道/黑道"
+    aliases: ["六黄道", "六黑道", "黃道", "黑道", "黃黑"]
+    source_status: "ready_pack_derived"
+    systems:
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: KR-14", "selection/xieji-bianfang-shu: 黄黑道"]
+        weight: "selection_core"
+      luming_nayin:
+        source_refs: ["luming-nayin/luoluzi-sanming: LZ-T97/LZ-T98"]
+        weight: "source_history_only"
+    do_not_confuse:
+      - "择日黄道不是天文学黄道，也不是命盘吉凶主线。"
+
+  - id: "shensha-jianchu"
+    name: "建除十二神"
+    aliases: ["建", "除", "满", "平", "定", "执", "破", "危", "成", "收", "开", "闭"]
+    source_status: "ready_pack_derived"
+    systems:
+      selection:
+        source_refs: ["selection/xieji-bianfang-shu: XR-04", "selection/xingli-kaoyuan: 月建/月破"]
+        weight: "selection_core"
+    do_not_confuse:
+      - "建除只用于择日历算，不用于命盘断人生。"
+
+  - id: "shensha-yuepo-yueyan"
+    name: "月破/月厌/月害"
+    aliases: ["月厭", "受死", "月害"]
+    source_status: "ready_pack_derived"
+    systems:
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: KR-12", "selection/xieji-bianfang-shu: 月神"]
+        weight: "selection_avoidance"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: 月煞/逐月神煞"]
+        weight: "plate_internal"
+    do_not_confuse:
+      - "月破日不等于个人命局破败。"
+
+  - id: "shensha-side-fei-lijue"
+    name: "四废/四离/四绝"
+    aliases: ["四廢", "四離", "四絕"]
+    source_status: "ready_pack_derived"
+    systems:
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: KR-13", "selection/xieji-bianfang-shu: 日神"]
+        weight: "selection_avoidance"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: DL-Q0034/DL-Q0042"]
+        weight: "plate_internal"
+    do_not_confuse:
+      - "四废四离四绝用于择日/课式，不是八字主线。"
+
+  - id: "shensha-jinshen-qisha"
+    name: "金神七煞"
+    aliases: ["金神", "七煞方"]
+    source_status: "ready_pack_derived"
+    systems:
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: KR-09", "selection/xieji-bianfang-shu: 年神"]
+        weight: "directional_avoidance"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: 起例"]
+        weight: "plate_internal"
+    do_not_confuse:
+      - "择日金神七煞不是八字金神格。"
+
+  - id: "shensha-dajiangjun"
+    name: "大将军"
+    aliases: ["博士"]
+    source_status: "ready_pack_derived"
+    systems:
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: KR-10", "selection/xieji-bianfang-shu: 年神/方位"]
+        weight: "directional_avoidance"
+    do_not_confuse:
+      - "大将军方与八字将星、将军箭不可混用。"
+
+  - id: "shensha-yuekong-mucang-jieshen"
+    name: "月空/母仓/解神"
+    aliases: ["母仓日", "解神"]
+    source_status: "ready_pack_derived"
+    systems:
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: KR-11", "selection/xieji-bianfang-shu: 月神/日神"]
+        weight: "selection_good_symbol"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: 逐月神煞"]
+        weight: "plate_internal"
+    do_not_confuse:
+      - "择日月吉神不可迁移为八字命盘贵人。"
+
+  - id: "shensha-twelve-generals"
+    name: "青龙/朱雀/六合/勾陈/玄武/太常/太阴/天后"
+    aliases: ["十二天将", "十干支神"]
+    source_status: "ready_pack_derived"
+    systems:
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: 神将释"]
+        weight: "plate_core"
+      luming_nayin:
+        source_refs: ["luming-nayin/yuzhao-shenying: YZ-T09..YZ-T18"]
+        weight: "source_history"
+      selection:
+        source_refs: ["selection/xingli-kaoyuan: 黄黑道六神"]
+        weight: "selection_symbol"
+    do_not_confuse:
+      - "六壬天将、禄命干神、择日黄黑道神同名不同层。"
+
+  - id: "shensha-sanxing-liuhai"
+    name: "三刑/六害"
+    aliases: ["刑害"]
+    source_status: "ready_pack_derived"
+    systems:
+      bazi:
+        source_refs: ["bazi/sanming-tonghui: 地支刑害相关"]
+        weight: "structure_relation"
+      luming_nayin:
+        source_refs: ["luming-nayin/wuxing-jingji: WX-T64/WX-T65", "luming-nayin/yuzhao-shenying: YZ-T35"]
+        weight: "source_history"
+      xingming:
+        source_refs: ["xingming/guotian-jing: 三刑六害"]
+        weight: "astronomical_chart_internal"
+    do_not_confuse:
+      - "三刑六害是结构关系，不能作为孤立神煞铁断。"
+      - "星命三刑六害依星命盘使用，不得直接并入八字地支刑害。"
+
+  - id: "shensha-fuyin-fanyin"
+    name: "伏吟/反吟"
+    aliases: ["伏吟", "伏呤", "反吟", "返吟"]
+    source_status: "ready_pack_derived"
+    systems:
+      luming_nayin:
+        source_refs: ["luming-nayin/luoluzi-sanming: LZ-07-03", "luming-nayin/wuxing-jingji: WX-T100", "luming-nayin/wuxing-jingji: WX-10-04"]
+        weight: "movement_repetition_symbol"
+      liuren:
+        source_refs: ["san-shi/daliuren-daquan: LT-108/LT-109", "san-shi/daliuren-daquan: LR-08/LR-09", "san-shi/daliuren-daquan: DL-Q0173/DL-Q0174"]
+        weight: "plate_method_core"
+    do_not_confuse:
+      - "禄命岁运伏吟反吟、六壬伏吟反吟课法、奇门反吟伏吟不是同一计算。"
+      - "八字聊天中少用术语裸断，必须解释为重复激活或冲返变化。"
+
+backlog:
+  acquisition_priority:
+    - title: "三命通会卷三神煞细校"
+      status: "ready_pack_second_pass_needed"
+      purpose: "八字神煞章节级二次精校"
+    - title: "五行精纪神煞卷细校"
+      status: "ready_pack_second_pass_needed"
+      purpose: "禄命神煞源流"
+    - title: "钦定协纪辨方书神煞表结构化"
+      status: "ready_pack_second_pass_needed"
+      purpose: "择日历算字段规范"
+    - title: "星历考原年神月神日神表结构化"
+      status: "ready_pack_second_pass_needed"
+      purpose: "官方择日神煞校正"
+    - title: "六壬大全逐月神煞结构化"
+      status: "ready_pack_second_pass_needed"
+      purpose: "六壬课内神煞与天将类神"

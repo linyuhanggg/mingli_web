@@ -20,8 +20,10 @@ import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
 import styles from "./fortune-flow.module.css";
 import formControls from "./form-controls.module.css";
 
+type FortunePeriod = "today" | "week";
+
 type FortuneFlowProps = {
-  mode: "today" | "week";
+  mode: FortunePeriod | "both";
 };
 
 const fortuneSchema = z.object({
@@ -90,7 +92,7 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
   }
 
   const handleStart = useCallback(
-    async (values: FortuneFormValues) => {
+    async (values: FortuneFormValues, period: FortunePeriod) => {
     if (busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
@@ -98,7 +100,7 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
     const payload = {
       profile_version_id: values.profile_version_id,
       query:
-        mode === "today"
+        period === "today"
           ? "看看今天的事业与工作节奏"
           : "看看近七日的事业与工作节奏",
     };
@@ -106,7 +108,7 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
     intentKeyRef.current = intent;
     try {
       const response =
-        mode === "today"
+        period === "today"
           ? await startTodayReading(payload, intent.key)
           : await startWeekReading(payload, intent.key);
       router.push(`/app/readings/${response.reading_version_id}`);
@@ -117,8 +119,10 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
       setBusy(false);
     }
     },
-    [mode, router],
+    [router],
   );
+
+  const defaultPeriod: FortunePeriod = mode === "week" ? "week" : "today";
 
   return (
     <div className={styles.wrap}>
@@ -157,8 +161,15 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
       {!loading && !error && profiles.length > 0 ? (
         <form
           className={styles.form}
-          // eslint-disable-next-line react-hooks/refs -- react-hook-form only invokes the handler at submit time, never during render
-          onSubmit={handleSubmit(handleStart)}
+          onSubmit={(event) => {
+            const submitter = (event.nativeEvent as SubmitEvent).submitter;
+            const selected =
+              submitter instanceof HTMLButtonElement &&
+              (submitter.value === "today" || submitter.value === "week")
+                ? submitter.value
+                : defaultPeriod;
+            void handleSubmit((values) => handleStart(values, selected))(event);
+          }}
           noValidate
           aria-busy={busy}
         >
@@ -210,15 +221,44 @@ export function FortuneFlow({ mode }: FortuneFlowProps) {
             </p>
           ) : null}
           <div className={formControls.actions}>
-            <button
-              className={clsx(formControls.action, formControls.actionPrimary)}
-              type="submit"
-              disabled={busy}
-              aria-busy={busy}
-            >
-              {mode === "today" ? "开始今日解读" : "开始近七日解读"}
-              {busy ? " · 正在启动…" : ""}
-            </button>
+            {mode === "both" ? (
+              <>
+                <button
+                  className={clsx(formControls.action, formControls.actionPrimary)}
+                  type="submit"
+                  name="period"
+                  value="today"
+                  disabled={busy}
+                  aria-busy={busy}
+                >
+                  开始今日解读
+                  {busy ? " · 正在启动…" : ""}
+                </button>
+                <button
+                  className={clsx(formControls.action, formControls.actionPrimary)}
+                  type="submit"
+                  name="period"
+                  value="week"
+                  disabled={busy}
+                  aria-busy={busy}
+                >
+                  开始近七日解读
+                  {busy ? " · 正在启动…" : ""}
+                </button>
+              </>
+            ) : (
+              <button
+                className={clsx(formControls.action, formControls.actionPrimary)}
+                type="submit"
+                name="period"
+                value={defaultPeriod}
+                disabled={busy}
+                aria-busy={busy}
+              >
+                {mode === "today" ? "开始今日解读" : "开始近七日解读"}
+                {busy ? " · 正在启动…" : ""}
+              </button>
+            )}
           </div>
         </form>
       ) : null}

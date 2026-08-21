@@ -1,0 +1,260 @@
+schema_version: mingli-qimen-source-tables-v1
+profile_id: shijia-zhuanpan-chaibu-xieji-v1
+version: 1.0.0
+status: source_transcribed_with_explicit_school_boundaries
+scope: hour_school_rotating_plate
+
+source_profiles:
+  qimen_tongzong:
+    title: 奇门遁甲统宗大全
+    recension: Taiyi web transcription with CTP and NLC scan anchors
+    normalized_path: references/fulltext/san-shi/qimen-dunjia-tongzhi/fulltext.md
+    sha256: f4feb5c389f0ac8bc8dfd0d3f011b088576bc5510248e8d8663e01e2d0b0c140
+    anchors:
+      dun_and_instruments: L69-L71
+      named_patterns: L57-L65,L95-L193
+      term_ju_table: L205-L223
+      stars_doors_deities: L333-L343
+      yuan_and_chief_director: L353-L365
+      worked_board: L1193
+      complete_door_map: L659
+      placement_sequences: L313-L365
+  xieji_bianfang:
+    title: 钦定协纪辨方书
+    recension: local normalized Siku text
+    normalized_path: references/fulltext/selection/xieji-bianfang-shu/fulltext.md
+    sha256: 49db8b60be16236af63ec9bc23c05723a61d22bdd9eafa118e88a66dcad6b30c
+    anchors:
+      chaibu_and_plate_variants: L11612
+  qimen_faqiao:
+    title: 奇门法窍
+    recension: verified excerpt from dclef/xuanxuedocs commit 8a887135add0ac9ed558105222fe2294ae398bad
+    normalized_path: references/source-excerpts/qimen-faqiao-chaibu-v1.md
+    sha256: 3ba3d5bf58037c342e863d17821b8e68742cdf35312bc804ff3b477a94fd4ff1
+    anchors:
+      exact_term_chaibu: QMF-CB-01
+      jade_maiden_guards_door: QMF-PAT-01
+      hour_stem_enters_tomb: QMF-PAT-02
+  wuxing_jingji:
+    title: 五行精纪
+    recension: local normalized received text retaining quoted source names
+    normalized_path: references/fulltext/luming-nayin/wuxing-jingji/fulltext.md
+    sha256: 32e0581bcba3b1b6df2b8e0c48db135a4a6f27e7dca2f010e0a818ab6ba9e08b
+    anchors:
+      horse_branch_cycle: L4397-L4449
+      xun_void_cycle: L6649-L6655
+
+selected_convention:
+  id: shijia-zhuanpan-chaibu-xieji-v1
+  version: 1.0.0
+  board_type: xieji_spatial_ring_rotating
+  ju_method: chaibu
+  term_boundary: shared_exact_solar_term_instant
+  yuan_method: most_recent_jia_or_ji_day_symbol_head
+  day_rollover: shared_calendar_policy
+  center_hosting: always_kun_2
+  deity_profile: baihu_xuanwu_variant
+  hour_basis: shared_calendar_effective_datetime
+  boundary_rules:
+    - the active solar term changes at its exact instant under the versioned shared modern calendar boundary; the classical Chaibu passage identifies only the transition day
+    - the most recent Jia or Ji day is the five-day symbol head
+    - symbol-head branches Zi Wu Mao You are upper Yuan
+    - symbol-head branches Yin Shen Si Hai are middle Yuan
+    - symbol-head branches Chen Xu Chou Wei are lower Yuan
+    - Yang Dun applies from winter solstice through the instant before summer solstice
+    - Yin Dun applies from summer solstice through the instant before winter solstice
+    - instruments fly forward in Yang Dun and reverse in Yin Dun
+    - stars rotate on the spatial eight-palace ring under the Xieji stated alternative
+    - doors rotate on the spatial eight-palace ring as stated by Xieji
+    - deities rotate on the spatial eight-palace ring and are checked by the L1193 worked row
+    - the center star and any center landing are hosted in Kun palace 2
+  incompatible_alternatives:
+    - id: shijia-zhuanpan-zhirun
+      status: separate_not_selected
+      reason: source-declared intercalation and Chao/Jie chronology cannot be merged with Chaibu
+    - id: shijia-maoshan-sixty-double-hours
+      status: separate_not_selected
+      reason: Yuan follows elapsed double-hours from the term rather than the Jia/Ji symbol head
+    - id: feipan
+      status: separate_not_selected
+      reason: nine-star flying and deity placement differ from the selected rotating plate
+    - id: tongzong-chaojie-zhirun
+      status: separate_not_selected
+      reason: Tongzong L73-L93 advances or delays the active term by Fu-head and intercalation; selected Chaibu follows Xieji L11612 exact-term splitting
+    - id: tongzong-numeric-outer-door-rotation
+      status: separate_not_selected
+      reason: the complete Tongzong L659 row moves doors on numeric outer-palace order, conflicting with the selected Xieji spatial-ring plate
+    - id: rotating-yang-gen-yin-kun-hosting
+      status: separate_not_selected
+      reason: center hosting differs from the selected always-Kun convention
+    - id: gouchen-zhuque-deities
+      status: separate_not_selected
+      reason: source preserves these names alongside the selected Baihu/Xuanwu variant
+
+palaces:
+  1: {trigram: 坎, direction: 正北, branches: [子], star: 天蓬, door: 休门}
+  2: {trigram: 坤, direction: 西南, branches: [未, 申], star: 天芮, door: 死门}
+  3: {trigram: 震, direction: 正东, branches: [卯], star: 天冲, door: 伤门}
+  4: {trigram: 巽, direction: 东南, branches: [辰, 巳], star: 天辅, door: 杜门}
+  5: {trigram: 中, direction: 中央, branches: [], star: 天禽, door: null}
+  6: {trigram: 乾, direction: 西北, branches: [戌, 亥], star: 天心, door: 开门}
+  7: {trigram: 兑, direction: 正西, branches: [酉], star: 天柱, door: 惊门}
+  8: {trigram: 艮, direction: 东北, branches: [丑, 寅], star: 天任, door: 生门}
+  9: {trigram: 离, direction: 正南, branches: [午], star: 天英, door: 景门}
+
+orders:
+  lo_shu_flight: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  star_rotation_outer_palaces: [1, 8, 3, 4, 9, 2, 7, 6]
+  door_rotation_outer_palaces: [1, 8, 3, 4, 9, 2, 7, 6]
+  tongzong_numeric_door_outer_palaces: [1, 2, 3, 4, 6, 7, 8, 9]
+  deity_rotation_outer_palaces: [1, 8, 3, 4, 9, 2, 7, 6]
+  earth_plate_tokens: [戊, 己, 庚, 辛, 壬, 癸, 丁, 丙, 乙]
+  six_instruments: [戊, 己, 庚, 辛, 壬, 癸]
+  three_wonders: [乙, 丙, 丁]
+  stars_rotating: [天蓬, 天任, 天冲, 天辅, 天英, 天芮, 天柱, 天心]
+  doors_rotating: [休门, 生门, 伤门, 杜门, 景门, 死门, 惊门, 开门]
+  doors_numeric_outer: [休门, 死门, 伤门, 杜门, 开门, 惊门, 生门, 景门]
+  deities:
+    baihu_xuanwu_variant: [值符, 腾蛇, 太阴, 六合, 白虎, 玄武, 九地, 九天]
+    gouchen_zhuque_variant: [值符, 腾蛇, 太阴, 六合, 勾陈, 朱雀, 九地, 九天]
+
+term_yuan_ju:
+  冬至: {dun: yang, upper: 1, middle: 7, lower: 4}
+  小寒: {dun: yang, upper: 2, middle: 8, lower: 5}
+  大寒: {dun: yang, upper: 3, middle: 9, lower: 6}
+  立春: {dun: yang, upper: 8, middle: 5, lower: 2}
+  雨水: {dun: yang, upper: 9, middle: 6, lower: 3}
+  惊蛰: {dun: yang, upper: 1, middle: 7, lower: 4}
+  春分: {dun: yang, upper: 3, middle: 9, lower: 6}
+  清明: {dun: yang, upper: 4, middle: 1, lower: 7}
+  谷雨: {dun: yang, upper: 5, middle: 2, lower: 8}
+  立夏: {dun: yang, upper: 4, middle: 1, lower: 7}
+  小满: {dun: yang, upper: 5, middle: 2, lower: 8}
+  芒种: {dun: yang, upper: 6, middle: 3, lower: 9}
+  夏至: {dun: yin, upper: 9, middle: 3, lower: 6}
+  小暑: {dun: yin, upper: 8, middle: 2, lower: 5}
+  大暑: {dun: yin, upper: 7, middle: 1, lower: 4}
+  立秋: {dun: yin, upper: 2, middle: 5, lower: 8}
+  处暑: {dun: yin, upper: 1, middle: 4, lower: 7}
+  白露: {dun: yin, upper: 9, middle: 3, lower: 6}
+  秋分: {dun: yin, upper: 7, middle: 1, lower: 4}
+  寒露: {dun: yin, upper: 6, middle: 9, lower: 3}
+  霜降: {dun: yin, upper: 5, middle: 8, lower: 2}
+  立冬: {dun: yin, upper: 6, middle: 9, lower: 3}
+  小雪: {dun: yin, upper: 5, middle: 8, lower: 2}
+  大雪: {dun: yin, upper: 4, middle: 7, lower: 1}
+
+xun_profiles:
+  甲子: {hidden_instrument: 戊, void_branches: [戌, 亥]}
+  甲戌: {hidden_instrument: 己, void_branches: [申, 酉]}
+  甲申: {hidden_instrument: 庚, void_branches: [午, 未]}
+  甲午: {hidden_instrument: 辛, void_branches: [辰, 巳]}
+  甲辰: {hidden_instrument: 壬, void_branches: [寅, 卯]}
+  甲寅: {hidden_instrument: 癸, void_branches: [子, 丑]}
+
+horse_by_hour_branch:
+  申: {horse_branch: 寅, palace: 8}
+  子: {horse_branch: 寅, palace: 8}
+  辰: {horse_branch: 寅, palace: 8}
+  寅: {horse_branch: 申, palace: 2}
+  午: {horse_branch: 申, palace: 2}
+  戌: {horse_branch: 申, palace: 2}
+  巳: {horse_branch: 亥, palace: 6}
+  酉: {horse_branch: 亥, palace: 6}
+  丑: {horse_branch: 亥, palace: 6}
+  亥: {horse_branch: 巳, palace: 4}
+  卯: {horse_branch: 巳, palace: 4}
+  未: {horse_branch: 巳, palace: 4}
+
+chief_director:
+  chief_identity: star in the earth palace containing the Xunshou hidden instrument
+  director_identity: door in the earth palace containing the Xunshou hidden instrument
+  chief_destination: earth palace containing the hour stem, with Jia represented by the hidden instrument
+  director_destination: advance the hour branch offset from the Xunshou palace through Lo Shu numbers, forward in Yang and reverse in Yin
+  identity_duration: ten double-hours in the same Xun
+
+named_pattern_definition_default: qimen-tongzong-forty-grid-v1
+named_pattern_calendar_jia_policy: no_match_without_source_declared_hidden-instrument_mapping
+named_pattern_incompatible_definitions:
+  qimen-tongzong-heaven-escape-l101-v1:
+    source_anchor: qimen-tongzong L101
+    source_phrase: 天遁 生门与丙奇临又开门与六丙合
+    status: separate_not_selected
+    reason: compressed forty-grid row gives an additional Open-Door and Bing clause without the selected L65 earth-Wu condition
+  qimen-tongzong-jade-maiden-compressed-v1:
+    source_anchor: qimen-tongzong L129
+    source_phrase: 玉女守门 甲己时丙 乙庚时辛 丙辛时乙 丁壬时己 戊癸时壬 十干之符
+    status: separate_not_selected
+    reason: compressed row does not state the selected Director-over-earth-Ding predicate explicitly
+  qimen-tongzong-hour-tomb-four-v1:
+    source_anchor: qimen-tongzong L61
+    source_phrase: 乙未壬辰兼丙戌，辛丑都来尽是凶
+    status: separate_not_selected
+    reason: four-pair Tongzong recension conflicts with the selected Faqiao six-pair list
+  qimen-faqiao-spirit-escape-v1:
+    source_anchor: qimen-faqiao upstream volume-six L93-L95
+    status: separate_not_selected
+    reason: Faqiao defines Spirit Escape as Bing, Life Door, and Nine Heavens rather than the selected Tongzong row
+  qimen-faqiao-xunshou-over-earth-gui-v1:
+    source_anchor: qimen-faqiao upstream volume-six L267-L269
+    status: separate_not_selected
+    reason: Faqiao defines Heaven Net by Xunshou over earth Gui rather than the selected Tongzong time-stem row
+  qimen-tongzong-white-enters-fire-secondary-v1:
+    source_anchor: qimen-tongzong L151
+    source_phrase: 又庚加卯日时酉丁
+    status: separate_not_selected
+    reason: secondary calendrical clause is compressed and is not merged into the selected exact Geng-over-Bing stem pair
+  qimen-tongzong-fire-enters-metal-secondary-v1:
+    source_anchor: qimen-tongzong L153
+    source_phrase: 又丙奇加惊用值符之庚辛
+    status: separate_not_selected
+    reason: secondary door-Chief clause is compressed and is not merged into the selected exact Bing-over-Geng stem pair
+named_pattern_predicates:
+  - {id: QM-P01, name: 青龙回首, predicate: chief_symbol_over_earth_stem, upper: 甲, lower: 丙, source_anchor: qimen-tongzong L97, source_phrase: 龙回首 甲值符加地盘丙奇, evidence_quote: "龙回首 甲值符加地盘丙奇", evidence_anchor: "fulltext.md L97"}
+  - {id: QM-P02, name: 飞鸟跌穴, predicate: heaven_stem_over_hidden_jia, upper: 丙, lower: 甲, source_anchor: qimen-tongzong L99, source_phrase: 鸟跌穴 丙奇加地盘甲值符, evidence_quote: "鸟跌穴 丙奇加地盘甲值符", evidence_anchor: "fulltext.md L99"}
+  - {id: QM-P03, name: 青龙逃走, predicate: heaven_stem_over_earth_stem, upper: 乙, lower: 辛, source_anchor: qimen-tongzong L119, source_phrase: 龙逃走 乙奇遇辛, evidence_quote: "龙逃走 乙奇遇辛", evidence_anchor: "fulltext.md L119"}
+  - {id: QM-P04, name: 白虎猖狂, predicate: heaven_stem_over_earth_stem, upper: 辛, lower: 乙, source_anchor: qimen-tongzong L121, source_phrase: 虎猖狂 辛遇乙奇, evidence_quote: "虎猖狂 辛遇乙奇", evidence_anchor: "fulltext.md L121"}
+  - {id: QM-P05, name: 腾蛇妖矫, predicate: heaven_stem_over_earth_stem, upper: 癸, lower: 丁, source_anchor: qimen-tongzong L123, source_phrase: 蛇妖矫 癸见丁奇, evidence_quote: "蛇妖矫 癸见丁奇", evidence_anchor: "fulltext.md L123"}
+  - {id: QM-P06, name: 朱雀投江, predicate: heaven_stem_over_earth_stem, upper: 丁, lower: 癸, source_anchor: qimen-tongzong L125, source_phrase: 雀投江 丁奇见癸, evidence_quote: "雀投江 丁奇见癸", evidence_anchor: "fulltext.md L125"}
+  - {id: QM-P07, name: 大格, predicate: heaven_stem_over_earth_stem, upper: 庚, lower: 癸, source_anchor: qimen-tongzong L131, source_phrase: 大格 庚临六癸, evidence_quote: "大格 庚临六癸", evidence_anchor: "fulltext.md L131"}
+  - {id: QM-P08, name: 刑格, predicate: heaven_stem_over_earth_stem, upper: 庚, lower: 己, source_anchor: qimen-tongzong L133, source_phrase: 刑格 庚临六己, evidence_quote: "刑格 庚临六己", evidence_anchor: "fulltext.md L133"}
+  - {id: QM-P09, name: 小格, predicate: heaven_stem_over_earth_stem, upper: 庚, lower: 壬, source_anchor: qimen-tongzong L143, source_phrase: 小格 庚临壬, evidence_quote: "小格 庚临壬", evidence_anchor: "fulltext.md L143"}
+  - {id: QM-P10, name: 天遁, predicate: door_heaven_earth, door: 生门, upper: 丙, lower: 戊, source_anchor: qimen-tongzong L65, source_phrase: 生门六丙临六戊，此为天遁是分明, incompatible_definition: qimen-tongzong-heaven-escape-l101-v1, evidence_quote: "生门六丙临六戊，此为天遁是分明", evidence_anchor: "fulltext.md L65"}
+  - {id: QM-P11, name: 地遁, predicate: door_heaven_earth, door: 开门, upper: 乙, lower: 己, source_anchor: qimen-tongzong L103, source_phrase: 地遁 开门与乙奇临己, evidence_quote: "开门六乙临六己，地遁如斯而已矣", evidence_anchor: "fulltext.md L65"}
+  - {id: QM-P12, name: 人遁, predicate: door_heaven_deity, door: 休门, upper: 丁, deity: 太阴, source_anchor: qimen-tongzong L105, source_phrase: 人遁 休门与丁奇临太阴, evidence_quote: "休门六丁合太阴，欲识人遁莫过此", evidence_anchor: "fulltext.md L65"}
+  - {id: QM-P13, name: 五不遇时, predicate: hour_stem_controls_day_stem, source_anchor: qimen-tongzong L57-L63, source_phrase: 时干克日干乃五不遇而灾生, evidence_quote: "时干克日干乃五不遇而灾生", evidence_anchor: "fulltext.md L57"}
+  - {id: QM-P14, name: 伏吟, predicate: all_rotating_stars_on_home_palaces, source_anchor: qimen-tongzong L157, source_phrase: 伏吟 本星加本宫, evidence_quote: "伏吟 本星加本宫", evidence_anchor: "fulltext.md L157"}
+  - {id: QM-P15, name: 反吟, predicate: all_rotating_stars_on_opposite_palaces, source_anchor: qimen-tongzong L155, source_phrase: 反吟 星加对宫, evidence_quote: "反吟 星加对宫", evidence_anchor: "fulltext.md L155"}
+  - {id: QM-P16, name: 三奇入墓, predicate: heaven_stem_in_palace, cases: {乙: [2], 丙: [6], 丁: [8]}, source_anchor: qimen-tongzong L161, source_phrase: 三奇入墓 乙奇坤宫 丙奇乾宫 丁奇艮宫, evidence_quote: "三奇入墓 乙奇坤宫 丙奇乾宫 丁奇艮宫", evidence_anchor: "fulltext.md L161"}
+  - {id: QM-P17, name: 六仪击刑, predicate: chief_destination_by_xun, cases: {甲子: 3, 甲戌: 2, 甲申: 8, 甲午: 9, 甲辰: 4, 甲寅: 4}, source_anchor: qimen-tongzong L165-L167, source_phrase: 六仪击刑 甲子值符三 甲申值符八 甲戌值符二 甲午值符九 甲辰值符四 甲寅值符四, evidence_quote: "六仪击刑 甲子值符三 甲申值符八 甲戌值符二 甲午值符九 甲辰值符四 甲寅值符四", evidence_anchor: "fulltext.md L165-L167"}
+  - {id: QM-P18, name: 门迫, predicate: door_in_palace, cases: {开门: [3, 4], 休门: [9], 生门: [1], 伤门: [8], 景门: [6], 死门: [1], 惊门: [3, 4], 杜门: [2, 8]}, source_anchor: qimen-tongzong L189-L193, source_phrase: 开门临三四宫（金克木） 休门临九宫（水克火） 生门临一宫（土克水） 伤门临八宫（木克土） 景门临六宫（火克金） 死门临一宫（土克水） 惊门临三四宫（金克木） 杜门临二八宫（木克土）, evidence_quote: "开门临三四宫（金克木） 休门临九宫（水克火） 生门临一宫（土克水） 伤门临八宫（木克土） 景门临六宫（火克金） 死门临一宫（土克水） 惊门临三四宫（金克木） 杜门临二八宫（木克土）", evidence_anchor: "fulltext.md L189-L193"}
+  - {id: QM-P19, name: 云遁, predicate: doors_heaven_earth, doors: [休门, 开门, 生门], upper: 乙, lower: 辛, source_anchor: qimen-tongzong L107, source_phrase: 云遁 休开生与乙奇合奇，地盘六辛, evidence_quote: "云遁 休开生与乙奇合奇，地盘六辛", evidence_anchor: "fulltext.md L107"}
+  - {id: QM-P20, name: 风遁, predicate: doors_heaven_in_palace, doors: [休门, 开门, 生门], upper: 乙, palace: 4, source_anchor: qimen-tongzong L109, source_phrase: 风遁 休开生临乙奇，地盘巽四宫, evidence_quote: "风遁 休开生临乙奇，地盘巽四宫", evidence_anchor: "fulltext.md L109"}
+  - {id: QM-P21, name: 龙遁, predicate: door_heaven_in_palace, door: 休门, upper: 乙, palace: 1, source_anchor: qimen-tongzong L111, source_phrase: 龙遁 休门与乙奇合坎, evidence_quote: "龙遁 休门与乙奇合坎", evidence_anchor: "fulltext.md L111"}
+  - {id: QM-P22, name: 虎遁, predicate: door_heaven_earth_in_palace, door: 休门, upper: 乙, lower: 辛, palace: 8, source_anchor: qimen-tongzong L113, source_phrase: 虎遁 休门与乙奇合艮辛, evidence_quote: "虎遁 休门与乙奇合艮辛", evidence_anchor: "fulltext.md L113"}
+  - {id: QM-P23, name: 神遁, predicate: door_heaven_deity, door: 休门, upper: 乙, deity: 九天, source_anchor: qimen-tongzong L115, source_phrase: 神遁 休门与乙奇合九天, definition_version: qimen-tongzong-forty-grid-v1, incompatible_definition: qimen-faqiao-spirit-escape-v1, evidence_quote: "神遁 休门与乙奇合九天", evidence_anchor: "fulltext.md L115"}
+  - {id: QM-P24, name: 鬼遁, predicate: door_heaven_deity, door: 杜门, upper: 乙, deity: 九地, source_anchor: qimen-tongzong L117, source_phrase: 鬼遁 乙奇合九地杜门, evidence_quote: "鬼遁 乙奇合九地杜门", evidence_anchor: "fulltext.md L117"}
+  - {id: QM-P25, name: 三奇得使, predicate: heaven_stem_over_earth_cases, cases: {乙: [辛, 己], 丙: [戊, 庚], 丁: [癸, 壬]}, source_anchor: qimen-tongzong L127, source_phrase: 三奇得使 乙奇加甲午甲戌 丙奇加甲子甲申 丁奇加甲寅甲辰, evidence_quote: "三奇得使 乙奇加甲午甲戌 丙奇加甲子甲申 丁奇加甲寅甲辰", evidence_anchor: "fulltext.md L127"}
+  - {id: QM-P26, name: 玉女守门, predicate: director_over_earth_stem, lower: 丁, source_anchor: qimen-faqiao QMF-PAT-01, source_phrase: 直使加地丁为守门, definition_version: qimen-faqiao-jade-maiden-v1, source_profile: qimen_faqiao, incompatible_definition: qimen-tongzong-jade-maiden-compressed-v1, evidence_quote: "直使加地丁为守门", evidence_anchor: "qimen-faqiao-chaibu-v1.md QMF-PAT-01"}
+  - {id: QM-P27, name: 岁格, predicate: heaven_stem_over_calendar_stem, upper: 庚, pillar: year, source_anchor: qimen-tongzong L135, source_phrase: 岁格 庚临岁干, evidence_quote: "岁格 庚临岁干", evidence_anchor: "fulltext.md L135"}
+  - {id: QM-P28, name: 月格, predicate: heaven_stem_over_calendar_stem, upper: 庚, pillar: month, source_anchor: qimen-tongzong L137, source_phrase: 月格 庚临月干, evidence_quote: "月格 庚临月干", evidence_anchor: "fulltext.md L137"}
+  - {id: QM-P29, name: 日格, predicate: heaven_stem_over_calendar_stem, upper: 庚, pillar: day, source_anchor: qimen-tongzong L139, source_phrase: 日格 庚临日干, evidence_quote: "日格 庚临日干", evidence_anchor: "fulltext.md L139"}
+  - {id: QM-P30, name: 时格, predicate: heaven_stem_over_calendar_stem, upper: 庚, pillar: hour, lower_stems: [乙, 丙, 丁], source_anchor: qimen-tongzong L141, source_phrase: 时格 庚临时干三奇, evidence_quote: "时格 庚临时干三奇", evidence_anchor: "fulltext.md L141"}
+  - {id: QM-P31, name: 伏宫, predicate: heaven_stem_over_hidden_jia, upper: 庚, source_anchor: qimen-tongzong L145, source_phrase: 伏宫 庚临值符, evidence_quote: "伏宫 庚临值符", evidence_anchor: "fulltext.md L145"}
+  - {id: QM-P32, name: 伏干, predicate: heaven_stem_over_calendar_stem, upper: 庚, pillar: day, source_anchor: qimen-tongzong L147, source_phrase: 伏干 庚临日干, evidence_quote: "伏干 庚临日干", evidence_anchor: "fulltext.md L147"}
+  - {id: QM-P33, name: 飞干格, predicate: calendar_stem_over_earth_stem, pillar: day, lower: 庚, source_anchor: qimen-tongzong L149, source_phrase: 飞干格 日干临庚, evidence_quote: "飞干格 日干临庚", evidence_anchor: "fulltext.md L149"}
+  - {id: QM-P34, name: 太白入荧, predicate: heaven_stem_over_earth_stem, upper: 庚, lower: 丙, source_anchor: qimen-tongzong L151, source_phrase: 太白入荧 六庚加丙奇又庚加卯日时酉丁, definition_version: qimen-tongzong-primary-pair-v1, incompatible_definition: qimen-tongzong-white-enters-fire-secondary-v1, evidence_quote: "六庚加丙奇", evidence_anchor: "fulltext.md L151"}
+  - {id: QM-P35, name: 火入金乡, predicate: heaven_stem_over_earth_stem, upper: 丙, lower: 庚, source_anchor: qimen-tongzong L153, source_phrase: 火入金乡 丙奇加六庚金又丙奇加惊用值符之庚辛, definition_version: qimen-tongzong-primary-pair-v1, incompatible_definition: qimen-tongzong-fire-enters-metal-secondary-v1, evidence_quote: "丙奇加六庚金", evidence_anchor: "fulltext.md L153"}
+  - {id: QM-P36, name: 时墓, predicate: hour_ganzhi_in_set, cases: [戊戌, 壬辰, 丙戌, 癸未, 丁丑, 己丑], source_anchor: qimen-faqiao QMF-PAT-02, source_phrase: 时干入墓，戊戌、壬辰、丙戌、癸未、丁丑、己丑也, definition_version: qimen-faqiao-hour-tomb-six-v1, source_profile: qimen_faqiao, incompatible_definition: qimen-tongzong-hour-tomb-four-v1, evidence_quote: "时干入墓，戊戌、壬辰、丙戌、癸未、丁丑、己丑也", evidence_anchor: "qimen-faqiao-chaibu-v1.md QMF-PAT-02"}
+  - {id: QM-P37, name: 六仪受制, predicate: door_in_palace, cases: {休门: [9], 伤门: [2], 杜门: [8], 景门: [6], 生门: [7], 死门: [1], 开门: [3], 惊门: [4]}, source_anchor: qimen-tongzong L169-L171, source_phrase: 六仪受制 休加离 伤加坤 杜加艮 景加乾 生加兑 死加坎 开加震 惊加巽, evidence_quote: "六仪受制 休加离 伤加坤 杜加艮 景加乾 生加兑 死加坎 开加震 惊加巽", evidence_anchor: "fulltext.md L169-L171"}
+  - {id: QM-P38, name: 地罗遮蔽, predicate: heaven_stem_over_calendar_stem, upper: 壬, pillar: hour, source_anchor: qimen-tongzong L173, source_phrase: 地罗遮蔽 六壬临时干, evidence_quote: "地罗遮蔽 六壬临时干", evidence_anchor: "fulltext.md L173"}
+  - {id: QM-P39, name: 天网四张, predicate: heaven_stem_over_calendar_stem, upper: 癸, pillar: hour, source_anchor: qimen-tongzong L175, source_phrase: 天网四张 六癸临时干, definition_version: qimen-tongzong-time-stem-net-v1, incompatible_definition: qimen-faqiao-xunshou-over-earth-gui-v1, evidence_quote: "天网四张 六癸临时干", evidence_anchor: "fulltext.md L175"}
+  - {id: QM-P40, name: 尺寸高低, predicate: time_net_palace_height, upper: 癸, pillar: hour, low_palaces: [1, 2, 3, 4, 5], high_palaces: [6, 7, 8, 9], source_anchor: qimen-tongzong L177, source_phrase: 尺寸高低 一二三四五宫尺寸低，六七八九宫尺寸高, evidence_quote: "尺寸高低 一二三四五宫尺寸低，六七八九宫尺寸高", evidence_anchor: "fulltext.md L177"}
+
+fact_boundaries:
+  calculation_only: true
+  named_patterns_are_predicate_matches_not_verdicts: true
+  query_text_pattern_selection: forbidden
+  alternative_board_merging: forbidden
+  exact_timing_from_symbol_only: forbidden
+  supplied_chart_substitution: forbidden

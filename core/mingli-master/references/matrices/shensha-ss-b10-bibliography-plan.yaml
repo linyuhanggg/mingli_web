@@ -1,0 +1,329 @@
+plan:
+  id: shensha-ss-b10-bibliography-plan
+  version: v0.1
+  batch_id: SS-B10
+  generated_at: "2026-07-05"
+  source_status: bibliography_and_acquisition_plan_only
+  purpose: "神煞相关书籍的跨体系书目核验、ready pack 二次精修边界、以及 image/source-lead 书目的 OCR/acquisition 工单。"
+  upstream_refs:
+    backlog: "references/matrices/shensha-distillation-backlog.yaml"
+    source_book_matrix: "references/matrices/shensha-source-book-matrix.yaml"
+    entry_source_profile: "references/matrices/shensha-entry-source-profile.yaml"
+    quote_trace: "references/matrices/shensha-quote-trace.yaml"
+    catalog: "references/catalog/catalog.json"
+  policy:
+    distillation_allowed: false
+    no_interpretation_rules: true
+    no_quote_trace_promotion: true
+    no_new_external_book_claims_without_verification: true
+    complete_text_required_for_future_rule_work: true
+    source_leads_require_manifest_before_ocr: true
+    image_only_requires_ocr_review_before_d2: true
+    source_lead_only_is_not_reference: true
+    ready_packs_can_only_receive_second_pass_trace_boundary_or_manifest_work: true
+    preserve_system_boundaries: true
+  ready_second_pass_groups:
+    - id: bazi_luming
+      priority: P0
+      systems: [bazi, luming-nayin]
+      role: "八字/禄命神煞源流与高频条目的二次定位。"
+      packs:
+        - pack: "bazi/sanming-tonghui"
+          title: "三命通会"
+          catalog_source_status: normalized_ready
+          index_source_status_note: "index.md 仍标 partial；可用作本地 D2 pack，但新增规则前需核对 quote-index/fulltext。"
+          shensha_relevance: "八字神煞总入口：天乙、驿马、桃花、华盖、空亡、羊刃、魁罡等。"
+        - pack: "luming-nayin/wuxing-jingji"
+          title: "五行精纪"
+          catalog_source_status: normalized_ready
+          index_source_status_note: "index.md 仍标 partial；主要作早期禄命源流与二次引文定位。"
+          shensha_relevance: "贵神、禄马、华盖、金舆、凶煞、空亡、刑害等早期神煞源流。"
+        - pack: "luming-nayin/li-xuzhong-mingshu"
+          title: "李虚中命书"
+          catalog_source_status: normalized_ready
+          index_source_status_note: "normalized_ready；仍需区分唐宋传本真伪层。"
+          shensha_relevance: "天乙贵神、贵合贵食、紫虚局、早期三元九命术语。"
+      allowed_actions:
+        - "补 quote-index 定位缺口。"
+        - "补 entry_source_profile 的 source_pack_role 和 book_priority。"
+        - "补非移植边界：禄命源流不得直接覆盖现代子平。"
+      not_allowed:
+        - "不从单一神煞推出八字结论。"
+        - "不把禄命早期术语直接并入子平一线判断。"
+    - id: selection_official
+      priority: P0
+      systems: [selection]
+      role: "官方择日神煞起例与裁判链。"
+      packs:
+        - pack: "selection/xingli-kaoyuan"
+          title: "御定星历考原"
+          catalog_source_status: normalized_ready
+          shensha_relevance: "年神、月神、日神、时神、黄黑道、二十八宿、四离四绝起例考源。"
+        - pack: "selection/xieji-bianfang-shu"
+          title: "钦定协纪辨方书"
+          catalog_source_status: normalized_ready
+          shensha_relevance: "择日神煞辨方、用事宜忌、辨讹、冲突裁判。"
+      allowed_actions:
+        - "维护 origin/adjudication/comparison 三层。"
+        - "把择日神煞绑定到 selection fact layer 字段。"
+      not_allowed:
+        - "不凭单个黄道、建除或神煞直接选日。"
+        - "不把择日神煞当命盘神煞。"
+    - id: liuren
+      priority: P1
+      systems: [san-shi, liuren]
+      role: "六壬课内神煞、天将、类神的书目边界。"
+      packs:
+        - pack: "san-shi/daliuren-daquan"
+          title: "大六壬大全"
+          catalog_source_status: normalized_ready
+          index_source_status_note: "index.md 仍标 partial；当前本地 normalized pack 可用，但新增规则需查 quote-index/fulltext。"
+          shensha_relevance: "六壬课内神煞、天将、类神、岁月神煞。"
+        - pack: "san-shi/liuren-zhiyin"
+          title: "六壬指南/六壬指引"
+          catalog_source_status: normalized_ready
+          shensha_relevance: "卷四大六壬神煞指南，入门与神煞表述定位。"
+        - pack: "san-shi/liuren-miben"
+          title: "大六壬秘本"
+          catalog_source_status: normalized_ready
+          shensha_relevance: "六壬秘本神煞、类神、课法旁证。"
+      allowed_actions:
+        - "补六壬条目的 source-layer 与 plate-only 边界。"
+        - "将天乙、白虎、青龙、朱雀、玄武限定在六壬课式内。"
+      not_allowed:
+        - "不移植到八字、紫微、择日或风水。"
+        - "不在缺四课三传/天将/月将事实层时解释。"
+    - id: ziwei_xingming
+      priority: P1
+      systems: [ziwei, xingming]
+      role: "紫微星曜/辅煞与七政四余神煞的同名消歧。"
+      packs:
+        - pack: "ziwei/ziwei-doushu-quanshu"
+          title: "紫微斗数全书"
+          catalog_source_status: normalized_ready
+          index_source_status_note: "当前维基文库三卷本 ready；若取得四卷/馆藏本需重建版本层。"
+          shensha_relevance: "羊陀火铃空劫、天刑天姚、红鸾天喜、流年太岁等紫微星曜/辅煞。"
+        - pack: "xingming/guotian-jing"
+          title: "果天经/果老星宗"
+          catalog_source_status: normalized_ready
+          index_source_status_note: "托名与层累版本风险；仍是当前 ready 的星命神煞主源。"
+          shensha_relevance: "天刑、天马地驿、阳刃、咸池、空亡、劫亡、三刑六害等七政四余神煞。"
+      allowed_actions:
+        - "补紫微/星命同名项不可移植边界。"
+        - "补星命神煞对天文排盘 adapter 的依赖。"
+      not_allowed:
+        - "不使用旧行度表替代现代星历。"
+        - "不把紫微星曜名称并入八字神煞。"
+    - id: yangzhai
+      priority: P1
+      systems: [fengshui, yangzhai]
+      role: "阳宅/八宅游年九星与神煞名目的书目边界。"
+      packs:
+        - pack: "fengshui/yangzhai-shishu"
+          title: "阳宅十书"
+          catalog_source_status: normalized_ready
+          index_source_status_note: "index.md 标 complete_chapter_set；阳宅/八宅一线主源。"
+          shensha_relevance: "游年九星、天乙巨门、五鬼、六煞、祸害、绝命。"
+        - pack: "fengshui/yangzhai-sanyao"
+          title: "阳宅三要"
+          catalog_source_status: normalized_ready
+          index_source_status_note: "文字本含翻印/现代整理层，PDF 无文字层；作为支持层。"
+          shensha_relevance: "门主灶、东西四宅、游年九星、三吉四凶。"
+      allowed_actions:
+        - "补阳宅八宅神煞的 property/fuyuan/eight-mansion fact layer 依赖。"
+      not_allowed:
+        - "不把八宅天乙/天医/五鬼等写进八字命盘神煞清单。"
+  source_leads:
+    - slug: "xingming/minghai-quanbian"
+      title: "新刻星平總會命海全編 / 星平会海"
+      system: "xingming"
+      current_source_status: image_only
+      local_status: "raw acquired; normalized blocked"
+      relevance: "现有矩阵记录含“論諸吉神起例”“諸煞星起例”“小兒關煞”等线索。"
+      ss_b6_pipeline_status: "ocr_pipeline_initialized_v0.3"
+      review_page_stubs:
+        batch: "review_batch_001+review_batch_002+review_batch_003"
+        pages: "013-026"
+        status: all_in_review_not_reviewed
+        batches:
+          - id: review_batch_001
+            pages: "013-024"
+          - id: review_batch_002
+            pages: "025"
+          - id: review_batch_003
+            pages: "026"
+        count: 14
+        draft_empty_count: 0
+        in_review_count: 14
+        reviewed_count: 0
+        validation: "OK in_review=14"
+      online_text_candidate_review: "Shidian HY1442 reviewed 2026-07-05: source_anchor_only; no bulk crawl/normalization due to robots+terms+unproven coverage."
+      distillation_allowed: false
+      allowed_actions_now:
+        - "完成 source-manifest。"
+        - "建立页码/卷次/目录 inventory。"
+        - "填写并校验 reviewed-page 草稿位。"
+        - "OCR 并人工抽样校勘。"
+        - "仅把 Shidian HY1442 用作小范围对勘线索，并回到 Harvard/Commons 页图核验。"
+      future_distillation_gate: ocr_reviewed_complete
+    - slug: "xingming/qizheng-quanshu-dacheng"
+      title: "七政全書大成"
+      system: "xingming"
+      current_source_status: image_only
+      local_status: "raw acquired; normalized blocked"
+      relevance: "七政四余历算表格与星命事实层候选来源。"
+      distillation_allowed: false
+      allowed_actions_now:
+        - "表格 OCR。"
+        - "结构化校验。"
+        - "评估是否能服务 tool.xingming.bindisk。"
+      future_distillation_gate: ocr_reviewed_complete
+    - slug: "xingming/qizheng-siyu-tianjing"
+      title: "七政四余天经"
+      system: "xingming"
+      current_source_status: blocked_unstable_title
+      local_status: "blocked; identity unresolved"
+      relevance: "书名疑似误题或混名。"
+      distillation_allowed: false
+      allowed_actions_now:
+        - "只做书名/版本考证。"
+      future_distillation_gate: verified_identity_plus_complete_text
+    - slug: "san-shi/liuren-zhiyin-vol5-shensha-charts"
+      title: "六壬指南卷五神煞全图及相关表"
+      system: "san-shi/liuren"
+      current_source_status: unreviewed_image_table_pages
+      local_status: "vision assets exist; pages 225-248 are draft_empty in VISION_OCR_PAGE_INVENTORY.md"
+      relevance: "六壬岁月神煞图表、掌诀和图式来源，可补 SS-B3 的图表证据。"
+      distillation_allowed: false
+      allowed_actions_now:
+        - "建立页码/图表 inventory。"
+        - "表格 OCR 或人工转写。"
+        - "二次视觉校勘后再合并入 san-shi/liuren-zhiyin 支持层。"
+      future_distillation_gate: ocr_reviewed_chart_set
+    - slug: "fengshui/yangzhai-aizhong-pian"
+      title: "阳宅爱众篇"
+      system: "fengshui/yangzhai"
+      current_source_status: unverified
+      local_status: "source lead only; missing"
+      relevance: "可能补八宅游年、宅门修补择时、年月吉神煞。"
+      distillation_allowed: false
+      allowed_actions_now:
+        - "创建 manifest。"
+        - "核验馆藏/影印/版本。"
+        - "取得完整文本或扫描后再 OCR。"
+      future_distillation_gate: complete_text_or_ocr_reviewed_complete
+    - slug: "fengshui/dahan-yuanling-mizangjing"
+      title: "大汉原陵秘葬经"
+      system: "fengshui/burial"
+      current_source_status: unverified
+      local_status: "source lead only; missing"
+      relevance: "墓葬神煞历史源流线索。"
+      distillation_allowed: false
+      allowed_actions_now:
+        - "只做书目验证。"
+        - "确认是否存在可靠馆藏/版本。"
+      future_distillation_gate: verified_identity_plus_complete_text
+    - slug: "selection/xiangji-tongshu"
+      title: "增补象吉通书大全 / 象吉通书"
+      system: "selection"
+      current_source_status: bibliography_unverified
+      local_status: "source lead only; no manifest"
+      relevance: "通书系择日、修造、安葬、二十四山、年/月/日/时吉凶神煞与民间选择体系候选。"
+      distillation_allowed: false
+      allowed_actions_now:
+        - "核验馆藏、版本、卷数与是否有完整影印。"
+        - "创建 source-manifest。"
+        - "取得完整文本或扫描后再 OCR/校勘。"
+      future_distillation_gate: complete_text_or_ocr_reviewed_complete
+    - slug: "selection/chongzheng-bimiu-tongshu"
+      title: "崇正辟谬通书 / 崇正辟谬"
+      system: "selection"
+      current_source_status: bibliography_unverified
+      local_status: "source lead only; no manifest"
+      relevance: "清代通书/选择类候选，可能补择日神煞、造葬选择、斗首等旁证；版本复杂。"
+      distillation_allowed: false
+      allowed_actions_now:
+        - "只做书目和版本核验。"
+        - "优先找馆藏/影印，不使用二手网页作底本。"
+      future_distillation_gate: verified_identity_plus_complete_text
+    - slug: "selection/xieji-tongyi"
+      title: "协吉通义"
+      system: "selection"
+      current_source_status: source_lead_ocr_candidate
+      local_status: "source lead only; no manifest"
+      relevance: "CTP 可见 OCR/wiki 线索；可能是协纪择日神煞旁支或抄撮本，可作版本/异文线索。"
+      distillation_allowed: false
+      allowed_actions_now:
+        - "创建 source lead manifest。"
+        - "核书名、底本、章节覆盖和 OCR 噪声。"
+        - "确认是否与《协纪辨方书》重复或只是旁支。"
+      future_distillation_gate: complete_text_or_ocr_reviewed_complete
+    - slug: "selection/jiugong-bagua-dunfa-mishu"
+      title: "九宫八卦遁法秘书"
+      system: "selection"
+      current_source_status: source_lead_ocr_candidate
+      local_status: "source lead only; no manifest"
+      relevance: "神煞/九宫/八卦/禄命杂术候选；可补天德贵人等神煞源流，但不可跨体系直接引用。"
+      distillation_allowed: false
+      allowed_actions_now:
+        - "书目核验。"
+        - "创建 source lead manifest。"
+        - "核完整度与 OCR/影印质量。"
+      future_distillation_gate: complete_text_or_ocr_reviewed_complete
+  promotion_gates:
+    - id: source_manifest_complete
+      required: true
+      description: "必须有 title/slug/system/source_status/edition/source_urls/local_files/chapter_coverage/provenance/license/distillation_allowed。"
+    - id: source_text_status_gate
+      required: true
+      allowed_statuses: [complete_text, complete_chapter_set, ocr_reviewed_complete]
+      description: "只有这三类状态可进入 full distillation；image_only/source_lead_only/partial_text 不能进入规则。"
+    - id: quote_index_exact_location
+      required: true
+      description: "规则必须有卷/章/页/URN/本地行号等可复核位置。"
+    - id: system_boundary_recorded
+      required: true
+      description: "每条神煞必须标明属于八字、禄命、择日、六壬、紫微、星命或风水哪一系统。"
+    - id: non_portability_tests
+      required: true
+      description: "同名神煞必须有不可跨体系使用的测试或边界说明。"
+  acquisition_work_orders:
+    - id: SS-B10-A1
+      target: "xingming/minghai-quanbian"
+      next_batch: SS-B6
+      steps: [manifest, page_inventory, reviewed_page_stubs, ocr_or_image_model_transcription, manual_sample_collation, line_coverage, source_status_review]
+    - id: SS-B10-A2
+      target: "xingming/qizheng-quanshu-dacheng"
+      next_batch: SS-B7
+      steps: [manifest, table_inventory, table_ocr, structured_validation, adapter_feasibility_review]
+    - id: SS-B10-A3
+      target: "fengshui/yangzhai-aizhong-pian"
+      next_batch: SS-B8
+      steps: [bibliographic_verification, manifest, acquire_scan_or_text, ocr_or_transcription, source_status_review]
+    - id: SS-B10-A4
+      target: "fengshui/dahan-yuanling-mizangjing"
+      next_batch: SS-B9
+      steps: [bibliographic_verification, identity_review, decide_acquire_or_drop]
+    - id: SS-B10-A5
+      target: "san-shi/liuren-zhiyin-vol5-shensha-charts"
+      next_batch: SS-B3-followup
+      steps: [page_table_inventory, table_ocr, manual_collation, merge_to_liuren_zhiyin_support_layer, liuren_fact_layer_boundary_review]
+    - id: SS-B10-A6
+      target: "selection/xiangji-tongshu"
+      next_batch: SS-B10-followup
+      steps: [bibliographic_verification, manifest, acquire_scan_or_text, ocr_or_transcription, source_status_review]
+    - id: SS-B10-A7
+      target: "selection/chongzheng-bimiu-tongshu"
+      next_batch: SS-B10-followup
+      steps: [bibliographic_verification, identity_review, manifest_if_verified, acquire_scan_or_text, source_status_review]
+    - id: SS-B10-A8
+      target: "selection/xieji-tongyi"
+      next_batch: SS-B10-followup
+      steps: [source_lead_manifest, ctp_or_library_identity_review, chapter_coverage_check, duplication_check_against_xieji_bianfangshu]
+    - id: SS-B10-A9
+      target: "selection/jiugong-bagua-dunfa-mishu"
+      next_batch: SS-B10-followup
+      steps: [source_lead_manifest, bibliographic_verification, ocr_quality_check, system_boundary_review]
+  handoff:
+    next_recommended_batch: SS-B6
+    reason: "SS-B10 只完成书目/获取计划；若继续推进神煞专书，下一步应先填写和校验《星平会海/命海全编》reviewed-page 草稿，而不是直接蒸馏规则。"

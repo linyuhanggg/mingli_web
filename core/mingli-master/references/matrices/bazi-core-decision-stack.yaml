@@ -1,0 +1,387 @@
+matrix:
+  id: bazi-core-decision-stack
+  version: v0.1
+  generated_at: "2026-07-05"
+  source_status: derived_from_D2_ready_bazi_reference_packs
+  scope:
+    - bazi_fact_layer
+    - source_dependency
+    - decision_order
+    - conflict_policy
+    - shensha_deweighting
+  required_fact_layer:
+    profiles:
+      natal_static:
+        status: validated_user_provided_four_pillars
+        adapter: scripts/bazi_fact_adapter.py pillars
+        required_output_fields:
+          - four_pillars
+          - hidden_stems
+          - ten_gods
+          - nayin
+          - month_command
+          - seasonal_profile
+          - tiaohou_markers
+        allowed:
+          - static_natal_interpretation
+        blocked:
+          - calendar_verification
+          - luck_cycles
+          - annual_timing
+      natal_timing:
+        status: calculated_natal_chart_from_birth_datetime
+        adapter: scripts/bazi_fact_adapter.py birth
+        requires_full_calendar_normalization: true
+        requires_luck_cycles: true
+    required_top_level:
+      - adapter
+      - calendar_normalization
+      - output
+      - trace
+    bazi_output_fields:
+      - four_pillars
+      - hidden_stems
+      - ten_gods
+      - nayin
+      - month_command
+      - seasonal_profile
+      - tiaohou_markers
+      - luck_cycles
+    calendar_fields:
+      - civil_datetime
+      - location
+      - lunar_date
+      - ganzhi
+      - solar_terms
+      - true_solar_time
+    transit_fields_when_timing_used:
+      - luck_cycle_for_period
+      - annual_ganzhi
+      - annual_ten_gods
+      - branch_relations
+    stop_if_missing: true
+  stages:
+    - id: BZ-00
+      name: fact_layer_gate
+      role: prerequisite
+      primary_files:
+        - references/tool-adapters.md
+        - scripts/adapter_validate.py
+      required_fields:
+        - calendar_normalization
+        - four_pillars
+        - hidden_stems
+        - ten_gods
+        - month_command
+        - seasonal_profile
+        - tiaohou_markers
+      outputs:
+        - fact_layer_status
+        - missing_fact_outputs
+      stop_if_missing: true
+    - id: BZ-01
+      name: ziping_entry_and_rough_frame
+      role: entrance
+      primary_packs:
+        - bazi/sanming-tonghui
+        - bazi/yuanhai-ziping
+      load_layers:
+        - index.md
+        - procedures.md
+        - rules.md
+        - quote-index.md
+        - validation.md
+      procedure_ids:
+        - P-01
+        - P-02
+        - P-03
+        - P-04
+        - P-05
+      rule_ids:
+        - YR-01-03
+        - YR-01-04
+        - YR-01-12
+        - YR-03-01
+        - YR-03-02~03
+      quote_anchors:
+        - SM-Q128
+        - SM-Q131
+        - SM-Q679
+        - SM-Q829
+        - YH-Q043
+        - YH-Q053
+      outputs:
+        - day_master_frame
+        - month_command_frame
+        - rough_pattern_candidates
+        - ten_god_table
+        - luck_transit_relation_map
+    - id: BZ-02
+      name: month_command_pattern_and_xiangshen
+      role: first_line_for_pattern_questions
+      primary_packs:
+        - bazi/ziping-zhenquan
+      support_packs:
+        - bazi/yuanhai-ziping
+        - bazi/sanming-tonghui
+      load_layers:
+        - index.md
+        - rules.md
+        - procedures.md
+        - quote-index.md
+        - validation.md
+      procedure_ids:
+        - ZPP-01
+        - ZPP-02
+        - ZPP-03
+        - ZPP-04
+        - ZPP-05
+      rule_ids:
+        - ZPR-01
+        - ZPR-03
+        - ZPR-04
+        - ZPR-05
+        - ZPR-10
+        - ZPR-11
+        - ZPR-12
+        - ZPR-16
+      quote_anchors:
+        - ZPQ-008
+        - ZPQ-009
+        - ZPQ-010
+        - ZPQ-015
+        - ZPQ-021
+        - ZPQ-047
+      outputs:
+        - pattern_candidate
+        - xiangshen
+        - success_failure_rescue
+        - pattern_boundary
+    - id: BZ-03
+      name: strength_flow_tongguan
+      role: first_line_for_strength_flow_questions
+      primary_packs:
+        - bazi/ditiansui-chanwei
+      support_packs:
+        - bazi/sanming-tonghui
+      load_layers:
+        - index.md
+        - rules.md
+        - procedures.md
+        - quote-index.md
+        - validation.md
+      procedure_ids:
+        - DP-01
+        - DP-02
+        - DP-03
+        - DP-04
+      rule_ids:
+        - DR-02-06
+        - DR-03-01
+        - DR-03-03
+        - DR-03-04
+        - DR-04-01
+        - DR-04-02
+      quote_anchors:
+        - DT-Q016
+        - DT-Q021
+        - DT-Q030
+        - DT-Q031
+      outputs:
+        - strength_bucket
+        - flow_status
+        - tongguan_candidate
+        - follow_or_counter_flow
+    - id: BZ-04
+      name: tiaohou_climate_layer
+      role: required_adjustment_layer
+      primary_packs:
+        - bazi/qiongtong-baojian
+      support_packs:
+        - bazi/ditiansui-chanwei
+      load_layers:
+        - index.md
+        - chapter-map.md
+        - rules.md
+        - procedures.md
+        - quote-index.md
+        - validation.md
+      procedure_ids:
+        - QP-01
+        - QP-02
+        - QP-03
+        - QP-04
+        - QP-05
+      rule_id_pattern: QR-NN-MM
+      quote_anchor_range:
+        - QT-Q005
+        - QT-Q056
+      required_fields:
+        - day_stem
+        - solar_term_month_boundary
+        - month_branch
+        - seasonal_profile
+        - tiaohou_markers
+      outputs:
+        - tiaohou_use_gods
+        - present_damaged_hidden_or_missing
+        - climate_extreme_flag
+      stop_if_missing: true
+    - id: BZ-05
+      name: conflict_arbitration
+      role: synthesis_gate
+      primary_files:
+        - references/matrices/bazi-core-decision-stack.md
+        - references/matrices/conflict-policy.md
+      inputs:
+        - pattern_layer
+        - strength_flow_layer
+        - tiaohou_layer
+      outputs:
+        - selected_primary_view
+        - preserved_disagreements
+        - downgraded_layers
+    - id: BZ-06
+      name: luck_and_year_activation
+      role: timing_layer
+      primary_packs:
+        - bazi/sanming-tonghui
+        - bazi/ditiansui-chanwei
+        - bazi/ziping-zhenquan
+      procedure_ids:
+        - P-05
+        - DP-04
+      rule_ids:
+        - ZPR-12
+        - ZPR-13
+        - YR-03-01
+        - YR-03-02~03
+      outputs:
+        - luck_cycle_theme
+        - annual_trigger
+        - testable_time_window
+        - counter_evidence
+    - id: BZ-07
+      name: shensha_auxiliary_layer
+      role: auxiliary_only
+      primary_files:
+        - references/matrices/shensha-cross-system-index.md
+        - references/matrices/shensha-name-disambiguation.yaml
+        - references/matrices/shensha-entry-source-profile.yaml
+        - references/matrices/shensha-quote-trace.yaml
+        - references/matrices/shensha-source-book-matrix.md
+        - references/matrices/shensha-source-book-matrix.yaml
+      primary_packs:
+        - bazi/sanming-tonghui
+      support_packs:
+        - luming-nayin/wuxing-jingji
+        - luming-nayin/li-xuzhong-mingshu
+      weight: auxiliary_below_pattern_strength_tiaohou_tengods_luck
+      outputs:
+        - shensha_inventory_if_requested
+        - source_system_disambiguation
+        - absent_important_shensha
+      never_override:
+        - month_command_pattern
+        - strength_flow
+        - tiaohou
+        - ten_gods
+        - luck_transit
+    - id: BZ-08
+      name: later_critique_and_anti_template
+      role: quality_gate
+      primary_packs:
+        - bazi/shenfeng-tongkao
+        - bazi/mingli-yueyan
+      primary_files:
+        - references/accuracy-and-statistical-validation.md
+      rule_ids:
+        - SF-R01
+        - SF-R02
+        - SF-R04
+        - MLY-R004
+        - MLY-R008
+      outputs:
+        - false_positive_check
+        - anti_template_check
+        - calibration_fields
+  conflict_policy:
+    pattern_vs_strength:
+      preserve_both_views: true
+      pattern_questions_primary: bazi/ziping-zhenquan
+      body_strength_flow_primary: bazi/ditiansui-chanwei
+    tiaohou_vs_strength:
+      climate_extreme_primary: bazi/qiongtong-baojian
+      non_extreme_primary: bazi/ditiansui-chanwei
+      always_preserve_caveat: 调候用神不是唯一用神
+    shensha_vs_core:
+      priority: never_core
+      max_role: auxiliary_label
+      require_disambiguation: true
+  anti_template:
+    daily_or_tomorrow_fortune:
+      banned_default_motifs:
+        - 财务
+        - 收尾
+        - 回款
+        - 催回复
+      allow_only_if:
+        - user_asked_domain
+        - fact_layer_specific_trigger
+        - prior_context_specific_trigger
+    output_must_have:
+      - concrete_question_answer
+      - source_or_fact_trigger
+      - boundary_or_confidence
+  ten_god_domain_leak_examples:
+    # Accuracy-first section 2: patterns the public gate must reject unless the
+    # user query explicitly opens the same domain. Kept in sync with
+    # scripts/gate_check.py::TEN_GOD_SCENE_FAMILIES.
+    印:
+      - "偏印临日，消息容易反复"
+      - "印星一抬头，文书多"
+      - "偏印同支，思路较乱"
+    财:
+      - "财星露头，今天可能回款"
+      - "偏财入日，今日入账"
+      - "正财伴身，合同金额可定"
+    官杀:
+      - "官杀一来，工作上就会被催"
+      - "七杀临日，领导私信多"
+      - "正官露头，合同签订具体日期可定"
+    食伤:
+      - "食伤明显，沟通容易争辩"
+      - "伤官入运，发声多"
+    比劫:
+      - "比劫偏重，朋友合作要留心"
+      - "劫财临日，小心抢单"
+  permitted_symbolic_readings:
+    # Traditional-symbolic phrasing that the gate must NOT flag, because it does
+    # not collapse the ten-god into a specific event.
+    - "偏印主内在环境、思维、革新，不等于消息或回复"
+    - "财星为日主所制之物，不代表具体回款"
+    - "官杀主权刚、约束、气位，不硬映射到合同事件"
+    - "食伤主发泄、才花，不就是今天要发言"
+    - "比劫主争、同类，不当作一定抢单"
+  shensha_book_followup:
+    ready_priority:
+      - bazi/sanming-tonghui
+      - luming-nayin/wuxing-jingji
+      - luming-nayin/li-xuzhong-mingshu
+      - luming-nayin/luoluzi-sanming
+      - luming-nayin/yuzhao-shenying
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      - san-shi/daliuren-daquan
+      - san-shi/liuren-zhiyin
+      - san-shi/liuren-miben
+      - ziwei/ziwei-doushu-quanshu
+      - ziwei/taiwei-fu
+      - xingming/guotian-jing
+      - fengshui/yangzhai-shishu
+      - fengshui/yangzhai-sanyao
+    acquisition_only:
+      - xingming/minghai-quanbian
+      - xingming/qizheng-quanshu-dacheng
+      - xingming/qizheng-siyu-tianjing
+      - source-lead/yangzhai-aizhong-pian

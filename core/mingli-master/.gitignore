@@ -1,0 +1,22 @@
+.DS_Store
+._*
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.*.runtime.lock
+
+# Local production replay artifacts may contain transport traces or stale audit output.
+references/regression/replays/
+references/regression/reacceptance-replay-log.md
+
+# Imported third-party benchmark questions and separated answer keys stay local.
+.benchmarks/
+
+# Complete source transcriptions are local research inputs. Their source-page
+# licences have not all been cleared for redistribution, so releases contain
+# only the distilled packs, provenance metadata, and recorded checksums.
+references/fulltext/

@@ -1,0 +1,214 @@
+{
+  "capability": {
+    "assumption_cost": 0,
+    "default_dimension_ids": [
+      "state",
+      "source_comparison"
+    ],
+    "default_priority": 100,
+    "dimension_ids": [
+      "state",
+      "source_comparison"
+    ],
+    "exact_horizon_ids": [],
+    "horizon_ids": [
+      "instant"
+    ],
+    "independent_lineage_id": "physiognomy",
+    "object_ids": [
+      "visible_observation"
+    ],
+    "required_input_groups": [
+      {
+        "any_of": [
+          "physiognomy_spec"
+        ]
+      }
+    ]
+  },
+  "claim_policy": {
+    "allowed_kind_ids": [
+      "kind.fact",
+      "kind.tendency"
+    ],
+    "certainty_ceiling_id": "certainty.tendency"
+  },
+  "display": {
+    "zh-CN": {
+      "description": "相法可见观察：依据已采集的可见观察（形/色/神/部位）事实，输出当前状态与可见对比。前提：必须提供 physiognomy_spec（结构化观察输入）；不读取环境变量或家目录。边界：不输出预测、应期、性格推断；不接受未结构化描述。与 fengshui 的选择依据：physiognomy 适用于人体可见观察对象，fengshui 适用于宅/空间/朝向对象；两者均不接不相关对象。",
+      "name": "相法"
+    }
+  },
+  "entrypoint": "reading_engine.providers:PhysiognomyProvider",
+  "evidence_profile_id": "physiognomy",
+  "id": "physiognomy",
+  "input_fields": {
+    "physiognomy_spec": {
+      "display": {
+        "zh-CN": "可见观察资料"
+      },
+      "request_slot": "chart_data.physiognomy_spec",
+      "type": "object"
+    }
+  },
+  "runtime_capability": {
+    "assumption_cost": 0,
+    "default_priority": 100,
+    "dimensions": [
+      "state",
+      "source_comparison"
+    ],
+    "exact_horizons": [],
+    "extension_output_bindings": [
+      {
+        "horizons": [
+          "instant"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/normalized_visible_observations",
+          "/fact_extension/facts/missing_targets",
+          "/fact_extension/facts/observation_conflicts",
+          "/fact_extension/facts/cross_capture_variations",
+          "/fact_extension/facts/source_comparison/sources",
+          "/fact_extension/facts/source_comparison/disagreements",
+          "/fact_extension/facts/uncertainties",
+          "/fact_extension/facts/critical_missing"
+        ],
+        "name": "visible_observation_scope"
+      }
+    ],
+    "extension_outputs": [
+      "visible_observation_scope"
+    ],
+    "horizons": [
+      "instant"
+    ],
+    "independent_lineage": "physiognomy",
+    "mode": "observation_driven_ready",
+    "objects": [
+      "visible_observation"
+    ],
+    "output_bindings": [
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/observation_scope"
+        ],
+        "name": "observation_scope"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/normalized_visible_observations"
+        ],
+        "name": "normalized_visible_observations"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/missing_targets"
+        ],
+        "name": "missing_targets"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/observation_conflicts"
+        ],
+        "name": "observation_conflicts"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/cross_capture_variations"
+        ],
+        "name": "cross_capture_variations"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/source_layers",
+          "/facts/chart_facts/output/source_disagreements"
+        ],
+        "name": "source_comparison"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/uncertainties"
+        ],
+        "name": "uncertainties"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/critical_missing"
+        ],
+        "name": "critical_missing"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/accepted_observation_fact_keys"
+        ],
+        "name": "accepted_observation_fact_keys"
+      }
+    ],
+    "outputs": [
+      "observation_scope",
+      "normalized_visible_observations",
+      "missing_targets",
+      "observation_conflicts",
+      "cross_capture_variations",
+      "source_comparison",
+      "uncertainties",
+      "critical_missing",
+      "accepted_observation_fact_keys"
+    ],
+    "required_inputs": [
+      "physiognomy_spec"
+    ],
+    "system": "physiognomy"
+  },
+  "schema_version": "provider-manifest-v1",
+  "terms": {
+    "certainty.tendency": {
+      "display": {
+        "zh-CN": "倾向性上限"
+      }
+    },
+    "instant": {
+      "display": {
+        "zh-CN": "当下"
+      }
+    },
+    "kind.fact": {
+      "display": {
+        "zh-CN": "事实陈述"
+      }
+    },
+    "kind.tendency": {
+      "display": {
+        "zh-CN": "倾向判断"
+      }
+    },
+    "limit.source_gap": {
+      "display": {
+        "zh-CN": "本轮没有命中可引用的古籍条文，只能基于确定性事实描述"
+      }
+    },
+    "source_comparison": {
+      "display": {
+        "zh-CN": "来源比较"
+      }
+    },
+    "state": {
+      "display": {
+        "zh-CN": "当前状态"
+      }
+    },
+    "visible_observation": {
+      "display": {
+        "zh-CN": "可见观察"
+      }
+    }
+  },
+  "time_semantics": {
+    "default_policy": "civil",
+    "input_time": null,
+    "role": "not_applicable",
+    "supported_policies": [],
+    "unsupported_fallback": "not_applicable"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "artifact": "lunar_python",
+  "version": "1.4.8",
+  "repository": "https://github.com/6tail/lunar-python",
+  "tag": "v1.4.8",
+  "reviewed_upstream_commit": "000c8a3d74eed098d6256a28fdd51b869324c559",
+  "distribution": "lunar_python-1.4.8.tar.gz",
+  "distribution_sha256": "3aa11cc73c25e70ddf0ba5bdac7398c03acc9491a3aa512a91c9642973b669d6",
+  "license": "MIT",
+  "license_sha256": "097ec7989106eb9a27b6eff71dbaf1cd6bb04a9b35b6c94b54fff0829a041a8c",
+  "upstream_distribution_license_sha256": "a9d04f47f0615c0ce48bdbe2ff58d5c174279d9f20f044ef29249632302a4ab3",
+  "implementation_hashes": {
+    "lunar_python/Lunar.py": "489a1725a2ba443f9e8acf0534f05a0ee28c24f8904adb129c8a30daa3ed7079"
+  },
+  "role": "Frozen independent engineering comparator for 30 selection boards; never a classical authority or production dependency."
+}

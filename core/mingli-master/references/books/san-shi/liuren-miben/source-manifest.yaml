@@ -1,0 +1,170 @@
+title: "大六壬秘本"
+slug: "liuren-miben"
+system: "san-shi"
+school:
+  - "大六壬"
+  - "鬼撮脚系"
+  - "秘本抄本"
+source_status: "complete_text"
+source_state_summary: "十七卷完整可检索转写已入库，三处章界乱码已据影印补齐，尚未完成全本逐页逐行校勘"
+distillation_allowed: true
+distillation_scope: >-
+  允许对现有十七卷完整转写做结构索引、来源分层和选择性规则蒸馏；不允许声称已形成影印定本、
+  已完成逐页校勘、已穷尽全书断语，或已把正文、金正音辑注、朱批和旁注逐行完全拆开。
+
+edition_statement: >-
+  当前可检索底本为 CTP 维基区《六壬秘本》（ctp:wb348173）五个 wiki chapter 的本地转写，
+  经归一化后按目录与卷题重组为十七卷。国立中央图书馆 NCL-06572 二册影印本（243 页）
+  是版本与疑字锚点；本轮仅据影印第 72、179、234 页修复三处 CTP 章界乱码，并核对扫描目录，
+  没有进行全书逐页逐行校勘。
+
+author_attribution:
+  catalog_attribution: "书题作清·金正音辑；本包称其为辑录/批注层，不据此把全部篇章都归为金正音原创。"
+  transmitted_works: >-
+    全书汇入《大六壬苗公鬼撮脚》、李九万百章歌、穿杨百章歌、通天鬼翼赋、玉成歌、玉田歌、
+    壬机秘要法语、五要权衡篇、《管辂神书》、《六壬心镜经》及增附三才应事等不同传承单元。
+  copyists_and_notes: >-
+    文内可见李道生附记、顾商文补阙、黄晴崖与施锦堂照录/朱批，以及金氏旁注、朱批、改字；
+    现有电子转写压平了版面，不能把所有无署名注语稳定归给某一人。
+
+source_urls:
+  - "https://ctext.org/wiki.pl?if=gb&res=348173"
+  - "https://commons.wikimedia.org/wiki/File:NCL-06572_%E5%A4%A7%E5%85%AD%E5%A3%AC%E7%A7%98%E6%9C%AC.pdf"
+  - "https://upload.wikimedia.org/wikipedia/commons/0/0a/NCL-06572_%E5%A4%A7%E5%85%AD%E5%A3%AC%E7%A7%98%E6%9C%AC.pdf"
+
+local_files:
+  - path: "references/fulltext/san-shi/liuren-miben/fulltext.md"
+    role: "normalized_complete_text"
+    extent: "5354 lines; 295312 bytes"
+    sha256: "44ea31ef43f874ffc9da03c6ed6c01eee62081db6c2faf11593ec9bbe47847e0"
+  - path: "references/fulltext/san-shi/liuren-miben/fulltext.md"
+    role: "skill_runtime_exact_copy"
+    extent: "5354 lines; exact byte copy of normalized source"
+    sha256: "44ea31ef43f874ffc9da03c6ed6c01eee62081db6c2faf11593ec9bbe47847e0"
+  - path: "sources/raw/san-shi/liuren-miben/chapter_1_ctext_582039.md"
+    role: "ctp_chapter_transcription"
+    ctp_urn: "ctp:ws582039"
+    sha256: "3037c4bd7a1848bb99cb46a45a1c214f7156ed4475aeb1ecc9f7b460160e6cc3"
+  - path: "sources/raw/san-shi/liuren-miben/chapter_2_ctext_594002.md"
+    role: "ctp_chapter_transcription"
+    ctp_urn: "ctp:ws594002"
+    sha256: "8c1fb8ea6ea30436426f02c6ad4211a6810de74adb3f2b186545783edd17f3df"
+  - path: "sources/raw/san-shi/liuren-miben/chapter_3_ctext_758162.md"
+    role: "ctp_chapter_transcription"
+    ctp_urn: "ctp:ws758162"
+    sha256: "6be1495149b8fbcb3fb3be0359b3ac034a5f3f464b16fc8c8fd920b22c9748a1"
+  - path: "sources/raw/san-shi/liuren-miben/chapter_4_ctext_199134.md"
+    role: "ctp_chapter_transcription"
+    ctp_urn: "ctp:ws199134"
+    sha256: "0f5ab1d7f09545367e856494e69fee2a6996544bfad475768a51e88ce6fe1c19"
+  - path: "sources/raw/san-shi/liuren-miben/chapter_5_ctext_593318.md"
+    role: "ctp_chapter_transcription"
+    ctp_urn: "ctp:ws593318"
+    sha256: "34ffca2c6a23530f683c5cf60ceaf8b8c518040949e371d6a1cf0059dfa8801d"
+  - path: "sources/raw/san-shi/liuren-miben/NCL-06572_daliuren-miben.pdf"
+    role: "original_scan_witness"
+    extent: "243 pages; 154825545 bytes"
+    sha256: "09d044c44f7cde2b83ea6bdbcf9edfe48d4c008130b7cfb2095dd2d672d2a649"
+
+chapter_coverage:
+  expected: "书题/目录 + 卷之一至卷之十七 + 录毕款"
+  present:
+    - "目录与篇目清单"
+    - "卷之一 十二月将照显变化论"
+    - "卷之二 十二天将所主"
+    - "卷之三 旬中神煞"
+    - "卷之四 神物论"
+    - "卷之五 天官加十二辰射覆物类"
+    - "卷之六 八卦将神射覆法"
+    - "卷之七 十干旺相死休囚法"
+    - "卷之八 李九万六壬百章歌"
+    - "卷之九 六壬穿杨百章歌"
+    - "卷之十 通天鬼翼赋"
+    - "卷之十一 大六壬玉成歌注解"
+    - "卷之十二 鬼撮脚总括玉田歌"
+    - "卷之十三 五行旺相胎孕休囚论及壬机秘要法语"
+    - "卷之十四 五要权衡篇及附录"
+    - "卷之十五 管辂神书"
+    - "卷之十六 六壬心镜经"
+    - "卷之十七 增附释三才应事"
+    - "乾隆四十年录竟款"
+  missing_text_units: []
+  structural_coverage: "complete"
+  rule_extraction_coverage: "selective_evidence_backed"
+  unresolved_collation:
+    - "NCL 影印尚未全本逐页逐行对校"
+    - "馆藏元数据称二十卷，扫描目录与正文卷题为十七卷"
+    - "正文、夹注、朱批、旁注的版面层尚未全量拆分"
+
+source_layers:
+  normalization_scaffold:
+    definition: "normalized 文件 L1-L5 的现代题头、来源说明，以及 L5335-L5354 的校勘记录。"
+    citation_policy: "可证明处理过程，不得冒充古籍原文。"
+  catalog_and_colophons:
+    definition: "书题、目录、篇目清单、抄录与录竟款。"
+    citation_policy: "可作结构和传承证据，不直接作断法规则。"
+  transmitted_body:
+    definition: "歌诀、赋文、分门占法、类象表及各传承篇章的正文层。"
+    citation_policy: "可蒸馏，但只称本书所载，不无证据强定单一作者。"
+  mixed_body_commentary:
+    definition: "正文后解释、题下注和夹注被电子转写压在同一行，未能稳定区分原文与注解。"
+    citation_policy: "规则须标 mixed；不得写成某作者无争议原句。"
+  jin_editorial_note:
+    definition: "明确出现‘金氏注/旁注/朱笔改’的辑注、改字和辨语。"
+    citation_policy: "必须点名为金氏层；不得倒灌为传承正文。"
+  named_copyist_note:
+    definition: "李道生、顾商文、黄晴崖、施锦堂等有署名的附记、补阙、朱批和抄录款。"
+    citation_policy: "只按署名层引用。"
+  scan_collated_junction:
+    definition: "CTP 章界乱码经 NCL 第 72、179、234 页逐字补回的三处正文。"
+    citation_policy: "可引用补回文字，同时记录影印页和仅局部校勘的边界。"
+
+scan_collation:
+  status: "three_junctions_verified_full_line_collation_pending"
+  verified_repairs:
+    - ctp_boundary: "chapter_1_to_2"
+      scan_page: 72
+      normalized_line: 1592
+      note: "补回四句歌诀。"
+    - ctp_boundary: "chapter_3_to_4"
+      scan_page: 179
+      normalized_line: 3912
+      note: "补回‘或生支合干’至‘两事言’。"
+    - ctp_boundary: "chapter_4_to_5"
+      scan_page: 234
+      normalized_line: 5158
+      note: "补回句号，消除单字符乱码。"
+  normalized_quality_checks:
+    replacement_character_count: 0
+    missing_character_placeholder_count_in_body: 0
+
+provenance_notes:
+  - "五个 CTP chapter 为完整可检索转写来源；NCL 影印负责版本锚定和局部疑字复核。"
+  - "扫描第 5-6 页目录实际列卷一至卷十七，和正文卷题一致。"
+  - "卷一 L154 明记旧本曾空白二页、后据另一秘本补入，说明本书自身已是层累传抄本。"
+  - "卷九 L1762 与卷十七 L5330 的抄录款保留在正文顺序中。"
+
+ocr_or_transcription_quality:
+  status: "complete_transcription_partially_scan_collated"
+  notes:
+    - "当前全文主要是电子转写而非本轮 OCR。"
+    - "三处章界乱码已由影印复核，正文 replacement character 与缺字占位均为 0。"
+    - "版面压平仍可能造成双行小字、夹注、朱批和正文边界误判。"
+    - "未校位置不能给出稳定影印页码，也不能用行号按比例伪算页码。"
+
+license_or_usage_notes:
+  - "古籍正文属于公有领域；NCL/Wikimedia 扫描按 Commons 馆藏页面说明使用。"
+  - "CTP 页面受站点条款约束；本包只记录已经取得的本地文件与来源锚点。"
+  - "reference pack 仅保存短引和解释索引；完整全文由本地 corpus 管理。"
+
+coverage_claim:
+  structural_index: "L1-L5354 已完成书题、目录、十七卷和校勘记录的全结构索引。"
+  rule_extraction: "选择性提取可定位、可设前置条件和停止条件的核心规则，不声称逐句规则化。"
+  quote_index: "每卷至少有结构或内容锚点；精选短引不等于全文逐句引文覆盖。"
+  source_layering: "明确署名层可分；无署名混排层仍保留不确定性。"
+  scan_collation: "仅三处章界补字完成，非全书逐页校勘。"
+
+distillation_notes:
+  rebuilt_at: "2026-07-10"
+  distilled_by: "Codex using cangjie-skill"
+  review_status: "source_layered_reference_pack_static_validated"

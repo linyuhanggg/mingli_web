@@ -1,0 +1,153 @@
+title: "大六壬大全 / 六壬大全"
+slug: "daliuren-daquan"
+system: "san-shi"
+school:
+  - "大六壬"
+  - "六壬总集"
+source_status: "complete_chapter_set"
+source_state_summary: "完整电子文本与文渊阁十二卷独立转写均已入库，文渊阁影印已取得；卷次异构与逐页校勘尚未解决。"
+distillation_allowed: true
+distillation_scope: >-
+  允许建立整书结构索引、来源分层、精选规则卡和短引证据。当前规则卡是选择性蒸馏，
+  不代表逐句穷尽；影印页码、图式、表格和两套卷次之间的最终版本学裁定仍待完成。
+
+edition_statement: >-
+  主检索文本为维基文库十二个子页合并并标准化的 13800 行电子文本。独立见证为
+  Kanripo KR3g0031 的《文渊阁四库全书》十二卷转写，固定于仓库提交
+  320cbc13a9048aa0f028d996ab32f8bf7b362ef7。馆藏影印锚点为《文渊阁四库全书》
+  第 0808 册。电子主文本自称四库本，但其卷次安排与 Kanripo 文渊阁转写不一致，
+  因此本包不得把 normalized 卷号直接称为文渊阁原卷号。
+
+author_attribution:
+  status: "unresolved"
+  statement: "四库提要称全书不著撰人名氏，卷首只题怀庆府推官郭载騋校；不得把郭载騋无保留写成作者或编者。"
+  normalized_anchor: "fulltext.md:L3"
+
+source_urls:
+  - "https://zh.wikisource.org/wiki/%E5%85%AD%E5%A3%AC%E5%A4%A7%E5%85%A8"
+  - "https://github.com/kanripo/KR3g0031"
+  - "https://commons.wikimedia.org/wiki/File:%E6%96%87%E6%B7%B5%E9%96%A3%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8_0808%E5%86%8A.djvu"
+
+local_files:
+  - path: "references/fulltext/san-shi/daliuren-daquan/fulltext.md"
+    role: "normalized_search_text"
+    extent: "13800 lines; 836523 bytes"
+    sha256: "4c5ec0c8ea1f7b36deaf1db317cfa4407b090ad4ed909a3b8a431dced0a25d9d"
+    quality: "complete searchable composite; edition identity and tables not fully collated"
+  - path: "sources/raw/san-shi/daliuren-daquan/wikisource_raw.txt"
+    role: "raw_wikisource_export"
+    extent: "13 Wikisource containers"
+    sha256: "06321fb8bf3f28a09be9a06868bd89ab205f85d091268d77dfcf0292cdbf9090"
+  - path: "sources/raw/san-shi/daliuren-daquan/Siku-Wenyuange-0808.djvu"
+    role: "wenyuange_scan_witness"
+    extent: "987 pages; 98547126 bytes; whole volume 0808, not all pages are this book"
+    sha256: "38d40b5cb9beb1282ea33c794224cee148012c8c1fcba7b2f3952901f816f2db"
+    collation_status: "acquired_pending_book_page_map_and_line_collation"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/Readme.org"
+    role: "kanripo_table_of_contents"
+    sha256: "49cade52d5aa57818b4dae1d7b3626b664a30e9f05a1284afbd50e55939bede8"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_000.txt"
+    role: "kanripo_wyg_preface"
+    sha256: "f5d4f4a9d6bcd09189079fb226e65b45661ccae2dd2dc34d27da2fd015cd123b"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_001.txt"
+    role: "kanripo_wyg_juan_1"
+    sha256: "c913926cfdef85f329734e89e60f38b68240700b2732abeb66a131080c90217d"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_002.txt"
+    role: "kanripo_wyg_juan_2"
+    sha256: "1551b934987f994cfe48c83bc6a044bca93b9233102fb38a1b64bbefc18dfa8f"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_003.txt"
+    role: "kanripo_wyg_juan_3"
+    sha256: "b808fe9cd9bce0716710a7a43724f8872ff8a779ac2ee6addf95a78fbfc32e8c"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_004.txt"
+    role: "kanripo_wyg_juan_4"
+    sha256: "e0bead3c5992547fe9d306786c6684e8f001409ec519aebee302727432bedfeb"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_005.txt"
+    role: "kanripo_wyg_juan_5"
+    sha256: "927727814d95abfd01054d5c713ac583ef18d94a12dcef9825daeedef4ac657a"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_006.txt"
+    role: "kanripo_wyg_juan_6"
+    sha256: "1f0c2b01131d38eb221f0b80d560851447a2e5d555c288444debb75a8367111f"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_007.txt"
+    role: "kanripo_wyg_juan_7"
+    sha256: "50b3e6ff540f77dca4ecc36ab4ac09c2bad07e0da277f3f44223cbce74b084fc"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_008.txt"
+    role: "kanripo_wyg_juan_8"
+    sha256: "5158382052afaba927c7ac7c879850c3ba894c1ab5e2f039e4f8b0671af87343"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_009.txt"
+    role: "kanripo_wyg_juan_9"
+    sha256: "ea49d6af76c06103058d9f98c10c3f61d28ef7af0965e04188337db3c228ca12"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_010.txt"
+    role: "kanripo_wyg_juan_10"
+    sha256: "7ec91114fce506ec2e4ec63d62f9177355fa905806930fffd29e1bdae2e4542d"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_011.txt"
+    role: "kanripo_wyg_juan_11"
+    sha256: "e5c4a359999b4ef5f23c654fea83096bf2558074c3569115d63b776bb5973741"
+  - path: "sources/raw/san-shi/daliuren-daquan/kanripo/KR3g0031_012.txt"
+    role: "kanripo_wyg_juan_12"
+    sha256: "e57be90b711efd0b03c12248bb378865b0ce762534841ba8a2a0b48ba3da4b80"
+
+chapter_coverage:
+  normalized_containers:
+    expected: 12
+    present: 12
+    line_span: "L28-L13800"
+    missing: []
+  kanripo_wenyuange_juan:
+    expected: 12
+    present: 12
+    files: "KR3g0031_001.txt through KR3g0031_012.txt"
+    missing: []
+  unresolved_collation:
+    - "normalized 卷五兵占在 Kanripo 文渊阁十二卷中无直接同卷对应。"
+    - "normalized 把宿度分野合为卷六，Kanripo 文渊阁本将其列为卷十一、卷十二。"
+    - "normalized 把课经列为卷七至十、毕法列为卷十一至十二；Kanripo 分别列为卷五至八、卷九至十。"
+    - "Kanripo 卷七题作课经四，和前后卷次仍需回看影印确认是否转写题误。"
+
+source_layers:
+  siku_editorial_preface:
+    definition: "四库馆臣提要、校记和版本批评。"
+    citation_policy: "可作书目、版本和冲突证据，不可冒充明代汇编正文。"
+  compendium_body:
+    definition: "normalized 正文中的起例、神将、歌赋、课经、毕法、兵占和分野材料。"
+    citation_policy: "每条规则必须给 normalized 精确行号；卷次称谓须注明是 normalized 容器。"
+  kanripo_wyg_witness:
+    definition: "Kanripo KR3g0031 的文渊阁十二卷独立转写及页叶标识。"
+    citation_policy: "用于交叉见证和文渊阁卷页定位；转写异字、缺图和许可风险须保留。"
+  scan_witness:
+    definition: "文渊阁四库全书第 0808 册影印。"
+    citation_policy: "未建立本书起讫页前，不得从 normalized 行号伪换算扫描页码。"
+  modern_synthesis:
+    definition: "本 reference pack 的术语解释、规则卡、流程和冲突裁决。"
+    citation_policy: "只能称现代结构化转述；不得写成古籍原句。"
+
+provenance_notes:
+  - "normalized 文件可全文检索，核心九宗法在正文多处重复。"
+  - "Kanripo 提供独立的文渊阁十二卷转写和叶码，可识别 normalized 的卷次错配。"
+  - "影印已经本地化，但尚未建立整册 0808 中《六壬大全》的起讫页。"
+  - "本包不使用 CTP 下载文本，也不把兄弟书《六壬指南》当作本书的依赖或替代证据。"
+
+ocr_or_transcription_quality:
+  status: "mixed_reviewed_searchable"
+  notes:
+    - "normalized 非 OCR 图片直出，但表格、盘式空格、异体字和小注边界会失真。"
+    - "normalized L70 的返吟井栏后半句明显粘连或讹乱，只可使用其可核短句。"
+    - "Kanripo 也有转写异字，例如十干寄宫处己/巳混淆，不能自动视为校本。"
+    - "规则卡只纳入可定位且可设置停止条件的材料。"
+
+license_or_usage_notes:
+  - "古籍原文属于公有领域。"
+  - "维基文库整理文本按其页面所示 CC BY-SA 条款使用。"
+  - "Wikimedia Commons 扫描页面标注为公有领域。"
+  - "Kanripo 仓库转写许可未在本地文件中核定；本包只作本地校勘见证，不承诺可再分发。"
+
+coverage_claim:
+  structural_index: "normalized 12/12 容器与 Kanripo 文渊阁 12/12 卷均已建图"
+  rule_extraction: "选择性核心规则卡，不声称逐条穷尽 13800 行或全部毕法、课经、神煞"
+  quote_index: "精选短引覆盖 normalized 十二容器和关键冲突，不代表逐句引用覆盖"
+  scan_collation: "未完成"
+  model_blind_evaluation: "未执行"
+
+distillation_notes:
+  rebuilt_at: "2026-07-10"
+  distilled_by: "Codex using cangjie-skill constraints"
+  review_status: "static_evidence_and_adapter_v2_validated_pending_scan_collation_and_blind_interpretation_tests"

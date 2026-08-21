@@ -1,0 +1,200 @@
+schema_version: mingli-runtime-source-families-v1
+required_always_semantics: route_readiness_required_goal_may_select_subset
+routes:
+  bazi:
+    required_always:
+      - bazi/sanming-tonghui
+      - bazi/yuanhai-ziping
+      - bazi/ziping-zhenquan
+      - bazi/ditiansui-chanwei
+      - bazi/qiongtong-baojian
+    required_when_active_subprofile: {}
+    comparison_only: []
+    required_roles_by_pack:
+      bazi/sanming-tonghui: [methodology_rule]
+      bazi/yuanhai-ziping: [methodology_rule]
+      bazi/ziping-zhenquan: [methodology_rule]
+      bazi/ditiansui-chanwei: [methodology_rule]
+      bazi/qiongtong-baojian: [issue_specific_judgment_rule]
+  time-check:
+    required_always:
+      - bazi/sanming-tonghui
+      - bazi/yuanhai-ziping
+      - bazi/ziping-zhenquan
+      - bazi/ditiansui-chanwei
+      - bazi/qiongtong-baojian
+    required_when_active_subprofile: {}
+    comparison_only: []
+    required_roles_by_pack:
+      bazi/sanming-tonghui: [methodology_rule]
+      bazi/yuanhai-ziping: [methodology_rule]
+      bazi/ziping-zhenquan: [methodology_rule]
+      bazi/ditiansui-chanwei: [methodology_rule]
+      bazi/qiongtong-baojian: [issue_specific_judgment_rule]
+  fortune:
+    required_always:
+      - bazi/yuanhai-ziping
+      - bazi/ditiansui-chanwei
+      - bazi/qiongtong-baojian
+    required_when_active_subprofile: {}
+    comparison_only: []
+    required_roles_by_pack:
+      bazi/yuanhai-ziping: [methodology_rule]
+      bazi/ditiansui-chanwei: [methodology_rule]
+      bazi/qiongtong-baojian: [issue_specific_judgment_rule]
+  ziwei:
+    required_always:
+      - ziwei/ziwei-doushu-quanshu
+      - ziwei/taiwei-fu
+    required_when_active_subprofile: {}
+    comparison_only: []
+    required_roles_by_pack:
+      ziwei/ziwei-doushu-quanshu: [methodology_rule]
+      ziwei/taiwei-fu: [methodology_rule]
+  luming-nayin:
+    required_always:
+      - luming-nayin/li-xuzhong-mingshu
+      - luming-nayin/luoluzi-sanming
+      - luming-nayin/wuxing-jingji
+      - luming-nayin/lantai-miaoxuan
+    required_when_active_subprofile: {}
+    comparison_only: []
+    required_roles_by_pack:
+      luming-nayin/li-xuzhong-mingshu: [issue_specific_judgment_rule]
+      luming-nayin/luoluzi-sanming: [methodology_rule]
+      luming-nayin/wuxing-jingji: [methodology_rule]
+      luming-nayin/lantai-miaoxuan: [methodology_rule]
+  xingming:
+    required_always:
+      - xingming/guotian-jing
+      - xingming/xingming-suyuan
+      - xingming/xingxue-dacheng
+    required_when_active_subprofile: {}
+    comparison_only: []
+    required_roles_by_pack:
+      xingming/guotian-jing: [methodology_rule]
+      xingming/xingming-suyuan: [methodology_rule]
+      xingming/xingxue-dacheng: [methodology_rule]
+  liuyao:
+    required_always:
+      - divination/zengshan-buyi
+      - divination/bushi-zhengzong
+      - divination/huangjin-ce
+      - divination/huozhu-lin
+    required_when_active_subprofile: {}
+    comparison_only: []
+    required_roles_by_pack:
+      divination/zengshan-buyi: [casting_rule]
+      divination/bushi-zhengzong: [casting_rule]
+      divination/huangjin-ce: [methodology_rule]
+      divination/huozhu-lin: [methodology_rule]
+  meihua:
+    required_always:
+      - divination/meihua-yishu
+      - divination/zhouyi-zhezhong
+      - divination/huangji-jingshi
+    required_when_active_subprofile: {}
+    comparison_only: []
+    required_roles_by_pack:
+      divination/meihua-yishu: [methodology_rule]
+      divination/zhouyi-zhezhong: [methodology_rule]
+      divination/huangji-jingshi: [methodology_rule]
+  liuren:
+    required_always:
+      - san-shi/daliuren-daquan
+      - san-shi/liuren-zhiyin
+      - san-shi/liuren-miben
+    required_when_active_subprofile: {}
+    comparison_only: []
+    required_roles_by_pack:
+      san-shi/daliuren-daquan: [casting_rule, issue_specific_judgment_rule]
+      san-shi/liuren-zhiyin: [casting_rule, issue_specific_judgment_rule]
+      san-shi/liuren-miben: [issue_specific_judgment_rule, timing_rule]
+  qimen:
+    required_always:
+      - san-shi/qimen-dunjia-tongzhi
+      - san-shi/qimen-faqiao
+    required_when_active_subprofile: {}
+    comparison_only: []
+    required_roles_by_pack:
+      san-shi/qimen-dunjia-tongzhi: [issue_specific_judgment_rule]
+      san-shi/qimen-faqiao: [issue_specific_judgment_rule]
+  taiyi:
+    required_always:
+      - san-shi/taiyi-shenshu
+    required_when_active_subprofile: {}
+    comparison_only: []
+    required_roles_by_pack:
+      san-shi/taiyi-shenshu: [issue_specific_judgment_rule]
+  selection:
+    required_always:
+      - selection/xieji-bianfang-shu
+      - selection/xingli-kaoyuan
+    required_when_active_subprofile: {}
+    comparison_only:
+      - selection/yuqia-ji
+      - selection/donggong-zeri
+    required_roles_by_pack:
+      selection/xieji-bianfang-shu: [issue_specific_judgment_rule]
+      selection/xingli-kaoyuan: [methodology_rule]
+  fengshui:
+    required_always: []
+    required_when_active_subprofile:
+      form:
+        selection_mode: activated_rule_packs
+        packs:
+          - fengshui/zangfa-daozhang
+          - fengshui/dutian-baozhao-jing
+          - fengshui/qingnang-xu
+          - fengshui/zangshu
+          - fengshui/tianyu-jing
+          - fengshui/xuexin-fu
+          - fengshui/yangzhai-sanyao
+          - fengshui/yangzhai-shishu
+          - fengshui/qingnang-jing
+          - fengshui/hanlong-jing
+          - fengshui/shenshi-xuankong-xue
+          - fengshui/huangdi-zhaijing
+          - fengshui/rudi-yan-quanshu
+          - fengshui/yilong-jing
+          - fengshui/qingnang-aoyu
+          - fengshui/dili-bianzheng
+      liqi.bazhai:
+        selection_mode: activated_rule_packs
+        packs:
+          - fengshui/yangzhai-shishu
+          - fengshui/yangzhai-sanyao
+          - fengshui/huangdi-zhaijing
+    comparison_only: []
+    required_roles_by_pack:
+      fengshui/zangfa-daozhang: [methodology_rule]
+      fengshui/dutian-baozhao-jing: [methodology_rule]
+      fengshui/qingnang-xu: [methodology_rule]
+      fengshui/zangshu: [methodology_rule]
+      fengshui/tianyu-jing: [methodology_rule]
+      fengshui/xuexin-fu: [methodology_rule]
+      fengshui/yangzhai-sanyao: [methodology_rule]
+      fengshui/yangzhai-shishu: [methodology_rule]
+      fengshui/qingnang-jing: [methodology_rule]
+      fengshui/hanlong-jing: [methodology_rule]
+      fengshui/shenshi-xuankong-xue: [methodology_rule]
+      fengshui/huangdi-zhaijing: [methodology_rule]
+      fengshui/rudi-yan-quanshu: [methodology_rule]
+      fengshui/yilong-jing: [methodology_rule]
+      fengshui/qingnang-aoyu: [methodology_rule]
+      fengshui/dili-bianzheng: [methodology_rule]
+  physiognomy:
+    required_always: []
+    required_when_active_subprofile:
+      visible_observation:
+        selection_mode: activated_rule_packs
+        packs:
+          - physiognomy/liuzhuang-xiangfa
+          - physiognomy/shenxiang-quanbian
+          - physiognomy/mayi-shenxiang
+    comparison_only:
+      - physiognomy/bingjian
+    required_roles_by_pack:
+      physiognomy/liuzhuang-xiangfa: [methodology_rule]
+      physiognomy/shenxiang-quanbian: [terminology_only]
+      physiognomy/mayi-shenxiang: [terminology_only]

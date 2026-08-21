@@ -1,0 +1,981 @@
+schema_version: kintaiyi-taiyi-raw-v1
+source:
+  repository: https://github.com/kentang2017/kintaiyi
+  commit: 68892c6bfe3a9635ff4a19a5f14559fff1adf4ab
+  license: MIT
+  license_path: LICENSE
+  license_sha256: 098b60569fd0fa7dd7b320ec29c62d778ffe6f0d76107de061056e6f4475de24
+  implementation_path: src/kintaiyi/kintaiyi.py
+  implementation_sha256: 042f7118ebeb5f10e2464f55463e8bf35c4736eecef6e3816f97a1391ac65f5e
+  config_path: src/kintaiyi/config.py
+  config_sha256: c5766a6435c91c82bd6241cf73c7852325cd432a820d5c227887b1137050510e
+  role: raw engineering comparator only; never classical authority
+generator:
+  path: scripts/fixtures/kintaiyi_taiyi_fixture_generator.py
+  sha256: 067ca9e107116d9e1ef2e2a4999371c5287f1d18a5ef37d7de8fc0c522b32598
+  execution: AST literal projection; upstream package is never imported or executed
+projection_contract:
+  annual_method: 金镜年计阳遁
+  projection_kind: static source projection with literal tables and labelled derivations;
+    not pan() output
+  upstream_origins:
+    accumulated_year: Taiyi.accnum tndict[1] plus lunar year
+    bureau: Taiyi.kook annual modulus
+    taiyi_palace_literal: config.taiyi_pai via Taiyi.ty_gong; pan field 太乙
+    wenchang_position_literal: config.skyeyes_dict[陽] via Taiyi.skyeyes
+    shiji_position_literal: config.sf_list via Taiyi.sf
+    host_count_literal: config.find_cal yangcal row 0; annual Yang 立成
+    guest_count_literal: config.find_cal yangcal row 1; annual Yang 立成
+    fixed_count_literal: config.find_cal yangcal row 2; annual Yang 立成
+    jishen_mapping: derived by replaying Taiyi.__init__ jigod_map with the annual
+      branch
+  raw_to_canonical_mapping:
+    bureau: bureau
+    taiyi_palace_literal: taiyi
+    wenchang_position_literal: tianmu_position
+    shiji_position_literal: shiji
+    host_count_literal: host_count
+    guest_count_literal: guest_count
+    jishen_mapping: jishen
+  known_primary_source_differences:
+  - 30
+  - 44
+  - 66
+raw_cases_sha256: a128b4de6ca06d8374d5acfb87a534c9c3ff89d8c4a9237e35946ecb6ccc7b54
+raw_cases:
+- id: kintaiyi-raw-bureau-01
+  input:
+    lunar_year: 1900
+  raw:
+    accumulated_year: 1938457
+    bureau: 1
+    taiyi_palace_literal: 乾
+    wenchang_position_literal: 申
+    shiji_position_literal: 坤
+    host_count_literal: 7
+    guest_count_literal: 13
+    fixed_count_literal: 13
+    jishen_mapping: 寅
+- id: kintaiyi-raw-bureau-02
+  input:
+    lunar_year: 1901
+  raw:
+    accumulated_year: 1938458
+    bureau: 2
+    taiyi_palace_literal: 乾
+    wenchang_position_literal: 酉
+    shiji_position_literal: 戌
+    host_count_literal: 6
+    guest_count_literal: 1
+    fixed_count_literal: 1
+    jishen_mapping: 丑
+- id: kintaiyi-raw-bureau-03
+  input:
+    lunar_year: 1902
+  raw:
+    accumulated_year: 1938459
+    bureau: 3
+    taiyi_palace_literal: 乾
+    wenchang_position_literal: 戌
+    shiji_position_literal: 亥
+    host_count_literal: 1
+    guest_count_literal: 40
+    fixed_count_literal: 32
+    jishen_mapping: 子
+- id: kintaiyi-raw-bureau-04
+  input:
+    lunar_year: 1903
+  raw:
+    accumulated_year: 1938460
+    bureau: 4
+    taiyi_palace_literal: 午
+    wenchang_position_literal: 乾
+    shiji_position_literal: 丑
+    host_count_literal: 25
+    guest_count_literal: 17
+    fixed_count_literal: 10
+    jishen_mapping: 亥
+- id: kintaiyi-raw-bureau-05
+  input:
+    lunar_year: 1904
+  raw:
+    accumulated_year: 1938461
+    bureau: 5
+    taiyi_palace_literal: 午
+    wenchang_position_literal: 乾
+    shiji_position_literal: 寅
+    host_count_literal: 25
+    guest_count_literal: 14
+    fixed_count_literal: 1
+    jishen_mapping: 戌
+- id: kintaiyi-raw-bureau-06
+  input:
+    lunar_year: 1905
+  raw:
+    accumulated_year: 1938462
+    bureau: 6
+    taiyi_palace_literal: 午
+    wenchang_position_literal: 亥
+    shiji_position_literal: 辰
+    host_count_literal: 25
+    guest_count_literal: 10
+    fixed_count_literal: 12
+    jishen_mapping: 酉
+- id: kintaiyi-raw-bureau-07
+  input:
+    lunar_year: 1906
+  raw:
+    accumulated_year: 1938463
+    bureau: 7
+    taiyi_palace_literal: 艮
+    wenchang_position_literal: 子
+    shiji_position_literal: 巳
+    host_count_literal: 8
+    guest_count_literal: 25
+    fixed_count_literal: 9
+    jishen_mapping: 申
+- id: kintaiyi-raw-bureau-08
+  input:
+    lunar_year: 1907
+  raw:
+    accumulated_year: 1938464
+    bureau: 8
+    taiyi_palace_literal: 艮
+    wenchang_position_literal: 丑
+    shiji_position_literal: 坤
+    host_count_literal: 1
+    guest_count_literal: 22
+    fixed_count_literal: 3
+    jishen_mapping: 未
+- id: kintaiyi-raw-bureau-09
+  input:
+    lunar_year: 1908
+  raw:
+    accumulated_year: 1938465
+    bureau: 9
+    taiyi_palace_literal: 艮
+    wenchang_position_literal: 艮
+    shiji_position_literal: 酉
+    host_count_literal: 3
+    guest_count_literal: 15
+    fixed_count_literal: 33
+    jishen_mapping: 午
+- id: kintaiyi-raw-bureau-10
+  input:
+    lunar_year: 1909
+  raw:
+    accumulated_year: 1938466
+    bureau: 10
+    taiyi_palace_literal: 卯
+    wenchang_position_literal: 寅
+    shiji_position_literal: 乾
+    host_count_literal: 1
+    guest_count_literal: 12
+    fixed_count_literal: 25
+    jishen_mapping: 巳
+- id: kintaiyi-raw-bureau-11
+  input:
+    lunar_year: 1910
+  raw:
+    accumulated_year: 1938467
+    bureau: 11
+    taiyi_palace_literal: 卯
+    wenchang_position_literal: 卯
+    shiji_position_literal: 丑
+    host_count_literal: 4
+    guest_count_literal: 4
+    fixed_count_literal: 13
+    jishen_mapping: 辰
+- id: kintaiyi-raw-bureau-12
+  input:
+    lunar_year: 1911
+  raw:
+    accumulated_year: 1938468
+    bureau: 12
+    taiyi_palace_literal: 卯
+    wenchang_position_literal: 辰
+    shiji_position_literal: 寅
+    host_count_literal: 37
+    guest_count_literal: 1
+    fixed_count_literal: 4
+    jishen_mapping: 卯
+- id: kintaiyi-raw-bureau-13
+  input:
+    lunar_year: 1912
+  raw:
+    accumulated_year: 1938469
+    bureau: 13
+    taiyi_palace_literal: 酉
+    wenchang_position_literal: 巽
+    shiji_position_literal: 辰
+    host_count_literal: 18
+    guest_count_literal: 19
+    fixed_count_literal: 19
+    jishen_mapping: 寅
+- id: kintaiyi-raw-bureau-14
+  input:
+    lunar_year: 1913
+  raw:
+    accumulated_year: 1938470
+    bureau: 14
+    taiyi_palace_literal: 酉
+    wenchang_position_literal: 巳
+    shiji_position_literal: 午
+    host_count_literal: 10
+    guest_count_literal: 9
+    fixed_count_literal: 9
+    jishen_mapping: 丑
+- id: kintaiyi-raw-bureau-15
+  input:
+    lunar_year: 1914
+  raw:
+    accumulated_year: 1938471
+    bureau: 15
+    taiyi_palace_literal: 酉
+    wenchang_position_literal: 午
+    shiji_position_literal: 坤
+    host_count_literal: 9
+    guest_count_literal: 7
+    fixed_count_literal: 6
+    jishen_mapping: 子
+- id: kintaiyi-raw-bureau-16
+  input:
+    lunar_year: 1915
+  raw:
+    accumulated_year: 1938472
+    bureau: 16
+    taiyi_palace_literal: 坤
+    wenchang_position_literal: 未
+    shiji_position_literal: 酉
+    host_count_literal: 1
+    guest_count_literal: 33
+    fixed_count_literal: 26
+    jishen_mapping: 亥
+- id: kintaiyi-raw-bureau-17
+  input:
+    lunar_year: 1916
+  raw:
+    accumulated_year: 1938473
+    bureau: 17
+    taiyi_palace_literal: 坤
+    wenchang_position_literal: 坤
+    shiji_position_literal: 亥
+    host_count_literal: 7
+    guest_count_literal: 27
+    fixed_count_literal: 16
+    jishen_mapping: 戌
+- id: kintaiyi-raw-bureau-18
+  input:
+    lunar_year: 1917
+  raw:
+    accumulated_year: 1938474
+    bureau: 18
+    taiyi_palace_literal: 坤
+    wenchang_position_literal: 坤
+    shiji_position_literal: 子
+    host_count_literal: 7
+    guest_count_literal: 26
+    fixed_count_literal: 11
+    jishen_mapping: 酉
+- id: kintaiyi-raw-bureau-19
+  input:
+    lunar_year: 1918
+  raw:
+    accumulated_year: 1938475
+    bureau: 19
+    taiyi_palace_literal: 子
+    wenchang_position_literal: 申
+    shiji_position_literal: 艮
+    host_count_literal: 8
+    guest_count_literal: 32
+    fixed_count_literal: 14
+    jishen_mapping: 申
+- id: kintaiyi-raw-bureau-20
+  input:
+    lunar_year: 1919
+  raw:
+    accumulated_year: 1938476
+    bureau: 20
+    taiyi_palace_literal: 子
+    wenchang_position_literal: 酉
+    shiji_position_literal: 辰
+    host_count_literal: 7
+    guest_count_literal: 26
+    fixed_count_literal: 2
+    jishen_mapping: 未
+- id: kintaiyi-raw-bureau-21
+  input:
+    lunar_year: 1920
+  raw:
+    accumulated_year: 1938477
+    bureau: 21
+    taiyi_palace_literal: 子
+    wenchang_position_literal: 戌
+    shiji_position_literal: 巳
+    host_count_literal: 2
+    guest_count_literal: 17
+    fixed_count_literal: 33
+    jishen_mapping: 午
+- id: kintaiyi-raw-bureau-22
+  input:
+    lunar_year: 1921
+  raw:
+    accumulated_year: 1938478
+    bureau: 22
+    taiyi_palace_literal: 巽
+    wenchang_position_literal: 乾
+    shiji_position_literal: 未
+    host_count_literal: 16
+    guest_count_literal: 30
+    fixed_count_literal: 1
+    jishen_mapping: 巳
+- id: kintaiyi-raw-bureau-23
+  input:
+    lunar_year: 1922
+  raw:
+    accumulated_year: 1938479
+    bureau: 23
+    taiyi_palace_literal: 巽
+    wenchang_position_literal: 乾
+    shiji_position_literal: 申
+    host_count_literal: 16
+    guest_count_literal: 23
+    fixed_count_literal: 32
+    jishen_mapping: 辰
+- id: kintaiyi-raw-bureau-24
+  input:
+    lunar_year: 1923
+  raw:
+    accumulated_year: 1938480
+    bureau: 24
+    taiyi_palace_literal: 巽
+    wenchang_position_literal: 亥
+    shiji_position_literal: 戌
+    host_count_literal: 16
+    guest_count_literal: 17
+    fixed_count_literal: 23
+    jishen_mapping: 卯
+- id: kintaiyi-raw-bureau-25
+  input:
+    lunar_year: 1924
+  raw:
+    accumulated_year: 1938481
+    bureau: 25
+    taiyi_palace_literal: 乾
+    wenchang_position_literal: 子
+    shiji_position_literal: 亥
+    host_count_literal: 39
+    guest_count_literal: 40
+    fixed_count_literal: 40
+    jishen_mapping: 寅
+- id: kintaiyi-raw-bureau-26
+  input:
+    lunar_year: 1925
+  raw:
+    accumulated_year: 1938482
+    bureau: 26
+    taiyi_palace_literal: 乾
+    wenchang_position_literal: 丑
+    shiji_position_literal: 艮
+    host_count_literal: 32
+    guest_count_literal: 31
+    fixed_count_literal: 31
+    jishen_mapping: 丑
+- id: kintaiyi-raw-bureau-27
+  input:
+    lunar_year: 1926
+  raw:
+    accumulated_year: 1938483
+    bureau: 27
+    taiyi_palace_literal: 乾
+    wenchang_position_literal: 艮
+    shiji_position_literal: 卯
+    host_count_literal: 31
+    guest_count_literal: 28
+    fixed_count_literal: 31
+    jishen_mapping: 子
+- id: kintaiyi-raw-bureau-28
+  input:
+    lunar_year: 1927
+  raw:
+    accumulated_year: 1938484
+    bureau: 28
+    taiyi_palace_literal: 午
+    wenchang_position_literal: 寅
+    shiji_position_literal: 巽
+    host_count_literal: 14
+    guest_count_literal: 9
+    fixed_count_literal: 38
+    jishen_mapping: 亥
+- id: kintaiyi-raw-bureau-29
+  input:
+    lunar_year: 1928
+  raw:
+    accumulated_year: 1938485
+    bureau: 29
+    taiyi_palace_literal: 午
+    wenchang_position_literal: 卯
+    shiji_position_literal: 未
+    host_count_literal: 13
+    guest_count_literal: 39
+    fixed_count_literal: 26
+    jishen_mapping: 戌
+- id: kintaiyi-raw-bureau-30
+  input:
+    lunar_year: 1929
+  raw:
+    accumulated_year: 1938486
+    bureau: 30
+    taiyi_palace_literal: 午
+    wenchang_position_literal: 辰
+    shiji_position_literal: 丑
+    host_count_literal: 10
+    guest_count_literal: 32
+    fixed_count_literal: 17
+    jishen_mapping: 酉
+- id: kintaiyi-raw-bureau-31
+  input:
+    lunar_year: 1930
+  raw:
+    accumulated_year: 1938487
+    bureau: 31
+    taiyi_palace_literal: 艮
+    wenchang_position_literal: 巽
+    shiji_position_literal: 戌
+    host_count_literal: 33
+    guest_count_literal: 10
+    fixed_count_literal: 34
+    jishen_mapping: 申
+- id: kintaiyi-raw-bureau-32
+  input:
+    lunar_year: 1931
+  raw:
+    accumulated_year: 1938488
+    bureau: 32
+    taiyi_palace_literal: 艮
+    wenchang_position_literal: 巳
+    shiji_position_literal: 子
+    host_count_literal: 25
+    guest_count_literal: 8
+    fixed_count_literal: 24
+    jishen_mapping: 未
+- id: kintaiyi-raw-bureau-33
+  input:
+    lunar_year: 1932
+  raw:
+    accumulated_year: 1938489
+    bureau: 33
+    taiyi_palace_literal: 艮
+    wenchang_position_literal: 午
+    shiji_position_literal: 艮
+    host_count_literal: 24
+    guest_count_literal: 3
+    fixed_count_literal: 15
+    jishen_mapping: 午
+- id: kintaiyi-raw-bureau-34
+  input:
+    lunar_year: 1933
+  raw:
+    accumulated_year: 1938490
+    bureau: 34
+    taiyi_palace_literal: 卯
+    wenchang_position_literal: 未
+    shiji_position_literal: 卯
+    host_count_literal: 26
+    guest_count_literal: 4
+    fixed_count_literal: 11
+    jishen_mapping: 巳
+- id: kintaiyi-raw-bureau-35
+  input:
+    lunar_year: 1934
+  raw:
+    accumulated_year: 1938491
+    bureau: 35
+    taiyi_palace_literal: 卯
+    wenchang_position_literal: 坤
+    shiji_position_literal: 巳
+    host_count_literal: 25
+    guest_count_literal: 28
+    fixed_count_literal: 1
+    jishen_mapping: 辰
+- id: kintaiyi-raw-bureau-36
+  input:
+    lunar_year: 1935
+  raw:
+    accumulated_year: 1938492
+    bureau: 36
+    taiyi_palace_literal: 卯
+    wenchang_position_literal: 坤
+    shiji_position_literal: 午
+    host_count_literal: 25
+    guest_count_literal: 27
+    fixed_count_literal: 36
+    jishen_mapping: 卯
+- id: kintaiyi-raw-bureau-37
+  input:
+    lunar_year: 1936
+  raw:
+    accumulated_year: 1938493
+    bureau: 37
+    taiyi_palace_literal: 酉
+    wenchang_position_literal: 申
+    shiji_position_literal: 坤
+    host_count_literal: 1
+    guest_count_literal: 7
+    fixed_count_literal: 7
+    jishen_mapping: 寅
+- id: kintaiyi-raw-bureau-38
+  input:
+    lunar_year: 1937
+  raw:
+    accumulated_year: 1938494
+    bureau: 38
+    taiyi_palace_literal: 酉
+    wenchang_position_literal: 酉
+    shiji_position_literal: 戌
+    host_count_literal: 6
+    guest_count_literal: 35
+    fixed_count_literal: 35
+    jishen_mapping: 丑
+- id: kintaiyi-raw-bureau-39
+  input:
+    lunar_year: 1938
+  raw:
+    accumulated_year: 1938495
+    bureau: 39
+    taiyi_palace_literal: 酉
+    wenchang_position_literal: 戌
+    shiji_position_literal: 亥
+    host_count_literal: 35
+    guest_count_literal: 34
+    fixed_count_literal: 26
+    jishen_mapping: 子
+- id: kintaiyi-raw-bureau-40
+  input:
+    lunar_year: 1939
+  raw:
+    accumulated_year: 1938496
+    bureau: 40
+    taiyi_palace_literal: 坤
+    wenchang_position_literal: 乾
+    shiji_position_literal: 丑
+    host_count_literal: 27
+    guest_count_literal: 19
+    fixed_count_literal: 12
+    jishen_mapping: 亥
+- id: kintaiyi-raw-bureau-41
+  input:
+    lunar_year: 1940
+  raw:
+    accumulated_year: 1938497
+    bureau: 41
+    taiyi_palace_literal: 坤
+    wenchang_position_literal: 乾
+    shiji_position_literal: 寅
+    host_count_literal: 27
+    guest_count_literal: 16
+    fixed_count_literal: 3
+    jishen_mapping: 戌
+- id: kintaiyi-raw-bureau-42
+  input:
+    lunar_year: 1941
+  raw:
+    accumulated_year: 1938498
+    bureau: 42
+    taiyi_palace_literal: 坤
+    wenchang_position_literal: 亥
+    shiji_position_literal: 辰
+    host_count_literal: 27
+    guest_count_literal: 12
+    fixed_count_literal: 34
+    jishen_mapping: 酉
+- id: kintaiyi-raw-bureau-43
+  input:
+    lunar_year: 1942
+  raw:
+    accumulated_year: 1938499
+    bureau: 43
+    taiyi_palace_literal: 子
+    wenchang_position_literal: 子
+    shiji_position_literal: 巳
+    host_count_literal: 8
+    guest_count_literal: 17
+    fixed_count_literal: 1
+    jishen_mapping: 申
+- id: kintaiyi-raw-bureau-44
+  input:
+    lunar_year: 1943
+  raw:
+    accumulated_year: 1938500
+    bureau: 44
+    taiyi_palace_literal: 子
+    wenchang_position_literal: 丑
+    shiji_position_literal: 坤
+    host_count_literal: 23
+    guest_count_literal: 14
+    fixed_count_literal: 32
+    jishen_mapping: 未
+- id: kintaiyi-raw-bureau-45
+  input:
+    lunar_year: 1944
+  raw:
+    accumulated_year: 1938501
+    bureau: 45
+    taiyi_palace_literal: 子
+    wenchang_position_literal: 艮
+    shiji_position_literal: 酉
+    host_count_literal: 32
+    guest_count_literal: 7
+    fixed_count_literal: 25
+    jishen_mapping: 午
+- id: kintaiyi-raw-bureau-46
+  input:
+    lunar_year: 1945
+  raw:
+    accumulated_year: 1938502
+    bureau: 46
+    taiyi_palace_literal: 巽
+    wenchang_position_literal: 寅
+    shiji_position_literal: 乾
+    host_count_literal: 5
+    guest_count_literal: 16
+    fixed_count_literal: 29
+    jishen_mapping: 巳
+- id: kintaiyi-raw-bureau-47
+  input:
+    lunar_year: 1946
+  raw:
+    accumulated_year: 1938503
+    bureau: 47
+    taiyi_palace_literal: 巽
+    wenchang_position_literal: 卯
+    shiji_position_literal: 丑
+    host_count_literal: 4
+    guest_count_literal: 8
+    fixed_count_literal: 17
+    jishen_mapping: 辰
+- id: kintaiyi-raw-bureau-48
+  input:
+    lunar_year: 1947
+  raw:
+    accumulated_year: 1938504
+    bureau: 48
+    taiyi_palace_literal: 巽
+    wenchang_position_literal: 辰
+    shiji_position_literal: 寅
+    host_count_literal: 1
+    guest_count_literal: 5
+    fixed_count_literal: 8
+    jishen_mapping: 卯
+- id: kintaiyi-raw-bureau-49
+  input:
+    lunar_year: 1948
+  raw:
+    accumulated_year: 1938505
+    bureau: 49
+    taiyi_palace_literal: 乾
+    wenchang_position_literal: 巽
+    shiji_position_literal: 辰
+    host_count_literal: 24
+    guest_count_literal: 25
+    fixed_count_literal: 25
+    jishen_mapping: 寅
+- id: kintaiyi-raw-bureau-50
+  input:
+    lunar_year: 1949
+  raw:
+    accumulated_year: 1938506
+    bureau: 50
+    taiyi_palace_literal: 乾
+    wenchang_position_literal: 巳
+    shiji_position_literal: 午
+    host_count_literal: 16
+    guest_count_literal: 15
+    fixed_count_literal: 15
+    jishen_mapping: 丑
+- id: kintaiyi-raw-bureau-51
+  input:
+    lunar_year: 1950
+  raw:
+    accumulated_year: 1938507
+    bureau: 51
+    taiyi_palace_literal: 乾
+    wenchang_position_literal: 午
+    shiji_position_literal: 坤
+    host_count_literal: 15
+    guest_count_literal: 13
+    fixed_count_literal: 6
+    jishen_mapping: 子
+- id: kintaiyi-raw-bureau-52
+  input:
+    lunar_year: 1951
+  raw:
+    accumulated_year: 1938508
+    bureau: 52
+    taiyi_palace_literal: 午
+    wenchang_position_literal: 未
+    shiji_position_literal: 酉
+    host_count_literal: 39
+    guest_count_literal: 31
+    fixed_count_literal: 24
+    jishen_mapping: 亥
+- id: kintaiyi-raw-bureau-53
+  input:
+    lunar_year: 1952
+  raw:
+    accumulated_year: 1938509
+    bureau: 53
+    taiyi_palace_literal: 午
+    wenchang_position_literal: 坤
+    shiji_position_literal: 亥
+    host_count_literal: 38
+    guest_count_literal: 25
+    fixed_count_literal: 14
+    jishen_mapping: 戌
+- id: kintaiyi-raw-bureau-54
+  input:
+    lunar_year: 1953
+  raw:
+    accumulated_year: 1938510
+    bureau: 54
+    taiyi_palace_literal: 午
+    wenchang_position_literal: 坤
+    shiji_position_literal: 子
+    host_count_literal: 38
+    guest_count_literal: 24
+    fixed_count_literal: 9
+    jishen_mapping: 酉
+- id: kintaiyi-raw-bureau-55
+  input:
+    lunar_year: 1954
+  raw:
+    accumulated_year: 1938511
+    bureau: 55
+    taiyi_palace_literal: 艮
+    wenchang_position_literal: 申
+    shiji_position_literal: 艮
+    host_count_literal: 16
+    guest_count_literal: 3
+    fixed_count_literal: 22
+    jishen_mapping: 申
+- id: kintaiyi-raw-bureau-56
+  input:
+    lunar_year: 1955
+  raw:
+    accumulated_year: 1938512
+    bureau: 56
+    taiyi_palace_literal: 艮
+    wenchang_position_literal: 酉
+    shiji_position_literal: 辰
+    host_count_literal: 15
+    guest_count_literal: 34
+    fixed_count_literal: 10
+    jishen_mapping: 未
+- id: kintaiyi-raw-bureau-57
+  input:
+    lunar_year: 1956
+  raw:
+    accumulated_year: 1938513
+    bureau: 57
+    taiyi_palace_literal: 艮
+    wenchang_position_literal: 戌
+    shiji_position_literal: 巳
+    host_count_literal: 10
+    guest_count_literal: 25
+    fixed_count_literal: 10
+    jishen_mapping: 午
+- id: kintaiyi-raw-bureau-58
+  input:
+    lunar_year: 1957
+  raw:
+    accumulated_year: 1938514
+    bureau: 58
+    taiyi_palace_literal: 卯
+    wenchang_position_literal: 乾
+    shiji_position_literal: 未
+    host_count_literal: 12
+    guest_count_literal: 26
+    fixed_count_literal: 27
+    jishen_mapping: 巳
+- id: kintaiyi-raw-bureau-59
+  input:
+    lunar_year: 1958
+  raw:
+    accumulated_year: 1938515
+    bureau: 59
+    taiyi_palace_literal: 卯
+    wenchang_position_literal: 乾
+    shiji_position_literal: 申
+    host_count_literal: 12
+    guest_count_literal: 19
+    fixed_count_literal: 28
+    jishen_mapping: 辰
+- id: kintaiyi-raw-bureau-60
+  input:
+    lunar_year: 1959
+  raw:
+    accumulated_year: 1938516
+    bureau: 60
+    taiyi_palace_literal: 卯
+    wenchang_position_literal: 亥
+    shiji_position_literal: 戌
+    host_count_literal: 12
+    guest_count_literal: 13
+    fixed_count_literal: 19
+    jishen_mapping: 卯
+- id: kintaiyi-raw-bureau-61
+  input:
+    lunar_year: 1960
+  raw:
+    accumulated_year: 1938517
+    bureau: 61
+    taiyi_palace_literal: 酉
+    wenchang_position_literal: 子
+    shiji_position_literal: 亥
+    host_count_literal: 33
+    guest_count_literal: 34
+    fixed_count_literal: 34
+    jishen_mapping: 寅
+- id: kintaiyi-raw-bureau-62
+  input:
+    lunar_year: 1961
+  raw:
+    accumulated_year: 1938518
+    bureau: 62
+    taiyi_palace_literal: 酉
+    wenchang_position_literal: 丑
+    shiji_position_literal: 艮
+    host_count_literal: 26
+    guest_count_literal: 25
+    fixed_count_literal: 25
+    jishen_mapping: 丑
+- id: kintaiyi-raw-bureau-63
+  input:
+    lunar_year: 1962
+  raw:
+    accumulated_year: 1938519
+    bureau: 63
+    taiyi_palace_literal: 酉
+    wenchang_position_literal: 艮
+    shiji_position_literal: 卯
+    host_count_literal: 25
+    guest_count_literal: 22
+    fixed_count_literal: 18
+    jishen_mapping: 子
+- id: kintaiyi-raw-bureau-64
+  input:
+    lunar_year: 1963
+  raw:
+    accumulated_year: 1938520
+    bureau: 64
+    taiyi_palace_literal: 坤
+    wenchang_position_literal: 寅
+    shiji_position_literal: 巽
+    host_count_literal: 16
+    guest_count_literal: 11
+    fixed_count_literal: 7
+    jishen_mapping: 亥
+- id: kintaiyi-raw-bureau-65
+  input:
+    lunar_year: 1964
+  raw:
+    accumulated_year: 1938521
+    bureau: 65
+    taiyi_palace_literal: 坤
+    wenchang_position_literal: 卯
+    shiji_position_literal: 未
+    host_count_literal: 15
+    guest_count_literal: 1
+    fixed_count_literal: 28
+    jishen_mapping: 戌
+- id: kintaiyi-raw-bureau-66
+  input:
+    lunar_year: 1965
+  raw:
+    accumulated_year: 1938522
+    bureau: 66
+    taiyi_palace_literal: 坤
+    wenchang_position_literal: 辰
+    shiji_position_literal: 丑
+    host_count_literal: 12
+    guest_count_literal: 34
+    fixed_count_literal: 19
+    jishen_mapping: 酉
+- id: kintaiyi-raw-bureau-67
+  input:
+    lunar_year: 1966
+  raw:
+    accumulated_year: 1938523
+    bureau: 67
+    taiyi_palace_literal: 子
+    wenchang_position_literal: 巽
+    shiji_position_literal: 戌
+    host_count_literal: 25
+    guest_count_literal: 2
+    fixed_count_literal: 26
+    jishen_mapping: 申
+- id: kintaiyi-raw-bureau-68
+  input:
+    lunar_year: 1967
+  raw:
+    accumulated_year: 1938524
+    bureau: 68
+    taiyi_palace_literal: 子
+    wenchang_position_literal: 巳
+    shiji_position_literal: 子
+    host_count_literal: 17
+    guest_count_literal: 8
+    fixed_count_literal: 16
+    jishen_mapping: 未
+- id: kintaiyi-raw-bureau-69
+  input:
+    lunar_year: 1968
+  raw:
+    accumulated_year: 1938525
+    bureau: 69
+    taiyi_palace_literal: 子
+    wenchang_position_literal: 午
+    shiji_position_literal: 艮
+    host_count_literal: 16
+    guest_count_literal: 32
+    fixed_count_literal: 7
+    jishen_mapping: 午
+- id: kintaiyi-raw-bureau-70
+  input:
+    lunar_year: 1969
+  raw:
+    accumulated_year: 1938526
+    bureau: 70
+    taiyi_palace_literal: 巽
+    wenchang_position_literal: 未
+    shiji_position_literal: 卯
+    host_count_literal: 30
+    guest_count_literal: 4
+    fixed_count_literal: 15
+    jishen_mapping: 巳
+- id: kintaiyi-raw-bureau-71
+  input:
+    lunar_year: 1970
+  raw:
+    accumulated_year: 1938527
+    bureau: 71
+    taiyi_palace_literal: 巽
+    wenchang_position_literal: 坤
+    shiji_position_literal: 巳
+    host_count_literal: 29
+    guest_count_literal: 32
+    fixed_count_literal: 5
+    jishen_mapping: 辰
+- id: kintaiyi-raw-bureau-72
+  input:
+    lunar_year: 1971
+  raw:
+    accumulated_year: 1938528
+    bureau: 72
+    taiyi_palace_literal: 巽
+    wenchang_position_literal: 坤
+    shiji_position_literal: 午
+    host_count_literal: 29
+    guest_count_literal: 31
+    fixed_count_literal: 9
+    jishen_mapping: 卯

@@ -1,0 +1,580 @@
+schema_version: mingli-fengshui-fixtures-v51
+fixture_contract_version: 2.0.0
+purpose: >-
+  Independently authored compass, door-origin Bazhai, source-scoped observation,
+  quality, incomplete-floorplan, conflict, and school-isolation fixtures for
+  Task 7L. Complete cases contain executable inputs; the audit never synthesizes
+  them from a provider-owned base spec.
+oracle_policy:
+  provider_code_used_to_generate_expected: false
+  evaluator_path: scripts/fengshui_fixture_reference.py
+  evaluator_sha256: b6227e464506f80787922345097accf49b36d1a93a0ffe646dce8c4cb27c4384
+  forbidden_imports: [reading_engine.fengshui]
+  compass_expectations: manually_frozen_from_versioned_half_open_table
+  bazhai_expectations: transcribed_from_door-origin_yangzhai_mnemonics
+  image_expectations: human_authored_structured_annotations
+
+fixture_templates:
+  image_good: &image_good
+    {readability: good, lighting: good, scale: known, viewpoint: top_down, occlusion: 0.0}
+  ground_good: &ground_good
+    {readability: good, lighting: good, scale: approximate, viewpoint: ground_level, occlusion: 0.0}
+  text_good: &text_good
+    {readability: good, lighting: not_applicable, scale: caller_described, viewpoint: caller_description, occlusion: 0.0}
+  floorplan_asset: &floorplan_asset
+    {asset_id: floorplan-1, media_type: image, role: floorplan, sha256: 8dfc990e2621a9f4a2a53d149e444503bf8fea80c7fdc84f7aacff382de72d4f}
+  road_water_asset: &road_water_asset
+    {asset_id: site-1, media_type: image, role: site_plan, sha256: 7aac8ef32fe8bedeafe1b98b73ef36dd92b72872b2af3a3a483e44b1a8d4f4c4}
+  terrain_asset: &terrain_asset
+    {asset_id: terrain-1, media_type: image, role: site_photo, sha256: f48e3e6ec57a129b5deb323f26bbde7c3b5e864b533bdff652942f2d97d0133d}
+  burial_asset: &burial_asset
+    {asset_id: burial-1, media_type: image, role: cultural_study_site, sha256: 27580eaba061e31dc17ed95f8dc99cff7c9fa1211c226297876bbb5671a4a210}
+  compass_south: &compass_south
+    {measurement_id: compass-1, facing_degrees: 180.0, method: handheld_compass, north_reference: "true", correction_degrees: 0.0, uncertainty_degrees: 0.5, quality: good, source_type: user_measurement, source_ref: measured-building-axis}
+  compass_east: &compass_east
+    {measurement_id: compass-1, facing_degrees: 90.0, method: handheld_compass, north_reference: "true", correction_degrees: 0.0, uncertainty_degrees: 0.5, quality: good, source_type: user_measurement, source_ref: measured-building-axis}
+  compass_northwest: &compass_northwest
+    {measurement_id: compass-1, facing_degrees: 315.0, method: handheld_compass, north_reference: "true", correction_degrees: 0.0, uncertainty_degrees: 0.5, quality: good, source_type: user_measurement, source_ref: measured-building-axis}
+  entry_south: &entry_south
+    node_id: entry
+    kind: entrance
+    direction_measurement:
+      {measurement_id: entry-direction, facing_degrees: 180.0, method: handheld_compass, north_reference: "true", correction_degrees: 0.0, uncertainty_degrees: 0.5, quality: good, source_type: user_measurement, source_ref: measured-entry-axis}
+  entry_east: &entry_east
+    node_id: entry
+    kind: entrance
+    direction_measurement:
+      {measurement_id: entry-direction, facing_degrees: 90.0, method: handheld_compass, north_reference: "true", correction_degrees: 0.0, uncertainty_degrees: 0.5, quality: good, source_type: user_measurement, source_ref: measured-entry-axis}
+  entry_northwest: &entry_northwest
+    node_id: entry
+    kind: entrance
+    direction_measurement:
+      {measurement_id: entry-direction, facing_degrees: 315.0, method: handheld_compass, north_reference: "true", correction_degrees: 0.0, uncertainty_degrees: 0.5, quality: good, source_type: user_measurement, source_ref: measured-entry-axis}
+
+asset_manifest:
+  - manifest_id: FS-A01
+    path: references/fixtures/assets/fengshui/residential-floorplan.svg
+    byte_length: 450
+    sha256: 8dfc990e2621a9f4a2a53d149e444503bf8fea80c7fdc84f7aacff382de72d4f
+    media_type: image/svg+xml
+    role: floorplan
+    license: project_authored_test_fixture
+    annotations_sha256: 5f4fd053b9c9d4feed277e2a43b0433b7c1fafcc5dea00cd47ba4c8efa9d5f10
+    annotations:
+      - {annotation_id: floorplan-entrance, kind: entrance, region_anchor: {kind: normalized_bbox, x: 0.42, y: 0.78, width: 0.16, height: 0.18}, value: {relation: observed_entrance}}
+      - {annotation_id: floorplan-layout, kind: layout, region_anchor: {kind: normalized_bbox, x: 0.12, y: 0.12, width: 0.76, height: 0.72}, value: {relation: observed_layout}}
+      - {annotation_id: floorplan-opening, kind: opening, region_anchor: {kind: normalized_bbox, x: 0.44, y: 0.48, width: 0.12, height: 0.18}, value: {relation: observed_opening}}
+      - {annotation_id: floorplan-enclosure, kind: enclosure, region_anchor: {kind: normalized_bbox, x: 0.1, y: 0.1, width: 0.8, height: 0.78}, value: {relation: observed_enclosure}}
+  - manifest_id: FS-A02
+    path: references/fixtures/assets/fengshui/road-water-site.svg
+    byte_length: 492
+    sha256: 7aac8ef32fe8bedeafe1b98b73ef36dd92b72872b2af3a3a483e44b1a8d4f4c4
+    media_type: image/svg+xml
+    role: site_plan
+    license: project_authored_test_fixture
+    annotations_sha256: 0eea842aaf01dd243e93707116ef91c0e738ed2232779d5167c31f00cf903ed6
+    annotations:
+      - {annotation_id: site-road, kind: road, region_anchor: {kind: normalized_bbox, x: 0.05, y: 0.12, width: 0.88, height: 0.76}, value: {relation: axis_toward_entrance}}
+      - {annotation_id: site-water, kind: water, region_anchor: {kind: normalized_bbox, x: 0.02, y: 0.18, width: 0.94, height: 0.42}, value: {relation: observed_water}}
+  - manifest_id: FS-A03
+    path: references/fixtures/assets/fengshui/terrain-ridge-site.svg
+    byte_length: 461
+    sha256: f48e3e6ec57a129b5deb323f26bbde7c3b5e864b533bdff652942f2d97d0133d
+    media_type: image/svg+xml
+    role: site_photo
+    license: project_authored_test_fixture
+    annotations_sha256: 88295d9c2a5aa07d0c12947cc7cbcfcc776f9c9978e76f4d54109d25211c6e88
+    annotations:
+      - {annotation_id: terrain-highland, kind: terrain, region_anchor: {kind: normalized_bbox, x: 0.02, y: 0.16, width: 0.96, height: 0.7}, value: {relation: highland_plainland_classification}}
+      - {annotation_id: terrain-hall, kind: terrain, region_anchor: {kind: normalized_bbox, x: 0.28, y: 0.58, width: 0.46, height: 0.28}, value: {relation: sheltered_open_hall}}
+      - {annotation_id: terrain-water-boundary, kind: water, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.76, width: 0.5, height: 0.18}, value: {relation: water_boundary_and_wind_shelter_observed}}
+      - {annotation_id: terrain-water-mouth, kind: water, region_anchor: {kind: normalized_bbox, x: 0.26, y: 0.75, width: 0.48, height: 0.2}, value: {relation: water_mouth_and_hall_observed}}
+      - {annotation_id: terrain-water-lock, kind: water, region_anchor: {kind: normalized_bbox, x: 0.24, y: 0.74, width: 0.52, height: 0.2}, value: {relation: interlocking_water_pattern}}
+      - {annotation_id: terrain-ridge, kind: ridge, region_anchor: {kind: normalized_bbox, x: 0.06, y: 0.16, width: 0.88, height: 0.48}, value: {relation: observed_ridge}}
+  - manifest_id: FS-A04
+    path: references/fixtures/assets/fengshui/burial-cultural-site.svg
+    byte_length: 537
+    sha256: 27580eaba061e31dc17ed95f8dc99cff7c9fa1211c226297876bbb5671a4a210
+    media_type: image/svg+xml
+    role: cultural_study_site
+    license: project_authored_test_fixture
+    annotations_sha256: 8a132b4c8a561bba8cda4a63c5b4d457063f24a4d66d2fcf34e766c0cf439f96
+    annotations:
+      - {annotation_id: burial-terrain, kind: terrain, region_anchor: {kind: normalized_bbox, x: 0.02, y: 0.25, width: 0.96, height: 0.58}, value: {relation: water_boundary_and_wind_shelter_observed}}
+      - {annotation_id: burial-water, kind: water, region_anchor: {kind: normalized_bbox, x: 0.08, y: 0.72, width: 0.84, height: 0.2}, value: {relation: water_mouth_and_hall_observed}}
+      - {annotation_id: burial-ridge, kind: ridge, region_anchor: {kind: normalized_bbox, x: 0.03, y: 0.24, width: 0.94, height: 0.42}, value: {relation: observed_ridge}}
+      - {annotation_id: burial-opening, kind: opening, region_anchor: {kind: normalized_bbox, x: 0.36, y: 0.5, width: 0.28, height: 0.28}, value: {relation: observed_opening}}
+
+compass_reference_fixtures:
+  - {id: FS-M01, facing_degrees: 0.0, facing_mountain: 子, sitting_mountain: 午}
+  - {id: FS-M02, facing_degrees: 15.0, facing_mountain: 癸, sitting_mountain: 丁}
+  - {id: FS-M03, facing_degrees: 30.0, facing_mountain: 丑, sitting_mountain: 未}
+  - {id: FS-M04, facing_degrees: 45.0, facing_mountain: 艮, sitting_mountain: 坤}
+  - {id: FS-M05, facing_degrees: 60.0, facing_mountain: 寅, sitting_mountain: 申}
+  - {id: FS-M06, facing_degrees: 75.0, facing_mountain: 甲, sitting_mountain: 庚}
+  - {id: FS-M07, facing_degrees: 90.0, facing_mountain: 卯, sitting_mountain: 酉}
+  - {id: FS-M08, facing_degrees: 105.0, facing_mountain: 乙, sitting_mountain: 辛}
+  - {id: FS-M09, facing_degrees: 120.0, facing_mountain: 辰, sitting_mountain: 戌}
+  - {id: FS-M10, facing_degrees: 135.0, facing_mountain: 巽, sitting_mountain: 乾}
+  - {id: FS-M11, facing_degrees: 150.0, facing_mountain: 巳, sitting_mountain: 亥}
+  - {id: FS-M12, facing_degrees: 165.0, facing_mountain: 丙, sitting_mountain: 壬}
+  - {id: FS-M13, facing_degrees: 180.0, facing_mountain: 午, sitting_mountain: 子}
+  - {id: FS-M14, facing_degrees: 195.0, facing_mountain: 丁, sitting_mountain: 癸}
+  - {id: FS-M15, facing_degrees: 210.0, facing_mountain: 未, sitting_mountain: 丑}
+  - {id: FS-M16, facing_degrees: 225.0, facing_mountain: 坤, sitting_mountain: 艮}
+  - {id: FS-M17, facing_degrees: 240.0, facing_mountain: 申, sitting_mountain: 寅}
+  - {id: FS-M18, facing_degrees: 255.0, facing_mountain: 庚, sitting_mountain: 甲}
+  - {id: FS-M19, facing_degrees: 270.0, facing_mountain: 酉, sitting_mountain: 卯}
+  - {id: FS-M20, facing_degrees: 285.0, facing_mountain: 辛, sitting_mountain: 乙}
+  - {id: FS-M21, facing_degrees: 300.0, facing_mountain: 戌, sitting_mountain: 辰}
+  - {id: FS-M22, facing_degrees: 315.0, facing_mountain: 乾, sitting_mountain: 巽}
+  - {id: FS-M23, facing_degrees: 330.0, facing_mountain: 亥, sitting_mountain: 巳}
+  - {id: FS-M24, facing_degrees: 345.0, facing_mountain: 壬, sitting_mountain: 丙}
+
+bazhai_source_examples:
+  - {house_gua: 乾, expected_star_map: {乾: 伏位, 坎: 六煞, 艮: 天乙, 震: 五鬼, 巽: 祸害, 离: 绝命, 坤: 延年, 兑: 生气}}
+  - {house_gua: 坎, expected_star_map: {乾: 六煞, 坎: 伏位, 艮: 五鬼, 震: 天乙, 巽: 生气, 离: 延年, 坤: 绝命, 兑: 祸害}}
+  - {house_gua: 艮, expected_star_map: {乾: 天乙, 坎: 五鬼, 艮: 伏位, 震: 六煞, 巽: 绝命, 离: 祸害, 坤: 生气, 兑: 延年}}
+  - {house_gua: 震, expected_star_map: {乾: 五鬼, 坎: 天乙, 艮: 六煞, 震: 伏位, 巽: 延年, 离: 生气, 坤: 祸害, 兑: 绝命}}
+  - {house_gua: 巽, expected_star_map: {乾: 祸害, 坎: 生气, 艮: 绝命, 震: 延年, 巽: 伏位, 离: 天乙, 坤: 五鬼, 兑: 六煞}}
+  - {house_gua: 离, expected_star_map: {乾: 绝命, 坎: 延年, 艮: 祸害, 震: 生气, 巽: 天乙, 离: 伏位, 坤: 六煞, 兑: 五鬼}}
+  - {house_gua: 坤, expected_star_map: {乾: 延年, 坎: 绝命, 艮: 生气, 震: 祸害, 巽: 五鬼, 离: 六煞, 坤: 伏位, 兑: 天乙}}
+  - {house_gua: 兑, expected_star_map: {乾: 生气, 坎: 祸害, 艮: 延年, 震: 绝命, 巽: 六煞, 离: 五鬼, 坤: 天乙, 兑: 伏位}}
+
+complete_observation_fixtures:
+  - id: FS-O01
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: residential
+        subprofiles: [form]
+        requested_form_variables: [road]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*road_water_asset]
+        observations:
+          - {observation_id: road-1, subprofile: form, kind: road, source_type: image_transcription, asset_id: site-1, region_anchor: {kind: normalized_bbox, x: 0.05, y: 0.12, width: 0.88, height: 0.76}, value: {relation: axis_toward_entrance}, quality: *image_good, uncertainty: 0.1}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/yangzhai-shishu#YZS-R003]}
+  - id: FS-O02
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: residential
+        subprofiles: [form]
+        requested_form_variables: [water]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*road_water_asset]
+        observations:
+          - {observation_id: water-1, subprofile: form, kind: water, source_type: image_transcription, asset_id: site-1, region_anchor: {kind: normalized_bbox, x: 0.02, y: 0.18, width: 0.94, height: 0.42}, value: {relation: observed_water}, quality: *image_good, uncertainty: 0.1}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/huangdi-zhaijing#HDZJ-R006, fengshui/yangzhai-shishu#YZS-R001]}
+  - id: FS-O03
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: residential
+        subprofiles: [form]
+        requested_form_variables: [entrance]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*floorplan_asset]
+        observations:
+          - {observation_id: entrance-1, subprofile: form, kind: entrance, source_type: image_transcription, asset_id: floorplan-1, region_anchor: {kind: normalized_bbox, x: 0.42, y: 0.78, width: 0.16, height: 0.18}, value: {relation: observed_entrance}, quality: *image_good, uncertainty: 0.1}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/yangzhai-shishu#YZS-R014]}
+  - id: FS-O04
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: residential
+        subprofiles: [form]
+        requested_form_variables: [layout]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*floorplan_asset]
+        observations:
+          - {observation_id: layout-1, subprofile: form, kind: layout, source_type: image_transcription, asset_id: floorplan-1, region_anchor: {kind: normalized_bbox, x: 0.12, y: 0.12, width: 0.76, height: 0.72}, value: {relation: observed_layout}, quality: *image_good, uncertainty: 0.1}
+        layout_graph:
+          nodes: [{node_id: room-1, kind: room, observation_id: layout-1}]
+          edges: []
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/huangdi-zhaijing#HDZJ-R006, fengshui/yangzhai-shishu#YZS-R014]}
+  - id: FS-O05
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: residential
+        subprofiles: [form]
+        requested_form_variables: [opening]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*floorplan_asset]
+        observations:
+          - {observation_id: opening-1, subprofile: form, kind: opening, source_type: image_transcription, asset_id: floorplan-1, region_anchor: {kind: normalized_bbox, x: 0.44, y: 0.48, width: 0.12, height: 0.18}, value: {relation: observed_opening}, quality: *image_good, uncertainty: 0.15}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: []}
+  - id: FS-O06
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: residential
+        subprofiles: [form]
+        requested_form_variables: [enclosure]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*floorplan_asset]
+        observations:
+          - {observation_id: enclosure-1, subprofile: form, kind: enclosure, source_type: image_transcription, asset_id: floorplan-1, region_anchor: {kind: normalized_bbox, x: 0.1, y: 0.1, width: 0.8, height: 0.78}, value: {relation: observed_enclosure}, quality: *image_good, uncertainty: 0.15}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: []}
+  - id: FS-O07
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: site_general
+        subprofiles: [form]
+        requested_form_variables: [terrain]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*terrain_asset]
+        observations:
+          - {observation_id: terrain-1, subprofile: form, kind: terrain, source_type: image_transcription, asset_id: terrain-1, region_anchor: {kind: normalized_bbox, x: 0.02, y: 0.16, width: 0.96, height: 0.7}, value: {relation: highland_plainland_classification}, quality: *ground_good, uncertainty: 0.2}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/hanlong-jing#R-01]}
+  - id: FS-O08
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: site_general
+        subprofiles: [form]
+        requested_form_variables: [terrain]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*terrain_asset]
+        observations:
+          - {observation_id: hall-1, subprofile: form, kind: terrain, source_type: image_transcription, asset_id: terrain-1, region_anchor: {kind: normalized_bbox, x: 0.28, y: 0.58, width: 0.46, height: 0.28}, value: {relation: sheltered_open_hall}, quality: *ground_good, uncertainty: 0.2}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/xuexin-fu#XXF-R01, fengshui/yilong-jing#R-05]}
+  - id: FS-O09
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: site_general
+        subprofiles: [form]
+        requested_form_variables: [water]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*terrain_asset]
+        observations:
+          - {observation_id: water-boundary-1, subprofile: form, kind: water, source_type: image_transcription, asset_id: terrain-1, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.76, width: 0.5, height: 0.18}, value: {relation: water_boundary_and_wind_shelter_observed}, quality: *ground_good, uncertainty: 0.2}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/zangshu#R-02]}
+  - id: FS-O10
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: site_general
+        subprofiles: [form]
+        requested_form_variables: [water]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*terrain_asset]
+        observations:
+          - {observation_id: water-mouth-1, subprofile: form, kind: water, source_type: image_transcription, asset_id: terrain-1, region_anchor: {kind: normalized_bbox, x: 0.26, y: 0.75, width: 0.48, height: 0.2}, value: {relation: water_mouth_and_hall_observed}, quality: *ground_good, uncertainty: 0.2}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/xuexin-fu#XXF-R01]}
+  - id: FS-O11
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: site_general
+        subprofiles: [form]
+        requested_form_variables: [water]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*terrain_asset]
+        observations:
+          - {observation_id: water-lock-1, subprofile: form, kind: water, source_type: image_transcription, asset_id: terrain-1, region_anchor: {kind: normalized_bbox, x: 0.24, y: 0.74, width: 0.52, height: 0.2}, value: {relation: interlocking_water_pattern}, quality: *ground_good, uncertainty: 0.2}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/xuexin-fu#XXF-R04]}
+  - id: FS-O12
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: site_general
+        subprofiles: [form]
+        requested_form_variables: [ridge]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*terrain_asset]
+        observations:
+          - {observation_id: ridge-1, subprofile: form, kind: ridge, source_type: image_transcription, asset_id: terrain-1, region_anchor: {kind: normalized_bbox, x: 0.06, y: 0.16, width: 0.88, height: 0.48}, value: {relation: observed_ridge}, quality: *ground_good, uncertainty: 0.25}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: []}
+  - id: FS-O13
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: burial_cultural_study
+        subprofiles: [form]
+        requested_form_variables: [terrain]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*burial_asset]
+        observations:
+          - {observation_id: burial-terrain-1, subprofile: form, kind: terrain, source_type: image_transcription, asset_id: burial-1, region_anchor: {kind: normalized_bbox, x: 0.02, y: 0.25, width: 0.96, height: 0.58}, value: {relation: water_boundary_and_wind_shelter_observed}, quality: *ground_good, uncertainty: 0.2}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/zangshu#R-02]}
+  - id: FS-O14
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: burial_cultural_study
+        subprofiles: [form]
+        requested_form_variables: [water]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*burial_asset]
+        observations:
+          - {observation_id: burial-water-1, subprofile: form, kind: water, source_type: image_transcription, asset_id: burial-1, region_anchor: {kind: normalized_bbox, x: 0.08, y: 0.72, width: 0.84, height: 0.2}, value: {relation: water_mouth_and_hall_observed}, quality: *ground_good, uncertainty: 0.2}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/xuexin-fu#XXF-R01]}
+  - id: FS-O15
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: burial_cultural_study
+        subprofiles: [form]
+        requested_form_variables: [ridge, opening]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*burial_asset]
+        observations:
+          - {observation_id: burial-ridge-1, subprofile: form, kind: ridge, source_type: image_transcription, asset_id: burial-1, region_anchor: {kind: normalized_bbox, x: 0.03, y: 0.24, width: 0.94, height: 0.42}, value: {relation: observed_ridge}, quality: *ground_good, uncertainty: 0.2}
+          - {observation_id: burial-opening-1, subprofile: form, kind: opening, source_type: image_transcription, asset_id: burial-1, region_anchor: {kind: normalized_bbox, x: 0.36, y: 0.5, width: 0.28, height: 0.28}, value: {relation: observed_opening}, quality: *image_good, uncertainty: 0.2}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: []}
+  - id: FS-O16
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: residential
+        subprofiles: [form]
+        requested_form_variables: [road, entrance]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: []
+        observations:
+          - {observation_id: text-road-1, subprofile: form, kind: road, source_type: user_text, source_ref: caller-road-description, value: {relation: axis_toward_entrance}, quality: *text_good, uncertainty: 0.2}
+          - {observation_id: text-entry-1, subprofile: form, kind: entrance, source_type: user_text, source_ref: caller-entry-description, value: {relation: observed_entrance}, quality: *text_good, uncertainty: 0.2}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/yangzhai-shishu#YZS-R003, fengshui/yangzhai-shishu#YZS-R014]}
+  - id: FS-O17
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: site_general
+        subprofiles: [form]
+        requested_form_variables: [terrain, water]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: []
+        observations:
+          - {observation_id: file-terrain-1, subprofile: form, kind: terrain, source_type: user_file, source_ref: survey-notes-a, value: {relation: highland_plainland_classification}, quality: *text_good, uncertainty: 0.15}
+          - {observation_id: file-water-1, subprofile: form, kind: water, source_type: user_file, source_ref: survey-notes-b, value: {relation: interlocking_water_pattern}, quality: *text_good, uncertainty: 0.15}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/hanlong-jing#R-01, fengshui/xuexin-fu#XXF-R04]}
+  - id: FS-O18
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: residential
+        subprofiles: [form, liqi]
+        requested_form_variables: [road]
+        liqi: {selected_school: bazhai, origin_basis: door_trigram, origin_node_id: entry}
+        compass_measurements: [*compass_south]
+        declared_orientation: {facing_mountain: 午, sitting_mountain: 子}
+        building: {completion_year: 2023, occupation_year: 2024, source_type: user_text, source_ref: owner-record}
+        assets: [*road_water_asset]
+        observations:
+          - {observation_id: road-18, subprofile: form, kind: road, source_type: image_transcription, asset_id: site-1, region_anchor: {kind: normalized_bbox, x: 0.05, y: 0.12, width: 0.88, height: 0.76}, value: {relation: axis_toward_entrance}, quality: *image_good, uncertainty: 0.1}
+        layout_graph: {nodes: [*entry_south], edges: []}
+    expected: {facing_mountain: 午, sitting_mountain: 子, form_status: complete, origin_gua: 离, origin_group: east_four, active_source_rule_ids: [fengshui/huangdi-zhaijing#HDZJ-R002, fengshui/yangzhai-sanyao#YZS-R005, fengshui/yangzhai-shishu#YZS-R003, fengshui/yangzhai-shishu#YZS-R007]}
+  - id: FS-O19
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: residential
+        subprofiles: [form, liqi]
+        requested_form_variables: [layout]
+        liqi: {selected_school: bazhai, origin_basis: door_trigram, origin_node_id: entry}
+        compass_measurements: [*compass_east]
+        declared_orientation: {facing_mountain: 卯, sitting_mountain: 酉}
+        building: {completion_year: 2024, occupation_year: 2024, supplied_period: 9, source_type: user_text, source_ref: owner-record}
+        assets: [*floorplan_asset]
+        observations:
+          - {observation_id: layout-19, subprofile: form, kind: layout, source_type: image_transcription, asset_id: floorplan-1, region_anchor: {kind: normalized_bbox, x: 0.12, y: 0.12, width: 0.76, height: 0.72}, value: {relation: observed_layout}, quality: *image_good, uncertainty: 0.1}
+        layout_graph:
+          nodes:
+            - *entry_east
+            - {node_id: hall, kind: room, observation_id: layout-19}
+            - node_id: inner-door
+              kind: door
+              direction_measurement: {measurement_id: inner-door-direction, facing_degrees: 90.0, method: handheld_compass, north_reference: "true", correction_degrees: 0.0, uncertainty_degrees: 0.5, quality: good, source_type: user_measurement, source_ref: measured-inner-door-axis}
+            - {node_id: room-2, kind: room, observation_id: layout-19}
+          edges:
+            - {from: entry, to: hall, boundary: open, observation_id: layout-19}
+            - {from: hall, to: room-2, boundary: separating_wall_with_door, door_id: inner-door, observation_id: layout-19}
+    expected: {facing_mountain: 卯, sitting_mountain: 酉, form_status: complete, origin_gua: 震, origin_group: east_four, active_source_rule_ids: [fengshui/huangdi-zhaijing#HDZJ-R002, fengshui/huangdi-zhaijing#HDZJ-R006, fengshui/yangzhai-sanyao#YZS-R005, fengshui/yangzhai-shishu#YZS-R006, fengshui/yangzhai-shishu#YZS-R007, fengshui/yangzhai-shishu#YZS-R014]}
+  - id: FS-O20
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: residential
+        subprofiles: [form, liqi]
+        requested_form_variables: [road, water]
+        liqi: {selected_school: bazhai, origin_basis: door_trigram, origin_node_id: entry}
+        compass_measurements:
+          - *compass_northwest
+          - {measurement_id: compass-2, facing_degrees: 90.0, method: handheld_compass, north_reference: "true", correction_degrees: 0.0, uncertainty_degrees: 0.5, quality: good, source_type: user_measurement, source_ref: superseded-second-survey}
+        confirmed_measurement_id: compass-1
+        declared_orientation: {facing_mountain: 乾, sitting_mountain: 巽}
+        building: {completion_year: 2024, occupation_year: 2025, supplied_period: 9, source_type: user_file, source_ref: completion-certificate}
+        assets: [*road_water_asset, *floorplan_asset]
+        observations:
+          - {observation_id: road-20, subprofile: form, kind: road, source_type: image_transcription, asset_id: site-1, region_anchor: {kind: normalized_bbox, x: 0.05, y: 0.12, width: 0.88, height: 0.76}, value: {relation: axis_toward_entrance}, quality: *image_good, uncertainty: 0.1}
+          - {observation_id: water-20, subprofile: form, kind: water, source_type: image_transcription, asset_id: site-1, region_anchor: {kind: normalized_bbox, x: 0.02, y: 0.18, width: 0.94, height: 0.42}, value: {relation: observed_water}, quality: *image_good, uncertainty: 0.1}
+        layout_graph: {nodes: [*entry_northwest], edges: []}
+    expected: {facing_mountain: 乾, sitting_mountain: 巽, form_status: complete, origin_gua: 乾, origin_group: west_four, active_source_rule_ids: [fengshui/huangdi-zhaijing#HDZJ-R002, fengshui/huangdi-zhaijing#HDZJ-R006, fengshui/yangzhai-sanyao#YZS-R005, fengshui/yangzhai-shishu#YZS-R001, fengshui/yangzhai-shishu#YZS-R003, fengshui/yangzhai-shishu#YZS-R007]}
+  - id: FS-O21
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: site_general
+        subprofiles: [form]
+        requested_form_variables: [terrain, water]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*terrain_asset]
+        observations:
+          - {observation_id: hall-shelter-21, subprofile: form, kind: terrain, source_type: image_transcription, asset_id: terrain-1, region_anchor: {kind: normalized_bbox, x: 0.28, y: 0.58, width: 0.46, height: 0.28}, value: {relation: sheltered_open_hall}, quality: *ground_good, uncertainty: 0.2}
+          - {observation_id: water-shelter-21, subprofile: form, kind: water, source_type: image_transcription, asset_id: terrain-1, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.76, width: 0.5, height: 0.18}, value: {relation: water_boundary_and_wind_shelter_observed}, quality: *ground_good, uncertainty: 0.2}
+        layout_graph: {nodes: [], edges: []}
+    expected: {facing_mountain: null, sitting_mountain: null, form_status: complete, origin_gua: null, origin_group: null, active_source_rule_ids: [fengshui/xuexin-fu#XXF-R01, fengshui/yilong-jing#R-05, fengshui/zangshu#R-02]}
+
+special_observation_fixtures:
+  - id: FS-PARTIAL-01
+    category: partial
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: residential
+        subprofiles: [form]
+        requested_form_variables: [road, entrance, layout]
+        liqi: {}
+        compass_measurements: []
+        declared_orientation: {}
+        building: {}
+        assets: [*road_water_asset]
+        observations:
+          - {observation_id: partial-road, subprofile: form, kind: road, source_type: image_transcription, asset_id: site-1, region_anchor: {kind: normalized_bbox, x: 0.05, y: 0.12, width: 0.88, height: 0.76}, value: {relation: axis_toward_entrance}, quality: *image_good, uncertainty: 0.1}
+        layout_graph: {nodes: [], edges: []}
+    expected: {form_status: partial, critical_missing: [form_observation:entrance, form_observation:layout]}
+  - id: FS-CONFLICT-01
+    category: conflict
+    input:
+      fengshui_spec:
+        schema_version: mingli-fengshui-input-v1
+        property_scope: residential
+        subprofiles: [liqi]
+        requested_form_variables: []
+        liqi: {selected_school: bazhai, origin_basis: door_trigram, origin_node_id: entry}
+        compass_measurements:
+          - *compass_south
+          - {measurement_id: compass-2, facing_degrees: 90.0, method: handheld_compass, north_reference: "true", correction_degrees: 0.0, uncertainty_degrees: 0.5, quality: good, source_type: user_measurement, source_ref: second-survey}
+        declared_orientation: {}
+        building: {}
+        assets: []
+        observations: []
+        layout_graph: {nodes: [*entry_south], edges: []}
+    expected: {compass_status: conflict, liqi_status: blocked, critical_missing: [confirmed_facing_measurement]}
+  - id: FS-LOW-LIGHT
+    category: low_quality
+    mutation: {quality_field: lighting, value: low}
+    expected: {observation_status: uncertain_observation, critical_missing: [form_observation:road]}
+  - id: FS-LOW-SCALE
+    category: low_quality
+    mutation: {quality_field: scale, value: unknown}
+    expected: {observation_status: uncertain_observation, critical_missing: [form_observation:road]}
+  - id: FS-LOW-VIEW
+    category: low_quality
+    mutation: {quality_field: viewpoint, value: oblique}
+    expected: {observation_status: uncertain_observation, critical_missing: [form_observation:road]}
+  - id: FS-SCHOOL-01
+    category: school_isolation
+    input_case: FS-O19
+    expected: {selected_school: bazhai, xuankong_chart: absent}
+  - id: FS-SCOPE-01
+    category: invalid_scope_school
+    mutation: {base_case: FS-O18, property_scope: burial_cultural_study}
+    expected_error: property_scope
+
+hashseed_spec:
+  schema_version: mingli-fengshui-input-v1
+  property_scope: residential
+  subprofiles: [form]
+  requested_form_variables: [layout]
+  liqi: {}
+  compass_measurements: []
+  declared_orientation: {}
+  building: {}
+  assets: []
+  observations:
+    - observation_id: text-layout-1
+      subprofile: form
+      kind: layout
+      source_type: user_text
+      source_ref: user-description-1
+      value: {relation: observed_layout}
+      quality: *text_good
+      uncertainty: 0.2
+  layout_graph:
+    nodes: [{node_id: room-1, kind: room, observation_id: text-layout-1}]
+    edges: []

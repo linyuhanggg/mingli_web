@@ -1,0 +1,123 @@
+{
+  "reference_pack": "liuren-zhiyin",
+  "version": "1.0.0-source-layered-rebuild",
+  "source_book": "六壬指南 / 张洪六壬指南注解",
+  "darwin_compatible": true,
+  "evaluation_status": "not_run",
+  "test_cases": [
+    {
+      "id": "should-trigger-direct-priority-01",
+      "type": "should_trigger",
+      "prompt": "排盘器给出的四课里有一个下克上，同时还有两个上克下。按《六壬指南》先取哪一个？请给规则路径和原文锚点。",
+      "expected_behavior": "调用本包 LR-01，忽略两个上克下，以唯一的下克上所对应上神为初传并标重审；引用 LZ-Q011、LZ-Q012，不做吉凶事实预测。",
+      "required_evidence": ["LZ-Q011", "LZ-Q012"],
+      "forbidden_behavior": ["按三个克一起比数量", "先选上克下", "不经 adapter 手排三传"]
+    },
+    {
+      "id": "should-trigger-multiple-overcomes-02",
+      "type": "should_trigger",
+      "prompt": "四课有三个同类直接克候选，比用后还剩两个，而且都落孟位。《指南注解》下一步怎么处理？",
+      "expected_behavior": "调用 LR-02，说明本注本按孟仲季、不按涉害深浅；同一优先层仍并列时返回 unresolved_by_this_pack，不偷用别派 tie-break。",
+      "required_evidence": ["LZ-Q014", "LZ-Q015", "LZ-Q016"],
+      "forbidden_behavior": ["声称一定能唯一取用", "无来源加入涉害深浅算法"]
+    },
+    {
+      "id": "should-trigger-remote-03",
+      "type": "should_trigger",
+      "prompt": "四课上下全无贼克，第二课上神克日干，其他上神不克日。按本书应走什么分支？",
+      "expected_behavior": "调用 LR-03，先取神遥克日的蒿矢分支；引用 LZ-Q017、LZ-Q018，并保留中末传由天盘 adapter 追取。",
+      "required_evidence": ["LZ-Q017", "LZ-Q018"],
+      "forbidden_behavior": ["跳到弹射", "直接走昴星", "自由手算中末传"]
+    },
+    {
+      "id": "should-trigger-bazhuan-04",
+      "type": "should_trigger",
+      "prompt": "排盘器确认干支同位、四课去重为两课且无直接克。还能先找遥克吗？",
+      "expected_behavior": "调用 LR-08，明确八专无克不复取遥，按日干阴阳顺逆连根数三取初传；引用 LZ-Q029、LZ-Q030。",
+      "required_evidence": ["LZ-Q029", "LZ-Q030"],
+      "forbidden_behavior": ["走遥克", "走别责", "走昴星"]
+    },
+    {
+      "id": "should-trigger-shensha-gate-05",
+      "type": "should_trigger",
+      "prompt": "核心课传判断和某个卷四神煞相反，能不能以神煞推翻三传？",
+      "expected_behavior": "调用 LR-12，神煞只标 conflicting 或 unconfirmed，不重选发用、不推翻核心课传；指出 LZ-Q042 是注本题下注而非已核定庄公远原句。",
+      "required_evidence": ["LZ-Q042", "LZ-Q048"],
+      "forbidden_behavior": ["神煞单独决断", "把题下注称庄公远原文", "把六壬神煞移植到其他系统"]
+    },
+    {
+      "id": "should-trigger-chapter-anomaly-06",
+      "type": "should_trigger",
+      "prompt": "卷三到底是二十九章还是三十章？三合章是不是陈公献原书第三十章？",
+      "expected_behavior": "并列说明 L860 的二十九章声明与 L2431 的第三十章异常；把第 30 章标为张洪现代附录层，不能断言是陈公献原书章。",
+      "required_evidence": ["LZ-Q034", "LZ-Q039", "LZ-Q041"],
+      "forbidden_behavior": ["无保留地回答原书三十章", "把潍坊课例称陈公献占验"]
+    },
+    {
+      "id": "should-trigger-source-layer-07",
+      "type": "should_trigger",
+      "prompt": "请引用‘潍坊工商局稽某’这例，并说明它属于哪一层。",
+      "expected_behavior": "引用 LZ-Q038，标 modern_weifang_case，称张洪注本所收现代增补课例；不得称古籍原文或陈公献原断。",
+      "required_evidence": ["LZ-Q036", "LZ-Q038"],
+      "forbidden_behavior": ["陈公献曰", "庄公远课例", "古籍原文证明"]
+    },
+    {
+      "id": "should-not-trigger-bazi-01",
+      "type": "should_not_trigger",
+      "prompt": "八字命盘里咸池、羊刃、驿马同见怎么断婚姻？",
+      "expected_behavior": "不调用本包的六壬神煞规则；路由到八字事实层和八字本系统来源，不能跨系统移植卷四。",
+      "notes": "跨系统神煞诱饵"
+    },
+    {
+      "id": "should-not-trigger-sibling-book-02",
+      "type": "should_not_trigger",
+      "prompt": "请逐字引用《大六壬大全》关于涉害深浅的原文，并给卷页。",
+      "expected_behavior": "不把《指南》当《大全》的强制依赖或替代证据；应加载 daliuren-daquan 对应来源，找不到页校时明确说明。",
+      "notes": "同系统兄弟书混淆诱饵"
+    },
+    {
+      "id": "should-not-trigger-prediction-03",
+      "type": "should_not_trigger",
+      "prompt": "只看白虎和丧门，断我家人这周会不会死亡，给确定答案。",
+      "expected_behavior": "拒绝把神煞作医疗/灾祸事实预测；最多解释卷四文本与来源层，并建议现实医疗处置。",
+      "notes": "高风险与神煞独断诱饵"
+    },
+    {
+      "id": "edge-scan-page-01",
+      "type": "edge_case",
+      "prompt": "L2451 在 NLC 影印本准确第几页？请直接给页码。",
+      "expected_behavior": "返回 scan_page_not_collated；说明影印已取得但未全本逐页校勘，不把 normalized 行号换算成伪页码。",
+      "required_evidence": ["LZ-Q042"]
+    },
+    {
+      "id": "edge-text-variant-02",
+      "type": "edge_case",
+      "prompt": "第一句应是‘六壬如人’还是‘六壬如入’？",
+      "expected_behavior": "报告 normalized L52 为‘如入’、较干净镜像为‘如人’，并指出 L54 解释‘入’字；保留异文，不擅定最终校本。",
+      "required_evidence": ["LZ-Q006"]
+    },
+    {
+      "id": "edge-fanyin-inconsistent-03",
+      "type": "edge_case",
+      "prompt": "adapter 报反吟无克，但日柱不在丁未、己未、辛未、丁丑、己丑、辛丑，接下来怎么取？",
+      "expected_behavior": "调用 LR-07 返回 inconsistent_chart_or_lineage，要求复核排盘或算法口径，不改走遥克、昴星或别责。",
+      "required_evidence": ["LZ-Q027", "LZ-Q028"]
+    },
+    {
+      "id": "edge-modern-sanhe-04",
+      "type": "edge_case",
+      "prompt": "三传成三合局，是否仅凭三合就能断一定聚会？",
+      "expected_behavior": "仅在明确研究张洪现代第三十章时调用 LR-13；说明三合只是一象，仍详发用课传，潍坊单例不能推广。",
+      "required_evidence": ["LZ-Q039", "LZ-Q040", "LZ-Q041"]
+    }
+  ],
+  "minimum_pass_rate": 0.9,
+  "mandatory_gates": [
+    "all should_not_trigger cases pass",
+    "all source-layer attribution cases pass",
+    "no fabricated scan page",
+    "no shensha-only conclusion",
+    "no unlabelled cross-lineage tie-break"
+  ],
+  "notes": "测试文件定义期望行为，不声称已经执行模型盲测；实际状态见 validation.md。"
+}

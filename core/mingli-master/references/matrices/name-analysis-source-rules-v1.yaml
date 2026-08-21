@@ -1,0 +1,159 @@
+schema_version: mingli-name-analysis-source-rules-v1
+updated_at: "2026-08-21"
+runtime_binding: not_in_runtime
+provider_status: contract_only_no_provider
+method_id: wuyin-xingshi-from-wuxing-jingji-v1
+excluded_methods:
+  - kangxi_stroke_count
+  - wuge_sancai_numerology
+  - personality_or_luck_verdict
+audit_policy:
+  research_source_root: external
+  research_sources_distribution: local_research_only
+  release_material: distilled_rules_provenance_and_checksums_only
+  note: >-
+    v1 freezes surname 五音 identity from 《五行精纪》卷九《辨五音訣》and the five
+    五音姓氏 tables. Full table OCR collation is not claimed. Independent
+    samples pin only the first unambiguous surname of each table.
+    康熙笔画、五格剖象、三才数理吉凶 are out of scope until a sourced dictionary
+    pack exists. This matrix is not a Provider and is not in the signed Runtime.
+
+source_registry:
+  wuxing_jingji_wuyin: &wuxing_jingji_wuyin
+    title: 五行精纪
+    edition_or_recension: 本地 normalized 通行整理本；卷九五音姓氏表有录入噪声，v1 只钉可独立核验的首姓
+    normalized_path: references/fulltext/luming-nayin/wuxing-jingji/fulltext.md
+    sha256: 32e0581bcba3b1b6df2b8e0c48db135a4a6f27e7dca2f010e0a818ab6ba9e08b
+    anchor: L2951-L2991 辨五音訣与五音姓氏
+    exact_excerpt: 舌音為徵，齒為商，牙角，喉宮，唇羽，方能五姓類中，用見圖達者盡規章。
+    material: surname 五音 classification and five tone tables; no natal verdict
+    license_status: ancient text public domain; normalized source local research only
+
+tone_to_element:
+  宫: earth
+  商: metal
+  角: wood
+  徵: fire
+  羽: water
+
+rules:
+  - id: name-analysis/wuxing-jingji#NA-WX-01
+    title: 五音发音分类
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*wuxing_jingji_wuyin]
+    quote_index: WX-Q231
+    source_anchor: fulltext.md#L2953
+    exact_excerpt: 舌音為徵，齒為商，牙角，喉宮，唇羽，方能五姓類中，用見圖達者盡規章。
+    statement: >-
+      舌音为徵、齿为商、牙为角、喉为宫、唇为羽。这是五姓分类口诀，不是吉凶断语。
+    boundary:
+      - do not emit luck, wealth, or personality from the articulatory classes
+      - articulatory class alone never assigns a surname; table lookup is required
+
+  - id: name-analysis/wuxing-jingji#NA-WX-01b
+    title: 五音贵旺月令标记
+    status: verified
+    evidence_role: identity_marker_only
+    primary_sources: [*wuxing_jingji_wuyin]
+    source_anchor: fulltext.md#L2955
+    exact_excerpt: 商音為金，旺在申酉，德在辰巳，角音屬木，旺在寅卯，德在戌亥，徵音屬火，旺在巳午，德在醜寅，宮羽音屬水土，旺在亥子，德在未申
+    statement: >-
+      五音各有旺支与德支。v1 只输出这些支标记，hard_verdict 必须为 null。
+    seasonal_markers:
+      商: {element: metal, wang_branches: [申, 酉], de_branches: [辰, 巳]}
+      角: {element: wood, wang_branches: [寅, 卯], de_branches: [戌, 亥]}
+      徵: {element: fire, wang_branches: [巳, 午], de_branches: [丑, 寅]}
+      宫: {element: earth, wang_branches: [亥, 子], de_branches: [未, 申]}
+      羽: {element: water, wang_branches: [亥, 子], de_branches: [未, 申]}
+    boundary:
+      - markers are identity facts, not 贵盛 or 有禄 conclusions
+      - yangzhai 鸣吠/安葬 procedures are a source_gap in v1
+
+  - id: name-analysis/wuxing-jingji#NA-WX-02
+    title: 角音姓氏首条
+    status: verified
+    evidence_role: lookup_fact
+    tone: 角
+    primary_sources: [*wuxing_jingji_wuyin]
+    quote_index: WX-Q232
+    source_anchor: fulltext.md#L2961
+    exact_excerpt: 趙天水週汝南朱沛國孔魯國曹諦郡華武陵金彭城
+    lookup:
+      趙: 角
+      赵: 角
+    boundary:
+      - only the pinned surnames are exact; other 角音 rows remain unmatched until collated
+
+  - id: name-analysis/wuxing-jingji#NA-WX-03
+    title: 徵音姓氏首条
+    status: verified
+    evidence_role: lookup_fact
+    tone: 徵
+    primary_sources: [*wuxing_jingji_wuyin]
+    quote_index: WX-Q233
+    source_anchor: fulltext.md#L2979
+    exact_excerpt: 錢彭城姜天水羅豫章季渤海
+    lookup:
+      錢: 徵
+      钱: 徵
+    boundary:
+      - remaining 徵音 rows contain OCR duplication and are not frozen as exact matches
+
+  - id: name-analysis/wuxing-jingji#NA-WX-04
+    title: 宫音姓氏首条
+    status: verified
+    evidence_role: lookup_fact
+    tone: 宫
+    primary_sources: [*wuxing_jingji_wuyin]
+    quote_index: WX-Q234
+    source_anchor: fulltext.md#L2983
+    exact_excerpt: 孫樂安範高平倪千乘曲臨海農雁門居渤海仰汝南
+    lookup:
+      孫: 宫
+      孙: 宫
+    boundary:
+      - only the pinned surnames are exact
+
+  - id: name-analysis/wuxing-jingji#NA-WX-05
+    title: 商音姓氏首条
+    status: verified
+    evidence_role: lookup_fact
+    tone: 商
+    primary_sources: [*wuxing_jingji_wuyin]
+    quote_index: WX-Q235
+    source_anchor: fulltext.md#L2987
+    exact_excerpt: 王太原栢魏郡
+    lookup:
+      王: 商
+    boundary:
+      - only the pinned surnames are exact
+
+  - id: name-analysis/wuxing-jingji#NA-WX-06
+    title: 羽音姓氏首条
+    status: verified
+    evidence_role: lookup_fact
+    tone: 羽
+    primary_sources: [*wuxing_jingji_wuyin]
+    quote_index: WX-Q236
+    source_anchor: fulltext.md#L2991
+    exact_excerpt: 吴（渤海）鲁（扶风）卞（济阳）
+    lookup:
+      吴: 羽
+      吳: 羽
+    boundary:
+      - only the pinned surnames are exact
+
+fail_closed:
+  - unmatched surname yields match_status unmatched and tone null
+  - given names have no v1 五音 table; given_name_wuyin is always null
+  - extra fields named stroke, kangxi, wuge, sancai, luck, verdict, 吉凶 are contract violations
+  - no Provider, catalog entry, or signed Runtime binding in this knife
+
+commentary_dependencies:
+  - path: references/books/luming-nayin/wuxing-jingji/quote-index.md
+    anchor: WX-Q231
+    role: 辨五音訣 short quote
+  - path: references/books/luming-nayin/wuxing-jingji/section-map.md
+    anchor: WX-S231
+    role: 卷九辨五音訣 section span

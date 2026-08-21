@@ -1,0 +1,20 @@
+{
+  "name": "iztro",
+  "version": "2.5.8",
+  "license": "MIT",
+  "upstream": "https://github.com/SylarLong/iztro",
+  "reviewed_upstream_tag": "2.5.8",
+  "reviewed_upstream_commit": "9d39f1743bf31c2b3c635c9b9556215d9c90ee2c",
+  "npm_tarball": "iztro-2.5.8.tgz",
+  "npm_tarball_sha256": "8293c6a587de521b0713e45826745ba4b7482fc507bd2da43fc820cadf06deca",
+  "npm_integrity": "sha512-kgyyvxdSEvgJxi6zvHpvzGbXZLGXCdhTHYK2Pe/sRdBIQ7RfCArvupmg2ChUMQCSQGomW7XCI0gWwUuKJwPENg==",
+  "vendored_file": "iztro.min.js",
+  "vendored_sha256": "4b8eca323e5d4291471567c62255a2166471c55c77ebe8f0d2d38240e69d12b1",
+  "license_sha256": "e6c7b6e313cbda3135b41bccc66c98be132cb8319d0d465903d17e669e748b36",
+  "artifact_scope": "npm distribution only",
+  "release_asset_divergence": {
+    "github_release_asset_sha256": "504618be9c631b6cb3644f8f02ce033973612154d77d9b0d9c5d0033d43bdb41",
+    "github_release_asset_minified_sha256": "e5e52408d24dccdd840be4f9ace3c5d7622aa101ea0a84b1cade4cc2c72e4943",
+    "policy": "The GitHub release asset is not byte-identical to the npm artifact and is not a production input."
+  }
+}

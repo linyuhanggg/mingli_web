@@ -1,0 +1,175 @@
+{
+  "reference_pack": "liuren-miben",
+  "version": "2.0.0-source-layered-rebuild",
+  "source_book": "大六壬秘本",
+  "darwin_compatible": true,
+  "evaluation_status": "not_run",
+  "test_cases": [
+    {
+      "id": "should-trigger-adapter-gate-01",
+      "type": "should_trigger",
+      "prompt": "现在是北京时间 2026-07-10 20:30，按《大六壬秘本》起课看我明天谈合同能不能成。不要给盘，直接断。",
+      "expected_behavior": "调用 LM-R00/LP-01；要求或生成可复算 adapter 事实，不能在缺四课三传、天将、旬空、profile 和 validation trace 时直接断。",
+      "required_evidence": ["LM-Q035", "LM-Q052", "LM-Q053"],
+      "forbidden_behavior": ["语言模型手排月将四课三传", "没有结构化课盘直接给结论", "用卷十三课名异文生成三传"]
+    },
+    {
+      "id": "should-trigger-five-essentials-02",
+      "type": "should_trigger",
+      "prompt": "adapter 已校验通过并给了完整四课三传。请按《秘本》五要权衡分析这次合作，列出主客、内外、虚实、动静、始终。",
+      "expected_behavior": "调用 LM-R09、LM-R10、LM-R12，先做角色映射与天时地利，再分初中末；输出 rule id、adapter fields、quote id 和冲突。",
+      "required_evidence": ["LM-Q039", "LM-Q040", "LM-Q044", "LM-Q046", "LM-Q047"],
+      "forbidden_behavior": ["三十类全部机械堆叠", "只看一个神煞", "不记录主客映射"]
+    },
+    {
+      "id": "should-trigger-imagery-03",
+      "type": "should_trigger",
+      "prompt": "《大六壬秘本》卷一的神后和卷二的贵人各自有哪些传统类象？只做文本检索。",
+      "expected_behavior": "走 LP-00A/LM-R01，分开月将层和天将层，引用 LM-Q003、LM-Q007；标 textual_lookup_only，不要求实际起课。",
+      "required_evidence": ["LM-Q003", "LM-Q007"],
+      "forbidden_behavior": ["把两层合成一个固定人物", "伪造影印页码", "声称现实中一定对应某人"]
+    },
+    {
+      "id": "should-trigger-shefu-04",
+      "type": "should_trigger",
+      "prompt": "完整 adapter 盘显示柔日、支上神明确、初传不空且旺。按卷四射覆如何形成物类候选？",
+      "expected_behavior": "调用 LM-R03，柔日先看支上并以初传为卷四用传入口；再按五行、旺衰、形色等生成候选，不把“中末总弃”扩大到所有六壬断法。",
+      "required_evidence": ["LM-Q009", "LM-Q010", "LM-Q011"],
+      "forbidden_behavior": ["跳过支上神", "全盘永远忽略中末传", "输出唯一现实物体"]
+    },
+    {
+      "id": "should-trigger-shefu-void-05",
+      "type": "should_trigger",
+      "prompt": "射覆盘里发用、所临和来方都落空，还能继续猜颜色和物品吗？",
+      "expected_behavior": "调用 LM-R04，先返回 absence_or_deception_candidate；空亡字段未解前停止具体物类匹配。",
+      "required_evidence": ["LM-Q012"],
+      "forbidden_behavior": ["继续给唯一物品", "把空亡写成百分百不存在"]
+    },
+    {
+      "id": "should-trigger-strength-conflict-06",
+      "type": "should_trigger",
+      "prompt": "这本书到底按四季旺衰还是每两日轮转？我要把它写进 adapter。",
+      "expected_behavior": "调用 LM-R05 并列卷七、卷十三、卷十七三层；要求命名 strength_profile、分别实现测试，不宣布一条为全书唯一规则。",
+      "required_evidence": ["LM-Q017", "LM-Q029", "LM-Q061"],
+      "forbidden_behavior": ["把两套口径混算", "直接宣布两日法是唯一真法", "把七分十分当统计概率"]
+    },
+    {
+      "id": "should-trigger-lesson-conflict-07",
+      "type": "should_trigger",
+      "prompt": "按《秘本》卷十三，唯一一下贼上是不是叫始入？请据此帮我重排三传。",
+      "expected_behavior": "调用 LM-R17；显示 LM-Q030 与卷十五口径冲突，只作版本比较，拒绝据此重排三传，要求已验证 adapter derivation trace。",
+      "required_evidence": ["LM-Q030", "LM-Q055", "LM-Q056"],
+      "forbidden_behavior": ["直接按卷十三生成三传", "隐藏卷十五同书冲突", "拿大全自动覆盖而不列来源"]
+    },
+    {
+      "id": "should-trigger-dual-issue-08",
+      "type": "should_trigger",
+      "prompt": "adapter 显示生干合支，同时我的问题确实有两个报价方案。《秘本》怎么处理？",
+      "expected_behavior": "调用 LM-R18，只标 dual_issue_candidate 并分别核验两方案；说明 LM-Q054 为 NCL 第 179 页补回，不断言必然发生两件事。",
+      "required_evidence": ["LM-Q054", "LM-Q068"],
+      "forbidden_behavior": ["直接断必有两件事", "忽略生合方向", "说全书已逐页校勘"]
+    },
+    {
+      "id": "should-trigger-sancai-09",
+      "type": "should_trigger",
+      "prompt": "我有完整盘，想按卷十七三才应事占人。需要哪些 adapter 字段？",
+      "expected_behavior": "调用 LM-R16，要求贵人落处、孟仲季、天盘和天将；只由 adapter 执行前后五辰函数。",
+      "required_evidence": ["LM-Q060"],
+      "forbidden_behavior": ["模型心算贵人落处", "把三才法覆盖常规四课三传", "从示例复制结论"]
+    },
+    {
+      "id": "should-trigger-specialty-routing-10",
+      "type": "should_trigger",
+      "prompt": "用《秘本》看行人，应先加载哪一卷、先找什么？",
+      "expected_behavior": "路由卷十七行人段，以类神为入口，再回到空旺、生克、三传复核；引用 LM-Q063。",
+      "required_evidence": ["LM-Q063"],
+      "forbidden_behavior": ["加载所有十七卷断语", "只凭类神直接定归期", "不要求正式盘面"]
+    },
+    {
+      "id": "should-not-trigger-bazi-01",
+      "type": "should_not_trigger",
+      "prompt": "八字里空亡和驿马同柱怎么断我的事业？",
+      "expected_behavior": "不调用本包六壬空亡、神煞或月将规则；路由到八字事实层和八字来源。",
+      "forbidden_behavior": ["引用 LM-Q044 解释八字", "把六壬旬空移植到八字"]
+    },
+    {
+      "id": "should-not-trigger-small-liuren-02",
+      "type": "should_not_trigger",
+      "prompt": "按小六壬的大安、留连、速喜帮我算今天能不能收到钱。",
+      "expected_behavior": "不调用或创建小六壬路径；L3351 的‘小六壬反此推’只是金氏比较注，不构成本包依赖。若要正式短事占，应路由已验证的大六壬 adapter。",
+      "forbidden_behavior": ["计算大安留连速喜", "把小六壬宫位映射为四课三传", "声称《秘本》依赖小六壬"]
+    },
+    {
+      "id": "should-not-trigger-sibling-book-03",
+      "type": "should_not_trigger",
+      "prompt": "请逐字引用《大六壬大全》关于元首重审的原文。",
+      "expected_behavior": "不以本包替代《大全》；加载 daliuren-daquan 独立来源。不能因同体系而冒充书名。",
+      "forbidden_behavior": ["把 LM-Q030 当大全原文", "声称本书依赖大全", "自动用大全覆盖秘本而不保留来源"]
+    },
+    {
+      "id": "should-not-trigger-page-fabrication-04",
+      "type": "should_not_trigger",
+      "prompt": "LM-Q039 在 NCL 影印准确第几页？按 5354 行平均换算一下。",
+      "expected_behavior": "返回 scan_page_not_collated；只有 L1592/L3912/L5158 三处可给已核页码，不按比例伪算。",
+      "forbidden_behavior": ["按行数除以页数", "给未经核对的精确页", "声称逐页校勘完成"]
+    },
+    {
+      "id": "should-not-trigger-shensha-alone-05",
+      "type": "should_not_trigger",
+      "prompt": "只凭卷三闭口和五亡两个神煞，直接断这件事一定失败。",
+      "expected_behavior": "LM-R02 只允许同书查表辅证；缺主课结构时停止，不给确定失败。",
+      "required_evidence": ["LM-Q008"],
+      "forbidden_behavior": ["神煞单独下断", "神煞重选发用", "跨系统复用"]
+    },
+    {
+      "id": "edge-volume-count-01",
+      "type": "edge_case",
+      "prompt": "《大六壬秘本》到底是十七卷还是二十卷？",
+      "expected_behavior": "说明馆藏元数据称二十卷，而 NCL 扫描目录与 CTP 正文卷题为十七卷；本包按十七卷建索引并保留书目冲突，不猜缺卷。",
+      "required_evidence": ["LM-Q002", "LM-Q065"],
+      "forbidden_behavior": ["宣布元数据一定错误", "虚构缺失三卷内容"]
+    },
+    {
+      "id": "edge-layer-attribution-02",
+      "type": "edge_case",
+      "prompt": "‘神煞之类，干有德合鬼墓’是不是金正音原著正文？",
+      "expected_behavior": "引用 LM-Q043，说明 L3183 明示金氏又录一条，因此标 jin_editorial_note；不能称全书原始正文。",
+      "required_evidence": ["LM-Q043"],
+      "forbidden_behavior": ["无保留称原著正文", "不区分辑录与原创"]
+    },
+    {
+      "id": "edge-restored-text-03",
+      "type": "edge_case",
+      "prompt": "三处 CTP 章界补字分别在哪里，能否说全书缺字都解决了？",
+      "expected_behavior": "列 L1592/NCL72、L3912/NCL179、L5158/NCL234；说明正文 replacement/占位为 0，但全本逐页异校未完成。",
+      "required_evidence": ["LM-Q020", "LM-Q054", "LM-Q062", "LM-Q067", "LM-Q068", "LM-Q069"],
+      "forbidden_behavior": ["声称全书逐字校定", "把校勘记录当古籍原文"]
+    },
+    {
+      "id": "edge-uncarded-saying-04",
+      "type": "edge_case",
+      "prompt": "卷十二某首婚姻歌没有出现在 rules.md，是不是代表没蒸馏完整？",
+      "expected_behavior": "区分全结构索引与选择性规则化；可按 chapter-map/quote-index 做 text_lookup，但不能把未卡片化断语伪称已验证规则。",
+      "required_evidence": ["LM-Q028"],
+      "forbidden_behavior": ["声称每句都已规则化", "为凑覆盖率现场编规则"]
+    },
+    {
+      "id": "edge-cross-book-conflict-05",
+      "type": "edge_case",
+      "prompt": "《秘本》和《指南》对某课说法相反，是否一律以《大全》为上位裁判？",
+      "expected_behavior": "否；三本是独立来源。并列原句、前置条件和 profile，说明实际 adapter 选择及理由，不以书名名望自动覆盖。",
+      "forbidden_behavior": ["大全自动覆盖", "隐藏少数来源", "静默拼接不同算法"]
+    }
+  ],
+  "minimum_pass_rate": 0.9,
+  "mandatory_gates": [
+    "all adapter-gate cases pass",
+    "all should_not_trigger cases pass",
+    "no small-liuren execution path",
+    "no fabricated scan page",
+    "no lesson-name text used to generate chart",
+    "all source-layer attribution cases pass",
+    "no automatic cross-book override"
+  ],
+  "notes": "本文件只定义压力测试；evaluation_status=not_run。JSON 静态校验不等于模型盲测，实际状态见 validation.md。"
+}

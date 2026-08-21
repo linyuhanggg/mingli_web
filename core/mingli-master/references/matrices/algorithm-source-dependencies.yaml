@@ -1,0 +1,2500 @@
+schema_version: mingli-algorithm-source-dependencies-v1
+updated_at: "2026-07-24"
+
+audit_policy:
+  research_source_root: external
+  research_sources_distribution: local_research_only
+  release_material: distilled_rules_provenance_and_checksums_only
+  note: >-
+    Complete research transcriptions are deliberately excluded from release artifacts because
+    their source-page redistribution licences are not uniformly cleared. The audit verifies the
+    locally held normalized text byte-for-byte and the release keeps exact anchors, short excerpts,
+    recension statements, and hashes. External code is only an engineering reference or test oracle.
+
+source_registry:
+  sanming_tonghui: &sanming_tonghui
+    title: 三命通会
+    edition_or_recension: 维基文库整理本；四库本系统；影印尚未逐章复核
+    normalized_path: references/fulltext/bazi/sanming-tonghui/fulltext.md
+    sha256: 0f78de8e47b7cd1dc199d6488c5fdf40d01819e589b0f50e78273541e8c14ed7
+    anchor: L47 六十甲子；L597-L599 四时节气；L1525 立春交寅；L2261-L2263 十神名义
+    exact_excerpt: 自甲子為首以六甲五子次第推排而盡於癸亥
+    material: sexagenary cycle, double-hour pillars, calendar boundaries, Ten-God identities, and branch relations
+    license_status: ancient text public domain; normalized source local research only
+  li_xuzhong: &li_xuzhong
+    title: 李虚中命书
+    edition_or_recension: 四库本系统之永乐大典辑本；卷首明示唐宋层累
+    normalized_path: references/fulltext/luming-nayin/li-xuzhong-mingshu/fulltext.md
+    sha256: 0e44902096544b62d55f1bf67b1e9059f9e0c39f3b614dde4fac332154bc3789
+    anchor: L16-L75 六十甲子、贵神与禄马表
+    exact_excerpt: 甲子天官蔵是子旺母衰之金溺於水下而韜光
+    material: sixty-Jiazi Nayin rows plus source-declared Lu, Ma, and noble relations
+    license_status: ancient text public domain; normalized source local research only
+  luoluzi: &luoluzi
+    title: 珞琭子三命消息赋
+    edition_or_recension: 本地 normalized 通行赋注合编本；正文与注文分层
+    normalized_path: references/fulltext/luming-nayin/luoluzi-sanming/fulltext.md
+    sha256: 05d42aa624f9287dd131e9202da40d3db3f0ed9200f1a089c711e97be4d96c28
+    anchor: L9 三才、四柱与三元
+    exact_excerpt: 每一宮有三元，有天元、人元、支元
+    material: Tianyuan, Diyuan/Renyuan layers and early-Luming scope
+    license_status: ancient text public domain; normalized source local research only
+  wuxing_jingji: &wuxing_jingji
+    title: 五行精纪
+    edition_or_recension: 本地 normalized 通行整理本；所引古书保留署名
+    normalized_path: references/fulltext/luming-nayin/wuxing-jingji/fulltext.md
+    sha256: 32e0581bcba3b1b6df2b8e0c48db135a4a6f27e7dca2f010e0a818ab6ba9e08b
+    anchor: L2599 与 L3607 胎元异说
+    exact_excerpt: 五行欲其自足，勿論胎
+    material: explicit competing conventions for whether and how Taiyuan participates
+    license_status: ancient text public domain; normalized source local research only
+  wuxing_jingji_cycles: &wuxing_jingji_cycles
+    title: 五行精纪
+    edition_or_recension: 本地 normalized 通行整理本；驿马与旬空仅作干支循环机械表
+    normalized_path: references/fulltext/luming-nayin/wuxing-jingji/fulltext.md
+    sha256: 32e0581bcba3b1b6df2b8e0c48db135a4a6f27e7dca2f010e0a818ab6ba9e08b
+    anchor: L4397-L4449 驿马四组三合支；L6649-L6655 六甲旬空
+    exact_excerpt: 申子辰年，馬在寅
+    material: generic sexagenary void branches and four trine horse branches; no Qimen verdicts
+    license_status: ancient text public domain; normalized source local research only
+  xingxue_dacheng: &xingxue_dacheng
+    title: 星学大成
+    edition_or_recension: 四库全书本 normalized text
+    normalized_path: references/fulltext/xingming/xingxue-dacheng/fulltext.md
+    sha256: 099ddc76d4143ad5e41601337c0ecb777b77adaf67737067339b9814784cb980
+    anchor: L53-L101 三盘、十二宫、十一曜与周天度数
+    exact_excerpt: 右周天都計三百六十五度二十分五十秒分布十二宫
+    material: classical coordinate vocabulary, houses, bodies, degrees, and motion-state requirements
+    license_status: ancient text public domain; normalized source local research only
+  guotian_jing: &guotian_jing
+    title: 果天经／果老星宗
+    edition_or_recension: 本地 normalized 通行整理本；古行度值只作历史层
+    normalized_path: references/fulltext/xingming/guotian-jing/fulltext.md
+    sha256: 3846727ba925eaf7b5a9e363f2561355a0ed58fddc73d0735d30e9dadc904e67
+    anchor: L121-L170 十一曜、宫度与体用；L1198 四余
+    exact_excerpt: 四余者即是气孛罗计也
+    material: seven luminaries, four residual points, house/degree ownership, transformations, and limit vocabulary
+    license_status: ancient text public domain; normalized source local research only
+  huozhu_lin: &huozhu_lin
+    title: 火珠林
+    edition_or_recension: 本地 normalized 通行整理本
+    normalized_path: references/fulltext/divination/huozhu-lin/fulltext.md
+    sha256: 6239f9ef22be7deb5771b513dacfc9cc1e8eea8cc5e54164f971cd7de86e5293
+    anchor: L23 卦定根源；L31-L65 六亲、飞伏与四时旺相
+    exact_excerpt: 卦定根源，六亲为主
+    material: six-relatives, visible/hidden lines, seasonal strength, and useful-line basis
+    license_status: ancient text public domain; normalized source local research only
+  bushi_zhengzong: &bushi_zhengzong
+    title: 卜筮正宗
+    edition_or_recension: 本地 normalized 分段转写本
+    normalized_path: references/fulltext/divination/bushi-zhengzong/fulltext.md
+    sha256: 651efe70d1bce36d1a18e9bf680a912ae3f556f2e66b16c137cd6efbfc9cb491
+    anchor: BSZZ-0010 through BSZZ-0030 起卦、装卦、旬空、月破与十八论
+    exact_excerpt: 六十四卦名 纳甲装卦歌 安世应诀
+    material: coin casting, 64 hexagrams, Najia, Shi/Ying, six spirits, Xunkong, month break, moving/change rules
+    license_status: ancient text public domain; normalized source local research only
+  zengshan_buyi: &zengshan_buyi
+    title: 增删卜易
+    edition_or_recension: 本地 normalized 通行本；野鹤实务层与后增层按原章节保留
+    normalized_path: references/fulltext/divination/zengshan-buyi/fulltext.md
+    sha256: 40cb50a05cbcb03ce3d42f2cc3de5daf1db6cf78e8dbae4c4b9b1e42dd6f50e0
+    anchor: L502-L516 变爻用神优先于伏神；L5850-L5903 装卦与用神；L6165-L6382 日月、合冲；L6544-L6592 旬空
+    exact_excerpt: 凡問事先寫年月日辰，再照六神章中寫出六神然後占卦
+    material: main and changed plate workflow, month/day relations, useful-spirit candidates, and competing practical judgments
+    license_status: ancient text public domain; normalized source local research only
+  huangjin_ce: &huangjin_ce
+    title: 黄金策
+    edition_or_recension: 本地 normalized 通行歌赋及注本；歌赋与后注分层
+    normalized_path: references/fulltext/divination/huangjin-ce/fulltext.md
+    sha256: 6a8569490397634b15c821116ebe21d9eff799c3b8c07c51179c4224a3362e77
+    anchor: L38 用神边界；L1523-L1551 用象、忌神与原神次序
+    exact_excerpt: 先察用象旺衰，次究忌神動靜
+    material: useful-spirit adjudication order and event-specific interpretation only after complete calculated facts
+    license_status: ancient text public domain; normalized source local research only
+  meihua_yishu: &meihua_yishu
+    title: 梅花易数
+    edition_or_recension: 维基文库 normalized 通行本；先天与后天方法分开
+    normalized_path: references/fulltext/divination/meihua-yishu/fulltext.md
+    sha256: 6fa4f590c86623eda1d0109200100c25408d101e557e98f76fc9db35699b9b59
+    anchor: L45-L55 基础数与体用；L120-L145 起卦与互卦
+    exact_excerpt: 以上年月日共計幾數，以八除之，以餘數作卦
+    material: supported casting methods, modulo boundaries, mutual/change extraction, body/use and seasonal strength
+    license_status: ancient text public domain; normalized source local research only
+  qimen_tongzhi: &qimen_tongzhi
+    title: 奇门遁甲统宗大全
+    edition_or_recension: Taiyi 网页转写底本；CTP/NLC 仅作版本锚点
+    normalized_path: references/fulltext/san-shi/qimen-dunjia-tongzhi/fulltext.md
+    sha256: f4feb5c389f0ac8bc8dfd0d3f011b088576bc5510248e8d8663e01e2d0b0c140
+    anchor: L61-L75 遁甲起例、阴阳遁、六仪三奇、值符值使与超接
+    exact_excerpt: 自冬至阳生起坎一宫
+    material: Chao/Ju convention, Dun/Yuan/Ju, instruments/wonders, chief/director and palace placement
+    license_status: ancient text public domain; normalized source local research only
+  xieji_qimen_chaibu: &xieji_qimen_chaibu
+    title: 钦定协纪辨方书
+    edition_or_recension: 四库全书本 normalized text；奇门择时起例段
+    normalized_path: references/fulltext/selection/xieji-bianfang-shu/fulltext.md
+    sha256: 49db8b60be16236af63ec9bc23c05723a61d22bdd9eafa118e88a66dcad6b30c
+    anchor: L11612 星门两种排法及其冲突例局
+    exact_excerpt: 直使加時宫不論隂陽八門順轉八卦
+    material: selected spatial-ring star alternative and door placement; its flying-star primary method remains incompatible
+    license_status: ancient text public domain; normalized source local research only
+  qimen_faqiao_chaibu: &qimen_faqiao_chaibu
+    title: 奇门法窍
+    edition_or_recension: dclef/xuanxuedocs 固定提交 8a887135add0ac9ed558105222fe2294ae398bad；公开扫描本卷六互证
+    normalized_path: references/source-excerpts/qimen-faqiao-chaibu-v1.md
+    source_location: release
+    sha256: 3ba3d5bf58037c342e863d17821b8e68742cdf35312bc804ff3b477a94fd4ff1
+    anchor: QMF-CB-01 交节、符头与拆局补局；QMF-PAT-01 玉女守门；QMF-PAT-02 时干入墓
+    exact_excerpt: 则丁未交节之日，即用冬至下元甲辰符首之局
+    material: day-level Chaibu transition retaining the current Fu-head Yuan, plus exact mechanical definitions for Jade Maiden Guards the Door and the six hour-pillar tomb cases; exact astronomical-instant switching is a separately declared modern calendar boundary
+    license_status: ancient text public domain; normalized verified excerpt released under MIT transcription provenance
+  taiyi_shenshu: &taiyi_shenshu
+    title: 太乙金镜式经
+    edition_or_recension: 四库全书本 normalized text；后世增入层按提要保留
+    normalized_path: references/fulltext/san-shi/taiyi-shenshu/fulltext.md
+    sha256: ecacc021ea180803b10b3b97a42ce602ea50bc342c73d30883012629cabc111c
+    anchor: L67-L89 上元积年、六纪、太乙、天目与计神；L348-L351 始击与主客算；L493-L505 阳局七十二立成；L595-L759 各自历元的长周期诸神与四神立成
+    exact_excerpt: 積得一百九十三萬七千二百八十一筭
+    material: annual upper-Jiazi epoch and complete Yang 72-board formulas plus separately epoch-bound long-cycle deity methods
+    license_status: ancient text public domain; normalized source local research only
+  xieji_bianfang: &xieji_bianfang
+    title: 协纪辨方书
+    edition_or_recension: 四库全书本 normalized text
+    normalized_path: references/fulltext/selection/xieji-bianfang-shu/fulltext.md
+    sha256: 49db8b60be16236af63ec9bc23c05723a61d22bdd9eafa118e88a66dcad6b30c
+    anchor: L812-L900 建除十二神；L924 月建；L1483 黄道黑道；各用事宜忌卷
+    exact_excerpt: 月建者諸神之主帥也
+    material: Jianchu, calendrical gods, Huang/Hei, exclusions and official event-specific rules
+    license_status: ancient text public domain; normalized source local research only
+  xingli_kaoyuan: &xingli_kaoyuan
+    title: 御定星历考原
+    edition_or_recension: 四库全书本 normalized text；官方考源与民俗层分开
+    normalized_path: references/fulltext/selection/xingli-kaoyuan/fulltext.md
+    sha256: 419ee9d7fe62e6e9bf597d1325ae7476a952c14bcefe967cc1d622bf5e04f9ff
+    anchor: L55-L103 月建月将；L963 二十八宿直日；各月神与用事章
+    exact_excerpt: 月建運天道而左旋為天關月將稟地道而右轉為地軸
+    material: official calendar coordinates, mansion cycle, gods, exclusions, and event categories
+    license_status: ancient text public domain; normalized source local research only
+  yuqia_ji: &yuqia_ji
+    title: 玉匣记
+    edition_or_recension: 维基文库 normalized 民俗层
+    normalized_path: references/fulltext/selection/yuqia-ji/fulltext.md
+    sha256: 93a9b8cde53e3fd6efafe509523fa3ec7c98181b7835c1933703f5cd5563d912
+    anchor: 民俗日期通则、二十八宿、彭祖百忌与用事章节
+    exact_excerpt: 二十八宿
+    material: separately labelled folk exclusions and event rules; never merged with official lineage
+    license_status: ancient text public domain; normalized source local research only
+  donggong_zeri: &donggong_zeri
+    title: 董公选择日要览
+    edition_or_recension: local normalized public-domain transcription; release table not independently scan-collated
+    normalized_path: references/fulltext/selection/donggong-zeri/fulltext.md
+    sha256: f35894e1041076321f3061fdcb20515740b12fc30fce6e4ec20977f5660396fc
+    anchor: L31-L36 日时并看；L54-L787 十二月建除逐日条目
+    exact_excerpt: 既已擇日，還宜擇時
+    material: separately labelled folk monthly-day comparison rows; never merged into official eligibility or rank
+    license_status: ancient text public domain; normalized source local research only
+  yangzhai_shishu: &yangzhai_shishu
+    title: 阳宅十书
+    edition_or_recension: 本地 normalized 通行整理本
+    normalized_path: references/fulltext/fengshui/yangzhai-shishu/fulltext.md
+    sha256: 78ca6fcbc7dec7b361bf4b4922c6834bc4d1320495940d51cc11f411d348110a
+    anchor: L767-L774 东西四宅；L1582-L1594 门与隔院；L1835-L1945 二十四山水法
+    exact_excerpt: 凡宅雖有二十四山，專以八山主之
+    material: Bazhai school inputs, door/layout graph, direction layers, and 24-mountain requirements
+    license_status: ancient text public domain; normalized source local research only
+  huangdi_zhaijing: &huangdi_zhaijing
+    title: 黄帝宅经
+    edition_or_recension: 本地 normalized 通行整理本；只支持宅居二十四路文献层
+    normalized_path: references/fulltext/fengshui/huangdi-zhaijing/fulltext.md
+    sha256: 04a5901c4908f79dfb74dc5d6a29f9e820181e03c967cc41f947aca3d14939b6
+    anchor: L15-L20 二十四路
+    exact_excerpt: 二十四路
+    material: residential twenty-four-route terminology and compass evidence context; not a standalone computation oracle
+    license_status: ancient text public domain; normalized source local research only
+  yangzhai_sanyao: &yangzhai_sanyao
+    title: 阳宅三要
+    edition_or_recension: 本地 normalized 通行整理本；晚出印本仅作入门起游年旁证
+    normalized_path: references/fulltext/fengshui/yangzhai-sanyao/fulltext.md
+    sha256: 56128f671f3b75fc05f04987a9445a57cef9058825442349c0d216d3cc364735
+    anchor: L96-L108 罗经盖面与乾门九星歌诀
+    exact_excerpt: 乾门九星歌诀解
+    material: secondary door-origin Bazhai mnemonic support with later-printing caveat
+    license_status: ancient text public domain; normalized source local research only
+  hanlong_jing: &hanlong_jing
+    title: 撼龙经
+    edition_or_recension: 四库全书本 normalized text；卷首提要保留署名争议
+    normalized_path: references/fulltext/fengshui/hanlong-jing/fulltext.md
+    sha256: d988005dfb7f7de267f19f550472af7eff79c16b18132ff082ebad8836709fe4
+    anchor: L5 版本提要；L13-L30 九星形势与水口
+    exact_excerpt: 撼龍經專言山壠落脈形勢
+    material: observable terrain, ridge, enclosure, water-mouth and form categories
+    license_status: ancient text public domain; normalized source local research only
+  zangshu: &zangshu
+    title: 葬书
+    edition_or_recension: 吴澄删定系统本地 normalized text；形势观察与理气计算分层
+    normalized_path: references/fulltext/fengshui/zangshu/fulltext.md
+    sha256: 5d38da6ceee94042299ceaae7136a39cb915297bb1dcf7f98f2eac4bd1a7e0af
+    anchor: 内篇二至三、外篇三；地势、水、风与聚散观察
+    exact_excerpt: 夫氣行乎地中，其行也因地之勢，其聚也，因勢之止
+    material: observable terrain, water, enclosure, soil, and confidence-limited form facts
+    license_status: ancient text public domain; normalized source local research only
+  yilong_jing: &yilong_jing
+    title: 疑龙经
+    edition_or_recension: 四库系统 normalized text；规则只作 caller-observed 形势分类上下文
+    normalized_path: references/fulltext/fengshui/yilong-jing/fulltext.md
+    sha256: b1bb72819575888442a7d49607b2e49754bcd2821ca355480b531b0ee3ebbff3
+    anchor: L20 明堂、风、水与外山观察
+    exact_excerpt: 明堂惜水如惜血
+    material: explicitly supplied hall, wind, water, enclosure and terrain observations; never automatic dragon-form inference
+    license_status: ancient text public domain; normalized source local research only
+  xuexin_fu: &xuexin_fu
+    title: 雪心赋
+    edition_or_recension: 本地 normalized 白文；形势分类上下文
+    normalized_path: references/fulltext/fengshui/xuexin-fu/fulltext.md
+    sha256: 5e27d9aaf634f59e97cc1afb39382ae328425c437041eeb31447b6ba2c8cef83
+    anchor: L25 水口明堂；L62 水势交锁织结
+    exact_excerpt: 入山尋水口，登穴看明堂
+    material: explicitly observed water-mouth, hall and water-pattern categories without outcome promises
+    license_status: ancient text public domain; normalized source local research only
+  shenxiang_quanbian: &shenxiang_quanbian
+    title: 神相全编
+    edition_or_recension: 《古今图书集成》631–639 卷辑录本，覆盖一至九；不是独立刊本；旁证层
+    normalized_path: references/fulltext/physiognomy/shenxiang-quanbian/fulltext.md
+    sha256: 984eac109baef32a234be23f0612b604d65cd08d26c4f5e00411e61d9e638865
+    anchor: L435 十三部位；L520 十二宫；五官各章
+    exact_excerpt: 十三部位總要之圖
+    material: named visible regions and classification vocabulary, not a license to invent or diagnose features
+    license_status: ancient text public domain; normalized source local research only
+  mayi_shenxiang: &mayi_shenxiang
+    title: 麻衣神相
+    edition_or_recension: 全学网通行网页完整转写；现代附益层已隔离
+    normalized_path: references/fulltext/physiognomy/mayi-shenxiang/fulltext.md
+    sha256: c9b02fe305c963d1e22ba694daf600297d9e4d8c3adad8bfaa7316f9471e8bc2
+    anchor: L48 十三部位；L112 十二宫；L251 五官
+    exact_excerpt: 十二宮
+    material: cross-source region vocabulary and explicit edition-layer limits
+    license_status: ancient text public domain; normalized source local research only
+  liuzhuang_xiangfa: &liuzhuang_xiangfa
+    title: 柳庄相法
+    edition_or_recension: CTP 连续行表 normalized 文本，尚未与影印本逐字对校，原卷册结构可能不同；晚出层与早期相法分层
+    normalized_path: references/fulltext/physiognomy/liuzhuang-xiangfa/fulltext.md
+    sha256: 04459fbe4f5d48e0810a8f0290c6f8f851754db02a2344fc109380aee6059af8
+    anchor: L30、L37-L38 动察、修正与不可一概；L50-L51 五官六府三停
+    exact_excerpt: 不可以美而言好，莫以恶而言害，其中还有异处，不可定一理而推
+    material: observation correction, conflict retention, and visible-region classification
+    license_status: ancient text public domain; normalized source local research only
+
+providers:
+  bazi:
+    source_audit_status: source_verified
+    dependencies:
+      - id: bazi.calendar.sxtwl-jieqi-four-pillars
+        category: calendar_formula_and_epoch
+        version: sxtwl-2.0.7/jieqi-month/zi-hour-midnight-v1
+        status: verified
+        convention:
+          id: bazi-calendar-east-asia-civil-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - month pillar changes at the twelve Jie boundaries
+            - year transit changes at Li Chun
+            - day rollover policy is explicit and defaults to civil midnight
+            - true solar time is not silently substituted for civil time
+        primary_sources:
+          - title: 三命通会
+            edition_or_recension: 维基文库整理本；四库本系统；影印尚未逐章复核
+            normalized_path: references/fulltext/bazi/sanming-tonghui/fulltext.md
+            sha256: 0f78de8e47b7cd1dc199d6488c5fdf40d01819e589b0f50e78273541e8c14ed7
+            anchor: L47 六十甲子；L597-L599 四时节气；L1525 立春交寅
+            exact_excerpt: 自甲子為首以六甲五子次第推排而盡於癸亥
+            material: sexagenary cycle, month Jie boundaries, and Li Chun transition into Yin month
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - path: references/books/bazi/sanming-tonghui/rules.md
+            anchor: R-02-03 and R-02-05
+            role: executable summary; never substitutes for the fulltext check
+        engineering_references:
+          - name: sxtwl
+            role: deterministic Chinese calendar and solar-term engine
+            version: 2.0.7
+            license: BSD-3-Clause
+            lockfile: requirements.txt
+            lock_entry: sxtwl==2.0.7
+            distribution: PyPI sdist sxtwl-2.0.7.tar.gz
+            distribution_sha256: 38b24472389f7f6f3521c2c99e4b5e86c0184c7d6eb02e5409c239d21f0a6512
+            upstream: https://github.com/yuangu/sxtwl_cpp
+            binding_note: PyPI 2.0.7 has no matching GitHub tag; bind the runtime to the PyPI sdist hash
+        independent_test_sample:
+          id: bazi-calendar-2000-10-18-shanghai
+          source: scripts/test_bazi_fact_adapter.py::BirthCalculationTests.test_birth_datetime_is_converted_to_lunar_calendar_and_four_pillars
+          source_path: scripts/test_bazi_fact_adapter.py
+          source_anchor: test_birth_datetime_is_converted_to_lunar_calendar_and_four_pillars
+          input: 2000-10-18T06:45:00 Asia/Shanghai male
+          expected: 庚辰 丙戌 己酉 丁卯; lunar 2000-09-21; non-leap
+          independence: fixed public-calendar sample asserted outside the provider implementation
+
+      - id: bazi.luck.major-cycle-three-days-per-year
+        category: formula_and_school_convention
+        version: sanming-three-days-per-year-v1
+        status: verified
+        convention:
+          id: sanming-year-stem-gender-direction
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - yang-year male and yin-year female move forward
+            - yin-year male and yang-year female move backward
+            - measure to the next or previous Jie and convert three days to one year
+            - a major cycle spans ten years and starts from the month pillar
+        primary_sources:
+          - title: 三命通会
+            edition_or_recension: 维基文库整理本；四库本系统；影印尚未逐章复核
+            normalized_path: references/fulltext/bazi/sanming-tonghui/fulltext.md
+            sha256: 0f78de8e47b7cd1dc199d6488c5fdf40d01819e589b0f50e78273541e8c14ed7
+            anchor: L665-L668 论大运
+            exact_excerpt: 陽男隂女大運以生日後未來節氣日時為數順而行之隂男陽女大運以生日前過去節氣日時為數逆而行之
+            material: complete direction rule, start-age formula, examples, ten-year cycle statement
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - path: references/books/bazi/sanming-tonghui/rules.md
+            anchor: R-02-05
+            role: normalized rule identity
+        independent_test_sample:
+          id: bazi-luck-forward-2000-10-18
+          source: scripts/test_bazi_fact_adapter.py::BirthCalculationTests.test_birth_datetime_is_converted_to_lunar_calendar_and_four_pillars
+          source_path: scripts/test_bazi_fact_adapter.py
+          source_anchor: test_birth_datetime_is_converted_to_lunar_calendar_and_four_pillars
+          input: 庚辰 year; male; 2000-10-18T06:45:00 Asia/Shanghai
+          expected: direction forward and at least eight consecutive ten-year cycles
+          independence: fixed fixture checks direction and cycle production independently of the extension layer
+
+      - id: bazi.relations.ten-gods-hidden-stems-branch-relations
+        category: lookup_tables_and_relation_formula
+        version: sanming-ziping-relations-v1
+        status: verified
+        convention:
+          id: ziping-polarity-aware-ten-gods
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - derive Ten Gods from five-element generation/control plus same/opposite polarity
+            - keep hidden stems as source facts rather than collapsing a branch to one element
+            - expose combine, clash, harm, break, punishment, and self-punishment as typed relations
+        primary_sources:
+          - title: 三命通会
+            edition_or_recension: 维基文库整理本；四库本系统；影印尚未逐章复核
+            normalized_path: references/fulltext/bazi/sanming-tonghui/fulltext.md
+            sha256: 0f78de8e47b7cd1dc199d6488c5fdf40d01819e589b0f50e78273541e8c14ed7
+            anchor: L2261-L2263 徐子平论格局与十神名义
+            exact_excerpt: 生我者壬癸水我生者丙丁火尅我者庚辛金我尅者戊巳土而十干盡之矣
+            material: polarity-aware Ten-God derivation and five-element relation basis
+            license_status: ancient text public domain; normalized source local research only
+          - title: 三命通会
+            edition_or_recension: same recension
+            normalized_path: references/fulltext/bazi/sanming-tonghui/fulltext.md
+            sha256: 0f78de8e47b7cd1dc199d6488c5fdf40d01819e589b0f50e78273541e8c14ed7
+            anchor: L552-L590 论人元司事
+            exact_excerpt: 故支中所藏者主命謂之人元名為司事之神
+            material: hidden-stem and seasonal-command tables
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - path: references/books/bazi/sanming-tonghui/rules.md
+            anchor: R-02-02 and R-02-08 through R-02-14
+            role: typed relation identities and caveats
+        independent_test_sample:
+          id: bazi-static-pillars-first-captured-chart
+          source: scripts/test_bazi_fact_adapter.py::SuppliedPillarsTests.test_first_captured_screenshot_is_deterministically_derived
+          source_path: scripts/test_bazi_fact_adapter.py
+          source_anchor: test_first_captured_screenshot_is_deterministically_derived
+          input: fixed four-pillar fixture
+          expected: day master, hidden stems, Ten Gods, and typed branch relations
+          independence: complete expected fields are asserted in a test fixture separate from extension code
+
+      - id: bazi.seasonal-tiaohou.day-master-month
+        category: lookup_table_and_applicability
+        version: qiongtong-day-master-month-v1
+        status: verified
+        convention:
+          id: qiongtong-day-master-month-specific
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - select by the actual day stem and month command
+            - expose exact day-stem/month-command applicability and climate markers as facts
+            - leave preferred-stem selection and favorability to the current evidence adjudication
+            - never reuse another day-master chapter
+        primary_sources:
+          - title: 穷通宝鉴
+            edition_or_recension: 本地 normalized 通行整理本；版本关系保守标注
+            normalized_path: references/fulltext/bazi/qiongtong-baojian/fulltext.md
+            sha256: fce5e9215be146435c533b15647849c03321577128e6fb7ac19258dc8b55cbaf
+            anchor: L35-L87 甲木逐月材料
+            exact_excerpt: 正月甲木，初春尚有余寒，得丙癸逢
+            material: day-master-by-month climate and preferred-stem procedures
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - path: references/books/bazi/qiongtong-baojian/rules.md
+            anchor: QR-01-01
+            role: normalized applicability predicates
+        independent_test_sample:
+          id: qiongtong-jia-wood-first-month
+          source: fulltext worked rule at L41-L43, independently indexed by Task 4 evidence predicates
+          source_path: references/books/bazi/qiongtong-baojian/rules.md
+          source_anchor: QR-01-01
+          input: 甲 day master; 寅 month command
+          expected: early-spring cold marker and exact 甲/寅 applicability identity for QR-01-01 evidence
+          independence: source-derived expected table row is checked independently from horizon iteration
+
+      - id: bazi.shensha.yima-taohua-auxiliary
+        category: auxiliary_lookup_tables
+        version: sanming-yima-taohua-auxiliary-v1
+        status: verified
+        convention:
+          id: sanming-year-day-branch-yima-taohua-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - calculate Yima and Taohua from each of the natal year and day branches
+            - report only the target branches actually present in natal or requested transit facts
+            - keep every match in an auxiliary layer with its anchor and matched positions
+            - never let an auxiliary match override month command, structure, strength, Tiaohou, Ten Gods, luck cycles, or transit facts
+        primary_sources:
+          - title: 三命通会
+            edition_or_recension: 维基文库整理本；四库本系统；影印尚未逐章复核
+            normalized_path: references/fulltext/bazi/sanming-tonghui/fulltext.md
+            sha256: 0f78de8e47b7cd1dc199d6488c5fdf40d01819e589b0f50e78273541e8c14ed7
+            anchor: L883-L890 驿马四局；L1197 桃花四局；L1198 神煞限制
+            exact_excerpt: 寅午戌生人馬在申
+            material: complete four-group Yima and Taohua lookup rows plus the source warning against isolated Shensha verdicts
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - path: references/books/bazi/sanming-tonghui/rules.md
+            anchor: R-03-05
+            role: auxiliary-only precedence boundary
+        independent_test_sample:
+          id: bazi-shensha-yima-taohua-auxiliary
+          source: references/fixtures/algorithm-source-samples-v51.yaml::bazi-shensha-yima-taohua-auxiliary
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: bazi-shensha-yima-taohua-auxiliary
+          input: 申 anchor with 寅 and 酉 present
+          expected: Yima 寅 and Taohua 酉 are auxiliary matches
+          independence: lookup expectations were transcribed directly from the source rows before provider implementation
+
+  time-check:
+    source_audit_status: source_verified
+    dependencies:
+      - id: time-check.candidate-hours-over-bazi
+        category: bounded_hour_candidate_enumeration_over_bazi_runtime
+        version: bazi-runtime-candidate-hours-v1
+        status: verified
+        convention:
+          id: twelve-branch-civil-day-candidates-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - enumerate the twelve earthly-branch double-hours in canonical order
+            - keep the declared time range as an eligibility intersection and never collapse the candidate set
+            - calculate every candidate through the pinned Bazi runtime rather than a second pillar implementation
+        primary_sources: [*sanming_tonghui]
+        commentary_dependencies:
+          - {path: references/books/bazi/sanming-tonghui/rules.md, anchor: R-02-03, role: sexagenary hour-pillar and calendar boundary}
+        independent_test_sample:
+          id: time-check-twelve-bazi-runtime-candidates
+          source: scripts/test_provider_time_policy_matrix.py::TimeCheckAlgorithmDependencyTests.test_time_check_enumerates_twelve_bazi_runtime_candidates
+          source_path: scripts/test_provider_time_policy_matrix.py
+          source_anchor: test_time_check_enumerates_twelve_bazi_runtime_candidates
+          input: one civil date with a full-day known-time range
+          expected: twelve ordered branch candidates, each carrying a complete four-pillar Bazi result
+          independence: the matrix test asserts branch order, count, and complete Bazi output outside the provider implementation
+      - id: time-check.true-solar-time-preservation
+        category: shared_calendar_time_basis_preservation
+        version: calendar-core-local-apparent-solar-v1
+        status: verified
+        convention:
+          id: time-check-declared-clock-policy-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - preserve the caller-declared civil, longitude-mean, or local-apparent solar policy on every candidate
+            - require coordinates for solar policies and retain the shared calendar time-basis identity
+            - use the pinned astronomy-engine equation of time for apparent solar time
+        primary_sources: [*sanming_tonghui]
+        engineering_references:
+          - name: Astronomy Engine Python
+            role: deterministic apparent-solar equation-of-time implementation
+            version: 2.1.19
+            license: MIT
+            upstream: https://github.com/cosinekitty/astronomy/tree/v2.1.19
+            upstream_tag_commit: 61dc07020aaa6885d2c7f688a4d82beaf6edb9ef
+            distribution_sha256: 95b797b87b659adc0602a6a205143ce5a10451664e80650bb7cd8ba3c8f1f02b
+            provenance_path: vendor/astronomy-engine-2.1.19/PROVENANCE.json
+        independent_test_sample:
+          id: time-check-true-solar-calendar-identity
+          source: scripts/test_provider_time_policy_matrix.py::TimeCheckAlgorithmDependencyTests.test_time_check_preserves_true_solar_calendar_identity
+          source_path: scripts/test_provider_time_policy_matrix.py
+          source_anchor: test_time_check_preserves_true_solar_calendar_identity
+          input: one date, exact coordinates, and local_apparent_solar-v1
+          expected: all twelve candidates retain local_apparent_solar-v1 in their shared calendar facts
+          independence: the matrix test checks each candidate calendar identity outside the provider implementation
+      - id: time-check.structured-event-evidence
+        category: bounded_year_pillar_relation_and_domain_role_evidence
+        version: bazi-year-pillar-event-domain-evidence-v1
+        status: verified
+        convention:
+          id: structured-events-are-evidence-not-verdicts-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - accept only dated structured events with an explicit supported domain
+            - compare event-year branch relations and the event-year Ten-God role against each eligible candidate
+            - expose supporting and counter signals without an event, life, or outcome verdict
+        primary_sources: [*sanming_tonghui]
+        commentary_dependencies:
+          - {path: references/books/bazi/sanming-tonghui/rules.md, anchor: R-02-08 through R-02-14, role: typed branch relations and polarity-aware Ten-God identity}
+        independent_test_sample:
+          id: time-check-structured-event-evidence
+          source: scripts/test_provider_time_policy_matrix.py::TimeCheckAlgorithmDependencyTests.test_time_check_uses_structured_events_as_bounded_evidence
+          source_path: scripts/test_provider_time_policy_matrix.py
+          source_anchor: test_time_check_uses_structured_events_as_bounded_evidence
+          input: one dated career event and twelve eligible hour candidates
+          expected: twelve ranked evidence rows and one event-match row, with no outcome or verdict field
+          independence: the matrix test freezes the evidence-only output boundary outside the ranking implementation
+      - id: time-check.classical-hour-rectification
+        category: classical_hour_candidate_elimination_and_conclusion
+        version: sanming-hour-clash-union-xiaoyun-minggong-v1
+        status: verified
+        convention:
+          id: classical-hour-rectification-remaining-set-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - a unique known-time-range intersection determines the hour without inventing clock minutes
+            - two or more dated events may hard-eliminate in-range hours whose hour-pillar, 命宫, and 小运 net polarity against those events is negative while another hour is positive
+            - the conclusion names the remaining hour set and never emits an outcome or 用神 verdict
+        primary_sources: [*sanming_tonghui]
+        commentary_dependencies:
+          - {path: references/books/bazi/sanming-tonghui/rules.md, anchor: R-02-06, role: transit year clash union as event evidence}
+          - {path: references/books/bazi/sanming-tonghui/rules.md, anchor: R-02-07, role: luck and year taken together}
+          - {path: references/books/bazi/sanming-tonghui/rules.md, anchor: R-02-10, role: branch six-union polarity}
+          - {path: references/books/bazi/sanming-tonghui/rules.md, anchor: R-02-14, role: branch six-clash as movement change}
+          - {path: references/books/bazi/sanming-tonghui/rules.md, anchor: R-02-17, role: ming-gong from month general plus hour}
+          - {path: references/books/bazi/sanming-tonghui/rules.md, anchor: R-02-18, role: xiaoyun starts from the hour pillar}
+        independent_test_sample:
+          id: time-check-classical-hour-rectification
+          source: scripts/test_provider_time_policy_matrix.py::TimeCheckAlgorithmDependencyTests.test_time_check_classical_rectification_eliminates_and_concludes
+          source_path: scripts/test_provider_time_policy_matrix.py
+          source_anchor: test_time_check_classical_rectification_eliminates_and_concludes
+          input: a unique known-time range, plus a synthetic two-event hour-clash set
+          expected: unique-range conclusion hour_determined; two-event clash set eliminates the negative hour and keeps the positive hour
+          independence: the matrix test freezes remaining-set status outside the ranking implementation
+
+  fortune:
+    source_audit_status: source_verified
+    dependencies:
+      - id: fortune.bounded-target-period-over-bazi
+        category: mechanical_scope_contract
+        version: fortune-v6-one-explicit-period
+        status: verified
+        convention:
+          id: fortune-bounded-view
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - inherit bazi.calendar.sxtwl-jieqi-four-pillars
+            - inherit bazi.luck.major-cycle-three-days-per-year
+            - inherit bazi.relations.ten-gods-hidden-stems-branch-relations
+            - expose exactly the requested calculated period and no adjacent-period extrapolation
+        primary_sources:
+          - title: 三命通会
+            edition_or_recension: same verified source as Bazi transit and luck dependencies
+            normalized_path: references/fulltext/bazi/sanming-tonghui/fulltext.md
+            sha256: 0f78de8e47b7cd1dc199d6488c5fdf40d01819e589b0f50e78273541e8c14ed7
+            anchor: L667-L670 大运与逐年太岁合参
+            exact_excerpt: 凡大運行有益處為吉泰之運亦不能常為福須太嵗行年更於生旺和合方可發福
+            material: separates natal, major-luck, and annual layers before interpretation
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - path: references/books/bazi/sanming-tonghui/rules.md
+            anchor: R-02-06 and R-02-07
+            role: transit-layer lineage
+        engineering_references:
+          - name: sxtwl
+            role: same pinned deterministic calendar dependency as Bazi
+            version: 2.0.7
+            license: BSD-3-Clause
+            lockfile: requirements.txt
+            lock_entry: sxtwl==2.0.7
+            distribution_sha256: 38b24472389f7f6f3521c2c99e4b5e86c0184c7d6eb02e5409c239d21f0a6512
+            upstream: https://github.com/yuangu/sxtwl_cpp
+        independent_test_sample:
+          id: fortune-active-layer-stack-one-day
+          source: scripts/test_near_time_fortune_adapter.py::NearTimeFortuneAdapterTests.test_luck_year_month_day_layers_are_explicit_without_vote_counting
+          source_path: scripts/test_near_time_fortune_adapter.py
+          source_anchor: test_luck_year_month_day_layers_are_explicit_without_vote_counting
+          input: fixed natal profile and one target day
+          expected: exactly major_luck, year, month, and day calculated layers
+          independence: legacy near-time adapter fixture predates and is separate from provider.extend
+
+  ziwei:
+    source_audit_status: source_verified
+    dependencies:
+      - id: ziwei.iztro.natal-palaces-stars-transformations
+        category: deterministic_engine_and_lookup_tables
+        version: iztro-2.5.8/default/fix-leap/zh-CN
+        status: verified
+        convention:
+          id: iztro-default-school-v2.5.8
+          version: 2.5.8
+          disputed: true
+          boundary_rules:
+            - default rather than zhongzhou algorithm profile
+            - fixLeap enabled
+            - early Rat hour index 0 and late Rat hour index 12 remain distinct
+            - transformation table is selected by the applicable stem and returned as facts
+        primary_sources:
+          - title: 紫微斗数全书
+            edition_or_recension: 维基文库当前三卷本；不声称覆盖异传卷四
+            normalized_path: references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md
+            sha256: 75679206451ebfad7d7124168316ffaf72a516de9c149e4bef001dd3f3b7283d
+            anchor: L952-L1031 安身命、十二宫、五行局、诸星与四化
+            exact_excerpt: 甲廉破武阳为伴，乙机梁紫月交侵
+            material: natal palace placement, star setup, five-element class, leap-month note, and complete stem transformation table
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - path: references/books/ziwei/ziwei-doushu-quanshu/rules.md
+            anchor: ZW-03
+            role: normalized source identities and school caveats
+        engineering_references:
+          - name: iztro npm distribution
+            role: deterministic implementation and test oracle; not a classical source
+            version: 2.5.8
+            license: MIT
+            upstream: https://github.com/SylarLong/iztro
+            upstream_tag_commit: 9d39f1743bf31c2b3c635c9b9556215d9c90ee2c
+            npm_tarball_sha256: 8293c6a587de521b0713e45826745ba4b7482fc507bd2da43fc820cadf06deca
+            npm_integrity: sha512-kgyyvxdSEvgJxi6zvHpvzGbXZLGXCdhTHYK2Pe/sRdBIQ7RfCArvupmg2ChUMQCSQGomW7XCI0gWwUuKJwPENg==
+            artifact_path: vendor/iztro-2.5.8/iztro.min.js
+            artifact_sha256: 4b8eca323e5d4291471567c62255a2166471c55c77ebe8f0d2d38240e69d12b1
+            license_path: vendor/iztro-2.5.8/LICENSE
+            license_sha256: e6c7b6e313cbda3135b41bccc66c98be132cb8319d0d465903d17e669e748b36
+            provenance_path: vendor/iztro-2.5.8/PROVENANCE.json
+            divergence_note: GitHub release asset differs from npm 2.5.8; production is bound only to the npm artifact above
+        independent_test_sample:
+          id: ziwei-public-benchmark-1970-07-22
+          source: scripts/test_ziwei_fact_adapter.py::ZiweiFactAdapterTests.test_public_benchmark_case_matches_the_pinned_chart_fixture
+          source_path: scripts/test_ziwei_fact_adapter.py
+          source_anchor: test_public_benchmark_case_matches_the_pinned_chart_fixture
+          input: 1970-07-22T15:00:00+08:00; male; Beijing
+          expected: 命宫亥 身宫卯 土五局; first palace 田宅寅 with 太阳旺禄 and 巨门庙
+          independence: recorded benchmark is asserted outside the vendored runtime
+
+      - id: ziwei.iztro.decadal-year-month-horoscope
+        category: temporal_formula_and_boundary_convention
+        version: iztro-2.5.8/horoscope-normal-v1
+        status: verified
+        convention:
+          id: iztro-horoscope-natural-year-v1
+          version: 2.5.8
+          disputed: true
+          boundary_rules:
+            - horoscopeDivide normal uses lunar New Year rather than Li Chun for year/month scope
+            - ageDivide normal uses nominal age at natural-year boundary
+            - major limit, annual, and monthly palace names and stem transformations are separate layers
+            - exact alternative remains a separately named future profile and is never silently merged
+        primary_sources:
+          - title: 紫微斗数全书
+            edition_or_recension: 维基文库当前三卷本
+            normalized_path: references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md
+            sha256: 75679206451ebfad7d7124168316ffaf72a516de9c149e4bef001dd3f3b7283d
+            anchor: L2709-L2711 论大限十年祸福；L1023-L1031 四化
+            exact_excerpt: 更须看月值恶杀，日值恶杀，加凑大小岁月日时五者参详吉凶推断
+            material: distinct major-limit, year, month, day, and hour layers; transformations remain scope-bound
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - path: references/books/ziwei/ziwei-doushu-quanshu/validation.md
+            anchor: Skill-Building Notes
+            role: forces all temporal placement through the deterministic tool
+        engineering_references:
+          - name: iztro FunctionalAstrolabe.horoscope
+            role: deterministic temporal implementation and test oracle
+            version: 2.5.8
+            license: MIT
+            upstream: https://github.com/SylarLong/iztro/blob/2.5.8/src/astro/FunctionalAstrolabe.ts
+            upstream_tag_commit: 9d39f1743bf31c2b3c635c9b9556215d9c90ee2c
+            artifact_path: vendor/iztro-2.5.8/iztro.min.js
+            artifact_sha256: 4b8eca323e5d4291471567c62255a2166471c55c77ebe8f0d2d38240e69d12b1
+            license_path: vendor/iztro-2.5.8/LICENSE
+            license_sha256: e6c7b6e313cbda3135b41bccc66c98be132cb8319d0d465903d17e669e748b36
+        independent_test_sample:
+          id: ziwei-horoscope-2026-07
+          source: references/fixtures/algorithm-source-samples-v51.yaml::ziwei-horoscope-2026-07
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: ziwei-horoscope-2026-07
+          input: fixed 1990-06-15 natal chart; target 2026-07
+          expected: one active major limit plus distinct 2026 annual and 2026-07 monthly layers with transformations
+          independence: expected scope shape is fixed before the provider temporal implementation
+
+      - id: ziwei.iztro.leap-hour-major-limit-conventions
+        category: disputed_calendar_and_limit_boundary_conventions
+        version: iztro-2.5.8/fix-leap/day-divide-v1
+        status: verified
+        convention:
+          id: iztro-default-leap-rat-limit-v1
+          version: 2.5.8
+          disputed: true
+          boundary_rules:
+            - fixLeap is enabled and its leap-month placements remain explicitly identified
+            - early Rat hour uses time index 0 and late Rat hour uses time index 12
+            - civil-midnight and late-Zi-next-day policies select iztro dayDivide current and forward respectively
+            - Yang male and Yin female major limits advance; Yin male and Yang female reverse
+            - the normal age profile changes nominal age and the active major limit at lunar New Year
+        primary_sources:
+          - title: 紫微斗数全书
+            edition_or_recension: 维基文库当前三卷本；不声称覆盖异传卷四
+            normalized_path: references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md
+            sha256: 75679206451ebfad7d7124168316ffaf72a516de9c149e4bef001dd3f3b7283d
+            anchor: L952-L958 闰月安身命；L1049 与 L1122 阳男阴女顺、阴男阳女逆及安大限
+            exact_excerpt: 阳男阴女从命前一宫起顺行 是父母宫。阴男阳女从命后一宫起逆行 是兄弟宫
+            material: leap-month placement, gender/year-polarity direction, and major-limit sequence
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - path: references/books/ziwei/ziwei-doushu-quanshu/procedures.md
+            anchor: P-ZW-01
+            role: normalized requirement that deterministic tooling owns leap-month, transformations, and major-limit placement
+          - path: references/books/ziwei/taiwei-fu/procedures.md
+            anchor: TP-03
+            role: early classical adjudication consumes calculated limit facts but never replaces the calculator
+        engineering_references:
+          - name: iztro npm distribution
+            role: deterministic implementation and boundary oracle; not a classical source
+            version: 2.5.8
+            license: MIT
+            upstream: https://github.com/SylarLong/iztro
+            upstream_tag_commit: 9d39f1743bf31c2b3c635c9b9556215d9c90ee2c
+            npm_tarball_sha256: 8293c6a587de521b0713e45826745ba4b7482fc507bd2da43fc820cadf06deca
+            npm_integrity: sha512-kgyyvxdSEvgJxi6zvHpvzGbXZLGXCdhTHYK2Pe/sRdBIQ7RfCArvupmg2ChUMQCSQGomW7XCI0gWwUuKJwPENg==
+            artifact_path: vendor/iztro-2.5.8/iztro.min.js
+            artifact_sha256: 4b8eca323e5d4291471567c62255a2166471c55c77ebe8f0d2d38240e69d12b1
+            license_path: vendor/iztro-2.5.8/LICENSE
+            license_sha256: e6c7b6e313cbda3135b41bccc66c98be132cb8319d0d465903d17e669e748b36
+            provenance_path: vendor/iztro-2.5.8/PROVENANCE.json
+        independent_test_sample:
+          id: ziwei-v51-leap-rat-direction-boundaries
+          source: scripts/test_v51_ziwei_completion.py fixture-driven boundary suite
+          source_path: scripts/test_v51_ziwei_completion.py
+          source_anchor: test_gender_and_lunar_year_polarity_determine_limit_direction
+          input: fixed leap-month, early/late Rat-hour, gender/polarity, and lunar-New-Year boundary cases
+          expected: at least 30 frozen cases with explicit engine input, direction, palace, and transformation facts
+          independence: expectations are stored outside the production adapter and include the independent public chart
+
+      - id: ziwei.source-conditioned-patterns
+        category: exact_fact_predicate_evidence_identity
+        version: verified-evidence-rules-v1
+        status: verified
+        convention:
+          id: verified-classical-evidence-exact-fact-match-v1
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - match only runtime-active, classically verified Ziwei rules against explicit calculated fact paths
+            - expose exact rule, source, matched fact paths, and predicate audit identities
+            - never convert a predicate match into a life, event, or outcome verdict
+        primary_sources:
+          - title: 紫微斗数全书
+            edition_or_recension: 维基文库当前三卷本；不声称覆盖异传卷四
+            normalized_path: references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md
+            sha256: 75679206451ebfad7d7124168316ffaf72a516de9c149e4bef001dd3f3b7283d
+            anchor: L963 十二宫次序
+            exact_excerpt: 一 命宫、二兄弟、三妻妾、四子女、五财帛、六疾厄、七迁移、八奴仆、九官禄、十田宅、十一福德、十二父母
+            material: exact palace identities used by verified applicability predicates
+            license_status: ancient text public domain; normalized source local research only
+          - title: 太微赋
+            edition_or_recension: 本地 normalized 通行本
+            normalized_path: references/fulltext/ziwei/taiwei-fu/fulltext.md
+            sha256: 2f77ec8c47122cf18308e9c3fc06274df65695861526e4d1896e4fc59ce262c9
+            anchor: L5
+            exact_excerpt: 斗數至玄至微，理旨難明
+            material: methodology rule identity without hard verdict promotion
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - {path: references/matrices/evidence-scope-bindings-v1.yaml, anchor: 'ziwei/taiwei-fu#TR-01', role: runtime scope and exact predicate binding}
+        source_artifact:
+          path: references/matrices/classical-evidence-bindings-v1.json
+          schema_version: mingli-classical-evidence-bindings-v1
+          sha256: 73c5a8a5d2041e7d49f838c70d0ca184fee060fd355a8f29b0fd6f9a0a7abc8d
+        independent_test_sample:
+          id: ziwei-source-conditioned-patterns
+          source: scripts/test_v51_ziwei_completion.py::ZiweiV51CompletionTests.test_source_conditioned_patterns_are_exact_identities_without_verdicts
+          source_path: scripts/test_v51_ziwei_completion.py
+          source_anchor: test_source_conditioned_patterns_are_exact_identities_without_verdicts
+          input: one frozen known-chart fixture
+          expected: exact TR-01 and ZW-M01 identities with predicate_matched_not_verdict status
+          independence: the test asserts the public identity set and no-verdict boundary outside the matcher
+
+  liuren:
+    source_audit_status: source_verified
+    dependencies:
+      - id: liuren.calendar.shared-sxtwl-four-pillars
+        category: shared_calendar_formula_epoch_and_hour_pillar
+        version: sxtwl-2.0.7/exact-jie-boundary-v1.2/east-asian-civil-jieqi-v1@1.0.2/five-rat-strict
+        status: verified
+        convention:
+          id: east-asian-civil-jieqi-v1
+          version: 1.0.2
+          disputed: true
+          boundary_rules:
+            - Liuren consumes the shared calendar_core normalization rather than an independent pillar calculator
+            - day rollover policy is explicit and limited to midnight or late-zi-next-day
+            - the hour branch follows civil time and its stem is recomputed from the final selected day by the five-rat rule
+            - month general is selected from the previous exact solar-term instant
+        runtime_binding:
+          module: reading_engine.calendar_core
+          calendar_algorithm_version: sxtwl-2.0.7/exact-jie-boundary-v1.2
+          calendar_convention_id: east-asian-civil-jieqi-v1
+          calendar_convention_version: 1.0.2
+          engine: sxtwl
+          engine_version: 2.0.7
+          zi_hour_policies: [late-zi-next-day, midnight]
+          hour_stem_rule: five-rat-strict
+        primary_sources:
+          - title: 三命通会
+            edition_or_recension: 维基文库整理本；四库本系统；影印尚未逐章复核
+            normalized_path: references/fulltext/bazi/sanming-tonghui/fulltext.md
+            sha256: 0f78de8e47b7cd1dc199d6488c5fdf40d01819e589b0f50e78273541e8c14ed7
+            anchor: L47 六十甲子；L597-L599 四时节气；L1525 立春交寅
+            exact_excerpt: 自甲子為首以六甲五子次第推排而盡於癸亥
+            material: sexagenary cycle, exact Jie boundaries, explicit Zi-hour day policy, and five-rat hour-stem derivation
+            license_status: ancient text public domain; normalized source local research only
+          - title: 大六壬秘本
+            edition_or_recension: local normalized mixed body/commentary; 司天苗达过将法
+            normalized_path: references/fulltext/san-shi/liuren-miben/fulltext.md
+            sha256: 44ea31ef43f874ffc9da03c6ed6c01eee62081db6c2faf11593ec9bbe47847e0
+            anchor: L3529-L3539
+            exact_excerpt: 雨水前日卯初刻，太陽入衛用登明亥。
+            material: twelve source-stated month-general transitions expanded over the fixed twenty-four solar-term cycle
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - path: references/matrices/liuren-source-tables-v1.yaml
+            anchor: month_general_solar_term_mapping
+            role: release-tracked twenty-four-term mapping, exact transition phrases, source anchor, and excerpt hash
+        source_artifact:
+          path: references/matrices/liuren-source-tables-v1.yaml
+          schema_version: mingli-liuren-source-tables-v1
+          sha256: 49095999aaef2b16000e201969f5ca5b1a02bf5c3e340ae0770d95f3cfe27415
+        engineering_references:
+          - name: sxtwl
+            role: shared deterministic Chinese calendar and solar-term engine
+            version: 2.0.7
+            license: BSD-3-Clause
+            lockfile: requirements.txt
+            lock_entry: sxtwl==2.0.7
+            distribution: PyPI sdist sxtwl-2.0.7.tar.gz
+            distribution_sha256: 38b24472389f7f6f3521c2c99e4b5e86c0184c7d6eb02e5409c239d21f0a6512
+            upstream: https://github.com/yuangu/sxtwl_cpp
+            binding_note: shared calendar_core validates the installed distribution version at runtime
+        independent_test_sample:
+          id: liuren-shared-calendar-five-rat-2024-01-15-late-zi
+          source: scripts/test_v51_liuren_completion.py::LiurenFixtureContractTests.test_audit_reports_bound_shared_calendar_runtime_identity
+          source_path: scripts/test_v51_liuren_completion.py
+          source_anchor: test_audit_reports_bound_shared_calendar_runtime_identity
+          input: 2024-01-15T23:30:00 Asia/Shanghai under both admitted Zi-hour policies
+          expected: midnight yields 戊寅/壬子; late-zi-next-day yields 己卯/甲子
+          independence: frozen known answers assert the final-day five-rat hour stem outside calendar_core
+
+      - id: liuren.cast.four-lessons-three-transmissions-nine-methods
+        category: formula_tree_and_lookup_tables
+        version: daliuren-nine-method-v2/official-corrected-guiren
+        status: verified
+        convention:
+          id: daliuren-nine-method-v2
+          version: 2.0.0
+          disputed: true
+          boundary_rules:
+            - classical nine-method algorithm is authoritative over the 720 engineering table
+            - official-corrected and traditional Guiren profiles remain explicit alternatives
+            - Fuyin, Fanyin, Shehai, Yaoke, Mao Xing, Bie Ze, and Ba Zhuan branches retain selection traces
+        primary_sources:
+          - title: 大六壬大全
+            edition_or_recension: normalized complete composite plus independent Kanripo WYG twelve-volume witness
+            normalized_path: references/fulltext/san-shi/daliuren-daquan/fulltext.md
+            sha256: 4c5ec0c8ea1f7b36deaf1db317cfa4407b090ad4ed909a3b8a431dced0a25d9d
+            anchor: L36 and L2704 onward; exact method anchors registered in source-manifest.yaml
+            exact_excerpt: 一 贼克法一下克上曰重审，一上克下曰元首
+            material: nine transmission-selection branches and worked lesson examples
+            license_status: ancient text public domain; normalized Wikisource text CC BY-SA; local research only
+        commentary_dependencies:
+          - path: references/books/san-shi/daliuren-daquan/source-manifest.yaml
+            anchor: source_layers and chapter_coverage
+            role: recension identity, fulltext hash, scan witness, and conflict boundaries
+          - path: references/books/san-shi/daliuren-daquan/rules.md
+            anchor: DLR-00 through DLR-18
+            role: executable method constraints
+          - path: references/matrices/liuren-source-tables-v1.yaml
+            anchor: source_profiles.daliuren_daquan and evidence_roles.san-shi/daliuren-daquan.casting_rule
+            role: release-tracked source identity, classical example coverage, and casting/evidence-role boundary
+        source_artifact:
+          path: references/matrices/liuren-source-tables-v1.yaml
+          schema_version: mingli-liuren-source-tables-v1
+          sha256: 49095999aaef2b16000e201969f5ca5b1a02bf5c3e340ae0770d95f3cfe27415
+        independent_test_sample:
+          id: liuren-classical-method-source-plates
+          source: references/fixtures/algorithm-source-samples-v51.yaml::liuren-classical-method-source-plates
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: liuren-classical-method-source-plates
+          input: 39 independently transcribed classical day, hour-branch, and month-general combinations
+          expected: four lessons, method identity or documented source-label variant, three transmissions, and exact source anchor
+          independence: expected plates are transcribed from line-anchored classical examples and never generated from provider code or the 720 engineering table
+
+      - id: liuren.timing.initial-group-seasonal-upper
+        category: timing_formula_and_calendar_conversion
+        version: liuren-miben-LM-R21-v1
+        status: verified
+        convention:
+          id: liuren-miben-seasonal-upper-next-branch-day
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - initial 寅卯 uses the heaven-plate branch above 辰
+            - initial 巳午 uses the heaven-plate branch above 未
+            - initial 申酉 uses the heaven-plate branch above 戌
+            - initial 亥子 uses the heaven-plate branch above 丑
+            - seasonal initials 辰戌丑未 use the separately stated next-season branch
+            - a converted civil date is only a traditional candidate and never a guarantee
+        primary_sources:
+          - title: 大六壬秘本
+            edition_or_recension: local normalized mixed body/commentary; specific line not yet fully page-collated
+            normalized_path: references/fulltext/san-shi/liuren-miben/fulltext.md
+            sha256: 44ea31ef43f874ffc9da03c6ed6c01eee62081db6c2faf11593ec9bbe47847e0
+            anchor: L3070-L3076
+            exact_excerpt: 凡寅卯發用，以辰上神為應期；申酉發用，以戌上神為應期
+            material: complete twelve-initial grouping, seasonal branches, and timing preconditions
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - path: references/books/san-shi/liuren-miben/rules.md
+            anchor: LM-R21
+            role: versioned next-matching-branch-day conversion and stop conditions
+          - path: references/books/san-shi/liuren-miben/quote-index.md
+            anchor: LM-Q070 and LM-Q071
+            role: exact short quotations and source-layer identity
+          - path: references/matrices/liuren-source-tables-v1.yaml
+            anchor: source_profiles.liuren_miben.anchors.timing and dimension_profiles.timing
+            role: release-tracked timing source identity and projection boundary
+        source_artifact:
+          path: references/matrices/liuren-source-tables-v1.yaml
+          schema_version: mingli-liuren-source-tables-v1
+          sha256: 49095999aaef2b16000e201969f5ca5b1a02bf5c3e340ae0770d95f3cfe27415
+        independent_test_sample:
+          id: liuren-money-timing-2026-07-14
+          source: scripts/test_v51_liuren_completion.py::LiurenDimensionProjectionTests.test_exact_timing_requires_calendar_rule_and_bounded_horizon
+          source_path: scripts/test_v51_liuren_completion.py
+          source_anchor: test_exact_timing_requires_calendar_rule_and_bounded_horizon
+          input: fixed cast dated 2026-07-10 with verified heaven plate and transmissions
+          expected: LM-R21 candidate 辛卯 2026-07-16; marked candidate_not_guarantee
+          independence: active provider fixture independently checks the bounded calendar candidate and the missing-horizon and missing-calendar stop conditions
+
+      - id: liuren.dimension-specific-calculated-facts
+        category: mechanical_projection_with_source_predicates
+        version: liuren-dimension-projection-v1
+        status: verified
+        convention:
+          id: liuren-dimension-fact-projection
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - project only calculated lesson, transmission, strength, void, and general facts
+            - keep issue-specific evidence selection outside the provider
+            - never infer a location, amount, health event, or exact date from generic lesson metadata
+        primary_sources:
+          - title: 大六壬大全
+            edition_or_recension: same verified complete composite
+            normalized_path: references/fulltext/san-shi/daliuren-daquan/fulltext.md
+            sha256: 4c5ec0c8ea1f7b36deaf1db317cfa4407b090ad4ed909a3b8a431dced0a25d9d
+            anchor: L4098-L4102 and L6914; DLR-16
+            exact_excerpt: 旺相气发必欲速，休囚死气皆迟延
+            material: relative timing/quantity constraints and explicit prohibition on unsupported specificity
+            license_status: ancient text public domain; normalized source local research only
+          - title: 大六壬秘本
+            edition_or_recension: local normalized mixed body/commentary
+            normalized_path: references/fulltext/san-shi/liuren-miben/fulltext.md
+            sha256: 44ea31ef43f874ffc9da03c6ed6c01eee62081db6c2faf11593ec9bbe47847e0
+            anchor: L555-L771 and L4917-L4919
+            exact_excerpt: 凡求財，傳中見財易求，無才難取
+            material: branch directions, general-landing correspondences, and money predicates
+            license_status: ancient text public domain; normalized source local research only
+          - title: 六壬指南及注解
+            edition_or_recension: local normalized composite
+            normalized_path: references/fulltext/san-shi/liuren-zhiyin/fulltext.md
+            sha256: 2298b2270daf8f8e413f9d6c768e84830a225f93779a2ebbd90e8c905885c8bc
+            anchor: L557-L558 and L777
+            exact_excerpt: 三傳生日百事宜，日生三傳財源耗
+            material: subject-object and directed transmission-to-day relations
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - path: references/books/san-shi/daliuren-daquan/rules.md
+            anchor: DLR-16 and stop_or_exception
+            role: authoritative scoped projection contract
+          - path: references/matrices/liuren-source-tables-v1.yaml
+            anchor: dimension_profiles and evidence_roles
+            role: dimension/output whitelist and separated casting, imagery, issue, and timing evidence roles
+        source_artifact:
+          path: references/matrices/liuren-source-tables-v1.yaml
+          schema_version: mingli-liuren-source-tables-v1
+          sha256: 49095999aaef2b16000e201969f5ca5b1a02bf5c3e340ae0770d95f3cfe27415
+        independent_test_sample:
+          id: liuren-outcome-relation-projection
+          source: references/fixtures/algorithm-source-samples-v51.yaml::liuren-outcome-relation-projection
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: liuren-outcome-relation-projection
+          input: fixed day stem, day branch, and three transmissions
+          expected: directed mechanical relations remain separate, target relative remains caller-bound, and no verdict is produced
+          independence: expectations were reduced from the cited source conditions before provider implementation
+
+      - id: liuren.location.branch-direction-correspondence
+        category: complete_lookup_table
+        version: liuren-miben-branch-directions-v1
+        status: verified
+        convention:
+          id: symbolic-direction-candidate-only
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - map all twelve branches to the eight named source sectors
+            - expose only a symbolic candidate and never claim an observed physical location
+        primary_sources:
+          - title: 大六壬秘本
+            edition_or_recension: local normalized mixed body/commentary
+            normalized_path: references/fulltext/san-shi/liuren-miben/fulltext.md
+            sha256: 44ea31ef43f874ffc9da03c6ed6c01eee62081db6c2faf11593ec9bbe47847e0
+            anchor: L555-L577
+            exact_excerpt: 其方在北
+            material: complete twelve-branch direction correspondences
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - {path: references/matrices/liuren-source-tables-v1.yaml, anchor: branch_directions, role: complete release-tracked branch-direction table}
+        source_artifact:
+          path: references/matrices/liuren-source-tables-v1.yaml
+          schema_version: mingli-liuren-source-tables-v1
+          sha256: 49095999aaef2b16000e201969f5ca5b1a02bf5c3e340ae0770d95f3cfe27415
+        independent_test_sample:
+          id: liuren-branch-direction-correspondence
+          source: references/fixtures/algorithm-source-samples-v51.yaml::liuren-branch-direction-correspondence
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: liuren-branch-direction-correspondence
+          input: all twelve earthly branches
+          expected: twelve exact branch-to-sector rows and symbolic-only scope
+          independence: the source rows were transcribed before the V5.1 dimension extension
+
+      - id: liuren.imagery.general-landing-correspondence
+        category: source_bound_correspondence_index
+        version: liuren-miben-general-landing-v1
+        status: verified
+        convention:
+          id: source-correspondence-not-observation
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - bind an exact source phrase only when both heavenly general and landing branch match
+            - label the result as correspondence rather than an observed real-world state
+            - emit no natural-language verdict or keyword-based interpretation
+        primary_sources:
+          - title: 大六壬秘本
+            edition_or_recension: local normalized mixed body/commentary
+            normalized_path: references/fulltext/san-shi/liuren-miben/fulltext.md
+            sha256: 44ea31ef43f874ffc9da03c6ed6c01eee62081db6c2faf11593ec9bbe47847e0
+            anchor: L269 文字；L600-L771 天将临支
+            exact_excerpt: 加寅為文字
+            material: heavenly-general landing correspondences
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - {path: references/matrices/liuren-source-tables-v1.yaml, anchor: source_profiles.liuren_miben.anchors.general_landing_imagery, role: source identity and imagery evidence-role boundary}
+        source_artifact:
+          path: references/matrices/liuren-source-tables-v1.yaml
+          schema_version: mingli-liuren-source-tables-v1
+          sha256: 49095999aaef2b16000e201969f5ca5b1a02bf5c3e340ae0770d95f3cfe27415
+        independent_test_sample:
+          id: liuren-general-landing-correspondence
+          source: references/fixtures/algorithm-source-samples-v51.yaml::liuren-general-landing-correspondence
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: liuren-general-landing-correspondence
+          input: Tengshe landing on Yin
+          expected: exact source phrase, rule identity, and correspondence-only role
+          independence: exact source text was checked against the hash-bound structured excerpt table
+
+  luming-nayin:
+    source_audit_status: source_verified
+    dependencies:
+      - id: luming.nayin.sixty-jiazi-table
+        category: complete_lookup_table
+        version: li-xuzhong-sixty-nayin-v1
+        status: verified
+        convention:
+          id: early-luming-nayin-independent-lineage
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - map all sixty Ganzhi positions without deriving them from modern Ten Gods
+            - retain the source row identity for every mapped Nayin
+        primary_sources: [*li_xuzhong]
+        commentary_dependencies:
+          - {path: references/books/luming-nayin/li-xuzhong-mingshu/rules.md, anchor: LX-01-01, role: sixty-row normalized index and caveats}
+        independent_test_sample:
+          id: luming-nayin-sixty-cycle-boundary
+          source: references/fixtures/algorithm-source-samples-v51.yaml::luming-nayin-sixty-cycle-boundary
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: luming-nayin-sixty-cycle-boundary
+          input: first and last Ganzhi in the sixty-cycle
+          expected: 甲子海中金 and 癸亥大海水
+          independence: manually transcribed boundary rows predate provider code
+      - id: luming.three-yuan-and-taiyuan
+        category: formula_and_disputed_convention
+        version: luoluzi-three-yuan/taiyuan-declared-v1
+        status: verified
+        convention:
+          id: early-luming-three-yuan-with-explicit-taiyuan-profile
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - expose stem, branch, and hidden-human layers as Tianyuan, Diyuan, and Renyuan
+            - calculate Taiyuan only when the selected source profile requires it
+            - under the declared five-position profile calculate Taiyuan as month stem plus one and month branch plus three
+            - expose the Five-Elements-Jingji no-Taiyuan position as a conflicting convention
+        primary_sources: [*luoluzi, *wuxing_jingji]
+        commentary_dependencies:
+          - {path: references/books/luming-nayin/luoluzi-sanming/rules.md, anchor: LZ-01-01, role: three-yuan scope and terminology}
+          - {path: references/books/luming-nayin/li-xuzhong-mingshu/procedures.md, anchor: P-01, role: versioned Taiyuan lookup formula and three-lives data contract}
+        independent_test_sample:
+          id: luming-three-yuan-fixed-pillars
+          source: references/fixtures/algorithm-source-samples-v51.yaml::luming-three-yuan-fixed-pillars
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: luming-three-yuan-fixed-pillars
+          input: fixed four-pillar tuple
+          expected: separate stem, branch, and required human-origin layers plus 丁丑 Taiyuan under the selected five-position profile
+          independence: expected components are direct decompositions recorded before implementation
+      - id: luming.relations.lu-ma-gui
+        category: source_declared_lookup_relations
+        version: li-xuzhong-lu-ma-gui-v1
+        status: verified
+        convention:
+          id: early-luming-source-named-relations
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - emit Lu, Ma, and Gui only from a named early-Luming table
+            - use the ten-stem Lu table, four-triad Yima table, and ten-stem Tianyi candidate table without interpretive promotion
+            - keep multiple nobleman recensions as separately named candidates
+            - do not translate a relation into modern Bazi Ten-God vocabulary
+        primary_sources: [*li_xuzhong]
+        commentary_dependencies:
+          - {path: references/books/luming-nayin/li-xuzhong-mingshu/rules.md, anchor: LX-08-01, role: normalized relation identities and source caveats}
+          - {path: references/books/luming-nayin/wuxing-jingji/rules.md, anchor: WX-05-01, role: exact ten-stem Tianyi table}
+          - {path: references/books/luming-nayin/wuxing-jingji/rules.md, anchor: WX-05-02, role: Lu and Ma relation scope}
+        independent_test_sample:
+          id: luming-lumagui-jia
+          source: references/fixtures/algorithm-source-samples-v51.yaml::luming-lumagui-jia
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: luming-lumagui-jia
+          input: 甲 stem with 寅未丑 branches
+          expected: Lu 寅 and noble candidates 丑未
+          independence: fixed lookup row is separately registered
+      - id: luming.source-conditioned-patterns
+        category: exact_fact_predicate_evidence_identity
+        version: verified-evidence-rules-v1
+        status: verified
+        convention:
+          id: verified-classical-evidence-exact-fact-match-v1
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - match only runtime-active, classically verified early-Luming rules against explicit calculated fact paths
+            - expose exact rule, source, matched fact paths, and predicate audit identities
+            - never convert a predicate match into a life, event, or outcome verdict
+        primary_sources:
+          - *li_xuzhong
+          - *luoluzi
+          - *wuxing_jingji
+          - title: 兰台妙选
+            edition_or_recension: 本地 normalized 通行整理本
+            normalized_path: references/fulltext/luming-nayin/lantai-miaoxuan/fulltext.md
+            sha256: ae30d81ed02dc99dd227f2ca7b0e6daf34bea9776c8a531f042b8e59bd80346e
+            anchor: L18
+            exact_excerpt: 天元、地元、人元謂之三命
+            material: three-lives fact framework used by the verified methodology predicate
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - {path: references/matrices/evidence-scope-bindings-v1.yaml, anchor: 'luming-nayin/lantai-miaoxuan#LT-M01', role: runtime scope and exact predicate binding}
+        source_artifact:
+          path: references/matrices/classical-evidence-bindings-v1.json
+          schema_version: mingli-classical-evidence-bindings-v1
+          sha256: 73c5a8a5d2041e7d49f838c70d0ca184fee060fd355a8f29b0fd6f9a0a7abc8d
+        independent_test_sample:
+          id: luming-source-conditioned-patterns
+          source: scripts/test_v51_luming_completion.py::LumingFactLayerTests.test_source_conditioned_patterns_are_exact_identities_without_verdicts
+          source_path: scripts/test_v51_luming_completion.py
+          source_anchor: test_source_conditioned_patterns_are_exact_identities_without_verdicts
+          input: fixed 乙丑 four-pillar tuple under the declared Taiyuan profile
+          expected: exact LT-M01 identity and predicate_matched_not_verdict status
+          independence: the test asserts the public identity and no-verdict boundary outside the matcher
+  xingming:
+    source_audit_status: source_verified
+    dependencies:
+      - id: xingming.ephemeris.seven-luminaries
+        category: astronomy_ephemeris_and_coordinate_convention
+        version: astronomy-engine-2.1.19/geocentric-ecliptic-of-date-v1
+        status: verified
+        convention:
+          id: xingming-tropical-geocentric-ecliptic-of-date
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - use modern ephemeris positions for Sun, Moon, Mercury, Venus, Mars, Jupiter, and Saturn
+            - preserve UTC conversion, observer location, equinox-of-date, and tropical frame in facts
+            - ancient mean-motion tables are historical evidence and never the numerical engine
+        primary_sources: [*xingxue_dacheng, *guotian_jing]
+        commentary_dependencies:
+          - {path: references/books/xingming/xingxue-dacheng/rules.md, anchor: XXDC-R002, role: mandatory tool-based degrees and bodies}
+        engineering_references:
+          - name: Astronomy Engine Python
+            role: deterministic tested planetary ephemeris implementation
+            version: 2.1.19
+            license: MIT
+            upstream: https://github.com/cosinekitty/astronomy/tree/v2.1.19
+            upstream_tag_commit: 61dc07020aaa6885d2c7f688a4d82beaf6edb9ef
+            distribution: PyPI sdist astronomy-engine-2.1.19.tar.gz
+            distribution_sha256: 95b797b87b659adc0602a6a205143ce5a10451664e80650bb7cd8ba3c8f1f02b
+            license_path: vendor/astronomy-engine-2.1.19/LICENSE
+            license_sha256: b4d9dd0fd80fce3879c4cd9e3754364f74fc5ec046f33276475ba3876785c8b7
+            provenance_path: vendor/astronomy-engine-2.1.19/PROVENANCE.json
+        independent_test_sample:
+          id: xingming-seven-luminaries-j2000
+          source: references/fixtures/algorithm-source-samples-v51.yaml::xingming-seven-luminaries-j2000
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: xingming-seven-luminaries-j2000
+          input: J2000 instant
+          expected: seven named longitude facts in the declared frame
+          independence: numeric values are frozen from an upstream oracle, outside provider code
+      - id: xingming.houses.ming-shen-degrees
+        category: house_and_degree_formula
+        version: xingxue-twelve-house-mingshen-opposition-v1
+        status: verified
+        convention:
+          id: xingxue-dacheng-twelve-house-three-disk
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - calculate twelve house boundaries from the declared classical disk convention
+            - preserve Ming degree and the exactly opposing Shen degree
+            - record degree-to-mansion precession convention rather than reuse ancient fixed longitudes silently
+        primary_sources: [*xingxue_dacheng]
+        commentary_dependencies:
+          - {path: references/books/xingming/xingxue-dacheng/rules.md, anchor: XXDC-R005, role: life/body lords and house facts}
+        independent_test_sample:
+          id: xingming-house-and-mingshen-opposition
+          source: references/fixtures/algorithm-source-samples-v51.yaml::xingming-house-and-mingshen-opposition
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: xingming-house-and-mingshen-opposition
+          input: Ming degree 42.5
+          expected: Shen degree 222.5
+          independence: exact opposition invariant is source-derived and provider-independent
+      - id: xingming.houses.topocentric-ming-degree
+        category: topocentric_house_anchor_formula
+        version: apparent-sidereal-eastern-ecliptic-horizon-v1
+        status: verified
+        convention:
+          id: xingming-topocentric-ming-with-exact-opposing-shen
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - Ming degree is the eastern intersection of the tropical ecliptic and local horizon from exact UTC, longitude, and latitude
+            - mean obliquity is of date and apparent sidereal time comes from the pinned astronomy engine
+            - Shen degree is exactly 180 degrees from Ming under the selected Xingxue recension
+        primary_sources: [*xingxue_dacheng]
+        commentary_dependencies:
+          - {path: references/books/xingming/xingxue-dacheng/rules.md, anchor: XXDC-R005, role: life and body degree facts}
+        engineering_references:
+          - name: Astronomy Engine Python
+            role: apparent sidereal time and versioned time scale
+            version: 2.1.19
+            license: MIT
+            upstream: https://github.com/cosinekitty/astronomy/tree/v2.1.19
+            upstream_tag_commit: 61dc07020aaa6885d2c7f688a4d82beaf6edb9ef
+            distribution_sha256: 95b797b87b659adc0602a6a205143ce5a10451664e80650bb7cd8ba3c8f1f02b
+            provenance_path: vendor/astronomy-engine-2.1.19/PROVENANCE.json
+        independent_test_sample:
+          id: xingming-topocentric-ming-j2000-greenwich
+          source: references/fixtures/algorithm-source-samples-v51.yaml::xingming-topocentric-ming-j2000-greenwich
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: xingming-topocentric-ming-j2000-greenwich
+          input: J2000 Greenwich instant and WGS84 observer
+          expected: Ming 24.268447624688 degrees and Shen 204.268447624688 degrees
+          independence: the sidereal, obliquity, and horizon intersection formula was evaluated outside provider code
+      - id: xingming.four-residuals.numeric-profiles
+        category: lunar_events_and_classical_mean_point_formula
+        version: lunar-node-apogee-and-dated-ziqi-calibration-v1
+        status: verified
+        convention:
+          id: xingming-four-residuals-explicit-numeric-identities
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - under the selected Guolao convention Luo Hou is the descending lunar node (交初) and Ji Du is the exactly opposing ascending node (交中)
+            - Yue Bo interpolates consecutive lunar apogee events and remains a calculated point rather than an observed body
+            - Zi Qi preserves the source 10228-day mean cycle and minus-1288 accumulated-day formula
+            - its absolute ecliptic phase is calibrated to the dated Ming almanac record JDN 2280289.5 at 284.58 degrees documented by Niu 2015
+            - the historical calibration is versioned and hash-bound in references/matrices/xingming-ziqi-calibration-v1.yaml
+            - every point records direction, numerical profile, source anchor, and non-observed status
+        primary_sources: [*xingxue_dacheng, *guotian_jing]
+        commentary_dependencies:
+          - {path: references/books/xingming/guotian-jing/quote-index.md, anchor: GX-Q1033, role: Luo Hou at 交初 and Ji Du at the opposing 交中}
+          - {path: references/matrices/xingming-ziqi-calibration-v1.yaml, anchor: classical_formula and historical_dated_calibration, role: source formula, formal epoch reconstruction, and dated longitude calibration}
+        engineering_references:
+          - name: Astronomy Engine Python
+            role: descending lunar-node and lunar-apogee event oracle
+            version: 2.1.19
+            license: MIT
+            upstream: https://github.com/cosinekitty/astronomy/tree/v2.1.19
+            upstream_tag_commit: 61dc07020aaa6885d2c7f688a4d82beaf6edb9ef
+            distribution_sha256: 95b797b87b659adc0602a6a205143ce5a10451664e80650bb7cd8ba3c8f1f02b
+            provenance_path: vendor/astronomy-engine-2.1.19/PROVENANCE.json
+          - name: Niu Weixing 2015 historical reconstruction
+            role: scholarship linking the source formula to a dated primary-almanac longitude
+            version: 自然科学史研究 34(4), pp.411-424
+            license: citation-only; article text is not redistributed
+            upstream: https://faculty.ustc.edu.cn/niuweixing/zh_CN/lwcg/64044/content/20711.htm
+            calibration_path: references/matrices/xingming-ziqi-calibration-v1.yaml
+            calibration_sha256: 6c1be027b753684907b7ac941bb48889efe0209b832770d9fc830f08967e56cc
+            artifact_path: references/matrices/xingming-ziqi-calibration-v1.yaml
+            artifact_sha256: 6c1be027b753684907b7ac941bb48889efe0209b832770d9fc830f08967e56cc
+        independent_test_sample:
+          id: xingming-residual-points-j2000
+          source: references/fixtures/algorithm-source-samples-v51.yaml::xingming-residual-points-j2000
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: xingming-residual-points-j2000
+          input: J2000 instant
+          expected: four named residual-point longitudes under their separate profiles
+          independence: lunar events came from the pinned upstream oracle and Zi Qi was evaluated separately from the historical dated calibration
+      - id: xingming.transformations.ten-stem-table
+        category: complete_source_lookup_table
+        version: xingxue-ten-stem-transformations-v1
+        status: verified
+        convention:
+          id: xingxue-transformations-rotate-ten-body-row
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - preserve the ten transformation labels in source order
+            - rotate the ten-body row once for each successive heavenly stem
+            - transformations are calculated assignments and never personal verdicts
+        primary_sources: [*xingxue_dacheng]
+        commentary_dependencies:
+          - {path: references/books/xingming/xingxue-dacheng/terms.md, anchor: XXDC-T004, role: ten-stem transformation vocabulary}
+        independent_test_sample:
+          id: xingming-ten-stem-transformations-jia
+          source: references/fixtures/algorithm-source-samples-v51.yaml::xingming-ten-stem-transformations-jia
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: xingming-ten-stem-transformations-jia
+          input: Jia year stem
+          expected: ten transformation-to-body assignments
+          independence: both ten-item source rows were transcribed before implementation
+      - id: xingming.limits.dongwei-bailiu-table
+        category: complete_limit_duration_table
+        version: dongwei-bailiu-100-years-6-months-v1
+        status: verified
+        convention:
+          id: xingxue-dongwei-twelve-limit-segments
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - traverse Ming, Xiangmao, Fude, Guanlu, Qianyi, Jie, Qi, Nu, Nannv, Tianzhai, Xiongdi, Caibo in source order
+            - preserve three four-and-a-half-year segments and two five-year closing segments
+            - the full table totals 100.5 years and is never rewritten as 106 years
+        primary_sources: [*xingxue_dacheng, *guotian_jing]
+        commentary_dependencies:
+          - {path: references/books/xingming/guotian-jing/rules.md, anchor: GR-01-06, role: source limit formula and scope}
+        independent_test_sample:
+          id: xingming-bailiu-100-years-six-months
+          source: references/fixtures/algorithm-source-samples-v51.yaml::xingming-bailiu-100-years-six-months
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: xingming-bailiu-100-years-six-months
+          input: Ming degree 42.5
+          expected: twelve source-ordered intervals totaling 100.5 years
+          independence: durations and total were transcribed and summed independently of provider code
+      - id: xingming.source-conditioned-patterns
+        category: exact_fact_predicate_evidence_identity
+        version: verified-evidence-rules-v1
+        status: verified
+        convention:
+          id: verified-classical-evidence-exact-fact-match-v1
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - match only runtime-active, classically verified Xingming rules against explicit calculated fact paths
+            - expose exact rule, source, matched fact paths, and predicate audit identities
+            - never convert a predicate match into a life, event, or outcome verdict
+        primary_sources:
+          - *xingxue_dacheng
+          - *guotian_jing
+          - title: 星命溯源
+            edition_or_recension: 本地 normalized 通行整理本
+            normalized_path: references/fulltext/xingming/xingming-suyuan/fulltext.md
+            sha256: 93581f38e1ffa36f9b33e695d4ec3441da57cad4a3f20e6b1c29b77207394f5a
+            anchor: L67
+            exact_excerpt: 次察身宫
+            material: Ming-Shen fact identity used by the verified methodology predicate
+            license_status: ancient text public domain; normalized source local research only
+        commentary_dependencies:
+          - {path: references/matrices/evidence-scope-bindings-v1.yaml, anchor: 'xingming/guotian-jing#GR-01-01', role: runtime scope and exact predicate binding}
+        source_artifact:
+          path: references/matrices/classical-evidence-bindings-v1.json
+          schema_version: mingli-classical-evidence-bindings-v1
+          sha256: 73c5a8a5d2041e7d49f838c70d0ca184fee060fd355a8f29b0fd6f9a0a7abc8d
+        independent_test_sample:
+          id: xingming-source-conditioned-patterns
+          source: scripts/test_v51_xingming_completion.py::XingmingFixtureContractTests.test_source_conditioned_patterns_are_exact_identities_without_verdicts
+          source_path: scripts/test_v51_xingming_completion.py
+          source_anchor: test_source_conditioned_patterns_are_exact_identities_without_verdicts
+          input: one fixed Shanghai natal chart with explicit coordinates
+          expected: exact GR-01-01, XR-M01, and XXDC-M01 identities with no-verdict status
+          independence: the test asserts the public identity set and no-verdict boundary outside the matcher
+  liuyao:
+    source_audit_status: source_verified
+    dependencies:
+      - id: liuyao.cast.six-tosses-and-hexagrams
+        category: casting_state_and_persisted_randomness
+        version: three-coin-six-toss-preserved-seed-v1
+        status: verified
+        convention:
+          id: liuyao-three-coin-not-time-cast
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - accept exactly six supplied toss values or generate six values once from a persisted seed
+            - treat 6 and 9 as moving and preserve the original toss sequence
+            - never substitute a Meihua time cast
+        primary_sources: [*bushi_zhengzong]
+        commentary_dependencies:
+          - {path: references/books/divination/bushi-zhengzong/rules.md, anchor: BSZZ-R01, role: complete cast prerequisite}
+          - {path: references/matrices/liuyao-jingfang-tables-v1.yaml, anchor: line_states, role: complete 6/7/8/9 state table}
+        source_artifact:
+          path: references/matrices/liuyao-jingfang-tables-v1.yaml
+          schema_version: mingli-liuyao-jingfang-tables-v1
+          sha256: bbc0d53684e6f544b1fc1504b3fccb7ac8c099944d6af058154d1d1535cc5c54
+        independent_test_sample:
+          id: liuyao-supplied-six-tosses
+          source: references/fixtures/algorithm-source-samples-v51.yaml::liuyao-supplied-six-tosses
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: liuyao-supplied-six-tosses
+          input: six fixed toss totals
+          expected: moving lines 3 and 4 with all tosses preserved
+          independence: toss classification fixture is independent of provider code
+      - id: liuyao.plate.hexagram-palace-shiying
+        category: complete_64_hexagram_table_and_palace_formula
+        version: jingfang-eight-palace-najia-v1
+        status: verified
+        convention:
+          id: jingfang-eight-palace-hexagram-identity
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - calculate main and changed 64-hexagram identities from six lines
+            - derive the eight-palace generation from the source line-change sequence
+            - bind Shi/Ying to the generation row and keep Youhun/Guihun explicit
+        primary_sources: [*bushi_zhengzong]
+        commentary_dependencies:
+          - {path: references/matrices/liuyao-jingfang-tables-v1.yaml, anchor: palace_stages and palaces, role: "all 64 names, eight-palace membership, and Shi/Ying rows"}
+        source_artifact:
+          path: references/matrices/liuyao-jingfang-tables-v1.yaml
+          schema_version: mingli-liuyao-jingfang-tables-v1
+          sha256: bbc0d53684e6f544b1fc1504b3fccb7ac8c099944d6af058154d1d1535cc5c54
+        independent_test_sample:
+          id: liuyao-eight-palace-boundaries
+          source: references/fixtures/algorithm-source-samples-v51.yaml::liuyao-eight-palace-boundaries
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: liuyao-eight-palace-boundaries
+          input: the eight source-ordered palace rows
+          expected: 64 unique hexagrams plus the fixed generation and Shi/Ying arrays
+          independence: all eight rows were transcribed from the source table before provider implementation
+      - id: liuyao.plate.najia-six-relatives-hidden-lines
+        category: complete_najia_and_flying_hidden_line_formula
+        version: jingfang-najia-six-relatives-fushen-v1
+        status: verified
+        convention:
+          id: jingfang-najia-main-palace-relatives
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - install stems and branches from the actual lower and upper trigrams
+            - calculate all six relatives against the main hexagram palace element
+            - emit pure-palace hidden lines only for relative categories missing from both the visible main plate and changed moving lines
+            - changed-line Najia never changes the main palace identity
+        primary_sources: [*bushi_zhengzong, *huozhu_lin, *zengshan_buyi]
+        commentary_dependencies:
+          - {path: references/books/divination/huozhu-lin/rules.md, anchor: HZL-R001, role: six-relatives and flying-hidden line dependency}
+          - {path: references/books/divination/bushi-zhengzong/rules.md, anchor: BSZZ-R04 through BSZZ-R05, role: changed-line and flying-hidden priority conflict}
+          - {path: references/matrices/liuyao-jingfang-tables-v1.yaml, anchor: trigrams and five_element_relations, role: complete Najia and six-relative tables}
+        source_artifact:
+          path: references/matrices/liuyao-jingfang-tables-v1.yaml
+          schema_version: mingli-liuyao-jingfang-tables-v1
+          sha256: bbc0d53684e6f544b1fc1504b3fccb7ac8c099944d6af058154d1d1535cc5c54
+        independent_test_sample:
+          id: liuyao-changed-line-suppresses-hidden
+          source: references/fixtures/algorithm-source-samples-v51.yaml::liuyao-changed-line-suppresses-hidden
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: liuyao-changed-line-suppresses-hidden
+          input: 风地观 changing at lines 4 and 6 to 泽地萃
+          expected: the changed line-four 子孙亥水 is a candidate and suppresses a redundant hidden 子孙 line
+          independence: 增删卜易 L502-L516 explicitly rejects seeking a hidden spirit when the moving line changes into the needed relative
+      - id: liuyao.plate.six-spirits
+        category: complete_day_stem_six_spirit_table
+        version: liuyao-six-spirits-day-stem-v1
+        status: verified
+        convention:
+          id: liuyao-six-spirits-bottom-up
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - select the first spirit only from the calculated day stem
+            - rotate the fixed six-spirit row from line one through line six
+            - six spirits remain adjunct calculated labels, never independent verdicts
+        primary_sources: [*bushi_zhengzong, *zengshan_buyi]
+        commentary_dependencies:
+          - {path: references/matrices/liuyao-jingfang-tables-v1.yaml, anchor: six_spirits, role: ten-stem starting table and six-line order}
+        source_artifact:
+          path: references/matrices/liuyao-jingfang-tables-v1.yaml
+          schema_version: mingli-liuyao-jingfang-tables-v1
+          sha256: bbc0d53684e6f544b1fc1504b3fccb7ac8c099944d6af058154d1d1535cc5c54
+        independent_test_sample:
+          id: liuyao-six-spirits-stem-boundaries
+          source: references/fixtures/algorithm-source-samples-v51.yaml::liuyao-six-spirits-stem-boundaries
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: liuyao-six-spirits-stem-boundaries
+          input: Jia and Ji day stems
+          expected: complete bottom-up rotations beginning with Qinglong and Tengshe
+          independence: both rotations were enumerated from the source mnemonic before implementation
+      - id: liuyao.calendar.xunkong-month-day-relations
+        category: calendar_lookup_and_mechanical_branch_relations
+        version: liuyao-xunkong-month-day-strength-v1
+        status: verified
+        convention:
+          id: liuyao-shared-calendar-strength-relations
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - consume the exact shared calendar day Ganzhi and Jie-bounded month command
+            - derive Xunkong from the complete six-cycle table and month break by exact opposition
+            - expose seasonal state, day/month clash, combine, generation, restraint, and trine membership as neutral facts
+        primary_sources: [*bushi_zhengzong, *huozhu_lin, *zengshan_buyi]
+        commentary_dependencies:
+          - {path: references/matrices/liuyao-jingfang-tables-v1.yaml, anchor: xunkong branch_clashes branch_combinations branch_trines, role: "complete void, clash, combine, and trine tables"}
+        source_artifact:
+          path: references/matrices/liuyao-jingfang-tables-v1.yaml
+          schema_version: mingli-liuyao-jingfang-tables-v1
+          sha256: bbc0d53684e6f544b1fc1504b3fccb7ac8c099944d6af058154d1d1535cc5c54
+        independent_test_sample:
+          id: liuyao-jiazi-xunkong
+          source: references/fixtures/algorithm-source-samples-v51.yaml::liuyao-jiazi-xunkong
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: liuyao-jiazi-xunkong
+          input: 甲子 day
+          expected: 戌亥 void
+          independence: first-cycle void row is independently enumerated
+      - id: liuyao.relations.returning-and-useful-spirit-candidates
+        category: moving_change_relations_and_candidate_contract
+        version: liuyao-returning-relations-candidates-v1
+        status: verified
+        convention:
+          id: liuyao-calculated-candidates-before-adjudication
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - compare every moving line with its deterministic changed-line Najia for returning generation, restraint, clash, combine, or same-element facts
+            - list visible, changed-moving, and source-derived hidden positions for all five six-relative categories
+            - accept an optional structured requested-relative set but never infer it from query wording
+            - final useful-spirit, original-spirit, avoid-spirit, and enemy-spirit selection remains evidence-bound adjudication
+        primary_sources: [*huozhu_lin, *bushi_zhengzong, *zengshan_buyi, *huangjin_ce]
+        commentary_dependencies:
+          - {path: references/books/divination/bushi-zhengzong/rules.md, anchor: BSZZ-R02 through BSZZ-R05, role: "candidate hierarchy, flying-hidden rules, and cross-book conflicts"}
+          - {path: references/matrices/liuyao-jingfang-tables-v1.yaml, anchor: fact_boundaries and five_element_relations, role: mechanical relation and candidate boundary}
+        source_artifact:
+          path: references/matrices/liuyao-jingfang-tables-v1.yaml
+          schema_version: mingli-liuyao-jingfang-tables-v1
+          sha256: bbc0d53684e6f544b1fc1504b3fccb7ac8c099944d6af058154d1d1535cc5c54
+        independent_test_sample:
+          id: liuyao-kuai-to-gou-hidden-returning
+          source: references/fixtures/algorithm-source-samples-v51.yaml::liuyao-kuai-to-gou-hidden-returning
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: liuyao-kuai-to-gou-hidden-returning
+          input: 泽天夬 changing at lines 1 and 6 to 天风姤
+          expected: line-one returning restraint and combine plus the missing Parent hidden line from the pure Kun plate
+          independence: original and changed Najia rows and the pure-palace missing category were enumerated independently
+  meihua:
+    source_audit_status: source_verified
+    dependencies:
+      - id: meihua.cast.explicit-methods-and-moduli
+        category: casting_formulas_and_input_provenance
+        version: meihua-explicit-methods-v1
+        status: verified
+        convention:
+          id: meihua-source-declared-method-only
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - accept time, supplied number, sound/count, observation, or supplied-hexagram facts only when method is explicit
+            - map remainder zero to trigram 8 or moving line 6
+            - record exact input provenance and never select a hidden random method
+        primary_sources: [*meihua_yishu]
+        commentary_dependencies:
+          - {path: references/books/divination/meihua-yishu/rules.md, anchor: MR-02-01, role: modulo-eight casting rule}
+          - {path: references/matrices/meihua-source-tables-v1.yaml, anchor: method_contracts and trigrams, role: exact structured input contracts and modulo tables}
+        source_artifact:
+          path: references/matrices/meihua-source-tables-v1.yaml
+          schema_version: mingli-meihua-source-tables-v1
+          sha256: 2a506471d4fe5c5ab0380af621123fe141a3833663f3497def46f78fd73e8e4a
+        independent_test_sample:
+          id: meihua-remainder-zero
+          source: references/fixtures/algorithm-source-samples-v51.yaml::meihua-remainder-zero
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: meihua-remainder-zero
+          input: sums divisible by eight and six
+          expected: trigram 8 and moving line 6
+          independence: modulus boundary fixture is fixed independently
+      - id: meihua.plate.main-mutual-changed
+        category: line_extraction_and_change_formula
+        version: meihua-mutual-change-v1
+        status: verified
+        convention:
+          id: meihua-six-line-bottom-up
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - store six lines bottom-up
+            - form lower mutual from lines 2-4 and upper mutual from lines 3-5
+            - change exactly the declared moving line
+        primary_sources: [*meihua_yishu]
+        commentary_dependencies:
+          - {path: references/books/divination/meihua-yishu/rules.md, anchor: MR-02-03, role: mutual-hexagram extraction}
+          - {path: references/matrices/meihua-source-tables-v1.yaml, anchor: hexagram_names and mutual_hexagram, role: complete identities and line extraction profile}
+        source_artifact:
+          path: references/matrices/meihua-source-tables-v1.yaml
+          schema_version: mingli-meihua-source-tables-v1
+          sha256: 2a506471d4fe5c5ab0380af621123fe141a3833663f3497def46f78fd73e8e4a
+        independent_test_sample:
+          id: meihua-mutual-extraction
+          source: references/fixtures/algorithm-source-samples-v51.yaml::meihua-mutual-extraction
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: meihua-mutual-extraction
+          input: fixed six-line main hexagram
+          expected: exact lower and upper mutual trigrams
+          independence: line slicing is separately recorded
+      - id: meihua.body-use-elements-season
+        category: body_use_and_seasonal_lookup
+        version: meihua-body-use-five-elements-v1
+        status: verified
+        convention:
+          id: moving-trigram-is-use
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - the trigram containing the moving line is Use and the other is Body
+            - derive five-element relation and seasonal strength as distinct facts
+            - do not convert body/use relations into Liuyao line facts
+        primary_sources: [*meihua_yishu]
+        commentary_dependencies:
+          - {path: references/books/divination/meihua-yishu/rules.md, anchor: MR-04-01, role: body/use identity and caveats}
+          - {path: references/matrices/meihua-source-tables-v1.yaml, anchor: five_element_relations and seasonal_strength, role: complete body/use and month-season tables}
+        source_artifact:
+          path: references/matrices/meihua-source-tables-v1.yaml
+          schema_version: mingli-meihua-source-tables-v1
+          sha256: 2a506471d4fe5c5ab0380af621123fe141a3833663f3497def46f78fd73e8e4a
+        independent_test_sample:
+          id: meihua-body-use-moving-upper
+          source: references/fixtures/algorithm-source-samples-v51.yaml::meihua-body-use-moving-upper
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: meihua-body-use-moving-upper
+          input: moving line 5
+          expected: upper trigram Use and lower trigram Body
+          independence: half-boundary example is provider-independent
+  qimen:
+    source_audit_status: source_verified
+    dependencies:
+      - id: qimen.calendar.dun-yuan-ju
+        category: solar_term_cycle_and_school_convention
+        version: shijia-zhuanpan-chaibu-xieji-v1
+        status: verified
+        convention:
+          id: shijia-zhuanpan-chaibu-xieji-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - use shared exact solar-term instants and explicit civil-day rollover as a modern versioned calendar boundary; the classical Chaibu passage states only the transition day
+            - Yang Dun begins at winter solstice and Yin Dun at summer solstice
+            - derive Yuan from the most recent Jia or Ji day symbol head
+            - use the source-transcribed 24-term three-Yuan Ju table
+            - Zhi Run, Maoshan, Feipan, and Yinpan remain separate versions
+        primary_sources: [*qimen_tongzhi, *qimen_faqiao_chaibu]
+        commentary_dependencies:
+          - {path: references/books/san-shi/qimen-dunjia-tongzhi/rules.md, anchor: Distillation Rules, role: computation and version-separation boundary}
+        source_artifact:
+          path: references/matrices/qimen-source-tables-v1.yaml
+          schema_version: mingli-qimen-source-tables-v1
+          sha256: 9cde893927111cf82fdc14e414c9e46a2168a2cc012ef282340732155eba7a0f
+        independent_test_sample:
+          id: qimen-winter-summer-dun
+          source: references/fixtures/algorithm-source-samples-v51.yaml::qimen-winter-summer-dun
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: qimen-winter-summer-dun
+          input: instants after winter and summer solstice
+          expected: Yang Dun then Yin Dun
+          independence: both branches are transcribed from one source paragraph
+      - id: qimen.plate.instruments-wonders-palaces
+        category: palace_flying_formula_and_lookup_tables
+        version: qimen-nine-palace-earth-plate-v1
+        status: verified
+        convention:
+          id: qimen-yang-forward-yin-reverse-earth-plate
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - map six Xunshou to 戊己庚辛壬癸
+            - fly instruments forward for Yang Dun and reverse for Yin Dun under the declared palace order
+            - place 乙丙丁 as separately typed three-wonder facts
+            - use the declared always-Kun center-hosting convention
+        primary_sources: [*qimen_tongzhi]
+        commentary_dependencies:
+          - {path: references/books/san-shi/qimen-dunjia-tongzhi/rules.md, anchor: Conflict Policy, role: incompatible-board isolation}
+        source_artifact:
+          path: references/matrices/qimen-source-tables-v1.yaml
+          schema_version: mingli-qimen-source-tables-v1
+          sha256: 9cde893927111cf82fdc14e414c9e46a2168a2cc012ef282340732155eba7a0f
+        independent_test_sample:
+          id: qimen-xunshou-jiazi
+          source: references/fixtures/algorithm-source-samples-v51.yaml::qimen-xunshou-jiazi
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: qimen-xunshou-jiazi
+          input: 甲子旬
+          expected: hidden under 戊
+          independence: first explicit Xunshou row is fixed separately
+      - id: qimen.plate.chief-director-stars-doors-deities
+        category: rotation_formula_and_derived_markers
+        version: qimen-rotating-chief-director-v1
+        status: verified
+        convention:
+          id: shijia-zhuanpan-always-kun-host-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - derive chief star and director door from Xunshou and hour stem, stable within one ten-hour Xun
+            - rotate stars on the spatial eight-palace ring
+            - rotate doors on the Xieji spatial eight-palace ring
+            - host Tianqin and center landings in Kun palace 2
+            - rotate the selected Baihu/Xuanwu deity profile forward in Yang and reverse in Yin
+            - keep the Tongzong L659 numeric outer-palace door row as an incompatible source profile
+        primary_sources: [*qimen_tongzhi, *xieji_qimen_chaibu]
+        commentary_dependencies:
+          - {path: references/books/san-shi/qimen-dunjia-tongzhi/rules.md, anchor: Distillation Rules, role: predicate completeness and interpretation boundary}
+        source_artifact:
+          path: references/matrices/qimen-source-tables-v1.yaml
+          schema_version: mingli-qimen-source-tables-v1
+          sha256: 9cde893927111cf82fdc14e414c9e46a2168a2cc012ef282340732155eba7a0f
+        engineering_references:
+          - name: deminzhang/qimen-go
+            role: independently reviewed rotating-plate engineering comparison only
+            version: 4d3f58fa0f401b5b3a337f119138e99e90685dda
+            license: MIT
+            upstream: https://github.com/deminzhang/qimen-go
+            artifact_sha256: 93ba61a632af3d402bfd65754d1adeb74b937f87b40e62fc50adc15a1d4bd350
+        independent_test_sample:
+          id: qimen-chief-director-ten-hour
+          source: references/fixtures/algorithm-source-samples-v51.yaml::qimen-chief-director-ten-hour
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: qimen-chief-director-ten-hour
+          input: two hours inside one Xun
+          expected: stable chief and director identities
+          independence: ten-hour boundary is source-stated and separately registered
+      - id: qimen.markers.xunkong-horse
+        category: sexagenary_void_and_hour_branch_horse
+        version: qimen-xunkong-hour-horse-v1
+        status: verified
+        convention:
+          id: qimen-hour-xun-void-and-trine-horse-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - derive the two void branches from the hour Xun
+            - map void branches to Qimen palaces without importing any verdict
+            - derive the hour horse branch from the four trine groups
+            - keep the Tongzong Tianma-direction method as an unselected separate convention
+        primary_sources: [*qimen_tongzhi, *wuxing_jingji_cycles]
+        commentary_dependencies:
+          - {path: references/matrices/shensha-cross-system-index.md, anchor: 驿马/天马, role: prohibit cross-system semantic merging}
+        source_artifact:
+          path: references/matrices/qimen-source-tables-v1.yaml
+          schema_version: mingli-qimen-source-tables-v1
+          sha256: 9cde893927111cf82fdc14e414c9e46a2168a2cc012ef282340732155eba7a0f
+        independent_test_sample:
+          id: qimen-xunkong-horse
+          source: references/fixtures/algorithm-source-samples-v51.yaml::qimen-xunkong-horse
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: qimen-xunkong-horse
+          input: {hour_ganzhi: 丙申}
+          expected: {xun: 甲午, void_branches: [辰, 巳], horse_branch: 寅}
+          independence: Xun arithmetic and the four trine horse table are source-transcribed separately
+      - id: qimen.patterns.board-predicates
+        category: named_pattern_predicates
+        version: qimen-forty-pattern-predicate-set-v1
+        status: verified
+        convention:
+          id: qimen-calculated-patterns-no-verdict-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - match all forty declared named-pattern predicates only against calculated calendar pillar, palace, stem, star, door, deity, Chief, and Director facts
+            - represent hidden Jia by the current Xunshou instrument only where the source predicate says Jia
+            - emit source rule identity and palace for every match
+            - never convert a pattern name into a user-facing outcome by itself
+        primary_sources: [*qimen_tongzhi, *qimen_faqiao_chaibu]
+        commentary_dependencies:
+          - {path: references/books/san-shi/qimen-dunjia-tongzhi/rules.md, anchor: Distillation Rules, role: preserve complete predicate conditions}
+        source_artifact:
+          path: references/matrices/qimen-source-tables-v1.yaml
+          schema_version: mingli-qimen-source-tables-v1
+          sha256: 9cde893927111cf82fdc14e414c9e46a2168a2cc012ef282340732155eba7a0f
+        independent_test_sample:
+          id: qimen-pattern-dragon-return
+          source: references/fixtures/algorithm-source-samples-v51.yaml::qimen-pattern-dragon-return
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: qimen-pattern-dragon-return
+          input: {heaven_symbol: 甲, earth_stem: 丙}
+          expected: {pattern: 青龙回首}
+          independence: the two-stem condition is an exact source row and is not inferred from prose
+  taiyi:
+    source_audit_status: source_verified
+    dependencies:
+      - id: taiyi.calendar.annual-epoch-and-scope
+        category: calendar_boundary_epoch_and_scope_contract
+        version: taiyi-jinjing-annual-tang-jiazi-v1
+        status: verified
+        convention:
+          id: taiyi-jinjing-annual-lunar-year-one-based
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - use the shared calendar lunar year and change the annual board only at lunar New Year
+            - translate the Tang Jiazi year 724 CE to accumulated year 1937281 with the one-based offset 1936557
+            - declare annual macro and historical board facts as the only supported scope of this profile
+            - reject personal life, personal event, medical, legal, military-action, month, day, hour, and minute claims under this profile
+        primary_sources: [*taiyi_shenshu]
+        commentary_dependencies:
+          - {path: references/books/san-shi/taiyi-shenshu/rules.md, anchor: TR-01, role: annual accumulated-year source and incompatible epoch boundary}
+          - {path: references/books/san-shi/taiyi-shenshu/procedures.md, anchor: TP-01, role: shared-calendar and declared-scope contract}
+          - {path: references/books/san-shi/taiyi-shenshu/procedures.md, anchor: TP-06, role: unsupported-scope contract}
+        source_artifact:
+          path: references/matrices/taiyi-source-tables-v1.yaml
+          schema_version: mingli-taiyi-source-tables-v1
+          sha256: a5ade0bfb7bcdf89aeb0862d5992fd6fb340d640ab1a593c6381cd480df5c393
+        independent_test_sample:
+          id: taiyi-annual-epoch-scope
+          source: references/fixtures/algorithm-source-samples-v51.yaml::taiyi-annual-epoch-scope
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: taiyi-annual-epoch-scope
+          input: lunar year 724 under the selected annual profile
+          expected: accumulated year 1937281, bureau 49, annual macro and historical scope
+          independence: the classical Tang anchor and shared-calendar lunar-year boundary are fixed in a release-tracked source table
+      - id: taiyi.cycle.six-ji-five-zi-yuan
+        category: complete_360_year_cycle_formula
+        version: taiyi-jinjing-six-ji-five-zi-yuan-v1
+        status: verified
+        convention:
+          id: taiyi-jinjing-360-position-one-based-cycle
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - divide the one-based 360-position cycle into six consecutive 60-year Ji
+            - divide the same cycle independently into five consecutive 72-year Zi-Yuan headed by Jiazi, Bingzi, Wuzi, Gengzi, and Renzi
+            - repeat bureaus one through 72 inside the 360-position cycle
+            - cycle governance as 理天、理地、理人 for successive years
+        primary_sources: [*taiyi_shenshu]
+        commentary_dependencies:
+          - {path: references/books/san-shi/taiyi-shenshu/rules.md, anchor: TR-03, role: six-Ji, five-Zi-Yuan, bureau, and governance formula}
+        source_artifact:
+          path: references/matrices/taiyi-source-tables-v1.yaml
+          schema_version: mingli-taiyi-source-tables-v1
+          sha256: a5ade0bfb7bcdf89aeb0862d5992fd6fb340d640ab1a593c6381cd480df5c393
+        independent_test_sample:
+          id: taiyi-six-ji-five-zi-yuan
+          source: references/fixtures/algorithm-source-samples-v51.yaml::taiyi-six-ji-five-zi-yuan
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: taiyi-six-ji-five-zi-yuan
+          input: accumulated year 1938457
+          expected: cycle position 217, Ji 4, Zi-Yuan 4, bureau 1, 理天
+          independence: all 360 positions are independently enumerated in the source-audit test
+      - id: taiyi.plate.taiyi-tianmu-jishen-shiji
+        category: complete_72_board_placement_tables_and_formulas
+        version: taiyi-jinjing-annual-yang-core-board-v1
+        status: verified
+        convention:
+          id: taiyi-jinjing-annual-yang-sixteen-ring-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - move Taiyi every three years through palaces 1, 2, 3, 4, 6, 7, 8, and 9 without visiting center 5
+            - move Tianmu forward through the expanded eighteen-position cycle with Yinde and Dawu each retaining two counts
+            - move Jishen backward through the twelve branches beginning at Yin for bureau one
+            - derive Shiji, also named the guest eye, by placing Jishen on Hede Gen and applying the same sixteen-ring rotation to Tianmu
+            - expose Tianmu as the host eye and Wenchang identity, and Shiji as the guest eye, without merging their roles
+        primary_sources: [*taiyi_shenshu]
+        commentary_dependencies:
+          - {path: references/books/san-shi/taiyi-shenshu/rules.md, anchor: TR-04, role: Taiyi and dependent placement order}
+          - {path: references/books/san-shi/taiyi-shenshu/procedures.md, anchor: TP-01, role: complete annual board output contract}
+        source_artifact:
+          path: references/matrices/taiyi-source-tables-v1.yaml
+          schema_version: mingli-taiyi-source-tables-v1
+          sha256: a5ade0bfb7bcdf89aeb0862d5992fd6fb340d640ab1a593c6381cd480df5c393
+        engineering_references:
+          - name: kentang2017/kintaiyi
+            role: frozen engineering comparator only; the anchored classical 72-row table remains authoritative
+            version: 68892c6bfe3a9635ff4a19a5f14559fff1adf4ab
+            license: MIT
+            upstream: https://github.com/kentang2017/kintaiyi
+            artifact_sha256: 042f7118ebeb5f10e2464f55463e8bf35c4736eecef6e3816f97a1391ac65f5e
+            license_sha256: 098b60569fd0fa7dd7b320ec29c62d778ffe6f0d76107de061056e6f4475de24
+        independent_test_sample:
+          id: taiyi-board-core-bureau-one
+          source: references/fixtures/algorithm-source-samples-v51.yaml::taiyi-board-core-bureau-one
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: taiyi-board-core-bureau-one
+          input: annual Yang bureau one
+          expected: Taiyi at Qian, Tianmu Wude at Shen, Jishen at Yin, Shiji at Kun
+          independence: placement formulas and the primary-source bureau-one row are checked independently
+      - id: taiyi.plate.host-guest-counts-and-generals
+        category: complete_host_guest_count_and_general_formulas
+        version: taiyi-jinjing-annual-host-guest-v1
+        status: verified
+        convention:
+          id: taiyi-jinjing-forward-sixteen-ring-count-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - count forward from Tianmu for the host and from Shiji for the guest until the Taiyi position
+            - start a main-palace eye with its palace number and an interval eye with one; include intervening main-palace numbers and stop before Taiyi
+            - when an eye coincides with Taiyi, use the Taiyi main-palace number
+            - use the units digit for a major general, the tens digit for an exact multiple of ten, and three times the major modulo ten with zero retained as center five for the assistant
+            - calculate host and guest facts from the same board and emit no victory verdict
+        primary_sources: [*taiyi_shenshu]
+        commentary_dependencies:
+          - {path: references/books/san-shi/taiyi-shenshu/rules.md, anchor: TR-05, role: host and guest counts plus four generals}
+          - {path: references/books/san-shi/taiyi-shenshu/procedures.md, anchor: TP-01, role: same-board mechanical integrity}
+        source_artifact:
+          path: references/matrices/taiyi-source-tables-v1.yaml
+          schema_version: mingli-taiyi-source-tables-v1
+          sha256: a5ade0bfb7bcdf89aeb0862d5992fd6fb340d640ab1a593c6381cd480df5c393
+        engineering_references:
+          - name: kentang2017/kintaiyi
+            role: frozen engineering comparator only with three recorded disagreements resolved to the primary source
+            version: 68892c6bfe3a9635ff4a19a5f14559fff1adf4ab
+            license: MIT
+            upstream: https://github.com/kentang2017/kintaiyi
+            artifact_sha256: 042f7118ebeb5f10e2464f55463e8bf35c4736eecef6e3816f97a1391ac65f5e
+            license_sha256: 098b60569fd0fa7dd7b320ec29c62d778ffe6f0d76107de061056e6f4475de24
+        independent_test_sample:
+          id: taiyi-host-guest-bureau-one
+          source: references/fixtures/algorithm-source-samples-v51.yaml::taiyi-host-guest-bureau-one
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: taiyi-host-guest-bureau-one
+          input: bureau one Taiyi, Tianmu, and Shiji positions
+          expected: host count 7 with generals 7 and 1; guest count 13 with generals 3 and 9
+          independence: the sixteen-ring count is recomputed without provider imports
+      - id: taiyi.deities.independent-long-cycle-epochs
+        category: independent_epoch_long_cycle_deity_formulas
+        version: taiyi-jinjing-volume-five-long-cycles-v1
+        status: verified
+        convention:
+          id: taiyi-jinjing-four-explicit-epoch-profiles-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - keep the annual Tang-Jiazi accumulated year separate from the volume-five upper-Jiayin, Wufu-Dayou, and Xiaoyou-four-deity epochs
+            - calculate Junji, Chenji, and Minji only from the upper-Jiayin long-cycle profile
+            - calculate Wufu and Dayou only from the Wufu-Dayou profile
+            - calculate Xiaoyou, Sishen, Tianyi, Diyi, and Zhifu only from the Xiaoyou-four-deity profile
+            - bind every emitted position to its epoch profile, cycle remainder, and source anchor
+        primary_sources: [*taiyi_shenshu]
+        commentary_dependencies:
+          - {path: references/books/san-shi/taiyi-shenshu/rules.md, anchor: TR-10, role: separately epoch-bound volume-five deity formulas}
+          - {path: references/books/san-shi/taiyi-shenshu/rules.md, anchor: TR-12, role: independent 180-year four-deity verification table}
+          - {path: references/books/san-shi/taiyi-shenshu/procedures.md, anchor: TP-03, role: deity-to-epoch binding contract}
+        source_artifact:
+          path: references/matrices/taiyi-source-tables-v1.yaml
+          schema_version: mingli-taiyi-source-tables-v1
+          sha256: a5ade0bfb7bcdf89aeb0862d5992fd6fb340d640ab1a593c6381cd480df5c393
+        independent_test_sample:
+          id: taiyi-long-cycle-epoch-separation
+          source: references/fixtures/algorithm-source-samples-v51.yaml::taiyi-long-cycle-epoch-separation
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: taiyi-long-cycle-epoch-separation
+          input: lunar year 724
+          expected: four distinct accumulated-year values 1937281, 285011, 13331, and 3361
+          independence: each epoch is tied to a separate source passage and retained as a distinct fixture value
+      - id: taiyi.evidence.board-predicates-and-scope
+        category: exact_board_predicates_and_evidence_scope
+        version: taiyi-jinjing-fact-bound-evidence-v1
+        status: verified
+        convention:
+          id: taiyi-exact-fact-reference-zero-fallback-v1
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - bind epoch and placement evidence only to the corresponding calculated fact path
+            - activate relation evidence only when the exact predicate identity and all participating fact paths exist on the current board
+            - bind long-cycle deity evidence only to the same deity and epoch profile
+            - return zero applicable evidence for unsupported personal scope or an unmatched relation and never substitute a heading, table label, historical anecdote, or unrelated chapter
+            - treat source examples as board verification and never as guarantees about modern events
+        primary_sources: [*taiyi_shenshu]
+        commentary_dependencies:
+          - {path: references/books/san-shi/taiyi-shenshu/procedures.md, anchor: TP-02, role: exact calculated relation predicates}
+          - {path: references/books/san-shi/taiyi-shenshu/procedures.md, anchor: TP-04, role: fact-reference and zero-fallback evidence contract}
+          - {path: references/books/san-shi/taiyi-shenshu/procedures.md, anchor: TP-06, role: unsupported-scope boundary}
+        source_artifact:
+          path: references/matrices/taiyi-source-tables-v1.yaml
+          schema_version: mingli-taiyi-source-tables-v1
+          sha256: a5ade0bfb7bcdf89aeb0862d5992fd6fb340d640ab1a593c6381cd480df5c393
+        independent_test_sample:
+          id: taiyi-evidence-scope-zero-personal
+          source: references/fixtures/algorithm-source-samples-v51.yaml::taiyi-evidence-scope-zero-personal
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: taiyi-evidence-scope-zero-personal
+          input: personal-life request without a matched annual-board predicate
+          expected: no personal claim, zero applicable board evidence, and no arbitrary fallback
+          independence: the release evidence boundary is checked independently of retrieval and provider code
+  selection:
+    source_audit_status: source_verified
+    dependencies:
+      - id: selection.candidate-calendar-foundation
+        category: range_generation_and_shared_calendar
+        version: selection-candidate-range-v1
+        status: verified
+        convention:
+          id: selection-explicit-range-location-hard-constraints
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - generate every civil day and requested time window in the normalized timezone
+            - preserve leap-month, solar-term, Ganzhi, location, and participant input digests
+            - hard constraints eliminate candidates and never become hidden scores
+        primary_sources: [*xieji_bianfang, *xingli_kaoyuan]
+        commentary_dependencies:
+          - {path: references/books/selection/xieji-bianfang-shu/rules.md, anchor: XR-01, role: calendar and Ganzhi prerequisites}
+        source_artifact:
+          path: references/matrices/selection-source-tables-v1.yaml
+          schema_version: mingli-selection-source-tables-v1
+          sha256: 3a32f9fe65b0ecb8b1285ef4578e5492cff9be622d44424c89bddd2346a93ec6
+        independent_test_sample:
+          id: selection-no-candidate
+          source: references/fixtures/algorithm-source-samples-v51.yaml::selection-no-candidate
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: selection-no-candidate
+          input: two-day range with two hard exclusions
+          expected: zero candidates and two explicit eliminations
+          independence: candidate contract is fixed separately from ranking code
+      - id: selection.day-facts.jianchu-mansions-gods
+        category: calendrical_lookup_tables
+        version: xieji-official-day-facts-v1
+        status: verified
+        convention:
+          id: xieji-official-lineage-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - calculate Jianchu, mansion, required year/month/day/hour gods, Huang/Hei, clashes, and exclusions per candidate
+            - identify every fact as official Xieji lineage or separately named source
+            - expose deleted or disputed popular rules instead of silently restoring them
+        primary_sources: [*xieji_bianfang, *xingli_kaoyuan]
+        commentary_dependencies:
+          - {path: references/books/selection/xieji-bianfang-shu/rules.md, anchor: XR-04, role: Jianchu and month-god formulas}
+        engineering_references:
+          - name: cnlunar
+            role: pinned implementation of Xieji calendar and named god tables
+            version: 0.2.4
+            license: MIT
+            upstream: https://github.com/OPN48/cnlunar/tree/0.2.4
+            upstream_tag_commit: 71e448a3ad4fa17bb731a57637ee0728e6f53d37
+            distribution: PyPI wheel cnlunar-0.2.4-py3-none-any.whl
+            distribution_sha256: 19689288604e86a3ef48dba23d39d6a7efbd5efabcb3923d4d656319762af4ea
+            license_path: vendor/cnlunar-0.2.4/LICENSE
+            license_sha256: 8bc77e1f9ab5c48cfc9e532b5eb30ff02c67cdc14af27b88b9c1ae815f1364bc
+            provenance_path: vendor/cnlunar-0.2.4/PROVENANCE.json
+        source_artifact:
+          path: references/matrices/selection-source-tables-v1.yaml
+          schema_version: mingli-selection-source-tables-v1
+          sha256: 3a32f9fe65b0ecb8b1285ef4578e5492cff9be622d44424c89bddd2346a93ec6
+        independent_test_sample:
+          id: selection-jianchu-month-branch
+          source: references/fixtures/algorithm-source-samples-v51.yaml::selection-jianchu-month-branch
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: selection-jianchu-month-branch
+          input: 寅 month and 寅 day
+          expected: 建
+          independence: first same-branch row fixes the twelve-day sequence
+      - id: selection.hour-facts.ganzhi-and-twelve-gods
+        category: deterministic_hour_ganzhi_and_huanghei
+        version: xieji-official-hour-facts-v1
+        status: verified
+        convention:
+          id: xieji-day-starts-hour-twelve-path-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - generate all twelve double-hours in branch order with explicit cross-midnight Zi interval
+            - obtain hour Ganzhi from the pinned calendar runtime and independently retain day rollover identity
+            - derive hour Huang/Hei from the candidate day branch by the source-declared day-starts-hour rule
+            - expose user time-window filtering separately from hour quality
+        primary_sources: [*xieji_bianfang, *xingli_kaoyuan]
+        commentary_dependencies:
+          - {path: references/books/selection/xieji-bianfang-shu/rules.md, anchor: XR-08, role: day and hour Huang-Hei integration}
+          - {path: references/books/selection/xingli-kaoyuan/rules.md, anchor: KR-14, role: Huang-Hei origin table}
+        engineering_references:
+          - name: cnlunar
+            role: pinned hour-Ganzhi table and independent daily lucky-time field
+            version: 0.2.4
+            license: MIT
+            upstream: https://github.com/OPN48/cnlunar/tree/0.2.4
+            upstream_tag_commit: 71e448a3ad4fa17bb731a57637ee0728e6f53d37
+            distribution_sha256: 19689288604e86a3ef48dba23d39d6a7efbd5efabcb3923d4d656319762af4ea
+            provenance_path: vendor/cnlunar-0.2.4/PROVENANCE.json
+        source_artifact:
+          path: references/matrices/selection-source-tables-v1.yaml
+          schema_version: mingli-selection-source-tables-v1
+          sha256: 3a32f9fe65b0ecb8b1285ef4578e5492cff9be622d44424c89bddd2346a93ec6
+        independent_test_sample:
+          id: selection-hour-path-from-day-branch
+          source: references/fixtures/algorithm-source-samples-v51.yaml::selection-hour-path-from-day-branch
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: selection-hour-path-from-day-branch
+          input: a fixed civil date and its twelve double-hours
+          expected: twelve named Ganzhi and twelve independently derived path gods
+          independence: day facts are frozen from lunar-python and the hour formula is fixed in the source table before provider code
+      - id: selection.event-rules-and-lineage-conflicts
+        category: event_predicates_and_explainable_ranking
+        version: selection-event-rules-separated-lineages-v1
+        status: verified
+        convention:
+          id: official-and-folk-never-merged
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - apply only predicates matching the declared event profile and participant facts
+            - keep Xieji official rules separate from Yuqia folk rules
+            - rank lexicographically by hard eligibility and declared preferences with explicit reasons, not opaque totals
+        primary_sources: [*xieji_bianfang, *xingli_kaoyuan, *yuqia_ji, *donggong_zeri]
+        primary_rule_witnesses:
+          - id: xieji-xunshan-luohou-v1
+            source_profile: xieji_bianfang
+            source_anchor: L1699-L1700
+            event_profile: construction_renovation
+            event_fact_field: luohou
+            directional_formula_key: xunshan_luohou_by_year_branch
+            evidence_rule_id: XR-18
+            exact_quote_sha256: 824e100a53a07217c4872738abb8e7fe2fad9f637d807b79920633c8ec5f54e8
+            normalized_formula_sha256: 2bbd9c5949152b6d78ea7fdbc39ab03519ca71e5cac4cc279c3dac8250f94470
+            explicitly_taboo_actions: [立向]
+            explicitly_exempt_actions: [开山, 修方]
+            source_action_glyph_normalization: {开: 開}
+            runtime_rank_policy: informational_until_same_palace_and_mitigation_facts_are_calculated
+            runtime_evidence_statement_sha256: ccabdc91a14e904b7006cab18342197237ee4214dbb9af25c5dc4063fb100b2a
+            mitigation_witnesses:
+              - {source_anchor: L10778, exact_excerpt_sha256: 36b1757d2592669dc5d848f1eb6700d359f413788e0042ef8ca2c779d2ea8af4, role: one_white_mitigation}
+              - {source_anchor: L10969, exact_excerpt_sha256: e56cda9e42fa2a319adf8d3af98d19d75a9972756e13284efe67d39917982883, role: explicit_action_scope}
+              - {source_anchor: L10970, exact_excerpt_sha256: 88baa779a2edc6794de9589cae68757c07824796a8567978a34b43178dd56d6f, role: non_same_palace_mitigation}
+              - {source_anchor: L10970, exact_excerpt_sha256: 654ed24a53e62eea113e90e3be211d5f747f4616bb2b804fae9e50a186a5c7e5, role: same_palace_prohibition}
+              - {source_anchor: L11305, exact_excerpt_sha256: 81a7c422b8f641aab4549e95ce9f374fbc9375b110042d3684ac21198fdbf7e0, role: explicit_action_scope_restatement}
+        supplemental_primary_sources:
+          - title: 新鐫陳子性造葬日用事宜應驗藏書卷之八
+            witness: CADAL02055581 digitized classical edition
+            artifact_url: https://www.shidianguji.com/zh/book/CADAL02055581/chapter/1lw9omhzyp4ax
+            source_anchor: lineId 3603, 三丧大墓
+            applicable_actions: [安葬]
+            exact_quote_sha256: b701705d2c253493a15164152e87edc4a110345c627e48b36800f89d8a0855b7
+            normalized_formula_sha256: a2fb735337f3638aa68d7da088d6a041737390ade4a2b498f86f15046eec0dc7
+            role: exact classical formula witness for 三丧; OCR 戍 is normalized to the earthly branch 戌
+          - title: 新鐫陳子性造葬日用事宜應驗藏書卷之八
+            witness: CADAL02055581 digitized classical edition
+            artifact_url: https://www.shidianguji.com/zh/book/CADAL02055581/chapter/1lw9omhzyp4ax
+            source_anchor: lines 1475-1477, 土禁凶日
+            event_context: lines 1467-1477, 斩草破土、掘金井
+            applicable_actions: [破土]
+            exact_quote_sha256: 8896a2994984761bc4df37cfbab89e04369e8cd953987d4c1e16ed19ccc87240
+            role: exact classical formula witness for 土禁; source evidence, not an engineering implementation
+        secondary_research_sources:
+          - title: "한국어와 중국어의 금기어 비교 연구: 죽음에 관한 금기어를 중심으로"
+            publisher: Chosun University Repository
+            issued_year: 2013
+            artifact_url: https://oak.chosun.ac.kr/handle/2020.oak/12030
+            source_anchor: PDF p.52 footnote 36
+            exact_excerpt_sha256: dc16c207f9cb4c146cd21de5b76a0639c10ba60143101847cdb7e8df2cb3bd66
+            normalized_rule_sha256: 2728e7a6a3814111c8745f1073984291c9dee1fb6941f5b774b99530dfb535e2
+            role: secondary folk-formula corroboration only; never classical or official-primary evidence
+        commentary_dependencies:
+          - {path: references/books/selection/yuqia-ji/rules.md, anchor: JR-01, role: folk-lineage isolation and caveats}
+        source_artifact:
+          path: references/matrices/selection-source-tables-v1.yaml
+          schema_version: mingli-selection-source-tables-v1
+          sha256: 3a32f9fe65b0ecb8b1285ef4578e5492cff9be622d44424c89bddd2346a93ec6
+        reference_oracle_artifact:
+          id: independent_declarative_reference_evaluator_v1
+          version: 1.1.0
+          path: scripts/selection_formula_reference.py
+          sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+          independence: recomputes directional formulas from source tables and raw structured action/direction inputs without provider event-fact or directional-fact outputs
+        independent_test_sample:
+          id: selection-school-separation
+          source: references/fixtures/algorithm-source-samples-v51.yaml::selection-school-separation
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: selection-school-separation
+          input: conflicting official and folk verdicts
+          expected: no merged verdict and an exposed disagreement
+          independence: conflict behavior is declared before implementation
+      - id: selection.runtime.cnlunar-official-tables
+        category: pinned_calendar_and_almanac_runtime
+        version: cnlunar-0.2.4/xieji-official-cnlunar-v1
+        status: verified
+        convention:
+          id: pinned-runtime-with-independent-calendar-crosscheck
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - pin cnlunar exactly to 0.2.4 and verify its distribution, source-file, and license hashes
+            - restrict runtime use to civil dates 1901-01-01 through 2100-12-31 and fail closed outside the range
+            - select godType 8char so Jianchu follows the exact solar-term month branch
+            - compare lunar date and lunar-year identity against thirty Hong Kong Observatory government-published calendar rows
+            - retain lunar-python only as a pinned engineering comparator for Ganzhi, Jianchu, mansion, path god, Huang-Hei, and clash
+            - retain the 2019 mansion epoch as an explicitly modern engineering calibration because the official source says the ancient epoch is unknown
+        primary_sources: [*xieji_bianfang, *xingli_kaoyuan]
+        engineering_references:
+          - name: cnlunar
+            role: production runtime for official almanac facts
+            version: 0.2.4
+            license: MIT
+            upstream: https://github.com/OPN48/cnlunar/tree/0.2.4
+            upstream_tag_commit: 71e448a3ad4fa17bb731a57637ee0728e6f53d37
+            distribution: PyPI wheel cnlunar-0.2.4-py3-none-any.whl
+            distribution_sha256: 19689288604e86a3ef48dba23d39d6a7efbd5efabcb3923d4d656319762af4ea
+            license_path: vendor/cnlunar-0.2.4/LICENSE
+            license_sha256: 8bc77e1f9ab5c48cfc9e532b5eb30ff02c67cdc14af27b88b9c1ae815f1364bc
+            provenance_path: vendor/cnlunar-0.2.4/PROVENANCE.json
+          - name: lunar-python
+            role: independent engineering comparator used only to freeze pre-implementation examples
+            version: 1.4.8
+            license: MIT
+            upstream: https://github.com/6tail/lunar-python/tree/1.4.8
+            upstream_tag_commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+            distribution: PyPI sdist lunar_python-1.4.8.tar.gz
+            distribution_sha256: 3aa11cc73c25e70ddf0ba5bdac7398c03acc9491a3aa512a91c9642973b669d6
+            runtime_dependency: false
+        source_artifact:
+          path: references/matrices/selection-source-tables-v1.yaml
+          schema_version: mingli-selection-source-tables-v1
+          sha256: 3a32f9fe65b0ecb8b1285ef4578e5492cff9be622d44424c89bddd2346a93ec6
+        independent_test_sample:
+          id: selection-thirty-hko-published-calendar-examples
+          source: references/fixtures/algorithm-source-samples-v51.yaml::selection-thirty-hko-published-calendar-examples
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: selection-thirty-hko-published-calendar-examples
+          input: thirty fixed civil dates spanning solar-term and lunar-new-year boundaries
+          expected: exact lunar year, month, day, leap flag, and published Chinese-year identity
+          independence: values are pinned to exact Hong Kong Observatory CSV rows and artifact hashes; lunar-python remains a separate engineering comparator
+      - id: selection.source-conditioned-patterns
+        category: exact_fact_predicate_evidence_identity
+        version: verified-evidence-rules-v1
+        status: verified
+        convention:
+          id: selection-exact-fact-match-without-verdict-v1
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - match only runtime-active, classically verified selection rules against explicit calculated fact paths
+            - expose rule identity, source identity, matched fact paths, and predicate audit
+            - never convert a predicate match into a day, event, or outcome verdict
+        primary_sources: [*xieji_bianfang, *xingli_kaoyuan]
+        commentary_dependencies:
+          - {path: references/books/selection/xieji-bianfang-shu/rules.md, anchor: XR-18, role: verified selection predicate identity}
+          - {path: references/books/selection/xingli-kaoyuan/rules.md, anchor: KR-05, role: verified Ganzhi fact predicate identity}
+          - {path: references/matrices/evidence-scope-bindings-v1.yaml, anchor: 'selection/xingli-kaoyuan#KR-05', role: runtime scope and exact predicate binding}
+        source_artifact:
+          path: references/matrices/classical-evidence-bindings-v1.json
+          schema_version: mingli-classical-evidence-bindings-v1
+          sha256: 73c5a8a5d2041e7d49f838c70d0ca184fee060fd355a8f29b0fd6f9a0a7abc8d
+        independent_test_sample:
+          id: selection-source-conditioned-patterns
+          source: scripts/test_v51_selection_completion.py::test_source_conditioned_patterns_are_exact_identities_without_verdicts
+          source_path: scripts/test_v51_selection_completion.py
+          source_anchor: test_source_conditioned_patterns_are_exact_identities_without_verdicts
+          input: one fixed candidate day with four calculated Ganzhi pillars
+          expected: exact KR-05 rule identity and predicate_matched_not_verdict status
+          independence: the test asserts the public pattern contract and exact identity outside the provider matching helper
+  fengshui:
+    source_audit_status: source_verified
+    dependencies:
+      - id: fengshui.observation.compass-layout-contract
+        category: measured_observation_and_normalization_contract
+        version: fengshui-observation-compass-v1
+        status: verified
+        convention:
+          id: north-centered-half-open-24-mountains
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - retain raw compass degree, measurement method, uncertainty, device orientation, and correction history
+            - normalize into 24 equal 15-degree half-open sectors centered on cardinal 子午卯酉
+            - retain floorplan/site image region anchors and do not invent missing measurements
+        primary_sources: [*yangzhai_shishu, *huangdi_zhaijing]
+        commentary_dependencies:
+          - {path: references/books/fengshui/yangzhai-shishu/rules.md, anchor: YZS-R012, role: compass and water-flow fact requirements}
+        source_artifact:
+          path: references/matrices/fengshui-source-tables-v1.yaml
+          schema_version: mingli-fengshui-source-tables-v1
+          sha256: 7d3f56abeb302736daf1f2822d45fd2ea9dccad69dc386f6175ffac060b42e9e
+        independent_test_sample:
+          id: fengshui-compass-boundary
+          source: references/fixtures/algorithm-source-samples-v51.yaml::fengshui-compass-boundary
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: fengshui-compass-boundary
+          input: degrees immediately before and at 7.5
+          expected: 子 then 癸
+          independence: half-open boundary is explicitly versioned and separately tested
+      - id: fengshui.form.observable-site-facts
+        category: observation_schema_and_source_predicates
+        version: fengshui-form-visible-facts-v1
+        status: verified
+        convention:
+          id: fengshui-form-observation-not-image-inference-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - accept only anchored visible or user-measured terrain, road, water, entrance, enclosure, ridge, and opening observations
+            - attach lighting, scale, occlusion, viewpoint, and uncertainty to image-derived observations
+            - classical form categories are evidence predicates and never fabricated computer-vision measurements
+        primary_sources: [*zangshu, *hanlong_jing, *yilong_jing, *xuexin_fu, *yangzhai_shishu, *huangdi_zhaijing]
+        commentary_dependencies:
+          - {path: references/books/fengshui/hanlong-jing/rules.md, anchor: R-01, role: observable form categories and modern caveats}
+          - {path: references/books/fengshui/yilong-jing/rules.md, anchor: R-05, role: caller-observed hall, wind, and water categories with partial-source caveat}
+          - {path: references/books/fengshui/xuexin-fu/rules.md, anchor: XXF-R01/XXF-R04, role: water-mouth, hall, and water-pattern context without outcome claims}
+        independent_test_sample:
+          id: fengshui-form-observation-gap
+          source: references/fixtures/algorithm-source-samples-v51.yaml::fengshui-form-observation-gap
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: fengshui-form-observation-gap
+          input: no site image and no terrain observation
+          expected: missing observation and no form claim
+          independence: absence behavior is fixed before provider normalization
+      - id: fengshui.liqi.bazhai-school
+        category: school_specific_layout_formula
+        version: yangzhai-shishu-bazhai-v1
+        status: verified
+        convention:
+          id: bazhai-eight-mansion-only-v1
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - calculate measured sitting/facing and door-origin Bazhai correspondences without substituting the sitting trigram
+            - a door after a separating wall starts a new declared layout node
+            - Sanhe and Xuankong never activate implicitly and require separate source-verified profiles
+        primary_sources: [*yangzhai_shishu, *yangzhai_sanyao, *huangdi_zhaijing]
+        commentary_dependencies:
+          - {path: references/books/fengshui/yangzhai-shishu/rules.md, anchor: YZS-R006, role: door and partition graph calculation}
+        independent_test_sample:
+          id: fengshui-school-separation
+          source: references/fixtures/algorithm-source-samples-v51.yaml::fengshui-school-separation
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: fengshui-school-separation
+          input: Bazhai selected with an otherwise valid period number
+          expected: Bazhai facts only and no Xuankong board
+          independence: school isolation behavior is independently declared
+  physiognomy:
+    source_audit_status: source_verified
+    dependencies:
+      - id: physiognomy.observation.image-quality-regions
+        category: image_observation_schema
+        version: physiognomy-visible-observation-v1
+        status: verified
+        convention:
+          id: visible-region-quality-bounded
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - every observation identifies image, region, view, lighting, angle, occlusion, resolution, and uncertainty
+            - no feature may be inferred from the opposite side, another image, or a culturally stereotyped template
+            - low-quality input caps confidence and may leave required regions missing
+        primary_sources: [*shenxiang_quanbian]
+        commentary_dependencies:
+          - {path: references/books/physiognomy/shenxiang-quanbian/rules.md, anchor: SR-01-05, role: normalized visible-region vocabulary}
+        independent_test_sample:
+          id: physiognomy-region-quality
+          source: references/fixtures/algorithm-source-samples-v51.yaml::physiognomy-region-quality
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: physiognomy-region-quality
+          input: {provider_fixture_section: boundary_cases, provider_fixture_case_id: low-light-required-target}
+          expected:
+            critical_missing: [observation_resolution:tid-9106a0874efbcc6c7809a596213bb1f8]
+            active_observation_count: 0
+            conflict_count: 0
+            cross_capture_variation_count: 0
+            superseded_observation_count: 0
+            active_source_rule_ids: []
+            active_regions: []
+            active_descriptors: []
+          independence: quality policy is fixed separately from provider code
+      - id: physiognomy.normalization.visible-only-features
+        category: observation_validation_and_missingness
+        version: physiognomy-visible-only-normalization-v1
+        status: verified
+        convention:
+          id: no-invisible-or-diagnostic-features
+          version: 1.0.0
+          disputed: false
+          boundary_rules:
+            - normalize only supplied visible morphology and neutral appearance observations
+            - reject health, ethnicity, character, identity, wealth, lifespan, or protected-attribute inference as observation facts
+            - retain null plus a missing reason for non-visible regions
+        primary_sources: [*shenxiang_quanbian, *mayi_shenxiang, *liuzhuang_xiangfa]
+        commentary_dependencies:
+          - {path: references/books/physiognomy/mayi-shenxiang/rules.md, anchor: MR-02, role: terminology-only boundary for five features and twelve houses}
+        independent_test_sample:
+          id: physiognomy-no-invisible-feature
+          source: references/fixtures/algorithm-source-samples-v51.yaml::physiognomy-no-invisible-feature
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: physiognomy-no-invisible-feature
+          input: {provider_fixture_section: boundary_cases, provider_fixture_case_id: hidden-right-ear-from-left-profile}
+          expected: {expected_error_regex: 'visible.*coverage'}
+          independence: visibility boundary is declared independently
+      - id: physiognomy.evidence.revision-and-source-conflict
+        category: revision_lineage_and_applicability_contract
+        version: physiognomy-observation-revision-v1
+        status: verified
+        convention:
+          id: latest-observation-with-source-disagreement
+          version: 1.0.0
+          disputed: true
+          boundary_rules:
+            - user correction supersedes the specific old observation and changes the observation digest
+            - classical source layers and later accretions remain separately identified
+            - evidence may describe historical associations but never turns them into diagnosis or deterministic personal fate
+        primary_sources: [*liuzhuang_xiangfa, *shenxiang_quanbian, *mayi_shenxiang]
+        commentary_dependencies:
+          - {path: references/books/physiognomy/liuzhuang-xiangfa/rules.md, anchor: LZ-R05, role: revision and disagreement-retention methodology}
+          - {path: references/books/physiognomy/shenxiang-quanbian/rules.md, anchor: SR-01-03, role: changeability and high-risk interpretation boundary}
+        independent_test_sample:
+          id: physiognomy-user-correction
+          source: references/fixtures/algorithm-source-samples-v51.yaml::physiognomy-user-correction
+          source_path: references/fixtures/algorithm-source-samples-v51.yaml
+          source_anchor: physiognomy-user-correction
+          input: {provider_fixture_section: boundary_cases, provider_fixture_case_id: correction-to-not-visible}
+          expected:
+            critical_missing: [visible_observation:tid-a73daedf6a0cf1f56c85a950d542b298]
+            active_observation_count: 0
+            conflict_count: 0
+            cross_capture_variation_count: 0
+            superseded_observation_count: 1
+            active_source_rule_ids: []
+            active_regions: []
+            active_descriptors: []
+          independence: revision behavior is recorded before provider implementation

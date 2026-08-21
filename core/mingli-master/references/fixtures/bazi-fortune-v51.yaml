@@ -1,0 +1,147 @@
+schema_version: mingli-bazi-fortune-fixtures-v1
+source_scope: >-
+  Fixed regression cases for the verified sxtwl, Sanming luck-cycle, Ziping
+  relation, and bounded Fortune conventions registered in
+  algorithm-source-dependencies.yaml. Strength, following, transformation,
+  and structure labels are deliberately expected as candidates, never verdicts.
+
+cases:
+  - id: natal-support-01
+    category: strong_weak_dispute
+    input: {pillars: [甲寅, 丙寅, 甲寅, 甲子]}
+    expected: {day_element: 木, month_branch: 寅, adjudication: required}
+  - id: natal-support-02
+    category: strong_weak_dispute
+    input: {pillars: [壬子, 癸亥, 壬子, 庚子]}
+    expected: {day_element: 水, month_branch: 亥, adjudication: required}
+  - id: natal-support-03
+    category: strong_weak_dispute
+    input: {pillars: [丙午, 丁巳, 丙寅, 甲午]}
+    expected: {day_element: 火, month_branch: 巳, adjudication: required}
+  - id: natal-pressure-01
+    category: strong_weak_dispute
+    input: {pillars: [庚申, 壬申, 甲午, 丙午]}
+    expected: {day_element: 木, month_branch: 申, adjudication: required}
+  - id: natal-pressure-02
+    category: strong_weak_dispute
+    input: {pillars: [甲寅, 乙卯, 庚午, 丙午]}
+    expected: {day_element: 金, month_branch: 卯, adjudication: required}
+  - id: natal-pressure-03
+    category: strong_weak_dispute
+    input: {pillars: [戊辰, 己未, 壬午, 丙午]}
+    expected: {day_element: 水, month_branch: 未, adjudication: required}
+  - id: natal-following-01
+    category: following_dispute
+    input: {pillars: [丙午, 丁巳, 庚午, 丙午]}
+    expected: {day_element: 金, month_branch: 巳, adjudication: required}
+  - id: natal-following-02
+    category: following_dispute
+    input: {pillars: [庚申, 辛酉, 甲申, 庚午]}
+    expected: {day_element: 木, month_branch: 酉, adjudication: required}
+  - id: natal-following-03
+    category: following_dispute
+    input: {pillars: [壬子, 癸亥, 丙子, 壬子]}
+    expected: {day_element: 火, month_branch: 亥, adjudication: required}
+  - id: natal-transform-01
+    category: transformation_dispute
+    input: {pillars: [甲子, 己巳, 甲辰, 己巳]}
+    expected: {day_element: 木, month_branch: 巳, adjudication: required}
+  - id: natal-transform-02
+    category: transformation_dispute
+    input: {pillars: [乙丑, 庚辰, 乙卯, 庚辰]}
+    expected: {day_element: 木, month_branch: 辰, adjudication: required}
+  - id: natal-transform-03
+    category: transformation_dispute
+    input: {pillars: [丙寅, 辛卯, 丙辰, 辛卯]}
+    expected: {day_element: 火, month_branch: 卯, adjudication: required}
+
+  - id: seasonal-deep-winter-earth
+    category: seasonal_extreme
+    input: {datetime: '2024-01-15T12:00:00'}
+    expected: {month_ganzhi: 乙丑, temperature: 寒, moisture: 湿}
+  - id: seasonal-early-spring-wood
+    category: seasonal_extreme
+    input: {datetime: '2024-02-14T12:00:00'}
+    expected: {month_ganzhi: 丙寅, temperature: 余寒转暖, moisture: 偏湿}
+  - id: seasonal-early-summer-fire
+    category: seasonal_extreme
+    input: {datetime: '2024-05-15T12:00:00'}
+    expected: {month_ganzhi: 己巳, temperature: 偏热, moisture: 偏燥}
+  - id: seasonal-mid-summer-fire
+    category: seasonal_extreme
+    input: {datetime: '2024-06-15T12:00:00'}
+    expected: {month_ganzhi: 庚午, temperature: 炎热, moisture: 偏燥}
+  - id: seasonal-late-summer-earth
+    category: seasonal_extreme
+    input: {datetime: '2024-07-15T12:00:00'}
+    expected: {month_ganzhi: 辛未, temperature: 暑热, moisture: 偏燥}
+  - id: seasonal-early-autumn-metal
+    category: seasonal_extreme
+    input: {datetime: '2024-08-15T12:00:00'}
+    expected: {month_ganzhi: 壬申, temperature: 由热转凉, moisture: 偏燥}
+  - id: seasonal-early-winter-water
+    category: seasonal_extreme
+    input: {datetime: '2024-11-15T12:00:00'}
+    expected: {month_ganzhi: 乙亥, temperature: 寒, moisture: 偏湿}
+  - id: seasonal-mid-winter-water
+    category: seasonal_extreme
+    input: {datetime: '2024-12-15T12:00:00'}
+    expected: {month_ganzhi: 丙子, temperature: 严寒, moisture: 偏湿}
+
+  - id: luck-male-cycle-1-before
+    category: luck_cycle_boundary
+    input: {gender: male, instant: '2007-07-09T18:28:52.600799+08:00'}
+    expected: {status: outside_calculated_cycles, sequences: []}
+  - id: luck-male-cycle-1-at
+    category: luck_cycle_boundary
+    input: {gender: male, instant: '2007-07-09T18:28:52.600800+08:00'}
+    expected: {status: single_cycle, sequences: [1]}
+  - id: luck-male-cycle-2-before
+    category: luck_cycle_boundary
+    input: {gender: male, instant: '2017-07-09T04:40:52.600799+08:00'}
+    expected: {status: single_cycle, sequences: [1]}
+  - id: luck-male-cycle-2-at
+    category: luck_cycle_boundary
+    input: {gender: male, instant: '2017-07-09T04:40:52.600800+08:00'}
+    expected: {status: single_cycle, sequences: [2]}
+  - id: luck-female-cycle-1-before
+    category: luck_cycle_boundary
+    input: {gender: female, instant: '2004-02-13T06:02:17.591999+08:00'}
+    expected: {status: outside_calculated_cycles, sequences: []}
+  - id: luck-female-cycle-1-at
+    category: luck_cycle_boundary
+    input: {gender: female, instant: '2004-02-13T06:02:17.592000+08:00'}
+    expected: {status: single_cycle, sequences: [1]}
+  - id: luck-female-cycle-3-before
+    category: luck_cycle_boundary
+    input: {gender: female, instant: '2024-02-13T02:26:17.591999+08:00'}
+    expected: {status: single_cycle, sequences: [2]}
+  - id: luck-female-cycle-3-at
+    category: luck_cycle_boundary
+    input: {gender: female, instant: '2024-02-13T02:26:17.592000+08:00'}
+    expected: {status: single_cycle, sequences: [3]}
+
+  - id: horizon-ten-years
+    category: long_horizon
+    input: {kind: year, start: 2024, end: 2033}
+    expected: {count: 10, first: '2024', last: '2033'}
+  - id: horizon-sixty-one-years
+    category: long_horizon
+    input: {kind: year, start: 1990, end: 2050}
+    expected: {count: 61, first: '1990', last: '2050'}
+  - id: horizon-upper-year-boundary
+    category: long_horizon
+    input: {kind: year, start: 2190, end: 2199}
+    expected: {count: 10, first: '2190', last: '2199'}
+  - id: horizon-twenty-four-months
+    category: long_horizon
+    input: {kind: month, start: 2024-01, end: 2025-12}
+    expected: {count: 24, first: 2024-01, last: 2025-12}
+  - id: horizon-leap-day-window
+    category: long_horizon
+    input: {kind: day, start: 2024-02-27, end: 2024-03-02}
+    expected: {count: 5, first: 2024-02-27, last: 2024-03-02}
+  - id: horizon-one-hundred-days
+    category: long_horizon
+    input: {kind: day, start: 2030-01-01, end: 2030-04-10}
+    expected: {count: 100, first: 2030-01-01, last: 2030-04-10}

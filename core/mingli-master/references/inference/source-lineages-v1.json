@@ -1,0 +1,74 @@
+{
+  "schema_version": "mingli-source-lineages-v1",
+  "policy": "Books in one lineage are correlated evidence, not independent votes. Deterministic adapters do not count as interpretive lineages.",
+  "packs": {
+    "bazi/ditiansui-chanwei": {
+      "lineage": "bazi.ditiansui-commentarial",
+      "counts_for_interpretive_independence": true
+    },
+    "bazi/qiongtong-baojian": {
+      "lineage": "bazi.tiaohou",
+      "counts_for_interpretive_independence": true
+    },
+    "bazi/sanming-tonghui": {
+      "lineage": "bazi.ziping-mainline",
+      "counts_for_interpretive_independence": true
+    },
+    "bazi/yuanhai-ziping": {
+      "lineage": "bazi.ziping-mainline",
+      "counts_for_interpretive_independence": true
+    },
+    "bazi/ziping-zhenquan": {
+      "lineage": "bazi.structure-commentarial",
+      "counts_for_interpretive_independence": true
+    },
+    "fact-adapter/bazi": {
+      "lineage": "fact.bazi-calculation",
+      "counts_for_interpretive_independence": false
+    },
+    "fact-adapter/structured-user-chart": {
+      "lineage": "fact.user-chart-validation",
+      "counts_for_interpretive_independence": false
+    },
+    "physiognomy/liuzhuang-xiangfa": {
+      "lineage": "physiognomy.liuzhuang-primary",
+      "counts_for_interpretive_independence": false
+    },
+    "physiognomy/mayi-shenxiang": {
+      "lineage": "physiognomy.mayi-mixed-transcription",
+      "counts_for_interpretive_independence": false
+    },
+    "physiognomy/shenxiang-quanbian": {
+      "lineage": "physiognomy.shenxiang-compilation",
+      "counts_for_interpretive_independence": false
+    },
+    "san-shi/liuren-miben": {
+      "lineage": "liuren.miben",
+      "counts_for_interpretive_independence": true
+    },
+    "san-shi/liuren-zhiyin": {
+      "lineage": "liuren.zhinan-commentarial",
+      "counts_for_interpretive_independence": true
+    },
+    "selection/donggong-zeri": {
+      "lineage": "selection.donggong-folk-almanac",
+      "counts_for_interpretive_independence": true
+    },
+    "selection/xieji-bianfang-shu": {
+      "lineage": "selection.imperial-xieji-xingli",
+      "counts_for_interpretive_independence": true
+    },
+    "selection/xingli-kaoyuan": {
+      "lineage": "selection.imperial-xieji-xingli",
+      "counts_for_interpretive_independence": true
+    },
+    "selection/yuqia-ji": {
+      "lineage": "selection.yuqia-folk-almanac",
+      "counts_for_interpretive_independence": true
+    },
+    "ziwei/ziwei-doushu-quanshu": {
+      "lineage": "ziwei.quanshu-mainline",
+      "counts_for_interpretive_independence": true
+    }
+  }
+}

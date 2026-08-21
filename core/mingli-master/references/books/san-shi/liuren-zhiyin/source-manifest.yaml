@@ -1,0 +1,139 @@
+title: "六壬指南 / 六壬指南注解"
+slug: "liuren-zhiyin"
+system: "san-shi"
+school:
+  - "大六壬"
+  - "指南系"
+source_status: "complete_text"
+source_state_summary: "完整可检索注本已入库、原本影印已取得、未全本逐页校勘"
+distillation_allowed: true
+distillation_scope: "可对完整可检索注本作分层蒸馏；古本页码、图表字形和逐句作者归属仍须影印校勘。"
+
+edition_statement: >-
+  当前检索底本为张洪《六壬指南注解》系统的完整电子注本，CTP 五个入口依次为卷首、
+  卷一《心印赋》、卷二《指掌赋》、卷三《会纂占验指南》、卷之四《神煞指南》。
+  NLC/Wikimedia 248 页扫描为原本影印见证。卷一、卷二另有较干净的《大六壬指南》
+  文本镜像；完整注解镜像用于识别张洪增注和现代课例。
+author_attribution:
+  transmitted_fuyi: "《心印赋》《指掌赋》为先贤赋文，作者不在本包内强定。"
+  chen_gongxian: "旧序称陈公献增注两赋并作《会纂》占验。"
+  zhuang_gongyuan: "旧序称庄公远作《神煞图位》；卷末署‘云岳山人庄广之再识’，二名关系待版本学核定。"
+  zhang_hong: "完整注本自序署北海张洪；其现代注释、史注及增补课例不得并称古籍原文。"
+
+source_urls:
+  - "https://ctext.org/wiki.pl?if=gb&res=516644"
+  - "https://upload.wikimedia.org/wikipedia/commons/9/9b/NLC416-12jh005348-45347_%E5%85%AD%E5%A3%AC%E6%8C%87%E5%8D%97.pdf"
+
+local_files:
+  - path: "references/fulltext/san-shi/liuren-zhiyin/fulltext.md"
+    sha256: "2298b2270daf8f8e413f9d6c768e84830a225f93779a2ebbd90e8c905885c8bc"
+    role: "normalized_fulltext"
+    extent: "2798 lines; five CTP containers"
+  - path: "sources/raw/san-shi/liuren-zhiyin/ctext/ctext_liuren-zhinan-zhujie_rows.txt"
+    sha256: "f29a16e115736f83bb3911eed394470c9bb622858ae66ffecf529d8968f7a510"
+    role: "complete_searchable_annotation_rows"
+  - path: "sources/raw/san-shi/liuren-zhiyin/ctext/front_320243.html"
+    sha256: "a7ccd044738901d41b54d34dec9ca6a5e8205aa94e376a6c9cfff500becae002"
+    role: "ctp_chapter_html"
+  - path: "sources/raw/san-shi/liuren-zhiyin/ctext/juan1-xinyin_149687.html"
+    sha256: "79e69bc6b1c58774054fed0594f77d5ee2aa92724bb725bce8e54e7f812e7c4f"
+    role: "ctp_chapter_html"
+  - path: "sources/raw/san-shi/liuren-zhiyin/ctext/juan2-zhizhang_311109.html"
+    sha256: "b38f6a10718b935c017325f0e926998acc371989c39125ce8e9c6b74c7953f9a"
+    role: "ctp_chapter_html"
+  - path: "sources/raw/san-shi/liuren-zhiyin/ctext/juan3-zhanyan_443151.html"
+    sha256: "25d92e99482807fa7a426c66372a84afcf5859a9eafeaa338cf9138a9951dcd8"
+    role: "ctp_chapter_html"
+  - path: "sources/raw/san-shi/liuren-zhiyin/ctext/juan4-shensha_617181.html"
+    sha256: "9418374fb32224d9c317ae77939d97c67a45009b1e1d79a32c09d9ab2ca1891f"
+    role: "ctp_chapter_html"
+  - path: "sources/raw/san-shi/liuren-zhiyin/daizhige-liuren-zhinan.txt"
+    sha256: "e6a9f1447b1c4d536c3dbc093dc6589267b5c50c6502941d4ccde26d04cf069b"
+    role: "cleaner_original_mirror_volumes_1_2"
+    provenance: "文件名所示代之阁镜像；精确下载 URL 未随文件保存。"
+  - path: "sources/raw/san-shi/liuren-zhiyin/daizhige-liuren-zhinan-zhujie.txt"
+    sha256: "eaff275f55dc4a3eb6a57a2dfce25b6082e60f8d91fe77cfdd08ac8b2f8252eb"
+    role: "complete_annotated_mirror"
+    provenance: "文件名所示代之阁镜像；精确下载 URL 未随文件保存。"
+  - path: "sources/raw/san-shi/liuren-zhiyin/NLC416-12jh005348-45347_liuren-zhinan.pdf"
+    sha256: "b2c24631dcc855bd0e2b1578b1050b26c792bc8e52b7bab6dbeae6ed2bc3db5d"
+    role: "original_scan_witness"
+    extent: "248 pages; 6568701 bytes"
+  - path: "references/fulltext/san-shi/liuren-zhiyin/supplemental-annotated-golla-vol3-4.md"
+    sha256: "2d03b731c84ad3a0f26c02bd1a3bdac860e7984632136c203d3daf4bc85012ae"
+    role: "supplemental_mirror_only"
+
+chapter_coverage:
+  expected: "传统书目四卷；张洪注本五个电子容器（含卷首）"
+  present:
+    - "卷首"
+    - "卷一心印赋"
+    - "卷二指掌赋"
+    - "卷三会纂占验指南"
+    - "卷之四神煞指南"
+  missing_text_units: []
+  unresolved_collation:
+    - "NLC 248 页尚未逐页逐行对校"
+    - "卷三所称二十九章与实际第三十章的版本归属"
+    - "旧卷三、卷四合卷及旧卷五神煞的卷次映射"
+
+source_layers:
+  normalization_scaffold:
+    definition: "normalized 文件生成的 front matter、Source Chapters 表和章节元数据。"
+    citation_policy: "不得作为书中原文引用。"
+  annotated_edition_heading:
+    definition: "注本自身的卷题、章题和目录标题。"
+    citation_policy: "可作结构证据，不直接当方法规则。"
+  old_preface_attribution:
+    definition: "周元曙、程起鸾旧序中关于陈公献、庄公远作品归属的书目证言。"
+    citation_policy: "只证明传统归属，不替代被归属作品的正文。"
+  original_text:
+    definition: "两赋的传承赋文短句；不强定为陈公献所作。"
+    evidence: "卷一、卷二较干净镜像与完整注本均可命中。"
+  chen_gongxian_content:
+    definition: "陈公献对两赋的旧注，以及《会纂》分门占法和明末清初占验。"
+    evidence: "旧序的明确归属，加卷一、卷二较干净镜像交叉命中。"
+  zhuang_gongyuan_content:
+    definition: "《神煞图位》及卷末《神煞辨讹》传统归庄公远层。"
+    evidence: "旧序归属与卷末署名；具体行界未全本影印校定。"
+  zhang_hong_modern_annotation:
+    definition: "张洪自序、简注、史注、辨析及注本编辑结构。"
+    evidence: "卷首自署、‘张注’标记、现代纪年及与较干净镜像的增量对照。"
+  modern_case:
+    definition: "张洪注本所收现代增补课例，包括 1998 年课例。"
+    citation_policy: "只能称现代注本课例，不得称陈公献占验。"
+  modern_weifang_case:
+    definition: "明确出现潍坊、现代机关或现代生活语境的增补课例。"
+    citation_policy: "只能作为现代实践样本，不得倒灌为古籍规则。"
+  annotated_comment_unattributed:
+    definition: "CTP 行内题下注或注本插语，但仅凭现有电子层不能稳归陈、庄或张。"
+    citation_policy: "保留未定归属；不得写成古籍原文。"
+
+provenance_notes:
+  - "CTP 五章和完整注解镜像提供全本检索能力。"
+  - "较干净镜像仅覆盖卷一、卷二，适合辨认两赋与旧注，不足以独立覆盖卷三、卷四。"
+  - "NLC 影印用于版本、图表和疑字复核，但本轮没有完成全本逐页校勘。"
+  - "Golla 文本混有现代注释，仅作补充比对。"
+
+ocr_or_transcription_quality:
+  status: "mixed"
+  notes:
+    - "主检索底本是电子行表，不是已逐页校定的影印转写。"
+    - "CTP inlinecomment 在 normalized 文本中被压平，原文与题下注的边界须回看 HTML。"
+    - "图表空格、异体字、简繁转换和个别错字仍可能失真。"
+
+license_or_usage_notes:
+  - "古籍内容属于公有领域；NLC/Wikimedia 扫描按馆藏与 Commons 页面说明使用。"
+  - "CTP 页面受站点条款约束；本包只记录本地既有文件和来源链接。"
+  - "代之阁及 Golla 镜像站条款未在本包内核定，不对外再分发其全文。"
+
+coverage_claim:
+  structural_index: "normalized L1-L2798 已建立结构索引"
+  rule_extraction: "选择性蒸馏核心取用与解释次序，不声称穷尽全书规则"
+  quote_index: "精选证据锚点，不代表全文逐句引用覆盖"
+  scan_collation: "未完成"
+
+distillation_notes:
+  rebuilt_at: "2026-07-10"
+  distilled_by: "Codex with cangjie-skill"
+  review_status: "source-layered_rebuild_pending_human_scan_collation"

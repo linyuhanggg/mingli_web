@@ -514,6 +514,23 @@ export type TimeCheckViewModel = {
   }>;
   readonly ranking_status: "not_ranked" | "candidate_evidence_ranked";
   readonly event_matching_status: "not_calculated" | "structured_evidence";
+  readonly rectification_status?:
+    | "hour_determined"
+    | "no_valid_candidate"
+    | "not_attempted"
+    | "remaining_ambiguous"
+    | null;
+  readonly rectification_conclusion?: {
+    readonly status:
+      | "hour_determined"
+      | "no_valid_candidate"
+      | "not_attempted"
+      | "remaining_ambiguous";
+    readonly selected_candidate_id: string | null;
+    readonly remaining_candidate_ids: ReadonlyArray<string>;
+    readonly basis: string;
+    readonly rule_ids?: ReadonlyArray<string>;
+  } | null;
   readonly limitations: ReadonlyArray<string>;
 };
 

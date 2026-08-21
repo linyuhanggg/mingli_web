@@ -1,0 +1,371 @@
+schema_version: mingli-algorithm-source-samples-v1
+purpose: >-
+  Independent pre-implementation examples used to pin formulas, lookup tables,
+  boundary conventions, and observation contracts. Provider fixture suites may copy
+  these expected facts but must not calculate the expectation with provider code.
+
+cases:
+  ziwei-horoscope-2026-07:
+    source_reference: iztro 2.5.8 horoscope scope replay fixed before the portable-core refactor
+    input: {birth_datetime: "1990-06-15T12:00:00", target_month: "2026-07"}
+    expected:
+      active_major_limit_count: 1
+      annual_layer: 2026
+      monthly_layer: "2026-07"
+      transformations_are_layer_scoped: true
+    verification: the vendored iztro result shape is replayed by the Ziwei provider audit and remains independent of host routing
+
+  liuren-classical-method-source-plates:
+    source_reference: 大六壬大全 L6876-L7904 and the sixteen explicit Fuyin day rows at L7774
+    input: 39 independently transcribed day, hour-branch, and month-general combinations
+    expected:
+      case_count: 39
+      primary_methods: [元首, 重审, 比用, 涉害, 遥克, 昴星, 别责, 八专, 伏吟, 反吟]
+      required_special_subtypes: [见机, 察微, 缀瑕, 蒿矢, 弹射, 自任, 自信, 杜传, 井栏射]
+      compared_facts: [four_lessons, transmission_method, three_transmissions, source_anchor]
+    verification: every expected plate and three-transmission row is copied from a line-anchored classical example, never from the vendored 720-row engineering table
+
+  liuren-branch-direction-correspondence:
+    source_reference: 大六壬秘本 L555-L577 八卦属十二将物类
+    input: [子, 丑, 寅, 卯, 辰, 巳, 午, 未, 申, 酉, 戌, 亥]
+    expected:
+      directions: [正北, 东北, 东北, 正东, 东南, 东南, 正南, 西南, 西南, 正西, 西北, 西北]
+      role: symbolic_direction_candidate_only
+    verification: the eight directional sectors and paired branch identities were transcribed before the V5.1 dimension extension
+
+  liuren-outcome-relation-projection:
+    source_reference: 六壬指南 LR-17 through LR-19; normalized fulltext L557-L558 and L777
+    input: {day_stem: 甲, day_branch: 辰, transmissions: [亥, 卯, 未]}
+    expected:
+      subject_object_relation: subject_overcomes_object
+      transmission_relations_are_separate: true
+      target_relative_requires_caller_domain: true
+      verdict: none
+    verification: the source conditions were reduced to mechanical directed relations without assigning a real-world conclusion
+
+  liuren-general-landing-correspondence:
+    source_reference: 大六壬秘本 L600-L771 天将所临类象
+    input: {heavenly_general: 腾蛇, landing_branch: 寅}
+    expected:
+      source_text: 為文字
+      source_rule: LM-R01
+      role: imagery_correspondence_not_observed_activity
+    verification: exact short source text and landing identity were checked against the hash-bound structured excerpt table
+
+  bazi-shensha-yima-taohua-auxiliary:
+    source_reference: 三命通会 L883-L890 驿马四局；L1197 桃花四局；L1198 神煞限制
+    input: {anchor_branch: 申, observed_branches: [寅, 酉]}
+    expected:
+      yima: 寅
+      taohua: 酉
+      matched: [驿马, 桃花]
+      precedence: auxiliary_only
+    verification: the two target branches and the auxiliary-only boundary were transcribed from separate source rows before implementation
+
+  luming-nayin-sixty-cycle-boundary:
+    source_reference: 李虚中命书卷上六十甲子；首尾行独立抄录
+    input: [甲子, 癸亥]
+    expected: [海中金, 大海水]
+    verification: first and last sexagenary entries checked in normalized source
+  luming-three-yuan-fixed-pillars:
+    source_reference: 珞琭子三命消息赋 L9；李虚中命书 P-01 胎元结构索引
+    input: {year: 庚辰, month: 丙戌, day: 己酉, hour: 丁卯, taiyuan_policy: calculate}
+    expected: {tianyuan: [庚, 丙, 己, 丁], diyuan: [辰, 戌, 酉, 卯], renyuan_required: true, taiyuan: 丁丑}
+    verification: expected components and month-stem +1/month-branch +3 Taiyuan were transcribed before luming provider implementation
+  luming-lumagui-jia:
+    source_reference: 李虚中命书 L65-L67
+    input: {day_stem: 甲, branches: [寅, 未, 丑]}
+    expected: {lu: 寅, tianyi_candidates: [丑, 未]}
+    verification: lookup row cross-checked against the source prose and fixed fixture
+
+  xingming-seven-luminaries-j2000:
+    source_reference: >-
+      Astronomy Engine 2.1.19 PyPI sdist
+      sha256:95b797b87b659adc0602a6a205143ce5a10451664e80650bb7cd8ba3c8f1f02b;
+      direct GeoVector(body, time, aberration=true) then Ecliptic(vector) oracle run
+    input: 2000-01-01T12:00:00Z
+    expected:
+      frame: geocentric_true_ecliptic_of_date
+      aberration: true
+      longitude_degrees:
+        Sun: 280.368738639819
+        Moon: 223.323891127474
+        Mercury: 271.888912066463
+        Venus: 241.565232940362
+        Mars: 327.963899077903
+        Jupiter: 25.254199844874
+        Saturn: 40.396124137178
+      tolerance_degrees: 1.0e-9
+    verification: >-
+      Values were recorded by executing the hash-pinned upstream sdist directly,
+      outside the provider tree; the geocentric EQJ vector was converted to true
+      ecliptic-of-date coordinates with aberration enabled.
+  xingming-house-and-mingshen-opposition:
+    source_reference: 星学大成 L1040
+    input: {life_degree: 42.5}
+    expected: {body_degree: 222.5, relation: exact_opposition}
+    verification: source states that the body degree is opposite the life degree
+  xingming-four-residuals-direction:
+    source_reference: 果老星宗 L1279 交初为罗喉、交中为计都
+    input: {luohou_longitude: 17.25}
+    expected: {luohou_identity: descending_lunar_node, jidu_identity: ascending_lunar_node, jidu_longitude: 197.25, luoji_separation_degrees: 180}
+    verification: the Guolao node identities and opposing-node invariant are independent of the ephemeris provider
+  xingming-topocentric-ming-j2000-greenwich:
+    source_reference: >-
+      Astronomy Engine 2.1.19 SiderealTime plus the source-declared eastern
+      ecliptic/horizon Ming convention; direct formula oracle frozen before provider activation
+    input: {instant: '2000-01-01T12:00:00Z', longitude: 0.0, latitude: 51.4779}
+    expected: {ming_degree: 24.268447624688, shen_degree: 204.268447624688, tolerance_degrees: 1.0e-9}
+    verification: apparent sidereal time, mean obliquity, and eastern-horizon intersection were evaluated outside the provider path
+  xingming-residual-points-j2000:
+    source_reference: >-
+      果老星宗 L1279 node identities; Astronomy Engine 2.1.19 lunar
+      node/apogee events; 星学大成 L4753
+      10228-day Zi Qi mean cycle calibrated by the dated Ming almanac value
+      recorded in 钮卫星 2015 p.417
+    input: {instant: '2000-01-01T12:00:00Z'}
+    expected:
+      罗睺: 303.835470062135
+      计都: 123.835470062135
+      紫炁: 192.344958936254
+      月孛: 259.424718735435
+      tolerance_degrees: 1.0e-9
+    verification: the descending-node Luo Hou and apogee events came from the hash-pinned upstream oracle, Ji Du is its exact ascending-node opposition, and Zi Qi was independently evaluated from JDN 2280289.5 at 284.58 degrees and the source 10228-day period
+  xingming-ten-stem-transformations-jia:
+    source_reference: 果老星宗 L330-L353 and L897-L906 十干变曜与完整横表
+    input: {year_stem: 甲}
+    expected:
+      transformations: [天禄, 天暗, 天福, 天耗, 天荫, 天贵, 天刑, 天印, 天囚, 天权]
+      classical_bodies: [火星, 月孛, 木星, 金星, 土星, 太阴, 水星, 紫炁, 计都, 罗睺]
+    verification: both ten-item rows were transcribed before the provider lookup was activated
+  xingming-bailiu-100-years-six-months:
+    source_reference: 果老星宗 L1056 and L1599 洞微百六限起例与十二宫年数
+    input: {ming_degree: 42.5}
+    expected:
+      houses: [命宫, 相貌, 福德, 官禄, 迁移, 疾厄, 妻妾, 奴仆, 男女, 田宅, 兄弟, 财帛]
+      duration_years: [15.0, 10.0, 11.0, 15.0, 8.0, 7.0, 11.0, 4.5, 4.5, 4.5, 5.0, 5.0]
+      total_years: 100.5
+    verification: the source total is one hundred years and six months; it was summed independently and is not normalized to 106 years
+
+  liuyao-supplied-six-tosses:
+    source_reference: 卜筮正宗以钱代蓍与安世应目录
+    input: [7, 8, 9, 6, 7, 8]
+    expected: {moving_lines: [3, 4], preserved_toss_count: 6}
+    verification: 6 and 9 are moving; the six supplied values remain immutable
+  liuyao-eight-palace-boundaries:
+    source_reference: 卜筮正宗 BSZZ-0135 through BSZZ-0207 八宫六十四卦全表与 BSZZ-0233 安世应诀
+    input: {palaces: [乾, 兑, 离, 震, 巽, 坎, 艮, 坤]}
+    expected:
+      unique_hexagram_count: 64
+      generation_names: [八纯, 一世, 二世, 三世, 四世, 五世, 游魂, 归魂]
+      shi_lines: [6, 1, 2, 3, 4, 5, 4, 3]
+      ying_lines: [3, 4, 5, 6, 1, 2, 1, 6]
+      qian_sequence: [乾为天, 天风姤, 天山遯, 天地否, 风地观, 山地剥, 火地晋, 火天大有]
+      kun_sequence: [坤为地, 地雷复, 地泽临, 地天泰, 雷天大壮, 泽天夬, 水天需, 水地比]
+    verification: all eight source rows were transcribed before provider implementation and the 64 names were checked for uniqueness
+  liuyao-qian-najia-boundary:
+    source_reference: 火珠林与卜筮正宗纳甲装卦法
+    input: {hexagram: 乾为天}
+    expected:
+      palace: 乾
+      palace_element: 金
+      shi_line: 6
+      ying_line: 3
+      najia_bottom_up:
+        - {line: 1, stem_branch: 甲子, element: 水, six_relative: 子孙}
+        - {line: 2, stem_branch: 甲寅, element: 木, six_relative: 妻财}
+        - {line: 3, stem_branch: 甲辰, element: 土, six_relative: 父母}
+        - {line: 4, stem_branch: 壬午, element: 火, six_relative: 官鬼}
+        - {line: 5, stem_branch: 壬申, element: 金, six_relative: 兄弟}
+        - {line: 6, stem_branch: 壬戌, element: 土, six_relative: 父母}
+    verification: >-
+      The complete Qian row was transcribed from the fixed Najia and Shi/Ying
+      rules, then its six relatives were independently derived against palace Metal.
+  liuyao-changed-line-suppresses-hidden:
+    source_reference: 增删卜易 L502-L516 变爻用神优先于伏神
+    input: {tosses_bottom_up: [8, 8, 8, 6, 7, 9], main: 风地观, changed: 泽地萃}
+    expected:
+      moving_lines: [4, 6]
+      line_4_changed: {stem_branch: 丁亥, six_relative: 子孙}
+      visible_main_relatives: [父母, 官鬼, 妻财]
+      hidden_relative_excluded: 子孙
+    verification: >-
+      The source diagram gives line four as 父母未土 moving to 子孙亥水 and
+      explicitly rejects seeking another hidden 子孙 when this changed line exists.
+  liuyao-six-spirits-stem-boundaries:
+    source_reference: 卜筮正宗 BSZZ-0234 through BSZZ-0236 六兽歌与自初爻装至六爻
+    input: {day_stems: [甲, 己]}
+    expected:
+      甲: [青龙, 朱雀, 勾陈, 螣蛇, 白虎, 玄武]
+      己: [螣蛇, 白虎, 玄武, 青龙, 朱雀, 勾陈]
+    verification: both six-line rotations were enumerated directly from the fixed order and source starting table
+  liuyao-jiazi-xunkong:
+    source_reference: 卜筮正宗六甲旬空起例
+    input: {day_ganzhi: 甲子}
+    expected: {xunkong: [戌, 亥]}
+    verification: first ten-day cycle boundary independently enumerated
+  liuyao-kuai-to-gou-hidden-returning:
+    source_reference: 卜筮正宗八宫全图、纳甲表、飞伏定例；增删卜易动变生克章
+    input: {tosses_bottom_up: [9, 7, 7, 7, 7, 6], day_ganzhi: 甲子, month_ganzhi: 丙寅}
+    expected:
+      main_hexagram: 泽天夬
+      changed_hexagram: 天风姤
+      moving_lines: [1, 6]
+      line_1: {main_najia: 甲子, changed_najia: 辛丑, returning_relations: [回头克, 回头合]}
+      missing_relative: 父母
+      hidden_line: {line: 2, stem_branch: 乙巳, six_relative: 父母}
+    verification: the two plates, changed-line Najia, elemental restraint, branch combine, and pure-Kun hidden line were independently enumerated
+
+  meihua-remainder-zero:
+    source_reference: 梅花易数年月日時起例
+    input: {upper_sum: 8, lower_sum: 16, moving_sum: 12}
+    expected: {upper_trigram_number: 8, lower_trigram_number: 8, moving_line: 6}
+    verification: zero remainders map to modulus 8 or 6, never zero
+  meihua-mutual-extraction:
+    source_reference: 梅花易数互卦起例
+    input: {main_lines_bottom_up: [1, 0, 1, 1, 0, 0]}
+    expected: {lower_mutual_lines: [0, 1, 1], upper_mutual_lines: [1, 1, 0]}
+    verification: lower mutual uses lines 2-4 and upper mutual uses lines 3-5
+  meihua-body-use-moving-upper:
+    source_reference: 梅花易数体用总诀
+    input: {moving_line: 5}
+    expected: {body: lower_trigram, use: upper_trigram}
+    verification: the trigram containing the moving line is use; the other is body
+
+  qimen-winter-summer-dun:
+    source_reference: 奇门遁甲统宗大全遁甲起例
+    input: [winter_solstice_after, summer_solstice_after]
+    expected: [yang_dun, yin_dun]
+    verification: both half-year branches are stated together in the source
+  qimen-xunshou-jiazi:
+    source_reference: 奇门遁甲统宗大全六仪表
+    input: {xun: 甲子旬}
+    expected: {hidden_instrument: 戊}
+    verification: first of the six explicit xunshou-to-instrument rows
+  qimen-chief-director-ten-hour:
+    source_reference: 奇门遁甲统宗大全遁甲起例
+    input: {same_xun: true, elapsed_double_hours: 9}
+    expected: {chief_identity_stable: true, director_identity_stable: true}
+    verification: source says chief and director change once per ten double-hours
+  qimen-xunkong-horse:
+    source_reference: 五行精纪空亡例与驿马位歌；奇门遁甲统宗旬首法
+    input: {hour_ganzhi: 丙申}
+    expected: {xun: 甲午, void_branches: [辰, 巳], horse_branch: 寅}
+    verification: the sexagenary Xun remainder and the four trine horse row are independent mechanical cycles
+  qimen-pattern-dragon-return:
+    source_reference: 奇门遁甲统宗大全奇门四十格
+    input: {heaven_symbol: 甲, earth_stem: 丙}
+    expected: {pattern: 青龙回首}
+    verification: exact two-layer predicate from the source row; no outcome wording is imported
+
+  taiyi-annual-epoch-scope:
+    source_reference: 太乙金镜式经 L67-L69 推上元积年
+    input: {lunar_year: 724, profile: taiyi-jinjing-annual-yang-board-v1}
+    expected: {accumulated_year: 1937281, bureau: 49, scope: annual_macro_historical_board_facts}
+    verification: the Tang Jiazi anchor, one-based civil-year translation, and annual-only scope are fixed independently of provider code
+  taiyi-six-ji-five-zi-yuan:
+    source_reference: 太乙金镜式经 L71-L81 推入六纪三元法
+    input: {accumulated_year: 1938457}
+    expected: {cycle_position: 217, ji: 4, zi_yuan: 4, bureau: 1, governance: 理天}
+    verification: independent modular enumeration covers all 360 cycle positions, six Ji, five 72-year Zi-Yuan, and three governance states
+  taiyi-board-core-bureau-one:
+    source_reference: 太乙金镜式经 L83-L93、L348-L351、L493
+    input: {bureau: 1}
+    expected: {taiyi: 乾, tianmu: 武德, tianmu_position: 申, jishen: 寅, shiji: 坤}
+    verification: the complete Yang-table row is recomputed from separately transcribed Taiyi, Tianmu, Jishen, and sixteen-ring rules
+  taiyi-host-guest-bureau-one:
+    source_reference: 太乙金镜式经 L348-L351、L493
+    input: {bureau: 1, taiyi: 乾, tianmu_position: 申, shiji: 坤}
+    expected: {host_count: 7, host_general: 7, host_assistant: 1, guest_count: 13, guest_general: 3, guest_assistant: 9}
+    verification: independent forward ring counting and decimal general formulas reproduce the primary-source row
+  taiyi-long-cycle-epoch-separation:
+    source_reference: 太乙金镜式经 L595-L659、L661-L759
+    input: {lunar_year: 724}
+    expected: {annual_accumulated_year: 1937281, upper_jiayin_accumulated_year: 285011, wufu_dayou_accumulated_year: 13331, xiaoyou_four_deity_accumulated_year: 3361}
+    verification: four source-stated epoch profiles remain independently named and cannot be substituted for one another
+  taiyi-evidence-scope-zero-personal:
+    source_reference: 太乙金镜式经 L353-L368 历史年局与 V5.1 事实证据边界
+    input: {profile: taiyi-jinjing-annual-yang-board-v1, requested_scope: personal_life, matched_board_predicate: false}
+    expected: {personal_claim_allowed: false, applicable_board_evidence: 0, arbitrary_fallback: false}
+    verification: annual board identity and exact calculated predicates gate evidence while unsupported personal scope remains explicitly unavailable
+
+  selection-jianchu-month-branch:
+    source_reference: 协纪辨方书建除十二神
+    input: {month_branch: 寅, day_branch: 寅}
+    expected: {jianchu: 建}
+    verification: 建 begins at the same branch as the month command
+  selection-no-candidate:
+    source_reference: candidate-engine mechanical contract
+    input: {range_days: 2, both_days_violate_hard_constraint: true}
+    expected: {candidates: [], explicit_eliminations: 2}
+    verification: hard constraints eliminate rather than award a hidden score
+  selection-school-separation:
+    source_reference: 协纪辨方书与玉匣记分层合同
+    input: {official_result: allowed, folk_result: excluded}
+    expected: {merged_verdict: null, disagreement_exposed: true}
+    verification: conflicting lineages remain separately addressable
+  selection-hour-path-from-day-branch:
+    source_reference: 协纪辨方书 L1509-L1510 日起时黄黑十二道；selection-source-tables-v1 hour formula
+    input: {day_branch: 子, hour_branches: [子, 丑, 寅, 卯, 辰, 巳, 午, 未, 申, 酉, 戌, 亥]}
+    expected:
+      gods: [金匮, 天德, 白虎, 玉堂, 天牢, 玄武, 司命, 勾陈, 青龙, 明堂, 天刑, 朱雀]
+      huanghei: [huang, huang, hei, huang, hei, hei, huang, hei, huang, huang, hei, hei]
+    verification: the source-declared day-starts-hour offset was evaluated directly against the twelve fixed branch indices before provider code
+  selection-thirty-hko-published-calendar-examples:
+    source_reference: Hong Kong Observatory Gregorian-Lunar calendar conversion tables 2024-2026; exact CSV rows and file hashes in selection-v51.yaml
+    input: {civil_date_count: 30, first: '2024-01-01', last: '2026-07-24'}
+    expected:
+      fixture_path: references/fixtures/selection-v51.yaml
+      published_case_count: 30
+      canonical_cases_sha256: de6a215b3ce0b01392efe00fed2ca826f5c5614528efa503b868dedff052f0f3
+      compared_fields: [lunar_year, lunar_month, lunar_day, is_leap_month, chinese_year_ganzhi]
+      source_file_sha256: [f2d67d5407e433bcaebbfd048bc54e4ab5c12bfb65a91b4e00af52db11278175, d2c5d752f370d3e583bde4950845fb6b4bfce1e1551da913ad14d655014fb32c, 8b2892b0e04faa632f09ea36ffee29e67b4427b85a18708d907d88d8be452b98]
+    verification: every expected value is bound to a government-published CSV row; the extended lunar-python comparison is audited separately as engineering evidence
+
+  fengshui-compass-boundary:
+    source_reference: 二十四山等分圆周机械约定
+    input: [7.4999, 7.5]
+    expected: [子, 癸]
+    verification: half-open 15-degree sectors with north-centered 子 are explicitly versioned
+  fengshui-form-observation-gap:
+    source_reference: 撼龙经形势输入合同
+    input: {site_image_regions: [], user_observations: []}
+    expected: {form_claims_allowed: false, missing: [terrain_or_site_observation]}
+    verification: no form feature may be invented when neither image nor observation exists
+  fengshui-school-separation:
+    source_reference: 阳宅十书与沈氏玄空学分层合同
+    input: {selected_school: bazhai, supplied_period: 9}
+    expected: {bazhai_facts: present, xuankong_chart: absent}
+    verification: period data cannot silently activate a different school
+
+  physiognomy-region-quality:
+    source_reference: 神相全编十三部位与观测合同
+    input: {provider_fixture_section: boundary_cases, provider_fixture_case_id: low-light-required-target}
+    expected:
+      critical_missing: [observation_resolution:tid-9106a0874efbcc6c7809a596213bb1f8]
+      active_observation_count: 0
+      conflict_count: 0
+      cross_capture_variation_count: 0
+      superseded_observation_count: 0
+      active_source_rule_ids: []
+      active_regions: []
+      active_descriptors: []
+    verification: the executable low-light fixture remains missing before any evidence binding
+  physiognomy-no-invisible-feature:
+    source_reference: image observation mechanical contract
+    input: {provider_fixture_section: boundary_cases, provider_fixture_case_id: hidden-right-ear-from-left-profile}
+    expected: {expected_error_regex: 'visible.*coverage'}
+    verification: the executable hidden-side fixture is rejected instead of being mirrored or inferred
+  physiognomy-user-correction:
+    source_reference: observation revision contract
+    input: {provider_fixture_section: boundary_cases, provider_fixture_case_id: correction-to-not-visible}
+    expected:
+      critical_missing: [visible_observation:tid-a73daedf6a0cf1f56c85a950d542b298]
+      active_observation_count: 0
+      conflict_count: 0
+      cross_capture_variation_count: 0
+      superseded_observation_count: 1
+      active_source_rule_ids: []
+      active_regions: []
+      active_descriptors: []
+    verification: the executable correction fixture supersedes stale input and leaves a missing visible fact

@@ -1,0 +1,131 @@
+refinement:
+  id: shensha-ss-b5-yangzhai-refinement
+  version: v0.1
+  generated_at: "2026-07-05"
+  batch_id: SS-B5
+  source_status: distilled_from_ready_yangzhai_packs
+  purpose: "Second-pass refinement for Yangzhai/Bazhai shensha-like terms, especially Younian nine stars, Tianyi/Jumen, Wugui, Liusha, Huohai, and Jueming. This matrix isolates property-layout terms from bazi, liuren, selection, ziwei, and xingming shensha."
+  upstream_refs:
+    backlog: references/matrices/shensha-distillation-backlog.yaml
+    source_profile: references/matrices/shensha-entry-source-profile.yaml
+    quote_trace: references/matrices/shensha-quote-trace.yaml
+    source_book_matrix: references/matrices/shensha-source-book-matrix.yaml
+    tool_adapters: references/tool-adapters.md
+  policy:
+    shensha_layer: yangzhai_bazhai_property_fact_layer
+    requires_tool_fengshui_eight_mansion: true
+    no_llm_fuyuan_or_younian_math: true
+    no_single_yangzhai_star_judgment: true
+    yangzhai_terms_property_internal_only: true
+    do_not_merge_with_bazi_luming_selection_liuren_ziwei_xingming: true
+    yangzhai_shishu_primary: true
+    yangzhai_sanyao_support: true
+    yangzhai_aizhong_pian_acquisition_only: true
+    no_medical_or_family_fate_guarantee: true
+    rerun_gate_check_after_final_rewrite: true
+  source_layers:
+    primary_layer:
+      pack: fengshui/yangzhai-shishu
+      role: bazhai_younian_nine_stars_primary_source
+      use_for:
+        - fuyuan_and_east_west_group
+        - great_younian_nine_stars
+        - tianyi_jumen_wugui_liusha_huohai_jueming_terms
+        - cross_door_partition_and_layer_logic
+        - door_repair_selection_boundary
+      anchor_rules: [YZS-R004, YZS-R005, YZS-R006, YZS-R007, YZS-R008, YZS-R009, YZS-R010, YZS-R011]
+      anchor_procedures: [YZS-P003, YZS-P004, YZS-P005, YZS-P007]
+      boundary: "Primary Yangzhai/Bazhai source. Concrete judgments require property-facing/layout/fuyuan facts; text also contains repair-date selection and image/table material that must not be hand-calculated."
+    support_layer:
+      pack: fengshui/yangzhai-sanyao
+      role: door_master_stove_bazhai_support
+      use_for:
+        - door_master_stove_synthesis
+        - east_four_west_four_boundary
+        - three_auspicious_four_inauspicious_terms
+        - static_dynamic_changed_house_distinctions
+      anchor_rules: [YZS-R001, YZS-R002, YZS-R003, YZS-R004, YZS-R005, YZS-R007]
+      anchor_procedures: [YZS-P001, YZS-P002]
+      boundary: "Support layer for 门主灶 and Bazhai combinations. Normalized text is a later printed/transcribed layer; keep source caveats and do not override yangzhai-shishu on source priority."
+    acquisition_only:
+      - fengshui/yangzhai-aizhong-pian
+  required_fact_layer:
+    adapter: tool.fengshui.eight_mansion
+    base_fields:
+      - property_type
+      - property_location
+      - compass_degrees_or_door_facing
+      - sitting_facing
+      - floorplan_or_layout_graph
+      - main_door_position
+      - master_room_or_host_room_position
+      - stove_bed_water_and_key_room_positions
+      - birth_year_or_occupant_profile_if_fuyuan_used
+      - ming_gua_or_fuyuan
+      - house_gua_or_zhai_gua
+      - east_four_west_four_group
+      - eight_mansion_or_younian_star_map
+      - door_sequence_or_partition_profile
+      - layer_or_room_mapping_when_used
+      - use_case
+      - source_trace
+      - warnings
+    optional_when_relevant:
+      - selection_calendar_profile_for_repair_or_opening_door
+      - water_flow_profile_for_drainage_or_water_method
+      - modern_building_safety_and_legal_context
+    single_factor_not_sufficient:
+      - tianyi_jumen
+      - bazhai_tianyi_tianyi_medical
+      - shengqi_tanlang
+      - yannian_wuqu
+      - fuwei_fubi
+      - wugui_lianzhen
+      - liusha_wenqu
+      - huohai_lucun
+      - jueming_pojun
+      - any_single_bazhai_star
+      - any_single_door_or_stove_position
+    missing_fact_stop_message: "缺少阳宅/八宅事实层：必须有 tool.fengshui.eight_mansion 或等价输出的坐向/门向、户型或布局图、门主灶床水位置、福元或命卦、宅卦、东四/西四、游年九星映射与 source_trace 后，才能解释八宅天乙、五鬼、六煞、祸害、绝命等。"
+  target_entries:
+    - shensha-you-nian-jiuxing
+    - shensha-tianyi-medical
+  entry_refinements:
+    - id: shensha-you-nian-jiuxing
+      name: "游年九星/天乙巨门"
+      fengshui_usage: bazhai_younian_nine_stars_and_house_direction_signal
+      source_layer_order: [primary_layer, support_layer]
+      source_refs: [YZS-R004, YZS-R005, YZS-R006, YZS-R007, YZS-R008, YZS-R009, YZS-P003, YZS-P004, YZS-Q009, YZS-Q021]
+      boundary: "八宅游年九星、天乙巨门、生气、延年、伏位、五鬼、六煞、祸害、绝命只在阳宅宅向/门主灶/福元命卦事实层内使用；不等于八字天乙贵人、六壬天乙、择日天医，也不得加入命盘神煞 inventory。"
+    - id: shensha-tianyi-medical
+      name: "天医/天乙巨门"
+      fengshui_usage: bazhai_tianyi_jumen_or_later_tianyi_medical_alias
+      source_layer_order: [primary_layer, support_layer]
+      source_refs: [YZS-R007, YZS-Q021, YZS-P003, "yangzhai-sanyao:YZS-R004", "yangzhai-sanyao:YZS-Q079"]
+      boundary: "八宅天医/天乙/天乙巨门是宅局游年九星语义，不等于八字天乙贵人、六壬天乙贵人或择日求医天医；不能解释为现实医疗保证。"
+  reading_order:
+    source_building:
+      - shensha-name-disambiguation.yaml
+      - shensha-entry-source-profile.yaml
+      - shensha-quote-trace.yaml
+      - shensha-source-book-matrix.yaml
+      - shensha-distillation-backlog.yaml
+      - shensha-ss-b5-yangzhai-refinement.yaml
+    yangzhai_answer:
+      - references/tool-adapters.md
+      - fengshui/yangzhai-shishu
+      - fengshui/yangzhai-sanyao
+    never_for_interpretation:
+      - fengshui/yangzhai-aizhong-pian
+  validation:
+    gate_codes:
+      - yangzhai_shensha_misapplied_to_bazi
+      - yangzhai_shensha_misapplied
+      - yangzhai_single_star_judgment
+      - fengshui_missing_required_fact_outputs
+    acceptance:
+      - target_entries_equal_all_fengshui_profile_entries
+      - concrete_bazhai_terms_require_property_fact_layer
+      - tianyi_jumen_not_merged_with_bazi_or_liuren_tianyi
+      - wugui_liusha_huohai_jueming_not_added_to_bazi_inventory
+      - yangzhai_aizhong_pian_remains_acquisition_only

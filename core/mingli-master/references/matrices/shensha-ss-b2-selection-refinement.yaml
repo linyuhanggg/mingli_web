@@ -1,0 +1,293 @@
+refinement:
+  id: shensha-ss-b2-selection-refinement
+  version: v0.1
+  generated_at: "2026-07-05"
+  batch_id: SS-B2
+  source_status: distilled_from_ready_selection_packs_and_qoder_manifests
+  purpose: "Second-pass refinement for official date-selection shensha. This is a routing, dependency, and fact-layer matrix, not an independent date-selection oracle."
+  upstream_refs:
+    backlog: references/matrices/shensha-distillation-backlog.yaml
+    source_profile: references/matrices/shensha-entry-source-profile.yaml
+    quote_trace: references/matrices/shensha-quote-trace.yaml
+    source_book_matrix: references/matrices/shensha-source-book-matrix.yaml
+    selection_fact_layer: references/matrices/selection-fact-layer-profile.yaml
+  policy:
+    shensha_layer: selection_fact_layer
+    requires_deterministic_selection_provider: true
+    no_llm_calendar_math: true
+    no_single_factor_selection: true
+    official_over_folk_on_conflict: true
+    folk_sources_comparison_only: true
+    xingli_origin_layer_priority: true
+    xieji_adjudication_layer_priority: true
+    current_model_final_review: true
+    semantic_gate: false
+  source_layers:
+    origin_layer:
+      pack: selection/xingli-kaoyuan
+      role: official_shensha_origin_rules
+      use_for:
+        - annual_gods_origin
+        - monthly_gods_origin
+        - daily_and_hourly_gods_origin
+        - huangdao_heidao_origin
+        - twenty_eight_lodges_origin
+        - sili_sijue_origin
+      anchor_rules: [KR-08, KR-09, KR-10, KR-11, KR-12, KR-13, KR-14, KR-15, KR-16, KR-17, KR-18, KR-19, KR-20]
+      boundary: "Origin and source-history layer; not enough to rank or recommend concrete dates."
+    adjudication_layer:
+      pack: selection/xieji-bianfang-shu
+      role: official_selection_adjudicator
+      use_for:
+        - event_yiji
+        - jianchu_huanghei_integration
+        - directional_avoidance
+        - folk_conflict_adjudication
+        - biane_correction
+      anchor_rules: [XR-03, XR-04, XR-05, XR-06, XR-07, XR-08, XR-09, XR-14, XR-16, XR-17]
+      anchor_procedures: [XP-01, XP-02, XP-03, XP-04, XP-05, XP-06, XP-07]
+      boundary: "Primary official adjudication layer; still requires complete deterministic V5.1 Selection facts."
+    folk_comparison_layer:
+      packs:
+        - selection/yuqia-ji
+        - selection/donggong-zeri
+      role: folk_almanac_comparison
+      boundary: "Comparison only; never overrides xieji-bianfang-shu in final official judgment."
+  required_fact_layer:
+    adapter: mingli-master.selection.v1
+    base_fields:
+      - calendar_normalization
+      - calendar_candidates
+      - date_time_candidates
+      - jianchu
+      - huanghei
+      - twenty_eight_lodges
+      - annual_gods
+      - monthly_gods
+      - daily_shensha
+      - hourly_shensha
+      - yiji
+      - conflicts
+      - rejection_reasons
+      - source_trace
+    conditional_fields:
+      direction_sensitive:
+        - direction_or_sitting
+        - directional_avoidance
+        - taisui_suipo
+        - annual_sansha
+        - monthly_sansha
+        - dajiangjun
+        - jinshen_qisha
+      participant_sensitive:
+        - participant_bazi
+        - participant_clashes
+      medical:
+        - tianyi
+        - medical_specific_yiji
+        - medical_caveat
+    single_factor_not_sufficient:
+      - huangdao_heidao
+      - jianchu
+      - tiande_yuede
+      - tianyi
+      - yima_tianma
+      - taisui
+      - baihu
+      - tianxing
+      - jinshen_qisha
+      - dajiangjun
+      - any_single_shensha
+  target_entries:
+    - shensha-tiande-yuede
+    - shensha-yima-tianma
+    - shensha-jiesha-wangshen-zaisha
+    - shensha-guchen-guasu
+    - shensha-shie-dabai
+    - shensha-yuanchen-dahao
+    - shensha-tianyi-medical
+    - shensha-taisui
+    - shensha-baihu
+    - shensha-guanfu-bingfu
+    - shensha-tianxing
+    - shensha-huangdao-heidao
+    - shensha-jianchu
+    - shensha-yuepo-yueyan
+    - shensha-side-fei-lijue
+    - shensha-jinshen-qisha
+    - shensha-dajiangjun
+    - shensha-yuekong-mucang-jieshen
+    - shensha-twelve-generals
+  event_profile_crosswalk:
+    generic_selection:
+      profile_ref: references/matrices/selection-fact-layer-profile.yaml:event_profiles.generic_selection
+      source_refs: [XP-01, XR-08, KP-04, KR-14, KR-15, KR-17]
+      must_not_rank_from: [huangdao_heidao, jianchu, single_shensha]
+    marriage:
+      profile_ref: references/matrices/selection-fact-layer-profile.yaml:event_profiles.marriage
+      source_refs: [XP-02, XR-05, KP-06, KR-18]
+      couple_specific_requires_participant_bazi: true
+    construction_renovation:
+      profile_ref: references/matrices/selection-fact-layer-profile.yaml:event_profiles.construction_renovation
+      source_refs: [XP-03, XR-02, XR-06, KP-02, KR-08, KR-09, KR-10, KR-20]
+      direction_or_sitting_required: true
+    burial_funeral:
+      profile_ref: references/matrices/selection-fact-layer-profile.yaml:event_profiles.burial_funeral
+      source_refs: [XP-04, XR-07, KP-06, KR-19]
+      burial_direction_required_when_judging_direction: true
+    travel_office:
+      profile_ref: references/matrices/selection-fact-layer-profile.yaml:event_profiles.travel_office
+      source_refs: [XP-05, XP-06, XR-09, KP-05]
+      requires: [yima_tianma, wangwang_day, guiji_day, sili_sijue, yanggong_ji, huangdao_good_hours]
+    business_opening_transaction:
+      profile_ref: references/matrices/selection-fact-layer-profile.yaml:event_profiles.business_opening_transaction
+      source_refs: [XP-01, XR-08, XR-14, KP-06, KR-17]
+      direction_required_when_opening_orientation_is_judged: true
+    medical:
+      profile_ref: references/matrices/selection-fact-layer-profile.yaml:event_profiles.medical
+      source_refs: [XP-01, XR-16, KP-06]
+      medical_caveat_required: true
+    folk_comparison:
+      profile_ref: references/matrices/selection-fact-layer-profile.yaml:event_profiles.folk_comparison
+      source_refs: [XP-07, XR-17, JP-01, JP-06, DP-01, DP-03, DP-06]
+      folk_weight: comparison_only
+  entry_refinements:
+    - id: shensha-tiande-yuede
+      name: "天德/月德"
+      selection_usage: auspicious_support
+      source_layer_order: [origin_layer, adjudication_layer, folk_comparison_layer]
+      source_refs: [KR-11, XR-05, XR-08]
+      boundary: "吉神支持项；不得单凭天德/月德选日。"
+    - id: shensha-yima-tianma
+      name: "驿马/天马"
+      selection_usage: travel_office_field
+      source_layer_order: [adjudication_layer, origin_layer, folk_comparison_layer]
+      source_refs: [XR-09, XP-05, KP-05]
+      boundary: "只在出行/上任择日事实层内使用；不等于命盘天马。"
+    - id: shensha-jiesha-wangshen-zaisha
+      name: "劫煞/亡神/灾煞"
+      selection_usage: annual_monthly_avoidance
+      source_layer_order: [adjudication_layer, origin_layer, folk_comparison_layer]
+      source_refs: [XR-03, KR-08]
+      boundary: "择日/方位避忌字段；不移植为个人命局灾断。"
+    - id: shensha-guchen-guasu
+      name: "孤辰/寡宿"
+      selection_usage: marriage_rejection_signal
+      source_layer_order: [adjudication_layer, folk_comparison_layer]
+      source_refs: [XR-05]
+      boundary: "婚嫁忌项之一；不得单独断婚败。"
+    - id: shensha-shie-dabai
+      name: "十恶大败"
+      selection_usage: general_rejection_signal
+      source_layer_order: [adjudication_layer, origin_layer, folk_comparison_layer]
+      source_refs: [XR-08]
+      boundary: "通用凶日字段；不等于命盘十恶大败。"
+    - id: shensha-yuanchen-dahao
+      name: "元辰/大耗/小耗"
+      selection_usage: depletion_or_avoidance_signal
+      source_layer_order: [origin_layer, adjudication_layer, folk_comparison_layer]
+      source_refs: [KR-12, XR-08]
+      boundary: "耗损象只作择日避忌字段；不得机械化为财务结论。"
+    - id: shensha-tianyi-medical
+      name: "天医"
+      selection_usage: medical_and_prayer_support
+      source_layer_order: [origin_layer, adjudication_layer, folk_comparison_layer]
+      source_refs: [XR-16, XR-12]
+      boundary: "医事宜忌文化参考；不替代医疗判断；不等于八宅天乙巨门。"
+    - id: shensha-taisui
+      name: "太岁/岁君/岁破"
+      selection_usage: annual_directional_avoidance
+      source_layer_order: [origin_layer, adjudication_layer, folk_comparison_layer]
+      source_refs: [KR-08, XR-03]
+      boundary: "年神/方位字段；不等于紫微流年太岁或六壬岁君。"
+    - id: shensha-baihu
+      name: "白虎"
+      selection_usage: annual_or_huanghei_avoidance
+      source_layer_order: [origin_layer, adjudication_layer, folk_comparison_layer]
+      source_refs: [KR-08, KR-14, XR-03, XR-08]
+      boundary: "择日白虎不是六壬白虎天将。"
+    - id: shensha-guanfu-bingfu
+      name: "官符/病符"
+      selection_usage: official_illness_avoidance_signal
+      source_layer_order: [origin_layer, adjudication_layer, folk_comparison_layer]
+      source_refs: [XR-03]
+      boundary: "只作传统用事避忌；不作现代法律/医疗事实判断。"
+    - id: shensha-tianxing
+      name: "天刑"
+      selection_usage: huanghei_black_path_signal
+      source_layer_order: [origin_layer, adjudication_layer]
+      source_refs: [KR-14, XR-08]
+      boundary: "黑道天刑不等于紫微天刑或星命天刑。"
+    - id: shensha-huangdao-heidao
+      name: "黄道/黑道"
+      selection_usage: day_hour_quality_anchor
+      source_layer_order: [origin_layer, adjudication_layer, folk_comparison_layer]
+      source_refs: [KR-14, XR-08, XP-06]
+      boundary: "黄黑道是基础字段；不能单独选日。"
+    - id: shensha-jianchu
+      name: "建除十二神"
+      selection_usage: event_suitability_anchor
+      source_layer_order: [adjudication_layer, origin_layer, folk_comparison_layer]
+      source_refs: [XR-04, XR-08]
+      boundary: "建除是基础字段；必须与用事宜忌、神煞、冲犯合看。"
+    - id: shensha-yuepo-yueyan
+      name: "月破/月厌/月害"
+      selection_usage: monthly_rejection_signal
+      source_layer_order: [origin_layer, adjudication_layer, folk_comparison_layer]
+      source_refs: [KR-12, XR-05, XR-08]
+      boundary: "月家避忌字段；不能直接断个人运势。"
+    - id: shensha-side-fei-lijue
+      name: "四废/四离/四绝"
+      selection_usage: solar_term_transition_rejection
+      source_layer_order: [origin_layer, adjudication_layer, folk_comparison_layer]
+      source_refs: [KR-13, XR-08, XR-09]
+      boundary: "节气/季节避忌字段；不脱离用事泛化为百事凶。"
+    - id: shensha-jinshen-qisha
+      name: "金神七煞"
+      selection_usage: construction_directional_avoidance
+      source_layer_order: [origin_layer, adjudication_layer, folk_comparison_layer]
+      source_refs: [KR-09, XR-06]
+      boundary: "择日金神七煞不是八字金神格；动土必须有方位事实层。"
+    - id: shensha-dajiangjun
+      name: "大将军"
+      selection_usage: annual_directional_avoidance
+      source_layer_order: [origin_layer, adjudication_layer, folk_comparison_layer]
+      source_refs: [KR-10, XR-06]
+      boundary: "年家方位字段；不与八字将星混用。"
+    - id: shensha-yuekong-mucang-jieshen
+      name: "月空/母仓/解神"
+      selection_usage: auspicious_support
+      source_layer_order: [origin_layer, adjudication_layer, folk_comparison_layer]
+      source_refs: [KR-11, XR-08, XR-12]
+      boundary: "月吉神支持项；不迁移为八字贵人。"
+    - id: shensha-twelve-generals
+      name: "青龙/朱雀/六合/勾陈/玄武/太常/太阴/天后"
+      selection_usage: huanghei_or_day_hour_spirit_names
+      source_layer_order: [origin_layer, adjudication_layer]
+      source_refs: [KR-14, XP-06]
+      boundary: "择日黄黑道/日时神名物；不等于六壬十二天将。"
+  shensha_book_followup:
+    ready_second_pass:
+      - bazi/sanming-tonghui
+      - luming-nayin/wuxing-jingji
+      - luming-nayin/li-xuzhong-mingshu
+      - selection/xingli-kaoyuan
+      - selection/xieji-bianfang-shu
+      - san-shi/daliuren-daquan
+      - san-shi/liuren-zhiyin
+      - san-shi/liuren-miben
+      - ziwei/ziwei-doushu-quanshu
+      - xingming/guotian-jing
+    acquisition_only:
+      - xingming/minghai-quanbian
+      - xingming/qizheng-quanshu-dacheng
+      - fengshui/yangzhai-aizhong-pian
+      - fengshui/dahan-yuanling-mizangjing
+    rule: "Only complete_text, complete_chapter_set, or ocr_reviewed_complete sources can be distilled into rules."
+  acceptance:
+    all_target_entries_have_selection_profile: true
+    source_layers_preserve_origin_vs_adjudication_vs_folk: true
+    selection_fact_layer_profile_loaded_before_judgment: true
+    no_date_selected_from_single_shensha_or_huanghei_or_jianchu: true
+    folk_almanac_sources_marked_comparison_only: true
+    event_profiles_cover_generic_marriage_construction_burial_travel_business_medical_folk: true

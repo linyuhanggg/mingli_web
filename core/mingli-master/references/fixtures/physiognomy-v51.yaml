@@ -1,0 +1,569 @@
+schema_version: mingli-physiognomy-fixtures-v1
+source_table_sha256: e8c499b22fd15ba1e1b6b31d304b77891727c827682d8e58ebc95f7a2adad08d
+annotation_manifest: references/fixtures/assets/physiognomy/annotation-manifest-v1.yaml
+fixture_policy:
+  complete_cases_are_independent_inputs: true
+  provider_receives_expected_fields: false
+  assets_are_project_authored_synthetic: true
+  no_real_person_data: true
+
+asset_manifest:
+  - {path: references/fixtures/assets/physiognomy/front-even.svg, sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, byte_length: 791, media_type: image/svg+xml, pixel_width: 256, pixel_height: 256, synthetic: true, no_real_person: true, license: CC0-1.0}
+  - {path: references/fixtures/assets/physiognomy/front-low-light.svg, sha256: 381a6e44ca5a955b756fa7e7880ad2a4d420854406f82a606c2c97e76fba17c1, byte_length: 607, media_type: image/svg+xml, pixel_width: 256, pixel_height: 256, synthetic: true, no_real_person: true, license: CC0-1.0}
+  - {path: references/fixtures/assets/physiognomy/left-profile.svg, sha256: d0e0d9103c9b6d3d6d3c7a062e04309444785f923f2c957d749676e68b422cde, byte_length: 621, media_type: image/svg+xml, pixel_width: 256, pixel_height: 256, synthetic: true, no_real_person: true, license: CC0-1.0}
+  - {path: references/fixtures/assets/physiognomy/right-profile.svg, sha256: 48abe0f37f1ee7ebf88c36d94609a309c0fc7d44852a47735bf9c39976be220b, byte_length: 625, media_type: image/svg+xml, pixel_width: 256, pixel_height: 256, synthetic: true, no_real_person: true, license: CC0-1.0}
+  - {path: references/fixtures/assets/physiognomy/upper-crop.svg, sha256: c1318ee02e6345f594e650e1be672700457b5276dda2e134c024b7760ec94352, byte_length: 516, media_type: image/svg+xml, pixel_width: 256, pixel_height: 256, synthetic: true, no_real_person: true, license: CC0-1.0}
+  - {path: references/fixtures/assets/physiognomy/lower-crop.svg, sha256: c8b5a3cebde99aad1adb4e282608659311c15810964358d084eb477e5ec65dc1, byte_length: 466, media_type: image/svg+xml, pixel_width: 256, pixel_height: 256, synthetic: true, no_real_person: true, license: CC0-1.0}
+  - {path: references/fixtures/assets/physiognomy/front-color-filter.svg, sha256: f5f237744b928038981782402f332fa104b799db30ed2de993ba8dba48ee9b57, byte_length: 613, media_type: image/svg+xml, pixel_width: 256, pixel_height: 256, synthetic: true, no_real_person: true, license: CC0-1.0}
+  - {path: references/fixtures/assets/physiognomy/front-geometry-filter.svg, sha256: 7842c7e462f48004e821df1961382e1f365e4548a151ebdb9cbc8234b9656d0b, byte_length: 633, media_type: image/svg+xml, pixel_width: 256, pixel_height: 256, synthetic: true, no_real_person: true, license: CC0-1.0}
+  - {path: references/fixtures/assets/physiognomy/three-quarter-left.svg, sha256: dcb3bb4dcfe0f10977c1bad4bb905a74ccd12502a5a3a6812bb57d2c3c17ff65, byte_length: 704, media_type: image/svg+xml, pixel_width: 256, pixel_height: 256, synthetic: true, no_real_person: true, license: CC0-1.0}
+  - {path: references/fixtures/assets/physiognomy/three-quarter-right.svg, sha256: 421fab88e6bd7ae377540557ac73099f86b611d1abfd238280fd3135416a2900, byte_length: 706, media_type: image/svg+xml, pixel_width: 256, pixel_height: 256, synthetic: true, no_real_person: true, license: CC0-1.0}
+
+asset_templates:
+  front_even: &front_even
+    asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e
+    capture_id: cid-c5790535e1222d281d01f3d422d937e4
+    subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+    media_type: image/svg+xml
+    sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8
+    byte_length: 791
+    pixel_width: 256
+    pixel_height: 256
+    pose_family: frontal
+    visible_subject_sides: bilateral
+    framing: full_face
+    supplied_visible_regions: [forehead, left_eyebrow, right_eyebrow, left_eye, right_eye, nose, mouth, chin, jawline, left_ear, right_ear, left_cheek, right_cheek, complexion]
+    quality: {lighting: even, camera_angle: frontal, focus: sharp, resolution: high, filtering: none, color_fidelity: calibrated}
+    synthetic: true
+    no_real_person: true
+  front_low_light: &front_low_light
+    asset_id: aid-57a018e3d92adb01b0b378394000edb3
+    capture_id: cid-34c8f9962967f42061b2a4cf8116cf25
+    subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+    media_type: image/svg+xml
+    sha256: 381a6e44ca5a955b756fa7e7880ad2a4d420854406f82a606c2c97e76fba17c1
+    byte_length: 607
+    pixel_width: 256
+    pixel_height: 256
+    pose_family: frontal
+    visible_subject_sides: bilateral
+    framing: full_face
+    supplied_visible_regions: [forehead]
+    quality: {lighting: low, camera_angle: frontal, focus: sharp, resolution: high, filtering: none, color_fidelity: uncalibrated}
+    synthetic: true
+    no_real_person: true
+  front_geometry_filter: &front_geometry_filter
+    asset_id: aid-46b19b4fe288005639940bf34eab830d
+    capture_id: cid-8c0ec6f7648b96dc56c7f58511f196bf
+    subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+    media_type: image/svg+xml
+    sha256: 7842c7e462f48004e821df1961382e1f365e4548a151ebdb9cbc8234b9656d0b
+    byte_length: 633
+    pixel_width: 256
+    pixel_height: 256
+    pose_family: frontal
+    visible_subject_sides: bilateral
+    framing: full_face
+    supplied_visible_regions: [forehead]
+    quality: {lighting: even, camera_angle: frontal, focus: sharp, resolution: high, filtering: geometry_altering, color_fidelity: calibrated}
+    synthetic: true
+    no_real_person: true
+  left_profile: &left_profile
+    asset_id: aid-0d1129eab0f8578a57b380795faef8b6
+    capture_id: cid-4fec5585f645700ec8693d1c2b285805
+    subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+    media_type: image/svg+xml
+    sha256: d0e0d9103c9b6d3d6d3c7a062e04309444785f923f2c957d749676e68b422cde
+    byte_length: 621
+    pixel_width: 256
+    pixel_height: 256
+    pose_family: left_profile
+    visible_subject_sides: left
+    framing: full_face
+    supplied_visible_regions: [forehead, left_eyebrow, left_eye, nose, mouth, chin, jawline, left_ear, left_cheek, complexion]
+    quality: {lighting: even, camera_angle: profile, focus: sharp, resolution: high, filtering: none, color_fidelity: calibrated}
+    synthetic: true
+    no_real_person: true
+  right_profile: &right_profile
+    asset_id: aid-03f23a2c31b27aee0adc9edccf0a2fd6
+    capture_id: cid-dc73760d10da8fd3dda44f783834d5af
+    subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+    media_type: image/svg+xml
+    sha256: 48abe0f37f1ee7ebf88c36d94609a309c0fc7d44852a47735bf9c39976be220b
+    byte_length: 625
+    pixel_width: 256
+    pixel_height: 256
+    pose_family: right_profile
+    visible_subject_sides: right
+    framing: full_face
+    supplied_visible_regions: [forehead, right_eyebrow, right_eye, nose, mouth, chin, jawline, right_ear, right_cheek, complexion]
+    quality: {lighting: even, camera_angle: profile, focus: sharp, resolution: high, filtering: none, color_fidelity: calibrated}
+    synthetic: true
+    no_real_person: true
+  upper_crop: &upper_crop
+    asset_id: aid-73349302bb6def53be36f90bd5f5ab2f
+    capture_id: cid-144afa40390696337c3cd9b263186c2c
+    subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+    media_type: image/svg+xml
+    sha256: c1318ee02e6345f594e650e1be672700457b5276dda2e134c024b7760ec94352
+    byte_length: 516
+    pixel_width: 256
+    pixel_height: 256
+    pose_family: frontal
+    visible_subject_sides: bilateral
+    framing: upper_crop
+    supplied_visible_regions: [forehead, left_eyebrow, right_eyebrow, left_eye, right_eye]
+    quality: {lighting: even, camera_angle: frontal, focus: sharp, resolution: high, filtering: none, color_fidelity: calibrated}
+    synthetic: true
+    no_real_person: true
+  lower_crop: &lower_crop
+    asset_id: aid-939cdb718b491819c31786572c1e512c
+    capture_id: cid-6e9bdc321825321aa9d94ad39fc2354e
+    subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+    media_type: image/svg+xml
+    sha256: c8b5a3cebde99aad1adb4e282608659311c15810964358d084eb477e5ec65dc1
+    byte_length: 466
+    pixel_width: 256
+    pixel_height: 256
+    pose_family: frontal
+    visible_subject_sides: bilateral
+    framing: lower_crop
+    supplied_visible_regions: [nose, mouth, chin, jawline]
+    quality: {lighting: even, camera_angle: frontal, focus: sharp, resolution: high, filtering: none, color_fidelity: calibrated}
+    synthetic: true
+    no_real_person: true
+  three_quarter_left: &three_quarter_left
+    asset_id: aid-97d96f41abdc3f0294f17527f2d81ddb
+    capture_id: cid-134bc71a49e3af6e11bdc55ec38ea62b
+    subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+    media_type: image/svg+xml
+    sha256: dcb3bb4dcfe0f10977c1bad4bb905a74ccd12502a5a3a6812bb57d2c3c17ff65
+    byte_length: 704
+    pixel_width: 256
+    pixel_height: 256
+    pose_family: three_quarter_left
+    visible_subject_sides: left
+    framing: full_face
+    supplied_visible_regions: [forehead, left_eyebrow, right_eyebrow, left_eye, right_eye, nose, mouth, chin, jawline, left_ear, left_cheek, right_cheek, complexion]
+    quality: {lighting: even, camera_angle: three_quarter, focus: sharp, resolution: high, filtering: none, color_fidelity: calibrated}
+    synthetic: true
+    no_real_person: true
+  three_quarter_right: &three_quarter_right
+    asset_id: aid-9e92cb90c81afc73ac95e34e8effc3bc
+    capture_id: cid-69dd8073b0398e40f337fac4a86fdbdb
+    subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+    media_type: image/svg+xml
+    sha256: 421fab88e6bd7ae377540557ac73099f86b611d1abfd238280fd3135416a2900
+    byte_length: 706
+    pixel_width: 256
+    pixel_height: 256
+    pose_family: three_quarter_right
+    visible_subject_sides: right
+    framing: full_face
+    supplied_visible_regions: [forehead, left_eyebrow, right_eyebrow, left_eye, right_eye, nose, mouth, chin, jawline, right_ear, left_cheek, right_cheek, complexion]
+    quality: {lighting: even, camera_angle: three_quarter, focus: sharp, resolution: high, filtering: none, color_fidelity: calibrated}
+    synthetic: true
+    no_real_person: true
+  color_filter: &color_filter
+    asset_id: aid-9b49f06df96825404022e2f5fc65f2b7
+    capture_id: cid-7900a38149bff081c72d76350c27ff20
+    subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+    media_type: image/svg+xml
+    sha256: f5f237744b928038981782402f332fa104b799db30ed2de993ba8dba48ee9b57
+    byte_length: 613
+    pixel_width: 256
+    pixel_height: 256
+    pose_family: frontal
+    visible_subject_sides: bilateral
+    framing: full_face
+    supplied_visible_regions: [forehead, complexion]
+    quality: {lighting: even, camera_angle: frontal, focus: sharp, resolution: high, filtering: color_only, color_fidelity: uncalibrated}
+    synthetic: true
+    no_real_person: true
+
+expected_default: &expected_default
+  critical_missing: []
+  active_observation_count: 1
+  conflict_count: 0
+  cross_capture_variation_count: 0
+  superseded_observation_count: 0
+  active_source_rule_ids: &default_rules
+    - physiognomy/liuzhuang-xiangfa#LZ-R01
+    - physiognomy/liuzhuang-xiangfa#LZ-R02
+    - physiognomy/liuzhuang-xiangfa#LZ-R05
+    - physiognomy/mayi-shenxiang#MR-01
+    - physiognomy/mayi-shenxiang#MR-02
+    - physiognomy/shenxiang-quanbian#SR-02-04
+
+complete_cases:
+  - case_id: complete-front-forehead-contour
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-3446c24fdee8580d699d0afd3256e529, taxonomy: anatomical_face_v1, region: forehead, feature_kind: visible_morphology, required: true}]
+      assets: [*front_even]
+      observations:
+        - {observation_id: oid-8342798c96dfef210cb512918268d772, target_id: tid-3446c24fdee8580d699d0afd3256e529, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: forehead, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.08, width: 0.50, height: 0.22}, value: {descriptor: contour_rounded}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [forehead], active_descriptors: [contour_rounded]}
+  - case_id: complete-front-left-eyebrow
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-8338379de23cee674080eb5f2f71111b, taxonomy: anatomical_face_v1, region: left_eyebrow, feature_kind: visible_morphology, required: true}]
+      assets: [*front_even]
+      observations:
+        - {observation_id: oid-4a400a0c041c9090383c1669fe93d107, target_id: tid-8338379de23cee674080eb5f2f71111b, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: left_eyebrow, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.29, width: 0.23, height: 0.14}, value: {descriptor: line_straight}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [left_eyebrow], active_descriptors: [line_straight]}
+  - case_id: complete-front-left-eye
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-db8551d8d149c317575cad97cb8b9be5, taxonomy: anatomical_face_v1, region: left_eye, feature_kind: visible_morphology, required: true}]
+      assets: [*front_even]
+      observations:
+        - {observation_id: oid-b360374ee70304f0d8a734fc3be362c3, target_id: tid-db8551d8d149c317575cad97cb8b9be5, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: left_eye, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.28, y: 0.36, width: 0.20, height: 0.15}, value: {descriptor: aperture_open}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [left_eye], active_descriptors: [aperture_open]}
+  - case_id: complete-front-nose
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-79fff4eb2ddbd9143c4e29c5ed8629d3, taxonomy: anatomical_face_v1, region: nose, feature_kind: visible_morphology, required: true}]
+      assets: [*front_even]
+      observations:
+        - {observation_id: oid-861499e3a6b70acece25267300c122de, target_id: tid-79fff4eb2ddbd9143c4e29c5ed8629d3, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: nose, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.40, y: 0.38, width: 0.20, height: 0.27}, value: {descriptor: bridge_straight}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [nose], active_descriptors: [bridge_straight]}
+  - case_id: complete-front-mouth
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-3c1593ae21de707e061e871f1a4dbf9b, taxonomy: anatomical_face_v1, region: mouth, feature_kind: visible_morphology, required: true}]
+      assets: [*front_even]
+      observations:
+        - {observation_id: oid-bf935bdfdda4cedf2cd2484c771408b2, target_id: tid-3c1593ae21de707e061e871f1a4dbf9b, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: mouth, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.35, y: 0.62, width: 0.30, height: 0.17}, value: {descriptor: mouth_closed}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [mouth], active_descriptors: [mouth_closed]}
+  - case_id: complete-front-chin
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-22f40555874b5c7de82e8d5f455d3622, taxonomy: anatomical_face_v1, region: chin, feature_kind: visible_morphology, required: true}]
+      assets: [*front_even]
+      observations:
+        - {observation_id: oid-71869f105040f08d89735628abe93cbd, target_id: tid-22f40555874b5c7de82e8d5f455d3622, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: chin, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.36, y: 0.75, width: 0.28, height: 0.17}, value: {descriptor: contour_rounded}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [chin], active_descriptors: [contour_rounded]}
+  - case_id: complete-front-left-ear
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-0518bbe48548c585eec7f9466b311842, taxonomy: anatomical_face_v1, region: left_ear, feature_kind: visible_morphology, required: true}]
+      assets: [*front_even]
+      observations:
+        - {observation_id: oid-ac40a3ed35a3d07ab99e003488d6e969, target_id: tid-0518bbe48548c585eec7f9466b311842, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: left_ear, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.14, y: 0.36, width: 0.14, height: 0.28}, value: {descriptor: outline_visible}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [left_ear], active_descriptors: [outline_visible]}
+  - case_id: complete-front-right-cheek
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-03b37a297c2d46a35632846c78807ec3, taxonomy: anatomical_face_v1, region: right_cheek, feature_kind: visible_morphology, required: true}]
+      assets: [*front_even]
+      observations:
+        - {observation_id: oid-48878e43aec74917f8013934dc0dcc13, target_id: tid-03b37a297c2d46a35632846c78807ec3, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: right_cheek, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.53, y: 0.46, width: 0.24, height: 0.23}, value: {descriptor: contour_full_relative}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [right_cheek], active_descriptors: [contour_full_relative]}
+  - case_id: complete-left-subject-profile
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-125b407737ec5ff6e4f71419c02a7cc0, taxonomy: anatomical_face_v1, region: left_ear, feature_kind: visible_morphology, required: true}]
+      assets: [*left_profile]
+      observations:
+        - {observation_id: oid-4f21ea62f14d99e9dab1f79479f91472, target_id: tid-125b407737ec5ff6e4f71419c02a7cc0, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-0d1129eab0f8578a57b380795faef8b6, asset_sha256: d0e0d9103c9b6d3d6d3c7a062e04309444785f923f2c957d749676e68b422cde, region: left_ear, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.60, y: 0.37, width: 0.20, height: 0.30}, value: {descriptor: outline_visible}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [left_ear], active_descriptors: [outline_visible]}
+  - case_id: complete-right-subject-profile
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-ab447a93343f7c6d768e934b12970af2, taxonomy: anatomical_face_v1, region: right_ear, feature_kind: visible_morphology, required: true}]
+      assets: [*right_profile]
+      observations:
+        - {observation_id: oid-eb74717e4be6a3b5d9550c632673b172, target_id: tid-ab447a93343f7c6d768e934b12970af2, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-03f23a2c31b27aee0adc9edccf0a2fd6, asset_sha256: 48abe0f37f1ee7ebf88c36d94609a309c0fc7d44852a47735bf9c39976be220b, region: right_ear, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.20, y: 0.37, width: 0.20, height: 0.30}, value: {descriptor: outline_visible}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [right_ear], active_descriptors: [outline_visible]}
+  - case_id: complete-left-three-quarter
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-4d8c04bd1510dde4957af510d9568d8d, taxonomy: anatomical_face_v1, region: left_cheek, feature_kind: visible_morphology, required: true}]
+      assets: [*three_quarter_left]
+      observations:
+        - {observation_id: oid-5295761ead1a715021004ad3481ac2b1, target_id: tid-4d8c04bd1510dde4957af510d9568d8d, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-97d96f41abdc3f0294f17527f2d81ddb, asset_sha256: dcb3bb4dcfe0f10977c1bad4bb905a74ccd12502a5a3a6812bb57d2c3c17ff65, region: left_cheek, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.20, y: 0.45, width: 0.30, height: 0.26}, value: {descriptor: contour_full_relative}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [left_cheek], active_descriptors: [contour_full_relative]}
+  - case_id: complete-right-three-quarter
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-d3afc9d9322f87a5b1ebbe73960039e6, taxonomy: anatomical_face_v1, region: right_cheek, feature_kind: visible_morphology, required: true}]
+      assets: [*three_quarter_right]
+      observations:
+        - {observation_id: oid-44c54d7c57459cd3370fb3980bec9010, target_id: tid-d3afc9d9322f87a5b1ebbe73960039e6, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-9e92cb90c81afc73ac95e34e8effc3bc, asset_sha256: 421fab88e6bd7ae377540557ac73099f86b611d1abfd238280fd3135416a2900, region: right_cheek, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.50, y: 0.45, width: 0.30, height: 0.26}, value: {descriptor: contour_full_relative}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [right_cheek], active_descriptors: [contour_full_relative]}
+  - case_id: complete-upper-crop
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-58e274b37c8d1da3b809487e5d0220e6, taxonomy: anatomical_face_v1, region: forehead, feature_kind: visible_morphology, required: true}]
+      assets: [*upper_crop]
+      observations:
+        - {observation_id: oid-5252b284cb8bb7df5f5cad6268d37f6d, target_id: tid-58e274b37c8d1da3b809487e5d0220e6, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-73349302bb6def53be36f90bd5f5ab2f, asset_sha256: c1318ee02e6345f594e650e1be672700457b5276dda2e134c024b7760ec94352, region: forehead, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.20, y: 0.14, width: 0.60, height: 0.28}, value: {descriptor: relative_width_broad}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [forehead], active_descriptors: [relative_width_broad]}
+  - case_id: complete-lower-crop
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-fe4034afa2bcb53f2e0c6c84b6c5b559, taxonomy: anatomical_face_v1, region: mouth, feature_kind: visible_morphology, required: true}]
+      assets: [*lower_crop]
+      observations:
+        - {observation_id: oid-3c90926bcc65dbdab999328563e4cbe4, target_id: tid-fe4034afa2bcb53f2e0c6c84b6c5b559, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-939cdb718b491819c31786572c1e512c, asset_sha256: c8b5a3cebde99aad1adb4e282608659311c15810964358d084eb477e5ec65dc1, region: mouth, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.32, y: 0.28, width: 0.36, height: 0.24}, value: {descriptor: lip_line_curved}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [mouth], active_descriptors: [lip_line_curved]}
+  - case_id: complete-user-text-forehead
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-4e2b1324349f719b614cdde667cff08f, taxonomy: anatomical_face_v1, region: forehead, feature_kind: visible_morphology, required: true}]
+      assets: []
+      observations:
+        - observation_id: oid-1bbe04ac543b30d1f516c9e1774ba6a6
+          target_id: tid-4e2b1324349f719b614cdde667cff08f
+          source_type: user_text
+          source_ref: rid-9d21e25f3dac7633ddc06e0b60ffb131
+          region: forehead
+          feature_kind: visible_morphology
+          visibility: full
+          value: {descriptor: contour_flat}
+          quality: &text_quality {lighting: not_applicable, camera_angle: caller_description, focus: not_applicable, resolution: not_applicable, filtering: not_applicable, color_fidelity: not_applicable}
+          occlusion: 0.0
+          uncertainty: 0.2
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [forehead], active_descriptors: [contour_flat]}
+  - case_id: complete-user-text-ear
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-4decefac09248641fad131ea398807a2, taxonomy: anatomical_face_v1, region: left_ear, feature_kind: visible_morphology, required: true}]
+      assets: []
+      observations:
+        - {observation_id: oid-ff93abba134428d40d94bdb5f9e6ef8d, target_id: tid-4decefac09248641fad131ea398807a2, source_type: user_text, source_ref: rid-5f2eb1f98be6436fbea8b3e1d3442617, region: left_ear, feature_kind: visible_morphology, visibility: partial, value: {descriptor: partially_visible}, quality: *text_quality, occlusion: 0.4, uncertainty: 0.2}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [left_ear], active_descriptors: [partially_visible]}
+  - case_id: complete-user-text-nose
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-0d6b915a492c35b49b69318661625a95, taxonomy: anatomical_face_v1, region: nose, feature_kind: visible_morphology, required: true}]
+      assets: []
+      observations:
+        - {observation_id: oid-5c229caf134e1670b801108044c38ec4, target_id: tid-0d6b915a492c35b49b69318661625a95, source_type: user_text, source_ref: rid-bb004e298fc7b3bd2718c3565b08c528, region: nose, feature_kind: visible_morphology, visibility: full, value: {descriptor: tip_rounded}, quality: *text_quality, occlusion: 0.0, uncertainty: 0.2}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [nose], active_descriptors: [tip_rounded]}
+  - case_id: complete-user-file-mouth
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-3bfd6143068d324bc50b08e58fa27d0a, taxonomy: anatomical_face_v1, region: mouth, feature_kind: visible_morphology, required: true}]
+      assets: []
+      observations:
+        - {observation_id: oid-1c93e8584a4aad9eeee1eb623813bd64, target_id: tid-3bfd6143068d324bc50b08e58fa27d0a, source_type: user_file, source_ref: rid-8d9883dd39512a1ba7a8962600ad0be3, region: mouth, feature_kind: visible_morphology, visibility: full, value: {descriptor: lip_line_straight}, quality: *text_quality, occlusion: 0.0, uncertainty: 0.2}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [mouth], active_descriptors: [lip_line_straight]}
+  - case_id: complete-capture-color-complexion
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-1c4c60a62d5c79f5f57324f0c53a891f, taxonomy: anatomical_face_v1, region: complexion, feature_kind: capture_color, required: true}]
+      assets: [*front_even]
+      observations:
+        - {observation_id: oid-3ef3752b576e63de5ba3b479f700f6fd, target_id: tid-1c4c60a62d5c79f5f57324f0c53a891f, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: complexion, feature_kind: capture_color, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.22, y: 0.18, width: 0.56, height: 0.59}, value: {descriptor: tone_even_visible}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected:
+      <<: *expected_default
+      active_regions: [complexion]
+      active_descriptors: [tone_even_visible]
+      active_source_rule_ids:
+        - physiognomy/liuzhuang-xiangfa#LZ-R01
+        - physiognomy/liuzhuang-xiangfa#LZ-R02
+        - physiognomy/liuzhuang-xiangfa#LZ-R03
+        - physiognomy/liuzhuang-xiangfa#LZ-R05
+        - physiognomy/mayi-shenxiang#MR-01
+        - physiognomy/mayi-shenxiang#MR-02
+        - physiognomy/shenxiang-quanbian#SR-01-03
+        - physiognomy/shenxiang-quanbian#SR-02-04
+  - case_id: complete-cross-capture-observation-specificity-separated
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-8c5811542327a3ebce2d0c06f023f282, taxonomy: anatomical_face_v1, region: forehead, feature_kind: visible_morphology, required: true}]
+      assets: [*front_even, *color_filter]
+      observations:
+        - {observation_id: oid-ee9175e024f100a37c38859425361444, target_id: tid-8c5811542327a3ebce2d0c06f023f282, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: forehead, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.08, width: 0.50, height: 0.22}, value: {descriptor: contour_rounded}, occlusion: 0.0, uncertainty: 0.1}
+        - {observation_id: oid-914bdaafe3f4cba01dfa580f513dfb34, target_id: tid-8c5811542327a3ebce2d0c06f023f282, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-9b49f06df96825404022e2f5fc65f2b7, asset_sha256: f5f237744b928038981782402f332fa104b799db30ed2de993ba8dba48ee9b57, region: forehead, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.08, width: 0.50, height: 0.22}, value: {descriptor: region_visible}, occlusion: 0.0, uncertainty: 0.2}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_observation_count: 2, active_regions: [forehead, forehead], active_descriptors: [contour_rounded, region_visible], cross_capture_variation_count: 1}
+  - case_id: complete-user-correction-replaces-visible
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-56fbe1a159efbc92cfc827869b719581, taxonomy: anatomical_face_v1, region: forehead, feature_kind: visible_morphology, required: true}]
+      assets: [*front_even]
+      observations:
+        - {observation_id: oid-2d6cb4525360a97f8c68e770ba669b97, target_id: tid-56fbe1a159efbc92cfc827869b719581, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: forehead, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.08, width: 0.50, height: 0.22}, value: {descriptor: contour_flat}, occlusion: 0.0, uncertainty: 0.1}
+        - {observation_id: oid-af6ef3a03070da458c85601cfc06775c, target_id: tid-56fbe1a159efbc92cfc827869b719581, source_type: user_correction, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: forehead, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.08, width: 0.50, height: 0.22}, value: {descriptor: contour_rounded}, occlusion: 0.0, uncertainty: 0.1, supersedes_observation_id: oid-2d6cb4525360a97f8c68e770ba669b97}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {<<: *expected_default, active_regions: [forehead], active_descriptors: [contour_rounded], superseded_observation_count: 1}
+
+boundary_cases:
+  - case_id: hidden-right-ear-from-left-profile
+    category: hidden_side
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-4d85967ff8e4d286f5597e9e6d41c824, taxonomy: anatomical_face_v1, region: right_ear, feature_kind: visible_morphology, required: true}]
+      assets: [*left_profile]
+      observations:
+        - {observation_id: oid-a1ef8e0dbe6e1d4b9d76a4f1e60d0d3f, target_id: tid-4d85967ff8e4d286f5597e9e6d41c824, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-0d1129eab0f8578a57b380795faef8b6, asset_sha256: d0e0d9103c9b6d3d6d3c7a062e04309444785f923f2c957d749676e68b422cde, region: right_ear, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.20, y: 0.37, width: 0.20, height: 0.30}, value: {descriptor: outline_visible}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected_error_regex: visible.*coverage
+  - case_id: low-light-required-target
+    category: low_light
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-9106a0874efbcc6c7809a596213bb1f8, taxonomy: anatomical_face_v1, region: forehead, feature_kind: visible_morphology, required: true}]
+      assets: [*front_low_light]
+      observations:
+        - {observation_id: oid-5284da82da4e6fda39f87645c82cee2b, target_id: tid-9106a0874efbcc6c7809a596213bb1f8, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-57a018e3d92adb01b0b378394000edb3, asset_sha256: 381a6e44ca5a955b756fa7e7880ad2a4d420854406f82a606c2c97e76fba17c1, region: forehead, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.08, width: 0.50, height: 0.22}, value: {descriptor: contour_rounded}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {critical_missing: [observation_resolution:tid-9106a0874efbcc6c7809a596213bb1f8], active_observation_count: 0, conflict_count: 0, cross_capture_variation_count: 0, superseded_observation_count: 0, active_source_rule_ids: [], active_regions: [], active_descriptors: []}
+  - case_id: geometry-filter-required-target
+    category: filtered
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-9f262da34dfc0df9195a099da860428b, taxonomy: anatomical_face_v1, region: forehead, feature_kind: visible_morphology, required: true}]
+      assets: [*front_geometry_filter]
+      observations:
+        - {observation_id: oid-412568dd4809c71274fc052395ec1718, target_id: tid-9f262da34dfc0df9195a099da860428b, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-46b19b4fe288005639940bf34eab830d, asset_sha256: 7842c7e462f48004e821df1961382e1f365e4548a151ebdb9cbc8234b9656d0b, region: forehead, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.20, y: 0.07, width: 0.60, height: 0.23}, value: {descriptor: contour_rounded}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {critical_missing: [observation_resolution:tid-9f262da34dfc0df9195a099da860428b], active_observation_count: 0, conflict_count: 0, cross_capture_variation_count: 0, superseded_observation_count: 0, active_source_rule_ids: [], active_regions: [], active_descriptors: []}
+  - case_id: same-capture-contradiction
+    category: contradictory
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-e8da68090334ef0fc1339c53db9de067, taxonomy: anatomical_face_v1, region: forehead, feature_kind: visible_morphology, required: true}]
+      assets: [*front_even]
+      observations:
+        - {observation_id: oid-27b243aa2b54889137e62f7d416f4c53, target_id: tid-e8da68090334ef0fc1339c53db9de067, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: forehead, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.08, width: 0.50, height: 0.22}, value: {descriptor: contour_rounded}, occlusion: 0.0, uncertainty: 0.1}
+        - {observation_id: oid-51b627f503e8f885ace8b8a7df969a00, target_id: tid-e8da68090334ef0fc1339c53db9de067, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: forehead, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.08, width: 0.50, height: 0.22}, value: {descriptor: contour_flat}, occlusion: 0.0, uncertainty: 0.1}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {critical_missing: [observation_resolution:tid-e8da68090334ef0fc1339c53db9de067], active_observation_count: 0, conflict_count: 1, cross_capture_variation_count: 0, superseded_observation_count: 0, active_source_rule_ids: [], active_regions: [], active_descriptors: []}
+  - case_id: correction-to-not-visible
+    category: corrected_to_missing
+    input:
+      schema_version: mingli-physiognomy-input-v1
+      observation_scope: face
+      subject_ref: sid-f24e57d350056044f94078d9f7d5abe3
+      requested_targets: [{target_id: tid-a73daedf6a0cf1f56c85a950d542b298, taxonomy: anatomical_face_v1, region: forehead, feature_kind: visible_morphology, required: true}]
+      assets: [*front_even]
+      observations:
+        - {observation_id: oid-3c7cbbd48439e6aa54b30a7f3a81b16d, target_id: tid-a73daedf6a0cf1f56c85a950d542b298, source_type: image_transcription, transcription_actor: current_vision_capable_caller, provider_performed_vision: false, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: forehead, feature_kind: visible_morphology, visibility: full, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.08, width: 0.50, height: 0.22}, value: {descriptor: contour_rounded}, occlusion: 0.0, uncertainty: 0.1}
+        - {observation_id: oid-f3eb45afcb884e7a4f317165239b8a62, target_id: tid-a73daedf6a0cf1f56c85a950d542b298, source_type: user_correction, asset_id: aid-f6a56c4b4c167a061c255dc85566eb1e, asset_sha256: 7860afa7e0f04c6db3d48cda96974162f45c2e007819e980bce15ca119e271e8, region: forehead, feature_kind: visible_morphology, visibility: not_visible, region_anchor: {kind: normalized_bbox, x: 0.25, y: 0.08, width: 0.50, height: 0.22}, value: null, occlusion: 1.0, uncertainty: 0.1, supersedes_observation_id: oid-3c7cbbd48439e6aa54b30a7f3a81b16d}
+      confirmed_observation_ids: []
+      comparison_relations: []
+      source_layer_policy: terminology_and_methodology_only
+    expected: {critical_missing: [visible_observation:tid-a73daedf6a0cf1f56c85a950d542b298], active_observation_count: 0, conflict_count: 0, cross_capture_variation_count: 0, superseded_observation_count: 1, active_source_rule_ids: [], active_regions: [], active_descriptors: []}

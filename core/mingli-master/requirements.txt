@@ -1,0 +1,5 @@
+PyYAML==6.0.3
+sxtwl==2.0.7
+astronomy-engine==2.1.19
+cnlunar==0.2.4
+zhconv==1.4.3

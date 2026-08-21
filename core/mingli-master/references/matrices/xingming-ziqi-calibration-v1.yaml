@@ -1,0 +1,47 @@
+schema_version: mingli-xingming-ziqi-calibration-v1
+profile_id: xingxue-dated-mean-ziqi-v1
+status: source_formula_with_historical_dated_calibration
+
+classical_formula:
+  title: 星学大成
+  edition_or_recension: 四库全书本 normalized text
+  normalized_path: references/fulltext/xingming/xingxue-dacheng/fulltext.md
+  normalized_sha256: 099ddc76d4143ad5e41601337c0ecb777b77adaf67737067339b9814784cb980
+  anchor: L4753 天乙紫炁星总龟算法
+  period_days: 10228.0
+  accumulated_day_adjustment: -1288.0
+  direction: direct
+  exact_excerpt: 置積日减一千二百八十八以一萬二百二十八大數除之
+
+formal_epoch_reconstruction:
+  reference: 钮卫星，敦煌遗书开宝七年星命书(P.4071)中的十一曜行度及相关问题研究
+  publication: 自然科学史研究 2015年第4期 411-424页
+  anchor: 417页；《符天历》显庆五年雨水朔下推171300日所得建炎三年正月雨水
+  formal_epoch_civil_date: 1129-02-12
+  accumulated_days: 171300
+  note: 该形式历元本身不保存紫炁绝对黄经，因此不单独作为数值零点
+
+historical_dated_calibration:
+  cited_primary_record: 大明嘉靖十年辛卯岁四余躔度
+  scholarly_reference: 钮卫星 2015，417页
+  julian_day: 2280289.5
+  zi_qi_longitude_degrees: 284.58
+  source_notation: 辛卯岁正月十八日紫气在斗十一度
+  conversion_status: published historical-astronomy reconstruction
+  precision_degrees: 0.01
+
+calculation_convention:
+  coordinate_frame: tropical_mean_cycle_calibrated_to_published_ecliptic_longitude
+  equation: normalize(anchor_longitude + (target_julian_day - anchor_julian_day) * 360 / 10228)
+  observed_body: false
+  interpretation_boundary: calculated classical mean point; never represented as an observed astronomical body
+
+independent_samples:
+  - id: xingming-ziqi-j2000
+    input_julian_day: 2451545.0
+    expected_longitude_degrees: 192.344958936254
+    tolerance_degrees: 1.0e-9
+  - id: xingming-ziqi-calibration-anchor
+    input_julian_day: 2280289.5
+    expected_longitude_degrees: 284.58
+    tolerance_degrees: 1.0e-12

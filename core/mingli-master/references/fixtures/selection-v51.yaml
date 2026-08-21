@@ -1,0 +1,4636 @@
+schema_version: mingli-selection-fixtures-v51
+profile_id: xieji-official-cnlunar-v1
+published_calendar_sources:
+  hko-2024:
+    publisher: Hong Kong Observatory
+    dataset: Gregorian-Lunar calendar conversion table
+    catalog_url: https://data.gov.hk/en-data/dataset/hk-hko-rss-gregorian-lunar-calendar-conversion-table
+    artifact_url: https://data.weather.gov.hk/weatherAPI/hko_data/calendar/nongli_calendar_2024.csv
+    local_artifact_path: vendor/hko-calendar/nongli_calendar_2024.csv
+    artifact_sha256: f2d67d5407e433bcaebbfd048bc54e4ab5c12bfb65a91b4e00af52db11278175
+    format: CSV
+    role: government-published independent calendar example; not a source for selection verdicts
+  hko-2025:
+    publisher: Hong Kong Observatory
+    dataset: Gregorian-Lunar calendar conversion table
+    catalog_url: https://data.gov.hk/en-data/dataset/hk-hko-rss-gregorian-lunar-calendar-conversion-table
+    artifact_url: https://data.weather.gov.hk/weatherAPI/hko_data/calendar/nongli_calendar_2025.csv
+    local_artifact_path: vendor/hko-calendar/nongli_calendar_2025.csv
+    artifact_sha256: d2c5d752f370d3e583bde4950845fb6b4bfce1e1551da913ad14d655014fb32c
+    format: CSV
+    role: government-published independent calendar example; not a source for selection verdicts
+  hko-2026:
+    publisher: Hong Kong Observatory
+    dataset: Gregorian-Lunar calendar conversion table
+    catalog_url: https://data.gov.hk/en-data/dataset/hk-hko-rss-gregorian-lunar-calendar-conversion-table
+    artifact_url: https://data.weather.gov.hk/weatherAPI/hko_data/calendar/nongli_calendar_2026.csv
+    local_artifact_path: vendor/hko-calendar/nongli_calendar_2026.csv
+    artifact_sha256: 8b2892b0e04faa632f09ea36ffee29e67b4427b85a18708d907d88d8be452b98
+    format: CSV
+    role: government-published independent calendar example; not a source for selection verdicts
+published_calendar_cases:
+- {id: hko-2024-01-01, source_id: hko-2024, source_anchor: 'CSV row 2', comparator_case_id: lunar-python-01, expected: {chinese_year_ganzhi: 癸卯, lunar_year: 2023, lunar_month: 11, lunar_day: 20, is_leap_month: false}}
+- {id: hko-2024-02-03, source_id: hko-2024, source_anchor: 'CSV row 35', comparator_case_id: lunar-python-02, expected: {chinese_year_ganzhi: 癸卯, lunar_year: 2023, lunar_month: 12, lunar_day: 24, is_leap_month: false}}
+- {id: hko-2024-02-04, source_id: hko-2024, source_anchor: 'CSV row 36', comparator_case_id: lunar-python-03, expected: {chinese_year_ganzhi: 癸卯, lunar_year: 2023, lunar_month: 12, lunar_day: 25, is_leap_month: false}}
+- {id: hko-2024-02-05, source_id: hko-2024, source_anchor: 'CSV row 37', comparator_case_id: lunar-python-04, expected: {chinese_year_ganzhi: 癸卯, lunar_year: 2023, lunar_month: 12, lunar_day: 26, is_leap_month: false}}
+- {id: hko-2024-02-09, source_id: hko-2024, source_anchor: 'CSV row 41', comparator_case_id: lunar-python-05, expected: {chinese_year_ganzhi: 癸卯, lunar_year: 2023, lunar_month: 12, lunar_day: 30, is_leap_month: false}}
+- {id: hko-2024-02-10, source_id: hko-2024, source_anchor: 'CSV row 42', comparator_case_id: lunar-python-06, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 1, lunar_day: 1, is_leap_month: false}}
+- {id: hko-2024-02-11, source_id: hko-2024, source_anchor: 'CSV row 43', comparator_case_id: lunar-python-07, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 1, lunar_day: 2, is_leap_month: false}}
+- {id: hko-2024-03-19, source_id: hko-2024, source_anchor: 'CSV row 80', comparator_case_id: lunar-python-08, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 2, lunar_day: 10, is_leap_month: false}}
+- {id: hko-2024-03-20, source_id: hko-2024, source_anchor: 'CSV row 81', comparator_case_id: lunar-python-09, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 2, lunar_day: 11, is_leap_month: false}}
+- {id: hko-2024-03-21, source_id: hko-2024, source_anchor: 'CSV row 82', comparator_case_id: lunar-python-10, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 2, lunar_day: 12, is_leap_month: false}}
+- {id: hko-2024-05-04, source_id: hko-2024, source_anchor: 'CSV row 126', comparator_case_id: lunar-python-11, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 3, lunar_day: 26, is_leap_month: false}}
+- {id: hko-2024-05-05, source_id: hko-2024, source_anchor: 'CSV row 127', comparator_case_id: lunar-python-12, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 3, lunar_day: 27, is_leap_month: false}}
+- {id: hko-2024-05-06, source_id: hko-2024, source_anchor: 'CSV row 128', comparator_case_id: lunar-python-13, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 3, lunar_day: 28, is_leap_month: false}}
+- {id: hko-2024-06-20, source_id: hko-2024, source_anchor: 'CSV row 173', comparator_case_id: lunar-python-14, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 5, lunar_day: 15, is_leap_month: false}}
+- {id: hko-2024-06-21, source_id: hko-2024, source_anchor: 'CSV row 174', comparator_case_id: lunar-python-15, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 5, lunar_day: 16, is_leap_month: false}}
+- {id: hko-2024-06-22, source_id: hko-2024, source_anchor: 'CSV row 175', comparator_case_id: lunar-python-16, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 5, lunar_day: 17, is_leap_month: false}}
+- {id: hko-2024-08-06, source_id: hko-2024, source_anchor: 'CSV row 220', comparator_case_id: lunar-python-17, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 7, lunar_day: 3, is_leap_month: false}}
+- {id: hko-2024-08-07, source_id: hko-2024, source_anchor: 'CSV row 221', comparator_case_id: lunar-python-18, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 7, lunar_day: 4, is_leap_month: false}}
+- {id: hko-2024-08-08, source_id: hko-2024, source_anchor: 'CSV row 222', comparator_case_id: lunar-python-19, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 7, lunar_day: 5, is_leap_month: false}}
+- {id: hko-2024-09-16, source_id: hko-2024, source_anchor: 'CSV row 261', comparator_case_id: lunar-python-20, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 8, lunar_day: 14, is_leap_month: false}}
+- {id: hko-2024-09-17, source_id: hko-2024, source_anchor: 'CSV row 262', comparator_case_id: lunar-python-21, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 8, lunar_day: 15, is_leap_month: false}}
+- {id: hko-2024-09-18, source_id: hko-2024, source_anchor: 'CSV row 263', comparator_case_id: lunar-python-22, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 8, lunar_day: 16, is_leap_month: false}}
+- {id: hko-2024-11-06, source_id: hko-2024, source_anchor: 'CSV row 312', comparator_case_id: lunar-python-23, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 10, lunar_day: 6, is_leap_month: false}}
+- {id: hko-2024-11-07, source_id: hko-2024, source_anchor: 'CSV row 313', comparator_case_id: lunar-python-24, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 10, lunar_day: 7, is_leap_month: false}}
+- {id: hko-2024-11-08, source_id: hko-2024, source_anchor: 'CSV row 314', comparator_case_id: lunar-python-25, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 10, lunar_day: 8, is_leap_month: false}}
+- {id: hko-2025-01-28, source_id: hko-2025, source_anchor: 'CSV row 29', comparator_case_id: lunar-python-26, expected: {chinese_year_ganzhi: 甲辰, lunar_year: 2024, lunar_month: 12, lunar_day: 29, is_leap_month: false}}
+- {id: hko-2025-01-29, source_id: hko-2025, source_anchor: 'CSV row 30', comparator_case_id: lunar-python-27, expected: {chinese_year_ganzhi: 乙巳, lunar_year: 2025, lunar_month: 1, lunar_day: 1, is_leap_month: false}}
+- {id: hko-2025-01-30, source_id: hko-2025, source_anchor: 'CSV row 31', comparator_case_id: lunar-python-28, expected: {chinese_year_ganzhi: 乙巳, lunar_year: 2025, lunar_month: 1, lunar_day: 2, is_leap_month: false}}
+- {id: hko-2025-07-24, source_id: hko-2025, source_anchor: 'CSV row 206', comparator_case_id: lunar-python-29, expected: {chinese_year_ganzhi: 乙巳, lunar_year: 2025, lunar_month: 6, lunar_day: 30, is_leap_month: false}}
+- {id: hko-2026-07-24, source_id: hko-2026, source_anchor: 'CSV row 206', comparator_case_id: lunar-python-30, expected: {chinese_year_ganzhi: 丙午, lunar_year: 2026, lunar_month: 6, lunar_day: 11, is_leap_month: false}}
+event_fact_formula_fixture_policy:
+  oracle_status: independent_declarative_reference_evaluator_v1
+  reference_evaluator_version: 1.1.0
+  reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  snapshot_contract: immutable exact-output source oracles generated by an evaluator that consumes only public day primitives and versioned definitions, never provider event-fact output
+  sample_kinds:
+  - positive
+  - negative
+  - exact_jie_boundary
+  value_contract: canonical SHA-256 of the complete structured value; active and kind are asserted separately
+  policy_inactive_kinds:
+  - lunar_zhoutang
+  - official_rejected_rule
+  intrinsically_active_kinds:
+  - bad_gods
+  - good_gods
+  - hour_path
+  - medical_policy
+  - record
+  - renshen_location
+event_fact_formula_sources:
+  jianchu:
+    kind: record
+    source_anchors:
+    - XR-04
+    - KR-17
+    definition_sha256: 1c3c6fbf12782f54c8dbb96978d46a4dd66c1cb360ec2accd0e78f829b111e61
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  huanghei.day:
+    kind: record
+    source_anchors:
+    - XR-04
+    - KR-14
+    definition_sha256: 4cd4e2e131eb483589f277f1085e0cc54bedd383e6f2b4f91fae566612738449
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  huanghei.hours:
+    kind: hour_path
+    source_anchors:
+    - XR-04
+    - KR-14
+    definition_sha256: c45692877f61e83447675ab478ba6cdfad4b47007cb452ce66bc0e1775abedd6
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  twenty_eight_lodges:
+    kind: record
+    source_anchors:
+    - KR-15
+    definition_sha256: 8501a0f2c9113537cc7d268b7118f3e1ec589c19e7d82f2d49052aeead9c9e3f
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  annual_gods:
+    kind: record
+    source_anchors:
+    - XR-03
+    - KR-08
+    definition_sha256: 5e692410054aba5503667d13bf5c67e13cfd1be76fb2f11579c550a9d6101304
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  monthly_gods:
+    kind: record
+    source_anchors:
+    - XR-04
+    - KR-11
+    - KR-12
+    definition_sha256: 4108292b5a96971567198f75c2333a7430955d06079c40333c0b76f084cf963e
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  daily_shensha:
+    kind: god_presence
+    source_anchors:
+    - XR-08
+    - KR-17
+    definition_sha256: 684bbb166266b48efa7e04995db6415b401f9af9d480ddb88ac0efab13bd8fc5
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  hourly_shensha:
+    kind: hour_path
+    source_anchors:
+    - XR-04
+    - KR-14
+    definition_sha256: c45692877f61e83447675ab478ba6cdfad4b47007cb452ce66bc0e1775abedd6
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  general_good_gods:
+    kind: good_gods
+    source_anchors:
+    - XR-08
+    - KR-17
+    definition_sha256: b64a748c198cfea3a58850f0905a2ca0fad4f7f17c1ed9411ecc5cbcf5630fd6
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  general_bad_gods:
+    kind: bad_gods
+    source_anchors:
+    - XR-08
+    - KR-17
+    definition_sha256: da663bdf1315e21927e800cfd85923e6303fb62355aaf45f1df7dd5fde6d2f3e
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  yiji:
+    kind: event_yiji
+    source_anchors:
+    - XR-08
+    - KR-17
+    definition_sha256: 600a4f0c23834cb54c2c64ac06ae8ff2c35331d54861234eb8469087060f16e9
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  conflicts:
+    kind: conflicts
+    source_anchors:
+    - XR-17
+    - DR-09
+    definition_sha256: 4e18fc8765278950898aef036239023c1d399c338dca51d771da1ac501cd8fc7
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  bujiang_day:
+    kind: god_presence
+    source_anchors:
+    - XR-05
+    - KR-18
+    definition_sha256: 79012522431386ad99a3dd681304f77f4f67c05bc89230de5c674bb00d98d05b
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  yaoan:
+    kind: god_presence
+    source_anchors:
+    - XR-05
+    - KR-18
+    definition_sha256: c4b016a2ff2029ac2c9a32c073dc33bada95a5371dd39a7ea62b8233e64c3fa8
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  shengqi:
+    kind: god_presence
+    source_anchors:
+    - XR-05
+    - KR-18
+    definition_sha256: 40ceaba78d9c2daa5a8d0f68978c1f6bcfd6c9a10ab4ce60288482841de50167
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  mucang:
+    kind: god_presence
+    source_anchors:
+    - XR-05
+    - KR-11
+    definition_sha256: 8f3aa7184227b974a43ee34b1e6c8fcfc8c1e8e4dc35dde8d6f0772acf824e51
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  tiande_yuede:
+    kind: god_presence
+    source_anchors:
+    - XR-05
+    - KR-11
+    - KR-18
+    definition_sha256: 94d34ad299e3828c254502cd776bc20f0d607904b56d408ae2f4789933470ba7
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  tiandehe_yuedehe:
+    kind: god_presence
+    source_anchors:
+    - XR-05
+    - KR-11
+    - KR-18
+    definition_sha256: 58a39baec8825e502581db47728aa170543594a5eb31723076f1d4039df0f024
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  sanhe_liuhe:
+    kind: god_presence
+    source_anchors:
+    - XR-05
+    - KR-06
+    - KR-18
+    definition_sha256: d8ffc33c4cb7c71f46a2865a7b043c45fa6bd4f7859b02608bd5757d887a7bed
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  yuepo_yueyan_yuexing_yuehai:
+    kind: god_presence
+    source_anchors:
+    - XR-04
+    - KR-12
+    - KR-18
+    definition_sha256: ac8289b2c349e388e463dd7bf5744774e1ef87bea387948a6d009fb4b8bdd8d4
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  side_waste_tombs:
+    kind: god_presence
+    source_anchors:
+    - XR-05
+    - KR-13
+    - KR-18
+    definition_sha256: cca033d6b68233bd72fe15c8a3946d253829077ab53208d0bd362c5180dec2f7
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  guchen_guasu:
+    kind: official_rejected_rule
+    source_anchors:
+    - XR-17
+    - xieji-fulltext-L11683
+    definition_sha256: a51c30416200a189003011a74c32bb02a859cb43fb32e45876352843803521bc
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  shi_eda_bai:
+    kind: fixed_day_set
+    source_anchors:
+    - XR-17
+    - JR-08
+    - xieji-fulltext-L1233
+    definition_sha256: 775569fc19127f383c37eff7ff53d5c232db6ae7a6e40ad337566abfb4b77cac
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  chongsang_sansang:
+    kind: god_presence
+    source_anchors:
+    - XR-05
+    - KR-18
+    definition_sha256: edc1aaf070a998d2b4bf9c4d4cec89f994bbdac14d5ff4b0232d98168eabaf96
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  furi_fuduan:
+    kind: mixed_official_and_rejected
+    source_anchors:
+    - XR-17
+    - KR-19
+    - xieji-fulltext-L11769
+    definition_sha256: 13e97adabf3e9ea5cd377920f60f3140981afbe729255abde976b74608eae12d
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  marriage_zhoutang:
+    kind: lunar_zhoutang
+    source_anchors:
+    - XR-17
+    - KR-18
+    - xieji-fulltext-L92
+    definition_sha256: 479c4b3e567eff65a98a31fbf07898f04662da0e61200288eb229e0c7a26e971
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  participant_clashes:
+    kind: participant_clashes
+    source_anchors:
+    - XR-05
+    - KR-18
+    definition_sha256: 4b46235c0b89e4c0dfc4fd0ac95f2eb9bc0d1dd7c263e1c0f6b296cdc7f9ba64
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  cheng_open_receive_days:
+    kind: jianchu_membership
+    source_anchors:
+    - XR-06
+    - KR-20
+    definition_sha256: 72b8c532ca5672e6a0861d115b3c4ffe96b3e5cba4e7d95a3dc866933432b3b8
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  tiande_yuede_yueen:
+    kind: god_presence
+    source_anchors:
+    - XR-06
+    - KR-11
+    - KR-20
+    definition_sha256: 3c05a2c860f5081dd44d959912fef108987a658c556d56d63621f698de21bbde
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  sixiang_shide_shengqi_mucang:
+    kind: god_presence
+    source_anchors:
+    - XR-06
+    - KR-11
+    - KR-20
+    definition_sha256: 6d601916d061ea121bffca9d5ceb7036f5ddbf2cf6eca6298a78e8f88569e081
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  tuwang_yongshi:
+    kind: god_presence
+    source_anchors:
+    - XR-06
+    - KR-20
+    - xieji-fulltext-L2752
+    definition_sha256: bb89fde66971ee0faa183e56dfd56dc4dcf428e210234ca9486cab903c5e3f59
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  yuepo_yueyan_dahao:
+    kind: god_presence
+    source_anchors:
+    - XR-06
+    - KR-12
+    - KR-20
+    definition_sha256: 2b8ae9609926c9c2051ed2a91d80298837dd8b0fde44062637266437479ce197
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  annual_sansha:
+    kind: record
+    source_anchors:
+    - XR-03
+    - KR-08
+    definition_sha256: cfc6597a85aede85a11604151f9b3e44dbbbeafd008003779a2d6fef09d451e7
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  monthly_sansha:
+    kind: record
+    source_anchors:
+    - XR-04
+    - KR-12
+    definition_sha256: ddc4c6121831c609c0b4acac34f923cbb726094e8ddcd22dada143fc5a04df18
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  taisui_suipo:
+    kind: record
+    source_anchors:
+    - XR-03
+    - KR-08
+    definition_sha256: 95e2deabc985ddcdd96e34c9a6ff99bb1d83b8f53b4a5f155aa9e7d097808e87
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  dajiangjun:
+    kind: direction_formula
+    source_anchors:
+    - XR-03
+    - KR-10
+    - xingli-fulltext-L369-L370
+    definition_sha256: 7fd553bbe7697fc6a359247754a899a2d2a336c7da194e1dc0a1562ce3922a62
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  jinshen_qisha:
+    kind: direction_formula
+    source_anchors:
+    - XR-03
+    - KR-09
+    - xingli-fulltext-L447-L449
+    definition_sha256: 352a05e999b3db824811187c45f484bcdc23c4980ed11fbd51f91dc315ae5a21
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  luohou:
+    kind: direction_formula
+    source_anchors:
+    - XR-18
+    - xieji-fulltext-L1699-L1700
+    - xieji-fulltext-L10778
+    - xieji-fulltext-L10969-L10970
+    - xieji-fulltext-L11305
+    - xieji-xunshan-luohou-v1
+    definition_sha256: fda6a20e6fa64dd1afb1b34c21791b4fb71848ac58cbc7946d89b706028e34ef
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  directional_hits:
+    kind: directional_hits
+    source_anchors:
+    - XR-02
+    - XR-03
+    - KR-08
+    - KR-09
+    - KR-10
+    definition_sha256: 2c0765492bdc6495043945c1318eb4112b7dee5382d7ad698bbdfc5f2239321c
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  mingfei_day:
+    kind: god_presence
+    source_anchors:
+    - XR-07
+    - KR-19
+    definition_sha256: f9c0f8c6456ef8b8e7961f4e6c103f891b7502c1fcbd849742e1df429e5c8233
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  mingfei_opposite_day:
+    kind: god_presence
+    source_anchors:
+    - XR-07
+    - KR-19
+    definition_sha256: 8cc00eed11cdfc91d0a4cbb6134515e5eb7a3e786c98f0c473999f5f60000f23
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  cheng_open_days:
+    kind: jianchu_membership
+    source_anchors:
+    - XR-07
+    - KR-19
+    definition_sha256: 398af2d47b326ef31cac428a70185c0ea05cab5c15c28b257a874820c5f8ce41
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  chongsang_day:
+    kind: god_presence
+    source_anchors:
+    - XR-07
+    - KR-19
+    definition_sha256: 0cb4ea664b5970b6eede844d2089817fc9e29b7c37c2734327e0acdc95e5731d
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  sansang_day:
+    kind: seasonal_branch_set
+    source_anchors:
+    - XR-07
+    - KR-19
+    - chen-zixing-sansang-v1
+    - chosun-sansang-secondary-v1
+    definition_sha256: 653f26248c61db59971829464e84aceb47f4d85fab304b4cbbbe50f241942f54
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  furi:
+    kind: god_presence
+    source_anchors:
+    - XR-07
+    - KR-19
+    definition_sha256: 8c040896d2390808639241902704c7eea63d1359a68346a2e713ab78cd44679c
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  fuduan_day:
+    kind: official_rejected_rule
+    source_anchors:
+    - XR-17
+    - xieji-fulltext-L11769
+    definition_sha256: f80c7ff6b5ba628d4a3bf958ffcd48d91145b294687fb212a3051448ee4cc181
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  yuepo_yueyan:
+    kind: god_presence
+    source_anchors:
+    - XR-07
+    - KR-19
+    definition_sha256: 13d1cd25fecf78c5cf9fa0cf18be5c7e507127198cba643573b67ed44014d38e
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  dihuo:
+    kind: god_presence
+    source_anchors:
+    - XR-07
+    - KR-19
+    definition_sha256: 5d32d68ab78af3c13b1ae12f6293f425b89205ec18c342565125910828b0f6ef
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  tujin:
+    kind: seasonal_branch_set
+    source_anchors:
+    - XR-07
+    - chen-zixing-tujin-v1
+    definition_sha256: ee99198a24ced732c3189bf792aafdb0a51d81b66f9a42dd762becc33d8b7607
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  mountain_family_clashes:
+    kind: directional_hits
+    source_anchors:
+    - XR-02
+    - XR-07
+    - KR-19
+    definition_sha256: a8d04f6eabf9f1e38dc8395536a9d6fdfcb9deada151f96646972b6ac0d6f946
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  yima_day:
+    kind: god_presence
+    source_anchors:
+    - XR-09
+    - KR-17
+    definition_sha256: 0b51839686fa5fbb0605982bb7693384b4bb646801cdaf2d46e826719d7d553e
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  tianma_day:
+    kind: god_presence
+    source_anchors:
+    - XR-09
+    - KR-17
+    definition_sha256: c7860b7230f2b8d6da0cb011013d2aee7af7edacb3f149e679cad33931e2a986
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  wangwang_day:
+    kind: god_presence
+    source_anchors:
+    - XR-09
+    - KR-17
+    definition_sha256: afe35ab0ee638c108ea59d5cebeaf4c2e99f322b8b6deead7daaa2ee3edf4171
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  guiji_day:
+    kind: god_presence
+    source_anchors:
+    - XR-09
+    - KR-17
+    definition_sha256: 1a9886d9d368072325a7ce9a3afa9800e2e40aae22f595647980acd69454100d
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  sili_sijue:
+    kind: god_presence
+    source_anchors:
+    - XR-09
+    - KR-13
+    definition_sha256: e05cc858145562e14e16b0d5925cf7c92781ad3113c86ac49788d620f028d2f7
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  yanggong_ji:
+    kind: lunar_month_day_set
+    source_anchors:
+    - XR-17
+    - JR-06
+    definition_sha256: 218a520041fcdd9d13a420510648d4cc4d8fd0ac0968229d774610fa5edadbfc
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  yueji_day:
+    kind: lunar_day_set
+    source_anchors:
+    - JR-07
+    definition_sha256: d346f107c9a3159c3ed43f9101d1133881ccf6af6d7f21ad655c91222cd658ae
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  huangdao_good_hours:
+    kind: hour_path
+    source_anchors:
+    - XR-09
+    - KR-14
+    definition_sha256: 641b83542f61a3d5b1115464c284aa682332f7f9a98c18f11e061edc99588c0e
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  office_cheng_open_lingzheng_tianen:
+    kind: composite
+    source_anchors:
+    - XR-09
+    - KR-17
+    definition_sha256: ea81d47cf6f8f01899078f5ef092fd5281ccef98891a4ea0d12c80ebefab8ca0
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  avoid_po_si_bi_days:
+    kind: composite
+    source_anchors:
+    - XR-09
+    - KR-13
+    - KR-17
+    definition_sha256: 06df24f2c222ee9b4ffd9f22cbb558d4e81a49cb398b514355a3ae2496f8eb2c
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  folk_travel_comparison:
+    kind: folk_comparison
+    source_anchors:
+    - JR-06
+    - JR-07
+    - DR-09
+    definition_sha256: 2e8a804dfeccfa766b3e5adec42d2d7348851f9dfce29ad6ff32c4c8e2847beb
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  event_specific_yiji:
+    kind: event_yiji
+    source_anchors:
+    - XR-14
+    - KR-17
+    definition_sha256: 4be6306cd77af2ec7ab73b9f9b5af5c06a622447c7c2ef9a67ea02fb6b8c96c3
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  jianchu_suitability:
+    kind: jianchu_membership
+    source_anchors:
+    - XR-14
+    - KR-17
+    definition_sha256: 1183e6f2db26f6d8187297f7098001657637323c8aee4e7c86eac3aca8ebb4ea
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  tiande_yuede_tianen:
+    kind: god_presence
+    source_anchors:
+    - XR-14
+    - KR-11
+    - KR-17
+    definition_sha256: e01300d8a560b97decdbd0ec8e1ed248c78560c25d7f9db677e026259e7758f7
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  mucang_shengqi:
+    kind: god_presence
+    source_anchors:
+    - XR-14
+    - KR-11
+    definition_sha256: 7db68bfe398bab9af5f1ac93f61161bb962157b547ae50d5256e8dd94c1c03e7
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  yuepo:
+    kind: god_presence
+    source_anchors:
+    - XR-14
+    - KR-12
+    definition_sha256: 4ca30182ab90d7260f5058e31757bfc74a38d442fe15996d032c8cc5ffbcd20c
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  directional_avoidance_when_relevant:
+    kind: directional_hits
+    source_anchors:
+    - XR-02
+    - XR-14
+    definition_sha256: 513a6f942a5d513d7e56fde5a7b9c7b56ea0451262677a476500f8ce077239eb
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  tianyi:
+    kind: god_presence
+    source_anchors:
+    - XR-16
+    - xingli-fulltext-L537-L539
+    definition_sha256: 7fa3168ea96018c234391cc6d09fb304516495464bc7879279fc9d0c325188c1
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  yueen:
+    kind: god_presence
+    source_anchors:
+    - XR-16
+    - KR-11
+    definition_sha256: bdf9758647138140cd7cc406766a92f9f7aa230e8f2544b027ab02e89ff6b070
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  sixiang:
+    kind: god_presence
+    source_anchors:
+    - XR-16
+    - KR-17
+    definition_sha256: 040e3e579536469a33fdf21379f8dbdaa74ade5cdd72c222c4ab6f2e4d1e3596
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  side_waste:
+    kind: god_presence
+    source_anchors:
+    - XR-16
+    - KR-13
+    definition_sha256: 5a3213a9649c80841b4ad9ff9b0e412a38a2b9054db50ffa700a4543b3420e72
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  renshen_location:
+    kind: renshen_location
+    source_anchors:
+    - JR-11
+    - yuqia-fulltext-L1492-L1511
+    definition_sha256: f4372a8dd188b16b67d18fd42bce97785a8ec27edea129a1de3346bd5b4e507e
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  visit_sick_taboo_days:
+    kind: day_ganzhi_set
+    source_anchors:
+    - JR-12
+    - yuqia-fulltext-L1584-L1587
+    definition_sha256: d5e3dd4631a5012520707c431e2ad3c5f2fb6ed7dd393b5b68f9f156de09376a
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+  medical_caveat:
+    kind: medical_policy
+    source_anchors:
+    - XR-16
+    - JR-11
+    - JR-12
+    definition_sha256: 54734555f950abba34367d10e6c2833b64926b4dd24d79bec893b0786e04e6aa
+    reference_evaluator: independent_declarative_reference_evaluator_v1
+    reference_evaluator_version: 1.1.0
+    reference_evaluator_sha256: cf3476eaa81be24ec106528b67200b91e52d71ef672b2bfc0fa700359bab9b3e
+event_fact_formula_cases:
+- id: jianchu--positive
+  field: jianchu
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: 53639be7f1d8d011cb0e1a8a06d7fd77c7c722ab1b6cb8be35dd9d95a0cbb5b0
+- id: jianchu--negative
+  field: jianchu
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: a52e0dbb0419aa44d71c3720156825049e032b9ae97381f6093bc3750869ccc2
+- id: jianchu--exact_jie_boundary
+  field: jianchu
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: a52e0dbb0419aa44d71c3720156825049e032b9ae97381f6093bc3750869ccc2
+- id: huanghei.day--positive
+  field: huanghei.day
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: 975c86fb5e5492cb14115da94acca2c2ea3c3024a14008416915e20e6c722b78
+- id: huanghei.day--negative
+  field: huanghei.day
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: be6d606c1a91775319f80cfbf8f6d16a68a8deae2bde2992c23b484fa9ca000c
+- id: huanghei.day--exact_jie_boundary
+  field: huanghei.day
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: be6d606c1a91775319f80cfbf8f6d16a68a8deae2bde2992c23b484fa9ca000c
+- id: huanghei.hours--positive
+  field: huanghei.hours
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: hour_path
+    value_sha256: deae3a0694f992d3432c0df74889ddec2dd88851e94cf8680a794aed1bfcc368
+- id: huanghei.hours--negative
+  field: huanghei.hours
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: hour_path
+    value_sha256: 5197301e6270294b5876e7cb0abc823295e7bf8c8d228fac9aa5e2edebf16d0c
+- id: huanghei.hours--exact_jie_boundary
+  field: huanghei.hours
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: hour_path
+    value_sha256: 5197301e6270294b5876e7cb0abc823295e7bf8c8d228fac9aa5e2edebf16d0c
+- id: twenty_eight_lodges--positive
+  field: twenty_eight_lodges
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: 9e15671674fe9c81264618502d60cbbff3b4587050fb792f4020516666059929
+- id: twenty_eight_lodges--negative
+  field: twenty_eight_lodges
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: 9aac755be3023a91ebe881fbfbad659db3fd0d5faab5038861f95490b2682a22
+- id: twenty_eight_lodges--exact_jie_boundary
+  field: twenty_eight_lodges
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: 9aac755be3023a91ebe881fbfbad659db3fd0d5faab5038861f95490b2682a22
+- id: annual_gods--positive
+  field: annual_gods
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: 3a0a85ec910be546e66b24ffcdeb9de04108168265521c76db2d07ad7ec5c147
+- id: annual_gods--negative
+  field: annual_gods
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: 4345185d5d5b6a84a6097bebe0ddb4cd44875358386c76222a58d17f7d9b8a19
+- id: annual_gods--exact_jie_boundary
+  field: annual_gods
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: 4345185d5d5b6a84a6097bebe0ddb4cd44875358386c76222a58d17f7d9b8a19
+- id: monthly_gods--positive
+  field: monthly_gods
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: 8c1c850dfa91f398e5da8e1abcd61a5569854280cac8ccc2fccdf6c5d1139dfb
+- id: monthly_gods--negative
+  field: monthly_gods
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: a85fd420d2812c56bf96f1e4210374f33f39e71d681b276c1d248cdfda4162c7
+- id: monthly_gods--exact_jie_boundary
+  field: monthly_gods
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: record
+    value_sha256: a85fd420d2812c56bf96f1e4210374f33f39e71d681b276c1d248cdfda4162c7
+- id: daily_shensha--positive
+  field: daily_shensha
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 60aa16bb37fd92c4328008978ad9db938b808cebf89f87919ec5778c58f06e40
+- id: daily_shensha--negative
+  field: daily_shensha
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 8c9037635cf2dcc3c37cb6671b4aa3c067848611c5228f995db34793cf8576ff
+- id: daily_shensha--exact_jie_boundary
+  field: daily_shensha
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 8c9037635cf2dcc3c37cb6671b4aa3c067848611c5228f995db34793cf8576ff
+- id: hourly_shensha--positive
+  field: hourly_shensha
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: hour_path
+    value_sha256: deae3a0694f992d3432c0df74889ddec2dd88851e94cf8680a794aed1bfcc368
+- id: hourly_shensha--negative
+  field: hourly_shensha
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: hour_path
+    value_sha256: 5197301e6270294b5876e7cb0abc823295e7bf8c8d228fac9aa5e2edebf16d0c
+- id: hourly_shensha--exact_jie_boundary
+  field: hourly_shensha
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: hour_path
+    value_sha256: 5197301e6270294b5876e7cb0abc823295e7bf8c8d228fac9aa5e2edebf16d0c
+- id: general_good_gods--positive
+  field: general_good_gods
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: good_gods
+    value_sha256: c4c41d66abee42cbc3a272c44b115396a66de60008674922b5442ef0abf99ccb
+- id: general_good_gods--negative
+  field: general_good_gods
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: good_gods
+    value_sha256: eee5fbeb9b117ebe6da56b858edfc29d583bf86fba894b867f4e5f2c19ce4a54
+- id: general_good_gods--exact_jie_boundary
+  field: general_good_gods
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: good_gods
+    value_sha256: eee5fbeb9b117ebe6da56b858edfc29d583bf86fba894b867f4e5f2c19ce4a54
+- id: general_bad_gods--positive
+  field: general_bad_gods
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: bad_gods
+    value_sha256: 1da63af01ce9f3a3c73d52da5c3822abd2881160b9c1531de2dbf461ca5192f3
+- id: general_bad_gods--negative
+  field: general_bad_gods
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: bad_gods
+    value_sha256: c67804a2d820829bc9b5808811a8c5466aca35fa94e202b9bea2c05461f97cb6
+- id: general_bad_gods--exact_jie_boundary
+  field: general_bad_gods
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: bad_gods
+    value_sha256: c67804a2d820829bc9b5808811a8c5466aca35fa94e202b9bea2c05461f97cb6
+- id: yiji--positive
+  field: yiji
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: event_yiji
+    value_sha256: a94ded51c9577c0e19c68e10474cba617b3c316d53ccc5782e0341a0b466a99f
+- id: yiji--negative
+  field: yiji
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-02-09'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: false
+    kind: event_yiji
+    value_sha256: 5620ebc8fc51ec075cd33f5327314e7df5c16240d13696c38968f8c180bbe59f
+- id: yiji--exact_jie_boundary
+  field: yiji
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: false
+    kind: event_yiji
+    value_sha256: 5620ebc8fc51ec075cd33f5327314e7df5c16240d13696c38968f8c180bbe59f
+- id: conflicts--positive
+  field: conflicts
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: true
+    kind: conflicts
+    value_sha256: 0e01833c2c0649ee976dc720ec89dfe5f604eb3d22878b6e014a3e95d554c76d
+- id: conflicts--negative
+  field: conflicts
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-02-09'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: false
+    kind: conflicts
+    value_sha256: bc086124d2d6afeb3cc85deb4579972c7d8c3638ec3ac62e7ff96e0493bd0a2c
+- id: conflicts--exact_jie_boundary
+  field: conflicts
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: generic_selection
+    requested_actions: []
+  expected:
+    active: false
+    kind: conflicts
+    value_sha256: bc086124d2d6afeb3cc85deb4579972c7d8c3638ec3ac62e7ff96e0493bd0a2c
+- id: bujiang_day--positive
+  field: bujiang_day
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 0241b0ddcce4cca97ad2020975cde7ed754908c83abcfae98b47a4dc10a9ed58
+- id: bujiang_day--negative
+  field: bujiang_day
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 7b5c6bd72634603998fce8fae3c08ee71e7c85da4ac2b5a207d23fb58f480b2b
+- id: bujiang_day--exact_jie_boundary
+  field: bujiang_day
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 7b5c6bd72634603998fce8fae3c08ee71e7c85da4ac2b5a207d23fb58f480b2b
+- id: yaoan--positive
+  field: yaoan
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-02-09'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: ba906229762319520405135c8af6225f2a276913cd990891e5dc28bae1d04f60
+- id: yaoan--negative
+  field: yaoan
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 7c8a6fd68bb46bda8a6114c1c98b1b42dda806d4c20283ff45c0033c1c703bf4
+- id: yaoan--exact_jie_boundary
+  field: yaoan
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 7c8a6fd68bb46bda8a6114c1c98b1b42dda806d4c20283ff45c0033c1c703bf4
+- id: shengqi--positive
+  field: shengqi
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-12'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 2d4afa6b0c91cfd9dadec89d3a1833b4e932c30b89a270720dda75f914ed789d
+- id: shengqi--negative
+  field: shengqi
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: d2968fc856a8cd13c87bb643988fe3f223c8faa21c0ca56843d16080a6407ce3
+- id: shengqi--exact_jie_boundary
+  field: shengqi
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: d2968fc856a8cd13c87bb643988fe3f223c8faa21c0ca56843d16080a6407ce3
+- id: mucang--positive
+  field: mucang
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-08-13'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 6929d4ce4ed0d382af93f9504bc969f764f81933f5e194f8e84cfe4ff9492f5e
+- id: mucang--negative
+  field: mucang
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: d88be2566a6c4bba53a57df612b14bbe694c113ee8fc208326ffe3c76f59932b
+- id: mucang--exact_jie_boundary
+  field: mucang
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: d88be2566a6c4bba53a57df612b14bbe694c113ee8fc208326ffe3c76f59932b
+- id: tiande_yuede--positive
+  field: tiande_yuede
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-05'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 90163c7fe3e7904d89d9322ee64a936c8e77699ac6b440a6bfccd6be61c1289b
+- id: tiande_yuede--negative
+  field: tiande_yuede
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 4621c9c8f22f3777e16b4712ea9dd173822463325bf3a94f538eab1c4efa8855
+- id: tiande_yuede--exact_jie_boundary
+  field: tiande_yuede
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 4621c9c8f22f3777e16b4712ea9dd173822463325bf3a94f538eab1c4efa8855
+- id: tiandehe_yuedehe--positive
+  field: tiandehe_yuedehe
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-07-24'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 53c27d5c8063c32c4d55732384a80b8b24ef83efa3827f8e841abf41c89f4d0f
+- id: tiandehe_yuedehe--negative
+  field: tiandehe_yuedehe
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 222ed78653e4683d5f768dff9ef7cfca53265403379dcc943c69570752c8ade5
+- id: tiandehe_yuedehe--exact_jie_boundary
+  field: tiandehe_yuedehe
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 222ed78653e4683d5f768dff9ef7cfca53265403379dcc943c69570752c8ade5
+- id: sanhe_liuhe--positive
+  field: sanhe_liuhe
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 967fcc63f34acb786baf4483deef203d71ce25cd5d02646be038287858fe63dc
+- id: sanhe_liuhe--negative
+  field: sanhe_liuhe
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-08-13'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: cec77ca162ae9a358a02d0956506879ae535f31b9f2c11b217bcabefda33474f
+- id: sanhe_liuhe--exact_jie_boundary
+  field: sanhe_liuhe
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: cec77ca162ae9a358a02d0956506879ae535f31b9f2c11b217bcabefda33474f
+- id: yuepo_yueyan_yuexing_yuehai--positive
+  field: yuepo_yueyan_yuexing_yuehai
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: c9511e8e6ddb1dc7d9600c47ee220bc00a2d1558bbe3d6ce0932e3c96dadbe2a
+- id: yuepo_yueyan_yuexing_yuehai--negative
+  field: yuepo_yueyan_yuexing_yuehai
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-02-09'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 6d60826bf825559daf7305502d9177ef09707ff1bb090276428d0b3d75dcf3b1
+- id: yuepo_yueyan_yuexing_yuehai--exact_jie_boundary
+  field: yuepo_yueyan_yuexing_yuehai
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 90da6f7112e82ca0dc26721579b8022be0465b24260938b8fbfe4235b526c0b7
+- id: side_waste_tombs--positive
+  field: side_waste_tombs
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-02-26'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 1ef402edcf097c05230d7af5af0e2885d37216c70ab4e3224760bb74d59f5e45
+- id: side_waste_tombs--negative
+  field: side_waste_tombs
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 497ffed47d8700d3ed5be126dca22815ad787922a0213ef26ad61c5a626e91b3
+- id: side_waste_tombs--exact_jie_boundary
+  field: side_waste_tombs
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 497ffed47d8700d3ed5be126dca22815ad787922a0213ef26ad61c5a626e91b3
+- id: guchen_guasu--positive
+  field: guchen_guasu
+  sample_kind: positive
+  activation_contract: official_policy_never_active
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: official_rejected_rule
+    value_sha256: 22accd1838578c103b9869a03e32a0a78dbb5d1ad520363e17f7f020a8d03383
+- id: guchen_guasu--negative
+  field: guchen_guasu
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: official_rejected_rule
+    value_sha256: 22accd1838578c103b9869a03e32a0a78dbb5d1ad520363e17f7f020a8d03383
+- id: guchen_guasu--exact_jie_boundary
+  field: guchen_guasu
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: official_rejected_rule
+    value_sha256: 22accd1838578c103b9869a03e32a0a78dbb5d1ad520363e17f7f020a8d03383
+- id: shi_eda_bai--positive
+  field: shi_eda_bai
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-09'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: fixed_day_set
+    value_sha256: 9fecfd902befca73408d99f1dfc08484ed7ec622b1998f4e8f5ee482aa217980
+- id: shi_eda_bai--negative
+  field: shi_eda_bai
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: fixed_day_set
+    value_sha256: 4c603d3b57e4ce87ae327cdc92ff6a8e3f5337c1d21d1b4f197fcb32d40d010b
+- id: shi_eda_bai--exact_jie_boundary
+  field: shi_eda_bai
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: true
+    kind: fixed_day_set
+    value_sha256: 47dda0ae32e60b4eb24d4218343071313ef7d7c490f5ed6f9d933ef8f875c95b
+- id: chongsang_sansang--positive
+  field: chongsang_sansang
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-02-09'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 8f7f471bf762f662ab6b3ab91786b281d8460b29a2ee201cf1c32defd49d10b4
+- id: chongsang_sansang--negative
+  field: chongsang_sansang
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: fe486ef50f12ae1b110ec9866bc99a5ccda6217e32fa547e9cdf0bd938fb41d2
+- id: chongsang_sansang--exact_jie_boundary
+  field: chongsang_sansang
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: fe486ef50f12ae1b110ec9866bc99a5ccda6217e32fa547e9cdf0bd938fb41d2
+- id: furi_fuduan--positive
+  field: furi_fuduan
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-02-09'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: true
+    kind: mixed_official_and_rejected
+    value_sha256: 982019a227603a9bf413b59b0d76b73b2d45a974cd5e3c300489040ff7f03aed
+- id: furi_fuduan--negative
+  field: furi_fuduan
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: mixed_official_and_rejected
+    value_sha256: effb296b489a9721357150f8ff0da19c8f21582c9ea400513a1636a92b456283
+- id: furi_fuduan--exact_jie_boundary
+  field: furi_fuduan
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: mixed_official_and_rejected
+    value_sha256: effb296b489a9721357150f8ff0da19c8f21582c9ea400513a1636a92b456283
+- id: marriage_zhoutang--positive
+  field: marriage_zhoutang
+  sample_kind: positive
+  activation_contract: official_policy_never_active
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: lunar_zhoutang
+    value_sha256: f41d46a14c7985cea172a104d9bc5600451442986007d32623410eb427d1ab74
+- id: marriage_zhoutang--negative
+  field: marriage_zhoutang
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: lunar_zhoutang
+    value_sha256: c880afd046c99f669127aff6339e39e9d3c1f25177c3a78b08ed708dbd5f932e
+- id: marriage_zhoutang--exact_jie_boundary
+  field: marriage_zhoutang
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: lunar_zhoutang
+    value_sha256: f41d46a14c7985cea172a104d9bc5600451442986007d32623410eb427d1ab74
+- id: participant_clashes--positive
+  field: participant_clashes
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-01'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+    participant_facts:
+    - id: a
+      year_branch: 午
+      day_branch: 寅
+    - id: b
+      year_branch: 丑
+      day_branch: 卯
+  expected:
+    active: true
+    kind: participant_clashes
+    value_sha256: d94dde36f8b9817dd52e931ffa427d8de2179c6d53c04aae2c58649b10b996c6
+- id: participant_clashes--negative
+  field: participant_clashes
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: participant_clashes
+    value_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+- id: participant_clashes--exact_jie_boundary
+  field: participant_clashes
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: marriage
+    requested_actions:
+    - 嫁娶
+  expected:
+    active: false
+    kind: participant_clashes
+    value_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+- id: cheng_open_receive_days--positive
+  field: cheng_open_receive_days
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-10'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: jianchu_membership
+    value_sha256: 6d1fc4897c8e8b2366ef46e400644197ea812a7fe4c4f564b2d8539012971939
+- id: cheng_open_receive_days--negative
+  field: cheng_open_receive_days
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: false
+    kind: jianchu_membership
+    value_sha256: cac4c966ba28bf2bf7cf65140b066d2213e98e7a4c8df5d025449dcb483d959c
+- id: cheng_open_receive_days--exact_jie_boundary
+  field: cheng_open_receive_days
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: true
+    kind: jianchu_membership
+    value_sha256: 490642c8dfb1aa8cebcc2e7342ff70f3c66836be8eee381231703f09a4b5dcf7
+- id: tiande_yuede_yueen--positive
+  field: tiande_yuede_yueen
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-01'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: f833f704deb4aadc0cf2c981565030118f81d0e12167fbb73f5b3ed62048b4b8
+- id: tiande_yuede_yueen--negative
+  field: tiande_yuede_yueen
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 2113f025955c4540832dee6913d9c87f4b529e269de4bff1f1945f99b73ba6ef
+- id: tiande_yuede_yueen--exact_jie_boundary
+  field: tiande_yuede_yueen
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 2113f025955c4540832dee6913d9c87f4b529e269de4bff1f1945f99b73ba6ef
+- id: sixiang_shide_shengqi_mucang--positive
+  field: sixiang_shide_shengqi_mucang
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-07-24'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 30049576db643879f38b8633f88098dfc338aa16069a85d948e3bcf0cb804431
+- id: sixiang_shide_shengqi_mucang--negative
+  field: sixiang_shide_shengqi_mucang
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 71ee0312381df6dea6353bdb9b538f6860e6a7afcee57212d8c586320d1fdb9f
+- id: sixiang_shide_shengqi_mucang--exact_jie_boundary
+  field: sixiang_shide_shengqi_mucang
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 71ee0312381df6dea6353bdb9b538f6860e6a7afcee57212d8c586320d1fdb9f
+- id: tuwang_yongshi--positive
+  field: tuwang_yongshi
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-07-24'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 8828f4e29fb1f72cb073641bdc3814df141108b55c1db4fa84f7377d7f253435
+- id: tuwang_yongshi--negative
+  field: tuwang_yongshi
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 0e5e1388f75603c099b03b49ee9ce4a9a6999a5ec8509604b5dd43d1e6376ee1
+- id: tuwang_yongshi--exact_jie_boundary
+  field: tuwang_yongshi
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 0e5e1388f75603c099b03b49ee9ce4a9a6999a5ec8509604b5dd43d1e6376ee1
+- id: yuepo_yueyan_dahao--positive
+  field: yuepo_yueyan_dahao
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 449c9a8ca5c9bc7ad8b698bd1ea996c17472f097ce1153cce7b583241f801298
+- id: yuepo_yueyan_dahao--negative
+  field: yuepo_yueyan_dahao
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-02-09'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 70f0323ea173adb4678bdb6d66bd1611f53d05e597604f4ca6f87e79e6ccd24f
+- id: yuepo_yueyan_dahao--exact_jie_boundary
+  field: yuepo_yueyan_dahao
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 70f0323ea173adb4678bdb6d66bd1611f53d05e597604f4ca6f87e79e6ccd24f
+- id: annual_sansha--positive
+  field: annual_sansha
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: true
+    kind: record
+    value_sha256: 5829668871473e9dbda83f018ffb5b921968d257d08577d6fb7c3628a8f71642
+- id: annual_sansha--negative
+  field: annual_sansha
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: true
+    kind: record
+    value_sha256: e5e02adedbd4d9f5ea6248f24b6d58080e8a8aec4cfb35f7136435b7018d86f7
+- id: annual_sansha--exact_jie_boundary
+  field: annual_sansha
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: true
+    kind: record
+    value_sha256: e5e02adedbd4d9f5ea6248f24b6d58080e8a8aec4cfb35f7136435b7018d86f7
+- id: monthly_sansha--positive
+  field: monthly_sansha
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: true
+    kind: record
+    value_sha256: 6b64ba88faf1fc1ca3c29b0fdda4aa5f430648a323725c2a1d56b5f20f86be76
+- id: monthly_sansha--negative
+  field: monthly_sansha
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: true
+    kind: record
+    value_sha256: 5829668871473e9dbda83f018ffb5b921968d257d08577d6fb7c3628a8f71642
+- id: monthly_sansha--exact_jie_boundary
+  field: monthly_sansha
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: true
+    kind: record
+    value_sha256: 5829668871473e9dbda83f018ffb5b921968d257d08577d6fb7c3628a8f71642
+- id: taisui_suipo--positive
+  field: taisui_suipo
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: true
+    kind: record
+    value_sha256: 55cc2a8da27257454e32d0b8c3d24a73c2ce93b0aa4eae310ed5a8ee9eb713bd
+- id: taisui_suipo--negative
+  field: taisui_suipo
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: true
+    kind: record
+    value_sha256: ddc44a12f332369e8efba33856783e50d5924440351911a7fb3be0504057115c
+- id: taisui_suipo--exact_jie_boundary
+  field: taisui_suipo
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: true
+    kind: record
+    value_sha256: ddc44a12f332369e8efba33856783e50d5924440351911a7fb3be0504057115c
+- id: dajiangjun--positive
+  field: dajiangjun
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-01'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+    requested_scopes:
+    - directional_judgment
+    directional_context:
+      site_branch: 子
+  expected:
+    active: true
+    kind: direction_formula
+    value_sha256: 832cfa8bb4e9dcfccc264ac9a59adf62a7425209ad253927af5b02e20ccd96ff
+- id: dajiangjun--negative
+  field: dajiangjun
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: false
+    kind: direction_formula
+    value_sha256: 2a500f23c0e52780dac680110d1df88818759c1e405deb031ba43ed53f5fc301
+- id: dajiangjun--exact_jie_boundary
+  field: dajiangjun
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: false
+    kind: direction_formula
+    value_sha256: 9f435bf96bc01efd31a41e4cc073ea3e0901c580d7a14614fdb0fe50c25b7d0f
+- id: jinshen_qisha--positive
+  field: jinshen_qisha
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-01'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+    requested_scopes:
+    - directional_judgment
+    directional_context:
+      site_branch: 申
+  expected:
+    active: true
+    kind: direction_formula
+    value_sha256: 408d1a9efdc546fa230d6645486d1f5fb4570c9ae9eaa1fdd2043f480a1e3a2b
+- id: jinshen_qisha--negative
+  field: jinshen_qisha
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: false
+    kind: direction_formula
+    value_sha256: 21b5697ac98a74ee49092737a05d681ea6102617e8b7f2c05aa4b5a02b71cb45
+- id: jinshen_qisha--exact_jie_boundary
+  field: jinshen_qisha
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: false
+    kind: direction_formula
+    value_sha256: 4042529367a7d14e3750ae326f3605005ec6d98e902f9833695ab928f90e88ed
+- id: luohou--positive
+  field: luohou
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-01'
+    event_profile: construction_renovation
+    requested_actions:
+    - 立向
+    requested_scopes:
+    - directional_judgment
+    directional_context:
+      site_mountain: 乙
+  expected:
+    active: true
+    kind: direction_formula
+    value_sha256: 809e350d3a4f173715eee60a33233c8082268c3323c6cca1dd4e50378c023ac9
+- id: luohou--negative
+  field: luohou
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: false
+    kind: direction_formula
+    value_sha256: 0d5221d4b499180229a1a282417f9c5f8aaab90525c349945dbb5b314bb113ac
+- id: luohou--exact_jie_boundary
+  field: luohou
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: false
+    kind: direction_formula
+    value_sha256: f5472d3385835a817974b36466c865bbb5a5b0e477f68b02ed37108d4164fe05
+- id: directional_hits--positive
+  field: directional_hits
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-01'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+    requested_scopes:
+    - directional_judgment
+    directional_context:
+      site_branch: 子
+  expected:
+    active: true
+    kind: directional_hits
+    value_sha256: 2b0386afc5f735d0ea942e06183116173af5b075d1976c73bcb400042ea58b3a
+- id: directional_hits--negative
+  field: directional_hits
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: construction_renovation
+    requested_actions:
+    - 搬移
+  expected:
+    active: false
+    kind: directional_hits
+    value_sha256: c964f4c570346f24bed1b0f9ffc455b20402bf7b1583a2758b3ecc1594eb1150
+- id: directional_hits--exact_jie_boundary
+  field: directional_hits
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: construction_renovation
+    requested_actions:
+    - 营建
+  expected:
+    active: false
+    kind: directional_hits
+    value_sha256: c964f4c570346f24bed1b0f9ffc455b20402bf7b1583a2758b3ecc1594eb1150
+- id: mingfei_day--positive
+  field: mingfei_day
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-07'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 5a30e14cfa60a9bbae47dd2c5527f4147f76a8b5e2b73a1f51b8ec243591b893
+- id: mingfei_day--negative
+  field: mingfei_day
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 52fcd6ba366992be716c27f97f32bcd867b7a3dc52c5809990963d33990550d8
+- id: mingfei_day--exact_jie_boundary
+  field: mingfei_day
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 52fcd6ba366992be716c27f97f32bcd867b7a3dc52c5809990963d33990550d8
+- id: mingfei_opposite_day--positive
+  field: mingfei_opposite_day
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 0a0aaedcd052fffb791fce40f377ba7690b13813e93b2c4137886e1fc0f9effe
+- id: mingfei_opposite_day--negative
+  field: mingfei_opposite_day
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-07-24'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 42f1071fa8a1916b25d088012dc1a63b630cb6b651914337f293e8259dccc554
+- id: mingfei_opposite_day--exact_jie_boundary
+  field: mingfei_opposite_day
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 42f1071fa8a1916b25d088012dc1a63b630cb6b651914337f293e8259dccc554
+- id: cheng_open_days--positive
+  field: cheng_open_days
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-10'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: jianchu_membership
+    value_sha256: c11910921327313345ed5756f4b67ef3df259b3e809cd20fed9e100bf135f31f
+- id: cheng_open_days--negative
+  field: cheng_open_days
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: false
+    kind: jianchu_membership
+    value_sha256: 40c064ebb1b867d9a601c6c374b04ce33861aa3f255d8bdef7b3d8ba944e8bfb
+- id: cheng_open_days--exact_jie_boundary
+  field: cheng_open_days
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+  expected:
+    active: false
+    kind: jianchu_membership
+    value_sha256: 7949a9781de57f9ae101f69551e32523183d9a9b954940d2518c38646c700e17
+- id: chongsang_day--positive
+  field: chongsang_day
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-02-09'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 0781bdaa59fc2e863f95383f2f2b748c8609004cb1f69ddde7df14395b1f3f59
+- id: chongsang_day--negative
+  field: chongsang_day
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: c1b1ba7cb6076c754b1c80a57b8e7a8e3dcb1e114410533730023a73c3dc7d41
+- id: chongsang_day--exact_jie_boundary
+  field: chongsang_day
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: c1b1ba7cb6076c754b1c80a57b8e7a8e3dcb1e114410533730023a73c3dc7d41
+- id: sansang_day--positive
+  field: sansang_day
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-02'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: seasonal_branch_set
+    value_sha256: 4962624b5c4162c27856e03857d7176579b67a2dad30df61352862657cd6837f
+- id: sansang_day--negative
+  field: sansang_day
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: false
+    kind: seasonal_branch_set
+    value_sha256: c7ed3fcd14cd6d5e51dbd9a5e092f5cbe9cb5566545b637c0d59449fc4a7fe16
+- id: sansang_day--exact_jie_boundary
+  field: sansang_day
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+  expected:
+    active: false
+    kind: seasonal_branch_set
+    value_sha256: 26c4ca361b662807da038af93cdc7bb34eaed1d920018e28756dea38c29830c7
+- id: furi--positive
+  field: furi
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-02-09'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 6231e93d7a0263548419727aabcb5b6b5e7d7f4367ece15c7da4e7e24c37e06d
+- id: furi--negative
+  field: furi
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 643ea438816bee421ce8c02b48e2597eddaf7743de6eeb2d9f4952c7840c4d03
+- id: furi--exact_jie_boundary
+  field: furi
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 643ea438816bee421ce8c02b48e2597eddaf7743de6eeb2d9f4952c7840c4d03
+- id: fuduan_day--positive
+  field: fuduan_day
+  sample_kind: positive
+  activation_contract: official_policy_never_active
+  input:
+    date: '2024-02-04'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+  expected:
+    active: false
+    kind: official_rejected_rule
+    value_sha256: d787e85c5d649ea0f48f84c84fe0f09e48258b989d695f1ec6789d7ed4d7ab53
+- id: fuduan_day--negative
+  field: fuduan_day
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: false
+    kind: official_rejected_rule
+    value_sha256: d787e85c5d649ea0f48f84c84fe0f09e48258b989d695f1ec6789d7ed4d7ab53
+- id: fuduan_day--exact_jie_boundary
+  field: fuduan_day
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+  expected:
+    active: false
+    kind: official_rejected_rule
+    value_sha256: d787e85c5d649ea0f48f84c84fe0f09e48258b989d695f1ec6789d7ed4d7ab53
+- id: yuepo_yueyan--positive
+  field: yuepo_yueyan
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 1c13cac679cb9ae2df3925acc57fa8f833095048d6708fd1310e7572a215ecfb
+- id: yuepo_yueyan--negative
+  field: yuepo_yueyan
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-02-09'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 82ac4fdaae46aee44e3c0cb44d475dd9367b1d99a0d987f595b2691dc5b6d187
+- id: yuepo_yueyan--exact_jie_boundary
+  field: yuepo_yueyan
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 82ac4fdaae46aee44e3c0cb44d475dd9367b1d99a0d987f595b2691dc5b6d187
+- id: dihuo--positive
+  field: dihuo
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 0861a09bd906c5101386b35f823b6c12c264f61d578b8caf875c52530e33cccf
+- id: dihuo--negative
+  field: dihuo
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-02-09'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: ad96adb4a7c6f593173decd970c1b34e03155c8dfb8a8aacfc2f92a226f1a5c9
+- id: dihuo--exact_jie_boundary
+  field: dihuo
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: ad96adb4a7c6f593173decd970c1b34e03155c8dfb8a8aacfc2f92a226f1a5c9
+- id: tujin--positive
+  field: tujin
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-09'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: true
+    kind: seasonal_branch_set
+    value_sha256: fec87b2c3e0dff5a810d01d50e82c3bf8f1da8fdc7b64d18c4cab1917ab69b54
+- id: tujin--negative
+  field: tujin
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: false
+    kind: seasonal_branch_set
+    value_sha256: 5a094e99e56e02cd1358e983a89585ed471820e17ddbcc89acf44314b9a2c177
+- id: tujin--exact_jie_boundary
+  field: tujin
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+  expected:
+    active: false
+    kind: seasonal_branch_set
+    value_sha256: df9b965554a1c5bebde6c0a9884a7ead4184795cd883b9e51c126f8f193b9896
+- id: mountain_family_clashes--positive
+  field: mountain_family_clashes
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-01'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+    requested_scopes:
+    - directional_judgment
+    directional_context:
+      site_branch: 子
+  expected:
+    active: true
+    kind: directional_hits
+    value_sha256: 2b0386afc5f735d0ea942e06183116173af5b075d1976c73bcb400042ea58b3a
+- id: mountain_family_clashes--negative
+  field: mountain_family_clashes
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: burial_funeral
+    requested_actions:
+    - 破土
+  expected:
+    active: false
+    kind: directional_hits
+    value_sha256: c964f4c570346f24bed1b0f9ffc455b20402bf7b1583a2758b3ecc1594eb1150
+- id: mountain_family_clashes--exact_jie_boundary
+  field: mountain_family_clashes
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: burial_funeral
+    requested_actions:
+    - 安葬
+  expected:
+    active: false
+    kind: directional_hits
+    value_sha256: c964f4c570346f24bed1b0f9ffc455b20402bf7b1583a2758b3ecc1594eb1150
+- id: yima_day--positive
+  field: yima_day
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-03'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 8262ee0bc619192ab45f77659371cd8a6562d831081f588b1d9562db26887ffb
+- id: yima_day--negative
+  field: yima_day
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 553912f0c7dd929df79dc3349da1125bb79e37f0ece24c9d1880d15663d9e27b
+- id: yima_day--exact_jie_boundary
+  field: yima_day
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 553912f0c7dd929df79dc3349da1125bb79e37f0ece24c9d1880d15663d9e27b
+- id: tianma_day--positive
+  field: tianma_day
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-03'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 7f657f4a77d272d879675b235a29bf05122b8e33d30120b3ede219ffc829aacd
+- id: tianma_day--negative
+  field: tianma_day
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: b0e585e196105d4de5bf7590766b0ca18777dacaa56061e95fc1bcbfb39de426
+- id: tianma_day--exact_jie_boundary
+  field: tianma_day
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: b0e585e196105d4de5bf7590766b0ca18777dacaa56061e95fc1bcbfb39de426
+- id: wangwang_day--positive
+  field: wangwang_day
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-02-09'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: ff73b3d9f4fd4678852ff10ac61e1fea6cd75611154f9b743ab259019d767d50
+- id: wangwang_day--negative
+  field: wangwang_day
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: b4e46e288119dfbcbfe64ef60f0399308c3c4fd952bb0a4653e51957e0ab4def
+- id: wangwang_day--exact_jie_boundary
+  field: wangwang_day
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: b4e46e288119dfbcbfe64ef60f0399308c3c4fd952bb0a4653e51957e0ab4def
+- id: guiji_day--positive
+  field: guiji_day
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-03'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 28d1e0f23b7099672bd9159db355d390692fd178c6d0de91be28f161448c2f62
+- id: guiji_day--negative
+  field: guiji_day
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: ede88aafa864f8facb17de618f572def6e0c685726559670f08fecf2dd388d77
+- id: guiji_day--exact_jie_boundary
+  field: guiji_day
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: ede88aafa864f8facb17de618f572def6e0c685726559670f08fecf2dd388d77
+- id: sili_sijue--positive
+  field: sili_sijue
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-02-03'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: c62e25d1f26ca50b0847a1c17b2204f64b6531cd09c33db23d6b4330d7c1819a
+- id: sili_sijue--negative
+  field: sili_sijue
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 575b71f79345a1a534202c60f598997be2461884a8d53e1fb9319b7f934b1085
+- id: sili_sijue--exact_jie_boundary
+  field: sili_sijue
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 575b71f79345a1a534202c60f598997be2461884a8d53e1fb9319b7f934b1085
+- id: yanggong_ji--positive
+  field: yanggong_ji
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-08-13'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: true
+    kind: lunar_month_day_set
+    value_sha256: e99c7bb165f602a85c70b3312ef48236c66228a1359f0ce52cdfeefabb87bbdc
+- id: yanggong_ji--negative
+  field: yanggong_ji
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: lunar_month_day_set
+    value_sha256: 830e0c712a4ae8ee00f4823e5b4ab526d8509bad60434b97e79c28a0b23fbaeb
+- id: yanggong_ji--exact_jie_boundary
+  field: yanggong_ji
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: lunar_month_day_set
+    value_sha256: 71e5b2a6e1d0e8da90740a6840de35b00f8d5cf187e336e562f99521f33565ba
+- id: yueji_day--positive
+  field: yueji_day
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: true
+    kind: lunar_day_set
+    value_sha256: 8cb407c4557284ac96590f1af345616c4e939b293d807d422e209e7d8c7a4a99
+- id: yueji_day--negative
+  field: yueji_day
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-02-09'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: lunar_day_set
+    value_sha256: 7cf1ac6c81ab97f21bdc584fb7360fe93575fde067e8d0f355971fe6eaab3d6a
+- id: yueji_day--exact_jie_boundary
+  field: yueji_day
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: lunar_day_set
+    value_sha256: 29040b21da9dc1fec4d8f09c0a21b754d793f5dd0cfe656745059aeee6409b96
+- id: huangdao_good_hours--positive
+  field: huangdao_good_hours
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: true
+    kind: hour_path
+    value_sha256: deae3a0694f992d3432c0df74889ddec2dd88851e94cf8680a794aed1bfcc368
+- id: huangdao_good_hours--negative
+  field: huangdao_good_hours
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: true
+    kind: hour_path
+    value_sha256: 5197301e6270294b5876e7cb0abc823295e7bf8c8d228fac9aa5e2edebf16d0c
+- id: huangdao_good_hours--exact_jie_boundary
+  field: huangdao_good_hours
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: true
+    kind: hour_path
+    value_sha256: 5197301e6270294b5876e7cb0abc823295e7bf8c8d228fac9aa5e2edebf16d0c
+- id: office_cheng_open_lingzheng_tianen--positive
+  field: office_cheng_open_lingzheng_tianen
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-01'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: composite
+    value_sha256: 5ad3185bd1348964dc3584328136f75299c87ed025db6de2e8f7021b92b1cd71
+- id: office_cheng_open_lingzheng_tianen--negative
+  field: office_cheng_open_lingzheng_tianen
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: composite
+    value_sha256: eed0cd7399b5983acee2f95d3751682e86028d859159be18f0a320756bab0fc9
+- id: office_cheng_open_lingzheng_tianen--exact_jie_boundary
+  field: office_cheng_open_lingzheng_tianen
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: composite
+    value_sha256: a45ccc96053681d2727aa4a6a975ad65b5228a72fab8927070eb9687f77e78dc
+- id: avoid_po_si_bi_days--positive
+  field: avoid_po_si_bi_days
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-08-13'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: true
+    kind: composite
+    value_sha256: 0f2904c5d107085881f5ee44bf8ccb05ad1e2b2a8f115b64221fffa45952687a
+- id: avoid_po_si_bi_days--negative
+  field: avoid_po_si_bi_days
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: composite
+    value_sha256: eed0cd7399b5983acee2f95d3751682e86028d859159be18f0a320756bab0fc9
+- id: avoid_po_si_bi_days--exact_jie_boundary
+  field: avoid_po_si_bi_days
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: composite
+    value_sha256: a45ccc96053681d2727aa4a6a975ad65b5228a72fab8927070eb9687f77e78dc
+- id: folk_travel_comparison--positive
+  field: folk_travel_comparison
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: true
+    kind: folk_comparison
+    value_sha256: d9ebcf849f02dad1551e934418c0df59fa7345877f6301fc6588150eb6bfa82c
+- id: folk_travel_comparison--negative
+  field: folk_travel_comparison
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-02-09'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: folk_comparison
+    value_sha256: ef20766407ddf8190b03de31a7686165534f49773cf47cece232ec0a65591925
+- id: folk_travel_comparison--exact_jie_boundary
+  field: folk_travel_comparison
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: travel_office
+    requested_actions:
+    - 出行
+  expected:
+    active: false
+    kind: folk_comparison
+    value_sha256: 0f38408449f006348cd9e6c828d647317dace7aa6998aa5ecab0a409509d2802
+- id: event_specific_yiji--positive
+  field: event_specific_yiji
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 立券交易
+  expected:
+    active: true
+    kind: event_yiji
+    value_sha256: a94ded51c9577c0e19c68e10474cba617b3c316d53ccc5782e0341a0b466a99f
+- id: event_specific_yiji--negative
+  field: event_specific_yiji
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-07-24'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 立券交易
+  expected:
+    active: false
+    kind: event_yiji
+    value_sha256: 5620ebc8fc51ec075cd33f5327314e7df5c16240d13696c38968f8c180bbe59f
+- id: event_specific_yiji--exact_jie_boundary
+  field: event_specific_yiji
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 开市
+  expected:
+    active: true
+    kind: event_yiji
+    value_sha256: 8ed7fdba76886c29fea6571910a7876f8486021c77f19e36ff0a7d53ac41feec
+- id: jianchu_suitability--positive
+  field: jianchu_suitability
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-03'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 开市
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: jianchu_membership
+    value_sha256: b3e87bcf5e48df0bd764173b5b49b8a8bb0eca01bf3ff2c16b6d1eeccaa4cf92
+- id: jianchu_suitability--negative
+  field: jianchu_suitability
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 立券交易
+  expected:
+    active: false
+    kind: jianchu_membership
+    value_sha256: fbc57bb03da8ab931f3c9c1cba06f2f9f16ec019427e9199b760697865e00a61
+- id: jianchu_suitability--exact_jie_boundary
+  field: jianchu_suitability
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 开市
+  expected:
+    active: false
+    kind: jianchu_membership
+    value_sha256: 4f7eece70d6fa1e5e94ba3f0ef5b761d3092bbd8676407aea870c4ac2aafd348
+- id: tiande_yuede_tianen--positive
+  field: tiande_yuede_tianen
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-01'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 开市
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 5fbcf6c430570a4c4140e1c44ea96ee5ccb6a7fc9862b32f89e9b5dc882f67f2
+- id: tiande_yuede_tianen--negative
+  field: tiande_yuede_tianen
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 立券交易
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 169871c9d85f8a858cb52710b748525dea375eb17542bc1635987bd66da43d87
+- id: tiande_yuede_tianen--exact_jie_boundary
+  field: tiande_yuede_tianen
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 开市
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 169871c9d85f8a858cb52710b748525dea375eb17542bc1635987bd66da43d87
+- id: mucang_shengqi--positive
+  field: mucang_shengqi
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-08-13'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 立券交易
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 316a27eb93f18b1d472437f933865854c779515751969c236086dc07cf074779
+- id: mucang_shengqi--negative
+  field: mucang_shengqi
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 立券交易
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 26fc3674080de8efe65e3001772baf56c1bc422ee090049caf68c28072b41c0d
+- id: mucang_shengqi--exact_jie_boundary
+  field: mucang_shengqi
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 开市
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 26fc3674080de8efe65e3001772baf56c1bc422ee090049caf68c28072b41c0d
+- id: yuepo--positive
+  field: yuepo
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-08'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 开市
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 9781f261e71f3b43e84bca4e0d95494bf926be7fc2dc024c8ebdae6ebf5806ad
+- id: yuepo--negative
+  field: yuepo
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 立券交易
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 94473a842b2e155ea1b9f5abb0450d9732d79934d5fbb0c7321ea928286e41fb
+- id: yuepo--exact_jie_boundary
+  field: yuepo
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 开市
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 94473a842b2e155ea1b9f5abb0450d9732d79934d5fbb0c7321ea928286e41fb
+- id: directional_avoidance_when_relevant--positive
+  field: directional_avoidance_when_relevant
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-01'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 开市
+    requested_scopes:
+    - directional_judgment
+    directional_context:
+      site_branch: 子
+  expected:
+    active: true
+    kind: directional_hits
+    value_sha256: 2b0386afc5f735d0ea942e06183116173af5b075d1976c73bcb400042ea58b3a
+- id: directional_avoidance_when_relevant--negative
+  field: directional_avoidance_when_relevant
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 立券交易
+  expected:
+    active: false
+    kind: directional_hits
+    value_sha256: c964f4c570346f24bed1b0f9ffc455b20402bf7b1583a2758b3ecc1594eb1150
+- id: directional_avoidance_when_relevant--exact_jie_boundary
+  field: directional_avoidance_when_relevant
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: business_opening_transaction
+    requested_actions:
+    - 开市
+  expected:
+    active: false
+    kind: directional_hits
+    value_sha256: c964f4c570346f24bed1b0f9ffc455b20402bf7b1583a2758b3ecc1594eb1150
+- id: tianyi--positive
+  field: tianyi
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-08-13'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 70fd091e7bb6c6325557b8cde69cb347f33f8e0aa72402e716bc5518acd63845
+- id: tianyi--negative
+  field: tianyi
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 33f37e10e1600fbf318a77f170c58fb17c8a9f50ebd399765462deeb1d17c41f
+- id: tianyi--exact_jie_boundary
+  field: tianyi
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 33f37e10e1600fbf318a77f170c58fb17c8a9f50ebd399765462deeb1d17c41f
+- id: yueen--positive
+  field: yueen
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-01-01'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 21dea51011430bd483b244ecd01814f71a01eb081e2d0eda8dbe5256655cb41b
+- id: yueen--negative
+  field: yueen
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: a3618c6118e7e63e62b51461fbd0f5431866678cb6cf5e27278ecb71def87a15
+- id: yueen--exact_jie_boundary
+  field: yueen
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: a3618c6118e7e63e62b51461fbd0f5431866678cb6cf5e27278ecb71def87a15
+- id: sixiang--positive
+  field: sixiang
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-07-24'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: e1e67f9f5527c592aadafd23d93567aedc7bd426d70e13c7983ca69af9c2aac2
+- id: sixiang--negative
+  field: sixiang
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: a5df8852c28862c3a7b5b50ea3efe2aabf6c0d8e2d7ba0e40a38e4cb7417dde6
+- id: sixiang--exact_jie_boundary
+  field: sixiang
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: a5df8852c28862c3a7b5b50ea3efe2aabf6c0d8e2d7ba0e40a38e4cb7417dde6
+- id: side_waste--positive
+  field: side_waste
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2024-02-26'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+    include_folk_comparison: true
+  expected:
+    active: true
+    kind: god_presence
+    value_sha256: 352bf31431471f56d64a0ef62b6a39d5cb63164b13cea737ed1163276c718e61
+- id: side_waste--negative
+  field: side_waste
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 14eb5c433cb6286cdafb50ae1e5607ba400f76b3af0489ebbfb16cff4cc4c359
+- id: side_waste--exact_jie_boundary
+  field: side_waste
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: false
+    kind: god_presence
+    value_sha256: 14eb5c433cb6286cdafb50ae1e5607ba400f76b3af0489ebbfb16cff4cc4c359
+- id: renshen_location--positive
+  field: renshen_location
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: true
+    kind: renshen_location
+    value_sha256: 7bcb57f3c4cffecef7ed405f6667e10b2edfb7f26eb15d4db838da2cd100e27a
+- id: renshen_location--negative
+  field: renshen_location
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: true
+    kind: renshen_location
+    value_sha256: 5451ced48163bd8b4fabbf4084cee32d46dc7b01ac7e7fa512c097f91b63ef7f
+- id: renshen_location--exact_jie_boundary
+  field: renshen_location
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: true
+    kind: renshen_location
+    value_sha256: 5451ced48163bd8b4fabbf4084cee32d46dc7b01ac7e7fa512c097f91b63ef7f
+- id: visit_sick_taboo_days--positive
+  field: visit_sick_taboo_days
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-02-09'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: true
+    kind: day_ganzhi_set
+    value_sha256: 77c9cfd83fec672e25e49c230b19bc3a88231721e601be0bb46e9b3cec7a01f1
+- id: visit_sick_taboo_days--negative
+  field: visit_sick_taboo_days
+  sample_kind: negative
+  activation_contract: must_be_inactive
+  input:
+    date: '2026-01-02'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: false
+    kind: day_ganzhi_set
+    value_sha256: 82cec20906726fc68230178e2a960e769313a70485167310e4e000f6855301b4
+- id: visit_sick_taboo_days--exact_jie_boundary
+  field: visit_sick_taboo_days
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: false
+    kind: day_ganzhi_set
+    value_sha256: 3edc8e34409cbc3e9c9bbb23a627ce501151347f4aa502e805f69e4c15a094e4
+- id: medical_caveat--positive
+  field: medical_caveat
+  sample_kind: positive
+  activation_contract: must_be_active
+  input:
+    date: '2026-01-02'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: true
+    kind: medical_policy
+    value_sha256: 65e8b1e08f11e8667bcad743f223203806fc3476cb54568e5222aec600aac6ff
+- id: medical_caveat--negative
+  field: medical_caveat
+  sample_kind: negative
+  activation_contract: intrinsically_calculated_always_active
+  input:
+    date: '2024-02-04'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: true
+    kind: medical_policy
+    value_sha256: 65e8b1e08f11e8667bcad743f223203806fc3476cb54568e5222aec600aac6ff
+- id: medical_caveat--exact_jie_boundary
+  field: medical_caveat
+  sample_kind: exact_jie_boundary
+  activation_contract: exact_snapshot
+  input:
+    date: '2024-02-04'
+    event_profile: medical
+    requested_actions:
+    - 求医疗病
+  expected:
+    active: true
+    kind: medical_policy
+    value_sha256: 65e8b1e08f11e8667bcad743f223203806fc3476cb54568e5222aec600aac6ff
+external_reference_cases:
+- id: lunar-python-01
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-01-01'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+    event_profile: construction_renovation
+    requested_actions:
+    - 立向
+    requested_scopes:
+    - directional_judgment
+    directional_context:
+      site_mountain: 乙
+  expected:
+    lunar_date:
+      year: 2023
+      month: 11
+      day: 20
+      is_leap_month: false
+    ganzhi:
+      year: 癸卯
+      month: 甲子
+      day: 甲子
+    jianchu: 建
+    mansion: 毕
+    day_twelve_god: 金贵
+    huanghei: huang
+    clash: (戊午)马
+- id: lunar-python-02
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-02-03'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2023
+      month: 12
+      day: 24
+      is_leap_month: false
+    ganzhi:
+      year: 癸卯
+      month: 乙丑
+      day: 丁酉
+    jianchu: 成
+    mansion: 柳
+    day_twelve_god: 勾陈
+    huanghei: hei
+    clash: (辛卯)兔
+- id: lunar-python-03
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-02-04'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2023
+      month: 12
+      day: 25
+      is_leap_month: false
+    ganzhi:
+      year: 癸卯
+      month: 乙丑
+      day: 戊戌
+    jianchu: 成
+    mansion: 星
+    day_twelve_god: 司命
+    huanghei: huang
+    clash: (壬辰)龙
+- id: lunar-python-04
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-02-05'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2023
+      month: 12
+      day: 26
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 丙寅
+      day: 己亥
+    jianchu: 收
+    mansion: 张
+    day_twelve_god: 勾陈
+    huanghei: hei
+    clash: (癸巳)蛇
+- id: lunar-python-05
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-02-09'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2023
+      month: 12
+      day: 30
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 丙寅
+      day: 癸卯
+    jianchu: 除
+    mansion: 亢
+    day_twelve_god: 朱雀
+    huanghei: hei
+    clash: (丁酉)鸡
+- id: lunar-python-06
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-02-10'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 1
+      day: 1
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 丙寅
+      day: 甲辰
+    jianchu: 满
+    mansion: 氐
+    day_twelve_god: 金贵
+    huanghei: huang
+    clash: (戊戌)狗
+- id: lunar-python-07
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-02-11'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 1
+      day: 2
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 丙寅
+      day: 乙巳
+    jianchu: 平
+    mansion: 房
+    day_twelve_god: 天德
+    huanghei: huang
+    clash: (己亥)猪
+- id: lunar-python-08
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-03-19'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 2
+      day: 10
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 丁卯
+      day: 壬午
+    jianchu: 平
+    mansion: 室
+    day_twelve_god: 金贵
+    huanghei: huang
+    clash: (丙子)鼠
+- id: lunar-python-09
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-03-20'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 2
+      day: 11
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 丁卯
+      day: 癸未
+    jianchu: 定
+    mansion: 壁
+    day_twelve_god: 天德
+    huanghei: huang
+    clash: (丁丑)牛
+- id: lunar-python-10
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-03-21'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 2
+      day: 12
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 丁卯
+      day: 甲申
+    jianchu: 执
+    mansion: 奎
+    day_twelve_god: 白虎
+    huanghei: hei
+    clash: (戊寅)虎
+- id: lunar-python-11
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-05-04'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 3
+      day: 26
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 戊辰
+      day: 戊辰
+    jianchu: 建
+    mansion: 氐
+    day_twelve_god: 青龙
+    huanghei: huang
+    clash: (壬戌)狗
+- id: lunar-python-12
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-05-05'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 3
+      day: 27
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 己巳
+      day: 己巳
+    jianchu: 建
+    mansion: 房
+    day_twelve_god: 勾陈
+    huanghei: hei
+    clash: (癸亥)猪
+- id: lunar-python-13
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-05-06'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 3
+      day: 28
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 己巳
+      day: 庚午
+    jianchu: 除
+    mansion: 心
+    day_twelve_god: 青龙
+    huanghei: huang
+    clash: (甲子)鼠
+- id: lunar-python-14
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-06-20'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 5
+      day: 15
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 庚午
+      day: 乙卯
+    jianchu: 收
+    mansion: 井
+    day_twelve_god: 玉堂
+    huanghei: huang
+    clash: (己酉)鸡
+- id: lunar-python-15
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-06-21'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 5
+      day: 16
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 庚午
+      day: 丙辰
+    jianchu: 开
+    mansion: 鬼
+    day_twelve_god: 天牢
+    huanghei: hei
+    clash: (庚戌)狗
+- id: lunar-python-16
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-06-22'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 5
+      day: 17
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 庚午
+      day: 丁巳
+    jianchu: 闭
+    mansion: 柳
+    day_twelve_god: 玄武
+    huanghei: hei
+    clash: (辛亥)猪
+- id: lunar-python-17
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-08-06'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 7
+      day: 3
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 辛未
+      day: 壬寅
+    jianchu: 危
+    mansion: 室
+    day_twelve_god: 金贵
+    huanghei: huang
+    clash: (丙申)猴
+- id: lunar-python-18
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-08-07'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 7
+      day: 4
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 壬申
+      day: 癸卯
+    jianchu: 危
+    mansion: 壁
+    day_twelve_god: 朱雀
+    huanghei: hei
+    clash: (丁酉)鸡
+- id: lunar-python-19
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-08-08'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 7
+      day: 5
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 壬申
+      day: 甲辰
+    jianchu: 成
+    mansion: 奎
+    day_twelve_god: 金贵
+    huanghei: huang
+    clash: (戊戌)狗
+- id: lunar-python-20
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-09-16'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 8
+      day: 14
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 癸酉
+      day: 癸未
+    jianchu: 开
+    mansion: 张
+    day_twelve_god: 天德
+    huanghei: huang
+    clash: (丁丑)牛
+- id: lunar-python-21
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-09-17'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 8
+      day: 15
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 癸酉
+      day: 甲申
+    jianchu: 闭
+    mansion: 翼
+    day_twelve_god: 白虎
+    huanghei: hei
+    clash: (戊寅)虎
+- id: lunar-python-22
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-09-18'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 8
+      day: 16
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 癸酉
+      day: 乙酉
+    jianchu: 建
+    mansion: 轸
+    day_twelve_god: 玉堂
+    huanghei: huang
+    clash: (己卯)兔
+- id: lunar-python-23
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-11-06'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 10
+      day: 6
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 甲戌
+      day: 甲戌
+    jianchu: 建
+    mansion: 参
+    day_twelve_god: 白虎
+    huanghei: hei
+    clash: (戊辰)龙
+- id: lunar-python-24
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-11-07'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 10
+      day: 7
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 乙亥
+      day: 乙亥
+    jianchu: 建
+    mansion: 井
+    day_twelve_god: 天德
+    huanghei: huang
+    clash: (己巳)蛇
+- id: lunar-python-25
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2024-11-08'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 10
+      day: 8
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 乙亥
+      day: 丙子
+    jianchu: 除
+    mansion: 鬼
+    day_twelve_god: 白虎
+    huanghei: hei
+    clash: (庚午)马
+- id: lunar-python-26
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2025-01-28'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2024
+      month: 12
+      day: 29
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 丁丑
+      day: 丁酉
+    jianchu: 成
+    mansion: 觜
+    day_twelve_god: 勾陈
+    huanghei: hei
+    clash: (辛卯)兔
+- id: lunar-python-27
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2025-01-29'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2025
+      month: 1
+      day: 1
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 丁丑
+      day: 戊戌
+    jianchu: 收
+    mansion: 参
+    day_twelve_god: 青龙
+    huanghei: huang
+    clash: (壬辰)龙
+- id: lunar-python-28
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2025-01-30'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2025
+      month: 1
+      day: 2
+      is_leap_month: false
+    ganzhi:
+      year: 甲辰
+      month: 丁丑
+      day: 己亥
+    jianchu: 开
+    mansion: 井
+    day_twelve_god: 明堂
+    huanghei: huang
+    clash: (癸巳)蛇
+- id: lunar-python-29
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2025-07-24'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2025
+      month: 6
+      day: 30
+      is_leap_month: false
+    ganzhi:
+      year: 乙巳
+      month: 癸未
+      day: 甲午
+    jianchu: 闭
+    mansion: 角
+    day_twelve_god: 天牢
+    huanghei: hei
+    clash: (戊子)鼠
+- id: lunar-python-30
+  source:
+    project: 6tail/lunar-python
+    version: 1.4.8
+    commit: 000c8a3d74eed098d6256a28fdd51b869324c559
+    license: MIT
+    role: independent engineering comparator; not a classical source
+  input:
+    date: '2026-07-24'
+    time: '12:00:00'
+    timezone: Asia/Shanghai
+    location: 上海
+  expected:
+    lunar_date:
+      year: 2026
+      month: 6
+      day: 11
+      is_leap_month: false
+    ganzhi:
+      year: 丙午
+      month: 乙未
+      day: 己亥
+    jianchu: 定
+    mansion: 亢
+    day_twelve_god: 明堂
+    huanghei: huang
+    clash: (癸巳)蛇
+completion_cases:
+- id: selection-complete-single-day
+  input:
+    event_profile: generic_selection
+    date_range: {start: '2026-07-24', end: '2026-07-24'}
+    timezone: Asia/Shanghai
+    location: 上海
+  expected: {candidate_count: 1, hour_fact_count: 12, date_time_candidate_min_count: 13}
+- id: selection-complete-bounded-range
+  input:
+    event_profile: business_opening_transaction
+    requested_actions: [开市]
+    date_range: {start: '2026-07-24', end: '2026-07-28'}
+    timezone: Asia/Shanghai
+    location: 上海
+  expected: {candidate_count: 5, ranking_method: explainable_lexicographic_v1}
+- id: selection-late-zi-window
+  input:
+    event_profile: generic_selection
+    date_range: {start: '2026-07-24', end: '2026-07-24'}
+    hard_constraints:
+      time_windows: [{start: '23:15', end: '23:45'}]
+    timezone: Asia/Shanghai
+    location: 上海
+  expected: {candidate_count: 1, hour_fact_count: 12, eligible_hour_branches: [子]}
+- id: selection-dst-gap-window
+  input:
+    event_profile: generic_selection
+    date_range: {start: '2026-03-08', end: '2026-03-08'}
+    hard_constraints:
+      time_windows: [{start: '02:15', end: '02:45'}]
+    timezone: America/New_York
+    location: New York
+  expected:
+    candidate_count: 1
+    hour_fact_count: 12
+    eligible_hour_branches: []
+    no_valid_candidate: true
+    timezone_resolution: {branch: 丑, nonexistent_minute_count: 60, ambiguous_minute_count: 0}
+- id: selection-dst-fold-window
+  input:
+    event_profile: generic_selection
+    date_range: {start: '2026-11-01', end: '2026-11-01'}
+    hard_constraints:
+      time_windows: [{start: '01:15', end: '01:45'}]
+    timezone: America/New_York
+    location: New York
+  expected:
+    candidate_count: 1
+    hour_fact_count: 12
+    eligible_hour_branches: [丑]
+    no_valid_candidate: false
+    timezone_resolution: {branch: 丑, nonexistent_minute_count: 0, ambiguous_minute_count: 60}
+boundary_cases:
+- id: exact-li-chun-day
+  category: calendar_boundary
+  date: '2024-02-04'
+  expected_boundary_status: intra_day_jie_boundary
+  expected_month_ganzhi_variants: [乙丑, 丙寅]
+- id: exact-li-xia-day
+  category: calendar_boundary
+  date: '2024-05-05'
+  expected_boundary_status: intra_day_jie_boundary
+  expected_month_ganzhi_variants: [戊辰, 己巳]
+- id: exact-li-qiu-day
+  category: calendar_boundary
+  date: '2024-08-07'
+  expected_boundary_status: intra_day_jie_boundary
+  expected_month_ganzhi_variants: [辛未, 壬申]
+- id: exact-li-dong-day
+  category: calendar_boundary
+  date: '2024-11-07'
+  expected_boundary_status: intra_day_jie_boundary
+  expected_month_ganzhi_variants: [甲戌, 乙亥]
+- id: exact-da-xue-late-night
+  category: calendar_boundary
+  date: '2024-12-06'
+  expected_boundary_status: intra_day_jie_boundary
+  expected_month_ganzhi_variants: [乙亥, 丙子]
+  expected_month_boundary_jie: 大雪
+- id: lunar-new-year-eve
+  category: calendar_boundary
+  date: '2024-02-09'
+  expected_lunar_date: {year: 2023, month: 12, day: 30, is_leap_month: false}
+- id: lunar-new-year-day
+  category: calendar_boundary
+  date: '2024-02-10'
+  expected_lunar_date: {year: 2024, month: 1, day: 1, is_leap_month: false}
+- id: leap-sixth-month-first-day
+  category: calendar_boundary
+  date: '2025-07-25'
+  expected_lunar_date: {year: 2025, month: 6, day: 1, is_leap_month: true}
+event_profile_cases:
+- {id: event-generic, event_profile: generic_selection, date: '2026-07-24'}
+- {id: event-marriage, event_profile: marriage, date: '2026-07-24'}
+- {id: event-construction, event_profile: construction_renovation, date: '2026-07-24'}
+- {id: event-burial, event_profile: burial_funeral, date: '2026-07-24'}
+- {id: event-travel, event_profile: travel_office, date: '2026-07-24'}
+- {id: event-business, event_profile: business_opening_transaction, date: '2026-07-24'}
+- {id: event-medical, event_profile: medical, date: '2026-07-24'}
+event_rule_cases:
+- {"id":"event-rule-generic_selection-2026-01-02","input":{"date":"2026-01-02","event_profile":"generic_selection","requested_actions":[]},"source_rule_ids":["XR-08","KR-17"],"expected":{"year_ganzhi":"乙巳","month_ganzhi":"戊子","day_ganzhi":"丙子","lunar_month_day":"11-14","jianchu":"建","day_path":"金贵","mansion":"鬼","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["annual_gods","conflicts","daily_shensha","general_bad_gods","general_good_gods","hourly_shensha","huanghei.day","huanghei.hours","jianchu","monthly_gods","twenty_eight_lodges","yiji"]}}
+- {"id":"event-rule-generic_selection-2026-02-09","input":{"date":"2026-02-09","event_profile":"generic_selection","requested_actions":[]},"source_rule_ids":["XR-08","KR-17"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"庚寅","day_ganzhi":"甲寅","lunar_month_day":"12-22","jianchu":"建","day_path":"天刑","mansion":"心","yi_matches":[],"ji_matches":[],"universal_avoidance":false,"eligible":true,"active_event_facts":["annual_gods","daily_shensha","general_bad_gods","general_good_gods","hourly_shensha","huanghei.day","huanghei.hours","jianchu","monthly_gods","twenty_eight_lodges"]}}
+- {"id":"event-rule-generic_selection-2026-07-24","input":{"date":"2026-07-24","event_profile":"generic_selection","requested_actions":[]},"source_rule_ids":["XR-08","KR-17"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"乙未","day_ganzhi":"己亥","lunar_month_day":"6-11","jianchu":"定","day_path":"明堂","mansion":"亢","yi_matches":[],"ji_matches":[],"universal_avoidance":false,"eligible":true,"active_event_facts":["annual_gods","daily_shensha","general_bad_gods","general_good_gods","hourly_shensha","huanghei.day","huanghei.hours","jianchu","monthly_gods","twenty_eight_lodges"]}}
+- {"id":"event-rule-generic_selection-2026-08-13","input":{"date":"2026-08-13","event_profile":"generic_selection","requested_actions":[]},"source_rule_ids":["XR-08","KR-17"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"丙申","day_ganzhi":"己未","lunar_month_day":"7-1","jianchu":"闭","day_path":"玉堂","mansion":"井","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["annual_gods","conflicts","daily_shensha","general_bad_gods","general_good_gods","hourly_shensha","huanghei.day","huanghei.hours","jianchu","monthly_gods","twenty_eight_lodges","yiji"]}}
+- {"id":"event-rule-marriage-2026-01-02","input":{"date":"2026-01-02","event_profile":"marriage","requested_actions":["嫁娶"]},"source_rule_ids":["XR-05","KR-18","DR-08"],"expected":{"year_ganzhi":"乙巳","month_ganzhi":"戊子","day_ganzhi":"丙子","lunar_month_day":"11-14","jianchu":"建","day_path":"金贵","mansion":"鬼","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["sanhe_liuhe","yuepo_yueyan_yuexing_yuehai"]}}
+- {"id":"event-rule-marriage-2026-02-09","input":{"date":"2026-02-09","event_profile":"marriage","requested_actions":["嫁娶"]},"source_rule_ids":["XR-05","KR-18","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"庚寅","day_ganzhi":"甲寅","lunar_month_day":"12-22","jianchu":"建","day_path":"天刑","mansion":"心","yi_matches":[],"ji_matches":[],"universal_avoidance":false,"eligible":true,"active_event_facts":["chongsang_sansang","furi_fuduan","sanhe_liuhe","yaoan"]}}
+- {"id":"event-rule-marriage-2026-07-24","input":{"date":"2026-07-24","event_profile":"marriage","requested_actions":["嫁娶"]},"source_rule_ids":["XR-05","KR-18","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"乙未","day_ganzhi":"己亥","lunar_month_day":"6-11","jianchu":"定","day_path":"明堂","mansion":"亢","yi_matches":[],"ji_matches":["嫁娶"],"universal_avoidance":false,"eligible":false,"active_event_facts":["chongsang_sansang","sanhe_liuhe","tiandehe_yuedehe"]}}
+- {"id":"event-rule-marriage-2026-08-13","input":{"date":"2026-08-13","event_profile":"marriage","requested_actions":["嫁娶"]},"source_rule_ids":["XR-05","KR-18","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"丙申","day_ganzhi":"己未","lunar_month_day":"7-1","jianchu":"闭","day_path":"玉堂","mansion":"井","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["mucang"]}}
+- {"id":"event-rule-construction_renovation-2026-01-02","input":{"date":"2026-01-02","event_profile":"construction_renovation","requested_actions":["搬移"]},"source_rule_ids":["XR-06","KR-20","DR-08"],"expected":{"year_ganzhi":"乙巳","month_ganzhi":"戊子","day_ganzhi":"丙子","lunar_month_day":"11-14","jianchu":"建","day_path":"金贵","mansion":"鬼","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["annual_sansha","monthly_sansha","taisui_suipo","yuepo_yueyan_dahao"]}}
+- {"id":"event-rule-construction_renovation-2026-02-09","input":{"date":"2026-02-09","event_profile":"construction_renovation","requested_actions":["搬移"]},"source_rule_ids":["XR-06","KR-20","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"庚寅","day_ganzhi":"甲寅","lunar_month_day":"12-22","jianchu":"建","day_path":"天刑","mansion":"心","yi_matches":[],"ji_matches":["搬移"],"universal_avoidance":false,"eligible":false,"active_event_facts":["annual_sansha","monthly_sansha","taisui_suipo"]}}
+- {"id":"event-rule-construction_renovation-2026-07-24","input":{"date":"2026-07-24","event_profile":"construction_renovation","requested_actions":["搬移"]},"source_rule_ids":["XR-06","KR-20","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"乙未","day_ganzhi":"己亥","lunar_month_day":"6-11","jianchu":"定","day_path":"明堂","mansion":"亢","yi_matches":["搬移"],"ji_matches":[],"universal_avoidance":false,"eligible":true,"active_event_facts":["annual_sansha","monthly_sansha","sixiang_shide_shengqi_mucang","taisui_suipo","tuwang_yongshi","yuepo_yueyan_dahao"]}}
+- {"id":"event-rule-construction_renovation-2026-08-13","input":{"date":"2026-08-13","event_profile":"construction_renovation","requested_actions":["搬移"]},"source_rule_ids":["XR-06","KR-20","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"丙申","day_ganzhi":"己未","lunar_month_day":"7-1","jianchu":"闭","day_path":"玉堂","mansion":"井","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["annual_sansha","monthly_sansha","sixiang_shide_shengqi_mucang","taisui_suipo"]}}
+- {"id":"event-rule-burial_funeral-2026-01-02","input":{"date":"2026-01-02","event_profile":"burial_funeral","requested_actions":["破土"]},"source_rule_ids":["XR-07","KR-19","DR-08"],"expected":{"year_ganzhi":"乙巳","month_ganzhi":"戊子","day_ganzhi":"丙子","lunar_month_day":"11-14","jianchu":"建","day_path":"金贵","mansion":"鬼","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["dihuo","mingfei_opposite_day","yuepo_yueyan"]}}
+- {"id":"event-rule-burial_funeral-2026-02-09","input":{"date":"2026-02-09","event_profile":"burial_funeral","requested_actions":["破土"]},"source_rule_ids":["XR-07","KR-19","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"庚寅","day_ganzhi":"甲寅","lunar_month_day":"12-22","jianchu":"建","day_path":"天刑","mansion":"心","yi_matches":[],"ji_matches":[],"universal_avoidance":false,"eligible":true,"active_event_facts":["chongsang_day","furi","mingfei_opposite_day"]}}
+- {"id":"event-rule-burial_funeral-2026-07-24","input":{"date":"2026-07-24","event_profile":"burial_funeral","requested_actions":["破土"]},"source_rule_ids":["XR-07","KR-19","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"乙未","day_ganzhi":"己亥","lunar_month_day":"6-11","jianchu":"定","day_path":"明堂","mansion":"亢","yi_matches":[],"ji_matches":["破土"],"universal_avoidance":false,"eligible":false,"active_event_facts":["chongsang_day","tuwang_yongshi"]}}
+- {"id":"event-rule-burial_funeral-2026-08-13","input":{"date":"2026-08-13","event_profile":"burial_funeral","requested_actions":["破土"]},"source_rule_ids":["XR-07","KR-19","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"丙申","day_ganzhi":"己未","lunar_month_day":"7-1","jianchu":"闭","day_path":"玉堂","mansion":"井","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":[]}}
+- {"id":"event-rule-travel_office-2026-01-02","input":{"date":"2026-01-02","event_profile":"travel_office","requested_actions":["出行"]},"source_rule_ids":["XR-09","DR-08"],"expected":{"year_ganzhi":"乙巳","month_ganzhi":"戊子","day_ganzhi":"丙子","lunar_month_day":"11-14","jianchu":"建","day_path":"金贵","mansion":"鬼","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["folk_travel_comparison","huangdao_good_hours","yueji_day"]}}
+- {"id":"event-rule-travel_office-2026-02-09","input":{"date":"2026-02-09","event_profile":"travel_office","requested_actions":["出行"]},"source_rule_ids":["XR-09","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"庚寅","day_ganzhi":"甲寅","lunar_month_day":"12-22","jianchu":"建","day_path":"天刑","mansion":"心","yi_matches":[],"ji_matches":[],"universal_avoidance":false,"eligible":true,"active_event_facts":["huangdao_good_hours","wangwang_day"]}}
+- {"id":"event-rule-travel_office-2026-07-24","input":{"date":"2026-07-24","event_profile":"travel_office","requested_actions":["出行"]},"source_rule_ids":["XR-09","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"乙未","day_ganzhi":"己亥","lunar_month_day":"6-11","jianchu":"定","day_path":"明堂","mansion":"亢","yi_matches":["出行"],"ji_matches":[],"universal_avoidance":false,"eligible":true,"active_event_facts":["huangdao_good_hours"]}}
+- {"id":"event-rule-travel_office-2026-08-13","input":{"date":"2026-08-13","event_profile":"travel_office","requested_actions":["出行"]},"source_rule_ids":["XR-09","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"丙申","day_ganzhi":"己未","lunar_month_day":"7-1","jianchu":"闭","day_path":"玉堂","mansion":"井","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["avoid_po_si_bi_days","folk_travel_comparison","huangdao_good_hours","yanggong_ji"]}}
+- {"id":"event-rule-business_opening_transaction-2026-01-02","input":{"date":"2026-01-02","event_profile":"business_opening_transaction","requested_actions":["立券交易"]},"source_rule_ids":["XR-08","DR-08"],"expected":{"year_ganzhi":"乙巳","month_ganzhi":"戊子","day_ganzhi":"丙子","lunar_month_day":"11-14","jianchu":"建","day_path":"金贵","mansion":"鬼","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["event_specific_yiji"]}}
+- {"id":"event-rule-business_opening_transaction-2026-02-09","input":{"date":"2026-02-09","event_profile":"business_opening_transaction","requested_actions":["立券交易"]},"source_rule_ids":["XR-08","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"庚寅","day_ganzhi":"甲寅","lunar_month_day":"12-22","jianchu":"建","day_path":"天刑","mansion":"心","yi_matches":["立券交易"],"ji_matches":[],"universal_avoidance":false,"eligible":true,"active_event_facts":["event_specific_yiji","furi_fuduan"]}}
+- {"id":"event-rule-business_opening_transaction-2026-07-24","input":{"date":"2026-07-24","event_profile":"business_opening_transaction","requested_actions":["立券交易"]},"source_rule_ids":["XR-08","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"乙未","day_ganzhi":"己亥","lunar_month_day":"6-11","jianchu":"定","day_path":"明堂","mansion":"亢","yi_matches":[],"ji_matches":[],"universal_avoidance":false,"eligible":true,"active_event_facts":[]}}
+- {"id":"event-rule-business_opening_transaction-2026-08-13","input":{"date":"2026-08-13","event_profile":"business_opening_transaction","requested_actions":["立券交易"]},"source_rule_ids":["XR-08","DR-08"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"丙申","day_ganzhi":"己未","lunar_month_day":"7-1","jianchu":"闭","day_path":"玉堂","mansion":"井","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["event_specific_yiji","mucang_shengqi"]}}
+- {"id":"event-rule-medical-2026-01-02","input":{"date":"2026-01-02","event_profile":"medical","requested_actions":["求医疗病"]},"source_rule_ids":["XR-16","JR-11","JR-12"],"expected":{"year_ganzhi":"乙巳","month_ganzhi":"戊子","day_ganzhi":"丙子","lunar_month_day":"11-14","jianchu":"建","day_path":"金贵","mansion":"鬼","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["medical_caveat","renshen_location"]}}
+- {"id":"event-rule-medical-2026-02-09","input":{"date":"2026-02-09","event_profile":"medical","requested_actions":["求医疗病"]},"source_rule_ids":["XR-16","JR-11","JR-12"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"庚寅","day_ganzhi":"甲寅","lunar_month_day":"12-22","jianchu":"建","day_path":"天刑","mansion":"心","yi_matches":[],"ji_matches":["求医疗病"],"universal_avoidance":false,"eligible":false,"active_event_facts":["furi","medical_caveat","renshen_location","visit_sick_taboo_days"]}}
+- {"id":"event-rule-medical-2026-07-24","input":{"date":"2026-07-24","event_profile":"medical","requested_actions":["求医疗病"]},"source_rule_ids":["XR-16","JR-11","JR-12"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"乙未","day_ganzhi":"己亥","lunar_month_day":"6-11","jianchu":"定","day_path":"明堂","mansion":"亢","yi_matches":[],"ji_matches":[],"universal_avoidance":false,"eligible":true,"active_event_facts":["medical_caveat","renshen_location","sixiang"]}}
+- {"id":"event-rule-medical-2026-08-13","input":{"date":"2026-08-13","event_profile":"medical","requested_actions":["求医疗病"]},"source_rule_ids":["XR-16","JR-11","JR-12"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"丙申","day_ganzhi":"己未","lunar_month_day":"7-1","jianchu":"闭","day_path":"玉堂","mansion":"井","yi_matches":[],"ji_matches":[],"universal_avoidance":true,"eligible":false,"active_event_facts":["medical_caveat","renshen_location","tianyi"]}}
+- {"id":"event-rule-construction-direction-2026-07-24","input":{"date":"2026-07-24","event_profile":"construction_renovation","requested_scopes":["directional_judgment"],"directional_context":{"site_branch":"子"},"requested_actions":["搬移"]},"source_rule_ids":["XR-02","XR-03","KR-08","KR-09","KR-10"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"乙未","day_ganzhi":"己亥","lunar_month_day":"6-11","jianchu":"定","day_path":"明堂","mansion":"亢","yi_matches":["搬移"],"ji_matches":[],"universal_avoidance":false,"eligible":true,"active_event_facts":["annual_sansha","directional_hits","jinshen_qisha","monthly_sansha","sixiang_shide_shengqi_mucang","taisui_suipo","tuwang_yongshi","yuepo_yueyan_dahao"],"directional_hits":[{"code":"annual_sui_po","site_branch":"子","matched_branch":"子"},{"code":"annual_zai_sha","site_branch":"子","matched_branch":"子"},{"code":"annual_jinshen_qisha","site_branch":"子","matched_branch":"子"}]}}
+- {"id":"event-rule-folk-conflict-2026-02-09","input":{"date":"2026-02-09","event_profile":"generic_selection","include_folk_comparison":true},"source_rule_ids":["DR-08","DR-09","JR-20"],"expected":{"year_ganzhi":"丙午","month_ganzhi":"庚寅","day_ganzhi":"甲寅","lunar_month_day":"12-22","jianchu":"建","day_path":"天刑","mansion":"心","yi_matches":[],"ji_matches":[],"universal_avoidance":false,"eligible":true,"active_event_facts":["annual_gods","daily_shensha","general_bad_gods","general_good_gods","hourly_shensha","huanghei.day","huanghei.hours","jianchu","monthly_gods","twenty_eight_lodges"],"donggong_verdict":"avoid","folk_disagreement":true}}
+no_candidate_cases:
+- id: all-days-explicitly-excluded
+  input:
+    event_profile: generic_selection
+    date_range: {start: '2026-07-24', end: '2026-07-25'}
+    hard_constraints:
+      excluded_dates: ['2026-07-24', '2026-07-25']
+    timezone: Asia/Shanghai
+    location: 上海
+  expected: {no_valid_candidate: true, elimination_count: 2}

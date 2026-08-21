@@ -1,0 +1,85 @@
+{
+  "schema_version": "mingli-bazi-rule-registry-v1",
+  "registry_id": "bazi-core-v1",
+  "foundation": {
+    "day_master": [
+      {"pack": "bazi/yuanhai-ziping", "rule_id": "YR-01-03"}
+    ],
+    "month_command": [
+      {"pack": "bazi/yuanhai-ziping", "rule_id": "YR-01-04"},
+      {"pack": "bazi/ditiansui-chanwei", "rule_id": "DR-02-06"}
+    ],
+    "timing": [
+      {"pack": "bazi/yuanhai-ziping", "rule_id": "YR-03-01"},
+      {"pack": "bazi/yuanhai-ziping", "rule_id": "YR-03-02"},
+      {"pack": "fact-adapter/bazi", "rule_id": "calendar.sexagenary-year-v1"}
+    ]
+  },
+  "tiaohou_pack": "bazi/qiongtong-baojian",
+  "tiaohou_chapters": {
+    "甲": {"三春": "QR-01-01", "三夏": "QR-01-02", "三秋": "QR-01-03", "三冬": "QR-01-04"},
+    "乙": {"三春": "QR-01-05", "三夏": "QR-01-06", "三秋": "QR-01-07", "三冬": "QR-01-08"},
+    "丙": {"三春": "QR-02-01", "三夏": "QR-02-02", "三秋": "QR-02-03", "三冬": "QR-02-04"},
+    "丁": {"三春": "QR-02-05", "三夏": "QR-02-06", "三秋": "QR-02-07", "三冬": "QR-02-08"},
+    "戊": {"三春": "QR-03-01", "三夏": "QR-03-02", "三秋": "QR-03-03", "三冬": "QR-03-04"},
+    "己": {"三春": "QR-03-05", "三夏": "QR-03-06", "三秋": "QR-03-07", "三冬": "QR-03-08"},
+    "庚": {"三春": "QR-04-01", "三夏": "QR-04-02", "三秋": "QR-04-03", "三冬": "QR-04-04"},
+    "辛": {"三春": "QR-04-05", "三夏": "QR-04-06", "三秋": "QR-04-07", "三冬": "QR-04-08"},
+    "壬": {"三春": "QR-05-01", "三夏": "QR-05-02", "三秋": "QR-05-03", "三冬": "QR-05-04"},
+    "癸": {"三春": "QR-05-05", "三夏": "QR-05-06", "三秋": "QR-05-07", "三冬": "QR-05-08"}
+  },
+  "tiaohou_profiles": {
+    "QR-01-01": {"preferred_stems": ["丙", "庚", "丁", "甲", "壬", "癸"]},
+    "QR-01-02": {"preferred_stems": ["癸", "丁"]},
+    "QR-01-03": {"preferred_stems": ["丁", "庚", "癸"]},
+    "QR-01-04": {"preferred_stems": ["庚", "丁", "戊"]},
+    "QR-01-05": {"preferred_stems": ["丙", "癸"]},
+    "QR-01-06": {"preferred_stems": ["癸", "丙"]},
+    "QR-01-07": {"preferred_stems": ["丙", "癸"]},
+    "QR-01-08": {"preferred_stems": ["丙", "戊"]},
+    "QR-02-01": {"preferred_stems": ["壬", "庚"]},
+    "QR-02-02": {"preferred_stems": ["壬", "庚"]},
+    "QR-02-03": {"preferred_stems": ["甲", "壬"]},
+    "QR-02-04": {"preferred_stems": ["壬", "甲", "戊"]},
+    "QR-02-05": {"preferred_stems": ["庚", "甲"]},
+    "QR-02-06": {"preferred_stems": ["庚", "壬"]},
+    "QR-02-07": {"preferred_stems": ["甲", "庚"]},
+    "QR-02-08": {"preferred_stems": ["甲", "庚", "戊"]},
+    "QR-03-01": {"preferred_stems": ["丙", "甲", "癸"]},
+    "QR-03-02": {"preferred_stems": ["癸", "丙"]},
+    "QR-03-03": {"preferred_stems": ["丙", "癸", "甲"]},
+    "QR-03-04": {"preferred_stems": ["丙", "甲"]},
+    "QR-03-05": {"preferred_stems": ["丙", "癸", "甲"]},
+    "QR-03-06": {"preferred_stems": ["癸", "辛"]},
+    "QR-03-07": {"preferred_stems": ["丙", "癸", "辛"]},
+    "QR-03-08": {"preferred_stems": ["丙", "戊"]},
+    "QR-04-01": {"preferred_stems": ["丁", "甲"]},
+    "QR-04-02": {"preferred_stems": ["壬", "戊"]},
+    "QR-04-03": {"preferred_stems": ["丁", "甲"]},
+    "QR-04-04": {"preferred_stems": ["丁", "丙", "戊"]},
+    "QR-04-05": {"preferred_stems": ["己", "壬"]},
+    "QR-04-06": {"preferred_stems": ["壬", "己", "癸"]},
+    "QR-04-07": {"preferred_stems": ["壬", "戊", "甲"]},
+    "QR-04-08": {"preferred_stems": ["丙", "壬"]},
+    "QR-05-01": {"preferred_stems": ["辛", "戊"]},
+    "QR-05-02": {"preferred_stems": ["辛", "庚"]},
+    "QR-05-03": {"preferred_stems": ["戊", "丁"]},
+    "QR-05-04": {"preferred_stems": ["戊", "丙"]},
+    "QR-05-05": {"preferred_stems": ["辛", "丙"]},
+    "QR-05-06": {"preferred_stems": ["辛", "庚"]},
+    "QR-05-07": {"preferred_stems": ["辛", "丁"]},
+    "QR-05-08": {"preferred_stems": ["丙", "辛"]}
+  },
+  "season_groups": {
+    "三春": ["寅", "卯", "辰"],
+    "三夏": ["巳", "午", "未"],
+    "三秋": ["申", "酉", "戌"],
+    "三冬": ["亥", "子", "丑"]
+  },
+  "source_status": {
+    "yuanhai_ziping": "distilled_reference_pending_primary_text_verification",
+    "ditiansui_chanwei": "distilled_reference_pending_primary_text_verification",
+    "qiongtong_baojian": "electronic_text_structure_verified_edition_partial_rule_cards_unvalidated",
+    "calendar_adapter": "deterministic_local_implementation"
+  }
+}

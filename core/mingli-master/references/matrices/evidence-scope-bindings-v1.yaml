@@ -1,0 +1,1133 @@
+schema_version: mingli-evidence-scope-bindings-v1
+policy:
+  unlisted_rules: disabled
+  fact_layer_status_alone_forbidden: true
+  narrower_than_source_scope_is_allowed: true
+bindings:
+  bazi/ditiansui-chanwei#DR-01-01:
+    route: bazi
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /four_pillars
+    - operator: nonempty
+      path_suffix: /hidden_stems
+    evidence_role: methodology_rule
+  bazi/qiongtong-baojian#QTB-M01:
+    route: bazi
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /day_master/stem
+    - operator: nonempty
+      path_suffix: /month_command/branch
+    evidence_role: methodology_rule
+  bazi/sanming-tonghui#R-01-02:
+    route: bazi
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/day_master/element
+    evidence_role: methodology_rule
+  bazi/sanming-tonghui#R-02-04:
+    route: bazi
+    rationale: The calculated month-command element and day-master element authorize only the source's four-season state;
+      they do not authorize a whole-chart strong/weak, useful-god, fortune, or event verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/day_master/element
+    - operator: nonempty
+      path_suffix: /output/month_command/main_qi_element
+    evidence_role: issue_specific_judgment_rule
+  bazi/yuanhai-ziping#YR-M01:
+    route: bazi
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /calendar_normalization/ganzhi
+    - operator: nonempty
+      path_suffix: /day_master/stem
+    - operator: nonempty
+      path_suffix: /month_command/branch
+    evidence_role: methodology_rule
+  bazi/ziping-zhenquan#ZPR-01:
+    route: bazi
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/day_master/stem
+    - operator: nonempty
+      path_suffix: /output/month_command/branch
+    evidence_role: methodology_rule
+  divination/bushi-zhengzong#BSZZ-M01:
+    route: liuyao
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/casting/tosses
+    - operator: nonempty
+      path_suffix: /output/moving_lines
+    evidence_role: casting_rule
+  divination/huangji-jingshi#HR-04-01:
+    route: meihua
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/upper_trigram/name
+    - operator: nonempty
+      path_suffix: /output/lower_trigram/name
+    evidence_role: methodology_rule
+  divination/huangjin-ce#HJC-M001:
+    route: liuyao
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/moving_lines
+    - operator: nonempty
+      path_suffix: /output/changed_hexagram
+    evidence_role: methodology_rule
+  divination/huangjin-ce#HJC-R009:
+    route: liuyao
+    rationale: Explicit finance question class plus calculated wealth and child-line candidates authorize the source-bound
+      relative roles; Runtime may identify a sole visible wealth line by uniqueness, but must not rank multiple/non-visible
+      candidates or create strength, outcome, timing, or event verdicts.
+    predicates:
+    - operator: eq
+      path_suffix: /output/useful_spirit_selection/question_context/question_class
+      value: finance
+    - operator: nonempty
+      path_suffix: /output/useful_spirit_candidates/妻财
+    - operator: nonempty
+      path_suffix: /output/useful_spirit_candidates/子孙
+    evidence_role: issue_specific_judgment_rule
+  divination/huozhu-lin#HZL-M001:
+    route: liuyao
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/shi_ying
+    evidence_role: methodology_rule
+  divination/zengshan-buyi#ZR-04-04:
+    route: liuyao
+    rationale: The checked source authorizes selecting the moving useful-spirit line only when exactly two visible candidates
+      exist and exactly one of them moves. Same-motion candidates remain unresolved until the full strength composite exists;
+      this binding creates no strength, outcome, timing, or event verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /output/useful_spirit_selection/question_context/question_class
+      value: finance
+    - operator: eq
+      path_suffix: /output/useful_spirit_selection/role_adjudication/specific_line_adjudication/visible_candidate_count
+      value: 2
+    - operator: eq
+      path_suffix: /output/useful_spirit_selection/role_adjudication/specific_line_adjudication/moving_visible_candidate_count
+      value: 1
+    evidence_role: issue_specific_judgment_rule
+  divination/zengshan-buyi#ZR-05-05:
+    route: liuyao
+    rationale: The checked source authorizes only the candidate month-order strength band. Runtime must keep day influence,
+      emptiness, break, movement, transformations, outcome, and timing unresolved.
+    predicates:
+    - operator: eq
+      path_suffix: /output/useful_spirit_selection/strength_evidence/status
+      value: candidate_only
+    - operator: nonempty
+      path_suffix: /output/calendar/month_branch
+    evidence_role: methodology_rule
+  divination/meihua-yishu#MR-01-01:
+    route: meihua
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/totals
+    evidence_role: methodology_rule
+  divination/meihua-yishu#MR-01-02:
+    route: meihua
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /body_relation_facts
+  divination/meihua-yishu#MR-01-03:
+    route: meihua
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /upper_trigram/element
+    - operator: nonempty
+      path_suffix: /lower_trigram/element
+  divination/meihua-yishu#MR-01-04:
+    route: meihua
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /seasonal_strength
+  divination/meihua-yishu#MR-01-05:
+    route: meihua
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /seasonal_strength
+  divination/meihua-yishu#MR-02-03:
+    route: meihua
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /mutual_hexagram
+  divination/meihua-yishu#MR-04-01:
+    route: meihua
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /body_use
+  divination/meihua-yishu#MR-04-02:
+    route: meihua
+    rationale: Calculated body/use, mutual and changed relation rows plus seasonal state make the five source relation classes
+      applicable; relation polarity remains distinct from a question-level outcome or timing verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/body_relation_facts
+    - operator: nonempty
+      path_suffix: /output/seasonal_strength
+    evidence_role: issue_specific_judgment_rule
+  divination/meihua-yishu#MR-04-04:
+    route: meihua
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /mutual_hexagram
+    - operator: nonempty
+      path_suffix: /changed_hexagram
+  divination/meihua-yishu#MR-05-02:
+    route: meihua
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /seasonal_strength
+  divination/zengshan-buyi#ZR-02-01:
+    route: liuyao
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /najia
+  divination/zengshan-buyi#ZR-03-01:
+    route: liuyao
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /six_relatives
+  divination/zengshan-buyi#ZR-06-01:
+    route: liuyao
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /casting/tosses
+    - operator: nonempty
+      path_suffix: /moving_lines
+  divination/zengshan-buyi#ZR-F01:
+    route: liuyao
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /output/primary_hexagram/name
+      value: 兑为泽
+    - operator: eq
+      path_suffix: /output/changed_hexagram/name
+      value: 天水讼
+    - operator: eq
+      path_suffix: /output/moving_lines/0
+      value: 1
+    - operator: eq
+      path_suffix: /output/moving_lines/1
+      value: 6
+    evidence_role: casting_rule
+  divination/zhouyi-zhezhong#ZZR-M001:
+    route: meihua
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/primary_hexagram
+    evidence_role: methodology_rule
+  fengshui/hanlong-jing#R-01:
+    route: fengshui
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /output/form/accepted_observation_fact_keys
+      value: terrain|highland_plainland_classification
+    evidence_role: methodology_rule
+  fengshui/huangdi-zhaijing#HDZJ-R006:
+    route: fengshui
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /output/form/accepted_observation_fact_keys
+      value: water|observed_water
+    - operator: descendant_eq
+      path_suffix: /output/layout_graph/nodes
+      value: entrance
+    - operator: eq
+      path_suffix: /output/compass/status
+      value: resolved
+    evidence_role: methodology_rule
+  fengshui/xuexin-fu#XXF-R01:
+    route: fengshui
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /output/form/accepted_observation_fact_keys
+      value: water|water_mouth_and_hall_observed
+    evidence_role: methodology_rule
+  fengshui/yangzhai-sanyao#YZS-R005:
+    route: fengshui
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /output/liqi/status
+      value: calculated_selected_school_facts_not_verdict
+    - operator: eq
+      path_suffix: /output/liqi/selected_school
+      value: bazhai
+    - operator: in
+      path_suffix: /output/liqi/bazhai/origin_group
+      values:
+      - east_four
+      - west_four
+    - operator: nonempty
+      path_suffix: /output/liqi/bazhai/direction_star_map
+    evidence_role: methodology_rule
+  fengshui/yangzhai-shishu#YZS-R003:
+    route: fengshui
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /output/form/accepted_observation_fact_keys
+      value: road|axis_toward_entrance
+  fengshui/yangzhai-shishu#YZS-R014:
+    route: fengshui
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /output/form/accepted_observation_fact_keys
+      value: layout|observed_layout
+    - operator: descendant_eq
+      path_suffix: /output/layout_graph/nodes
+      value: entrance
+    - operator: descendant_eq
+      path_suffix: /output/layout_graph/nodes
+      value: door
+    - operator: descendant_eq
+      path_suffix: /output/layout_graph/nodes
+      value: room
+    - operator: descendant_eq
+      path_suffix: /output/layout_graph/edges
+      value: separating_wall_with_door
+    evidence_role: methodology_rule
+  fengshui/yilong-jing#R-05:
+    route: fengshui
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /output/form/accepted_observation_fact_keys
+      value: terrain|sheltered_open_hall
+    - operator: descendant_eq
+      path_suffix: /output/form/accepted_observation_fact_keys
+      value: water|water_boundary_and_wind_shelter_observed
+    evidence_role: methodology_rule
+  fengshui/zangshu#R-02:
+    route: fengshui
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /output/form/accepted_observation_fact_keys
+      value: water|water_boundary_and_wind_shelter_observed
+    evidence_role: methodology_rule
+  luming-nayin/lantai-miaoxuan#LT-M01:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/three_yuan_profiles
+    - operator: nonempty
+      path_suffix: /output/pillars
+    evidence_role: methodology_rule
+  luming-nayin/li-xuzhong-mingshu#LX-01-01:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 甲子
+  luming-nayin/li-xuzhong-mingshu#LX-01-02:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 乙丑
+  luming-nayin/li-xuzhong-mingshu#LX-01-03:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 丙寅
+  luming-nayin/li-xuzhong-mingshu#LX-01-04:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 丁卯
+  luming-nayin/li-xuzhong-mingshu#LX-01-05:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 戊辰
+  luming-nayin/li-xuzhong-mingshu#LX-01-06:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 己巳
+  luming-nayin/li-xuzhong-mingshu#LX-01-07:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 庚午
+  luming-nayin/li-xuzhong-mingshu#LX-01-08:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 辛未
+  luming-nayin/li-xuzhong-mingshu#LX-01-09:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 壬申
+  luming-nayin/li-xuzhong-mingshu#LX-01-10:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 癸酉
+  luming-nayin/li-xuzhong-mingshu#LX-01-11:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 甲戌
+  luming-nayin/li-xuzhong-mingshu#LX-01-12:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 乙亥
+  luming-nayin/li-xuzhong-mingshu#LX-01-13:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 丙子
+  luming-nayin/li-xuzhong-mingshu#LX-01-14:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 丁丑
+  luming-nayin/li-xuzhong-mingshu#LX-01-15:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 戊寅
+  luming-nayin/li-xuzhong-mingshu#LX-01-16:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 己卯
+  luming-nayin/li-xuzhong-mingshu#LX-01-17:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 庚辰
+  luming-nayin/li-xuzhong-mingshu#LX-01-18:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 辛巳
+  luming-nayin/li-xuzhong-mingshu#LX-01-19:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 壬午
+  luming-nayin/li-xuzhong-mingshu#LX-01-20:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 癸未
+  luming-nayin/li-xuzhong-mingshu#LX-01-21:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 甲申
+  luming-nayin/li-xuzhong-mingshu#LX-01-22:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 乙酉
+  luming-nayin/li-xuzhong-mingshu#LX-01-23:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 丙戌
+  luming-nayin/li-xuzhong-mingshu#LX-01-24:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 丁亥
+  luming-nayin/li-xuzhong-mingshu#LX-01-25:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 戊子
+  luming-nayin/li-xuzhong-mingshu#LX-01-26:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 己丑
+  luming-nayin/li-xuzhong-mingshu#LX-01-27:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 庚寅
+  luming-nayin/li-xuzhong-mingshu#LX-01-28:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 辛卯
+  luming-nayin/li-xuzhong-mingshu#LX-01-29:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 壬辰
+  luming-nayin/li-xuzhong-mingshu#LX-01-30:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 癸巳
+  luming-nayin/li-xuzhong-mingshu#LX-01-31:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 甲午
+  luming-nayin/li-xuzhong-mingshu#LX-01-32:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 乙未
+  luming-nayin/li-xuzhong-mingshu#LX-01-33:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 丙申
+  luming-nayin/li-xuzhong-mingshu#LX-01-34:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 丁酉
+  luming-nayin/li-xuzhong-mingshu#LX-01-35:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 戊戌
+  luming-nayin/li-xuzhong-mingshu#LX-01-36:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 己亥
+  luming-nayin/li-xuzhong-mingshu#LX-01-37:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 庚子
+  luming-nayin/li-xuzhong-mingshu#LX-01-38:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 辛丑
+  luming-nayin/li-xuzhong-mingshu#LX-01-39:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 壬寅
+  luming-nayin/li-xuzhong-mingshu#LX-01-40:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 癸卯
+  luming-nayin/li-xuzhong-mingshu#LX-01-41:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 甲辰
+  luming-nayin/li-xuzhong-mingshu#LX-01-42:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 乙巳
+  luming-nayin/li-xuzhong-mingshu#LX-01-43:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 丙午
+  luming-nayin/li-xuzhong-mingshu#LX-01-44:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 丁未
+  luming-nayin/li-xuzhong-mingshu#LX-01-45:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 戊申
+  luming-nayin/li-xuzhong-mingshu#LX-01-46:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 己酉
+  luming-nayin/li-xuzhong-mingshu#LX-01-47:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 庚戌
+  luming-nayin/li-xuzhong-mingshu#LX-01-48:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 辛亥
+  luming-nayin/li-xuzhong-mingshu#LX-01-49:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 壬子
+  luming-nayin/li-xuzhong-mingshu#LX-01-50:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 癸丑
+  luming-nayin/li-xuzhong-mingshu#LX-01-51:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 甲寅
+  luming-nayin/li-xuzhong-mingshu#LX-01-52:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 乙卯
+  luming-nayin/li-xuzhong-mingshu#LX-01-53:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 丙辰
+  luming-nayin/li-xuzhong-mingshu#LX-01-54:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 丁巳
+  luming-nayin/li-xuzhong-mingshu#LX-01-55:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 戊午
+  luming-nayin/li-xuzhong-mingshu#LX-01-56:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 己未
+  luming-nayin/li-xuzhong-mingshu#LX-01-57:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 庚申
+  luming-nayin/li-xuzhong-mingshu#LX-01-58:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 辛酉
+  luming-nayin/li-xuzhong-mingshu#LX-01-59:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 壬戌
+  luming-nayin/li-xuzhong-mingshu#LX-01-60:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /four_pillars/year
+      value: 癸亥
+  luming-nayin/luoluzi-sanming#LZ-01-01:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/pillars
+    - operator: nonempty
+      path_suffix: /output/three_yuan_profiles/luoluzi
+    evidence_role: methodology_rule
+  luming-nayin/wuxing-jingji#WX-01-01:
+    route: luming-nayin
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/pillars
+    - operator: nonempty
+      path_suffix: /output/nayin
+    evidence_role: methodology_rule
+  physiognomy/liuzhuang-xiangfa#LZ-R01:
+    route: physiognomy
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/accepted_observation_fact_keys
+  physiognomy/mayi-shenxiang#MR-02:
+    route: physiognomy
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /output/accepted_observation_fact_keys
+      value: visible_morphology|nose
+  physiognomy/shenxiang-quanbian#SR-02-04:
+    route: physiognomy
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /output/accepted_observation_fact_keys
+      value: visible_morphology|forehead
+  san-shi/liuren-miben#LM-R01:
+    route: liuren
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: same_record_fields
+      path_suffix: /general_landing_correspondences
+      value:
+        role: imagery_correspondence_not_observed_activity
+        source_pack: san-shi/liuren-miben
+        source_rule: LM-R01
+        status: source_correspondence_matched
+    replaces_dimension_rule_id_predicate: true
+  san-shi/liuren-zhiyin#LR-15:
+    route: liuren
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /source_rule_ids
+      value: LR-15
+  selection/xingli-kaoyuan#KR-05:
+    route: selection
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /calendar/ganzhi/year
+    - operator: nonempty
+      path_suffix: /calendar/ganzhi/month
+    - operator: nonempty
+      path_suffix: /calendar/ganzhi/day
+    - operator: nonempty
+      path_suffix: /calendar/ganzhi/hour
+    evidence_role: methodology_rule
+  xingming/guotian-jing#GR-01-01:
+    route: xingming
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /calendar_normalization/ganzhi/year
+    - operator: nonempty
+      path_suffix: /calendar_normalization/ganzhi/month
+    - operator: nonempty
+      path_suffix: /calendar_normalization/ganzhi/day
+    - operator: nonempty
+      path_suffix: /calendar_normalization/ganzhi/hour
+    evidence_role: methodology_rule
+  xingming/guotian-jing#GR-01-02:
+    route: xingming
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /houses
+  xingming/guotian-jing#GR-01-05:
+    route: xingming
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /ming_shen
+  xingming/guotian-jing#GR-01-06:
+    route: xingming
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /major_limits
+  xingming/xingming-suyuan#XR-M01:
+    route: xingming
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /output/ming_shen
+    evidence_role: methodology_rule
+  xingming/xingxue-dacheng#XXDC-M01:
+    route: xingming
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: eq
+      path_suffix: /output/houses/0/name
+      value: 命宫
+    - operator: eq
+      path_suffix: /output/houses/1/name
+      value: 财帛
+    - operator: eq
+      path_suffix: /output/houses/2/name
+      value: 兄弟
+    - operator: eq
+      path_suffix: /output/houses/3/name
+      value: 田宅
+    - operator: eq
+      path_suffix: /output/houses/4/name
+      value: 男女
+    - operator: eq
+      path_suffix: /output/houses/5/name
+      value: 奴仆
+    - operator: eq
+      path_suffix: /output/houses/6/name
+      value: 妻妾
+    - operator: eq
+      path_suffix: /output/houses/7/name
+      value: 疾厄
+    - operator: eq
+      path_suffix: /output/houses/8/name
+      value: 迁移
+    - operator: eq
+      path_suffix: /output/houses/9/name
+      value: 官禄
+    - operator: eq
+      path_suffix: /output/houses/10/name
+      value: 福德
+    - operator: eq
+      path_suffix: /output/houses/11/name
+      value: 相貌
+    evidence_role: methodology_rule
+  ziwei/taiwei-fu#TR-01:
+    route: ziwei
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /output/palaces
+      value: 命宫
+    evidence_role: methodology_rule
+  ziwei/ziwei-doushu-quanshu#ZW-01-01:
+    route: ziwei
+    rationale: 原文「紫微为帝座尊星，入命主聪明端正、仪表魁梧、有领导力」，取主条件「紫微入命」，即紫微坐命宫。
+    predicates:
+    - operator: same_record_fields
+      path_suffix: /output/star_facts
+      value: {name: 紫微, palace: 命宫}
+  ziwei/ziwei-doushu-quanshu#ZW-01-02:
+    route: ziwei
+    rationale: 原文「天机为兄弟主星，入命主智慧善变、宜动宜谋」，取主条件「天机入命」，即天机坐命宫。
+    predicates:
+    - operator: same_record_fields
+      path_suffix: /output/star_facts
+      value: {name: 天机, palace: 命宫}
+  ziwei/ziwei-doushu-quanshu#ZW-01-03:
+    route: ziwei
+    rationale: 原文「太阳庙旺（寅卯辰巳午）入命主贵气光明、为父星夫星；落陷（戌亥子）入命主辛劳」，取共有主条件「太阳入命」，即太阳坐命宫。
+    predicates:
+    - operator: same_record_fields
+      path_suffix: /output/star_facts
+      value: {name: 太阳, palace: 命宫}
+  ziwei/ziwei-doushu-quanshu#ZW-01-04:
+    route: ziwei
+    rationale: 原文「武曲为财帛主，入命主刚毅决断、宜从事财金武职」，取主条件「武曲入命」，即武曲坐命宫。
+    predicates:
+    - operator: same_record_fields
+      path_suffix: /output/star_facts
+      value: {name: 武曲, palace: 命宫}
+  ziwei/ziwei-doushu-quanshu#ZW-01-05:
+    route: ziwei
+    rationale: 原文「天同为福德主星，入命主温和敦厚、福寿绵长」，取主条件「天同入命」，即天同坐命宫。
+    predicates:
+    - operator: same_record_fields
+      path_suffix: /output/star_facts
+      value: {name: 天同, palace: 命宫}
+  ziwei/ziwei-doushu-quanshu#ZW-01-06:
+    route: ziwei
+    rationale: 原文「廉贞为官禄囚星，入命主邪正双面」，取主条件「廉贞入命」，即廉贞坐命宫。
+    predicates:
+    - operator: same_record_fields
+      path_suffix: /output/star_facts
+      value: {name: 廉贞, palace: 命宫}
+  ziwei/ziwei-doushu-quanshu#ZW-01-07:
+    route: ziwei
+    rationale: 原文「天府为南斗财库主星，入命主慷慨稳重、财禄宽裕」，取主条件「天府入命」，即天府坐命宫。
+    predicates:
+    - operator: same_record_fields
+      path_suffix: /output/star_facts
+      value: {name: 天府, palace: 命宫}
+  ziwei/ziwei-doushu-quanshu#ZW-01-08:
+    route: ziwei
+    rationale: 原文「太阴庙旺（亥子丑酉）入命主富裕清秀、为母星妻星；落陷（巳午）入命主劳碌」，取共有主条件「太阴入命」，即太阴坐命宫。
+    predicates:
+    - operator: same_record_fields
+      path_suffix: /output/star_facts
+      value: {name: 太阴, palace: 命宫}
+  ziwei/ziwei-doushu-quanshu#ZW-01-09:
+    route: ziwei
+    rationale: 原文「贪狼为桃花主星，入命主多欲多变、社交广泛」，取主条件「贪狼入命」，即贪狼坐命宫。
+    predicates:
+    - operator: same_record_fields
+      path_suffix: /output/star_facts
+      value: {name: 贪狼, palace: 命宫}
+  ziwei/ziwei-doushu-quanshu#ZW-01-10:
+    route: ziwei
+    rationale: 原文「巨门为是非暗星，入命主口舌是非疑虑多」，取主条件「巨门入命」，即巨门坐命宫。
+    predicates:
+    - operator: same_record_fields
+      path_suffix: /output/star_facts
+      value: {name: 巨门, palace: 命宫}
+  ziwei/ziwei-doushu-quanshu#ZW-04-01:
+    route: ziwei
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /palaces
+      value: 命宫
+  ziwei/ziwei-doushu-quanshu#ZW-06-01:
+    route: ziwei
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: nonempty
+      path_suffix: /major_limits
+  ziwei/ziwei-doushu-quanshu#ZW-M01:
+    route: ziwei
+    rationale: Recovered from the checked V53 applicability contract; preserve exact calculated-fact scope and do not create
+      a verdict.
+    predicates:
+    - operator: descendant_eq
+      path_suffix: /output/palaces
+      value: 命宫
+    - operator: descendant_eq
+      path_suffix: /output/palaces
+      value: 父母
+    evidence_role: methodology_rule

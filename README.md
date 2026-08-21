@@ -38,6 +38,7 @@ backend/worker/         独立异步任务进程
 backend/alembic/        PostgreSQL 迁移历史
 contracts/openapi/      同源 API 合同
 contracts/schemas/      共享 JSON Schema 与 ViewModel 合同
+core/mingli-master/     从 mingli-master-skill 移植的算法源码
 infra/                  本地容器、Nginx 与运行手册
 tests/contract/         跨模块与权威文档合同测试
 docs/releases/evidence/ 机器、浏览器和发布证据

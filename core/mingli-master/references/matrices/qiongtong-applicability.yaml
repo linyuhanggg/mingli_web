@@ -1,0 +1,207 @@
+# Qiongtong Baojian applicability matrix.
+#
+# Purpose: hard applicability filter for the near-time / formal fortune pipeline.
+# The 穷通宝鉴 organizes tiaohou (climate) rules by day-master stem × solar-term
+# month group. Chapters that do not match the natal day-master AND month command
+# are ineligible regardless of BM25 semantic score.
+#
+# Accuracy note: chapter IDs use the canonical 三春/三夏/三秋/三冬 season labels.
+# When a natal chart is under 己土日主 in 戌月, the only applicable Qiongtong
+# chapter is 三秋己土 (with the 岁运合参 timing rule from 滴天髓阐微). 三春甲木
+# and 七月丙火 are ineligible.
+#
+# The month_group value maps 12 branches to 4 seasons per the classical layout:
+#   三春 = 寅卯辰
+#   三夏 = 巳午未
+#   三秋 = 申酉戌
+#   三冬 = 亥子丑
+
+schema_version: qiongtong-applicability-v1
+source: 穷通宝鉴 (Qiongtong Baojian)
+generated_at: "2026-07-11"
+verification:
+  status: electronic_text_structure_verified_edition_partial
+  verified_at: "2026-07-13"
+  source_anchor: "https://zh.wikisource.org/wiki/%E7%A9%B7%E9%80%9A%E5%AE%9D%E9%89%B4"
+  local_fulltext: references/fulltext/bazi/qiongtong-baojian/fulltext.md
+  local_fulltext_sha256: fce5e9215be146435c533b15647849c03321577128e6fb7ac19258dc8b55cbaf
+  scope: all 40 day-stem-by-season headings are present and bind one-to-one to bazi-rules-v1 rule IDs
+  limit: Wikisource arrangement has not been collated line by line against a Qing printed edition
+
+month_groups:
+  三春: [寅, 卯, 辰]
+  三夏: [巳, 午, 未]
+  三秋: [申, 酉, 戌]
+  三冬: [亥, 子, 丑]
+
+chapters:
+  # 甲乙木
+  - id: qiongtong-jiawood-spring
+    day_master: 甲
+    month_group: 三春
+    heading: 三春甲木
+  - id: qiongtong-jiawood-summer
+    day_master: 甲
+    month_group: 三夏
+    heading: 三夏甲木
+  - id: qiongtong-jiawood-autumn
+    day_master: 甲
+    month_group: 三秋
+    heading: 三秋甲木
+  - id: qiongtong-jiawood-winter
+    day_master: 甲
+    month_group: 三冬
+    heading: 三冬甲木
+  - id: qiongtong-yiwood-spring
+    day_master: 乙
+    month_group: 三春
+    heading: 三春乙木
+  - id: qiongtong-yiwood-summer
+    day_master: 乙
+    month_group: 三夏
+    heading: 三夏乙木
+  - id: qiongtong-yiwood-autumn
+    day_master: 乙
+    month_group: 三秋
+    heading: 三秋乙木
+  - id: qiongtong-yiwood-winter
+    day_master: 乙
+    month_group: 三冬
+    heading: 三冬乙木
+  # 丙丁火
+  - id: qiongtong-bingfire-spring
+    day_master: 丙
+    month_group: 三春
+    heading: 三春丙火
+  - id: qiongtong-bingfire-summer
+    day_master: 丙
+    month_group: 三夏
+    heading: 三夏丙火
+  - id: qiongtong-bingfire-autumn
+    day_master: 丙
+    month_group: 三秋
+    heading: 三秋丙火
+  - id: qiongtong-bingfire-winter
+    day_master: 丙
+    month_group: 三冬
+    heading: 三冬丙火
+  - id: qiongtong-dingfire-spring
+    day_master: 丁
+    month_group: 三春
+    heading: 三春丁火
+  - id: qiongtong-dingfire-summer
+    day_master: 丁
+    month_group: 三夏
+    heading: 三夏丁火
+  - id: qiongtong-dingfire-autumn
+    day_master: 丁
+    month_group: 三秋
+    heading: 三秋丁火
+  - id: qiongtong-dingfire-winter
+    day_master: 丁
+    month_group: 三冬
+    heading: 三冬丁火
+  # 戊己土
+  - id: qiongtong-wuearth-spring
+    day_master: 戊
+    month_group: 三春
+    heading: 三春戊土
+  - id: qiongtong-wuearth-summer
+    day_master: 戊
+    month_group: 三夏
+    heading: 三夏戊土
+  - id: qiongtong-wuearth-autumn
+    day_master: 戊
+    month_group: 三秋
+    heading: 三秋戊土
+  - id: qiongtong-wuearth-winter
+    day_master: 戊
+    month_group: 三冬
+    heading: 三冬戊土
+  - id: qiongtong-jiearth-spring
+    day_master: 己
+    month_group: 三春
+    heading: 三春己土
+  - id: qiongtong-jiearth-summer
+    day_master: 己
+    month_group: 三夏
+    heading: 三夏己土
+  - id: qiongtong-jiearth-autumn
+    day_master: 己
+    month_group: 三秋
+    heading: 三秋己土
+  - id: qiongtong-jiearth-winter
+    day_master: 己
+    month_group: 三冬
+    heading: 三冬己土
+  # 庚辛金
+  - id: qiongtong-genmetal-spring
+    day_master: 庚
+    month_group: 三春
+    heading: 三春庚金
+  - id: qiongtong-genmetal-summer
+    day_master: 庚
+    month_group: 三夏
+    heading: 三夏庚金
+  - id: qiongtong-genmetal-autumn
+    day_master: 庚
+    month_group: 三秋
+    heading: 三秋庚金
+  - id: qiongtong-genmetal-winter
+    day_master: 庚
+    month_group: 三冬
+    heading: 三冬庚金
+  - id: qiongtong-xinmetal-spring
+    day_master: 辛
+    month_group: 三春
+    heading: 三春辛金
+  - id: qiongtong-xinmetal-summer
+    day_master: 辛
+    month_group: 三夏
+    heading: 三夏辛金
+  - id: qiongtong-xinmetal-autumn
+    day_master: 辛
+    month_group: 三秋
+    heading: 三秋辛金
+  - id: qiongtong-xinmetal-winter
+    day_master: 辛
+    month_group: 三冬
+    heading: 三冬辛金
+  # 壬癸水
+  - id: qiongtong-renwater-spring
+    day_master: 壬
+    month_group: 三春
+    heading: 三春壬水
+  - id: qiongtong-renwater-summer
+    day_master: 壬
+    month_group: 三夏
+    heading: 三夏壬水
+  - id: qiongtong-renwater-autumn
+    day_master: 壬
+    month_group: 三秋
+    heading: 三秋壬水
+  - id: qiongtong-renwater-winter
+    day_master: 壬
+    month_group: 三冬
+    heading: 三冬壬水
+  - id: qiongtong-guiwater-spring
+    day_master: 癸
+    month_group: 三春
+    heading: 三春癸水
+  - id: qiongtong-guiwater-summer
+    day_master: 癸
+    month_group: 三夏
+    heading: 三夏癸水
+  - id: qiongtong-guiwater-autumn
+    day_master: 癸
+    month_group: 三秋
+    heading: 三秋癸水
+  - id: qiongtong-guiwater-winter
+    day_master: 癸
+    month_group: 三冬
+    heading: 三冬癸水
+
+exclusions:
+  # High-risk topics that must NOT be surfaced by BM25 unless the user explicitly asks.
+  - longevity_and_death_rules
+  - hidden_wealth_predictions_by_year

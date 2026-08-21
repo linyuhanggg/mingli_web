@@ -1,0 +1,182 @@
+schema_version: mingli-liuren-source-tables-v1
+profile_id: daliuren-daquan-wyg-dimension-evidence-v1
+version: 1.0.0
+purpose: >-
+  Release-tracked identities for deterministic Liuren dimension projections and
+  evidence-role separation. The table contains no event verdicts and does not
+  replace the cited normalized primary sources.
+
+source_profiles:
+  daliuren_daquan:
+    title: 大六壬大全
+    normalized_path: references/fulltext/san-shi/daliuren-daquan/fulltext.md
+    sha256: 4c5ec0c8ea1f7b36deaf1db317cfa4407b090ad4ed909a3b8a431dced0a25d9d
+    anchors:
+      casting_methods: L36-L70 and L6876-L7904
+      dimension_relations: L4064-L4102 and L6914
+  liuren_miben:
+    title: 大六壬秘本
+    normalized_path: references/fulltext/san-shi/liuren-miben/fulltext.md
+    sha256: 44ea31ef43f874ffc9da03c6ed6c01eee62081db6c2faf11593ec9bbe47847e0
+    anchors:
+      month_general_cycle: L3529-L3539
+      branch_directions: L555-L577
+      general_landing_imagery: L600-L771
+      timing: L3070-L3076
+      money: L4917-L4919
+  liuren_zhiyin:
+    title: 六壬指南及注解
+    normalized_path: references/fulltext/san-shi/liuren-zhiyin/fulltext.md
+    sha256: 2298b2270daf8f8e413f9d6c768e84830a225f93779a2ebbd90e8c905885c8bc
+    anchors:
+      subject_object: L557-L558
+      transmission_relations: L777
+
+month_general_solar_term_mapping:
+  source_profile: liuren_miben
+  source_anchor: L3529-L3539
+  source_excerpt_sha256: e9af6436dbcaa6cd7c340f06a5ba18a97a43374650a23b59fc5d903df57fa3f9
+  source_transitions:
+    雨水: 雨水前日卯初刻，太陽入衛用登明亥。
+    春分: 春分後二巳一刻，入魯河魁作將明戌。
+    谷雨: 穀雨後四亥初刻，入趙從魁用可稱酉。
+    小满: 小滿後五酉三刻，入晉還須傳送興申。
+    夏至: 夏至後四未一刻，入秦小吉用其名未。
+    大暑: 大暑後三巳一亥，入周先用勝光靈午。
+    处暑: 處暑後三巳二刻，入楚還當太乙迎巳。
+    秋分: 秋分後七寅三刻，入鄭天罡用去亨辰。
+    霜降: 霜降後九醜三刻，太衝運動宋州城卯。
+    小雪: 小雪後七戌一刻，功曹將領入燕京寅。
+    冬至: 冬至後四刻一刻，入吳大吉便休停醜。
+    大寒: 大寒當日酉三刻，入齊神後歲功成子。
+  terms:
+    雨水: 亥
+    惊蛰: 亥
+    春分: 戌
+    清明: 戌
+    谷雨: 酉
+    立夏: 酉
+    小满: 申
+    芒种: 申
+    夏至: 未
+    小暑: 未
+    大暑: 午
+    立秋: 午
+    处暑: 巳
+    白露: 巳
+    秋分: 辰
+    寒露: 辰
+    霜降: 卯
+    立冬: 卯
+    小雪: 寅
+    大雪: 寅
+    冬至: 丑
+    小寒: 丑
+    大寒: 子
+    立春: 子
+
+structured_excerpt_indexes:
+  general_landing_imagery:
+    path: scripts/data/liuren-miben-general-imagery.json
+    schema_version: liuren-miben-general-imagery-v1
+    sha256: da5cead70490e0769cb60ed44de07e8b106960d964f8616a7ad384380f13d996
+    allowed_fields: [source_text, source_anchor]
+    excluded_runtime_fields: [base_activity, activity_candidates]
+    exact_pair_count: 141
+    missing_exact_pairs: [天空/酉, 天空/戌, 天空/亥]
+    missing_policy: emit_no_exact_source_correspondence_without_fallback
+
+method_label_variants:
+  - input: {day: 乙卯, hour_branch: 寅, month_general: 子}
+    source_label: 比用
+    calculated_label: 涉害
+    transmissions: 亥酉未
+    source_anchor: daliuren-daquan L7190
+    resolution: calculated_transmissions_unchanged
+    note: the source witness names the same 亥酉未 result 比用 inside its 涉害 discussion
+
+complete_source_plate_ids:
+  - daquan-L6876
+  - daquan-L6932
+  - daquan-L6954
+  - daquan-L7000
+  - daquan-L7082
+  - daquan-L7114
+  - daquan-L7140
+  - daquan-L7166
+  - daquan-L7190
+  - daquan-L7272
+  - daquan-L7298
+  - daquan-L7414
+  - daquan-L7440
+  - daquan-L7518
+  - daquan-L7560
+  - daquan-L7584
+  - daquan-L7608
+  - daquan-L7700
+  - daquan-L7726
+  - daquan-L7752
+  - daquan-L7778
+  - daquan-L7878
+  - daquan-L7904
+
+branch_directions:
+  子: {direction: north, chinese: 正北, source_anchor: liuren-miben L555}
+  丑: {direction: northeast, chinese: 东北, source_anchor: liuren-miben L557}
+  寅: {direction: northeast, chinese: 东北, source_anchor: liuren-miben L559}
+  卯: {direction: east, chinese: 正东, source_anchor: liuren-miben L561}
+  辰: {direction: southeast, chinese: 东南, source_anchor: liuren-miben L563}
+  巳: {direction: southeast, chinese: 东南, source_anchor: liuren-miben L565}
+  午: {direction: south, chinese: 正南, source_anchor: liuren-miben L567}
+  未: {direction: southwest, chinese: 西南, source_anchor: liuren-miben L569}
+  申: {direction: southwest, chinese: 西南, source_anchor: liuren-miben L571}
+  酉: {direction: west, chinese: 正西, source_anchor: liuren-miben L573}
+  戌: {direction: northwest, chinese: 西北, source_anchor: liuren-miben L575}
+  亥: {direction: northwest, chinese: 西北, source_anchor: liuren-miben L577}
+
+dimension_profiles:
+  outcome:
+    aliases: [outcome]
+    eligible_rule_ids: [LR-17, LR-18, DLR-17]
+    deterministic_outputs: [subject_object_relation, transmissions_to_day, initial_final_relation, stage_flow]
+  timing:
+    aliases: [timing]
+    eligible_rule_ids: [DLR-16, LM-R13, LM-R21, LR-16]
+    deterministic_outputs: [relative_speed, candidate_branch, candidate_date]
+  state:
+    aliases: [state, current_state]
+    eligible_rule_ids: [LM-R01, LM-R06, LR-09]
+    deterministic_outputs: [stage_status, general_landing_correspondences]
+  location:
+    aliases: [location, location_direction]
+    eligible_rule_ids: []
+    deterministic_outputs: [stage_branch_directions]
+  relationship:
+    aliases: [relationship]
+    eligible_rule_ids: [LM-R06, LM-R09, LR-17, LR-19]
+    deterministic_outputs: [six_relative_stages, subject_object_relation, stage_flow]
+  work:
+    aliases: [work, career]
+    eligible_rule_ids: [LM-R09, LM-R15, LM-R22, LR-19]
+    deterministic_outputs: [six_relative_stages, stage_status, subject_object_relation, target_relative, target_contract_status, target_presence, target_strength, target_general_modifier]
+  money:
+    aliases: [money]
+    eligible_rule_ids: [LM-R20]
+    deterministic_outputs: [wealth_presence, wealth_stage_strength, wealth_void_status, wealth_general_modifier]
+
+evidence_roles:
+  san-shi/daliuren-daquan:
+    casting_rule: [DLR-00, DLR-01, DLR-02, DLR-03, DLR-04, DLR-05, DLR-06, DLR-07, DLR-08, DLR-09, DLR-10, DLR-11, DLR-15]
+    imagery_correspondence: [DLR-13, DLR-14]
+    issue_specific_judgment_rule: [DLR-12, DLR-17, DLR-18]
+    timing_rule: [DLR-16]
+  san-shi/liuren-miben:
+    casting_rule: [LM-R00, LM-R05, LM-R19]
+    imagery_correspondence: [LM-R01, LM-R02, LM-R03, LM-R04, LM-R08, LM-R16]
+    issue_specific_judgment_rule: [LM-R06, LM-R07, LM-R09, LM-R10, LM-R11, LM-R12, LM-R14, LM-R15, LM-R17, LM-R18, LM-R20, LM-R22]
+    timing_rule: [LM-R13, LM-R21]
+  san-shi/liuren-zhiyin:
+    casting_rule: [LR-00, LR-01, LR-02, LR-03, LR-04, LR-05, LR-06, LR-07, LR-08, LR-14]
+    imagery_correspondence: [LR-09, LR-10, LR-12]
+    issue_specific_judgment_rule: [LR-11, LR-13, LR-15, LR-17, LR-18, LR-19]
+    timing_rule: [LR-16]

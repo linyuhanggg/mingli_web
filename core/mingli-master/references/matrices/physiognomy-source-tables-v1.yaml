@@ -1,0 +1,353 @@
+schema_version: mingli-physiognomy-source-tables-v1
+profile_id: visible-observation-source-layering-v1
+
+research_source_policy:
+  research_source_root: external
+  release_contains_normalized_fulltext: false
+  release_contains_hash_pinned_provenance: true
+
+algorithm_sample_contract:
+  path: references/fixtures/algorithm-source-samples-v51.yaml
+  sha256: c6ef93164eea96ac185a5bc0d1382ee9689423d96dd0ede1ade4e9b6728af072
+  bindings:
+    physiognomy-region-quality: {fixture_section: boundary_cases, fixture_case_id: low-light-required-target}
+    physiognomy-no-invisible-feature: {fixture_section: boundary_cases, fixture_case_id: hidden-right-ear-from-left-profile}
+    physiognomy-user-correction: {fixture_section: boundary_cases, fixture_case_id: correction-to-not-visible}
+
+source_profiles:
+  liuzhuang_xiangfa:
+    pack: physiognomy/liuzhuang-xiangfa
+    title: 柳庄相法
+    source_layer: primary_liuzhuang_lineage
+    evidence_role: methodology_and_terminology_only
+    edition_caveat: CTP 连续行表尚未与影印本逐字校对，原卷册结构可能不同
+    normalized_path: references/fulltext/physiognomy/liuzhuang-xiangfa/fulltext.md
+    normalized_sha256: 04459fbe4f5d48e0810a8f0290c6f8f851754db02a2344fc109380aee6059af8
+    release_rules_path: references/books/physiognomy/liuzhuang-xiangfa/rules.md
+    release_rules_sha256: 124ba7938f6ec9435f8370b1576b7598d75b37c854a1f61fdeeb4736a3bbc84f
+    anchor: L25-L26 不可单点硬断；L30、L37-L38 动察与变化；L65-L70 五官术语
+    exact_excerpt: 不可以美而言好，莫以恶而言害，其中还有异处，不可定一理而推
+    applicability: anti-single-feature inference, observation revision, and source disagreement retention
+    verdict_prohibited: true
+  shenxiang_quanbian:
+    pack: physiognomy/shenxiang-quanbian
+    title: 神相全编
+    source_layer: side_evidence_classical_compilation
+    evidence_role: terminology_and_changeability_only
+    edition_caveat: 古今图书集成辑录本，不是独立十二卷刊本
+    normalized_path: references/fulltext/physiognomy/shenxiang-quanbian/fulltext.md
+    normalized_sha256: 984eac109baef32a234be23f0612b604d65cd08d26c4f5e00411e61d9e638865
+    release_rules_path: references/books/physiognomy/shenxiang-quanbian/rules.md
+    release_rules_sha256: bfcc17714b606749e120d3824b000c6e483ef94bc09cfbad10885990e39a378f
+    anchor: L262-L268 气色变化；L435-L474 十三部位；L838-L855 五官；L1060-L1074 六府三才三停
+    exact_excerpt: 十三部位總要之圖
+    applicability: visible-region vocabulary, capture-dependent complexion changeability, and compilation boundaries
+    verdict_prohibited: true
+  mayi_shenxiang:
+    pack: physiognomy/mayi-shenxiang
+    title: 麻衣神相
+    source_layer: mixed_web_transcription
+    evidence_role: terminology_and_edition_boundary_only
+    edition_caveat: MY-002 至 MY-011 为古籍转写层；MY-001、MY-012 至 MY-014 为现代附益层并排除
+    normalized_path: references/fulltext/physiognomy/mayi-shenxiang/fulltext.md
+    normalized_sha256: c9b02fe305c963d1e22ba694daf600297d9e4d8c3adad8bfaa7316f9471e8bc2
+    release_rules_path: references/books/physiognomy/mayi-shenxiang/rules.md
+    release_rules_sha256: 7fa99227101fd04e5237085e3275e6d666cde096b85398dc76401b982e19e6a1
+    anchor: L48 起十三部位；L112 十二宫；L251 起五官；现代附益层隔离
+    exact_excerpt: 十二宮
+    applicability: cross-source region vocabulary and edition-layer boundaries only
+    verdict_prohibited: true
+
+observation_contract:
+  schema_version: mingli-physiognomy-input-v1
+  observation_scope: face
+  subject_side_definition: left and right always mean the photographed subject's anatomical side
+  accepted_source_types: [image_transcription, user_text, user_file, user_correction]
+  allowed_caller_operation: visible_transcription_only
+  provider_performed_vision: false
+  forbidden_provider_operations: [vision, image_decode, image_fetch, biometric_matching, identity_resolution]
+  forbidden_all_actor_inferences:
+    - health
+    - diagnosis
+    - disease
+    - disability
+    - race
+    - ethnicity
+    - nationality
+    - religion
+    - sex
+    - gender
+    - gender_identity
+    - sexual_orientation
+    - identity
+    - age
+    - character
+    - personality
+    - temperament
+    - emotion
+    - attractiveness
+    - wealth
+    - lifespan
+    - criminality
+    - protected_attribute
+  forbidden_raw_media_fields:
+    - raw_image
+    - raw_image_base64
+    - image_bytes
+    - image_url
+    - file_path
+    - exif
+    - face_embedding
+    - biometric_template
+  taxonomies: [anatomical_face_v1]
+  allowed_regions:
+    - forehead
+    - left_eyebrow
+    - right_eyebrow
+    - left_eye
+    - right_eye
+    - nose
+    - mouth
+    - chin
+    - jawline
+    - left_ear
+    - right_ear
+    - left_cheek
+    - right_cheek
+    - complexion
+  allowed_feature_kinds: [visible_morphology, capture_color]
+  source_type_provenance_schema:
+    image_transcription: image
+    user_text: text
+    user_file: text
+    user_correction: same_as_superseded_observation
+  descriptors:
+    visible_morphology:
+      forehead: [region_visible, relative_width_broad, relative_width_narrow, contour_rounded, contour_flat]
+      left_eyebrow: &eyebrow_descriptors [region_visible, line_straight, line_curved, density_even, density_sparse_visible]
+      right_eyebrow: *eyebrow_descriptors
+      left_eye: &eye_descriptors [region_visible, aperture_open, aperture_narrow, alignment_level]
+      right_eye: *eye_descriptors
+      nose: [region_visible, bridge_straight, tip_rounded, relative_width_broad, relative_width_narrow]
+      mouth: [region_visible, lip_line_straight, lip_line_curved, mouth_closed, mouth_open]
+      chin: [region_visible, contour_rounded, contour_square, contour_pointed]
+      jawline: [region_visible, outline_rounded, outline_angular]
+      left_ear: &ear_descriptors [region_visible, outline_visible, partially_visible]
+      right_ear: *ear_descriptors
+      left_cheek: &cheek_descriptors [region_visible, contour_full_relative, contour_flat_relative]
+      right_cheek: *cheek_descriptors
+      complexion: [region_visible]
+    capture_color:
+      complexion: [tone_even_visible, tone_nonuniform_visible, color_observation_only]
+  capture_color_regions: [complexion]
+  allowed_scopes: [face, palm, posture, combined]
+  mode_profiles:
+    palm:
+      taxonomies: [anatomical_palm_v1]
+      allowed_regions: [left_palm, right_palm, life_line, head_line, heart_line, fate_line]
+      allowed_feature_kinds: [visible_morphology]
+      capture_color_regions: []
+      source_profiles: [mayi_shenxiang, shenxiang_quanbian]
+      active_source_rule_ids:
+        - physiognomy/mayi-shenxiang#MR-01
+        - physiognomy/mayi-shenxiang#MR-02
+        - physiognomy/shenxiang-quanbian#SR-02-04
+      descriptors:
+        visible_morphology:
+          left_palm: &palm_descriptors [region_visible, ridge_visible, texture_even_visible]
+          right_palm: *palm_descriptors
+          life_line: &palm_line_descriptors [region_visible, line_continuous, line_discontinuous, line_deep_visible, line_shallow_visible]
+          head_line: *palm_line_descriptors
+          heart_line: *palm_line_descriptors
+          fate_line: *palm_line_descriptors
+    posture:
+      taxonomies: [posture_observation_v1]
+      allowed_regions: [head_posture, shoulder_line, spine_curve, walking_gait, sitting_posture]
+      allowed_feature_kinds: [visible_morphology]
+      capture_color_regions: []
+      source_profiles: [mayi_shenxiang, shenxiang_quanbian]
+      active_source_rule_ids:
+        - physiognomy/mayi-shenxiang#MR-01
+        - physiognomy/mayi-shenxiang#MR-02
+        - physiognomy/shenxiang-quanbian#SR-02-04
+      descriptors:
+        visible_morphology:
+          head_posture: [region_visible, level, forward_tilt, backward_tilt]
+          shoulder_line: [region_visible, level, uneven]
+          spine_curve: [region_visible, aligned, curved]
+          walking_gait: [region_visible, steady, uneven]
+          sitting_posture: [region_visible, upright, forward_lean, uneven]
+
+visibility_contract:
+  pose_families: [frontal, left_profile, right_profile, three_quarter_left, three_quarter_right, detail, unknown]
+  visible_subject_sides: [left, right, bilateral, unknown]
+  framing: [full_face, upper_crop, lower_crop, region_crop, partial_unknown]
+  framing_region_ceiling:
+    full_face: [forehead, left_eyebrow, right_eyebrow, left_eye, right_eye, nose, mouth, chin, jawline, left_ear, right_ear, left_cheek, right_cheek, complexion]
+    upper_crop: [forehead, left_eyebrow, right_eyebrow, left_eye, right_eye]
+    lower_crop: [nose, mouth, chin, jawline]
+    region_crop: [forehead, left_eyebrow, right_eyebrow, left_eye, right_eye, nose, mouth, chin, jawline, left_ear, right_ear, left_cheek, right_cheek, complexion]
+    partial_unknown: [forehead, left_eyebrow, right_eyebrow, left_eye, right_eye, nose, mouth, chin, jawline, left_ear, right_ear, left_cheek, right_cheek, complexion]
+  camera_angles: [frontal, three_quarter, profile, oblique, unknown]
+  pose_angle_compatibility:
+    frontal: [frontal]
+    left_profile: [profile]
+    right_profile: [profile]
+    three_quarter_left: [three_quarter]
+    three_quarter_right: [three_quarter]
+    detail: [frontal, three_quarter, profile, oblique, unknown]
+    unknown: [unknown]
+  pose_region_ceiling:
+    frontal: &bilateral_regions [forehead, left_eyebrow, right_eyebrow, left_eye, right_eye, nose, mouth, chin, jawline, left_ear, right_ear, left_cheek, right_cheek, complexion]
+    left_profile: [forehead, left_eyebrow, left_eye, nose, mouth, chin, jawline, left_ear, left_cheek, complexion]
+    right_profile: [forehead, right_eyebrow, right_eye, nose, mouth, chin, jawline, right_ear, right_cheek, complexion]
+    three_quarter_left: [forehead, left_eyebrow, right_eyebrow, left_eye, right_eye, nose, mouth, chin, jawline, left_ear, left_cheek, right_cheek, complexion]
+    three_quarter_right: [forehead, left_eyebrow, right_eyebrow, left_eye, right_eye, nose, mouth, chin, jawline, right_ear, left_cheek, right_cheek, complexion]
+    detail: *bilateral_regions
+    unknown: []
+  subject_side_region_ceiling:
+    left: [forehead, left_eyebrow, left_eye, nose, mouth, chin, jawline, left_ear, left_cheek, complexion]
+    right: [forehead, right_eyebrow, right_eye, nose, mouth, chin, jawline, right_ear, right_cheek, complexion]
+    bilateral: *bilateral_regions
+    unknown: []
+  descriptor_pose_compatibility:
+    relative_width_broad: [frontal]
+    relative_width_narrow: [frontal]
+    alignment_level: [frontal]
+  descriptor_context_requirements:
+    relative_width_broad: &relative_width_context
+      allowed_framings: [full_face, upper_crop]
+      required_regions_by_observed_region:
+        forehead: [left_eye, right_eye]
+        nose: [left_cheek, right_cheek]
+    relative_width_narrow: *relative_width_context
+    alignment_level:
+      allowed_framings: [full_face, upper_crop]
+      required_regions: [left_eye, right_eye]
+  minimum_region_anchor_pixels_per_axis: 1.0
+  effective_visibility: pose_region_ceiling intersect framing_region_ceiling intersect supplied_visible_regions; detail additionally intersects declared subject side; descriptor pose/context gates and at-least-one-source-pixel anchor coverage also apply
+  no_mirroring: true
+  no_template_completion: true
+
+quality_contract:
+  lighting: [even, uneven, low, backlit, overexposed, color_cast, unknown]
+  focus: [sharp, soft, blurred, unknown]
+  resolution: [high, adequate, low, unknown]
+  filtering: [none, color_only, geometry_altering, suspected, unknown]
+  color_fidelity: [calibrated, uncalibrated, unknown]
+  non_image_quality:
+    lighting: not_applicable
+    camera_angle: caller_description
+    focus: not_applicable
+    resolution: not_applicable
+    filtering: not_applicable
+    color_fidelity: not_applicable
+  maximum_occlusion_inclusive: 0.5
+  maximum_uncertainty_inclusive: 0.5
+  visible_morphology:
+    disallowed_lighting: [low, backlit, overexposed, unknown]
+    disallowed_focus: [blurred, unknown]
+    disallowed_resolution: [low, unknown]
+    disallowed_filtering: [geometry_altering, suspected, unknown]
+  capture_color:
+    allowed_regions: [complexion]
+    allowed_lighting: [even]
+    allowed_camera_angles: [frontal, three_quarter]
+    allowed_focus: [sharp]
+    allowed_resolution: [high, adequate]
+    allowed_filtering: [none]
+    allowed_color_fidelity: [calibrated]
+
+asset_contract:
+  maximum_byte_length: 100000000
+  maximum_pixel_axis: 100000
+
+revision_contract:
+  correction_source_type: user_correction
+  correction_requires_supersedes_observation_id: true
+  correction_must_keep_subject_target_region_feature_and_provenance_kind: true
+  image_correction_must_keep: [asset_id, asset_sha256, capture_id]
+  text_or_file_correction_must_keep: [source_ref, non_image_quality]
+  correction_cycle_forbidden: true
+  one_active_successor_per_observation: true
+  same_capture_conflict_requires_confirmation: true
+  different_capture_or_lighting_never_auto_equivalent: true
+  different_capture_is_variation_not_conflict_without_explicit_relation: true
+  explicit_comparison_relation: same_target_user_confirmed
+
+source_rule_activation:
+  safe_rule_ids:
+    - physiognomy/liuzhuang-xiangfa#LZ-R01
+    - physiognomy/liuzhuang-xiangfa#LZ-R02
+    - physiognomy/liuzhuang-xiangfa#LZ-R03
+    - physiognomy/liuzhuang-xiangfa#LZ-R05
+    - physiognomy/mayi-shenxiang#MR-01
+    - physiognomy/mayi-shenxiang#MR-02
+    - physiognomy/shenxiang-quanbian#SR-01-03
+    - physiognomy/shenxiang-quanbian#SR-02-04
+  evidence_roles:
+    methodology_rule:
+      - physiognomy/liuzhuang-xiangfa#LZ-R01
+      - physiognomy/liuzhuang-xiangfa#LZ-R05
+    terminology_only:
+      - physiognomy/liuzhuang-xiangfa#LZ-R02
+      - physiognomy/liuzhuang-xiangfa#LZ-R03
+      - physiognomy/mayi-shenxiang#MR-02
+      - physiognomy/shenxiang-quanbian#SR-01-03
+      - physiognomy/shenxiang-quanbian#SR-02-04
+    edition_boundary:
+      - physiognomy/mayi-shenxiang#MR-01
+  baseline_methodology:
+    - physiognomy/liuzhuang-xiangfa#LZ-R01
+    - physiognomy/liuzhuang-xiangfa#LZ-R05
+    - physiognomy/mayi-shenxiang#MR-01
+  any_active_visible_region:
+    - physiognomy/liuzhuang-xiangfa#LZ-R02
+    - physiognomy/mayi-shenxiang#MR-02
+    - physiognomy/shenxiang-quanbian#SR-02-04
+  active_capture_color:
+    - physiognomy/liuzhuang-xiangfa#LZ-R03
+    - physiognomy/shenxiang-quanbian#SR-01-03
+  projection:
+    evidence_roles: [methodology_rule, terminology_only, edition_boundary]
+    verdict_prohibited: true
+    historical_association_is_not_subject_fact: true
+
+source_layer_contract:
+  priority_order:
+    - primary_liuzhuang_lineage
+    - side_evidence_classical_compilation
+    - mixed_web_transcription
+  no_majority_vote: true
+  no_independent_cross_check_claim_for_compiled_shared_material: true
+  later_accretions_never_first_line: true
+  disagreements:
+    - id: liuzhuang_vs_compilation
+      sources: [physiognomy/liuzhuang-xiangfa, physiognomy/shenxiang-quanbian]
+      policy: retain_separate_source_ids_without_forced_resolution
+      public_sources: [柳庄相法, 神相全编]
+      public_summary: 柳庄相法作为主线，神相全编作为汇编旁证；分层保留，不强制合并
+    - id: mayi_web_layer_boundary
+      sources: [physiognomy/mayi-shenxiang]
+      policy: MY-002-through-MY-011-only; modern additions excluded
+      public_sources: [麻衣神相]
+      public_summary: 仅采用 MY-002 至 MY-011 的古籍转写层，现代附益层明确排除
+
+privacy_contract:
+  provider_accepts_raw_media: false
+  opaque_identifier_min_length: 36
+  opaque_identifier_pattern: '^(?:sid|aid|cid|tid|oid|rid)-[0-9a-f]{32,64}$'
+  opaque_identifier_namespaces: {subject_ref: sid, asset_id: aid, capture_id: cid, target_id: tid, observation_id: oid, source_ref: rid}
+  private_fact_fields: [subject_ref, asset_id, capture_id, sha256, asset_sha256, region_anchor, observation_id, observation_ids, confirmed_observation_ids, supersedes_observation_id, target_id, source_ref, pixel_width, pixel_height, byte_length, media_type, framing, schema_version, taxonomy, source_type, transcription_actor, provider_performed_vision, source_layer_policy, comparison_relations, pack, source_layer, evidence_role, id, policy, sources]
+  fact_index_allowlist: [fact_layer_status, observation_scope, active_source_rule_ids, normalized_visible_observations, missing_targets, uncertainties, observation_conflicts, cross_capture_variations, source_comparison, source_conditioned_patterns]
+  fact_index_nested_private_fields: [subject_ref, asset_id, capture_id, sha256, asset_sha256, region_anchor, normalized_bbox, observation_id, observation_ids, confirmed_observation_ids, supersedes_observation_id, target_id, source_ref]
+  public_basis_allowlist: [observation_scope, normalized_visible_observations, missing_targets, uncertainties, observation_conflicts, cross_capture_variations, source_comparison]
+  public_copy_forbidden_tokens: [subject_ref, subject_refs, asset_id, capture_id, sha256, asset_sha256, region_anchor, normalized_bbox, observation_id, observation_ids, confirmed_observation_ids, supersedes_observation_id, target_id, source_ref, pixel_width, pixel_height, byte_length, media_type, pose_family, framing, supplied_visible_regions, schema_version, taxonomy, source_type, transcription_actor, provider_performed_vision, source_layer_policy, comparison_relations, face_embedding, biometric_template]
+  region_anchor_public_policy: semantic_region_only_coordinates_private
+
+evidence_binding_contract:
+  version: 1.0.0
+  required_predicates:
+    - {path_suffix: /fact_layer_status, operator: eq, value: observation_driven_physiognomy_facts}
+    - {path_suffix: /active_source_rule_ids, operator: descendant_eq, value: $rule_id}
+  evidence_fact_ref_allowlist: [fact_layer_status, active_source_rule_ids]

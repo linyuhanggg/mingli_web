@@ -1,0 +1,451 @@
+{
+  "capability": {
+    "assumption_cost": 0,
+    "default_dimension_ids": [
+      "outcome",
+      "state"
+    ],
+    "default_priority": 5,
+    "dimension_ids": [
+      "outcome",
+      "state"
+    ],
+    "exact_horizon_ids": [],
+    "horizon_ids": [
+      "instant"
+    ],
+    "independent_lineage_id": "meihua",
+    "object_ids": [
+      "concrete_event",
+      "supplied_chart"
+    ],
+    "required_input_groups": [
+      {
+        "any_of": [
+          "casting_method"
+        ]
+      },
+      {
+        "any_of": [
+          "event_datetime"
+        ]
+      },
+      {
+        "any_of": [
+          "timezone"
+        ]
+      },
+      {
+        "any_of": [
+          "location"
+        ]
+      }
+    ]
+  },
+  "claim_policy": {
+    "allowed_kind_ids": [
+      "kind.fact",
+      "kind.tendency"
+    ],
+    "certainty_ceiling_id": "certainty.tendency"
+  },
+  "display": {
+    "zh-CN": {
+      "description": "梅花易数成卦：依据数字起卦或时间起卦输入，输出体用/互卦/变卦等卦结构事实。前提：必须提供 casting_method（明确起卦方式）+ event_datetime + timezone + location。边界：horizon 限定为 instant；不接受命盘或择日对象。与 liuyao 的选择依据：meihua 同时支持数字起卦与时间起卦，类象更广，适合快速判断；liuyao 限定六爻体系、需明确投掷记录。",
+      "name": "梅花易数"
+    }
+  },
+  "entrypoint": "reading_engine.providers:MeihuaProvider",
+  "evidence_profile_id": "meihua",
+  "id": "meihua",
+  "input_fields": {
+    "casting_method": {
+      "choices": [
+        {
+          "display": {
+            "zh-CN": "按时间起卦"
+          },
+          "id": "time"
+        },
+        {
+          "display": {
+            "zh-CN": "按数字起卦"
+          },
+          "id": "supplied_number"
+        },
+        {
+          "display": {
+            "zh-CN": "按声数起卦"
+          },
+          "id": "sound_count"
+        },
+        {
+          "display": {
+            "zh-CN": "按观察起卦"
+          },
+          "id": "observation"
+        },
+        {
+          "display": {
+            "zh-CN": "提供完整卦象"
+          },
+          "id": "supplied_hexagram"
+        }
+      ],
+      "description": {
+        "zh-CN": "请选择实际采用的起法；不同起法需要的资料不同。"
+      },
+      "display": {
+        "zh-CN": "起卦方式"
+      },
+      "request_slot": "chart_data.casting_method",
+      "type": "string"
+    },
+    "coordinate_accuracy_meters": {
+      "display": {
+        "zh-CN": "坐标精度(米)"
+      },
+      "request_slot": "metadata.coordinate_accuracy_meters",
+      "type": "number"
+    },
+    "coordinate_source": {
+      "display": {
+        "zh-CN": "坐标来源"
+      },
+      "request_slot": "metadata.coordinate_source",
+      "type": "string"
+    },
+    "count": {
+      "display": {
+        "zh-CN": "计数值"
+      },
+      "request_slot": "chart_data.count",
+      "type": "structured"
+    },
+    "event_datetime": {
+      "display": {
+        "zh-CN": "事件时间"
+      },
+      "request_slot": "event_datetime",
+      "type": "datetime"
+    },
+    "latitude": {
+      "display": {
+        "zh-CN": "纬度"
+      },
+      "request_slot": "metadata.latitude",
+      "type": "number"
+    },
+    "location": {
+      "display": {
+        "zh-CN": "地点"
+      },
+      "request_slot": "location",
+      "type": "string"
+    },
+    "longitude": {
+      "display": {
+        "zh-CN": "经度"
+      },
+      "request_slot": "metadata.longitude",
+      "type": "number"
+    },
+    "lower_trigram": {
+      "display": {
+        "zh-CN": "下卦"
+      },
+      "request_slot": "chart_data.lower_trigram",
+      "type": "string"
+    },
+    "moving_line": {
+      "display": {
+        "zh-CN": "动爻"
+      },
+      "request_slot": "chart_data.moving_line",
+      "type": "structured"
+    },
+    "number": {
+      "display": {
+        "zh-CN": "起卦数字"
+      },
+      "request_slot": "chart_data.number",
+      "type": "structured"
+    },
+    "observation_source": {
+      "display": {
+        "zh-CN": "观察来源"
+      },
+      "request_slot": "chart_data.observation_source",
+      "type": "structured"
+    },
+    "provenance": {
+      "display": {
+        "zh-CN": "资料来源"
+      },
+      "request_slot": "chart_data.provenance",
+      "type": "structured"
+    },
+    "time_basis_policy": {
+      "display": {
+        "zh-CN": "时间口径"
+      },
+      "request_slot": "metadata.time_basis_policy",
+      "type": "string"
+    },
+    "timezone": {
+      "display": {
+        "zh-CN": "时区"
+      },
+      "request_slot": "timezone",
+      "type": "string"
+    },
+    "upper_trigram": {
+      "display": {
+        "zh-CN": "上卦"
+      },
+      "request_slot": "chart_data.upper_trigram",
+      "type": "string"
+    },
+    "zi_hour_policy": {
+      "display": {
+        "zh-CN": "子时策略"
+      },
+      "request_slot": "metadata.zi_hour_policy",
+      "type": "string"
+    }
+  },
+  "runtime_capability": {
+    "assumption_cost": 0,
+    "default_priority": 5,
+    "dimensions": [
+      "outcome",
+      "state"
+    ],
+    "exact_horizons": [],
+    "extension_output_bindings": [
+      {
+        "horizons": [
+          "instant"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/body_use",
+          "/fact_extension/facts/body_relation_facts",
+          "/fact_extension/facts/seasonal_strength",
+          "/fact_extension/facts/interpretive_candidates",
+          "/fact_extension/facts/mutual_hexagram",
+          "/fact_extension/facts/changed_hexagram",
+          "/fact_extension/facts/moving_lines"
+        ],
+        "name": "dimension_candidate_facts"
+      }
+    ],
+    "extension_outputs": [
+      "dimension_candidate_facts"
+    ],
+    "finding_bindings": [
+      {
+        "horizons": [
+          "instant"
+        ],
+        "id": "body_use",
+        "json_pointers": [
+          "/fact_extension/facts/body_use"
+        ],
+        "kind_id": "finding.body_use",
+        "support_fact_ids": [
+          "body_use"
+        ]
+      },
+      {
+        "horizons": [
+          "instant"
+        ],
+        "id": "body_relations",
+        "json_pointers": [
+          "/fact_extension/facts/body_relation_facts"
+        ],
+        "kind_id": "finding.body_relations",
+        "support_fact_ids": [
+          "body_relation_facts"
+        ]
+      }
+    ],
+    "horizons": [
+      "instant"
+    ],
+    "independent_lineage": "meihua",
+    "mode": "calculation",
+    "objects": [
+      "concrete_event",
+      "supplied_chart"
+    ],
+    "output_bindings": [
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/upper_trigram"
+        ],
+        "name": "upper_trigram"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/lower_trigram"
+        ],
+        "name": "lower_trigram"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/moving_lines"
+        ],
+        "name": "moving_lines"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/primary_hexagram"
+        ],
+        "name": "primary_hexagram"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/mutual_hexagram"
+        ],
+        "name": "mutual_hexagram"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/changed_hexagram"
+        ],
+        "name": "changed_hexagram"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/body_use"
+        ],
+        "name": "body_use"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/body_relation_facts"
+        ],
+        "name": "body_relation_facts"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/seasonal_strength"
+        ],
+        "name": "seasonal_strength"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/interpretive_candidates"
+        ],
+        "name": "interpretive_candidates"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/casting_method"
+        ],
+        "name": "casting_method"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/source_conditioned_patterns"
+        ],
+        "name": "source_conditioned_patterns"
+      }
+    ],
+    "outputs": [
+      "upper_trigram",
+      "lower_trigram",
+      "moving_lines",
+      "primary_hexagram",
+      "mutual_hexagram",
+      "changed_hexagram",
+      "body_use",
+      "body_relation_facts",
+      "seasonal_strength",
+      "interpretive_candidates",
+      "casting_method",
+      "source_conditioned_patterns"
+    ],
+    "required_inputs": [
+      "casting_method",
+      "event_datetime",
+      "timezone",
+      "location"
+    ],
+    "system": "meihua"
+  },
+  "schema_version": "provider-manifest-v1",
+  "terms": {
+    "certainty.tendency": {
+      "display": {
+        "zh-CN": "倾向性上限"
+      }
+    },
+    "concrete_event": {
+      "display": {
+        "zh-CN": "具体事项"
+      }
+    },
+    "finding.body_relations": {
+      "display": {
+        "zh-CN": "关系解读材料"
+      }
+    },
+    "finding.body_use": {
+      "display": {
+        "zh-CN": "体用解读材料"
+      }
+    },
+    "instant": {
+      "display": {
+        "zh-CN": "当下"
+      }
+    },
+    "kind.fact": {
+      "display": {
+        "zh-CN": "事实陈述"
+      }
+    },
+    "kind.tendency": {
+      "display": {
+        "zh-CN": "倾向判断"
+      }
+    },
+    "limit.source_gap": {
+      "display": {
+        "zh-CN": "本轮没有命中可引用的古籍条文，只能基于确定性事实描述"
+      }
+    },
+    "outcome": {
+      "display": {
+        "zh-CN": "结果成败"
+      }
+    },
+    "state": {
+      "display": {
+        "zh-CN": "当前状态"
+      }
+    },
+    "supplied_chart": {
+      "display": {
+        "zh-CN": "已有卦象或盘面"
+      }
+    }
+  },
+  "time_semantics": {
+    "coordinates_required_policies": [
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "default_policy": "civil",
+    "input_time": "event_datetime",
+    "role": "civil_schedule",
+    "supported_policies": [
+      "civil",
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "unsupported_fallback": "need_input"
+  }
+}

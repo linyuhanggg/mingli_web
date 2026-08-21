@@ -1,0 +1,369 @@
+{
+  "capability": {
+    "assumption_cost": 0,
+    "default_dimension_ids": [
+      "career",
+      "health",
+      "location",
+      "outcome",
+      "relationship",
+      "state",
+      "timing"
+    ],
+    "default_priority": 20,
+    "dimension_ids": [
+      "career",
+      "health",
+      "location",
+      "outcome",
+      "relationship",
+      "state",
+      "timing"
+    ],
+    "exact_horizon_ids": [],
+    "horizon_ids": [
+      "month",
+      "year",
+      "life"
+    ],
+    "independent_lineage_id": "ziwei",
+    "object_ids": [
+      "natal",
+      "near_time_personal"
+    ],
+    "required_input_groups": [
+      {
+        "any_of": [
+          "birth_datetime"
+        ]
+      },
+      {
+        "any_of": [
+          "timezone"
+        ]
+      },
+      {
+        "any_of": [
+          "location"
+        ]
+      },
+      {
+        "any_of": [
+          "gender"
+        ]
+      }
+    ]
+  },
+  "claim_policy": {
+    "allowed_kind_ids": [
+      "kind.fact",
+      "kind.tendency"
+    ],
+    "certainty_ceiling_id": "certainty.tendency"
+  },
+  "display": {
+    "zh-CN": {
+      "description": "紫微斗数命盘：依据出生时刻、出生地与性别，输出命宫/身宫/十二宫与主星事实。前提：必须提供 birth_datetime + timezone + location + gender。边界：horizon 限定为 month/year/life；不接受事件对象与即时对象。与 bazi/xingming/luming-nayin 的选择依据：ziwei 是宫位星曜派系；若问「宫位/主星/四化」请选本能力；若问四柱/大运选 bazi；若问七政四余选 xingming；若仅需纳音基础事实选 luming-nayin。",
+      "name": "紫微斗数"
+    }
+  },
+  "entrypoint": "reading_engine.providers:ZiweiProvider",
+  "fact_contract": "fact_contracts.ziwei:ZiweiFactContract",
+  "evidence_profile_id": "ziwei",
+  "id": "ziwei",
+  "input_fields": {
+    "birth_datetime": {
+      "display": {
+        "zh-CN": "出生时间"
+      },
+      "request_slot": "birth_data.birth_datetime",
+      "type": "datetime"
+    },
+    "coordinate_accuracy_meters": {
+      "display": {
+        "zh-CN": "坐标精度(米)"
+      },
+      "request_slot": "birth_data.coordinate_accuracy_meters",
+      "type": "number"
+    },
+    "coordinate_source": {
+      "display": {
+        "zh-CN": "坐标来源"
+      },
+      "request_slot": "birth_data.coordinate_source",
+      "type": "string"
+    },
+    "gender": {
+      "display": {
+        "zh-CN": "性别"
+      },
+      "request_slot": "birth_data.gender",
+      "type": "string"
+    },
+    "latitude": {
+      "display": {
+        "zh-CN": "纬度"
+      },
+      "request_slot": "birth_data.latitude",
+      "type": "number"
+    },
+    "location": {
+      "display": {
+        "zh-CN": "地点"
+      },
+      "request_slot": "location",
+      "type": "string"
+    },
+    "longitude": {
+      "display": {
+        "zh-CN": "经度"
+      },
+      "request_slot": "birth_data.longitude",
+      "type": "number"
+    },
+    "time_basis_policy": {
+      "display": {
+        "zh-CN": "时间口径"
+      },
+      "request_slot": "birth_data.time_basis_policy",
+      "type": "string"
+    },
+    "timezone": {
+      "display": {
+        "zh-CN": "时区"
+      },
+      "request_slot": "timezone",
+      "type": "string"
+    },
+    "zi_hour_policy": {
+      "display": {
+        "zh-CN": "子时策略"
+      },
+      "request_slot": "birth_data.zi_hour_policy",
+      "type": "string"
+    }
+  },
+  "runtime_capability": {
+    "assumption_cost": 0,
+    "default_priority": 20,
+    "dimensions": [
+      "career",
+      "health",
+      "location",
+      "outcome",
+      "relationship",
+      "state",
+      "timing"
+    ],
+    "exact_horizons": [],
+    "extension_output_bindings": [
+      {
+        "horizons": [
+          "month",
+          "year"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/active_major_limit"
+        ],
+        "name": "active_major_limit"
+      },
+      {
+        "horizons": [
+          "month",
+          "year"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/annual_layers"
+        ],
+        "name": "annual_layers"
+      },
+      {
+        "horizons": [
+          "month",
+          "year"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/monthly_layers"
+        ],
+        "name": "monthly_layers"
+      },
+      {
+        "horizons": [
+          "life"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/dimension_fact_scope"
+        ],
+        "name": "dimension_fact_scope"
+      }
+    ],
+    "extension_outputs": [
+      "active_major_limit",
+      "annual_layers",
+      "monthly_layers",
+      "dimension_fact_scope"
+    ],
+    "horizons": [
+      "month",
+      "year",
+      "life"
+    ],
+    "independent_lineage": "ziwei",
+    "mode": "calculation",
+    "objects": [
+      "natal",
+      "near_time_personal"
+    ],
+    "output_bindings": [
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/ming_shen"
+        ],
+        "name": "ming_shen"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/palaces"
+        ],
+        "name": "palaces"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/stars"
+        ],
+        "name": "stars"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/interpretive_candidates"
+        ],
+        "name": "interpretive_candidates"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/source_conditioned_patterns"
+        ],
+        "name": "source_conditioned_patterns"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/sihua"
+        ],
+        "name": "sihua"
+      }
+    ],
+    "outputs": [
+      "ming_shen",
+      "palaces",
+      "stars",
+      "sihua",
+      "interpretive_candidates",
+      "source_conditioned_patterns"
+    ],
+    "required_inputs": [
+      "birth_datetime",
+      "timezone",
+      "location",
+      "gender"
+    ],
+    "system": "ziwei"
+  },
+  "schema_version": "provider-manifest-v1",
+  "terms": {
+    "career": {
+      "display": {
+        "zh-CN": "事业"
+      }
+    },
+    "certainty.tendency": {
+      "display": {
+        "zh-CN": "倾向性上限"
+      }
+    },
+    "health": {
+      "display": {
+        "zh-CN": "健康"
+      }
+    },
+    "kind.fact": {
+      "display": {
+        "zh-CN": "事实陈述"
+      }
+    },
+    "kind.tendency": {
+      "display": {
+        "zh-CN": "倾向判断"
+      }
+    },
+    "life": {
+      "display": {
+        "zh-CN": "一生"
+      }
+    },
+    "limit.source_gap": {
+      "display": {
+        "zh-CN": "本轮没有命中可引用的古籍条文，只能基于确定性事实描述"
+      }
+    },
+    "location": {
+      "display": {
+        "zh-CN": "方位地点"
+      }
+    },
+    "month": {
+      "display": {
+        "zh-CN": "月"
+      }
+    },
+    "natal": {
+      "display": {
+        "zh-CN": "本命"
+      }
+    },
+    "near_time_personal": {
+      "display": {
+        "zh-CN": "近期个人运势"
+      }
+    },
+    "outcome": {
+      "display": {
+        "zh-CN": "结果成败"
+      }
+    },
+    "relationship": {
+      "display": {
+        "zh-CN": "人际感情"
+      }
+    },
+    "state": {
+      "display": {
+        "zh-CN": "当前状态"
+      }
+    },
+    "timing": {
+      "display": {
+        "zh-CN": "时机应期"
+      }
+    },
+    "year": {
+      "display": {
+        "zh-CN": "年"
+      }
+    }
+  },
+  "time_semantics": {
+    "coordinates_required_policies": [
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "default_policy": "civil",
+    "input_time": "birth_data.birth_datetime",
+    "role": "pillar_clock",
+    "supported_policies": [
+      "civil",
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "unsupported_fallback": "need_input"
+  }
+}

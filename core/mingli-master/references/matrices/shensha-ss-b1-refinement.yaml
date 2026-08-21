@@ -1,0 +1,198 @@
+refinement:
+  id: shensha-ss-b1-refinement
+  version: v0.1
+  generated_at: "2026-07-05"
+  batch_id: SS-B1
+  source_status: distilled_from_ready_local_packs_and_qoder_manifests
+  purpose: "Second-pass refinement for high-frequency bazi/luming shensha terms. This is a routing and boundary matrix, not an independent interpretation source."
+  upstream_refs:
+    backlog: references/matrices/shensha-distillation-backlog.yaml
+    source_profile: references/matrices/shensha-entry-source-profile.yaml
+    quote_trace: references/matrices/shensha-quote-trace.yaml
+    bazi_stack: references/matrices/bazi-core-decision-stack.yaml
+  policy:
+    shensha_layer: "BZ-07 auxiliary_only"
+    bazi_requires_fact_layer: true
+    luming_is_source_history_support: true
+    no_cross_system_merge: true
+    no_single_shensha_judgment: true
+    do_not_override:
+      - month_command
+      - structure_pattern
+      - strength_and_flow
+      - tiaohou
+      - ten_gods
+      - luck_cycles
+      - deterministic_fact_layer
+  source_readiness:
+    - pack: bazi/sanming-tonghui
+      qoder_manifest_status: normalized_ready
+      codex_validation_status: d2_ready_for_local_source
+      ss_b1_role: bazi_first_line
+    - pack: luming-nayin/wuxing-jingji
+      qoder_manifest_status: normalized_ready
+      codex_validation_status: d2_ready_for_local_source
+      ss_b1_role: early_luming_first_line
+    - pack: luming-nayin/li-xuzhong-mingshu
+      qoder_manifest_status: normalized_ready
+      codex_validation_status: ready_candidate
+      ss_b1_role: early_luming_support
+    - pack: luming-nayin/luoluzi-sanming
+      qoder_manifest_status: normalized_ready
+      codex_validation_status: ready_candidate_with_base_text_commentary_boundary
+      ss_b1_role: luming_fu_yun_support
+    - pack: luming-nayin/yuzhao-shenying
+      qoder_manifest_status: normalized_ready
+      codex_validation_status: ready_candidate
+      ss_b1_role: early_branch_spirit_support
+  target_entries:
+    - shensha-tianyi-guiren
+    - shensha-jinyu
+    - shensha-lushen-lucun
+    - shensha-yima-tianma
+    - shensha-xianchi-taohua
+    - shensha-kongwang
+    - shensha-luowang
+    - shensha-fuyin-fanyin
+    - shensha-baihu
+    - shensha-sangmen-diaoke
+  entry_refinements:
+    - id: shensha-tianyi-guiren
+      name: "天乙贵人"
+      bazi_usage: first_line_auxiliary
+      luming_usage: source_history_support
+      cross_system_risk: high
+      bazi:
+        first_line_pack: bazi/sanming-tonghui
+        quote_refs: [SM-Q149, SM-Q150]
+        operational_effect: "贵人、解厄、助力类辅证。"
+      luming_nayin:
+        first_line_pack: luming-nayin/wuxing-jingji
+        support_packs: [luming-nayin/li-xuzhong-mingshu]
+        quote_refs: [WX-Q147, WX-Q238, WX-Q242]
+        operational_effect: "早期贵神与禄命三限/三元语境中的贵气来源。"
+      boundary: "不等于六壬天乙天将；不能单凭天乙断富贵或化尽凶煞。"
+    - id: shensha-jinyu
+      name: "金舆"
+      bazi_usage: first_line_auxiliary
+      luming_usage: source_history_support
+      cross_system_risk: medium
+      bazi:
+        first_line_pack: bazi/sanming-tonghui
+        quote_refs: [SM-Q144, SM-Q146, SM-Q492]
+        operational_effect: "车舆、礼遇、迁动资源类辅证。"
+      luming_nayin:
+        first_line_pack: luming-nayin/wuxing-jingji
+        support_packs: [luming-nayin/li-xuzhong-mingshu]
+        quote_refs: [WX-Q452, WX-05-06]
+        operational_effect: "禄前二辰的车舆/福神语境。"
+      boundary: "不能单凭金舆断豪车、资产等级或具体交通工具。"
+    - id: shensha-lushen-lucun
+      name: "禄/禄神/禄存/化禄"
+      bazi_usage: first_line_auxiliary
+      luming_usage: source_history_support
+      cross_system_risk: critical
+      bazi:
+        first_line_pack: bazi/sanming-tonghui
+        quote_refs: [SM-Q148, SM-Q492]
+        operational_effect: "十干禄、禄马、福神互助的辅助信号。"
+      luming_nayin:
+        first_line_pack: luming-nayin/wuxing-jingji
+        support_packs: [luming-nayin/li-xuzhong-mingshu, luming-nayin/luoluzi-sanming]
+        quote_refs: [LZ-Q33, LZ-Q35, WX-Q238, WX-Q242]
+        operational_effect: "禄命源流中的财命有气、禄马同乡、三限贵神语境。"
+      boundary: "八字干禄、禄命禄马、紫微禄存/化禄、星命禄神必须分开。"
+    - id: shensha-yima-tianma
+      name: "驿马/天马"
+      bazi_usage: first_line_auxiliary
+      luming_usage: source_history_support
+      cross_system_risk: critical
+      bazi:
+        first_line_pack: bazi/sanming-tonghui
+        quote_refs: [SM-Q147, SM-Q148]
+        operational_effect: "动迁、出行、远动、职业流动类辅证。"
+      luming_nayin:
+        first_line_pack: luming-nayin/wuxing-jingji
+        support_packs: [luming-nayin/li-xuzhong-mingshu]
+        quote_refs: [WX-Q357]
+        operational_effect: "天马贵神的源流语境。"
+      boundary: "不等于择日天马、紫微天马、星命天马；不得无 selection fact layer 推荐日子。"
+    - id: shensha-xianchi-taohua
+      name: "咸池/桃花"
+      bazi_usage: first_line_auxiliary
+      luming_usage: none_in_ss_b1
+      cross_system_risk: high
+      bazi:
+        first_line_pack: bazi/sanming-tonghui
+        quote_refs: [SM-Q139, SM-Q188, SM-Q762]
+        operational_effect: "社交、审美、情欲/关系吸引力辅证。"
+      boundary: "不输出古文道德标签；必须合参十神、夫妻宫、格局和运年。"
+    - id: shensha-kongwang
+      name: "空亡"
+      bazi_usage: first_line_auxiliary
+      luming_usage: source_history_support
+      cross_system_risk: high
+      bazi:
+        first_line_pack: bazi/sanming-tonghui
+        quote_refs: [SM-Q160, SM-Q183]
+        operational_effect: "虚位、落空、减力、待填实的辅助信号。"
+      luming_nayin:
+        first_line_pack: luming-nayin/wuxing-jingji
+        support_packs: [luming-nayin/li-xuzhong-mingshu, luming-nayin/luoluzi-sanming]
+        quote_refs: [WX-Q177, WX-Q190, WX-Q200]
+        operational_effect: "禄命纳音气数与冲破空亡的源流语境。"
+      boundary: "不作一切皆空的绝对断语；冲合填实和整体格局优先。"
+    - id: shensha-luowang
+      name: "天罗/地网"
+      bazi_usage: first_line_auxiliary
+      luming_usage: source_history_support
+      cross_system_risk: medium
+      bazi:
+        first_line_pack: bazi/sanming-tonghui
+        quote_refs: [SM-Q182, SM-Q185]
+        operational_effect: "辰巳/戌亥类束缚、阻滞、罗网象的辅助信号。"
+      luming_nayin:
+        first_line_pack: luming-nayin/luoluzi-sanming
+        support_packs: [luming-nayin/wuxing-jingji]
+        quote_refs: [LZ-Q40, WX-Q623, WX-Q630]
+        operational_effect: "禄命凶杀、三元九宫语境中的罗网源流。"
+      boundary: "不是择日黄黑道；不作医学、灾病、法律硬断。"
+    - id: shensha-fuyin-fanyin
+      name: "伏吟/反吟"
+      bazi_usage: not_promoted_in_ss_b1
+      luming_usage: source_history_support
+      cross_system_risk: critical
+      luming_nayin:
+        first_line_pack: luming-nayin/luoluzi-sanming
+        support_packs: [luming-nayin/wuxing-jingji, luming-nayin/yuzhao-shenying]
+        quote_refs: [LZ-Q39, LZ-Q72, WX-10-04]
+        operational_effect: "运命同位/对冲、重复/反复冲击的源流语境。"
+      boundary: "不等于六壬返吟/伏吟；八字聊天若用同柱重复义，必须另有完整八字事实层。"
+    - id: shensha-baihu
+      name: "白虎"
+      bazi_usage: not_bazi_first_line
+      luming_usage: source_history_support
+      cross_system_risk: critical
+      luming_nayin:
+        first_line_pack: luming-nayin/yuzhao-shenying
+        support_packs: [luming-nayin/wuxing-jingji]
+        quote_refs: [YZ-Q052, YZ-T15, YZ-T37]
+        operational_effect: "禄命神将、道路、刚烈类源流。"
+      boundary: "不等于六壬白虎天将；不进入八字神煞库存。"
+    - id: shensha-sangmen-diaoke
+      name: "丧门/吊客"
+      bazi_usage: not_bazi_first_line
+      luming_usage: source_history_support
+      cross_system_risk: critical
+      luming_nayin:
+        first_line_pack: luming-nayin/luoluzi-sanming
+        support_packs: []
+        quote_refs: [LZ-Q66, LZ-T83, LZ-07-06]
+        operational_effect: "宅墓丧吊源流，敏感断语只作文化研究。"
+      boundary: "不作真人丧事硬断；不移植到八字日常运势。"
+  acceptance:
+    all_target_ids_exist_in_name_profile_and_trace: true
+    bazi_promoted_entries_have_bazi_first_line_pack: true
+    non_bazi_entries_explicitly_marked_not_bazi_first_line: true
+    every_entry_has_boundary: true
+    no_entry_can_override_bazi_core_stack: true

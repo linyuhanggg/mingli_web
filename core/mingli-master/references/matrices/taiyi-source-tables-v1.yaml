@@ -1,0 +1,294 @@
+schema_version: mingli-taiyi-source-tables-v1
+version: 1.0.0
+status: verified
+
+source_profiles:
+  taiyi_jinjing:
+    title: 太乙金镜式经
+    recension: 四库全书本 normalized text
+    normalized_path: references/fulltext/san-shi/taiyi-shenshu/fulltext.md
+    sha256: ecacc021ea180803b10b3b97a42ce602ea50bc342c73d30883012629cabc111c
+    anchors:
+      annual_epoch: L67-L69
+      six_ji_and_cycle: L71-L81
+      tianmu_and_jishen: L83-L93
+      palace_names: L318-L321
+      shiji_and_counts: L348-L351
+      scope: L353-L368
+      yang_72_table: L493-L505
+      long_cycle_deities: L595-L659
+      four_deity_table: L661-L759
+  kintaiyi_engineering_reference:
+    repository: https://github.com/kentang2017/kintaiyi
+    commit: 68892c6bfe3a9635ff4a19a5f14559fff1adf4ab
+    license: MIT
+    license_sha256: 098b60569fd0fa7dd7b320ec29c62d778ffe6f0d76107de061056e6f4475de24
+    implementation_path: src/kintaiyi/kintaiyi.py
+    implementation_sha256: 042f7118ebeb5f10e2464f55463e8bf35c4736eecef6e3816f97a1391ac65f5e
+    role: engineering comparison only; never a classical authority or runtime dependency
+    known_primary_source_differences:
+      - {bureau: 30, field: shiji, primary: 申, reference: 丑}
+      - {bureau: 44, field: host_count, primary: 33, reference: 23}
+      - {bureau: 66, field: shiji, primary: 申, reference: 丑}
+
+selected_convention:
+  id: taiyi-jinjing-annual-yang-board-v1
+  version: 1.0.0
+  declared_scope: annual_macro_historical_board_facts
+  unsupported_scopes: [personal_life, personal_event, medical, legal, military_action]
+  calendar_boundary: lunar_new_year_from_shared_calendar
+  annual_dun: yang
+  interpretation_policy: calculated facts and predicates only; no event verdicts
+  epoch_profile: jinjing-annual-tang-jiazi-v1
+  boundary_rules:
+    - The annual count is one-based and equals 1937281 in the Tang Jiazi year 724 CE.
+    - The selected civil translation is accumulated_year = lunar_year + 1936557 for CE lunar years.
+    - Six Ji use the 360-year cycle; five Zi-Yuan use five consecutive 72-year blocks.
+    - The 72 annual bureaus repeat inside the 360-year cycle and cycle 理天、理地、理人 every three years.
+    - Annual Taiyi and Tianmu move forward; the Yin 72-table belongs to a different time-count profile.
+    - Main-board and long-cycle deity epochs remain separate and are emitted with their own epoch_profile.
+    - No classical historical correspondence is converted into a modern prediction.
+  incompatible_alternatives:
+    - id: zhou-liwang-near-epoch
+      status: separate_not_selected
+      reason: L374-L411 starts from 周厉王三十七年甲子 and cannot be mixed with the volume-one upper epoch.
+    - id: upper-jiayin-285011
+      status: separate_long_cycle_only
+      reason: L595-L617 belongs to the volume-five long-cycle deity methods, not the annual board.
+    - id: yanjinian-10153917
+      status: separate_not_selected
+      reason: the later 演纪 accumulated-year recension is not the selected Taiyi Jinjing annual epoch.
+    - id: yin-72-time-board
+      status: separate_not_selected
+      reason: the Yin table is a different time-count profile; annual calculation in this release is Yang.
+
+epoch_profiles:
+  jinjing-annual-tang-jiazi-v1:
+    anchor_lunar_year_ce: 724
+    anchor_ganzhi: 甲子
+    anchor_accumulated_year: 1937281
+    derived_ce_offset: 1936557
+    one_based: true
+    source_anchor: L67-L69
+  upper-jiayin-long-cycle-v1:
+    anchor_lunar_year_ce: 724
+    anchor_ganzhi: 甲子
+    anchor_accumulated_year: 285011
+    derived_ce_offset: 284287
+    one_based: true
+    source_anchor: L595-L612
+  wufu-dayou-long-cycle-v1:
+    anchor_lunar_year_ce: 724
+    anchor_ganzhi: 甲子
+    anchor_accumulated_year: 13331
+    derived_ce_offset: 12607
+    one_based: true
+    source_anchor: L614-L638
+  xiaoyou-four-deity-v1:
+    anchor_lunar_year_ce: 724
+    anchor_ganzhi: 甲子
+    anchor_accumulated_year: 3361
+    derived_ce_offset: 2637
+    one_based: true
+    source_anchor: L644-L659
+
+cycles:
+  six_ji_years: 360
+  ji_years: 60
+  five_zi_yuan_years: 72
+  annual_bureaus: 72
+  taiyi_small_cycle: 24
+  taiyi_residence_years: 3
+  tianmu_cycle: 18
+  jishen_cycle: 12
+  governance_cycle: [理天, 理地, 理人]
+  zi_yuan_heads: [甲子, 丙子, 戊子, 庚子, 壬子]
+
+positions:
+  sixteen_ring_forward: [子, 丑, 艮, 寅, 卯, 辰, 巽, 巳, 午, 未, 坤, 申, 酉, 戌, 乾, 亥]
+  main_palaces:
+    乾: 1
+    午: 2
+    艮: 3
+    卯: 4
+    酉: 6
+    坤: 7
+    子: 8
+    巽: 9
+  interval_positions: [丑, 寅, 辰, 巳, 未, 申, 戌, 亥]
+  taiyi_forward_order: [乾, 午, 艮, 卯, 酉, 坤, 子, 巽]
+  tianmu_expanded_cycle:
+    - {position: 申, name: 武德}
+    - {position: 酉, name: 太簇}
+    - {position: 戌, name: 陰主}
+    - {position: 乾, name: 陰德}
+    - {position: 乾, name: 陰德}
+    - {position: 亥, name: 大義}
+    - {position: 子, name: 地主}
+    - {position: 丑, name: 陽德}
+    - {position: 艮, name: 和德}
+    - {position: 寅, name: 呂申}
+    - {position: 卯, name: 高叢}
+    - {position: 辰, name: 太陽}
+    - {position: 巽, name: 大炅}
+    - {position: 巳, name: 大神}
+    - {position: 午, name: 大威}
+    - {position: 未, name: 天道}
+    - {position: 坤, name: 大武}
+    - {position: 坤, name: 大武}
+  branch_pairs:
+    子: 丑
+    丑: 子
+    寅: 亥
+    亥: 寅
+    卯: 戌
+    戌: 卯
+    辰: 酉
+    酉: 辰
+    巳: 申
+    申: 巳
+    午: 未
+    未: 午
+
+formula_contracts:
+  bureau: one_based_mod(accumulated_year, 72)
+  cycle_position: one_based_mod(accumulated_year, 360)
+  ji: ceil(cycle_position / 60)
+  zi_yuan: ceil(cycle_position / 72)
+  governance: governance_cycle[one_based_mod(accumulated_year, 3) - 1]
+  taiyi: taiyi_forward_order[ceil(one_based_mod(accumulated_year, 24) / 3) - 1]
+  tianmu: tianmu_expanded_cycle[one_based_mod(accumulated_year, 18) - 1]
+  jishen: reverse twelve-branch walk beginning at 寅 for bureau one
+  shiji: rotate the sixteen ring so Jishen is on 和德艮, then project Tianmu by the same offset
+  count: from the eye toward Taiyi, count the eye main-palace number or one for an interval, add intervening main-palace numbers, and stop before Taiyi
+  major_general: use the units digit; for an exact multiple of ten use the tens digit
+  assistant_general: one_based decimal residue of three times the major general, with central five retained for residue zero
+
+board_predicate_contracts:
+  - {id: TY-P01, name: 掩, relation: same_position, left_fact_path: /shiji, right_fact_path: /taiyi, source_anchor: L430, evidence_policy: matched_fact_only_no_verdict}
+  - {id: TY-P02, name: 文昌囚, relation: same_position, left_fact_path: /tianmu_position, right_fact_path: /taiyi, source_anchor: L442, evidence_policy: matched_fact_only_no_verdict}
+  - {id: TY-P03, name: 始击格, relation: opposite_position, left_fact_path: /shiji, right_fact_path: /taiyi, source_anchor: L450, evidence_policy: matched_fact_only_no_verdict}
+  - {id: TY-P04, name: 文昌对, relation: opposite_position, left_fact_path: /tianmu_position, right_fact_path: /taiyi, source_anchor: L454, evidence_policy: matched_fact_only_no_verdict}
+  - {id: TY-P05, name: 主大将囚, relation: same_palace, left_fact_path: /host_general, right_fact_path: /taiyi, source_anchor: L442, evidence_policy: matched_fact_only_no_verdict}
+  - {id: TY-P06, name: 主参将囚, relation: same_palace, left_fact_path: /host_assistant, right_fact_path: /taiyi, source_anchor: L442, evidence_policy: matched_fact_only_no_verdict}
+  - {id: TY-P07, name: 客大将囚, relation: same_palace, left_fact_path: /guest_general, right_fact_path: /taiyi, source_anchor: L442, evidence_policy: matched_fact_only_no_verdict}
+  - {id: TY-P08, name: 客参将囚, relation: same_palace, left_fact_path: /guest_assistant, right_fact_path: /taiyi, source_anchor: L442, evidence_policy: matched_fact_only_no_verdict}
+  - {id: TY-P09, name: 客大将格, relation: opposite_palace, left_fact_path: /guest_general, right_fact_path: /taiyi, source_anchor: L450, evidence_policy: matched_fact_only_no_verdict}
+  - {id: TY-P10, name: 客参将格, relation: opposite_palace, left_fact_path: /guest_assistant, right_fact_path: /taiyi, source_anchor: L450, evidence_policy: matched_fact_only_no_verdict}
+
+long_cycle_deities:
+  junji:
+    epoch_profile: upper-jiayin-long-cycle-v1
+    formula: one_based_mod(accumulated_year, 360), thirty years per branch-domain, forward from 戌
+    source_anchor: L602-L604
+  chenji:
+    epoch_profile: upper-jiayin-long-cycle-v1
+    formula: after mod 360 and mod 36, three years per branch-domain, forward from 戌
+    source_anchor: L606-L608
+  minji:
+    epoch_profile: upper-jiayin-long-cycle-v1
+    formula: after mod 360 and mod 12, one year per branch-domain, forward from 戌
+    source_anchor: L610-L612
+  wufu:
+    epoch_profile: wufu-dayou-long-cycle-v1
+    formula: one_based_mod(accumulated_year, 225), forty-five years in each of [乾, 艮, 巽, 坤, 中]
+    source_anchor: L614-L617
+  dayou:
+    epoch_profile: wufu-dayou-long-cycle-v1
+    formula: after mod 4320 and mod 288, thirty-six years per palace, forward from seven and skip five
+    source_anchor: L619-L638
+  xiaoyou:
+    epoch_profile: xiaoyou-four-deity-v1
+    formula: after mod 240 and mod 24, three years per palace, forward from one and skip five
+    source_anchor: L644-L646
+  four_deity_cycle:
+    epoch_profile: xiaoyou-four-deity-v1
+    place_order: [1, 2, 3, 4, 5, 6, 7, 8, 9, 絳, 明, 玉]
+    years_per_place: 3
+    cycle_years: 180
+    upper_middle_lower_starts:
+      四神: [1, 9, 5]
+      天乙: [6, 2, 絳]
+      地乙: [9, 5, 1]
+      直符: [5, 1, 9]
+    source_anchor: L648-L759
+
+annual_yang_72_source_rows:
+  - {bureau: 1, taiyi: 乾, tianmu: 武德, tianmu_position: 申, host_count: 7, host_general: 7, host_assistant: 1, shiji: 坤, guest_count: 13, guest_general: 3, guest_assistant: 9, jishen: 寅}
+  - {bureau: 2, taiyi: 乾, tianmu: 太簇, tianmu_position: 酉, host_count: 6, host_general: 6, host_assistant: 8, shiji: 戌, guest_count: 1, guest_general: 1, guest_assistant: 3, jishen: 丑}
+  - {bureau: 3, taiyi: 乾, tianmu: 陰主, tianmu_position: 戌, host_count: 1, host_general: 1, host_assistant: 3, shiji: 亥, guest_count: 40, guest_general: 4, guest_assistant: 2, jishen: 子}
+  - {bureau: 4, taiyi: 午, tianmu: 陰德, tianmu_position: 乾, host_count: 25, host_general: 5, host_assistant: 5, shiji: 丑, guest_count: 17, guest_general: 7, guest_assistant: 1, jishen: 亥}
+  - {bureau: 5, taiyi: 午, tianmu: 陰德, tianmu_position: 乾, host_count: 25, host_general: 5, host_assistant: 5, shiji: 寅, guest_count: 14, guest_general: 4, guest_assistant: 2, jishen: 戌}
+  - {bureau: 6, taiyi: 午, tianmu: 大義, tianmu_position: 亥, host_count: 25, host_general: 5, host_assistant: 5, shiji: 辰, guest_count: 10, guest_general: 1, guest_assistant: 3, jishen: 酉}
+  - {bureau: 7, taiyi: 艮, tianmu: 地主, tianmu_position: 子, host_count: 8, host_general: 8, host_assistant: 4, shiji: 巳, guest_count: 25, guest_general: 5, guest_assistant: 5, jishen: 申}
+  - {bureau: 8, taiyi: 艮, tianmu: 陽德, tianmu_position: 丑, host_count: 1, host_general: 1, host_assistant: 3, shiji: 坤, guest_count: 22, guest_general: 2, guest_assistant: 6, jishen: 未}
+  - {bureau: 9, taiyi: 艮, tianmu: 和德, tianmu_position: 艮, host_count: 3, host_general: 3, host_assistant: 9, shiji: 酉, guest_count: 15, guest_general: 5, guest_assistant: 5, jishen: 午}
+  - {bureau: 10, taiyi: 卯, tianmu: 呂申, tianmu_position: 寅, host_count: 1, host_general: 1, host_assistant: 3, shiji: 乾, guest_count: 12, guest_general: 2, guest_assistant: 6, jishen: 巳}
+  - {bureau: 11, taiyi: 卯, tianmu: 高叢, tianmu_position: 卯, host_count: 4, host_general: 4, host_assistant: 2, shiji: 丑, guest_count: 4, guest_general: 4, guest_assistant: 2, jishen: 辰}
+  - {bureau: 12, taiyi: 卯, tianmu: 太陽, tianmu_position: 辰, host_count: 37, host_general: 7, host_assistant: 1, shiji: 寅, guest_count: 1, guest_general: 1, guest_assistant: 3, jishen: 卯}
+  - {bureau: 13, taiyi: 酉, tianmu: 大炅, tianmu_position: 巽, host_count: 18, host_general: 8, host_assistant: 4, shiji: 辰, guest_count: 19, guest_general: 9, guest_assistant: 7, jishen: 寅}
+  - {bureau: 14, taiyi: 酉, tianmu: 大神, tianmu_position: 巳, host_count: 10, host_general: 1, host_assistant: 3, shiji: 午, guest_count: 9, guest_general: 9, guest_assistant: 7, jishen: 丑}
+  - {bureau: 15, taiyi: 酉, tianmu: 大威, tianmu_position: 午, host_count: 9, host_general: 9, host_assistant: 7, shiji: 坤, guest_count: 7, guest_general: 7, guest_assistant: 1, jishen: 子}
+  - {bureau: 16, taiyi: 坤, tianmu: 天道, tianmu_position: 未, host_count: 1, host_general: 1, host_assistant: 3, shiji: 酉, guest_count: 33, guest_general: 3, guest_assistant: 9, jishen: 亥}
+  - {bureau: 17, taiyi: 坤, tianmu: 大武, tianmu_position: 坤, host_count: 7, host_general: 7, host_assistant: 1, shiji: 亥, guest_count: 27, guest_general: 7, guest_assistant: 1, jishen: 戌}
+  - {bureau: 18, taiyi: 坤, tianmu: 大武, tianmu_position: 坤, host_count: 7, host_general: 7, host_assistant: 1, shiji: 子, guest_count: 26, guest_general: 6, guest_assistant: 8, jishen: 酉}
+  - {bureau: 19, taiyi: 子, tianmu: 武德, tianmu_position: 申, host_count: 8, host_general: 8, host_assistant: 4, shiji: 艮, guest_count: 32, guest_general: 2, guest_assistant: 6, jishen: 申}
+  - {bureau: 20, taiyi: 子, tianmu: 太簇, tianmu_position: 酉, host_count: 7, host_general: 7, host_assistant: 1, shiji: 辰, guest_count: 26, guest_general: 6, guest_assistant: 8, jishen: 未}
+  - {bureau: 21, taiyi: 子, tianmu: 陰主, tianmu_position: 戌, host_count: 2, host_general: 2, host_assistant: 6, shiji: 巳, guest_count: 17, guest_general: 7, guest_assistant: 1, jishen: 午}
+  - {bureau: 22, taiyi: 巽, tianmu: 陰德, tianmu_position: 乾, host_count: 16, host_general: 6, host_assistant: 8, shiji: 未, guest_count: 30, guest_general: 3, guest_assistant: 9, jishen: 巳}
+  - {bureau: 23, taiyi: 巽, tianmu: 陰德, tianmu_position: 乾, host_count: 16, host_general: 6, host_assistant: 8, shiji: 申, guest_count: 23, guest_general: 3, guest_assistant: 9, jishen: 辰}
+  - {bureau: 24, taiyi: 巽, tianmu: 大義, tianmu_position: 亥, host_count: 16, host_general: 6, host_assistant: 8, shiji: 戌, guest_count: 17, guest_general: 7, guest_assistant: 1, jishen: 卯}
+  - {bureau: 25, taiyi: 乾, tianmu: 地主, tianmu_position: 子, host_count: 39, host_general: 9, host_assistant: 7, shiji: 亥, guest_count: 40, guest_general: 4, guest_assistant: 2, jishen: 寅}
+  - {bureau: 26, taiyi: 乾, tianmu: 陽德, tianmu_position: 丑, host_count: 32, host_general: 2, host_assistant: 6, shiji: 艮, guest_count: 31, guest_general: 1, guest_assistant: 3, jishen: 丑}
+  - {bureau: 27, taiyi: 乾, tianmu: 和德, tianmu_position: 艮, host_count: 31, host_general: 1, host_assistant: 3, shiji: 卯, guest_count: 28, guest_general: 8, guest_assistant: 4, jishen: 子}
+  - {bureau: 28, taiyi: 午, tianmu: 呂申, tianmu_position: 寅, host_count: 14, host_general: 4, host_assistant: 2, shiji: 巽, guest_count: 9, guest_general: 9, guest_assistant: 7, jishen: 亥}
+  - {bureau: 29, taiyi: 午, tianmu: 高叢, tianmu_position: 卯, host_count: 13, host_general: 3, host_assistant: 9, shiji: 未, guest_count: 39, guest_general: 9, guest_assistant: 7, jishen: 戌}
+  - {bureau: 30, taiyi: 午, tianmu: 太陽, tianmu_position: 辰, host_count: 10, host_general: 1, host_assistant: 3, shiji: 申, guest_count: 32, guest_general: 2, guest_assistant: 6, jishen: 酉}
+  - {bureau: 31, taiyi: 艮, tianmu: 大炅, tianmu_position: 巽, host_count: 33, host_general: 3, host_assistant: 9, shiji: 戌, guest_count: 10, guest_general: 1, guest_assistant: 3, jishen: 申}
+  - {bureau: 32, taiyi: 艮, tianmu: 大神, tianmu_position: 巳, host_count: 25, host_general: 5, host_assistant: 5, shiji: 子, guest_count: 8, guest_general: 8, guest_assistant: 4, jishen: 未}
+  - {bureau: 33, taiyi: 艮, tianmu: 大威, tianmu_position: 午, host_count: 24, host_general: 4, host_assistant: 2, shiji: 艮, guest_count: 3, guest_general: 3, guest_assistant: 9, jishen: 午}
+  - {bureau: 34, taiyi: 卯, tianmu: 天道, tianmu_position: 未, host_count: 26, host_general: 6, host_assistant: 8, shiji: 卯, guest_count: 4, guest_general: 4, guest_assistant: 2, jishen: 巳}
+  - {bureau: 35, taiyi: 卯, tianmu: 大武, tianmu_position: 坤, host_count: 25, host_general: 5, host_assistant: 5, shiji: 巳, guest_count: 28, guest_general: 8, guest_assistant: 4, jishen: 辰}
+  - {bureau: 36, taiyi: 卯, tianmu: 大武, tianmu_position: 坤, host_count: 25, host_general: 5, host_assistant: 5, shiji: 午, guest_count: 27, guest_general: 7, guest_assistant: 1, jishen: 卯}
+  - {bureau: 37, taiyi: 酉, tianmu: 武德, tianmu_position: 申, host_count: 1, host_general: 1, host_assistant: 3, shiji: 坤, guest_count: 7, guest_general: 7, guest_assistant: 1, jishen: 寅}
+  - {bureau: 38, taiyi: 酉, tianmu: 太簇, tianmu_position: 酉, host_count: 6, host_general: 6, host_assistant: 8, shiji: 戌, guest_count: 35, guest_general: 5, guest_assistant: 5, jishen: 丑}
+  - {bureau: 39, taiyi: 酉, tianmu: 陰主, tianmu_position: 戌, host_count: 35, host_general: 5, host_assistant: 5, shiji: 亥, guest_count: 34, guest_general: 4, guest_assistant: 2, jishen: 子}
+  - {bureau: 40, taiyi: 坤, tianmu: 陰德, tianmu_position: 乾, host_count: 27, host_general: 7, host_assistant: 1, shiji: 丑, guest_count: 19, guest_general: 9, guest_assistant: 7, jishen: 亥}
+  - {bureau: 41, taiyi: 坤, tianmu: 陰德, tianmu_position: 乾, host_count: 27, host_general: 7, host_assistant: 1, shiji: 寅, guest_count: 16, guest_general: 6, guest_assistant: 8, jishen: 戌}
+  - {bureau: 42, taiyi: 坤, tianmu: 大義, tianmu_position: 亥, host_count: 27, host_general: 7, host_assistant: 1, shiji: 辰, guest_count: 12, guest_general: 2, guest_assistant: 6, jishen: 酉}
+  - {bureau: 43, taiyi: 子, tianmu: 地主, tianmu_position: 子, host_count: 8, host_general: 8, host_assistant: 4, shiji: 巳, guest_count: 17, guest_general: 7, guest_assistant: 1, jishen: 申}
+  - {bureau: 44, taiyi: 子, tianmu: 陽德, tianmu_position: 丑, host_count: 33, host_general: 3, host_assistant: 9, shiji: 坤, guest_count: 14, guest_general: 4, guest_assistant: 2, jishen: 未}
+  - {bureau: 45, taiyi: 子, tianmu: 和德, tianmu_position: 艮, host_count: 32, host_general: 2, host_assistant: 6, shiji: 酉, guest_count: 7, guest_general: 7, guest_assistant: 1, jishen: 午}
+  - {bureau: 46, taiyi: 巽, tianmu: 呂申, tianmu_position: 寅, host_count: 5, host_general: 5, host_assistant: 5, shiji: 乾, guest_count: 16, guest_general: 6, guest_assistant: 8, jishen: 巳}
+  - {bureau: 47, taiyi: 巽, tianmu: 高叢, tianmu_position: 卯, host_count: 4, host_general: 4, host_assistant: 2, shiji: 丑, guest_count: 8, guest_general: 8, guest_assistant: 4, jishen: 辰}
+  - {bureau: 48, taiyi: 巽, tianmu: 太陽, tianmu_position: 辰, host_count: 1, host_general: 1, host_assistant: 3, shiji: 寅, guest_count: 5, guest_general: 5, guest_assistant: 5, jishen: 卯}
+  - {bureau: 49, taiyi: 乾, tianmu: 大炅, tianmu_position: 巽, host_count: 24, host_general: 4, host_assistant: 2, shiji: 辰, guest_count: 25, guest_general: 5, guest_assistant: 5, jishen: 寅}
+  - {bureau: 50, taiyi: 乾, tianmu: 大神, tianmu_position: 巳, host_count: 16, host_general: 6, host_assistant: 8, shiji: 午, guest_count: 15, guest_general: 5, guest_assistant: 5, jishen: 丑}
+  - {bureau: 51, taiyi: 乾, tianmu: 大威, tianmu_position: 午, host_count: 15, host_general: 5, host_assistant: 5, shiji: 坤, guest_count: 13, guest_general: 3, guest_assistant: 9, jishen: 子}
+  - {bureau: 52, taiyi: 午, tianmu: 天道, tianmu_position: 未, host_count: 39, host_general: 9, host_assistant: 7, shiji: 酉, guest_count: 31, guest_general: 1, guest_assistant: 3, jishen: 亥}
+  - {bureau: 53, taiyi: 午, tianmu: 大武, tianmu_position: 坤, host_count: 38, host_general: 8, host_assistant: 4, shiji: 亥, guest_count: 25, guest_general: 5, guest_assistant: 5, jishen: 戌}
+  - {bureau: 54, taiyi: 午, tianmu: 大武, tianmu_position: 坤, host_count: 38, host_general: 8, host_assistant: 4, shiji: 子, guest_count: 24, guest_general: 4, guest_assistant: 2, jishen: 酉}
+  - {bureau: 55, taiyi: 艮, tianmu: 武德, tianmu_position: 申, host_count: 16, host_general: 6, host_assistant: 8, shiji: 艮, guest_count: 3, guest_general: 3, guest_assistant: 9, jishen: 申}
+  - {bureau: 56, taiyi: 艮, tianmu: 太簇, tianmu_position: 酉, host_count: 15, host_general: 5, host_assistant: 5, shiji: 辰, guest_count: 34, guest_general: 4, guest_assistant: 2, jishen: 未}
+  - {bureau: 57, taiyi: 艮, tianmu: 陰主, tianmu_position: 戌, host_count: 10, host_general: 1, host_assistant: 3, shiji: 巳, guest_count: 25, guest_general: 5, guest_assistant: 5, jishen: 午}
+  - {bureau: 58, taiyi: 卯, tianmu: 陰德, tianmu_position: 乾, host_count: 12, host_general: 2, host_assistant: 6, shiji: 未, guest_count: 26, guest_general: 6, guest_assistant: 8, jishen: 巳}
+  - {bureau: 59, taiyi: 卯, tianmu: 陰德, tianmu_position: 乾, host_count: 12, host_general: 2, host_assistant: 6, shiji: 申, guest_count: 19, guest_general: 9, guest_assistant: 7, jishen: 辰}
+  - {bureau: 60, taiyi: 卯, tianmu: 大義, tianmu_position: 亥, host_count: 12, host_general: 2, host_assistant: 6, shiji: 戌, guest_count: 13, guest_general: 3, guest_assistant: 9, jishen: 卯}
+  - {bureau: 61, taiyi: 酉, tianmu: 地主, tianmu_position: 子, host_count: 33, host_general: 3, host_assistant: 9, shiji: 亥, guest_count: 34, guest_general: 4, guest_assistant: 2, jishen: 寅}
+  - {bureau: 62, taiyi: 酉, tianmu: 陽德, tianmu_position: 丑, host_count: 26, host_general: 6, host_assistant: 8, shiji: 艮, guest_count: 25, guest_general: 5, guest_assistant: 5, jishen: 丑}
+  - {bureau: 63, taiyi: 酉, tianmu: 和德, tianmu_position: 艮, host_count: 25, host_general: 5, host_assistant: 5, shiji: 卯, guest_count: 22, guest_general: 2, guest_assistant: 6, jishen: 子}
+  - {bureau: 64, taiyi: 坤, tianmu: 呂申, tianmu_position: 寅, host_count: 16, host_general: 6, host_assistant: 8, shiji: 巽, guest_count: 11, guest_general: 1, guest_assistant: 3, jishen: 亥}
+  - {bureau: 65, taiyi: 坤, tianmu: 高叢, tianmu_position: 卯, host_count: 15, host_general: 5, host_assistant: 5, shiji: 未, guest_count: 1, guest_general: 1, guest_assistant: 3, jishen: 戌}
+  - {bureau: 66, taiyi: 坤, tianmu: 太陽, tianmu_position: 辰, host_count: 12, host_general: 2, host_assistant: 6, shiji: 申, guest_count: 34, guest_general: 4, guest_assistant: 2, jishen: 酉}
+  - {bureau: 67, taiyi: 子, tianmu: 大炅, tianmu_position: 巽, host_count: 25, host_general: 5, host_assistant: 5, shiji: 戌, guest_count: 2, guest_general: 2, guest_assistant: 6, jishen: 申}
+  - {bureau: 68, taiyi: 子, tianmu: 大神, tianmu_position: 巳, host_count: 17, host_general: 7, host_assistant: 1, shiji: 子, guest_count: 8, guest_general: 8, guest_assistant: 4, jishen: 未}
+  - {bureau: 69, taiyi: 子, tianmu: 大威, tianmu_position: 午, host_count: 16, host_general: 6, host_assistant: 8, shiji: 艮, guest_count: 32, guest_general: 2, guest_assistant: 6, jishen: 午}
+  - {bureau: 70, taiyi: 巽, tianmu: 天道, tianmu_position: 未, host_count: 30, host_general: 3, host_assistant: 9, shiji: 卯, guest_count: 4, guest_general: 4, guest_assistant: 2, jishen: 巳}
+  - {bureau: 71, taiyi: 巽, tianmu: 大武, tianmu_position: 坤, host_count: 29, host_general: 9, host_assistant: 7, shiji: 巳, guest_count: 32, guest_general: 2, guest_assistant: 6, jishen: 辰}
+  - {bureau: 72, taiyi: 巽, tianmu: 大武, tianmu_position: 坤, host_count: 29, host_general: 9, host_assistant: 7, shiji: 午, guest_count: 31, guest_general: 1, guest_assistant: 3, jishen: 卯}
+
+engineering_reference_matching_bureaus:
+  reference: kintaiyi_engineering_reference
+  frozen_count: 30
+  bureaus: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31]
+  excluded_known_differences: [30, 44, 66]

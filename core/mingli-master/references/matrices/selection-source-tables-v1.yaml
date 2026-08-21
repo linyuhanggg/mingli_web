@@ -1,0 +1,674 @@
+schema_version: mingli-selection-source-tables-v1
+version: 1.2.1
+status: source_verified
+
+selected_profile:
+  id: xieji-official-cnlunar-v1
+  version: 1.2.1
+  supported_civil_years: [1901, 2100]
+  maximum_candidate_range_days: 366
+  calendar_boundary: exact_jie_month_from_shared_calendar
+  day_rollover: civil_midnight
+  hour_profile: civil_date_segmented_double_hours-v1
+  candidate_policy: generate_each_civil_day_and_requested_double_hour
+  day_summary_reference_time: local_civil_noon
+  exact_jie_boundary_policy: compare civil-day endpoints and preserve all detected month and Jianchu variants
+  interpretation_policy: calculated rule matches and conflicts only; no event guarantee
+
+source_profiles:
+  xieji_bianfang:
+    title: 钦定协纪辨方书
+    recension: 四库全书本 normalized text
+    normalized_path: references/fulltext/selection/xieji-bianfang-shu/fulltext.md
+    sha256: 49db8b60be16236af63ec9bc23c05723a61d22bdd9eafa118e88a66dcad6b30c
+    anchors:
+      jianchu: L875
+      month_break: L904
+      huanghei_day_and_hour: L1509
+      xunshan_luohou: L1699-L1700
+      xunshan_luohou_mitigation: [L10778, L10969-L10970, L11305]
+      mansion_cycle_and_epoch_uncertainty: L407-L409
+      deleted_popular_rules: L94-L96
+  xingli_kaoyuan:
+    title: 御定星历考原
+    recension: 四库全书本 normalized text
+    normalized_path: references/fulltext/selection/xingli-kaoyuan/fulltext.md
+    sha256: 419ee9d7fe62e6e9bf597d1325ae7476a952c14bcefe967cc1d622bf5e04f9ff
+    anchors:
+      jianchu: L918
+      month_break: L692
+      mansion_cycle: L960-L963
+      xunkong: L972
+  donggong_zeri:
+    title: 董公选择日要览
+    recension: local normalized public-domain transcription
+    normalized_path: references/fulltext/selection/donggong-zeri/fulltext.md
+    sha256: f35894e1041076321f3061fdcb20515740b12fc30fce6e4ec20977f5660396fc
+    release_table_path: references/books/selection/donggong-zeri/monthly-day-table.md
+    release_table_sha256: ff1931d10c20c2fc6b5e38ecef4d0d51a95629d3aab85599beee341683e5de6b
+    anchors:
+      day_and_hour_scope: L31-L36
+      monthly_rows: L54-L787
+    role: folk comparison only; never merged into official rank
+  yuqia_ji:
+    title: 玉匣记
+    recension: 维基文库 normalized 民俗层
+    normalized_path: references/fulltext/selection/yuqia-ji/fulltext.md
+    sha256: 93a9b8cde53e3fd6efafe509523fa3ec7c98181b7835c1933703f5cd5563d912
+    anchors:
+      mansions: L1006-L1175
+      pengzu: L1520
+      folk_calendar_rules: L1520-L1650
+    role: folk comparison only; never merged into official rank
+
+primary_classical_rule_witnesses:
+  xieji-xunshan-luohou-v1:
+    source_profile: xieji_bianfang
+    source_anchor: L1699-L1700
+    event_profile: construction_renovation
+    event_fact_field: luohou
+    directional_formula_key: xunshan_luohou_by_year_branch
+    evidence_rule_id: XR-18
+    exact_quote: 起例巡山羅㬋為太嵗前一位子年在癸丑年在艮寅年在甲卯年在乙辰年在巽巳年在丙午年在丁未年在坤申年在庚酉年在辛戌年在乾亥年在壬○選擇宗鏡曰巡山羅㬋止忌立向開山修方不忌
+    exact_quote_sha256: 824e100a53a07217c4872738abb8e7fe2fad9f637d807b79920633c8ec5f54e8
+    normalized_formula: 子癸；丑艮；寅甲；卯乙；辰巽；巳丙；午丁；未坤；申庚；酉辛；戌乾；亥壬；止忌立向；开山、修方不忌
+    normalized_formula_sha256: 2bbd9c5949152b6d78ea7fdbc39ab03519ca71e5cac4cc279c3dac8250f94470
+    explicitly_taboo_actions: [立向]
+    explicitly_exempt_actions: [开山, 修方]
+    source_action_glyph_normalization: {开: 開}
+    runtime_rank_policy: informational_until_same_palace_and_mitigation_facts_are_calculated
+    runtime_evidence_statement: 巡山羅㬋按年支配二十四山；原文明确“止忌立向，开山、修方不忌”，且一白到向为吉、吉星到山到向可择用，与太岁同宫则勿犯。当前事实层未计算同宫与制化，因此仅作方位信息，不作硬淘汰。
+    runtime_evidence_statement_sha256: ccabdc91a14e904b7006cab18342197237ee4214dbb9af25c5dc4063fb100b2a
+    mitigation_witnesses:
+      - source_anchor: L10778
+        exact_excerpt: 巡山羅㬋占向一白到則吉
+        exact_excerpt_sha256: 36b1757d2592669dc5d848f1eb6700d359f413788e0042ef8ca2c779d2ea8af4
+        role: one_white_mitigation
+      - source_anchor: L10969
+        exact_excerpt: 宗鏡曰巡山羅㬋忌立向不忌開山修方
+        exact_excerpt_sha256: e56cda9e42fa2a319adf8d3af98d19d75a9972756e13284efe67d39917982883
+        role: explicit_action_scope
+      - source_anchor: L10970
+        exact_excerpt: 有吉星到山到向坐山乘旺猶可擇吉取用
+        exact_excerpt_sha256: 88baa779a2edc6794de9589cae68757c07824796a8567978a34b43178dd56d6f
+        role: non_same_palace_mitigation
+      - source_anchor: L10970
+        exact_excerpt: 則與太歳同宫勿犯可也
+        exact_excerpt_sha256: 654ed24a53e62eea113e90e3be211d5f747f4616bb2b804fae9e50a186a5c7e5
+        role: same_palace_prohibition
+      - source_anchor: L11305
+        exact_excerpt: 巡山羅㬋止忌立向
+        exact_excerpt_sha256: 81a7c422b8f641aab4549e95ce9f374fbc9375b110042d3684ac21198fdbf7e0
+        role: explicit_action_scope_restatement
+    role: exact primary classical witness for the directional formula, explicit exemptions, and mitigation limits that preclude unconditional runtime elimination
+
+supplemental_classical_sources:
+  chen-zixing-sansang-v1:
+    title: 新鐫陳子性造葬日用事宜應驗藏書卷之八
+    witness: CADAL02055581 digitized classical edition
+    role: exact classical formula witness for the 三丧大墓 seasonal day branch
+    url: https://www.shidianguji.com/zh/book/CADAL02055581/chapter/1lw9omhzyp4ax
+    local_artifact_path: vendor/selection-sources/chen-zixing-CADAL02055581-excerpts.txt
+    local_artifact_sha256: 6b35bfd61b866eb513de2f9d131152ef49b154608330f0d3e56ed22bc5e36b46
+    accessed_at: '2026-07-24'
+    source_anchor: lineId 3603, 三丧大墓
+    exact_quote: 三丧大墓：春辰日，夏未日，秋戍日，冬丑日，
+    exact_quote_sha256: b701705d2c253493a15164152e87edc4a110345c627e48b36800f89d8a0855b7
+    normalized_formula: 春辰；夏未；秋戌；冬丑
+    normalized_formula_sha256: a2fb735337f3638aa68d7da088d6a041737390ade4a2b498f86f15046eec0dc7
+    normalization: digitized text uses 戍 for the autumn branch; normalized to 戌 because 戍 is not one of the twelve earthly branches
+  chen-zixing-tujin-v1:
+    title: 新鐫陳子性造葬日用事宜應驗藏書卷之八
+    witness: CADAL02055581 digitized classical edition
+    role: exact classical formula witness for the 土禁 seasonal day branch
+    url: https://www.shidianguji.com/zh/book/CADAL02055581/chapter/1lw9omhzyp4ax
+    local_artifact_path: vendor/selection-sources/chen-zixing-CADAL02055581-excerpts.txt
+    local_artifact_sha256: 6b35bfd61b866eb513de2f9d131152ef49b154608330f0d3e56ed22bc5e36b46
+    accessed_at: '2026-07-24'
+    source_anchor: lines 1475-1477, 土禁凶日
+    event_context: lines 1467-1477, 斩草破土、掘金井
+    applicable_actions: [破土]
+    exact_quote: 土禁凶日，春亥夏寅，秋巳、冬申，
+    exact_quote_sha256: 8896a2994984761bc4df37cfbab89e04369e8cd953987d4c1e16ed19ccc87240
+
+engineering_verification_sources:
+  chosun-sansang-secondary-v1:
+    title: "한국어와 중국어의 금기어 비교 연구: 죽음에 관한 금기어를 중심으로"
+    author: 왕뢰
+    alternative_author: Wang, lei
+    publisher: Chosun University Repository
+    issued_year: 2013
+    role: secondary engineering corroboration only; never a classical or official-primary evidence source
+    url: https://oak.chosun.ac.kr/handle/2020.oak/12030
+    artifact_url: https://oak.chosun.ac.kr/bitstream/2020.oak/12030/2/%ED%95%9C%EA%B5%AD%EC%96%B4%EC%99%80%20%EC%A4%91%EA%B5%AD%EC%96%B4%EC%9D%98%20%EA%B8%88%EA%B8%B0%EC%96%B4%20%EB%B9%84%EA%B5%90%20%EC%97%B0%EA%B5%AC%3A%20%EC%A3%BD%EC%9D%8C%EC%97%90%20%EA%B4%80%ED%95%9C%20%EA%B8%88%EA%B8%B0%EC%96%B4%EB%A5%BC%20%EC%A4%91%EC%8B%AC%EC%9C%BC%EB%A1%9C.pdf
+    accessed_at: '2026-07-24'
+    source_anchor: PDF p.52 footnote 36
+    exact_excerpt: 삼상일이란 춘진일(春辰日), 하말일(夏末日), 추수일(秋戍日), 동축일(冬丑日)을 가리킨다.
+    exact_excerpt_sha256: dc16c207f9cb4c146cd21de5b76a0639c10ba60143101847cdb7e8df2cb3bd66
+    normalized_rule: 春季（农历一至三月）辰日；夏季（农历四至六月）未日；秋季（农历七至九月）戌日；冬季（农历十至十二月）丑日。
+    normalized_rule_sha256: 2728e7a6a3814111c8745f1073984291c9dee1fb6941f5b774b99530dfb535e2
+
+runtime:
+  project: OPN48/cnlunar
+  version: 0.2.4
+  commit: 71e448a3ad4fa17bb731a57637ee0728e6f53d37
+  distribution_sha256: 19689288604e86a3ef48dba23d39d6a7efbd5efabcb3923d4d656319762af4ea
+  license: MIT
+  license_sha256: 8bc77e1f9ab5c48cfc9e532b5eb30ff02c67cdc14af27b88b9c1ae815f1364bc
+  config_sha256: aa804333238a07633057f614ae611798cc64da4621549940bb0d2025c2ab478a
+  implementation_sha256: 049ad17c4153208d4cbcdc358177eff30d46f6429f0caf3676ea7d4170a2cdd8
+  role: pinned mechanical implementation; not classical authority
+
+lineages:
+  official:
+    id: xieji-xingli-official-v1
+    priority: primary
+    sources: [xieji_bianfang, xingli_kaoyuan]
+  folk:
+    id: donggong-yuqia-folk-v1
+    priority: comparison_only
+    sources: [donggong_zeri, yuqia_ji]
+  conflict_policy:
+    preserve_disagreement: true
+    merge_verdicts: false
+    official_rank_ignores_folk_results: true
+
+jianchu:
+  order: [建, 除, 满, 平, 定, 执, 破, 危, 成, 收, 开, 闭]
+  formula: day_branch offset from exact Jie-month branch, same branch is 建
+  source_anchor: xieji_bianfang L875; xingli_kaoyuan L918
+
+huanghei:
+  gods:
+    - {name: 青龙, class: huang}
+    - {name: 明堂, class: huang}
+    - {name: 天刑, class: hei}
+    - {name: 朱雀, class: hei}
+    - {name: 金匮, runtime_variant: 金贵, class: huang}
+    - {name: 天德, class: huang}
+    - {name: 白虎, class: hei}
+    - {name: 玉堂, class: huang}
+    - {name: 天牢, class: hei}
+    - {name: 玄武, class: hei}
+    - {name: 司命, class: huang}
+    - {name: 勾陈, class: hei}
+  qinglong_start_by_month_or_day_branch:
+    子: 申
+    丑: 戌
+    寅: 子
+    卯: 寅
+    辰: 辰
+    巳: 午
+    午: 申
+    未: 戌
+    申: 子
+    酉: 寅
+    戌: 辰
+    亥: 午
+  day_formula: start 青龙 on the branch selected by the exact Jie-month branch, then advance through the day branches
+  hour_formula: start 青龙 on the branch selected by the day branch, then advance through the hour branches
+  source_anchor: xieji_bianfang L1509
+
+mansions:
+  order: [角, 亢, 氐, 房, 心, 尾, 箕, 斗, 牛, 女, 虚, 危, 室, 壁, 奎, 娄, 胃, 昴, 毕, 觜, 参, 井, 鬼, 柳, 星, 张, 翼, 轸]
+  cycle_days: 28
+  classical_supercycle_days: 420
+  engineering_epoch: {civil_date: '2019-01-17', mansion: 角, source: cnlunar-0.2.4}
+  source_anchor: xingli_kaoyuan L960-L963
+  caveat: the classical text explicitly says the absolute first-Yuan epoch cannot be recovered; the release epoch is versioned and engineering-verified
+
+hour_profiles:
+  branches: [子, 丑, 寅, 卯, 辰, 巳, 午, 未, 申, 酉, 戌, 亥]
+  representative_hours: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22]
+  civil_date_projection: the cross-midnight Zi double-hour is represented by 00:00-01:00 and 23:00-24:00 segments on each civil candidate date
+  constraint_matching: a structured time window admits a branch when it intersects any of that branch's half-open civil-time segments; representative instants are not used for filtering
+  timezone_transition_policy: nonexistent local minutes are ineligible; repeated local minutes preserve both UTC-offset variants and remain explicitly ambiguous
+  civil_date_segments:
+    子: [['00:00', '01:00'], ['23:00', '24:00']]
+    丑: [['01:00', '03:00']]
+    寅: [['03:00', '05:00']]
+    卯: [['05:00', '07:00']]
+    辰: [['07:00', '09:00']]
+    巳: [['09:00', '11:00']]
+    午: [['11:00', '13:00']]
+    未: [['13:00', '15:00']]
+    申: [['15:00', '17:00']]
+    酉: [['17:00', '19:00']]
+    戌: [['19:00', '21:00']]
+    亥: [['21:00', '23:00']]
+  intervals:
+    子: ['23:00', '00:59:59']
+    丑: ['01:00', '02:59:59']
+    寅: ['03:00', '04:59:59']
+    卯: ['05:00', '06:59:59']
+    辰: ['07:00', '08:59:59']
+    巳: ['09:00', '10:59:59']
+    午: ['11:00', '12:59:59']
+    未: ['13:00', '14:59:59']
+    申: ['15:00', '16:59:59']
+    酉: ['17:00', '18:59:59']
+    戌: ['19:00', '20:59:59']
+    亥: ['21:00', '22:59:59']
+
+gods:
+  year_required:
+    - {id: year.taisui, formula: year branch, source_anchor: xieji XR-03}
+    - {id: year.suipo, formula: branch opposite the year branch, source_anchor: xieji XR-03}
+    - {id: year.three_sha, formula: trine-opposing three-branch sector table, source_anchor: xieji L773-L775}
+  month_required:
+    - {id: month.build, formula: exact Jie-month branch, source_anchor: xieji L875}
+    - {id: month.break, formula: branch opposite the exact Jie-month branch, source_anchor: xieji L904}
+    - {id: month.three_sha, formula: apply the same trine-opposing three-branch table to the exact Jie-month branch, source_anchor: xieji L1375}
+  day_required:
+    - {id: day.jianchu, formula: jianchu contract, source_anchor: xieji L875}
+    - {id: day.huanghei, formula: huanghei day contract, source_anchor: xieji L1509}
+    - {id: day.mansion, formula: mansion contract, source_anchor: xingli L960-L963}
+    - {id: day.official_good_bad, formula: pinned cnlunar official tables, source_anchor: xieji event chapters}
+  hour_required:
+    - {id: hour.ganzhi, formula: shared calendar double-hour facts, source_anchor: calendar-core}
+    - {id: hour.huanghei, formula: huanghei hour contract, source_anchor: xieji L1509}
+  three_sha_by_trine:
+    申子辰: {jie_sha: 巳, zai_sha: 午, sui_sha: 未, sector: south}
+    巳酉丑: {jie_sha: 寅, zai_sha: 卯, sui_sha: 辰, sector: east}
+    寅午戌: {jie_sha: 亥, zai_sha: 子, sui_sha: 丑, sector: north}
+    亥卯未: {jie_sha: 申, zai_sha: 酉, sui_sha: 戌, sector: west}
+
+branch_opposites:
+  子: 午
+  丑: 未
+  寅: 申
+  卯: 酉
+  辰: 戌
+  巳: 亥
+  午: 子
+  未: 丑
+  申: 寅
+  酉: 卯
+  戌: 辰
+  亥: 巳
+
+event_profiles:
+  generic_selection:
+    official_terms: []
+    source_rules: [XR-08, KR-17]
+    required_event_fact_fields: [jianchu, huanghei.day, huanghei.hours, twenty_eight_lodges, annual_gods, monthly_gods, daily_shensha, hourly_shensha, general_good_gods, general_bad_gods, yiji, conflicts]
+    safety_policy: cultural_reference_not_event_guarantee
+  marriage:
+    official_terms: [嫁娶, 结婚姻, 纳采]
+    donggong_terms: [婚姻, 嫁娶, 娶亲, 纳采]
+    source_rules: [XR-05, KR-18, DR-08]
+    required_event_fact_fields: [bujiang_day, yaoan, shengqi, mucang, tiande_yuede, tiandehe_yuedehe, sanhe_liuhe, yuepo_yueyan_yuexing_yuehai, side_waste_tombs, guchen_guasu, shi_eda_bai, chongsang_sansang, furi_fuduan, marriage_zhoutang, participant_clashes]
+  construction_renovation:
+    official_terms: [营建, 修宫室, 缮城郭, 修造, 立向, 开山, 修方, 竖柱上梁, 筑堤防, 修仓库, 搬移, 安床, 破土]
+    donggong_terms: [起造, 修造, 动土, 入宅, 上梁]
+    source_rules: [XR-06, KR-20, DR-08]
+    directional_scope_fields: [site_branch, site_mountain]
+    required_event_fact_fields: [cheng_open_receive_days, tiande_yuede_yueen, sixiang_shide_shengqi_mucang, tuwang_yongshi, yuepo_yueyan_dahao, annual_sansha, monthly_sansha, taisui_suipo, dajiangjun, jinshen_qisha, luohou, directional_hits]
+  burial_funeral:
+    official_terms: [安葬, 启攒, 破土]
+    donggong_terms: [安葬, 埋葬, 破土, 启攒]
+    source_rules: [XR-07, KR-19, DR-08]
+    directional_scope_fields: [site_branch, site_mountain]
+    required_event_fact_fields: [mingfei_day, mingfei_opposite_day, bujiang_day, cheng_open_days, chongsang_day, sansang_day, furi, fuduan_day, yuepo_yueyan, dihuo, tujin, tuwang_yongshi, mountain_family_clashes]
+  travel_office:
+    official_terms: [出行, 上官, 临政]
+    donggong_terms: [出行, 上官, 赴任]
+    source_rules: [XR-09, DR-08]
+    directional_scope_fields: [site_branch, site_mountain]
+    required_event_fact_fields: [yima_day, tianma_day, wangwang_day, guiji_day, sili_sijue, yanggong_ji, yueji_day, huangdao_good_hours, office_cheng_open_lingzheng_tianen, avoid_po_si_bi_days, folk_travel_comparison]
+  business_opening_transaction:
+    official_terms: [开市, 立券交易, 纳财, 开仓]
+    donggong_terms: [开张, 开市, 交易, 纳财]
+    source_rules: [XR-08, DR-08]
+    required_event_fact_fields: [event_specific_yiji, jianchu_suitability, tiande_yuede_tianen, mucang_shengqi, yuepo, side_waste_tombs, shi_eda_bai, furi_fuduan, directional_avoidance_when_relevant]
+  medical:
+    official_terms: [求医疗病, 解除, 沐浴]
+    donggong_terms: []
+    source_rules: [XR-16, JR-11, JR-12]
+    required_event_fact_fields: [tianyi, yueen, sixiang, shengqi, furi, side_waste, shi_eda_bai, renshen_location, visit_sick_taboo_days, medical_caveat]
+    safety_policy: never delay care; professional medical advice controls
+
+event_fact_definitions:
+  jianchu: {kind: record, record: jianchu, source_anchors: [XR-04, KR-17]}
+  huanghei.day: {kind: record, record: day_path, source_anchors: [XR-04, KR-14]}
+  huanghei.hours: {kind: hour_path, source_anchors: [XR-04, KR-14]}
+  twenty_eight_lodges: {kind: record, record: mansion, source_anchors: [KR-15]}
+  annual_gods: {kind: record, record: annual_gods, source_anchors: [XR-03, KR-08]}
+  monthly_gods: {kind: record, record: monthly_gods, source_anchors: [XR-04, KR-11, KR-12]}
+  daily_shensha: {kind: god_presence, names: [], source_anchors: [XR-08, KR-17]}
+  hourly_shensha: {kind: hour_path, source_anchors: [XR-04, KR-14]}
+  general_good_gods: {kind: good_gods, source_anchors: [XR-08, KR-17]}
+  general_bad_gods: {kind: bad_gods, source_anchors: [XR-08, KR-17]}
+  yiji: {kind: event_yiji, source_anchors: [XR-08, KR-17]}
+  conflicts: {kind: conflicts, source_anchors: [XR-17, DR-09]}
+  bujiang_day: {kind: god_presence, names: [不将], source_anchors: [XR-05, KR-18]}
+  yaoan: {kind: god_presence, names: [要安], source_anchors: [XR-05, KR-18]}
+  shengqi: {kind: god_presence, names: [生气], source_anchors: [XR-05, KR-18]}
+  mucang: {kind: god_presence, names: [母仓], source_anchors: [XR-05, KR-11]}
+  tiande_yuede: {kind: god_presence, names: [天德, 月德], source_anchors: [XR-05, KR-11, KR-18]}
+  tiandehe_yuedehe: {kind: god_presence, names: [天德合, 月德合], source_anchors: [XR-05, KR-11, KR-18]}
+  sanhe_liuhe: {kind: god_presence, names: [三合, 六合], source_anchors: [XR-05, KR-06, KR-18]}
+  yuepo_yueyan_yuexing_yuehai: {kind: god_presence, names: [月破, 月厌, 月刑, 月害], source_anchors: [XR-04, KR-12, KR-18]}
+  side_waste_tombs: {kind: god_presence, names: [四废, 五墓], source_anchors: [XR-05, KR-13, KR-18]}
+  guchen_guasu: {kind: official_rejected_rule, names: [孤辰, 寡宿], source_anchors: [XR-17, xieji-fulltext-L11683]}
+  shi_eda_bai: {kind: fixed_day_set, day_ganzhi: [甲辰, 乙巳, 丙申, 丁亥, 戊戌, 己丑, 庚辰, 辛巳, 壬申, 癸亥], authority: conditional_not_blanket_taboo, source_anchors: [XR-17, JR-08, xieji-fulltext-L1233]}
+  chongsang_sansang: {kind: god_presence, names: [重丧, 三丧], source_anchors: [XR-05, KR-18]}
+  furi_fuduan: {kind: mixed_official_and_rejected, official_names: [复日], rejected_names: [伏断], source_anchors: [XR-17, KR-19, xieji-fulltext-L11769]}
+  marriage_zhoutang: {kind: lunar_zhoutang, authority: rejected_by_official_primary, source_anchors: [XR-17, KR-18, xieji-fulltext-L92]}
+  participant_clashes: {kind: participant_clashes, source_anchors: [XR-05, KR-18]}
+  cheng_open_receive_days: {kind: jianchu_membership, favorable: [成, 开, 收], source_anchors: [XR-06, KR-20]}
+  tiande_yuede_yueen: {kind: god_presence, names: [天德, 月德, 月恩], source_anchors: [XR-06, KR-11, KR-20]}
+  sixiang_shide_shengqi_mucang: {kind: god_presence, names: [四相, 时德, 生气, 母仓], source_anchors: [XR-06, KR-11, KR-20]}
+  tuwang_yongshi: {kind: god_presence, names: [土王用事], source_anchors: [XR-06, KR-20, xieji-fulltext-L2752]}
+  yuepo_yueyan_dahao: {kind: god_presence, names: [月破, 月厌, 大耗], source_anchors: [XR-06, KR-12, KR-20]}
+  annual_sansha: {kind: record, record: annual_three_sha, source_anchors: [XR-03, KR-08]}
+  monthly_sansha: {kind: record, record: monthly_three_sha, source_anchors: [XR-04, KR-12]}
+  taisui_suipo: {kind: record, record: taisui_suipo, source_anchors: [XR-03, KR-08]}
+  dajiangjun: {kind: direction_formula, formula: dajiangjun, source_anchors: [XR-03, KR-10, xingli-fulltext-L369-L370]}
+  jinshen_qisha: {kind: direction_formula, formula: jinshen_qisha, source_anchors: [XR-03, KR-09, xingli-fulltext-L447-L449]}
+  luohou: {kind: direction_formula, formula: xunshan_luohou, applicable_actions: [立向], explicitly_exempt_actions: [开山, 修方], rank_effect: informational, source_anchors: [XR-18, xieji-fulltext-L1699-L1700, xieji-fulltext-L10778, xieji-fulltext-L10969-L10970, xieji-fulltext-L11305, xieji-xunshan-luohou-v1]}
+  directional_hits: {kind: directional_hits, source_anchors: [XR-02, XR-03, KR-08, KR-09, KR-10]}
+  mingfei_day: {kind: god_presence, names: [鸣吠], source_anchors: [XR-07, KR-19]}
+  mingfei_opposite_day: {kind: god_presence, names: [鸣吠对], source_anchors: [XR-07, KR-19]}
+  cheng_open_days: {kind: jianchu_membership, favorable: [成, 开], source_anchors: [XR-07, KR-19]}
+  chongsang_day: {kind: god_presence, names: [重丧], source_anchors: [XR-07, KR-19]}
+  sansang_day: {kind: seasonal_branch_set, lunar_month_seasons: {spring: [1, 2, 3], summer: [4, 5, 6], autumn: [7, 8, 9], winter: [10, 11, 12]}, taboo_branches: {spring: 辰, summer: 未, autumn: 戌, winter: 丑}, applicable_actions: [安葬], authority: chen_zixing_zaozang_classical_witness, rank_effect: hard_elimination, source_anchors: [XR-07, KR-19, chen-zixing-sansang-v1, chosun-sansang-secondary-v1]}
+  furi: {kind: god_presence, names: [复日], source_anchors: [XR-07, KR-19]}
+  fuduan_day: {kind: official_rejected_rule, names: [伏断], source_anchors: [XR-17, xieji-fulltext-L11769]}
+  yuepo_yueyan: {kind: god_presence, names: [月破, 月厌], source_anchors: [XR-07, KR-19]}
+  dihuo: {kind: god_presence, names: [地火], source_anchors: [XR-07, KR-19]}
+  tujin: {kind: seasonal_branch_set, lunar_month_seasons: {spring: [1, 2, 3], summer: [4, 5, 6], autumn: [7, 8, 9], winter: [10, 11, 12]}, taboo_branches: {spring: 亥, summer: 寅, autumn: 巳, winter: 申}, applicable_actions: [破土], authority: chen_zixing_zaozang_classical_witness, rank_effect: hard_elimination, source_anchors: [XR-07, chen-zixing-tujin-v1]}
+  mountain_family_clashes: {kind: directional_hits, source_anchors: [XR-02, XR-07, KR-19]}
+  yima_day: {kind: god_presence, names: [驿马], source_anchors: [XR-09, KR-17]}
+  tianma_day: {kind: god_presence, names: [天马], source_anchors: [XR-09, KR-17]}
+  wangwang_day: {kind: god_presence, names: [往亡], source_anchors: [XR-09, KR-17]}
+  guiji_day: {kind: god_presence, names: [归忌], source_anchors: [XR-09, KR-17]}
+  sili_sijue: {kind: god_presence, names: [四离, 四绝], source_anchors: [XR-09, KR-13]}
+  yanggong_ji: {kind: lunar_month_day_set, values: ['1-13', '2-11', '3-9', '4-7', '5-5', '6-2', '7-1', '7-29', '8-27', '9-25', '10-23', '11-21', '12-19'], authority: folk_comparison_only, source_anchors: [XR-17, JR-06]}
+  yueji_day: {kind: lunar_day_set, values: [5, 14, 23], authority: folk_comparison_only, source_anchors: [JR-07]}
+  huangdao_good_hours: {kind: hour_path, source_anchors: [XR-09, KR-14]}
+  office_cheng_open_lingzheng_tianen: {kind: composite, jianchu: [成, 开], gods: [临日, 天恩], source_anchors: [XR-09, KR-17]}
+  avoid_po_si_bi_days: {kind: composite, jianchu: [破, 闭], gods: [四离, 四绝], source_anchors: [XR-09, KR-13, KR-17]}
+  folk_travel_comparison: {kind: folk_comparison, source_anchors: [JR-06, JR-07, DR-09]}
+  event_specific_yiji: {kind: event_yiji, source_anchors: [XR-14, KR-17]}
+  jianchu_suitability: {kind: jianchu_membership, favorable: [满, 成, 开], source_anchors: [XR-14, KR-17]}
+  tiande_yuede_tianen: {kind: god_presence, names: [天德, 月德, 天恩], source_anchors: [XR-14, KR-11, KR-17]}
+  mucang_shengqi: {kind: god_presence, names: [母仓, 生气], source_anchors: [XR-14, KR-11]}
+  yuepo: {kind: god_presence, names: [月破], source_anchors: [XR-14, KR-12]}
+  directional_avoidance_when_relevant: {kind: directional_hits, source_anchors: [XR-02, XR-14]}
+  tianyi: {kind: god_presence, names: [天医], source_anchors: [XR-16, xingli-fulltext-L537-L539]}
+  yueen: {kind: god_presence, names: [月恩], source_anchors: [XR-16, KR-11]}
+  sixiang: {kind: god_presence, names: [四相], source_anchors: [XR-16, KR-17]}
+  side_waste: {kind: god_presence, names: [四废], source_anchors: [XR-16, KR-13]}
+  renshen_location: {kind: renshen_location, source_anchors: [JR-11, yuqia-fulltext-L1492-L1511]}
+  visit_sick_taboo_days: {kind: day_ganzhi_set, table: visit_sick_taboo_day_ganzhi, source_anchors: [JR-12, yuqia-fulltext-L1584-L1587]}
+  medical_caveat: {kind: medical_policy, source_anchors: [XR-16, JR-11, JR-12]}
+
+folk_medical_tables:
+  version: 1.0.0
+  source: references/fulltext/selection/yuqia-ji/fulltext.md
+  source_anchor: L1492-L1511; L1584-L1587
+  renshen_by_day_stem:
+    甲: 头
+    乙: 项
+    丙: 肩背
+    丁: 胸肋
+    戊: 腹
+    己: 背
+    庚: 膝
+    辛: 脾
+    壬: 肾
+    癸: 足
+  renshen_by_day_branch:
+    子: 目
+    丑: 耳
+    寅: 胸
+    卯: 足
+    辰: 腰
+    巳: 手
+    午: 心腹
+    未: 足
+    申: 头
+    酉: 背
+    戌: 喉
+    亥: 项
+  renshen_by_hour_branch:
+    子: 踝
+    丑: 头
+    寅: 耳
+    卯: 面
+    辰: 项
+    巳: 乳
+    午: 胸肋
+    未: 腹
+    申: 心
+    酉: 膝
+    戌: 腰阴
+    亥: 股
+  visit_sick_taboo_day_ganzhi: [壬寅, 壬午, 庚午, 甲寅, 乙卯, 己卯]
+
+# Evidence retrieval is allowed only after these mechanical predicates match
+# the current deterministic fact layer.  `not_calculated` intentionally points
+# to no provider field: records outside the released event profiles remain in
+# the corpus for research but can never be selected as runtime evidence.
+evidence_fact_bindings:
+  version: 1.1.0
+  policy: exact active rule identities from the best exact date-time fact precede semantic ranking; inactive and absent facts never activate a rule
+  contracts:
+    applicable_rule:
+      - {path_suffix: /active_source_rule_ids, operator: descendant_eq, value: $local_id}
+    not_calculated:
+      - {path_suffix: /output/not_calculated_classical_rule_ids, operator: nonempty}
+  rules:
+    DR-01: applicable_rule
+    DR-02: applicable_rule
+    DR-03: applicable_rule
+    DR-04: not_calculated
+    DR-05: applicable_rule
+    DR-06: not_calculated
+    DR-07: applicable_rule
+    DR-08: applicable_rule
+    DR-09: applicable_rule
+    DR-10: not_calculated
+    XR-01: applicable_rule
+    XR-02: applicable_rule
+    XR-03: applicable_rule
+    XR-04: applicable_rule
+    XR-05: applicable_rule
+    XR-06: applicable_rule
+    XR-07: applicable_rule
+    XR-08: applicable_rule
+    XR-09: applicable_rule
+    XR-10: not_calculated
+    XR-11: not_calculated
+    XR-12: not_calculated
+    XR-13: not_calculated
+    XR-14: applicable_rule
+    XR-15: not_calculated
+    XR-16: applicable_rule
+    XR-17: applicable_rule
+    XR-18: applicable_rule
+    KR-01: applicable_rule
+    KR-02: applicable_rule
+    KR-03: not_calculated
+    KR-04: not_calculated
+    KR-05: applicable_rule
+    KR-06: applicable_rule
+    KR-07: not_calculated
+    KR-08: applicable_rule
+    KR-09: applicable_rule
+    KR-10: applicable_rule
+    KR-11: applicable_rule
+    KR-12: applicable_rule
+    KR-13: applicable_rule
+    KR-14: applicable_rule
+    KR-15: applicable_rule
+    KR-16: not_calculated
+    KR-17: applicable_rule
+    KR-18: applicable_rule
+    KR-19: applicable_rule
+    KR-20: applicable_rule
+    JR-01: applicable_rule
+    JR-02: not_calculated
+    JR-03: not_calculated
+    JR-04: applicable_rule
+    JR-05: applicable_rule
+    JR-06: applicable_rule
+    JR-07: applicable_rule
+    JR-08: applicable_rule
+    JR-09: applicable_rule
+    JR-10: not_calculated
+    JR-11: applicable_rule
+    JR-12: applicable_rule
+    JR-13: not_calculated
+    JR-14: not_calculated
+    JR-15: not_calculated
+    JR-16: not_calculated
+    JR-17: not_calculated
+    JR-18: not_calculated
+    JR-19: not_calculated
+    JR-20: applicable_rule
+directional_formulas:
+  dajiangjun_by_year_branch:
+    子: 酉
+    丑: 酉
+    寅: 子
+    卯: 子
+    辰: 子
+    巳: 卯
+    午: 卯
+    未: 卯
+    申: 午
+    酉: 午
+    戌: 午
+    亥: 酉
+  jinshen_qisha_by_year_stem:
+    甲: [午, 未, 申, 酉]
+    乙: [辰, 巳]
+    丙: [子, 丑, 寅, 卯, 午, 未]
+    丁: [寅, 卯, 戌, 亥]
+    戊: [申, 酉, 子, 丑]
+    己: [午, 未, 申, 酉]
+    庚: [辰, 巳]
+    辛: [子, 丑, 寅, 卯, 午, 未]
+    壬: [寅, 卯, 戌, 亥]
+    癸: [申, 酉, 子, 丑]
+  xunshan_luohou_by_year_branch:
+    子: 癸
+    丑: 艮
+    寅: 甲
+    卯: 乙
+    辰: 巽
+    巳: 丙
+    午: 丁
+    未: 坤
+    申: 庚
+    酉: 辛
+    戌: 乾
+    亥: 壬
+
+donggong_event_verdicts:
+  version: 1.0.0
+  source_rows: references/books/selection/donggong-zeri/monthly-day-table.md
+  compilation_policy: frozen source-row classification; production runtime performs identifier lookup only and never adjudicates prose
+  default: not_stated
+  profiles:
+    generic_selection:
+      classification_sha256: 57e476cf63f28cd766ebc22afd888e311c48a519197481503abb6345ba04271f
+      recommend: [DG-D005, DG-D016, DG-D018, DG-D021, DG-D027, DG-D035, DG-D047, DG-D049, DG-D050, DG-D053, DG-D057, DG-D060, DG-D062, DG-D069, DG-D072, DG-D079, DG-D088, DG-D093, DG-D096, DG-D098, DG-D105, DG-D113, DG-D115, DG-D122, DG-D132, DG-D134, DG-D141, DG-D143]
+      avoid: [DG-D001, DG-D002, DG-D004, DG-D006, DG-D007, DG-D009, DG-D012, DG-D013, DG-D014, DG-D019, DG-D022, DG-D023, DG-D025, DG-D028, DG-D031, DG-D033, DG-D036, DG-D037, DG-D040, DG-D043, DG-D044, DG-D045, DG-D048, DG-D052, DG-D055, DG-D058, DG-D064, DG-D075, DG-D076, DG-D078, DG-D082, DG-D085, DG-D100, DG-D110, DG-D111, DG-D118, DG-D127]
+      mixed_conditional: [DG-D003, DG-D008, DG-D010, DG-D011, DG-D015, DG-D017, DG-D020, DG-D024, DG-D026, DG-D029, DG-D030, DG-D032, DG-D034, DG-D038, DG-D039, DG-D041, DG-D042, DG-D051, DG-D054, DG-D056, DG-D059, DG-D061, DG-D063, DG-D065, DG-D066, DG-D067, DG-D068, DG-D070, DG-D071, DG-D073, DG-D074, DG-D077, DG-D080, DG-D081, DG-D083, DG-D084, DG-D086, DG-D089, DG-D090, DG-D091, DG-D092, DG-D094, DG-D095, DG-D097, DG-D099, DG-D101, DG-D102, DG-D103, DG-D104, DG-D106, DG-D107, DG-D108, DG-D109, DG-D112, DG-D114, DG-D116, DG-D117, DG-D119, DG-D120, DG-D121, DG-D123, DG-D124, DG-D125, DG-D126, DG-D128, DG-D129, DG-D130, DG-D131, DG-D133, DG-D135, DG-D136, DG-D137, DG-D138, DG-D139, DG-D140, DG-D142, DG-D144]
+    marriage:
+      classification_sha256: e8028f6c60cc9b37009a9ea0a90b5709275ccb1808867e4ba93d6073022a85bb
+      recommend: [DG-D005, DG-D021, DG-D026, DG-D030, DG-D038, DG-D051, DG-D077, DG-D080, DG-D086, DG-D089, DG-D090, DG-D092, DG-D093, DG-D096, DG-D098, DG-D101, DG-D102, DG-D105, DG-D113, DG-D119, DG-D120, DG-D122, DG-D123, DG-D126, DG-D134, DG-D136, DG-D143]
+      avoid: [DG-D001, DG-D003, DG-D006, DG-D008, DG-D009, DG-D010, DG-D011, DG-D012, DG-D013, DG-D017, DG-D019, DG-D022, DG-D023, DG-D024, DG-D025, DG-D028, DG-D034, DG-D036, DG-D037, DG-D040, DG-D048, DG-D052, DG-D055, DG-D056, DG-D058, DG-D061, DG-D064, DG-D068, DG-D078, DG-D103, DG-D106, DG-D107, DG-D108, DG-D109, DG-D111, DG-D130, DG-D142]
+      mixed_conditional: [DG-D099, DG-D104, DG-D117]
+    construction_renovation:
+      classification_sha256: 7b01d3c1915c2a7bd5409181892eab5d548cab46b372a8486c6616e9c669e420
+      recommend: [DG-D005, DG-D018, DG-D021, DG-D026, DG-D029, DG-D030, DG-D038, DG-D039, DG-D065, DG-D077, DG-D080, DG-D084, DG-D086, DG-D090, DG-D092, DG-D093, DG-D096, DG-D098, DG-D101, DG-D102, DG-D104, DG-D105, DG-D113, DG-D119, DG-D122, DG-D126, DG-D129, DG-D132, DG-D134, DG-D136, DG-D140, DG-D143]
+      avoid: [DG-D001, DG-D002, DG-D003, DG-D006, DG-D008, DG-D009, DG-D010, DG-D011, DG-D012, DG-D013, DG-D014, DG-D015, DG-D017, DG-D019, DG-D022, DG-D023, DG-D024, DG-D025, DG-D028, DG-D034, DG-D036, DG-D037, DG-D040, DG-D041, DG-D048, DG-D052, DG-D055, DG-D056, DG-D058, DG-D061, DG-D064, DG-D068, DG-D078, DG-D103, DG-D106, DG-D107, DG-D108, DG-D109, DG-D111, DG-D130, DG-D135, DG-D142, DG-D144]
+      mixed_conditional: [DG-D051, DG-D099, DG-D117, DG-D120, DG-D123]
+    burial_funeral:
+      classification_sha256: 165387ab9afe2b45fea72250342435c977de332d54f17e1170a9bdb14a59d062
+      recommend: [DG-D005, DG-D011, DG-D016, DG-D020, DG-D021, DG-D024, DG-D029, DG-D035, DG-D039, DG-D051, DG-D070, DG-D073, DG-D077, DG-D092, DG-D095, DG-D096, DG-D098, DG-D104, DG-D105, DG-D107, DG-D122, DG-D125, DG-D126, DG-D129, DG-D133, DG-D134, DG-D136, DG-D140]
+      avoid: [DG-D001, DG-D003, DG-D010, DG-D013, DG-D025, DG-D028, DG-D036, DG-D037, DG-D040, DG-D041, DG-D048, DG-D052, DG-D055, DG-D056, DG-D058, DG-D078, DG-D106, DG-D109, DG-D117, DG-D120, DG-D142]
+      mixed_conditional: [DG-D008, DG-D099]
+    travel_office:
+      classification_sha256: ff496b8bbcf40b880b7e6df3cf28504c92a3e32b8cf977b86c6b4e8c52540ad4
+      recommend: [DG-D005, DG-D021, DG-D030, DG-D038, DG-D051, DG-D065, DG-D077, DG-D080, DG-D084, DG-D090, DG-D092, DG-D093, DG-D096, DG-D098, DG-D101, DG-D102, DG-D105, DG-D113, DG-D120, DG-D122, DG-D126, DG-D134, DG-D136, DG-D143]
+      avoid: [DG-D001, DG-D003, DG-D008, DG-D010, DG-D013, DG-D028, DG-D036, DG-D037, DG-D040, DG-D052, DG-D058, DG-D061, DG-D078, DG-D106, DG-D109, DG-D117, DG-D130, DG-D142]
+      mixed_conditional: [DG-D099, DG-D104]
+    business_opening_transaction:
+      classification_sha256: ba6a6cb3ff01b9a2d7f2e83354ed8c97709ca0892ce77cca522dbddb957b353e
+      recommend: [DG-D005, DG-D021, DG-D030, DG-D038, DG-D051, DG-D077, DG-D080, DG-D084, DG-D086, DG-D090, DG-D092, DG-D093, DG-D096, DG-D098, DG-D101, DG-D102, DG-D105, DG-D113, DG-D119, DG-D120, DG-D122, DG-D126, DG-D134, DG-D143]
+      avoid: [DG-D001, DG-D003, DG-D006, DG-D008, DG-D010, DG-D011, DG-D013, DG-D022, DG-D024, DG-D025, DG-D028, DG-D036, DG-D037, DG-D048, DG-D052, DG-D058, DG-D061, DG-D078, DG-D103, DG-D106, DG-D107, DG-D108, DG-D109, DG-D117, DG-D130, DG-D142]
+      mixed_conditional: [DG-D099, DG-D104]
+    medical:
+      classification_sha256: 05f16625a0e170c2e7503072a8aaec3944534fab3840d3c324d588ebfdaf274b
+      recommend: [DG-D098]
+      avoid: [DG-D001, DG-D003, DG-D008, DG-D010, DG-D013, DG-D028, DG-D036, DG-D052, DG-D058, DG-D078, DG-D099, DG-D142]
+      mixed_conditional: []
+
+event_rule_contract:
+  matching_operation: exact structured action identity only
+  universal_avoidance_terms: [诸事不宜]
+  official_ji_effect: hard_elimination_with_explicit_reason
+  official_yi_effect: explainable ranking preference
+  natural_language_matching: forbidden
+
+directional_scope_contract:
+  requested_scope_id: directional_judgment
+  accepted_structured_fields: [directional_context.site_branch, directional_context.site_mountain]
+  field_semantics:
+    directional_context.site_branch: twelve-branch directional checks
+    directional_context.site_mountain: twenty-four-mountain checks including xunshan luohou
+  minimum_required: at least one accepted structured field
+  evaluated_facts: [annual_tai_sui, annual_sui_po, annual_three_sha, monthly_build, monthly_break, monthly_three_sha, annual_dajiangjun, annual_jinshen_qisha, xunshan_luohou]
+  missing_direction_policy: fail_closed_without_guessing
+
+folk_rules:
+  - id: folk.yang-gong-thirteen
+    source: yuqia_ji
+    status: comparison_only_disputed_by_xieji
+    lunar_month_days: ['1-13', '2-11', '3-9', '4-7', '5-5', '6-2', '7-1', '7-29', '8-27', '9-25', '10-23', '11-21', '12-19']
+    source_anchor: yuqia JR-06; xieji L11826 rejects popular use
+  - id: folk.month-taboo
+    source: yuqia_ji
+    status: comparison_only
+    lunar_days: [5, 14, 23]
+    source_anchor: yuqia JR-07
+  - id: folk.pengzu
+    source: yuqia_ji
+    status: comparison_only
+    formula: match day stem and day branch to the two recorded taboo sayings
+    source_anchor: yuqia L1520; JR-05
+  - id: folk.donggong-monthly-day
+    source: donggong_zeri
+    status: comparison_only_unverified_against_scan
+    lookup: exact Jie-month branch plus Jianchu label, with day stem details retained in the quoted row
+    source_anchor: donggong monthly-day-table DG-D001 through DG-D144
+
+hard_constraint_contract:
+  supported_fields: [excluded_dates, allowed_weekdays, excluded_weekdays, allowed_hour_branches, excluded_hour_branches, time_windows, earliest_date, latest_date, participant_clash_is_hard]
+  participant_clash_is_hard_default: true
+  policy: each mismatch creates an explicit elimination reason; hard constraints never enter ranking components
+
+candidate_output_contract:
+  day_candidates: retain every civil day with full rejection reasons
+  date_time_candidates: split each day into calculated double-hour calendar variants, including both civil Zi segments, exact Jie transitions, and repeated-time folds
+  eligibility: a date-time candidate is eligible only when both its parent day and its exact civil-time segment satisfy hard constraints
+  identity: each date-time candidate is bound to its UTC instant, local interval, hour branch, calendar digest, and source dependency
+
+ranking:
+  method: explainable_lexicographic_v1
+  opaque_numeric_score: false
+  component_order:
+    - hard_eligible_first
+    - fewer_official_event_avoid_matches
+    - more_official_event_recommend_matches
+    - more_active_event_favorable_facts
+    - official_huang_day_first
+    - official_huang_hour_first
+    - fewer_participant_clashes
+    - earlier_civil_instant
+  folk_affects_rank: false

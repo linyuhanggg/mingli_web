@@ -1,0 +1,279 @@
+refinement:
+  id: shensha-ss-b4-ziwei-xingming-refinement
+  version: v0.1
+  generated_at: "2026-07-05"
+  batch_id: SS-B4
+  source_status: distilled_from_ready_ziwei_xingming_packs
+  purpose: "Second-pass refinement for same-name shensha terms in Ziwei and Xingming. This matrix defines source priority, fact-layer requirements, and cross-system boundaries; it is not an independent star-oracle."
+  upstream_refs:
+    backlog: references/matrices/shensha-distillation-backlog.yaml
+    source_profile: references/matrices/shensha-entry-source-profile.yaml
+    quote_trace: references/matrices/shensha-quote-trace.yaml
+    source_book_matrix: references/matrices/shensha-source-book-matrix.yaml
+    tool_adapters: references/tool-adapters.md
+  policy:
+    shensha_layer: ziwei_chart_and_xingming_astronomical_fact_layer
+    requires_tool_ziwei_bindisk: true
+    requires_tool_xingming_bindisk: true
+    no_llm_chart_or_ephemeris_math: true
+    no_single_ziwei_star_judgment: true
+    no_single_xingming_shensha_judgment: true
+    ziwei_terms_chart_internal_only: true
+    xingming_terms_astronomical_chart_internal_only: true
+    do_not_merge_with_bazi_luming_selection_liuren_fengshui: true
+    ziwei_quanshu_primary: true
+    taiwei_fu_early_fu_support: true
+    feixing_late_observation_only: true
+    guotian_primary_xingming: true
+    image_only_sources_acquisition_only: true
+    rerun_gate_check_after_final_rewrite: true
+  source_layers:
+    ziwei_primary_layer:
+      pack: ziwei/ziwei-doushu-quanshu
+      role: ziwei_primary_chart_star_minor_star_flowing_sha
+      use_for:
+        - major_and_auxiliary_stars
+        - minor_malefics_and_flowing_sha
+        - four_transformations
+        - twelve_palaces
+        - limits_and_flowing_year
+      boundary: "Primary Ziwei source; current Wikisource scope is three juan, and every concrete judgment requires tool.ziwei.bindisk or equivalent complete Ziwei fact layer."
+    ziwei_fu_layer:
+      pack: ziwei/taiwei-fu
+      role: early_fu_semantic_support
+      use_for:
+        - early_fu_phrases
+        - minor_star_semantic_hints
+        - classical_phrase_boundary
+      boundary: "Early fu skeleton and famous phrases; partial/collation risk. It supports, but does not override, ziwei-doushu-quanshu."
+    ziwei_observation_layer:
+      pack: ziwei/feixing-ziwei-doushu-yuanzhi
+      role: republican_observation_annotation
+      use_for:
+        - late_case_observations
+        - red_luan_great_consumption_notes
+        - borrowed_palace_or_environment_annotations
+      boundary: "Late observation/case layer; only load after complete Ziwei chart facts and never as classical primary authority."
+    xingming_primary_layer:
+      pack: xingming/guotian-jing
+      role: qizheng_siyu_shensha_primary_ready_source
+      use_for:
+        - eleven_luminaries
+        - qizheng_siyu_chart_shensha
+        - palace_degree_lord_terms
+        - same_name_shensha_boundary
+      boundary: "Requires tool.xingming.bindisk with ephemeris; old degree tables are not modern astronomical facts."
+    xingming_support_layer:
+      packs:
+        - xingming/xingming-suyuan
+        - xingming/xingxue-dacheng
+      role: source_history_and_adapter_boundary_support
+      boundary: "Support only in SS-B4 unless separately promoted by a later refinement batch."
+    acquisition_only:
+      - xingming/minghai-quanbian
+      - xingming/qizheng-quanshu-dacheng
+      - xingming/qizheng-siyu-tianjing
+  required_fact_layer:
+    ziwei:
+      adapter: tool.ziwei.bindisk
+      base_fields:
+        - calendar_normalization
+        - lunar_date_leap_month_status
+        - sex_gender_convention
+        - twelve_palaces
+        - ming_shen_palaces
+        - major_stars
+        - auxiliary_stars
+        - malefics_and_minor_stars
+        - four_transformations
+        - palace_brightness_or_miao_wang
+        - da_limit
+        - xiao_limit
+        - liunian
+        - flowing_stars_or_flowing_sha
+        - source_trace
+      single_factor_not_sufficient:
+        - qingyang
+        - tuoluo
+        - lucun
+        - hualu
+        - tianma
+        - taohua_xianchi
+        - hongluan_tianxi
+        - tianxing
+        - baihu
+        - great_consumption
+        - flowing_taisui
+        - any_single_star
+      missing_fact_stop_message: "缺少紫微事实层：必须有 tool.ziwei.bindisk 或等价输出的历法/农历闰月、命身宫、十二宫、星曜、四化、大限小限流年、流煞与 source_trace 后，才能解释紫微神煞或辅星。"
+    xingming:
+      adapter: tool.xingming.bindisk
+      base_fields:
+        - calendar_normalization
+        - ephemeris_source_version
+        - birth_or_event_datetime_location_timezone
+        - astronomical_positions
+        - eleven_luminaries
+        - rahu_ketu_ziqi_yuebei
+        - zodiac_or_house_mapping
+        - twelve_houses
+        - life_palace
+        - degree_lord
+        - palace_lord
+        - body_lord
+        - shensha_positions
+        - motion_state
+        - source_trace
+      single_factor_not_sufficient:
+        - yangren
+        - tianma_diyi
+        - xianchi
+        - kongwang
+        - jiewang
+        - sanxing_liuhai
+        - tianxing
+        - any_single_xingming_shensha
+      missing_fact_stop_message: "缺少星命事实层：必须有 tool.xingming.bindisk 或等价输出的 ephemeris、出生/事件时地、十一曜/罗计紫孛、十二宫、命度/度主/宫主、神煞位置与 source_trace 后，才能解释星命神煞。"
+  target_entries:
+    - shensha-wenchang
+    - shensha-jinyu
+    - shensha-lushen-lucun
+    - shensha-yima-tianma
+    - shensha-xianchi-taohua
+    - shensha-hongluan-tianxi
+    - shensha-yangren
+    - shensha-kongwang
+    - shensha-jiangxing-huagai
+    - shensha-jiesha-wangshen-zaisha
+    - shensha-yuanchen-dahao
+    - shensha-taisui
+    - shensha-baihu
+    - shensha-guanfu-bingfu
+    - shensha-sangmen-diaoke
+    - shensha-tianxing
+    - shensha-sanxing-liuhai
+  entry_refinements:
+    - id: shensha-wenchang
+      name: "文昌"
+      ziwei_usage: auxiliary_star_and_literary_signal
+      source_layer_order: [ziwei_primary_layer, ziwei_fu_layer]
+      boundary: "紫微文昌是星曜/宫位组合字段，不等于八字文昌贵人；必须看所在宫位、会照、四化、大限流年。"
+    - id: shensha-jinyu
+      name: "金舆"
+      ziwei_usage: fu_text_pattern_or_semantic_phrase
+      source_layer_order: [ziwei_fu_layer, ziwei_primary_layer]
+      boundary: "紫微金舆捧栉偏赋文格局语义，不等于八字金舆贵人；不得从一个词推出富贵。"
+    - id: shensha-lushen-lucun
+      name: "禄/禄神/禄存/化禄"
+      ziwei_usage: lucun_star_and_four_transformation_hualu
+      xingming_usage: xingming_lu_spirit_or_luminary_transformation
+      source_layer_order: [ziwei_primary_layer, ziwei_fu_layer, xingming_primary_layer]
+      boundary: "紫微禄存/化禄属于星曜与四化，星命禄神/化禄属于天文盘神煞；均不等于八字干禄或禄命干禄。"
+    - id: shensha-yima-tianma
+      name: "驿马/天马"
+      ziwei_usage: tianma_star_movement_signal
+      xingming_usage: tianma_diyi_astronomical_chart_signal
+      source_layer_order: [ziwei_primary_layer, ziwei_fu_layer, xingming_primary_layer]
+      boundary: "紫微天马是星曜位移象，星命天马地驿是七政四余盘内字段；不等于八字驿马、择日出行马星或六壬课内动象。"
+    - id: shensha-xianchi-taohua
+      name: "咸池/桃花"
+      ziwei_usage: taohua_related_star_context
+      xingming_usage: xianchi_astronomical_chart_signal
+      source_layer_order: [ziwei_primary_layer, ziwei_observation_layer, ziwei_fu_layer, xingming_primary_layer]
+      boundary: "紫微桃花/咸池须合看贪狼、天姚等星曜和宫位，星命咸池须看星命盘；不等于八字桃花单项。"
+    - id: shensha-hongluan-tianxi
+      name: "红鸾/天喜"
+      ziwei_usage: marriage_or_joy_auxiliary_star
+      source_layer_order: [ziwei_observation_layer, ziwei_primary_layer]
+      boundary: "紫微红鸾天喜只在紫微盘内作喜庆/婚恋辅助；民国飞星材料为注释层，不得变成每次运势回复的固定套话。"
+    - id: shensha-yangren
+      name: "羊刃/阳刃"
+      ziwei_usage: qingyang_or_flowing_yang_malefic
+      xingming_usage: yangren_astronomical_chart_signal
+      source_layer_order: [ziwei_primary_layer, ziwei_fu_layer, ziwei_observation_layer, xingming_primary_layer]
+      boundary: "紫微擎羊/流羊是星曜/流煞，星命阳刃是天文盘神煞；二者不等于八字羊刃格，不能单项断伤灾。"
+    - id: shensha-kongwang
+      name: "空亡"
+      ziwei_usage: sky_void_empty_palace_or_fu_text_signal
+      xingming_usage: kongwang_astronomical_chart_signal
+      source_layer_order: [ziwei_fu_layer, ziwei_primary_layer, xingming_primary_layer]
+      boundary: "紫微天空/地劫/空亡语义与星命空亡只在各自盘内使用；不等于八字旬空。"
+    - id: shensha-jiangxing-huagai
+      name: "将星/华盖"
+      ziwei_usage: star_or_minor_star_authority_cover_signal
+      source_layer_order: [ziwei_primary_layer, ziwei_fu_layer]
+      boundary: "紫微将星/华盖类名目只作星曜宫位辅助，不用八字三合取法反推紫微盘。"
+    - id: shensha-jiesha-wangshen-zaisha
+      name: "劫煞/亡神/灾煞"
+      xingming_usage: xingming_loss_obstruction_astronomical_signal
+      source_layer_order: [xingming_primary_layer]
+      boundary: "星命劫亡等名目只在七政四余天文盘内使用；不得移植为八字/择日/六壬单项凶断。"
+    - id: shensha-yuanchen-dahao
+      name: "元辰/大耗/小耗"
+      ziwei_usage: great_and_small_consumption_flowing_auxiliary_signal
+      source_layer_order: [ziwei_observation_layer, ziwei_primary_layer]
+      boundary: "紫微大耗/小耗或民国观测层耗星只在斗数宫位与流限内使用；不等于八字元辰。"
+    - id: shensha-taisui
+      name: "太岁/岁君/岁破"
+      ziwei_usage: flowing_year_taisui_context
+      source_layer_order: [ziwei_primary_layer, ziwei_fu_layer]
+      boundary: "紫微流年太岁是斗数流年上下文；不等于择日太岁方、六壬岁君或八字流年干支本身。"
+    - id: shensha-baihu
+      name: "白虎"
+      ziwei_usage: flowing_malefic_or_fu_text_warning
+      source_layer_order: [ziwei_fu_layer, ziwei_observation_layer, ziwei_primary_layer]
+      boundary: "紫微白虎类流煞或赋文凶象不得外推为六壬白虎天将、择日白虎或八字白虎；敏感凶辞必须降为文本说明。"
+    - id: shensha-guanfu-bingfu
+      name: "官符/病符"
+      ziwei_usage: flowing_year_minor_sha
+      source_layer_order: [ziwei_fu_layer, ziwei_primary_layer]
+      boundary: "紫微官符/病符是流年小煞语义，不作现代法律或医疗事实判断，也不等于择日/六壬同名项。"
+    - id: shensha-sangmen-diaoke
+      name: "丧门/吊客"
+      ziwei_usage: flowing_year_minor_sha_or_mourning_signal
+      source_layer_order: [ziwei_primary_layer, ziwei_observation_layer, ziwei_fu_layer]
+      boundary: "紫微丧门吊客须合盘合限看，只作传统文本凶象，不等于八字/六壬条目，不能单项断丧病。"
+    - id: shensha-tianxing
+      name: "天刑"
+      ziwei_usage: tianxing_star_punishment_signal
+      xingming_usage: tianxing_astronomical_chart_signal
+      source_layer_order: [ziwei_primary_layer, ziwei_observation_layer, xingming_primary_layer]
+      boundary: "紫微天刑星与星命天刑各在本盘内使用；不等于择日黑道天刑或六壬天刑，不能单项断官非/伤灾。"
+    - id: shensha-sanxing-liuhai
+      name: "三刑/六害"
+      xingming_usage: astronomical_chart_relation_signal
+      source_layer_order: [xingming_primary_layer]
+      boundary: "星命三刑六害是七政四余盘内关系信号，不等于八字地支三刑六合六害的算法。"
+  reading_order:
+    source_building:
+      - shensha-name-disambiguation.yaml
+      - shensha-entry-source-profile.yaml
+      - shensha-quote-trace.yaml
+      - shensha-source-book-matrix.yaml
+      - shensha-distillation-backlog.yaml
+      - shensha-ss-b4-ziwei-xingming-refinement.yaml
+    ziwei_answer:
+      - references/tool-adapters.md
+      - ziwei/ziwei-doushu-quanshu
+      - ziwei/taiwei-fu
+      - ziwei/feixing-ziwei-doushu-yuanzhi only after complete fact layer and only as annotation
+    xingming_answer:
+      - references/tool-adapters.md
+      - xingming/guotian-jing
+      - xingming/xingming-suyuan optional support
+    never_for_interpretation:
+      - xingming/minghai-quanbian
+      - xingming/qizheng-quanshu-dacheng
+      - xingming/qizheng-siyu-tianjing
+  validation:
+    gate_codes:
+      - ziwei_shensha_misapplied_to_bazi
+      - xingming_shensha_misapplied
+      - ziwei_single_star_judgment
+      - xingming_single_shensha_judgment
+    acceptance:
+      - target_entries_equal_all_ziwei_or_xingming_profile_entries
+      - all_concrete_ziwei_usage_requires_tool_ziwei_bindisk
+      - all_concrete_xingming_usage_requires_tool_xingming_bindisk
+      - image_only_xingming_sources_remain_acquisition_only
+      - feixing_pack_remains_annotation_layer

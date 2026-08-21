@@ -1,0 +1,432 @@
+schema_version: mingli-liuyao-fixtures-v51
+purpose: 64 source-table plates, 30 source-anchored classical casts, and deterministic calendar boundaries
+source_table: references/matrices/liuyao-jingfang-tables-v1.yaml
+provider_contract:
+  system: liuyao
+  provider_class: reading_engine.providers.LiuyaoProvider
+  provider_id: mingli-master.liuyao.v1
+  provider_version: 1.4.0
+  adapter_version: 1.4.0
+  capability_mode: calculation
+classical_examples_source:
+  path: references/fulltext/divination/zengshan-buyi/fulltext.md
+  sha256: 40cb50a05cbcb03ce3d42f2cc3de5daf1db6cf78e8dbae4c4b9b1e42dd6f50e0
+  artifact_role: source-anchored complete classical cast fixtures
+calendar_witness_policy:
+  role: reproducible_witness_for_source_recorded_month_branch_and_day_ganzhi
+  historical_divination_date_claimed: false
+  calendar_engine: reading_engine.calendar_core.normalize_calendar
+classical_examples:
+  - {id: zengshan-01, source_anchor: L266-L278, source_heading: '如亥月己丑日占將來有官否。得兌化訟卦', month_branch: 亥, day_ganzhi: 己丑, calendar_witness: {event_datetime: '1987-12-06T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [9, 7, 8, 7, 7, 6], moving_lines: [1, 6], primary: 兑为泽, changed: 天水讼}
+  - {id: zengshan-02, source_anchor: L296-L308, source_heading: '又如辰月戊子日占父何日歸得乾之夬', month_branch: 辰, day_ganzhi: 戊子, calendar_witness: {event_datetime: '1984-04-24T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 7, 7, 7, 7, 9], moving_lines: [6], primary: 乾为天, changed: 泽天夬}
+  - {id: zengshan-03, source_anchor: L328-L340, source_heading: '寅月丙辰日占得地澤臨', month_branch: 寅, day_ganzhi: 丙辰, calendar_witness: {event_datetime: '1988-03-02T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 7, 8, 8, 8, 8], moving_lines: [], primary: 地泽临, changed: 地泽临}
+  - {id: zengshan-04, source_anchor: L404-L416, source_heading: '如卯月壬辰日占候文書何日得領﹐得山火賁卦', month_branch: 卯, day_ganzhi: 壬辰, calendar_witness: {event_datetime: '1989-04-02T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 8, 7, 8, 8, 7], moving_lines: [], primary: 山火贲, changed: 山火贲}
+  - {id: zengshan-05, source_anchor: L420-L432, source_heading: '又酉月丙辰日占子病。得地風升', month_branch: 酉, day_ganzhi: 丙辰, calendar_witness: {event_datetime: '1984-09-19T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [8, 7, 7, 8, 8, 8], moving_lines: [], primary: 地风升, changed: 地风升}
+  - {id: zengshan-06, source_anchor: L440-L452, source_heading: '一日到一宅上見醫者滿座。卯月丙辰日占父病得地雷復卦', month_branch: 卯, day_ganzhi: 丙辰, calendar_witness: {event_datetime: '1984-03-23T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 8, 8, 8, 8, 8], moving_lines: [], primary: 地雷复, changed: 地雷复}
+  - {id: zengshan-07, source_anchor: L488-L500, source_heading: '有子月戊寅日占官得困之兌卦', month_branch: 子, day_ganzhi: 戊寅, calendar_witness: {event_datetime: '1984-12-10T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [6, 7, 8, 7, 7, 8], moving_lines: [1], primary: 泽水困, changed: 兑为泽}
+  - {id: zengshan-08, source_anchor: L534-L546, source_heading: '申月癸卯日占鄕試得恆變大過', month_branch: 申, day_ganzhi: 癸卯, calendar_witness: {event_datetime: '1984-09-06T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [8, 7, 7, 7, 6, 8], moving_lines: [5], primary: 雷风恒, changed: 泽风大过}
+  - {id: zengshan-09, source_anchor: L602-L614, source_heading: '戌月癸亥日占本年冬今得關差否水澤節變需卦', month_branch: 戌, day_ganzhi: 癸亥, calendar_witness: {event_datetime: '1988-11-04T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 7, 6, 8, 7, 8], moving_lines: [3], primary: 水泽节, changed: 水天需}
+  - {id: zengshan-10, source_anchor: L618-L630, source_heading: '又如未月丁卯日占功名始得出仕否得火天同人變革卦', month_branch: 未, day_ganzhi: 丁卯, calendar_witness: {event_datetime: '1984-08-01T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 8, 7, 7, 7, 9], moving_lines: [6], primary: 天火同人, changed: 泽火革}
+  - {id: zengshan-11, source_anchor: L634-L646, source_heading: '又如申月辛卯日占病得澤天夬卦變大壯', month_branch: 申, day_ganzhi: 辛卯, calendar_witness: {event_datetime: '1984-08-25T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 7, 7, 7, 9, 8], moving_lines: [5], primary: 泽天夬, changed: 雷天大壮}
+  - {id: zengshan-12, source_anchor: L650-L662, source_heading: '又如丑月癸卯日占妻病服藥可愈否﹖得臨之泰', month_branch: 丑, day_ganzhi: 癸卯, calendar_witness: {event_datetime: '1984-01-10T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 7, 6, 8, 8, 8], moving_lines: [3], primary: 地泽临, changed: 地天泰}
+  - {id: zengshan-13, source_anchor: L666-L678, source_heading: '又如戌月癸未日占病得乾之夬', month_branch: 戌, day_ganzhi: 癸未, calendar_witness: {event_datetime: '1984-10-16T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 7, 7, 7, 7, 9], moving_lines: [6], primary: 乾为天, changed: 泽天夬}
+  - {id: zengshan-14, source_anchor: L682-L694, source_heading: '又如戌月己卯日占母血崩一年有餘得同人變解', month_branch: 戌, day_ganzhi: 己卯, calendar_witness: {event_datetime: '1984-10-12T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [9, 6, 9, 7, 9, 9], moving_lines: [1, 2, 3, 5, 6], primary: 天火同人, changed: 雷水解}
+  - {id: zengshan-15, source_anchor: L698-L710, source_heading: '又如卯月癸酉日占父母近病得萃之否', month_branch: 卯, day_ganzhi: 癸酉, calendar_witness: {event_datetime: '1985-04-04T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [8, 8, 8, 7, 7, 6], moving_lines: [6], primary: 泽地萃, changed: 天地否}
+  - {id: zengshan-16, source_anchor: L714-L726, source_heading: '又如辰月癸丑日占病得困變解', month_branch: 辰, day_ganzhi: 癸丑, calendar_witness: {event_datetime: '1987-05-04T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [8, 7, 8, 7, 9, 8], moving_lines: [5], primary: 泽水困, changed: 雷水解}
+  - {id: zengshan-17, source_anchor: L730-L742, source_heading: '又如辰月乙丑日占妻母病得隨之否', month_branch: 辰, day_ganzhi: 乙丑, calendar_witness: {event_datetime: '1989-05-05T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [9, 8, 8, 7, 7, 6], moving_lines: [1, 6], primary: 泽雷随, changed: 天地否}
+  - {id: zengshan-18, source_anchor: L746-L758, source_heading: '又如申月乙卯日占出得屯之節', month_branch: 申, day_ganzhi: 乙卯, calendar_witness: {event_datetime: '1987-09-03T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 6, 8, 8, 7, 8], moving_lines: [2], primary: 水雷屯, changed: 水泽节}
+  - {id: zengshan-19, source_anchor: L778-L790, source_heading: '又如辰月乙未日占子病得大有變睽﹐同時祖又占子孫亦得此卦', month_branch: 辰, day_ganzhi: 乙未, calendar_witness: {event_datetime: '1984-05-01T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 7, 9, 7, 8, 7], moving_lines: [3], primary: 火天大有, changed: 火泽睽}
+  - {id: zengshan-20, source_anchor: L794-L806, source_heading: '又如卯月丙寅日衙役占官府升否得解之困', month_branch: 卯, day_ganzhi: 丙寅, calendar_witness: {event_datetime: '1984-04-02T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [8, 7, 8, 7, 6, 8], moving_lines: [5], primary: 雷水解, changed: 泽水困}
+  - {id: zengshan-21, source_anchor: L810-L822, source_heading: '又如巳月乙丑日占試中否得兌之訟', month_branch: 巳, day_ganzhi: 乙丑, calendar_witness: {event_datetime: '1984-05-31T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [9, 7, 8, 7, 7, 6], moving_lines: [1, 6], primary: 兑为泽, changed: 天水讼}
+  - {id: zengshan-22, source_anchor: L826-L838, source_heading: '又如未月丁丑日占母路隔千里何時來得火天大有變井', month_branch: 未, day_ganzhi: 丁丑, calendar_witness: {event_datetime: '1985-08-06T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [9, 7, 7, 9, 6, 9], moving_lines: [1, 4, 5, 6], primary: 火天大有, changed: 水风井}
+  - {id: zengshan-23, source_anchor: L842-L854, source_heading: '又如未月辛丑日占開金銀器皿店得火雷噬嗑化屯卦', month_branch: 未, day_ganzhi: 辛丑, calendar_witness: {event_datetime: '1990-08-04T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 8, 8, 9, 6, 9], moving_lines: [4, 5, 6], primary: 火雷噬嗑, changed: 水雷屯}
+  - {id: zengshan-24, source_anchor: L914-L926, source_heading: '又如申月己丑日占病壬申命得雷風恆', month_branch: 申, day_ganzhi: 己丑, calendar_witness: {event_datetime: '1984-08-23T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [8, 7, 7, 7, 8, 8], moving_lines: [], primary: 雷风恒, changed: 雷风恒}
+  - {id: zengshan-25, source_anchor: L952-L964, source_heading: '如申月己未日占賊來否得大畜之泰卦', month_branch: 申, day_ganzhi: 己未, calendar_witness: {event_datetime: '1987-09-07T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 7, 7, 8, 8, 9], moving_lines: [6], primary: 山天大畜, changed: 地天泰}
+  - {id: zengshan-26, source_anchor: L1078-L1090, source_heading: '如未月庚子日占求財得風天小畜', month_branch: 未, day_ganzhi: 庚子, calendar_witness: {event_datetime: '1990-08-03T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [7, 7, 7, 8, 7, 7], moving_lines: [], primary: 风天小畜, changed: 风天小畜}
+  - {id: zengshan-27, source_anchor: L1094-L1106, source_heading: '未月甲午日占升遷得師之渙卦', month_branch: 未, day_ganzhi: 甲午, calendar_witness: {event_datetime: '1988-08-07T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [8, 7, 8, 8, 6, 6], moving_lines: [5, 6], primary: 地水师, changed: 风水涣}
+  - {id: zengshan-28, source_anchor: L1110-L1122, source_heading: '又如亥月丙午日母占子何日脫厄﹐得豫之歸妹', month_branch: 亥, day_ganzhi: 丙午, calendar_witness: {event_datetime: '1984-11-08T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [6, 6, 8, 7, 8, 8], moving_lines: [1, 2], primary: 雷地豫, changed: 雷泽归妹}
+  - {id: zengshan-29, source_anchor: L1180-L1192, source_heading: '如巳月壬子日占鄕試得水地比', month_branch: 巳, day_ganzhi: 壬子, calendar_witness: {event_datetime: '1984-05-18T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [8, 8, 8, 8, 7, 8], moving_lines: [], primary: 水地比, changed: 水地比}
+  - {id: zengshan-30, source_anchor: L1318-L1330, source_heading: '如酉月乙巳日占升遷得澤地萃之天地否', month_branch: 酉, day_ganzhi: 乙巳, calendar_witness: {event_datetime: '1984-09-08T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight}, tosses: [8, 8, 8, 7, 7, 6], moving_lines: [6], primary: 泽地萃, changed: 天地否}
+classical_fact_expectations:
+  zengshan-01:
+    source_lines_bottom_up: [[官鬼, 巳, 火, ○, null, 妻财, 寅, 木, ⚋], [妻财, 卯, 木, ⚊, null, 父母, 辰, 土, ⚊], [父母, 丑, 土, ⚋, 应, 官鬼, 午, 火, ⚋], [子孙, 亥, 水, ⚊, null, 官鬼, 午, 火, ⚊], [兄弟, 酉, 金, ⚊, null, 兄弟, 申, 金, ⚊], [父母, 未, 土, ㄨ, 世, 父母, 戌, 土, ⚊]]
+    xunkong: [午, 未]
+    seasonal_states_bottom_up: [死, 相, 囚, 旺, 休, 囚]
+    month_relations_bottom_up: [冲, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲]
+    changed_xunkong_bottom_up: [false, false, true, true, false, false]
+    changed_seasonal_states_bottom_up: [相, 囚, 死, 死, 休, 囚]
+    changed_month_relations_bottom_up: [合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-02:
+    source_lines_bottom_up: [[子孙, 子, 水, ⚊, null, 子孙, 子, 水, ⚊], [妻财, 寅, 木, ⚊, null, 妻财, 寅, 木, ⚊], [父母, 辰, 土, ⚊, 应, 父母, 辰, 土, ⚊], [官鬼, 午, 火, ⚊, null, 子孙, 亥, 水, ⚊], [兄弟, 申, 金, ⚊, null, 兄弟, 酉, 金, ⚊], [父母, 戌, 土, ○, 世, 父母, 未, 土, ⚋]]
+    xunkong: [午, 未]
+    seasonal_states_bottom_up: [死, 囚, 旺, 休, 相, 旺]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, false, false, false, true]
+    changed_seasonal_states_bottom_up: [死, 囚, 旺, 死, 相, 旺]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-03:
+    source_lines_bottom_up: [[父母, 巳, 火, ⚊, null, 父母, 巳, 火, ⚊], [官鬼, 卯, 木, ⚊, 世, 官鬼, 卯, 木, ⚊], [兄弟, 丑, 土, ⚋, null, 兄弟, 丑, 土, ⚋], [兄弟, 丑, 土, ⚋, null, 兄弟, 丑, 土, ⚋], [妻财, 亥, 水, ⚋, 应, 妻财, 亥, 水, ⚋], [子孙, 酉, 金, ⚋, null, 子孙, 酉, 金, ⚋]]
+    xunkong: [子, 丑]
+    seasonal_states_bottom_up: [相, 旺, 死, 死, 休, 囚]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合]
+    changed_xunkong_bottom_up: [false, false, true, true, false, false]
+    changed_seasonal_states_bottom_up: [相, 旺, 死, 死, 休, 囚]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合]
+  zengshan-04:
+    source_lines_bottom_up: [[官鬼, 卯, 木, ⚊, 世, 官鬼, 卯, 木, ⚊], [兄弟, 丑, 土, ⚋, null, 兄弟, 丑, 土, ⚋], [妻财, 亥, 水, ⚊, null, 妻财, 亥, 水, ⚊], [兄弟, 戌, 土, ⚋, 应, 兄弟, 戌, 土, ⚋], [妻财, 子, 水, ⚋, null, 妻财, 子, 水, ⚋], [官鬼, 寅, 木, ⚊, null, 官鬼, 寅, 木, ⚊]]
+    xunkong: [午, 未]
+    seasonal_states_bottom_up: [旺, 死, 休, 死, 休, 旺]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, false, false, false, false]
+    changed_seasonal_states_bottom_up: [旺, 死, 休, 死, 休, 旺]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合]
+  zengshan-05:
+    source_lines_bottom_up: [[妻财, 丑, 土, ⚋, 应, 妻财, 丑, 土, ⚋], [父母, 亥, 水, ⚊, null, 父母, 亥, 水, ⚊], [官鬼, 酉, 金, ⚊, null, 官鬼, 酉, 金, ⚊], [妻财, 丑, 土, ⚋, 世, 妻财, 丑, 土, ⚋], [父母, 亥, 水, ⚋, null, 父母, 亥, 水, ⚋], [官鬼, 酉, 金, ⚋, null, 官鬼, 酉, 金, ⚋]]
+    xunkong: [子, 丑]
+    seasonal_states_bottom_up: [休, 相, 旺, 休, 相, 旺]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合, 合]
+    changed_xunkong_bottom_up: [true, false, false, true, false, false]
+    changed_seasonal_states_bottom_up: [休, 相, 旺, 休, 相, 旺]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合, 合]
+  zengshan-06:
+    source_lines_bottom_up: [[妻财, 子, 水, ⚊, 世, 妻财, 子, 水, ⚊], [官鬼, 寅, 木, ⚋, null, 官鬼, 寅, 木, ⚋], [兄弟, 辰, 土, ⚋, null, 兄弟, 辰, 土, ⚋], [兄弟, 丑, 土, ⚋, 应, 兄弟, 丑, 土, ⚋], [妻财, 亥, 水, ⚋, null, 妻财, 亥, 水, ⚋], [子孙, 酉, 金, ⚋, null, 子孙, 酉, 金, ⚋]]
+    xunkong: [子, 丑]
+    seasonal_states_bottom_up: [休, 旺, 死, 死, 休, 囚]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合]
+    changed_xunkong_bottom_up: [true, false, false, true, false, false]
+    changed_seasonal_states_bottom_up: [休, 旺, 死, 死, 休, 囚]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合]
+  zengshan-07:
+    source_lines_bottom_up: [[妻财, 寅, 木, ㄨ, 世, 官鬼, 巳, 火, ⚊], [父母, 辰, 土, ⚊, null, 妻财, 卯, 木, ⚊], [官鬼, 午, 火, ⚋, null, 父母, 丑, 土, ⚋], [子孙, 亥, 水, ⚊, 应, 子孙, 亥, 水, ⚊], [兄弟, 酉, 金, ⚊, null, 兄弟, 酉, 金, ⚊], [父母, 未, 土, ⚋, null, 父母, 未, 土, ⚋]]
+    xunkong: [申, 酉]
+    seasonal_states_bottom_up: [相, 囚, 死, 旺, 休, 囚]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, false, false, true, false]
+    changed_seasonal_states_bottom_up: [死, 相, 囚, 旺, 休, 囚]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合]
+  zengshan-08:
+    source_lines_bottom_up: [[妻财, 丑, 土, ⚋, null, 妻财, 丑, 土, ⚋], [父母, 亥, 水, ⚊, null, 父母, 亥, 水, ⚊], [官鬼, 酉, 金, ⚊, 世, 官鬼, 酉, 金, ⚊], [子孙, 午, 火, ⚊, null, 父母, 亥, 水, ⚊], [官鬼, 申, 金, ㄨ, null, 官鬼, 酉, 金, ⚊], [妻财, 戌, 土, ⚋, 应, 妻财, 未, 土, ⚋]]
+    xunkong: [辰, 巳]
+    seasonal_states_bottom_up: [休, 相, 旺, 囚, 旺, 休]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合, 合]
+    changed_xunkong_bottom_up: [false, false, false, false, false, false]
+    changed_seasonal_states_bottom_up: [休, 相, 旺, 相, 旺, 休]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 冲, 无直接冲合, 冲, 无直接冲合]
+  zengshan-09:
+    source_lines_bottom_up: [[妻财, 巳, 火, ⚊, 世, 兄弟, 子, 水, ⚊], [子孙, 卯, 木, ⚊, null, 子孙, 寅, 木, ⚊], [官鬼, 丑, 土, ㄨ, null, 官鬼, 辰, 土, ⚊], [父母, 申, 金, ⚋, 应, 父母, 申, 金, ⚋], [官鬼, 戌, 土, ⚊, null, 官鬼, 戌, 土, ⚊], [兄弟, 子, 水, ⚋, null, 兄弟, 子, 水, ⚋]]
+    xunkong: [子, 丑]
+    seasonal_states_bottom_up: [休, 囚, 旺, 相, 旺, 死]
+    month_relations_bottom_up: [无直接冲合, 合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [冲, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [true, false, false, false, false, true]
+    changed_seasonal_states_bottom_up: [死, 囚, 旺, 相, 旺, 死]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-10:
+    source_lines_bottom_up: [[父母, 卯, 木, ⚊, null, 父母, 卯, 木, ⚊], [子孙, 丑, 土, ⚋, null, 子孙, 丑, 土, ⚋], [官鬼, 亥, 水, ⚊, 世, 官鬼, 亥, 水, ⚊], [兄弟, 午, 火, ⚊, null, 官鬼, 亥, 水, ⚊], [妻财, 申, 金, ⚊, null, 妻财, 酉, 金, ⚊], [子孙, 戌, 土, ○, 应, 子孙, 未, 土, ⚋]]
+    xunkong: [戌, 亥]
+    seasonal_states_bottom_up: [囚, 旺, 死, 休, 相, 旺]
+    month_relations_bottom_up: [无直接冲合, 冲, 无直接冲合, 合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合]
+    changed_xunkong_bottom_up: [false, false, true, true, false, false]
+    changed_seasonal_states_bottom_up: [囚, 旺, 死, 死, 相, 旺]
+    changed_month_relations_bottom_up: [无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合]
+  zengshan-11:
+    source_lines_bottom_up: [[妻财, 子, 水, ⚊, null, 妻财, 子, 水, ⚊], [官鬼, 寅, 木, ⚊, 应, 官鬼, 寅, 木, ⚊], [兄弟, 辰, 土, ⚊, null, 兄弟, 辰, 土, ⚊], [妻财, 亥, 水, ⚊, null, 父母, 午, 火, ⚊], [子孙, 酉, 金, ○, 世, 子孙, 申, 金, ⚋], [兄弟, 未, 土, ⚋, null, 兄弟, 戌, 土, ⚋]]
+    xunkong: [午, 未]
+    seasonal_states_bottom_up: [相, 死, 休, 相, 旺, 休]
+    month_relations_bottom_up: [无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, false, true, false, false]
+    changed_seasonal_states_bottom_up: [相, 死, 休, 囚, 旺, 休]
+    changed_month_relations_bottom_up: [无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合]
+  zengshan-12:
+    source_lines_bottom_up: [[父母, 巳, 火, ⚊, null, 妻财, 子, 水, ⚊], [官鬼, 卯, 木, ⚊, 世, 官鬼, 寅, 木, ⚊], [兄弟, 丑, 土, ㄨ, null, 兄弟, 辰, 土, ⚊], [兄弟, 丑, 土, ⚋, null, 兄弟, 丑, 土, ⚋], [妻财, 亥, 水, ⚋, 应, 妻财, 亥, 水, ⚋], [子孙, 酉, 金, ⚋, null, 子孙, 酉, 金, ⚋]]
+    xunkong: [辰, 巳]
+    seasonal_states_bottom_up: [休, 囚, 旺, 旺, 死, 相]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲]
+    changed_xunkong_bottom_up: [false, false, true, false, false, false]
+    changed_seasonal_states_bottom_up: [死, 囚, 旺, 旺, 死, 相]
+    changed_month_relations_bottom_up: [合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲]
+  zengshan-13:
+    source_lines_bottom_up: [[子孙, 子, 水, ⚊, null, 子孙, 子, 水, ⚊], [妻财, 寅, 木, ⚊, null, 妻财, 寅, 木, ⚊], [父母, 辰, 土, ⚊, 应, 父母, 辰, 土, ⚊], [官鬼, 午, 火, ⚊, null, 子孙, 亥, 水, ⚊], [兄弟, 申, 金, ⚊, null, 兄弟, 酉, 金, ⚊], [父母, 戌, 土, ○, 世, 父母, 未, 土, ⚋]]
+    xunkong: [申, 酉]
+    seasonal_states_bottom_up: [死, 囚, 旺, 休, 相, 旺]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, false, false, true, false]
+    changed_seasonal_states_bottom_up: [死, 囚, 旺, 死, 相, 旺]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-14:
+    source_lines_bottom_up: [[父母, 卯, 木, ○, null, 父母, 寅, 木, ⚋], [子孙, 丑, 土, ㄨ, null, 子孙, 辰, 土, ⚊], [官鬼, 亥, 水, ○, 世, 兄弟, 午, 火, ⚋], [兄弟, 午, 火, ⚊, null, 兄弟, 午, 火, ⚊], [妻财, 申, 金, ○, null, 妻财, 申, 金, ⚋], [子孙, 戌, 土, ○, 应, 子孙, 戌, 土, ⚋]]
+    xunkong: [申, 酉]
+    seasonal_states_bottom_up: [囚, 旺, 死, 休, 相, 旺]
+    month_relations_bottom_up: [合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合]
+    changed_xunkong_bottom_up: [false, false, false, false, true, false]
+    changed_seasonal_states_bottom_up: [囚, 旺, 休, 休, 相, 旺]
+    changed_month_relations_bottom_up: [无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合]
+  zengshan-15:
+    source_lines_bottom_up: [[父母, 未, 土, ⚋, null, 父母, 未, 土, ⚋], [官鬼, 巳, 火, ⚋, 世, 官鬼, 巳, 火, ⚋], [妻财, 卯, 木, ⚋, null, 妻财, 卯, 木, ⚋], [子孙, 亥, 水, ⚊, null, 官鬼, 午, 火, ⚊], [兄弟, 酉, 金, ⚊, 应, 兄弟, 申, 金, ⚊], [父母, 未, 土, ㄨ, null, 父母, 戌, 土, ⚊]]
+    xunkong: [戌, 亥]
+    seasonal_states_bottom_up: [死, 相, 旺, 休, 囚, 死]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, false, false, false, true]
+    changed_seasonal_states_bottom_up: [死, 相, 旺, 相, 囚, 死]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-16:
+    source_lines_bottom_up: [[妻财, 寅, 木, ⚋, 世, 妻财, 寅, 木, ⚋], [父母, 辰, 土, ⚊, null, 父母, 辰, 土, ⚊], [官鬼, 午, 火, ⚋, null, 官鬼, 午, 火, ⚋], [子孙, 亥, 水, ⚊, 应, 官鬼, 午, 火, ⚊], [兄弟, 酉, 金, ○, null, 兄弟, 申, 金, ⚋], [父母, 未, 土, ⚋, null, 父母, 戌, 土, ⚋]]
+    xunkong: [寅, 卯]
+    seasonal_states_bottom_up: [囚, 旺, 休, 死, 相, 旺]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲]
+    changed_xunkong_bottom_up: [true, false, false, false, false, false]
+    changed_seasonal_states_bottom_up: [囚, 旺, 休, 休, 相, 旺]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-17:
+    source_lines_bottom_up: [[父母, 子, 水, ○, null, 妻财, 未, 土, ⚋], [兄弟, 寅, 木, ⚋, null, 子孙, 巳, 火, ⚋], [妻财, 辰, 土, ⚋, 世, 兄弟, 卯, 木, ⚋], [父母, 亥, 水, ⚊, null, 子孙, 午, 火, ⚊], [官鬼, 酉, 金, ⚊, null, 官鬼, 申, 金, ⚊], [妻财, 未, 土, ㄨ, 应, 妻财, 戌, 土, ⚊]]
+    xunkong: [戌, 亥]
+    seasonal_states_bottom_up: [死, 囚, 旺, 死, 相, 旺]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合]
+    day_relations_bottom_up: [合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲]
+    changed_xunkong_bottom_up: [false, false, false, false, false, true]
+    changed_seasonal_states_bottom_up: [旺, 休, 囚, 休, 相, 旺]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲]
+    changed_day_relations_bottom_up: [冲, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-18:
+    source_lines_bottom_up: [[兄弟, 子, 水, ⚊, null, 妻财, 巳, 火, ⚊], [子孙, 寅, 木, ㄨ, 世, 子孙, 卯, 木, ⚊], [官鬼, 辰, 土, ⚋, null, 官鬼, 丑, 土, ⚋], [父母, 申, 金, ⚋, null, 父母, 申, 金, ⚋], [官鬼, 戌, 土, ⚊, 应, 官鬼, 戌, 土, ⚊], [兄弟, 子, 水, ⚋, null, 兄弟, 子, 水, ⚋]]
+    xunkong: [子, 丑]
+    seasonal_states_bottom_up: [相, 死, 休, 旺, 休, 相]
+    month_relations_bottom_up: [无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, true, false, false, true]
+    changed_seasonal_states_bottom_up: [囚, 死, 休, 旺, 休, 相]
+    changed_month_relations_bottom_up: [合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合]
+  zengshan-19:
+    source_lines_bottom_up: [[子孙, 子, 水, ⚊, null, 官鬼, 巳, 火, ⚊], [妻财, 寅, 木, ⚊, null, 妻财, 卯, 木, ⚊], [父母, 辰, 土, ○, 世, 父母, 丑, 土, ⚋], [兄弟, 酉, 金, ⚊, null, 兄弟, 酉, 金, ⚊], [父母, 未, 土, ⚋, null, 父母, 未, 土, ⚋], [官鬼, 巳, 火, ⚊, 应, 官鬼, 巳, 火, ⚊]]
+    xunkong: [辰, 巳]
+    seasonal_states_bottom_up: [死, 囚, 旺, 相, 旺, 休]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [true, false, false, false, false, true]
+    changed_seasonal_states_bottom_up: [休, 囚, 旺, 相, 旺, 休]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-20:
+    source_lines_bottom_up: [[兄弟, 寅, 木, ⚋, null, 兄弟, 寅, 木, ⚋], [妻财, 辰, 土, ⚊, 世, 妻财, 辰, 土, ⚊], [子孙, 午, 火, ⚋, null, 子孙, 午, 火, ⚋], [子孙, 午, 火, ⚊, null, 父母, 亥, 水, ⚊], [官鬼, 申, 金, ㄨ, 应, 官鬼, 酉, 金, ⚊], [妻财, 戌, 土, ⚋, null, 妻财, 未, 土, ⚋]]
+    xunkong: [戌, 亥]
+    seasonal_states_bottom_up: [旺, 死, 相, 相, 囚, 死]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, false, true, false, false]
+    changed_seasonal_states_bottom_up: [旺, 死, 相, 休, 囚, 死]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合]
+  zengshan-21:
+    source_lines_bottom_up: [[官鬼, 巳, 火, ○, null, 妻财, 寅, 木, ⚋], [妻财, 卯, 木, ⚊, null, 父母, 辰, 土, ⚊], [父母, 丑, 土, ⚋, 应, 官鬼, 午, 火, ⚋], [子孙, 亥, 水, ⚊, null, 官鬼, 午, 火, ⚊], [兄弟, 酉, 金, ⚊, null, 兄弟, 申, 金, ⚊], [父母, 未, 土, ㄨ, 世, 父母, 戌, 土, ⚊]]
+    xunkong: [戌, 亥]
+    seasonal_states_bottom_up: [旺, 休, 相, 囚, 死, 相]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 冲]
+    changed_xunkong_bottom_up: [false, false, false, false, false, true]
+    changed_seasonal_states_bottom_up: [休, 相, 旺, 旺, 死, 相]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-22:
+    source_lines_bottom_up: [[子孙, 子, 水, ○, null, 父母, 丑, 土, ⚋], [妻财, 寅, 木, ⚊, null, 子孙, 亥, 水, ⚊], [父母, 辰, 土, ⚊, 世, 兄弟, 酉, 金, ⚊], [兄弟, 酉, 金, ○, null, 兄弟, 申, 金, ⚋], [父母, 未, 土, ㄨ, null, 父母, 戌, 土, ⚊], [官鬼, 巳, 火, ○, 应, 子孙, 子, 水, ⚋]]
+    xunkong: [申, 酉]
+    seasonal_states_bottom_up: [死, 囚, 旺, 相, 旺, 休]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [合, 无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, true, true, false, false]
+    changed_seasonal_states_bottom_up: [旺, 死, 相, 相, 旺, 死]
+    changed_month_relations_bottom_up: [冲, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合]
+  zengshan-23:
+    source_lines_bottom_up: [[父母, 子, 水, ⚊, null, 父母, 子, 水, ⚊], [兄弟, 寅, 木, ⚋, 应, 兄弟, 寅, 木, ⚋], [妻财, 辰, 土, ⚋, null, 妻财, 辰, 土, ⚋], [官鬼, 酉, 金, ○, null, 官鬼, 申, 金, ⚋], [妻财, 未, 土, ㄨ, 世, 妻财, 戌, 土, ⚊], [子孙, 巳, 火, ○, null, 父母, 子, 水, ⚋]]
+    xunkong: [辰, 巳]
+    seasonal_states_bottom_up: [死, 囚, 旺, 相, 旺, 休]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [合, 无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, true, false, false, false]
+    changed_seasonal_states_bottom_up: [死, 囚, 旺, 相, 旺, 死]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合]
+  zengshan-24:
+    source_lines_bottom_up: [[妻财, 丑, 土, ⚋, null, 妻财, 丑, 土, ⚋], [父母, 亥, 水, ⚊, null, 父母, 亥, 水, ⚊], [官鬼, 酉, 金, ⚊, 世, 官鬼, 酉, 金, ⚊], [子孙, 午, 火, ⚊, null, 子孙, 午, 火, ⚊], [官鬼, 申, 金, ⚋, null, 官鬼, 申, 金, ⚋], [妻财, 戌, 土, ⚋, 应, 妻财, 戌, 土, ⚋]]
+    xunkong: [午, 未]
+    seasonal_states_bottom_up: [休, 相, 旺, 囚, 旺, 休]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, false, true, false, false]
+    changed_seasonal_states_bottom_up: [休, 相, 旺, 囚, 旺, 休]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-25:
+    source_lines_bottom_up: [[妻财, 子, 水, ⚊, null, 妻财, 子, 水, ⚊], [官鬼, 寅, 木, ⚊, 世, 官鬼, 寅, 木, ⚊], [兄弟, 辰, 土, ⚊, null, 兄弟, 辰, 土, ⚊], [兄弟, 戌, 土, ⚋, null, 兄弟, 丑, 土, ⚋], [妻财, 子, 水, ⚋, 应, 妻财, 亥, 水, ⚋], [官鬼, 寅, 木, ○, null, 子孙, 酉, 金, ⚋]]
+    xunkong: [子, 丑]
+    seasonal_states_bottom_up: [相, 死, 休, 休, 相, 死]
+    month_relations_bottom_up: [无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合, 冲]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [true, false, false, true, false, false]
+    changed_seasonal_states_bottom_up: [相, 死, 休, 休, 相, 旺]
+    changed_month_relations_bottom_up: [无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合]
+  zengshan-26:
+    source_lines_bottom_up: [[父母, 子, 水, ⚊, 世, 父母, 子, 水, ⚊], [兄弟, 寅, 木, ⚊, null, 兄弟, 寅, 木, ⚊], [妻财, 辰, 土, ⚊, null, 妻财, 辰, 土, ⚊], [妻财, 未, 土, ⚋, 应, 妻财, 未, 土, ⚋], [子孙, 巳, 火, ⚊, null, 子孙, 巳, 火, ⚊], [兄弟, 卯, 木, ⚊, null, 兄弟, 卯, 木, ⚊]]
+    xunkong: [辰, 巳]
+    seasonal_states_bottom_up: [死, 囚, 旺, 旺, 休, 囚]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, true, false, true, false]
+    changed_seasonal_states_bottom_up: [死, 囚, 旺, 旺, 休, 囚]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-27:
+    source_lines_bottom_up: [[子孙, 寅, 木, ⚋, null, 子孙, 寅, 木, ⚋], [官鬼, 辰, 土, ⚊, null, 官鬼, 辰, 土, ⚊], [妻财, 午, 火, ⚋, 世, 妻财, 午, 火, ⚋], [官鬼, 丑, 土, ⚋, null, 官鬼, 未, 土, ⚋], [兄弟, 亥, 水, ㄨ, null, 妻财, 巳, 火, ⚊], [父母, 酉, 金, ㄨ, 应, 子孙, 卯, 木, ⚊]]
+    xunkong: [辰, 巳]
+    seasonal_states_bottom_up: [囚, 旺, 休, 旺, 死, 相]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 合, 冲, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [false, true, false, false, true, false]
+    changed_seasonal_states_bottom_up: [囚, 旺, 休, 旺, 休, 囚]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合]
+  zengshan-28:
+    source_lines_bottom_up: [[妻财, 未, 土, ㄨ, 世, 子孙, 巳, 火, ⚊], [子孙, 巳, 火, ㄨ, null, 兄弟, 卯, 木, ⚊], [兄弟, 卯, 木, ⚋, null, 妻财, 丑, 土, ⚋], [子孙, 午, 火, ⚊, 应, 子孙, 午, 火, ⚊], [官鬼, 申, 金, ⚋, null, 官鬼, 申, 金, ⚋], [妻财, 戌, 土, ⚋, null, 妻财, 戌, 土, ⚋]]
+    xunkong: [寅, 卯]
+    seasonal_states_bottom_up: [囚, 死, 相, 死, 休, 囚]
+    month_relations_bottom_up: [无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [false, true, false, false, false, false]
+    changed_seasonal_states_bottom_up: [死, 相, 囚, 死, 休, 囚]
+    changed_month_relations_bottom_up: [冲, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-29:
+    source_lines_bottom_up: [[兄弟, 未, 土, ⚋, null, 兄弟, 未, 土, ⚋], [父母, 巳, 火, ⚋, null, 父母, 巳, 火, ⚋], [官鬼, 卯, 木, ⚋, 世, 官鬼, 卯, 木, ⚋], [子孙, 申, 金, ⚋, null, 子孙, 申, 金, ⚋], [兄弟, 戌, 土, ⚊, null, 兄弟, 戌, 土, ⚊], [妻财, 子, 水, ⚋, 应, 妻财, 子, 水, ⚋]]
+    xunkong: [寅, 卯]
+    seasonal_states_bottom_up: [相, 旺, 休, 死, 相, 囚]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, true, false, false, false]
+    changed_seasonal_states_bottom_up: [相, 旺, 休, 死, 相, 囚]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合]
+  zengshan-30:
+    source_lines_bottom_up: [[父母, 未, 土, ⚋, null, 父母, 未, 土, ⚋], [官鬼, 巳, 火, ⚋, 世, 官鬼, 巳, 火, ⚋], [妻财, 卯, 木, ⚋, null, 妻财, 卯, 木, ⚋], [子孙, 亥, 水, ⚊, null, 官鬼, 午, 火, ⚊], [兄弟, 酉, 金, ⚊, 应, 兄弟, 申, 金, ⚊], [父母, 未, 土, ㄨ, null, 父母, 戌, 土, ⚊]]
+    xunkong: [寅, 卯]
+    seasonal_states_bottom_up: [休, 囚, 死, 相, 旺, 休]
+    month_relations_bottom_up: [无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合]
+    day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合]
+    changed_xunkong_bottom_up: [false, false, true, false, false, false]
+    changed_seasonal_states_bottom_up: [休, 囚, 死, 囚, 旺, 休]
+    changed_month_relations_bottom_up: [无直接冲合, 无直接冲合, 冲, 无直接冲合, 无直接冲合, 无直接冲合]
+    changed_day_relations_bottom_up: [无直接冲合, 无直接冲合, 无直接冲合, 无直接冲合, 合, 无直接冲合]
+hexagram_reference_cases:
+  - {name: 乾为天, upper: 乾, lower: 乾, palace: 乾, stage: pure, shi: 6, ying: 3}
+  - {name: 天风姤, upper: 乾, lower: 巽, palace: 乾, stage: first, shi: 1, ying: 4}
+  - {name: 天山遯, upper: 乾, lower: 艮, palace: 乾, stage: second, shi: 2, ying: 5}
+  - {name: 天地否, upper: 乾, lower: 坤, palace: 乾, stage: third, shi: 3, ying: 6}
+  - {name: 风地观, upper: 巽, lower: 坤, palace: 乾, stage: fourth, shi: 4, ying: 1}
+  - {name: 山地剥, upper: 艮, lower: 坤, palace: 乾, stage: fifth, shi: 5, ying: 2}
+  - {name: 火地晋, upper: 离, lower: 坤, palace: 乾, stage: wandering_soul, shi: 4, ying: 1}
+  - {name: 火天大有, upper: 离, lower: 乾, palace: 乾, stage: returning_soul, shi: 3, ying: 6}
+  - {name: 兑为泽, upper: 兑, lower: 兑, palace: 兑, stage: pure, shi: 6, ying: 3}
+  - {name: 泽水困, upper: 兑, lower: 坎, palace: 兑, stage: first, shi: 1, ying: 4}
+  - {name: 泽地萃, upper: 兑, lower: 坤, palace: 兑, stage: second, shi: 2, ying: 5}
+  - {name: 泽山咸, upper: 兑, lower: 艮, palace: 兑, stage: third, shi: 3, ying: 6}
+  - {name: 水山蹇, upper: 坎, lower: 艮, palace: 兑, stage: fourth, shi: 4, ying: 1}
+  - {name: 地山谦, upper: 坤, lower: 艮, palace: 兑, stage: fifth, shi: 5, ying: 2}
+  - {name: 雷山小过, upper: 震, lower: 艮, palace: 兑, stage: wandering_soul, shi: 4, ying: 1}
+  - {name: 雷泽归妹, upper: 震, lower: 兑, palace: 兑, stage: returning_soul, shi: 3, ying: 6}
+  - {name: 离为火, upper: 离, lower: 离, palace: 离, stage: pure, shi: 6, ying: 3}
+  - {name: 火山旅, upper: 离, lower: 艮, palace: 离, stage: first, shi: 1, ying: 4}
+  - {name: 火风鼎, upper: 离, lower: 巽, palace: 离, stage: second, shi: 2, ying: 5}
+  - {name: 火水未济, upper: 离, lower: 坎, palace: 离, stage: third, shi: 3, ying: 6}
+  - {name: 山水蒙, upper: 艮, lower: 坎, palace: 离, stage: fourth, shi: 4, ying: 1}
+  - {name: 风水涣, upper: 巽, lower: 坎, palace: 离, stage: fifth, shi: 5, ying: 2}
+  - {name: 天水讼, upper: 乾, lower: 坎, palace: 离, stage: wandering_soul, shi: 4, ying: 1}
+  - {name: 天火同人, upper: 乾, lower: 离, palace: 离, stage: returning_soul, shi: 3, ying: 6}
+  - {name: 震为雷, upper: 震, lower: 震, palace: 震, stage: pure, shi: 6, ying: 3}
+  - {name: 雷地豫, upper: 震, lower: 坤, palace: 震, stage: first, shi: 1, ying: 4}
+  - {name: 雷水解, upper: 震, lower: 坎, palace: 震, stage: second, shi: 2, ying: 5}
+  - {name: 雷风恒, upper: 震, lower: 巽, palace: 震, stage: third, shi: 3, ying: 6}
+  - {name: 地风升, upper: 坤, lower: 巽, palace: 震, stage: fourth, shi: 4, ying: 1}
+  - {name: 水风井, upper: 坎, lower: 巽, palace: 震, stage: fifth, shi: 5, ying: 2}
+  - {name: 泽风大过, upper: 兑, lower: 巽, palace: 震, stage: wandering_soul, shi: 4, ying: 1}
+  - {name: 泽雷随, upper: 兑, lower: 震, palace: 震, stage: returning_soul, shi: 3, ying: 6}
+  - {name: 巽为风, upper: 巽, lower: 巽, palace: 巽, stage: pure, shi: 6, ying: 3}
+  - {name: 风天小畜, upper: 巽, lower: 乾, palace: 巽, stage: first, shi: 1, ying: 4}
+  - {name: 风火家人, upper: 巽, lower: 离, palace: 巽, stage: second, shi: 2, ying: 5}
+  - {name: 风雷益, upper: 巽, lower: 震, palace: 巽, stage: third, shi: 3, ying: 6}
+  - {name: 天雷无妄, upper: 乾, lower: 震, palace: 巽, stage: fourth, shi: 4, ying: 1}
+  - {name: 火雷噬嗑, upper: 离, lower: 震, palace: 巽, stage: fifth, shi: 5, ying: 2}
+  - {name: 山雷颐, upper: 艮, lower: 震, palace: 巽, stage: wandering_soul, shi: 4, ying: 1}
+  - {name: 山风蛊, upper: 艮, lower: 巽, palace: 巽, stage: returning_soul, shi: 3, ying: 6}
+  - {name: 坎为水, upper: 坎, lower: 坎, palace: 坎, stage: pure, shi: 6, ying: 3}
+  - {name: 水泽节, upper: 坎, lower: 兑, palace: 坎, stage: first, shi: 1, ying: 4}
+  - {name: 水雷屯, upper: 坎, lower: 震, palace: 坎, stage: second, shi: 2, ying: 5}
+  - {name: 水火既济, upper: 坎, lower: 离, palace: 坎, stage: third, shi: 3, ying: 6}
+  - {name: 泽火革, upper: 兑, lower: 离, palace: 坎, stage: fourth, shi: 4, ying: 1}
+  - {name: 雷火丰, upper: 震, lower: 离, palace: 坎, stage: fifth, shi: 5, ying: 2}
+  - {name: 地火明夷, upper: 坤, lower: 离, palace: 坎, stage: wandering_soul, shi: 4, ying: 1}
+  - {name: 地水师, upper: 坤, lower: 坎, palace: 坎, stage: returning_soul, shi: 3, ying: 6}
+  - {name: 艮为山, upper: 艮, lower: 艮, palace: 艮, stage: pure, shi: 6, ying: 3}
+  - {name: 山火贲, upper: 艮, lower: 离, palace: 艮, stage: first, shi: 1, ying: 4}
+  - {name: 山天大畜, upper: 艮, lower: 乾, palace: 艮, stage: second, shi: 2, ying: 5}
+  - {name: 山泽损, upper: 艮, lower: 兑, palace: 艮, stage: third, shi: 3, ying: 6}
+  - {name: 火泽睽, upper: 离, lower: 兑, palace: 艮, stage: fourth, shi: 4, ying: 1}
+  - {name: 天泽履, upper: 乾, lower: 兑, palace: 艮, stage: fifth, shi: 5, ying: 2}
+  - {name: 风泽中孚, upper: 巽, lower: 兑, palace: 艮, stage: wandering_soul, shi: 4, ying: 1}
+  - {name: 风山渐, upper: 巽, lower: 艮, palace: 艮, stage: returning_soul, shi: 3, ying: 6}
+  - {name: 坤为地, upper: 坤, lower: 坤, palace: 坤, stage: pure, shi: 6, ying: 3}
+  - {name: 地雷复, upper: 坤, lower: 震, palace: 坤, stage: first, shi: 1, ying: 4}
+  - {name: 地泽临, upper: 坤, lower: 兑, palace: 坤, stage: second, shi: 2, ying: 5}
+  - {name: 地天泰, upper: 坤, lower: 乾, palace: 坤, stage: third, shi: 3, ying: 6}
+  - {name: 雷天大壮, upper: 震, lower: 乾, palace: 坤, stage: fourth, shi: 4, ying: 1}
+  - {name: 泽天夬, upper: 兑, lower: 乾, palace: 坤, stage: fifth, shi: 5, ying: 2}
+  - {name: 水天需, upper: 坎, lower: 乾, palace: 坤, stage: wandering_soul, shi: 4, ying: 1}
+  - {name: 水地比, upper: 坎, lower: 坤, palace: 坤, stage: returning_soul, shi: 3, ying: 6}
+
+calendar_boundaries:
+  xunkong_days: [甲子, 甲戌, 甲申, 甲午, 甲辰, 甲寅]
+  six_spirit_day_stems: [甲, 乙, 丙, 丁, 戊, 己, 庚, 辛, 壬, 癸]
+calendar_boundary_cases:
+  - {id: before-li-chun, category: solar_term_boundary, datetime: '2024-02-04T16:20:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight, expected_pillars: [癸卯, 乙丑, 戊戌, 庚申], expected_lunar: [2023, 12, 25, false]}
+  - {id: after-li-chun, category: solar_term_boundary, datetime: '2024-02-04T16:40:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight, expected_pillars: [甲辰, 丙寅, 戊戌, 庚申], expected_lunar: [2023, 12, 25, false]}
+  - {id: late-zi-current-day, category: day_rollover, datetime: '2024-01-15T23:30:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight, expected_pillars: [癸卯, 乙丑, 戊寅, 壬子], expected_lunar: [2023, 12, 5, false]}
+  - {id: late-zi-next-day, category: day_rollover, datetime: '2024-01-15T23:30:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: late-zi-next-day, expected_pillars: [癸卯, 乙丑, 己卯, 甲子], expected_lunar: [2023, 12, 5, false]}
+  - {id: leap-lunar-month, category: leap_month, datetime: '2023-03-22T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight, expected_pillars: [癸卯, 乙卯, 己卯, 庚午], expected_lunar: [2023, 2, 1, true]}
+  - {id: new-york-dst, category: timezone_boundary, datetime: '2024-07-01T12:00:00', timezone: America/New_York, location: 纽约, zi_hour_policy: midnight, expected_pillars: [甲辰, 庚午, 丙寅, 甲午], expected_lunar: [2024, 5, 26, false]}
+  - {id: historical-offset, category: timezone_boundary, datetime: '1880-01-01T12:00:00', timezone: America/New_York, location: 纽约, zi_hour_policy: midnight, expected_pillars: [己卯, 丙子, 己丑, 庚午], expected_lunar: [1879, 11, 20, false]}
+moving_boundaries:
+  - {id: stable-all-yang, tosses: [7, 7, 7, 7, 7, 7], moving_lines: [], primary: 乾为天, changed: 乾为天}
+  - {id: all-old-yang, tosses: [9, 9, 9, 9, 9, 9], moving_lines: [1, 2, 3, 4, 5, 6], primary: 乾为天, changed: 坤为地}
+  - {id: all-old-yin, tosses: [6, 6, 6, 6, 6, 6], moving_lines: [1, 2, 3, 4, 5, 6], primary: 坤为地, changed: 乾为天}
+  - {id: middle-pair, tosses: [7, 8, 9, 6, 7, 8], moving_lines: [3, 4], primary: 水火既济, changed: 泽雷随}

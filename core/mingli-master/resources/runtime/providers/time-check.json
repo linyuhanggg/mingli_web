@@ -1,0 +1,366 @@
+{
+  "capability": {
+    "assumption_cost": 0,
+    "default_dimension_ids": [
+      "time_options"
+    ],
+    "default_priority": 10,
+    "dimension_ids": [
+      "time_options"
+    ],
+    "exact_horizon_ids": [
+      "life"
+    ],
+    "horizon_ids": [
+      "life"
+    ],
+    "independent_lineage_id": "time-check",
+    "object_ids": [
+      "natal"
+    ],
+    "required_input_groups": [
+      {
+        "any_of": [
+          "time_check_date"
+        ]
+      },
+      {
+        "any_of": [
+          "time_range_start"
+        ]
+      },
+      {
+        "any_of": [
+          "time_range_end"
+        ]
+      },
+      {
+        "any_of": [
+          "timezone"
+        ]
+      },
+      {
+        "any_of": [
+          "location"
+        ]
+      },
+      {
+        "any_of": [
+          "gender"
+        ]
+      }
+    ]
+  },
+  "claim_policy": {
+    "allowed_kind_ids": [
+      "kind.fact"
+    ],
+    "certainty_ceiling_id": "certainty.tendency"
+  },
+  "display": {
+    "zh-CN": {
+      "description": "寻时定盘：使用 field.time_check_date 枚举十二个传统时辰代表候选，并逐个复用八字 Runtime 计算四柱与时间口径事实；field.time_range_start 与 field.time_range_end 按传统时辰区间交集筛选，另需 field.timezone、field.location、field.gender。结构化事件先作有界证据比较，再按时支冲合、坐命宫与小运淘汰候选并给出定盘结论；不含用神或人生事件断语。",
+      "name": "寻时定盘"
+    }
+  },
+  "entrypoint": "reading_engine.providers:TimeCheckProvider",
+  "evidence_profile_id": "bazi",
+  "id": "time-check",
+  "input_fields": {
+    "coordinate_accuracy_meters": {
+      "display": {
+        "zh-CN": "坐标精度(米)"
+      },
+      "request_slot": "birth_data.coordinate_accuracy_meters",
+      "type": "number"
+    },
+    "coordinate_source": {
+      "display": {
+        "zh-CN": "坐标来源"
+      },
+      "request_slot": "birth_data.coordinate_source",
+      "type": "string"
+    },
+    "gender": {
+      "display": {
+        "zh-CN": "性别"
+      },
+      "request_slot": "birth_data.gender",
+      "type": "string"
+    },
+    "known_events": {
+      "display": {
+        "zh-CN": "可核对事件"
+      },
+      "request_slot": "birth_data.known_events",
+      "type": "structured"
+    },
+    "known_event_facts": {
+      "display": {
+        "zh-CN": "可核对事件事实"
+      },
+      "request_slot": "birth_data.known_event_facts",
+      "type": "structured"
+    },
+    "latitude": {
+      "display": {
+        "zh-CN": "纬度"
+      },
+      "request_slot": "birth_data.latitude",
+      "type": "number"
+    },
+    "location": {
+      "display": {
+        "zh-CN": "出生地"
+      },
+      "request_slot": "location",
+      "type": "string"
+    },
+    "longitude": {
+      "display": {
+        "zh-CN": "经度"
+      },
+      "request_slot": "birth_data.longitude",
+      "type": "number"
+    },
+    "time_basis_policy": {
+      "display": {
+        "zh-CN": "时间口径"
+      },
+      "request_slot": "birth_data.time_basis_policy",
+      "type": "string"
+    },
+    "time_check_date": {
+      "display": {
+        "zh-CN": "出生日期"
+      },
+      "request_slot": "birth_data.time_check_date",
+      "type": "date"
+    },
+    "time_range_end": {
+      "display": {
+        "zh-CN": "已知时间范围结束"
+      },
+      "request_slot": "birth_data.time_range_end",
+      "type": "string"
+    },
+    "time_range_start": {
+      "display": {
+        "zh-CN": "已知时间范围开始"
+      },
+      "request_slot": "birth_data.time_range_start",
+      "type": "string"
+    },
+    "timezone": {
+      "display": {
+        "zh-CN": "时区"
+      },
+      "request_slot": "timezone",
+      "type": "string"
+    },
+    "zi_hour_policy": {
+      "display": {
+        "zh-CN": "子时策略"
+      },
+      "request_slot": "birth_data.zi_hour_policy",
+      "type": "string"
+    }
+  },
+  "runtime_capability": {
+    "default_priority": 10,
+    "dimensions": [
+      "time_options"
+    ],
+    "exact_horizons": [
+      "life"
+    ],
+    "extension_output_bindings": [
+      {
+        "horizons": [
+          "life"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/dimension_fact_scope"
+        ],
+        "name": "dimension_fact_scope"
+      }
+    ],
+    "extension_outputs": [
+      "dimension_fact_scope"
+    ],
+    "horizons": [
+      "life"
+    ],
+    "independent_lineage": "time-check",
+    "mode": "calculation",
+    "objects": [
+      "natal"
+    ],
+    "output_bindings": [
+      {
+        "horizons": [
+          "life"
+        ],
+        "json_pointers": [
+          "/facts/chart_facts/output/candidate_count"
+        ],
+        "name": "candidate_count"
+      },
+      {
+        "horizons": [
+          "life"
+        ],
+        "json_pointers": [
+          "/facts/chart_facts/output/candidates"
+        ],
+        "name": "candidates"
+      },
+      {
+        "horizons": [
+          "life"
+        ],
+        "json_pointers": [
+          "/facts/chart_facts/output/known_time_range"
+        ],
+        "name": "known_time_range"
+      },
+      {
+        "horizons": [
+          "life"
+        ],
+        "json_pointers": [
+          "/facts/chart_facts/output/time_basis_policy"
+        ],
+        "name": "time_basis_policy"
+      },
+      {
+        "horizons": [
+          "life"
+        ],
+        "json_pointers": [
+          "/facts/chart_facts/output/known_event_count"
+        ],
+        "name": "known_event_count"
+      },
+      {
+        "horizons": [
+          "life"
+        ],
+        "json_pointers": [
+          "/facts/chart_facts/output/ranking_status"
+        ],
+        "name": "ranking_status"
+      },
+    {
+      "horizons": [
+        "life"
+      ],
+      "json_pointers": [
+        "/facts/chart_facts/output/event_matching_status"
+      ],
+      "name": "event_matching_status"
+    },
+    {
+      "horizons": [
+        "life"
+      ],
+      "json_pointers": [
+        "/facts/chart_facts/output/event_input_status"
+      ],
+      "name": "event_input_status"
+    },
+    {
+      "horizons": [
+        "life"
+      ],
+      "json_pointers": [
+        "/facts/chart_facts/output/candidate_rankings"
+      ],
+      "name": "candidate_rankings"
+    },
+    {
+      "horizons": [
+        "life"
+      ],
+      "json_pointers": [
+        "/facts/chart_facts/output/event_matches"
+      ],
+      "name": "event_matches"
+    },
+    {
+      "horizons": [
+        "life"
+      ],
+      "json_pointers": [
+        "/facts/chart_facts/output/rectification_status"
+      ],
+      "name": "rectification_status"
+    },
+    {
+      "horizons": [
+        "life"
+      ],
+      "json_pointers": [
+        "/facts/chart_facts/output/rectification_conclusion"
+      ],
+      "name": "rectification_conclusion"
+    }
+  ],
+  "outputs": [
+      "candidate_count",
+      "candidates",
+      "known_time_range",
+      "time_basis_policy",
+    "known_event_count",
+    "ranking_status",
+    "event_matching_status",
+    "event_input_status",
+    "candidate_rankings",
+    "event_matches",
+    "rectification_status",
+    "rectification_conclusion"
+  ],
+    "required_inputs": [
+      "time_check_date",
+      "time_range_start",
+      "time_range_end",
+      "timezone",
+      "location",
+      "gender"
+    ],
+    "system": "time-check"
+  },
+  "schema_version": "provider-manifest-v1",
+  "terms": {
+    "certainty.tendency": {
+      "display": {
+        "zh-CN": "事实层边界"
+      }
+    },
+    "kind.fact": {
+      "display": {
+        "zh-CN": "确定性事实"
+      }
+    },
+    "time_options": {
+      "display": {
+        "zh-CN": "十二时辰候选"
+      }
+    }
+  },
+  "time_semantics": {
+    "coordinates_required_policies": [
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "default_policy": "local_apparent_solar-v1",
+    "input_time": "birth_data.time_check_date",
+    "role": "pillar_clock",
+    "supported_policies": [
+      "civil",
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "unsupported_fallback": "need_input"
+  }
+}

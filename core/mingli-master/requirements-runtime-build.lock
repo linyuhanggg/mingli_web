@@ -1,0 +1,6 @@
+# Build tools are installed from these universal wheels before compiling the
+# hash-locked sxtwl sdist. Build isolation is then disabled, so pip cannot
+# resolve undeclared build dependencies outside this lock.
+setuptools==82.0.1 --hash=sha256:a59e362652f08dcd477c78bb6e7bd9d80a7995bc73ce773050228a348ce2e5bb
+wheel==0.46.3 --hash=sha256:4b399d56c9d9338230118d705d9737a2a468ccca63d5e813e2a4fc7815d8bc4d
+packaging==26.2 --hash=sha256:5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e

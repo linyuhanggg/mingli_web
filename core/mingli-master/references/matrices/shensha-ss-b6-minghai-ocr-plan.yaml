@@ -1,0 +1,286 @@
+plan:
+  id: shensha-ss-b6-minghai-ocr-plan
+  version: v0.3
+  batch_id: SS-B6
+  generated_at: "2026-07-05"
+  source_status: ocr_pipeline_initialized_not_distillable
+  purpose: "《新刻星平總會命海全編 / 星平会海》从 image-only source lead 推进到 OCR/人工校勘流水线，但不产出断事规则。"
+  source:
+    slug: "xingming/minghai-quanbian"
+    title: "新刻星平總會命海全編 / 星平会海"
+    system: "xingming"
+    manifest: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/manifests/minghai-quanbian.yaml"
+    raw_source_path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/raw/xingming/minghai-quanbian"
+    derived_path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian"
+    page_map: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/page-map.csv"
+    page_count: 437
+    raw_files: 6
+    raw_source_status: acquired
+    normalized_status: blocked
+    source_status: image_only
+    distillation_allowed: false
+  current_evidence:
+    checksums_recorded: true
+    page_map_rows: 437
+    pdf_text_layer: absent
+    tesseract_baseline: ocr_unreviewed_noisy
+    vision_ocr_baseline: no_usable_text_on_page_14_right_leaf_crop
+    column_tiles:
+      page_14_generated: true
+      command: "python sources/scripts/render_minghai_ocr_assets.py --pages 14 --dpi 300 --columns 8 --column-overlap 70"
+      tile_count: 16
+      path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/vision-assets/page-014/column-tiles"
+      canonical_text: false
+    review_batch_001:
+      generated: true
+      pages: "v.1 global pages 13-24"
+      page_count: 12
+      asset_files: 264
+      batch_note: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/review-batch-001-v1-pages-013-024.md"
+      asset_range: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/vision-assets/page-013 through page-024"
+      command: "python sources/scripts/render_minghai_ocr_assets.py --pages 15-24 --dpi 220 --columns 8 --column-overlap 50 --render-timeout 25 --prefer-existing-render"
+      render_note: "page 15 direct pdftoppm timed out; pages 15-24 used existing v.1 sample render images as review inputs."
+      canonical_text: false
+      review_page_stubs_created: true
+      review_page_stub_count: 12
+      review_page_stub_status: all_in_review_not_reviewed
+      review_page_draft_empty_count: 0
+      review_page_in_review_count: 12
+      review_page_reviewed_count: 0
+      in_review_pages:
+        - page: 13
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-013.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+        - page: 14
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-014.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+        - page: 15
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-015.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+        - page: 16
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-016.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+        - page: 17
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-017.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+        - page: 18
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-018.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+        - page: 19
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-019.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+        - page: 20
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-020.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+        - page: 21
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-021.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+        - page: 22
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-022.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+        - page: 23
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-023.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+        - page: 24
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-024.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+      reviewed_pages_status: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/REVIEWED_PAGES_STATUS.md"
+      review_page_stub_range: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-013.md through page-024.md"
+      review_page_stub_command: "python sources/scripts/create_minghai_review_page_stubs.py --pages 13-24"
+      review_page_validation_command: "python sources/scripts/validate_minghai_review_pages.py --pages 13-24"
+      review_page_validation_result: "OK draft_empty=0, in_review=12"
+      reviewed_text_pages_created: false
+    review_batch_002:
+      generated: true
+      pages: "v.1 global page 25"
+      page_count: 1
+      asset_files: 22
+      batch_note: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/review-batch-002-v1-page-025.md"
+      asset_range: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/vision-assets/page-025"
+      command: "python sources/scripts/render_minghai_ocr_assets.py --pages 25 --dpi 180 --columns 8 --column-overlap 50 --render-timeout 120 --prefer-existing-render"
+      render_note: "page 25 direct pdftoppm timed out at 220 DPI after 25 seconds; rerendered successfully at 180 DPI with 120-second timeout."
+      canonical_text: false
+      review_page_stubs_created: true
+      review_page_stub_count: 1
+      review_page_stub_status: all_in_review_not_reviewed
+      review_page_draft_empty_count: 0
+      review_page_in_review_count: 1
+      review_page_reviewed_count: 0
+      in_review_pages:
+        - page: 25
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-025.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+      reviewed_pages_status: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/REVIEWED_PAGES_STATUS.md"
+      review_page_stub_range: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-025.md"
+      review_page_stub_command: "python sources/scripts/create_minghai_review_page_stubs.py --pages 25"
+      review_page_validation_command: "python sources/scripts/validate_minghai_review_pages.py --pages 13-25"
+      review_page_validation_result: "OK in_review=13"
+      reviewed_text_pages_created: false
+    review_batch_003:
+      generated: true
+      pages: "v.1 global page 26"
+      page_count: 1
+      asset_files: 22
+      batch_note: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/review-batch-003-v1-page-026.md"
+      asset_range: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/vision-assets/page-026"
+      command: "python sources/scripts/render_minghai_ocr_assets.py --pages 26 --dpi 180 --columns 8 --column-overlap 50 --render-timeout 120 --prefer-existing-render"
+      render_note: "page 26 rendered successfully at 180 DPI with 120-second timeout; column OCR generated noisy drafts with no stable anchors."
+      canonical_text: false
+      review_page_stubs_created: true
+      review_page_stub_count: 1
+      review_page_stub_status: all_in_review_not_reviewed
+      review_page_draft_empty_count: 0
+      review_page_in_review_count: 1
+      review_page_reviewed_count: 0
+      in_review_pages:
+        - page: 26
+          path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-026.md"
+          status: in_review
+          transcription_status: partial_model_assisted_initial_pass
+          visible_sections:
+            - "陰錯陽差歌 continuation"
+            - "呻吟煞一名孤鸞煞歌"
+            - "總論駕前神煞歌"
+            - "總論駕後神煞歌"
+            - "地煞賦總斷 opening"
+      reviewed_pages_status: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/REVIEWED_PAGES_STATUS.md"
+      review_page_stub_range: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/page-026.md"
+      review_page_stub_command: "python sources/scripts/create_minghai_review_page_stubs.py --pages 26"
+      review_page_validation_command: "python sources/scripts/validate_minghai_review_pages.py --pages 13-26"
+      review_page_validation_result: "OK in_review=14"
+      reviewed_text_pages_created: false
+    column_ocr_drafts:
+      page_14_generated: true
+      command: "python sources/scripts/ocr_minghai_column_tiles.py --page 14 --leaf both --force"
+      draft_count: 16
+      total_wc_m_characters: 2188
+      source_status: ocr_unreviewed_draft
+      path: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/ocr-drafts/page-014-column-tiles"
+      report: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/ocr-drafts/page-014-column-tiles/COLUMN_OCR_DRAFT_REPORT.md"
+      expected_anchors:
+        - "論諸吉神起例"
+        - "論祿勳"
+        - "論玉堂"
+        - "祿者"
+        - "天元祿"
+      anchor_hits: []
+      canonical_text: false
+      promotion_allowed: false
+      conclusion: "Automatic column OCR remains too noisy for direct distillation; use only beside images for reviewed transcription."
+    confirmed_relevance:
+      - "v.1 page 14 visually anchors 論諸吉神起例."
+      - "page 14 column tiles visibly anchor 論諸吉神起例, ○論祿勳, and ○論玉堂 as review targets."
+    online_text_candidate:
+      provider: "识典古籍"
+      url: "https://www.shidianguji.com/zh/book/HY1442/chapter/1koboy2q7bbws"
+      spot_checked_at: "2026-07-05"
+      status: source_anchor_only
+      review_report: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/SHIDIAN_CANDIDATE_REVIEW.md"
+      observed_page_14_relevant_anchors:
+        - "論諸吉神起例"
+        - "論玉堂"
+        - "論文昌"
+        - "論禄神"
+      robots_review:
+        checked_at: "2026-07-05"
+        generic_user_agent_allowed: false
+        note: "robots.txt has User-agent:* Disallow:/; sitemap metadata was used only for coverage clues."
+      terms_review:
+        checked_at: "2026-07-05"
+        bulk_copy_or_crawl_allowed: false
+        note: "协议限制未经书面许可的复制、整理、非法抓取、模拟下载、机器人监视/复制/下载。"
+      coverage_review:
+        checked_at: "2026-07-05"
+        book_url_found_in_sitemap: true
+        chapter_urls_observed: 9
+        complete_coverage_proven: false
+        expected_local_structure: "十卷、首一卷"
+      required_before_use:
+        - explicit_permission_or_allowed_export_path
+        - complete_chapter_coverage_check
+        - quality_label_check
+        - alignment_against_harvard_commons_scan
+      usable_as_normalized_source_now: false
+      usable_as_comparison_aid_now: true
+    usable_as_answer_source: false
+    usable_as_reference_pack: false
+  policy:
+    distillation_allowed: false
+    no_interpretation_rules: true
+    no_quote_trace_promotion: true
+    no_automatic_ocr_promotion: true
+    complete_reviewed_fulltext_required: true
+    shidian_text_not_normalized_source_until_terms_and_completeness_reviewed: true
+    shidian_text_may_only_be_logged_comparison_aid_until_reviewed: true
+    shidian_no_bulk_crawl_due_to_robots_and_terms: true
+    keep_as_acquisition_only_in_mingli_master: true
+  allowed_actions:
+    - page_leaf_accounting
+    - render_review_assets
+    - OCR_experiment_drafts
+    - manual_or_model_assisted_transcription
+    - reviewed_page_assembly_after_all_pages_accounted
+    - manifest_update_only_after_reviewed_fulltext_checksum
+  disallowed_actions:
+    - promote_to_D2_ready_pack
+    - add_rules_or_procedures_from_unreviewed_OCR
+    - use_in_answer_time_interpretation
+    - merge_xingming_shensha_with_bazi_or_selection_terms
+  work_products:
+    status_report: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/SS_B6_OCR_STATUS.md"
+    collation_protocol: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/OCR_COLLATION_PROTOCOL.md"
+    sample_report: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/OCR_SAMPLE_REPORT.md"
+    render_script: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/scripts/render_minghai_ocr_assets.py"
+    column_ocr_script: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/scripts/ocr_minghai_column_tiles.py"
+    review_page_stub_script: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/scripts/create_minghai_review_page_stubs.py"
+    review_page_validation_script: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/scripts/validate_minghai_review_pages.py"
+    review_queue: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/VISION_REVIEW_QUEUE.md"
+    review_batch_001: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/review-batch-001-v1-pages-013-024.md"
+    review_batch_002: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/review-batch-002-v1-page-025.md"
+    review_batch_003: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/review-batch-003-v1-page-026.md"
+    reviewed_pages_status: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/reviewed-pages/REVIEWED_PAGES_STATUS.md"
+    page_14_column_tiles: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/vision-assets/page-014/column-tiles"
+    page_14_column_ocr_draft_report: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/ocr/ocr-drafts/page-014-column-tiles/COLUMN_OCR_DRAFT_REPORT.md"
+    online_text_candidate_url: "https://www.shidianguji.com/zh/book/HY1442/chapter/1koboy2q7bbws"
+    online_text_candidate_review: "~/Desktop/mingli-corpus-plan/qoder-distillation/sources/derived/xingming/minghai-quanbian/SHIDIAN_CANDIDATE_REVIEW.md"
+  next_steps:
+    - id: SS-B6-1
+      title: "Page/leaf accounting"
+      requirement: "Review all 437 rows for visible folio, page type, layout, and text-bearing/non-text status."
+    - id: SS-B6-2
+      title: "Render high-value shensha pages"
+      requirement: "Use render_minghai_ocr_assets.py for pages around v.1 page 14 and later shensha/table sections."
+    - id: SS-B6-3
+      title: "Reviewed transcription"
+      requirement: "Batch 001 reviewed-pages/page-013.md through page-024.md, batch 002 page-025.md, and batch 003 page-026.md are now in_review; next pass must double-review or expand page range, and validate_minghai_review_pages.py must pass before any assembly."
+    - id: SS-B6-3a
+      title: "Online rendered text comparison review"
+      requirement: "Shidian review currently blocks bulk crawling and normalization; use only small logged comparison checks unless explicit permission/export path, full coverage, quality label, and Harvard/Commons alignment are later verified."
+    - id: SS-B6-4
+      title: "Promotion audit"
+      requirement: "Assemble reviewed fulltext, record SHA256, run validate_sources.py, then create D2 reference pack."
+  promotion_gates:
+    - source_manifest_complete
+    - all_437_pages_accounted
+    - text_bearing_pages_reviewed_or_marked_unreadable
+    - shensha_sections_double_reviewed
+    - fulltext_reviewed_with_page_anchors
+    - reviewed_fulltext_sha256_recorded
+    - source_validation_passes
+    - system_boundary_tests_added
+  handoff:
+    next_recommended_batch: SS-B6
+    reason: "Continue OCR/page-review work; SS-B6 remains incomplete until reviewed fulltext exists."

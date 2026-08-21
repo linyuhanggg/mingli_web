@@ -1,0 +1,19 @@
+{
+  "providers": [
+    "providers/bazi.json",
+    "providers/fengshui.json",
+    "providers/fortune.json",
+    "providers/liuren.json",
+    "providers/liuyao.json",
+    "providers/luming-nayin.json",
+    "providers/meihua.json",
+    "providers/physiognomy.json",
+    "providers/qimen.json",
+    "providers/selection.json",
+    "providers/taiyi.json",
+    "providers/time-check.json",
+    "providers/xingming.json",
+    "providers/ziwei.json"
+  ],
+  "schema_version": "catalog-v1"
+}

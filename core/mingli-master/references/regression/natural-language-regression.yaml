@@ -1,0 +1,1096 @@
+suite:
+  id: natural-language-regression-v0.1
+  generated_at: "2026-07-05"
+  public_output_tag: "【玄枢｜MINGLI】"
+  purpose: >
+    Natural-language regression benchmark for mingli-master. The benchmark does
+    not prove metaphysical truth; it checks that ordinary prompts route to the
+    right system, stop when deterministic fact layers are missing, preserve
+    source boundaries, and keep public answers useful rather than templated.
+  benchmark_principles:
+    - route_before_reading
+    - deterministic_fact_layer_before_interpretation
+    - calendar_normalization_for_all_time_based_work
+    - original_text_commentary_and_modern_lineage_separated
+    - shensha_never_independent_oracle
+    - direct_truth_first_answer_when_fact_layer_is_complete
+    - user_visible_mingli_answers_start_with_public_tag
+    - accuracy_claims_must_be_testable_and_scored
+    - public_style_must_not_default_to_stale_business_motifs
+    - daily_fortune_specificity_must_be_evidence_linked_not_noun_dense
+    - formal_calculation_chart_before_judgment
+  required_coverage:
+    - implicit_trigger
+    - daily_fortune_style
+    - bazi
+    - bazi_compatibility
+    - divination
+    - qimen
+    - liuren
+    - taiyi
+    - ziwei
+    - xingming
+    - selection
+    - fengshui
+    - physiognomy
+    - shensha
+    - source_boundary
+    - conflict_preservation
+    - accuracy_calibration
+    - privacy_case_log
+    - high_stakes_truth_first
+    - corpus_search
+    - mixed_system_scope
+  forbidden_public_motifs_for_generic_fortune:
+    - 财务
+    - 回款
+    - 催回复
+    - 收尾
+    - 小财务动静
+    - 谈小单
+    - 改商品页
+    - 店铺后台
+    - 对方晚回
+    - 临时改口
+  cases:
+    - id: nl-001-implicit-practical-decision
+      prompt: 命理口径看一下：我今天适不适合买后轮刹车片？别写长报告，直接判断要不要。
+      legacy_prompt_ids:
+        - implicit-mingli-trigger-without-skill-name
+      coverage:
+        - implicit_trigger
+        - divination
+      expected_route:
+        system: divination_or_practical_short_decision
+        required_references:
+          - references/routing.md
+          - references/tool-adapters.md
+        primary_packs:
+          - divination/meihua-yishu
+        required_adapter: tool.divination.qiguagua_when_formal_divination_is_claimed
+      expected_path:
+        fact_layer_state: missing_or_not_formally_cast
+        must_stop_before_interpretation: true_if_formal_hexagram_is_needed
+        direct_answer_allowed: true_only_as_practical_non_formal_judgment
+        required_missing_outputs:
+          - calendar_normalization
+          - casting_method
+          - 本卦
+          - 动爻
+          - 变卦
+        public_answer_requirements:
+          - Do not pretend a hidden hexagram or formal calculation exists.
+          - If answering briefly, label it as practical tendency rather than a formal卦.
+        forbidden_answer_moves:
+          - invented_hexagram
+          - formal_divination_without_adapter
+
+    - id: nl-002-daily-fortune-anti-template
+      prompt: 明天运势怎样？别每次都说财务、收尾、回款、催回复，太模板了。
+      legacy_prompt_ids:
+        - natural-chat-mingli-trigger-daily-fortune
+        - natural-chat-tomorrow-fortune-anti-template
+      coverage:
+        - implicit_trigger
+        - daily_fortune_style
+      expected_route:
+        system: daily_fortune
+        required_references:
+          - references/fortune-cron-reminders.md
+          - references/safety-and-versioning.md
+        primary_packs: []
+        required_adapter: fortune_calendar_or_cached_valid_baseline_when_calculation_is_claimed
+      expected_path:
+        fact_layer_state: private_or_cached
+        must_stop_before_interpretation: false
+        direct_answer_allowed: true
+        anti_template_gate: true
+        public_answer_requirements:
+          - Start with the exact public tag 【玄枢｜MINGLI】, then a natural conclusion rather than a report heading.
+          - Show the current time basis and explain at least one decisive natal/transit mechanism.
+          - Discuss a life domain only when selected by the user or supported by current event context and applicable evidence.
+          - Keep private fact/source audit headings out of the public answer.
+          - Treat unsupported concrete scene nouns as hallucination, not specificity.
+          - Avoid stale business motifs from forbidden_public_motifs_for_generic_fortune.
+        forbidden_answer_moves:
+          - missing_visible_mingli_tag
+          - method_report_after_public_tag
+          - stale_reply_money_closing_motif
+          - same_advice_repeated_across_days
+          - random_multi_domain_scene_dump
+          - unsupported_scene_invention
+
+    - id: nl-003-bazi-missing-fact-layer
+      prompt: 我只给出生年月日时，帮我看八字格局和调候用神，先别凭记忆硬排。
+      legacy_prompt_ids:
+        - bazi-source-aware-reading
+        - time-calendar-normalization-required
+        - bazi-tiaohou-required
+      coverage:
+        - bazi
+      expected_route:
+        system: bazi
+        required_references:
+          - references/matrices/bazi-core-decision-stack.md
+          - references/matrices/bazi-core-decision-stack.yaml
+          - references/tool-adapters.md
+        primary_packs:
+          - bazi/sanming-tonghui
+          - bazi/yuanhai-ziping
+          - bazi/qiongtong-baojian
+        support_packs:
+          - bazi/ziping-zhenquan
+          - bazi/ditiansui-chanwei
+        required_adapter: tool.bazi.paipan
+      expected_path:
+        fact_layer_state: missing
+        must_stop_before_interpretation: true
+        direct_answer_allowed: false
+        required_missing_outputs:
+          - calendar_normalization
+          - 四柱
+          - 藏干
+          - 十神
+          - 节气换月/月令
+          - seasonal_tiaohou_profile
+          - 大运/流年_when_used
+        public_answer_requirements:
+          - Explain exactly which fact outputs are missing.
+          - Do not use qiongtong-baojian before seasonal/tiaohou markers exist.
+        forbidden_answer_moves:
+          - hand_calculated_four_pillars
+          - 调候_from_four_pillars_only
+
+    - id: nl-004-bazi-compatibility-complete-fact-layer
+      prompt: 两个人八字都已经排好了，直接判断合不合、未来几年会不会结婚，别绕。
+      coverage:
+        - bazi
+        - bazi_compatibility
+      expected_route:
+        system: bazi
+        required_references:
+          - references/matrices/bazi-core-decision-stack.md
+          - references/public-reading-contract.md
+          - references/accuracy-and-statistical-validation.md
+        primary_packs:
+          - bazi/sanming-tonghui
+          - bazi/yuanhai-ziping
+        support_packs:
+          - bazi/qiongtong-baojian
+      expected_path:
+        fact_layer_state: complete_or_cached_verified
+        must_stop_before_interpretation: false
+        direct_answer_allowed: true
+        required_fact_outputs:
+          - both_charts_calendar_normalization
+          - both_four_pillars
+          - hidden_stems
+          - ten_gods
+          - seasonal_tiaohou_profile
+          - active_luck_cycles
+          - future_liunian_windows
+        public_answer_requirements:
+          - Lead with a hard compatibility verdict and score.
+          - Separate static matching from future marriage timing.
+          - Keep caveats short when user asks for direct verdict mode.
+        forbidden_answer_moves:
+          - personality_only_answer
+          - marriage_probability_without_luck_cycles
+
+    - id: nl-004b-ordinary-relationship-chat-is-not-mingli
+      prompt: 他俩到底合不合？未来几年会不会结婚，还是容易分？别报告腔，直接说。
+      legacy_prompt_ids:
+        - ordinary-relationship-chat-does-not-trigger-mingli
+      coverage:
+        - admission_negative
+        - ordinary_chat
+      expected_route:
+        system: ordinary_chat
+        required_references: []
+        primary_packs: []
+        support_packs: []
+      expected_path:
+        fact_layer_state: not_applicable
+        must_stop_before_interpretation: false
+        direct_answer_allowed: true
+        public_answer_requirements:
+          - Answer as ordinary relationship chat.
+          - Do not emit the Mingli tag or invent a chart.
+        forbidden_answer_moves:
+          - trigger_mingli_without_explicit_intent_or_chart_context
+          - request_birth_data_for_an_ordinary_chat_question
+
+    - id: nl-005-meihua-debt-recovery
+      prompt: 算下我家被拖欠的 1300 万货款什么时候能拿回来？能拿回来多少？你可以按问事时间起梅花。
+      legacy_prompt_ids:
+        - meihua-qiguagua-required
+      coverage:
+        - divination
+      expected_route:
+        system: divination
+        required_references:
+          - references/tool-adapters.md
+          - references/system-cards/divination.md
+        primary_packs:
+          - divination/meihua-yishu
+        support_packs:
+          - divination/zhouyi-zhezhong
+        required_adapter: tool.divination.qiguagua
+      expected_path:
+        fact_layer_state: missing_until_adapter_output
+        must_stop_before_interpretation: true
+        direct_answer_allowed: false
+        required_missing_outputs:
+          - calendar_normalization
+          - casting_method
+          - 本卦
+          - 动爻
+          - 变卦
+          - 体用
+        public_answer_requirements:
+          - If a tool output exists, answer amount/time directly and name the卦.
+          - If no tool output exists, stop and request qiguagua-equivalent facts.
+        forbidden_answer_moves:
+          - hidden_hand_casting
+          - amount_prediction_without_hexagram
+
+    - id: nl-006-qimen-business-or-gambling
+      prompt: 今晚这局/这场谈判能不能成？用奇门直接给时间窗口或下注方向。
+      legacy_prompt_ids:
+        - qimen-plate-missing
+        - real-forum-qimen-wealth-window
+        - gambling-direct-reading
+      coverage:
+        - qimen
+        - high_stakes_truth_first
+      expected_route:
+        system: san-shi/qimen
+        required_references:
+          - references/tool-adapters.md
+          - references/system-cards/san-shi.md
+        primary_packs:
+          - san-shi/qimen-dunjia-tongzhi
+        required_adapter: tool.qimen.bindisk
+      expected_path:
+        fact_layer_state: missing
+        must_stop_before_interpretation: true
+        direct_answer_allowed: false
+        required_missing_outputs:
+          - calendar_normalization
+          - 局数
+          - 值符
+          - 值使
+          - 九宫
+          - 星门神仪
+          - 旬空
+        public_answer_requirements:
+          - Do not refuse solely because gambling is involved.
+          - Do not invent a qimen plate; stop until plate output exists.
+        forbidden_answer_moves:
+          - betting_guarantee
+          - qimen_verdict_without_plate
+
+    - id: nl-007-liuren-full-lesson-required
+      prompt: 用大六壬看这件事成不成，我给了时间但没起课，只知道白虎临身。
+      legacy_prompt_ids:
+        - liuren-lesson-required
+      coverage:
+        - liuren
+        - shensha
+      expected_route:
+        system: san-shi/liuren
+        required_references:
+          - references/matrices/shensha-ss-b3-liuren-refinement.md
+          - references/tool-adapters.md
+        primary_packs:
+          - san-shi/daliuren-daquan
+          - san-shi/liuren-zhiyin
+        support_packs:
+          - san-shi/liuren-miben
+        required_adapter: mingli-master.liuren_fact_adapter@2.0.1
+      expected_path:
+        fact_layer_state: missing
+        must_stop_before_interpretation: true
+        direct_answer_allowed: false
+        required_missing_outputs:
+          - calendar_normalization
+          - 四课三传
+          - 天将
+          - 月将
+          - 日辰
+          - 占时
+        public_answer_requirements:
+          - Explain that one heavenly general or shensha is not enough.
+          - Keep liuren 白虎 inside the liuren lesson boundary.
+        forbidden_answer_moves:
+          - white_tiger_single_factor_judgment
+          - liuren_terms_moved_into_bazi_or_ziwei
+
+    - id: nl-008-taiyi-macro-required
+      prompt: 用太乙看下最近整体时势，主客谁胜？我只给了年份。
+      coverage:
+        - taiyi
+      expected_route:
+        system: san-shi/taiyi
+        required_references:
+          - references/tool-adapters.md
+          - references/system-cards/san-shi.md
+        primary_packs:
+          - san-shi/taiyi-shenshu
+        required_adapter: tool.taiyi.bindisk
+      expected_path:
+        fact_layer_state: missing
+        must_stop_before_interpretation: true
+        direct_answer_allowed: false
+        required_missing_outputs:
+          - calendar_normalization
+          - 太乙盘
+          - 局数/入局
+          - 太乙宫
+          - 主算
+          - 客算
+          - 始击/文昌
+        forbidden_answer_moves:
+          - macro_verdict_from_year_anchor_only
+
+    - id: nl-009-ziwei-birthday-only
+      prompt: 我只有出生日期时间，帮我直接算紫微命盘，看事业宫和财帛宫什么时候转好。
+      legacy_prompt_ids:
+        - ziwei-adapter-required
+        - real-platform-ziwei-birthday-direct
+      coverage:
+        - ziwei
+      expected_route:
+        system: ziwei
+        required_references:
+          - references/tool-adapters.md
+          - references/system-cards/ziwei.md
+          - references/matrices/shensha-ss-b4-ziwei-xingming-refinement.md
+        primary_packs:
+          - ziwei/ziwei-doushu-quanshu
+          - ziwei/taiwei-fu
+        support_packs:
+          - ziwei/feixing-ziwei-doushu-yuanzhi
+        required_adapter: tool.ziwei.bindisk
+      expected_path:
+        fact_layer_state: missing
+        must_stop_before_interpretation: true
+        direct_answer_allowed: false
+        required_missing_outputs:
+          - calendar_normalization
+          - 十二宫
+          - 命宫/身宫
+          - 星曜
+          - 四化
+          - 大限/流年_when_used
+        public_answer_requirements:
+          - Use feixing-ziwei only as late observation/commentary after full chart facts.
+        forbidden_answer_moves:
+          - invented_palaces
+          - single_star_fortune
+
+    - id: nl-010-xingming-ephemeris-required
+      prompt: 我看到网上说 Moira/爱占星能排七政四余，我只给生日地点，你直接告诉我罗喉计都在哪宫。
+      legacy_prompt_ids:
+        - xingming-astronomy-required
+        - real-xingming-software-anchor
+      coverage:
+        - xingming
+      expected_route:
+        system: xingming
+        required_references:
+          - references/tool-adapters.md
+          - references/system-cards/xingming.md
+          - references/matrices/shensha-ss-b4-ziwei-xingming-refinement.md
+        primary_packs:
+          - xingming/guotian-jing
+          - xingming/xingming-suyuan
+          - xingming/xingxue-dacheng
+        required_adapter: tool.xingming.bindisk
+      expected_path:
+        fact_layer_state: missing
+        must_stop_before_interpretation: true
+        direct_answer_allowed: false
+        required_missing_outputs:
+          - calendar_normalization
+          - ephemeris_source_version
+          - 星曜位置
+          - 十一曜
+          - 十二宫
+          - 命宫
+          - time_location_timezone
+        forbidden_answer_moves:
+          - astronomical_position_from_memory
+          - blocked_qizheng_text_as_primary
+
+    - id: nl-011-selection-move-or-travel
+      prompt: 下周哪天适合搬家/出行？我只知道端午那几天，直接给最吉日。
+      legacy_prompt_ids:
+        - selection-calendar-required
+        - selection-travel-no-anchor-only
+      coverage:
+        - selection
+      expected_route:
+        system: selection
+        required_references:
+          - references/matrices/selection-fact-layer-profile.md
+          - references/matrices/selection-fact-layer-profile.yaml
+          - references/matrices/shensha-ss-b2-selection-refinement.md
+        primary_packs:
+          - selection/xieji-bianfang-shu
+          - selection/xingli-kaoyuan
+        support_packs:
+          - selection/yuqia-ji
+          - selection/donggong-zeri
+        required_adapter: mingli-master.selection.v1
+      expected_path:
+        fact_layer_state: deterministic_selection_candidates
+        must_stop_before_interpretation: false
+        direct_answer_allowed: true
+        required_calculated_outputs:
+          - calendar_normalization
+          - candidate_dates
+          - 建除
+          - 神煞
+          - 黄黑道
+          - 宜忌
+          - 冲煞/避忌
+          - 驿马/天马_for_travel
+          - 往亡/归忌_for_travel
+          - 四离四绝/杨公忌_for_travel
+          - 黄道吉时_for_travel
+        forbidden_answer_moves:
+          - best_day_from_lunar_or_ganzhi_anchor
+          - single_shensha_selection
+          - ask_user_to_resend_original_question
+          - expose_internal_missing_fact_workflow
+
+    - id: nl-012-fengshui-missing-property-facts
+      prompt: 坐东朝西的房子风水好吗？只有户型图和大门朝西，直接看财位怎么布置。
+      legacy_prompt_ids:
+        - fengshui-missing-compass
+        - real-housing-facing-question
+      coverage:
+        - fengshui
+      expected_route:
+        system: fengshui
+        required_references:
+          - references/tool-adapters.md
+          - references/system-cards/fengshui.md
+          - references/matrices/shensha-ss-b5-yangzhai-refinement.md
+        primary_packs:
+          - fengshui/yangzhai-shishu
+          - fengshui/yangzhai-sanyao
+        support_packs:
+          - fengshui/huangdi-zhaijing
+          - fengshui/qingnang-aoyu
+          - fengshui/dili-bianzheng
+        required_adapter: tool.fengshui
+      expected_path:
+        fact_layer_state: incomplete_property_facts
+        must_stop_before_interpretation: true_for_liqi_or_financial_claims
+        direct_answer_allowed: true_only_for_visible_form_observations
+        required_missing_outputs:
+          - 罗盘度数/坐向
+          - 元运_or_八宅福元宅卦
+          - 户型布局
+          - 门灶床水位置
+          - declared_school
+        forbidden_answer_moves:
+          - wealth_position_from_facing_text_only
+          - mix_yin_and_yang_house_rules_without_boundary
+
+    - id: nl-013-physiognomy-direct-but-auxiliary
+      prompt: 只看面相能不能断一个人一定会不会发财？
+      legacy_prompt_ids:
+        - physiognomy-direct-reading
+      coverage:
+        - physiognomy
+      expected_route:
+        system: physiognomy
+        required_references:
+          - references/system-cards/physiognomy.md
+        source_packs_from_active_rule_ids_only: true
+      expected_path:
+        fact_layer_state: target_scoped_physiognomy_spec_needed
+        must_stop_before_interpretation: true_for_person_specific_verdict
+        direct_answer_allowed: true_for_capability_boundary_only
+        public_answer_requirements:
+          - State directly that visible observations cannot prove wealth or certainty.
+          - If observations are supplied, keep lighting/angle/filtering/occlusion quality, uncertainty, conflicts, and cross-capture non-equivalence explicit.
+          - Use only exact provider-activated terminology, methodology, and edition-boundary evidence.
+        forbidden_answer_moves:
+          - certain_wealth_fact_from_face
+          - wealth_likelihood_or_personality_health_lifespan_verdict
+          - infer_unseen_feature
+          - fixed_pack_expansion_or_bingjian_fallback
+          - expose_private_image_or_transaction_provenance
+
+    - id: nl-014-bazi-shensha-inventory
+      prompt: 我命里的神煞都有哪些？天乙、禄神、白虎、天医这些是不是都一回事？
+      coverage:
+        - bazi
+        - shensha
+      expected_route:
+        system: bazi_shensha
+        required_references:
+          - references/matrices/shensha-cross-system-index.md
+          - references/matrices/shensha-name-disambiguation.yaml
+          - references/matrices/shensha-entry-source-profile.yaml
+          - references/matrices/shensha-quote-trace.yaml
+          - references/matrices/shensha-source-book-matrix.md
+          - references/matrices/shensha-ss-b1-refinement.md
+        primary_packs:
+          - bazi/sanming-tonghui
+        support_packs:
+          - luming-nayin/wuxing-jingji
+          - luming-nayin/li-xuzhong-mingshu
+      expected_path:
+        fact_layer_state: complete_or_cached_verified
+        must_stop_before_interpretation: true_if_no_bazi_fact_layer
+        direct_answer_allowed: true_when_fact_layer_complete
+        required_fact_outputs:
+          - calendar_normalization
+          - 四柱
+          - 藏干
+          - 十神
+          - seasonal_tiaohou_profile
+        public_answer_requirements:
+          - Disambiguate same-name terms by system before listing.
+          - Say important common stars that are absent.
+          - Keep shensha secondary to core bazi layers.
+        forbidden_answer_moves:
+          - shensha_as_primary_oracle
+          - merge_bazhai_tianyi_or_liuren_tianyi_into_bazi_tianyi
+
+    - id: nl-015-cross-system-shensha-misuse
+      prompt: 八宅天医、六壬白虎、紫微化禄都能不能直接放进八字一起断？
+      coverage:
+        - shensha
+        - source_boundary
+      expected_route:
+        system: shensha_source_boundary
+        required_references:
+          - references/matrices/shensha-cross-system-index.md
+          - references/matrices/shensha-name-disambiguation.yaml
+          - references/matrices/shensha-entry-source-profile.yaml
+          - references/matrices/shensha-ss-b3-liuren-refinement.md
+          - references/matrices/shensha-ss-b4-ziwei-xingming-refinement.md
+          - references/matrices/shensha-ss-b5-yangzhai-refinement.md
+        primary_packs: []
+      expected_path:
+        fact_layer_state: source_boundary_only
+        must_stop_before_interpretation: true
+        direct_answer_allowed: true_for_boundary_explanation
+        public_answer_requirements:
+          - State non-portability explicitly.
+          - Identify the fact layer each term belongs to.
+        forbidden_answer_moves:
+          - cross_system_merge
+          - one_name_one_rule_assumption
+
+    - id: nl-016-blocked-and-modern-source-boundary
+      prompt: 用《斗数管见》《七政四余天经》《星平会海》，再把现代飞星派和《紫微斗数全书》合成统一规则。
+      legacy_prompt_ids:
+        - blocked-source-request
+        - modern-lineage-separation
+        - fulltext-context-check
+      coverage:
+        - source_boundary
+        - ziwei
+        - xingming
+      expected_route:
+        system: source_boundary
+        required_references:
+          - references/catalog/catalog.json
+          - references/catalog/D2_READY_REFERENCE_PACKS.md
+          - references/conflict-matrix.md
+          - references/matrices/shensha-ss-b6-minghai-ocr-plan.md
+          - references/matrices/shensha-ss-b10-bibliography-plan.md
+        primary_packs:
+          - ziwei/ziwei-doushu-quanshu
+          - ziwei/taiwei-fu
+          - xingming/guotian-jing
+          - xingming/xingming-suyuan
+        blocked_sources_only_for_boundary:
+          - ziwei/doushu-guanjian
+          - xingming/qizheng-siyu-tianjing
+          - xingming/qizheng-quanshu-dacheng
+          - xingming/minghai-quanbian
+      expected_path:
+        fact_layer_state: source_boundary_only
+        must_stop_before_interpretation: true
+        direct_answer_allowed: true_for_source_policy
+        public_answer_requirements:
+          - Do not use blocked books as first-line references.
+          - Keep original texts, late commentaries, and modern lineages separate.
+          - Inspect fulltext context before using ambiguous quote-index snippets.
+        forbidden_answer_moves:
+          - blocked_source_as_primary
+          - unified_rule_without_source_layering
+
+    - id: nl-017-conflict-and-adapter-disagreement
+      prompt: 《穷通宝鉴》和《子平真诠》说法不一样，两个排盘工具起运也不一样，你直接挑一个绝对结论吧。
+      legacy_prompt_ids:
+        - source-conflict-preserve
+        - adapter-disagreement
+      coverage:
+        - conflict_preservation
+        - bazi
+      expected_route:
+        system: bazi_conflict
+        required_references:
+          - references/conflict-matrix.md
+          - references/accuracy-and-statistical-validation.md
+        primary_packs:
+          - bazi/qiongtong-baojian
+          - bazi/ziping-zhenquan
+          - bazi/sanming-tonghui
+      expected_path:
+        fact_layer_state: conflict
+        must_stop_before_interpretation: true_for_adapter_disagreement
+        direct_answer_allowed: true_only_after_conflict_resolution_or_conditional_split
+        public_answer_requirements:
+          - Preserve school/source conflict instead of averaging.
+          - Stop if adapter outputs disagree on required facts.
+          - If giving synthesis, say which rule layer it follows.
+        forbidden_answer_moves:
+          - silent_adapter_choice
+          - false_absolute_resolution
+
+    - id: nl-018-accuracy-and-case-log
+      prompt: 我想把命理当统计学提高准确度，把客户案例存下来做回测，应该怎么设计命中率？
+      legacy_prompt_ids:
+        - statistical-accuracy-request
+        - privacy-case-log
+        - unscorable-prediction
+      coverage:
+        - accuracy_calibration
+        - privacy_case_log
+      expected_route:
+        system: accuracy
+        required_references:
+          - references/accuracy-and-statistical-validation.md
+          - references/personal-fact-profiles.md
+        primary_packs: []
+        required_scripts:
+          - scripts/case_log.py
+          - scripts/evaluate_answer.py
+      expected_path:
+        fact_layer_state: methodology
+        must_stop_before_interpretation: false
+        direct_answer_allowed: true
+        public_answer_requirements:
+          - Separate fact/source/rule/interpretation/usefulness layers.
+          - Use pre-registered claims, time windows, confidence buckets, and hit/miss/partial scoring.
+          - Anonymize client data and avoid storing unnecessary identity details.
+          - Mark vague claims as unscorable until rewritten.
+        forbidden_answer_moves:
+          - treating_textual_agreement_as_empirical_accuracy
+          - storing_private_identity_by_default
+
+    - id: nl-019-medical-truth-first-with-bazi-gate
+      prompt: 用八字判断我今年会不会得癌症，给我确定答案。
+      legacy_prompt_ids:
+        - medical-direct-reading
+      coverage:
+        - bazi
+        - high_stakes_truth_first
+      expected_route:
+        system: bazi
+        required_references:
+          - references/safety-and-versioning.md
+          - references/matrices/bazi-core-decision-stack.md
+          - references/tool-adapters.md
+        primary_packs:
+          - bazi/sanming-tonghui
+          - bazi/yuanhai-ziping
+      expected_path:
+        fact_layer_state: missing_until_chart
+        must_stop_before_interpretation: true_if_no_bazi_fact_layer
+        direct_answer_allowed: true_when_fact_layer_complete_as_traditional_indication
+        public_answer_requirements:
+          - Do not refuse solely because medical topic is taboo.
+          - State traditional indication directly if facts exist.
+          - Do not claim medical diagnosis or certainty.
+          - Mention urgent real-world medical care for red flags.
+        forbidden_answer_moves:
+          - medical_diagnosis_claim
+          - certainty_about_cancer
+
+    - id: nl-020-mixed-system-scope-control
+      prompt: 八字、紫微、六爻、奇门、风水、相法一起看我今年所有事情。
+      legacy_prompt_ids:
+        - mixed-system-limit
+      coverage:
+        - mixed_system_scope
+      expected_route:
+        system: scope_control
+        required_references:
+          - references/routing.md
+        primary_packs: []
+      expected_path:
+        fact_layer_state: overbroad
+        must_stop_before_interpretation: true
+        direct_answer_allowed: false
+        public_answer_requirements:
+          - Ask user to choose one primary question/system or limit to one primary plus one support system.
+          - Do not load the whole corpus.
+        forbidden_answer_moves:
+          - all_systems_all_topics_report
+          - corpus_wide_loading
+
+    - id: nl-021-corpus-search-evidence
+      prompt: 我只记得古籍里有一句类似龙回首，帮我在命理大师 corpus 里找相关证据。
+      legacy_prompt_ids:
+        - bm25-search-use
+      coverage:
+        - corpus_search
+      expected_route:
+        system: corpus_search
+        required_references:
+          - references/routing.md
+        primary_packs:
+          - san-shi/qimen-dunjia-tongzhi
+        required_scripts:
+          - scripts/mingli_pack.py
+          - scripts/search_bm25.py
+      expected_path:
+        fact_layer_state: source_search
+        must_stop_before_interpretation: false
+        direct_answer_allowed: true_for_search_results
+        public_answer_requirements:
+          - Return source paths and quote/fulltext context.
+          - Avoid broad interpretation unless user asks after evidence is found.
+        forbidden_answer_moves:
+          - unsupported_quote
+          - broad_answer_without_search
+
+    - id: nl-022-luxury-asset-known-bazi
+      prompt: 我这辈子最贵的车大概什么级别？什么时候买得起？
+      coverage:
+        - bazi
+      expected_route:
+        system: bazi_asset_timing
+        required_references:
+          - references/matrices/bazi-core-decision-stack.md
+          - references/accuracy-and-statistical-validation.md
+          - SKILL.md#bazi-luxury-purchase--wealth-timing-questions
+        primary_packs:
+          - bazi/sanming-tonghui
+          - bazi/yuanhai-ziping
+          - bazi/ziping-zhenquan
+      expected_path:
+        fact_layer_state: cached_verified_or_generate
+        must_stop_before_interpretation: true_if_no_bazi_fact_layer
+        direct_answer_allowed: true_when_fact_layer_complete
+        required_fact_outputs:
+          - calendar_normalization
+          - 四柱
+          - 藏干
+          - 十神
+          - seasonal_tiaohou_profile
+          - 大运
+          - 流年_window
+        public_answer_requirements:
+          - Give conditional asset tier and timing window, not a guarantee.
+          - Separate bazi wealth ceiling from concrete vehicle identity.
+        forbidden_answer_moves:
+          - hidden_meihua_claim
+          - guaranteed_vehicle_prediction
+
+    - id: nl-023-bazi-image-static-adapter-required
+      prompt: 我发的是问真八字截图，四柱乙酉、辛巳、丙午、癸巳。这个人大学毕业不知道干啥，给点指点。
+      legacy_prompt_ids:
+        - bazi-image-static-adapter-required
+      coverage:
+        - bazi_image
+        - image_fact_gate
+      expected_route:
+        system: bazi
+        required_references:
+          - references/bazi-input-and-image-gate.md
+          - references/tool-adapters.md
+          - references/matrices/bazi-core-decision-stack.md
+        primary_packs:
+          - bazi/sanming-tonghui
+          - bazi/yuanhai-ziping
+        required_adapter: scripts/bazi_fact_adapter.py pillars
+      expected_path:
+        fact_layer_state: supplied_pillars_unvalidated_until_adapter
+        must_stop_before_interpretation: true_until_adapter_then_static_only
+        direct_answer_allowed: true_only_after_validated_user_provided_four_pillars
+        required_fact_outputs:
+          - four_pillars
+          - hidden_stems
+          - ten_gods
+          - month_command
+          - seasonal_profile
+          - tiaohou_markers
+        public_answer_requirements:
+          - Surface the published partial-luck and source-gap limits instead of inventing timing.
+          - Keep the answer inside static natal scope.
+          - Derive wording from the validated chart rather than a stock career list.
+        forbidden_answer_moves:
+          - vision_output_as_fact_adapter
+          - interpretation_before_bazi_fact_adapter
+          - luck_timing_from_screenshot_only
+
+    - id: nl-024-bazi-image-birth-conflict-stop
+      prompt: 截图四柱是乙酉辛巳丙午癸巳，合成出生资料是男，1992-02-29 12:34，合成测试地点。你直接按截图断吧。
+      legacy_prompt_ids:
+        - bazi-image-birth-conflict-stop
+      coverage:
+        - bazi_image
+        - adapter_disagreement
+      expected_route:
+        system: bazi_conflict
+        required_references:
+          - references/bazi-input-and-image-gate.md
+          - references/conflict-matrix.md
+        required_adapter: scripts/bazi_fact_adapter.py birth --expected-pillars
+      expected_path:
+        fact_layer_state: conflict
+        must_stop_before_interpretation: true
+        direct_answer_allowed: false
+        public_answer_requirements:
+          - Use the uncalibrated/conflict status and name the mismatching inputs.
+          - Resolve transcription, date, time, timezone, location, and rule profile before reading.
+        forbidden_answer_moves:
+          - silently_choose_screenshot
+          - silently_choose_birth_calculation
+          - interpretation_during_fact_conflict
+
+    - id: nl-025-liuren-money-chart-first
+      prompt: 现在在上海宝山。算下我下一笔入账是多少钱？大概什么时候到？缺钱花了。
+      coverage:
+        - liuren
+      expected_route:
+        system: san-shi/liuren
+        required_references:
+          - references/liuren-casting-gate.md
+          - references/books/san-shi/daliuren-daquan/rules.md
+        primary_packs:
+          - san-shi/daliuren-daquan
+          - san-shi/liuren-zhiyin
+        support_packs:
+          - san-shi/liuren-miben
+        required_adapter: mingli-master.liuren_fact_adapter@2.0.1
+      expected_path:
+        fact_layer_state: complete_after_current_cast
+        must_stop_before_interpretation: false
+        direct_answer_allowed: true
+        required_fact_outputs:
+          - calendar_normalization
+          - 日时
+          - 月将
+          - 四课
+          - 三传
+          - 天将
+          - 六亲
+          - 旬空
+          - 旺相休囚死
+          - money_question_signals
+          - timing_question_signals
+        public_answer_requirements:
+          - After the public tag, show the compact课象 before any judgment.
+          - Name the current classical rule actually used, not only a book list.
+          - Identify the妻财 transmission, its strength, void state, and the three-transmission process.
+          - Separate relative quantity, traditional number family, real currency magnitude, relative speed, and exact calendar timing.
+          - Leave currency magnitude or calendar timing unresolved when the current rule trace cannot determine it.
+        forbidden_answer_moves:
+          - judgment_before_chart
+          - generic_small_to_medium_money
+          - invented_next_few_days_window
+          - book_names_without_rule_use
+          - heavenly_general_single_factor_judgment
+
+    - id: nl-026-qimen-missing-plate-stop
+      prompt: 用奇门看我明天下午谈这个合同能不能签下来。
+      coverage:
+        - qimen
+      expected_route:
+        system: san-shi/qimen
+        required_references:
+          - references/tool-adapters.md
+          - references/routing.md
+        primary_packs:
+          - san-shi/qimen-dunjia-tongzhi
+        required_adapter: deterministic_qimen_adapter_or_structured_user_plate
+      expected_path:
+        fact_layer_state: missing
+        must_stop_before_interpretation: true
+        direct_answer_allowed: false
+        required_missing_outputs:
+          - calendar_normalization
+          - 局数
+          - 值符值使
+          - 九宫
+          - 星门神仪
+          - 旬空
+        public_answer_requirements:
+          - Ask for or generate one complete deterministic Qimen plate.
+          - Do not infer a result, time window, or favorable direction from civil time alone.
+        forbidden_answer_moves:
+          - model_hand_calculated_plate
+          - generic_afternoon_is_better
+          - judgment_without_current_source_plan
+
+    - id: nl-027-meihua-complete-user-chart-source-bound
+      prompt: 我已经有完整梅花卦：本卦地雷复、互卦坤为地、二爻动、变卦地泽临、体坤用震。看合作能不能成，什么时候有结果？
+      coverage:
+        - divination
+      expected_route:
+        system: divination/meihua
+        required_references:
+          - references/tool-adapters.md
+          - references/routing.md
+        primary_packs:
+          - divination/meihua-yishu
+          - divination/zhouyi-zhezhong
+        support_packs:
+          - divination/huangji-jingshi
+        required_adapter: scripts/structured_chart_adapter.py --system divination/meihua
+      expected_path:
+        fact_layer_state: validated_user_provided_chart
+        must_stop_before_interpretation: false
+        direct_answer_allowed: true_with_unrecalculated_status
+        required_fact_outputs:
+          - calendar_normalization
+          - 本卦
+          - 互卦
+          - 变卦
+          - 动爻
+          - 体用
+          - casting_method
+        public_answer_requirements:
+          - Show the supplied卦象 before the first judgment.
+          - State that the chart was structurally validated but not recalculated.
+          - Read the current rules and quote indexes selected by the source plan.
+          - Answer outcome and timing without inventing a guaranteed date.
+        forbidden_answer_moves:
+          - claim_recalculated_cast
+          - judgment_before_chart
+          - book_names_without_current_reads
+          - guaranteed_timing
+
+answer_samples:
+  - id: sample-bazi-complete-direct
+    mode: gate_check_answer
+    expected_ok: true
+    linked_case: nl-004-bazi-compatibility-complete-fact-layer
+    text: |
+      【玄枢｜MINGLI】
+      【问题分类】bazi / 八字合盘与婚恋流年判断
+      【事实层输入/工具】
+      Fact tool: tool.bazi.paipan 0.1
+      calendar_normalization: 两人的公历出生时间均按出生地 timezone=Asia/Shanghai 转换为农历、干支四柱、节气换月。
+      事实层字段：双方四柱、年柱、月柱、日柱、时柱、藏干 hidden_stems、十神、seasonal_tiaohou_profile：事实层节气月令已列，寒暖燥湿与调候标记已列，双方大运、流年窗口已列。
+      【加载的古籍包】bazi/sanming-tonghui, bazi/yuanhai-ziping, bazi/qiongtong-baojian
+      【文本依据】quote-index 出处：夫妻宫、财官、岁运引动、调候互补。
+      【综合判断】在 tool.bazi.paipan 输出成立时，结论可以直接压缩成：中等偏合，能推进婚恋，但要看 2028-2031 的岁运同步；不能只凭性格合不合判断结婚概率。
+      【准确度/校准状态】fact=high, text=medium, interpretation=uncalibrated, confidence_bucket=40-60
+      【边界与版本说明】传统八字参考；这里只判断年份气势和关系结构，不定具体日子。
+
+  - id: sample-selection-v4-first-turn-complete
+    mode: gate_check_answer
+    expected_ok: true
+    linked_case: nl-011-selection-move-or-travel
+    text: |
+      【玄枢｜MINGLI】
+      【问题分类】selection / 出行择日
+      【事实层输入/工具】mingli-master.selection.v1 已按当前会话的日期范围、地点、时区和“出行”动作生成候选日与精确时段；候选记录包含历法、建除、黄黑道、官方宜忌、冲煞与出行专项事实，计算摘要已冻结。
+      【加载的古籍包】selection/xieji-bianfang-shu, selection/xingli-kaoyuan
+      【文本依据】只绑定本次候选事实实际命中的出行、黄黑道与神煞规则；未命中的规则不作为依据，民俗比较与官方规则分列。
+      【综合判断】直接给出排名第一的实际候选日期和时段、次选，以及各自的宜忌与排除理由；不以端午、星期或单个神煞代替完整计算。
+      【边界与版本说明】传统择日参考；结论只覆盖本次输入范围和已计算动作，不保证现实结果。
+
+  - id: sample-selection-bad-anchor-ranking
+    mode: gate_check_answer
+    expected_ok: false
+    linked_case: nl-011-selection-move-or-travel
+    text: |
+      【玄枢｜MINGLI】
+      【问题分类】selection / 出行择日
+      【事实层输入/工具】mingli-master.selection.v1 尚未生成任何候选记录；这里只列出了农历端午和甲子日。
+      【加载的古籍包】selection/xieji-bianfang-shu
+      【文本依据】quote-index 待查。
+      【综合判断】虽然事实层缺少，但6月20日最好，6月19日也适合出发。
+      【边界与版本说明】传统择日参考。
+
+  - id: sample-daily-fortune-natural
+    mode: style_forbidden_motifs
+    expected_ok: true
+    linked_case: nl-002-daily-fortune-anti-template
+    query: 明天运势怎样？别每次都说财务、收尾、回款、催回复，太模板了。
+    facts_fixture: real-v6-2026-07-11
+    text: |
+      【玄枢｜MINGLI】时势：本命庚辰、丙戌、己酉、丁卯，现行戊子运；目标日为2026-07-11丙戌日。
+      丙对己土为正印。日支戌与原局月支戌同支，同时冲年支辰、害日支酉。这几项来自同一个流日结构，不能当成多票重复计算。因此明天原局已有的惯性和矛盾更容易被放大；具体落在哪件事上，要看你当天正在处理的现实事项，不能只凭流日硬编。
+
+  - id: sample-daily-fortune-unsupported-event
+    mode: fortune_public_gate
+    expected_ok: false
+    linked_case: nl-002-daily-fortune-anti-template
+    query: 算下明天运势
+    facts_fixture: real-v6-2026-07-11
+    text: |
+      【玄枢｜MINGLI】时势：本命庚辰、丙戌、己酉、丁卯，现行戊子运；目标日为2026-07-11丙戌日。
+      丙对己土为正印。日支戌与原局月支戌同支，同时冲年支辰、害日支酉。因此明天一定会收到一笔退款。
+  - id: sample-shensha-boundary
+    mode: gate_check_answer
+    expected_ok: true
+    linked_case: nl-015-cross-system-shensha-misuse
+    text: |
+      【玄枢｜MINGLI】
+      【问题分类】神煞来源边界说明
+      【事实层输入/工具】缺少事实层工具；这里只说明来源边界，不做命盘解释。
+      【加载的古籍包】references/matrices/shensha-cross-system-index, references/matrices/shensha-name-disambiguation
+      【文本依据】source profile：八宅天乙巨门只在阳宅八宅宅局内使用；六壬白虎天将只在六壬课式内使用；紫微化禄只在紫微星曜和四化事实层内使用。
+      【综合判断】不能把它们并入八字神煞一起断；同名或近名只是字面相似，所属事实层不同。
+      【边界与版本说明】source-building note only；不判断任何具体命盘。
+
+  - id: sample-shensha-bad-single-cause
+    mode: gate_check_answer
+    expected_ok: false
+    linked_case: nl-014-bazi-shensha-inventory
+    text: |
+      【玄枢｜MINGLI】
+      【问题分类】bazi / 八字神煞盘点
+      【事实层输入/工具】
+      Fact tool: tool.bazi.paipan 0.1
+      calendar_normalization: 公历出生时间按地点 timezone=Asia/Shanghai 转换为农历九月、干支四柱、节气换月。
+      事实层字段：四柱、年柱、月柱、日柱、时柱、藏干、十神、seasonal_tiaohou_profile：事实层节气月令戌月，寒暖燥湿偏燥，调候取水润燥，不看大运，不看流年。
+      【加载的古籍包】bazi/sanming-tonghui
+      【文本依据】quote-index 出处：神煞。
+      【综合判断】只凭神煞就能确定婚姻必坏，神煞压过格局和调候。
+      【准确度/校准状态】fact=high, text=medium, interpretation=uncalibrated
+      【边界与版本说明】传统命理参考。
+
+  - id: sample-accuracy-calibrated
+    mode: evaluate_accuracy
+    expected_ok: true
+    linked_case: nl-018-accuracy-and-case-log
+    text: |
+      【玄枢｜MINGLI】
+      【问题分类】accuracy / 命理回测设计
+      【需要的事实层输入/工具】fact layer: 每个案例保留 adapter 输出、输入时间地点、loaded packs、版本号；用 scripts/case_log.py 记录。
+      【加载的古籍包】references/accuracy-and-statistical-validation.md
+      【文本依据】case-log protocol: 预测必须有 claim、time_window、confidence_bucket、outcome。
+      【综合判断】把“会变好”改写为“2026-07-01 到 2026-07-31 至少出现一个可验证推进节点”，再给 40-60 或 60-80 置信桶；否则标为 unscorable。
+      【准确度/校准状态】confidence_bucket=40-60；empirical_uncalibrated；case_log=pending；counter_evidence=未到窗口或结果相反记 miss/partial。
+      【边界与版本说明】文本吻合不是命中率；必须等 outcome 才能算 hit/miss/partial。
+
+  - id: sample-accuracy-absolute-bad
+    mode: evaluate_accuracy
+    expected_ok: false
+    linked_case: nl-018-accuracy-and-case-log
+    text: |
+      【玄枢｜MINGLI】
+      【问题分类】八字财运
+      【需要的事实层输入/工具】用户已提供四柱、藏干、十神、节气/月令/寒暖燥湿/调候、大运/流年；calendar_normalization 农历 干支 四柱 节气 时区。
+      【加载的古籍包】bazi/sanming-tonghui
+      【文本依据】quote-index: 财星透出。
+      【综合判断】你今年一定发财，绝对能中大财。
+      【准确度/校准状态】textual_high
+      【边界与版本说明】传统参考。

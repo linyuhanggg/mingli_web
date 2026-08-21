@@ -1,0 +1,328 @@
+{
+  "capability": {
+    "assumption_cost": 0,
+    "default_dimension_ids": [
+      "location",
+      "outcome",
+      "state",
+      "timing"
+    ],
+    "default_priority": 5,
+    "dimension_ids": [
+      "location",
+      "outcome",
+      "state",
+      "timing"
+    ],
+    "exact_horizon_ids": [],
+    "horizon_ids": [
+      "year"
+    ],
+    "independent_lineage_id": "taiyi",
+    "object_ids": [
+      "macro_historical"
+    ],
+    "required_input_groups": [
+      {
+        "any_of": [
+          "reference_datetime"
+        ]
+      },
+      {
+        "any_of": [
+          "timezone"
+        ]
+      },
+      {
+        "any_of": [
+          "location"
+        ]
+      }
+    ]
+  },
+  "claim_policy": {
+    "allowed_kind_ids": [
+      "kind.fact",
+      "kind.tendency"
+    ],
+    "certainty_ceiling_id": "certainty.tendency"
+  },
+  "display": {
+    "zh-CN": {
+      "description": "太乙年计盘：依据参考年与坐标，输出年计盘结构事实（太乙积数/十六神/四计/门具）。前提：必须提供 reference_datetime + timezone + location。边界：horizon 限定为 year；不接受日以下时窗或命盘对象。与 selection 的选择依据：taiyi 看年度格局；selection 选具体日课。两者时间尺度不可互换。",
+      "name": "太乙"
+    }
+  },
+  "entrypoint": "reading_engine.providers:TaiyiProvider",
+  "evidence_profile_id": "taiyi",
+  "id": "taiyi",
+  "input_fields": {
+    "coordinate_accuracy_meters": {
+      "display": {
+        "zh-CN": "坐标精度(米)"
+      },
+      "request_slot": "metadata.coordinate_accuracy_meters",
+      "type": "number"
+    },
+    "coordinate_source": {
+      "display": {
+        "zh-CN": "坐标来源"
+      },
+      "request_slot": "metadata.coordinate_source",
+      "type": "string"
+    },
+    "latitude": {
+      "display": {
+        "zh-CN": "纬度"
+      },
+      "request_slot": "metadata.latitude",
+      "type": "number"
+    },
+    "location": {
+      "display": {
+        "zh-CN": "地点"
+      },
+      "request_slot": "location",
+      "type": "string"
+    },
+    "longitude": {
+      "display": {
+        "zh-CN": "经度"
+      },
+      "request_slot": "metadata.longitude",
+      "type": "number"
+    },
+    "reference_datetime": {
+      "display": {
+        "zh-CN": "参考时间"
+      },
+      "request_slot": "reference_datetime",
+      "type": "datetime"
+    },
+    "time_basis_policy": {
+      "display": {
+        "zh-CN": "时间口径"
+      },
+      "request_slot": "metadata.time_basis_policy",
+      "type": "string"
+    },
+    "timezone": {
+      "display": {
+        "zh-CN": "时区"
+      },
+      "request_slot": "timezone",
+      "type": "string"
+    },
+    "zi_hour_policy": {
+      "display": {
+        "zh-CN": "子时策略"
+      },
+      "request_slot": "metadata.zi_hour_policy",
+      "type": "string"
+    }
+  },
+  "runtime_capability": {
+    "assumption_cost": 0,
+    "default_priority": 5,
+    "dimensions": [
+      "location",
+      "outcome",
+      "state",
+      "timing"
+    ],
+    "exact_horizons": [],
+    "extension_output_bindings": [
+      {
+        "horizons": [
+          "year"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/calendar",
+          "/fact_extension/facts/cycle",
+          "/fact_extension/facts/board",
+          "/fact_extension/facts/host_guest",
+          "/fact_extension/facts/long_cycle_deities",
+          "/fact_extension/facts/board_predicates",
+          "/fact_extension/facts/scope_contract"
+        ],
+        "name": "calculated_annual_board_scope"
+      }
+    ],
+    "extension_outputs": [
+      "calculated_annual_board_scope"
+    ],
+    "horizons": [
+      "year"
+    ],
+    "independent_lineage": "taiyi",
+    "mode": "calculation",
+    "objects": [
+      "macro_historical"
+    ],
+    "output_bindings": [
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/calendar"
+        ],
+        "name": "calendar"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/epoch"
+        ],
+        "name": "epoch"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/cycle"
+        ],
+        "name": "cycle"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/board"
+        ],
+        "name": "board"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/board/taiyi_position"
+        ],
+        "name": "taiyi_position"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/wenchang",
+          "/facts/chart_facts/output/tianmu"
+        ],
+        "name": "wenchang_tianmu"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/shiji",
+          "/facts/chart_facts/output/kemu"
+        ],
+        "name": "shiji_kemu"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/host_count",
+          "/facts/chart_facts/output/guest_count"
+        ],
+        "name": "host_guest_counts"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/four_generals"
+        ],
+        "name": "four_generals"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/long_cycle_deities"
+        ],
+        "name": "long_cycle_deities"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/board_predicates"
+        ],
+        "name": "board_predicates"
+      },
+      {
+        "json_pointers": [
+          "/facts/chart_facts/output/scope_contract"
+        ],
+        "name": "scope_contract"
+      }
+    ],
+    "outputs": [
+      "calendar",
+      "epoch",
+      "cycle",
+      "board",
+      "taiyi_position",
+      "wenchang_tianmu",
+      "shiji_kemu",
+      "host_guest_counts",
+      "four_generals",
+      "long_cycle_deities",
+      "board_predicates",
+      "scope_contract"
+    ],
+    "required_inputs": [
+      "reference_datetime",
+      "timezone",
+      "location"
+    ],
+    "system": "taiyi"
+  },
+  "schema_version": "provider-manifest-v1",
+  "terms": {
+    "certainty.tendency": {
+      "display": {
+        "zh-CN": "倾向性上限"
+      }
+    },
+    "kind.fact": {
+      "display": {
+        "zh-CN": "事实陈述"
+      }
+    },
+    "kind.tendency": {
+      "display": {
+        "zh-CN": "倾向判断"
+      }
+    },
+    "limit.source_gap": {
+      "display": {
+        "zh-CN": "本轮没有命中可引用的古籍条文，只能基于确定性事实描述"
+      }
+    },
+    "location": {
+      "display": {
+        "zh-CN": "方位地点"
+      }
+    },
+    "macro_historical": {
+      "display": {
+        "zh-CN": "宏观年运"
+      }
+    },
+    "outcome": {
+      "display": {
+        "zh-CN": "结果成败"
+      }
+    },
+    "state": {
+      "display": {
+        "zh-CN": "当前状态"
+      }
+    },
+    "timing": {
+      "display": {
+        "zh-CN": "时机应期"
+      }
+    },
+    "year": {
+      "display": {
+        "zh-CN": "年"
+      }
+    }
+  },
+  "time_semantics": {
+    "coordinates_required_policies": [
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "default_policy": "civil",
+    "input_time": "event_datetime",
+    "role": "civil_schedule",
+    "supported_policies": [
+      "civil",
+      "longitude_mean_solar-v1",
+      "local_apparent_solar-v1"
+    ],
+    "unsupported_fallback": "need_input"
+  }
+}

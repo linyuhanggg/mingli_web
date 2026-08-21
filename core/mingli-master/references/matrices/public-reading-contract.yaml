@@ -1,0 +1,91 @@
+schema_version: global-public-reading-contract-v1
+
+aliases:
+  liuyao: divination
+  meihua: divination
+  san-shi/liuren: liuren
+  san-shi/qimen: qimen
+  san-shi/taiyi: taiyi
+  luming: luming-nayin
+  selection-date: selection
+
+defaults:
+  default_depth: expanded
+  category_taboo: false
+  direct_scene_policy: no_category_taboo_multi_factor
+  followup_mode: reuse_bound_facts
+  required_detail_axes: [direct_conclusion, decisive_mechanism, process, boundary]
+
+question_shapes:
+  current_state:
+    patterns: ["在干嘛", "在干什么", "在做什么", "现在干什么", "现在在做", "在哪里", "在哪", "跟谁", "和谁", "是否在", "是不是在"]
+    required_detail_axes: [action, people, setting, privacy, money_entertainment, direction, movement]
+  sensitive_scene:
+    patterns: ["应酬", "酒局", "喝酒", "赌", "博彩", "赌场", "感情秘密", "隐情", "暧昧", "出轨", "私下见面", "开房"]
+    required_detail_axes: [action, people, setting, privacy, money_entertainment]
+  detail_followup:
+    patterns: ["具体解读", "说细", "详细", "展开", "细一点", "再解释", "复断", "按原课重写"]
+    followup_mode: reuse_bound_facts
+    required_detail_axes: [direct_conclusion, decisive_mechanism, process, scene_resolution, boundary]
+
+systems:
+  bazi:
+    display_basis: 命盘
+    current_event_resolution: route_to_event_system
+    location_resolution: []
+    direct_scope: [life_structure, tendency, timing, relationship_pattern, money_pattern, hidden_pattern]
+  fortune:
+    display_basis: 时势
+    current_event_resolution: route_to_event_system
+    location_resolution: []
+    direct_scope: [day_direction, user_selected_domain]
+  luming-nayin:
+    display_basis: 命盘
+    current_event_resolution: route_to_event_system
+    location_resolution: []
+    direct_scope: [life_structure, tendency, timing, hidden_pattern]
+  ziwei:
+    display_basis: 命盘
+    current_event_resolution: route_to_event_system
+    location_resolution: []
+    direct_scope: [palace_pattern, tendency, timing, relationship_pattern, money_pattern, hidden_pattern]
+  xingming:
+    display_basis: 命盘
+    current_event_resolution: route_to_event_system
+    location_resolution: []
+    direct_scope: [star_pattern, tendency, timing, hidden_pattern]
+  divination:
+    display_basis: 卦象
+    current_event_resolution: direct_with_fact_layer
+    location_resolution: [direction, distance, inside_outside, venue_type, movement, company]
+    direct_scope: [event, current_state, scene, people, direction, timing, hidden_pattern]
+  liuren:
+    display_basis: 卦象
+    current_event_resolution: direct_with_fact_layer
+    location_resolution: [direction, distance, inside_outside, venue_type, movement, company]
+    direct_scope: [event, current_state, scene, people, direction, timing, hidden_pattern]
+  qimen:
+    display_basis: 局象
+    current_event_resolution: direct_with_fact_layer
+    location_resolution: [direction, distance, inside_outside, venue_type, movement, company]
+    direct_scope: [event, current_state, scene, people, direction, timing, hidden_pattern]
+  taiyi:
+    display_basis: 局象
+    current_event_resolution: direct_with_fact_layer
+    location_resolution: [direction, distance, inside_outside, venue_type, movement, company]
+    direct_scope: [event, current_state, scene, people, direction, timing, hidden_pattern]
+  selection:
+    display_basis: 日课
+    current_event_resolution: not_applicable
+    location_resolution: [event_place, direction]
+    direct_scope: [candidate_date, avoidance, timing]
+  fengshui:
+    display_basis: 宅局
+    current_event_resolution: not_applicable
+    location_resolution: [property_location, orientation, inside_outside, layout_zone]
+    direct_scope: [environment, layout, direction, hidden_pattern]
+  physiognomy:
+    display_basis: 相象
+    current_event_resolution: not_applicable
+    location_resolution: []
+    direct_scope: [visible_feature, observation_quality, uncertainty, source_comparison]

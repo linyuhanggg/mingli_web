@@ -1,0 +1,855 @@
+schema_version: mingli-qimen-fixtures-v51
+profile_id: shijia-zhuanpan-chaibu-xieji-v1
+source:
+  path: references/fulltext/san-shi/qimen-dunjia-tongzhi/fulltext.md
+  sha256: f4feb5c389f0ac8bc8dfd0d3f011b088576bc5510248e8d8663e01e2d0b0c140
+source_rule_boards:
+  - id: qimen-source-01
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 甲子}
+    expected:
+      dun: yang
+      yuan: upper
+      symbol_head: 甲子
+      ju: 1
+      xun: 甲子
+      hidden_instrument: 戊
+      chief: 天蓬
+      chief_palace: 1
+      director: 休门
+      director_palace: 1
+      void_branches: [戌, 亥]
+      void_palaces: [6]
+      horse_branch: 寅
+      horse_palace: 8
+      signature: '1:戊/戊/天蓬/休门/值符|2:己/己+壬/天芮+天禽/死门/玄武|3:庚/庚/天冲/伤门/太阴|4:辛/辛/天辅/杜门/六合|5:壬/-/-/-/-|6:癸/癸/天心/开门/九天|7:丁/丁/天柱/惊门/九地|8:丙/丙/天任/生门/腾蛇|9:乙/乙/天英/景门/白虎'
+  - id: qimen-source-02
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 小寒, day_ganzhi: 己卯, hour_ganzhi: 乙丑}
+    expected:
+      dun: yang
+      yuan: upper
+      symbol_head: 己卯
+      ju: 2
+      xun: 甲子
+      hidden_instrument: 戊
+      chief: 天芮
+      chief_palace: 1
+      director: 死门
+      director_palace: 3
+      void_branches: [戌, 亥]
+      void_palaces: [6]
+      horse_branch: 亥
+      horse_palace: 6
+      signature: '1:乙/戊+辛/天芮+天禽/杜门/值符|2:戊/己/天冲/休门/玄武|3:己/壬/天心/死门/太阴|4:庚/乙/天蓬/惊门/六合|5:辛/-/-/-/-|6:壬/丙/天英/伤门/九天|7:癸/庚/天辅/生门/九地|8:丁/癸/天柱/景门/腾蛇|9:丙/丁/天任/开门/白虎'
+  - id: qimen-source-03
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 大寒, day_ganzhi: 甲午, hour_ganzhi: 丙寅}
+    expected:
+      dun: yang
+      yuan: upper
+      symbol_head: 甲午
+      ju: 3
+      xun: 甲子
+      hidden_instrument: 戊
+      chief: 天冲
+      chief_palace: 1
+      director: 伤门
+      director_palace: 2
+      void_branches: [戌, 亥]
+      void_palaces: [6]
+      horse_branch: 申
+      horse_palace: 2
+      signature: '1:丙/戊/天冲/死门/值符|2:乙/辛/天心/伤门/玄武|3:戊/丁/天英/开门/太阴|4:己/乙+庚/天芮+天禽/休门/六合|5:庚/-/-/-/-|6:辛/癸/天任/景门/九天|7:壬/丙/天蓬/杜门/九地|8:癸/己/天辅/惊门/腾蛇|9:丁/壬/天柱/生门/白虎'
+  - id: qimen-source-04
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 立春, day_ganzhi: 己酉, hour_ganzhi: 丁卯}
+    expected:
+      dun: yang
+      yuan: upper
+      symbol_head: 己酉
+      ju: 8
+      xun: 甲子
+      hidden_instrument: 戊
+      chief: 天任
+      chief_palace: 2
+      director: 生门
+      director_palace: 2
+      void_branches: [戌, 亥]
+      void_palaces: [6]
+      horse_branch: 巳
+      horse_palace: 4
+      signature: '1:庚/己/天英/景门/六合|2:辛/戊/天任/生门/值符|3:壬/乙/天柱/惊门/玄武|4:癸/丙/天心/开门/九地|5:丁/-/-/-/-|6:丙/癸/天辅/杜门/太阴|7:乙/壬/天冲/伤门/腾蛇|8:戊/辛+丁/天芮+天禽/死门/白虎|9:己/庚/天蓬/休门/九天'
+  - id: qimen-source-05
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 雨水, day_ganzhi: 甲寅, hour_ganzhi: 戊辰}
+    expected:
+      dun: yang
+      yuan: middle
+      symbol_head: 甲寅
+      ju: 6
+      xun: 甲子
+      hidden_instrument: 戊
+      chief: 天心
+      chief_palace: 6
+      director: 开门
+      director_palace: 1
+      void_branches: [戌, 亥]
+      void_palaces: [6]
+      horse_branch: 寅
+      horse_palace: 8
+      signature: '1:壬/壬/天蓬/开门/腾蛇|2:癸/癸+乙/天芮+天禽/景门/九地|3:丁/丁/天冲/生门/六合|4:丙/丙/天辅/伤门/白虎|5:乙/-/-/-/-|6:戊/戊/天心/惊门/值符|7:己/己/天柱/死门/九天|8:庚/庚/天任/休门/太阴|9:辛/辛/天英/杜门/玄武'
+  - id: qimen-source-06
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 惊蛰, day_ganzhi: 己巳, hour_ganzhi: 己巳}
+    expected:
+      dun: yang
+      yuan: middle
+      symbol_head: 己巳
+      ju: 7
+      xun: 甲子
+      hidden_instrument: 戊
+      chief: 天柱
+      chief_palace: 8
+      director: 惊门
+      director_palace: 3
+      void_branches: [戌, 亥]
+      void_palaces: [6]
+      horse_branch: 亥
+      horse_palace: 6
+      signature: '1:辛/壬+丙/天芮+天禽/景门/九天|2:壬/癸/天冲/生门/白虎|3:癸/乙/天心/惊门/腾蛇|4:丁/辛/天蓬/开门/太阴|5:丙/-/-/-/-|6:乙/庚/天英/杜门/九地|7:戊/丁/天辅/伤门/玄武|8:己/戊/天柱/死门/值符|9:庚/己/天任/休门/六合'
+  - id: qimen-source-07
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 春分, day_ganzhi: 甲申, hour_ganzhi: 庚午}
+    expected:
+      dun: yang
+      yuan: middle
+      symbol_head: 甲申
+      ju: 9
+      xun: 甲子
+      hidden_instrument: 戊
+      chief: 天英
+      chief_palace: 2
+      director: 景门
+      director_palace: 6
+      void_branches: [戌, 亥]
+      void_palaces: [6]
+      horse_branch: 申
+      horse_palace: 2
+      signature: '1:己/丁/天心/死门/六合|2:庚/戊/天英/伤门/值符|3:辛/乙/天任/开门/玄武|4:壬/辛/天冲/休门/九地|5:癸/-/-/-/-|6:丁/丙/天柱/景门/太阴|7:丙/庚+癸/天芮+天禽/杜门/腾蛇|8:乙/己/天蓬/惊门/白虎|9:戊/壬/天辅/生门/九天'
+  - id: qimen-source-08
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 清明, day_ganzhi: 己亥, hour_ganzhi: 辛未}
+    expected:
+      dun: yang
+      yuan: middle
+      symbol_head: 己亥
+      ju: 1
+      xun: 甲子
+      hidden_instrument: 戊
+      chief: 天蓬
+      chief_palace: 4
+      director: 休门
+      director_palace: 8
+      void_branches: [戌, 亥]
+      void_palaces: [6]
+      horse_branch: 巳
+      horse_palace: 4
+      signature: '1:戊/己+壬/天芮+天禽/开门/玄武|2:己/庚/天冲/景门/太阴|3:庚/癸/天心/生门/九天|4:辛/戊/天蓬/伤门/值符|5:壬/-/-/-/-|6:癸/乙/天英/惊门/白虎|7:丁/辛/天辅/死门/六合|8:丙/丁/天柱/休门/九地|9:乙/丙/天任/杜门/腾蛇'
+  - id: qimen-source-09
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 谷雨, day_ganzhi: 甲辰, hour_ganzhi: 壬申}
+    expected:
+      dun: yang
+      yuan: lower
+      symbol_head: 甲辰
+      ju: 8
+      xun: 甲子
+      hidden_instrument: 戊
+      chief: 天任
+      chief_palace: 3
+      director: 生门
+      director_palace: 7
+      void_branches: [戌, 亥]
+      void_palaces: [6]
+      horse_branch: 寅
+      horse_palace: 8
+      signature: '1:庚/丙/天心/杜门/九地|2:辛/己/天英/休门/六合|3:壬/戊/天任/死门/值符|4:癸/壬/天冲/惊门/腾蛇|5:丁/-/-/-/-|6:丙/乙/天柱/伤门/玄武|7:乙/辛+丁/天芮+天禽/生门/白虎|8:戊/庚/天蓬/景门/九天|9:己/癸/天辅/开门/太阴'
+  - id: qimen-source-10
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 立夏, day_ganzhi: 己未, hour_ganzhi: 癸酉}
+    expected:
+      dun: yang
+      yuan: lower
+      symbol_head: 己未
+      ju: 7
+      xun: 甲子
+      hidden_instrument: 戊
+      chief: 天柱
+      chief_palace: 3
+      director: 惊门
+      director_palace: 7
+      void_branches: [戌, 亥]
+      void_palaces: [6]
+      horse_branch: 亥
+      horse_palace: 6
+      signature: '1:辛/庚/天英/休门/九地|2:壬/己/天任/死门/六合|3:癸/戊/天柱/伤门/值符|4:丁/乙/天心/杜门/腾蛇|5:丙/-/-/-/-|6:乙/丁/天辅/开门/玄武|7:戊/癸/天冲/惊门/白虎|8:己/壬+丙/天芮+天禽/生门/九天|9:庚/辛/天蓬/景门/太阴'
+  - id: qimen-source-11
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 小满, day_ganzhi: 甲戌, hour_ganzhi: 甲戌}
+    expected:
+      dun: yang
+      yuan: lower
+      symbol_head: 甲戌
+      ju: 8
+      xun: 甲戌
+      hidden_instrument: 己
+      chief: 天英
+      chief_palace: 9
+      director: 景门
+      director_palace: 9
+      void_branches: [申, 酉]
+      void_palaces: [2, 7]
+      horse_branch: 申
+      horse_palace: 2
+      signature: '1:庚/庚/天蓬/休门/白虎|2:辛/辛+丁/天芮+天禽/死门/腾蛇|3:壬/壬/天冲/伤门/九地|4:癸/癸/天辅/杜门/九天|5:丁/-/-/-/-|6:丙/丙/天心/开门/六合|7:乙/乙/天柱/惊门/太阴|8:戊/戊/天任/生门/玄武|9:己/己/天英/景门/值符'
+  - id: qimen-source-12
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 芒种, day_ganzhi: 己丑, hour_ganzhi: 乙亥}
+    expected:
+      dun: yang
+      yuan: lower
+      symbol_head: 己丑
+      ju: 9
+      xun: 甲戌
+      hidden_instrument: 己
+      chief: 天蓬
+      chief_palace: 8
+      director: 休门
+      director_palace: 2
+      void_branches: [申, 酉]
+      void_palaces: [2, 7]
+      horse_branch: 巳
+      horse_palace: 4
+      signature: '1:己/丁/天心/杜门/九天|2:庚/戊/天英/休门/白虎|3:辛/乙/天任/死门/腾蛇|4:壬/辛/天冲/惊门/太阴|5:癸/-/-/-/-|6:丁/丙/天柱/伤门/九地|7:丙/庚+癸/天芮+天禽/生门/玄武|8:乙/己/天蓬/景门/值符|9:戊/壬/天辅/开门/六合'
+  - id: qimen-source-13
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 夏至, day_ganzhi: 乙丑, hour_ganzhi: 丙子}
+    expected:
+      dun: yin
+      yuan: upper
+      symbol_head: 甲子
+      ju: 9
+      xun: 甲戌
+      hidden_instrument: 己
+      chief: 天任
+      chief_palace: 2
+      director: 生门
+      director_palace: 6
+      void_branches: [申, 酉]
+      void_palaces: [2, 7]
+      horse_branch: 寅
+      horse_palace: 8
+      signature: '1:乙/戊/天英/伤门/玄武|2:丙/己/天任/开门/值符|3:丁/庚/天柱/景门/六合|4:癸/辛/天心/死门/太阴|5:壬/-/-/-/-|6:辛/癸/天辅/生门/九地|7:庚/丁/天冲/休门/九天|8:己/丙+壬/天芮+天禽/杜门/白虎|9:戊/乙/天蓬/惊门/腾蛇'
+  - id: qimen-source-14
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 小暑, day_ganzhi: 庚午, hour_ganzhi: 丁丑}
+    expected:
+      dun: yin
+      yuan: middle
+      symbol_head: 己巳
+      ju: 2
+      xun: 甲戌
+      hidden_instrument: 己
+      chief: 天蓬
+      chief_palace: 2
+      director: 休门
+      director_palace: 7
+      void_branches: [申, 酉]
+      void_palaces: [2, 7]
+      horse_branch: 亥
+      horse_palace: 6
+      signature: '1:己/丙/天辅/伤门/玄武|2:戊/己/天蓬/开门/值符|3:乙/戊+丁/天芮+天禽/景门/六合|4:丙/壬/天柱/死门/太阴|5:丁/-/-/-/-|6:癸/乙/天冲/生门/九地|7:壬/辛/天任/休门/九天|8:辛/庚/天英/杜门/白虎|9:庚/癸/天心/惊门/腾蛇'
+  - id: qimen-source-15
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 大暑, day_ganzhi: 乙亥, hour_ganzhi: 戊寅}
+    expected:
+      dun: yin
+      yuan: lower
+      symbol_head: 甲戌
+      ju: 4
+      xun: 甲戌
+      hidden_instrument: 己
+      chief: 天冲
+      chief_palace: 4
+      director: 伤门
+      director_palace: 8
+      void_branches: [申, 酉]
+      void_palaces: [2, 7]
+      horse_branch: 申
+      horse_palace: 2
+      signature: '1:辛/丙/天心/生门/六合|2:庚/壬/天英/惊门/九地|3:己/癸/天任/杜门/腾蛇|4:戊/己/天冲/景门/值符|5:乙/-/-/-/-|6:丙/丁/天柱/休门/白虎|7:丁/庚+乙/天芮+天禽/开门/玄武|8:癸/辛/天蓬/伤门/太阴|9:壬/戊/天辅/死门/九天'
+  - id: qimen-source-16
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 立秋, day_ganzhi: 庚辰, hour_ganzhi: 己卯}
+    expected:
+      dun: yin
+      yuan: upper
+      symbol_head: 己卯
+      ju: 2
+      xun: 甲戌
+      hidden_instrument: 己
+      chief: 天蓬
+      chief_palace: 1
+      director: 休门
+      director_palace: 2
+      void_branches: [申, 酉]
+      void_palaces: [2, 7]
+      horse_branch: 巳
+      horse_palace: 4
+      signature: '1:己/己/天蓬/杜门/值符|2:戊/戊+丁/天芮+天禽/休门/六合|3:乙/乙/天冲/死门/九地|4:丙/丙/天辅/惊门/玄武|5:丁/-/-/-/-|6:癸/癸/天心/伤门/腾蛇|7:壬/壬/天柱/生门/太阴|8:辛/辛/天任/景门/九天|9:庚/庚/天英/开门/白虎'
+  - id: qimen-source-17
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 处暑, day_ganzhi: 乙酉, hour_ganzhi: 庚辰}
+    expected:
+      dun: yin
+      yuan: middle
+      symbol_head: 甲申
+      ju: 4
+      xun: 甲戌
+      hidden_instrument: 己
+      chief: 天冲
+      chief_palace: 2
+      director: 伤门
+      director_palace: 6
+      void_branches: [申, 酉]
+      void_palaces: [2, 7]
+      horse_branch: 寅
+      horse_palace: 8
+      signature: '1:辛/庚+乙/天芮+天禽/杜门/玄武|2:庚/己/天冲/休门/值符|3:己/丙/天心/死门/六合|4:戊/辛/天蓬/惊门/太阴|5:乙/-/-/-/-|6:丙/壬/天英/伤门/九地|7:丁/戊/天辅/生门/九天|8:癸/丁/天柱/景门/白虎|9:壬/癸/天任/开门/腾蛇'
+  - id: qimen-source-18
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 白露, day_ganzhi: 庚寅, hour_ganzhi: 辛巳}
+    expected:
+      dun: yin
+      yuan: lower
+      symbol_head: 己丑
+      ju: 6
+      xun: 甲戌
+      hidden_instrument: 己
+      chief: 天禽
+      chief_palace: 3
+      director: 死门
+      director_palace: 7
+      void_branches: [申, 酉]
+      void_palaces: [2, 7]
+      horse_branch: 亥
+      horse_palace: 6
+      signature: '1:癸/庚/天辅/开门/太阴|2:壬/癸/天蓬/景门/玄武|3:辛/壬+己/天芮+天禽/生门/值符|4:庚/乙/天柱/伤门/九天|5:己/-/-/-/-|6:戊/辛/天冲/惊门/六合|7:乙/丙/天任/死门/白虎|8:丙/丁/天英/休门/腾蛇|9:丁/戊/天心/杜门/九地'
+  - id: qimen-source-19
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 秋分, day_ganzhi: 丙寅, hour_ganzhi: 甲午}
+    expected:
+      dun: yin
+      yuan: upper
+      symbol_head: 甲子
+      ju: 7
+      xun: 甲午
+      hidden_instrument: 辛
+      chief: 天辅
+      chief_palace: 4
+      director: 杜门
+      director_palace: 4
+      void_branches: [辰, 巳]
+      void_palaces: [4]
+      horse_branch: 申
+      horse_palace: 2
+      signature: '1:丁/丁/天蓬/休门/六合|2:癸/癸+庚/天芮+天禽/死门/九地|3:壬/壬/天冲/伤门/腾蛇|4:辛/辛/天辅/杜门/值符|5:庚/-/-/-/-|6:己/己/天心/开门/白虎|7:戊/戊/天柱/惊门/玄武|8:乙/乙/天任/生门/太阴|9:丙/丙/天英/景门/九天'
+  - id: qimen-source-20
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 寒露, day_ganzhi: 辛未, hour_ganzhi: 乙未}
+    expected:
+      dun: yin
+      yuan: middle
+      symbol_head: 己巳
+      ju: 9
+      xun: 甲午
+      hidden_instrument: 辛
+      chief: 天心
+      chief_palace: 1
+      director: 开门
+      director_palace: 2
+      void_branches: [辰, 巳]
+      void_palaces: [4]
+      horse_branch: 巳
+      horse_palace: 4
+      signature: '1:乙/辛/天心/伤门/值符|2:丙/戊/天英/开门/六合|3:丁/己/天任/景门/九地|4:癸/丁/天冲/死门/玄武|5:壬/-/-/-/-|6:辛/庚/天柱/生门/腾蛇|7:庚/丙+壬/天芮+天禽/休门/太阴|8:己/乙/天蓬/杜门/九天|9:戊/癸/天辅/惊门/白虎'
+  - id: qimen-source-21
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 霜降, day_ganzhi: 丁丑, hour_ganzhi: 戊申}
+    expected:
+      dun: yin
+      yuan: lower
+      symbol_head: 甲戌
+      ju: 2
+      xun: 甲辰
+      hidden_instrument: 壬
+      chief: 天柱
+      chief_palace: 2
+      director: 惊门
+      director_palace: 3
+      void_branches: [寅, 卯]
+      void_palaces: [3, 8]
+      horse_branch: 寅
+      horse_palace: 8
+      signature: '1:己/辛/天任/景门/玄武|2:戊/壬/天柱/生门/值符|3:乙/丙/天辅/惊门/六合|4:丙/庚/天英/开门/太阴|5:丁/-/-/-/-|6:癸/己/天蓬/杜门/九地|7:壬/癸/天心/伤门/九天|8:辛/乙/天冲/死门/白虎|9:庚/戊+丁/天芮+天禽/休门/腾蛇'
+  - id: qimen-source-22
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 立冬, day_ganzhi: 丁卯, hour_ganzhi: 己酉}
+    expected:
+      dun: yin
+      yuan: upper
+      symbol_head: 甲子
+      ju: 6
+      xun: 甲辰
+      hidden_instrument: 壬
+      chief: 天芮
+      chief_palace: 2
+      director: 死门
+      director_palace: 6
+      void_branches: [寅, 卯]
+      void_palaces: [3, 8]
+      horse_branch: 亥
+      horse_palace: 6
+      signature: '1:癸/癸/天蓬/惊门/玄武|2:壬/壬+己/天芮+天禽/杜门/值符|3:辛/辛/天冲/休门/六合|4:庚/庚/天辅/生门/太阴|5:己/-/-/-/-|6:戊/戊/天心/死门/九地|7:乙/乙/天柱/景门/九天|8:丙/丙/天任/开门/白虎|9:丁/丁/天英/伤门/腾蛇'
+  - id: qimen-source-23
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 小雪, day_ganzhi: 癸酉, hour_ganzhi: 壬戌}
+    expected:
+      dun: yin
+      yuan: middle
+      symbol_head: 己巳
+      ju: 8
+      xun: 甲寅
+      hidden_instrument: 癸
+      chief: 天冲
+      chief_palace: 4
+      director: 伤门
+      director_palace: 4
+      void_branches: [子, 丑]
+      void_palaces: [1, 8]
+      horse_branch: 申
+      horse_palace: 2
+      signature: '1:丙/庚/天心/开门/六合|2:丁/乙/天英/景门/九地|3:癸/戊/天任/生门/腾蛇|4:壬/癸/天冲/伤门/值符|5:辛/-/-/-/-|6:庚/己/天柱/惊门/白虎|7:己/丁+辛/天芮+天禽/死门/玄武|8:戊/丙/天蓬/休门/太阴|9:乙/壬/天辅/杜门/九天'
+  - id: qimen-source-24
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 大雪, day_ganzhi: 戊寅, hour_ganzhi: 癸亥}
+    expected:
+      dun: yin
+      yuan: lower
+      symbol_head: 甲戌
+      ju: 1
+      xun: 甲寅
+      hidden_instrument: 癸
+      chief: 天禽
+      chief_palace: 2
+      director: 死门
+      director_palace: 2
+      void_branches: [子, 丑]
+      void_palaces: [1, 8]
+      horse_branch: 巳
+      horse_palace: 4
+      signature: '1:戊/戊/天蓬/休门/玄武|2:乙/乙+癸/天芮+天禽/死门/值符|3:丙/丙/天冲/伤门/六合|4:丁/丁/天辅/杜门/太阴|5:癸/-/-/-/-|6:壬/壬/天心/开门/九地|7:辛/辛/天柱/惊门/九天|8:庚/庚/天任/生门/白虎|9:己/己/天英/景门/腾蛇'
+  - id: qimen-source-25
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 冬至, day_ganzhi: 丙辰, hour_ganzhi: 戊子}
+    expected:
+      dun: yang
+      yuan: middle
+      symbol_head: 甲寅
+      ju: 7
+      xun: 甲申
+      hidden_instrument: 庚
+      chief: 天英
+      chief_palace: 7
+      director: 景门
+      director_palace: 4
+      void_branches: [午, 未]
+      void_palaces: [2, 9]
+      horse_branch: 寅
+      horse_palace: 8
+      signature: '1:辛/戊/天柱/生门/太阴|2:壬/丁/天辅/惊门/九天|3:癸/辛/天蓬/杜门/白虎|4:丁/己/天任/景门/玄武|5:丙/-/-/-/-|6:乙/壬+丙/天芮+天禽/休门/腾蛇|7:戊/庚/天英/开门/值符|8:己/乙/天心/伤门/六合|9:庚/癸/天冲/死门/九地'
+  - id: qimen-source-26
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 小寒, day_ganzhi: 辛酉, hour_ganzhi: 己丑}
+    expected:
+      dun: yang
+      yuan: lower
+      symbol_head: 己未
+      ju: 5
+      xun: 甲申
+      hidden_instrument: 庚
+      chief: 天柱
+      chief_palace: 6
+      director: 惊门
+      director_palace: 3
+      void_branches: [午, 未]
+      void_palaces: [2, 9]
+      horse_branch: 亥
+      horse_palace: 6
+      signature: '1:癸/己/天心/景门/腾蛇|2:丁/壬/天英/生门/九地|3:丙/辛/天任/惊门/六合|4:乙/丙/天冲/开门/白虎|5:戊/-/-/-/-|6:己/庚/天柱/杜门/值符|7:庚/丁+戊/天芮+天禽/伤门/九天|8:辛/癸/天蓬/死门/太阴|9:壬/乙/天辅/休门/玄武'
+  - id: qimen-source-27
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 大寒, day_ganzhi: 丁未, hour_ganzhi: 壬寅}
+    expected:
+      dun: yang
+      yuan: lower
+      symbol_head: 甲辰
+      ju: 6
+      xun: 甲午
+      hidden_instrument: 辛
+      chief: 天英
+      chief_palace: 1
+      director: 景门
+      director_palace: 8
+      void_branches: [辰, 巳]
+      void_palaces: [4]
+      horse_branch: 申
+      horse_palace: 2
+      signature: '1:壬/辛/天英/杜门/值符|2:癸/庚/天任/休门/玄武|3:丁/己/天柱/死门/太阴|4:丙/戊/天心/惊门/六合|5:乙/-/-/-/-|6:戊/丙/天辅/伤门/九天|7:己/丁/天冲/生门/九地|8:庚/癸+乙/天芮+天禽/景门/腾蛇|9:辛/壬/天蓬/开门/白虎'
+  - id: qimen-source-28
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 立春, day_ganzhi: 壬子, hour_ganzhi: 癸卯}
+    expected:
+      dun: yang
+      yuan: upper
+      symbol_head: 己酉
+      ju: 8
+      xun: 甲午
+      hidden_instrument: 辛
+      chief: 天芮
+      chief_palace: 4
+      director: 死门
+      director_palace: 2
+      void_branches: [辰, 巳]
+      void_palaces: [4]
+      horse_branch: 巳
+      horse_palace: 4
+      signature: '1:庚/壬/天冲/休门/玄武|2:辛/丙/天心/死门/太阴|3:壬/己/天英/伤门/九天|4:癸/辛+丁/天芮+天禽/杜门/值符|5:丁/-/-/-/-|6:丙/戊/天任/开门/白虎|7:乙/庚/天蓬/惊门/六合|8:戊/癸/天辅/生门/九地|9:己/乙/天柱/景门/腾蛇'
+  - id: qimen-source-29
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 雨水, day_ganzhi: 戊戌, hour_ganzhi: 丙辰}
+    expected:
+      dun: yang
+      yuan: upper
+      symbol_head: 甲午
+      ju: 9
+      xun: 甲寅
+      hidden_instrument: 癸
+      chief: 天禽
+      chief_palace: 7
+      director: 死门
+      director_palace: 7
+      void_branches: [子, 丑]
+      void_palaces: [1, 8]
+      horse_branch: 寅
+      horse_palace: 8
+      signature: '1:己/丁/天心/开门/太阴|2:庚/戊/天英/景门/九天|3:辛/乙/天任/生门/白虎|4:壬/辛/天冲/伤门/玄武|5:癸/-/-/-/-|6:丁/丙/天柱/惊门/腾蛇|7:丙/庚+癸/天芮+天禽/死门/值符|8:乙/己/天蓬/休门/六合|9:戊/壬/天辅/杜门/九地'
+  - id: qimen-source-30
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 惊蛰, day_ganzhi: 癸卯, hour_ganzhi: 丁巳}
+    expected:
+      dun: yang
+      yuan: middle
+      symbol_head: 己亥
+      ju: 7
+      xun: 甲寅
+      hidden_instrument: 癸
+      chief: 天冲
+      chief_palace: 4
+      director: 伤门
+      director_palace: 6
+      void_branches: [子, 丑]
+      void_palaces: [1, 8]
+      horse_branch: 亥
+      horse_palace: 6
+      signature: '1:辛/乙/天心/杜门/玄武|2:壬/庚/天英/休门/太阴|3:癸/己/天任/死门/九天|4:丁/癸/天冲/惊门/值符|5:丙/-/-/-/-|6:乙/戊/天柱/伤门/白虎|7:戊/壬+丙/天芮+天禽/生门/六合|8:己/辛/天蓬/景门/九地|9:庚/丁/天辅/开门/腾蛇'
+  - id: qimen-source-31
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 春分, day_ganzhi: 丙申, hour_ganzhi: 甲午}
+    expected:
+      dun: yang
+      yuan: upper
+      symbol_head: 甲午
+      ju: 3
+      xun: 甲午
+      hidden_instrument: 辛
+      chief: 天心
+      chief_palace: 6
+      director: 开门
+      director_palace: 6
+      void_branches: [辰, 巳]
+      void_palaces: [4]
+      horse_branch: 申
+      horse_palace: 2
+      signature: '1:丙/丙/天蓬/休门/腾蛇|2:乙/乙+庚/天芮+天禽/死门/九地|3:戊/戊/天冲/伤门/六合|4:己/己/天辅/杜门/白虎|5:庚/-/-/-/-|6:辛/辛/天心/开门/值符|7:壬/壬/天柱/惊门/九天|8:癸/癸/天任/生门/太阴|9:丁/丁/天英/景门/玄武'
+  - id: qimen-source-32
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 清明, day_ganzhi: 辛丑, hour_ganzhi: 乙未}
+    expected:
+      dun: yang
+      yuan: middle
+      symbol_head: 己亥
+      ju: 1
+      xun: 甲午
+      hidden_instrument: 辛
+      chief: 天辅
+      chief_palace: 9
+      director: 杜门
+      director_palace: 2
+      void_branches: [辰, 巳]
+      void_palaces: [4]
+      horse_branch: 巳
+      horse_palace: 4
+      signature: '1:戊/癸/天心/惊门/白虎|2:己/乙/天英/杜门/腾蛇|3:庚/丙/天任/休门/九地|4:辛/庚/天冲/生门/九天|5:壬/-/-/-/-|6:癸/丁/天柱/死门/六合|7:丁/己+壬/天芮+天禽/景门/太阴|8:丙/戊/天蓬/开门/玄武|9:乙/辛/天辅/伤门/值符'
+  - id: qimen-source-33
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 谷雨, day_ganzhi: 丁亥, hour_ganzhi: 戊申}
+    expected:
+      dun: yang
+      yuan: middle
+      symbol_head: 甲申
+      ju: 2
+      xun: 甲辰
+      hidden_instrument: 壬
+      chief: 天心
+      chief_palace: 2
+      director: 开门
+      director_palace: 1
+      void_branches: [寅, 卯]
+      void_palaces: [3, 8]
+      horse_branch: 寅
+      horse_palace: 8
+      signature: '1:乙/己/天冲/开门/六合|2:戊/壬/天心/景门/值符|3:己/丙/天英/生门/玄武|4:庚/戊+辛/天芮+天禽/伤门/九地|5:辛/-/-/-/-|6:壬/丁/天任/惊门/太阴|7:癸/乙/天蓬/死门/腾蛇|8:丁/庚/天辅/休门/白虎|9:丙/癸/天柱/杜门/九天'
+  - id: qimen-source-34
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 立夏, day_ganzhi: 壬辰, hour_ganzhi: 己酉}
+    expected:
+      dun: yang
+      yuan: lower
+      symbol_head: 己丑
+      ju: 7
+      xun: 甲辰
+      hidden_instrument: 壬
+      chief: 天芮
+      chief_palace: 8
+      director: 死门
+      director_palace: 7
+      void_branches: [寅, 卯]
+      void_palaces: [3, 8]
+      horse_branch: 亥
+      horse_palace: 6
+      signature: '1:辛/庚/天英/开门/九天|2:壬/己/天任/景门/白虎|3:癸/戊/天柱/生门/腾蛇|4:丁/乙/天心/伤门/太阴|5:丙/-/-/-/-|6:乙/丁/天辅/惊门/九地|7:戊/癸/天冲/死门/玄武|8:己/壬+丙/天芮+天禽/休门/值符|9:庚/辛/天蓬/杜门/六合'
+  - id: qimen-source-35
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 小满, day_ganzhi: 戊午, hour_ganzhi: 壬戌}
+    expected:
+      dun: yang
+      yuan: middle
+      symbol_head: 甲寅
+      ju: 2
+      xun: 甲寅
+      hidden_instrument: 癸
+      chief: 天柱
+      chief_palace: 6
+      director: 惊门
+      director_palace: 6
+      void_branches: [子, 丑]
+      void_palaces: [1, 8]
+      horse_branch: 申
+      horse_palace: 2
+      signature: '1:乙/壬/天心/开门/腾蛇|2:戊/丙/天英/景门/九地|3:己/丁/天任/生门/六合|4:庚/己/天冲/伤门/白虎|5:辛/-/-/-/-|6:壬/癸/天柱/惊门/值符|7:癸/戊+辛/天芮+天禽/死门/九天|8:丁/乙/天蓬/休门/太阴|9:丙/庚/天辅/杜门/玄武'
+  - id: qimen-source-36
+    category: source_rule_vector
+    source_anchor: qimen-tongzong L205-L223,L333-L365
+    input: {active_term: 芒种, day_ganzhi: 癸丑, hour_ganzhi: 癸亥}
+    expected:
+      dun: yang
+      yuan: upper
+      symbol_head: 己酉
+      ju: 6
+      xun: 甲寅
+      hidden_instrument: 癸
+      chief: 天芮
+      chief_palace: 2
+      director: 死门
+      director_palace: 2
+      void_branches: [子, 丑]
+      void_palaces: [1, 8]
+      horse_branch: 巳
+      horse_palace: 4
+      signature: '1:壬/壬/天蓬/休门/六合|2:癸/癸+乙/天芮+天禽/死门/值符|3:丁/丁/天冲/伤门/玄武|4:丙/丙/天辅/杜门/九地|5:乙/-/-/-/-|6:戊/戊/天心/开门/太阴|7:己/己/天柱/惊门/腾蛇|8:庚/庚/天任/生门/白虎|9:辛/辛/天英/景门/九天'
+  - id: qimen-source-37
+    category: exact_classical_center_xun_rule
+    source_anchor: qimen-tongzong L359
+    input: {active_term: 冬至, day_ganzhi: 丁卯, hour_ganzhi: 甲辰}
+    expected:
+      dun: yang
+      yuan: upper
+      symbol_head: 甲子
+      ju: 1
+      xun: 甲辰
+      hidden_instrument: 壬
+      chief: 天禽
+      chief_palace: 2
+      director: 死门
+      director_palace: 2
+      void_branches: [寅, 卯]
+      void_palaces: [3, 8]
+      horse_branch: 寅
+      horse_palace: 8
+      signature: '1:戊/戊/天蓬/休门/六合|2:己/己+壬/天芮+天禽/死门/值符|3:庚/庚/天冲/伤门/玄武|4:辛/辛/天辅/杜门/九地|5:壬/-/-/-/-|6:癸/癸/天心/开门/太阴|7:丁/丁/天柱/惊门/腾蛇|8:丙/丙/天任/生门/白虎|9:乙/乙/天英/景门/九天'
+pattern_coverage_cases:
+  - {id: pattern-01, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 丙寅}, expected_rule_id: QM-P01}
+  - {id: pattern-02, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 癸酉}, expected_rule_id: QM-P02}
+  - {id: pattern-03, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 癸酉}, expected_rule_id: QM-P03}
+  - {id: pattern-04, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 丙寅}, expected_rule_id: QM-P04}
+  - {id: pattern-05, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 癸酉}, expected_rule_id: QM-P05}
+  - {id: pattern-06, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 丙寅}, expected_rule_id: QM-P06}
+  - {id: pattern-07, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 己巳}, expected_rule_id: QM-P07}
+  - {id: pattern-08, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 辛未}, expected_rule_id: QM-P08}
+  - {id: pattern-09, input: {active_term: 冬至, day_ganzhi: 己巳, hour_ganzhi: 乙丑}, expected_rule_id: QM-P09}
+  - {id: pattern-10, input: {active_term: 冬至, day_ganzhi: 辛未, hour_ganzhi: 壬辰}, expected_rule_id: QM-P10}
+  - {id: pattern-11, input: {active_term: 冬至, day_ganzhi: 丙寅, hour_ganzhi: 辛卯}, expected_rule_id: QM-P11}
+  - {id: pattern-12, input: {active_term: 冬至, day_ganzhi: 庚午, hour_ganzhi: 丙子}, expected_rule_id: QM-P12}
+  - {id: pattern-13, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 庚午}, expected_rule_id: QM-P13}
+  - {id: pattern-14, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 甲子}, expected_rule_id: QM-P14}
+  - {id: pattern-15, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 乙丑}, expected_rule_id: QM-P15}
+  - {id: pattern-16, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 丙寅}, expected_rule_id: QM-P16}
+  - {id: pattern-17, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 庚午}, expected_rule_id: QM-P17}
+  - {id: pattern-18, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 乙丑}, expected_rule_id: QM-P18}
+  - {id: pattern-19, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 乙丑, hour_ganzhi: 丙戌}, expected_rule_id: QM-P19}
+  - {id: pattern-20, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 乙丑, hour_ganzhi: 丙戌}, expected_rule_id: QM-P20}
+  - {id: pattern-21, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 丁卯, hour_ganzhi: 癸卯}, expected_rule_id: QM-P21}
+  - {id: pattern-22, fixture_kind: algebraic_predicate_vector, input: {active_term: 小寒, day_ganzhi: 乙亥, hour_ganzhi: 戊寅}, expected_rule_id: QM-P22}
+  - {id: pattern-23, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 丁卯, hour_ganzhi: 戊申}, expected_rule_id: QM-P23}
+  - {id: pattern-24, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 庚午, hour_ganzhi: 戊寅}, expected_rule_id: QM-P24}
+  - {id: pattern-25, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 丙寅}, expected_rule_id: QM-P25}
+  - {id: pattern-26, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 庚午}, expected_rule_id: QM-P26}
+  - {id: pattern-27, fixture_kind: real_calendar_projection, input: {active_term: 冬至, day_ganzhi: 癸卯, hour_ganzhi: 癸丑, year_ganzhi: 己亥, month_ganzhi: 丙子}, expected_rule_id: QM-P27}
+  - {id: pattern-28, fixture_kind: real_calendar_projection, input: {active_term: 冬至, day_ganzhi: 甲辰, hour_ganzhi: 壬申, year_ganzhi: 己亥, month_ganzhi: 丙子}, expected_rule_id: QM-P28}
+  - {id: pattern-29, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 乙丑, hour_ganzhi: 癸未}, expected_rule_id: QM-P29}
+  - {id: pattern-30, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 乙丑, hour_ganzhi: 乙酉}, expected_rule_id: QM-P30}
+  - {id: pattern-31, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 丁卯}, expected_rule_id: QM-P31}
+  - {id: pattern-32, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 乙丑, hour_ganzhi: 癸未}, expected_rule_id: QM-P32}
+  - {id: pattern-33, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 乙丑, hour_ganzhi: 辛巳}, expected_rule_id: QM-P33}
+  - {id: pattern-34, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 癸酉}, expected_rule_id: QM-P34}
+  - {id: pattern-35, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 丙寅}, expected_rule_id: QM-P35}
+  - {id: pattern-36, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 乙丑, hour_ganzhi: 丁丑}, expected_rule_id: QM-P36}
+  - {id: pattern-37, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 乙丑}, expected_rule_id: QM-P37}
+  - {id: pattern-38, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 乙亥}, expected_rule_id: QM-P38}
+  - {id: pattern-39, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 戊辰, hour_ganzhi: 乙卯}, expected_rule_id: QM-P39}
+  - {id: pattern-40, fixture_kind: algebraic_predicate_vector, input: {active_term: 冬至, day_ganzhi: 戊辰, hour_ganzhi: 乙卯}, expected_rule_id: QM-P40}
+calendar_pattern_witnesses:
+  - {id: real-calendar-year-grid, datetime: '2020-01-01T02:00:00', timezone: Asia/Shanghai, location: 上海, expected_pillars: {year: 己亥, month: 丙子, day: 癸卯, hour: 癸丑}, expected_active_term: 冬至, expected_rule_id: QM-P27}
+  - {id: real-calendar-month-grid, datetime: '2020-01-02T16:00:00', timezone: Asia/Shanghai, location: 上海, expected_pillars: {year: 己亥, month: 丙子, day: 甲辰, hour: 壬申}, expected_active_term: 冬至, expected_rule_id: QM-P28}
+named_pattern_cases:
+  - id: qimen-pattern-tian-dun
+    category: named_pattern_activation
+    source_anchor: qimen-tongzong L65
+    input: {active_term: 冬至, day_ganzhi: 辛未, hour_ganzhi: 壬辰}
+    expected_pattern_ids: [QM-P03, QM-P05, QM-P09, QM-P10, QM-P18, QM-P25, QM-P36, QM-P37]
+  - id: qimen-pattern-di-dun
+    category: named_pattern_activation
+    source_anchor: qimen-tongzong L103
+    input: {active_term: 冬至, day_ganzhi: 丙寅, hour_ganzhi: 辛卯}
+    expected_pattern_ids: [QM-P02, QM-P04, QM-P06, QM-P11, QM-P16, QM-P18, QM-P25, QM-P33, QM-P35, QM-P37]
+  - id: qimen-pattern-ren-dun
+    category: named_pattern_activation
+    source_anchor: qimen-tongzong L105
+    input: {active_term: 冬至, day_ganzhi: 庚午, hour_ganzhi: 丙子}
+    expected_pattern_ids: [QM-P02, QM-P12, QM-P13, QM-P15, QM-P17, QM-P18]
+classical_cases:
+  - id: tongzong-yang-two-wuyin
+    category: complete_classical_worked_board
+    source_anchor: L1193
+    source_text_contract:
+      dun_ju: 阳二局
+      day_stem_group: 乙庚日
+      hour_ganzhi: 戊寅
+      xun: 甲戌
+      chief_destination_palace: 2
+      director: 伤门
+      director_destination_palace: 7
+      director_deity: 腾蛇
+    input: {active_term: 小寒, day_ganzhi: 乙丑, hour_ganzhi: 戊寅}
+    expected:
+      dun: yang
+      yuan: upper
+      ju: 2
+      xun: 甲戌
+      chief: 天冲
+      chief_palace: 2
+      director: 伤门
+      director_palace: 7
+      director_deity: 腾蛇
+      signature: '1:乙/戊+辛/天芮+天禽/景门/六合|2:戊/己/天冲/生门/值符|3:己/壬/天心/惊门/玄武|4:庚/乙/天蓬/开门/九地|5:辛/-/-/-/-|6:壬/丙/天英/杜门/太阴|7:癸/庚/天辅/伤门/腾蛇|8:丁/癸/天柱/死门/白虎|9:丙/丁/天任/休门/九天'
+classical_door_map_cases:
+  - id: tongzong-yang-one-dingmao-eight-doors
+    category: complete_classical_eight_door_map
+    source_anchor: L659
+    input: {active_term: 冬至, day_ganzhi: 甲子, hour_ganzhi: 丁卯}
+    expected:
+      休门: 4
+      死门: 6
+      伤门: 7
+      杜门: 8
+      开门: 9
+      惊门: 1
+      生门: 2
+      景门: 3
+calendar_boundaries:
+  - {id: lichun-before, category: solar_term_boundary, datetime: "2024-02-04T16:26:53.122558", timezone: Asia/Shanghai, location: 上海, expected_active_term: 大寒}
+  - {id: lichun-at, category: solar_term_boundary, datetime: "2024-02-04T16:26:53.122559", timezone: Asia/Shanghai, location: 上海, expected_active_term: 立春}
+  - {id: xiazhi-before, category: solar_term_boundary, datetime: "2024-06-21T04:50:45.887374", timezone: Asia/Shanghai, location: 上海, expected_active_term: 芒种}
+  - {id: xiazhi-at, category: solar_term_boundary, datetime: "2024-06-21T04:50:45.887375", timezone: Asia/Shanghai, location: 上海, expected_active_term: 夏至}
+  - {id: dongzhi-before, category: solar_term_boundary, datetime: "2024-12-21T17:20:19.592284", timezone: Asia/Shanghai, location: 上海, expected_active_term: 大雪}
+  - {id: dongzhi-at, category: solar_term_boundary, datetime: "2024-12-21T17:20:19.592285", timezone: Asia/Shanghai, location: 上海, expected_active_term: 冬至}
+  - {id: midnight-before, category: day_rollover, datetime: "2024-02-10T23:59:59", timezone: Asia/Shanghai, location: 上海, expected_active_term: 立春, expected_day: 甲辰}
+  - {id: midnight-at, category: day_rollover, datetime: "2024-02-11T00:00:00", timezone: Asia/Shanghai, location: 上海, expected_active_term: 立春, expected_day: 乙巳}
+  - {id: leap-second-month, category: lunar_leap_month, datetime: "2023-03-22T12:00:00", timezone: Asia/Shanghai, location: 上海, expected_active_term: 春分, expected_lunar_month: 2}

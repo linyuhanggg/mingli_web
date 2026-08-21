@@ -139,6 +139,7 @@ from app.charts.contracts import (
     TimeCheckCandidateEvidenceV1,
     TimeCheckCandidateV1,
     TimeCheckEventMatchV1,
+    TimeCheckRectificationConclusionV1,
     TimeCheckViewV1,
     TimeLayer,
     ViewModel,
@@ -2305,6 +2306,16 @@ def project_time_check_view_model(
         capability_id="time-check",
         field_id="event_matches",
     )
+    rectification_status_fact = _brief_fact_value_for_capability(
+        facts,
+        capability_id="time-check",
+        field_id="rectification_status",
+    )
+    rectification_conclusion_fact = _brief_fact_value_for_capability(
+        facts,
+        capability_id="time-check",
+        field_id="rectification_conclusion",
+    )
     if (
         candidate_fact is None
         or count_fact is None
@@ -2370,6 +2381,45 @@ def project_time_check_view_model(
         return None
     if ranking_fact[1] == "not_ranked" and ranking_rows:
         return None
+    rectification_status: (
+        Literal[
+            "hour_determined",
+            "no_valid_candidate",
+            "not_attempted",
+            "remaining_ambiguous",
+        ]
+        | None
+    ) = None
+    rectification_conclusion: TimeCheckRectificationConclusionV1 | None = None
+    if rectification_status_fact is None and rectification_conclusion_fact is None:
+        pass
+    elif rectification_status_fact is None or rectification_conclusion_fact is None:
+        return None
+    else:
+        allowed_status = {
+            "hour_determined",
+            "no_valid_candidate",
+            "not_attempted",
+            "remaining_ambiguous",
+        }
+        if rectification_status_fact[1] not in allowed_status:
+            return None
+        if not isinstance(rectification_conclusion_fact[1], Mapping):
+            return None
+        if any(
+            key in rectification_conclusion_fact[1]
+            for key in ("outcome", "verdict")
+        ):
+            return None
+        try:
+            rectification_conclusion = TimeCheckRectificationConclusionV1.model_validate(
+                rectification_conclusion_fact[1]
+            )
+        except (TypeError, ValueError):
+            return None
+        if rectification_conclusion.status != rectification_status_fact[1]:
+            return None
+        rectification_status = rectification_status_fact[1]
     subject_ref = candidate_fact[0] or _subject_ref(brief, facts)
     if not subject_ref:
         return None
@@ -2397,6 +2447,8 @@ def project_time_check_view_model(
         event_matches=event_matches,
         ranking_status=ranking_fact[1],
         event_matching_status=matching_fact[1],
+        rectification_status=rectification_status,
+        rectification_conclusion=rectification_conclusion,
         limitations=limitations,
     )
 

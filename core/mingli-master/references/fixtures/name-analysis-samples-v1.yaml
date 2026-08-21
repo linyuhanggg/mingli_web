@@ -1,0 +1,86 @@
+schema_version: mingli-algorithm-source-samples-v1
+purpose: >-
+  Independent pre-implementation surname 五音 samples transcribed from
+  《五行精纪》卷九 tables before any Provider exists. Expectations must not be
+  computed by a name-analysis provider.
+
+cases:
+  name-analysis-zhao-jiao:
+    source_reference: 五行精纪 fulltext.md L2961 角音首姓
+    input: {name: 赵青, usage_scene: unspecified}
+    expected:
+      family_name: 赵
+      lookup_key: 趙
+      tone: 角
+      element: wood
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-02
+      hard_verdict: null
+    verification: 趙 is the first surname of the 角音 table; 青 is given-name only
+
+  name-analysis-qian-zhi:
+    source_reference: 五行精纪 fulltext.md L2979 徵音首姓
+    input: {name: 钱, usage_scene: luming}
+    expected:
+      family_name: 钱
+      lookup_key: 錢
+      tone: 徵
+      element: fire
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-03
+      hard_verdict: null
+    verification: 錢 is the first surname of the 徵音 table
+
+  name-analysis-sun-gong:
+    source_reference: 五行精纪 fulltext.md L2983 宫音首姓
+    input: {name: 孙, usage_scene: unspecified}
+    expected:
+      family_name: 孙
+      lookup_key: 孫
+      tone: 宫
+      element: earth
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-04
+      hard_verdict: null
+    verification: 孫 is the first surname of the 宫音 table
+
+  name-analysis-wang-shang:
+    source_reference: 五行精纪 fulltext.md L2987 商音首姓
+    input: {name: 王, usage_scene: unspecified}
+    expected:
+      family_name: 王
+      lookup_key: 王
+      tone: 商
+      element: metal
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-05
+      hard_verdict: null
+    verification: 王 is the first surname of the 商音 table
+
+  name-analysis-wu-yu:
+    source_reference: 五行精纪 fulltext.md L2991 羽音首姓
+    input: {name: 吴, usage_scene: yangzhai}
+    expected:
+      family_name: 吴
+      lookup_key: 吴
+      tone: 羽
+      element: water
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-06
+      source_gaps:
+        - yangzhai 鸣吠安葬手续未蒸馏
+      hard_verdict: null
+    verification: 吴 is the first surname of the 羽音 table; yangzhai remains a gap
+
+  name-analysis-unmatched-surname:
+    source_reference: no row in the pinned v1 lookup
+    input: {name: 玊, usage_scene: unspecified}
+    expected:
+      family_name: 玊
+      lookup_key: 玊
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: fail-closed unmatched; do not invent 五格 or stroke counts

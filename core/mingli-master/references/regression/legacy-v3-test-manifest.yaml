@@ -1,0 +1,78 @@
+schema_version: mingli-legacy-v3-test-isolation-v1
+policy:
+  discovery_gate: "python3 -m unittest discover -s scripts -p 'test_*.py'"
+  isolation_mechanism: "Rename retired modules to legacy_test_*.py; never skip them."
+  scope: "Only tests coupled to v3 language routing, fixed verdict policy, semantic prose gates, program-authored briefs, or frozen-judgment pipelines."
+isolated_tests:
+  - path: scripts/legacy_v3/legacy_test_baziqa_model_benchmark.py
+    reason: Requires removed route verdict controls and the pre-v4 evidence API in an offline benchmark.
+    replaced_by: [scripts/test_v4_request_contract.py, scripts/test_v4_answer_contract.py]
+  - path: scripts/legacy_v3/legacy_test_bazi_pipeline.py
+    reason: Exercises the retired inference-freeze and semantic public-gate pipeline.
+    replaced_by: [scripts/test_v4_providers.py, scripts/test_v4_conversation_trajectories.py]
+  - path: scripts/legacy_v3/legacy_test_fifth_acceptance_regressions.py
+    reason: Encodes v3 word-sensitive claim-scope and adjudication rules.
+    replaced_by: [scripts/test_v4_answer_contract.py, scripts/test_v4_conversation_trajectories.py]
+  - path: scripts/legacy_v3/legacy_test_fortune_public_brief.py
+    reason: Requires the retired program-authored fortune brief.
+    replaced_by: [scripts/test_v4_answer_contract.py, scripts/test_v4_conversation_trajectories.py]
+  - path: scripts/legacy_v3/legacy_test_gate_check.py
+    reason: Requires the retired semantic output gate and vocabulary policies.
+    replaced_by: [scripts/test_v4_answer_contract.py, scripts/test_v4_skill_minimalism.py]
+  - path: scripts/legacy_v3/legacy_test_gate_paraphrase.py
+    reason: Uses a phrase corpus to decide whether public prose is accepted.
+    replaced_by: [scripts/test_v4_answer_contract.py, scripts/test_v4_conversation_trajectories.py]
+  - path: scripts/legacy_v3/legacy_test_global_direct_reading_contract.py
+    reason: Asserts program-authored per-system public writing briefs.
+    replaced_by: [scripts/test_v4_answer_contract.py, scripts/test_v4_providers.py]
+  - path: scripts/legacy_v3/legacy_test_interpretation_contract.py
+    reason: Asserts removed verdict controls, confidence ceilings, and fixed specificity classes.
+    replaced_by: [scripts/test_v4_answer_contract.py, scripts/test_v4_request_contract.py]
+  - path: scripts/legacy_v3/legacy_test_liuren_pipeline.py
+    reason: Exercises the retired freeze-and-semantic-gate Da Liu Ren wrapper.
+    replaced_by: [scripts/test_v4_providers.py, scripts/test_v4_conversation_trajectories.py]
+  - path: scripts/legacy_v3/legacy_test_liuren_routing_contract.py
+    reason: Derives route and action from user-language tokens.
+    replaced_by: [scripts/test_v4_request_contract.py, scripts/test_v4_followup_state.py]
+  - path: scripts/legacy_v3/legacy_test_natural_language_regression.py
+    reason: Couples admission and output acceptance to known phrases.
+    replaced_by: [scripts/test_v4_answer_contract.py, scripts/test_v4_conversation_trajectories.py]
+  - path: scripts/legacy_v3/legacy_test_qoder_audit_findings.py
+    reason: Audits the retired v3 semantic prose gate.
+    replaced_by: [scripts/test_v4_answer_contract.py, scripts/test_v4_skill_minimalism.py]
+  - path: scripts/legacy_v3/legacy_test_qoder_final_acceptance_findings.py
+    reason: Audits word-level v3 boundary and bridge rules.
+    replaced_by: [scripts/test_v4_answer_contract.py, scripts/test_v4_conversation_trajectories.py]
+  - path: scripts/legacy_v3/legacy_test_qoder_fourth_acceptance_findings.py
+    reason: Audits word-level v3 certainty and adjudication rules.
+    replaced_by: [scripts/test_v4_answer_contract.py, scripts/test_v4_conversation_trajectories.py]
+  - path: scripts/legacy_v3/legacy_test_qoder_reacceptance_findings.py
+    reason: Audits word-level v3 scene-leak and boundary rules.
+    replaced_by: [scripts/test_v4_answer_contract.py, scripts/test_v4_conversation_trajectories.py]
+  - path: scripts/legacy_v3/legacy_test_reading_engine_fortune.py
+    reason: Requires provider-owned judgments and rendered fallback prose.
+    replaced_by: [scripts/test_v4_providers.py, scripts/test_v4_followup_state.py]
+  - path: scripts/legacy_v3/legacy_test_reading_engine_legacy_providers.py
+    reason: Requires calculation providers to embed source evidence and judgments.
+    replaced_by: [scripts/test_v4_providers.py, scripts/test_v4_answer_contract.py]
+  - path: scripts/legacy_v3/legacy_test_reading_engine_structured.py
+    reason: Requires structured providers to create v3 judgments and prose.
+    replaced_by: [scripts/test_v4_providers.py, scripts/test_v4_followup_state.py]
+  - path: scripts/legacy_v3/legacy_test_reading_engine_v2.py
+    reason: Captures the pre-v4 engine authority and implicit routing contract.
+    replaced_by: [scripts/test_v4_request_contract.py, scripts/test_v4_followup_state.py, scripts/test_v4_answer_contract.py]
+  - path: scripts/legacy_v3/legacy_test_reading_engine_ziwei.py
+    reason: Requires the Ziwei provider to create fixed judgments and prose.
+    replaced_by: [scripts/test_v4_providers.py, scripts/test_v4_followup_state.py]
+  - path: scripts/legacy_v3/legacy_test_reading_public_brief.py
+    reason: Requires the retired shared public-brief compiler.
+    replaced_by: [scripts/test_v4_answer_contract.py, scripts/test_v4_conversation_trajectories.py]
+  - path: scripts/legacy_v3/legacy_test_reading_transaction_cli.py
+    reason: Captures the v3 CLI contract with implicit action and program-authored responses.
+    replaced_by: [scripts/test_v4_request_contract.py, scripts/test_v4_intake_conversation.py]
+  - path: scripts/legacy_v3/legacy_test_route_capabilities.py
+    reason: Requires verdict and confidence policy in the factual capability registry.
+    replaced_by: [scripts/test_v4_request_contract.py, scripts/test_v4_providers.py]
+  - path: scripts/legacy_v3/legacy_test_single_authority_contract.py
+    reason: Captures v3 module ownership and the former semantic gate chain.
+    replaced_by: [scripts/test_v4_skill_minimalism.py, scripts/test_v4_request_contract.py]

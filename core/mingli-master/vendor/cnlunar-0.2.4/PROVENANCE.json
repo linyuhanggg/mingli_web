@@ -1,0 +1,25 @@
+{
+  "project": "OPN48/cnlunar",
+  "version": "0.2.4",
+  "tag": "0.2.4",
+  "annotated_tag_object": "b3e1cb1e78a62431405d90a685671c7dd4a3f990",
+  "reviewed_upstream_commit": "71e448a3ad4fa17bb731a57637ee0728e6f53d37",
+  "distribution": "cnlunar-0.2.4-py3-none-any.whl",
+  "distribution_sha256": "19689288604e86a3ef48dba23d39d6a7efbd5efabcb3923d4d656319762af4ea",
+  "sdist": "cnlunar-0.2.4.tar.gz",
+  "sdist_sha256": "a270238a657744dbc477cb48207b4dffe7c03100b327c81ae4622055d593463f",
+  "license": "MIT",
+  "license_path": "vendor/cnlunar-0.2.4/LICENSE",
+  "license_sha256": "8bc77e1f9ab5c48cfc9e532b5eb30ff02c67cdc14af27b88b9c1ae815f1364bc",
+  "upstream": "https://github.com/OPN48/cnlunar/tree/0.2.4",
+  "role": "Pinned engineering implementation of selected Xieji almanac tables; not a classical source",
+  "reviewed_files": {
+    "cnlunar/__init__.py": "3f04b228907514f4337e9fad0a93e80bcf7bc27b52c7f42e0cc9d6064a294685",
+    "cnlunar/lunar.py": "049ad17c4153208d4cbcdc358177eff30d46f6429f0caf3676ea7d4170a2cdd8",
+    "cnlunar/config.py": "aa804333238a07633057f614ae611798cc64da4621549940bb0d2025c2ab478a",
+    "cnlunar/solar24.py": "a284dbe276637fb27d93f12c608c234b516cd4fbb1201fa2415df27a49886bf1",
+    "cnlunar/tools.py": "2f99d0d77a2365b23021c5adf56354ed4a233df7e1856244aff2ee592e091b6a",
+    "cnlunar/holidays.py": "092bfa2afb155f0857a093ec1d7836a0694e56b5fca66bae681495696a675f97",
+    "cnlunar/demo.py": "6d4c96d25235fbb6dbd870eb2729ef0d230c1a8524c82d5779a6e6147dfb295b"
+  }
+}

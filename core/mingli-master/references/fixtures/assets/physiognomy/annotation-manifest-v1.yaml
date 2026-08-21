@@ -1,0 +1,100 @@
+schema_version: mingli-physiognomy-annotation-manifest-v1
+coordinate_system: normalized_bbox_xywh
+side_definition: photographed subject anatomical side
+license: project-authored synthetic fixture, CC0-1.0
+assets:
+  front-even.svg:
+    descriptors:
+      forehead: [contour_rounded]
+      left_eyebrow: [line_straight]
+      left_eye: [aperture_open]
+      nose: [bridge_straight]
+      mouth: [mouth_closed]
+      chin: [contour_rounded]
+      left_ear: [outline_visible]
+      right_cheek: [contour_full_relative]
+      complexion: [tone_even_visible]
+    regions:
+      forehead: [0.25, 0.08, 0.50, 0.22]
+      left_eyebrow: [0.25, 0.29, 0.23, 0.14]
+      right_eyebrow: [0.52, 0.29, 0.23, 0.14]
+      left_eye: [0.28, 0.36, 0.20, 0.15]
+      right_eye: [0.52, 0.36, 0.20, 0.15]
+      nose: [0.40, 0.38, 0.20, 0.27]
+      mouth: [0.35, 0.62, 0.30, 0.17]
+      chin: [0.36, 0.75, 0.28, 0.17]
+      jawline: [0.20, 0.46, 0.60, 0.42]
+      left_ear: [0.14, 0.36, 0.14, 0.28]
+      right_ear: [0.72, 0.36, 0.14, 0.28]
+      left_cheek: [0.23, 0.46, 0.24, 0.23]
+      right_cheek: [0.53, 0.46, 0.24, 0.23]
+      complexion: [0.22, 0.18, 0.56, 0.59]
+  front-low-light.svg:
+    regions:
+      forehead: [0.25, 0.08, 0.50, 0.22]
+  left-profile.svg:
+    descriptors:
+      left_ear: [outline_visible]
+    regions:
+      forehead: [0.30, 0.08, 0.43, 0.22]
+      left_eye: [0.34, 0.35, 0.23, 0.17]
+      nose: [0.23, 0.40, 0.25, 0.27]
+      mouth: [0.29, 0.58, 0.27, 0.16]
+      chin: [0.34, 0.70, 0.30, 0.18]
+      left_ear: [0.60, 0.37, 0.20, 0.30]
+      left_cheek: [0.36, 0.45, 0.28, 0.25]
+  right-profile.svg:
+    descriptors:
+      right_ear: [outline_visible]
+    regions:
+      forehead: [0.27, 0.08, 0.43, 0.22]
+      right_eye: [0.43, 0.35, 0.23, 0.17]
+      nose: [0.52, 0.40, 0.25, 0.27]
+      mouth: [0.44, 0.58, 0.27, 0.16]
+      chin: [0.36, 0.70, 0.30, 0.18]
+      right_ear: [0.20, 0.37, 0.20, 0.30]
+      right_cheek: [0.36, 0.45, 0.28, 0.25]
+  upper-crop.svg:
+    descriptors:
+      forehead: [relative_width_broad]
+    regions:
+      forehead: [0.20, 0.14, 0.60, 0.28]
+      left_eyebrow: [0.22, 0.40, 0.25, 0.16]
+      right_eyebrow: [0.53, 0.40, 0.25, 0.16]
+      left_eye: [0.26, 0.50, 0.22, 0.17]
+      right_eye: [0.52, 0.50, 0.22, 0.17]
+  lower-crop.svg:
+    descriptors:
+      mouth: [lip_line_curved]
+    regions:
+      nose: [0.40, 0.00, 0.20, 0.32]
+      mouth: [0.32, 0.28, 0.36, 0.24]
+      chin: [0.30, 0.52, 0.40, 0.30]
+      jawline: [0.24, 0.42, 0.52, 0.44]
+  front-color-filter.svg:
+    descriptors:
+      forehead: [region_visible]
+    regions:
+      forehead: [0.25, 0.08, 0.50, 0.22]
+      complexion: [0.22, 0.18, 0.56, 0.59]
+  front-geometry-filter.svg:
+    regions:
+      forehead: [0.20, 0.07, 0.60, 0.23]
+  three-quarter-left.svg:
+    descriptors:
+      left_cheek: [contour_full_relative]
+    regions:
+      left_cheek: [0.20, 0.45, 0.30, 0.26]
+      left_eye: [0.27, 0.36, 0.22, 0.16]
+      nose: [0.37, 0.38, 0.24, 0.27]
+      mouth: [0.34, 0.62, 0.29, 0.16]
+      left_ear: [0.65, 0.38, 0.18, 0.29]
+  three-quarter-right.svg:
+    descriptors:
+      right_cheek: [contour_full_relative]
+    regions:
+      right_cheek: [0.50, 0.45, 0.30, 0.26]
+      right_eye: [0.51, 0.36, 0.22, 0.16]
+      nose: [0.39, 0.38, 0.24, 0.27]
+      mouth: [0.37, 0.62, 0.29, 0.16]
+      right_ear: [0.17, 0.38, 0.18, 0.29]

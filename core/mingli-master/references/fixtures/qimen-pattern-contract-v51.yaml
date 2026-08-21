@@ -1,0 +1,85 @@
+schema_version: mingli-qimen-pattern-contract-v1
+purpose: provider-independent frozen transcription of all forty selected predicate formulas
+negative_contract: mutate every structured field independently and require the provider audit to fail
+source_contracts:
+  - {id: QM-P01, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L97, source_phrase: 龙回首 甲值符加地盘丙奇, evidence_quote: "龙回首 甲值符加地盘丙奇", evidence_anchor: "fulltext.md L97"}
+  - {id: QM-P02, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L99, source_phrase: 鸟跌穴 丙奇加地盘甲值符, evidence_quote: "鸟跌穴 丙奇加地盘甲值符", evidence_anchor: "fulltext.md L99"}
+  - {id: QM-P03, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L119, source_phrase: 龙逃走 乙奇遇辛, evidence_quote: "龙逃走 乙奇遇辛", evidence_anchor: "fulltext.md L119"}
+  - {id: QM-P04, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L121, source_phrase: 虎猖狂 辛遇乙奇, evidence_quote: "虎猖狂 辛遇乙奇", evidence_anchor: "fulltext.md L121"}
+  - {id: QM-P05, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L123, source_phrase: 蛇妖矫 癸见丁奇, evidence_quote: "蛇妖矫 癸见丁奇", evidence_anchor: "fulltext.md L123"}
+  - {id: QM-P06, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L125, source_phrase: 雀投江 丁奇见癸, evidence_quote: "雀投江 丁奇见癸", evidence_anchor: "fulltext.md L125"}
+  - {id: QM-P07, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L131, source_phrase: 大格 庚临六癸, evidence_quote: "大格 庚临六癸", evidence_anchor: "fulltext.md L131"}
+  - {id: QM-P08, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L133, source_phrase: 刑格 庚临六己, evidence_quote: "刑格 庚临六己", evidence_anchor: "fulltext.md L133"}
+  - {id: QM-P09, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L143, source_phrase: 小格 庚临壬, evidence_quote: "小格 庚临壬", evidence_anchor: "fulltext.md L143"}
+  - {id: QM-P10, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L65, source_phrase: 生门六丙临六戊，此为天遁是分明, incompatible_definition: qimen-tongzong-heaven-escape-l101-v1, evidence_quote: "生门六丙临六戊，此为天遁是分明", evidence_anchor: "fulltext.md L65"}
+  - {id: QM-P11, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L103, source_phrase: 地遁 开门与乙奇临己, evidence_quote: "开门六乙临六己，地遁如斯而已矣", evidence_anchor: "fulltext.md L65"}
+  - {id: QM-P12, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L105, source_phrase: 人遁 休门与丁奇临太阴, evidence_quote: "休门六丁合太阴，欲识人遁莫过此", evidence_anchor: "fulltext.md L65"}
+  - {id: QM-P13, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L57-L63, source_phrase: 时干克日干乃五不遇而灾生, evidence_quote: "时干克日干乃五不遇而灾生", evidence_anchor: "fulltext.md L57"}
+  - {id: QM-P14, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L157, source_phrase: 伏吟 本星加本宫, evidence_quote: "伏吟 本星加本宫", evidence_anchor: "fulltext.md L157"}
+  - {id: QM-P15, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L155, source_phrase: 反吟 星加对宫, evidence_quote: "反吟 星加对宫", evidence_anchor: "fulltext.md L155"}
+  - {id: QM-P16, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L161, source_phrase: 三奇入墓 乙奇坤宫 丙奇乾宫 丁奇艮宫, evidence_quote: "三奇入墓 乙奇坤宫 丙奇乾宫 丁奇艮宫", evidence_anchor: "fulltext.md L161"}
+  - {id: QM-P17, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L165-L167, source_phrase: 六仪击刑 甲子值符三 甲申值符八 甲戌值符二 甲午值符九 甲辰值符四 甲寅值符四, evidence_quote: "六仪击刑 甲子值符三 甲申值符八 甲戌值符二 甲午值符九 甲辰值符四 甲寅值符四", evidence_anchor: "fulltext.md L165-L167"}
+  - {id: QM-P18, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L189-L193, source_phrase: 开门临三四宫（金克木） 休门临九宫（水克火） 生门临一宫（土克水） 伤门临八宫（木克土） 景门临六宫（火克金） 死门临一宫（土克水） 惊门临三四宫（金克木） 杜门临二八宫（木克土）, evidence_quote: "开门临三四宫（金克木） 休门临九宫（水克火） 生门临一宫（土克水） 伤门临八宫（木克土） 景门临六宫（火克金） 死门临一宫（土克水） 惊门临三四宫（金克木） 杜门临二八宫（木克土）", evidence_anchor: "fulltext.md L189-L193"}
+  - {id: QM-P19, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L107, source_phrase: 云遁 休开生与乙奇合奇，地盘六辛, evidence_quote: "云遁 休开生与乙奇合奇，地盘六辛", evidence_anchor: "fulltext.md L107"}
+  - {id: QM-P20, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L109, source_phrase: 风遁 休开生临乙奇，地盘巽四宫, evidence_quote: "风遁 休开生临乙奇，地盘巽四宫", evidence_anchor: "fulltext.md L109"}
+  - {id: QM-P21, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L111, source_phrase: 龙遁 休门与乙奇合坎, evidence_quote: "龙遁 休门与乙奇合坎", evidence_anchor: "fulltext.md L111"}
+  - {id: QM-P22, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L113, source_phrase: 虎遁 休门与乙奇合艮辛, evidence_quote: "虎遁 休门与乙奇合艮辛", evidence_anchor: "fulltext.md L113"}
+  - {id: QM-P23, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L115, source_phrase: 神遁 休门与乙奇合九天, incompatible_definition: qimen-faqiao-spirit-escape-v1, evidence_quote: "神遁 休门与乙奇合九天", evidence_anchor: "fulltext.md L115"}
+  - {id: QM-P24, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L117, source_phrase: 鬼遁 乙奇合九地杜门, evidence_quote: "鬼遁 乙奇合九地杜门", evidence_anchor: "fulltext.md L117"}
+  - {id: QM-P25, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L127, source_phrase: 三奇得使 乙奇加甲午甲戌 丙奇加甲子甲申 丁奇加甲寅甲辰, evidence_quote: "三奇得使 乙奇加甲午甲戌 丙奇加甲子甲申 丁奇加甲寅甲辰", evidence_anchor: "fulltext.md L127"}
+  - {id: QM-P26, source_profile: qimen_faqiao, definition_version: qimen-faqiao-jade-maiden-v1, source_anchor: qimen-faqiao QMF-PAT-01, source_phrase: 直使加地丁为守门, incompatible_definition: qimen-tongzong-jade-maiden-compressed-v1, evidence_quote: "直使加地丁为守门", evidence_anchor: "qimen-faqiao-chaibu-v1.md QMF-PAT-01"}
+  - {id: QM-P27, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L135, source_phrase: 岁格 庚临岁干, evidence_quote: "岁格 庚临岁干", evidence_anchor: "fulltext.md L135"}
+  - {id: QM-P28, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L137, source_phrase: 月格 庚临月干, evidence_quote: "月格 庚临月干", evidence_anchor: "fulltext.md L137"}
+  - {id: QM-P29, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L139, source_phrase: 日格 庚临日干, evidence_quote: "日格 庚临日干", evidence_anchor: "fulltext.md L139"}
+  - {id: QM-P30, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L141, source_phrase: 时格 庚临时干三奇, evidence_quote: "时格 庚临时干三奇", evidence_anchor: "fulltext.md L141"}
+  - {id: QM-P31, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L145, source_phrase: 伏宫 庚临值符, evidence_quote: "伏宫 庚临值符", evidence_anchor: "fulltext.md L145"}
+  - {id: QM-P32, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L147, source_phrase: 伏干 庚临日干, evidence_quote: "伏干 庚临日干", evidence_anchor: "fulltext.md L147"}
+  - {id: QM-P33, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L149, source_phrase: 飞干格 日干临庚, evidence_quote: "飞干格 日干临庚", evidence_anchor: "fulltext.md L149"}
+  - {id: QM-P34, source_profile: qimen_tongzong, definition_version: qimen-tongzong-primary-pair-v1, source_anchor: qimen-tongzong L151, source_phrase: 太白入荧 六庚加丙奇又庚加卯日时酉丁, incompatible_definition: qimen-tongzong-white-enters-fire-secondary-v1, evidence_quote: "六庚加丙奇", evidence_anchor: "fulltext.md L151"}
+  - {id: QM-P35, source_profile: qimen_tongzong, definition_version: qimen-tongzong-primary-pair-v1, source_anchor: qimen-tongzong L153, source_phrase: 火入金乡 丙奇加六庚金又丙奇加惊用值符之庚辛, incompatible_definition: qimen-tongzong-fire-enters-metal-secondary-v1, evidence_quote: "丙奇加六庚金", evidence_anchor: "fulltext.md L153"}
+  - {id: QM-P36, source_profile: qimen_faqiao, definition_version: qimen-faqiao-hour-tomb-six-v1, source_anchor: qimen-faqiao QMF-PAT-02, source_phrase: 时干入墓，戊戌、壬辰、丙戌、癸未、丁丑、己丑也, incompatible_definition: qimen-tongzong-hour-tomb-four-v1, evidence_quote: "时干入墓，戊戌、壬辰、丙戌、癸未、丁丑、己丑也", evidence_anchor: "qimen-faqiao-chaibu-v1.md QMF-PAT-02"}
+  - {id: QM-P37, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L169-L171, source_phrase: 六仪受制 休加离 伤加坤 杜加艮 景加乾 生加兑 死加坎 开加震 惊加巽, evidence_quote: "六仪受制 休加离 伤加坤 杜加艮 景加乾 生加兑 死加坎 开加震 惊加巽", evidence_anchor: "fulltext.md L169-L171"}
+  - {id: QM-P38, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L173, source_phrase: 地罗遮蔽 六壬临时干, evidence_quote: "地罗遮蔽 六壬临时干", evidence_anchor: "fulltext.md L173"}
+  - {id: QM-P39, source_profile: qimen_tongzong, definition_version: qimen-tongzong-time-stem-net-v1, source_anchor: qimen-tongzong L175, source_phrase: 天网四张 六癸临时干, incompatible_definition: qimen-faqiao-xunshou-over-earth-gui-v1, evidence_quote: "天网四张 六癸临时干", evidence_anchor: "fulltext.md L175"}
+  - {id: QM-P40, source_profile: qimen_tongzong, definition_version: qimen-tongzong-forty-grid-v1, source_anchor: qimen-tongzong L177, source_phrase: 尺寸高低 一二三四五宫尺寸低，六七八九宫尺寸高, evidence_quote: "尺寸高低 一二三四五宫尺寸低，六七八九宫尺寸高", evidence_anchor: "fulltext.md L177"}
+predicates:
+  - {id: QM-P01, positive_fixture_id: pattern-01, contract: {name: 青龙回首, predicate: chief_symbol_over_earth_stem, upper: 甲, lower: 丙}}
+  - {id: QM-P02, positive_fixture_id: pattern-02, contract: {name: 飞鸟跌穴, predicate: heaven_stem_over_hidden_jia, upper: 丙, lower: 甲}}
+  - {id: QM-P03, positive_fixture_id: pattern-03, contract: {name: 青龙逃走, predicate: heaven_stem_over_earth_stem, upper: 乙, lower: 辛}}
+  - {id: QM-P04, positive_fixture_id: pattern-04, contract: {name: 白虎猖狂, predicate: heaven_stem_over_earth_stem, upper: 辛, lower: 乙}}
+  - {id: QM-P05, positive_fixture_id: pattern-05, contract: {name: 腾蛇妖矫, predicate: heaven_stem_over_earth_stem, upper: 癸, lower: 丁}}
+  - {id: QM-P06, positive_fixture_id: pattern-06, contract: {name: 朱雀投江, predicate: heaven_stem_over_earth_stem, upper: 丁, lower: 癸}}
+  - {id: QM-P07, positive_fixture_id: pattern-07, contract: {name: 大格, predicate: heaven_stem_over_earth_stem, upper: 庚, lower: 癸}}
+  - {id: QM-P08, positive_fixture_id: pattern-08, contract: {name: 刑格, predicate: heaven_stem_over_earth_stem, upper: 庚, lower: 己}}
+  - {id: QM-P09, positive_fixture_id: pattern-09, contract: {name: 小格, predicate: heaven_stem_over_earth_stem, upper: 庚, lower: 壬}}
+  - {id: QM-P10, positive_fixture_id: pattern-10, contract: {name: 天遁, predicate: door_heaven_earth, door: 生门, upper: 丙, lower: 戊}}
+  - {id: QM-P11, positive_fixture_id: pattern-11, contract: {name: 地遁, predicate: door_heaven_earth, door: 开门, upper: 乙, lower: 己}}
+  - {id: QM-P12, positive_fixture_id: pattern-12, contract: {name: 人遁, predicate: door_heaven_deity, door: 休门, upper: 丁, deity: 太阴}}
+  - {id: QM-P13, positive_fixture_id: pattern-13, contract: {name: 五不遇时, predicate: hour_stem_controls_day_stem}}
+  - {id: QM-P14, positive_fixture_id: pattern-14, contract: {name: 伏吟, predicate: all_rotating_stars_on_home_palaces}}
+  - {id: QM-P15, positive_fixture_id: pattern-15, contract: {name: 反吟, predicate: all_rotating_stars_on_opposite_palaces}}
+  - {id: QM-P16, positive_fixture_id: pattern-16, contract: {name: 三奇入墓, predicate: heaven_stem_in_palace, cases: {乙: [2], 丙: [6], 丁: [8]}}}
+  - {id: QM-P17, positive_fixture_id: pattern-17, contract: {name: 六仪击刑, predicate: chief_destination_by_xun, cases: {甲子: 3, 甲戌: 2, 甲申: 8, 甲午: 9, 甲辰: 4, 甲寅: 4}}}
+  - {id: QM-P18, positive_fixture_id: pattern-18, contract: {name: 门迫, predicate: door_in_palace, cases: {开门: [3, 4], 休门: [9], 生门: [1], 伤门: [8], 景门: [6], 死门: [1], 惊门: [3, 4], 杜门: [2, 8]}}}
+  - {id: QM-P19, positive_fixture_id: pattern-19, contract: {name: 云遁, predicate: doors_heaven_earth, doors: [休门, 开门, 生门], upper: 乙, lower: 辛}}
+  - {id: QM-P20, positive_fixture_id: pattern-20, contract: {name: 风遁, predicate: doors_heaven_in_palace, doors: [休门, 开门, 生门], upper: 乙, palace: 4}}
+  - {id: QM-P21, positive_fixture_id: pattern-21, contract: {name: 龙遁, predicate: door_heaven_in_palace, door: 休门, upper: 乙, palace: 1}}
+  - {id: QM-P22, positive_fixture_id: pattern-22, contract: {name: 虎遁, predicate: door_heaven_earth_in_palace, door: 休门, upper: 乙, lower: 辛, palace: 8}}
+  - {id: QM-P23, positive_fixture_id: pattern-23, contract: {name: 神遁, predicate: door_heaven_deity, door: 休门, upper: 乙, deity: 九天}}
+  - {id: QM-P24, positive_fixture_id: pattern-24, contract: {name: 鬼遁, predicate: door_heaven_deity, door: 杜门, upper: 乙, deity: 九地}}
+  - {id: QM-P25, positive_fixture_id: pattern-25, contract: {name: 三奇得使, predicate: heaven_stem_over_earth_cases, cases: {乙: [辛, 己], 丙: [戊, 庚], 丁: [癸, 壬]}}}
+  - {id: QM-P26, positive_fixture_id: pattern-26, contract: {name: 玉女守门, predicate: director_over_earth_stem, lower: 丁}}
+  - {id: QM-P27, positive_fixture_id: pattern-27, contract: {name: 岁格, predicate: heaven_stem_over_calendar_stem, upper: 庚, pillar: year}}
+  - {id: QM-P28, positive_fixture_id: pattern-28, contract: {name: 月格, predicate: heaven_stem_over_calendar_stem, upper: 庚, pillar: month}}
+  - {id: QM-P29, positive_fixture_id: pattern-29, contract: {name: 日格, predicate: heaven_stem_over_calendar_stem, upper: 庚, pillar: day}}
+  - {id: QM-P30, positive_fixture_id: pattern-30, contract: {name: 时格, predicate: heaven_stem_over_calendar_stem, upper: 庚, pillar: hour, lower_stems: [乙, 丙, 丁]}}
+  - {id: QM-P31, positive_fixture_id: pattern-31, contract: {name: 伏宫, predicate: heaven_stem_over_hidden_jia, upper: 庚}}
+  - {id: QM-P32, positive_fixture_id: pattern-32, contract: {name: 伏干, predicate: heaven_stem_over_calendar_stem, upper: 庚, pillar: day}}
+  - {id: QM-P33, positive_fixture_id: pattern-33, contract: {name: 飞干格, predicate: calendar_stem_over_earth_stem, pillar: day, lower: 庚}}
+  - {id: QM-P34, positive_fixture_id: pattern-34, contract: {name: 太白入荧, predicate: heaven_stem_over_earth_stem, upper: 庚, lower: 丙}}
+  - {id: QM-P35, positive_fixture_id: pattern-35, contract: {name: 火入金乡, predicate: heaven_stem_over_earth_stem, upper: 丙, lower: 庚}}
+  - {id: QM-P36, positive_fixture_id: pattern-36, contract: {name: 时墓, predicate: hour_ganzhi_in_set, cases: [戊戌, 壬辰, 丙戌, 癸未, 丁丑, 己丑]}}
+  - {id: QM-P37, positive_fixture_id: pattern-37, contract: {name: 六仪受制, predicate: door_in_palace, cases: {休门: [9], 伤门: [2], 杜门: [8], 景门: [6], 生门: [7], 死门: [1], 开门: [3], 惊门: [4]}}}
+  - {id: QM-P38, positive_fixture_id: pattern-38, contract: {name: 地罗遮蔽, predicate: heaven_stem_over_calendar_stem, upper: 壬, pillar: hour}}
+  - {id: QM-P39, positive_fixture_id: pattern-39, contract: {name: 天网四张, predicate: heaven_stem_over_calendar_stem, upper: 癸, pillar: hour}}
+  - {id: QM-P40, positive_fixture_id: pattern-40, contract: {name: 尺寸高低, predicate: time_net_palace_height, upper: 癸, pillar: hour, low_palaces: [1, 2, 3, 4, 5], high_palaces: [6, 7, 8, 9]}}

@@ -1,0 +1,464 @@
+generated_at: "2026-07-05"
+version: "v0.1"
+source_status: "derived_from_shensha_name_disambiguation_v0.2_and_source_book_matrix_v0.1"
+purpose: "Per-entry source-book priority overlay for shensha terms. Use together with shensha-name-disambiguation.yaml; this file says which book role is primary, supporting, or acquisition-only for each entry."
+
+source_book_matrix_ref: "references/matrices/shensha-source-book-matrix.yaml"
+name_disambiguation_ref: "references/matrices/shensha-name-disambiguation.yaml"
+ss_b1_refinement_ref: "references/matrices/shensha-ss-b1-refinement.yaml"
+ss_b2_refinement_ref: "references/matrices/shensha-ss-b2-selection-refinement.yaml"
+ss_b3_refinement_ref: "references/matrices/shensha-ss-b3-liuren-refinement.yaml"
+ss_b4_refinement_ref: "references/matrices/shensha-ss-b4-ziwei-xingming-refinement.yaml"
+ss_b5_refinement_ref: "references/matrices/shensha-ss-b5-yangzhai-refinement.yaml"
+ss_b6_ocr_plan_ref: "references/matrices/shensha-ss-b6-minghai-ocr-plan.yaml"
+ss_b10_bibliography_plan_ref: "references/matrices/shensha-ss-b10-bibliography-plan.yaml"
+
+policy:
+  overlay_only: true
+  keep_name_logic_in_disambiguation_yaml: true
+  do_not_use_backlog_for_interpretation: true
+  do_not_merge_systems: true
+  use_source_refs_from_name_disambiguation: true
+  fact_layer_required_before_interpretation: true
+
+book_roles:
+  bazi_sanming_p0:
+    priority: "P0"
+    pack: "bazi/sanming-tonghui"
+    source_pack_role: "bazi_shensha_main_index"
+    use_boundary: "Bazi shensha inventory and meaning; secondary to month command, structure, tiaohou, ten gods, and luck."
+  bazi_yuanhai_p1:
+    priority: "P1"
+    pack: "bazi/yuanhai-ziping"
+    source_pack_role: "early_ziping_shensha_terms"
+    use_boundary: "Source-history and cross-check only."
+  bazi_deweighting_p1:
+    priority: "P1"
+    pack: "bazi/ziping-zhenquan"
+    source_pack_role: "shensha_deweighting_boundary"
+    use_boundary: "Use only to keep shensha below structure and useful-god logic."
+  bazi_practical_p1:
+    priority: "P1"
+    pack: "bazi/shenfeng-tongkao"
+    source_pack_role: "bazi_practical_cross_check"
+    use_boundary: "Practical correction layer; not a standalone shensha oracle."
+  bazi_anti_abuse_p1:
+    priority: "P1"
+    pack: "bazi/mingli-yueyan"
+    source_pack_role: "anti_abuse_and_deweighting"
+    use_boundary: "Use when an interpretation is becoming mechanical or overconfident."
+  luming_wuxing_p0:
+    priority: "P0"
+    pack: "luming-nayin/wuxing-jingji"
+    source_pack_role: "early_luming_shensha_source_history"
+    use_boundary: "Early source-history support; does not override modern bazi structure."
+  luming_lixuzhong_p1:
+    priority: "P1"
+    pack: "luming-nayin/li-xuzhong-mingshu"
+    source_pack_role: "early_guishen_and_luming_terms"
+    use_boundary: "Early luming term support only."
+  luming_luoluzi_p1:
+    priority: "P1"
+    pack: "luming-nayin/luoluzi-sanming"
+    source_pack_role: "luming_fu_yun_shensha_source"
+    use_boundary: "Separate base text and commentary; source-history only."
+  luming_lantai_p1:
+    priority: "P1"
+    pack: "luming-nayin/lantai-miaoxuan"
+    source_pack_role: "luming_niche_pattern_support"
+    use_boundary: "Niche luming pattern support; not a high-frequency shensha index."
+  luming_yuzhao_p1:
+    priority: "P1"
+    pack: "luming-nayin/yuzhao-shenying"
+    source_pack_role: "early_branch_spirit_and_relation_support"
+    use_boundary: "Early branch-spirit and relation support only."
+  selection_xingli_p0:
+    priority: "P0"
+    pack: "selection/xingli-kaoyuan"
+    source_pack_role: "official_shensha_origin_rules"
+    use_boundary: "Origin/rule source; final date judgment still needs selection adapter and Xieji adjudication."
+  selection_xieji_p0:
+    priority: "P0"
+    pack: "selection/xieji-bianfang-shu"
+    source_pack_role: "official_selection_adjudicator"
+    use_boundary: "Official selection adjudicator; requires complete selection fact layer."
+  selection_yuqia_p1:
+    priority: "P1"
+    pack: "selection/yuqia-ji"
+    source_pack_role: "folk_almanac_taboo_comparison"
+    use_boundary: "Folk almanac comparison only."
+  selection_donggong_p1:
+    priority: "P1"
+    pack: "selection/donggong-zeri"
+    source_pack_role: "folk_month_day_table_comparison"
+    use_boundary: "Folk month-day table comparison only."
+  liuren_daquan_p0:
+    priority: "P0"
+    pack: "san-shi/daliuren-daquan"
+    source_pack_role: "liuren_shensha_and_heavenly_generals"
+    use_boundary: "Only inside a generated liuren plate, four lessons, and three transmissions fact layer."
+  liuren_zhiyin_p1:
+    priority: "P1"
+    pack: "san-shi/liuren-zhiyin"
+    source_pack_role: "liuren_volume_four_shensha_guide"
+    use_boundary: "Liuren plate only."
+  liuren_miben_p1:
+    priority: "P1"
+    pack: "san-shi/liuren-miben"
+    source_pack_role: "liuren_secret_text_support"
+    use_boundary: "Liuren plate only; support source."
+  taiyi_p1:
+    priority: "P1"
+    pack: "san-shi/taiyi-shenshu"
+    source_pack_role: "taiyi_taisui_tianyi_macro_terms"
+    use_boundary: "Taiyi plate only."
+  ziwei_quanshu_p0:
+    priority: "P0"
+    pack: "ziwei/ziwei-doushu-quanshu"
+    source_pack_role: "ziwei_stars_minor_stars_and_flowing_sha"
+    use_boundary: "Requires ziwei chart fact layer; never merge with bazi shensha."
+  ziwei_taiweifu_p1:
+    priority: "P1"
+    pack: "ziwei/taiwei-fu"
+    source_pack_role: "ziwei_fu_text_minor_stars"
+    use_boundary: "Ziwei semantic and fu-text layer."
+  ziwei_feixing_p1:
+    priority: "P1"
+    pack: "ziwei/feixing-ziwei-doushu-yuanzhi"
+    source_pack_role: "republican_observation_annotation"
+    use_boundary: "Annotation layer, not classical primary source."
+  xingming_guotian_p0:
+    priority: "P0"
+    pack: "xingming/guotian-jing"
+    source_pack_role: "qizheng_siyu_xingming_shensha_ready_source"
+    source_risk: "attributed_to_Zhang_Guo_late_compilation_version_risk"
+    use_boundary: "Requires xingming astronomical chart adapter; old degree tables are not modern ephemeris."
+  yangzhai_shishu_p0:
+    priority: "P0"
+    pack: "fengshui/yangzhai-shishu"
+    source_pack_role: "bazhai_you-nian_nine_stars_source"
+    use_boundary: "Only inside property-facing, door-stove-bed, or minggua/house-gua fact layer."
+  yangzhai_sanyao_p1:
+    priority: "P1"
+    pack: "fengshui/yangzhai-sanyao"
+    source_pack_role: "bazhai_door_master_stove_you-nian_support"
+    use_boundary: "Yangzhai support only."
+  liuyao_huangjince_p1:
+    priority: "P1"
+    pack: "divination/huangjin-ce"
+    source_pack_role: "liuyao_shensha_deweighting_evidence"
+    use_boundary: "Only for six-line divination; evidence that shensha stays below line dynamics."
+
+entry_source_profiles:
+  shensha-tianyi-guiren:
+    name: "天乙贵人"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_deweighting_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: ["luming_lixuzhong_p1"], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: ["liuren_zhiyin_p1"], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-you-nian-jiuxing:
+    name: "游年九星/天乙巨门"
+    profiles:
+      fengshui: {first_line: ["yangzhai_shishu_p0"], support: ["yangzhai_sanyao_p1"], book_priority: "P0", source_pack_role: "bazhai_you-nian_nine_stars_source"}
+    cross_system_risk: "high"
+    acquisition_only: ["fengshui/yangzhai-aizhong-pian"]
+  shensha-tiande-yuede:
+    name: "天德/月德"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_anti_abuse_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: ["luming_yuzhao_p1"], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: ["selection_yuqia_p1"], book_priority: "P0", source_pack_role: "official_selection_adjudicator"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: ["liuren_zhiyin_p1"], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-wenchang:
+    name: "文昌"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_yuanhai_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_lixuzhong_p1"], support: ["luming_wuxing_p0"], book_priority: "P1", source_pack_role: "early_guishen_and_luming_terms"}
+      ziwei: {first_line: ["ziwei_quanshu_p0"], support: ["ziwei_taiweifu_p1"], book_priority: "P0", source_pack_role: "ziwei_stars_minor_stars_and_flowing_sha"}
+    cross_system_risk: "medium"
+    acquisition_only: []
+  shensha-taiji-guiren:
+    name: "太极贵人"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_deweighting_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: [], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+    cross_system_risk: "low"
+    acquisition_only: []
+  shensha-sanqi-guiren:
+    name: "三奇贵人"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_practical_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: [], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-xuetang-ciguan:
+    name: "学堂/词馆"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_yuanhai_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: ["luming_lixuzhong_p1"], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+    cross_system_risk: "low"
+    acquisition_only: []
+  shensha-dexiu:
+    name: "德秀"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_anti_abuse_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+    cross_system_risk: "low"
+    acquisition_only: []
+  shensha-jinyu:
+    name: "金舆"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_yuanhai_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: ["luming_lixuzhong_p1"], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+      ziwei: {first_line: ["ziwei_taiweifu_p1"], support: ["ziwei_quanshu_p0"], book_priority: "P1", source_pack_role: "ziwei_fu_text_minor_stars"}
+    cross_system_risk: "medium"
+    acquisition_only: []
+  shensha-lushen-lucun:
+    name: "禄/禄神/禄存/化禄"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_yuanhai_p1", "bazi_deweighting_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: ["luming_lixuzhong_p1", "luming_luoluzi_p1"], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+      ziwei: {first_line: ["ziwei_quanshu_p0"], support: ["ziwei_taiweifu_p1"], book_priority: "P0", source_pack_role: "ziwei_stars_minor_stars_and_flowing_sha"}
+      xingming: {first_line: ["xingming_guotian_p0"], support: [], book_priority: "P0", source_pack_role: "qizheng_siyu_xingming_shensha_ready_source"}
+    cross_system_risk: "critical"
+    acquisition_only: ["xingming/minghai-quanbian"]
+  shensha-yima-tianma:
+    name: "驿马/天马"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_yuanhai_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: ["luming_lixuzhong_p1"], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+      selection: {first_line: ["selection_xieji_p0", "selection_xingli_p0"], support: ["selection_yuqia_p1"], book_priority: "P0", source_pack_role: "official_selection_adjudicator"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: ["liuren_zhiyin_p1"], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+      ziwei: {first_line: ["ziwei_quanshu_p0"], support: ["ziwei_taiweifu_p1"], book_priority: "P0", source_pack_role: "ziwei_stars_minor_stars_and_flowing_sha"}
+      xingming: {first_line: ["xingming_guotian_p0"], support: [], book_priority: "P0", source_pack_role: "qizheng_siyu_xingming_shensha_ready_source"}
+    cross_system_risk: "critical"
+    acquisition_only: ["xingming/minghai-quanbian"]
+  shensha-xianchi-taohua:
+    name: "咸池/桃花"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_anti_abuse_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: ["liuren_miben_p1"], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+      ziwei: {first_line: ["ziwei_quanshu_p0"], support: ["ziwei_feixing_p1", "ziwei_taiweifu_p1"], book_priority: "P0", source_pack_role: "ziwei_stars_minor_stars_and_flowing_sha"}
+      xingming: {first_line: ["xingming_guotian_p0"], support: [], book_priority: "P0", source_pack_role: "qizheng_siyu_xingming_shensha_ready_source"}
+    cross_system_risk: "high"
+    acquisition_only: ["xingming/minghai-quanbian"]
+  shensha-hongluan-tianxi:
+    name: "红鸾/天喜"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_anti_abuse_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: [], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+      ziwei: {first_line: ["ziwei_feixing_p1"], support: ["ziwei_quanshu_p0"], book_priority: "P1", source_pack_role: "republican_observation_annotation"}
+    cross_system_risk: "medium"
+    acquisition_only: []
+  shensha-yangren:
+    name: "羊刃/阳刃"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_practical_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: ["luming_lixuzhong_p1"], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+      ziwei: {first_line: ["ziwei_quanshu_p0"], support: ["ziwei_taiweifu_p1", "ziwei_feixing_p1"], book_priority: "P0", source_pack_role: "ziwei_stars_minor_stars_and_flowing_sha"}
+      xingming: {first_line: ["xingming_guotian_p0"], support: [], book_priority: "P0", source_pack_role: "qizheng_siyu_xingming_shensha_ready_source"}
+    cross_system_risk: "critical"
+    acquisition_only: ["xingming/minghai-quanbian"]
+  shensha-kongwang:
+    name: "空亡"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_yuanhai_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: ["luming_lixuzhong_p1", "luming_luoluzi_p1"], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+      ziwei: {first_line: ["ziwei_taiweifu_p1"], support: ["ziwei_quanshu_p0"], book_priority: "P1", source_pack_role: "ziwei_fu_text_minor_stars"}
+      xingming: {first_line: ["xingming_guotian_p0"], support: [], book_priority: "P0", source_pack_role: "qizheng_siyu_xingming_shensha_ready_source"}
+    cross_system_risk: "high"
+    acquisition_only: ["xingming/minghai-quanbian"]
+  shensha-jiangxing-huagai:
+    name: "将星/华盖"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_yuanhai_p1", "bazi_anti_abuse_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: ["luming_lixuzhong_p1", "luming_luoluzi_p1"], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: [], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+      ziwei: {first_line: ["ziwei_quanshu_p0"], support: ["ziwei_taiweifu_p1"], book_priority: "P0", source_pack_role: "ziwei_stars_minor_stars_and_flowing_sha"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-jiesha-wangshen-zaisha:
+    name: "劫煞/亡神/灾煞"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_anti_abuse_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: ["luming_luoluzi_p1"], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+      selection: {first_line: ["selection_xieji_p0", "selection_xingli_p0"], support: ["selection_donggong_p1"], book_priority: "P0", source_pack_role: "official_selection_adjudicator"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: [], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+      xingming: {first_line: ["xingming_guotian_p0"], support: [], book_priority: "P0", source_pack_role: "qizheng_siyu_xingming_shensha_ready_source"}
+    cross_system_risk: "critical"
+    acquisition_only: ["xingming/minghai-quanbian"]
+  shensha-guchen-guasu:
+    name: "孤辰/寡宿"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_anti_abuse_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: ["luming_luoluzi_p1"], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+      selection: {first_line: ["selection_xieji_p0"], support: ["selection_yuqia_p1"], book_priority: "P0", source_pack_role: "official_selection_adjudicator"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: [], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-kuigang:
+    name: "魁罡"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_practical_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_lixuzhong_p1"], support: ["luming_yuzhao_p1"], book_priority: "P1", source_pack_role: "early_guishen_and_luming_terms"}
+    cross_system_risk: "medium"
+    acquisition_only: []
+  shensha-shie-dabai:
+    name: "十恶大败"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_anti_abuse_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      selection: {first_line: ["selection_xieji_p0", "selection_xingli_p0"], support: ["selection_yuqia_p1"], book_priority: "P0", source_pack_role: "official_selection_adjudicator"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-rigui-ride:
+    name: "日贵/日德"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_yuanhai_p1", "bazi_practical_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+    cross_system_risk: "medium"
+    acquisition_only: []
+  shensha-luowang:
+    name: "天罗/地网"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_anti_abuse_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_luoluzi_p1"], support: ["luming_wuxing_p0"], book_priority: "P1", source_pack_role: "luming_fu_yun_shensha_source"}
+    cross_system_risk: "medium"
+    acquisition_only: []
+  shensha-yuanchen-dahao:
+    name: "元辰/大耗/小耗"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_anti_abuse_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: ["selection_yuqia_p1"], book_priority: "P0", source_pack_role: "official_shensha_origin_rules"}
+      ziwei: {first_line: ["ziwei_feixing_p1"], support: ["ziwei_quanshu_p0"], book_priority: "P1", source_pack_role: "republican_observation_annotation"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-tianyi-medical:
+    name: "天医"
+    profiles:
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: ["selection_yuqia_p1"], book_priority: "P0", source_pack_role: "official_selection_adjudicator"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: [], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+      fengshui: {first_line: ["yangzhai_shishu_p0"], support: ["yangzhai_sanyao_p1"], book_priority: "P0", source_pack_role: "bazhai_you-nian_nine_stars_source"}
+    cross_system_risk: "critical"
+    acquisition_only: ["fengshui/yangzhai-aizhong-pian"]
+  shensha-taisui:
+    name: "太岁/岁君/岁破"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_yuanhai_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: ["selection_donggong_p1"], book_priority: "P0", source_pack_role: "official_selection_adjudicator"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: ["taiyi_p1"], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+      ziwei: {first_line: ["ziwei_quanshu_p0"], support: ["ziwei_taiweifu_p1"], book_priority: "P0", source_pack_role: "ziwei_stars_minor_stars_and_flowing_sha"}
+    cross_system_risk: "critical"
+    acquisition_only: []
+  shensha-baihu:
+    name: "白虎"
+    profiles:
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: ["selection_yuqia_p1"], book_priority: "P0", source_pack_role: "official_selection_adjudicator"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: ["liuren_zhiyin_p1"], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+      ziwei: {first_line: ["ziwei_taiweifu_p1"], support: ["ziwei_feixing_p1", "ziwei_quanshu_p0"], book_priority: "P1", source_pack_role: "ziwei_fu_text_minor_stars"}
+      luming_nayin: {first_line: ["luming_yuzhao_p1"], support: ["luming_wuxing_p0"], book_priority: "P1", source_pack_role: "early_branch_spirit_and_relation_support"}
+    cross_system_risk: "critical"
+    acquisition_only: []
+  shensha-guanfu-bingfu:
+    name: "官符/病符"
+    profiles:
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: ["selection_donggong_p1"], book_priority: "P0", source_pack_role: "official_selection_adjudicator"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: [], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+      ziwei: {first_line: ["ziwei_taiweifu_p1"], support: ["ziwei_quanshu_p0"], book_priority: "P1", source_pack_role: "ziwei_fu_text_minor_stars"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: [], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-sangmen-diaoke:
+    name: "丧门/吊客"
+    profiles:
+      liuren: {first_line: ["liuren_daquan_p0"], support: ["liuren_miben_p1"], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+      ziwei: {first_line: ["ziwei_quanshu_p0"], support: ["ziwei_feixing_p1", "ziwei_taiweifu_p1"], book_priority: "P0", source_pack_role: "ziwei_stars_minor_stars_and_flowing_sha"}
+      luming_nayin: {first_line: ["luming_luoluzi_p1"], support: [], book_priority: "P1", source_pack_role: "luming_fu_yun_shensha_source"}
+    cross_system_risk: "critical"
+    acquisition_only: []
+  shensha-tianxing:
+    name: "天刑"
+    profiles:
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: [], book_priority: "P0", source_pack_role: "official_shensha_origin_rules"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: [], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+      ziwei: {first_line: ["ziwei_quanshu_p0"], support: ["ziwei_feixing_p1"], book_priority: "P0", source_pack_role: "ziwei_stars_minor_stars_and_flowing_sha"}
+      xingming: {first_line: ["xingming_guotian_p0"], support: [], book_priority: "P0", source_pack_role: "qizheng_siyu_xingming_shensha_ready_source"}
+    cross_system_risk: "critical"
+    acquisition_only: ["xingming/minghai-quanbian"]
+  shensha-huangdao-heidao:
+    name: "黄道/黑道"
+    profiles:
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: ["selection_yuqia_p1"], book_priority: "P0", source_pack_role: "official_selection_adjudicator"}
+      luming_nayin: {first_line: ["luming_luoluzi_p1"], support: [], book_priority: "P1", source_pack_role: "luming_fu_yun_shensha_source"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-jianchu:
+    name: "建除十二神"
+    profiles:
+      selection: {first_line: ["selection_xieji_p0", "selection_xingli_p0"], support: ["selection_yuqia_p1", "selection_donggong_p1"], book_priority: "P0", source_pack_role: "official_selection_adjudicator"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-yuepo-yueyan:
+    name: "月破/月厌/月害"
+    profiles:
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: ["selection_yuqia_p1"], book_priority: "P0", source_pack_role: "official_shensha_origin_rules"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: [], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-side-fei-lijue:
+    name: "四废/四离/四绝"
+    profiles:
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: ["selection_yuqia_p1"], book_priority: "P0", source_pack_role: "official_shensha_origin_rules"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: [], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-jinshen-qisha:
+    name: "金神七煞"
+    profiles:
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: ["selection_donggong_p1"], book_priority: "P0", source_pack_role: "official_shensha_origin_rules"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: [], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-dajiangjun:
+    name: "大将军"
+    profiles:
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: ["selection_donggong_p1"], book_priority: "P0", source_pack_role: "official_selection_adjudicator"}
+    cross_system_risk: "high"
+    acquisition_only: []
+  shensha-yuekong-mucang-jieshen:
+    name: "月空/母仓/解神"
+    profiles:
+      selection: {first_line: ["selection_xingli_p0", "selection_xieji_p0"], support: ["selection_yuqia_p1"], book_priority: "P0", source_pack_role: "official_shensha_origin_rules"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: [], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+    cross_system_risk: "medium"
+    acquisition_only: []
+  shensha-twelve-generals:
+    name: "青龙/朱雀/六合/勾陈/玄武/太常/太阴/天后"
+    profiles:
+      liuren: {first_line: ["liuren_daquan_p0"], support: ["liuren_zhiyin_p1"], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+      luming_nayin: {first_line: ["luming_yuzhao_p1"], support: ["luming_wuxing_p0"], book_priority: "P1", source_pack_role: "early_branch_spirit_and_relation_support"}
+      selection: {first_line: ["selection_xingli_p0"], support: ["selection_xieji_p0"], book_priority: "P0", source_pack_role: "official_shensha_origin_rules"}
+    cross_system_risk: "critical"
+    acquisition_only: []
+  shensha-sanxing-liuhai:
+    name: "三刑/六害"
+    profiles:
+      bazi: {first_line: ["bazi_sanming_p0"], support: ["bazi_deweighting_p1"], book_priority: "P0", source_pack_role: "bazi_shensha_main_index"}
+      luming_nayin: {first_line: ["luming_wuxing_p0"], support: ["luming_yuzhao_p1"], book_priority: "P0", source_pack_role: "early_luming_shensha_source_history"}
+      xingming: {first_line: ["xingming_guotian_p0"], support: [], book_priority: "P0", source_pack_role: "qizheng_siyu_xingming_shensha_ready_source"}
+    cross_system_risk: "high"
+    acquisition_only: ["xingming/minghai-quanbian"]
+  shensha-fuyin-fanyin:
+    name: "伏吟/反吟"
+    profiles:
+      luming_nayin: {first_line: ["luming_luoluzi_p1", "luming_wuxing_p0"], support: ["luming_yuzhao_p1"], book_priority: "P1", source_pack_role: "luming_fu_yun_shensha_source"}
+      liuren: {first_line: ["liuren_daquan_p0"], support: ["liuren_zhiyin_p1"], book_priority: "P0", source_pack_role: "liuren_shensha_and_heavenly_generals"}
+    cross_system_risk: "critical"
+    acquisition_only: []
+
+coverage_checks:
+  expected_name_disambiguation_entries: 39
+  every_entry_has_book_priority: true
+  every_entry_has_source_pack_role: true
+  backlog_slugs_are_not_interpretation_sources: true

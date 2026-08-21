@@ -684,6 +684,30 @@ class TimeCheckCandidateEvidenceV1(ContractModel):
     rank: int = Field(ge=1, le=12)
 
 
+class TimeCheckRectificationConclusionV1(ContractModel):
+    """Classical rectification conclusion: remaining hour or why it is still open."""
+
+    status: Literal[
+        "hour_determined",
+        "no_valid_candidate",
+        "not_attempted",
+        "remaining_ambiguous",
+    ]
+    selected_candidate_id: str | None = Field(default=None, min_length=1)
+    remaining_candidate_ids: tuple[str, ...]
+    basis: str = Field(min_length=1)
+    rule_ids: tuple[str, ...] = ()
+
+    @model_validator(mode="after")
+    def _selected_matches_status(self) -> TimeCheckRectificationConclusionV1:
+        if self.status == "hour_determined":
+            if self.selected_candidate_id is None:
+                raise ValueError("determined hour requires selected_candidate_id")
+        elif self.selected_candidate_id is not None:
+            raise ValueError("non-determined status cannot select a candidate")
+        return self
+
+
 class TimeCheckEventMatchV1(ContractModel):
     """Runtime evidence showing which candidates matched one dated event."""
 
@@ -721,7 +745,26 @@ class TimeCheckViewV1(ContractModel):
     event_matches: tuple[TimeCheckEventMatchV1, ...]
     ranking_status: Literal["not_ranked", "candidate_evidence_ranked"]
     event_matching_status: Literal["not_calculated", "structured_evidence"]
+    rectification_status: (
+        Literal[
+            "hour_determined",
+            "no_valid_candidate",
+            "not_attempted",
+            "remaining_ambiguous",
+        ]
+        | None
+    ) = None
+    rectification_conclusion: TimeCheckRectificationConclusionV1 | None = None
     limitations: tuple[str, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _rectification_pair_matches(self) -> TimeCheckViewV1:
+        conclusion = self.rectification_conclusion
+        if conclusion is None:
+            return self
+        if self.rectification_status != conclusion.status:
+            raise ValueError("rectification_status must match conclusion.status")
+        return self
 
 
 class ZiweiPalace(ContractModel):

@@ -1,0 +1,10 @@
+# Hashes are SHA-256 of artifacts fetched from the pinned PyPI releases on
+# 2026-07-25. PyYAML is admitted only for the tested CPython 3.11/3.14 macOS
+# arm64 runtimes. Other architectures fail closed until their wheel is audited.
+PyYAML==6.0.3 \
+    --hash=sha256:652cb6edd41e718550aad172851962662ff2681490a8a711af6a4d288dd96824 \
+    --hash=sha256:34d5fcd24b8445fadc33f9cf348c1047101756fd760b4dacb5c3e99755703310
+sxtwl==2.0.7 --hash=sha256:38b24472389f7f6f3521c2c99e4b5e86c0184c7d6eb02e5409c239d21f0a6512
+astronomy-engine==2.1.19 --hash=sha256:232ba7dd2bbf42225c48be6721b676e8c6c079dbd4588d2781dfa68adcb6f67f
+cnlunar==0.2.4 --hash=sha256:19689288604e86a3ef48dba23d39d6a7efbd5efabcb3923d4d656319762af4ea
+zhconv==1.4.3 --hash=sha256:ad42d9057ca0605f8e41d62b67ca797f879f58193ee6840562c51459b2698c45

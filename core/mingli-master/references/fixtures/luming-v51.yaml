@@ -1,0 +1,122 @@
+schema_version: mingli-luming-fixtures-v51
+source_scope:
+  - luming-nayin/li-xuzhong-mingshu
+  - luming-nayin/wuxing-jingji
+  - luming-nayin/lantai-miaoxuan
+
+nayin_cycle:
+  - [甲子, 海中金]
+  - [乙丑, 海中金]
+  - [丙寅, 炉中火]
+  - [丁卯, 炉中火]
+  - [戊辰, 大林木]
+  - [己巳, 大林木]
+  - [庚午, 路旁土]
+  - [辛未, 路旁土]
+  - [壬申, 剑锋金]
+  - [癸酉, 剑锋金]
+  - [甲戌, 山头火]
+  - [乙亥, 山头火]
+  - [丙子, 涧下水]
+  - [丁丑, 涧下水]
+  - [戊寅, 城头土]
+  - [己卯, 城头土]
+  - [庚辰, 白蜡金]
+  - [辛巳, 白蜡金]
+  - [壬午, 杨柳木]
+  - [癸未, 杨柳木]
+  - [甲申, 泉中水]
+  - [乙酉, 泉中水]
+  - [丙戌, 屋上土]
+  - [丁亥, 屋上土]
+  - [戊子, 霹雳火]
+  - [己丑, 霹雳火]
+  - [庚寅, 松柏木]
+  - [辛卯, 松柏木]
+  - [壬辰, 长流水]
+  - [癸巳, 长流水]
+  - [甲午, 沙中金]
+  - [乙未, 沙中金]
+  - [丙申, 山下火]
+  - [丁酉, 山下火]
+  - [戊戌, 平地木]
+  - [己亥, 平地木]
+  - [庚子, 壁上土]
+  - [辛丑, 壁上土]
+  - [壬寅, 金箔金]
+  - [癸卯, 金箔金]
+  - [甲辰, 覆灯火]
+  - [乙巳, 覆灯火]
+  - [丙午, 天河水]
+  - [丁未, 天河水]
+  - [戊申, 大驿土]
+  - [己酉, 大驿土]
+  - [庚戌, 钗钏金]
+  - [辛亥, 钗钏金]
+  - [壬子, 桑柘木]
+  - [癸丑, 桑柘木]
+  - [甲寅, 大溪水]
+  - [乙卯, 大溪水]
+  - [丙辰, 沙中土]
+  - [丁巳, 沙中土]
+  - [戊午, 天上火]
+  - [己未, 天上火]
+  - [庚申, 石榴木]
+  - [辛酉, 石榴木]
+  - [壬戌, 大海水]
+  - [癸亥, 大海水]
+
+source_examples:
+  - {id: lx-01, source: 李虚中命书, anchor: L16, pillars: [甲子], expected_nayin: [海中金]}
+  - {id: lx-02, source: 李虚中命书, anchor: L17, pillars: [乙丑], expected_nayin: [海中金]}
+  - {id: lx-03, source: 李虚中命书, anchor: L18, pillars: [丙寅], expected_nayin: [炉中火]}
+  - {id: lx-04, source: 李虚中命书, anchor: L19, pillars: [丁卯], expected_nayin: [炉中火]}
+  - {id: lx-05, source: 李虚中命书, anchor: L20, pillars: [戊辰], expected_nayin: [大林木]}
+  - {id: lx-06, source: 李虚中命书, anchor: L21, pillars: [己巳], expected_nayin: [大林木]}
+  - {id: lx-07, source: 李虚中命书, anchor: L21, pillars: [庚午], expected_nayin: [路旁土]}
+  - {id: lx-08, source: 李虚中命书, anchor: L22, pillars: [辛未], expected_nayin: [路旁土]}
+  - {id: lx-09, source: 李虚中命书, anchor: L23, pillars: [壬申], expected_nayin: [剑锋金]}
+  - {id: lx-10, source: 李虚中命书, anchor: L24, pillars: [癸酉], expected_nayin: [剑锋金]}
+
+  - {id: wx-01, source: 五行精纪, anchor: L1367, pillars: [丁巳, 癸丑, 壬辰, 辛亥], expected_nayin: [沙中土, 桑柘木, 长流水, 钗钏金]}
+  - {id: wx-02, source: 五行精纪, anchor: L1367, pillars: [癸巳, 辛酉, 庚寅, 辛巳], expected_nayin: [长流水, 石榴木, 松柏木, 白蜡金]}
+  - {id: wx-03, source: 五行精纪, anchor: L1383, pillars: [己未, 乙亥, 丙寅, 辛卯], expected_nayin: [天上火, 山头火, 炉中火, 松柏木]}
+  - {id: wx-04, source: 五行精纪, anchor: L1603, pillars: [丁巳, 癸丑, 戊戌, 癸亥], expected_nayin: [沙中土, 桑柘木, 平地木, 大海水]}
+  - {id: wx-05, source: 五行精纪, anchor: L1611, pillars: [丙子, 戊戌, 辛酉, 丙申], expected_nayin: [涧下水, 平地木, 石榴木, 山下火]}
+  - {id: wx-06, source: 五行精纪, anchor: L2061, pillars: [乙亥, 丁亥, 辛亥, 己亥], expected_nayin: [山头火, 屋上土, 钗钏金, 平地木]}
+  - {id: wx-07, source: 五行精纪, anchor: L2061, pillars: [癸丑, 乙丑, 乙丑, 丁丑], expected_nayin: [桑柘木, 海中金, 海中金, 涧下水]}
+  - {id: wx-08, source: 五行精纪, anchor: L2067, pillars: [戊辰, 癸亥, 戊寅, 甲寅], expected_nayin: [大林木, 大海水, 城头土, 大溪水]}
+  - {id: wx-09, source: 五行精纪, anchor: L2097, pillars: [乙丑, 甲戌, 己亥, 丁卯], expected_nayin: [海中金, 山头火, 平地木, 炉中火]}
+  - {id: wx-10, source: 五行精纪, anchor: L2097, pillars: [丁未, 己酉, 乙巳, 丁巳], expected_nayin: [天河水, 大驿土, 覆灯火, 沙中土]}
+
+  - {id: lt-01, source: 兰台妙选, anchor: L71, pillars: [甲子, 己未], expected_nayin: [海中金, 天上火]}
+  - {id: lt-02, source: 兰台妙选, anchor: L71, pillars: [乙丑, 己未], expected_nayin: [海中金, 天上火]}
+  - {id: lt-03, source: 兰台妙选, anchor: L71, pillars: [己未, 甲子], expected_nayin: [天上火, 海中金]}
+  - {id: lt-04, source: 兰台妙选, anchor: L71, pillars: [己未, 乙丑], expected_nayin: [天上火, 海中金]}
+  - {id: lt-05, source: 兰台妙选, anchor: L309, pillars: [甲子, 甲午], expected_nayin: [海中金, 沙中金]}
+  - {id: lt-06, source: 兰台妙选, anchor: L309, pillars: [甲子, 丙午], expected_nayin: [海中金, 天河水]}
+  - {id: lt-07, source: 兰台妙选, anchor: L309, pillars: [甲子, 戊午], expected_nayin: [海中金, 天上火]}
+  - {id: lt-08, source: 兰台妙选, anchor: L309, pillars: [庚子, 甲午], expected_nayin: [壁上土, 沙中金]}
+  - {id: lt-09, source: 兰台妙选, anchor: L309, pillars: [庚子, 庚午], expected_nayin: [壁上土, 路旁土]}
+  - {id: lt-10, source: 兰台妙选, anchor: L309, pillars: [壬子, 丙午], expected_nayin: [桑柘木, 天河水]}
+
+taiyuan_cases:
+  - id: taiyuan-wuxing-jingji-01
+    source: 五行精纪
+    anchor: L2599
+    month_pillar: 丁丑
+    expected: 戊辰
+  - id: taiyuan-wuxing-jingji-02
+    source: 五行精纪
+    anchor: L2599
+    month_pillar: 戊申
+    expected: 己亥
+
+calendar_cases:
+  - {id: before-li-chun, category: solar_term_boundary, datetime: '2024-02-04T16:20:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight, expected_pillars: [癸卯, 乙丑, 戊戌, 庚申], expected_lunar: [2023, 12, 25, false], expected_offset_seconds: 28800}
+  - {id: after-li-chun, category: solar_term_boundary, datetime: '2024-02-04T16:40:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight, expected_pillars: [甲辰, 丙寅, 戊戌, 庚申], expected_lunar: [2023, 12, 25, false], expected_offset_seconds: 28800}
+  - {id: late-zi-current-day, category: day_rollover, datetime: '2024-01-15T23:30:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight, expected_pillars: [癸卯, 乙丑, 戊寅, 壬子], expected_lunar: [2023, 12, 5, false], expected_offset_seconds: 28800}
+  - {id: late-zi-next-day, category: day_rollover, datetime: '2024-01-15T23:30:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: late-zi-next-day, expected_pillars: [癸卯, 乙丑, 己卯, 甲子], expected_lunar: [2023, 12, 5, false], expected_offset_seconds: 28800}
+  - {id: leap-lunar-month, category: leap_month, datetime: '2023-03-22T12:00:00', timezone: Asia/Shanghai, location: 上海, zi_hour_policy: midnight, expected_pillars: [癸卯, 乙卯, 己卯, 庚午], expected_lunar: [2023, 2, 1, true], expected_offset_seconds: 28800}
+  - {id: new-york-dst, category: timezone_boundary, datetime: '2024-07-01T12:00:00', timezone: America/New_York, location: 纽约, zi_hour_policy: midnight, expected_pillars: [甲辰, 庚午, 丙寅, 甲午], expected_lunar: [2024, 5, 26, false], expected_offset_seconds: -14400}
+  - {id: historical-offset, category: timezone_boundary, datetime: '1880-01-01T12:00:00', timezone: America/New_York, location: 纽约, zi_hour_policy: midnight, expected_pillars: [己卯, 丙子, 己丑, 庚午], expected_lunar: [1879, 11, 20, false], expected_offset_seconds: -17762}

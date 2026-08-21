@@ -103,6 +103,43 @@ def test_release_bound_is_ref_bound_and_fails_closed(tmp_path: Path) -> None:
     assert "找不到 rule_id" in ref_result.stdout
 
 
+def test_release_bound_accepts_accepted_result_fact_panel(tmp_path: Path) -> None:
+    release_root, _evidence_path, evidence = _write_release_bound_fixture(tmp_path)
+    accepted_path = tmp_path / "accepted-result.json"
+    accepted_path.write_text(
+        json.dumps(
+            {
+                "status": "accepted",
+                "fact_panel": {"evidence": [evidence]},
+                "document": {
+                    "evidence": [
+                        {
+                            "evidence_ref": evidence["evidence_ref"],
+                            "title": evidence["source_title"],
+                        }
+                    ]
+                },
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    citations_path = tmp_path / "citations.txt"
+    citations_path.write_text(f"{evidence['excerpt']}\n", encoding="utf-8")
+    result = _run(
+        "--mode",
+        "release-bound",
+        "--release-root",
+        release_root,
+        "--file",
+        accepted_path,
+        "--citations-file",
+        citations_path,
+    )
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert "verified_release_bound" in result.stdout
+
+
 def test_fulltext_mode_stays_exact_and_missing_root_is_actionable(
     tmp_path: Path,
 ) -> None:

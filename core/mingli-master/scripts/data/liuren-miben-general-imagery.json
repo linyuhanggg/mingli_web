@@ -1,0 +1,1159 @@
+{
+  "schema_version": "liuren-miben-general-imagery-v1",
+  "source": {
+    "path": "references/fulltext/san-shi/liuren-miben/fulltext.md",
+    "sha256": "44ea31ef43f874ffc9da03c6ed6c01eee62081db6c2faf11593ec9bbe47847e0",
+    "pack": "san-shi/liuren-miben",
+    "rule_id": "LM-R01",
+    "distribution": "structured_short_excerpts_only"
+  },
+  "generals": {
+    "贵人": {
+      "base_text": "貴人、官祿、慶賀、詔命",
+      "base_activity": "处理正式事务或与有身份的人接触",
+      "by_branch": {
+        "寅": {
+          "source_text": "貴人怒",
+          "activity_candidates": [
+            "处理正式事务或与有身份的人接触"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L261"
+        },
+        "卯": {
+          "source_text": "為求退官",
+          "activity_candidates": [
+            "处理工作、公事或一件有压力的事务",
+            "处理正式事务或与有身份的人接触"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L261"
+        },
+        "辰": {
+          "source_text": "見官方",
+          "activity_candidates": [
+            "处理工作、公事或一件有压力的事务",
+            "处理正式事务或与有身份的人接触"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L261"
+        },
+        "巳": {
+          "source_text": "為賞設",
+          "activity_candidates": [
+            "处理正式事务或与有身份的人接触"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L261"
+        },
+        "午": {
+          "source_text": "為遷官",
+          "activity_candidates": [
+            "在路上、出门或准备移动",
+            "处理工作、公事或一件有压力的事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L261"
+        },
+        "未": {
+          "source_text": "為廟神",
+          "activity_candidates": [
+            "处理正式事务或与有身份的人接触"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L263"
+        },
+        "申": {
+          "source_text": "為佛像",
+          "activity_candidates": [
+            "处理正式事务或与有身份的人接触"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L263"
+        },
+        "酉": {
+          "source_text": "為關隔",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "处理正式事务或与有身份的人接触"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L263"
+        },
+        "戌": {
+          "source_text": "為貴怒訟",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "处理正式事务或与有身份的人接触"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L263"
+        },
+        "亥": {
+          "source_text": "為官供具",
+          "activity_candidates": [
+            "核对物品、钱款、衣物或手续",
+            "处理工作、公事或一件有压力的事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L263"
+        },
+        "子": {
+          "source_text": "為婦人病",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "身体有点疲累、不舒服或在休息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L265"
+        },
+        "丑": {
+          "source_text": "貴人吉慶",
+          "activity_candidates": [
+            "处理正式事务或与有身份的人接触"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L265"
+        }
+      }
+    },
+    "腾蛇": {
+      "base_text": "驚恐、怪異、夢寐",
+      "base_activity": "心里反复琢磨、担心或被一件事牵着注意力",
+      "by_branch": {
+        "寅": {
+          "source_text": "為文字",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "心里反复琢磨、担心或被一件事牵着注意力"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L269"
+        },
+        "卯": {
+          "source_text": "為車馬怪",
+          "activity_candidates": [
+            "在路上、出门或准备移动",
+            "心里反复琢磨、担心或被一件事牵着注意力"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L269"
+        },
+        "辰": {
+          "source_text": "為火光怪",
+          "activity_candidates": [
+            "心里反复琢磨、担心或被一件事牵着注意力"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L269"
+        },
+        "巳": {
+          "source_text": "為難產",
+          "activity_candidates": [
+            "心里反复琢磨、担心或被一件事牵着注意力"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L269"
+        },
+        "午": {
+          "source_text": "為血光怪",
+          "activity_candidates": [
+            "身体有点疲累、不舒服或在休息",
+            "心里反复琢磨、担心或被一件事牵着注意力"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L269"
+        },
+        "未": {
+          "source_text": "為酒食物",
+          "activity_candidates": [
+            "吃东西、弄饮食或收拾餐食",
+            "心里反复琢磨、担心或被一件事牵着注意力"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L271"
+        },
+        "申": {
+          "source_text": "為道路怪",
+          "activity_candidates": [
+            "在路上、出门或准备移动",
+            "心里反复琢磨、担心或被一件事牵着注意力"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L271"
+        },
+        "酉": {
+          "source_text": "為釜鳴怪",
+          "activity_candidates": [
+            "吃东西、弄饮食或收拾餐食",
+            "心里反复琢磨、担心或被一件事牵着注意力"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L271"
+        },
+        "戌": {
+          "source_text": "為墳墓怪",
+          "activity_candidates": [
+            "心里反复琢磨、担心或被一件事牵着注意力"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L271"
+        },
+        "亥": {
+          "source_text": "為事爭訟",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "心里反复琢磨、担心或被一件事牵着注意力"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L271"
+        },
+        "子": {
+          "source_text": "為陰私事",
+          "activity_candidates": [
+            "独处或安静处理不想公开的小事",
+            "心里反复琢磨、担心或被一件事牵着注意力"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L273"
+        },
+        "丑": {
+          "source_text": "為宅中怪",
+          "activity_candidates": [
+            "待在住处或处理家里的事",
+            "心里反复琢磨、担心或被一件事牵着注意力"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L273"
+        }
+      }
+    },
+    "朱雀": {
+      "base_text": "文書、遠信、刑戮、口舌",
+      "base_activity": "看消息、说话或处理文字信息",
+      "by_branch": {
+        "寅": {
+          "source_text": "為音信",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "看消息、说话或处理文字信息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L277"
+        },
+        "卯": {
+          "source_text": "為口舌",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "看消息、说话或处理文字信息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L277"
+        },
+        "辰": {
+          "source_text": "為獄訟仇冤",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "看消息、说话或处理文字信息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L277"
+        },
+        "巳": {
+          "source_text": "為妻子",
+          "activity_candidates": [
+            "看消息、说话或处理文字信息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L277"
+        },
+        "午": {
+          "source_text": "為爭鬥",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "看消息、说话或处理文字信息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L277"
+        },
+        "未": {
+          "source_text": "為婚姻不和",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "看消息、说话或处理文字信息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L279"
+        },
+        "申": {
+          "source_text": "為遠信",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "看消息、说话或处理文字信息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L279"
+        },
+        "酉": {
+          "source_text": "為奴婢鬥訟",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "看消息、说话或处理文字信息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L279"
+        },
+        "戌": {
+          "source_text": "為武官爭鬥",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "处理工作、公事或一件有压力的事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L279"
+        },
+        "亥": {
+          "source_text": "為爭小口",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "看消息、说话或处理文字信息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L279"
+        },
+        "子": {
+          "source_text": "為奸私訟",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "独处或安静处理不想公开的小事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L281"
+        },
+        "丑": {
+          "source_text": "為老人口舌",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "看消息、说话或处理文字信息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L281"
+        }
+      }
+    },
+    "六合": {
+      "base_text": "婚姻、和合、丈夫、隱逸",
+      "base_activity": "见人、沟通或处理关系上的事",
+      "by_branch": {
+        "寅": {
+          "source_text": "為文書信喜",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "见人、沟通或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L285"
+        },
+        "卯": {
+          "source_text": "為法術書",
+          "activity_candidates": [
+            "见人、沟通或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L285"
+        },
+        "辰": {
+          "source_text": "為事不成",
+          "activity_candidates": [
+            "见人、沟通或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L285"
+        },
+        "巳": {
+          "source_text": "為陰人和合，又爐冶",
+          "activity_candidates": [
+            "吃东西、弄饮食或收拾餐食",
+            "和熟人见面、说话或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L285"
+        },
+        "午": {
+          "source_text": "為喜事",
+          "activity_candidates": [
+            "见人、沟通或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L287"
+        },
+        "未": {
+          "source_text": "為婚姻和合喜，又為婚姻私氣",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "见人、沟通或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L287"
+        },
+        "申": {
+          "source_text": "為詞訟爭",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "见人、沟通或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L287"
+        },
+        "酉": {
+          "source_text": "為男子喜",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "见人、沟通或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L287"
+        },
+        "戌": {
+          "source_text": "為婦人逃走",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "在路上、出门或准备移动"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L289"
+        },
+        "亥": {
+          "source_text": "為陰人私亂",
+          "activity_candidates": [
+            "见人、沟通或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L289"
+        },
+        "子": {
+          "source_text": "為陰亂爭鬥",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "见人、沟通或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L289"
+        },
+        "丑": {
+          "source_text": "為田宅不安",
+          "activity_candidates": [
+            "待在住处或处理家里的事",
+            "见人、沟通或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L289"
+        }
+      }
+    },
+    "勾陈": {
+      "base_text": "兵器、戰陣、刑革、爭鬥、詞訟",
+      "base_activity": "核对、协商或处理一件拖着的小事",
+      "by_branch": {
+        "寅": {
+          "source_text": "為爭論、鬥訟",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "核对、协商或处理一件拖着的小事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L293"
+        },
+        "卯": {
+          "source_text": "為鬥打、爭競",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "核对、协商或处理一件拖着的小事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L293"
+        },
+        "辰": {
+          "source_text": "為戰爭事",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "核对、协商或处理一件拖着的小事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L293"
+        },
+        "巳": {
+          "source_text": "為出兵事",
+          "activity_candidates": [
+            "核对、协商或处理一件拖着的小事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L293"
+        },
+        "午": {
+          "source_text": "為婦人爭訟",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "和熟人见面、说话或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L295"
+        },
+        "未": {
+          "source_text": "為說事",
+          "activity_candidates": [
+            "核对、协商或处理一件拖着的小事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L295"
+        },
+        "申": {
+          "source_text": "為神怒降災",
+          "activity_candidates": [
+            "核对、协商或处理一件拖着的小事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L295"
+        },
+        "酉": {
+          "source_text": "為遠行不通",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "在路上、出门或准备移动"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L295"
+        },
+        "戌": {
+          "source_text": "為牆垣事",
+          "activity_candidates": [
+            "待在住处或处理家里的事",
+            "核对、协商或处理一件拖着的小事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L297"
+        },
+        "亥": {
+          "source_text": "為小口病",
+          "activity_candidates": [
+            "身体有点疲累、不舒服或在休息",
+            "核对、协商或处理一件拖着的小事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L297"
+        },
+        "子": {
+          "source_text": "為惡逆縱意",
+          "activity_candidates": [
+            "核对、协商或处理一件拖着的小事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L297"
+        },
+        "丑": {
+          "source_text": "為爭田宅",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "待在住处或处理家里的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L297"
+        }
+      }
+    },
+    "青龙": {
+      "base_text": "官祿、財物、婚姻、慶賞",
+      "base_activity": "处理钱物、饮食或让人轻松的日常事务",
+      "by_branch": {
+        "寅": {
+          "source_text": "為文書喜信",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "处理钱物、饮食或让人轻松的日常事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L301"
+        },
+        "卯": {
+          "source_text": "為術士事喜又疑事",
+          "activity_candidates": [
+            "处理钱物、饮食或让人轻松的日常事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L301"
+        },
+        "辰": {
+          "source_text": "為鮮物",
+          "activity_candidates": [
+            "核对物品、钱款、衣物或手续",
+            "处理钱物、饮食或让人轻松的日常事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L301"
+        },
+        "巳": {
+          "source_text": "為酒食",
+          "activity_candidates": [
+            "吃东西、弄饮食或收拾餐食",
+            "处理钱物、饮食或让人轻松的日常事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L301"
+        },
+        "午": {
+          "source_text": "為遷官職",
+          "activity_candidates": [
+            "在路上、出门或准备移动",
+            "处理工作、公事或一件有压力的事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L301"
+        },
+        "未": {
+          "source_text": "為婚姻酒食",
+          "activity_candidates": [
+            "吃东西、弄饮食或收拾餐食",
+            "和熟人见面、说话或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L303"
+        },
+        "申": {
+          "source_text": "為失物",
+          "activity_candidates": [
+            "处理钱物、饮食或让人轻松的日常事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L303"
+        },
+        "酉": {
+          "source_text": "為行遭雨",
+          "activity_candidates": [
+            "处理钱物、饮食或让人轻松的日常事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L303"
+        },
+        "戌": {
+          "source_text": "為印信",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "处理钱物、饮食或让人轻松的日常事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L303"
+        },
+        "亥": {
+          "source_text": "為道使喜信，又為直使喜",
+          "activity_candidates": [
+            "处理钱物、饮食或让人轻松的日常事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L305"
+        },
+        "子": {
+          "source_text": "為官祿",
+          "activity_candidates": [
+            "处理工作、公事或一件有压力的事务",
+            "处理钱物、饮食或让人轻松的日常事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L305"
+        },
+        "丑": {
+          "source_text": "為田宅",
+          "activity_candidates": [
+            "待在住处或处理家里的事",
+            "处理钱物、饮食或让人轻松的日常事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L305"
+        }
+      }
+    },
+    "天空": {
+      "base_text": "虛驚、欺詐、不實、奴婢、逃亡",
+      "base_activity": "放空、等待，或手头事情还没有落实",
+      "by_branch": {
+        "寅": {
+          "source_text": "為誑亂，又主家中文書事",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "待在住处或处理家里的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L309"
+        },
+        "卯": {
+          "source_text": "為妄言，又為妻妾妄言不實",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "放空、等待，或手头事情还没有落实"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L309"
+        },
+        "辰": {
+          "source_text": "為孝女",
+          "activity_candidates": [
+            "放空、等待，或手头事情还没有落实"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L309"
+        },
+        "巳": {
+          "source_text": "為官大勢，又火爐",
+          "activity_candidates": [
+            "吃东西、弄饮食或收拾餐食",
+            "处理工作、公事或一件有压力的事务"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L311"
+        },
+        "午": {
+          "source_text": "為馬死",
+          "activity_candidates": [
+            "放空、等待，或手头事情还没有落实"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L311"
+        },
+        "未": {
+          "source_text": "媒人虛詐",
+          "activity_candidates": [
+            "放空、等待，或手头事情还没有落实"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L311"
+        },
+        "申": {
+          "source_text": "為僧妄言",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "放空、等待，或手头事情还没有落实"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L311"
+        },
+        "子": {
+          "source_text": "奴婢不實",
+          "activity_candidates": [
+            "放空、等待，或手头事情还没有落实"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L313"
+        },
+        "丑": {
+          "source_text": "妄言、田宅、利害",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "待在住处或处理家里的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L313"
+        }
+      }
+    },
+    "白虎": {
+      "base_text": "病患、死亡、出入、器傷",
+      "base_activity": "奔波、劳累、身体不适或接触器具",
+      "by_branch": {
+        "寅": {
+          "source_text": "為貓畜或虎",
+          "activity_candidates": [
+            "奔波、劳累、身体不适或接触器具"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L317"
+        },
+        "卯": {
+          "source_text": "為雷畜類",
+          "activity_candidates": [
+            "奔波、劳累、身体不适或接触器具"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L317"
+        },
+        "辰": {
+          "source_text": "為哭泣",
+          "activity_candidates": [
+            "身体有点疲累、不舒服或在休息",
+            "奔波、劳累、身体不适或接触器具"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L317"
+        },
+        "巳": {
+          "source_text": "為喪車",
+          "activity_candidates": [
+            "身体有点疲累、不舒服或在休息",
+            "奔波、劳累、身体不适或接触器具"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L317"
+        },
+        "午": {
+          "source_text": "為死亡、爭鬥、病",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "身体有点疲累、不舒服或在休息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L319"
+        },
+        "未": {
+          "source_text": "為匍卒又為爭鬥病",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "身体有点疲累、不舒服或在休息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L319"
+        },
+        "申": {
+          "source_text": "爭鬥病",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "身体有点疲累、不舒服或在休息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L319"
+        },
+        "酉": {
+          "source_text": "為守門卒，不宜出行",
+          "activity_candidates": [
+            "在路上、出门或准备移动",
+            "奔波、劳累、身体不适或接触器具"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L321"
+        },
+        "戌": {
+          "source_text": "為真印，為病",
+          "activity_candidates": [
+            "身体有点疲累、不舒服或在休息",
+            "奔波、劳累、身体不适或接触器具"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L321"
+        },
+        "亥": {
+          "source_text": "為小口病，病重",
+          "activity_candidates": [
+            "身体有点疲累、不舒服或在休息",
+            "奔波、劳累、身体不适或接触器具"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L321"
+        },
+        "子": {
+          "source_text": "為婦人爭鬥，病",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "和熟人见面、说话或处理关系上的事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L323"
+        },
+        "丑": {
+          "source_text": "為六畜損病",
+          "activity_candidates": [
+            "身体有点疲累、不舒服或在休息",
+            "奔波、劳累、身体不适或接触器具"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L323"
+        }
+      }
+    },
+    "太常": {
+      "base_text": "官祿、印綬、田宅、財物、衣服、賞賜",
+      "base_activity": "吃喝、衣物或日常家事",
+      "by_branch": {
+        "寅": {
+          "source_text": "為衛士",
+          "activity_candidates": [
+            "吃喝、衣物或日常家事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L327"
+        },
+        "卯": {
+          "source_text": "為女冠",
+          "activity_candidates": [
+            "吃喝、衣物或日常家事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L327"
+        },
+        "辰": {
+          "source_text": "為獵、官事",
+          "activity_candidates": [
+            "处理工作、公事或一件有压力的事务",
+            "吃喝、衣物或日常家事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L327"
+        },
+        "巳": {
+          "source_text": "為術士",
+          "activity_candidates": [
+            "吃喝、衣物或日常家事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L327"
+        },
+        "午": {
+          "source_text": "為婦人孝服，為始",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "吃喝、衣物或日常家事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L327"
+        },
+        "未": {
+          "source_text": "為巫女，一為印綬",
+          "activity_candidates": [
+            "核对物品、钱款、衣物或手续",
+            "吃喝、衣物或日常家事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L329"
+        },
+        "申": {
+          "source_text": "為天德",
+          "activity_candidates": [
+            "吃喝、衣物或日常家事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L329"
+        },
+        "酉": {
+          "source_text": "為師姑",
+          "activity_candidates": [
+            "吃喝、衣物或日常家事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L329"
+        },
+        "戌": {
+          "source_text": "為印綬",
+          "activity_candidates": [
+            "核对物品、钱款、衣物或手续",
+            "吃喝、衣物或日常家事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L329"
+        },
+        "亥": {
+          "source_text": "為黃衣人",
+          "activity_candidates": [
+            "吃喝、衣物或日常家事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L329"
+        },
+        "子": {
+          "source_text": "為貞節婦",
+          "activity_candidates": [
+            "吃喝、衣物或日常家事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L331"
+        },
+        "丑": {
+          "source_text": "為老人",
+          "activity_candidates": [
+            "吃喝、衣物或日常家事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L331"
+        }
+      }
+    },
+    "玄武": {
+      "base_text": "盜賊、遺亡、奸私、離別",
+      "base_activity": "私下处理事情，或不太想让人知道细节",
+      "by_branch": {
+        "寅": {
+          "source_text": "為功曹、判官",
+          "activity_candidates": [
+            "处理工作、公事或一件有压力的事务",
+            "私下处理事情，或不太想让人知道细节"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L335"
+        },
+        "卯": {
+          "source_text": "為盜賊",
+          "activity_candidates": [
+            "私下处理事情，或不太想让人知道细节"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L335"
+        },
+        "辰": {
+          "source_text": "為惡神煞，一為神事怒",
+          "activity_candidates": [
+            "私下处理事情，或不太想让人知道细节"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L335"
+        },
+        "巳": {
+          "source_text": "為灶君怒",
+          "activity_candidates": [
+            "吃东西、弄饮食或收拾餐食",
+            "私下处理事情，或不太想让人知道细节"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L335"
+        },
+        "午": {
+          "source_text": "為菩薩怒",
+          "activity_candidates": [
+            "私下处理事情，或不太想让人知道细节"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L337"
+        },
+        "未": {
+          "source_text": "為家親鬼，一為婚姻事凶",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "私下处理事情，或不太想让人知道细节"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L337"
+        },
+        "申": {
+          "source_text": "為羅漢",
+          "activity_candidates": [
+            "私下处理事情，或不太想让人知道细节"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L337"
+        },
+        "酉": {
+          "source_text": "為奴婢逃走",
+          "activity_candidates": [
+            "在路上、出门或准备移动",
+            "私下处理事情，或不太想让人知道细节"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L339"
+        },
+        "戌": {
+          "source_text": "為四足作怪",
+          "activity_candidates": [
+            "私下处理事情，或不太想让人知道细节"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L339"
+        },
+        "亥": {
+          "source_text": "為水厄怪",
+          "activity_candidates": [
+            "私下处理事情，或不太想让人知道细节"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L339"
+        },
+        "子": {
+          "source_text": "為婦人逃",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "私下处理事情，或不太想让人知道细节"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L339"
+        },
+        "丑": {
+          "source_text": "為失六畜",
+          "activity_candidates": [
+            "私下处理事情，或不太想让人知道细节"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L339"
+        }
+      }
+    },
+    "太阴": {
+      "base_text": "欺蔽、隱匿、陰私",
+      "base_activity": "独处、安静看东西或处理私事",
+      "by_branch": {
+        "寅": {
+          "source_text": "為淫婦、怪女",
+          "activity_candidates": [
+            "独处、安静看东西或处理私事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L343"
+        },
+        "卯": {
+          "source_text": "為從出入、婚姻",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "在路上、出门或准备移动"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L343"
+        },
+        "辰": {
+          "source_text": "為伏藏",
+          "activity_candidates": [
+            "独处或安静处理不想公开的小事",
+            "独处、安静看东西或处理私事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L343"
+        },
+        "巳": {
+          "source_text": "為私事、發怒",
+          "activity_candidates": [
+            "独处或安静处理不想公开的小事",
+            "独处、安静看东西或处理私事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L343"
+        },
+        "午": {
+          "source_text": "為鬥爭及病",
+          "activity_candidates": [
+            "沟通争执、协商或处理一件纠缠的小事",
+            "身体有点疲累、不舒服或在休息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L345"
+        },
+        "未": {
+          "source_text": "婚姻事",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "独处、安静看东西或处理私事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L345"
+        },
+        "申": {
+          "source_text": "為音信",
+          "activity_candidates": [
+            "看消息、手机、文书或与人说话",
+            "独处、安静看东西或处理私事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L345"
+        },
+        "酉": {
+          "source_text": "為婢逃出",
+          "activity_candidates": [
+            "独处、安静看东西或处理私事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L345"
+        },
+        "戌": {
+          "source_text": "官員印事",
+          "activity_candidates": [
+            "处理工作、公事或一件有压力的事务",
+            "独处、安静看东西或处理私事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L345"
+        },
+        "亥": {
+          "source_text": "為孝服、女子事",
+          "activity_candidates": [
+            "独处、安静看东西或处理私事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L347"
+        },
+        "子": {
+          "source_text": "為奸私事",
+          "activity_candidates": [
+            "独处或安静处理不想公开的小事",
+            "独处、安静看东西或处理私事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L347"
+        },
+        "丑": {
+          "source_text": "女子疾病",
+          "activity_candidates": [
+            "身体有点疲累、不舒服或在休息",
+            "独处、安静看东西或处理私事"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L347"
+        }
+      }
+    },
+    "天后": {
+      "base_text": "婦人、陰私、暗昧",
+      "base_activity": "处理女性、家事或照料方面的事情",
+      "by_branch": {
+        "寅": {
+          "source_text": "為美婦人",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "处理女性、家事或照料方面的事情"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L351"
+        },
+        "卯": {
+          "source_text": "為女冠",
+          "activity_candidates": [
+            "处理女性、家事或照料方面的事情"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L351"
+        },
+        "辰": {
+          "source_text": "為婦人病，又孕婦",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "身体有点疲累、不舒服或在休息"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L351"
+        },
+        "巳": {
+          "source_text": "為孕婦",
+          "activity_candidates": [
+            "处理女性、家事或照料方面的事情"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L351"
+        },
+        "午": {
+          "source_text": "為婦縱逸",
+          "activity_candidates": [
+            "处理女性、家事或照料方面的事情"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L351"
+        },
+        "未": {
+          "source_text": "婚姻凶",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "处理女性、家事或照料方面的事情"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L353"
+        },
+        "申": {
+          "source_text": "為婦細長體",
+          "activity_candidates": [
+            "处理女性、家事或照料方面的事情"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L353"
+        },
+        "酉": {
+          "source_text": "為婦貧賤、女身",
+          "activity_candidates": [
+            "处理女性、家事或照料方面的事情"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L353"
+        },
+        "戌": {
+          "source_text": "為婦嗔怒惡",
+          "activity_candidates": [
+            "处理女性、家事或照料方面的事情"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L353"
+        },
+        "亥": {
+          "source_text": "為婦、少年、又正道",
+          "activity_candidates": [
+            "处理女性、家事或照料方面的事情"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L355"
+        },
+        "子": {
+          "source_text": "為荒淫婦",
+          "activity_candidates": [
+            "处理女性、家事或照料方面的事情"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L355"
+        },
+        "丑": {
+          "source_text": "為婦人一為老婦人",
+          "activity_candidates": [
+            "和熟人见面、说话或处理关系上的事",
+            "处理女性、家事或照料方面的事情"
+          ],
+          "source_anchor": "references/fulltext/san-shi/liuren-miben/fulltext.md:L355"
+        }
+      }
+    }
+  }
+}
