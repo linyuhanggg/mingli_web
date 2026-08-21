@@ -81,10 +81,17 @@ class BaziPublicClaimUnitTests(unittest.TestCase):
             self.assertNotIn("偏强", finding.public_text)
             self.assertNotIn("偏弱", finding.public_text)
 
-    def test_bazi_prepare_emits_four_exact_public_claim_units(self) -> None:
+    def _claim_by_id(self, claims: tuple, claim_unit_id: str):
+        return next(
+            finding
+            for finding in claims
+            if finding.data["claim_unit_id"] == claim_unit_id
+        )
+
+    def test_bazi_prepare_emits_seven_exact_public_claim_units(self) -> None:
         result = self._prepare(["乙酉", "辛巳", "丙午", "癸巳"])
         claims = self._public_claims(result)
-        self.assertEqual(len(claims), 4, result.brief.to_dict())
+        self.assertEqual(len(claims), 7, result.brief.to_dict())
         self.assertEqual(
             {finding.data["claim_unit_id"] for finding in claims},
             {
@@ -92,16 +99,14 @@ class BaziPublicClaimUnitTests(unittest.TestCase):
                 "bazi.day-master-root-support-v1",
                 "bazi.ziping-pattern-entry-v1",
                 "bazi.tiaohou-priority-v1",
+                "bazi.pillar-roles-v1",
+                "bazi.three-yuan-structure-v1",
+                "bazi.element-flow-inventory-v1",
             },
         )
         self._assert_exact_claim_shape(result, claims)
 
-        root = next(
-            finding
-            for finding in claims
-            if finding.data["claim_unit_id"]
-            == "bazi.day-master-root-support-v1"
-        )
+        root = self._claim_by_id(claims, "bazi.day-master-root-support-v1")
         self.assertEqual(
             root.public_text,
             (
@@ -117,10 +122,56 @@ class BaziPublicClaimUnitTests(unittest.TestCase):
             ("evidence:bazi/bazi/sanming-tonghui#R-02-04",),
         )
 
+        pillar_roles = self._claim_by_id(claims, "bazi.pillar-roles-v1")
+        self.assertEqual(
+            pillar_roles.public_text,
+            (
+                "四柱以日干丙为主：年柱乙酉为本，月柱辛巳为提纲，时柱癸巳为辅佐；"
+                "这只是四柱判读次序的定位，格局、旺衰与吉凶仍未裁定。"
+            ),
+        )
+        self.assertEqual(
+            pillar_roles.evidence_refs,
+            ("evidence:bazi/bazi/yuanhai-ziping#YR-M01",),
+        )
+
+        three_yuan = self._claim_by_id(claims, "bazi.three-yuan-structure-v1")
+        self.assertEqual(
+            three_yuan.public_text,
+            (
+                "四柱天干乙、辛、丙、癸为天元；地支酉、巳、午、巳为地元；"
+                "支中所藏（年酉藏辛，月巳藏丙庚戊，日午藏丁己，时巳藏丙庚戊）"
+                "为人元；这只是干支藏三元的结构陈列，格局与吉凶仍未裁定。"
+            ),
+        )
+        self.assertEqual(
+            three_yuan.evidence_refs,
+            ("evidence:bazi/bazi/ditiansui-chanwei#DR-01-01",),
+        )
+
+        element_flow = self._claim_by_id(
+            claims, "bazi.element-flow-inventory-v1"
+        )
+        self.assertEqual(
+            element_flow.public_text,
+            (
+                "盘中五行（含支藏）出现次数为木1、火7、土3、金5、水1；"
+                "五行顺则相生、逆则相克，日主五行为火，生火者为木；"
+                "这只是五行计数与生克次序的陈列，整盘旺衰、喜忌与吉凶仍未裁定。"
+            ),
+        )
+        self.assertEqual(
+            element_flow.evidence_refs,
+            ("evidence:bazi/bazi/sanming-tonghui#R-01-02",),
+        )
+
     def test_root_support_unit_fail_closes_when_transformation_is_in_play(
         self,
     ) -> None:
-        # 甲己合土 and 辰月土令: 化神当令 is mechanically in play.
+        # 甲己合土 and 辰月土令: 化神当令 is mechanically in play.  The
+        # structural units keep rendering: pillar roles, the three-yuan
+        # layout, and the element inventory stay valid chart facts even
+        # when a transformation regime blocks the root-support synthesis.
         result = self._prepare(["己酉", "戊辰", "甲子", "乙亥"])
         claims = self._public_claims(result)
         ids = {finding.data["claim_unit_id"] for finding in claims}
@@ -131,6 +182,9 @@ class BaziPublicClaimUnitTests(unittest.TestCase):
                 "bazi.month-order-state-v1",
                 "bazi.ziping-pattern-entry-v1",
                 "bazi.tiaohou-priority-v1",
+                "bazi.pillar-roles-v1",
+                "bazi.three-yuan-structure-v1",
+                "bazi.element-flow-inventory-v1",
             },
         )
         self._assert_exact_claim_shape(result, claims)
