@@ -1,0 +1,11 @@
+[Unit]
+Description=Poll the tracked branch for the test preview every few minutes
+
+[Timer]
+OnBootSec=3min
+OnUnitInactiveSec=3min
+AccuracySec=30s
+Unit=fateradar-autodeploy.service
+
+[Install]
+WantedBy=timers.target

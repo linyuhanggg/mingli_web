@@ -1,0 +1,14 @@
+[Unit]
+Description=Deploy the fateradar test preview from the tracked branch
+Documentation=file:///opt/fateradar/current/infra/TEST_SERVER_RUNBOOK.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/fateradar-autodeploy
+# Builds are long: npm ci plus two Next.js builds plus a uv sync.
+TimeoutStartSec=3600
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=6

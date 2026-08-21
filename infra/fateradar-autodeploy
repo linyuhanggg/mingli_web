@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+# fateradar-autodeploy — pull-based deployer for the fateradar test preview.
+#
+# GitHub Actions cannot be used here: the Actions pipeline backend
+# (pipelinesghubeus*.actions.githubusercontent.com -> Azure 20.253.126.26:443)
+# is unreachable from this host, while github.com, api.github.com and
+# codeload.github.com all work. So instead of GitHub pushing to us, we poll it.
+#
+# Run from a systemd timer as root. Fetches the watched branch through a
+# read-only deploy key, and when it moves, hands the tree to fateradar-deploy,
+# which owns all the build, switch, health-check and rollback logic.
+#
+# Independent of any workstation: neither the MacBook nor the Mac mini is in
+# this path.
+set -Eeuo pipefail
+
+readonly REPO_SSH=git@github.com:linyuhanggg/mingli_web.git
+readonly REPO_API=https://api.github.com/repos/linyuhanggg/mingli_web
+readonly BRANCH=main
+readonly MIRROR=/opt/fateradar/shared/repo.git
+readonly DEPLOY_KEY=/root/.ssh/fateradar_deploy_key
+readonly INCOMING=/var/lib/fateradar-incoming
+readonly STATE=/var/lib/fateradar-autodeploy.state
+readonly STATUS=/var/lib/fateradar-autodeploy.status
+readonly LOCK=/var/lock/fateradar-autodeploy.lock
+readonly FORCE_FLAG=/var/lib/fateradar-autodeploy.force
+# A rebuild costs ~2.7GB and many minutes, so doc- and evidence-only commits
+# must not trigger one.
+readonly WATCHED=(backend web admin ui contracts core infra/nginx infra/systemd)
+# Set by creating /root/.fateradar-status-token (fine-grained PAT, Commit
+# statuses: write). Optional; everything else works without it.
+readonly STATUS_TOKEN=/root/.fateradar-status-token
+
+export GIT_SSH_COMMAND="ssh -i $DEPLOY_KEY -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+
+log() { printf '[autodeploy] %s\n' "$*"; }
+
+write_status() {
+  printf '{"sha":"%s","release":"%s","result":"%s","at":"%s"}\n' \
+    "${1:-}" "${2:-}" "${3:-}" "$(date -Is)" > "$STATUS"
+}
+
+report_github() {
+  local sha=$1 state=$2 description=$3
+  [[ -f $STATUS_TOKEN ]] || return 0
+  curl -fsS -X POST \
+    -H "Authorization: Bearer $(< "$STATUS_TOKEN")" \
+    -H 'Accept: application/vnd.github+json' \
+    "$REPO_API/statuses/$sha" \
+    -d "$(printf '{"state":"%s","context":"test-preview","description":"%s"}' \
+          "$state" "${description:0:130}")" \
+    >/dev/null 2>&1 || log "could not report status to GitHub"
+}
+
+exec 9>"$LOCK"
+if ! flock -n 9; then
+  log "another run holds the lock; a deploy is probably still building"
+  exit 0
+fi
+
+if [[ ! -d $MIRROR ]]; then
+  log "creating mirror at $MIRROR"
+  git clone --mirror "$REPO_SSH" "$MIRROR"
+fi
+
+git --git-dir="$MIRROR" remote set-url origin "$REPO_SSH"
+git --git-dir="$MIRROR" fetch --prune --quiet origin "+refs/heads/$BRANCH:refs/heads/$BRANCH"
+
+target=$(git --git-dir="$MIRROR" rev-parse "$BRANCH")
+short=${target:0:7}
+last=""
+[[ -f $STATE ]] && last=$(< "$STATE")
+
+forced=false
+if [[ -f $FORCE_FLAG ]]; then
+  forced=true
+  rm -f "$FORCE_FLAG"
+  log "force flag set; deploying regardless of path filter"
+fi
+
+if [[ $target == "$last" && $forced == false ]]; then
+  exit 0
+fi
+
+last_short=${last:0:7}
+log "branch $BRANCH is at $short (last deployed: ${last_short:-none})"
+
+# Record the new head before the path check so an ignored commit is not
+# re-examined on every tick.
+if [[ -n $last && $forced == false ]]; then
+  if ! git --git-dir="$MIRROR" diff --name-only "$last" "$target" -- "${WATCHED[@]}" \
+       | grep -q .; then
+    log "no changes under watched paths; recording $short without a rebuild"
+    printf '%s\n' "$target" > "$STATE"
+    write_status "$target" "" skipped
+    exit 0
+  fi
+fi
+
+release="auto-$(date -u +%Y%m%d-%H%M)-$short"
+archive="$INCOMING/$release.tar.gz"
+install -d -o root -g gha -m 0770 "$INCOMING"
+git --git-dir="$MIRROR" archive --format=tar.gz -o "$archive" "$target"
+log "staged $archive ($(stat -c %s "$archive") bytes)"
+
+report_github "$target" pending "deploying $release"
+write_status "$target" "$release" running
+
+if /usr/local/sbin/fateradar-deploy "$archive" "$release"; then
+  printf '%s\n' "$target" > "$STATE"
+  write_status "$target" "$release" success
+  report_github "$target" success "deployed $release"
+  log "deployed $short as $release"
+else
+  # fateradar-deploy already rolled `current` back and re-verified. Do not
+  # advance STATE: the next tick would otherwise treat this commit as done.
+  rm -f "$archive"
+  write_status "$target" "$release" failure
+  report_github "$target" failure "deploy failed, rolled back"
+  log "deploy of $short FAILED; previous release restored"
+  exit 1
+fi

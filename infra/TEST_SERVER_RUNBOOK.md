@@ -330,7 +330,53 @@ sudo systemctl start fateradar-test-api fateradar-test-worker fateradar-test-web
 - 新版本目录先保留，确认稳定后再清理；
 - 回滚后必须重新执行完整验收（含重启复验）。
 
-## 12. 红线清单
+## 12. 自动部署（拉取式，2026-08-21 起）
+
+第 2 到第 4、第 9、第 11 节的流程已经脚本化，服务器自己从 GitHub 拉取并部署，不依赖任何工作站。
+
+**为什么不用 GitHub Actions**：Actions 的流水线后端 `pipelinesghubeus*.actions.githubusercontent.com` 解析到 Azure `20.253.126.26`，本机 443 连不通，自托管 runner 注册会在 `Location.GetConnectionData` 无限超时。而 `github.com`、`api.github.com`、`codeload.github.com` 和 git over SSH 都正常，所以改成服务器主动轮询。
+
+**组成**
+
+| 位置 | 作用 |
+| --- | --- |
+| `/usr/local/sbin/fateradar-deploy` | 单次部署：建 release、构建、冻结权限、原子切 `current`、健康检查、失败回滚、保留 3 版 |
+| `/usr/local/sbin/fateradar-autodeploy` | 轮询 `main`，有变化才调用上面那个 |
+| `fateradar-autodeploy.timer` | 每 3 分钟触发一次 |
+| `/opt/fateradar/shared/repo.git` | 只读 deploy key 拉取的裸镜像 |
+| `/root/.ssh/fateradar_deploy_key` | 仓库只读 deploy key |
+| `/var/lib/fateradar-autodeploy.state` | 已部署的 commit SHA |
+| `/var/lib/fateradar-autodeploy.status` | 最近一次结果的 JSON |
+
+仓库里 `infra/fateradar-deploy` 和 `infra/fateradar-autodeploy` 只是**参考副本**，服务器上那份才是权威。CI 用户若能改写部署脚本就等于持有 root，所以更新必须是人工 `install` 到服务器，不走自动同步。
+
+**权限边界**：root 只做解包、改权限、切符号链接和驱动 systemd；`uv sync`、`npm ci`、`npm run build` 全部经 `runuser` 降到 `fateradar` 用户执行。仓库内容永不以 root 运行。`gha` 用户的 sudo 白名单只有 `fateradar-deploy` 一条。
+
+**明确不自动做的事**：数据库迁移。新版本若增加了 Alembic revision，部署会拒绝执行并要求人工走第 5 节，然后重新触发。Nginx 配置、UFW、安全组、`/etc/fateradar/test.env` 和生产环境同样不在自动范围内。
+
+**只在这些路径变化时才重建**：`backend`、`web`、`admin`、`ui`、`contracts`、`core`、`infra/nginx`、`infra/systemd`。文档和证据类提交只记录 SHA，不触发 2.7GB 的重建。
+
+**常用操作**
+
+```bash
+# 看最近一次结果
+cat /var/lib/fateradar-autodeploy.status
+journalctl -u fateradar-autodeploy.service -n 50 --no-pager
+
+# 强制重建当前 main（跳过路径过滤）
+sudo touch /var/lib/fateradar-autodeploy.force
+sudo systemctl start fateradar-autodeploy.service
+
+# 暂停 / 恢复自动部署
+sudo systemctl disable --now fateradar-autodeploy.timer
+sudo systemctl enable --now fateradar-autodeploy.timer
+```
+
+可选：在 `/root/.fateradar-status-token` 放一个有 Commit statuses 写权限的 fine-grained PAT，部署结果就会作为 `test-preview` 检查显示在 GitHub 的每个 commit 上。没有这个文件时其余功能不受影响。
+
+**清理注意**：`releases/` 下混有历史误解压留下的散落条目（`.qoder`、`.impeccable` 等）。清理逻辑只删同时含 `backend/pyproject.toml` 与 `web/package.json` 的目录，其余一律跳过。
+
+## 13. 红线清单
 
 - API 与 Web 只监听回环；临时公网只允许经 Nginx 的 18080 入口，绝不直接暴露 8000/3000；
 - 18080 是无 TLS 的全网公开测试入口，只放虚构测试数据，预览完成后按第 8.1 节关闭；

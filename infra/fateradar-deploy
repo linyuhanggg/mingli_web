@@ -1,0 +1,250 @@
+#!/usr/bin/env bash
+# fateradar-deploy — build and switch the fateradar test preview to a release.
+#
+# Canonical copy lives at /usr/local/sbin/fateradar-deploy, root:root 0755.
+# A reference copy is committed at infra/fateradar-deploy for review, but the
+# server copy is authoritative: if the CI user could rewrite this file it would
+# effectively hold root, so updates are a deliberate manual install.
+#
+# Privilege boundary: root only unpacks the archive, normalises permissions,
+# swaps the `current` symlink and drives systemd. Every step that executes
+# repository content — uv sync, npm ci, npm run build — is dropped to the
+# unprivileged `fateradar` service user. Nothing from the archive runs as root.
+#
+# Procedure follows infra/TEST_SERVER_RUNBOOK.md sections 2, 3, 4, 9 and 11.
+# Database migrations are deliberately out of scope: the script refuses to
+# deploy a release that adds Alembic revisions and asks for a human instead.
+#
+# Usage: fateradar-deploy <archive> <release-id>
+set -Eeuo pipefail
+
+readonly ROOT=/opt/fateradar
+readonly RELEASES=$ROOT/releases
+readonly SHARED=$ROOT/shared
+readonly CURRENT=$ROOT/current
+# Staging lives outside the app tree so the CI user needs no traverse rights on
+# /opt/fateradar, and therefore no membership in the fateradar group.
+readonly INCOMING=/var/lib/fateradar-incoming
+readonly SERVICE_USER=fateradar
+readonly UNITS=(fateradar-test-api fateradar-test-worker fateradar-test-web fateradar-test-admin)
+readonly KEEP_RELEASES=3
+readonly PUBLIC_PREVIEW=http://106.14.10.235:18080
+
+log()  { printf '[deploy] %s\n' "$*"; }
+fail() { printf '[deploy] FAIL: %s\n' "$*" >&2; exit 1; }
+
+as_service_user() {
+  # `fateradar` has /usr/sbin/nologin, so invoke bash explicitly rather than
+  # via runuser -s, which cannot be combined with -u.
+  runuser -u "$SERVICE_USER" -- bash -c "$1"
+}
+
+[[ $EUID -eq 0 ]] || fail "must run as root"
+[[ $# -eq 2 ]] || fail "usage: fateradar-deploy <archive> <release-id>"
+
+ARCHIVE=$1
+RELEASE_ID=$2
+
+# The CI user controls both arguments, so validate them instead of trusting
+# them. The archive must sit in the staging directory and the release id must
+# not be able to escape $RELEASES.
+[[ $RELEASE_ID =~ ^[A-Za-z0-9._-]+$ ]] || fail "release id has unexpected characters: $RELEASE_ID"
+[[ $ARCHIVE == "$INCOMING/"*.tar.gz ]] || fail "archive must be under $INCOMING: $ARCHIVE"
+[[ $ARCHIVE != *..* ]] || fail "archive path must not contain .."
+[[ -f $ARCHIVE ]] || fail "archive not found: $ARCHIVE"
+
+readonly TARGET=$RELEASES/$RELEASE_ID
+[[ -e $TARGET ]] && fail "release already exists: $TARGET"
+
+PREVIOUS=""
+if [[ -L $CURRENT ]]; then
+  PREVIOUS=$(readlink -f "$CURRENT")
+  log "current release: $PREVIOUS"
+else
+  log "no current symlink; this is a first deploy"
+fi
+
+rollback() {
+  local reason=$1
+  printf '[deploy] rolling back: %s\n' "$reason" >&2
+  systemctl stop "${UNITS[@]}" || true
+  if [[ -n $PREVIOUS && -d $PREVIOUS ]]; then
+    ln -sfn "$PREVIOUS" "$CURRENT.rollback"
+    mv -Tf "$CURRENT.rollback" "$CURRENT"
+    systemctl start "${UNITS[@]}" || true
+    printf '[deploy] restored %s, waiting for it to come up\n' "$PREVIOUS" >&2
+    if wait_for_health; then
+      printf '[deploy] rollback verified healthy\n' >&2
+    else
+      printf '[deploy] ROLLBACK UNHEALTHY - needs a human now\n' >&2
+    fi
+  else
+    printf '[deploy] no previous release to restore\n' >&2
+  fi
+  exit 1
+}
+
+health_check() {
+  local quiet=${1:-}
+  local ok=0
+  check() {
+    local label=$1; shift
+    if "$@" >/dev/null 2>&1; then
+      [[ $quiet == quiet ]] || log "  ok   $label"
+    else
+      printf '[deploy]   FAIL %s\n' "$label" >&2
+      ok=1
+    fi
+  }
+  check "nginx loopback /healthz"   curl -fsS --max-time 10 http://127.0.0.1:8080/healthz
+  check "public preview /healthz"   curl -fsS --max-time 15 "$PUBLIC_PREVIEW/healthz"
+  check "api live"                  curl -fsS --max-time 10 http://127.0.0.1:8080/api/v1/health/live
+  check "api ready"                 curl -fsS --max-time 20 http://127.0.0.1:8080/api/v1/health/ready
+  check "web home"                  curl -fsS --max-time 20 -o /dev/null http://127.0.0.1:8080/
+  check "admin login"               curl -fsS --max-time 20 -o /dev/null http://127.0.0.1:3001/login
+  check "units active"              systemctl is-active --quiet "${UNITS[@]}" nginx
+  return $ok
+}
+
+# The API needs roughly ten seconds to finish importing before it answers
+# /health/live, and Next standalone is not instant either, so poll to a deadline
+# instead of guessing a single sleep.
+wait_for_health() {
+  local deadline=$(( SECONDS + ${1:-150} ))
+  while :; do
+    if health_check quiet; then
+      return 0
+    fi
+    (( SECONDS >= deadline )) && break
+    sleep 5
+  done
+  log "still unhealthy after ${1:-150}s; final check:"
+  health_check
+  return 1
+}
+
+# ---------------------------------------------------------------- unpack
+
+log "release id: $RELEASE_ID"
+digest=$(sha256sum "$ARCHIVE" | awk '{print $1}')
+log "archive digest: $digest"
+
+install -d -m 0750 -o "$SERVICE_USER" -g "$SERVICE_USER" "$TARGET"
+tar -xzf "$ARCHIVE" -C "$TARGET"
+chown -R "$SERVICE_USER:$SERVICE_USER" "$TARGET"
+
+install -d -m 0700 -o root -g root "$SHARED/backups"
+printf 'release=%s\narchive=%s\nsha256=%s\ndeployed_at=%s\n' \
+  "$RELEASE_ID" "$(basename "$ARCHIVE")" "$digest" "$(date -Is)" \
+  > "$SHARED/backups/$RELEASE_ID-MANIFEST.txt"
+
+# ------------------------------------------------- migration guard (no DB)
+
+if [[ -n $PREVIOUS && -d $PREVIOUS/backend/alembic/versions ]]; then
+  added=$(comm -13 \
+    <(find "$PREVIOUS/backend/alembic/versions" -name '*.py' -printf '%f\n' | sort) \
+    <(find "$TARGET/backend/alembic/versions" -name '*.py' -printf '%f\n' | sort))
+  if [[ -n $added ]]; then
+    log "release adds Alembic revisions:"
+    printf '  %s\n' $added
+    rm -rf "$TARGET"
+    fail "database migrations are out of scope for automated deploys; run runbook section 5 by hand, then redeploy"
+  fi
+  log "no new Alembic revisions"
+fi
+
+# ------------------------------------------------------------------ build
+
+log "backend: uv sync (python 3.13)"
+as_service_user "cd '$TARGET/backend' && \
+  UV_PYTHON_INSTALL_DIR='$SHARED/python' UV_CACHE_DIR='$SHARED/uv-cache' \
+  uv sync --frozen --no-dev --python 3.13" || rollback "backend uv sync failed"
+
+for app in web admin; do
+  log "$app: npm ci"
+  as_service_user "cd '$TARGET/$app' && npm_config_cache='$SHARED/npm-cache' npm ci" \
+    || rollback "$app npm ci failed"
+  log "$app: npm run build"
+  as_service_user "cd '$TARGET/$app' && npm_config_cache='$SHARED/npm-cache' \
+    BACKEND_INTERNAL_URL=http://127.0.0.1:8000 npm run build" \
+    || rollback "$app build failed"
+  as_service_user "cd '$TARGET/$app' && node scripts/start-standalone.mjs --prepare-only" \
+    || rollback "$app standalone prepare failed"
+done
+
+# ------------------------------------------------------- freeze permissions
+
+log "normalising permissions and freezing release read-only"
+find "$TARGET" -type d -exec chmod 0755 {} +
+find "$TARGET" -type f -exec chmod 0644 {} +
+chmod -R a-w "$TARGET"
+# Next standalone writes its cache and server chunks at runtime; uv's launchers
+# need the exec bit back after the blanket chmod.
+for w in \
+  "$TARGET/web/.next/standalone/web/.next/cache" \
+  "$TARGET/web/.next/standalone/web/.next/server" \
+  "$TARGET/admin/.next/standalone/admin/.next/cache" \
+  "$TARGET/admin/.next/standalone/admin/.next/server"; do
+  [[ -d $w ]] && chmod -R u+w "$w" && chown -R "$SERVICE_USER:$SERVICE_USER" "$w"
+done
+[[ -d $TARGET/backend/.venv/bin ]] && chmod -R u+x "$TARGET/backend/.venv/bin"
+
+# --------------------------------------------------------------- switch
+
+log "switching current -> $RELEASE_ID"
+ln -sfn "$TARGET" "$CURRENT.new"
+mv -Tf "$CURRENT.new" "$CURRENT"
+
+systemctl daemon-reload
+systemctl restart "${UNITS[@]}" || rollback "unit restart failed"
+
+log "health check (pass 1)"
+wait_for_health || rollback "health check failed after switch"
+health_check
+
+# The runbook requires proving the boot path, not just a warm restart.
+log "restart and re-verify"
+systemctl restart "${UNITS[@]}" || rollback "second restart failed"
+log "health check (pass 2)"
+wait_for_health || rollback "health check failed after restart"
+health_check
+
+# ---------------------------------------------------------------- prune
+
+# Each release carries its own .venv and two node_modules trees at ~2.7GB, and
+# the volume only has tens of GB, so retention is not optional here.
+log "pruning old releases, keeping $KEEP_RELEASES"
+
+# A past mis-extraction left stray repository entries (backend/, web/, docs/,
+# README.md, ...) as siblings of the release directories, so entries here cannot
+# be assumed to be releases. Anything without the release layout is left alone.
+is_release() {
+  [[ -f $RELEASES/$1/backend/pyproject.toml && -f $RELEASES/$1/web/package.json ]]
+}
+
+mapfile -t releases < <(cd "$RELEASES" && ls -1t | while IFS= read -r r; do
+  is_release "$r" && printf '%s\n' "$r"
+done)
+
+declare -A keep=()
+keep[$RELEASE_ID]=1
+[[ -n $PREVIOUS ]] && keep[$(basename "$PREVIOUS")]=1
+# Top up with the newest remaining releases so more than one rollback target is
+# always on hand.
+for r in "${releases[@]}"; do
+  (( ${#keep[@]} >= KEEP_RELEASES )) && break
+  keep[$r]=1
+done
+
+for r in "${releases[@]}"; do
+  [[ -n ${keep[$r]:-} ]] && continue
+  log "  removing $r"
+  chmod -R u+w "$RELEASES/$r" 2>/dev/null || true
+  rm -rf "$RELEASES/$r"
+done
+
+log "kept: $(printf '%s ' "${!keep[@]}")"
+
+log "disk after prune: $(df -h "$ROOT" | awk 'NR==2{print $4" free of "$2}')"
+rm -f "$ARCHIVE"
+log "deployed $RELEASE_ID"
