@@ -1,0 +1,22 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "test-server",
+      "url": "http://106.14.10.235:18080",
+      "port": 18080
+    },
+    {
+      "name": "mingli-live-proxy",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["/tmp/mingli-live-proxy.mjs"],
+      "port": 18081
+    },
+    {
+      "name": "web-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "web", "run", "dev", "--", "-p", "3000"],
+      "port": 3000
+    }
+  ]
+}

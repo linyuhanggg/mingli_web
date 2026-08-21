@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "hooks": {
+    "subagentStop": [
+      {
+        "command": "node .cursor/hooks/board-append.js",
+        "timeout": 5
+      }
+    ],
+    "stop": [
+      {
+        "command": "node .cursor/hooks/board-continue.js",
+        "timeout": 5,
+        "loop_limit": 20
+      }
+    ]
+  }
+}

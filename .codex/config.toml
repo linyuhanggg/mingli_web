@@ -1,0 +1,12 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+service_tier = "default"
+
+[agents]
+enabled = false
+max_concurrent_threads_per_session = 3
+interrupt_message = true
+
+[features]
+multi_agent = false
+fast_mode = false
