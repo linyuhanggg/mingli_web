@@ -8,7 +8,9 @@ through ``prepare`` and ``complete`` only.
 
 from __future__ import annotations
 
+import errno
 import json
+import subprocess
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -30,8 +32,10 @@ from .interface_contracts import (
     Prepared,
     PublicTerm,
     Result,
+    RuntimeFailure,
     Stopped,
     TimeSemanticsView,
+    runtime_failure,
 )
 from .provider_protocol import ResolvedComparison
 
@@ -40,6 +44,48 @@ _DEFAULT_LOCALE = "zh-CN"
 # Human-readable, domain-free fallback used when even the message catalog
 # cannot be consulted. Never empty.
 FALLBACK_ERROR_TEXT = "本次处理未完成，请稍后重试。"
+
+_TRANSIENT_ERRNOS = frozenset(
+    {
+        errno.EAGAIN,
+        errno.EINTR,
+        errno.EMFILE,
+        errno.ENFILE,
+        errno.ENOMEM,
+        errno.ETIMEDOUT,
+    }
+)
+
+
+def _failure_for_exception(error: BaseException) -> RuntimeFailure:
+    if isinstance(error, (TimeoutError, subprocess.TimeoutExpired)):
+        return runtime_failure("transient.timeout")
+    if isinstance(error, MemoryError):
+        return runtime_failure("transient.resource_unavailable")
+    if isinstance(error, OSError) and error.errno in _TRANSIENT_ERRNOS:
+        return runtime_failure("transient.resource_unavailable")
+    if isinstance(error, (KeyError, TypeError, ValueError)):
+        return runtime_failure("input_contract.invalid_payload")
+    return runtime_failure("runtime.internal_error")
+
+
+def _failure_for_internal_code(code: str) -> RuntimeFailure:
+    if code in {"TimeoutError", "TimeoutExpired"}:
+        return runtime_failure("transient.timeout")
+    if code in {
+        "BlockingIOError",
+        "InterruptedError",
+        "MemoryError",
+    }:
+        return runtime_failure("transient.resource_unavailable")
+    if code in {
+        "empty_public_copy",
+        "invalid_transition",
+        "not_prepared",
+        "unknown_state_token",
+    }:
+        return runtime_failure("input_contract.invalid_payload")
+    return runtime_failure("runtime.internal_error")
 
 
 def _localized(display: Mapping[str, Any], locale: str = _DEFAULT_LOCALE) -> Any:
@@ -248,9 +294,14 @@ class ReadingInterface:
             return Stopped(
                 reason="error",
                 public_copy=FALLBACK_ERROR_TEXT,
+                failure=runtime_failure("input_contract.invalid_command"),
             )
-        except Exception:  # noqa: BLE001 - the interface never leaks internals
-            return Stopped(reason="error", public_copy=FALLBACK_ERROR_TEXT)
+        except Exception as error:  # noqa: BLE001 - never leak internals
+            return Stopped(
+                reason="error",
+                public_copy=FALLBACK_ERROR_TEXT,
+                failure=_failure_for_exception(error),
+            )
 
     # -- complete ----------------------------------------------------------
 
@@ -263,10 +314,12 @@ class ReadingInterface:
                 state_token=command.state_token,
                 public_copy=result.public_copy,
             )
+        code = str(getattr(result, "code", ""))
         return Stopped(
             reason="error",
             public_copy=self._reason_text("error"),
             state_token=command.state_token,
+            failure=_failure_for_internal_code(code),
         )
 
     # -- prepare -----------------------------------------------------------
@@ -287,6 +340,9 @@ class ReadingInterface:
                 return Stopped(
                     reason="error",
                     public_copy=self._reason_text("error"),
+                    failure=runtime_failure(
+                        "input_contract.invalid_state_token"
+                    ),
                 )
             if record.phase == "accepted" and record.reading_id:
                 prior = self.engine.store.load(record.reading_id)
@@ -730,8 +786,13 @@ class ReadingInterface:
                 reason="error",
                 public_copy=self._reason_text("error"),
                 state_token=turn.state_token,
+                failure=_failure_for_internal_code(code),
             )
-        return Stopped(reason="error", public_copy=FALLBACK_ERROR_TEXT)
+        return Stopped(
+            reason="error",
+            public_copy=FALLBACK_ERROR_TEXT,
+            failure=runtime_failure("runtime.internal_error"),
+        )
 
     def _describe(self) -> Described:
         if self._described is None:

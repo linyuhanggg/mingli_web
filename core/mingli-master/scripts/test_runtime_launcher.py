@@ -172,6 +172,10 @@ class RuntimeLauncherTests(unittest.TestCase):
                 payload = json.loads(completed.stdout.strip())
                 self.assertEqual(payload.get("kind"), "stopped")
                 self.assertTrue(str(payload.get("public_copy") or "").strip())
+                self.assertEqual(
+                    payload.get("failure", {}).get("category"),
+                    "bootstrap",
+                )
                 self.assertIn("runtime", completed.stderr.lower())
 
     def test_launcher_without_home_still_returns_one_stopped_result(self) -> None:
@@ -191,6 +195,10 @@ class RuntimeLauncherTests(unittest.TestCase):
         payload = json.loads(completed.stdout.strip())
         self.assertEqual(payload.get("kind"), "stopped")
         self.assertTrue(str(payload.get("public_copy") or "").strip())
+        self.assertEqual(
+            payload.get("failure", {}).get("category"),
+            "bootstrap",
+        )
 
     def test_launcher_missing_bootstrap_still_returns_one_stopped_result(self) -> None:
         import json
@@ -218,6 +226,10 @@ class RuntimeLauncherTests(unittest.TestCase):
         payload = json.loads(completed.stdout.strip())
         self.assertEqual(payload.get("kind"), "stopped")
         self.assertTrue(str(payload.get("public_copy") or "").strip())
+        self.assertEqual(
+            payload.get("failure", {}).get("category"),
+            "bootstrap",
+        )
 
     def test_launcher_rejects_legacy_shell_arguments_as_a_stopped_result(self) -> None:
         import json
@@ -241,6 +253,10 @@ class RuntimeLauncherTests(unittest.TestCase):
         self.assertEqual(payload.get("kind"), "stopped")
         self.assertEqual(payload.get("reason"), "error")
         self.assertTrue(str(payload.get("public_copy") or "").strip())
+        self.assertEqual(
+            payload.get("failure", {}).get("code"),
+            "bootstrap.unexpected_arguments",
+        )
 
 
 if __name__ == "__main__":
