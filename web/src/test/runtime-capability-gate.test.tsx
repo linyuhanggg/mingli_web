@@ -143,9 +143,11 @@ describe("Runtime capability tier gate", () => {
   it("keeps B-tier facts and removes interpretive candidate blocks", () => {
     render(<RuntimeChart viewModel={ziweiView} capability={bTier} />);
 
-    expect(screen.getByRole("table", { name: "十二宫与主星" })).toBeVisible();
-    expect(screen.queryByRole("table", { name: "古籍来源条件候选" })).toBeNull();
-    expect(screen.queryByText("TR-01 · 至玄至微")).toBeNull();
+    expect(screen.getByRole("grid", { name: "十二宫环盘" })).toBeVisible();
+    expect(screen.queryByRole("table", { name: "十二宫与主星" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("table", { name: "古籍来源条件候选" })).not.toBeInTheDocument();
+    expect(screen.queryByText("TR-01 · 至玄至微")).not.toBeInTheDocument();
+    expect(screen.queryByText(/吉凶|大吉|大凶/)).not.toBeInTheDocument();
   });
 
   it("keeps Daliuren B-tier board facts while removing evidence, candidates, summary and deep read", () => {

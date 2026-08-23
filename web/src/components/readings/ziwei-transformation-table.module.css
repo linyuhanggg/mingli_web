@@ -1,0 +1,74 @@
+.panel {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+  color: var(--color-text);
+  background: var(--color-canvas);
+}
+
+.group {
+  display: grid;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.scope {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+  font-weight: 600;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-aux);
+}
+
+.table th,
+.table td {
+  padding: 0.25rem 0.4rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  color: var(--color-text);
+}
+
+.table tr[data-highlight="true"] {
+  background: var(--color-surface-muted);
+}
+
+.star {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: var(--font-domain);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+}
+
+.star:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.hua {
+  display: inline-flex;
+  min-width: 1.05rem;
+  justify-content: center;
+  border: 1px solid var(--color-evidence);
+  color: var(--color-evidence);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star,
+  .table tr {
+    transition: none;
+  }
+}
