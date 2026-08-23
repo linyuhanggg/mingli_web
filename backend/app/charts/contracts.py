@@ -1894,22 +1894,294 @@ class DaliurenTimingCandidate(ContractModel):
     candidate_not_guarantee: Literal[True]
 
 
+class DaliurenDayHour(ContractModel):
+    day: str = Field(min_length=2)
+    hour: str = Field(min_length=2)
+
+
+class DaliurenMonthGeneral(ContractModel):
+    branch: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+
+
+class DaliurenNoblePerson(ContractModel):
+    branch: str = Field(min_length=1)
+    day_night_profile: str = Field(min_length=1)
+    direction: str = Field(min_length=1)
+    earth_position: str = Field(min_length=1)
+    period: Literal["day", "night"]
+    profile: str = Field(min_length=1)
+    source: str = Field(min_length=1)
+
+
+class DaliurenXunkong(ContractModel):
+    branches: tuple[str, str]
+    xun: str = Field(min_length=2)
+
+
+class DaliurenHeavenPlateCell(ContractModel):
+    earth: str = Field(min_length=1)
+    heaven: str = Field(min_length=1)
+
+
+class DaliurenGeneralCell(ContractModel):
+    earth: str = Field(min_length=1)
+    general: str = Field(min_length=1)
+    heaven: str = Field(min_length=1)
+
+
+class DaliurenLessonMethod(ContractModel):
+    """Stable nine-method fields from mingli-liuren-runtime-core-facts-v1."""
+
+    calculated_transmissions: str = Field(min_length=3)
+    calculation_source: str = Field(min_length=1)
+    direct_direction: str | None = None
+    primary: str = Field(min_length=1)
+    selected_initial: str = Field(min_length=1)
+    source_anchor: str = Field(min_length=1)
+    use_method: str = Field(min_length=1)
+
+
+class DaliurenRuleSourceRef(ContractModel):
+    pack: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    quote_id: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    source_anchor: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+
+
+class DaliurenRuleEvidenceEntry(ContractModel):
+    model_config = ConfigDict(extra="allow", frozen=True)
+
+    activation_id: str = Field(min_length=1)
+    dependency_group: str = Field(min_length=1)
+    fact_paths: tuple[str, ...] = Field(min_length=1)
+    observation: dict[str, object]
+    polarity: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    rule_key: str = Field(min_length=1)
+    source_refs: tuple[DaliurenRuleSourceRef, ...] = Field(min_length=1)
+    status: str = Field(min_length=1)
+    weight_class: str = Field(min_length=1)
+    confidence_ceiling: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    stop_conditions: tuple[str, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+
+
+class DaliurenRuleNotEvaluatedEntry(ContractModel):
+    activation_id: str = Field(min_length=1)
+    reason: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    rule_key: str = Field(min_length=1)
+    source_refs: tuple[DaliurenRuleSourceRef, ...] = Field(min_length=1)
+    status: str = Field(min_length=1)
+
+
+class DaliurenRuleEvidence(ContractModel):
+    catalog_schema: str = Field(min_length=1)
+    hard_verdict: None = None
+    matched: tuple[DaliurenRuleEvidenceEntry, ...]
+    not_evaluated: tuple[DaliurenRuleNotEvaluatedEntry, ...]
+    requires_school_adjudication: bool
+    scope_boundaries: tuple[DaliurenRuleEvidenceEntry, ...]
+    status: str = Field(min_length=1)
+
+
+class DaliurenRelationFact(ContractModel):
+    object: str = Field(min_length=1)
+    object_element: str = Field(min_length=1)
+    object_value: str = Field(min_length=1)
+    relation: str = Field(min_length=1)
+    subject: str = Field(min_length=1)
+    subject_element: str = Field(min_length=1)
+    subject_value: str = Field(min_length=1)
+
+
+class DaliurenStageFlowEntry(DaliurenRelationFact):
+    from_stage: str = Field(min_length=1)
+    to_stage: str = Field(min_length=1)
+
+
+class DaliurenTransmissionToDayEntry(DaliurenRelationFact):
+    stage: str = Field(min_length=1)
+
+
+class DaliurenSixRelativeStage(ContractModel):
+    branch: str = Field(min_length=1)
+    six_relative: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenStageStatusEntry(ContractModel):
+    branch: str = Field(min_length=1)
+    heavenly_general: str = Field(min_length=1)
+    is_xunkong: bool
+    season_strength: str = Field(min_length=1)
+    six_relative: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenStageBranchDirection(ContractModel):
+    branch: str = Field(min_length=1)
+    declared_source_anchor: str = Field(min_length=1)
+    direction: str = Field(min_length=1)
+    direction_chinese: str = Field(min_length=1)
+    scope: str = Field(min_length=1)
+    source_binding_status: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenGeneralLanding(ContractModel):
+    heavenly_general: str = Field(min_length=1)
+    landing_branch: str = Field(min_length=1)
+    role: str = Field(min_length=1)
+    source_anchor: str = Field(min_length=1)
+    source_pack: str = Field(min_length=1)
+    source_rule: str = Field(min_length=1)
+    source_text: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+    status: str = Field(min_length=1)
+
+
+class DaliurenCandidateBranch(ContractModel):
+    anchor_earth_branch: str = Field(min_length=1)
+    branch: str = Field(min_length=1)
+    source_rule: str = Field(min_length=1)
+
+
+class DaliurenDimensionFact(ContractModel):
+    model_config = ConfigDict(extra="allow", frozen=True)
+
+    canonical_dimension: str = Field(min_length=1)
+    requested_dimension: str = Field(min_length=1)
+    rule_evidence: DaliurenRuleEvidence
+    status: str = Field(min_length=1)
+    source_rule_ids: tuple[str, ...] = Field(min_length=1)
+    initial_final_relation: DaliurenRelationFact | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    subject_object_relation: DaliurenRelationFact | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    stage_flow: tuple[DaliurenStageFlowEntry, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    transmissions_to_day: tuple[DaliurenTransmissionToDayEntry, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    six_relative_stages: tuple[DaliurenSixRelativeStage, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    stage_status: tuple[DaliurenStageStatusEntry, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    stage_branch_directions: tuple[DaliurenStageBranchDirection, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    general_landing_correspondences: tuple[DaliurenGeneralLanding, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    candidate_branch: DaliurenCandidateBranch | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    candidate_date: DaliurenTimingCandidate | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    relative_speed: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    target_contract_status: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    target_presence: bool | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    target_relative: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    target_general_modifier: tuple[object, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    target_strength: tuple[object, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    wealth_presence: bool | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    wealth_general_modifier: tuple[object, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    wealth_stage_strength: tuple[object, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    wealth_void_status: tuple[object, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+
+
 class DaliurenCoreFacts(ContractModel):
     """Runtime-owned six-ren plate and rule-trace facts; no event verdicts."""
 
-    day_hour: dict[str, object] | None = None
-    dimension_facts: dict[str, object] | None = None
-    earth_plate: tuple[str, ...] | None = None
-    heaven_plate: tuple[dict[str, object], ...] | None = None
-    heavenly_generals: tuple[dict[str, object], ...] | None = None
-    lesson_method: dict[str, object] | None = None
-    month_general: dict[str, object] | None = None
-    noble_person: dict[str, object] | None = None
-    plate_offset: int | None = None
+    day_hour: DaliurenDayHour | None = None
+    dimension_facts: dict[str, DaliurenDimensionFact] | None = None
+    earth_plate: tuple[str, ...] | None = Field(
+        default=None,
+        min_length=12,
+        max_length=12,
+    )
+    heaven_plate: tuple[DaliurenHeavenPlateCell, ...] | None = Field(
+        default=None,
+        min_length=12,
+        max_length=12,
+    )
+    heavenly_generals: tuple[DaliurenGeneralCell, ...] | None = Field(
+        default=None,
+        min_length=12,
+        max_length=12,
+    )
+    lesson_method: DaliurenLessonMethod | None = None
+    month_general: DaliurenMonthGeneral | None = None
+    noble_person: DaliurenNoblePerson | None = None
+    plate_offset: int | None = Field(default=None, ge=0, le=11)
     structural_patterns: tuple[str, ...] | None = None
-    transmission_method: dict[str, object] | None = None
     timing_candidates: tuple[DaliurenTimingCandidate, ...] | None = None
-    xunkong: dict[str, object] | None = None
+    xunkong: DaliurenXunkong | None = None
 
 
 class DaliurenChartV1(ContractModel):

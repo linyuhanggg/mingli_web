@@ -1,11 +1,44 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://fateradar.cn/contracts/views/daliuren-chart-v1.schema.json", "title": "Daliuren Chart ViewModel v1",
-  "type": "object", "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/daliuren-chart-v1.schema.json",
+  "title": "Daliuren Chart ViewModel v1",
+  "type": "object",
+  "additionalProperties": false,
   "required": ["schema_version", "subject_ref", "question", "lessons", "transmissions"],
   "properties": {
-    "schema_version": {"const": "daliuren-chart/v1"}, "subject_ref": {"type": "string", "minLength": 1}, "question": {"type": "string", "minLength": 1},
-    "lessons": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "object", "additionalProperties": false, "required": ["lesson_id", "upper", "lower"], "properties": {"lesson_id": {"type": "string", "minLength": 1}, "upper": {"type": "string", "minLength": 1}, "lower": {"type": "string", "minLength": 1}}}},
-    "transmissions": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "object", "additionalProperties": false, "required": ["stage", "branch", "general"], "properties": {"stage": {"enum": ["initial", "middle", "final"]}, "branch": {"type": "string", "minLength": 1}, "general": {"type": "string", "minLength": 1}}}},
+    "schema_version": {"const": "daliuren-chart/v1"},
+    "subject_ref": {"type": "string", "minLength": 1},
+    "question": {"type": "string", "minLength": 1},
+    "lessons": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["lesson_id", "upper", "lower"],
+        "properties": {
+          "lesson_id": {"type": "string", "minLength": 1},
+          "upper": {"type": "string", "minLength": 1},
+          "lower": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "transmissions": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage", "branch", "general"],
+        "properties": {
+          "stage": {"enum": ["initial", "middle", "final"]},
+          "branch": {"type": "string", "minLength": 1},
+          "general": {"type": "string", "minLength": 1}
+        }
+      }
+    },
     "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]}
   },
   "$defs": {
@@ -13,19 +46,340 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "day_hour": {"type": ["object", "null"]},
-        "dimension_facts": {"type": ["object", "null"]},
-        "earth_plate": {"type": ["array", "null"], "items": {"type": "string"}},
-        "heaven_plate": {"type": ["array", "null"], "items": {"type": "object"}},
-        "heavenly_generals": {"type": ["array", "null"], "items": {"type": "object"}},
-        "lesson_method": {"type": ["object", "null"]},
-        "month_general": {"type": ["object", "null"]},
-        "noble_person": {"type": ["object", "null"]},
-        "plate_offset": {"type": ["integer", "null"]},
+        "day_hour": {"oneOf": [{"$ref": "#/$defs/dayHour"}, {"type": "null"}]},
+        "dimension_facts": {
+          "oneOf": [
+            {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {"$ref": "#/$defs/dimensionFact"}
+            },
+            {"type": "null"}
+          ]
+        },
+        "earth_plate": {
+          "oneOf": [
+            {"type": "array", "minItems": 12, "maxItems": 12, "items": {"type": "string", "minLength": 1}},
+            {"type": "null"}
+          ]
+        },
+        "heaven_plate": {
+          "oneOf": [
+            {"type": "array", "minItems": 12, "maxItems": 12, "items": {"$ref": "#/$defs/heavenPlateCell"}},
+            {"type": "null"}
+          ]
+        },
+        "heavenly_generals": {
+          "oneOf": [
+            {"type": "array", "minItems": 12, "maxItems": 12, "items": {"$ref": "#/$defs/generalCell"}},
+            {"type": "null"}
+          ]
+        },
+        "lesson_method": {"oneOf": [{"$ref": "#/$defs/lessonMethod"}, {"type": "null"}]},
+        "month_general": {"oneOf": [{"$ref": "#/$defs/monthGeneral"}, {"type": "null"}]},
+        "noble_person": {"oneOf": [{"$ref": "#/$defs/noblePerson"}, {"type": "null"}]},
+        "plate_offset": {"type": ["integer", "null"], "minimum": 0, "maximum": 11},
         "structural_patterns": {"type": ["array", "null"], "items": {"type": "string"}},
-        "transmission_method": {"type": ["object", "null"]},
         "timing_candidates": {"type": ["array", "null"], "items": {"$ref": "#/$defs/timingCandidate"}},
-        "xunkong": {"type": ["object", "null"]}
+        "xunkong": {"oneOf": [{"$ref": "#/$defs/xunkong"}, {"type": "null"}]}
+      }
+    },
+    "dayHour": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["day", "hour"],
+      "properties": {
+        "day": {"type": "string", "minLength": 2},
+        "hour": {"type": "string", "minLength": 2}
+      }
+    },
+    "monthGeneral": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "name"],
+      "properties": {
+        "branch": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1}
+      }
+    },
+    "noblePerson": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "day_night_profile", "direction", "earth_position", "period", "profile", "source"],
+      "properties": {
+        "branch": {"type": "string", "minLength": 1},
+        "day_night_profile": {"type": "string", "minLength": 1},
+        "direction": {"type": "string", "minLength": 1},
+        "earth_position": {"type": "string", "minLength": 1},
+        "period": {"enum": ["day", "night"]},
+        "profile": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1}
+      }
+    },
+    "xunkong": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branches", "xun"],
+      "properties": {
+        "branches": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string", "minLength": 1}},
+        "xun": {"type": "string", "minLength": 2}
+      }
+    },
+    "heavenPlateCell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["earth", "heaven"],
+      "properties": {
+        "earth": {"type": "string", "minLength": 1},
+        "heaven": {"type": "string", "minLength": 1}
+      }
+    },
+    "generalCell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["earth", "general", "heaven"],
+      "properties": {
+        "earth": {"type": "string", "minLength": 1},
+        "general": {"type": "string", "minLength": 1},
+        "heaven": {"type": "string", "minLength": 1}
+      }
+    },
+    "lessonMethod": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "calculated_transmissions",
+        "calculation_source",
+        "direct_direction",
+        "primary",
+        "selected_initial",
+        "source_anchor",
+        "use_method"
+      ],
+      "properties": {
+        "calculated_transmissions": {"type": "string", "minLength": 3},
+        "calculation_source": {"type": "string", "minLength": 1},
+        "direct_direction": {"oneOf": [{"type": "string", "minLength": 1}, {"type": "null"}]},
+        "primary": {"type": "string", "minLength": 1},
+        "selected_initial": {"type": "string", "minLength": 1},
+        "source_anchor": {"type": "string", "minLength": 1},
+        "use_method": {"type": "string", "minLength": 1}
+      }
+    },
+    "dimensionFact": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["canonical_dimension", "requested_dimension", "rule_evidence", "status", "source_rule_ids"],
+      "properties": {
+        "canonical_dimension": {"type": "string", "minLength": 1},
+        "requested_dimension": {"type": "string", "minLength": 1},
+        "rule_evidence": {"$ref": "#/$defs/ruleEvidence"},
+        "status": {"type": "string", "minLength": 1},
+        "source_rule_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "initial_final_relation": {"$ref": "#/$defs/relationFact"},
+        "subject_object_relation": {"$ref": "#/$defs/relationFact"},
+        "stage_flow": {"type": "array", "items": {"$ref": "#/$defs/stageFlowEntry"}},
+        "transmissions_to_day": {"type": "array", "items": {"$ref": "#/$defs/transmissionToDayEntry"}},
+        "six_relative_stages": {"type": "array", "items": {"$ref": "#/$defs/sixRelativeStage"}},
+        "stage_status": {"type": "array", "items": {"$ref": "#/$defs/stageStatusEntry"}},
+        "stage_branch_directions": {"type": "array", "items": {"$ref": "#/$defs/stageBranchDirection"}},
+        "general_landing_correspondences": {"type": "array", "items": {"$ref": "#/$defs/generalLanding"}},
+        "candidate_branch": {"oneOf": [{"$ref": "#/$defs/candidateBranch"}, {"type": "null"}]},
+        "candidate_date": {"oneOf": [{"$ref": "#/$defs/timingCandidate"}, {"type": "null"}]},
+        "relative_speed": {"type": "string", "minLength": 1},
+        "target_contract_status": {"type": "string", "minLength": 1},
+        "target_presence": {"type": "boolean"},
+        "target_relative": {"type": "string", "minLength": 1},
+        "target_general_modifier": {"type": "array"},
+        "target_strength": {"type": "array"},
+        "wealth_presence": {"type": "boolean"},
+        "wealth_general_modifier": {"type": "array"},
+        "wealth_stage_strength": {"type": "array"},
+        "wealth_void_status": {"type": "array"}
+      }
+    },
+    "ruleEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["catalog_schema", "hard_verdict", "matched", "not_evaluated", "requires_school_adjudication", "scope_boundaries", "status"],
+      "properties": {
+        "catalog_schema": {"type": "string", "minLength": 1},
+        "hard_verdict": {"type": "null"},
+        "matched": {"type": "array", "items": {"$ref": "#/$defs/ruleEvidenceEntry"}},
+        "not_evaluated": {"type": "array", "items": {"$ref": "#/$defs/ruleNotEvaluatedEntry"}},
+        "requires_school_adjudication": {"type": "boolean"},
+        "scope_boundaries": {"type": "array", "items": {"$ref": "#/$defs/ruleEvidenceEntry"}},
+        "status": {"type": "string", "minLength": 1}
+      }
+    },
+    "ruleEvidenceEntry": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["activation_id", "dependency_group", "fact_paths", "observation", "polarity", "rule_id", "rule_key", "source_refs", "status", "weight_class"],
+      "properties": {
+        "activation_id": {"type": "string", "minLength": 1},
+        "confidence_ceiling": {"type": "string", "minLength": 1},
+        "dependency_group": {"type": "string", "minLength": 1},
+        "fact_paths": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "observation": {"type": "object"},
+        "polarity": {"type": "string", "minLength": 1},
+        "rule_id": {"type": "string", "minLength": 1},
+        "rule_key": {"type": "string", "minLength": 1},
+        "source_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/ruleSourceRef"}},
+        "status": {"type": "string", "minLength": 1},
+        "weight_class": {"type": "string", "minLength": 1},
+        "stop_conditions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "ruleNotEvaluatedEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["activation_id", "reason", "rule_id", "rule_key", "source_refs", "status"],
+      "properties": {
+        "activation_id": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "rule_id": {"type": "string", "minLength": 1},
+        "rule_key": {"type": "string", "minLength": 1},
+        "source_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/ruleSourceRef"}},
+        "status": {"type": "string", "minLength": 1}
+      }
+    },
+    "ruleSourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pack", "rule_id"],
+      "properties": {
+        "pack": {"type": "string", "minLength": 1},
+        "rule_id": {"type": "string", "minLength": 1},
+        "quote_id": {"type": "string", "minLength": 1},
+        "source_anchor": {"type": "string", "minLength": 1}
+      }
+    },
+    "relationFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["object", "object_element", "object_value", "relation", "subject", "subject_element", "subject_value"],
+      "properties": {
+        "object": {"type": "string", "minLength": 1},
+        "object_element": {"type": "string", "minLength": 1},
+        "object_value": {"type": "string", "minLength": 1},
+        "relation": {"type": "string", "minLength": 1},
+        "subject": {"type": "string", "minLength": 1},
+        "subject_element": {"type": "string", "minLength": 1},
+        "subject_value": {"type": "string", "minLength": 1}
+      }
+    },
+    "stageFlowEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object",
+        "object_element",
+        "object_value",
+        "relation",
+        "subject",
+        "subject_element",
+        "subject_value",
+        "from_stage",
+        "to_stage"
+      ],
+      "properties": {
+        "object": {"type": "string", "minLength": 1},
+        "object_element": {"type": "string", "minLength": 1},
+        "object_value": {"type": "string", "minLength": 1},
+        "relation": {"type": "string", "minLength": 1},
+        "subject": {"type": "string", "minLength": 1},
+        "subject_element": {"type": "string", "minLength": 1},
+        "subject_value": {"type": "string", "minLength": 1},
+        "from_stage": {"type": "string", "minLength": 1},
+        "to_stage": {"type": "string", "minLength": 1}
+      }
+    },
+    "transmissionToDayEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object",
+        "object_element",
+        "object_value",
+        "relation",
+        "subject",
+        "subject_element",
+        "subject_value",
+        "stage"
+      ],
+      "properties": {
+        "object": {"type": "string", "minLength": 1},
+        "object_element": {"type": "string", "minLength": 1},
+        "object_value": {"type": "string", "minLength": 1},
+        "relation": {"type": "string", "minLength": 1},
+        "subject": {"type": "string", "minLength": 1},
+        "subject_element": {"type": "string", "minLength": 1},
+        "subject_value": {"type": "string", "minLength": 1},
+        "stage": {"type": "string", "minLength": 1}
+      }
+    },
+    "sixRelativeStage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "six_relative", "stage"],
+      "properties": {
+        "branch": {"type": "string", "minLength": 1},
+        "six_relative": {"type": "string", "minLength": 1},
+        "stage": {"type": "string", "minLength": 1}
+      }
+    },
+    "stageStatusEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "heavenly_general", "is_xunkong", "season_strength", "six_relative", "stage"],
+      "properties": {
+        "branch": {"type": "string", "minLength": 1},
+        "heavenly_general": {"type": "string", "minLength": 1},
+        "is_xunkong": {"type": "boolean"},
+        "season_strength": {"type": "string", "minLength": 1},
+        "six_relative": {"type": "string", "minLength": 1},
+        "stage": {"type": "string", "minLength": 1}
+      }
+    },
+    "stageBranchDirection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "declared_source_anchor", "direction", "direction_chinese", "scope", "source_binding_status", "stage"],
+      "properties": {
+        "branch": {"type": "string", "minLength": 1},
+        "declared_source_anchor": {"type": "string", "minLength": 1},
+        "direction": {"type": "string", "minLength": 1},
+        "direction_chinese": {"type": "string", "minLength": 1},
+        "scope": {"type": "string", "minLength": 1},
+        "source_binding_status": {"type": "string", "minLength": 1},
+        "stage": {"type": "string", "minLength": 1}
+      }
+    },
+    "generalLanding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["heavenly_general", "landing_branch", "role", "source_anchor", "source_pack", "source_rule", "source_text", "stage", "status"],
+      "properties": {
+        "heavenly_general": {"type": "string", "minLength": 1},
+        "landing_branch": {"type": "string", "minLength": 1},
+        "role": {"type": "string", "minLength": 1},
+        "source_anchor": {"type": "string", "minLength": 1},
+        "source_pack": {"type": "string", "minLength": 1},
+        "source_rule": {"type": "string", "minLength": 1},
+        "source_text": {"type": "string", "minLength": 1},
+        "stage": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "minLength": 1}
+      }
+    },
+    "candidateBranch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anchor_earth_branch", "branch", "source_rule"],
+      "properties": {
+        "anchor_earth_branch": {"type": "string", "minLength": 1},
+        "branch": {"type": "string", "minLength": 1},
+        "source_rule": {"type": "string", "minLength": 1}
       }
     },
     "timingCandidate": {

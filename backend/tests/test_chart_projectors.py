@@ -1310,47 +1310,25 @@ def test_qimen_projector_keeps_center_palace_omissions_as_null() -> None:
 
 
 def test_daliuren_projector_maps_lessons_and_three_transmissions() -> None:
-    values = {
-        "four_lessons": [
-            {"lesson": 1, "upper": "辰", "lower": "庚"},
-            {"lesson": 2, "upper": "子", "lower": "辰"},
-            {"lesson": 3, "upper": "辰", "lower": "申"},
-            {"lesson": 4, "upper": "子", "lower": "辰"},
-        ],
-        "three_transmissions": [
-            {"stage": "initial", "branch": "子", "heavenly_general": "青龙"},
-            {"stage": "middle", "branch": "申", "heavenly_general": "腾蛇"},
-            {"stage": "final", "branch": "辰", "heavenly_general": "玄武"},
-        ],
-        "day_hour": {"day": "甲子", "hour": "乙丑"},
-        "earth_plate": ["子", "丑"],
-        "structural_patterns": ["伏吟"],
-        "timing_candidates": [
-            {
-                "id": "initial_group_upper_candidate",
-                "role": "event_response_candidate",
-                "anchor_earth_branch": "巳",
-                "branch": "酉",
-                "solar_date": "2026-08-21",
-                "day_ganzhi": "丁卯",
-                "days_after_cast": 7,
-                "source_pack": "san-shi/liuren-miben",
-                "source_rule": "LM-R21",
-                "candidate_not_guarantee": True,
-            }
-        ],
-        "xunkong": {"xun": "甲子", "branches": ["戌", "亥"]},
-    }
+    fixture_path = (
+        Path(__file__).resolve().parent
+        / "fixtures"
+        / "liuren-runtime-core-facts-v1.json"
+    )
+    runtime_core_facts = json.loads(fixture_path.read_text(encoding="utf-8"))
+    values = {"runtime_core_facts": runtime_core_facts}
 
     view_model = project_daliuren_view_model(brief("liuren", values))
 
     assert isinstance(view_model, DaliurenChartV1)
     assert [item.lesson_id for item in view_model.lessons] == ["1", "2", "3", "4"]
-    assert [item.general for item in view_model.transmissions] == ["青龙", "腾蛇", "玄武"]
+    assert [item.general for item in view_model.transmissions] == ["勾陈", "天后", "青龙"]
     assert view_model.core_facts is not None
-    assert view_model.core_facts.earth_plate == ("子", "丑")
-    assert view_model.core_facts.structural_patterns == ("伏吟",)
-    assert view_model.core_facts.timing_candidates[0].solar_date == "2026-08-21"
+    assert view_model.core_facts.day_hour is not None
+    assert view_model.core_facts.day_hour.day == "乙酉"
+    assert view_model.core_facts.structural_patterns == ("伏吟", "四课不备")
+    assert view_model.core_facts.timing_candidates is not None
+    assert view_model.core_facts.timing_candidates[0].solar_date == "2026-07-20"
     assert view_model.core_facts.timing_candidates[0].source_rule == "LM-R21"
     assert view_model.core_facts.timing_candidates[0].candidate_not_guarantee is True
     schema_path = (
