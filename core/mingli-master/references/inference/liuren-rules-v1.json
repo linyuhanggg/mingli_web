@@ -435,5 +435,44 @@
       "dependency_group": "liuren.subject_object_relation",
       "confidence_ceiling": "medium"
     }
+  },
+  "source_conditioned_patterns": {
+    "伏吟": {
+      "rule_id": "DLR-09",
+      "local_rule_id": "liuren.structural.fuyin",
+      "title": "伏吟",
+      "source_pack": "san-shi/daliuren-daquan",
+      "source_anchor": "fulltext.md#L7696",
+      "quote_id": "DLQ-041",
+      "source_excerpt_sha256": "6400e1ec077c2ab888440a1e008e4bc34ed0c052164c453e61299fe5b83fd282"
+    },
+    "反吟": {
+      "rule_id": "DLR-10",
+      "local_rule_id": "liuren.structural.fanyin",
+      "title": "反吟",
+      "source_pack": "san-shi/daliuren-daquan",
+      "source_anchor": "fulltext.md#L7874",
+      "quote_id": "DLQ-043",
+      "source_excerpt_sha256": "b034e6b61bca5961696c061b07e2d2932f1d37c96343ac2d1c3b7bf6ffb24da6"
+    },
+    "八专日": {
+      "rule_id": "DLR-08",
+      "local_rule_id": "liuren.structural.bazhuan-day",
+      "title": "八专日",
+      "source_pack": "san-shi/daliuren-daquan",
+      "source_anchor": "fulltext.md#L7556",
+      "quote_id": "DLQ-039",
+      "source_excerpt_sha256": "49e85b95bb8434d7d79eb0b93353285615f322d969d67262c608f59bad9e1a35"
+    },
+    "四课不备": {
+      "rule_id": "DLR-07",
+      "local_rule_id": "liuren.structural.incomplete-four-lessons",
+      "title": "四课不备",
+      "source_pack": "san-shi/daliuren-daquan",
+      "source_anchor": "fulltext.md#L58",
+      "quote_id": "DLQ-012",
+      "source_excerpt_sha256": "0cc05b83aa28cd091f6a48fb7a3528019ff4925e763f6bcf847f13128293070a",
+      "required_distinct_lesson_count": 3
+    }
   }
 }
