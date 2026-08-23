@@ -100,8 +100,8 @@ EXPECTED_PROVIDER_IDENTITIES = {
     ),
     "liuren": (
         "reading_engine.providers.LiurenProvider",
-        "mingli-master.liuren.v7",
-        "mingli-liuren-pipeline-v5-rule-evidence",
+        "mingli-master.liuren.v8",
+        "mingli-liuren-pipeline-v6-runtime-contract",
     ),
     "qimen": (
         "reading_engine.providers.QimenProvider",
