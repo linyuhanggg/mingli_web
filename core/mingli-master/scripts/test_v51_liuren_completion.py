@@ -147,7 +147,7 @@ class LiurenFixtureContractTests(unittest.TestCase):
         )
 
     def test_calendar_semantics_change_has_new_adapter_and_pipeline_versions(self) -> None:
-        self.assertEqual(liuren_fact_adapter.VERSION, "2.0.1")
+        self.assertEqual(liuren_fact_adapter.VERSION, "2.1.0")
         self.assertEqual(
             LiurenProvider.provider_version,
             "mingli-liuren-pipeline-v6-runtime-contract",

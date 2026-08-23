@@ -186,18 +186,21 @@
     {
       "stage": "initial",
       "branch": "辰",
+      "hidden_stem": "壬",
       "heavenly_general": "勾陈",
       "six_relative": "妻财"
     },
     {
       "stage": "middle",
       "branch": "酉",
+      "hidden_stem": "乙",
       "heavenly_general": "天后",
       "six_relative": "官鬼"
     },
     {
       "stage": "final",
       "branch": "卯",
+      "hidden_stem": "辛",
       "heavenly_general": "青龙",
       "six_relative": "兄弟"
     }

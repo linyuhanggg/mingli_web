@@ -15,6 +15,11 @@ LIUREN_RULES_RELATIVE_PATH = Path("references/inference/liuren-rules-v1.json")
 LIUREN_RULES_SHA256 = "0b16659d31494934cec373327f477ff4725e66b0bb20c50602dd34d66d6d147b"
 
 EARTH_PLATE_ORDER = tuple("子丑寅卯辰巳午未申酉戌亥")
+HEAVENLY_STEMS = tuple("甲乙丙丁戊己庚辛壬癸")
+SEXAGENARY_CYCLE = tuple(
+    HEAVENLY_STEMS[index % 10] + EARTH_PLATE_ORDER[index % 12]
+    for index in range(60)
+)
 TRANSMISSION_STAGES = ("initial", "middle", "final")
 
 _TOP_LEVEL_REQUIRED = (
@@ -63,6 +68,7 @@ _THREE_TRANSMISSION_ROW_FIELDS = (
     "heavenly_general",
     "six_relative",
 )
+_THREE_TRANSMISSION_OPTIONAL_FIELDS = ("hidden_stem",)
 _XUNKONG_FIELDS = ("xun", "branches")
 _DIMENSION_ENVELOPE = (
     "requested_dimension",
@@ -962,6 +968,46 @@ def _validate_dimension_facts(value: Any, path: str) -> None:
         )
 
 
+def _validate_transmission_hidden_stems(
+    transmissions: Sequence[Any],
+    *,
+    day_ganzhi: Any,
+    xunkong: Mapping[str, Any],
+) -> None:
+    path = "runtime_core_facts.three_transmissions"
+    if day_ganzhi not in SEXAGENARY_CYCLE:
+        raise LiurenRuntimeContractError(
+            "runtime_core_facts.day_hour.day must be a valid sexagenary pillar "
+            "when hidden_stem is published"
+        )
+    start = (SEXAGENARY_CYCLE.index(day_ganzhi) // 10) * 10
+    xun_rows = SEXAGENARY_CYCLE[start : start + 10]
+    stem_by_branch = {ganzhi[1]: ganzhi[0] for ganzhi in xun_rows}
+    expected_empty = [
+        branch for branch in EARTH_PLATE_ORDER if branch not in stem_by_branch
+    ]
+    if xunkong["xun"] != xun_rows[0] or list(xunkong["branches"]) != expected_empty:
+        raise LiurenRuntimeContractError(
+            "runtime_core_facts.xunkong must match day_hour.day when hidden_stem is published"
+        )
+    for index, raw in enumerate(transmissions):
+        row = _mapping(raw, f"{path}[{index}]")
+        if row["branch"] not in EARTH_PLATE_ORDER:
+            raise LiurenRuntimeContractError(
+                f"{path}[{index}].branch must be one earthly branch"
+            )
+        value = row["hidden_stem"]
+        if value is not None and value not in HEAVENLY_STEMS:
+            raise LiurenRuntimeContractError(
+                f"{path}[{index}].hidden_stem must be one heavenly stem or null"
+            )
+        expected = stem_by_branch.get(row["branch"])
+        if value != expected:
+            raise LiurenRuntimeContractError(
+                f"{path}[{index}].hidden_stem does not match the day xun"
+            )
+
+
 def validate_runtime_core_facts(value: Any) -> None:
     """Reject missing and unknown public-contract fields at every fixed layer."""
 
@@ -1066,17 +1112,25 @@ def validate_runtime_core_facts(value: Any) -> None:
         raise LiurenRuntimeContractError(
             "runtime_core_facts.three_transmissions must have 3 rows"
         )
+    hidden_stem_presence: list[bool] = []
     for index, raw in enumerate(transmissions):
         path = f"runtime_core_facts.three_transmissions[{index}]"
         row = _exact_keys(
             raw,
             required=_THREE_TRANSMISSION_ROW_FIELDS,
+            optional=_THREE_TRANSMISSION_OPTIONAL_FIELDS,
             path=path,
         )
+        hidden_stem_presence.append("hidden_stem" in row)
         if row["stage"] != TRANSMISSION_STAGES[index]:
             raise LiurenRuntimeContractError(f"{path}.stage is out of order")
         for field in ("branch", "heavenly_general", "six_relative"):
             _nonempty_string(row[field], f"{path}.{field}")
+    if any(hidden_stem_presence) and not all(hidden_stem_presence):
+        raise LiurenRuntimeContractError(
+            "runtime_core_facts.three_transmissions.hidden_stem must be present "
+            "on all three rows or omitted from all three rows"
+        )
 
     offset = contract["plate_offset"]
     if not isinstance(offset, int) or isinstance(offset, bool) or not 0 <= offset < 12:
@@ -1092,6 +1146,12 @@ def validate_runtime_core_facts(value: Any) -> None:
     if len(_string_array(xunkong["branches"], "runtime_core_facts.xunkong.branches")) != 2:
         raise LiurenRuntimeContractError(
             "runtime_core_facts.xunkong.branches must have 2 rows"
+        )
+    if all(hidden_stem_presence):
+        _validate_transmission_hidden_stems(
+            transmissions,
+            day_ganzhi=day_hour["day"],
+            xunkong=xunkong,
         )
     structural_patterns = _string_array(
         contract["structural_patterns"], "runtime_core_facts.structural_patterns"
@@ -1164,7 +1224,10 @@ def build_runtime_core_facts(
         ),
         "three_transmissions": _project_mapping_rows(
             output.get("three_transmissions"),
-            fields=_THREE_TRANSMISSION_ROW_FIELDS,
+            fields=(
+                *_THREE_TRANSMISSION_ROW_FIELDS,
+                *_THREE_TRANSMISSION_OPTIONAL_FIELDS,
+            ),
             path="output.three_transmissions",
         ),
         "plate_offset": copy.deepcopy(output.get("plate_offset")),

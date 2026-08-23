@@ -1,0 +1,90 @@
+{
+  "schema_version": "mingli-liuren-transmission-hidden-stems-v1",
+  "calculation_source": "sexagenary-day-xun-v1",
+  "source_reference": {
+    "source_pack": "san-shi/liuren-miben",
+    "source_anchor": "references/books/san-shi/liuren-miben/quote-index.md#LM-Q008",
+    "source_scope": "旬表与天中见证；旬内天干由六十甲子确定性枚举审计"
+  },
+  "cases": {
+    "positive": {
+      "input": {
+        "day_ganzhi": "乙酉",
+        "hour_ganzhi": "癸未",
+        "month_general": "未"
+      },
+      "expected": {
+        "xun": "甲申",
+        "xunkong": [
+          "午",
+          "未"
+        ],
+        "branches": [
+          "辰",
+          "酉",
+          "卯"
+        ],
+        "hidden_stems": [
+          "壬",
+          "乙",
+          "辛"
+        ]
+      }
+    },
+    "partial": {
+      "input": {
+        "day_ganzhi": "甲子",
+        "hour_ganzhi": "甲子",
+        "month_general": "卯"
+      },
+      "expected": {
+        "xun": "甲子",
+        "xunkong": [
+          "戌",
+          "亥"
+        ],
+        "branches": [
+          "申",
+          "亥",
+          "寅"
+        ],
+        "hidden_stems": [
+          "壬",
+          null,
+          "丙"
+        ]
+      }
+    },
+    "legacy_absent": {
+      "base_case": "positive",
+      "mutation": "omit_hidden_stem_from_all_three_rows",
+      "expected_status": "accepted_backward_compatible"
+    },
+    "invalid": [
+      {
+        "id": "mixed_presence",
+        "base_case": "positive",
+        "mutation": "omit_hidden_stem_from_first_row",
+        "error_contains": "present on all three rows or omitted from all three rows"
+      },
+      {
+        "id": "wrong_stem",
+        "base_case": "positive",
+        "mutation": "set_first_hidden_stem_to_甲",
+        "error_contains": "does not match the day xun"
+      },
+      {
+        "id": "wrong_type",
+        "base_case": "positive",
+        "mutation": "set_first_hidden_stem_to_array",
+        "error_contains": "must be one heavenly stem or null"
+      },
+      {
+        "id": "wrong_xunkong",
+        "base_case": "positive",
+        "mutation": "set_xun_to_甲子",
+        "error_contains": "xunkong must match day_hour.day"
+      }
+    ]
+  }
+}

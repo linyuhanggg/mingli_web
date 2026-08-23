@@ -307,7 +307,7 @@ suite:
           - san-shi/liuren-zhiyin
         support_packs:
           - san-shi/liuren-miben
-        required_adapter: mingli-master.liuren_fact_adapter@2.0.1
+        required_adapter: mingli-master.liuren_fact_adapter@2.1.0
       expected_path:
         fact_layer_state: missing
         must_stop_before_interpretation: true
@@ -875,7 +875,7 @@ suite:
           - san-shi/liuren-zhiyin
         support_packs:
           - san-shi/liuren-miben
-        required_adapter: mingli-master.liuren_fact_adapter@2.0.1
+        required_adapter: mingli-master.liuren_fact_adapter@2.1.0
       expected_path:
         fact_layer_state: complete_after_current_cast
         must_stop_before_interpretation: false

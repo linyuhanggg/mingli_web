@@ -24,9 +24,10 @@ import yaml
 from reading_engine import calendar_core
 
 
-VERSION = "2.0.1"
+VERSION = "2.1.0"
 ADAPTER_NAME = "mingli-master.liuren_fact_adapter"
 SCHEMA_VERSION = "mingli-liuren-fact-v1"
+TRANSMISSION_HIDDEN_STEM_PROFILE = "sexagenary-day-xun-v1"
 
 STEMS = "甲乙丙丁戊己庚辛壬癸"
 BRANCHES = "子丑寅卯辰巳午未申酉戌亥"
@@ -814,6 +815,20 @@ def _xunkong(day_ganzhi: str) -> dict[str, Any]:
     return {"xun": JIAZI[start], "branches": empty}
 
 
+def _xun_hidden_stem(day_ganzhi: str, branch: str) -> str | None:
+    """Return the stem occupying ``branch`` in the day xun, or null if void."""
+
+    if day_ganzhi not in VALID_JIAZI:
+        raise ValueError(f"invalid sexagenary day pillar: {day_ganzhi!r}")
+    if branch not in BRANCHES:
+        raise ValueError(f"invalid transmission branch: {branch!r}")
+    start = (JIAZI.index(day_ganzhi) // 10) * 10
+    for ganzhi in JIAZI[start : start + 10]:
+        if ganzhi[1] == branch:
+            return ganzhi[0]
+    return None
+
+
 def _structural_patterns(day_ganzhi: str, lessons: list[dict[str, Any]], offset: int) -> list[str]:
     patterns: list[str] = []
     if offset == 0:
@@ -895,6 +910,7 @@ def _build_core(
         {
             "stage": stage,
             "branch": branch,
+            "hidden_stem": _xun_hidden_stem(day_ganzhi, branch),
             "heavenly_general": general_by_heaven[branch],
             "six_relative": _six_relative(day_ganzhi[0], branch),
         }
@@ -940,6 +956,7 @@ def _build_core(
                 "day_night": day_night_profile,
                 "month_general": "solar-term-pair-boundary",
                 "biezhe": biezhe_profile,
+                "transmission_hidden_stems": TRANSMISSION_HIDDEN_STEM_PROFILE,
                 "hour_stem_validation": (
                     "five-rat-strict"
                     if strict_hour_pillar
@@ -988,6 +1005,15 @@ def _build_core(
                 "《大六壬秘本》仅作类象与专项解释旁证，不参与本 adapter 取传",
             ],
             "guiren_profile": GUIREN_PROFILES[guiren_profile]["source"],
+            "transmission_hidden_stems": {
+                "calculation_source": TRANSMISSION_HIDDEN_STEM_PROFILE,
+                "source_pack": "san-shi/liuren-miben",
+                "source_anchor": "quote-index.md#LM-Q008",
+                "source_scope": (
+                    "xun-table and void-branch witness only; stem assignment is "
+                    "the deterministic sixty-Jiazi enumeration"
+                ),
+            },
             "transmission_table": _compact_transmission_table_audit(),
         },
         "trace": [
@@ -999,6 +1025,7 @@ def _build_core(
             "placed month general over the hour branch and built the twelve-position heaven plate",
             "derived four lessons from day stem lodge and day branch",
             "derived the initial, middle, and final transmissions with the classical nine-method algorithm",
+            "mapped each transmission branch to its occupied stem in the day xun; xunkong branches remain null",
             "cross-checked the calculated result against a fixed 60x12 table without allowing the table to override it",
             "placed heavenly generals under the explicitly selected guiren and day/night profiles",
         ],

@@ -127,6 +127,37 @@ class LiurenFactAdapterTests(unittest.TestCase):
         self.assertNotIn("反吟", payload["output"]["structural_patterns"])
         self.assertTrue(adapter_validate.validate_payload("liuren", payload)["ok"])
 
+    def test_transmission_hidden_stems_use_day_xun_and_validate(self):
+        payload = liuren.build_from_chart(
+            day_ganzhi="甲子",
+            hour_ganzhi="甲子",
+            month_general="卯",
+            question="脱敏遁干空亡样例",
+            location="fixture",
+        )
+
+        self.assertEqual(
+            payload["adapter"]["rule_profile"]["transmission_hidden_stems"],
+            liuren.TRANSMISSION_HIDDEN_STEM_PROFILE,
+        )
+        self.assertEqual(
+            [
+                (row["branch"], row["hidden_stem"])
+                for row in payload["output"]["three_transmissions"]
+            ],
+            [("申", "壬"), ("亥", None), ("寅", "丙")],
+        )
+        self.assertTrue(adapter_validate.validate_payload("liuren", payload)["ok"])
+
+        forged = copy.deepcopy(payload)
+        forged["output"]["three_transmissions"][1]["hidden_stem"] = "癸"
+        result = adapter_validate.validate_payload("liuren", forged)
+        self.assertFalse(result["ok"])
+        self.assertIn(
+            "liuren_transmission_hidden_stem_mismatch",
+            {finding["code"] for finding in result["findings"]},
+        )
+
     def test_impossible_hour_stem_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "incompatible hour pillar"):
             self._chart(hour_ganzhi="甲午")

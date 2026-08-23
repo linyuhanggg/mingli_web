@@ -169,4 +169,4 @@
 }
 ```
 
-此示例是最小字段契约。实际运行以 `mingli-master.liuren_fact_adapter` 2.0.1 的 JSON 为准，不接受语言模型仿写的同形文本。
+此示例是最小字段契约。实际运行以 `mingli-master.liuren_fact_adapter` 2.1.0 的 JSON 为准，不接受语言模型仿写的同形文本。
