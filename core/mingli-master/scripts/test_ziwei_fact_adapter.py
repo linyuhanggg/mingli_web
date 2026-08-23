@@ -4,14 +4,61 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 import unittest
+from datetime import datetime
 from pathlib import Path
+from unittest import mock
 
 import adapter_validate
 import ziwei_fact_adapter
 
 
 class ZiweiFactAdapterTests(unittest.TestCase):
+    def test_adapter_invokes_the_vendored_runtime_without_jit(self) -> None:
+        completed = mock.Mock(
+            returncode=0,
+            stdout=json.dumps({"palaces": [{} for _ in range(12)]}),
+            stderr="",
+        )
+        with mock.patch.object(
+            ziwei_fact_adapter.subprocess,
+            "run",
+            return_value=completed,
+        ) as run:
+            ziwei_fact_adapter._run_iztro(datetime(1990, 5, 6, 8), "男")
+
+        self.assertEqual(
+            run.call_args.args[0],
+            ["node", "--jitless", str(ziwei_fact_adapter.RUNTIME)],
+        )
+
+    def test_jitless_runtime_matches_the_default_chart_bytes(self) -> None:
+        payload = json.dumps(
+            {
+                "year": 1990,
+                "month": 5,
+                "day": 6,
+                "hour": 8,
+                "gender": "男",
+                "ziHourPolicy": "midnight",
+            },
+            ensure_ascii=False,
+        )
+        outputs: list[str] = []
+        for flags in ((), ziwei_fact_adapter.NODE_RUNTIME_FLAGS):
+            completed = subprocess.run(
+                ["node", *flags, str(ziwei_fact_adapter.RUNTIME)],
+                input=payload,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            outputs.append(completed.stdout)
+
+        self.assertEqual(outputs[0], outputs[1])
+
     def test_public_benchmark_case_matches_the_pinned_chart_fixture(self) -> None:
         facts = ziwei_fact_adapter.build_from_birth(
             "1970-07-22T15:00:00+08:00",

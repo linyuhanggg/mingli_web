@@ -13,9 +13,11 @@ not start or stdout could not be written) escapes this contract.
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Mapping
@@ -24,6 +26,8 @@ PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 if str(PACKAGE_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(PACKAGE_ROOT / "scripts"))
 
+from reading_engine.interface_contracts import runtime_failure  # noqa: E402
+
 # Human-readable, domain-free fallback; duplicated here so even a broken
 # core import still yields a lawful Result on stdout.
 FALLBACK_ERROR_TEXT = "本次处理未完成，请稍后重试。"
@@ -31,14 +35,43 @@ FALLBACK_ERROR_TEXT = "本次处理未完成，请稍后重试。"
 STORE_ROOT_ENV = "MINGLI_STORE_ROOT"
 _STATE_ROOT_PARENT = Path(".local/state/mingli-master/instances")
 
+_TRANSIENT_ERRNOS = frozenset(
+    {
+        errno.EAGAIN,
+        errno.EINTR,
+        errno.EMFILE,
+        errno.ENFILE,
+        errno.ENOMEM,
+        errno.ETIMEDOUT,
+    }
+)
 
-def _stopped_error(text: str = FALLBACK_ERROR_TEXT) -> dict[str, object]:
+
+def _stopped_error(
+    code: str = "runtime.internal_error",
+    text: str = FALLBACK_ERROR_TEXT,
+) -> dict[str, object]:
     return {
         "kind": "stopped",
         "reason": "error",
         "public_copy": text or FALLBACK_ERROR_TEXT,
         "state_token": None,
+        "input_request": None,
+        "failure": runtime_failure(code).to_dict(),
+        "continuation_allowed": False,
+        "terminal": True,
+        "completion_committed": False,
     }
+
+
+def _failure_code_for_exception(error: BaseException) -> str:
+    if isinstance(error, (TimeoutError, subprocess.TimeoutExpired)):
+        return "transient.timeout"
+    if isinstance(error, MemoryError):
+        return "transient.resource_unavailable"
+    if isinstance(error, OSError) and error.errno in _TRANSIENT_ERRNOS:
+        return "transient.resource_unavailable"
+    return "runtime.internal_error"
 
 
 def resolve_store_root(
@@ -87,7 +120,7 @@ def run(
             payload = json.loads(stdin_text)
         except json.JSONDecodeError as error:
             print(f"json_cli: malformed input: {error}", file=stderr)
-            result_payload = _stopped_error()
+            result_payload = _stopped_error("input_contract.malformed_json")
         else:
             from reading_engine.interface import ReadingInterface
             from reading_engine.interface_contracts import command_from_dict
@@ -96,7 +129,9 @@ def run(
                 command = command_from_dict(payload)
             except (KeyError, TypeError, ValueError) as error:
                 print(f"json_cli: invalid command: {error}", file=stderr)
-                result_payload = _stopped_error()
+                result_payload = _stopped_error(
+                    "input_contract.invalid_command"
+                )
             else:
                 interface = ReadingInterface(
                     skill_root=skill_root,
@@ -105,7 +140,7 @@ def run(
                 result_payload = interface.execute(command).to_dict()
     except Exception as error:  # noqa: BLE001 - stdout must stay lawful
         print(f"json_cli: internal failure: {error}", file=stderr)
-        result_payload = _stopped_error()
+        result_payload = _stopped_error(_failure_code_for_exception(error))
     stdout.write(json.dumps(result_payload, ensure_ascii=False) + "\n")
     stdout.flush()
     return 0
@@ -120,7 +155,12 @@ def main(argv: list[str] | None = None) -> int:
         store_root = resolve_store_root(PACKAGE_ROOT)
     except ValueError as error:
         print(f"json_cli: invalid state root: {error}", file=sys.stderr)
-        print(json.dumps(_stopped_error(), ensure_ascii=False))
+        print(
+            json.dumps(
+                _stopped_error("bootstrap.state_root_invalid"),
+                ensure_ascii=False,
+            )
+        )
         return 0
     return run(
         sys.stdin.read(),
