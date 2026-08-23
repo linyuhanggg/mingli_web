@@ -20,7 +20,10 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import yaml
 
 import liuren_fact_adapter
-from reading_engine.liuren_contract import build_runtime_core_facts
+from reading_engine.liuren_contract import (
+    LIUREN_RULES_SHA256,
+    build_runtime_core_facts,
+)
 from runtime_python import runtime_command
 
 
@@ -79,7 +82,6 @@ LIUREN_SOURCE_TABLE_SHA256 = "49095999aaef2b16000e201969f5ca5b1a02bf5c3e340ae077
 LIUREN_IMAGERY_RELPATH = Path("scripts/data/liuren-miben-general-imagery.json")
 LIUREN_IMAGERY_SHA256 = "da5cead70490e0769cb60ed44de07e8b106960d964f8616a7ad384380f13d996"
 LIUREN_RULES_RELPATH = Path("references/inference/liuren-rules-v1.json")
-LIUREN_RULES_SHA256 = "0fcbe9716e80e1a54e15b3e6fe615b1d517e3a0d023b7795ed412372b6bf526c"
 LIUREN_DIMENSION_ALIASES = {
     "outcome": "outcome",
     "timing": "timing",

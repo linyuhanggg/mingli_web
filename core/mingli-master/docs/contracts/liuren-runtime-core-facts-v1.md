@@ -24,11 +24,26 @@
 | `three_transmissions` | object[3] | 是 | 否 | 不省略 | `stage` 固定为 `initial → middle → final` |
 | `plate_offset` | integer | 是 | 否 | 不省略 | 0–11 |
 | `xunkong` | object | 是 | 否 | 不省略 | 严格为 `{xun, branches[2]}` |
-| `structural_patterns` | string[] | 是 | 否 | 不省略 | 仅现有算法识别的结构名；GAP-DL-02 的格局来源锚点不在本合同范围 |
+| `structural_patterns` | string[] | 是 | 否 | 不省略 | 兼容字段；仅保留现有算法识别的结构名，不承担“可核验”语义 |
+| `source_conditioned_patterns` | object[] | 否 | 否 | 旧 v1 payload 可省略；当前生成器总是输出 | GAP-DL-02 additive 投影；无可核验锚点时整项省略，零命中为 `[]` |
 | `dimension_facts` | object | 是 | 否 | 不省略 | 只含本次请求维度，保持请求首次出现顺序 |
 | `timing_candidates` | object[] | 否 | 否 | 未请求 timing 时省略 | 已请求 timing 但无有界日期候选时输出 `[]` |
 
 `lesson_method` 的严格键集为：`primary`、`use_method`、`direct_direction`、`selected_initial`、`calculated_transmissions`、`calculation_source`、`source_anchor`。原始 Runtime 的键名是 `transmission_method`；稳定投影只使用产品合同名称 `lesson_method`，不会同时输出两个别名。
+
+## `source_conditioned_patterns`
+
+每项严格同构于其他术数已经公开的来源命中对象：
+
+- `rule_id`、`local_rule_id`、`title`：稳定规则身份与当前结构名；
+- `source_pack`、`source_anchor`：可回查的 reference pack 与 `fulltext.md#L...` 行锚点；
+- `status`：固定为 `predicate_matched_not_verdict`；
+- `fact_paths`、`predicate_audit`：指回本次 `structural_patterns` 命中及必要的结构条件；
+- `source_dependency_id`：固定为 `liuren.source-conditioned-structural-patterns-v1`。
+
+当前来源表只登记已经通过 reference pack 核对的四项：伏吟 `DLR-09 / DLQ-041 / L7696`、反吟 `DLR-10 / DLQ-043 / L7874`、八专日 `DLR-08 / DLQ-039 / L7556`、四课不备 `DLR-07 / DLQ-012 / L58`。其中“四课不备”的古籍锚点明确限定“三课备”，所以只有四课去重后恰为三课才发布来源对象；两课或其他未收录标签继续保留兼容字符串，但不生成伪锚点。
+
+该数组不是吉凶、成败或应期裁决。它没有 `verdict` 字段，也不允许把 `status` 改成结论态。来源登记在 `references/inference/liuren-rules-v1.json`；聚焦审计命令为 `python3 -B scripts/audit_liuren_structural_patterns.py`。
 
 ## `dimension_facts`
 

@@ -7,13 +7,17 @@ import copy
 import json
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+import audit_liuren_structural_patterns
 import liuren_calc
 import liuren_fact_adapter
+from reading_engine import liuren_contract
 from reading_engine.liuren_contract import (
     LiurenRuntimeContractError,
     SCHEMA_VERSION,
     build_runtime_core_facts,
+    build_source_conditioned_patterns,
     validate_runtime_core_facts,
 )
 
@@ -168,6 +172,7 @@ class LiurenRuntimeContractTests(unittest.TestCase):
                 "plate_offset",
                 "xunkong",
                 "structural_patterns",
+                "source_conditioned_patterns",
                 "dimension_facts",
             ],
         )
@@ -479,6 +484,71 @@ class LiurenRuntimeContractTests(unittest.TestCase):
                     for source_ref in record["source_refs"]:
                         self.assertTrue(source_ref["source_anchor"], (dimension, record))
 
+    def test_source_conditioned_patterns_are_anchored_and_not_verdicts(self) -> None:
+        facts = liuren_fact_adapter.build_from_chart(
+            day_ganzhi="癸丑",
+            hour_ganzhi="戊午",
+            month_general="午",
+            question="脱敏来源样例",
+            location="fixture",
+        )
+        contract = liuren_calc.extend_liuren_facts(
+            facts,
+            requested_dimensions=("relationship",),
+            horizon=HORIZON,
+            target_relative=None,
+        )["runtime_core_facts"]
+
+        self.assertEqual(
+            [row["title"] for row in contract["source_conditioned_patterns"]],
+            ["伏吟", "八专日"],
+        )
+        for row in contract["source_conditioned_patterns"]:
+            self.assertEqual(row["status"], "predicate_matched_not_verdict")
+            self.assertTrue(row["source_anchor"].startswith("fulltext.md#L"))
+            self.assertNotIn("verdict", row)
+            self.assertNotIn("hard_verdict", row)
+            self.assertTrue(row["fact_paths"])
+            self.assertTrue(row["predicate_audit"])
+
+    def test_unmapped_or_unverifiable_patterns_fail_closed(self) -> None:
+        output = copy.deepcopy(_facts()["output"])
+        output["structural_patterns"] = ["伏吟", "合成未收录课体"]
+        rows = build_source_conditioned_patterns(output)
+        self.assertEqual([row["title"] for row in rows], ["伏吟"])
+
+        catalog = copy.deepcopy(liuren_contract._structural_pattern_catalog())
+        catalog["伏吟"]["source_anchor"] = ""
+        with patch.object(
+            liuren_contract,
+            "_structural_pattern_catalog",
+            return_value=catalog,
+        ):
+            self.assertEqual(build_source_conditioned_patterns(output), [])
+
+    def test_two_lesson_incomplete_pattern_does_not_reuse_three_lesson_anchor(self) -> None:
+        facts = liuren_fact_adapter.build_from_chart(
+            day_ganzhi="癸丑",
+            hour_ganzhi="戊午",
+            month_general="午",
+            question="脱敏来源边界",
+            location="fixture",
+        )
+        output = facts["output"]
+        self.assertIn("四课不备", output["structural_patterns"])
+        self.assertNotIn(
+            "四课不备",
+            [row["title"] for row in build_source_conditioned_patterns(output)],
+        )
+
+    def test_structural_pattern_source_audit_closes_rule_quote_and_anchor(self) -> None:
+        report = audit_liuren_structural_patterns.audit_liuren_structural_patterns()
+
+        self.assertTrue(report["ready"], report)
+        self.assertEqual(report["pattern_count"], 4)
+        self.assertEqual(report["anchored_pattern_count"], 4)
+        self.assertEqual(report["findings"], [])
+
     def test_missing_source_anchor_and_non_null_verdict_are_rejected(self) -> None:
         without_anchor = _contract()
         source_ref = without_anchor["dimension_facts"]["relationship"][
@@ -498,6 +568,21 @@ class LiurenRuntimeContractTests(unittest.TestCase):
             LiurenRuntimeContractError, "hard_verdict must be null"
         ):
             validate_runtime_core_facts(with_verdict)
+
+        source_verdict = _contract()
+        source_verdict["source_conditioned_patterns"][0]["verdict"] = "吉"
+        with self.assertRaisesRegex(
+            LiurenRuntimeContractError, "contains unknown keys: verdict"
+        ):
+            validate_runtime_core_facts(source_verdict)
+
+        source_status = _contract()
+        source_status["source_conditioned_patterns"][0]["status"] = "verdict"
+        with self.assertRaisesRegex(
+            LiurenRuntimeContractError,
+            "status must be predicate_matched_not_verdict",
+        ):
+            validate_runtime_core_facts(source_status)
 
     def test_builder_returns_a_deep_copy(self) -> None:
         facts = _facts()
