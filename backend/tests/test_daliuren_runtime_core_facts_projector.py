@@ -124,6 +124,47 @@ def test_daliuren_projector_fail_closed_on_wrong_schema_version() -> None:
     assert project_daliuren_view_model(_runtime_core_brief(payload)) is None
 
 
+def test_daliuren_projector_preserves_timing_candidates_omission_and_empty_array() -> None:
+    omitted_payload = copy.deepcopy(_load_fixture())
+    omitted_payload.pop("timing_candidates")
+    omitted_view = project_daliuren_view_model(_runtime_core_brief(omitted_payload))
+
+    empty_payload = copy.deepcopy(_load_fixture())
+    empty_payload["timing_candidates"] = []
+    empty_view = project_daliuren_view_model(_runtime_core_brief(empty_payload))
+
+    assert isinstance(omitted_view, DaliurenChartV1)
+    assert omitted_view.core_facts is not None
+    assert omitted_view.core_facts.timing_candidates is None
+    assert isinstance(empty_view, DaliurenChartV1)
+    assert empty_view.core_facts is not None
+    assert empty_view.core_facts.timing_candidates == ()
+
+
+def test_daliuren_projector_fails_closed_when_any_required_runtime_field_is_missing() -> None:
+    required_fields = (
+        "day_hour",
+        "earth_plate",
+        "heaven_plate",
+        "heavenly_generals",
+        "month_general",
+        "noble_person",
+        "lesson_method",
+        "four_lessons",
+        "three_transmissions",
+        "plate_offset",
+        "xunkong",
+        "structural_patterns",
+        "dimension_facts",
+    )
+
+    for field in required_fields:
+        payload = copy.deepcopy(_load_fixture())
+        payload.pop(field)
+
+        assert project_daliuren_view_model(_runtime_core_brief(payload)) is None, field
+
+
 def test_daliuren_projector_fail_closed_on_unknown_lesson_method_key() -> None:
     payload = copy.deepcopy(_load_fixture())
     lesson_method = dict(payload["lesson_method"])

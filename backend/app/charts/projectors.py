@@ -5259,6 +5259,21 @@ def project_qimen_view_model(
 
 
 _DALIUREN_RUNTIME_CORE_FACTS_VERSION = "mingli-liuren-runtime-core-facts-v1"
+_DALIUREN_RUNTIME_REQUIRED_FIELDS = (
+    "day_hour",
+    "earth_plate",
+    "heaven_plate",
+    "heavenly_generals",
+    "month_general",
+    "noble_person",
+    "lesson_method",
+    "four_lessons",
+    "three_transmissions",
+    "plate_offset",
+    "xunkong",
+    "structural_patterns",
+    "dimension_facts",
+)
 
 
 def _daliuren_runtime_core_facts_payload(facts: object) -> Mapping[str, object] | None:
@@ -5273,6 +5288,15 @@ def _daliuren_runtime_core_facts_payload(facts: object) -> Mapping[str, object] 
     if payload.get("schema_version") != _DALIUREN_RUNTIME_CORE_FACTS_VERSION:
         return None
     return payload
+
+
+def _daliuren_required_fields_present(payload: Mapping[str, object]) -> bool:
+    """Reject v1 Runtime bundles that omit a required contract field."""
+
+    return all(
+        field in payload and payload[field] is not None
+        for field in _DALIUREN_RUNTIME_REQUIRED_FIELDS
+    )
 
 
 def _daliuren_lessons_from_runtime(raw_lessons: object) -> tuple[DaliurenLesson, ...] | None:
@@ -5369,7 +5393,7 @@ def _daliuren_core_facts_from_runtime(
         kwargs["plate_offset"] = plate_offset
 
     timing_candidates = payload.get("timing_candidates")
-    if isinstance(timing_candidates, list) and timing_candidates:
+    if isinstance(timing_candidates, list):
         kwargs["timing_candidates"] = timing_candidates
 
     if not kwargs:
@@ -5392,6 +5416,8 @@ def project_daliuren_view_model(
     subject_ref = _subject_ref(brief, facts)
     question = _question(brief)
     if runtime_core is None or subject_ref is None or question is None:
+        return None
+    if not _daliuren_required_fields_present(runtime_core):
         return None
 
     lessons = _daliuren_lessons_from_runtime(runtime_core.get("four_lessons"))
