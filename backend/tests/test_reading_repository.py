@@ -272,6 +272,67 @@ async def test_repository_round_trips_encrypted_orchestrator_checkpoints(
         assert accepted_copy.public_copy_digest
 
 
+async def test_repository_persists_only_closed_runtime_failure_audit_fields(
+    reading_database: Any,
+) -> None:
+    models = importlib.import_module("app.readings.models")
+    now = datetime(2026, 8, 9, 12, 0, tzinfo=UTC)
+    async with reading_database.sessions() as session, session.begin():
+        repository, _profile, version, job, contracts = await create_reading_graph(session)
+        await repository.record_terminal_stopped(
+            str(job.id),
+            contracts.Stopped(
+                reason="error",
+                public_copy="含敏感上下文的失败文案不进入审计列。",
+                state_token="runtime-secret-token",
+                failure=contracts.RuntimeFailure(
+                    code="transient.timeout",
+                    category="transient",
+                    retryable=True,
+                ),
+            ),
+            now,
+        )
+        checkpoint = await repository.load_checkpoint(str(job.id))
+        audit_row = (
+            await session.execute(
+                text(
+                    "SELECT runtime_failure_schema_version, runtime_failure_code, "
+                    "runtime_failure_category, runtime_failure_retryable "
+                    "FROM reading_versions"
+                )
+            )
+        ).one()
+
+    assert checkpoint.terminal_stopped is not None
+    assert checkpoint.terminal_stopped.failure == contracts.RuntimeFailure(
+        code="transient.timeout",
+        category="transient",
+        retryable=True,
+    )
+    assert audit_row == (
+        "mingli-runtime-failure/v1",
+        "transient.timeout",
+        "transient",
+        True,
+    )
+
+    async with reading_database.sessions() as session:
+        persisted = await session.get(models.ReadingVersion, version.id)
+        assert persisted is not None
+        serialized = repr(
+            (
+                persisted.last_result_ciphertext,
+                persisted.runtime_failure_schema_version,
+                persisted.runtime_failure_code,
+                persisted.runtime_failure_category,
+                persisted.runtime_failure_retryable,
+            )
+        )
+    assert "runtime-secret-token" not in serialized
+    assert "敏感上下文" not in serialized
+
+
 async def test_load_job_uses_the_immutable_product_version_contract_snapshot(
     reading_database: Any,
 ) -> None:

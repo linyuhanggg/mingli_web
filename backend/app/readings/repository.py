@@ -278,6 +278,7 @@ class SqlReadingRepository:
         version.last_result_nonce = None
         version.last_result_ciphertext = None
         version.last_result_digest = None
+        self._clear_runtime_failure_audit(version)
         job.status = "queued"
         job.available_at = available_at or datetime.now(UTC)
         job.lease_owner = None
@@ -1170,6 +1171,20 @@ class SqlReadingRepository:
         version.last_result_nonce = encrypted.nonce
         version.last_result_ciphertext = encrypted.ciphertext
         version.last_result_digest = encrypted.fingerprint
+        if stopped.failure is None:
+            self._clear_runtime_failure_audit(version)
+            return
+        version.runtime_failure_schema_version = stopped.failure.schema_version
+        version.runtime_failure_code = stopped.failure.code
+        version.runtime_failure_category = stopped.failure.category
+        version.runtime_failure_retryable = stopped.failure.retryable
+
+    @staticmethod
+    def _clear_runtime_failure_audit(version: ReadingVersion) -> None:
+        version.runtime_failure_schema_version = None
+        version.runtime_failure_code = None
+        version.runtime_failure_category = None
+        version.runtime_failure_retryable = None
 
     def _set_completion(self, version: ReadingVersion, public_copy: str) -> None:
         encrypted = self.cipher.encrypt_text(

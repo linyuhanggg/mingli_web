@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
 from mingli_paths import MINGLI_CORE_ROOT, MINGLI_CORE_SCRIPTS
 
 
@@ -306,7 +305,72 @@ def test_result_dtos_validate_and_round_trip_public_json(
     result = contracts.result_from_dict(payload)
 
     assert type(result).__name__ == expected_type
-    assert result.to_dict() == payload
+    if expected_type == "Stopped":
+        assert result.failure == contracts.RuntimeFailure.internal_error()
+        assert result.to_dict() == {
+            **payload,
+            "failure": {
+                "schema_version": "mingli-runtime-failure/v1",
+                "code": "runtime.internal_error",
+                "category": "runtime_internal",
+                "retryable": False,
+            },
+        }
+    else:
+        assert result.to_dict() == payload
+
+
+def test_runtime_failure_v1_accepts_only_the_closed_non_pii_code_table() -> None:
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    payload = {
+        "kind": "stopped",
+        "reason": "error",
+        "public_copy": "处理未完成。",
+        "state_token": None,
+        "input_request": None,
+        "failure": {
+            "schema_version": "mingli-runtime-failure/v1",
+            "code": "transient.timeout",
+            "category": "transient",
+            "retryable": True,
+        },
+    }
+
+    stopped = contracts.result_from_dict(payload)
+
+    assert stopped.failure is not None
+    assert stopped.failure.to_dict() == payload["failure"]
+    assert stopped.to_dict() == payload
+
+    for malformed_failure in (
+        {**payload["failure"], "exception_text": "subject=private"},
+        {**payload["failure"], "path": "/private/runtime"},
+        {**payload["failure"], "category": "runtime_internal"},
+        {**payload["failure"], "retryable": False},
+    ):
+        malformed = {**payload, "failure": malformed_failure}
+        with pytest.raises(contracts.ContractValidationError):
+            contracts.result_from_dict(malformed)
+
+
+def test_runtime_failure_v1_rejects_failure_on_non_error_stop() -> None:
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    payload = {
+        "kind": "stopped",
+        "reason": "unsupported",
+        "public_copy": "当前不支持。",
+        "state_token": None,
+        "input_request": None,
+        "failure": {
+            "schema_version": "mingli-runtime-failure/v1",
+            "code": "runtime.internal_error",
+            "category": "runtime_internal",
+            "retryable": False,
+        },
+    }
+
+    with pytest.raises(contracts.ContractValidationError):
+        contracts.result_from_dict(payload)
 
 
 def test_protocol_boundary_rejects_extra_or_legacy_fields() -> None:
