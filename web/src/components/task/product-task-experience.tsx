@@ -4,6 +4,7 @@ import { Check, ChevronRight, Circle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { ReadingResult } from "@/components/readings/reading-result";
 import { Status } from "@/components/ui/status";
 import { WorkbenchShell } from "@/components/workbench/workbench-shell";
 import {
@@ -127,6 +128,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(null);
   const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(null);
+  const [ziweiPreviewReadingId, setZiweiPreviewReadingId] = useState<string | null>(null);
   const [savedProfiles, setSavedProfiles] = useState<ProfileSummary[]>([]);
   const [savedProfilesLoading, setSavedProfilesLoading] = useState(
     shouldLoadProfiles,
@@ -334,6 +336,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               : await startQizhengReading(payload, intent.key);
         if (product.id === "bazi") {
           setBaziPreviewReadingId(response.reading_version_id);
+          setStage("workbench");
+        } else if (product.id === "ziwei") {
+          setZiweiPreviewReadingId(response.reading_version_id);
           setStage("workbench");
         } else {
           router.push(`/app/readings/${response.reading_version_id}`);
@@ -652,7 +657,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           />
         </div>
       ) : null}
-      {stage === "workbench" && product.id !== "bazi" ? (
+      {stage === "workbench" && product.id !== "bazi" && product.id !== "ziwei" ? (
         <WorkbenchShell
           product={product}
           onBack={() => {
@@ -660,6 +665,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             setBaziProfileVersionId(null);
             intentKeyRef.current = null;
             setBaziPreviewReadingId(null);
+            setZiweiPreviewReadingId(null);
             setSubmitError(null);
             setStage("input");
           }}
@@ -697,6 +703,48 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           profileVersionId={baziProfileVersionId ?? ""}
           query={values?.issue.trim() || "请预览我的八字命盘。"}
         />
+      ) : null}
+      {stage === "workbench" && product.id === "ziwei" && !ziweiPreviewReadingId ? (
+        <Status
+          actions={
+            <button
+              type="button"
+              onClick={() => {
+                setSubmitError(null);
+                setStage("input");
+              }}
+            >
+              返回录入
+            </button>
+          }
+          description="当前没有已确认的紫微任务句柄，不会伪造盘面。"
+          state="empty"
+          title="还没有可恢复的盘面"
+        />
+      ) : null}
+      {stage === "workbench" && product.id === "ziwei" && ziweiPreviewReadingId ? (
+        <>
+          <Status
+            actions={
+              <button
+                type="button"
+                onClick={() => {
+                  profileVersionRef.current = null;
+                  intentKeyRef.current = null;
+                  setZiweiPreviewReadingId(null);
+                  setSubmitError(null);
+                  setStage("input");
+                }}
+              >
+                返回录入
+              </button>
+            }
+            description="盘面留在本页。登录只用于保存、历史和深读。"
+            state="empty"
+            title="紫微盘面"
+          />
+          <ReadingResult readingId={ziweiPreviewReadingId} />
+        </>
       ) : null}
     </div>
   );
