@@ -443,10 +443,45 @@ it("renders Runtime Ziwei core facts without adding browser-side judgments", () 
   );
 
   expect(screen.getByText("水二局")).toBeVisible();
-  expect(screen.getByText("本命四化事实")).toBeVisible();
-  expect(screen.getByText("廉贞")).toBeVisible();
-  expect(screen.getByText("TR-01 · 至玄至微")).toBeVisible();
-  expect(screen.getByText(/不在浏览器追加判断/)).toBeVisible();
+  expect(screen.getByText("紫微")).toBeVisible();
+  expect(screen.getByRole("region", { name: "四化" })).toHaveTextContent("廉贞");
+  expect(screen.queryByText("本命四化事实")).not.toBeInTheDocument();
+  expect(screen.queryByText("TR-01 · 至玄至微")).not.toBeInTheDocument();
+  expect(screen.queryByText(/不在浏览器追加判断/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/吉凶|大吉|大凶/)).not.toBeInTheDocument();
+});
+
+it("renders ZiweiPalaceBoard for ziwei-chart/v1 and fail-closes missing core_facts modules", () => {
+  const branches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"] as const;
+  render(
+    <RuntimeChart
+      viewModel={{
+        schema_version: "ziwei-chart/v1",
+        subject_ref: "profile-version:fixture",
+        life_palace_id: "0",
+        body_palace_id: "1",
+        palaces: branches.map((branch, index) => ({
+          palace_id: String(index),
+          label: index === 0 ? "命宫" : `宫${index}`,
+          heavenly_stem: "甲",
+          earthly_branch: branch,
+          major_stars: index === 0 ? ["紫微"] : [],
+          minor_stars: [],
+          adjective_stars: [],
+        })),
+        time_layers: [],
+        core_facts: null,
+      }}
+    />,
+  );
+
+  expect(screen.getByRole("grid", { name: "十二宫环盘" })).toBeVisible();
+  expect(screen.getAllByText("紫微").length).toBeGreaterThan(0);
+  expect(screen.getAllByText("命宫").length).toBeGreaterThan(0);
+  expect(screen.queryByRole("region", { name: "口径" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "四化" })).not.toBeInTheDocument();
+  expect(screen.queryByText("测试期未开放")).toBeVisible();
+  expect(screen.queryByText(/¥/)).not.toBeInTheDocument();
 });
 
 it("renders Runtime Qizheng core facts and keeps absent aspects absent", () => {
