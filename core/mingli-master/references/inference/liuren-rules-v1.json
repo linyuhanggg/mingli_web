@@ -8,7 +8,8 @@
         {
           "pack": "san-shi/liuren-miben",
           "rule_id": "LM-R20",
-          "quote_id": "LM-Q072"
+          "quote_id": "LM-Q072",
+          "source_anchor": "fulltext.md#L4917"
         }
       ],
       "dimensions": [
@@ -25,7 +26,8 @@
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-15",
-          "quote_id": "LZ-Q050"
+          "quote_id": "LZ-Q050",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": [
@@ -42,12 +44,14 @@
         {
           "pack": "san-shi/liuren-miben",
           "rule_id": "LM-R20",
-          "quote_id": "LM-Q072"
+          "quote_id": "LM-Q072",
+          "source_anchor": "fulltext.md#L4917"
         },
         {
           "pack": "san-shi/liuren-miben",
           "rule_id": "LM-R10",
-          "quote_id": "LM-Q051"
+          "quote_id": "LM-Q051",
+          "source_anchor": "fulltext.md#L3568"
         }
       ],
       "dimensions": [
@@ -64,7 +68,8 @@
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-15",
-          "quote_id": "LZ-Q050"
+          "quote_id": "LZ-Q050",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": [
@@ -81,12 +86,14 @@
         {
           "pack": "san-shi/liuren-miben",
           "rule_id": "LM-R20",
-          "quote_id": "LM-Q072"
+          "quote_id": "LM-Q072",
+          "source_anchor": "fulltext.md#L4917"
         },
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-15",
-          "quote_id": "LZ-Q050"
+          "quote_id": "LZ-Q050",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": [
@@ -107,12 +114,14 @@
         {
           "pack": "san-shi/liuren-miben",
           "rule_id": "LM-R20",
-          "quote_id": "LM-Q072"
+          "quote_id": "LM-Q072",
+          "source_anchor": "fulltext.md#L4917"
         },
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-15",
-          "quote_id": "LZ-Q050"
+          "quote_id": "LZ-Q050",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": [
@@ -133,7 +142,8 @@
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-17",
-          "quote_id": "LZ-Q054"
+          "quote_id": "LZ-Q054",
+          "source_anchor": "fulltext.md#L557"
         }
       ],
       "dimensions": ["outcome"],
@@ -149,7 +159,8 @@
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-17",
-          "quote_id": "LZ-Q054"
+          "quote_id": "LZ-Q054",
+          "source_anchor": "fulltext.md#L557"
         }
       ],
       "dimensions": ["outcome"],
@@ -165,7 +176,8 @@
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-18",
-          "quote_id": "LZ-Q055"
+          "quote_id": "LZ-Q055",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": ["outcome"],
@@ -181,7 +193,8 @@
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-18",
-          "quote_id": "LZ-Q055"
+          "quote_id": "LZ-Q055",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": ["outcome"],
@@ -197,7 +210,8 @@
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-18",
-          "quote_id": "LZ-Q055"
+          "quote_id": "LZ-Q055",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": ["outcome"],
@@ -213,7 +227,8 @@
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-18",
-          "quote_id": "LZ-Q055"
+          "quote_id": "LZ-Q055",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": ["outcome"],
@@ -229,12 +244,14 @@
         {
           "pack": "san-shi/liuren-miben",
           "rule_id": "LM-R22",
-          "quote_id": "LM-Q074"
+          "quote_id": "LM-Q074",
+          "source_anchor": "fulltext.md#L2926"
         },
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-19",
-          "quote_id": "LZ-Q056"
+          "quote_id": "LZ-Q056",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": ["outcome"],
@@ -250,12 +267,14 @@
         {
           "pack": "san-shi/liuren-miben",
           "rule_id": "LM-R22",
-          "quote_id": "LM-Q024"
+          "quote_id": "LM-Q024",
+          "source_anchor": "fulltext.md#L1835"
         },
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-19",
-          "quote_id": "LZ-Q056"
+          "quote_id": "LZ-Q056",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": ["outcome"],
@@ -271,12 +290,14 @@
         {
           "pack": "san-shi/liuren-miben",
           "rule_id": "LM-R22",
-          "quote_id": "LM-Q024"
+          "quote_id": "LM-Q024",
+          "source_anchor": "fulltext.md#L1835"
         },
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-19",
-          "quote_id": "LZ-Q056"
+          "quote_id": "LZ-Q056",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": ["outcome"],
@@ -292,12 +313,14 @@
         {
           "pack": "san-shi/liuren-miben",
           "rule_id": "LM-R22",
-          "quote_id": "LM-Q019"
+          "quote_id": "LM-Q019",
+          "source_anchor": "fulltext.md#L1474"
         },
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-19",
-          "quote_id": "LZ-Q056"
+          "quote_id": "LZ-Q056",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": ["outcome"],
@@ -313,7 +336,8 @@
         {
           "pack": "san-shi/liuren-zhiyin",
           "rule_id": "LR-19",
-          "quote_id": "LZ-Q056"
+          "quote_id": "LZ-Q056",
+          "source_anchor": "fulltext.md#L777"
         }
       ],
       "dimensions": ["work"],
@@ -329,7 +353,8 @@
         {
           "pack": "san-shi/liuren-miben",
           "rule_id": "LM-R10",
-          "quote_id": "LM-Q051"
+          "quote_id": "LM-Q051",
+          "source_anchor": "fulltext.md#L3568"
         }
       ],
       "dimensions": [

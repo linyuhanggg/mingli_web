@@ -20,16 +20,18 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import yaml
 
 import liuren_fact_adapter
+from reading_engine.liuren_contract import build_runtime_core_facts
 from runtime_python import runtime_command
 
 
-CALCULATION_CONTRACT = "mingli-liuren-pipeline-v5-rule-evidence"
+CALCULATION_CONTRACT = "mingli-liuren-pipeline-v6-runtime-contract"
 RUNTIME_FILES = (
     "scripts/liuren_calc.py",
     "scripts/runtime_python.py",
     "scripts/liuren_fact_adapter.py",
     "scripts/data/liuren-miben-general-imagery.json",
     "scripts/reading_engine/calendar_core.py",
+    "scripts/reading_engine/liuren_contract.py",
     "scripts/adapter_validate.py",
     "references/matrices/liuren-source-tables-v1.yaml",
     "references/inference/liuren-rules-v1.json",
@@ -77,7 +79,7 @@ LIUREN_SOURCE_TABLE_SHA256 = "49095999aaef2b16000e201969f5ca5b1a02bf5c3e340ae077
 LIUREN_IMAGERY_RELPATH = Path("scripts/data/liuren-miben-general-imagery.json")
 LIUREN_IMAGERY_SHA256 = "da5cead70490e0769cb60ed44de07e8b106960d964f8616a7ad384380f13d996"
 LIUREN_RULES_RELPATH = Path("references/inference/liuren-rules-v1.json")
-LIUREN_RULES_SHA256 = "b7f8eb3a544bc315ae2c400112d161c8c6561c9823764e8813ea45f930b3cf53"
+LIUREN_RULES_SHA256 = "0fcbe9716e80e1a54e15b3e6fe615b1d517e3a0d023b7795ed412372b6bf526c"
 LIUREN_DIMENSION_ALIASES = {
     "outcome": "outcome",
     "timing": "timing",
@@ -1114,8 +1116,21 @@ def extend_liuren_facts(
             for dependency in dependency_ids
         ],
     }
-    if any(canonical == "timing" for _, canonical in canonical_requested):
+    timing_requested = any(
+        canonical == "timing" for _, canonical in canonical_requested
+    )
+    if timing_requested:
         result["timing"] = timing
+        result["runtime_core_facts"] = build_runtime_core_facts(
+            output,
+            dimension_facts,
+            timing_candidates=timing["candidates"],
+        )
+    else:
+        result["runtime_core_facts"] = build_runtime_core_facts(
+            output,
+            dimension_facts,
+        )
     return result
 
 

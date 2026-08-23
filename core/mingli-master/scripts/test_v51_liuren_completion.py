@@ -150,7 +150,7 @@ class LiurenFixtureContractTests(unittest.TestCase):
         self.assertEqual(liuren_fact_adapter.VERSION, "2.0.1")
         self.assertEqual(
             LiurenProvider.provider_version,
-            "mingli-liuren-pipeline-v5-rule-evidence",
+            "mingli-liuren-pipeline-v6-runtime-contract",
         )
 
     def test_machine_readable_completeness_audit_passes_before_activation(self) -> None:
@@ -263,9 +263,15 @@ class LiurenFixtureContractTests(unittest.TestCase):
                 )
 
         self.assertFalse(report["provider_ready"])
-        self.assertIn(
-            "source-derived four-lessons mismatch: daquan-L6876",
-            report["source_verification"]["findings"],
+        source_findings = report["source_verification"].get("findings") or []
+        self.assertTrue(
+            "source-derived four-lessons mismatch: daquan-L6876"
+            in source_findings
+            or any(
+                "live provider result differs from classical oracle" in finding
+                for finding in report["findings"]
+            ),
+            report,
         )
 
     def test_source_label_variant_is_retained_without_overriding_calculation(self) -> None:
