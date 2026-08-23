@@ -1,0 +1,89 @@
+.panel {
+  display: grid;
+  gap: var(--space-sm);
+  min-width: 0;
+  color: var(--color-text);
+  background: var(--color-canvas);
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.summary,
+.skuCopy {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.kicker {
+  display: inline-block;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.quoteList {
+  display: grid;
+  gap: var(--space-xs);
+  margin: var(--space-xs) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quote {
+  margin: 0;
+  padding: 0.35rem 0 0.35rem 0.75rem;
+  border-left: 2px solid var(--color-evidence-line);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+}
+
+.offerCard {
+  display: grid;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.offerName {
+  margin: 0;
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+}
+
+.loginLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  width: fit-content;
+  padding: 0 0.9rem;
+  border-radius: var(--radius-control);
+  background: var(--color-text);
+  color: var(--color-surface);
+  font-size: var(--font-size-label);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.loginLink:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loginLink {
+    transition: none;
+  }
+}
