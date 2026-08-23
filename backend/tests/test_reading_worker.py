@@ -582,6 +582,68 @@ async def test_worker_releases_bound_fulfillment_on_terminal_stop(
         assert persisted_job.status == "stopped"
 
 
+async def test_worker_persists_runtime_failure_without_replaying_no_token_prepare(
+    worker_database: Any,
+) -> None:
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    models = importlib.import_module("app.readings.models")
+    readings = importlib.import_module("worker.readings")
+    job = await seed_job(worker_database)
+    clock = MutableClock(WORKER_TEST_NOW)
+
+    class RetryableFailureRuntime:
+        def __init__(self) -> None:
+            self.commands: list[Any] = []
+
+        async def execute(self, command: Any) -> Any:
+            self.commands.append(command)
+            return contracts.Stopped(
+                reason="error",
+                public_copy="运行时暂时不可用。",
+                failure=contracts.RuntimeFailure(
+                    code="transient.resource_unavailable",
+                    category="transient",
+                    retryable=True,
+                ),
+            )
+
+    runtime = RetryableFailureRuntime()
+    factory = readings.SqlReadingOrchestratorFactory(
+        cipher=make_test_cipher(),
+        runtime=runtime,
+        model=CountingModel([]),
+        clock=clock,
+        alert_sink=NoopAlertSink(),
+    )
+
+    await process_one_stage(
+        worker_database,
+        worker_id="worker-runtime-failure",
+        clock=clock,
+        orchestrator_factory=factory,
+    )
+
+    assert [command.kind for command in runtime.commands] == ["prepare"]
+    async with worker_database.sessions() as session:
+        version = await session.get(models.ReadingVersion, job.reading_version_id)
+        persisted_job = await session.get(models.ReadingJobRecord, job.id)
+        assert version is not None
+        assert persisted_job is not None
+        assert version.status == "terminal_stopped"
+        assert persisted_job.status == "stopped"
+        assert version.runtime_failure_schema_version == "mingli-runtime-failure/v1"
+        assert version.runtime_failure_code == "transient.resource_unavailable"
+        assert version.runtime_failure_category == "transient"
+        assert version.runtime_failure_retryable is True
+
+    assert await readings.ReadingJobWorkSource(
+        sessions=worker_database.sessions,
+        worker_id="worker-runtime-failure-retry",
+        clock=clock,
+    ).claim_one() is None
+    assert [command.kind for command in runtime.commands] == ["prepare"]
+
+
 def test_claim_query_is_fail_safe_for_postgresql_workers() -> None:
     readings = importlib.import_module("worker.readings")
     now = datetime(2026, 8, 9, 12, 0, tzinfo=UTC)
