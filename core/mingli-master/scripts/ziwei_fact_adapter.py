@@ -21,6 +21,7 @@ ADAPTER_NAME = "mingli-master.ziwei_fact_adapter"
 ADAPTER_VERSION = "1.2.0"
 IZTRO_VERSION = "2.5.8"
 RUNTIME = Path(__file__).with_name("ziwei_runtime.js")
+NODE_RUNTIME_FLAGS = ("--jitless",)
 VENDOR = Path(__file__).resolve().parents[1] / "vendor" / f"iztro-{IZTRO_VERSION}"
 YANG_STEMS = frozenset("甲丙戊庚壬")
 TRANSFORMATION_EFFECTS = ("禄", "权", "科", "忌")
@@ -132,7 +133,7 @@ def _run_iztro(
             f"{target_date.year}-{target_date.month}-{target_date.day}"
         )
     completed = subprocess.run(
-        ["node", str(RUNTIME)],
+        ["node", *NODE_RUNTIME_FLAGS, str(RUNTIME)],
         input=json.dumps(payload, ensure_ascii=False),
         check=False,
         capture_output=True,

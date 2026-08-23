@@ -25,9 +25,11 @@ from reading_engine.interface_contracts import (
     PublicLimit,
     PublicTerm,
     ReadingBrief,
+    RuntimeFailure,
     Stopped,
     command_from_dict,
     result_from_dict,
+    runtime_failure,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -196,6 +198,51 @@ class PortableInterfaceTests(unittest.TestCase):
     def test_stopped_rejects_unknown_reason(self) -> None:
         with self.assertRaises(ValueError):
             Stopped(reason="not-a-reason", public_copy="text")
+
+    def test_stopped_error_has_a_versioned_pii_free_failure(self) -> None:
+        result = Stopped(reason="error", public_copy="safe failure text")
+
+        self.assertEqual(
+            result.failure,
+            RuntimeFailure(
+                schema_version="mingli-runtime-failure/v1",
+                code="runtime.internal_error",
+                category="runtime_internal",
+                retryable=False,
+            ),
+        )
+        assert result.failure is not None
+        self.assertEqual(
+            set(result.failure.to_dict()),
+            {"schema_version", "code", "category", "retryable"},
+        )
+
+    def test_failure_code_registry_is_closed_and_reason_scoped(self) -> None:
+        with self.assertRaises(ValueError):
+            runtime_failure("runtime.user-submitted-value")
+        with self.assertRaises(ValueError):
+            RuntimeFailure(
+                code="transient.timeout",
+                category="runtime_internal",
+                retryable=False,
+            )
+        with self.assertRaises(ValueError):
+            Stopped(
+                reason="unsupported",
+                public_copy="unsupported",
+                failure=runtime_failure("runtime.internal_error"),
+            )
+
+    def test_failure_decoder_rejects_extra_diagnostic_fields(self) -> None:
+        payload = Stopped(
+            reason="error",
+            public_copy="safe failure text",
+        ).to_dict()
+        assert isinstance(payload["failure"], dict)
+        payload["failure"]["exception"] = "private path or caller data"
+
+        with self.assertRaises(ValueError):
+            result_from_dict(payload)
 
     def test_each_public_command_round_trips(self) -> None:
         for command in self.describe_prepare_complete_examples():

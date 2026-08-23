@@ -58,6 +58,15 @@ class JsonCodecCliTests(unittest.TestCase):
         self.assertEqual(payload.get("kind"), "stopped")
         self.assertEqual(payload.get("reason"), "error")
         self.assertTrue(str(payload.get("public_copy") or "").strip())
+        self.assertEqual(
+            payload.get("failure"),
+            {
+                "schema_version": "mingli-runtime-failure/v1",
+                "code": "input_contract.malformed_json",
+                "category": "input_contract",
+                "retryable": False,
+            },
+        )
 
     def test_cli_offers_no_subcommands_or_transaction_paths(self) -> None:
         completed = subprocess.run(
