@@ -1,0 +1,82 @@
+.panel {
+  display: grid;
+  gap: var(--space-sm);
+  min-width: 0;
+  color: var(--color-text);
+  background: var(--color-canvas);
+}
+
+.viewport {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(4.6rem, 1fr);
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  min-width: 0;
+}
+
+.cell {
+  display: grid;
+  gap: 0.2rem;
+  justify-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--target-min);
+  padding: 0.5rem 0.3rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+}
+
+.cell[data-highlight="true"] {
+  border-color: var(--color-accent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.cell:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.seq {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+}
+
+.palace {
+  font-family: var(--font-domain);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+}
+
+.ganzhi,
+.ages {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}
+
+.ages {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell {
+    transition: none;
+  }
+}
