@@ -377,3 +377,51 @@ def test_daliuren_chart_schema_rejects_transmission_method_alias(
         },
     }
     reject_schema("views/daliuren-chart-v1.schema.json", payload)
+
+
+def test_daliuren_chart_schema_accepts_only_typed_source_pattern_fields(
+    validate_schema: Callable[[str, object], None],
+    reject_schema: Callable[[str, object], None],
+) -> None:
+    payload = {
+        "schema_version": "daliuren-chart/v1",
+        "subject_ref": "fixture:probe",
+        "question": "fixture question",
+        "lessons": [
+            {"lesson_id": "1", "upper": "辰", "lower": "庚"},
+            {"lesson_id": "2", "upper": "子", "lower": "辰"},
+            {"lesson_id": "3", "upper": "辰", "lower": "申"},
+            {"lesson_id": "4", "upper": "子", "lower": "辰"},
+        ],
+        "transmissions": [
+            {"stage": "initial", "branch": "子", "general": "青龙"},
+            {"stage": "middle", "branch": "申", "general": "腾蛇"},
+            {"stage": "final", "branch": "辰", "general": "玄武"},
+        ],
+        "core_facts": {
+            "structural_patterns": ["伏吟"],
+            "source_conditioned_patterns": [
+                {
+                    "rule_id": "DLR-09",
+                    "local_rule_id": "liuren.structural.fuyin",
+                    "title": "伏吟",
+                    "source_pack": "san-shi/daliuren-daquan",
+                    "source_anchor": "fulltext.md#L7696",
+                    "status": "predicate_matched_not_verdict",
+                    "fact_paths": [
+                        "fact:/chart_facts/output/structural_patterns/0"
+                    ],
+                    "predicate_audit": [
+                        "/chart_facts/output/structural_patterns/0:eq:伏吟"
+                    ],
+                    "source_dependency_id": (
+                        "liuren.source-conditioned-structural-patterns-v1"
+                    ),
+                }
+            ],
+        },
+    }
+
+    validate_schema("views/daliuren-chart-v1.schema.json", payload)
+    payload["core_facts"]["source_conditioned_patterns"][0]["verdict"] = "forged"
+    reject_schema("views/daliuren-chart-v1.schema.json", payload)

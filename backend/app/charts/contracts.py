@@ -1903,6 +1903,32 @@ class DaliurenTimingCandidate(ContractModel):
     candidate_not_guarantee: Literal[True]
 
 
+class DaliurenSourcePattern(ContractModel):
+    """Audited structural-pattern match, never a divination verdict."""
+
+    rule_id: Literal["DLR-07", "DLR-08", "DLR-09", "DLR-10"]
+    local_rule_id: Literal[
+        "liuren.structural.incomplete-four-lessons",
+        "liuren.structural.bazhuan-day",
+        "liuren.structural.fuyin",
+        "liuren.structural.fanyin",
+    ]
+    title: Literal["四课不备", "八专日", "伏吟", "反吟"]
+    source_pack: Literal["san-shi/daliuren-daquan"]
+    source_anchor: Literal[
+        "fulltext.md#L58",
+        "fulltext.md#L7556",
+        "fulltext.md#L7696",
+        "fulltext.md#L7874",
+    ]
+    status: Literal["predicate_matched_not_verdict"]
+    fact_paths: tuple[str, ...] = Field(min_length=1)
+    predicate_audit: tuple[str, ...] = Field(min_length=1)
+    source_dependency_id: Literal[
+        "liuren.source-conditioned-structural-patterns-v1"
+    ]
+
+
 class DaliurenDayHour(ContractModel):
     day: str = Field(min_length=2)
     hour: str = Field(min_length=2)
@@ -2351,6 +2377,7 @@ class DaliurenCoreFacts(ContractModel):
     noble_person: DaliurenNoblePerson | None = None
     plate_offset: int | None = Field(default=None, ge=0, le=11, strict=True)
     structural_patterns: tuple[Annotated[str, Field(min_length=1)], ...] | None = None
+    source_conditioned_patterns: tuple[DaliurenSourcePattern, ...] = ()
     timing_candidates: tuple[DaliurenTimingCandidate, ...] | None = None
     xunkong: DaliurenXunkong | None = None
 

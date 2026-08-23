@@ -100,8 +100,62 @@
         "noble_person": {"oneOf": [{"$ref": "#/$defs/noblePerson"}, {"type": "null"}]},
         "plate_offset": {"type": ["integer", "null"], "minimum": 0, "maximum": 11},
         "structural_patterns": {"type": ["array", "null"], "items": {"type": "string", "minLength": 1}},
+        "source_conditioned_patterns": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourcePattern"}
+        },
         "timing_candidates": {"type": ["array", "null"], "items": {"$ref": "#/$defs/timingCandidate"}},
         "xunkong": {"oneOf": [{"$ref": "#/$defs/xunkong"}, {"type": "null"}]}
+      }
+    },
+    "sourcePattern": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id",
+        "local_rule_id",
+        "title",
+        "source_pack",
+        "source_anchor",
+        "status",
+        "fact_paths",
+        "predicate_audit",
+        "source_dependency_id"
+      ],
+      "properties": {
+        "rule_id": {"enum": ["DLR-07", "DLR-08", "DLR-09", "DLR-10"]},
+        "local_rule_id": {
+          "enum": [
+            "liuren.structural.incomplete-four-lessons",
+            "liuren.structural.bazhuan-day",
+            "liuren.structural.fuyin",
+            "liuren.structural.fanyin"
+          ]
+        },
+        "title": {"enum": ["四课不备", "八专日", "伏吟", "反吟"]},
+        "source_pack": {"const": "san-shi/daliuren-daquan"},
+        "source_anchor": {
+          "enum": [
+            "fulltext.md#L58",
+            "fulltext.md#L7556",
+            "fulltext.md#L7696",
+            "fulltext.md#L7874"
+          ]
+        },
+        "status": {"const": "predicate_matched_not_verdict"},
+        "fact_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "predicate_audit": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "source_dependency_id": {
+          "const": "liuren.source-conditioned-structural-patterns-v1"
+        }
       }
     },
     "dayHour": {

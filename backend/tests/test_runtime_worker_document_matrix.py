@@ -38,7 +38,6 @@ from app.readings.request_compiler import (
 )
 from app.readings.runtime_contracts import Prepare
 from app.readings.status import ReadingStatus
-
 from mingli_paths import MINGLI_RUNTIME_RELEASE_ROOT
 
 # isort: split
@@ -754,6 +753,17 @@ def _assert_runtime_golden_facts(
     elif capability_id == "liuren":
         assert values["day_hour"] == {"day": "庚申", "hour": "辛巳"}, label
         assert values["earth_plate"] == list("子丑寅卯辰巳午未申酉戌亥"), label
+        runtime_core_facts = values["runtime_core_facts"]
+        assert isinstance(runtime_core_facts, dict), label
+        source_patterns = runtime_core_facts["source_conditioned_patterns"]
+        assert isinstance(source_patterns, list) and source_patterns, label
+        assert all(
+            item["status"] == "predicate_matched_not_verdict"
+            and item["source_dependency_id"]
+            == "liuren.source-conditioned-structural-patterns-v1"
+            and "verdict" not in item
+            for item in source_patterns
+        ), label
         lessons = values["four_lessons"]
         assert isinstance(lessons, list), label
         assert lessons[0] == {
@@ -1394,6 +1404,17 @@ async def _run_worker_document_job(
     # immutable document may still retain opaque claim reference IDs for
     # auditability, so scope this assertion to the typed public ViewModel.
     assert "/input/" not in repr(document.view_model.model_dump(mode="json")), label
+    if expected_schema == "daliuren-chart/v1":
+        core_facts = document.view_model.core_facts
+        assert core_facts is not None, label
+        source_patterns = core_facts.source_conditioned_patterns
+        assert source_patterns, label
+        assert all(
+            item.status == "predicate_matched_not_verdict"
+            and item.source_dependency_id
+            == "liuren.source-conditioned-structural-patterns-v1"
+            for item in source_patterns
+        ), label
     return document
 
 

@@ -7,6 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 from app.charts.contracts import DaliurenChartV1
 from app.charts.projectors import project_daliuren_view_model
 from jsonschema import Draft202012Validator
@@ -237,6 +238,37 @@ def _payload_with_state_work_money_dimensions() -> dict[str, object]:
     return payload
 
 
+_MING17_SOURCE_PATTERNS = {
+    "四课不备": (
+        "DLR-07",
+        "liuren.structural.incomplete-four-lessons",
+        "fulltext.md#L58",
+    ),
+    "八专日": (
+        "DLR-08",
+        "liuren.structural.bazhuan-day",
+        "fulltext.md#L7556",
+    ),
+    "伏吟": ("DLR-09", "liuren.structural.fuyin", "fulltext.md#L7696"),
+    "反吟": ("DLR-10", "liuren.structural.fanyin", "fulltext.md#L7874"),
+}
+
+
+def _source_pattern(title: str) -> dict[str, object]:
+    rule_id, local_rule_id, source_anchor = _MING17_SOURCE_PATTERNS[title]
+    return {
+        "rule_id": rule_id,
+        "local_rule_id": local_rule_id,
+        "title": title,
+        "source_pack": "san-shi/daliuren-daquan",
+        "source_anchor": source_anchor,
+        "status": "predicate_matched_not_verdict",
+        "fact_paths": ["fact:/chart_facts/output/structural_patterns/0"],
+        "predicate_audit": [f"/chart_facts/output/structural_patterns/0:eq:{title}"],
+        "source_dependency_id": "liuren.source-conditioned-structural-patterns-v1",
+    }
+
+
 def test_daliuren_projector_maps_ming11_runtime_core_facts_fixture() -> None:
     view_model = project_daliuren_view_model(_runtime_core_brief(_load_fixture()))
 
@@ -263,6 +295,10 @@ def test_daliuren_projector_maps_ming11_runtime_core_facts_fixture() -> None:
     assert core_facts.heavenly_generals is not None
     assert len(core_facts.heavenly_generals) == 12
     assert core_facts.structural_patterns == ("伏吟", "四课不备")
+    assert [
+        item.model_dump(mode="json")
+        for item in core_facts.source_conditioned_patterns
+    ] == [_source_pattern("伏吟")]
     assert core_facts.plate_offset == 0
     assert core_facts.xunkong is not None
     assert core_facts.xunkong.xun == "甲申"
@@ -288,6 +324,79 @@ def test_daliuren_projector_maps_ming11_runtime_core_facts_fixture() -> None:
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     Draft202012Validator.check_schema(schema)
     Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
+
+
+@pytest.mark.parametrize("title", _MING17_SOURCE_PATTERNS)
+def test_daliuren_projector_projects_each_ming17_source_pattern(title: str) -> None:
+    payload = copy.deepcopy(_load_fixture())
+    payload["structural_patterns"] = [title]
+    payload["source_conditioned_patterns"] = [_source_pattern(title)]
+    if title == "四课不备":
+        payload["four_lessons"] = [
+            {"lesson": 1, "upper": "子", "lower": "庚"},
+            {"lesson": 2, "upper": "丑", "lower": "辰"},
+            {"lesson": 3, "upper": "寅", "lower": "申"},
+            {"lesson": 4, "upper": "子", "lower": "辰"},
+        ]
+        payload["source_conditioned_patterns"][0]["fact_paths"] = [
+            "fact:/chart_facts/output/structural_patterns/0",
+            "fact:/chart_facts/output/four_lessons/0/upper",
+            "fact:/chart_facts/output/four_lessons/1/upper",
+            "fact:/chart_facts/output/four_lessons/2/upper",
+            "fact:/chart_facts/output/four_lessons/3/upper",
+        ]
+        payload["source_conditioned_patterns"][0]["predicate_audit"].append(
+            "/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3"
+        )
+
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is not None
+    assert [item.title for item in view_model.core_facts.source_conditioned_patterns] == [
+        title
+    ]
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda payload: payload.pop("source_conditioned_patterns"),
+        lambda payload: payload.__setitem__("source_conditioned_patterns", "wrong-type"),
+        lambda payload: payload["source_conditioned_patterns"][0].__setitem__(
+            "untrusted", "raw-json"
+        ),
+        lambda payload: payload["source_conditioned_patterns"][0].__setitem__(
+            "source_anchor", "fulltext.md#L0"
+        ),
+    ],
+    ids=("missing", "wrong-type", "unknown-key", "forged-anchor"),
+)
+def test_daliuren_projector_fail_closes_only_invalid_source_pattern_block(
+    mutate: object,
+) -> None:
+    payload = copy.deepcopy(_load_fixture())
+    assert callable(mutate)
+    mutate(payload)
+
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.structural_patterns == ("伏吟", "四课不备")
+    assert view_model.core_facts.source_conditioned_patterns == ()
+
+
+def test_daliuren_projector_fail_closes_incomplete_four_lessons_source() -> None:
+    payload = copy.deepcopy(_load_fixture())
+    payload["structural_patterns"] = ["四课不备"]
+    payload["source_conditioned_patterns"] = [_source_pattern("四课不备")]
+
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.source_conditioned_patterns == ()
 
 
 def test_daliuren_projector_fail_closed_without_runtime_core_facts() -> None:

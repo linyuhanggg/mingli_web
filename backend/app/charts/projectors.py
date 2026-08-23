@@ -56,6 +56,7 @@ from app.charts.contracts import (
     DaliurenChartV1,
     DaliurenCoreFacts,
     DaliurenLesson,
+    DaliurenSourcePattern,
     DaliurenTransmission,
     DimensionSynthesis,
     ElementBalance,
@@ -5274,7 +5275,10 @@ _DALIUREN_RUNTIME_REQUIRED_FIELDS = (
     "structural_patterns",
     "dimension_facts",
 )
-_DALIUREN_RUNTIME_OPTIONAL_FIELDS = ("timing_candidates",)
+_DALIUREN_RUNTIME_OPTIONAL_FIELDS = (
+    "source_conditioned_patterns",
+    "timing_candidates",
+)
 _DALIUREN_RUNTIME_ENVELOPE_FIELDS = frozenset(
     {
         "schema_version",
@@ -5286,6 +5290,52 @@ _DALIUREN_RUNTIME_TRANSMISSION_FIELDS = frozenset(
     {"stage", "branch", "heavenly_general", "six_relative"}
 )
 _DALIUREN_RUNTIME_TRANSMISSION_STAGES = ("initial", "middle", "final")
+_DALIUREN_SOURCE_PATTERN_FIELDS: Final[frozenset[str]] = frozenset(
+    {
+        "rule_id",
+        "local_rule_id",
+        "title",
+        "source_pack",
+        "source_anchor",
+        "status",
+        "fact_paths",
+        "predicate_audit",
+        "source_dependency_id",
+    }
+)
+_DALIUREN_SOURCE_PATTERN_METADATA: Final[
+    dict[str, tuple[str, str, str, str, str]]
+] = {
+    "四课不备": (
+        "DLR-07",
+        "liuren.structural.incomplete-four-lessons",
+        "san-shi/daliuren-daquan",
+        "fulltext.md#L58",
+        "liuren.source-conditioned-structural-patterns-v1",
+    ),
+    "八专日": (
+        "DLR-08",
+        "liuren.structural.bazhuan-day",
+        "san-shi/daliuren-daquan",
+        "fulltext.md#L7556",
+        "liuren.source-conditioned-structural-patterns-v1",
+    ),
+    "伏吟": (
+        "DLR-09",
+        "liuren.structural.fuyin",
+        "san-shi/daliuren-daquan",
+        "fulltext.md#L7696",
+        "liuren.source-conditioned-structural-patterns-v1",
+    ),
+    "反吟": (
+        "DLR-10",
+        "liuren.structural.fanyin",
+        "san-shi/daliuren-daquan",
+        "fulltext.md#L7874",
+        "liuren.source-conditioned-structural-patterns-v1",
+    ),
+}
+_DALIUREN_SOURCE_PATTERN_STATUS = "predicate_matched_not_verdict"
 
 
 def _daliuren_runtime_core_facts_payload(facts: object) -> Mapping[str, object] | None:
@@ -5379,6 +5429,118 @@ def _daliuren_transmissions_from_runtime(
     return tuple(transmissions)
 
 
+def _daliuren_source_conditioned_patterns(
+    value: object,
+    *,
+    structural_patterns: object,
+    four_lessons: object,
+) -> tuple[DaliurenSourcePattern, ...] | None:
+    """Accept only MING-17's audited source objects as a complete block."""
+
+    if not isinstance(value, (list, tuple)):
+        return None
+    if not value:
+        return ()
+    if not isinstance(structural_patterns, (list, tuple)) or not all(
+        isinstance(item, str) and item.strip() for item in structural_patterns
+    ):
+        return None
+
+    result: list[DaliurenSourcePattern] = []
+    seen_titles: set[str] = set()
+    for raw in value:
+        if not isinstance(raw, Mapping) or set(raw) != _DALIUREN_SOURCE_PATTERN_FIELDS:
+            return None
+        title = raw.get("title")
+        metadata = (
+            _DALIUREN_SOURCE_PATTERN_METADATA.get(title)
+            if isinstance(title, str)
+            else None
+        )
+        if metadata is None or title in seen_titles:
+            return None
+        (
+            expected_rule_id,
+            expected_local_rule_id,
+            expected_source_pack,
+            expected_source_anchor,
+            expected_dependency_id,
+        ) = metadata
+        if (
+            raw.get("rule_id") != expected_rule_id
+            or raw.get("local_rule_id") != expected_local_rule_id
+            or raw.get("source_pack") != expected_source_pack
+            or raw.get("source_anchor") != expected_source_anchor
+            or raw.get("status") != _DALIUREN_SOURCE_PATTERN_STATUS
+            or raw.get("source_dependency_id") != expected_dependency_id
+        ):
+            return None
+
+        fact_paths = raw.get("fact_paths")
+        predicate_audit = raw.get("predicate_audit")
+        if not isinstance(fact_paths, (list, tuple)) or not isinstance(
+            predicate_audit, (list, tuple)
+        ):
+            return None
+        if not all(
+            isinstance(item, str) and item.strip()
+            for item in (*fact_paths, *predicate_audit)
+        ):
+            return None
+        matching_indices = [
+            index
+            for index, pattern in enumerate(structural_patterns)
+            if pattern == title
+        ]
+        if not matching_indices or not any(
+            path
+            == f"fact:/chart_facts/output/structural_patterns/{index}"
+            for path in fact_paths
+            for index in matching_indices
+        ):
+            return None
+        if not any(audit.endswith(f":eq:{title}") for audit in predicate_audit):
+            return None
+
+        if title == "四课不备":
+            if not isinstance(four_lessons, (list, tuple)) or len(four_lessons) != 4:
+                return None
+            lesson_uppers: set[str] = set()
+            for lesson in four_lessons:
+                if not isinstance(lesson, Mapping):
+                    return None
+                upper = cast(object, lesson.get("upper"))
+                if not isinstance(upper, str) or not upper.strip():
+                    return None
+                lesson_uppers.add(upper)
+            if len(lesson_uppers) != 3:
+                return None
+            if not any(
+                audit.endswith(":distinct_count_eq:3") for audit in predicate_audit
+            ):
+                return None
+
+        try:
+            result.append(
+                DaliurenSourcePattern(
+                    rule_id=expected_rule_id,
+                    local_rule_id=expected_local_rule_id,
+                    title=title,
+                    source_pack=expected_source_pack,
+                    source_anchor=expected_source_anchor,
+                    status=_DALIUREN_SOURCE_PATTERN_STATUS,
+                    fact_paths=tuple(fact_paths),
+                    predicate_audit=tuple(predicate_audit),
+                    source_dependency_id=expected_dependency_id,
+                )
+            )
+        except ValueError:
+            return None
+        seen_titles.add(cast(str, title))
+
+    return tuple(result)
+
+
 def _daliuren_core_facts_from_runtime(
     payload: Mapping[str, object],
 ) -> DaliurenCoreFacts | None:
@@ -5402,6 +5564,15 @@ def _daliuren_core_facts_from_runtime(
     kwargs = {field: payload[field] for field in required_core_fields}
     if "timing_candidates" in payload:
         kwargs["timing_candidates"] = payload["timing_candidates"]
+    source_patterns = payload.get("source_conditioned_patterns")
+    if source_patterns is not None:
+        parsed_source_patterns = _daliuren_source_conditioned_patterns(
+            source_patterns,
+            structural_patterns=payload["structural_patterns"],
+            four_lessons=payload["four_lessons"],
+        )
+        if parsed_source_patterns is not None:
+            kwargs["source_conditioned_patterns"] = parsed_source_patterns
     try:
         return DaliurenCoreFacts.model_validate(kwargs)
     except ValidationError:
