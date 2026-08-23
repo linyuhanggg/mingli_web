@@ -485,31 +485,262 @@ def test_qizheng_projector_exposes_ephemeris_ming_shen_limits_and_transformation
     Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
 
 
+_LIUYAO_NAJIA_DEPENDENCY = "liuyao.plate.najia-six-relatives-hidden-lines"
+_LIUYAO_CALENDAR_DEPENDENCY = "liuyao.calendar.xunkong-month-day-relations"
+_LIUYAO_RELATION_DEPENDENCY = (
+    "liuyao.relations.returning-and-useful-spirit-candidates"
+)
+
+
+def _liuyao_najia(stem: str, branch: str, element: str) -> dict[str, Any]:
+    """One Runtime najia entry in the admitted signed V53 shape."""
+
+    return {
+        "stem": stem,
+        "branch": branch,
+        "ganzhi": f"{stem}{branch}",
+        "element": element,
+        "source_dependency_id": _LIUYAO_NAJIA_DEPENDENCY,
+    }
+
+
+def _liuyao_month_day_strength(seasonal_state: str) -> dict[str, Any]:
+    return {
+        "day": {
+            "branch": "申",
+            "branch_relation": "无直接冲合",
+            "clash": False,
+            "element": "金",
+            "element_relation": "日生爻",
+            "shared_trines": [],
+        },
+        "month": {
+            "branch": "申",
+            "branch_relation": "无直接冲合",
+            "break": False,
+            "element": "金",
+            "element_relation": "月生爻",
+            "shared_trines": [["申", "子", "辰"]],
+        },
+        "fact_status": "calculated_relation_not_verdict",
+        "seasonal_state": seasonal_state,
+        "source_dependency_id": _LIUYAO_CALENDAR_DEPENDENCY,
+    }
+
+
+def _liuyao_changed_line(
+    line: int,
+    najia: dict[str, Any],
+    six_relative: str,
+    yin_yang: str,
+) -> dict[str, Any]:
+    return {
+        "line": line,
+        "month_day_strength": _liuyao_month_day_strength("囚"),
+        "najia": najia,
+        "six_relative": six_relative,
+        "source_dependency_id": _LIUYAO_NAJIA_DEPENDENCY,
+        "xunkong": False,
+        "yin_yang": yin_yang,
+    }
+
+
+def _liuyao_returning_relation(
+    original: dict[str, Any],
+    changed: dict[str, Any],
+    relation: str,
+) -> dict[str, Any]:
+    return {
+        "changed": changed,
+        "original": original,
+        "relations": [relation],
+        "fact_status": "calculated_relation_not_verdict",
+        "source_dependency_id": _LIUYAO_RELATION_DEPENDENCY,
+    }
+
+
+_LIUYAO_PLATE_NAJIA = (
+    _liuyao_najia("甲", "子", "水"),
+    _liuyao_najia("甲", "寅", "木"),
+    _liuyao_najia("甲", "辰", "土"),
+    _liuyao_najia("壬", "午", "火"),
+    _liuyao_najia("壬", "申", "金"),
+    _liuyao_najia("壬", "戌", "土"),
+)
+_LIUYAO_CHANGED_NAJIA = (
+    _liuyao_najia("辛", "丑", "土"),
+    _liuyao_najia("辛", "亥", "水"),
+    _liuyao_najia("辛", "酉", "金"),
+    _liuyao_najia("己", "亥", "水"),
+    _liuyao_najia("己", "丑", "土"),
+    _liuyao_najia("己", "卯", "木"),
+)
+_LIUYAO_LINE_STATES = ("老阳", "少阳", "少阴", "老阴", "少阳", "少阴")
+_LIUYAO_SIX_RELATIVES = ("妻财", "兄弟", "父母", "官鬼", "子孙", "父母")
+_LIUYAO_SIX_SPIRITS = ("白虎", "玄武", "青龙", "朱雀", "勾陈", "螣蛇")
+
+
+def _liuyao_line_fact(position: int) -> dict[str, Any]:
+    """One visible plate line in the admitted signed V53 shape."""
+
+    state = _LIUYAO_LINE_STATES[position - 1]
+    moving = state in {"老阳", "老阴"}
+    fact: dict[str, Any] = {
+        "line": position,
+        "month_day_strength": _liuyao_month_day_strength("旺"),
+        "moving": moving,
+        "najia": _LIUYAO_PLATE_NAJIA[position - 1],
+        "roles": ["世"] if position == 3 else (["应"] if position == 6 else []),
+        "six_relative": _LIUYAO_SIX_RELATIVES[position - 1],
+        "six_spirit": _LIUYAO_SIX_SPIRITS[position - 1],
+        "state": state,
+        "xunkong": False,
+        "yin_yang": "阳" if state in {"老阳", "少阳"} else "阴",
+    }
+    if moving:
+        fact["changed_line"] = _liuyao_changed_line(
+            position,
+            _LIUYAO_CHANGED_NAJIA[position - 1],
+            "子孙",
+            "阴" if state == "老阳" else "阳",
+        )
+        fact["changed_relation"] = _liuyao_returning_relation(
+            _LIUYAO_PLATE_NAJIA[position - 1],
+            _LIUYAO_CHANGED_NAJIA[position - 1],
+            "回头生",
+        )
+    return fact
+
+
 def test_liuyao_projector_maps_runtime_line_states_to_contract_values() -> None:
-    lines = [
-        {"line": 1, "state": "老阳", "moving": True},
-        {"line": 2, "state": "少阳", "moving": False},
-        {"line": 3, "state": "少阴", "moving": False},
-        {"line": 4, "state": "老阴", "moving": True},
-        {"line": 5, "state": "少阳", "moving": False},
-        {"line": 6, "state": "少阴", "moving": False},
+    lines = [_liuyao_line_fact(position) for position in range(1, 7)]
+    returning_relations = [
+        _liuyao_returning_relation(
+            _LIUYAO_PLATE_NAJIA[position - 1],
+            _LIUYAO_CHANGED_NAJIA[position - 1],
+            "回头生",
+        )
+        for position in (1, 4)
     ]
     values = {
         "primary_hexagram": {
             "name": "泽天夬",
             "upper_trigram": "兑",
             "lower_trigram": "乾",
+            "bits_bottom_up": "111110",
+            "king_wen_number": 43,
+            "palace": "坤",
+            "palace_element": "土",
+            "shi_line": 5,
+            "ying_line": 2,
+            "stage": "fifth",
+            "source_dependency_id": "liuyao.plate.hexagram-palace-shiying",
         },
         "changed_hexagram": {
             "name": "天风姤",
             "upper_trigram": "乾",
             "lower_trigram": "巽",
+            "bits_bottom_up": "011111",
+            "king_wen_number": 44,
+            "palace": "乾",
+            "palace_element": "金",
+            "shi_line": 1,
+            "ying_line": 4,
+            "stage": "first",
+            "source_dependency_id": "liuyao.plate.hexagram-palace-shiying",
         },
         "lines": lines,
-        "line_facts": [{"line": 1, "six_relative": "妻财", "moving": True}],
-        "najia": [{"branch": "子", "element": "水", "ganzhi": "甲子"}],
-        "returning_relations": [{"source_line": 1, "relations": ["回头生"]}],
-        "six_relatives": ["妻财"],
+        "line_facts": lines,
+        "najia": list(_LIUYAO_PLATE_NAJIA),
+        "changed_najia": list(_LIUYAO_CHANGED_NAJIA),
+        "changed_plate_lines": [
+            _liuyao_changed_line(
+                position,
+                _LIUYAO_CHANGED_NAJIA[position - 1],
+                "子孙",
+                "阴",
+            )
+            for position in range(1, 7)
+        ],
+        "hidden_lines": [
+            {
+                "line": 3,
+                "month_day_strength": _liuyao_month_day_strength("相"),
+                "najia": _liuyao_najia("己", "亥", "水"),
+                "six_relative": "官鬼",
+                "source_dependency_id": _LIUYAO_NAJIA_DEPENDENCY,
+                "source_plate": "离为火",
+                "status": "source_derived_hidden_line_candidate",
+                "xunkong": False,
+            }
+        ],
+        "month_day_strength": [
+            _liuyao_month_day_strength("旺") for _ in range(6)
+        ],
+        "relation_facts": returning_relations,
+        "returning_relations": returning_relations,
+        "shi_ying": {"shi": 3, "ying": 6},
+        "shi_ying_moving_relations": {
+            "fact_status": "calculated_relation_not_verdict",
+            "moving_to_candidates": [
+                {
+                    "branch_relation": "无直接冲合",
+                    "element_relation": "动爻生候选",
+                    "fact_status": "calculated_relation_not_verdict",
+                    "shared_trines": [],
+                    "source_dependency_id": _LIUYAO_RELATION_DEPENDENCY,
+                    "source_line": 1,
+                    "source_najia": _LIUYAO_PLATE_NAJIA[0],
+                    "source_role_label": "动爻",
+                    "source_roles": [],
+                    "target_line": 1,
+                    "target_najia": _LIUYAO_CHANGED_NAJIA[0],
+                    "target_relative": "子孙",
+                    "target_role_label": "候选",
+                    "target_roles": [],
+                    "target_source": "changed_line",
+                }
+            ],
+            "shi_ying": {
+                "branch_relation": "无直接冲合",
+                "element_relation": "比和",
+                "fact_status": "calculated_relation_not_verdict",
+                "shared_trines": [],
+                "source_dependency_id": _LIUYAO_RELATION_DEPENDENCY,
+                "source_line": 3,
+                "source_najia": _LIUYAO_PLATE_NAJIA[2],
+                "source_role_label": "世",
+                "source_roles": ["世"],
+                "target_line": 6,
+                "target_najia": _LIUYAO_PLATE_NAJIA[5],
+                "target_relative": "父母",
+                "target_role_label": "应",
+                "target_roles": ["应"],
+                "target_source": "visible_line",
+                "shi_line": 3,
+                "ying_line": 6,
+            },
+            "source_dependency_id": _LIUYAO_RELATION_DEPENDENCY,
+        },
+        "calendar": {
+            "day_branch": "申",
+            "day_ganzhi": "庚申",
+            "day_stem": "庚",
+            "month_branch": "申",
+            "month_ganzhi": "丙申",
+        },
+        "casting": {
+            "cast_digest": "9e2182933ab47ecb1f7b537449d2f48b14d48f18c88532f88a08fd0e50408359",
+            "method": "supplied_complete_cast",
+            "provenance": {"kind": "user_supplied_cast"},
+            "source_dependency_id": "liuyao.cast.six-tosses-and-hexagrams",
+            "tosses": [9, 7, 8, 6, 7, 8],
+        },
+        "six_spirit_profile": {
+            "day_stem": "庚",
+            "source_dependency_id": "liuyao.plate.six-spirits",
+        },
+        "six_relatives": list(_LIUYAO_SIX_RELATIVES),
         "useful_spirit_selection": {
             "status": "evidence_bound",
             "reason": "school-dependent adjudication is outside deterministic calculation",
@@ -647,7 +878,11 @@ def test_liuyao_projector_maps_runtime_line_states_to_contract_values() -> None:
                 "classification_source": "explicit_structured_input",
             },
         },
-        "xunkong": {"day_ganzhi": "甲子", "void_branches": ["戌", "亥"]},
+        "xunkong": {
+            "day_ganzhi": "庚申",
+            "void_branches": ["子", "丑"],
+            "source_dependency_id": _LIUYAO_CALENDAR_DEPENDENCY,
+        },
         "source_conditioned_patterns": [
             {
                 "rule_id": "divination/huozhu-lin#HZL-M001",
@@ -667,29 +902,95 @@ def test_liuyao_projector_maps_runtime_line_states_to_contract_values() -> None:
     assert isinstance(view_model, LiuyaoChartV1)
     assert [line.value for line in view_model.lines] == [9, 7, 8, 6, 7, 8]
     assert [line.moving for line in view_model.lines] == [True, False, False, True, False, False]
-    assert view_model.core_facts is not None
-    assert view_model.core_facts.six_relatives == ("妻财",)
-    assert view_model.core_facts.line_facts == (
-        {"line": 1, "six_relative": "妻财", "moving": True},
+    assert view_model.primary_hexagram.palace == "坤"
+    assert view_model.primary_hexagram.palace_element == "土"
+    assert view_model.primary_hexagram.shi_line == 5
+    assert view_model.primary_hexagram.ying_line == 2
+    assert view_model.primary_hexagram.king_wen_number == 43
+    assert view_model.primary_hexagram.stage == "fifth"
+    assert view_model.primary_hexagram.bits_bottom_up == "111110"
+    assert view_model.changed_hexagram is not None
+    assert view_model.changed_hexagram.palace == "乾"
+    assert view_model.changed_hexagram.shi_line == 1
+    core_facts = view_model.core_facts
+    assert core_facts is not None
+    assert core_facts.six_relatives == _LIUYAO_SIX_RELATIVES
+
+    assert core_facts.line_facts is not None and len(core_facts.line_facts) == 6
+    first_line = core_facts.line_facts[0]
+    assert first_line.six_relative == "妻财"
+    assert first_line.moving is True
+    assert first_line.najia.ganzhi == "甲子"
+    assert first_line.month_day_strength.seasonal_state == "旺"
+    assert first_line.changed_line is not None
+    assert first_line.changed_line.najia.ganzhi == "辛丑"
+    assert first_line.changed_relation is not None
+    assert first_line.changed_relation.relations == ("回头生",)
+    static_line = core_facts.line_facts[1]
+    assert static_line.moving is False
+    assert static_line.changed_line is None
+    assert static_line.changed_relation is None
+    assert core_facts.line_facts[2].roles == ("世",)
+    assert core_facts.line_facts[5].roles == ("应",)
+    assert core_facts.lines == core_facts.line_facts
+
+    assert core_facts.najia is not None
+    assert [entry.ganzhi for entry in core_facts.najia] == [
+        "甲子", "甲寅", "甲辰", "壬午", "壬申", "壬戌",
+    ]
+    assert core_facts.changed_najia is not None
+    assert core_facts.changed_najia[0].element == "土"
+    assert core_facts.changed_plate_lines is not None
+    assert len(core_facts.changed_plate_lines) == 6
+
+    assert core_facts.hidden_lines is not None
+    hidden = core_facts.hidden_lines[0]
+    assert hidden.line == 3
+    assert hidden.source_plate == "离为火"
+    assert hidden.status == "source_derived_hidden_line_candidate"
+
+    assert core_facts.month_day_strength is not None
+    assert len(core_facts.month_day_strength) == 6
+    assert core_facts.month_day_strength[0].month.month_break is False
+    assert core_facts.month_day_strength[0].fact_status == (
+        "calculated_relation_not_verdict"
     )
-    assert view_model.core_facts.returning_relations == (
-        {"source_line": 1, "relations": ["回头生"]},
-    )
-    assert view_model.core_facts.xunkong == {
-        "day_ganzhi": "甲子",
-        "void_branches": ["戌", "亥"],
-    }
-    assert view_model.core_facts.useful_spirit_selection is not None
+
+    assert core_facts.returning_relations is not None
+    assert core_facts.returning_relations[0].relations == ("回头生",)
+    assert core_facts.relation_facts == core_facts.returning_relations
+
+    assert core_facts.shi_ying is not None
+    assert (core_facts.shi_ying.shi, core_facts.shi_ying.ying) == (3, 6)
+    assert core_facts.shi_ying_moving_relations is not None
+    assert core_facts.shi_ying_moving_relations.shi_ying.shi_line == 3
     assert (
-        view_model.core_facts.useful_spirit_selection.role_adjudication
+        core_facts.shi_ying_moving_relations.moving_to_candidates[0].target_source
+        == "changed_line"
+    )
+
+    assert core_facts.xunkong is not None
+    assert core_facts.xunkong.void_branches == ("子", "丑")
+    assert core_facts.calendar is not None
+    assert core_facts.calendar.month_branch == "申"
+    assert core_facts.calendar.day_ganzhi == "庚申"
+    assert core_facts.casting is not None
+    assert core_facts.casting.tosses == (9, 7, 8, 6, 7, 8)
+    assert core_facts.casting.provenance.kind == "user_supplied_cast"
+    assert core_facts.six_spirit_profile is not None
+    assert core_facts.six_spirit_profile.day_stem == "庚"
+
+    assert core_facts.useful_spirit_selection is not None
+    assert (
+        core_facts.useful_spirit_selection.role_adjudication
         .specific_line_adjudication.specific_line_selection
         == 1
     )
     assert [
         pattern.local_rule_id
-        for pattern in view_model.core_facts.source_conditioned_patterns
+        for pattern in core_facts.source_conditioned_patterns
     ] == ["HZL-M001"]
-    assert view_model.core_facts.source_conditioned_patterns[0].status == (
+    assert core_facts.source_conditioned_patterns[0].status == (
         "predicate_matched_not_verdict"
     )
     schema = json.loads(
@@ -698,12 +999,93 @@ def test_liuyao_projector_maps_runtime_line_states_to_contract_values() -> None:
             / "contracts/schemas/views/liuyao-chart-v1.schema.json"
         ).read_text(encoding="utf-8")
     )
-    Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
+    dumped = view_model.model_dump(mode="json")
+    Draft202012Validator(schema).validate(dumped)
+    dumped_core_facts = dumped["core_facts"]
+    assert dumped_core_facts["month_day_strength"][0]["month"]["break"] is False
+    assert "changed_line" not in dumped_core_facts["line_facts"][1]
+
+
+def test_liuyao_projector_degrades_mismatched_core_fact_shapes_to_missing() -> None:
+    """A drifted Runtime fact shape must become missing, never a guess."""
+
+    values = {
+        # A drifted palace block keeps the base summary and drops extensions.
+        "primary_hexagram": {
+            "name": "泽天夬",
+            "upper_trigram": "兑",
+            "lower_trigram": "乾",
+            "palace": "坤",
+            "shi_line": 0,
+        },
+        "lines": [_liuyao_line_fact(position) for position in range(1, 7)],
+        # Missing the required stem key: the whole najia array degrades.
+        "najia": [
+            {key: value for key, value in entry.items() if key != "stem"}
+            for entry in _LIUYAO_PLATE_NAJIA
+        ],
+        # Wrong key names for the pinned shi/ying shape.
+        "shi_ying": {"shi_line": 3, "ying_line": 6},
+        # Only five per-line strength entries cannot map onto six lines.
+        "month_day_strength": [
+            _liuyao_month_day_strength("旺") for _ in range(5)
+        ],
+        "xunkong": {
+            "day_ganzhi": "庚申",
+            "void_branches": ["子", "丑"],
+            "source_dependency_id": _LIUYAO_CALENDAR_DEPENDENCY,
+        },
+    }
+
+    view_model = project_liuyao_view_model(brief("liuyao", values))
+
+    assert isinstance(view_model, LiuyaoChartV1)
+    assert view_model.primary_hexagram.name == "泽天夬"
+    assert view_model.primary_hexagram.palace is None
+    assert view_model.primary_hexagram.shi_line is None
+    core_facts = view_model.core_facts
+    assert core_facts is not None
+    assert core_facts.najia is None
+    assert core_facts.shi_ying is None
+    assert core_facts.month_day_strength is None
+    assert core_facts.lines is not None and len(core_facts.lines) == 6
+    assert core_facts.xunkong is not None
+    assert core_facts.xunkong.day_ganzhi == "庚申"
 
 
 def test_meihua_projector_maps_structural_plate_facts_without_verdicts() -> None:
     values = {
         "casting_method": "time",
+        "casting": {
+            "casting_digest": (
+                "0b4776fe125e1bf8f4adc1b230d3df4d"
+                "51f98e0e83c88af206e324e5a31451b5"
+            ),
+            "inputs": {
+                "hour_branch_number": 6,
+                "lunar_day": 2,
+                "lunar_leap_month": False,
+                "lunar_month": 7,
+                "lunar_year": 2026,
+                "year_branch_number": 7,
+            },
+            "method": "time",
+            "natural_language_classification": False,
+            "provenance": {
+                "calendar_digest": (
+                    "f857007e0b56255e7ec9d0f6c27308de"
+                    "a24cfc6366b1bf2f56a2fd7f817dab99"
+                ),
+                "kind": "shared_calendar_time_cast",
+            },
+            "source_dependency_id": "meihua.cast.explicit-methods-and-moduli",
+        },
+        "calendar": {
+            "hour_ganzhi": "辛巳",
+            "month_branch": "申",
+            "month_ganzhi": "丙申",
+        },
+        "totals": {"lower": 22, "moving": 22, "upper": 16},
         "primary_hexagram": {
             "name": "风雷益",
             "upper_trigram": "巽",
@@ -822,6 +1204,17 @@ def test_meihua_projector_maps_structural_plate_facts_without_verdicts() -> None
     assert view_model.moving_lines == (2,)
     assert view_model.body_use.status == "calculated_relation_not_verdict"
     assert view_model.core_facts is not None
+    assert view_model.core_facts.casting is not None
+    assert view_model.core_facts.casting.method == "time"
+    assert view_model.core_facts.casting.inputs.lunar_year == 2026
+    assert view_model.core_facts.casting.inputs.year_branch_number == 7
+    assert view_model.core_facts.casting.inputs.hour_branch_number == 6
+    assert view_model.core_facts.casting.provenance.kind == "shared_calendar_time_cast"
+    assert view_model.core_facts.calendar is not None
+    assert view_model.core_facts.calendar.month_branch == "申"
+    assert view_model.core_facts.totals is not None
+    assert view_model.core_facts.totals.upper == 16
+    assert view_model.core_facts.totals.moving == 22
     assert view_model.core_facts.body_relation_facts is not None
     assert view_model.core_facts.body_relation_facts[0].source_plate == "primary"
     assert view_model.core_facts.seasonal_strength is not None
@@ -1309,8 +1702,124 @@ def test_qimen_projector_keeps_center_palace_omissions_as_null() -> None:
     Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
 
 
-def test_daliuren_projector_maps_lessons_and_three_transmissions() -> None:
-    values = {
+_DALIUREN_BRANCHES = [
+    "子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥",
+]
+
+_DALIUREN_GENERALS = [
+    "贵人", "腾蛇", "朱雀", "六合", "勾陈", "青龙",
+    "天空", "白虎", "太常", "玄武", "太阴", "天后",
+]
+
+
+def _daliuren_lesson_method() -> dict[str, object]:
+    """The nine-method trace shape captured from the signed V53 Runtime."""
+
+    return {
+        "calculated_transmissions": "亥酉酉",
+        "calculation_source": "classical_nine-method_algorithm",
+        "direct_candidates": [],
+        "direct_direction": None,
+        "primary": "八专",
+        "remote_day_over_god": [],
+        "remote_god_over_day": [],
+        "rule_order": ["贼克", "比用/知一", "涉害", "遥克", "昴星", "别责", "八专", "伏吟", "反吟"],
+        "selected_initial": "亥",
+        "selection_trace": {
+            "count_includes_start": True,
+            "direction": "forward",
+            "result": "八专",
+            "selected": "亥",
+            "starting_branch": "酉",
+        },
+        "source_anchor": "daliuren-daquan L7556/L7652",
+        "source_label_variants": [],
+        "table_disagreement": False,
+        "table_label": "八专",
+        "table_result_disagreement": False,
+        "table_transmissions": "亥酉酉",
+        "use_method": "八专无克顺逆三神",
+    }
+
+
+def _daliuren_dimension_facts() -> dict[str, object]:
+    """A timing dimension entry mirroring the Runtime rule-evidence shape."""
+
+    candidate_date = {
+        "id": "initial_group_upper_candidate",
+        "role": "event_response_candidate",
+        "anchor_earth_branch": "丑",
+        "branch": "寅",
+        "solar_date": "2026-08-20",
+        "day_ganzhi": "丙寅",
+        "days_after_cast": 6,
+        "source_pack": "san-shi/liuren-miben",
+        "source_rule": "LM-R21",
+        "candidate_not_guarantee": True,
+    }
+    return {
+        "timing": {
+            "canonical_dimension": "timing",
+            "requested_dimension": "timing",
+            "candidate_branch": {
+                "anchor_earth_branch": "丑",
+                "branch": "寅",
+                "source_rule": "LM-R21",
+            },
+            "candidate_date": candidate_date,
+            "relative_speed": "relatively_faster",
+            "source_rule_ids": ["LM-R21"],
+            "status": "calculated_facts_not_verdict",
+            "rule_evidence": {
+                "catalog_schema": "mingli-liuren-executable-rules-v1",
+                "hard_verdict": None,
+                "matched": [
+                    {
+                        "activation_id": "liuren.timing.candidate_branch",
+                        "confidence_ceiling": "medium",
+                        "dependency_group": "liuren.timing.initial-group-seasonal-upper",
+                        "fact_paths": ["dimension_facts.timing.candidate_branch"],
+                        "observation": {"candidate_date": candidate_date},
+                        "polarity": "uncertain",
+                        "rule_id": "LM-R21",
+                        "rule_key": "timing_candidate_evidence",
+                        "source_refs": [
+                            {
+                                "pack": "san-shi/liuren-miben",
+                                "rule_id": "LM-R21",
+                                "source_anchor": "liuren-miben/fulltext.md#L1024",
+                            }
+                        ],
+                        "status": "matched",
+                        "weight_class": "timing_candidate",
+                    }
+                ],
+                "not_evaluated": [
+                    {
+                        "activation_id": "liuren.target.message.present",
+                        "reason": "no_message_target_fact_in_current_liuren_contract",
+                        "rule_id": "LM-R22",
+                        "rule_key": "message_target_present",
+                        "source_refs": [
+                            {
+                                "pack": "san-shi/liuren-miben",
+                                "quote_id": "LM-Q074",
+                                "rule_id": "LM-R22",
+                            }
+                        ],
+                        "status": "required_fact_missing",
+                    }
+                ],
+                "requires_school_adjudication": True,
+                "scope_boundaries": [],
+                "status": "calculated",
+            },
+        }
+    }
+
+
+def _daliuren_values() -> dict[str, object]:
+    return {
         "four_lessons": [
             {"lesson": 1, "upper": "辰", "lower": "庚"},
             {"lesson": 2, "upper": "子", "lower": "辰"},
@@ -1322,9 +1831,35 @@ def test_daliuren_projector_maps_lessons_and_three_transmissions() -> None:
             {"stage": "middle", "branch": "申", "heavenly_general": "腾蛇"},
             {"stage": "final", "branch": "辰", "heavenly_general": "玄武"},
         ],
-        "day_hour": {"day": "甲子", "hour": "乙丑"},
-        "earth_plate": ["子", "丑"],
-        "structural_patterns": ["伏吟"],
+        "day_hour": {"day": "庚申", "hour": "辛巳"},
+        "month_general": {"branch": "午", "name": "胜光"},
+        "noble_person": {
+            "branch": "丑",
+            "day_night_profile": "civil-double-hour",
+            "direction": "forward",
+            "earth_position": "子",
+            "period": "day",
+            "profile": "official-corrected",
+            "source": "《钦定协纪辨方书》天乙贵人表；《六壬大全》四库提要订正说明",
+        },
+        "earth_plate": list(_DALIUREN_BRANCHES),
+        "heaven_plate": [
+            {"earth": branch, "heaven": _DALIUREN_BRANCHES[(index + 1) % 12]}
+            for index, branch in enumerate(_DALIUREN_BRANCHES)
+        ],
+        "heavenly_generals": [
+            {
+                "earth": branch,
+                "general": _DALIUREN_GENERALS[index],
+                "heaven": _DALIUREN_BRANCHES[(index + 1) % 12],
+            }
+            for index, branch in enumerate(_DALIUREN_BRANCHES)
+        ],
+        "plate_offset": 1,
+        "lesson_method": _daliuren_lesson_method(),
+        "transmission_method": _daliuren_lesson_method(),
+        "dimension_facts": _daliuren_dimension_facts(),
+        "structural_patterns": ["八专日", "四课不备"],
         "timing_candidates": [
             {
                 "id": "initial_group_upper_candidate",
@@ -1339,20 +1874,55 @@ def test_daliuren_projector_maps_lessons_and_three_transmissions() -> None:
                 "candidate_not_guarantee": True,
             }
         ],
-        "xunkong": {"xun": "甲子", "branches": ["戌", "亥"]},
+        "xunkong": {"xun": "甲寅", "branches": ["子", "丑"]},
     }
 
-    view_model = project_daliuren_view_model(brief("liuren", values))
+
+def test_daliuren_projector_maps_lessons_and_three_transmissions() -> None:
+    view_model = project_daliuren_view_model(brief("liuren", _daliuren_values()))
 
     assert isinstance(view_model, DaliurenChartV1)
     assert [item.lesson_id for item in view_model.lessons] == ["1", "2", "3", "4"]
     assert [item.general for item in view_model.transmissions] == ["青龙", "腾蛇", "玄武"]
-    assert view_model.core_facts is not None
-    assert view_model.core_facts.earth_plate == ("子", "丑")
-    assert view_model.core_facts.structural_patterns == ("伏吟",)
-    assert view_model.core_facts.timing_candidates[0].solar_date == "2026-08-21"
-    assert view_model.core_facts.timing_candidates[0].source_rule == "LM-R21"
-    assert view_model.core_facts.timing_candidates[0].candidate_not_guarantee is True
+    core_facts = view_model.core_facts
+    assert core_facts is not None
+    assert core_facts.day_hour is not None
+    assert core_facts.day_hour.day == "庚申"
+    assert core_facts.month_general is not None
+    assert core_facts.month_general.name == "胜光"
+    assert core_facts.noble_person is not None
+    assert core_facts.noble_person.period == "day"
+    assert core_facts.noble_person.branch == "丑"
+    assert core_facts.earth_plate == tuple(_DALIUREN_BRANCHES)
+    assert core_facts.heaven_plate is not None
+    assert len(core_facts.heaven_plate) == 12
+    assert core_facts.heaven_plate[0].earth == "子"
+    assert core_facts.heaven_plate[0].heaven == "丑"
+    assert core_facts.heavenly_generals is not None
+    assert core_facts.heavenly_generals[0].general == "贵人"
+    assert core_facts.lesson_method is not None
+    assert core_facts.lesson_method.primary == "八专"
+    assert core_facts.lesson_method.selected_initial == "亥"
+    assert core_facts.transmission_method is not None
+    assert core_facts.transmission_method.use_method == "八专无克顺逆三神"
+    assert core_facts.dimension_facts is not None
+    timing_dimension = core_facts.dimension_facts["timing"]
+    assert timing_dimension.candidate_branch is not None
+    assert timing_dimension.candidate_branch.branch == "寅"
+    assert timing_dimension.candidate_date is not None
+    assert timing_dimension.candidate_date.solar_date == "2026-08-20"
+    assert timing_dimension.rule_evidence.hard_verdict is None
+    matched = timing_dimension.rule_evidence.matched
+    assert matched[0].rule_id == "LM-R21"
+    assert matched[0].source_refs[0].source_anchor == "liuren-miben/fulltext.md#L1024"
+    assert timing_dimension.rule_evidence.not_evaluated[0].rule_id == "LM-R22"
+    assert core_facts.xunkong is not None
+    assert core_facts.xunkong.branches == ("子", "丑")
+    assert core_facts.structural_patterns == ("八专日", "四课不备")
+    assert core_facts.timing_candidates is not None
+    assert core_facts.timing_candidates[0].solar_date == "2026-08-21"
+    assert core_facts.timing_candidates[0].source_rule == "LM-R21"
+    assert core_facts.timing_candidates[0].candidate_not_guarantee is True
     schema_path = (
         Path(__file__).resolve().parents[2]
         / "contracts"
@@ -1362,6 +1932,41 @@ def test_daliuren_projector_maps_lessons_and_three_transmissions() -> None:
     )
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
     Draft202012Validator.check_schema(schema)
+    Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
+
+
+def test_daliuren_projector_degrades_mismatched_core_fact_shapes_to_missing() -> None:
+    values = _daliuren_values()
+    values["earth_plate"] = ["子", "丑"]
+    values["heaven_plate"] = [{"earth": "子"}]
+    values["noble_person"] = {"branch": "丑", "period": "dawn"}
+    values["lesson_method"] = {"primary": "贼克"}
+    values["dimension_facts"] = {"timing": {"canonical_dimension": "timing"}}
+    values["xunkong"] = {"xun": "甲寅", "branches": ["子", "丑", "寅"]}
+
+    view_model = project_daliuren_view_model(brief("liuren", values))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    core_facts = view_model.core_facts
+    assert core_facts is not None
+    assert core_facts.earth_plate is None
+    assert core_facts.heaven_plate is None
+    assert core_facts.noble_person is None
+    assert core_facts.lesson_method is None
+    assert core_facts.dimension_facts is None
+    assert core_facts.xunkong is None
+    assert core_facts.day_hour is not None
+    assert core_facts.month_general is not None
+    assert core_facts.transmission_method is not None
+    assert core_facts.timing_candidates is not None
+    schema_path = (
+        Path(__file__).resolve().parents[2]
+        / "contracts"
+        / "schemas"
+        / "views"
+        / "daliuren-chart-v1.schema.json"
+    )
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
     Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
 
 
@@ -1616,6 +2221,43 @@ def test_canwen_projector_exposes_scope_alignment_and_missing_cross_art_scope() 
     assert hecan.selected_art_ids == ("bazi", "ziwei", "qizheng")
     assert hecan.dimensions == view_model.dimensions
     assert project_runtime_view_model(payload, product_id="hecan") == hecan
+    assert all(row.kind != "source_bound_corroboration" for row in dimension.convergence)
+
+
+def test_canwen_insufficient_arts_are_retained_not_fused() -> None:
+    payload = {
+        "question": "比较共同事实范围",
+        "facts": [
+            {
+                "ref": "fact:profile/calculated/bazi/dimension_fact_scope",
+                "subject_ref": "profile:fixture",
+                "kind_id": "kind.fact",
+                "value": {
+                    "career": {
+                        "scope": "calculated_natal_chart",
+                        "base_calculation_digest": "a" * 64,
+                    }
+                },
+                "display_text": "dimension_fact_scope",
+            },
+        ],
+        "request_view": {
+            "subject_refs": ["profile:fixture"],
+            "capability_ids": ["bazi", "ziwei"],
+            "dimension_ids": ["career"],
+        },
+    }
+
+    view_model = project_canwen_view_model(payload)
+
+    assert isinstance(view_model, CanwenViewV1)
+    dimension = view_model.dimensions[0]
+    assert dimension.missing_art_ids == ("ziwei",)
+    assert dimension.convergence == ()
+    assert len(dimension.disagreements) == 1
+    assert dimension.disagreements[0].kind == "insufficient_arts"
+    assert "hard_verdict" not in dimension.disagreements[0].model_dump()
+    assert "硬裁定" not in dimension.disagreements[0].display_text
 
 
 def test_canwen_projector_exposes_candidate_and_source_pattern_evidence() -> None:
@@ -1742,9 +2384,7 @@ def test_canwen_projector_exposes_candidate_and_source_pattern_evidence() -> Non
     assert all(signal.fact_refs for signal in evidence_signals)
     assert dimension.missing_art_ids == ()
     assert dimension.disagreements == ()
-    assert dimension.convergence == (
-        "所选术数的计算事实范围均已提供；尚未形成实质性互证结论。",
-    )
+    assert dimension.convergence == ()
 
 
 def test_canwen_does_not_treat_provider_scope_names_as_art_disagreement() -> None:
@@ -1801,9 +2441,7 @@ def test_canwen_does_not_treat_provider_scope_names_as_art_disagreement() -> Non
     dimension = view_model.dimensions[0]
     assert dimension.missing_art_ids == ()
     assert dimension.disagreements == ()
-    assert dimension.convergence == (
-        "所选术数的计算事实范围均已提供；尚未形成实质性互证结论。",
-    )
+    assert dimension.convergence == ()
 
 
 def test_project_runtime_view_model_does_not_treat_wenshi_as_canwen() -> None:

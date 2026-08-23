@@ -1,0 +1,8 @@
+[2026-08-23T06:50:18.369Z] shot 50-gufa-flow-quote http://106.14.10.235:18080/bazi#r7-evidence
+[2026-08-23T06:50:18.445Z] shot 51-gufa-sanyuan http://106.14.10.235:18080/bazi#r7-evidence
+[2026-08-23T06:50:19.580Z] shot 52-otp-email http://106.14.10.235:18080/auth/verify
+[2026-08-23T06:50:20.469Z] shot 53-otp-code http://106.14.10.235:18080/auth/verify
+[2026-08-23T06:50:22.550Z] shot 54-after-login http://106.14.10.235:18080/auth/verify
+[2026-08-23T06:50:22.551Z] url=http://106.14.10.235:18080/auth/verify 退出=false 测试期=false 提纲=false 提纲=false 天元=false 流行=false
+[2026-08-23T06:50:33.197Z] shot 55-logged-natal http://106.14.10.235:18080/bazi
+[2026-08-23T06:50:33.200Z] logged natal 测试期=true 可购买=false 提纲=false 天元=false 流行=false 深读需要登录=true

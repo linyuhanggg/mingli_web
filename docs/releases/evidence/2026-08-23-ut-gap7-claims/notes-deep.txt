@@ -1,0 +1,21 @@
+[2026-08-23T06:48:04.285Z] fill natal
+[2026-08-23T06:48:13.677Z] shot 20-natal-ready url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:48:13.677Z] natal hits ["测试期未开放","深读需要登录"]
+[2026-08-23T06:48:13.682Z] gufa count=1
+[2026-08-23T06:48:15.067Z] shot 21-gufa-hits url=http://106.14.10.235:18080/bazi#r7-evidence
+[2026-08-23T06:48:15.069Z] gufa hits ["测试期未开放","深读需要登录"]
+[2026-08-23T06:48:16.984Z] shot 22-gufa-scrolled url=http://106.14.10.235:18080/bazi#r7-evidence
+[2026-08-23T06:48:17.439Z] shot 23-deep-gate-before-login url=http://106.14.10.235:18080/bazi#r7-evidence
+[2026-08-23T06:48:17.442Z] 登录后继续 count=0
+[2026-08-23T06:48:17.448Z] otp link count=0 texthead=跳到主要内容 | 命理工具 | 测试版 | 术数 | 合参 | 工具 | 每日 | 知识内容 | 更多 | 登录 | 返回 | 八字 |  | 填出生资料，先拿到四柱和可回溯的依据。 |  | 录入与核对 | 工作台 | 报告与追问 | 返回录入 | 八字工作台 |  | 当前任务状态由服务端确认 |  | 任务进度 |  | 登录只用于接管当前任务和后续履约，不会重复提交出生资料。 |  | 免费确定性盘面 |  | 盘面和事实由服务端排定；这里不展示尚未生成的深读内容。 |  | 八字命盘 |  | 四柱、日主、月令、大运与已返回的盘面事实。 |  | 排盘结果 |  | 点击四柱可核对详细盘面；页面只展示系统已经计算并公开的事实。 |  | 确定性盘面 |  | 八字命盘 |  | 日主 己（土·阴） · 月令 戌月 · 主气 戊 |  | 05 |  | 本命 | 流年 | 流月 | 流日 |  | 01 |  | 民用钟表时间 | 口径修正未跨越时辰与日界 | 详情 |  | 八字 | 02 |  | 事实类别 | 	 | 年柱 | 庚 | 伤官 | 辰 | 典 1 | 有 1 条古法涉及此柱 | 	 | 月柱 | 丙 | 正印 | 戌 | 典 5 | 有 5 条古法涉及此
+[2026-08-23T06:48:17.454Z] visible inputs=4
+[2026-08-23T06:48:17.456Z] locator.fill: Error: Input of type "radio" cannot be filled
+Call log:
+  - waiting for locator('input:visible').first()
+    - locator resolved to <input checked required="" type="radio" value="accepted" name="verification_outcome" class="verification-form-module__VtXi2W__optionInput"/>
+    - fill("linyuhang.ut4.1787467683354@example.com")
+  - attempting fill action
+    - waiting for element to be visible, enabled and editable
+
+    at /private/tmp/ut4-gap7-deep.mjs:111:33
+[2026-08-23T06:48:17.477Z] shot 99-deep-error url=http://106.14.10.235:18080/bazi#r7-evidence

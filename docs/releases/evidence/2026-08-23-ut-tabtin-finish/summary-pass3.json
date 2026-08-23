@@ -1,0 +1,89 @@
+{
+  "r1440": {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "meihua": {
+      "url": "http://106.14.10.235:18080/meihua",
+      "urlAfter": "http://106.14.10.235:18080/meihua",
+      "hits": [],
+      "snake": [],
+      "timeout": true,
+      "ms": 50000
+    }
+  },
+  "r360": {
+    "viewport": {
+      "width": 360,
+      "height": 800
+    },
+    "bazi": {
+      "chart": {
+        "url": "http://106.14.10.235:18080/bazi",
+        "folio": null,
+        "table": {
+          "tag": "TABLE",
+          "class": "bazi-chart-module__y942EG__matrix",
+          "w": 304,
+          "h": 589,
+          "text": "事实类别\n\t\n年柱\n庚\n伤官\n辰\n典 1\n有 1 条古法涉及此柱\n\t\n月柱\n丙\n正印\n戌\n典 5\n有 5 条古法涉及此柱\n\t\n日柱\n己\n日主\n酉\n典 6\n有 6 条古法涉及此柱\n\t\n时柱\n丁\n偏印\n卯\n空\n典 1\n有 1 条古法涉及此柱\n\n藏干\t\n戊\n乙\n癸\n\t\n戊\n辛\n丁\n\t\n辛\n\t\n乙\n\n藏干十神\t\n戊 · 劫财\n乙 · 七杀\n癸 · 偏财\n\t\n戊 · 劫财\n辛 · 食神\n丁 · 偏印\n\t\n辛 · 食神\n\t\n乙 · 七杀\n\n纳音\t白蜡金\t屋上土\t大驿土\t炉中火\n十二长生\t养\t墓\t长生\t病\n神煞\t\t\t\n桃花\n\t"
+        },
+        "dl": {
+          "tag": "DL",
+          "class": "bazi-chart-module__y942EG__timeBasisList",
+          "w": 211,
+          "h": 1433,
+          "text": ""
+        },
+        "pillars": {
+          "tag": "DIV",
+          "class": "bazi-chart-module__y942EG__matrixGroup",
+          "w": 185,
+          "h": 589,
+          "text": "事实类别\n\t\n年柱\n庚\n伤官\n辰\n典 1\n有 1 条古法涉及此柱\n\t\n月柱\n丙\n正印\n戌\n典 5\n有 5 条古法涉及此柱\n\t\n日柱\n己\n日主\n酉\n典 6\n有 6 条古法涉及此柱\n\t\n时柱\n丁\n偏印\n卯\n空\n典 1\n有 1 条古法涉及此柱\n\n藏干\t\n戊\n乙\n癸\n\t\n戊\n辛\n丁\n\t\n辛\n\t\n乙\n\n藏干十神\t\n戊 · 劫财\n乙 · 七杀\n癸 · 偏财\n\t\n戊 · 劫财\n辛 · 食神\n丁 · 偏印\n\t\n辛 · 食神\n\t\n乙 · 七杀\n\n纳音\t白蜡金\t屋上土\t大驿土\t炉中火\n十二长生\t养\t墓\t长生\t病\n神煞\t\t\t\n桃花\n\t"
+        },
+        "chips": [
+          {
+            "text": "本命",
+            "pressed": "true"
+          },
+          {
+            "text": "流年",
+            "pressed": "false"
+          },
+          {
+            "text": "流月",
+            "pressed": "false"
+          },
+          {
+            "text": "流日",
+            "pressed": "false"
+          }
+        ],
+        "hasYearMonthDayHour": true
+      },
+      "yearPosts": [
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/preview",
+          "body": {
+            "profile_version_id": "7c394baa-8704-49cd-bdaa-22fcd2645d41",
+            "query": "请预览我的八字流年盘面。",
+            "dimension_ids": [
+              "career"
+            ],
+            "target_year": 2026
+          }
+        }
+      ]
+    },
+    "meihua": {
+      "url": "http://106.14.10.235:18080/meihua",
+      "urlAfter": "http://106.14.10.235:18080/meihua",
+      "hits": [],
+      "snake": [],
+      "timeout": true,
+      "ms": 50000
+    }
+  }
+}

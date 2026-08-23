@@ -1,8 +1,10 @@
 schema_version: mingli-algorithm-source-samples-v1
 purpose: >-
-  Independent pre-implementation surname 五音 samples transcribed from
-  《五行精纪》卷九 tables before any Provider exists. Expectations must not be
-  computed by a name-analysis provider.
+  Independent surname 五音 samples transcribed from 《五行精纪》卷九 tables.
+  First-surname pins remain. Remaining-row samples are unambiguous 单姓
+  collated from the same tables. Compound-surname samples use explicit
+  family_name. Expectations must not be computed by a name-analysis
+  provider. Cross-table conflicts stay unmatched.
 
 cases:
   name-analysis-zhao-jiao:
@@ -72,6 +74,136 @@ cases:
       hard_verdict: null
     verification: 吴 is the first surname of the 羽音 table; yangzhai remains a gap
 
+  name-analysis-zhou-jiao:
+    source_reference: 五行精纪 fulltext.md L2961 角音其餘行 週汝南
+    input: {name: 周, usage_scene: unspecified}
+    expected:
+      family_name: 周
+      lookup_key: 週
+      tone: 角
+      element: wood
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-02
+      hard_verdict: null
+    verification: 週/周 is a remaining 角音 row after the first surname 趙
+
+  name-analysis-li-zhi:
+    source_reference: 五行精纪 fulltext.md L2979 徵音其餘行 李隴西
+    input: {name: 李, usage_scene: unspecified}
+    expected:
+      family_name: 李
+      lookup_key: 李
+      tone: 徵
+      element: fire
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-03
+      hard_verdict: null
+    verification: 李隴西 is a remaining unambiguous 徵音 row
+
+  name-analysis-lin-gong:
+    source_reference: 五行精纪 fulltext.md L2983 宫音其餘行 林西河
+    input: {name: 林, usage_scene: unspecified}
+    expected:
+      family_name: 林
+      lookup_key: 林
+      tone: 宫
+      element: earth
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-04
+      hard_verdict: null
+    verification: 林西河 is a remaining unambiguous 宫音 row
+
+  name-analysis-zhang-shang:
+    source_reference: 五行精纪 fulltext.md L2987 商音其餘行 张清河
+    input: {name: 张, usage_scene: unspecified}
+    expected:
+      family_name: 张
+      lookup_key: 张
+      tone: 商
+      element: metal
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-05
+      hard_verdict: null
+    verification: 张清河 is a remaining unambiguous 商音 row
+
+  name-analysis-ma-yu:
+    source_reference: 五行精纪 fulltext.md L2991 羽音其餘行 马（扶风）
+    input: {name: 马, usage_scene: unspecified}
+    expected:
+      family_name: 马
+      lookup_key: 马
+      tone: 羽
+      element: water
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-06
+      hard_verdict: null
+    verification: 马（扶风） is a remaining unambiguous 羽音 row
+
+  name-analysis-tantai-jiao:
+    source_reference: 五行精纪 fulltext.md L2975 角音 澹台大山
+    input: {name: 澹台灭明, family_name: 澹台, given_name: 灭明, usage_scene: unspecified}
+    expected:
+      family_name: 澹台
+      lookup_key: 澹台
+      tone: 角
+      element: wood
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-02
+      hard_verdict: null
+    verification: 澹台大山 is a 角音 复姓 row; not in another tone table
+
+  name-analysis-zhuge-zhi:
+    source_reference: 五行精纪 fulltext.md L2979 徵音 諸葛瑯琊
+    input: {name: 诸葛, family_name: 诸葛, usage_scene: unspecified}
+    expected:
+      family_name: 诸葛
+      lookup_key: 諸葛
+      tone: 徵
+      element: fire
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-03
+      hard_verdict: null
+    verification: 諸葛瑯琊 is a 徵音 复姓 row before the 一云 span
+
+  name-analysis-shuiqiu-gong:
+    source_reference: 五行精纪 fulltext.md L2983 宫音 水丘吳興
+    input: {name: 水丘, family_name: 水丘, usage_scene: unspecified}
+    expected:
+      family_name: 水丘
+      lookup_key: 水丘
+      tone: 宫
+      element: earth
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-04
+      hard_verdict: null
+    verification: 水丘吳興 is a 宫音 复姓 row before 一云商音
+
+  name-analysis-linghu-shang:
+    source_reference: 五行精纪 fulltext.md L2987 商音 令狐太原
+    input: {name: 令狐, family_name: 令狐, usage_scene: unspecified}
+    expected:
+      family_name: 令狐
+      lookup_key: 令狐
+      tone: 商
+      element: metal
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-05
+      hard_verdict: null
+    verification: 令狐太原 is a 商音 复姓 row before 一云汾王
+
+  name-analysis-huangfu-yu:
+    source_reference: 五行精纪 fulltext.md L2991 羽音 皇甫（京兆）
+    input: {name: 皇甫, family_name: 皇甫, usage_scene: unspecified}
+    expected:
+      family_name: 皇甫
+      lookup_key: 皇甫
+      tone: 羽
+      element: water
+      match_status: exact
+      source_rule_id: name-analysis/wuxing-jingji#NA-WX-06
+      hard_verdict: null
+    verification: 皇甫（京兆） is a 羽音 复姓 row; not in another tone table
+
   name-analysis-unmatched-surname:
     source_reference: no row in the pinned v1 lookup
     input: {name: 玊, usage_scene: unspecified}
@@ -84,3 +216,198 @@ cases:
       source_status: unmatched
       hard_verdict: null
     verification: fail-closed unmatched; do not invent 五格 or stroke counts
+
+  name-analysis-conflict-qu:
+    source_reference: 曲 appears in both 角音 曲陳留 and 宫音 曲臨海
+    input: {name: 曲, usage_scene: unspecified}
+    expected:
+      family_name: 曲
+      lookup_key: 曲
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: cross-table conflict stays fail-closed; do not pick a tone
+
+  name-analysis-conflict-xiong:
+    source_reference: 熊 appears in 角音 熊中山 and 宫音 熊豫章
+    input: {name: 熊, usage_scene: unspecified}
+    expected:
+      family_name: 熊
+      lookup_key: 熊
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: cross-table 单姓 conflict stays fail-closed
+
+  name-analysis-conflict-duanmu:
+    source_reference: 端木 appears in 商音 端木兰陵 and 羽音 端木（鲁国）
+    input: {name: 端木, family_name: 端木, usage_scene: unspecified}
+    expected:
+      family_name: 端木
+      lookup_key: 端木
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: cross-table 复姓 conflict stays fail-closed; do not pick 商 or 羽
+
+  name-analysis-yiyun-diwu:
+    source_reference: 宫音 一雲商音第五陝西
+    input: {name: 第五, family_name: 第五, usage_scene: unspecified}
+    expected:
+      family_name: 第五
+      lookup_key: 第五
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: 一云别音 stays unmatched; do not retone 第五 to 商
+
+  name-analysis-yiyun-xiahou:
+    source_reference: 商音 一云汾王后 夏侯谯国
+    input: {name: 夏侯, family_name: 夏侯, usage_scene: unspecified}
+    expected:
+      family_name: 夏侯
+      lookup_key: 夏侯
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: 一云 span after 郭太原 stays unmatched; do not pin 夏侯 as 商
+
+  name-analysis-yiyun-nanmen:
+    source_reference: 宫音 一雲商音南門河南
+    input: {name: 南门, family_name: 南门, usage_scene: unspecified}
+    expected:
+      family_name: 南门
+      lookup_key: 南门
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: 一云别音 南門 stays unmatched; do not retone from 西門/東門/北門 徵音 sibling compounds
+
+  name-analysis-ocr-nanguan:
+    source_reference: 五行精纪 fulltext.md L2979 徵音 OCR 南官中吳
+    input: {name: 南官, family_name: 南官, usage_scene: unspecified}
+    expected:
+      family_name: 南官
+      lookup_key: 南官
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: OCR fragment stays unmatched; do not retone 南官 from 南宫 羽音
+
+  name-analysis-ocr-ping:
+    source_reference: 五行精纪 fulltext.md L2979 徵音 OCR 平風氣
+    input: {name: 平, usage_scene: unspecified}
+    expected:
+      family_name: 平
+      lookup_key: 平
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: OCR fragment stays unmatched; do not retone 平 from 商音 平河内
+
+  name-analysis-ocr-xianyu:
+    source_reference: 五行精纪 fulltext.md L2987 商音 OCR 鲜干太原
+    input: {name: 鲜于, family_name: 鲜于, usage_scene: unspecified}
+    expected:
+      family_name: 鲜于
+      lookup_key: 鲜于
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: OCR 鲜干 stays unmatched; do not split 干 or retone 于 from 羽音
+
+  name-analysis-dup-chen:
+    source_reference: 五行精纪 fulltext.md L2979 徵音重复粘贴 陳穎川
+    input: {name: 陈, usage_scene: unspecified}
+    expected:
+      family_name: 陈
+      lookup_key: 陈
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: duplicate paste 陳穎川 stays unmatched; do not retone from 徵音 first-line 錢
+
+  name-analysis-dup-zeng:
+    source_reference: 五行精纪 fulltext.md L2979 徵音重复粘贴 曾魯國
+    input: {name: 曾, usage_scene: unspecified}
+    expected:
+      family_name: 曾
+      lookup_key: 曾
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: duplicate paste 曾魯國 stays unmatched; do not retone from 徵音 first-line 錢
+
+  name-analysis-dup-shi:
+    source_reference: 五行精纪 fulltext.md L2979 徵音重复粘贴 史穎兆
+    input: {name: 史, usage_scene: unspecified}
+    expected:
+      family_name: 史
+      lookup_key: 史
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: duplicate paste 史穎兆 stays unmatched; do not retone from 徵音 first-line 錢
+
+  name-analysis-dup-cen:
+    source_reference: 五行精纪 fulltext.md L2983 宫音重复粘贴 岑南陽
+    input: {name: 岑, usage_scene: unspecified}
+    expected:
+      family_name: 岑
+      lookup_key: 岑
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: duplicate paste 岑南陽 stays unmatched; do not retone from 宫音 first-line 孫
+
+  name-analysis-dup-ji:
+    source_reference: 五行精纪 fulltext.md L2983 宫音重复粘贴 冀渤海
+    input: {name: 冀, usage_scene: unspecified}
+    expected:
+      family_name: 冀
+      lookup_key: 冀
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: duplicate paste 冀渤海 stays unmatched; do not retone from 宫音 first-line 孫
+
+  name-analysis-dup-niu:
+    source_reference: 五行精纪 fulltext.md L2983 宫音重复粘贴 天水牛陳曲吳興
+    input: {name: 牛, usage_scene: unspecified}
+    expected:
+      family_name: 牛
+      lookup_key: 牛
+      tone: null
+      element: null
+      match_status: unmatched
+      source_status: unmatched
+      hard_verdict: null
+    verification: duplicate paste 牛 stays unmatched; do not retone from 宫音 first-line 孫

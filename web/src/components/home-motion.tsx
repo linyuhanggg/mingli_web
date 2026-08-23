@@ -60,7 +60,7 @@ export function HomeHeroItemMotion({ children }: { children: ReactNode }) {
   return (
     <motion.div
       variants={{ hidden: { opacity: 0, y: 12 }, shown: { opacity: 1, y: 0 } }}
-      transition={{ duration: motionDurations.entrance, ease: easeOutExpo }}
+      transition={{ duration: motionDurations.chapter, ease: easeOutExpo }}
     >
       {children}
     </motion.div>
@@ -105,8 +105,8 @@ export function HomeSectionMotion({
         />
       ) : null}
       <motion.div
-        variants={{ hidden: { opacity: 0, y: 12 }, shown: { opacity: 1, y: 0 } }}
-        transition={{ duration: motionDurations.entrance, delay, ease: easeOutExpo }}
+        variants={{ hidden: { opacity: 0, y: 16 }, shown: { opacity: 1, y: 0 } }}
+        transition={{ duration: motionDurations.chapter, delay, ease: easeOutExpo }}
       >
         {children}
       </motion.div>
@@ -161,7 +161,7 @@ export function HomeLedgerItemMotion({ children }: { children: ReactNode }) {
   return (
     <motion.article
       variants={{ hidden: { opacity: 0, y: 12 }, shown: { opacity: 1, y: 0 } }}
-      transition={{ duration: motionDurations.entrance, ease: easeOutExpo }}
+      transition={{ duration: motionDurations.chapter, ease: easeOutExpo }}
     >
       {children}
     </motion.article>
@@ -196,7 +196,7 @@ export function HomeStepItemMotion({ children }: { children: ReactNode }) {
   return (
     <motion.li
       variants={{ hidden: { opacity: 0, y: 12 }, shown: { opacity: 1, y: 0 } }}
-      transition={{ duration: motionDurations.entrance, ease: easeOutExpo }}
+      transition={{ duration: motionDurations.chapter, ease: easeOutExpo }}
     >
       {children}
     </motion.li>

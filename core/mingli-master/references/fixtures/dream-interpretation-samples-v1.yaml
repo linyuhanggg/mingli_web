@@ -1,0 +1,67 @@
+schema_version: mingli-algorithm-source-samples-v1
+purpose: >-
+  Independent pre-implementation 解梦 samples transcribed from the current
+  《玉匣记》 recension before any Provider exists. The omen table is empty.
+  Expectations must not be computed by a dream provider or a language model.
+
+cases:
+  dream-unmatched-rain:
+    source_reference: no 梦见 row in yuqia-ji fulltext
+    input:
+      dream_text: 梦见下雨
+      background: null
+      omen_key: 雨
+    expected:
+      omen_key: 雨
+      lookup_key: 雨
+      match_status: unmatched
+      source_status: unmatched
+      omen_match: null
+      source_rule_id: dream-interpretation/yuqia-ji#DI-YQ-03
+      hard_verdict: null
+    verification: 雨 is a plausible omen token but is not in the empty v1 lookup
+
+  dream-unmatched-dragon:
+    source_reference: no 梦见 row in yuqia-ji fulltext
+    input:
+      dream_text: 梦见龙
+      omen_key: 龙
+    expected:
+      omen_key: 龙
+      lookup_key: 龙
+      match_status: unmatched
+      source_status: unmatched
+      omen_match: null
+      source_rule_id: dream-interpretation/yuqia-ji#DI-YQ-03
+      hard_verdict: null
+    verification: 龙 is not a pinned 占梦 row in this recension
+
+  dream-front-matter-is-not-a-row:
+    source_reference: 玉匣记 fulltext.md L12 前言点名占夢
+    input:
+      dream_text: 占夢
+      omen_key: 占夢
+    expected:
+      omen_key: 占夢
+      lookup_key: 占夢
+      match_status: unmatched
+      source_status: unmatched
+      omen_match: null
+      source_rule_id: dream-interpretation/yuqia-ji#DI-YQ-01
+      hard_verdict: null
+    verification: 前言点名不是查找命中；不得把主题词当成梦兆行
+
+  dream-unmatched-free-text:
+    source_reference: no row in the pinned v1 lookup
+    input:
+      dream_text: 昨夜梦见陌生人递信
+      background: 近日准备出行
+      omen_key: null
+    expected:
+      omen_key: null
+      lookup_key: null
+      match_status: unmatched
+      source_status: unmatched
+      omen_match: null
+      hard_verdict: null
+    verification: fail-closed unmatched; do not invent Zhou Gong, LLM, or board 梦寐

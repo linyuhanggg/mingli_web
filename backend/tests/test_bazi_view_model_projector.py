@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 from app.charts.contracts import BaziCalendarNormalization, FortuneCalendarNormalization
 from app.charts.projectors import (
@@ -7,6 +10,7 @@ from app.charts.projectors import (
     project_runtime_view_model,
 )
 from app.readings.runtime_contracts import ReadingBrief
+from jsonschema import Draft202012Validator
 
 
 def _brief(*, capability_id: str = "bazi") -> ReadingBrief:
@@ -877,6 +881,7 @@ def test_projects_runtime_bazi_core_facts_without_input_or_findings() -> None:
     assert "source_title" not in view_model.core_facts.source_conditioned_patterns[0].model_dump()
     assert "excerpt" not in view_model.core_facts.source_conditioned_patterns[0].model_dump()
     assert "1994-04-30" not in str(view_model.model_dump(mode="json"))
+    assert view_model.findings == ()
 
 
 def test_bazi_source_pattern_does_not_invent_an_evidence_reference() -> None:
@@ -910,3 +915,109 @@ def test_bazi_source_pattern_does_not_invent_an_evidence_reference() -> None:
     pattern = view_model.core_facts.source_conditioned_patterns[0]
     assert pattern.evidence_ref is None
     assert "evidence_ref" not in pattern.model_dump()
+
+
+def _public_claim_finding(
+    *,
+    unit_id: str,
+    claim_unit_id: str,
+    public_text: str,
+) -> dict[str, object]:
+    return {
+        "ref": f"finding:profile-version:test/bazi/public-claim/{unit_id}",
+        "subject_ref": "profile-version:test",
+        "dimension_ids": ["career"],
+        "kind_id": "kind.tendency",
+        "data": {"claim_unit_id": claim_unit_id, "hard_verdict": None},
+        "public_text": public_text,
+        "fact_refs": ["fact:profile-version:test/calculated/bazi/four_pillars"],
+        "evidence_refs": ["evidence:bazi/bazi/yuanhai-ziping#YR-M01"],
+        "limit_kind_ids": [],
+        "support_mode": "exact",
+    }
+
+
+def test_natal_view_keeps_runtime_public_claim_findings_with_chinese_copy() -> None:
+    payload = _brief().to_dict()
+    payload["findings"] = [
+        _public_claim_finding(
+            unit_id="pillar-roles",
+            claim_unit_id="bazi.pillar-roles-v1",
+            public_text=(
+                "四柱以日干丙为主：年柱乙酉为本，月柱辛巳为提纲，时柱癸巳为辅佐；"
+                "这只是四柱判读次序的定位，格局、旺衰与吉凶仍未裁定。"
+            ),
+        ),
+        _public_claim_finding(
+            unit_id="three-yuan-structure",
+            claim_unit_id="bazi.three-yuan-structure-v1",
+            public_text=(
+                "四柱天干乙、辛、丙、癸为天元；地支酉、巳、午、巳为地元；"
+                "支中所藏为人元；这只是干支藏三元的结构陈列，格局与吉凶仍未裁定。"
+            ),
+        ),
+        _public_claim_finding(
+            unit_id="element-flow-inventory",
+            claim_unit_id="bazi.element-flow-inventory-v1",
+            public_text=(
+                "盘中五行（含支藏）出现次数为木1、火7、土3、金5、水1；"
+                "五行顺则相生、逆则相克，日主五行为火，生火者为木；"
+                "这只是五行计数与生克次序的陈列，整盘旺衰、喜忌与吉凶仍未裁定。"
+            ),
+        ),
+        _public_claim_finding(
+            unit_id="month-order-state",
+            claim_unit_id="bazi.month-order-state-v1",
+            public_text=(
+                "月令主气五行为火，日主五行火在该月令状态表中为“旺”；"
+                "这只确定月令季节状态，整盘身强身弱仍未裁定。"
+            ),
+        ),
+        {
+            "ref": "finding:profile-version:test/bazi/interpretive_candidates",
+            "subject_ref": "profile-version:test",
+            "dimension_ids": ["career"],
+            "kind_id": "kind.tendency",
+            "data": {"fixture": True},
+            "fact_refs": ["fact:profile-version:test/calculated/bazi/four_pillars"],
+            "evidence_refs": [],
+            "limit_kind_ids": [],
+            "support_mode": "shared_turn",
+        },
+        _public_claim_finding(
+            unit_id="unknown-future-unit",
+            claim_unit_id="bazi.unknown-future-v1",
+            public_text="这是未登记的同批公开句，投影不得把内部 id 当成标题。",
+        ),
+    ]
+
+    view_model = project_bazi_view_model(ReadingBrief.from_dict(payload))
+
+    assert view_model is not None
+    dumped = view_model.model_dump(mode="json")
+    findings = dumped["findings"]
+    titles = {item["title"]: item for item in findings}
+    assert set(titles) == {"柱位职分", "三元结构", "五行流转盘点", "月令状态"}
+    assert titles["柱位职分"]["body"].startswith("四柱以日干丙为主")
+    assert titles["三元结构"]["body"].startswith("四柱天干乙、辛、丙、癸为天元")
+    assert titles["五行流转盘点"]["body"].startswith("盘中五行（含支藏）出现次数")
+    assert titles["月令状态"]["body"].startswith("月令主气五行为火")
+    for item in findings:
+        assert item["title"] != item["claim_unit_id"]
+        assert item["claim_unit_id"] not in item["title"]
+        assert item["body"] != item["claim_unit_id"]
+        assert any("\u3400" <= char <= "\u9fff" for char in item["title"])
+        assert any("\u3400" <= char <= "\u9fff" for char in item["body"])
+    assert "bazi.unknown-future-v1" not in {item["claim_unit_id"] for item in findings}
+    assert "bazi.unknown-future-v1" not in json.dumps(dumped, ensure_ascii=False)
+
+    schema_path = (
+        Path(__file__).resolve().parents[2]
+        / "contracts"
+        / "schemas"
+        / "views"
+        / "bazi-chart-v1.schema.json"
+    )
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
+    Draft202012Validator(schema).validate(dumped)

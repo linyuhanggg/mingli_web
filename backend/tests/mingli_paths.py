@@ -14,6 +14,6 @@ MINGLI_CORE_SCRIPTS = MINGLI_CORE_ROOT / "scripts"
 MINGLI_RUNTIME_RELEASE_ROOT = Path(
     os.environ.get(
         "MINGLI_RUNTIME_TEST_RELEASE_ROOT",
-        str(PROJECT_ROOT / ".runtime" / "v53-time-check-release"),
+        str(PROJECT_ROOT / ".runtime" / "v53-time-check-release-gap7-20260822"),
     )
 ).expanduser()

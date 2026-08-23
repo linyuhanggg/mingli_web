@@ -15,15 +15,18 @@ from app.adapters.runtime import (
     RuntimeReleaseInventory,
     RuntimeStartupError,
     RuntimeStartupGate,
+    V53_TIME_CHECK_RELEASE_FILE_COUNT,
     build_runtime_startup_gate,
     runtime_capability_shape_sha256,
 )
 from app.readings.capability_policy import (
     P0_EXPOSED_CAPABILITY_IDS,
     V51_RELEASE_CAPABILITY_IDS,
+    V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
     CapabilityNotExposedError,
     require_p0_capability,
 )
+from mingli_paths import PROJECT_ROOT
 from app.readings.runtime_contracts import Describe, Described
 from pydantic import ValidationError
 
@@ -718,6 +721,126 @@ def test_runtime_startup_gate_admits_the_relationship_release_profile(
     assert gate.release_inspector.expected_release_name == (
         "mingli-master-portable-core-v52-relationship"
     )
+
+
+_PREVIOUS_V53_TIME_CHECK_DESCRIBE_DIGEST = (
+    "3403992cb31aebea19e69ec3b1280a5ef02718c5f9ca3e3f94448ef7b039facc"
+)
+_PREVIOUS_V53_TIME_CHECK_SHAPE = (
+    "fb9da7fa1969e449e91222a0f10a2076da2e8cca43d1083b531aa218ff31e042"
+)
+_PREVIOUS_V53_TIME_CHECK_LISTING_SHA = (
+    "c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b"
+)
+_PREVIOUS_V53_TIME_CHECK_SOURCE_COMMIT = (
+    "663543e65ae037843b03dca1dec9486293affc9d"
+)
+_PREVIOUS_V53_TIME_CHECK_FILE_COUNT = 220
+
+
+def test_runtime_startup_gate_admits_the_time_check_gap7_release_profile(
+    tmp_path: Path,
+) -> None:
+    from app.config import Settings, _RUNTIME_RELEASE_PROFILES
+
+    profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
+    launcher = tmp_path / "runtime-time-check-fixture"
+    launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    launcher.chmod(0o700)
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    settings = Settings(
+        runtime_adapter="one-shot",
+        runtime_release_profile="v53-time-check",
+        runtime_launcher_path=launcher,
+        runtime_python_path=Path("/usr/bin/python3"),
+        runtime_release_root=release_root,
+        runtime_state_root=state_root,
+        runtime_expected_manifest_digest=profile["manifest_digest"],
+        runtime_expected_capability_shape_sha256=profile["capability_shape_sha256"],
+    )
+
+    gate = build_runtime_startup_gate(settings)
+
+    assert V53_TIME_CHECK_RELEASE_FILE_COUNT == 221
+    assert gate.expected_release_manifest_sha256 == profile["release_manifest_sha256"]
+    assert gate.expected_release_file_count == 221
+    assert gate.release_inspector.expected_release_file_count == 221
+    assert gate.release_inspector.expected_source_commit == profile["source_commit"]
+    assert gate.release_inspector.expected_release_name == profile["release_name"]
+    assert gate.expected_capability_ids == V53_TIME_CHECK_RELEASE_CAPABILITY_IDS
+
+
+def test_runtime_startup_gate_rejects_stale_v53_time_check_digests(
+    tmp_path: Path,
+) -> None:
+    from app.config import Settings
+
+    launcher = tmp_path / "runtime-stale-fixture"
+    launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    launcher.chmod(0o700)
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    settings = Settings(
+        runtime_adapter="one-shot",
+        runtime_release_profile="v53-time-check",
+        runtime_launcher_path=launcher,
+        runtime_python_path=Path("/usr/bin/python3"),
+        runtime_release_root=release_root,
+        runtime_state_root=state_root,
+        runtime_expected_manifest_digest=_PREVIOUS_V53_TIME_CHECK_DESCRIBE_DIGEST,
+        runtime_expected_capability_shape_sha256=_PREVIOUS_V53_TIME_CHECK_SHAPE,
+    )
+
+    with pytest.raises(
+        RuntimeStartupError,
+        match="does not match the admitted release",
+    ):
+        build_runtime_startup_gate(settings)
+
+
+def test_filesystem_release_inspector_still_admits_the_previous_v53_listing() -> None:
+    listing = (
+        PROJECT_ROOT / ".runtime" / "v53-time-check-release" / ".mingli-release-manifest.json"
+    )
+    if not listing.is_file():
+        pytest.skip("previous v53-time-check listing is not present")
+    inventory = FileSystemRuntimeReleaseInspector(
+        release_root=listing.parent,
+        expected_release_manifest_sha256=_PREVIOUS_V53_TIME_CHECK_LISTING_SHA,
+        expected_release_name="mingli-master-portable-core",
+        expected_source_commit=_PREVIOUS_V53_TIME_CHECK_SOURCE_COMMIT,
+        expected_capability_ids=V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
+        expected_release_file_count=_PREVIOUS_V53_TIME_CHECK_FILE_COUNT,
+    ).inspect()
+    assert inventory.release_file_count == _PREVIOUS_V53_TIME_CHECK_FILE_COUNT
+
+
+def test_filesystem_release_inspector_admits_the_local_gap7_listing() -> None:
+    from app.config import _RUNTIME_RELEASE_PROFILES
+
+    profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
+    listing = (
+        PROJECT_ROOT
+        / ".runtime"
+        / "v53-time-check-release-gap7-20260822"
+        / ".mingli-release-manifest.json"
+    )
+    if not listing.is_file():
+        pytest.skip("gap7 v53-time-check listing is not present")
+    inventory = FileSystemRuntimeReleaseInspector(
+        release_root=listing.parent,
+        expected_release_manifest_sha256=profile["release_manifest_sha256"],
+        expected_release_name=profile["release_name"],
+        expected_source_commit=profile["source_commit"],
+        expected_capability_ids=V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
+        expected_release_file_count=V53_TIME_CHECK_RELEASE_FILE_COUNT,
+    ).inspect()
+    assert inventory.release_file_count == 221
 
 
 async def test_configured_worker_admits_the_real_runtime_before_processing(

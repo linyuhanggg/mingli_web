@@ -32,6 +32,7 @@ from app.readings.narrative_contracts import (
     NarrativeCandidate,
     NarrativeRequest,
 )
+from app.readings.relationship_deep_extract import extract_relationship_deep_candidate
 
 DEEPSEEK_PROVIDER = "deepseek"
 DEEPSEEK_MODEL_ID = "deepseek-v4-flash"
@@ -611,6 +612,58 @@ class FakeModelGateway:
     """Deterministic schema Fake; it has no tools, memory, network or acceptance role."""
 
     async def generate(self, request: NarrativeRequest) -> ModelGenerationResult:
+        extracted = extract_relationship_deep_candidate(
+            request.brief,
+            request.output_contract,
+        )
+        if extracted.errors != ("relationship_deep_extract_not_applicable",):
+            if extracted.candidate is None:
+                raise NarrativeGenerationError(
+                    extracted.errors[0] if extracted.errors else "relationship_signals_missing"
+                )
+            candidate = extracted.candidate
+        else:
+            candidate = self._schema_candidate(request)
+        usage = ModelTokenUsage(input_tokens=0, output_tokens=0, total_tokens=0)
+        price_snapshot = ModelPriceSnapshot(
+            version="fake-model-price-v1",
+            currency="CNY",
+            input_microunits_per_million_tokens=0,
+            output_microunits_per_million_tokens=0,
+        )
+        receipt = ModelCallReceipt(
+            outcome="succeeded",
+            error_code=None,
+            model_profile_id="fake-model-p0-v1",
+            model_profile_snapshot_digest=hashlib.sha256(b"fake-model-p0-v1").hexdigest(),
+            provider="fake",
+            provider_model_version="fake-model-v1",
+            provider_request_fingerprint=hashlib.sha256(b"fake-request-v1").hexdigest(),
+            request_fingerprint=hashlib.sha256(_canonical_json(request.to_dict())).hexdigest(),
+            latency_ms=0,
+            narrative_policy_version=request.narrative_policy_version,
+            output_contract_id=request.output_contract.contract_id,
+            price_snapshot=ModelPriceReceipt(
+                version=price_snapshot.version,
+                currency=price_snapshot.currency,
+                snapshot_digest=price_snapshot.snapshot_digest,
+                input_microunits_per_million_tokens=0,
+                output_microunits_per_million_tokens=0,
+            ),
+            usage=usage,
+            cost=ModelCost(
+                currency="CNY",
+                microunits=0,
+                price_snapshot_version=price_snapshot.version,
+                price_snapshot_digest=price_snapshot.snapshot_digest,
+                input_microunits_per_million_tokens=0,
+                output_microunits_per_million_tokens=0,
+            ),
+        )
+        return ModelGenerationResult(candidate=candidate, receipt=receipt)
+
+    @staticmethod
+    def _schema_candidate(request: NarrativeRequest) -> NarrativeCandidate:
         scopes = _objects(request.brief.get("claim_scopes"))
         findings = _objects(request.brief.get("findings"))
         brief_limit_ids = {
@@ -668,47 +721,9 @@ class FakeModelGateway:
                     "limit_kind_ids": list(limit_ids),
                 }
             )
-
-        candidate = NarrativeCandidate.from_dict(
+        return NarrativeCandidate.from_dict(
             {
                 "schema_version": "mingli-narrative-candidate-v1",
                 "blocks": blocks,
             }
         )
-        usage = ModelTokenUsage(input_tokens=0, output_tokens=0, total_tokens=0)
-        price_snapshot = ModelPriceSnapshot(
-            version="fake-model-price-v1",
-            currency="CNY",
-            input_microunits_per_million_tokens=0,
-            output_microunits_per_million_tokens=0,
-        )
-        receipt = ModelCallReceipt(
-            outcome="succeeded",
-            error_code=None,
-            model_profile_id="fake-model-p0-v1",
-            model_profile_snapshot_digest=hashlib.sha256(b"fake-model-p0-v1").hexdigest(),
-            provider="fake",
-            provider_model_version="fake-model-v1",
-            provider_request_fingerprint=hashlib.sha256(b"fake-request-v1").hexdigest(),
-            request_fingerprint=hashlib.sha256(_canonical_json(request.to_dict())).hexdigest(),
-            latency_ms=0,
-            narrative_policy_version=request.narrative_policy_version,
-            output_contract_id=request.output_contract.contract_id,
-            price_snapshot=ModelPriceReceipt(
-                version=price_snapshot.version,
-                currency=price_snapshot.currency,
-                snapshot_digest=price_snapshot.snapshot_digest,
-                input_microunits_per_million_tokens=0,
-                output_microunits_per_million_tokens=0,
-            ),
-            usage=usage,
-            cost=ModelCost(
-                currency="CNY",
-                microunits=0,
-                price_snapshot_version=price_snapshot.version,
-                price_snapshot_digest=price_snapshot.snapshot_digest,
-                input_microunits_per_million_tokens=0,
-                output_microunits_per_million_tokens=0,
-            ),
-        )
-        return ModelGenerationResult(candidate=candidate, receipt=receipt)

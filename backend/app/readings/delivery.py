@@ -21,6 +21,10 @@ from app.readings.models import (
     ReportFeedback,
 )
 from app.readings.presentation import ReadingDocumentV1
+from app.readings.relationship_deep_extract import (
+    relationship_deep_http_export,
+    relationship_deep_http_share,
+)
 from app.readings.repository import SqlReadingRepository
 from app.readings.share_contracts import SharedReadingDocumentV1
 from app.security.envelope import EnvelopeCipher
@@ -223,7 +227,23 @@ class ReadingDeliveryService:
         version_id: UUID,
         ttl: timedelta,
     ) -> ShareToken:
-        document = await self._owned_document(owner, version_id)
+        root, version = await self._owned_version(owner, version_id)
+        product_id = version.product_id or root.product_id
+        wired = await relationship_deep_http_share(
+            repository=self.repository,
+            reading_version_id=version_id,
+            product_id=product_id,
+        )
+        if "relationship_deep_extract_not_applicable" in wired.errors:
+            document = await self._owned_document(owner, version_id)
+        elif wired.errors or wired.document is None:
+            if version.status != "accepted":
+                raise ReadingDocumentUnavailableError("Reading is not accepted")
+            raise ReadingDocumentUnavailableError("Accepted document is unavailable")
+        else:
+            if version.status != "accepted":
+                raise ReadingDocumentUnavailableError("Reading is not accepted")
+            document = wired.document
         if not document.actions.share.enabled:
             raise ReadingDocumentUnavailableError("Sharing is disabled for this document")
         if ttl < timedelta(minutes=5) or ttl > timedelta(days=7):
@@ -264,7 +284,23 @@ class ReadingDeliveryService:
         export_format: ExportFormat,
         ttl: timedelta,
     ) -> ExportToken:
-        document = await self._owned_document(owner, version_id)
+        root, version = await self._owned_version(owner, version_id)
+        product_id = version.product_id or root.product_id
+        wired = await relationship_deep_http_export(
+            repository=self.repository,
+            reading_version_id=version_id,
+            product_id=product_id,
+        )
+        if "relationship_deep_extract_not_applicable" in wired.errors:
+            document = await self._owned_document(owner, version_id)
+        elif wired.errors or wired.document is None:
+            if version.status != "accepted":
+                raise ReadingDocumentUnavailableError("Reading is not accepted")
+            raise ReadingDocumentUnavailableError("Accepted document is unavailable")
+        else:
+            if version.status != "accepted":
+                raise ReadingDocumentUnavailableError("Reading is not accepted")
+            document = wired.document
         if not document.actions.export.enabled:
             raise ReadingDocumentUnavailableError("Exporting is disabled for this document")
         if ttl < timedelta(minutes=5) or ttl > timedelta(days=1):

@@ -648,9 +648,9 @@ P3 出口：六组全部页面、四角色、完整业务明文/系统秘密隐�
 | P4-004 | 1440 全路由旅程、最大宽和复杂合参 | `docs/releases/evidence/2026-08-14-route-acceptance-working-tree/README.md`、当前 Web/Admin smoke | `BROWSER_VERIFIED` |
 | P4-005 | 键盘、焦点、读屏语义、200/400% zoom、reduced-motion | `docs/releases/evidence/2026-08-13-accessibility/**`、当前工作树 accessibility 合同 | `BROWSER_VERIFIED` |
 | P4-006 | 通用视觉范围决定；不要求青囊/METIS 像素复刻 | `docs/releases/evidence/2026-08-14-p4-006-generic-visual-decision/README.md` | `VERIFIED` |
-| P4-007 | 用户亲自浏览并批准公共/产品/账户/Admin | `docs/releases/evidence/2026-08-14-p4-007-test-server-upload/README.md` | `IN_PROGRESS` |
+| P4-007 | 用户亲自浏览并批准公共/产品/账户/Admin | 2026-08-21 首轮否决：首页勉强、其余半成品；2026-08-22 再次确认不得对旧 UI/交互做逐页验收。解除条件：五术按新 DESIGN 与每屏内容合同返工并发布新预览后，由用户本人复测 | `BLOCKED` |
 
-P4 是不可跳过门禁。P4-007 未完成前，不得进入“UI 已完成”的表述；只允许只读代码/数据调研，不得实施会约束或改写未批准页面合同的后端产品功能。
+P4 是不可跳过门禁。当前测试预览的 UI/交互已被用户否决，P4-007 不是「还在等逐页批准」。未通过新预览复测前，不得进入“UI 已完成”的表述；不得把旧 111 路清单或岗位 PASS 写成 `USER_ACCEPTED`。
 
 ### P5 — ViewModel、API 与后端产品合同
 
@@ -857,7 +857,7 @@ uv run --project backend mypy --config-file backend/pyproject.toml backend/app b
 | P10-011 见相媒体 Adapter 与结构化观察边界 | `docs/releases/evidence/2026-08-15-p10-011-physiognomy-media-adapter/README.md` | 本地私有媒体生命周期、质量/授权门禁、审计脱敏、HTTP/数据库/前端 File 上传和冻结 physio 输入已通过；生产对象存储和外部验收仍缺 |
 | P8-008 未来商业关闭态与合同 | `docs/releases/evidence/2026-08-14-p8-008-future-commerce-closed/README.md` | 定价页与 OpenAPI 明确关闭自动续费、代币余额、充值钱包和点击即付款；不代替未来订阅/充值产品批准或真实支付生产验收 |
 | P4-006 通用视觉范围决定 | `docs/releases/evidence/2026-08-14-p4-006-generic-visual-decision/README.md` | 用户确认文本与视觉均为通用表达，不存在必须复刻青囊/METIS 的产品问题；不代替 P4-007 用户浏览批准 |
-| P4-007 测试服务器上传 | `docs/releases/evidence/2026-08-14-p4-007-test-server-upload/README.md` | 当前工作树应用快照已上传并切换到 `fateradar-prod` 测试验收机；等待用户逐页浏览批准 |
+| P4-007 测试服务器上传 | `docs/releases/evidence/2026-08-14-p4-007-test-server-upload/README.md` | 当时工作树快照已上传测试验收机；2026-08-21/22 用户已否决该预览 UI/交互，不再等待逐页批准 |
 | 绑定清单可复原基线 | `docs/releases/evidence/2026-08-18-binding-manifest-baselines/` | `classical-evidence-bindings-v1.json` 施工前/交付态与自动备份；用于哈希核对和回滚，不代表 Runtime 已发布 |
 
 外部原件仍保留于：
@@ -873,16 +873,16 @@ uv run --project backend mypy --config-file backend/pyproject.toml backend/app b
 
 本节只回答两个问题：现在卡在哪，下一步做什么。施工流水不再写入本节，历史条目已按原文归档到 `docs/releases/evidence/ledger-archive/`。
 
-### 14.1 唯一全局门禁：P4-007 用户逐页批准
+### 14.1 唯一全局门禁：P4-007 当前 UI 已被否决
 
-P2 的 18 项与 P3 的 12 项全部停在 `IN_PROGRESS`，原因不是缺证据，而是缺 P4-007。P4 是不可跳过门禁：它未完成前不得出现「UI 已完成」的表述，也不得实施会约束或改写未批准页面合同的后端产品功能。
+P4-007 = `BLOCKED`。用户已否决当前测试预览的 UI 和交互，不是「还在等逐页批准」。P2 的 18 项与 P3 的 12 项因此不能写成完成。未发布按新合同返工后的预览前，不得出现「UI 已完成」，也不得把旧预览岗位 PASS 写成 `USER_ACCEPTED`。
 
-机器侧能做的部分已经做完：
+机器侧旧证据只证明当时构建可点、可截图，不构成用户批准：
 
-- 全站四视口逐路证据：Web 71 + Admin 40 路由 × 4 视口共 444 条正常路由视图，最大页面溢出 `0px`，唯一 h1、Skip Link 首焦点、reduced motion 内容保留均通过，Fixture / raw JSON / snake_case / 旧品牌四类禁项均 0 失败。证据：`docs/releases/evidence/2026-08-19-route-acceptance/README.md`。
-- 逐页人工验收清单：按公共站、产品录入、工作台与结果、账户区、Admin 五族覆盖 Web 71 + Admin 40，合计 111 条正常路由；每条给出路由、当前构建关键变化、实际 1440 截图路径、判断问题和空白结论栏，114 个截图/文档链接实测均存在，禁用验收标记 0，没有代填结论。清单：`docs/releases/evidence/2026-08-19-route-acceptance/USER-ACCEPTANCE-CHECKLIST.md`。
+- 全站四视口逐路证据：Web 71 + Admin 40 路由 × 4 视口共 444 条正常路由视图。证据：`docs/releases/evidence/2026-08-19-route-acceptance/README.md`。
+- 旧逐页人工验收清单（111 路）已停用，不得再拿来请用户勾选：`docs/releases/evidence/2026-08-19-route-acceptance/USER-ACCEPTANCE-CHECKLIST.md`。
 
-**下一步只有一个动作：用户按该清单逐页浏览并逐条给出结论。** 清单之外的任何自动化、DOM 断言、组件单测或接口绿灯都不能推进 P4-007（依据 §1.3）。
+2026-08-21 首轮结论、2026-08-22 再次确认：首页勉强可用，其余页面 UI/UX 整体不合格、半成品感。处置是五术返工闭环（每屏内容合同 → UI 设计 → 前端实现 → 技术 QA → 新预览发布 → 用户复测），不是修几个文案后继续刷旧 18080。`DESIGN.md` 审美合同已授权重写；青囊/METIS 审计只作可改编参考。解除条件：八字/紫微/六爻/梅花/大六壬按新合同发布新预览后，由用户本人复测。
 
 ### 14.2 等待用户裁决或授权的三项
 
@@ -891,19 +891,25 @@ P2 的 18 项与 P3 的 12 项全部停在 `IN_PROGRESS`，原因不是缺证据
 | 编号 | 事项 | 现状与依据 |
 |---|---|---|
 | D-1 | 2026-08-19 测试服务器发布的授权归属 | 当轮施工提示词红线明确写「不 push、不上传测试机、不部署」，但发布确已发生并原子切换 `/opt/fateradar/current`，而本机当日 codex 会话记录为空。旧 release 与切换前环境备份均保留，未修改生产、未 push。归属确认前只记录事实，不判定违规，也不据此推进 P4-007。证据：`docs/releases/evidence/2026-08-19-bazi-test-server-upload/README.md` |
-| D-2 | `/liuyao`、`/meihua` 的能力档位 | 两者仍为 B 档且 `user_decision_pending=True`（`backend/app/readings/capability_policy.py`），需用户裁定是否开放 |
+| D-2 | `/liuyao`、`/meihua` 的能力档位 | 已裁决（2026-08-21）：用户确定六爻、梅花与八字/紫微/大六壬并列主线，档位改走常规规则、`user_decision_pending` 清除（T-0821-CAP-1 施工中），不再等待 |
 | D-3 | P10-001 的 V53 重签授权 | 第 4 个 Claim Unit `bazi.day-master-root-support-v1` 只存在于 core 源码，当前签名制品只发出 3 个。重签必然改变 manifest digest，describe 很可能变，capability shape 须按实测重算、禁止猜哈希；新树必须放新目录，回滚点为保持现行 `.runtime/v53-time-check-release` 不动。证据：`artifacts/runtime-evidence/2026-08-19-v53-resign-impact.md` |
 
 ### 14.3 剩余产品断点
 
+2026-08-21 主线收缩：主做八字、紫微、六爻、梅花、大六壬。见相、解梦、姓名分析暂缓（姓名 `name-analysis-input/v1`、`name-analysis-view/v1` 合同与来源规则已冻结，Provider 暂不施工）；七政、奇门、合参维持现状，本轮不返工。
+
 平台层与算法层已推得很深：13 个 V51 Provider 完成真实 `Provider → Prepared → Worker → Accepted → typed ReadingDocument` 闭环，V53 寻时定盘通过 14 能力真实矩阵，V52 完成八字/紫微/七政关系 Worker 闭环。以下是仍未完成的产品能力，不受 P4-007 阻塞的部分可以并行推进：
 
 - 寻时定盘：core 源码已接古法校时淘汰与定盘结论（已知范围唯一即可定盘；≥2 条结构化事件按时支/命宫/小运净极性淘汰），`time-check-view/v1` 已投影 `rectification_status` / `rectification_conclusion`（无 outcome/verdict）。签名 `.runtime/v53-time-check-release` 未重签，页面视觉未改，故公开预览仍是旧制品。
-- 解梦仍无正式输入/输出合同与规则包。姓名分析已冻结 `name-analysis-input/v1`、`name-analysis-view/v1` 与《五行精纪》五音姓氏来源规则（只钉每表首姓，不自选康熙/五格/吉凶）；尚未写 Provider，未进 catalog/签名 Runtime，页面视觉未改。
-- 解梦工具的正式来源规则与 Provider
-- 三术合参的实质互证与分歧裁决（`convergence` / `disagreements` 仍为空，当前只有信号层与范围投影）
-- 见相的手相、体态、综合三模式（当前只支持 `face` scope）
-- 各术深读、追问、导出在真实产品与真实 Worker 上的完整交付
+- 姓名分析已冻结 `name-analysis-input/v1`、`name-analysis-view/v1` 与《五行精纪》五音姓氏来源规则（只钉每表首姓，不自选康熙/五格/吉凶）；尚未进 catalog/签名 Runtime，页面视觉未改。
+- 解梦已冻结 `dream-interpretation-input/v1`、`dream-interpretation-view/v1` 与《玉匣记》杂占来源规则（当前维基文库 fulltext 杂占篇无占梦子目，v1 查找表为空，unmatched fail-closed；不自选周公网典/模型文案/盘依赖梦寐）；尚未写 Provider，未进 catalog/签名 Runtime，页面视觉未改。
+- 解梦 Provider（按已冻结合同，空表 fail-closed，不进 catalog/.runtime）
+- 三术合参互证/分歧已冻结 `cross-art-synthesis-view/v1`，本地裁决已接到 live `hecan-view/v1`/`wenshi-view/v1`/`canwen-view/v1` 的 `comparisonRow`（不再用 string[] 或 `dimension_fact_scope` 占位句）。lookup 空，`hard_verdict=null`，`forced_resolution=false`。未进 catalog/签名 Runtime，页面视觉未改。
+- 见相手相已冻结 `physiognomy-palm-input/v1`、`physiognomy-palm-view/v1` 与《麻衣神相》卷三论四肢/论手背纹术语（MY-002–011；西式生命线/智慧线/感情线/事业线与卷六现代附益「面相手相十二宫」排除；lookup 无吉凶表，`hard_verdict=null`）。尚未写 Provider，未进 catalog/签名 Runtime，页面视觉未改。
+- 见相体态已冻结 `physiognomy-posture-input/v1`、`physiognomy-posture-view/v1` 与《麻衣神相》卷一五行形相/卷二相骨相肉/卷三五体术语（MY-002–011；西式 BMI/体型/医疗体态与卷六现代附益脚部运动排除；柳庄论行/论坐只点名、lookup 无吉凶表，`hard_verdict=null`）。尚未写 Provider，未进 catalog/签名 Runtime，页面视觉未改。
+- 见相综合已冻结 `physiognomy-combined-input/v1`、`physiognomy-combined-view/v1` 与《柳庄相法》不可定一理、《麻衣神相》五体组成术语（任意非空面/手/体子集；分支出事实后给印证/分歧/证据充足度；lookup 无吉凶表，`hard_verdict=null`，`forced_resolution=false`；卷六面相手相十二宫与「归一理」不作融合表）。尚未写 Provider，未进 catalog/签名 Runtime，页面视觉未改（当前 Runtime 仍只支持 `face` scope）。
+- 各术深读输出合同已冻结：八字/奇门/六爻既有；紫微/七政 `career`；梅花 `outcome/state`（无 timing）；大六壬 `outcome/timing/state`；均 3–8 段、不输出吉凶成败硬结论。见相暂缓。尚未写新 API/Job/Worker，未进 catalog/签名 Runtime，页面视觉未改。追问、导出与真实履约仍未交付。
+- 合盘关系深读输出合同已冻结，抽取门禁已接入 Guard，抽取成稿已接到 `NarrativeModel.generate`，generate 候选已接到 `PublicCopyAssembler`（抽取以组装后的 public copy 为字数/标识门禁：超长先裁段，不足三段 fail-closed），组装后的 public copy 已接到 `Complete` 意图（`kind=complete`，`public_copy` 逐字节相同，须含合同披露段；空白 token fail-closed；免费 `*-relationship` 不适用），Complete 意图已接到 Fake Runtime Accepted 回放（首次 Accepted 正文与 Complete.public_copy 逐字节相同；同 token 重放只回第一次 Accepted，不覆盖；非 Accepted fail-closed；免费 `*-relationship` 不适用），Fake Runtime Accepted 已接到 ReadingDocument 固化（`ReadingDocumentBuilder` 投影 typed `ReadingDocumentV1`；claims 必须出现在 Accepted.public_copy 中；同 version 重放 dump 相同；无 ViewModel / 非 Accepted fail-closed；免费 `*-relationship` 不适用），ReadingDocument 已接到 first-write-wins 仓储门禁（`save_reading_document`；accepted_copy_ref 绑定仓储 Accepted Copy id；首次 created=True；同 version 重放 dump 相同且 created=False；改写 / 无 Accepted Copy fail-closed；免费 `*-relationship` 不适用），仓储 ReadingDocument 已接到 job 级 save（`save_reading_document_for_job`；accepted_copy_ref 由 `load_accepted_copy_ref(job_id)` 绑定；首次 created=True；同 job 重放 dump 相同且 created=False；改写 / 无 Accepted Copy / 无 Job fail-closed；免费 `*-relationship` 不适用），job 仓储取出 candidate 再固化 ReadingDocument（`relationship_deep_persist_job_candidate`；candidate 由 `load_successful_candidate(job_id)` 取出；首次 created=True；同 job 重放 dump 相同且 created=False；无 candidate / 仓储改写 candidate / 无 Job fail-closed；免费 `*-relationship` 不适用），job 仓储取出 Prepared brief 再固化 ReadingDocument（`relationship_deep_persist_job_prepared`；brief 由 `load_prepared_brief(job_id)` 取出；首次 created=True；同 job 重放 dump 相同且 created=False；无 brief / 仓储改写 brief / 无 Job fail-closed；免费 `*-relationship` 不适用），job 仓储取出 Accepted 再固化 ReadingDocument（`relationship_deep_persist_job_accepted`；Accepted 由 `load_accepted(job_id)` 取出；首次 created=True；同 job 重放 dump 相同且 created=False；无 Accepted / 仓储改写 Accepted / 无 Job fail-closed；免费 `*-relationship` 不适用），job 仓储取出 reading_version_id 再固化 ReadingDocument（`relationship_deep_persist_job_version`；reading_version_id 由 `load_reading_version_id(job_id)` 取出；首次 created=True；同 job 重放 dump 相同且 created=False；无 reading_version_id / 仓储改写 reading_version_id / 无 Job fail-closed；免费 `*-relationship` 不适用），job 仓储取出 output_contract 再固化 ReadingDocument（`relationship_deep_persist_job_output_contract`；output_contract 由 `load_output_contract(job_id)` 取出；首次 created=True；同 job 重放 dump 相同且 created=False；无 output_contract / 仓储改写 output_contract / 无 Job fail-closed；免费 `*-relationship` 不适用），job 仓储取出 relationship_type 再固化 ReadingDocument（`relationship_deep_persist_job_relationship_type`；relationship_type 由 `load_relationship_type(job_id)` 取出；首次 created=True；同 job 重放 dump 相同且 created=False；无 relationship_type / 仓储改写 relationship_type / 无 Job fail-closed；免费 `*-relationship` 不适用），job 仓储取出 runtime_release 再固化 ReadingDocument（`relationship_deep_persist_job_runtime_release`；runtime_release 由 `load_runtime_release(job_id)` 取出；首次 created=True；同 job 重放 dump 相同且 created=False；无 runtime_release / 仓储改写 runtime_release / 无 Job fail-closed；免费 `*-relationship` 不适用），job 仓储固化接到编排入口（`relationship_deep_persist_orchestrator`；编排 `_complete` 在 Accepted 后调用仓储固化；首次 created=True；同 job 重放 dump 相同且 created=False；无 runtime_release / 仓储改写 runtime_release / 无 Job fail-closed；免费 `*-relationship` 不适用），抽取/generate 接到编排 generate 入口（`relationship_deep_generate_orchestrator`；编排 `_generate` 在 relationship-deep 时从仓储取出 brief/output_contract 再抽取，不走模型；首次 candidate 正文逐字等于 `relationship_signals.display_text`；同 job 重放 dump 相同；无 brief / 仓储改写 brief / 无信号 / 无 Job fail-closed；免费 `*-relationship` 不适用），PREPARED 经抽取 generate 一跑到 Accepted 固化（编排 `_generate` 在 relationship-deep 成功后同一次 run 进入 `_complete` 仓储固化；首次 Accepted 正文与抽取组装 public copy 逐字节相同；同 job 重放 dump 相同且 created=False；无 brief / 仓储改写 brief / 无信号 / 无 relationship_type / 仓储改写 runtime_release / 无 Job fail-closed；免费 `*-relationship` 不适用），Prepare 一跑到 PREPARED 再经抽取到 Accepted 固化（编排 `_prepare` 在 relationship-deep 成功后同一次 run 进入 `_generate`→`_complete` 仓储固化，不走模型；首次 Accepted 正文与抽取组装 public copy 逐字节相同；同 job 重放 dump 相同且 created=False；无 brief / 仓储改写 brief / 无信号 / 无 relationship_type / 仓储改写 runtime_release fail-closed；免费 `*-relationship` 仍停在 PREPARED）：八字/紫微/七政各术独立合同，维度仅 `relationship`，3–8 段；正文必须逐字等于 `relationship_signals.display_text`（不用包装 fact 文案）；public copy 为逐字段落加合同披露；不输出合婚吉凶或匹配度硬结论，不并入合参。免费 `*-relationship` 仍走 `preview-v1`。API/Job 已接到编排 Prepare 入口（`relationship_deep_prepare_orchestrator`；Job 的 output_contract 由 `output_contract_for_product(*-relationship-deep)` 绑定后进入编排 `_prepare`，同一次 run 经抽取到 Accepted 仓储固化，不走模型；首次 Accepted 正文与抽取组装 public copy 逐字节相同；同 job 重放 dump 相同且 created=False；无 Job / 无 contract / 无 brief / 仓储改写 brief / 无信号 / 无 relationship_type / 仓储改写 runtime_release fail-closed；免费 `*-relationship` 不适用且不执行 Prepare），已有 Worker 已接到编排 Prepare 入口（`SqlReadingOrchestratorFactory` 经 `relationship_deep_prepare_orchestrator`；已有 `ReadingJobWorkSource`/`ReadingJobProcessor`/`Worker.run_once` 认领后进入编排 `_prepare`，同一次 run 经抽取到 Accepted 仓储固化，不走模型；首次 Accepted 正文与抽取组装 public copy 逐字节相同；同 job 重放 dump 相同且 created=False；Job 状态 `complete`；无 Job 不认领且不执行 Prepare；无 contract / 无 brief / 仓储改写 brief / 无信号 / 无 relationship_type / 仓储改写 runtime_release fail-closed；免费 `*-relationship` 不适用抽取路径，已有 Worker 仍走普通 `_prepare` 停在 PREPARED），公开 HTTP 已接到编排 Prepare 入口（已有 `POST /api/v1/readings/*-relationship-deep` 经 `start_relationship` 绑定 `output_contract_for_product` 后，已有 Worker 进入 `relationship_deep_prepare_orchestrator`；同一次 run 经抽取到 Accepted 仓储固化，不走模型；首次 Accepted 正文与抽取组装 public copy 逐字节相同；同 job 重放 dump 相同且 created=False；Job 状态 `complete`；无 Job 不认领且不执行 Prepare；无 contract / 无 brief / 仓储改写 brief / 无信号 / 无 relationship_type / 仓储改写 runtime_release fail-closed；免费 `*-relationship` 不适用抽取路径，已有 Worker 仍走普通 `_prepare` 停在 PREPARED），公开 HTTP 结果已接到 Accepted 文档（已有 `GET /api/v1/readings/{reading_version_id}/result` 经 `relationship_deep_http_result`；首次结果 `accepted_copy` 与 Accepted.public_copy 逐字节相同，`document` dump 与仓储 ReadingDocument 相同；同 version 重放 dump 相同；无 Accepted / 仓储改写 Accepted / 无 document / 无 version fail-closed；免费 `*-relationship` 不适用抽取文档），公开 HTTP 追问已接到 Accepted 文档（已有 `POST /api/v1/readings/{reading_version_id}/follow-up` 经 `relationship_deep_http_follow_up`；先过 Accepted 文档门禁，`prior_answer` 与 Accepted.public_copy 逐字节相同；已有 Worker 对追问 version 固化文档；首次结果 `accepted_copy` 与 Accepted.public_copy 逐字节相同，`document` dump 与仓储 ReadingDocument 相同；同 version 重放 dump 相同；无 Accepted / 仓储改写 Accepted / 无 document / 无 version fail-closed；免费 `*-relationship` 不适用抽取文档），公开 HTTP 导出已接到 Accepted 文档（已有 `POST /api/v1/readings/{reading_version_id}/export` 经 `relationship_deep_http_export`；先过 Accepted 文档门禁，导出正文由 Accepted 仓储 ReadingDocument 渲染；首次 PNG 载荷与 `render_reading_export(document)` 相同，`document` dump 与仓储 ReadingDocument 相同；同 version 重放 dump 相同且 PNG 载荷相同；无 Accepted / 仓储改写 Accepted / 无 document / 无 version fail-closed；免费 `*-relationship` 不适用抽取文档），公开 HTTP 分享已接到 Accepted 文档（已有 `POST /api/v1/readings/{reading_version_id}/share` 经 `relationship_deep_http_share`；先过 Accepted 文档门禁，分享快照由 Accepted 仓储 ReadingDocument 投影 `SharedReadingDocumentV1`；首次快照 dump 与 `SharedReadingDocumentV1.from_document(document)` 相同，`document` dump 与仓储 ReadingDocument 相同；同 version 重放 dump 相同且快照 dump 相同；无 Accepted / 仓储改写 Accepted / 无 document / 无 version fail-closed；免费 `*-relationship` 不适用抽取文档），未新写 Worker，未进 catalog/签名 Runtime，页面视觉未改。V53 无 `relationship_signals` 空槽仍诚实。
 
 ### 14.4 外部门禁
 
@@ -938,5 +944,7 @@ P12 门禁顺序：备案/许可主要约束 P12-007 的中国大陆公开生产
 | 2026-08-14 | 用户判定现行中性视觉「整体廉价/乱」，经 `grill-me` 逐题确认后批准方向 C「现代 SaaS 锐感」全站换皮（决策记录与审计：`docs/redesign/2026-08-14-*.md`）。影响范围：`DESIGN.md` §2/§3/§4/§6.1/§6.3/§8.3/§8.5/§10 修订；首页改「价值主张 + 任务入口」混合结构；多盘问答（`canwen`）并入命盘合参，原路由保留重定向、历史任务与报告不失效；`/account` 重建为消费 App 式「我的」页；字阶冻结收口。迁移与重新验收：全部公共页、产品流、工作台、账户区、Admin 需按新合同重走 360/768/1024/1440 真实浏览器验收并逐页由用户批准；既有 P2/P3/P4/P4-007 验收状态不自动继承，逐项重验 | 用户明确确认 |
 | 2026-08-18 | G1 可核验性路线用户裁决：选定 **C + B，不做 A**。补充实测事实（原调查遗漏）：签名 release 的 `references/index/evidence-rules.jsonl` 已自带逐字原文——1328 条规则下 478 条 `classical_sources` 条目**全部**带 `verbatim_quote` 与 `verbatim_quote_sha256`（覆盖率 100%），`verbatim_quote_sha256` 实测等于 `sha256(verbatim_quote.encode("utf-8"))`，条目另带 `path` / `sha256` / `anchor` 锁定语料文件版本与行号；本轮 7 条页面引文在 release 自带记录中逐字命中 `7/7`。故可核验链条拆为四步，**第 1–3 步仅凭签名 release 即可完成，只有第 4 步（原文确在该书该行）需要外置 fulltext**。路线 C 即新增仅依赖 release 的核验模式（按 `evidence_ref` 反查规则记录，逐字比对 `excerpt`↔`verbatim_quote`、`locator`↔`anchor`、校验哈希，任一不满足 fail closed）。不做 A 的理由是授权而非体积：54 部全文中含已标点整理的简体本，标点整理本通常另有著作权，授权未确认前不得固化进签名制品；C 已取得 A 的大部分实用价值，日后确认授权可增量补做。决策与依据记入 `artifacts/runtime-evidence/2026-08-18-g1-self-verification-investigation/README.md` 的 dated addendum，未覆盖原调查记录。 | 已裁决，待施工 |
 | 2026-08-19 | 项目经理审美裁定写入 `DESIGN.md` §2.1。方向 C 不变；收紧廉价感禁则、首页玻璃隔离、结果页证据优先、主操作走黑按钮。影响：只收紧视觉合同，不改产品地图/路由/品牌名。前端按新 §2.1 实现，不擅自改合同。P2/P3/P4-007 验收不自动继承，仍须用户逐页批准。 | 用户明确授权项目经理为好看改 UI 文档 |
+| 2026-08-21 | 主线收缩为五术（八字/紫微/六爻/梅花/大六壬），见相/解梦/姓名分析暂缓；P4-007 首轮结论：首页勉强可用、其余 UI/UX 全面返工；授权废弃并重写 `DESIGN.md` 审美合同，设计师以 taste skill 自主裁量，青囊/METIS 审计作为可改编参考不照抄；六爻/梅花能力档位裁决为开放主线 | 用户明确确认 |
+| 2026-08-22 | 再次确认：P4-007 当前 UI/交互已被否决。禁止把旧测试预览当验收对象，禁止恢复 111 路逐页清单，禁止为旧预览要用户复测。P4-007 记 `BLOCKED`；解除条件是五术按新 DESIGN/每屏内容合同返工并发布新预览后由用户本人复测 | 用户明确确认 |
 
 历史施工状态行见 `docs/releases/evidence/ledger-archive/2026-08-13--2026-08-19-change-log.md`。

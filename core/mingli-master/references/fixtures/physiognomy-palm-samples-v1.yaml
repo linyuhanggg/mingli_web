@@ -1,0 +1,87 @@
+schema_version: mingli-algorithm-source-samples-v1
+purpose: >-
+  Independent pre-implementation 见相手相 samples transcribed from admitted
+  《麻衣神相》卷三 terminology before any palm Provider exists. Luck lookup is
+  empty. Expectations must not be computed by a provider or a language model.
+
+cases:
+  palm-left-palm-terminology:
+    source_reference: 麻衣神相 fulltext.md L1305 手足谓之四肢；柳庄 L126 点名手
+    input:
+      mode: palm
+      observations:
+        - region_id: left_palm
+          descriptor: region_visible
+          visibility: full
+          uncertainty: 0.1
+      region_label: 掌
+    expected:
+      mode: palm
+      lookup_key: 掌
+      region_id: left_palm
+      match_status: exact
+      source_status: exact_rule_bound
+      source_rule_id: physiognomy-palm/mayi-shenxiang#PP-MY-01
+      hard_verdict: null
+    verification: 掌 is a classical site name; not a wealth row
+
+  palm-hand-back-terminology:
+    source_reference: 麻衣神相 fulltext.md L1613 手背之纹
+    input:
+      mode: palm
+      observations:
+        - region_id: hand_back
+          descriptor: pattern_visible
+          visibility: partial
+          uncertainty: 0.2
+      region_label: 手背纹
+    expected:
+      mode: palm
+      lookup_key: 手背纹
+      region_id: hand_back
+      match_status: exact
+      source_status: exact_rule_bound
+      source_rule_id: physiognomy-palm/mayi-shenxiang#PP-MY-02
+      hard_verdict: null
+    verification: 手背纹 is terminology identity only
+
+  palm-fingers-longwen-label-not-verdict:
+    source_reference: 麻衣神相 fulltext.md L1613 谓之龙纹
+    input:
+      mode: palm
+      observations:
+        - region_id: fingers
+          descriptor: pattern_visible
+          visibility: full
+          uncertainty: 0
+      region_label: 龙纹
+    expected:
+      mode: palm
+      lookup_key: 龙纹
+      region_id: fingers
+      match_status: exact
+      source_status: exact_rule_bound
+      source_rule_id: physiognomy-palm/mayi-shenxiang#PP-MY-03
+      hard_verdict: null
+    verification: 龙纹 is a pattern label; 主之师 must not become hard_verdict
+
+  palm-modern-appendix-unmatched:
+    source_reference: 麻衣神相 fulltext.md L3225 卷六面相手相十二宫现代附益
+    input:
+      mode: palm
+      observations:
+        - region_id: left_hand
+          descriptor: region_visible
+          visibility: full
+          uncertainty: 0.3
+      region_label: 官禄宫
+    expected:
+      mode: palm
+      lookup_key: 官禄宫
+      region_id: left_hand
+      match_status: unmatched
+      source_status: unmatched
+      region_match: null
+      source_rule_id: physiognomy-palm/mayi-shenxiang#PP-MY-04
+      hard_verdict: null
+    verification: 官禄宫 in this pack is modern appendix, not a palm row

@@ -1,0 +1,29 @@
+{
+  "url": "http://106.14.10.235:18080/account/history/840b8532-6e3b-40ab-bada-55d558e61a4d",
+  "pathname": "/account/history/840b8532-6e3b-40ab-bada-55d558e61a4d",
+  "stayed": false,
+  "loginWall": true,
+  "loginLink": false,
+  "oldTable": false,
+  "oldHits": [],
+  "captionHits": [],
+  "hasKeChuan": false,
+  "hasOldLessonCaption": false,
+  "timingTable": false,
+  "timingArea": false,
+  "deepClosed": false,
+  "priceCard": false,
+  "forbiddenHits": [],
+  "luckHits": [],
+  "captions": [],
+  "regions": [],
+  "alerts": [],
+  "waitedMs": 1,
+  "timedOut": false,
+  "consoleErrors": [
+    "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-features/#potentially-trustworthy-origin and https://html.spec.whatwg.org/#the-cross-origin-opener-policy-header.",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ],
+  "entryLogin": true,
+  "afterClickUrl": "http://106.14.10.235:18080/account/history/840b8532-6e3b-40ab-bada-55d558e61a4d"
+}

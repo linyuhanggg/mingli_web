@@ -34,6 +34,16 @@ _CERTAINTY_RANK = {
 _BAZI_DEEP_OUTPUT_CONTRACT_ID = "bazi-deep-output-v1"
 _BAZI_DEEP_TEXT_NOT_GROUNDED = "bazi_deep_text_not_grounded"
 _BAZI_DEEP_DUPLICATE_SOURCE = "bazi_deep_duplicate_source"
+_RELATIONSHIP_DEEP_CONTRACT_IDS = frozenset(
+    {
+        "bazi-relationship-deep-output-v1",
+        "ziwei-relationship-deep-output-v1",
+        "qizheng-relationship-deep-output-v1",
+    }
+)
+_RELATIONSHIP_DEEP_TEXT_NOT_GROUNDED = "relationship_deep_text_not_grounded"
+_RELATIONSHIP_DEEP_DUPLICATE_SOURCE = "relationship_deep_duplicate_source"
+_RELATIONSHIP_SIGNALS_MISSING = "relationship_signals_missing"
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,6 +143,29 @@ def _is_verified_exact_evidence(item: object) -> bool:
     )
 
 
+def _relationship_signal_display_texts(facts: Mapping[str, object]) -> tuple[str, ...]:
+    texts: list[str] = []
+    for fact in facts.values():
+        if not isinstance(fact, Mapping):
+            continue
+        ref = fact.get("ref")
+        if (
+            not isinstance(ref, str)
+            or ref.rstrip("/").rsplit("/", 1)[-1] != "relationship_signals"
+        ):
+            continue
+        raw_signals = fact.get("value")
+        if not isinstance(raw_signals, (list, tuple)):
+            continue
+        for item in raw_signals:
+            if not isinstance(item, Mapping):
+                continue
+            display_text = item.get("display_text")
+            if isinstance(display_text, str) and display_text.strip():
+                texts.append(display_text)
+    return tuple(texts)
+
+
 def _is_audited_public_finding(
     finding: object,
     evidence: Mapping[str, object],
@@ -161,8 +194,11 @@ class NarrativeGuard:
     ``bazi-deep-output-v1`` additionally uses a P0 extractive text contract:
     each block must exactly copy a directly referenced public fact, Runtime
     claim unit, or limit.
-    This mechanical equality check is not general semantic entailment; other
-    output contracts keep the reference-closure behavior below.
+    ``*-relationship-deep-output-v1`` is stricter: each block must exactly
+    copy a ``relationship_signals.display_text``; missing or empty signals
+    fail closed. This mechanical equality check is not general semantic
+    entailment; other output contracts keep the reference-closure behavior
+    below.
     """
 
     def validate(
@@ -189,6 +225,10 @@ class NarrativeGuard:
         dimensions = {dimension for _subject, dimension in scopes}
         brief_text = json.dumps(payload, ensure_ascii=False, sort_keys=True)
         is_bazi_deep = contract.contract_id == _BAZI_DEEP_OUTPUT_CONTRACT_ID
+        is_relationship_deep = contract.contract_id in _RELATIONSHIP_DEEP_CONTRACT_IDS
+        signal_texts = _relationship_signal_display_texts(facts)
+        if is_relationship_deep and not signal_texts:
+            _add_error(errors, _RELATIONSHIP_SIGNALS_MISSING)
 
         if not contract.min_blocks <= len(parsed.blocks) <= contract.max_blocks:
             _add_error(errors, "block_count_out_of_range")
@@ -202,6 +242,7 @@ class NarrativeGuard:
         covered_limits: set[str] = set()
         used_bazi_source_refs: set[str] = set()
         used_bazi_texts: set[str] = set()
+        used_relationship_texts: set[str] = set()
         for block in parsed.blocks:
             covered_dimensions.add(block.dimension_id)
             covered_limits.update(block.limit_kind_ids)
@@ -253,6 +294,13 @@ class NarrativeGuard:
                 else:
                     used_bazi_texts.add(block.text)
                     used_bazi_source_refs.update(bazi_source_refs)
+            if is_relationship_deep and signal_texts:
+                if block.text not in signal_texts:
+                    _add_error(errors, _RELATIONSHIP_DEEP_TEXT_NOT_GROUNDED)
+                elif block.text in used_relationship_texts:
+                    _add_error(errors, _RELATIONSHIP_DEEP_DUPLICATE_SOURCE)
+                else:
+                    used_relationship_texts.add(block.text)
             relationship_scope_fact_refs: frozenset[str] = frozenset()
             if any(item is None for item in known_facts):
                 _add_error(errors, "unknown_fact_ref")

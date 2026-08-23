@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/inputs/physiognomy-posture-input-v1.schema.json",
+  "title": "Physiognomy Posture Input v1",
+  "description": "Formal intake for 见相 posture scope only. v1 accepts user-transcribed visible observations of classical 五体/形/骨/肉 and optional 行/坐 sites. Western BMI/somatotype/medical spine, combined, face, palm, raw images, voice personality, and luck fields are forbidden.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "mode", "observations"],
+  "properties": {
+    "schema_version": {"const": "physiognomy-posture-input/v1"},
+    "mode": {"const": "posture"},
+    "observations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "items": {"$ref": "#/$defs/observation"}
+    },
+    "region_label": {
+      "type": ["string", "null"],
+      "pattern": "^[\\u3400-\\u9FFF\\uF900-\\uFAFF]{1,8}$"
+    },
+    "subject_ref": {
+      "type": ["string", "null"],
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["region_id", "descriptor", "visibility", "uncertainty"],
+      "properties": {
+        "region_id": {
+          "enum": [
+            "whole_body",
+            "form",
+            "bone",
+            "flesh",
+            "gait",
+            "sitting"
+          ]
+        },
+        "descriptor": {
+          "enum": [
+            "region_visible",
+            "contour_visible",
+            "texture_even_visible"
+          ]
+        },
+        "visibility": {"enum": ["full", "partial"]},
+        "uncertainty": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}

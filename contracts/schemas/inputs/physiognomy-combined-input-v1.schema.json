@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/inputs/physiognomy-combined-input-v1.schema.json",
+  "title": "Physiognomy Combined Input v1",
+  "description": "Formal intake for 见相 combined/综合观照 only. v1 accepts any non-empty subset of face/palm/posture branches as user-transcribed visible observations. Missing branches stay missing. Western fused scores, life/head/heart/fate lines, BMI/somatotype, raw images, voice, luck, and averaging fields are forbidden.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "mode", "branches", "observations"],
+  "properties": {
+    "schema_version": {"const": "physiognomy-combined-input/v1"},
+    "mode": {"const": "combined"},
+    "branches": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {"enum": ["face", "palm", "posture"]}
+    },
+    "observations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {"$ref": "#/$defs/observation"}
+    },
+    "region_label": {
+      "type": ["string", "null"],
+      "pattern": "^[\\u3400-\\u9FFF\\uF900-\\uFAFF]{1,8}$"
+    },
+    "subject_ref": {
+      "type": ["string", "null"],
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"branches": {"contains": {"const": "face"}}}, "required": ["branches"]},
+      "then": {
+        "properties": {
+          "observations": {
+            "contains": {
+              "type": "object",
+              "required": ["branch"],
+              "properties": {"branch": {"const": "face"}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"branches": {"contains": {"const": "palm"}}}, "required": ["branches"]},
+      "then": {
+        "properties": {
+          "observations": {
+            "contains": {
+              "type": "object",
+              "required": ["branch"],
+              "properties": {"branch": {"const": "palm"}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"branches": {"contains": {"const": "posture"}}}, "required": ["branches"]},
+      "then": {
+        "properties": {
+          "observations": {
+            "contains": {
+              "type": "object",
+              "required": ["branch"],
+              "properties": {"branch": {"const": "posture"}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"not": {"properties": {"branches": {"contains": {"const": "face"}}}, "required": ["branches"]}},
+      "then": {
+        "properties": {
+          "observations": {
+            "items": {
+              "properties": {"branch": {"not": {"const": "face"}}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"not": {"properties": {"branches": {"contains": {"const": "palm"}}}, "required": ["branches"]}},
+      "then": {
+        "properties": {
+          "observations": {
+            "items": {
+              "properties": {"branch": {"not": {"const": "palm"}}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"not": {"properties": {"branches": {"contains": {"const": "posture"}}}, "required": ["branches"]}},
+      "then": {
+        "properties": {
+          "observations": {
+            "items": {
+              "properties": {"branch": {"not": {"const": "posture"}}}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "faceRegion": {
+      "enum": [
+        "forehead",
+        "left_eyebrow",
+        "right_eyebrow",
+        "left_eye",
+        "right_eye",
+        "nose",
+        "mouth",
+        "chin",
+        "jawline",
+        "left_ear",
+        "right_ear",
+        "left_cheek",
+        "right_cheek",
+        "complexion"
+      ]
+    },
+    "palmRegion": {
+      "enum": [
+        "left_hand",
+        "right_hand",
+        "left_palm",
+        "right_palm",
+        "fingers",
+        "hand_back"
+      ]
+    },
+    "postureRegion": {
+      "enum": [
+        "whole_body",
+        "form",
+        "bone",
+        "flesh",
+        "gait",
+        "sitting"
+      ]
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "region_id", "descriptor", "visibility", "uncertainty"],
+      "properties": {
+        "branch": {"enum": ["face", "palm", "posture"]},
+        "region_id": {"type": "string", "minLength": 1},
+        "descriptor": {
+          "enum": [
+            "region_visible",
+            "contour_visible",
+            "texture_even_visible",
+            "pattern_visible"
+          ]
+        },
+        "visibility": {"enum": ["full", "partial"]},
+        "uncertainty": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"branch": {"const": "face"}}, "required": ["branch"]},
+          "then": {"properties": {"region_id": {"$ref": "#/$defs/faceRegion"}}}
+        },
+        {
+          "if": {"properties": {"branch": {"const": "palm"}}, "required": ["branch"]},
+          "then": {"properties": {"region_id": {"$ref": "#/$defs/palmRegion"}}}
+        },
+        {
+          "if": {"properties": {"branch": {"const": "posture"}}, "required": ["branch"]},
+          "then": {"properties": {"region_id": {"$ref": "#/$defs/postureRegion"}}}
+        }
+      ]
+    }
+  }
+}

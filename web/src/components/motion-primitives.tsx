@@ -10,8 +10,11 @@ export const motionDurations = {
   feedback: 0.18,
   state: 0.26,
   entrance: 0.45,
+  chapter: 0.48,
   focal: 0.72,
 } as const;
+
+export const CHAPTER_STAGGER = 0.06;
 
 function isTestRuntime() {
   return (
@@ -43,7 +46,7 @@ export function Reveal({
   children,
   className,
   delay = 0,
-  y = 10,
+  y = 16,
   as = "div",
   immediate = false,
 }: RevealProps) {
@@ -52,7 +55,7 @@ export function Reveal({
     as === "section" ? motion.section : as === "article" ? motion.article : motion.div;
 
   const transition = {
-    duration: motionDurations.entrance,
+    duration: motionDurations.chapter,
     delay,
     ease: easeOutExpo,
   };
@@ -101,7 +104,7 @@ type StaggerProps = {
 export function Stagger({
   children,
   className,
-  stagger = 0.07,
+  stagger = 0.06,
   delayChildren = 0.04,
   as = "div",
   immediate = false,
@@ -178,7 +181,7 @@ export function StaggerItem({
       hidden: { opacity: 0, y },
       shown: { opacity: 1, y: 0 },
     },
-    transition: { duration: motionDurations.entrance, ease: easeOutExpo },
+    transition: { duration: motionDurations.chapter, ease: easeOutExpo },
   } as const;
 
   if (as === "li") {

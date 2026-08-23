@@ -1,0 +1,102 @@
+{
+  "event": "UAT-ZW-DL-WIRE",
+  "result": "FAIL",
+  "not": "PREVIEW_STALE",
+  "whyNotPreviewStale": "游客提交后从未落到盘面，未见旧 caption「十二宫与主星」「本命四化事实」「四课」「三传」「大六壬结构事实」「有界应期候选」。不能用旧表结论。",
+  "startedAt": "2026-08-22T19:08:58+08:00",
+  "finishedAt": "2026-08-22T19:20:17+08:00",
+  "entry": "http://106.14.10.235:18080",
+  "identity": "林宇航 / 男 / 2000-10-18 05:10 / 福建省莆田市涵江区",
+  "guest": true,
+  "viewports": ["1440x900", "360x800"],
+  "verdictByPath": {
+    "/ziwei": "FAIL",
+    "/daliuren": "FAIL",
+    "/bazi": "PASS",
+    "/liuyao": "FAIL",
+    "/meihua": "PASS"
+  },
+  "paths": {
+    "ziwei1440": {
+      "entryUrl": "http://106.14.10.235:18080/ziwei",
+      "header": "登录",
+      "filled": "林宇航 / 男 / 2000-10-18 05:10 / 福建省 / 莆田市 / 涵江区",
+      "afterSubmitUrl": "http://106.14.10.235:18080/account/history/9f637622-f380-4dfa-afd7-02959ddc1bc8",
+      "expected": "仍在 /ziwei，可见十二宫环盘/命宫，深读「测试期未开放」，无旧表、无登录墙",
+      "actual": "立即跳到 /account/history/:id。文案「需要登录 / 登录后才能查看历史 / 前往登录」。顶栏变「游客模式 登录或注册」。未见盘面。",
+      "screenshots": [
+        "1440/ziwei-00-entry.png",
+        "1440/ziwei-01-filled.png",
+        "1440/ziwei-02-after-click.png",
+        "1440/ziwei-03-settled.png"
+      ],
+      "severity": "P1"
+    },
+    "daliuren1440": {
+      "entryUrl": "http://106.14.10.235:18080/daliuren",
+      "header": "登录",
+      "filled": "问题=林宇航近日工作变动是否顺利，只问这一件事。 / 事情进展 / 2026-08-22 19:00 / Asia/Shanghai / 福建省莆田市涵江区",
+      "afterSubmitUrl": "http://106.14.10.235:18080/account/history/840b8532-6e3b-40ab-bada-55d558e61a4d",
+      "expected": "仍在 /daliuren，可见纸墨课传，无旧表 caption，无应期表亦可，深读「测试期未开放」",
+      "actual": "立即跳到 /account/history/:id，同一登录墙。未见课传。",
+      "screenshots": [
+        "1440/daliuren-00-entry.png",
+        "1440/daliuren-01-filled.png",
+        "1440/daliuren-02-after-click.png",
+        "1440/daliuren-03-settled.png"
+      ],
+      "severity": "P1"
+    },
+    "ziwei360": {
+      "entryUrl": "http://106.14.10.235:18080/ziwei",
+      "afterSubmitUrl": "http://106.14.10.235:18080/account/history/d2dd9184-d224-42b5-8d87-1bbb7d2c1a18",
+      "expected": "仍在 /ziwei，窄屏不要空盘",
+      "actual": "同样登录墙。盘面未出现，无法验空盘。",
+      "screenshots": ["360/ziwei-00-entry.png", "360/ziwei-01-filled.png", "360/ziwei-03-settled.png"],
+      "severity": "P1"
+    },
+    "daliuren360": {
+      "entryUrl": "http://106.14.10.235:18080/daliuren",
+      "afterSubmitUrl": "http://106.14.10.235:18080/account/history/5e8d83bc-ebd8-491f-bf12-7340db421c9e",
+      "expected": "仍在 /daliuren，四课可读",
+      "actual": "同样登录墙。未见四课，无法验挤叠。",
+      "screenshots": ["360/daliuren-00-entry.png", "360/daliuren-01-filled.png", "360/daliuren-03-settled.png"],
+      "severity": "P1"
+    },
+    "bazi": {
+      "entryUrl": "http://106.14.10.235:18080/bazi",
+      "afterSubmitUrl": "http://106.14.10.235:18080/bazi",
+      "expected": "能录入、能出盘、无白屏",
+      "actual": "约 9s 后同页出八字命盘。日主己（土·阴）·月令戌月。四柱庚辰/丙戌/己酉/丁卯可见。无白屏。",
+      "screenshots": ["smoke/bazi-01-filled.png", "smoke/bazi-03-waited.png", "smoke/bazi-03-waited-full.png"],
+      "severity": "none",
+      "notes": "判定过程有英文内部句，本轮冒烟不扩成独立 Fail。"
+    },
+    "liuyao": {
+      "entryUrl": "http://106.14.10.235:18080/liuyao",
+      "afterSubmitUrl": "http://106.14.10.235:18080/liuyao",
+      "expected": "能录入、能出盘、无白屏",
+      "actual": "六爻填齐后仍留 /liuyao。一次提交见「正在生成盘面」，随后诚实失败「服务暂时不可用，请稍后重试。」控制台 403。无白屏、无登录墙，但没有出盘。",
+      "screenshots": ["smoke/liuyao-03-waited.png", "smoke/liuyao-04-settled.png"],
+      "severity": "P2"
+    },
+    "meihua": {
+      "entryUrl": "http://106.14.10.235:18080/meihua",
+      "afterSubmitUrl": "http://106.14.10.235:18080/meihua",
+      "expected": "能录入、能出盘、无白屏",
+      "actual": "约 5s 后同页出盘。本卦地火明夷、互卦雷水解、变卦水火既济。可核验起卦可见。无登录墙。",
+      "screenshots": ["smoke/meihua-01-filled.png", "smoke/meihua-02-settled.png"],
+      "severity": "none"
+    }
+  },
+  "blockers": [
+    "游客 /ziwei /daliuren 提交后 router 进 /account/history/:id，登录墙挡住盘面。纸墨环盘/课传本轮无法用眼睛验收。",
+    "对照已接线 /bazi /meihua 游客可留本页出盘。仓库 product-task-experience 对紫微/大六壬仍 router.push(/app/readings/:id)。"
+  ],
+  "outOfScopeNotFailed": [
+    "宫位详情抽屉",
+    "录入页 S0 剪影",
+    "七政",
+    "奇门"
+  ]
+}

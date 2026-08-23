@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -236,12 +236,15 @@ describe("P2 product interaction contracts", () => {
     }
     await user.click(submitButton(productId));
 
-    const lineInputs = ["初爻", "二爻", "三爻", "四爻", "五爻", "上爻"].map((name) => screen.getByLabelText(name));
     expect(onConfirm).not.toHaveBeenCalled();
     expect(await screen.findByText("请完成六次起卦过程")).toBeVisible();
-    expect(lineInputs[0]).toHaveFocus();
+    expect(document.getElementById(`${productId}-line-0`)).toHaveFocus();
 
-    for (const input of lineInputs) await user.selectOptions(input, "young-yang");
+    for (let index = 0; index < 6; index += 1) {
+      const row = document.getElementById(`${productId}-line-${index}`);
+      if (!row) throw new Error(`missing ${productId}-line-${index}`);
+      await user.click(within(row).getByRole("radio", { name: "少阳（7）" }));
+    }
     await user.click(submitButton(productId));
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });

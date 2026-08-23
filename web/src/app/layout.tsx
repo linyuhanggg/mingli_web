@@ -23,7 +23,9 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   colorScheme: "light",
-  themeColor: "#ffffff",
+  // 与 ui/tokens.css 的 --color-canvas（宣纸底）同源；
+  // viewport 元数据不能引用 CSS 变量，只能写字面量，改 token 时需同步。
+  themeColor: "#f2ebdd",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

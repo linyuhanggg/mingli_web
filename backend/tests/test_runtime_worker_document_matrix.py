@@ -449,6 +449,19 @@ def _assert_runtime_golden_facts(
             expected_source_pattern_ids.insert(2, "HJC-R009")
         if label == "liuyao-two-present-single-moving":
             expected_source_pattern_ids.insert(4, "ZR-04-04")
+        if label in {
+            "liuyao",
+            "liuyao-finance",
+            "liuyao-two-present-single-moving",
+        }:
+            # The admitted signed V53 release emits the ZR-05-05 seasonal
+            # strength-band source pattern whenever useful-spirit strength
+            # evidence is requested (career dimension or a finance class);
+            # verified against the digest-pinned release on 2026-08-21.
+            expected_source_pattern_ids.insert(
+                expected_source_pattern_ids.index("ZZR-M001"),
+                "ZR-05-05",
+            )
         assert [item["local_rule_id"] for item in source_patterns] == (
             expected_source_pattern_ids
         ), label

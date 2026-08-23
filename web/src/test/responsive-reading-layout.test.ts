@@ -16,11 +16,14 @@ describe("responsive reading layout", () => {
     );
   });
 
-  it("lets the four pillars respond to their container rather than the viewport", () => {
+  it("lets the bazi workspace respond to its container rather than the viewport", () => {
     const css = read("src/components/readings/bazi-chart.module.css");
 
     expect(css).toMatch(/container-type:\s*inline-size/);
-    expect(css).toMatch(/@container \(min-width: 34rem\)/);
+    // S3 双栏由容器宽度驱动：左盘 480–520px，右阅读区 ≥360px（DESIGN §5/§7.2）。
+    expect(css).toMatch(
+      /@container \(min-width: 62rem\)[\s\S]*?\.stage\s*\{[\s\S]*?grid-template-columns:\s*minmax\(30rem, 32\.5rem\)\s+minmax\(22\.5rem, 1fr\)/,
+    );
   });
 
   it("opens the evidence column only on a roomy desktop and clears the sticky header", () => {

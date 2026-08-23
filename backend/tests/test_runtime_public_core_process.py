@@ -10,6 +10,7 @@ from app.charts.contracts import (
     DaliurenChartV1,
     FortuneFactsViewV1,
     LiuyaoChartV1,
+    MeihuaChartV1,
     PhysiognomyViewV1,
     QizhengChartV1,
     ZiweiChartV1,
@@ -19,6 +20,7 @@ from app.charts.projectors import (
     project_daliuren_view_model,
     project_fortune_view_model,
     project_liuyao_view_model,
+    project_meihua_view_model,
     project_physiognomy_view_model,
     project_qizheng_view_model,
     project_ziwei_view_model,
@@ -35,6 +37,7 @@ from app.readings.request_compiler import (
     compile_fortune_prepare,
     compile_liuren_prepare,
     compile_liuyao_prepare,
+    compile_meihua_prepare,
     compile_qizheng_day_prepare,
     compile_qizheng_month_prepare,
     compile_qizheng_prepare,
@@ -89,6 +92,12 @@ async def test_real_runtime_projects_public_natal_and_divination_core() -> None:
     bazi_view = project_bazi_view_model(bazi_brief)
     assert isinstance(bazi_view, BaziChartV1)
     assert bazi_view.core_facts is not None
+    for finding in bazi_view.findings:
+        dumped_finding = finding.model_dump(mode="json")
+        assert dumped_finding["title"] != dumped_finding["claim_unit_id"]
+        assert dumped_finding["body"] != dumped_finding["claim_unit_id"]
+        assert any("\u3400" <= char <= "\u9fff" for char in dumped_finding["title"])
+        assert any("\u3400" <= char <= "\u9fff" for char in dumped_finding["body"])
     assert bazi_view.core_facts.year_layers is None
     assert bazi_view.core_facts.month_layers is None
     assert bazi_view.core_facts.day_layers is None
@@ -104,25 +113,18 @@ async def test_real_runtime_projects_public_natal_and_divination_core() -> None:
     assert all(pattern.fact_paths for pattern in source_patterns)
     assert all(pattern.predicate_audit for pattern in source_patterns)
     assert [
-        pattern.local_rule_id
-        for pattern in source_patterns
-        if pattern.evidence_ref is not None
+        pattern.local_rule_id for pattern in source_patterns if pattern.evidence_ref is not None
     ] == ["QR-02-01", "QTB-M01", "R-01-02", "R-02-04", "ZPR-01"]
     assert [
-        pattern.local_rule_id
-        for pattern in source_patterns
-        if pattern.evidence_ref is None
+        pattern.local_rule_id for pattern in source_patterns if pattern.evidence_ref is None
     ] == ["DR-01-01"]
     bazi_values = {
         str(item["ref"]).split("/calculated/bazi/", 1)[1]: item.get("value")
         for item in bazi_brief["facts"]
-        if isinstance(item, dict)
-        and "/calculated/bazi/" in str(item.get("ref"))
+        if isinstance(item, dict) and "/calculated/bazi/" in str(item.get("ref"))
     }
     calendar_normalization = bazi_values["calendar_normalization"]
-    assert calendar_normalization["true_solar_time"]["status"] == (
-        "apparent_solar_applied"
-    )
+    assert calendar_normalization["true_solar_time"]["status"] == ("apparent_solar_applied")
     assert "civil_datetime" not in calendar_normalization
     assert "location" not in calendar_normalization
     assert "longitude" not in calendar_normalization
@@ -147,9 +149,7 @@ async def test_real_runtime_projects_public_natal_and_divination_core() -> None:
         )
     )
     assert isinstance(qizheng, Prepared)
-    assert isinstance(
-        project_qizheng_view_model(qizheng.to_dict()["brief"]), QizhengChartV1
-    )
+    assert isinstance(project_qizheng_view_model(qizheng.to_dict()["brief"]), QizhengChartV1)
 
     liuyao = await runtime.execute(
         compile_liuyao_prepare(
@@ -166,15 +166,46 @@ async def test_real_runtime_projects_public_natal_and_divination_core() -> None:
     assert isinstance(liuyao, Prepared)
     liuyao_view = project_liuyao_view_model(liuyao.to_dict()["brief"])
     assert isinstance(liuyao_view, LiuyaoChartV1)
+    assert liuyao_view.primary_hexagram.palace is not None
+    assert liuyao_view.primary_hexagram.palace_element is not None
+    assert liuyao_view.primary_hexagram.shi_line is not None
+    assert liuyao_view.primary_hexagram.ying_line is not None
+    assert liuyao_view.primary_hexagram.king_wen_number is not None
+    assert liuyao_view.changed_hexagram is not None
+    assert liuyao_view.changed_hexagram.palace is not None
     assert liuyao_view.core_facts is not None
     assert liuyao_view.core_facts.najia is not None
     assert liuyao_view.core_facts.relation_facts is not None
     assert liuyao_view.core_facts.line_facts is not None
     assert liuyao_view.core_facts.returning_relations is not None
     assert [
-        pattern.local_rule_id
-        for pattern in liuyao_view.core_facts.source_conditioned_patterns
+        pattern.local_rule_id for pattern in liuyao_view.core_facts.source_conditioned_patterns
     ] == ["BSZZ-M01", "HJC-M001", "HZL-M001", "ZZR-M001"]
+
+    meihua = await runtime.execute(
+        compile_meihua_prepare(
+            action="meihua_preview",
+            query="验证梅花起卦推导链",
+            subject_ref="meihua:public-core-synthetic",
+            casting_method="time",
+            event_datetime=datetime.fromisoformat("2026-08-14T10:00:00+08:00"),
+            confirmed_timezone="Asia/Shanghai",
+            location="福建省福州市",
+            dimension_ids=("outcome",),
+        )
+    )
+    assert isinstance(meihua, Prepared)
+    meihua_view = project_meihua_view_model(meihua.to_dict()["brief"])
+    assert isinstance(meihua_view, MeihuaChartV1)
+    assert meihua_view.core_facts is not None
+    casting = meihua_view.core_facts.casting
+    assert casting is not None
+    assert casting.method == "time"
+    assert casting.inputs.hour_branch_number >= 1
+    assert casting.inputs.lunar_year is not None
+    assert meihua_view.core_facts.calendar is not None
+    assert meihua_view.core_facts.totals is not None
+    assert meihua_view.core_facts.totals.upper >= 1
 
     daliuren = await runtime.execute(
         compile_liuren_prepare(
@@ -191,8 +222,19 @@ async def test_real_runtime_projects_public_natal_and_divination_core() -> None:
     daliuren_view = project_daliuren_view_model(daliuren.to_dict()["brief"])
     assert isinstance(daliuren_view, DaliurenChartV1)
     assert daliuren_view.core_facts is not None
+    assert daliuren_view.core_facts.day_hour is not None
+    assert daliuren_view.core_facts.month_general is not None
+    assert daliuren_view.core_facts.noble_person is not None
+    assert daliuren_view.core_facts.xunkong is not None
+    assert daliuren_view.core_facts.earth_plate is not None
+    assert len(daliuren_view.core_facts.earth_plate) == 12
     assert daliuren_view.core_facts.heaven_plate is not None
+    assert len(daliuren_view.core_facts.heaven_plate) == 12
+    assert daliuren_view.core_facts.heavenly_generals is not None
+    assert daliuren_view.core_facts.lesson_method is not None
+    assert daliuren_view.core_facts.lesson_method.primary
     assert daliuren_view.core_facts.transmission_method is not None
+    assert daliuren_view.core_facts.dimension_facts is not None
     assert daliuren_view.core_facts.timing_candidates is not None
 
     daliuren_timing = await runtime.execute(
@@ -212,8 +254,7 @@ async def test_real_runtime_projects_public_natal_and_divination_core() -> None:
     timing_values = {
         str(item["ref"]).split("/calculated/liuren/", 1)[1]: item.get("value")
         for item in daliuren_timing.to_dict()["brief"]["facts"]
-        if isinstance(item, dict)
-        and "/calculated/liuren/" in str(item.get("ref"))
+        if isinstance(item, dict) and "/calculated/liuren/" in str(item.get("ref"))
     }
     timing_candidates = timing_values["timing_candidates"]
     assert timing_candidates
@@ -237,8 +278,7 @@ async def test_real_runtime_projects_public_natal_and_divination_core() -> None:
     work_values = {
         str(item["ref"]).split("/calculated/liuren/", 1)[1]: item.get("value")
         for item in daliuren_work.to_dict()["brief"]["facts"]
-        if isinstance(item, dict)
-        and "/calculated/liuren/" in str(item.get("ref"))
+        if isinstance(item, dict) and "/calculated/liuren/" in str(item.get("ref"))
     }
     work_dimension = work_values["dimension_facts"]["work"]
     assert work_dimension["target_relative"] == "兄弟"
@@ -386,8 +426,7 @@ async def test_real_runtime_projects_ziwei_and_qizheng_year_layers() -> None:
     assert [item.year for item in ziwei_view.core_facts.annual_layers] == [2026]
     assert ziwei_view.core_facts.source_conditioned_patterns
     assert {
-        pattern.local_rule_id
-        for pattern in ziwei_view.core_facts.source_conditioned_patterns
+        pattern.local_rule_id for pattern in ziwei_view.core_facts.source_conditioned_patterns
     } >= {"TR-01", "ZW-M01"}
     assert all(
         pattern.status == "predicate_matched_not_verdict"
@@ -414,8 +453,7 @@ async def test_real_runtime_projects_ziwei_and_qizheng_year_layers() -> None:
     assert [item.year for item in qizheng_view.core_facts.annual_transformations] == [2026]
     assert qizheng_view.core_facts.source_conditioned_patterns
     assert {
-        pattern.local_rule_id
-        for pattern in qizheng_view.core_facts.source_conditioned_patterns
+        pattern.local_rule_id for pattern in qizheng_view.core_facts.source_conditioned_patterns
     } >= {"GR-01-01", "XR-M01", "XXDC-M01"}
     assert all(
         pattern.status == "predicate_matched_not_verdict"
@@ -481,10 +519,9 @@ async def test_real_runtime_projects_declared_month_and_day_layers() -> None:
     assert isinstance(ziwei_month_view, ZiweiChartV1)
     assert ziwei_month_view.core_facts is not None
     assert ziwei_month_view.core_facts.monthly_layers is not None
-    assert [
-        (item.year, item.month)
-        for item in ziwei_month_view.core_facts.monthly_layers
-    ] == [(2026, 8)]
+    assert [(item.year, item.month) for item in ziwei_month_view.core_facts.monthly_layers] == [
+        (2026, 8)
+    ]
     assert next(
         layer for layer in ziwei_month_view.time_layers if layer.layer_id == "month"
     ).available
@@ -504,9 +541,7 @@ async def test_real_runtime_projects_declared_month_and_day_layers() -> None:
     assert qizheng_month_view.core_facts is not None
     assert qizheng_month_view.core_facts.requested_limit_layers is not None
     assert next(
-        layer
-        for layer in qizheng_month_view.time_layers
-        if layer.layer_id == "month"
+        layer for layer in qizheng_month_view.time_layers if layer.layer_id == "month"
     ).available
 
     qizheng_day = await runtime.execute(
@@ -536,9 +571,7 @@ async def test_real_runtime_projects_fortune_fact_panel_without_chart_claim() ->
             action="today",
             query="验证日运事实面板",
             profile=SYNTHETIC_PROFILE,
-            server_reference_datetime=datetime.fromisoformat(
-                "2026-08-14T02:00:00+00:00"
-            ),
+            server_reference_datetime=datetime.fromisoformat("2026-08-14T02:00:00+00:00"),
             dimension_ids=("career",),
         )
     )
@@ -553,12 +586,8 @@ async def test_real_runtime_projects_fortune_fact_panel_without_chart_claim() ->
     assert isinstance(view_model, FortuneFactsViewV1)
     assert view_model.period_markers
     assert view_model.period_markers[0].specific_event_policy
-    assert view_model.calendar_normalization.time_basis.policy == (
-        "local_apparent_solar-v1"
-    )
-    assert view_model.calendar_normalization.true_solar_time.status == (
-        "apparent_solar_applied"
-    )
+    assert view_model.calendar_normalization.time_basis.policy == ("local_apparent_solar-v1")
+    assert view_model.calendar_normalization.true_solar_time.status == ("apparent_solar_applied")
     public_payload = json.dumps(
         {"panel": panel, "view_model": view_model.model_dump(mode="json")},
         ensure_ascii=False,

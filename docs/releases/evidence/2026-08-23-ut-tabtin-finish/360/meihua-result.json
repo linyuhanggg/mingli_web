@@ -1,0 +1,14 @@
+{
+  "url": "http://106.14.10.235:18080/meihua",
+  "urlAfter": "http://106.14.10.235:18080/meihua",
+  "stayed": true,
+  "ms": 50000,
+  "timeout": true,
+  "hits": [],
+  "snake": [],
+  "hasBen": true,
+  "hasHu": true,
+  "hasBian": true,
+  "hasTi": true,
+  "hasYong": true
+}

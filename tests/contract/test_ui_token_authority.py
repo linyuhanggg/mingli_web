@@ -9,7 +9,54 @@ WEB_GLOBALS = ROOT / "web" / "src" / "app" / "globals.css"
 ADMIN_GLOBALS = ROOT / "admin" / "src" / "app" / "globals.css"
 APP_CSS_ROOTS = (ROOT / "web" / "src", ROOT / "admin" / "src")
 
+# 纸墨档案基底（DESIGN.md §3，2026-08-21 重写）。C 端全站宣纸底；
+# Admin 例外见 ADMIN_NEUTRAL_OVERRIDES（§12 不换肤）。
 DESIGN_TOKEN_VALUES = {
+    "--color-canvas": "#f2ebdd",
+    "--color-surface": "#fbf7ec",
+    "--color-surface-subtle": "#f6f0e2",
+    "--color-surface-muted": "#eae2cf",
+    "--color-surface-inverse": "#221b12",
+    "--color-text": "#221b12",
+    "--color-text-secondary": "#5a4e3e",
+    "--color-text-muted": "#857763",
+    "--color-text-inverse": "#fbf7ec",
+    "--color-border": "rgb(34 27 18 / 14%)",
+    "--color-border-strong": "rgb(34 27 18 / 26%)",
+    "--color-overlay": "rgb(34 27 18 / 44%)",
+    "--color-action": "#221b12",
+    "--color-action-hover": "#3a3122",
+    "--color-on-action": "#fbf7ec",
+    "--color-focus": "#9a3b2f",
+    "--color-accent": "#9a3b2f",
+    "--color-accent-hover": "#7e2f25",
+    "--color-on-accent": "#fdf9f0",
+    # 证据专色：金只属于古籍命中/引文/可核验标记（§3）。
+    "--color-evidence": "#8f6f2f",
+    "--color-evidence-line": "rgb(143 111 47 / 45%)",
+    "--color-evidence-wash": "rgb(143 111 47 / 12%)",
+    "--color-info": "#3f5d7a",
+    "--color-success": "#2f6b43",
+    "--color-warning": "#8a5f14",
+    "--color-danger": "#a03227",
+    "--surface-info": "#e9edf1",
+    "--surface-success": "#e6efe7",
+    "--surface-warning": "#f6ecd3",
+    "--surface-danger": "#f5e4df",
+    "--radius-control": "6px",
+    "--radius-card": "6px",
+    "--radius-panel": "10px",
+    "--radius-pill": "999px",
+    "--shadow-float": "0 4px 16px rgb(34 27 18 / 10%)",
+    "--shadow-overlay": "0 16px 48px rgb(34 27 18 / 16%)",
+    "--target-min": "44px",
+    "--target-submit": "48px",
+}
+
+# Admin 不换肤（DESIGN.md §12）：仅允许 admin/src/app/globals.css 应用根把
+# 基底 Token 覆写回中性灰白（换肤前 ui/tokens.css 的原值），不使用宣纸底
+# 与朱砂强调。控件形状、状态语义、间距、字体继续共享，不得覆写。
+ADMIN_NEUTRAL_OVERRIDES = {
     "--color-canvas": "#fafafa",
     "--color-surface": "#ffffff",
     "--color-surface-subtle": "#f5f5f5",
@@ -29,22 +76,9 @@ DESIGN_TOKEN_VALUES = {
     "--color-accent": "#2563eb",
     "--color-accent-hover": "#1d4ed8",
     "--color-on-accent": "#ffffff",
-    "--color-info": "#2563eb",
-    "--color-success": "#137a45",
-    "--color-warning": "#946200",
-    "--color-danger": "#c62828",
-    "--surface-info": "#eef5ff",
-    "--surface-success": "#ecf8f1",
-    "--surface-warning": "#fff7df",
-    "--surface-danger": "#fff0ef",
-    "--radius-control": "8px",
-    "--radius-card": "8px",
-    "--radius-panel": "12px",
-    "--radius-pill": "999px",
+    "--shadow-card-hover": "0 1px 2px rgb(0 0 0 / 4%), 0 4px 12px rgb(0 0 0 / 5%)",
     "--shadow-float": "0 4px 16px rgb(0 0 0 / 8%)",
     "--shadow-overlay": "0 16px 48px rgb(0 0 0 / 14%)",
-    "--target-min": "44px",
-    "--target-submit": "48px",
 }
 
 BANNED_TOKEN_RE = re.compile(
@@ -99,16 +133,26 @@ OLD_BRAND_COLOR_RE = re.compile(
     r"|#0a2823\b",
     re.IGNORECASE,
 )
+# 域字（宋体系）仅限盘面大字与古籍引文原文块（DESIGN.md §4），
+# 按「文件 → 选择器」精确放行；共享卦象组件族条目见 §13。
 DOMAIN_FONT_ALLOWLIST = {
-    "web/src/components/readings/bazi-chart.module.css",
-    "web/src/components/readings/liuyao-hexagram.module.css",
-}
-DOMAIN_FONT_ALLOWED_SELECTORS = {
-    ".pillarStem",
-    ".pillarBranch",
-    ".names dd",
-    ".yaoMark",
-    ".hexagramGlyph",
+    "web/src/components/readings/bazi-chart.module.css": {
+        ".glyphCell",          # M2 四柱矩阵干支大字格
+        ".hiddenStem",         # 藏干
+        ".elementName",        # M4 五行名
+        ".seasonalLine strong",  # M3 月令/季节干支强调
+        ".evidenceQuote",      # M12 古籍引文原文块（§4②）
+    },
+    "web/src/components/readings/liuyao-hexagram.module.css": {
+        ".names dd",
+    },
+    "web/src/components/readings/hexagram-glyphs.module.css": {
+        ".trigramName",        # TrigramGlyph 卦名（§13 共享卦象组件族）
+        ".hexName",            # HexagramHeader 卦名行
+    },
+    "web/src/components/readings/meihua-chart.module.css": {
+        ".relation",           # MeihuaTriad 体用关系盘面大字
+    },
 }
 STATUS_INFINITE_ALLOWLIST = {
     "web/src/components/status-panel.module.css",
@@ -136,7 +180,13 @@ HOME_GLASS_SELECTORS = {
     ".crossCard",
     ".auxGrid",
     ".hero",
+    ".quickStart",
 }
+# 首页装饰层例外（DESIGN.md §3/§6）延伸到全局顶栏的首页专属变体：
+# site-chrome 仅在 [data-home-chrome="true"] 作用域内允许玻璃，
+# 其余页面的顶栏保持不透明纸面。
+SITE_CHROME_CSS_REL = "web/src/components/site-chrome.module.css"
+HOME_CHROME_SCOPE = '[data-home-chrome="true"]'
 
 
 def _iter_app_css() -> list[Path]:
@@ -260,9 +310,30 @@ def test_web_and_admin_do_not_redeclare_shared_tokens() -> None:
     duplicates: list[str] = []
     for path in _iter_app_css():
         for name in _declared_tokens(path.read_text(encoding="utf-8")):
-            if name in shared:
-                duplicates.append(f"{path.relative_to(ROOT)}:{name}")
+            if name not in shared:
+                continue
+            # §12 唯一豁免：Admin 应用根把基底 Token 覆写回中性灰白。
+            if path == ADMIN_GLOBALS and name in ADMIN_NEUTRAL_OVERRIDES:
+                continue
+            duplicates.append(f"{path.relative_to(ROOT)}:{name}")
     assert duplicates == []
+
+
+def test_admin_root_overrides_base_tokens_to_neutral_exactly() -> None:
+    """Admin 不换肤（DESIGN.md §12）。
+
+    admin 根 globals 必须把基底 Token 覆写回中性灰白原值——不多一枚
+    （防止 Admin 偷跑自己的皮肤），不少一枚（防止宣纸底漏进后台），
+    值也不得漂移。
+    """
+    declared = _declared_tokens(ADMIN_GLOBALS.read_text(encoding="utf-8"))
+    assert set(declared) == set(ADMIN_NEUTRAL_OVERRIDES)
+    mismatched = [
+        f"{name}: {declared[name]!r} != {expected!r}"
+        for name, expected in ADMIN_NEUTRAL_OVERRIDES.items()
+        if _normalize_css_value(declared[name]) != _normalize_css_value(expected)
+    ]
+    assert mismatched == []
 
 
 def test_design_token_values_are_declared_exactly() -> None:
@@ -295,15 +366,34 @@ def test_static_css_vars_point_at_declared_tokens() -> None:
     if (ROOT / "ui" / "base.css").is_file():
         shared.update(_declared_tokens((ROOT / "ui" / "base.css").read_text(encoding="utf-8")))
 
-    undefined: list[str] = []
+    # 组件把可选尺寸旋钮声明在祖先容器（如 admin-*-surface 声明
+    # --field-control-height，field.module.css 带 fallback 消费）是合法级联。
+    # 仅当使用处带显式 fallback 时，才允许指向同应用内其他文件声明的 Token；
+    # 不带 fallback 的引用仍必须在共享层或本文件内声明，拼错照抓。
+    per_app_declared: dict[Path, set[str]] = {root: set() for root in APP_CSS_ROOTS}
+    sources: dict[Path, str] = {}
     for path in _iter_app_css():
         source = path.read_text(encoding="utf-8")
+        sources[path] = source
+        for root in APP_CSS_ROOTS:
+            if path.is_relative_to(root):
+                per_app_declared[root].update(_declared_tokens(source))
+
+    var_use_with_terminator = re.compile(r"var\(\s*(--[a-zA-Z0-9-]+)\s*([,)])")
+    undefined: list[str] = []
+    for path, source in sources.items():
         local = set(_declared_tokens(source))
         known = shared | local
+        app_declared = next(
+            per_app_declared[root] for root in APP_CSS_ROOTS if path.is_relative_to(root)
+        )
         for line_no, line in enumerate(source.splitlines(), start=1):
-            for name in VAR_USE_RE.findall(line):
-                if name not in known:
-                    undefined.append(f"{path.relative_to(ROOT)}:{line_no}:{name}")
+            for name, terminator in var_use_with_terminator.findall(line):
+                if name in known:
+                    continue
+                if terminator == "," and name in app_declared:
+                    continue
+                undefined.append(f"{path.relative_to(ROOT)}:{line_no}:{name}")
     assert undefined == []
 
 
@@ -348,6 +438,15 @@ def test_retired_brand_rgb_is_absent_from_app_css() -> None:
     assert violations == []
 
 
+# -webkit-tap-highlight-color 不可靠地支持 var()，UA 高亮收口为朱砂
+# （--color-accent #9a3b2f = rgb(154 59 47)）时只能写字面量；
+# 只豁免 web 根 globals 的这一属性，且色值必须钉在朱砂三元组上。
+TAP_HIGHLIGHT_ACCENT_RE = re.compile(
+    r"^-webkit-tap-highlight-color\s*:\s*rgb\(154 59 47 / \d+%\)\s*;?$"
+)
+ADMIN_TOKEN_DECL_RE = re.compile(r"^(--[a-zA-Z0-9-]+)\s*:")
+
+
 def test_business_css_does_not_scatter_hardcoded_colors() -> None:
     violations: list[str] = []
     for path in _iter_app_css():
@@ -355,8 +454,17 @@ def test_business_css_does_not_scatter_hardcoded_colors() -> None:
             stripped = line.split("/*", 1)[0].strip()
             if not stripped or stripped.startswith("*"):
                 continue
-            if COLOR_LITERAL_RE.search(stripped):
-                violations.append(f"{path.relative_to(ROOT)}:{line_no}:{stripped}")
+            if not COLOR_LITERAL_RE.search(stripped):
+                continue
+            if path == WEB_GLOBALS and TAP_HIGHLIGHT_ACCENT_RE.match(stripped):
+                continue
+            # Admin 中性覆写块的 Token 声明允许字面量（§12）；
+            # 精确值由 test_admin_root_overrides_base_tokens_to_neutral_exactly 钉住。
+            if path == ADMIN_GLOBALS:
+                decl = ADMIN_TOKEN_DECL_RE.match(stripped)
+                if decl and decl.group(1) in ADMIN_NEUTRAL_OVERRIDES:
+                    continue
+            violations.append(f"{path.relative_to(ROOT)}:{line_no}:{stripped}")
     assert violations == []
 
 
@@ -380,6 +488,18 @@ def test_gradients_and_glass_effects_are_banned() -> None:
                     violations.extend(
                         f"{rel}: {part}: homepage glass is not approved"
                         for part in sorted(_selector_parts(selector) - HOME_GLASS_SELECTORS)
+                    )
+            continue
+        if rel == SITE_CHROME_CSS_REL:
+            # 顶栏玻璃只允许出现在首页专属 chrome 变体上；渐变一律禁止。
+            for selector, body in _iter_rule_blocks(source):
+                if GRADIENT_RE.search(body):
+                    violations.append(f"{rel}: {selector}: gradient is not approved")
+                if GLASS_SURFACE_RE.search(body) and not all(
+                    HOME_CHROME_SCOPE in part for part in _selector_parts(selector)
+                ):
+                    violations.append(
+                        f"{rel}: {selector}: glass outside home chrome scope"
                     )
             continue
         for line_no, line in enumerate(source.splitlines(), start=1):
@@ -413,7 +533,8 @@ def test_font_domain_is_limited_to_chart_glyphs() -> None:
     for path in _iter_app_css():
         rel = str(path.relative_to(ROOT))
         source = path.read_text(encoding="utf-8")
-        if rel not in DOMAIN_FONT_ALLOWLIST:
+        allowed_selectors = DOMAIN_FONT_ALLOWLIST.get(rel)
+        if allowed_selectors is None:
             for line_no, line in enumerate(source.splitlines(), start=1):
                 if FONT_DOMAIN_USE_RE.search(line):
                     leaks.append(f"{rel}:{line_no}:{line.strip()}")
@@ -423,7 +544,7 @@ def test_font_domain_is_limited_to_chart_glyphs() -> None:
             if "{" in line:
                 current_selectors = [part.strip() for part in line.split("{", 1)[0].split(",")]
             if FONT_DOMAIN_USE_RE.search(line) and not any(
-                selector in DOMAIN_FONT_ALLOWED_SELECTORS for selector in current_selectors
+                selector in allowed_selectors for selector in current_selectors
             ):
                 leaks.append(f"{rel}:{line_no}:{','.join(current_selectors)}:{line.strip()}")
     assert leaks == []

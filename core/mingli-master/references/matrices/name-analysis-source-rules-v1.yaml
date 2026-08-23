@@ -1,7 +1,7 @@
 schema_version: mingli-name-analysis-source-rules-v1
 updated_at: "2026-08-21"
 runtime_binding: not_in_runtime
-provider_status: contract_only_no_provider
+provider_status: local_provider_not_in_runtime
 method_id: wuyin-xingshi-from-wuxing-jingji-v1
 excluded_methods:
   - kangxi_stroke_count
@@ -13,15 +13,17 @@ audit_policy:
   release_material: distilled_rules_provenance_and_checksums_only
   note: >-
     v1 freezes surname 五音 identity from 《五行精纪》卷九《辨五音訣》and the five
-    五音姓氏 tables. Full table OCR collation is not claimed. Independent
-    samples pin only the first unambiguous surname of each table.
-    康熙笔画、五格剖象、三才数理吉凶 are out of scope until a sourced dictionary
-    pack exists. This matrix is not a Provider and is not in the signed Runtime.
+    五音姓氏 tables. Remaining unambiguous 单姓 rows are collated from the
+    local fulltext. Compound surnames are independently pinned only when the
+    two-character span sits in one tone table before a 一云 span. OCR-garbled
+    spans, 一云别音 rows, fragments, and surnames that appear in more than one
+    tone table stay unmatched. 康熙笔画、五格剖象、三才数理吉凶 remain out of
+    scope. This matrix is not in catalog or the signed Runtime.
 
 source_registry:
   wuxing_jingji_wuyin: &wuxing_jingji_wuyin
     title: 五行精纪
-    edition_or_recension: 本地 normalized 通行整理本；卷九五音姓氏表有录入噪声，v1 只钉可独立核验的首姓
+    edition_or_recension: 本地 normalized 通行整理本；卷九五音姓氏表有录入噪声，v1 钉可独立核验行并排除跨表冲突
     normalized_path: references/fulltext/luming-nayin/wuxing-jingji/fulltext.md
     sha256: 32e0581bcba3b1b6df2b8e0c48db135a4a6f27e7dca2f010e0a818ab6ba9e08b
     anchor: L2951-L2991 辨五音訣与五音姓氏
@@ -71,7 +73,7 @@ rules:
       - yangzhai 鸣吠/安葬 procedures are a source_gap in v1
 
   - id: name-analysis/wuxing-jingji#NA-WX-02
-    title: 角音姓氏首条
+    title: 角音姓氏可核验行
     status: verified
     evidence_role: lookup_fact
     tone: 角
@@ -82,11 +84,74 @@ rules:
     lookup:
       趙: 角
       赵: 角
+      週: 角
+      周: 角
+      朱: 角
+      孔: 角
+      曹: 角
+      華: 角
+      华: 角
+      金: 角
+      盧: 角
+      卢: 角
+      樂: 角
+      乐: 角
+      和: 角
+      肖: 角
+      萧: 角
+      蕭: 角
+      董: 角
+      高: 角
+      虞: 角
+      裘: 角
+      艾: 角
+      弘: 角
+      國: 角
+      国: 角
+      秋: 角
+      郜: 角
+      印: 角
+      懷: 角
+      從: 角
+      从: 角
+      索: 角
+      喬: 角
+      乔: 角
+      洪: 角
+      崔: 角
+      陸: 角
+      陆: 角
+      家: 角
+      車: 角
+      车: 角
+      俠: 角
+      侠: 角
+      雍: 角
+      僕: 角
+      仆: 角
+      晁: 角
+      荊: 角
+      荆: 角
+      密: 角
+      藥: 角
+      药: 角
+      衙: 角
+      甲: 角
+      虢: 角
+      岳: 角
+      敬: 角
+      戢: 角
+      憲: 角
+      劉: 角
+      刘: 角
+      澹台: 角
+      鍾離: 角
+      钟离: 角
     boundary:
-      - only the pinned surnames are exact; other 角音 rows remain unmatched until collated
+      - OCR fragments and surnames that also appear in another tone table remain unmatched
 
   - id: name-analysis/wuxing-jingji#NA-WX-03
-    title: 徵音姓氏首条
+    title: 徵音姓氏可核验行
     status: verified
     evidence_role: lookup_fact
     tone: 徵
@@ -97,11 +162,113 @@ rules:
     lookup:
       錢: 徵
       钱: 徵
+      姜: 徵
+      羅: 徵
+      罗: 徵
+      季: 徵
+      咎: 徵
+      莊: 徵
+      庄: 徵
+      終: 徵
+      终: 徵
+      欒: 徵
+      栾: 徵
+      卓: 徵
+      丁: 徵
+      吉: 徵
+      巴: 徵
+      辛: 徵
+      祭: 徵
+      李: 徵
+      寳: 徵
+      宝: 徵
+      畢: 徵
+      毕: 徵
+      婁: 徵
+      娄: 徵
+      宣: 徵
+      瞿: 徵
+      唐: 徵
+      紀: 徵
+      蔡: 徵
+      邉: 徵
+      边: 徵
+      易: 徵
+      師: 徵
+      宿: 徵
+      莘: 徵
+      單: 徵
+      单: 徵
+      靳: 徵
+      聶: 徵
+      聂: 徵
+      錄: 徵
+      录: 徵
+      智: 徵
+      尤: 徵
+      舒: 徵
+      田: 徵
+      慎: 徵
+      鞏: 徵
+      翟: 徵
+      諸: 徵
+      诸: 徵
+      井: 徵
+      冷: 徵
+      練: 徵
+      练: 徵
+      開: 徵
+      开: 徵
+      施: 徵
+      騰: 徵
+      腾: 徵
+      藍: 徵
+      蓝: 徵
+      支: 徵
+      別: 徵
+      别: 徵
+      廖: 徵
+      寧: 徵
+      宁: 徵
+      賴: 徵
+      赖: 徵
+      勞: 徵
+      劳: 徵
+      石: 徵
+      段: 徵
+      訾: 徵
+      晉: 徵
+      晋: 徵
+      負: 徵
+      负: 徵
+      迮: 徵
+      西門: 徵
+      西门: 徵
+      申屠: 徵
+      遲: 徵
+      迟: 徵
+      獨孤: 徵
+      独孤: 徵
+      東門: 徵
+      东门: 徵
+      東门: 徵
+      东門: 徵
+      北門: 徵
+      北门: 徵
+      司徒: 徵
+      信都: 徵
+      斛斯: 徵
+      司空: 徵
+      諸葛: 徵
+      诸葛: 徵
+      譚: 徵
+      司馬: 徵
+      司马: 徵
     boundary:
-      - remaining 徵音 rows contain OCR duplication and are not frozen as exact matches
+      - OCR-duplicated 徵音 spans, duplicate paste blocks, and cross-table conflicts remain unmatched
 
   - id: name-analysis/wuxing-jingji#NA-WX-04
-    title: 宫音姓氏首条
+    title: 宫音姓氏可核验行
     status: verified
     evidence_role: lookup_fact
     tone: 宫
@@ -112,11 +279,81 @@ rules:
     lookup:
       孫: 宫
       孙: 宫
+      範: 宫
+      范: 宫
+      倪: 宫
+      農: 宫
+      居: 宫
+      仰: 宫
+      幸: 宫
+      蒙: 宫
+      封: 宫
+      馮: 宫
+      冯: 宫
+      彭: 宫
+      殷: 宫
+      閔: 宫
+      闵: 宫
+      晏: 宫
+      都: 宫
+      仲: 宫
+      閻: 宫
+      阎: 宫
+      耿: 宫
+      宮: 宫
+      宫: 宫
+      昭: 宫
+      欝: 宫
+      郁: 宫
+      鬱: 宫
+      松: 宫
+      嚴: 宫
+      严: 宫
+      任: 宫
+      計: 宫
+      计: 宫
+      林: 宫
+      充: 宫
+      寇: 宫
+      仇: 宫
+      薊: 宫
+      雙: 宫
+      双: 宫
+      瑰: 宫
+      魏: 宫
+      鄷: 宫
+      酆: 宫
+      談: 宫
+      谈: 宫
+      丘: 宫
+      容: 宫
+      廣: 宫
+      广: 宫
+      甘: 宫
+      薄: 宫
+      貢: 宫
+      贡: 宫
+      逢: 宫
+      陶: 宫
+      鮑: 宫
+      鲍: 宫
+      宋: 宫
+      應: 宫
+      应: 宫
+      弋: 宫
+      針: 宫
+      针: 宫
+      藺: 宫
+      蔺: 宫
+      冉: 宫
+      水: 宫
+      水丘: 宫
+      大叔: 宫
     boundary:
-      - only the pinned surnames are exact
+      - OCR fragments, duplicate paste blocks, 一云别音 rows, and cross-table conflicts remain unmatched
 
   - id: name-analysis/wuxing-jingji#NA-WX-05
-    title: 商音姓氏首条
+    title: 商音姓氏可核验行
     status: verified
     evidence_role: lookup_fact
     tone: 商
@@ -126,11 +363,151 @@ rules:
     exact_excerpt: 王太原栢魏郡
     lookup:
       王: 商
+      栢: 商
+      柏: 商
+      姚: 商
+      柳: 商
+      厐: 商
+      庞: 商
+      麻: 商
+      徐: 商
+      蒋: 商
+      章: 商
+      常: 商
+      邵: 商
+      雷: 商
+      项: 商
+      强: 商
+      骆: 商
+      韩: 商
+      傅: 商
+      湛: 商
+      汪: 商
+      祝: 商
+      贾: 商
+      樊: 商
+      何: 商
+      康: 商
+      元: 商
+      狄: 商
+      梁: 商
+      路: 商
+      万: 商
+      张: 商
+      奚: 商
+      贺: 商
+      汤: 商
+      伏: 商
+      杜: 商
+      柯: 商
+      戚: 商
+      郎: 商
+      方: 商
+      成: 商
+      阮: 商
+      江: 商
+      谢: 商
+      昌: 商
+      茅: 商
+      席: 商
+      莫: 商
+      房: 商
+      慕: 商
+      殳: 商
+      稽: 商
+      邴: 商
+      申: 商
+      相: 商
+      靖: 商
+      赫连: 商
+      赫連: 商
+      能: 商
+      伊: 商
+      巫: 商
+      郄: 商
+      查: 商
+      铎: 商
+      苌: 商
+      附: 商
+      安: 商
+      上官: 商
+      万俟: 商
+      萬俟: 商
+      寿: 商
+      向: 商
+      暴: 商
+      苍: 商
+      滑: 商
+      牧: 商
+      桑: 商
+      盖: 商
+      况: 商
+      臧: 商
+      拓拔: 商
+      拓跋: 商
+      叶: 商
+      党: 商
+      裴: 商
+      阚: 商
+      危: 商
+      令狐: 商
+      尚: 商
+      匡: 商
+      白: 商
+      杭: 商
+      荣: 商
+      全: 商
+      巢: 商
+      贺兰: 商
+      賀蘭: 商
+      司寇: 商
+      温: 商
+      左: 商
+      羊: 商
+      鄢: 商
+      相里: 商
+      青阳: 商
+      青陽: 商
+      轩辕: 商
+      軒轅: 商
+      柴: 商
+      欧: 商
+      鄂: 商
+      程: 商
+      惠: 商
+      班: 商
+      蒯: 商
+      满: 商
+      郭: 商
+      蔣: 商
+      項: 商
+      駱: 商
+      韓: 商
+      賈: 商
+      萬: 商
+      張: 商
+      賀: 商
+      湯: 商
+      謝: 商
+      鐸: 商
+      萇: 商
+      壽: 商
+      蒼: 商
+      蓋: 商
+      況: 商
+      葉: 商
+      黨: 商
+      闞: 商
+      榮: 商
+      賀兰: 商
+      溫: 商
+      歐: 商
+      滿: 商
     boundary:
-      - only the pinned surnames are exact
+      - OCR fragments, 一云别音 rows, and cross-table conflicts remain unmatched
 
   - id: name-analysis/wuxing-jingji#NA-WX-06
-    title: 羽音姓氏首条
+    title: 羽音姓氏可核验行
     status: verified
     evidence_role: lookup_fact
     tone: 羽
@@ -140,15 +517,211 @@ rules:
     exact_excerpt: 吴（渤海）鲁（扶风）卞（济阳）
     lookup:
       吴: 羽
+      鲁: 羽
+      卞: 羽
+      毛: 羽
+      凌: 羽
+      鱼: 羽
+      夔: 羽
+      龙: 羽
+      于: 羽
+      谷: 羽
+      须: 羽
+      盘: 羽
+      褚: 羽
+      韦: 羽
+      伍: 羽
+      禹: 羽
+      霍: 羽
+      古: 羽
+      戎: 羽
+      蒲: 羽
+      羿: 羽
+      后: 羽
+      楚: 羽
+      马: 羽
+      具: 羽
+      缪: 羽
+      瘦: 羽
+      祖: 羽
+      胥: 羽
+      储: 羽
+      堵: 羽
+      涂: 羽
+      帅: 羽
+      许: 羽
+      苗: 羽
+      卜: 羽
+      梅: 羽
+      扈: 羽
+      步: 羽
+      武: 羽
+      宗: 羽
+      汲: 羽
+      璩: 羽
+      潜: 羽
+      巨: 羽
+      吕: 羽
+      袁: 羽
+      盛: 羽
+      燕: 羽
+      沃: 羽
+      符: 羽
+      包: 羽
+      富: 羽
+      饶: 羽
+      汝: 羽
+      顿: 羽
+      喻: 羽
+      费: 羽
+      孟: 羽
+      夏: 羽
+      浦: 羽
+      尉: 羽
+      詹: 羽
+      巽: 羽
+      毋: 羽
+      宛: 羽
+      牟: 羽
+      苏: 羽
+      穆: 羽
+      胡: 羽
+      茹: 羽
+      越: 羽
+      束: 羽
+      翁: 羽
+      弓: 羽
+      养: 羽
+      邳: 羽
+      旅: 羽
+      渠: 羽
+      单于: 羽
+      突卢: 羽
+      税: 羽
+      淳于: 羽
+      宗正: 羽
+      士孙: 羽
+      来: 羽
+      于丘: 羽
+      比罗: 羽
+      颛孙: 羽
+      慕容: 羽
+      仆固: 羽
+      伊祈: 羽
+      乙弗: 羽
+      皇甫: 羽
+      沙陀: 羽
+      比干: 羽
+      南宫: 羽
+      朱耶: 羽
+      宇文: 羽
+      羽弗: 羽
+      斛律: 羽
       吳: 羽
+      魯: 羽
+      魚: 羽
+      龍: 羽
+      於: 羽
+      盤: 羽
+      韋: 羽
+      後: 羽
+      馬: 羽
+      繆: 羽
+      儲: 羽
+      塗: 羽
+      帥: 羽
+      許: 羽
+      潛: 羽
+      呂: 羽
+      饒: 羽
+      頓: 羽
+      費: 羽
+      蘇: 羽
+      養: 羽
+      來: 羽
     boundary:
-      - only the pinned surnames are exact
+      - OCR fragments, 一云别音 rows, and cross-table conflicts remain unmatched
+
+compound_surnames:
+  角: [澹台, 鍾離, 钟离]
+  徵: [西門, 西门, 申屠, 獨孤, 独孤, 東門, 东门, 東门, 东門, 北門, 北门, 司徒, 信都, 斛斯, 司空, 諸葛, 诸葛, 司馬, 司马]
+  宫: [水丘, 大叔]
+  商: [赫连, 赫連, 上官, 万俟, 萬俟, 拓拔, 拓跋, 令狐, 贺兰, 賀蘭, 賀兰, 司寇, 相里, 青阳, 青陽, 轩辕, 軒轅]
+  羽: [单于, 突卢, 淳于, 宗正, 士孙, 于丘, 比罗, 颛孙, 慕容, 仆固, 伊祈, 乙弗, 皇甫, 沙陀, 比干, 南宫, 朱耶, 宇文, 羽弗, 斛律]
+
+yiyun_bieyin_unmatched:
+  - {surname: 第五, tables: [宫], evidence: 宫音 一雲商音第五陝西；不改入商}
+  - {surname: 南門, tables: [宫], evidence: 宫音 一雲商音南門河南；不据西門東門北門改徵}
+  - {surname: 南门, tables: [宫], evidence: 南門 simplified; same unmatched pin}
+  - {surname: 公孫, tables: [宫], evidence: 宫音 一雲商音公孫高陽；不改入商}
+  - {surname: 公孙, tables: [宫], evidence: 公孫 simplified; same unmatched pin}
+  - {surname: 夏侯, tables: [商], evidence: 商音 一云汾王后 夏侯谯国}
+  - {surname: 長孫, tables: [商], evidence: 商音 一云 长孙（济阴）}
+  - {surname: 长孙, tables: [商], evidence: 長孫 simplified; same unmatched pin}
+  - {surname: 尉遲, tables: [徵], evidence: 徵音 一雲上谷…尉遲太原}
+  - {surname: 尉迟, tables: [徵], evidence: 尉遲 simplified; same unmatched pin}
+  - {surname: 紇乾, tables: [徵], evidence: 徵音 一雲上谷紇乾魏郡}
+
+gongyin_duplicate_paste_unmatched:
+  - {surname: 牛, tables: [宫], evidence: 宫音重复粘贴 天水牛陳曲吳興；不据首姓 孫改宫}
+  - {surname: 岑, tables: [宫], evidence: 宫音重复粘贴 岑南陽；不据首姓 孫改宫}
+  - {surname: 冀, tables: [宫], evidence: 宫音重复粘贴 冀渤海；不据首姓 孫改宫}
+  - {surname: 隆, tables: [宫], evidence: 宫音重复粘贴 隆南陽；不据首姓 孫改宫}
+  - {surname: 景, tables: [宫], evidence: 宫音重复粘贴 景晉陽；不据首姓 孫改宫}
+  - {surname: 也, tables: [宫], evidence: 宫音重复粘贴 也昌陽；不据首姓 孫改宫}
+  - {surname: 奄, tables: [宫], evidence: 宫音重复粘贴 奄內黃；不据首姓 孫改宫}
+  - {surname: 公, tables: [宫], evidence: 宫音重复粘贴 公松陽；不据首姓 孫改宫、不拆公孫}
+
+zhengyin_duplicate_paste_unmatched:
+  - {surname: 宰, tables: [徵], evidence: 徵音重复粘贴 宰西河；不据首姓 錢改徵}
+  - {surname: 曾, tables: [徵], evidence: 徵音重复粘贴 曾魯國；不据首姓 錢改徵}
+  - {surname: 勐, tables: [徵], evidence: 徵音重复粘贴 勐鹹陽；不据首姓 錢改徵}
+  - {surname: 陳, tables: [徵], evidence: 徵音重复粘贴 陳穎川；不据首姓 錢改徵}
+  - {surname: 陈, tables: [徵], evidence: 陳 simplified; same unmatched pin}
+  - {surname: 史, tables: [徵], evidence: 徵音重复粘贴 史穎兆；不据首姓 錢改徵}
+  - {surname: 時, tables: [徵], evidence: 徵音重复粘贴 時隴西；不据首姓 錢改徵}
+  - {surname: 时, tables: [徵], evidence: 時 simplified; same unmatched pin}
+  - {surname: 興, tables: [徵], evidence: 徵音重复粘贴 興兆南河／興萬億幹川；不据首姓 錢改徵}
+  - {surname: 兴, tables: [徵], evidence: 興 simplified; same unmatched pin}
+
+ocr_fragment_unmatched:
+  - {surname: 南官, tables: [徵], evidence: 徵音 OCR 南官中吳；不据羽音 南宫改羽}
+  - {surname: 平, tables: [徵], evidence: 徵音 OCR 平風氣；不据商音 平河内改商}
+  - {surname: 氣, tables: [徵], evidence: 徵音 OCR 平風氣平風範陽氣平風平氣}
+  - {surname: 气, tables: [徵], evidence: 氣 simplified; same unmatched pin}
+  - {surname: 次第, tables: [徵], evidence: 徵音 OCR 次第京兆}
+  - {surname: 薛, tables: [徵], evidence: 徵音 OCR 薛門東；不猜河東}
+  - {surname: 天花, tables: [宫], evidence: 宫音 OCR 天花陝西}
+  - {surname: 問弓, tables: [宫], evidence: 宫音 OCR 問弓太原；不据羽音 弓改羽}
+  - {surname: 问弓, tables: [宫], evidence: 問弓 simplified; same unmatched pin}
+  - {surname: 鮮于, tables: [商], evidence: 商音 OCR 鲜干太原；不拆干、不据羽音 于改羽}
+  - {surname: 鲜于, tables: [商], evidence: 鮮于 simplified; same unmatched pin}
+  - {surname: 鲜干, tables: [商], evidence: 商音 OCR 鲜干太原；不拆入 干}
+
+cross_table_unmatched:
+  - {surname: 曲, tables: [角, 宫], evidence: 角音 曲陳留 / 宫音 曲臨海}
+  - {surname: 熊, tables: [角, 宫], evidence: 角音 熊中山 / 宫音 熊豫章}
+  - {surname: 俞, tables: [角, 商], evidence: 角音 俞河間 / 商音 俞会稽}
+  - {surname: 卫, tables: [徵, 羽], evidence: 徵音 衛平昌 / 羽音 卫（河东）}
+  - {surname: 衛, tables: [徵, 羽], evidence: 徵音 衛平昌 / 羽音 卫（河东）}
+  - {surname: 余, tables: [商, 羽], evidence: 商音 余雁门 / 羽音 余（下邳）}
+  - {surname: 颜, tables: [商, 羽], evidence: 商音 颜鲁国 / 羽音 颜（武陵）}
+  - {surname: 乌, tables: [商, 羽], evidence: 商音 乌颖川 / 羽音 乌（颖川）}
+  - {surname: 干, tables: [商, 羽], evidence: 羽音 干（河内）；商音 鲜干 不拆}
+  - {surname: 扶, tables: [商, 羽], evidence: 商音 扶琅琊 / 羽音 扶（京兆）}
+  - {surname: 端木, tables: [商, 羽], evidence: 商音 端木兰陵 / 羽音 端木（鲁国）}
 
 fail_closed:
   - unmatched surname yields match_status unmatched and tone null
   - given names have no v1 五音 table; given_name_wuyin is always null
   - extra fields named stroke, kangxi, wuge, sancai, luck, verdict, 吉凶 are contract violations
-  - no Provider, catalog entry, or signed Runtime binding in this knife
+  - no catalog entry or signed Runtime binding in this knife
+  - cross_table_unmatched surnames stay unmatched even when a single table row is readable
+  - 一云别音 rows and OCR fragments are not compound-surname pins
+  - yiyun_bieyin_unmatched surnames stay unmatched; do not retone from another table or sibling compounds
+  - ocr_fragment_unmatched surnames stay unmatched; do not retone from another table
+  - zhengyin_duplicate_paste_unmatched surnames stay unmatched; do not retone from the 徵音 first-line pin
+  - gongyin_duplicate_paste_unmatched surnames stay unmatched; do not retone from the 宫音 first-line pin
 
 commentary_dependencies:
   - path: references/books/luming-nayin/wuxing-jingji/quote-index.md

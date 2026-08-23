@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/physiognomy-posture-view-v1.schema.json",
+  "title": "Physiognomy Posture ViewModel v1",
+  "description": "Facts-only projection for 见相 posture scope. Terminology identity from 《麻衣神相》卷一 五行形相 / 卷二 相骨相肉 / 卷三 五体 (MY-002–011). No luck verdict, Western BMI/somatotype/medical posture, 卷六 foot-exercise appendix, palm, or combined.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "subject_ref",
+    "mode",
+    "normalized",
+    "region_match",
+    "source_identity",
+    "active_source_rule_ids",
+    "source_dependency_ids",
+    "source_status",
+    "source_gaps",
+    "limitations",
+    "hard_verdict"
+  ],
+  "properties": {
+    "schema_version": {"const": "physiognomy-posture-view/v1"},
+    "subject_ref": {"$ref": "#/$defs/text"},
+    "mode": {"const": "posture"},
+    "normalized": {"$ref": "#/$defs/normalizedPosture"},
+    "region_match": {
+      "oneOf": [
+        {"$ref": "#/$defs/regionMatch"},
+        {"type": "null"}
+      ]
+    },
+    "source_identity": {"$ref": "#/$defs/sourceIdentity"},
+    "active_source_rule_ids": {"$ref": "#/$defs/stringArray"},
+    "source_dependency_ids": {"$ref": "#/$defs/stringArray"},
+    "source_status": {
+      "enum": [
+        "exact_rule_bound",
+        "ambiguous",
+        "unmatched",
+        "unavailable"
+      ]
+    },
+    "source_gaps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/text"}
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/text"}
+    },
+    "hard_verdict": {"type": "null"}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1},
+    "stringArray": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+    "regionId": {
+      "enum": [
+        "whole_body",
+        "form",
+        "bone",
+        "flesh",
+        "gait",
+        "sitting"
+      ]
+    },
+    "normalizedPosture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "taxonomy", "region_ids", "region_label"],
+      "properties": {
+        "mode": {"const": "posture"},
+        "taxonomy": {"const": "anatomical_posture_classical_v1"},
+        "region_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/regionId"}
+        },
+        "region_label": {
+          "type": ["string", "null"],
+          "minLength": 1
+        }
+      }
+    },
+    "regionMatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "region_id",
+        "lookup_key",
+        "match_status",
+        "source_rule_id",
+        "source_excerpt"
+      ],
+      "properties": {
+        "region_id": {"$ref": "#/$defs/regionId"},
+        "lookup_key": {"$ref": "#/$defs/text"},
+        "match_status": {"enum": ["exact", "ambiguous", "unmatched"]},
+        "source_rule_id": {"$ref": "#/$defs/text"},
+        "source_excerpt": {"$ref": "#/$defs/text"}
+      }
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_pack",
+        "source_dependency_id",
+        "source_rule_id",
+        "source_anchor"
+      ],
+      "properties": {
+        "source_pack": {"const": "physiognomy/mayi-shenxiang"},
+        "source_dependency_id": {"$ref": "#/$defs/text"},
+        "source_rule_id": {"$ref": "#/$defs/text"},
+        "source_anchor": {"$ref": "#/$defs/text"}
+      }
+    }
+  }
+}

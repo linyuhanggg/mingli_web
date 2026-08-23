@@ -478,6 +478,75 @@ async def start_qizheng_relationship_reading(
 
 
 @router.post(
+    "/bazi-relationship-deep",
+    operation_id="startBaziRelationshipDeepReading",
+    response_model=ReadingStartResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def start_bazi_relationship_deep_reading(
+    request: Request,
+    response: Response,
+    payload: RelationshipStartRequest,
+    session: AsyncSession = Depends(database_session),
+    owner: Owner = Depends(require_owner_csrf),
+) -> ReadingStartResponse:
+    return await _start_relationship_reading(
+        request,
+        response,
+        payload,
+        session,
+        owner,
+        product_id="bazi-relationship-deep",
+    )
+
+
+@router.post(
+    "/ziwei-relationship-deep",
+    operation_id="startZiweiRelationshipDeepReading",
+    response_model=ReadingStartResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def start_ziwei_relationship_deep_reading(
+    request: Request,
+    response: Response,
+    payload: RelationshipStartRequest,
+    session: AsyncSession = Depends(database_session),
+    owner: Owner = Depends(require_owner_csrf),
+) -> ReadingStartResponse:
+    return await _start_relationship_reading(
+        request,
+        response,
+        payload,
+        session,
+        owner,
+        product_id="ziwei-relationship-deep",
+    )
+
+
+@router.post(
+    "/qizheng-relationship-deep",
+    operation_id="startQizhengRelationshipDeepReading",
+    response_model=ReadingStartResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def start_qizheng_relationship_deep_reading(
+    request: Request,
+    response: Response,
+    payload: RelationshipStartRequest,
+    session: AsyncSession = Depends(database_session),
+    owner: Owner = Depends(require_owner_csrf),
+) -> ReadingStartResponse:
+    return await _start_relationship_reading(
+        request,
+        response,
+        payload,
+        session,
+        owner,
+        product_id="qizheng-relationship-deep",
+    )
+
+
+@router.post(
     "/today",
     operation_id="startTodayReading",
     response_model=ReadingStartResponse,

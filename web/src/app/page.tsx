@@ -19,6 +19,8 @@ import {
   type ProductDefinition,
 } from "@/products/catalog";
 
+import { BaziEmptySilhouette } from "@/components/readings/bazi-chart";
+
 import { HomeAtmosphere } from "./home-atmosphere";
 import { HomeStage } from "./home-stage";
 import styles from "./home.module.css";
@@ -119,6 +121,9 @@ export default function HomePage() {
             <Container className={styles.heroFrame}>
               <HomeHeroMotion className={styles.hero}>
                 <HomeHeroItemMotion>
+                  <p aria-hidden="true" className={styles.chapter} data-chapter="01">
+                    01
+                  </p>
                   <p aria-hidden="true" className={styles.heroKicker}>
                     一卷可证伪的命理
                   </p>
@@ -167,7 +172,9 @@ export default function HomePage() {
             <Container className={styles.quickStartInner}>
               <header className={styles.quickStartHead}>
                 <div>
-                  <span aria-hidden="true" className={styles.chapter}>卷首入门</span>
+                  <span aria-hidden="true" className={styles.chapter} data-chapter="02">
+                    02
+                  </span>
                   <h2 id="home-start">先做这一件</h2>
                 </div>
                 <p>先给确定性盘面事实，再谈解释与边界。</p>
@@ -193,20 +200,42 @@ export default function HomePage() {
           <Container className={styles.container}>
             <HomeSectionMotion dividerClassName={styles.paperDivider}>
               <section aria-label="机制" className={styles.mechanism}>
-                <ul>
-                  <li>
-                    <strong>确定性盘面免费</strong>
-                    <span>同一套算法生成盘面，可复现、可核对。</span>
-                  </li>
-                  <li>
-                    <strong>事实与解释分层</strong>
-                    <span>盘面事实与模型表达分开标注，适用边界可见。</span>
-                  </li>
-                  <li>
-                    <strong>多术互证</strong>
-                    <span>同根资料多术对照，分歧与缺失明示。</span>
-                  </li>
-                </ul>
+                <div className={styles.mechanismLayout}>
+                  <div>
+                    <header className={styles.sectionHead}>
+                      <div>
+                        <span aria-hidden="true" className={styles.chapter} data-chapter="03">
+                          03
+                        </span>
+                        <h2 className={styles.chapterTitle} id="home-mechanism">
+                          机制
+                        </h2>
+                      </div>
+                    </header>
+                    <ul>
+                      <li>
+                        <strong>确定性盘面免费</strong>
+                        <span>同一套算法生成盘面，可复现、可核对。</span>
+                      </li>
+                      <li>
+                        <strong>事实与解释分层</strong>
+                        <span>盘面事实与模型表达分开标注，适用边界可见。</span>
+                      </li>
+                      <li>
+                        <strong>多术互证</strong>
+                        <span>同根资料多术对照，分歧与缺失明示。</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <aside className={styles.folio} data-folio="true">
+                    <p className={styles.folioMeta}>
+                      <span className={styles.folioSeal}>八字</span>
+                      <span>空盘</span>
+                    </p>
+                    <BaziEmptySilhouette />
+                    <p className={styles.folioCaption}>提交后由服务端生成，可核验。无示例干支。</p>
+                  </aside>
+                </div>
               </section>
             </HomeSectionMotion>
 
@@ -214,6 +243,9 @@ export default function HomePage() {
               <section aria-labelledby="home-natal" className={styles.section}>
                 <div className={styles.sectionHead}>
                   <div>
+                    <span aria-hidden="true" className={styles.chapter} data-chapter="04">
+                      04
+                    </span>
                     <h2 id="home-natal">命盘</h2>
                   </div>
                   <p>从出生资料开始，观察长期结构与时间层。</p>
@@ -241,6 +273,9 @@ export default function HomePage() {
               <section aria-labelledby="home-event" className={styles.section}>
                 <div className={styles.sectionHead}>
                   <div>
+                    <span aria-hidden="true" className={styles.chapter} data-chapter="05">
+                      05
+                    </span>
                     <h2 id="home-event">事件判断</h2>
                   </div>
                   <p>围绕同一件具体事情，记录问题、过程与发生时空。</p>
@@ -271,6 +306,9 @@ export default function HomePage() {
               <section aria-labelledby="home-cross" className={styles.section}>
                 <div className={styles.sectionHead}>
                   <div>
+                    <span aria-hidden="true" className={styles.chapter} data-chapter="06">
+                      06
+                    </span>
                     <h2 id="home-cross">合参</h2>
                   </div>
                   <p>同一对象、同一问题，多术分别计算后再对照。</p>
@@ -326,6 +364,9 @@ export default function HomePage() {
 
             <section aria-labelledby="home-closing" className={styles.closing}>
               <div>
+                <span aria-hidden="true" className={styles.chapter} data-chapter="07">
+                  07
+                </span>
                 <h2 id="home-closing">先拿到一张可核对的盘</h2>
                 <p>不需要注册。填出生资料就能得到确定性四柱；要保存、跨设备或深读时再登录。</p>
               </div>

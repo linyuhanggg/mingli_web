@@ -66,10 +66,13 @@ def test_capability_tier_follows_runtime_evidence_roles_and_divination_prefixes(
     assert projection["bazi"].judgment_rule_count == 1
     assert projection["ziwei"].tier == "B"
     assert projection["ziwei"].judgment_rule_count == 0
+    # 2026-08-21 user decision: Liuyao/Meihua follow the shared tier rule.
+    assert projection["liuyao"].tier == "A"
     assert projection["liuyao"].judgment_rule_count == 2
-    assert projection["liuyao"].user_decision_pending is True
+    assert projection["liuyao"].user_decision_pending is False
+    assert projection["meihua"].tier == "A"
     assert projection["meihua"].judgment_rule_count == 1
-    assert projection["meihua"].user_decision_pending is True
+    assert projection["meihua"].user_decision_pending is False
 
 
 def test_capability_tier_changes_when_runtime_rule_role_changes(tmp_path: Path) -> None:
@@ -115,6 +118,12 @@ def test_admitted_v53_projection_matches_the_recorded_runtime_counts() -> None:
     assert projection["ziwei"].judgment_rule_count == 0
     assert projection["qizheng"].judgment_rule_count == 0
     assert projection["jianxiang"].judgment_rule_count == 0
+    # 2026-08-21 user decision: with judgment rules present, the admitted
+    # release now projects Liuyao/Meihua at tier A with no pending flag.
+    assert projection["liuyao"].tier == "A"
+    assert projection["liuyao"].user_decision_pending is False
+    assert projection["meihua"].tier == "A"
+    assert projection["meihua"].user_decision_pending is False
 
 
 async def test_public_capability_endpoint_exposes_runtime_projection(client) -> None:  # type: ignore[no-untyped-def]

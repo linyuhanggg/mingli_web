@@ -63,6 +63,7 @@ const yearLayer = {
   structural_changes: {
     status: "mechanical_candidates_only",
     transit_pillar: "丙午",
+    stem_ten_god: "比肩",
     branch_relations: [],
     hard_verdict: null,
   },
@@ -105,19 +106,19 @@ function pillarButton(label: RegExp) {
 }
 
 describe("BaziChart fact-density workspace", () => {
-  it("renders raw relation types, neutral lines, and a semantic table", async () => {
+  it("renders raw relation types, neutral arcs, and a semantic table", async () => {
     const user = userEvent.setup();
     render(<BaziChart chart={denseChart()} evidence={[]} />);
 
     const relationTable = screen.getByRole("table", { name: "地支关系事实" });
     expect(within(relationTable).getByText("寅午半合")).toBeVisible();
     expect(screen.getByRole("img", { name: "地支关系连线" })).toBeVisible();
-    expect(document.querySelectorAll('line[data-relation-type="寅午半合"]')).toHaveLength(1);
+    expect(document.querySelectorAll('path[data-relation-type="寅午半合"]')).toHaveLength(1);
     expect(document.body.textContent).not.toMatch(/冲.*红|红.*冲/);
 
     await user.click(pillarButton(/月柱/));
     expect(
-      document.querySelector('line[data-relation-type="寅午半合"][data-fact-highlight="true"]'),
+      document.querySelector('path[data-relation-type="寅午半合"][data-fact-highlight="true"]'),
     ).not.toBeNull();
   });
 
@@ -190,17 +191,22 @@ describe("BaziChart fact-density workspace", () => {
     expect(fireRow.querySelector('[data-fact-highlight="true"]')).not.toBeNull();
   });
 
-  it("renders the complete luck sequence and tests all three Runtime statuses", async () => {
+  it("keeps the luck track on the natal surface and covers all three Runtime statuses", async () => {
     const user = userEvent.setup();
     const { rerender } = render(<BaziChart chart={denseChart()} evidence={[]} />);
 
-    await user.click(screen.getByRole("tab", { name: /大运/ }));
-    const luckPanel = screen.getByRole("tabpanel", { name: /大运/ });
-    const luckTable = within(luckPanel).getByRole("table", { name: "完整大运序列" });
-    expect(within(luckTable).getByRole("row", { name: /4 庚戌 31 41/ })).toBeVisible();
-    expect(within(luckPanel).getByText("夏至 · 1992年6月21日 12:14")).toBeVisible();
-    expect(within(luckPanel).getByText("顺行")).toBeVisible();
-    expect(within(luckPanel).getByText("已计算")).toHaveAttribute("data-status", "calculated");
+    // M8：大运轨常驻本命盘面，不再藏在单独页签里。
+    const luckSection = screen.getByRole("region", { name: "大运" });
+    const track = within(luckSection).getByRole("list", { name: "大运序列" });
+    expect(within(track).getAllByRole("listitem")).toHaveLength(4);
+    expect(within(track).getByText("31–41 岁")).toBeVisible();
+    expect(within(luckSection).getByText("已计算")).toHaveAttribute(
+      "data-status",
+      "calculated",
+    );
+    await user.click(within(luckSection).getByText("起运依据"));
+    expect(within(luckSection).getByText("夏至 · 1992年6月21日 12:14")).toBeVisible();
+    expect(within(luckSection).getByText("顺行")).toBeVisible();
 
     const sequenceOnly = denseChart({
       luck_cycles: {
@@ -212,10 +218,14 @@ describe("BaziChart fact-density workspace", () => {
       },
     });
     rerender(<BaziChart chart={sequenceOnly} evidence={[]} />);
-    await user.click(screen.getByRole("tab", { name: /大运/ }));
-    const sequencePanel = screen.getByRole("tabpanel", { name: /大运/ });
-    expect(within(sequencePanel).getByText("仅返回序列")).toHaveAttribute("data-status", "sequence_only");
-    expect(within(sequencePanel).getByText("起运岁数未返回")).toBeVisible();
+    const sequenceSection = screen.getByRole("region", { name: "大运" });
+    expect(within(sequenceSection).getByText("仅返回序列")).toHaveAttribute(
+      "data-status",
+      "sequence_only",
+    );
+    // sequence_only：年龄列整列不渲染（flow-spec S3-M8）。
+    expect(within(sequenceSection).queryByText(/–.*岁/)).toBeNull();
+    expect(within(sequenceSection).getByText("起运岁数未返回")).toBeVisible();
 
     const missingGender = denseChart({
       luck_cycles: {
@@ -227,62 +237,88 @@ describe("BaziChart fact-density workspace", () => {
       },
     });
     rerender(<BaziChart chart={missingGender} evidence={[]} />);
-    await user.click(screen.getByRole("tab", { name: /大运/ }));
-    const missingGenderPanel = screen.getByRole("tabpanel", { name: /大运/ });
-    expect(within(missingGenderPanel).getByText("因性别缺失未计算")).toHaveAttribute(
-      "data-status",
-      "not_calculated_missing_gender",
-    );
-    expect(within(missingGenderPanel).getByText("缺少性别，无法计算顺逆与起运序列")).toBeVisible();
+    const missingSection = screen.getByRole("region", { name: "大运" });
+    expect(
+      within(missingSection).getByText("未提供性别，无法确定大运顺逆。"),
+    ).toHaveAttribute("data-status", "not_calculated_missing_gender");
   });
 
-  it("keeps five layer panels mounted and exposes year, month, and day facts", async () => {
+  it("switches time layers without unmounting the matrix and shows no raw enum text", async () => {
     const user = userEvent.setup();
     render(<BaziChart chart={denseChart()} evidence={[]} />);
 
-    expect(screen.getAllByRole("tabpanel", { hidden: true })).toHaveLength(5);
-    await user.click(screen.getByRole("tab", { name: /流年/ }));
-    const yearlyPanel = screen.getByRole("tabpanel", { name: /流年/ });
-    expect(within(yearlyPanel).getByRole("table", { name: "完整流年事实" })).toBeVisible();
-    expect(within(yearlyPanel).getAllByText("mechanical_candidates_only").length).toBeGreaterThan(0);
-    expect(screen.getByRole("tab", { name: /流年/ })).toHaveAttribute("aria-selected", "true");
-
-    await user.click(screen.getByRole("tab", { name: /流月/ }));
-    expect(screen.getByRole("table", { name: "流月总览" })).toBeVisible();
-    expect(screen.getByText("2026-08")).toBeVisible();
-    const monthlyPanel = screen.getByRole("tabpanel", { name: /流月/ });
-    expect(monthlyPanel).toHaveAttribute("aria-hidden", "false");
-    const natalPanel = document.getElementById(
-      screen.getByRole("tab", { name: /^本命/ }).getAttribute("aria-controls") ?? "",
-    );
-    expect(natalPanel).toHaveAttribute(
-      "aria-hidden",
+    const chips = screen.getByRole("group", { name: "时间层" });
+    expect(within(chips).getByRole("button", { name: /本命/ })).toHaveAttribute(
+      "aria-pressed",
       "true",
     );
 
-    await user.click(screen.getByRole("tab", { name: /流日/ }));
-    const dailyPanel = screen.getByRole("tabpanel", { name: /流日/ });
-    expect(within(dailyPanel).getByRole("table", { name: "流日总览" })).toBeVisible();
-    expect(within(dailyPanel).getAllByText("2026-08-15").length).toBeGreaterThan(0);
+    // 流年：矩阵右侧追加流年柱列（§21.2 容器不卸载），右栏出现机械候选模块。
+    await user.click(within(chips).getByRole("button", { name: /流年/ }));
+    expect(screen.getByRole("table", { name: "四柱矩阵" })).toBeVisible();
+    expect(screen.getByText("流年柱 · 2026")).toBeVisible();
+    const yearModule = screen.getByRole("region", { name: "流年 2026" });
+    expect(within(yearModule).getByText(/流年天干十神：比肩/)).toBeVisible();
+    expect(within(yearModule).getByText(/本年机械候选（未裁定）/)).toBeVisible();
+    expect(within(yearModule).getByText(/当年所在大运：丁未/)).toBeVisible();
+    const luckSection = screen.getByRole("region", { name: "大运" });
+    expect(
+      within(luckSection).getByText("当年所在").closest("li"),
+    ).toHaveAttribute("data-active", "true");
+    await user.click(within(yearModule).getByText(/年内分段/));
+    expect(within(yearModule).getByRole("table", { name: "分段事实" })).toBeVisible();
+    expect(screen.queryByText(/mechanical_candidates_only/)).toBeNull();
+
+    // 流月 / 流日：同构模块，粒度标签区分。
+    await user.click(within(chips).getByRole("button", { name: /流月/ }));
+    const monthModule = screen.getByRole("region", { name: "流月 2026-08" });
+    expect(within(monthModule).getByText(/代表时刻：2026年8月8日 12:00/)).toBeVisible();
+    expect(within(monthModule).getByRole("table", { name: "分段事实" })).toBeVisible();
+    expect(screen.getByRole("table", { name: "四柱矩阵" })).toBeVisible();
+
+    await user.click(within(chips).getByRole("button", { name: /流日/ }));
+    const dayModule = screen.getByRole("region", { name: "流日 2026-08-15" });
+    expect(within(dayModule).getByText(/代表时刻：2026年8月15日 12:00/)).toBeVisible();
+    expect(screen.queryByText(/mechanical_candidates_only|hard_verdict/)).toBeNull();
   });
 
-  it("locks the layer transition to opacity and transform without skeletons", () => {
-    const shellCss = readFileSync(
-      join(process.cwd(), "src/components/readings/chart-workspace-shell.module.css"),
-      "utf8",
-    );
+  it("declares unavailable layers with the server reason instead of hiding them", () => {
+    const chart = {
+      ...denseChart({ year_layers: null, month_layers: null, day_layers: null }),
+      timeLayers: [
+        { layer_id: "year", label: "流年", available: false, unavailable_reason: "流年层数据尚未产出" },
+        { layer_id: "month", label: "流月", available: false, unavailable_reason: null },
+        { layer_id: "day", label: "流日", available: true, unavailable_reason: null },
+      ],
+    } as BaziChartView;
+    render(<BaziChart chart={chart} evidence={[]} />);
+
+    const chips = screen.getByRole("group", { name: "时间层" });
+    const yearChip = within(chips).getByRole("button", { name: /流年/ });
+    expect(yearChip).toBeDisabled();
+    expect(yearChip).toHaveTextContent("流年层数据尚未产出");
+    expect(within(chips).getByRole("button", { name: /流月/ })).toBeDisabled();
+    // 声明可用但数据缺失的层同样禁用并写明原因（GAP-BZ-01 fail closed）。
+    const dayChip = within(chips).getByRole("button", { name: /流日/ });
+    expect(dayChip).toBeDisabled();
+    expect(dayChip).toHaveTextContent("该时间层数据尚未产出");
+  });
+
+  it("locks highlight and layer overlays to border/background/weight without skeletons", () => {
     const chartCss = readFileSync(
       join(process.cwd(), "src/components/readings/bazi-chart.module.css"),
       "utf8",
     );
-    expect(shellCss).toMatch(/\.layerPanel[\s\S]*?transition:[\s\S]*?opacity 150ms ease,[\s\S]*?transform 150ms ease/);
-    expect(shellCss).toMatch(/\.layerPanel[\s\S]*?opacity:\s*0/);
-    expect(shellCss).toMatch(/\.layerPanel\[data-active="true"\][\s\S]*?opacity:\s*1/);
-    expect(shellCss).not.toMatch(/skeleton|shimmer/i);
     expect(chartCss).toMatch(/overflow-x:\s*auto/);
     expect(chartCss).not.toMatch(/@keyframes|animation:/);
+    expect(chartCss).not.toMatch(/skeleton|shimmer/i);
+    // 时间层叠加只允许 220ms 透明度，禁止翻面。
+    expect(chartCss).toMatch(
+      /\.transitHead,\s*\n\.matrix td\[data-active="true"\]\s*\{\s*\n\s*transition: opacity var\(--duration-overlay\) var\(--ease-out\);/,
+    );
+    expect(chartCss).not.toMatch(/pillarCard[^{]*\{[^}]*animation-delay/s);
     const factHighlightBlock = chartCss.match(/\.factHighlight,[\s\S]*?\n}\n/)?.[0] ?? "";
-    expect(factHighlightBlock).toContain("border: 1px solid var(--color-action)");
+    expect(factHighlightBlock).toContain("border: 1px solid var(--color-accent)");
     expect(factHighlightBlock).not.toContain("box-shadow");
     expect(factHighlightBlock).not.toContain("color:");
   });

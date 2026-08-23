@@ -1,0 +1,12 @@
+.bar {
+  min-width: 0;
+  color: var(--color-text);
+  background: var(--color-canvas);
+}
+
+.date {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-meta);
+  line-height: var(--line-height-body);
+}

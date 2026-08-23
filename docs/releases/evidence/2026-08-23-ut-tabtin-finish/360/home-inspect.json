@@ -1,0 +1,95 @@
+{
+  "url": "http://106.14.10.235:18080/",
+  "title": "十三术同根，五十五部古籍为证",
+  "chapters": [
+    {
+      "id": "01",
+      "heading": "",
+      "headingPx": null,
+      "bodyPx": null,
+      "headingWeight": null
+    },
+    {
+      "id": "02",
+      "heading": "",
+      "headingPx": null,
+      "bodyPx": null,
+      "headingWeight": null
+    },
+    {
+      "id": "03",
+      "heading": "",
+      "headingPx": null,
+      "bodyPx": null,
+      "headingWeight": null
+    },
+    {
+      "id": "04",
+      "heading": "",
+      "headingPx": null,
+      "bodyPx": null,
+      "headingWeight": null
+    },
+    {
+      "id": "05",
+      "heading": "",
+      "headingPx": null,
+      "bodyPx": null,
+      "headingWeight": null
+    },
+    {
+      "id": "06",
+      "heading": "",
+      "headingPx": null,
+      "bodyPx": null,
+      "headingWeight": null
+    },
+    {
+      "id": "07",
+      "heading": "",
+      "headingPx": null,
+      "bodyPx": null,
+      "headingWeight": null
+    }
+  ],
+  "folio": {
+    "display": "none",
+    "visibility": "visible",
+    "width": 0,
+    "height": 0,
+    "text": "八字空盘年柱月柱日柱时柱提交后由服务端生成，可核验。无示例干支。",
+    "ganZhi": []
+  },
+  "animations": [
+    {
+      "name": "home-module__F6jZ2q__atmosphereEnter",
+      "playState": "finished",
+      "iterations": 1,
+      "duration": 700
+    },
+    {
+      "name": "home-module__F6jZ2q__inkDrift",
+      "playState": "running",
+      "iterations": 1,
+      "duration": 28000
+    },
+    {
+      "name": "home-module__F6jZ2q__talismanGhostSway",
+      "playState": "running",
+      "iterations": 1,
+      "duration": 16000
+    },
+    {
+      "name": "home-module__F6jZ2q__talismanFlameSway",
+      "playState": "running",
+      "iterations": 1,
+      "duration": 11000
+    },
+    {
+      "name": "home-module__F6jZ2q__talismanSway",
+      "playState": "running",
+      "iterations": 1,
+      "duration": 13000
+    }
+  ]
+}

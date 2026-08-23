@@ -1,0 +1,13 @@
+[
+  {
+    "url": "http://106.14.10.235:18080/api/v1/readings/preview",
+    "body": {
+      "profile_version_id": "7c394baa-8704-49cd-bdaa-22fcd2645d41",
+      "query": "请预览我的八字流年盘面。",
+      "dimension_ids": [
+        "career"
+      ],
+      "target_year": 2026
+    }
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "url": "http://106.14.10.235:18080/liuyao",
+  "pathname": "/liuyao",
+  "stayed": true,
+  "loginWall": false,
+  "unavailable": false,
+  "hasChart": false,
+  "generating": false,
+  "waitedMs": 60427
+}

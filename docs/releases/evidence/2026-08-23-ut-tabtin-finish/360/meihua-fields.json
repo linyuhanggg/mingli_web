@@ -1,0 +1,88 @@
+{
+  "url": "http://106.14.10.235:18080/meihua",
+  "fields": [
+    {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "name": "issue",
+      "id": "meihua-issue",
+      "label": "当前问题",
+      "value": ""
+    },
+    {
+      "tag": "SELECT",
+      "type": "select-one",
+      "name": "focus",
+      "id": "meihua-focus",
+      "label": "判断侧重",
+      "value": ""
+    },
+    {
+      "tag": "INPUT",
+      "type": "datetime-local",
+      "name": "eventTime",
+      "id": "meihua-event-time",
+      "label": "事件时间",
+      "value": ""
+    },
+    {
+      "tag": "INPUT",
+      "type": "text",
+      "name": "timezone",
+      "id": "meihua-timezone",
+      "label": "事件时区",
+      "value": "Asia/Shanghai"
+    },
+    {
+      "tag": "INPUT",
+      "type": "text",
+      "name": "location",
+      "id": "meihua-location",
+      "label": "事件地点",
+      "value": ""
+    },
+    {
+      "tag": "SELECT",
+      "type": "select-one",
+      "name": "timeStandard",
+      "id": "meihua-time-standard",
+      "label": "事件时间口径",
+      "value": "civil"
+    },
+    {
+      "tag": "SELECT",
+      "type": "select-one",
+      "name": "meihuaCastingMethod",
+      "id": "meihua-casting-method",
+      "label": "梅花起卦方式",
+      "value": "time"
+    }
+  ],
+  "buttons": [
+    {
+      "text": "术数",
+      "type": "button",
+      "disabled": false
+    },
+    {
+      "text": "合参",
+      "type": "button",
+      "disabled": false
+    },
+    {
+      "text": "更多",
+      "type": "button",
+      "disabled": false
+    },
+    {
+      "text": "立即起卦 · 查看本卦与体用",
+      "type": "submit",
+      "disabled": false
+    },
+    {
+      "text": "术数",
+      "type": "button",
+      "disabled": false
+    }
+  ]
+}

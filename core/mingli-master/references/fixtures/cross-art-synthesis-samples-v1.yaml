@@ -1,0 +1,113 @@
+schema_version: mingli-algorithm-source-samples-v1
+purpose: >-
+  Independent 合参互证/分歧 samples transcribed from admitted 《果老星宗》不可执泥一端
+  and 《卜筮正宗》理无二致 source_gap. Luck lookup is empty. Local adjudicator
+  must match these rows; it must not invent a fusion table.
+
+cases:
+  hecan-two-arts-empty-synthesis:
+    source_reference: 果老 fulltext.md L1530 不可执泥一端
+    input:
+      product_id: hecan
+      selected_art_ids: [bazi, ziwei]
+      dimension_id: career
+      present_art_ids: [bazi, ziwei]
+    expected:
+      product_id: hecan
+      lookup_key: null
+      match_status: exact
+      source_status: exact_rule_bound
+      source_rule_id: cross-art-synthesis/guotian-jing#CAS-GX-01
+      evidence_status: all_selected_present
+      missing_art_ids: []
+      convergence: []
+      disagreements: []
+      forced_resolution: false
+      hard_verdict: null
+    verification: two natal arts present; empty comparison arrays are valid
+
+  hecan-scope-names-not-disagreement:
+    source_reference: 紫微全书 甲廉破武阳为伴；scope 名称不同不算分歧
+    input:
+      product_id: hecan
+      selected_art_ids: [bazi, ziwei, qizheng]
+      dimension_id: career
+      present_art_ids: [bazi, ziwei, qizheng]
+      scope_names:
+        bazi: calculated_natal_chart
+        ziwei: calculated_natal_ziwei_chart
+        qizheng: calculated_natal_xingming_chart
+    expected:
+      product_id: hecan
+      lookup_key: null
+      match_status: exact
+      source_status: exact_rule_bound
+      source_rule_id: cross-art-synthesis/ziwei-doushu-quanshu#CAS-ZW-01
+      evidence_status: all_selected_present
+      missing_art_ids: []
+      convergence: []
+      disagreements: []
+      forced_resolution: false
+      hard_verdict: null
+    verification: different dimension_fact_scope names are not disagreements
+
+  hecan-disagreement-retained:
+    source_reference: 果老 fulltext.md L1530 不可执泥一端
+    input:
+      product_id: hecan
+      selected_art_ids: [bazi, ziwei]
+      dimension_id: career
+      present_art_ids: [bazi, ziwei]
+      art_signals:
+        bazi:
+          predicate_id: career_direction
+          value: 正官可见
+          fact_refs: [fact:profile/calculated/bazi/career]
+        ziwei:
+          predicate_id: career_direction
+          value: 迁移宫主星
+          fact_refs: [fact:profile/calculated/ziwei/career]
+    expected:
+      product_id: hecan
+      lookup_key: null
+      match_status: exact
+      source_status: exact_rule_bound
+      source_rule_id: cross-art-synthesis/guotian-jing#CAS-GX-01
+      evidence_status: all_selected_present
+      missing_art_ids: []
+      convergence: []
+      disagreement_kind: source_disagreement_retained
+      disagreements:
+        - arts: [bazi, ziwei]
+          kind: source_disagreement_retained
+          display_text: 2术对 career 来源谓词不一致，分歧保留
+          fact_refs:
+            - fact:profile/calculated/bazi/career
+            - fact:profile/calculated/ziwei/career
+          source_rule_id: cross-art-synthesis/guotian-jing#CAS-GX-01
+      forced_resolution: false
+      hard_verdict: null
+    verification: 异处 is retained; no winner and no averaged luck row
+
+  wenshi-fusion-slogan-unmatched:
+    source_reference: 卜筮正宗 fulltext.md L1872 事有百端，理无二致
+    input:
+      product_id: wenshi
+      selected_art_ids: [liuyao, qimen, daliuren]
+      dimension_id: outcome
+      present_art_ids: [liuyao, qimen, daliuren]
+      region_label: 理无二致
+    expected:
+      product_id: wenshi
+      lookup_key: 理无二致
+      match_status: unmatched
+      source_status: unmatched
+      region_match: null
+      source_rule_id: cross-art-synthesis/bushi-zhengzong#CAS-BS-01
+      evidence_status: all_selected_present
+      missing_art_ids: []
+      convergence: []
+      disagreements: []
+      forced_resolution: false
+      hard_verdict: null
+    verification: 理无二致 is compilation slogan, not a wenshi fusion table

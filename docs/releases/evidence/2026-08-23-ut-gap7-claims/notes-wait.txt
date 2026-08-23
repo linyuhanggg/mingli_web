@@ -1,0 +1,20 @@
+[2026-08-23T06:46:03.576Z] shot 11-filled-retry url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:03.621Z] submitted
+[2026-08-23T06:46:05.629Z] poll 0 preparing=true pillars=false len=337 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:05.674Z] shot 12-wait-00 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:07.677Z] poll 1 preparing=true pillars=false len=337 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:09.682Z] poll 2 preparing=true pillars=false len=337 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:11.686Z] poll 3 preparing=true pillars=false len=337 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:13.691Z] poll 4 preparing=false pillars=true len=2508 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:13.755Z] shot 13-after-wait url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:13.755Z] ready=true hits=["深读","古法命中"]
+[2026-08-23T06:46:14.170Z] shot 14-natal-scroll-00 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:14.923Z] shot 14-natal-scroll-02 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:15.682Z] shot 14-natal-scroll-04 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:16.448Z] shot 14-natal-scroll-06 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:17.682Z] shot 14-natal-scroll-08 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:18.464Z] shot 14-natal-scroll-10 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:19.246Z] shot 14-natal-scroll-12 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:20.024Z] shot 14-natal-scroll-14 url=http://106.14.10.235:18080/bazi
+[2026-08-23T06:46:20.386Z] full hits=["深读","古法命中"]
+[2026-08-23T06:46:20.390Z] deep-ish: ["报告 PDF","登录后继续"]

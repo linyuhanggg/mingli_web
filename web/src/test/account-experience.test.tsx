@@ -8,7 +8,7 @@ import {
   useAccountSession,
 } from "@/components/account-session-context";
 import { PrivateShell } from "@/components/private-shell";
-import { SiteHeader } from "@/components/site-header";
+import { MobileNavigation, SiteHeader } from "@/components/site-header";
 import { ApiError, getReadingResult } from "@/lib/api";
 
 
@@ -324,11 +324,11 @@ describe("public account entry", () => {
     render(<SiteHeader />);
 
     const accountLink = await screen.findByRole("link", {
-      name: "已登录，进入我的首页",
+      name: "我的",
     });
     expect(accountLink).toHaveAttribute("href", "/account");
-    expect(accountLink).toHaveTextContent("已登录");
-    expect(accountLink).toHaveTextContent("我的首页");
+    expect(accountLink).toHaveTextContent("我的");
+    expect(accountLink).not.toHaveTextContent("已登录");
   });
 
   it("keeps a direct login entry when signed out", async () => {
@@ -348,16 +348,63 @@ describe("public account entry", () => {
 
     render(<SiteHeader />);
 
-    expect(
-      screen.getByRole("link", { name: "正在确认登录状态" }),
-    ).toHaveTextContent("确认登录");
+    const checkingLink = screen.getByRole("link", { name: "正在确认" });
+    expect(checkingLink).toHaveTextContent("正在确认");
+    expect(checkingLink).toHaveAttribute("href", "/account");
+    expect(checkingLink).not.toHaveTextContent("确认登录");
+    expect(checkingLink).not.toHaveTextContent("登录");
 
     rejectAccount?.(new Error("网络暂时不可用"));
 
-    expect(
-      await screen.findByRole("link", {
-        name: "身份状态暂时未知，前往个人中心",
+    const unknownLink = await screen.findByRole("link", { name: "身份未知" });
+    expect(unknownLink).toHaveTextContent("身份未知");
+    expect(unknownLink).toHaveAttribute("href", "/account");
+    expect(unknownLink).not.toHaveTextContent("登录");
+    expect(unknownLink).not.toHaveTextContent("我的");
+  });
+
+  it("aligns the mobile bottom account tab with the public header", async () => {
+    render(<MobileNavigation pathname="/" />);
+
+    const bottomBar = screen.getByLabelText("移动底栏");
+    const loginLink = await within(bottomBar).findByRole("link", { name: "登录", hidden: true });
+    expect(loginLink).toHaveAttribute("href", "/auth/login");
+    expect(loginLink).toHaveTextContent("登录");
+    expect(within(bottomBar).queryByRole("link", { name: "我的", hidden: true })).not.toBeInTheDocument();
+  });
+
+  it("keeps the mobile bottom account tab as 我的 only after sign-in", async () => {
+    api.getAccount.mockResolvedValue(signedInAccount);
+
+    render(<MobileNavigation pathname="/" />);
+
+    const bottomBar = screen.getByLabelText("移动底栏");
+    const accountLink = await within(bottomBar).findByRole("link", { name: "我的", hidden: true });
+    expect(accountLink).toHaveAttribute("href", "/account");
+    expect(accountLink).toHaveTextContent("我的");
+  });
+
+  it("names checking and unknown mobile identity states like the public header", async () => {
+    let rejectAccount: ((reason: Error) => void) | undefined;
+    api.getAccount.mockReturnValue(
+      new Promise((_, reject) => {
+        rejectAccount = reject;
       }),
-    ).toHaveTextContent("身份未知");
+    );
+
+    render(<MobileNavigation pathname="/" />);
+
+    const bottomBar = screen.getByLabelText("移动底栏");
+    const checkingLink = within(bottomBar).getByRole("link", { name: "正在确认", hidden: true });
+    expect(checkingLink).toHaveTextContent("正在确认");
+    expect(checkingLink).toHaveAttribute("href", "/account");
+
+    rejectAccount?.(new Error("网络暂时不可用"));
+
+    const unknownLink = await within(bottomBar).findByRole("link", { name: "身份未知", hidden: true });
+    expect(unknownLink).toHaveTextContent("身份未知");
+    expect(unknownLink).toHaveAttribute("href", "/account");
+    expect(unknownLink).not.toHaveTextContent("登录");
+    expect(unknownLink).not.toHaveTextContent("我的");
   });
 });

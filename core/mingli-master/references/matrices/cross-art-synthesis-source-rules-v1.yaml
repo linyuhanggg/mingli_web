@@ -1,0 +1,165 @@
+schema_version: mingli-cross-art-synthesis-source-rules-v1
+updated_at: "2026-08-21"
+runtime_binding: not_in_runtime
+provider_status: local_provider_not_in_runtime
+method_id: retain-disagreement-no-fusion-v1
+excluded_methods:
+  - averaged_luck_verdict
+  - weighted_score_fusion
+  - silent_winner_selection
+  - inventing_missing_arts
+  - dimension_fact_scope_as_convergence
+  - provider_scope_name_as_disagreement
+  - llm_generated_synthesis
+  - bushi_one_principle_as_fusion
+audit_policy:
+  research_source_root: external
+  research_sources_distribution: local_research_only
+  release_material: distilled_rules_provenance_and_checksums_only
+  note: >-
+    v1 freezes 合参 convergence/disagreements as comparison rows, not a
+    fourth diagnostic method. 八字、紫微、七政、六爻、奇门、大六壬 stay
+    independent. Empty arrays are valid. 《果老星宗》「不可执泥一端」
+    forbids forced_resolution. 《卜筮正宗》「理无二致」is a compilation
+    slogan, not a license to average 六爻+奇门+六壬. Live hecan-view /
+    wenshi-view / canwen-view reuse comparisonRow; local adjudicator
+    is not in catalog or the signed Runtime.
+
+source_registry:
+  guotian_no_one_end: &guotian_no_one_end
+    title: 果老星宗
+    edition_or_recension: 本地 normalized 通行整理本；正文与注文分层
+    normalized_path: references/fulltext/xingming/guotian-jing/fulltext.md
+    sha256: 3846727ba925eaf7b5a9e363f2561355a0ed58fddc73d0735d30e9dadc904e67
+    anchor: L1530 三辰通载 不可执泥一端
+    exact_excerpt: 不可执泥一端斯得之矣
+    material: retain disagreement; no single-end or averaged cross-art verdict
+    license_status: ancient text public domain; normalized source local research only
+  ziwei_star_setup: &ziwei_star_setup
+    title: 紫微斗数全书
+    edition_or_recension: 维基文库当前三卷本；不声称覆盖异传卷四
+    normalized_path: references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md
+    sha256: 75679206451ebfad7d7124168316ffaf72a516de9c149e4bef001dd3f3b7283d
+    anchor: L952-L1031 安身命、十二宫、五行局、诸星与四化
+    exact_excerpt: 甲廉破武阳为伴，乙机梁紫月交侵
+    material: natal palace/star setup; not a 子平 or 七政 fusion table
+    license_status: ancient text public domain; normalized source local research only
+  huozhu_six_relatives: &huozhu_six_relatives
+    title: 火珠林
+    edition_or_recension: 本地 normalized 通行整理本
+    normalized_path: references/fulltext/divination/huozhu-lin/fulltext.md
+    sha256: 6239f9ef22be7deb5771b513dacfc9cc1e8eea8cc5e54164f971cd7de86e5293
+    anchor: L23 卦定根源；六亲为主
+    exact_excerpt: 卦定根源，六亲为主
+    material: 六爻 six-relatives identity; not a 奇门/六壬 fusion license
+    license_status: ancient text public domain; normalized source local research only
+  bushi_one_principle: &bushi_one_principle
+    title: 卜筮正宗
+    edition_or_recension: 本地 normalized 分段转写本
+    normalized_path: references/fulltext/divination/bushi-zhengzong/fulltext.md
+    sha256: 651efe70d1bce36d1a18e9bf680a912ae3f556f2e66b16c137cd6efbfc9cb491
+    anchor: L1872 事有百端，理无二致
+    exact_excerpt: 事有百端，理无二致
+    material: compilation slogan; not a cross-art luck lookup
+    license_status: ancient text public domain; normalized source local research only
+
+lookup: {}
+
+rules:
+  - id: cross-art-synthesis/guotian-jing#CAS-GX-01
+    title: 不可执泥一端
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*guotian_no_one_end]
+    quote_index: GX-Q1282
+    source_anchor: fulltext.md#L1530
+    exact_excerpt: 不可执泥一端斯得之矣
+    statement: >-
+      合参必须保留异处。convergence 与 disagreements 是比较行，不得平均成一句吉凶，
+      也不得 forced_resolution=true。
+    boundary:
+      - disagreement is retained; never collapsed into hard_verdict
+      - empty comparison arrays remain valid when no comparable source predicates exist
+
+  - id: cross-art-synthesis/ziwei-doushu-quanshu#CAS-ZW-01
+    title: 紫微安星口诀不是合参融合表
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*ziwei_star_setup]
+    quote_index: ZW-03
+    source_anchor: fulltext.md#L952
+    exact_excerpt: 甲廉破武阳为伴，乙机梁紫月交侵
+    statement: >-
+      紫微安星口诀只证明斗数身份。不得把八字用神、紫微宫星或七政黄经并成一张吉凶表。
+    boundary:
+      - natal 合参 arts stay independent
+      - provider scope-name differences are not disagreements
+
+  - id: cross-art-synthesis/huozhu-lin#CAS-HZ-01
+    title: 六亲为主不是三术合断
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*huozhu_six_relatives]
+    quote_index: HZL-001
+    source_anchor: fulltext.md#L23
+    exact_excerpt: 卦定根源，六亲为主
+    statement: >-
+      六爻以六亲为根源。问事合参里六爻、奇门、大六壬分支出事实；不得合成第四套断法。
+    boundary:
+      - wenshi comparison rows never invent a missing art
+      - dimension_fact_scope presence is not source_bound_corroboration
+
+  - id: cross-art-synthesis/bushi-zhengzong#CAS-BS-01
+    title: 理无二致不是融合表
+    status: verified
+    evidence_role: source_gap
+    primary_sources: [*bushi_one_principle]
+    quote_index: BSZZ-1850
+    source_anchor: fulltext.md#L1872
+    exact_excerpt: 事有百端，理无二致
+    statement: >-
+      「理无二致」是编纂口诀，不是把六爻/奇门/六壬平均成一张吉凶表的授权。
+    boundary:
+      - one-principle slogans never yield exact luck lookup
+      - fused_score / winner / arbitration fields are contract violations
+
+  - id: cross-art-synthesis/guotian-jing#CAS-GX-02
+    title: 合参吉凶表 fail-closed
+    status: verified
+    evidence_role: lookup_fact
+    primary_sources: [*guotian_no_one_end]
+    source_anchor: fulltext.md#L1530
+    exact_excerpt: 不可执泥一端斯得之矣
+    lookup: {}
+    statement: >-
+      无钉死吉凶行。比较行可 terminology exact；缺术保持 missing；
+      hard_verdict 必须为 null；forced_resolution 必须为 false。
+    boundary:
+      - unmatched never upgrades to career, wealth, or event verdict
+      - live hecan-view comparison rows are this structured contract
+      - no catalog entry or signed Runtime binding
+
+fail_closed:
+  - v1 luck lookup is empty; hard_verdict is always null
+  - forced_resolution is always false
+  - empty convergence and disagreements are valid
+  - selected arts with no facts stay in missing_art_ids; they are not invented
+  - dimension_fact_scope alignment is not 互证
+  - different provider scope names are not 分歧
+  - 理无二致 / 归一理 slogans are unmatched, not corroboration
+  - extra fields named luck, verdict, fused_score, winner, arbitration, llm are contract violations
+  - no catalog entry or signed Runtime binding
+
+commentary_dependencies:
+  - path: references/books/xingming/guotian-jing/quote-index.md
+    anchor: GX-Q1282
+    role: 不可执泥一端 methodology short quote
+  - path: references/books/ziwei/ziwei-doushu-quanshu/rules.md
+    anchor: ZW-03
+    role: 紫微安星 identity, not fusion
+  - path: references/matrices/conflict-policy.md
+    anchor: "0. 顶层原则"
+    role: 保留分歧，不强行揉合
+  - path: references/books/divination/bushi-zhengzong/chapter-map.md
+    anchor: BSZZ-1850
+    role: 理无二致 is compilation slogan, not fusion

@@ -1,0 +1,162 @@
+schema_version: mingli-physiognomy-combined-source-rules-v1
+updated_at: "2026-08-21"
+runtime_binding: not_in_runtime
+provider_status: local_provider_not_in_runtime
+method_id: liuzhuang-mayi-branch-comparison-v1
+excluded_methods:
+  - averaged_luck_verdict
+  - western_fused_score_personality_composite
+  - mayi_modern_appendix_face_palm_twelve_palaces
+  - mayi_jinsuo_one_principle_as_fusion
+  - inventing_missing_branches
+  - llm_generated_physiognomy
+  - health_lifespan_wealth_personality_verdict
+  - voice_as_combined_branch
+audit_policy:
+  research_source_root: external
+  research_sources_distribution: local_research_only
+  release_material: distilled_rules_provenance_and_checksums_only
+  note: >-
+    v1 freezes 见相 combined/综合观照 as branch comparison, not a fourth
+    diagnostic method. Any non-empty subset of face/palm/posture is
+    valid. Facts stay per branch. 共同印证 / 分歧 / 证据充足度 are comparison
+    rows, never hard_verdict. 《柳庄相法》「不可定一理而推」forbids averaging
+    or forced resolution. 《麻衣神相》卷三「加之以首，谓之五体」names 首+四肢
+    composition (MY-007; admitted MY-002–MY-011). 「相法百家归一理」and
+    卷六 面相手相十二宫 are not a fusion table. 声 is 神相全编 side evidence,
+    not a v1 branch. No catalog or signed Runtime binding.
+
+source_registry:
+  liuzhuang_no_one_principle: &liuzhuang_no_one_principle
+    title: 柳庄相法
+    edition_or_recension: CTP 连续行表；尚未与影印本逐字对校；v1 只取不可单点/不可定一理
+    normalized_path: references/fulltext/physiognomy/liuzhuang-xiangfa/fulltext.md
+    sha256: 04459fbe4f5d48e0810a8f0290c6f8f851754db02a2344fc109380aee6059af8
+    anchor: L25 相有诀法不可乱言；不可定一理
+    exact_excerpt: 不可以美而言好，莫以恶而言害，其中还有异处，不可定一理而推
+    material: retain disagreement; no single-feature or averaged verdict
+    license_status: ancient text public domain; normalized source local research only
+  mayi_wuti_composition: &mayi_wuti_composition
+    title: 麻衣神相
+    edition_or_recension: 全学网网页转写；仅 MY-002 至 MY-011 古籍转写层；卷六现代附益排除
+    normalized_path: references/fulltext/physiognomy/mayi-shenxiang/fulltext.md
+    sha256: c9b02fe305c963d1e22ba694daf600297d9e4d8c3adad8bfaa7316f9471e8bc2
+    anchor: L1305 五体；L2799 金锁赋「归一理」不作融合授权
+    exact_excerpt: 夫手足者谓之四肢，以象四时，加之以首，谓之五体，以象五行
+    material: names 首+四肢 composition; not a luck lookup; not a fusion license
+    license_status: ancient text public domain; normalized source local research only
+
+terminology_regions:
+  五体: whole_body
+  首: forehead
+  四肢: left_hand
+  形: form
+
+lookup: {}
+
+rules:
+  - id: physiognomy-combined/liuzhuang-xiangfa#PC-LZ-01
+    title: 不可定一理而推
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*liuzhuang_no_one_principle]
+    quote_index: LZ-Q001
+    source_anchor: fulltext.md#L25
+    exact_excerpt: 不可以美而言好，莫以恶而言害，其中还有异处，不可定一理而推
+    statement: >-
+      综合观照必须保留异处。共同印证与分歧是比较行，不得平均成一句吉凶，
+      也不得 forced_resolution=true。
+    boundary:
+      - disagreement is retained; never collapsed into hard_verdict
+      - one completed branch is valid intake; missing branches stay missing
+
+  - id: physiognomy-combined/mayi-shenxiang#PC-MY-01
+    title: 加首谓之五体
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*mayi_wuti_composition]
+    quote_index: MY-Q013
+    source_anchor: fulltext.md#L1305
+    exact_excerpt: 夫手足者谓之四肢，以象四时，加之以首，谓之五体，以象五行
+    statement: >-
+      五体是首加四肢的组成术语。面/手/体分支可分别呈现；不得把缺支补成虚构观察。
+    boundary:
+      - 五体不分 / 一世贱穷 is source language, not a living-subject fate row
+      - completed_count<3 is evidence_sufficiency, not a license to invent
+
+  - id: physiognomy-combined/mayi-shenxiang#PC-MY-02
+    title: 百家归一理不是融合表
+    status: verified
+    evidence_role: source_gap
+    primary_sources: [*mayi_wuti_composition]
+    quote_index: MY-Q021
+    source_anchor: fulltext.md#L2799
+    exact_excerpt: 相法百家归一理　文字泛多难以撰
+    statement: >-
+      「归一理」是编纂口诀，不是把面/手/体平均成一张吉凶表的授权。
+    boundary:
+      - one-principle slogans never yield exact luck lookup
+      - fused_score / composite_personality are contract violations
+
+  - id: physiognomy-combined/mayi-shenxiang#PC-MY-03
+    title: 卷六面相手相十二宫是现代附益
+    status: verified
+    evidence_role: source_gap
+    primary_sources: [*mayi_wuti_composition]
+    quote_index: MY-Q027
+    source_anchor: fulltext.md#L4075
+    exact_excerpt: 官禄宫（左前额的中央部，上至发往下至印堂）
+    statement: >-
+      MY-012 至 MY-014 面相手相十二宫属现代附益层，不得当作综合宫位融合表。
+    boundary:
+      - modern appendix never yields exact_rule_bound
+      - 官禄宫 appendix labels are unmatched, not a combined region_id
+
+  - id: physiognomy-combined/liuzhuang-xiangfa#PC-LZ-02
+    title: 综合吉凶表 fail-closed
+    status: verified
+    evidence_role: lookup_fact
+    primary_sources: [*liuzhuang_no_one_principle]
+    source_anchor: fulltext.md#L25
+    exact_excerpt: 不可以美而言好，莫以恶而言害，其中还有异处，不可定一理而推
+    lookup: {}
+    statement: >-
+      无钉死吉凶行。古典部位可 terminology exact；缺支保持 missing；
+      hard_verdict 必须为 null；forced_resolution 必须为 false。
+    boundary:
+      - unmatched never upgrades to wealth, lifespan, illness, or personality
+      - western fused score / life_line / bmi ids are intake violations, not aliases
+      - 声 is not a v1 combined branch
+
+fail_closed:
+  - v1 luck lookup is empty; hard_verdict is always null
+  - forced_resolution is always false
+  - any non-empty subset of face/palm/posture is valid; missing branches are not invented
+  - western fused scores, life/head/heart/fate lines, bmi/somatotype are not region_ids
+  - MY-012–MY-014 modern appendix is not a combined table
+  - 声/论声 is 神相全编 side evidence, not a v1 branch
+  - extra fields named luck, verdict, fused_score, interpretation, llm are contract violations
+  - no catalog entry or signed Runtime binding
+
+commentary_dependencies:
+  - path: references/books/physiognomy/liuzhuang-xiangfa/quote-index.md
+    anchor: LZ-Q001
+    role: 不可乱言 / 不可定一理 methodology short quote
+  - path: references/books/physiognomy/liuzhuang-xiangfa/chapter-map.md
+    anchor: LZ-008
+    role: 相有诀法不可乱言
+  - path: references/books/physiognomy/mayi-shenxiang/quote-index.md
+    anchor: MY-Q013
+    role: 五体 terminology short quote
+  - path: references/books/physiognomy/mayi-shenxiang/quote-index.md
+    anchor: MY-Q021
+    role: 归一理 is compilation slogan, not fusion
+  - path: references/books/physiognomy/mayi-shenxiang/chapter-map.md
+    anchor: MY-007
+    role: 卷三 论四肢 admitted transcription layer
+  - path: references/books/physiognomy/mayi-shenxiang/chapter-map.md
+    anchor: MY-011
+    role: 卷五 金锁赋 admitted transcription layer; 归一理 not a lookup
+  - path: references/books/physiognomy/mayi-shenxiang/chapter-map.md
+    anchor: MY-012
+    role: 卷六 modern appendix excluded

@@ -540,9 +540,67 @@ def test_reading_document_rejects_invalid_interpretive_candidates(
     assert tuple(Draft202012Validator(schema).iter_errors(payload))
 
 
+def _liuyao_hexagram(*, with_palace: bool) -> dict[str, object]:
+    hexagram: dict[str, object] = {
+        "name": "泽天夬",
+        "upper_trigram": "兑",
+        "lower_trigram": "乾",
+    }
+    if with_palace:
+        hexagram.update(
+            {
+                "bits_bottom_up": "111110",
+                "king_wen_number": 43,
+                "palace": "坤",
+                "palace_element": "土",
+                "shi_line": 5,
+                "ying_line": 2,
+                "stage": "fifth",
+                "source_dependency_id": "liuyao.plate.hexagram-palace-shiying",
+            }
+        )
+    return hexagram
+
+
+def _liuyao_view_model(*, with_palace: bool) -> dict[str, object]:
+    return {
+        "schema_version": "liuyao-chart/v1",
+        "subject_ref": "liuyao:fixture",
+        "question": "此问求财如何？",
+        "primary_hexagram": _liuyao_hexagram(with_palace=with_palace),
+        "changed_hexagram": {
+            "name": "天风姤",
+            "upper_trigram": "乾",
+            "lower_trigram": "巽",
+            **(
+                {
+                    "bits_bottom_up": "011111",
+                    "king_wen_number": 44,
+                    "palace": "乾",
+                    "palace_element": "金",
+                    "shi_line": 1,
+                    "ying_line": 4,
+                    "stage": "first",
+                    "source_dependency_id": "liuyao.plate.hexagram-palace-shiying",
+                }
+                if with_palace
+                else {}
+            ),
+        },
+        "lines": [
+            {"position": index, "value": 7, "moving": False}
+            for index in range(1, 7)
+        ],
+    }
+
+
 @pytest.mark.parametrize(
     ("schema_version", "view_model"),
     [
+        (
+            "liuyao-chart/v1",
+            _liuyao_view_model(with_palace=True),
+        ),
         (
             "meihua-chart/v1",
             {
@@ -772,6 +830,46 @@ def test_reading_document_accepts_the_recent_art_view_models(
     Draft202012Validator(schema).validate(payload)
     document = ReadingDocumentV1.model_validate(payload)
     assert document.view_model.schema_version == schema_version
+
+
+def test_reading_document_liuyao_hexagram_palace_fields_are_optional_and_closed() -> None:
+    schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
+    defs = schema["$defs"]
+    assert defs["knownViewItem"]["additionalProperties"] is False
+    assert defs["hexagram"]["additionalProperties"] is False
+    palace_keys = {
+        "bits_bottom_up",
+        "king_wen_number",
+        "palace",
+        "palace_element",
+        "shi_line",
+        "ying_line",
+        "stage",
+        "source_dependency_id",
+    }
+    assert palace_keys <= set(defs["knownViewItem"]["properties"])
+    assert palace_keys <= set(defs["hexagram"]["properties"])
+
+    payload = _reading_document_payload()
+    payload["versions"] = {
+        **payload["versions"],
+        "view_model_schema": "liuyao-chart/v1",
+    }
+
+    omitted = copy.deepcopy(payload)
+    omitted["view_model"] = _liuyao_view_model(with_palace=False)
+    Draft202012Validator(schema).validate(omitted)
+    ReadingDocumentV1.model_validate(omitted)
+
+    present = copy.deepcopy(payload)
+    present["view_model"] = _liuyao_view_model(with_palace=True)
+    Draft202012Validator(schema).validate(present)
+    ReadingDocumentV1.model_validate(present)
+
+    extra = copy.deepcopy(payload)
+    extra["view_model"] = _liuyao_view_model(with_palace=True)
+    extra["view_model"]["primary_hexagram"]["unexpected"] = True
+    assert tuple(Draft202012Validator(schema).iter_errors(extra))
 
 
 def test_reading_document_accepts_qizheng_provenance_fields() -> None:

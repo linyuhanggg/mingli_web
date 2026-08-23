@@ -1,0 +1,174 @@
+schema_version: mingli-physiognomy-posture-source-rules-v1
+updated_at: "2026-08-21"
+runtime_binding: not_in_runtime
+provider_status: local_provider_not_in_runtime
+method_id: mayi-form-bone-flesh-wuti-terminology-v1
+excluded_methods:
+  - western_bmi_somatotype_medical_posture
+  - mayi_modern_appendix_foot_exercise
+  - liuzhuang_gait_sitting_wealth_verdict
+  - palm_observation
+  - combined_face_palm_posture
+  - llm_generated_physiognomy
+  - health_lifespan_wealth_personality_verdict
+  - voice_personality_diagnosis
+audit_policy:
+  research_source_root: external
+  research_sources_distribution: local_research_only
+  release_material: distilled_rules_provenance_and_checksums_only
+  note: >-
+    v1 freezes 见相 posture scope as terminology identity of 形、骨、肉、五体
+    from 《麻衣神相》卷一 五行 / 卷二 相骨相肉 / 卷三 论四肢 (MY-004, MY-005, MY-007;
+    admitted MY-002–MY-011 layer). 形 is 象数分类, not personality.
+    Named 骨/肉 observations stay visible morphology. 《柳庄相法》论行/论坐
+    names 行 and 坐 as sites but those rows carry 富贵贫贱 and are not a
+    lookup table. 卷六 foot-fatigue / exercise language (MY-012–MY-014
+    modern appendix) stays excluded. 声 belongs to 《神相全编》论声 and is
+    not a v1 region. No catalog or signed Runtime binding. Local
+    provider, if later written, must not invent a luck table.
+
+source_registry:
+  mayi_form_bone_flesh: &mayi_form_bone_flesh
+    title: 麻衣神相
+    edition_or_recension: 全学网网页转写；仅 MY-002 至 MY-011 古籍转写层；卷六现代附益排除
+    normalized_path: references/fulltext/physiognomy/mayi-shenxiang/fulltext.md
+    sha256: c9b02fe305c963d1e22ba694daf600297d9e4d8c3adad8bfaa7316f9471e8bc2
+    anchor: L494 精合而后神生而后形全；L569 相骨相肉；L1305 五体
+    exact_excerpt: 精合而后神生，神生而后形全
+    material: form/bone/flesh/five-body terminology; no BMI table; no luck lookup
+    license_status: ancient text public domain; normalized source local research only
+  liuzhuang_gait_sit_site: &liuzhuang_gait_sit_site
+    title: 柳庄相法
+    edition_or_recension: CTP 连续行表；行/坐条含富贵贫贱硬断，v1 只作部位点名旁证
+    normalized_path: references/fulltext/physiognomy/liuzhuang-xiangfa/fulltext.md
+    sha256: 04459fbe4f5d48e0810a8f0290c6f8f851754db02a2344fc109380aee6059af8
+    anchor: L518 论行富贵贫贱；L522 论坐富贵贫贱
+    exact_excerpt: 八十九、论行富贵贫贱
+    material: names 行/坐 as physiognomy sites; wealth/poverty rows are verdict-bearing and not lookup
+    license_status: ancient text public domain; normalized source local research only
+
+terminology_regions:
+  五体: whole_body
+  形: form
+  骨: bone
+  肉: flesh
+  骨肉: bone
+
+lookup: {}
+
+rules:
+  - id: physiognomy-posture/mayi-shenxiang#PP-MY-01
+    title: 加首谓之五体
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*mayi_form_bone_flesh]
+    quote_index: MY-Q013
+    source_anchor: fulltext.md#L1305
+    exact_excerpt: 夫手足者谓之四肢，以象四时，加之以首，谓之五体，以象五行
+    statement: >-
+      五体是首加四肢的整体术语，不是 BMI/体型量表，也不是吉凶查找行。
+    boundary:
+      - terminology identity never yields hard_verdict
+      - do not map 五体不分 / 一世贱穷 onto a living subject as fate or poverty
+
+  - id: physiognomy-posture/mayi-shenxiang#PP-MY-02
+    title: 骨是部位术语
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*mayi_form_bone_flesh]
+    quote_index: MY-Q009
+    source_anchor: fulltext.md#L569
+    exact_excerpt: 骨节象金石，欲峻不欲横，欲圆不欲粗
+    statement: >-
+      骨被点名为可观察部位。这只证明主题存在，不是医疗脊柱或骨架诊断表。
+    boundary:
+      - 骨 identity is not a health, lifespan, or personality row
+      - bone observations stay region_visible / contour_visible only
+
+  - id: physiognomy-posture/mayi-shenxiang#PP-MY-03
+    title: 形是象数分类不是人格
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*mayi_form_bone_flesh]
+    quote_index: MY-Q008
+    source_anchor: fulltext.md#L494
+    exact_excerpt: 精合而后神生，神生而后形全
+    statement: >-
+      形是五行形相的象数分类名。v1 只输出名称身份，不得输出人格、职业、能力或体型量表。
+    boundary:
+      - 形 is a label, never a somatotype or personality lookup hit
+      - 金木水火土形 remains classification language inside the source, not hard_verdict
+
+  - id: physiognomy-posture/mayi-shenxiang#PP-MY-04
+    title: 卷六脚部运动是现代附益
+    status: verified
+    evidence_role: source_gap
+    primary_sources: [*mayi_form_bone_flesh]
+    quote_index: MY-Q026
+    source_anchor: fulltext.md#L3597
+    exact_excerpt: 当脚部出现疲劳现象时，可做脚腕部位的上下运动及扇形运动，促使毛细管扩张，促进血液循环，将会大大有益于缓解病症
+    statement: >-
+      MY-012 至 MY-014 脚部疲劳/运动/循环语言属现代附益层，不得当作古籍体态表。
+    boundary:
+      - modern appendix never yields exact_rule_bound
+      - medical, exercise, or capillary language in that layer is excluded
+
+  - id: physiognomy-posture/liuzhuang-xiangfa#PP-LZ-01
+    title: 柳庄点名行坐但不是查找表
+    status: verified
+    evidence_role: source_gap
+    primary_sources: [*liuzhuang_gait_sit_site]
+    source_anchor: fulltext.md#L518
+    exact_excerpt: 八十九、论行富贵贫贱
+    statement: >-
+      柳庄有行/坐部位条目，随后行/坐富贵贫贱硬断。v1 lookup 必须为空。
+    boundary:
+      - 论行富贵贫贱 is a prohibited verdict title, not a lookup row
+      - liuzhuang names the site; it does not authorize a luck table
+
+  - id: physiognomy-posture/mayi-shenxiang#PP-MY-05
+    title: 体态吉凶表 fail-closed
+    status: verified
+    evidence_role: lookup_fact
+    primary_sources: [*mayi_form_bone_flesh]
+    source_anchor: fulltext.md#L1305
+    exact_excerpt: 夫手足者谓之四肢，以象四时，加之以首，谓之五体，以象五行
+    lookup: {}
+    statement: >-
+      无钉死吉凶行。古典部位可 terminology exact；西式 BMI/体型/医疗体态不得进入输入；
+      hard_verdict 必须为 null。
+    boundary:
+      - unmatched never upgrades to wealth, lifespan, illness, or personality
+      - western bmi / somatotype / scoliosis ids are contract violations at intake, not silent aliases
+
+fail_closed:
+  - v1 luck lookup is empty; hard_verdict is always null
+  - western bmi / somatotype / scoliosis / spine_curve / shoulder_line are not region_ids
+  - palm and combined are out of this contract
+  - MY-012–MY-014 modern appendix is not a posture table
+  - 声/论声 is 神相全编 side evidence, not a v1 region_id
+  - extra fields named luck, verdict, bmi, interpretation, llm are contract violations
+  - no catalog entry or signed Runtime binding
+
+commentary_dependencies:
+  - path: references/books/physiognomy/mayi-shenxiang/quote-index.md
+    anchor: MY-Q008
+    role: 形全 terminology short quote
+  - path: references/books/physiognomy/mayi-shenxiang/quote-index.md
+    anchor: MY-Q009
+    role: 相骨 short quote
+  - path: references/books/physiognomy/mayi-shenxiang/quote-index.md
+    anchor: MY-Q013
+    role: 五体 terminology short quote
+  - path: references/books/physiognomy/mayi-shenxiang/chapter-map.md
+    anchor: MY-004
+    role: 卷一 五行 admitted transcription layer
+  - path: references/books/physiognomy/mayi-shenxiang/chapter-map.md
+    anchor: MY-005
+    role: 卷二 相骨相肉 admitted transcription layer
+  - path: references/books/physiognomy/mayi-shenxiang/chapter-map.md
+    anchor: MY-007
+    role: 卷三 论四肢 admitted transcription layer
+  - path: references/books/physiognomy/liuzhuang-xiangfa/chapter-map.md
+    anchor: LZ-089
+    role: 论行富贵贫贱 site name; not a luck table

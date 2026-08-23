@@ -1,0 +1,60 @@
+{
+  "360": {
+    "titleHits": [
+      "柱位职分",
+      "三元结构",
+      "五行流转盘点"
+    ],
+    "headingHits": [
+      "柱位职分",
+      "三元结构",
+      "五行流转盘点"
+    ],
+    "forbiddenHits": [],
+    "snake": [
+      "month_command",
+      "ten_gods",
+      "luck_cycles",
+      "transit_facts"
+    ],
+    "dottedIds": [],
+    "gufa": true,
+    "deepClosed": true,
+    "chartIdx": 31,
+    "judgeIdx": 53,
+    "findingPos": 2189,
+    "afterChartBeforeJudge": false,
+    "entryUrl": "http://106.14.10.235:18080/bazi",
+    "natalUrl": "http://106.14.10.235:18080/bazi",
+    "timedOut": false
+  },
+  "1440": {
+    "titleHits": [
+      "柱位职分",
+      "三元结构",
+      "五行流转盘点"
+    ],
+    "headingHits": [
+      "柱位职分",
+      "三元结构",
+      "五行流转盘点"
+    ],
+    "forbiddenHits": [],
+    "snake": [
+      "month_command",
+      "ten_gods",
+      "luck_cycles",
+      "transit_facts"
+    ],
+    "dottedIds": [],
+    "gufa": true,
+    "deepClosed": true,
+    "chartIdx": 55,
+    "judgeIdx": 77,
+    "findingPos": 2213,
+    "afterChartBeforeJudge": false,
+    "entryUrl": "http://106.14.10.235:18080/bazi",
+    "natalUrl": "http://106.14.10.235:18080/bazi",
+    "timedOut": false
+  }
+}

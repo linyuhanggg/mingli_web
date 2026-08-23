@@ -133,7 +133,7 @@ describe("jianxiang + hecan three items", () => {
         {
           dimension_id: "career",
           signals: [{ art_id: "bazi", subject_refs: ["profile-version:test"], signal_id: "career-bazi", display_text: "日主为甲", fact_refs: [] }],
-          convergence: ["两术目前只声明共同事实范围。"],
+          convergence: [],
           disagreements: [],
           missing_art_ids: [],
         },
