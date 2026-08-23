@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/physiognomy-combined-view-v1.schema.json",
+  "title": "Physiognomy Combined ViewModel v1",
+  "description": "Facts-only projection for 见相 combined/综合观照. Completed branches stay separate; then corroboration, disagreements, and evidence sufficiency. Methodology from 《柳庄相法》不可定一理 and 《麻衣神相》五体 composition (MY-002–011). No averaged luck verdict, Western fused score, 卷六 面相手相十二宫 appendix, or invented missing branches.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "subject_ref",
+    "mode",
+    "normalized",
+    "branch_facts",
+    "corroboration",
+    "disagreements",
+    "evidence_sufficiency",
+    "source_identity",
+    "active_source_rule_ids",
+    "source_dependency_ids",
+    "source_status",
+    "source_gaps",
+    "limitations",
+    "forced_resolution",
+    "hard_verdict"
+  ],
+  "properties": {
+    "schema_version": {"const": "physiognomy-combined-view/v1"},
+    "subject_ref": {"$ref": "#/$defs/text"},
+    "mode": {"const": "combined"},
+    "normalized": {"$ref": "#/$defs/normalizedCombined"},
+    "branch_facts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/branchFact"}
+    },
+    "corroboration": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/comparisonRow"}
+    },
+    "disagreements": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/comparisonRow"}
+    },
+    "evidence_sufficiency": {"$ref": "#/$defs/evidenceSufficiency"},
+    "source_identity": {"$ref": "#/$defs/sourceIdentity"},
+    "active_source_rule_ids": {"$ref": "#/$defs/stringArray"},
+    "source_dependency_ids": {"$ref": "#/$defs/stringArray"},
+    "source_status": {
+      "enum": [
+        "exact_rule_bound",
+        "ambiguous",
+        "unmatched",
+        "unavailable"
+      ]
+    },
+    "source_gaps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/text"}
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/text"}
+    },
+    "forced_resolution": {"const": false},
+    "hard_verdict": {"type": "null"}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1},
+    "stringArray": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+    "branchId": {"enum": ["face", "palm", "posture"]},
+    "regionId": {
+      "enum": [
+        "forehead",
+        "left_eyebrow",
+        "right_eyebrow",
+        "left_eye",
+        "right_eye",
+        "nose",
+        "mouth",
+        "chin",
+        "jawline",
+        "left_ear",
+        "right_ear",
+        "left_cheek",
+        "right_cheek",
+        "complexion",
+        "left_hand",
+        "right_hand",
+        "left_palm",
+        "right_palm",
+        "fingers",
+        "hand_back",
+        "whole_body",
+        "form",
+        "bone",
+        "flesh",
+        "gait",
+        "sitting"
+      ]
+    },
+    "normalizedCombined": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "taxonomy", "completed_branches", "missing_branches"],
+      "properties": {
+        "mode": {"const": "combined"},
+        "taxonomy": {"const": "branch_comparison_classical_v1"},
+        "completed_branches": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/branchId"}
+        },
+        "missing_branches": {
+          "type": "array",
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/branchId"}
+        }
+      }
+    },
+    "branchFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "branch",
+        "region_id",
+        "lookup_key",
+        "match_status",
+        "source_rule_id",
+        "source_excerpt"
+      ],
+      "properties": {
+        "branch": {"$ref": "#/$defs/branchId"},
+        "region_id": {"$ref": "#/$defs/regionId"},
+        "lookup_key": {"$ref": "#/$defs/text"},
+        "match_status": {"enum": ["exact", "ambiguous", "unmatched"]},
+        "source_rule_id": {"$ref": "#/$defs/text"},
+        "source_excerpt": {"$ref": "#/$defs/text"}
+      }
+    },
+    "comparisonRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branches", "kind", "display_text"],
+      "properties": {
+        "branches": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/branchId"}
+        },
+        "kind": {
+          "enum": [
+            "shared_site_name",
+            "wuti_composition",
+            "source_disagreement_retained",
+            "missing_branch"
+          ]
+        },
+        "display_text": {"$ref": "#/$defs/text"}
+      }
+    },
+    "evidenceSufficiency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["completed_count", "missing_branches", "status"],
+      "properties": {
+        "completed_count": {"type": "integer", "minimum": 1, "maximum": 3},
+        "missing_branches": {
+          "type": "array",
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/branchId"}
+        },
+        "status": {
+          "enum": ["single_branch", "partial", "all_three_present"]
+        }
+      }
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_pack",
+        "source_dependency_id",
+        "source_rule_id",
+        "source_anchor"
+      ],
+      "properties": {
+        "source_pack": {
+          "enum": [
+            "physiognomy/liuzhuang-xiangfa",
+            "physiognomy/mayi-shenxiang"
+          ]
+        },
+        "source_dependency_id": {"$ref": "#/$defs/text"},
+        "source_rule_id": {"$ref": "#/$defs/text"},
+        "source_anchor": {"$ref": "#/$defs/text"}
+      }
+    }
+  }
+}

@@ -1,0 +1,166 @@
+schema_version: mingli-physiognomy-palm-source-rules-v1
+updated_at: "2026-08-21"
+runtime_binding: not_in_runtime
+provider_status: local_provider_not_in_runtime
+method_id: mayi-limbs-handback-terminology-v1
+excluded_methods:
+  - western_palmistry_life_head_heart_fate_lines
+  - mayi_modern_appendix_face_palm_twelve_palaces
+  - posture_observation
+  - combined_face_palm_posture
+  - llm_generated_physiognomy
+  - health_lifespan_wealth_personality_verdict
+audit_policy:
+  research_source_root: external
+  research_sources_distribution: local_research_only
+  release_material: distilled_rules_provenance_and_checksums_only
+  note: >-
+    v1 freezes 见相 palm scope as terminology identity of 手足/四肢、掌、五指、手背纹
+    from 《麻衣神相》卷三 (MY-007 论四肢, MY-008 论手背纹; admitted MY-002–MY-011 layer).
+    Named patterns such as 龙纹 are labels, not luck rows. 《柳庄相法》「手为一身之苗」
+    names 手 as a site but its 掌/指甲 rows carry 财禄贵贱 verdicts and are not a
+    lookup table. Western life/head/heart/fate lines and 卷六 面相手相十二宫
+    (MY-012–MY-014 modern appendix) stay excluded. No catalog or signed
+    Runtime binding. Local provider, if later written, must not invent a
+    luck table.
+
+source_registry:
+  mayi_limbs_handback: &mayi_limbs_handback
+    title: 麻衣神相
+    edition_or_recension: 全学网网页转写；仅 MY-002 至 MY-011 古籍转写层；卷六现代附益排除
+    normalized_path: references/fulltext/physiognomy/mayi-shenxiang/fulltext.md
+    sha256: c9b02fe305c963d1e22ba694daf600297d9e4d8c3adad8bfaa7316f9471e8bc2
+    anchor: L1305 论四肢；L1613 论手背纹
+    exact_excerpt: 夫手足者谓之四肢，以象四时，加之以首，谓之五体，以象五行
+    material: limb and dorsal-hand terminology; no western line table; no luck lookup
+    license_status: ancient text public domain; normalized source local research only
+  liuzhuang_hand_site: &liuzhuang_hand_site
+    title: 柳庄相法
+    edition_or_recension: CTP 连续行表；手条含贵贱硬断，v1 只作部位点名旁证
+    normalized_path: references/fulltext/physiognomy/liuzhuang-xiangfa/fulltext.md
+    sha256: 04459fbe4f5d48e0810a8f0290c6f8f851754db02a2344fc109380aee6059af8
+    anchor: L126 手为一身之苗
+    exact_excerpt: 五十四、手为一身之苗，万般之说
+    material: names 手 as a physiognomy site; palm/nail rows are verdict-bearing and not lookup
+    license_status: ancient text public domain; normalized source local research only
+
+terminology_regions:
+  手足: left_hand
+  四肢: left_hand
+  掌: left_palm
+  五指: fingers
+  手背: hand_back
+  手背纹: hand_back
+  龙纹: fingers
+
+lookup: {}
+
+rules:
+  - id: physiognomy-palm/mayi-shenxiang#PP-MY-01
+    title: 手足谓之四肢
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*mayi_limbs_handback]
+    quote_index: MY-Q013
+    source_anchor: fulltext.md#L1305
+    exact_excerpt: 夫手足者谓之四肢，以象四时，加之以首，谓之五体，以象五行
+    statement: >-
+      手足是四肢术语，不是西式掌纹表，也不是吉凶查找行。
+    boundary:
+      - terminology identity never yields hard_verdict
+      - do not map 四肢不端 verses onto a living subject as fate or poverty
+
+  - id: physiognomy-palm/mayi-shenxiang#PP-MY-02
+    title: 手背之纹是部位术语
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*mayi_limbs_handback]
+    quote_index: MY-Q015
+    source_anchor: fulltext.md#L1613
+    exact_excerpt: 手背之纹其验尚矣，故有人知之理
+    statement: >-
+      手背纹被点名为可观察部位。这只证明主题存在，不是生命线查找表。
+    boundary:
+      - 手背纹 identity is not a luck, career, or health row
+      - dorsal-hand observations stay region_visible / pattern_visible only
+
+  - id: physiognomy-palm/mayi-shenxiang#PP-MY-03
+    title: 五指龙纹只是纹名
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*mayi_limbs_handback]
+    quote_index: MY-Q016
+    source_anchor: fulltext.md#L1613
+    exact_excerpt: 五指皆近于上两节者，谓之龙纹，为天，主之师
+    statement: >-
+      龙纹是五指纹名。v1 只输出名称身份，不得输出「主之师」或任何职业/贵贱。
+    boundary:
+      - named pattern is a label, never a verdict lookup hit
+      - 主之师 remains inside the source excerpt and must not become hard_verdict
+
+  - id: physiognomy-palm/mayi-shenxiang#PP-MY-04
+    title: 卷六面相手相十二宫是现代附益
+    status: verified
+    evidence_role: source_gap
+    primary_sources: [*mayi_limbs_handback]
+    quote_index: MY-Q023
+    source_anchor: fulltext.md#L3225
+    exact_excerpt: 鼻孔小的人，对东西过份爱惜，是个吝啬鬼，相反，鼻孔大的人气度也大
+    statement: >-
+      MY-012 至 MY-014「面相手相十二宫」属现代附益层，不得当作古籍手相表。
+    boundary:
+      - modern appendix never yields exact_rule_bound
+      - personality, medical, or exercise language in that layer is excluded
+
+  - id: physiognomy-palm/liuzhuang-xiangfa#PP-LZ-01
+    title: 柳庄点名手但不是查找表
+    status: verified
+    evidence_role: source_gap
+    primary_sources: [*liuzhuang_hand_site]
+    source_anchor: fulltext.md#L126
+    exact_excerpt: 五十四、手为一身之苗，万般之说
+    statement: >-
+      柳庄有手部位条目，随后掌/指甲行含财禄贵贱硬断。v1 lookup 必须为空。
+    boundary:
+      - 掌明则财兴禄厚 is a prohibited verdict, not a lookup row
+      - liuzhuang names the site; it does not authorize a luck table
+
+  - id: physiognomy-palm/mayi-shenxiang#PP-MY-05
+    title: 手相吉凶表 fail-closed
+    status: verified
+    evidence_role: lookup_fact
+    primary_sources: [*mayi_limbs_handback]
+    source_anchor: fulltext.md#L1305
+    exact_excerpt: 夫手足者谓之四肢，以象四时，加之以首，谓之五体，以象五行
+    lookup: {}
+    statement: >-
+      无钉死吉凶行。古典部位可 terminology exact；西式生命线等不得进入输入；
+      hard_verdict 必须为 null。
+    boundary:
+      - unmatched never upgrades to wealth, lifespan, illness, or personality
+      - western line ids are contract violations at intake, not silent aliases
+
+fail_closed:
+  - v1 luck lookup is empty; hard_verdict is always null
+  - western life_line / head_line / heart_line / fate_line are not region_ids
+  - posture and combined are out of this contract
+  - MY-012–MY-014 modern appendix is not a palm table
+  - extra fields named luck, verdict, life_line, interpretation, llm are contract violations
+  - no catalog entry or signed Runtime binding
+
+commentary_dependencies:
+  - path: references/books/physiognomy/mayi-shenxiang/quote-index.md
+    anchor: MY-Q013
+    role: 论四肢 手足术语 short quote
+  - path: references/books/physiognomy/mayi-shenxiang/quote-index.md
+    anchor: MY-Q015
+    role: 论手背纹 short quote
+  - path: references/books/physiognomy/mayi-shenxiang/chapter-map.md
+    anchor: MY-007
+    role: 卷三 论四肢 admitted transcription layer
+  - path: references/books/physiognomy/mayi-shenxiang/chapter-map.md
+    anchor: MY-008
+    role: 卷三 论手背纹 admitted transcription layer
+  - path: references/books/physiognomy/liuzhuang-xiangfa/chapter-map.md
+    anchor: LZ-055
+    role: 手为一身之苗 site name; not a luck table

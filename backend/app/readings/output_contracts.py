@@ -66,6 +66,114 @@ LIUYAO_DEEP_V1 = OutputContract(
 )
 
 
+ZIWEI_DEEP_V1 = OutputContract(
+    contract_id="ziwei-deep-output-v1",
+    language="zh-CN",
+    min_blocks=3,
+    max_blocks=8,
+    max_output_chars=3200,
+    required_dimension_ids=("career",),
+    required_limit_kind_ids=(),
+    disclosure_text=(
+        "本深读只基于已计算的紫微十二宫、星曜与四化事实；不输出格局吉凶硬结论，"
+        "也不替代现实中的专业判断。"
+    ),
+)
+
+
+QIZHENG_DEEP_V1 = OutputContract(
+    contract_id="qizheng-deep-output-v1",
+    language="zh-CN",
+    min_blocks=3,
+    max_blocks=8,
+    max_output_chars=3200,
+    required_dimension_ids=("career",),
+    required_limit_kind_ids=(),
+    disclosure_text=(
+        "本深读只基于已计算的七政星盘与时限事实；不输出吉凶硬结论，"
+        "也不替代现实中的专业判断。"
+    ),
+)
+
+
+MEIHUA_DEEP_V1 = OutputContract(
+    contract_id="meihua-deep-output-v1",
+    language="zh-CN",
+    min_blocks=3,
+    max_blocks=8,
+    max_output_chars=3200,
+    required_dimension_ids=("outcome", "state"),
+    required_limit_kind_ids=(),
+    disclosure_text=(
+        "本深读只基于已计算的梅花三卦、体用关系与旺衰事实；候选不等于体用定夺，"
+        "不输出成败或应期的硬结论，也不替代现实中的专业判断。"
+    ),
+)
+
+
+DALIUREN_DEEP_V1 = OutputContract(
+    contract_id="daliuren-deep-output-v1",
+    language="zh-CN",
+    min_blocks=3,
+    max_blocks=8,
+    max_output_chars=3200,
+    required_dimension_ids=("outcome", "timing", "state"),
+    required_limit_kind_ids=(),
+    disclosure_text=(
+        "本深读只基于已计算的大六壬课传、神将与应期候选；候选不等于课体定夺，"
+        "不输出成败或应期的硬结论，也不替代现实中的专业判断。"
+    ),
+)
+
+
+BAZI_RELATIONSHIP_DEEP_V1 = OutputContract(
+    contract_id="bazi-relationship-deep-output-v1",
+    language="zh-CN",
+    min_blocks=3,
+    max_blocks=8,
+    max_output_chars=3200,
+    required_dimension_ids=("relationship",),
+    required_limit_kind_ids=(),
+    disclosure_text=(
+        "本深读只基于已计算的双方八字关系结构事实与来源绑定依据；"
+        "关系信号缺失时不得编造；不输出合婚吉凶或匹配度硬结论，"
+        "也不替代现实中的专业判断。本产品不是三术合参。"
+    ),
+)
+
+
+ZIWEI_RELATIONSHIP_DEEP_V1 = OutputContract(
+    contract_id="ziwei-relationship-deep-output-v1",
+    language="zh-CN",
+    min_blocks=3,
+    max_blocks=8,
+    max_output_chars=3200,
+    required_dimension_ids=("relationship",),
+    required_limit_kind_ids=(),
+    disclosure_text=(
+        "本深读只基于已计算的双方紫微关系结构事实与来源绑定依据；"
+        "关系信号缺失时不得编造；不输出合盘吉凶或匹配度硬结论，"
+        "也不替代现实中的专业判断。本产品不是三术合参。"
+    ),
+)
+
+
+QIZHENG_RELATIONSHIP_DEEP_V1 = OutputContract(
+    contract_id="qizheng-relationship-deep-output-v1",
+    language="zh-CN",
+    min_blocks=3,
+    max_blocks=8,
+    max_output_chars=3200,
+    required_dimension_ids=("relationship",),
+    required_limit_kind_ids=(),
+    disclosure_text=(
+        "本深读只基于已计算的双方七政关系结构事实与来源绑定依据；"
+        "关系信号缺失时不得编造；不输出合盘吉凶或匹配度硬结论，"
+        "也不替代现实中的专业判断。本产品不是三术合参。"
+    ),
+)
+
+
 def output_contract_for_dimensions(dimension_ids: Sequence[str]) -> OutputContract:
     """Freeze the requested dimensions into the product contract for this Job."""
 
@@ -80,6 +188,28 @@ _OUTPUT_CONTRACTS = MappingProxyType(
         BAZI_DEEP_V1.contract_id: BAZI_DEEP_V1,
         QIMEN_DEEP_V1.contract_id: QIMEN_DEEP_V1,
         LIUYAO_DEEP_V1.contract_id: LIUYAO_DEEP_V1,
+        ZIWEI_DEEP_V1.contract_id: ZIWEI_DEEP_V1,
+        QIZHENG_DEEP_V1.contract_id: QIZHENG_DEEP_V1,
+        MEIHUA_DEEP_V1.contract_id: MEIHUA_DEEP_V1,
+        DALIUREN_DEEP_V1.contract_id: DALIUREN_DEEP_V1,
+        BAZI_RELATIONSHIP_DEEP_V1.contract_id: BAZI_RELATIONSHIP_DEEP_V1,
+        ZIWEI_RELATIONSHIP_DEEP_V1.contract_id: ZIWEI_RELATIONSHIP_DEEP_V1,
+        QIZHENG_RELATIONSHIP_DEEP_V1.contract_id: QIZHENG_RELATIONSHIP_DEEP_V1,
+    }
+)
+
+_PRODUCT_OUTPUT_CONTRACTS = MappingProxyType(
+    {
+        "bazi-deep": BAZI_DEEP_V1,
+        "qimen-deep": QIMEN_DEEP_V1,
+        "liuyao-deep": LIUYAO_DEEP_V1,
+        "ziwei-deep": ZIWEI_DEEP_V1,
+        "qizheng-deep": QIZHENG_DEEP_V1,
+        "meihua-deep": MEIHUA_DEEP_V1,
+        "daliuren-deep": DALIUREN_DEEP_V1,
+        "bazi-relationship-deep": BAZI_RELATIONSHIP_DEEP_V1,
+        "ziwei-relationship-deep": ZIWEI_RELATIONSHIP_DEEP_V1,
+        "qizheng-relationship-deep": QIZHENG_RELATIONSHIP_DEEP_V1,
     }
 )
 
@@ -90,12 +220,10 @@ def output_contract_for_product(
 ) -> OutputContract:
     """Resolve the immutable narrative contract for one product lane."""
 
-    if product_id == "bazi-deep":
-        return BAZI_DEEP_V1
-    if product_id == "qimen-deep":
-        return QIMEN_DEEP_V1
-    if product_id == "liuyao-deep":
-        return LIUYAO_DEEP_V1
+    if product_id is not None:
+        contract = _PRODUCT_OUTPUT_CONTRACTS.get(product_id)
+        if contract is not None:
+            return contract
     return output_contract_for_dimensions(dimension_ids)
 
 

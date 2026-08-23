@@ -1,0 +1,173 @@
+{
+  "url": "http://106.14.10.235:18080/bazi",
+  "fields": [
+    {
+      "tag": "INPUT",
+      "type": "text",
+      "name": "subject",
+      "id": "bazi-subject",
+      "label": "受测对象",
+      "value": ""
+    },
+    {
+      "tag": "INPUT",
+      "type": "radio",
+      "name": "bazi-gender",
+      "id": null,
+      "label": "男",
+      "value": "male"
+    },
+    {
+      "tag": "INPUT",
+      "type": "radio",
+      "name": "bazi-gender",
+      "id": null,
+      "label": "女",
+      "value": "female"
+    },
+    {
+      "tag": "SELECT",
+      "type": "select-one",
+      "name": null,
+      "id": null,
+      "label": "出生年份",
+      "value": ""
+    },
+    {
+      "tag": "SELECT",
+      "type": "select-one",
+      "name": null,
+      "id": null,
+      "label": "出生月份",
+      "value": ""
+    },
+    {
+      "tag": "SELECT",
+      "type": "select-one",
+      "name": null,
+      "id": null,
+      "label": "出生日期",
+      "value": ""
+    },
+    {
+      "tag": "SELECT",
+      "type": "select-one",
+      "name": null,
+      "id": null,
+      "label": "出生小时",
+      "value": ""
+    },
+    {
+      "tag": "SELECT",
+      "type": "select-one",
+      "name": null,
+      "id": null,
+      "label": "出生分钟",
+      "value": ""
+    },
+    {
+      "tag": "SELECT",
+      "type": "select-one",
+      "name": null,
+      "id": null,
+      "label": "出生省份",
+      "value": ""
+    },
+    {
+      "tag": "SELECT",
+      "type": "select-one",
+      "name": null,
+      "id": null,
+      "label": "出生城市",
+      "value": ""
+    },
+    {
+      "tag": "SELECT",
+      "type": "select-one",
+      "name": null,
+      "id": null,
+      "label": "出生区县",
+      "value": ""
+    },
+    {
+      "tag": "INPUT",
+      "type": "radio",
+      "name": "bazi-time-standard",
+      "id": null,
+      "label": null,
+      "value": "civil"
+    },
+    {
+      "tag": "INPUT",
+      "type": "radio",
+      "name": "bazi-time-standard",
+      "id": null,
+      "label": null,
+      "value": "local-apparent-solar"
+    },
+    {
+      "tag": "INPUT",
+      "type": "text",
+      "name": "timezone",
+      "id": "bazi-timezone",
+      "label": null,
+      "value": "Asia/Shanghai"
+    },
+    {
+      "tag": "INPUT",
+      "type": "text",
+      "name": "targetYear",
+      "id": "bazi-target-year",
+      "label": null,
+      "value": ""
+    },
+    {
+      "tag": "INPUT",
+      "type": "month",
+      "name": "targetMonth",
+      "id": "bazi-target-month",
+      "label": null,
+      "value": ""
+    },
+    {
+      "tag": "INPUT",
+      "type": "date",
+      "name": "targetDate",
+      "id": "bazi-target-date",
+      "label": null,
+      "value": ""
+    }
+  ],
+  "buttons": [
+    {
+      "text": "术数",
+      "type": "button",
+      "disabled": false
+    },
+    {
+      "text": "合参",
+      "type": "button",
+      "disabled": false
+    },
+    {
+      "text": "更多",
+      "type": "button",
+      "disabled": false
+    },
+    {
+      "text": "海外或找不到？直接输入",
+      "type": "button",
+      "disabled": false
+    },
+    {
+      "text": "立即排盘（免费）· 查看八字四柱",
+      "type": "submit",
+      "disabled": false
+    },
+    {
+      "text": "术数",
+      "type": "button",
+      "disabled": false
+    }
+  ]
+}

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Protocol, cast
+from typing import Any, Protocol, cast
 from uuid import UUID
 
 from app.readings.alerts import AlertEvent, AlertSink, NoopAlertSink
@@ -28,6 +28,11 @@ from app.readings.public_copy import (
 )
 from app.readings.public_copy import (
     PublicCopyAssemblyError,
+)
+from app.readings.relationship_deep_extract import (
+    RELATIONSHIP_DEEP_CONTRACT_IDS,
+    relationship_deep_generate_orchestrator,
+    relationship_deep_persist_orchestrator,
 )
 from app.readings.runtime_contracts import (
     Accepted,
@@ -293,6 +298,8 @@ class ReadingOrchestrator:
             return ReadingOutcome(status=ReadingStatus.RUNTIME_UNKNOWN)
         if isinstance(result, Prepared):
             await self.repository.record_prepared(job.id, result, self.clock.now())
+            if job.output_contract.contract_id in RELATIONSHIP_DEEP_CONTRACT_IDS:
+                return await self._generate(job, result, 0)
             return ReadingOutcome(status=ReadingStatus.PREPARED)
         if isinstance(result, Stopped):
             if result.reason == "need_input":
@@ -336,9 +343,21 @@ class ReadingOrchestrator:
         public_copy: str | None = None
         cancel_after_commit = False
         try:
-            generation = await self.model.generate(request)
-            candidate = close_candidate_references(generation.candidate, brief)
-            model_receipt = generation.receipt
+            if job.output_contract.contract_id in RELATIONSHIP_DEEP_CONTRACT_IDS:
+                generated = await relationship_deep_generate_orchestrator(
+                    repository=cast(Any, self.repository),
+                    job_id=job.id,
+                )
+                if generated.candidate is None or generated.errors:
+                    raise OrchestratorInvariantError(
+                        "Prepared result cannot generate without extract candidate"
+                    )
+                candidate = close_candidate_references(generated.candidate, brief)
+                model_receipt = None
+            else:
+                generation = await self.model.generate(request)
+                candidate = close_candidate_references(generation.candidate, brief)
+                model_receipt = generation.receipt
             guard_result = self.guard.validate(
                 candidate,
                 brief,
@@ -417,6 +436,8 @@ class ReadingOrchestrator:
                     "model_profile_id": model_receipt.model_profile_id,
                 },
             )
+        if job.output_contract.contract_id in RELATIONSHIP_DEEP_CONTRACT_IDS:
+            return await self._complete(job, prepared, public_copy)
         return ReadingOutcome(status=ReadingStatus.COMPLETING)
 
     async def _complete(
@@ -447,6 +468,19 @@ class ReadingOrchestrator:
                     "Accepted bytes differ from the persisted completion intent"
                 )
             await self.repository.record_accepted(job.id, result, self.clock.now())
+            if job.output_contract.contract_id in RELATIONSHIP_DEEP_CONTRACT_IDS:
+                persisted = await relationship_deep_persist_orchestrator(
+                    repository=cast(Any, self.repository),
+                    job_id=job.id,
+                )
+                if persisted.document is None or persisted.errors:
+                    raise OrchestratorInvariantError(
+                        "Accepted result cannot be committed without ReadingDocument"
+                    )
+                return ReadingOutcome(
+                    status=ReadingStatus.ACCEPTED,
+                    public_copy=result.public_copy,
+                )
             if (
                 self.document_builder is not None
                 and self.require_reading_document

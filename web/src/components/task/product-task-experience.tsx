@@ -4,6 +4,7 @@ import { Check, ChevronRight, Circle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { ReadingResult } from "@/components/readings/reading-result";
 import { Status } from "@/components/ui/status";
 import { WorkbenchShell } from "@/components/workbench/workbench-shell";
 import {
@@ -49,8 +50,14 @@ import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
 import { mapStartReadingFailure } from "@/lib/start-reading-error";
 import type { ProductDefinition } from "@/products/catalog";
 
+import { mapLiuyaoCastingRejection } from "./liuyao-casting-reject";
+import { mapMeihuaCastingRejection } from "./meihua-casting-reject";
 import { ProductInputForm, type TaskFormValues } from "./product-input-form";
 import { BaziDeepTaskFlow } from "./bazi-deep-task-flow";
+import { LIUYAO_ENTRY_CASTING_HINT } from "./liuyao-entry-copy";
+import { LiuyaoEntrySilhouette } from "./liuyao-entry-silhouette";
+import { MEIHUA_ENTRY_CASTING_HINT } from "./meihua-entry-copy";
+import { MeihuaEntrySilhouette } from "./meihua-entry-silhouette";
 import styles from "./task-shell.module.css";
 
 type TaskStage = "input" | "workbench";
@@ -123,10 +130,19 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [values, setValues] = useState<TaskFormValues | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitErrorState, setSubmitErrorState] = useState<"unavailable" | "error">("unavailable");
+  const [meihuaCastingReject, setMeihuaCastingReject] = useState<{
+    name: keyof TaskFormValues;
+    message: string;
+    index?: number;
+  } | null>(null);
   const [busy, setBusy] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(null);
   const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(null);
+  const [meihuaPreviewReadingId, setMeihuaPreviewReadingId] = useState<string | null>(null);
+  const [ziweiPreviewReadingId, setZiweiPreviewReadingId] = useState<string | null>(null);
+  const [liuyaoPreviewReadingId, setLiuyaoPreviewReadingId] = useState<string | null>(null);
+  const [daliurenPreviewReadingId, setDaliurenPreviewReadingId] = useState<string | null>(null);
   const [savedProfiles, setSavedProfiles] = useState<ProfileSummary[]>([]);
   const [savedProfilesLoading, setSavedProfilesLoading] = useState(
     shouldLoadProfiles,
@@ -199,6 +215,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     if (busy) return;
     setBusy(true);
     setSubmitError(null);
+    setMeihuaCastingReject(null);
 
     try {
       if (product.id === "jianxiang") {
@@ -334,6 +351,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               : await startQizhengReading(payload, intent.key);
         if (product.id === "bazi") {
           setBaziPreviewReadingId(response.reading_version_id);
+          setStage("workbench");
+        } else if (product.id === "ziwei") {
+          setZiweiPreviewReadingId(response.reading_version_id);
           setStage("workbench");
         } else {
           router.push(`/app/readings/${response.reading_version_id}`);
@@ -477,7 +497,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         });
         intentKeyRef.current = intent;
         const response = await startLiuyaoReading(payload, intent.key);
-        router.push(`/app/readings/${response.reading_version_id}`);
+        setLiuyaoPreviewReadingId(response.reading_version_id);
+        setStage("workbench");
         return;
       }
 
@@ -558,7 +579,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         });
         intentKeyRef.current = intent;
         const response = await startMeihuaReading(payload, intent.key);
-        router.push(`/app/readings/${response.reading_version_id}`);
+        setMeihuaPreviewReadingId(response.reading_version_id);
+        setStage("workbench");
         return;
       }
 
@@ -602,8 +624,31 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         product.id === "qimen"
           ? await startQimenReading(payload, intent.key)
           : await startDaliurenReading(daliurenPayload, intent.key);
+      if (product.id === "daliuren") {
+        setDaliurenPreviewReadingId(response.reading_version_id);
+        setStage("workbench");
+        return;
+      }
       router.push(`/app/readings/${response.reading_version_id}`);
     } catch (reason) {
+      if (product.id === "liuyao") {
+        const castingReject = mapLiuyaoCastingRejection(reason, nextValues.lines);
+        if (castingReject) {
+          setMeihuaCastingReject({
+            name: "lines",
+            message: castingReject.message,
+            index: castingReject.index,
+          });
+          return;
+        }
+      }
+      if (product.id === "meihua") {
+        const castingReject = mapMeihuaCastingRejection(reason, nextValues);
+        if (castingReject) {
+          setMeihuaCastingReject({ name: castingReject.field, message: castingReject.message });
+          return;
+        }
+      }
       const mapped = mapStartReadingFailure(reason);
       setSubmitErrorState(mapped.state);
       setSubmitError(mapped.title);
@@ -616,6 +661,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   // 因此这里不再插入一个独立的「输入确认」页，直接进入生成。
   function handleConfirm(nextValues: TaskFormValues) {
     setSubmitError(null);
+    setMeihuaCastingReject(null);
     setValues(nextValues);
     void startRuntimeReading(nextValues);
   }
@@ -625,6 +671,12 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       {stage !== "input" ? <TaskProgress product={product} stage={stage} /> : null}
       {stage === "input" ? (
         <div className={styles.inputLayout} data-input-region="first-screen">
+          {product.id === "meihua" ? (
+            <p className={styles.meihuaCastingHint}>{MEIHUA_ENTRY_CASTING_HINT}</p>
+          ) : null}
+          {product.id === "liuyao" ? (
+            <p className={styles.liuyaoCastingHint}>{LIUYAO_ENTRY_CASTING_HINT}</p>
+          ) : null}
           <ProductInputForm
             busy={busy}
             onProfileVersionChange={(profileVersionId) => {
@@ -649,10 +701,13 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             }}
             submitError={submitError}
             submitErrorState={submitErrorState}
+            serverFieldError={meihuaCastingReject}
           />
+          {product.id === "meihua" ? <MeihuaEntrySilhouette /> : null}
+          {product.id === "liuyao" ? <LiuyaoEntrySilhouette /> : null}
         </div>
       ) : null}
-      {stage === "workbench" && product.id !== "bazi" ? (
+      {stage === "workbench" && product.id !== "bazi" && product.id !== "meihua" && product.id !== "ziwei" && product.id !== "liuyao" && product.id !== "daliuren" ? (
         <WorkbenchShell
           product={product}
           onBack={() => {
@@ -660,6 +715,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             setBaziProfileVersionId(null);
             intentKeyRef.current = null;
             setBaziPreviewReadingId(null);
+            setMeihuaPreviewReadingId(null);
+            setZiweiPreviewReadingId(null);
+            setDaliurenPreviewReadingId(null);
             setSubmitError(null);
             setStage("input");
           }}
@@ -697,6 +755,174 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           profileVersionId={baziProfileVersionId ?? ""}
           query={values?.issue.trim() || "请预览我的八字命盘。"}
         />
+      ) : null}
+      {stage === "workbench" && product.id === "meihua" && !meihuaPreviewReadingId ? (
+        <Status
+          actions={(
+            <button
+              type="button"
+              onClick={() => {
+                setSubmitError(null);
+                setStage("input");
+              }}
+            >
+              返回录入
+            </button>
+          )}
+          description="当前没有已确认的梅花任务句柄，不会伪造盘面。"
+          state="empty"
+          title="还没有可恢复的盘面"
+        />
+      ) : null}
+      {stage === "workbench" && product.id === "meihua" && meihuaPreviewReadingId ? (
+        <>
+          <Status
+            actions={(
+              <button
+                type="button"
+                onClick={() => {
+                  profileVersionRef.current = null;
+                  intentKeyRef.current = null;
+                  setMeihuaPreviewReadingId(null);
+                  setSubmitError(null);
+                  setStage("input");
+                }}
+              >
+                返回录入
+              </button>
+            )}
+            description="盘面留在本页。登录只用于保存、历史和深读。"
+            state="empty"
+            title="梅花盘面"
+          />
+          <ReadingResult readingId={meihuaPreviewReadingId} />
+        </>
+      ) : null}
+      {stage === "workbench" && product.id === "liuyao" && !liuyaoPreviewReadingId ? (
+        <Status
+          actions={(
+            <button
+              type="button"
+              onClick={() => {
+                setSubmitError(null);
+                setStage("input");
+              }}
+            >
+              返回录入
+            </button>
+          )}
+          description="当前没有已确认的六爻任务句柄，不会伪造盘面。"
+          state="empty"
+          title="还没有可恢复的盘面"
+        />
+      ) : null}
+      {stage === "workbench" && product.id === "liuyao" && liuyaoPreviewReadingId ? (
+        <>
+          <Status
+            actions={(
+              <button
+                type="button"
+                onClick={() => {
+                  profileVersionRef.current = null;
+                  intentKeyRef.current = null;
+                  setLiuyaoPreviewReadingId(null);
+                  setSubmitError(null);
+                  setStage("input");
+                }}
+              >
+                返回录入
+              </button>
+            )}
+            description="盘面留在本页。登录只用于保存、历史和深读。"
+            state="empty"
+            title="六爻盘面"
+          />
+          <ReadingResult readingId={liuyaoPreviewReadingId} />
+        </>
+      ) : null}
+      {stage === "workbench" && product.id === "ziwei" && !ziweiPreviewReadingId ? (
+        <Status
+          actions={
+            <button
+              type="button"
+              onClick={() => {
+                setSubmitError(null);
+                setStage("input");
+              }}
+            >
+              返回录入
+            </button>
+          }
+          description="当前没有已确认的紫微任务句柄，不会伪造盘面。"
+          state="empty"
+          title="还没有可恢复的盘面"
+        />
+      ) : null}
+      {stage === "workbench" && product.id === "ziwei" && ziweiPreviewReadingId ? (
+        <>
+          <Status
+            actions={
+              <button
+                type="button"
+                onClick={() => {
+                  profileVersionRef.current = null;
+                  intentKeyRef.current = null;
+                  setZiweiPreviewReadingId(null);
+                  setSubmitError(null);
+                  setStage("input");
+                }}
+              >
+                返回录入
+              </button>
+            }
+            description="盘面留在本页。登录只用于保存、历史和深读。"
+            state="empty"
+            title="紫微盘面"
+          />
+          <ReadingResult readingId={ziweiPreviewReadingId} />
+        </>
+      ) : null}
+      {stage === "workbench" && product.id === "daliuren" && !daliurenPreviewReadingId ? (
+        <Status
+          actions={
+            <button
+              type="button"
+              onClick={() => {
+                setSubmitError(null);
+                setStage("input");
+              }}
+            >
+              返回录入
+            </button>
+          }
+          description="当前没有已确认的大六壬任务句柄，不会伪造盘面。"
+          state="empty"
+          title="还没有可恢复的盘面"
+        />
+      ) : null}
+      {stage === "workbench" && product.id === "daliuren" && daliurenPreviewReadingId ? (
+        <>
+          <Status
+            actions={
+              <button
+                type="button"
+                onClick={() => {
+                  profileVersionRef.current = null;
+                  intentKeyRef.current = null;
+                  setDaliurenPreviewReadingId(null);
+                  setSubmitError(null);
+                  setStage("input");
+                }}
+              >
+                返回录入
+              </button>
+            }
+            description="盘面留在本页。登录只用于保存、历史和深读。"
+            state="empty"
+            title="大六壬盘面"
+          />
+          <ReadingResult readingId={daliurenPreviewReadingId} />
+        </>
       ) : null}
     </div>
   );

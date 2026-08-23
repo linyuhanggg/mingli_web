@@ -1,0 +1,121 @@
+schema_version: mingli-algorithm-source-samples-v1
+purpose: >-
+  Independent pre-implementation 见相综合 samples transcribed from admitted
+  《柳庄相法》不可定一理 and 《麻衣神相》五体 terminology before any combined Provider
+  exists. Luck lookup is empty. Expectations must not be computed by a
+  provider or a language model.
+
+cases:
+  combined-single-face-wuti-head:
+    source_reference: 柳庄 fulltext.md L25 不可定一理；麻衣 L1305 加首谓之五体
+    input:
+      mode: combined
+      branches: [face]
+      observations:
+        - branch: face
+          region_id: forehead
+          descriptor: region_visible
+          visibility: full
+          uncertainty: 0.1
+      region_label: 首
+    expected:
+      mode: combined
+      lookup_key: 首
+      region_id: forehead
+      match_status: exact
+      source_status: exact_rule_bound
+      source_rule_id: physiognomy-combined/mayi-shenxiang#PC-MY-01
+      evidence_status: single_branch
+      missing_branches: [palm, posture]
+      corroboration: []
+      forced_resolution: false
+      hard_verdict: null
+    verification: one branch is valid; missing palm/posture stay missing
+
+  combined-face-palm-wuti-composition:
+    source_reference: 麻衣神相 fulltext.md L1305 首加四肢谓之五体
+    input:
+      mode: combined
+      branches: [face, palm]
+      observations:
+        - branch: face
+          region_id: forehead
+          descriptor: region_visible
+          visibility: full
+          uncertainty: 0.1
+        - branch: palm
+          region_id: left_hand
+          descriptor: region_visible
+          visibility: partial
+          uncertainty: 0.2
+      region_label: 五体
+    expected:
+      mode: combined
+      lookup_key: 五体
+      region_id: whole_body
+      match_status: exact
+      source_status: exact_rule_bound
+      source_rule_id: physiognomy-combined/mayi-shenxiang#PC-MY-01
+      evidence_status: partial
+      missing_branches: [posture]
+      corroboration_kind: wuti_composition
+      forced_resolution: false
+      hard_verdict: null
+    verification: face+palm corroborate 五体 composition; not an averaged luck row
+
+  combined-disagreement-retained:
+    source_reference: 柳庄 fulltext.md L25 其中还有异处，不可定一理而推
+    input:
+      mode: combined
+      branches: [face, posture]
+      observations:
+        - branch: face
+          region_id: forehead
+          descriptor: contour_visible
+          visibility: full
+          uncertainty: 0.2
+        - branch: posture
+          region_id: form
+          descriptor: contour_visible
+          visibility: partial
+          uncertainty: 0.4
+      region_label: 形
+    expected:
+      mode: combined
+      lookup_key: 形
+      region_id: form
+      match_status: exact
+      source_status: exact_rule_bound
+      source_rule_id: physiognomy-combined/liuzhuang-xiangfa#PC-LZ-01
+      evidence_status: partial
+      missing_branches: [palm]
+      disagreement_kind: source_disagreement_retained
+      forced_resolution: false
+      hard_verdict: null
+    verification: 异处 is retained; 形 stays a label, not personality hard_verdict
+
+  combined-modern-appendix-unmatched:
+    source_reference: 麻衣神相 fulltext.md L4075 卷六官禄宫现代附益
+    input:
+      mode: combined
+      branches: [face]
+      observations:
+        - branch: face
+          region_id: forehead
+          descriptor: region_visible
+          visibility: full
+          uncertainty: 0.3
+      region_label: 官禄宫
+    expected:
+      mode: combined
+      lookup_key: 官禄宫
+      region_id: forehead
+      match_status: unmatched
+      source_status: unmatched
+      region_match: null
+      source_rule_id: physiognomy-combined/mayi-shenxiang#PC-MY-03
+      evidence_status: single_branch
+      missing_branches: [palm, posture]
+      forced_resolution: false
+      hard_verdict: null
+    verification: 官禄宫 in this pack is modern appendix palace language, not a combined row

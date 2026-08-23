@@ -85,17 +85,28 @@ def test_public_runtime_gate_only_allows_the_frozen_p0_set() -> None:
         )
 
 
-def test_public_product_gate_keeps_relationship_products_out_of_production() -> None:
+@pytest.mark.parametrize(
+    "product_id",
+    [
+        "bazi-relationship",
+        "bazi-relationship-deep",
+        "ziwei-relationship-deep",
+        "qizheng-relationship-deep",
+    ],
+)
+def test_public_product_gate_keeps_relationship_products_out_of_production(
+    product_id: str,
+) -> None:
     policy = importlib.import_module("app.readings.capability_policy")
 
     policy.require_public_product_exposure(
-        "bazi-relationship",
+        product_id,
         environment="test",
         real_traffic_enabled=False,
     )
-    with pytest.raises(policy.CapabilityNotExposedError, match="bazi-relationship"):
+    with pytest.raises(policy.CapabilityNotExposedError, match=product_id):
         policy.require_public_product_exposure(
-            "bazi-relationship",
+            product_id,
             environment="production",
             real_traffic_enabled=False,
         )

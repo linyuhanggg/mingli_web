@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/inputs/dream-interpretation-input-v1.schema.json",
+  "title": "Dream Interpretation Input v1",
+  "description": "Formal intake for the standalone dream tool. v1 is exact omen-token lookup against 《玉匣记》占梦 rows only. The current Wikisource recension has no such rows. Zhou Gong web dictionaries, LLM prose, psychology, and board-dependent 梦寐/梦象 are forbidden.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "dream_text"],
+  "properties": {
+    "schema_version": {"const": "dream-interpretation-input/v1"},
+    "dream_text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "pattern": "[\\u3400-\\u9FFF\\uF900-\\uFAFF]"
+    },
+    "background": {
+      "type": ["string", "null"],
+      "maxLength": 2000
+    },
+    "omen_key": {
+      "type": ["string", "null"],
+      "pattern": "^[\\u3400-\\u9FFF\\uF900-\\uFAFF]{1,16}$"
+    },
+    "subject_ref": {
+      "type": ["string", "null"],
+      "minLength": 1
+    }
+  }
+}

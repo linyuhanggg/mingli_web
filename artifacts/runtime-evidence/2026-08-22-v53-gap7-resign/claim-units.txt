@@ -1,0 +1,7 @@
+bazi.month-order-state-v1
+bazi.day-master-root-support-v1
+bazi.ziping-pattern-entry-v1
+bazi.tiaohou-priority-v1
+bazi.pillar-roles-v1
+bazi.three-yuan-structure-v1
+bazi.element-flow-inventory-v1

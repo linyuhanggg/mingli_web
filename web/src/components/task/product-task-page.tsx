@@ -6,11 +6,25 @@ import { PublicPageShell } from "@/components/public-page-shell";
 import { Status } from "@/components/ui/status";
 import { getProductDefinition, type ProductId } from "@/products/catalog";
 
+import { LIUYAO_ENTRY_SUITABILITY } from "./liuyao-entry-copy";
+import { MEIHUA_ENTRY_SUITABILITY } from "./meihua-entry-copy";
 import { ProductTaskExperience } from "./product-task-experience";
 import styles from "./task-shell.module.css";
 
+const ENTRY_SUITABILITY: Partial<Record<ProductId, string>> = {
+  liuyao: LIUYAO_ENTRY_SUITABILITY,
+  meihua: MEIHUA_ENTRY_SUITABILITY,
+};
+
+const ENTRY_SEAL: Partial<Record<ProductId, string>> = {
+  liuyao: "六爻",
+  meihua: "梅",
+};
+
 export function ProductTaskPage({ productId }: { productId: ProductId }) {
   const product = getProductDefinition(productId);
+  const suitability = ENTRY_SUITABILITY[productId] ?? product.summary;
+  const seal = ENTRY_SEAL[productId];
 
   return (
     <PublicPageShell>
@@ -21,8 +35,13 @@ export function ProductTaskPage({ productId }: { productId: ProductId }) {
               <ArrowLeft aria-hidden="true" size={16} strokeWidth={1.8} />
               返回
             </a>
+            {seal ? (
+              <span aria-hidden="true" className={styles.sealMark} data-seal={productId}>
+                {seal}
+              </span>
+            ) : null}
             <h1>{product.name}</h1>
-            <p>{product.summary}</p>
+            <p>{suitability}</p>
           </header>
           <Suspense
             fallback={(

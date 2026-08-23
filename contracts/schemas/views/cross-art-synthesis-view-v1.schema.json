@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/cross-art-synthesis-view-v1.schema.json",
+  "title": "Cross-art synthesis ViewModel v1",
+  "description": "Facts-only output contract for 合参 convergence/disagreements. Per-art signals stay separate; comparison rows never average, pick a winner, or invent missing arts. Methodology from 《果老星宗》不可执泥一端 and 《卜筮正宗》理无二致 as a source_gap, not a fusion table. Live hecan-view/wenshi-view/canwen-view reuse this comparisonRow shape; the local adjudicator is not catalogued.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "product_id",
+    "subject_ref",
+    "dimension_id",
+    "selected_art_ids",
+    "present_art_ids",
+    "missing_art_ids",
+    "convergence",
+    "disagreements",
+    "evidence_sufficiency",
+    "source_identity",
+    "active_source_rule_ids",
+    "source_dependency_ids",
+    "source_status",
+    "source_gaps",
+    "limitations",
+    "forced_resolution",
+    "hard_verdict"
+  ],
+  "properties": {
+    "schema_version": {"const": "cross-art-synthesis-view/v1"},
+    "product_id": {"enum": ["hecan", "wenshi", "canwen"]},
+    "subject_ref": {"$ref": "#/$defs/text"},
+    "dimension_id": {"$ref": "#/$defs/text"},
+    "selected_art_ids": {"$ref": "#/$defs/selectedArtIdList"},
+    "present_art_ids": {"$ref": "#/$defs/presentArtIdList"},
+    "missing_art_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/artId"}
+    },
+    "convergence": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/comparisonRow"}
+    },
+    "disagreements": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/comparisonRow"}
+    },
+    "evidence_sufficiency": {"$ref": "#/$defs/evidenceSufficiency"},
+    "source_identity": {"$ref": "#/$defs/sourceIdentity"},
+    "active_source_rule_ids": {"$ref": "#/$defs/stringArray"},
+    "source_dependency_ids": {"$ref": "#/$defs/stringArray"},
+    "source_status": {
+      "enum": [
+        "exact_rule_bound",
+        "ambiguous",
+        "unmatched",
+        "unavailable"
+      ]
+    },
+    "source_gaps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/text"}
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/text"}
+    },
+    "forced_resolution": {"const": false},
+    "hard_verdict": {"type": "null"}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1},
+    "stringArray": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+    "artId": {
+      "enum": ["bazi", "ziwei", "qizheng", "liuyao", "qimen", "daliuren"]
+    },
+    "selectedArtIdList": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/artId"}
+    },
+    "presentArtIdList": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/artId"}
+    },
+    "comparisonRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["arts", "kind", "display_text", "fact_refs", "source_rule_id"],
+      "properties": {
+        "arts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/artId"}
+        },
+        "kind": {
+          "enum": [
+            "source_bound_corroboration",
+            "source_disagreement_retained",
+            "missing_art",
+            "insufficient_arts"
+          ]
+        },
+        "display_text": {"$ref": "#/$defs/text"},
+        "signal_ids": {"$ref": "#/$defs/stringArray"},
+        "fact_refs": {"$ref": "#/$defs/stringArray"},
+        "source_rule_id": {"$ref": "#/$defs/text"}
+      }
+    },
+    "evidenceSufficiency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["present_count", "missing_art_ids", "status"],
+      "properties": {
+        "present_count": {"type": "integer", "minimum": 0, "maximum": 3},
+        "missing_art_ids": {
+          "type": "array",
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/artId"}
+        },
+        "status": {
+          "enum": [
+            "insufficient_for_corroboration",
+            "partial",
+            "all_selected_present"
+          ]
+        }
+      }
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_pack",
+        "source_dependency_id",
+        "source_rule_id",
+        "source_anchor"
+      ],
+      "properties": {
+        "source_pack": {
+          "enum": [
+            "xingming/guotian-jing",
+            "ziwei/ziwei-doushu-quanshu",
+            "divination/huozhu-lin",
+            "divination/bushi-zhengzong"
+          ]
+        },
+        "source_dependency_id": {"$ref": "#/$defs/text"},
+        "source_rule_id": {"$ref": "#/$defs/text"},
+        "source_anchor": {"$ref": "#/$defs/text"}
+      }
+    }
+  }
+}

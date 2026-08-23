@@ -1,0 +1,209 @@
+{
+  "tag": "1440",
+  "urlAfterLogin": "http://106.14.10.235:18080/account",
+  "meihua": {
+    "url": "http://106.14.10.235:18080/account/history/0b40ecb0-96c7-4c7e-ba5e-1c8c5b00077c",
+    "facts": {
+      "hasBen": false,
+      "hasHu": false,
+      "hasBian": false,
+      "hasTi": false,
+      "hasYong": false,
+      "hasVerifiable": false,
+      "hasMethod": false,
+      "hasInputs": false,
+      "hasRawSum": false,
+      "hasDigest": false,
+      "hasDl": true,
+      "loginWall": false,
+      "headings": [
+        "历史详情",
+        "准备解读",
+        "报告信息"
+      ]
+    },
+    "triad": []
+  },
+  "bazi": {
+    "url": "http://106.14.10.235:18080/bazi",
+    "chips": [
+      {
+        "text": "本命",
+        "disabled": false,
+        "pressed": "true",
+        "busy": null
+      },
+      {
+        "text": "流年",
+        "disabled": false,
+        "pressed": "false",
+        "busy": null
+      },
+      {
+        "text": "流月",
+        "disabled": false,
+        "pressed": "false",
+        "busy": null
+      },
+      {
+        "text": "流日",
+        "disabled": false,
+        "pressed": "false",
+        "busy": null
+      }
+    ],
+    "yearFail": {
+      "label": "流年",
+      "abortOnce": true,
+      "pendingNatalStayed": true,
+      "natalStillPresent": true,
+      "newPosts": [
+        {
+          "keys": [
+            "target_year"
+          ],
+          "body": {
+            "profile_version_id": "b6cdc067-8d1f-44e0-9813-1305cbb1c3de",
+            "query": "请预览我的八字流年盘面。",
+            "dimension_ids": [
+              "career"
+            ],
+            "target_year": 2026
+          }
+        }
+      ],
+      "alertText": "这次时间层请求没有成功，仍显示刚才那张已确认的盘。"
+    },
+    "yearOk": {
+      "label": "流年",
+      "abortOnce": false,
+      "pendingNatalStayed": true,
+      "natalStillPresent": true,
+      "newPosts": [
+        {
+          "keys": [
+            "target_year"
+          ],
+          "body": {
+            "profile_version_id": "b6cdc067-8d1f-44e0-9813-1305cbb1c3de",
+            "query": "请预览我的八字流年盘面。",
+            "dimension_ids": [
+              "career"
+            ],
+            "target_year": 2026
+          }
+        }
+      ],
+      "alertText": null
+    },
+    "monthOk": {
+      "label": "流月",
+      "abortOnce": false,
+      "pendingNatalStayed": true,
+      "natalStillPresent": true,
+      "newPosts": [
+        {
+          "keys": [
+            "target_month"
+          ],
+          "body": {
+            "profile_version_id": "b6cdc067-8d1f-44e0-9813-1305cbb1c3de",
+            "query": "请预览我的八字流月盘面。",
+            "dimension_ids": [
+              "career"
+            ],
+            "target_month": "2026-08"
+          }
+        }
+      ],
+      "alertText": null
+    },
+    "dayOk": {
+      "label": "流日",
+      "abortOnce": false,
+      "pendingNatalStayed": true,
+      "natalStillPresent": true,
+      "newPosts": [
+        {
+          "keys": [
+            "target_date"
+          ],
+          "body": {
+            "profile_version_id": "b6cdc067-8d1f-44e0-9813-1305cbb1c3de",
+            "query": "请预览我的八字流日盘面。",
+            "dimension_ids": [
+              "career"
+            ],
+            "target_date": "2026-08-22"
+          }
+        }
+      ],
+      "alertText": null
+    },
+    "previewAudit": [
+      {
+        "keys": [],
+        "body": {
+          "profile_version_id": "b6cdc067-8d1f-44e0-9813-1305cbb1c3de",
+          "query": "请预览我的八字命盘。",
+          "dimension_ids": [
+            "career"
+          ]
+        }
+      },
+      {
+        "keys": [
+          "target_year"
+        ],
+        "body": {
+          "profile_version_id": "b6cdc067-8d1f-44e0-9813-1305cbb1c3de",
+          "query": "请预览我的八字流年盘面。",
+          "dimension_ids": [
+            "career"
+          ],
+          "target_year": 2026
+        }
+      },
+      {
+        "keys": [
+          "target_year"
+        ],
+        "body": {
+          "profile_version_id": "b6cdc067-8d1f-44e0-9813-1305cbb1c3de",
+          "query": "请预览我的八字流年盘面。",
+          "dimension_ids": [
+            "career"
+          ],
+          "target_year": 2026
+        }
+      },
+      {
+        "keys": [
+          "target_month"
+        ],
+        "body": {
+          "profile_version_id": "b6cdc067-8d1f-44e0-9813-1305cbb1c3de",
+          "query": "请预览我的八字流月盘面。",
+          "dimension_ids": [
+            "career"
+          ],
+          "target_month": "2026-08"
+        }
+      },
+      {
+        "keys": [
+          "target_date"
+        ],
+        "body": {
+          "profile_version_id": "b6cdc067-8d1f-44e0-9813-1305cbb1c3de",
+          "query": "请预览我的八字流日盘面。",
+          "dimension_ids": [
+            "career"
+          ],
+          "target_date": "2026-08-22"
+        }
+      }
+    ]
+  },
+  "email": "linyuhang.ut0821.1787355637092@example.com"
+}

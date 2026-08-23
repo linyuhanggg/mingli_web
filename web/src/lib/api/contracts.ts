@@ -371,6 +371,8 @@ export type LiuyaoStartRequest = {
   location: string;
   subject_ref?: string;
   query?: string;
+  /** 问题类别（GAP-LY-01）：结构化传入时 Runtime 才裁定用神角色集；首期仅求财。 */
+  question_class?: "finance";
   dimension_ids?: ("career" | "outcome" | "state" | "timing")[];
 };
 
@@ -410,6 +412,8 @@ export type RecastLiuyaoRequest = {
   location: string;
   subject_ref?: string;
   query?: string;
+  /** 同 LiuyaoStartRequest.question_class（后端 RecastLiuyaoRequest 同构字段）。 */
+  question_class?: "finance";
   dimension_ids?: ("career" | "outcome" | "timing")[];
 };
 

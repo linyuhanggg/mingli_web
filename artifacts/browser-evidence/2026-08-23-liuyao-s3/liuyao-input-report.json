@@ -1,0 +1,58 @@
+[
+  {
+    "viewport": 360,
+    "title": "六爻",
+    "form": true,
+    "fixtureMarkers": 0,
+    "overflowPx": 0,
+    "states": [
+      "closed",
+      "closed",
+      "closed",
+      "closed"
+    ],
+    "path": "/liuyao"
+  },
+  {
+    "viewport": 768,
+    "title": "六爻",
+    "form": true,
+    "fixtureMarkers": 0,
+    "overflowPx": 0,
+    "states": [
+      "closed",
+      "closed",
+      "closed",
+      "closed"
+    ],
+    "path": "/liuyao"
+  },
+  {
+    "viewport": 1024,
+    "title": "六爻",
+    "form": true,
+    "fixtureMarkers": 0,
+    "overflowPx": 0,
+    "states": [
+      "closed",
+      "closed",
+      "closed",
+      "closed"
+    ],
+    "path": "/liuyao"
+  },
+  {
+    "viewport": 1440,
+    "title": "六爻",
+    "form": true,
+    "fixtureMarkers": 0,
+    "overflowPx": 0,
+    "states": [
+      "closed",
+      "closed",
+      "closed",
+      "closed"
+    ],
+    "path": "/liuyao"
+  }
+]

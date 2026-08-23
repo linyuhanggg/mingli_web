@@ -1,0 +1,15 @@
+{
+  "url": "http://106.14.10.235:18080/meihua",
+  "pathname": "/meihua",
+  "stayed": true,
+  "loginWall": false,
+  "hasChart": true,
+  "white": false,
+  "consoleErrors": [
+    "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-features/#potentially-trustworthy-origin and https://html.spec.whatwg.org/#the-cross-origin-opener-policy-header.",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ],
+  "waitedMs": 4837,
+  "timedOut": false,
+  "textSample": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n梅花易数\n\n写清一件事和起卦依据，先查看本卦、互卦、变卦与体用结构。\n\n录入与核对\n工作台\n报告与追问\n梅花盘面\n\n盘面留在本页。登录只用于保存、历史和深读。\n\n返回录入\n林宇航近日工作变动是否顺利，只问这一件事。\n\n梅花易数 · 目标日期 长期范围 · 版本 v1\n\n01\n盘面事实\n\n盘面由服务端排定；浏览器只负责展示，不重新计算。\n\n问题林宇航近日工作变动是否顺利，只问这一件事。\n\n起法按时间起卦\n\n动爻：五爻\n\n可核验起卦\n年支数\n7\n农历年\n2026\n农历月\n7\n农历日\n10\n时支数\n11\n月干支\n丙申\n月支\n申\n时干支\n壬戌\n上卦原始和\n24\n下卦原始和\n35\n动爻原始和\n35\n盘面\n\n本卦\n\n地火明夷\n坤\n/\n离\n用\n坤\n土\n×\n体\n离\n火\n→\n\n互卦\n\n雷水解\n震\n/\n坎\n震\n上卦\n坎\n下卦\n→\n\n变卦\n\n水火既济\n坎\n/\n离\n坎\n上卦\n离\n下卦\n三卦语义表\n卦位\t上卦\t下卦\t五行\t动爻\n本卦\t坤\t离\t体火 / 用土\t动爻：五爻\n互卦\t震\t坎\t—\t无\n变卦\t坎\t离\t—\t无\n体用\n\n体：离（下卦）· 火\n离\n\n用：坤（上卦）· 土\n坤\n\n体生用\n\n已计算的五行关系，不是吉凶\n\n旺衰\n\n月令旺衰是按时令算出的事实，不是吉凶。\n\n月令旺衰事实\n卦\t月令\t状态\n离（体）\t申月 · 秋\t平\n坎\t申月 · 秋\t平\n震\t申月 · 秋\t衰\n坤（用）\t申月 · 秋\t平\n基础摘要\n\n本卦地火明夷；互卦雷水解；变卦水火既济；动爻：五爻；体离火、用坤土，体生用；离平、离平、坎平、坎平、震衰、离平、坤平、坤平。\n\n古籍极性\n\n下面是古籍已经裁定的关系，不是断这件事成不成。\n\n本卦上卦 坤（土）→ 体 离（火）：土体生用火\n泄耗体\n关系极性已裁定\n平\nMR-04-02\n未决检查\n互卦下卦 坎（水）→ 体 "
+}

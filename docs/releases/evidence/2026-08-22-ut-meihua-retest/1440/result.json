@@ -1,0 +1,246 @@
+{
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "entryUrl": "http://106.14.10.235:18080/meihua",
+  "entryText": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n梅花易数\n\n写清一件事和起卦依据，先查看本卦、互卦、变卦与体用结构。\n\n梅花易数任务输入\n\n只填写本任务需要的资料。带“必填”的项目会在本机先检查。\n\n确认后生成盘面\n问题与事件时空\n当前问题\n\n只写一件事，说明对象、目标和希望判断的时间范围。\n\n判断侧重\n请选择\n结果观察\n状态变化\n事件时间\n\n默认使用你明确选择的当地时间，不读取设备位置。\n\n事件时区\n\n主动确认事件发生地的 IANA 时区，不读取设备位置。\n\n事件地点\n\n用于保留起局/起课的地点事实。\n\n事件时间口径\n民用钟表时间\n当地视太阳时\n\n默认民用钟表时间；需要真太阳时时再明确选择。\n\n梅花起卦方式\n按时间起卦\n按数字起卦\n按声数起卦\n按观察起卦\n提供完整卦象\n\n按实际采用的起法提交，不会把数字、声音或观测资料改成时间起卦。\n\n立即起卦 · 查看本卦与体用\n提交后会发生什么\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。",
+  "formBefore": {
+    "url": "http://106.14.10.235:18080/meihua",
+    "title": "梅花易数｜命理工具",
+    "fields": [
+      {
+        "tag": "TEXTAREA",
+        "type": null,
+        "name": "issue",
+        "id": "meihua-issue",
+        "label": "当前问题",
+        "aria": null,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": null,
+        "name": "focus",
+        "id": "meihua-focus",
+        "label": "判断侧重",
+        "aria": null,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "datetime-local",
+        "name": "eventTime",
+        "id": "meihua-event-time",
+        "label": "事件时间",
+        "aria": null,
+        "placeholder": null,
+        "value": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": null,
+        "name": "timezone",
+        "id": "meihua-timezone",
+        "label": "事件时区",
+        "aria": null,
+        "placeholder": "例如 Asia/Shanghai",
+        "value": "Asia/Shanghai"
+      },
+      {
+        "tag": "INPUT",
+        "type": null,
+        "name": "location",
+        "id": "meihua-location",
+        "label": "事件地点",
+        "aria": null,
+        "placeholder": "省 / 市 / 区县",
+        "value": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": null,
+        "name": "timeStandard",
+        "id": "meihua-time-standard",
+        "label": "事件时间口径",
+        "aria": null,
+        "placeholder": null,
+        "value": "civil"
+      },
+      {
+        "tag": "SELECT",
+        "type": null,
+        "name": "meihuaCastingMethod",
+        "id": "meihua-casting-method",
+        "label": "梅花起卦方式",
+        "aria": null,
+        "placeholder": null,
+        "value": "time"
+      }
+    ],
+    "buttons": [
+      {
+        "text": "术数",
+        "type": "button",
+        "disabled": false
+      },
+      {
+        "text": "合参",
+        "type": "button",
+        "disabled": false
+      },
+      {
+        "text": "更多",
+        "type": "button",
+        "disabled": false
+      },
+      {
+        "text": "立即起卦 · 查看本卦与体用",
+        "type": "submit",
+        "disabled": false
+      },
+      {
+        "text": "术数",
+        "type": "button",
+        "disabled": false
+      }
+    ]
+  },
+  "formAfter": {
+    "url": "http://106.14.10.235:18080/meihua",
+    "title": "梅花易数｜命理工具",
+    "fields": [
+      {
+        "tag": "TEXTAREA",
+        "type": null,
+        "name": "issue",
+        "id": "meihua-issue",
+        "label": "当前问题",
+        "aria": null,
+        "placeholder": null,
+        "value": "林宇航近日工作变动是否顺利，只问这一件事。"
+      },
+      {
+        "tag": "SELECT",
+        "type": null,
+        "name": "focus",
+        "id": "meihua-focus",
+        "label": "判断侧重",
+        "aria": null,
+        "placeholder": null,
+        "value": "outcome"
+      },
+      {
+        "tag": "INPUT",
+        "type": "datetime-local",
+        "name": "eventTime",
+        "id": "meihua-event-time",
+        "label": "事件时间",
+        "aria": null,
+        "placeholder": null,
+        "value": "2026-08-22T09:30"
+      },
+      {
+        "tag": "INPUT",
+        "type": null,
+        "name": "timezone",
+        "id": "meihua-timezone",
+        "label": "事件时区",
+        "aria": null,
+        "placeholder": "例如 Asia/Shanghai",
+        "value": "Asia/Shanghai"
+      },
+      {
+        "tag": "INPUT",
+        "type": null,
+        "name": "location",
+        "id": "meihua-location",
+        "label": "事件地点",
+        "aria": null,
+        "placeholder": "省 / 市 / 区县",
+        "value": "福建省莆田市涵江区"
+      },
+      {
+        "tag": "SELECT",
+        "type": null,
+        "name": "timeStandard",
+        "id": "meihua-time-standard",
+        "label": "事件时间口径",
+        "aria": null,
+        "placeholder": null,
+        "value": "civil"
+      },
+      {
+        "tag": "SELECT",
+        "type": null,
+        "name": "meihuaCastingMethod",
+        "id": "meihua-casting-method",
+        "label": "梅花起卦方式",
+        "aria": null,
+        "placeholder": null,
+        "value": "time"
+      }
+    ],
+    "buttons": [
+      {
+        "text": "术数",
+        "type": "button",
+        "disabled": false
+      },
+      {
+        "text": "合参",
+        "type": "button",
+        "disabled": false
+      },
+      {
+        "text": "更多",
+        "type": "button",
+        "disabled": false
+      },
+      {
+        "text": "立即起卦 · 查看本卦与体用",
+        "type": "submit",
+        "disabled": false
+      },
+      {
+        "text": "术数",
+        "type": "button",
+        "disabled": false
+      }
+    ]
+  },
+  "clicked": "立即起卦",
+  "immediatelyAfterClickUrl": "http://106.14.10.235:18080/meihua",
+  "immediatelyAfterClickText": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n梅花易数\n\n写清一件事和起卦依据，先查看本卦、互卦、变卦与体用结构。\n\n录入与核对\n工作台\n报告与追问\n梅花盘面\n\n盘面留在本页。登录只用于保存、历史和深读。\n\n返回录入\n准备解读\n\n事实已就绪，正在准备解读。 目标日期：长期范围\n\n报告信息\n报告版本\nv1\n\n准备解读\n\n这份报告保留当前版本，后续修改不会覆盖本次内容。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。",
+  "result": {
+    "url": "http://106.14.10.235:18080/meihua",
+    "loginWall": false,
+    "historyPath": false,
+    "hasS3": true,
+    "preparing": false,
+    "waitedMs": 4034
+  },
+  "settledUrl": "http://106.14.10.235:18080/meihua",
+  "analysis": {
+    "url": "http://106.14.10.235:18080/meihua",
+    "pathname": "/meihua",
+    "stayedOnMeihua": true,
+    "loginWall": false,
+    "historyPath": false,
+    "hasBen": true,
+    "hasHu": true,
+    "hasBian": true,
+    "hasTi": true,
+    "hasYong": true,
+    "verifiable": true,
+    "method": true,
+    "inputs": true,
+    "rawSum": true,
+    "forbiddenHits": [],
+    "emptyJudgmentZh": false,
+    "oldEmpty": false,
+    "guestMode": false
+  }
+}

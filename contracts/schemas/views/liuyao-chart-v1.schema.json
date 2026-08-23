@@ -9,36 +9,269 @@
     "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]}
   },
   "$defs": {
-    "hexagram": {"type": "object", "additionalProperties": false, "required": ["name", "upper_trigram", "lower_trigram"], "properties": {"name": {"type": "string", "minLength": 1}, "upper_trigram": {"type": "string", "minLength": 1}, "lower_trigram": {"type": "string", "minLength": 1}}},
+    "hexagram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "upper_trigram", "lower_trigram"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "upper_trigram": {"type": "string", "minLength": 1},
+        "lower_trigram": {"type": "string", "minLength": 1},
+        "bits_bottom_up": {"type": "string", "pattern": "^[01]{6}$"},
+        "king_wen_number": {"type": "integer", "minimum": 1, "maximum": 64},
+        "palace": {"type": "string", "minLength": 1},
+        "palace_element": {"$ref": "#/$defs/element"},
+        "shi_line": {"$ref": "#/$defs/linePosition"},
+        "ying_line": {"$ref": "#/$defs/linePosition"},
+        "stage": {"type": "string", "minLength": 1},
+        "source_dependency_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "element": {"enum": ["木", "火", "土", "金", "水"]},
+    "sixRelative": {"enum": ["兄弟", "子孙", "妻财", "官鬼", "父母"]},
+    "sixSpirit": {"enum": ["青龙", "朱雀", "勾陈", "螣蛇", "白虎", "玄武"]},
+    "lineState": {"enum": ["老阴", "少阳", "少阴", "老阳"]},
+    "yinYang": {"enum": ["阳", "阴"]},
+    "structuralRole": {"enum": ["世", "应"]},
+    "seasonalState": {"enum": ["旺", "相", "休", "囚", "死"]},
+    "linePosition": {"type": "integer", "minimum": 1, "maximum": 6},
+    "sharedTrines": {"type": "array", "items": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "string", "minLength": 1}}},
+    "najiaEntry": {
+      "type": "object", "additionalProperties": false,
+      "required": ["stem", "branch", "ganzhi", "element", "source_dependency_id"],
+      "properties": {
+        "stem": {"type": "string", "minLength": 1},
+        "branch": {"type": "string", "minLength": 1},
+        "ganzhi": {"type": "string", "minLength": 2},
+        "element": {"$ref": "#/$defs/element"},
+        "source_dependency_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "dayRelation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["branch", "branch_relation", "clash", "element", "element_relation", "shared_trines"],
+      "properties": {
+        "branch": {"type": "string", "minLength": 1},
+        "branch_relation": {"type": "string", "minLength": 1},
+        "clash": {"type": "boolean"},
+        "element": {"$ref": "#/$defs/element"},
+        "element_relation": {"type": "string", "minLength": 1},
+        "shared_trines": {"$ref": "#/$defs/sharedTrines"}
+      }
+    },
+    "monthRelation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["branch", "branch_relation", "break", "element", "element_relation", "shared_trines"],
+      "properties": {
+        "branch": {"type": "string", "minLength": 1},
+        "branch_relation": {"type": "string", "minLength": 1},
+        "break": {"type": "boolean"},
+        "element": {"$ref": "#/$defs/element"},
+        "element_relation": {"type": "string", "minLength": 1},
+        "shared_trines": {"$ref": "#/$defs/sharedTrines"}
+      }
+    },
+    "monthDayStrength": {
+      "type": "object", "additionalProperties": false,
+      "required": ["day", "month", "fact_status", "seasonal_state", "source_dependency_id"],
+      "properties": {
+        "day": {"$ref": "#/$defs/dayRelation"},
+        "month": {"$ref": "#/$defs/monthRelation"},
+        "fact_status": {"const": "calculated_relation_not_verdict"},
+        "seasonal_state": {"$ref": "#/$defs/seasonalState"},
+        "source_dependency_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "changedLineFact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["line", "month_day_strength", "najia", "six_relative", "source_dependency_id", "xunkong", "yin_yang"],
+      "properties": {
+        "line": {"$ref": "#/$defs/linePosition"},
+        "month_day_strength": {"$ref": "#/$defs/monthDayStrength"},
+        "najia": {"$ref": "#/$defs/najiaEntry"},
+        "six_relative": {"$ref": "#/$defs/sixRelative"},
+        "source_dependency_id": {"type": "string", "minLength": 1},
+        "xunkong": {"type": "boolean"},
+        "yin_yang": {"$ref": "#/$defs/yinYang"}
+      }
+    },
+    "returningRelation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["changed", "original", "relations", "fact_status", "source_dependency_id"],
+      "properties": {
+        "changed": {"$ref": "#/$defs/najiaEntry"},
+        "original": {"$ref": "#/$defs/najiaEntry"},
+        "relations": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "fact_status": {"const": "calculated_relation_not_verdict"},
+        "source_dependency_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "plateLineFact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["line", "month_day_strength", "moving", "najia", "roles", "six_relative", "six_spirit", "state", "xunkong", "yin_yang"],
+      "properties": {
+        "line": {"$ref": "#/$defs/linePosition"},
+        "month_day_strength": {"$ref": "#/$defs/monthDayStrength"},
+        "moving": {"type": "boolean"},
+        "najia": {"$ref": "#/$defs/najiaEntry"},
+        "roles": {"type": "array", "items": {"$ref": "#/$defs/structuralRole"}},
+        "six_relative": {"$ref": "#/$defs/sixRelative"},
+        "six_spirit": {"$ref": "#/$defs/sixSpirit"},
+        "state": {"$ref": "#/$defs/lineState"},
+        "xunkong": {"type": "boolean"},
+        "yin_yang": {"$ref": "#/$defs/yinYang"},
+        "changed_line": {"oneOf": [{"$ref": "#/$defs/changedLineFact"}, {"type": "null"}]},
+        "changed_relation": {"oneOf": [{"$ref": "#/$defs/returningRelation"}, {"type": "null"}]}
+      }
+    },
+    "hiddenLineFact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["line", "month_day_strength", "najia", "six_relative", "source_dependency_id", "source_plate", "status", "xunkong"],
+      "properties": {
+        "line": {"$ref": "#/$defs/linePosition"},
+        "month_day_strength": {"$ref": "#/$defs/monthDayStrength"},
+        "najia": {"$ref": "#/$defs/najiaEntry"},
+        "six_relative": {"$ref": "#/$defs/sixRelative"},
+        "source_dependency_id": {"type": "string", "minLength": 1},
+        "source_plate": {"type": "string", "minLength": 1},
+        "status": {"const": "source_derived_hidden_line_candidate"},
+        "xunkong": {"type": "boolean"}
+      }
+    },
+    "shiYingPositions": {
+      "type": "object", "additionalProperties": false,
+      "required": ["shi", "ying"],
+      "properties": {"shi": {"$ref": "#/$defs/linePosition"}, "ying": {"$ref": "#/$defs/linePosition"}}
+    },
+    "xunkongFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["day_ganzhi", "void_branches", "source_dependency_id"],
+      "properties": {
+        "day_ganzhi": {"type": "string", "minLength": 2},
+        "void_branches": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string", "minLength": 1}},
+        "source_dependency_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "calendarFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["day_branch", "day_ganzhi", "day_stem", "month_branch", "month_ganzhi"],
+      "properties": {
+        "day_branch": {"type": "string", "minLength": 1},
+        "day_ganzhi": {"type": "string", "minLength": 2},
+        "day_stem": {"type": "string", "minLength": 1},
+        "month_branch": {"type": "string", "minLength": 1},
+        "month_ganzhi": {"type": "string", "minLength": 2}
+      }
+    },
+    "castProvenance": {
+      "type": "object", "additionalProperties": true,
+      "required": ["kind"],
+      "properties": {"kind": {"type": "string", "minLength": 1}}
+    },
+    "castingFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["cast_digest", "method", "provenance", "source_dependency_id", "tosses"],
+      "properties": {
+        "cast_digest": {"type": "string", "minLength": 1},
+        "method": {"type": "string", "minLength": 1},
+        "provenance": {"$ref": "#/$defs/castProvenance"},
+        "source_dependency_id": {"type": "string", "minLength": 1},
+        "tosses": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"enum": [6, 7, 8, 9]}},
+        "algorithm": {"type": "string", "minLength": 1},
+        "coin_values": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"enum": [2, 3]}}},
+        "coin_faces": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"enum": ["背", "字"]}}},
+        "seed_source": {"type": "string", "minLength": 1},
+        "seed_commitment": {"type": "string", "minLength": 1}
+      }
+    },
+    "shiYingRelationFact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["branch_relation", "element_relation", "fact_status", "shared_trines", "source_dependency_id", "source_line", "source_najia", "source_role_label", "source_roles", "target_line", "target_najia", "target_relative", "target_role_label", "target_roles", "target_source"],
+      "properties": {
+        "branch_relation": {"type": "string", "minLength": 1},
+        "element_relation": {"type": "string", "minLength": 1},
+        "fact_status": {"const": "calculated_relation_not_verdict"},
+        "shared_trines": {"$ref": "#/$defs/sharedTrines"},
+        "source_dependency_id": {"type": "string", "minLength": 1},
+        "source_line": {"$ref": "#/$defs/linePosition"},
+        "source_najia": {"$ref": "#/$defs/najiaEntry"},
+        "source_role_label": {"type": "string", "minLength": 1},
+        "source_roles": {"type": "array", "items": {"$ref": "#/$defs/structuralRole"}},
+        "target_line": {"$ref": "#/$defs/linePosition"},
+        "target_najia": {"$ref": "#/$defs/najiaEntry"},
+        "target_relative": {"$ref": "#/$defs/sixRelative"},
+        "target_role_label": {"type": "string", "minLength": 1},
+        "target_roles": {"type": "array", "items": {"$ref": "#/$defs/structuralRole"}},
+        "target_source": {"enum": ["visible_line", "changed_line", "hidden_line"]}
+      }
+    },
+    "shiYingAnchorRelation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["branch_relation", "element_relation", "fact_status", "shared_trines", "source_dependency_id", "source_line", "source_najia", "source_role_label", "source_roles", "target_line", "target_najia", "target_relative", "target_role_label", "target_roles", "target_source", "shi_line", "ying_line"],
+      "properties": {
+        "branch_relation": {"type": "string", "minLength": 1},
+        "element_relation": {"type": "string", "minLength": 1},
+        "fact_status": {"const": "calculated_relation_not_verdict"},
+        "shared_trines": {"$ref": "#/$defs/sharedTrines"},
+        "source_dependency_id": {"type": "string", "minLength": 1},
+        "source_line": {"$ref": "#/$defs/linePosition"},
+        "source_najia": {"$ref": "#/$defs/najiaEntry"},
+        "source_role_label": {"type": "string", "minLength": 1},
+        "source_roles": {"type": "array", "items": {"$ref": "#/$defs/structuralRole"}},
+        "target_line": {"$ref": "#/$defs/linePosition"},
+        "target_najia": {"$ref": "#/$defs/najiaEntry"},
+        "target_relative": {"$ref": "#/$defs/sixRelative"},
+        "target_role_label": {"type": "string", "minLength": 1},
+        "target_roles": {"type": "array", "items": {"$ref": "#/$defs/structuralRole"}},
+        "target_source": {"enum": ["visible_line", "changed_line", "hidden_line"]},
+        "shi_line": {"$ref": "#/$defs/linePosition"},
+        "ying_line": {"$ref": "#/$defs/linePosition"}
+      }
+    },
+    "shiYingMovingRelations": {
+      "type": "object", "additionalProperties": false,
+      "required": ["fact_status", "moving_to_candidates", "shi_ying", "source_dependency_id"],
+      "properties": {
+        "fact_status": {"const": "calculated_relation_not_verdict"},
+        "moving_to_candidates": {"type": "array", "items": {"$ref": "#/$defs/shiYingRelationFact"}},
+        "shi_ying": {"$ref": "#/$defs/shiYingAnchorRelation"},
+        "source_dependency_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "sixSpiritProfile": {
+      "type": "object", "additionalProperties": false,
+      "required": ["day_stem", "source_dependency_id"],
+      "properties": {"day_stem": {"type": "string", "minLength": 1}, "source_dependency_id": {"type": "string", "minLength": 1}}
+    },
     "coreFacts": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "calendar": {"type": ["object", "null"]},
-        "casting": {"type": ["object", "null"]},
+        "calendar": {"oneOf": [{"$ref": "#/$defs/calendarFacts"}, {"type": "null"}]},
+        "casting": {"oneOf": [{"$ref": "#/$defs/castingFacts"}, {"type": "null"}]},
         "casting_method": {"type": ["string", "null"], "minLength": 1},
-        "changed_najia": {"type": ["array", "null"], "items": {"type": "object"}},
-        "changed_plate_lines": {"type": ["array", "null"], "items": {"type": "object"}},
+        "changed_najia": {"oneOf": [{"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/najiaEntry"}}, {"type": "null"}]},
+        "changed_plate_lines": {"oneOf": [{"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/changedLineFact"}}, {"type": "null"}]},
         "changed_six_relatives": {"type": ["array", "null"], "items": {"type": "string"}},
-        "hidden_lines": {"type": ["array", "null"], "items": {"type": "object"}},
+        "hidden_lines": {"oneOf": [{"type": "array", "items": {"$ref": "#/$defs/hiddenLineFact"}}, {"type": "null"}]},
         "interpretation_status": {"type": ["string", "null"], "minLength": 1},
-        "line_facts": {"type": ["array", "null"], "items": {"type": "object"}},
-        "lines": {"type": ["array", "null"], "items": {"type": "object"}},
-        "month_day_strength": {"type": ["array", "null"], "items": {"type": "object"}},
+        "line_facts": {"oneOf": [{"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/plateLineFact"}}, {"type": "null"}]},
+        "lines": {"oneOf": [{"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/plateLineFact"}}, {"type": "null"}]},
+        "month_day_strength": {"oneOf": [{"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/monthDayStrength"}}, {"type": "null"}]},
         "moving_lines": {"type": ["array", "null"], "items": {"type": "integer"}},
-        "najia": {"type": ["array", "null"], "items": {"type": "object"}},
-        "relation_facts": {"type": ["array", "null"], "items": {"type": "object"}},
-        "returning_relations": {"type": ["array", "null"], "items": {"type": "object"}},
+        "najia": {"oneOf": [{"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/najiaEntry"}}, {"type": "null"}]},
+        "relation_facts": {"oneOf": [{"type": "array", "items": {"$ref": "#/$defs/returningRelation"}}, {"type": "null"}]},
+        "returning_relations": {"oneOf": [{"type": "array", "items": {"$ref": "#/$defs/returningRelation"}}, {"type": "null"}]},
         "requested_useful_spirit_candidates": {"type": ["object", "null"]},
-        "shi_ying": {"type": ["object", "null"]},
-        "shi_ying_moving_relations": {"type": ["object", "null"]},
+        "shi_ying": {"oneOf": [{"$ref": "#/$defs/shiYingPositions"}, {"type": "null"}]},
+        "shi_ying_moving_relations": {"oneOf": [{"$ref": "#/$defs/shiYingMovingRelations"}, {"type": "null"}]},
         "six_relatives": {"type": ["array", "null"], "items": {"type": "string"}},
-        "six_spirit_profile": {"type": ["object", "null"]},
+        "six_spirit_profile": {"oneOf": [{"$ref": "#/$defs/sixSpiritProfile"}, {"type": "null"}]},
         "six_spirits": {"type": ["array", "null"], "items": {"type": "string"}},
         "source_conditioned_patterns": {"type": "array", "items": {"$ref": "#/$defs/sourcePattern"}},
         "useful_spirit_candidates": {"type": ["object", "null"]},
         "useful_spirit_selection": {"oneOf": [{"$ref": "#/$defs/usefulSpiritSelection"}, {"type": "null"}]},
-        "xunkong": {"type": ["object", "null"]}
+        "xunkong": {"oneOf": [{"$ref": "#/$defs/xunkongFacts"}, {"type": "null"}]}
       }
     },
     "liuyaoSourceRef": {

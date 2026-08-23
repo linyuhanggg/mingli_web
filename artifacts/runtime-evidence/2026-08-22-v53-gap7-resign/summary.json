@@ -1,0 +1,31 @@
+{
+  "task": "T-0821-GAP-7",
+  "status": "DONE",
+  "new_runtime": ".runtime/v53-time-check-release-gap7-20260822",
+  "manifest_sha256": "d45bb86d88b13daf50aa62ea7ee699c291dde5cd480fd76205a27371cd21bb3b",
+  "source_commit": "025511b782e9d6a22cd675e3e1a6ee9df96ffa25",
+  "managed_files": 221,
+  "old_runtime": ".runtime/v53-time-check-release",
+  "old_source_commit": "663543e65ae037843b03dca1dec9486293affc9d",
+  "old_mtime": "2026-08-18 20:27:41",
+  "describe_capabilities": 14,
+  "evidence_index_records": 1328,
+  "default_deep_read_claim_units": [
+    "bazi.month-order-state-v1",
+    "bazi.day-master-root-support-v1",
+    "bazi.ziping-pattern-entry-v1",
+    "bazi.tiaohou-priority-v1",
+    "bazi.pillar-roles-v1",
+    "bazi.three-yuan-structure-v1",
+    "bazi.element-flow-inventory-v1"
+  ],
+  "parent_commit_files": [
+    "core/mingli-master/scripts/reading_engine/providers.py",
+    "core/mingli-master/scripts/reading_evidence_bundle.py",
+    "core/mingli-master/scripts/test_v51_bazi_public_claim_units.py",
+    "core/mingli-master/scripts/release_deploy.py",
+    "core/mingli-master/scripts/test_release_deploy.py",
+    "scripts/check_mingli_core_workspace.py"
+  ],
+  "pushed": false
+}

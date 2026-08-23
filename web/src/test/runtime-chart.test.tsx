@@ -443,10 +443,45 @@ it("renders Runtime Ziwei core facts without adding browser-side judgments", () 
   );
 
   expect(screen.getByText("水二局")).toBeVisible();
-  expect(screen.getByText("本命四化事实")).toBeVisible();
-  expect(screen.getByText("廉贞")).toBeVisible();
-  expect(screen.getByText("TR-01 · 至玄至微")).toBeVisible();
-  expect(screen.getByText(/不在浏览器追加判断/)).toBeVisible();
+  expect(screen.getByText("紫微")).toBeVisible();
+  expect(screen.getByRole("region", { name: "四化" })).toHaveTextContent("廉贞");
+  expect(screen.queryByText("本命四化事实")).not.toBeInTheDocument();
+  expect(screen.queryByText("TR-01 · 至玄至微")).not.toBeInTheDocument();
+  expect(screen.queryByText(/不在浏览器追加判断/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/吉凶|大吉|大凶/)).not.toBeInTheDocument();
+});
+
+it("renders ZiweiPalaceBoard for ziwei-chart/v1 and fail-closes missing core_facts modules", () => {
+  const branches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"] as const;
+  render(
+    <RuntimeChart
+      viewModel={{
+        schema_version: "ziwei-chart/v1",
+        subject_ref: "profile-version:fixture",
+        life_palace_id: "0",
+        body_palace_id: "1",
+        palaces: branches.map((branch, index) => ({
+          palace_id: String(index),
+          label: index === 0 ? "命宫" : `宫${index}`,
+          heavenly_stem: "甲",
+          earthly_branch: branch,
+          major_stars: index === 0 ? ["紫微"] : [],
+          minor_stars: [],
+          adjective_stars: [],
+        })),
+        time_layers: [],
+        core_facts: null,
+      }}
+    />,
+  );
+
+  expect(screen.getByRole("grid", { name: "十二宫环盘" })).toBeVisible();
+  expect(screen.getAllByText("紫微").length).toBeGreaterThan(0);
+  expect(screen.getAllByText("命宫").length).toBeGreaterThan(0);
+  expect(screen.queryByRole("region", { name: "口径" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "四化" })).not.toBeInTheDocument();
+  expect(screen.queryByText("测试期未开放")).toBeVisible();
+  expect(screen.queryByText(/¥/)).not.toBeInTheDocument();
 });
 
 it("renders Runtime Qizheng core facts and keeps absent aspects absent", () => {
@@ -929,10 +964,13 @@ it("renders Meihua source-adjudicated relation polarity without inventing an eve
     />,
   );
 
-  expect(screen.getByText("体用关系来源裁定（未形成事件结论）")).toBeVisible();
-  expect(screen.getByText("体用比和")).toBeVisible();
+  expect(screen.getByRole("heading", { name: "古籍极性" })).toBeVisible();
+  expect(screen.getAllByText("比和").length).toBeGreaterThan(0);
   expect(screen.getByText("关系极性已裁定")).toBeVisible();
-  expect(screen.getByText(/综合成败与应期仍待正式合成裁决/)).toBeVisible();
+  expect(
+    screen.getByText("以上是古籍已裁定的关系极性。这件事成不成、吉凶、应期，本页不断。"),
+  ).toBeVisible();
+  expect(screen.queryByText("以上为古籍已裁定的关系极性，事件成败不在本页判断")).toBeNull();
   expect(screen.queryByText("体用关系候选（非最终结论）")).toBeNull();
 });
 
@@ -1200,9 +1238,56 @@ it("renders a bounded Daliuren timing candidate as a non-guaranteed date", () =>
     />,
   );
 
-  expect(screen.getByText("有界应期候选")).toBeVisible();
-  expect(screen.getByText("2026-08-21")).toBeVisible();
-  expect(screen.getByText("丁卯 · 酉")).toBeVisible();
-  expect(screen.getByText("LM-R21 · san-shi/liuren-miben")).toBeVisible();
-  expect(screen.getByText("候选日期，不是现实保证")).toBeVisible();
+  expect(screen.getByRole("region", { name: "课传" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "初传 酉 朱雀" })).toBeVisible();
+  expect(screen.getByText(/2026-08-21/)).toBeVisible();
+  expect(screen.getByText("以下为古籍规则产生的候选日期，不是保证的应期")).toBeVisible();
+  expect(screen.queryByText("有界应期候选")).not.toBeInTheDocument();
+  expect(screen.queryByText("丁卯 · 酉")).not.toBeInTheDocument();
+  expect(screen.queryByText("LM-R21 · san-shi/liuren-miben")).not.toBeInTheDocument();
+  expect(screen.queryByText("候选日期，不是现实保证")).not.toBeInTheDocument();
+});
+
+it("renders DaliurenBoard for daliuren-chart/v1 and fail-closes missing timing_candidates", () => {
+  render(
+    <RuntimeChart
+      viewModel={{
+        schema_version: "daliuren-chart/v1",
+        subject_ref: "liuren:timing-fixture",
+        question: "这件事何时可能出现回应？",
+        lessons: [
+          { lesson_id: "1", upper: "酉", lower: "庚" },
+          { lesson_id: "2", upper: "戌", lower: "酉" },
+          { lesson_id: "3", upper: "子", lower: "申" },
+          { lesson_id: "4", upper: "丑", lower: "子" },
+        ],
+        transmissions: [
+          { stage: "initial", branch: "酉", general: "朱雀" },
+          { stage: "middle", branch: "戌", general: "六合" },
+          { stage: "final", branch: "亥", general: "勾陈" },
+        ],
+        core_facts: {
+          day_hour: null,
+          dimension_facts: null,
+          earth_plate: null,
+          heaven_plate: null,
+          heavenly_generals: null,
+          lesson_method: null,
+          month_general: null,
+          noble_person: null,
+          plate_offset: null,
+          structural_patterns: null,
+          transmission_method: null,
+          timing_candidates: null,
+          xunkong: null,
+        },
+      }}
+    />,
+  );
+
+  expect(screen.getByRole("region", { name: "课传" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "初传 酉 朱雀" })).toBeVisible();
+  expect(screen.queryByText("2026-08-21")).not.toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "应期" })).not.toBeInTheDocument();
+  expect(screen.queryByText("有界应期候选")).not.toBeInTheDocument();
 });

@@ -11,10 +11,12 @@
     "pillars": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"$ref": "#/$defs/pillar"}},
     "element_balance": {"type": "array", "items": {"$ref": "#/$defs/elementBalance"}},
     "time_layers": {"type": "array", "items": {"$ref": "#/$defs/timeLayer"}},
-    "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]}
+    "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]},
+    "findings": {"type": "array", "items": {"$ref": "#/$defs/publicFinding"}}
   },
   "$defs": {
     "text": {"type": "string", "minLength": 1},
+    "publicFinding": {"type": "object", "additionalProperties": false, "required": ["finding_ref", "claim_unit_id", "title", "body"], "properties": {"finding_ref": {"$ref": "#/$defs/text"}, "claim_unit_id": {"$ref": "#/$defs/text"}, "title": {"$ref": "#/$defs/text"}, "body": {"$ref": "#/$defs/text"}}},
     "stringArray": {"type": "array", "items": {"$ref": "#/$defs/text"}},
     "position": {"enum": ["year", "month", "day", "hour"]},
     "element": {"enum": ["wood", "fire", "earth", "metal", "water"]},

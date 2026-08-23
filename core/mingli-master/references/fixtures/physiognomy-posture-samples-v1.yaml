@@ -1,0 +1,88 @@
+schema_version: mingli-algorithm-source-samples-v1
+purpose: >-
+  Independent pre-implementation 见相体态 samples transcribed from admitted
+  《麻衣神相》卷一/卷二/卷三 terminology before any posture Provider exists. Luck
+  lookup is empty. Expectations must not be computed by a provider or a
+  language model.
+
+cases:
+  posture-whole-body-wuti:
+    source_reference: 麻衣神相 fulltext.md L1305 加之以首谓之五体；柳庄 L518 点名行
+    input:
+      mode: posture
+      observations:
+        - region_id: whole_body
+          descriptor: region_visible
+          visibility: full
+          uncertainty: 0.1
+      region_label: 五体
+    expected:
+      mode: posture
+      lookup_key: 五体
+      region_id: whole_body
+      match_status: exact
+      source_status: exact_rule_bound
+      source_rule_id: physiognomy-posture/mayi-shenxiang#PP-MY-01
+      hard_verdict: null
+    verification: 五体 is a classical site name; not a BMI row
+
+  posture-bone-terminology:
+    source_reference: 麻衣神相 fulltext.md L569 骨节象金石
+    input:
+      mode: posture
+      observations:
+        - region_id: bone
+          descriptor: contour_visible
+          visibility: partial
+          uncertainty: 0.2
+      region_label: 骨
+    expected:
+      mode: posture
+      lookup_key: 骨
+      region_id: bone
+      match_status: exact
+      source_status: exact_rule_bound
+      source_rule_id: physiognomy-posture/mayi-shenxiang#PP-MY-02
+      hard_verdict: null
+    verification: 骨 is terminology identity only
+
+  posture-form-not-personality:
+    source_reference: 麻衣神相 fulltext.md L494 神生而后形全
+    input:
+      mode: posture
+      observations:
+        - region_id: form
+          descriptor: contour_visible
+          visibility: full
+          uncertainty: 0
+      region_label: 形
+    expected:
+      mode: posture
+      lookup_key: 形
+      region_id: form
+      match_status: exact
+      source_status: exact_rule_bound
+      source_rule_id: physiognomy-posture/mayi-shenxiang#PP-MY-03
+      hard_verdict: null
+    verification: 形 is a classification label; personality must not become hard_verdict
+
+  posture-modern-foot-exercise-unmatched:
+    source_reference: 麻衣神相 fulltext.md L3597 卷六脚部运动现代附益
+    input:
+      mode: posture
+      observations:
+        - region_id: gait
+          descriptor: region_visible
+          visibility: full
+          uncertainty: 0.3
+      region_label: 脚腕
+    expected:
+      mode: posture
+      lookup_key: 脚腕
+      region_id: gait
+      match_status: unmatched
+      source_status: unmatched
+      region_match: null
+      source_rule_id: physiognomy-posture/mayi-shenxiang#PP-MY-04
+      hard_verdict: null
+    verification: 脚腕 in this pack is modern appendix exercise language, not a posture row

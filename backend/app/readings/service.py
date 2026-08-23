@@ -40,6 +40,10 @@ from app.readings.capability_policy import (
 )
 from app.readings.models import ReadingJobRecord, ReadingVersion
 from app.readings.output_contracts import output_contract_for_product
+from app.readings.relationship_deep_extract import (
+    relationship_deep_http_follow_up,
+    relationship_deep_http_result,
+)
 from app.readings.public_fact_panel import project_public_fact_panel
 from app.readings.repository import (
     READING_HISTORY_LIMIT,
@@ -761,6 +765,13 @@ class ReadingService:
             "bazi-relationship": ("bazi_relationship_preview", "bazi", "bazi"),
             "ziwei-relationship": ("ziwei_relationship_preview", "ziwei", "ziwei"),
             "qizheng-relationship": (
+                "qizheng_relationship_preview",
+                "qizheng",
+                "xingming",
+            ),
+            "bazi-relationship-deep": ("bazi_relationship_preview", "bazi", "bazi"),
+            "ziwei-relationship-deep": ("ziwei_relationship_preview", "ziwei", "ziwei"),
+            "qizheng-relationship-deep": (
                 "qizheng_relationship_preview",
                 "qizheng",
                 "xingming",
@@ -2069,8 +2080,20 @@ class ReadingService:
             version_id,
         )
         brief = await self.repository.load_fact_brief(version_id)
-        accepted_copy = await self.repository.load_accepted_copy(version_id)
-        document = await self.repository.load_reading_document(version_id)
+        product_id = version.product_id or root.product_id
+        wired = await relationship_deep_http_result(
+            repository=self.repository,
+            reading_version_id=version_id,
+            product_id=product_id,
+        )
+        if "relationship_deep_extract_not_applicable" in wired.errors:
+            accepted_copy = await self.repository.load_accepted_copy(version_id)
+            document = await self.repository.load_reading_document(version_id)
+        elif wired.errors:
+            raise ReadingNotAcceptedError("Accepted document is unavailable")
+        else:
+            accepted_copy = wired.accepted_copy
+            document = wired.document
         verification = await self.repository.load_verification(version_id)
         waiting = await self.repository.load_waiting_input(version_id)
         capability_projection = project_capability(
@@ -2158,7 +2181,18 @@ class ReadingService:
         )
         if version.status != ReadingStatus.ACCEPTED.value:
             raise ReadingNotAcceptedError("Follow-up requires an Accepted Reading")
-        accepted_copy = await self.repository.load_accepted_copy(version.id)
+        product_id = version.product_id or root.product_id
+        wired = await relationship_deep_http_follow_up(
+            repository=self.repository,
+            reading_version_id=version.id,
+            product_id=product_id,
+        )
+        if "relationship_deep_extract_not_applicable" in wired.errors:
+            accepted_copy = await self.repository.load_accepted_copy(version.id)
+        elif wired.errors:
+            raise ReadingNotAcceptedError("Accepted document is unavailable")
+        else:
+            accepted_copy = wired.accepted_copy
         if accepted_copy is None:
             raise ReadingNotAcceptedError("Accepted Copy is missing")
         await self._check_follow_up_contract(root, version)

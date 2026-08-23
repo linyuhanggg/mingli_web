@@ -1,2 +1,10 @@
 @import "../../../ui/tokens.css";
 @import "../../../ui/base.css";
+
+/* Web 专属全局覆写。
+   base.css 的点按高亮仍是方向 C 的蓝；纸墨档案（DESIGN §3）里
+   朱砂是唯一交互强调色，这里在 Web 侧收口。 */
+button,
+a {
+  -webkit-tap-highlight-color: rgb(154 59 47 / 16%);
+}

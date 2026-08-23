@@ -40,6 +40,25 @@
   line-height: 1.15;
 }
 
+.sealMark {
+  display: inline-grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sealMark[data-seal="liuyao"] {
+  width: auto;
+  min-width: 1.75rem;
+  padding-inline: 0.28rem;
+}
+
 .pageLine p {
   margin: 0;
   flex: 1 1 12rem;
@@ -141,6 +160,290 @@
   display: grid;
   justify-items: center;
   width: 100%;
+}
+
+.meihuaCastingHint,
+.liuyaoCastingHint {
+  grid-area: hint;
+  margin: 0;
+  max-width: var(--container-form);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  line-height: 1.4;
+}
+
+.meihuaMethodFields {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-md);
+  overflow-x: clip;
+  animation: meihuaMethodIn 120ms ease;
+}
+
+.meihuaMethodFields > p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+}
+
+@keyframes meihuaMethodIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meihuaMethodFields {
+    animation: none;
+  }
+}
+
+.meihuaTrigramRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.meihuaTrigramPick {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.meihuaSilhouette {
+  grid-area: silhouette;
+  display: grid;
+  min-width: 26.25rem;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-subtle);
+}
+
+.meihuaTriad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.meihuaHexagramSlot {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.meihuaHexagramSlot strong {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  text-align: center;
+}
+
+.meihuaHexagramSlot ol {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.meihuaHexagramSlot li {
+  height: 0.45rem;
+  border: 1px solid var(--color-border-strong);
+  background: transparent;
+}
+
+.meihuaBodyUse {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.meihuaBodyUse span {
+  display: inline-grid;
+  min-width: 1.75rem;
+  min-height: 1.75rem;
+  place-items: center;
+  border: 1px dashed var(--color-border-strong);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.meihuaSilhouette figcaption {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+}
+
+.experience[data-product="meihua"][data-stage="input"] .inputLayout {
+  justify-items: stretch;
+  align-items: start;
+  width: 100%;
+  grid-template-columns: minmax(28.5rem, 31rem) minmax(26.25rem, 1fr);
+  grid-template-areas:
+    "hint hint"
+    "form silhouette";
+  gap: var(--space-md) var(--space-xl);
+}
+
+.experience[data-product="meihua"][data-stage="input"] .formPanel {
+  grid-area: form;
+}
+
+.liuyaoSilhouette {
+  grid-area: silhouette;
+  display: grid;
+  min-width: 26.25rem;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-subtle);
+}
+
+.liuyaoTower {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.liuyaoTowerHead {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-xs);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  text-align: center;
+}
+
+.liuyaoTower ol {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.liuyaoTower li {
+  height: 0.7rem;
+  border: 1px solid var(--color-border-strong);
+  background: transparent;
+}
+
+.liuyaoShiYing {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.liuyaoShiYing span {
+  display: inline-grid;
+  min-width: 1.75rem;
+  min-height: 1.75rem;
+  place-items: center;
+  border: 1px dashed var(--color-border-strong);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.liuyaoSilhouette figcaption {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+}
+
+.experience[data-product="liuyao"][data-stage="input"] .inputLayout {
+  justify-items: stretch;
+  align-items: start;
+  width: 100%;
+  grid-template-columns: minmax(28.5rem, 31rem) minmax(26.25rem, 1fr);
+  grid-template-areas:
+    "hint hint"
+    "form silhouette";
+  gap: var(--space-md) var(--space-xl);
+}
+
+.experience[data-product="liuyao"][data-stage="input"] .formPanel {
+  grid-area: form;
+}
+
+@media (max-width: 63.999rem) {
+  .experience[data-product="meihua"][data-stage="input"] .inputLayout {
+    grid-template-columns: minmax(0, var(--container-form));
+    justify-items: center;
+    grid-template-areas:
+      "hint"
+      "silhouette"
+      "form";
+  }
+
+  .experience[data-product="liuyao"][data-stage="input"] .inputLayout {
+    grid-template-columns: minmax(0, var(--container-form));
+    justify-items: center;
+    grid-template-areas:
+      "hint"
+      "silhouette"
+      "form";
+  }
+
+  .meihuaSilhouette {
+    min-width: 0;
+    width: 100%;
+    max-width: var(--container-form);
+    min-height: 5.5rem;
+    max-height: 7.5rem;
+    overflow: hidden;
+  }
+
+  .liuyaoSilhouette {
+    min-width: 0;
+    width: 100%;
+    max-width: var(--container-form);
+    min-height: 5.5rem;
+    max-height: 7.5rem;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 22.5rem) {
+  .meihuaSilhouette {
+    display: none;
+  }
+
+  .liuyaoSilhouette {
+    display: none;
+  }
+
+  .experience[data-product="meihua"][data-stage="input"] .inputLayout {
+    grid-template-areas:
+      "hint"
+      "form";
+  }
+
+  .experience[data-product="liuyao"][data-stage="input"] .inputLayout {
+    grid-template-areas:
+      "hint"
+      "form";
+  }
+
+  .meihuaTrigramRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lineRecorderOptions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .belowFold {
@@ -413,6 +716,20 @@
   overflow-wrap: anywhere;
 }
 
+.submitSummaryTrigram {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.submitSummaryFigure {
+  width: 3.6rem;
+}
+
+.submitSummaryFigure ol {
+  padding: 0;
+}
+
 /* 边界说明从主视线降到折叠区：需要时能查，填表时不挡路。 */
 .submitBoundary > summary {
   color: var(--color-text-secondary);
@@ -555,20 +872,61 @@
   background: var(--color-surface-subtle);
 }
 
-.lineProcess > div {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.lineRecorder {
+  display: flex;
+  flex-direction: column-reverse;
   gap: var(--space-sm);
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.lineRecorderKey {
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border-left: 2px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  line-height: 1.5;
 }
 
 .lineEntry {
   display: grid;
+  min-width: 0;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.lineEntryHead {
+  display: flex;
+  width: 100%;
+  min-height: var(--target-min);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 720;
+}
+
+.lineRecorderOptions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.lineRecorderOptions .segment {
+  flex-direction: column;
+  min-height: var(--target-min);
   gap: var(--space-xs);
 }
 
-.lineEntry label {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
+.lineRecorderGlyph {
+  display: block;
+  width: 2.2rem;
 }
 
 .capturePanel {
@@ -775,7 +1133,6 @@
 
   .twoColumns,
   .choices,
-  .lineProcess > div,
   .confirmActions {
     grid-template-columns: 1fr;
   }

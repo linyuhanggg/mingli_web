@@ -1,0 +1,21 @@
+[2026-08-23T06:49:15.207Z] shot 40-natal http://106.14.10.235:18080/bazi
+[2026-08-23T06:49:15.210Z] six heading count=1
+[2026-08-23T06:49:15.920Z] shot 41-gufa-heading-click http://106.14.10.235:18080/bazi
+[2026-08-23T06:49:15.926Z] nav 古法命中=1
+[2026-08-23T06:49:17.353Z] shot 42-gufa-nav http://106.14.10.235:18080/bazi#r7-evidence
+[2026-08-23T06:49:17.355Z] includes 渊海=false 滴天=true 三命=true 提纲=false 天元=true
+[2026-08-23T06:49:17.359Z] 登录后继续=1 visible=true
+[2026-08-23T06:49:17.421Z] shot 43-login-continue-inview http://106.14.10.235:18080/bazi#r7-evidence
+[2026-08-23T06:49:18.501Z] shot 44-login-page http://106.14.10.235:18080/auth/login
+[2026-08-23T06:49:18.503Z] login page head=跳到主要内容 | 命理工具 | 测试版 | 术数 | 合参 | 工具 | 每日 | 知识内容 | 更多 | 登录 | 登录 |  | 登录后进入账户 |  | 手机或邮箱 | 密码 |  | 密码不会保存在这台设备上。 |  | 登录 | 用验证码登录 | 注册 | 找回账号 | 命 | 命理工具 |  | 中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。 |  | 产品入口 | 术数总览 | 命盘合参 | 工具 | 每日 | 知识与帮助 | 知识内容 | 方法与边界 | 帮助与支持 | 账户与政策 | 账户 | 隐私政策 | 服务条款 | © 2026 命理工具测试版 | 内容仅作传统文化参考，不替代医疗、法律、投资或其他专业
+[2026-08-23T06:49:18.505Z] otpSwitch=1
+[2026-08-23T06:49:19.084Z] shot 45-otp-ui http://106.14.10.235:18080/auth/verify
+[2026-08-23T06:49:19.090Z] locator.fill: Error: strict mode violation: getByLabel(/手机或邮箱|邮箱/) resolved to 2 elements:
+    1) <form novalidate="" aria-label="发送邮箱验证码">…</form> aka getByRole('form', { name: '发送邮箱验证码' })
+    2) <input required="" type="email" spellcheck="false" name="destination" id="otp-destination" autocomplete="email" aria-invalid="false" aria-describedby="otp-destination-help"/> aka getByRole('textbox', { name: '邮箱地址' })
+
+Call log:
+  - waiting for getByLabel(/手机或邮箱|邮箱/)
+
+    at /private/tmp/ut4-gap7-login.mjs:86:38
+[2026-08-23T06:49:19.120Z] shot 99-login-error http://106.14.10.235:18080/auth/verify

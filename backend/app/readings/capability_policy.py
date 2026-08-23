@@ -47,6 +47,9 @@ RELATIONSHIP_PRODUCT_IDS: Final = (
     "bazi-relationship",
     "ziwei-relationship",
     "qizheng-relationship",
+    "bazi-relationship-deep",
+    "ziwei-relationship-deep",
+    "qizheng-relationship-deep",
 )
 PAID_PRODUCT_IDS: Final = ("bazi-deep", "qimen-deep", "liuyao-deep")
 CAPABILITY_LABELS: Final = MappingProxyType(
@@ -269,6 +272,9 @@ _PRODUCT_ALIASES: Final = {
     "qizheng-relationship": "qizheng",
     "ziwei-relationship": "ziwei",
     "bazi-relationship": "bazi",
+    "qizheng-relationship-deep": "qizheng",
+    "ziwei-relationship-deep": "ziwei",
+    "bazi-relationship-deep": "bazi",
 }
 
 _DIVINATION_PREFIXES: Final = {
@@ -357,7 +363,6 @@ def _read_counts(path: Path) -> tuple[Counter[str], Counter[str]]:
 
 
 def _tier_for(
-    product_id: str,
     *,
     active_count: int,
     judgment_count: int,
@@ -365,10 +370,8 @@ def _tier_for(
 ) -> tuple[CapabilityTier, bool]:
     if not source_available or active_count == 0:
         return "C", False
-    # The index has two Liuyao and three Meihua judgment rules. The product
-    # decision is explicitly pending, so both remain B until user approval.
-    if product_id in {"liuyao", "meihua"}:
-        return "B", judgment_count > 0
+    # 2026-08-21 user decision: Liuyao/Meihua are mainline products, so their
+    # former B-tier hold is lifted and every product shares this same rule.
     return ("A", False) if judgment_count > 0 else ("B", False)
 
 
@@ -390,7 +393,6 @@ def project_capabilities(
         active_count = active[count_key] if count_key is not None else 0
         judgment_count = judgment[count_key] if count_key is not None else 0
         tier, pending = _tier_for(
-            product_id,
             active_count=active_count,
             judgment_count=judgment_count,
             source_available=source_available,

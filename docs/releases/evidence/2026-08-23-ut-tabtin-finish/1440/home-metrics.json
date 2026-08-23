@@ -1,0 +1,32 @@
+{
+  "heroTitle": {
+    "tag": "H1",
+    "text": "十三术同根，\n五十五部古籍为证",
+    "fontSize": "56px",
+    "fontWeight": "700"
+  },
+  "heroBody": {
+    "tag": "P",
+    "text": "以统一命盘为底，沿古籍证据逐层展开推演。",
+    "fontSize": "18px",
+    "fontWeight": "400"
+  },
+  "ch02": {
+    "tag": "H2",
+    "text": "先做这一件",
+    "fontSize": "40px",
+    "fontWeight": "720"
+  },
+  "ch03": {
+    "tag": "H2",
+    "text": "机制",
+    "fontSize": "40px",
+    "fontWeight": "720"
+  },
+  "folio": {
+    "display": "block",
+    "w": 352,
+    "h": 232,
+    "ganZhi": []
+  }
+}

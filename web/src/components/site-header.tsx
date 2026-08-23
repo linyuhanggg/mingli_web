@@ -22,6 +22,7 @@ import {
 import {
   AccountSessionBoundary,
   useAccountSession,
+  type AccountSessionState,
 } from "./account-session-context";
 import { BrandMark } from "./brand-mark";
 import { Container } from "./container";
@@ -92,8 +93,23 @@ const mobileLinks = [
   { href: "/", label: "主页", icon: Home },
   { href: "/tools", label: "工具", icon: Wrench },
   { href: "/daily", label: "每日", icon: CalendarDays },
-  { href: "/account", label: "我的", icon: UserRound },
 ] as const;
+
+function publicAccountEntry(state: AccountSessionState) {
+  const signedIn = state.status === "signedIn";
+  const signedOut = state.status === "signedOut";
+  return {
+    href: signedOut ? "/auth/login" : "/account",
+    label: signedIn
+      ? "我的"
+      : signedOut
+        ? "登录"
+        : state.status === "checking"
+          ? "正在确认"
+          : "身份未知",
+    session: signedIn ? "signed-in" : signedOut ? "signed-out" : "unknown",
+  } as const;
+}
 
 function isRouteActive(pathname: string, href: string) {
   return href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
@@ -109,44 +125,54 @@ function isCrossActive(pathname: string) {
   return crossLinks.some((item) => isRouteActive(pathname, item.href));
 }
 
-function PublicAccountEntryContent({ pathname }: { pathname: string }) {
+function PublicAccountEntryContent({
+  pathname,
+  className,
+  withIcon = false,
+}: {
+  pathname: string;
+  className: string;
+  withIcon?: boolean;
+}) {
   const { state } = useAccountSession();
-
-  const signedIn = state.status === "signedIn";
-  const signedOut = state.status === "signedOut";
-  const href = signedOut ? "/auth/login" : "/account";
-  const label = signedIn
-    ? "已登录 · 我的首页"
-    : signedOut
-      ? "登录"
-      : state.status === "checking"
-        ? "确认登录"
-        : "身份未知";
-  const accessibleName = signedIn
-    ? "已登录，进入我的首页"
-    : state.status === "checking"
-      ? "正在确认登录状态"
-      : state.status === "error"
-        ? "身份状态暂时未知，前往个人中心"
-        : label;
+  const { href, label, session } = publicAccountEntry(state);
 
   return (
     <Link
       aria-current={pathname === href ? "page" : undefined}
-      aria-label={accessibleName}
-      className={styles.utilityLink}
-      data-session={signedIn ? "signed-in" : signedOut ? "signed-out" : "unknown"}
+      aria-label={label}
+      className={className}
+      data-session={session}
       href={href}
     >
-      {label}
+      {withIcon ? (
+        <>
+          <UserRound aria-hidden="true" size={19} strokeWidth={1.8} />
+          <span>{label}</span>
+        </>
+      ) : (
+        label
+      )}
     </Link>
   );
 }
 
-function PublicAccountEntry({ pathname }: { pathname: string }) {
+function PublicAccountEntry({
+  pathname,
+  className,
+  withIcon = false,
+}: {
+  pathname: string;
+  className: string;
+  withIcon?: boolean;
+}) {
   return (
     <AccountSessionBoundary>
-      <PublicAccountEntryContent pathname={pathname} />
+      <PublicAccountEntryContent
+        className={className}
+        pathname={pathname}
+        withIcon={withIcon}
+      />
     </AccountSessionBoundary>
   );
 }
@@ -495,6 +521,11 @@ export function MobileNavigation({ pathname }: { pathname: string }) {
           <span>{label}</span>
         </Link>
       ))}
+      <PublicAccountEntry
+        className={styles.mobileNavItem}
+        pathname={pathname}
+        withIcon
+      />
     </nav>
   );
 }
@@ -535,7 +566,7 @@ export function SiteHeader() {
           <SitePrimaryNavigation />
           <div className={styles.headerActions}>
             <nav aria-label="账户入口">
-              <PublicAccountEntry pathname={pathname} />
+              <PublicAccountEntry className={styles.utilityLink} pathname={pathname} />
             </nav>
           </div>
         </Container>

@@ -608,13 +608,8 @@ async def test_frozen_runtime_prepares_the_canwen_three_art_brief() -> None:
         for signal in dimension.signals
         if ".candidate_scope." in signal.signal_id or ".source_pattern." in signal.signal_id
     )
-    expected_convergence = (
-        ("所选术数的计算事实范围均已提供；尚未形成实质性互证结论。",)
-        if settings.runtime_release_profile == "v52-relationship"
-        else ()
-    )
     assert all(
-        dimension.convergence == expected_convergence
+        dimension.convergence == ()
         for dimension in view_model.dimensions
     )
 

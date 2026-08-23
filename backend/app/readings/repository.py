@@ -485,6 +485,47 @@ class SqlReadingRepository:
         )
         return NarrativeCandidate.from_dict(payload)
 
+    async def load_prepared_brief(self, job_id: str) -> ReadingBrief | None:
+        _job, version = await self._job_and_version(job_id)
+        return await self.load_fact_brief(version.id)
+
+    async def load_accepted(self, job_id: str) -> Accepted | None:
+        _job, version = await self._job_and_version(job_id)
+        public_copy = await self.load_accepted_copy(version.id)
+        if public_copy is None:
+            return None
+        token = await self.load_state_token(version.id)
+        return Accepted(state_token=token, public_copy=public_copy)
+
+    async def load_reading_version_id(self, job_id: str) -> UUID | None:
+        _job, version = await self._job_and_version(job_id)
+        return version.id
+
+    async def load_output_contract(self, job_id: str) -> OutputContract | None:
+        job, _version = await self._job_and_version(job_id)
+        payload = job.output_contract
+        if not isinstance(payload, dict) or not payload:
+            return None
+        return OutputContract.from_dict(payload)
+
+    async def load_relationship_type(self, job_id: str) -> str | None:
+        _job, version = await self._job_and_version(job_id)
+        raw = version.relationship_type
+        if not isinstance(raw, str) or not raw.strip():
+            return None
+        return raw
+
+    async def load_runtime_release(self, job_id: str) -> str | None:
+        _job, version = await self._job_and_version(job_id)
+        release = await self.session.get(RuntimeRelease, version.runtime_release_id)
+        if release is None:
+            return None
+        name = release.name if isinstance(release.name, str) else ""
+        version_label = release.version if isinstance(release.version, str) else ""
+        if not name.strip() or not version_label.strip():
+            return None
+        return f"{name}@{version_label}"
+
     async def load_accepted_copy_ref(self, job_id: str) -> str | None:
         _job, version = await self._job_and_version(job_id)
         accepted_copy = await self.get_accepted_copy(version.id)
@@ -504,6 +545,13 @@ class SqlReadingRepository:
             accepted_copy_id=accepted_copy.id,
             document=document,
         )
+
+    async def load_reading_document_for_job(
+        self,
+        job_id: str,
+    ) -> ReadingDocumentV1 | None:
+        _job, version = await self._job_and_version(job_id)
+        return await self.load_reading_document(version.id)
 
     async def load_verification(
         self,

@@ -600,6 +600,31 @@ class FortuneFactsViewV1(ContractModel):
     calendar_normalization: FortuneCalendarNormalization
 
 
+class BaziPublicFinding(ContractModel):
+    """A Runtime public claim card for the free natal chart.
+
+    Title and body are Chinese display copy. ``claim_unit_id`` is a machine
+    identity for the frontend, not something to render as the card heading.
+    """
+
+    finding_ref: str = Field(min_length=1)
+    claim_unit_id: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    body: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _chinese_copy_not_internal_id(self) -> BaziPublicFinding:
+        if not _has_han(self.title) or not _has_han(self.body):
+            raise ValueError("Bazi public findings must carry Chinese title and body")
+        if self.title == self.claim_unit_id or self.body == self.claim_unit_id:
+            raise ValueError("Bazi public findings cannot use internal ids as copy")
+        return self
+
+
+def _has_han(value: str) -> bool:
+    return any("\u3400" <= char <= "\u9fff" for char in value)
+
+
 class BaziChartV1(ContractModel):
     schema_version: Literal["bazi-chart/v1"] = "bazi-chart/v1"
     subject_ref: str = Field(min_length=1)
@@ -607,6 +632,7 @@ class BaziChartV1(ContractModel):
     element_balance: tuple[ElementBalance, ...]
     time_layers: tuple[TimeLayer, ...]
     core_facts: BaziCoreFacts | None = None
+    findings: tuple[BaziPublicFinding, ...] = ()
 
 
 class ChartSimilarityPillarComparison(ContractModel):
@@ -1047,6 +1073,269 @@ class LiuyaoLine(ContractModel):
     moving: bool
 
 
+LiuyaoElement = Literal["木", "火", "土", "金", "水"]
+LiuyaoSixRelative = Literal["兄弟", "子孙", "妻财", "官鬼", "父母"]
+LiuyaoSixSpirit = Literal["青龙", "朱雀", "勾陈", "螣蛇", "白虎", "玄武"]
+LiuyaoLineState = Literal["老阴", "少阳", "少阴", "老阳"]
+LiuyaoYinYang = Literal["阳", "阴"]
+LiuyaoStructuralRole = Literal["世", "应"]
+LiuyaoSeasonalState = Literal["旺", "相", "休", "囚", "死"]
+
+
+class LiuyaoHexagram(HexagramSummary):
+    """Hexagram summary plus Runtime palace/shi-ying facts when parseable.
+
+    The extended fields degrade to missing when the Runtime hexagram fact
+    does not match the pinned shape; the three base fields stay required.
+    """
+
+    bits_bottom_up: str | None = Field(
+        default=None,
+        pattern=r"^[01]{6}$",
+        exclude_if=lambda value: value is None,
+    )
+    king_wen_number: int | None = Field(
+        default=None,
+        ge=1,
+        le=64,
+        exclude_if=lambda value: value is None,
+    )
+    palace: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    palace_element: LiuyaoElement | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    shi_line: int | None = Field(
+        default=None,
+        ge=1,
+        le=6,
+        exclude_if=lambda value: value is None,
+    )
+    ying_line: int | None = Field(
+        default=None,
+        ge=1,
+        le=6,
+        exclude_if=lambda value: value is None,
+    )
+    stage: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    source_dependency_id: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+
+
+class LiuyaoNajiaEntry(ContractModel):
+    """One Runtime najia assignment (array index 0 is the bottom line)."""
+
+    stem: str = Field(min_length=1)
+    branch: str = Field(min_length=1)
+    ganzhi: str = Field(min_length=2)
+    element: LiuyaoElement
+    source_dependency_id: str = Field(min_length=1)
+
+
+class LiuyaoDayRelation(ContractModel):
+    branch: str = Field(min_length=1)
+    branch_relation: str = Field(min_length=1)
+    clash: bool
+    element: LiuyaoElement
+    element_relation: str = Field(min_length=1)
+    shared_trines: tuple[tuple[str, str, str], ...]
+
+
+class LiuyaoMonthRelation(ContractModel):
+    model_config = ConfigDict(serialize_by_alias=True)
+
+    branch: str = Field(min_length=1)
+    branch_relation: str = Field(min_length=1)
+    month_break: bool = Field(alias="break")
+    element: LiuyaoElement
+    element_relation: str = Field(min_length=1)
+    shared_trines: tuple[tuple[str, str, str], ...]
+
+
+class LiuyaoMonthDayStrength(ContractModel):
+    """Month/day relation facts for one line; never a strength verdict."""
+
+    day: LiuyaoDayRelation
+    month: LiuyaoMonthRelation
+    fact_status: Literal["calculated_relation_not_verdict"]
+    seasonal_state: LiuyaoSeasonalState
+    source_dependency_id: str = Field(min_length=1)
+
+
+class LiuyaoChangedLineFact(ContractModel):
+    """One changed-plate line (also lines[].changed_line for moving lines)."""
+
+    line: int = Field(ge=1, le=6)
+    month_day_strength: LiuyaoMonthDayStrength
+    najia: LiuyaoNajiaEntry
+    six_relative: LiuyaoSixRelative
+    source_dependency_id: str = Field(min_length=1)
+    xunkong: bool
+    yin_yang: LiuyaoYinYang
+
+
+class LiuyaoReturningRelation(ContractModel):
+    """Original-to-changed line relation fact, not a judgment."""
+
+    changed: LiuyaoNajiaEntry
+    original: LiuyaoNajiaEntry
+    relations: tuple[str, ...] = Field(min_length=1)
+    fact_status: Literal["calculated_relation_not_verdict"]
+    source_dependency_id: str = Field(min_length=1)
+
+
+class LiuyaoLineFact(ContractModel):
+    """One visible plate line with its calculated per-line facts."""
+
+    line: int = Field(ge=1, le=6)
+    month_day_strength: LiuyaoMonthDayStrength
+    moving: bool
+    najia: LiuyaoNajiaEntry
+    roles: tuple[LiuyaoStructuralRole, ...]
+    six_relative: LiuyaoSixRelative
+    six_spirit: LiuyaoSixSpirit
+    state: LiuyaoLineState
+    xunkong: bool
+    yin_yang: LiuyaoYinYang
+    changed_line: LiuyaoChangedLineFact | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    changed_relation: LiuyaoReturningRelation | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+
+
+class LiuyaoHiddenLineFact(ContractModel):
+    line: int = Field(ge=1, le=6)
+    month_day_strength: LiuyaoMonthDayStrength
+    najia: LiuyaoNajiaEntry
+    six_relative: LiuyaoSixRelative
+    source_dependency_id: str = Field(min_length=1)
+    source_plate: str = Field(min_length=1)
+    status: Literal["source_derived_hidden_line_candidate"]
+    xunkong: bool
+
+
+class LiuyaoShiYingPositions(ContractModel):
+    shi: int = Field(ge=1, le=6)
+    ying: int = Field(ge=1, le=6)
+
+
+class LiuyaoXunkongFacts(ContractModel):
+    day_ganzhi: str = Field(min_length=2)
+    void_branches: tuple[str, str]
+    source_dependency_id: str = Field(min_length=1)
+
+
+class LiuyaoCalendarFacts(ContractModel):
+    day_branch: str = Field(min_length=1)
+    day_ganzhi: str = Field(min_length=2)
+    day_stem: str = Field(min_length=1)
+    month_branch: str = Field(min_length=1)
+    month_ganzhi: str = Field(min_length=2)
+
+
+class LiuyaoCastProvenance(ContractModel):
+    """Cast provenance; digital-coin casts carry extra preserved keys."""
+
+    model_config = ConfigDict(extra="allow")
+
+    kind: str = Field(min_length=1)
+
+
+class LiuyaoCastingFacts(ContractModel):
+    """The preserved cast record; digital-coin fields stay absent otherwise."""
+
+    cast_digest: str = Field(min_length=1)
+    method: str = Field(min_length=1)
+    provenance: LiuyaoCastProvenance
+    source_dependency_id: str = Field(min_length=1)
+    tosses: tuple[Literal[6, 7, 8, 9], ...] = Field(min_length=6, max_length=6)
+    algorithm: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    coin_values: tuple[tuple[Literal[2, 3], Literal[2, 3], Literal[2, 3]], ...] | None = Field(
+        default=None,
+        min_length=6,
+        max_length=6,
+        exclude_if=lambda value: value is None,
+    )
+    coin_faces: (
+        tuple[
+            tuple[Literal["背", "字"], Literal["背", "字"], Literal["背", "字"]],
+            ...,
+        ]
+        | None
+    ) = Field(
+        default=None,
+        min_length=6,
+        max_length=6,
+        exclude_if=lambda value: value is None,
+    )
+    seed_source: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    seed_commitment: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+
+
+class LiuyaoShiYingRelationFact(ContractModel):
+    """One calculated line-to-line relation around the shi/ying anchor."""
+
+    branch_relation: str = Field(min_length=1)
+    element_relation: str = Field(min_length=1)
+    fact_status: Literal["calculated_relation_not_verdict"]
+    shared_trines: tuple[tuple[str, str, str], ...]
+    source_dependency_id: str = Field(min_length=1)
+    source_line: int = Field(ge=1, le=6)
+    source_najia: LiuyaoNajiaEntry
+    source_role_label: str = Field(min_length=1)
+    source_roles: tuple[LiuyaoStructuralRole, ...]
+    target_line: int = Field(ge=1, le=6)
+    target_najia: LiuyaoNajiaEntry
+    target_relative: LiuyaoSixRelative
+    target_role_label: str = Field(min_length=1)
+    target_roles: tuple[LiuyaoStructuralRole, ...]
+    target_source: Literal["visible_line", "changed_line", "hidden_line"]
+
+
+class LiuyaoShiYingAnchorRelation(LiuyaoShiYingRelationFact):
+    shi_line: int = Field(ge=1, le=6)
+    ying_line: int = Field(ge=1, le=6)
+
+
+class LiuyaoShiYingMovingRelations(ContractModel):
+    fact_status: Literal["calculated_relation_not_verdict"]
+    moving_to_candidates: tuple[LiuyaoShiYingRelationFact, ...]
+    shi_ying: LiuyaoShiYingAnchorRelation
+    source_dependency_id: str = Field(min_length=1)
+
+
+class LiuyaoSixSpiritProfile(ContractModel):
+    day_stem: str = Field(min_length=1)
+    source_dependency_id: str = Field(min_length=1)
+
+
 class LiuyaoSourcePattern(ContractModel):
     rule_id: str = Field(min_length=1)
     local_rule_id: str = Field(min_length=1)
@@ -1115,8 +1404,7 @@ class LiuyaoSpecificLineAdjudication(ContractModel):
             if (
                 len(lines) != 1
                 or self.specific_line_selection != lines[0]
-                or self.derivation_basis
-                != "verified_role_plus_runtime_unique_visible_candidate"
+                or self.derivation_basis != "verified_role_plus_runtime_unique_visible_candidate"
                 or not isinstance(self.selection_source_ref, LiuyaoSourceRef)
             ):
                 raise ValueError("unique visible Liuyao line adjudication is inconsistent")
@@ -1137,8 +1425,7 @@ class LiuyaoSpecificLineAdjudication(ContractModel):
             if (
                 len(lines) < 2
                 or self.specific_line_selection is not None
-                or self.derivation_basis
-                != "verified_role_plus_runtime_multiple_visible_candidates"
+                or self.derivation_basis != "verified_role_plus_runtime_multiple_visible_candidates"
                 or self.selection_source_ref is not None
                 or (len(lines) == 2 and len(moving_lines) == 1)
             ):
@@ -1147,8 +1434,7 @@ class LiuyaoSpecificLineAdjudication(ContractModel):
             lines
             or moving_lines
             or self.specific_line_selection is not None
-            or self.derivation_basis
-            != "verified_role_plus_runtime_no_visible_candidate"
+            or self.derivation_basis != "verified_role_plus_runtime_no_visible_candidate"
             or self.selection_source_ref is not None
         ):
             raise ValueError("non-visible Liuyao line adjudication is inconsistent")
@@ -1174,10 +1460,7 @@ class LiuyaoRoleAdjudication(ContractModel):
             raise ValueError("finance support relative must be 子孙")
         if self.obstacle_attention_relatives != ("兄弟", "官鬼", "父母"):
             raise ValueError("finance obstacle relatives are inconsistent")
-        if (
-            self.specific_line_selection
-            != self.specific_line_adjudication.specific_line_selection
-        ):
+        if self.specific_line_selection != self.specific_line_adjudication.specific_line_selection:
             raise ValueError("specific Liuyao line selections do not match")
         return self
 
@@ -1288,9 +1571,7 @@ class LiuyaoStrengthEvidence(ContractModel):
     fact_status: Literal["calculated_relation_not_verdict"]
     hard_verdict: None = None
     requires_school_adjudication: Literal[True]
-    source_dependency_id: Literal[
-        "liuyao.interpretation.useful-spirit-strength-evidence"
-    ]
+    source_dependency_id: Literal["liuyao.interpretation.useful-spirit-strength-evidence"]
 
     @model_validator(mode="after")
     def _source_presence_matches_status(self) -> LiuyaoStrengthEvidence:
@@ -1299,8 +1580,7 @@ class LiuyaoStrengthEvidence(ContractModel):
                 raise ValueError("requested Liuyao strength evidence needs one source")
             binding_digest = self.source_rules[0].binding_digest
             if any(
-                candidate.seasonal_adjudication.source_ref.binding_digest
-                != binding_digest
+                candidate.seasonal_adjudication.source_ref.binding_digest != binding_digest
                 for evidence in self.by_relative.values()
                 for candidate in evidence.candidates
             ):
@@ -1331,32 +1611,44 @@ class LiuyaoUsefulSpiritSelection(ContractModel):
 
 
 class LiuyaoCoreFacts(ContractModel):
-    """Runtime-owned six-line structural facts; no divination verdicts."""
+    """Runtime-owned six-line structural facts; no divination verdicts.
 
-    calendar: dict[str, object] | None = None
-    casting: dict[str, object] | None = None
+    The per-line arrays (najia, lines, line_facts, month_day_strength,
+    changed_najia, changed_plate_lines) are index-aligned bottom-up: array
+    index 0 is line 1 (初爻).  Shapes are pinned to the admitted signed V53
+    Runtime output; a mismatching fact degrades to None instead of guessing.
+    """
+
+    calendar: LiuyaoCalendarFacts | None = None
+    casting: LiuyaoCastingFacts | None = None
     casting_method: str | None = Field(default=None, min_length=1)
-    changed_najia: tuple[dict[str, object], ...] | None = None
-    changed_plate_lines: tuple[dict[str, object], ...] | None = None
+    changed_najia: tuple[LiuyaoNajiaEntry, ...] | None = Field(
+        default=None, min_length=6, max_length=6
+    )
+    changed_plate_lines: tuple[LiuyaoChangedLineFact, ...] | None = Field(
+        default=None, min_length=6, max_length=6
+    )
     changed_six_relatives: tuple[str, ...] | None = None
-    hidden_lines: tuple[dict[str, object], ...] | None = None
+    hidden_lines: tuple[LiuyaoHiddenLineFact, ...] | None = None
     interpretation_status: str | None = Field(default=None, min_length=1)
-    line_facts: tuple[dict[str, object], ...] | None = None
-    lines: tuple[dict[str, object], ...] | None = None
-    month_day_strength: tuple[dict[str, object], ...] | None = None
+    line_facts: tuple[LiuyaoLineFact, ...] | None = Field(default=None, min_length=6, max_length=6)
+    lines: tuple[LiuyaoLineFact, ...] | None = Field(default=None, min_length=6, max_length=6)
+    month_day_strength: tuple[LiuyaoMonthDayStrength, ...] | None = Field(
+        default=None, min_length=6, max_length=6
+    )
     moving_lines: tuple[int, ...] | None = None
-    najia: tuple[dict[str, object], ...] | None = None
-    relation_facts: tuple[dict[str, object], ...] | None = None
-    returning_relations: tuple[dict[str, object], ...] | None = None
+    najia: tuple[LiuyaoNajiaEntry, ...] | None = Field(default=None, min_length=6, max_length=6)
+    relation_facts: tuple[LiuyaoReturningRelation, ...] | None = None
+    returning_relations: tuple[LiuyaoReturningRelation, ...] | None = None
     requested_useful_spirit_candidates: dict[str, object] | None = None
-    shi_ying: dict[str, object] | None = None
-    shi_ying_moving_relations: dict[str, object] | None = None
+    shi_ying: LiuyaoShiYingPositions | None = None
+    shi_ying_moving_relations: LiuyaoShiYingMovingRelations | None = None
     six_relatives: tuple[str, ...] | None = None
-    six_spirit_profile: dict[str, object] | None = None
+    six_spirit_profile: LiuyaoSixSpiritProfile | None = None
     six_spirits: tuple[str, ...] | None = None
     useful_spirit_candidates: dict[str, object] | None = None
     useful_spirit_selection: LiuyaoUsefulSpiritSelection | None = None
-    xunkong: dict[str, object] | None = None
+    xunkong: LiuyaoXunkongFacts | None = None
     source_conditioned_patterns: tuple[LiuyaoSourcePattern, ...] = ()
 
 
@@ -1364,8 +1656,8 @@ class LiuyaoChartV1(ContractModel):
     schema_version: Literal["liuyao-chart/v1"] = "liuyao-chart/v1"
     subject_ref: str = Field(min_length=1)
     question: str = Field(min_length=1)
-    primary_hexagram: HexagramSummary
-    changed_hexagram: HexagramSummary | None
+    primary_hexagram: LiuyaoHexagram
+    changed_hexagram: LiuyaoHexagram | None
     lines: tuple[LiuyaoLine, ...] = Field(min_length=6, max_length=6)
     core_facts: LiuyaoCoreFacts | None = None
 
@@ -1468,6 +1760,106 @@ class MeihuaInterpretiveCandidates(ContractModel):
     boundary: str = Field(min_length=1)
 
 
+class MeihuaCastProvenance(ContractModel):
+    """Cast provenance; user-reported casts carry extra preserved keys."""
+
+    model_config = ConfigDict(extra="allow")
+
+    kind: str = Field(min_length=1)
+
+
+class MeihuaCastingInputs(ContractModel):
+    """The casting inputs the Runtime recorded; keys vary per method.
+
+    ``time`` carries the lunar calendar numbers, ``supplied_number`` /
+    ``sound_count`` carry the reported quantity, and the trigram methods
+    echo the user-selected trigrams. ``hour_branch_number`` is always
+    present because the moving line falls back to the hour count.
+    """
+
+    hour_branch_number: int = Field(ge=1, le=12)
+    lunar_year: int | None = Field(
+        default=None,
+        ge=1,
+        exclude_if=lambda value: value is None,
+    )
+    lunar_month: int | None = Field(
+        default=None,
+        ge=1,
+        le=12,
+        exclude_if=lambda value: value is None,
+    )
+    lunar_day: int | None = Field(
+        default=None,
+        ge=1,
+        le=30,
+        exclude_if=lambda value: value is None,
+    )
+    lunar_leap_month: bool | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    year_branch_number: int | None = Field(
+        default=None,
+        ge=1,
+        le=12,
+        exclude_if=lambda value: value is None,
+    )
+    number: int | None = Field(
+        default=None,
+        ge=1,
+        exclude_if=lambda value: value is None,
+    )
+    count: int | None = Field(
+        default=None,
+        ge=1,
+        exclude_if=lambda value: value is None,
+    )
+    upper_trigram: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    lower_trigram: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    moving_line: int | None = Field(
+        default=None,
+        ge=1,
+        le=6,
+        exclude_if=lambda value: value is None,
+    )
+
+
+class MeihuaCastingFacts(ContractModel):
+    """The preserved casting record from input to derived trigrams."""
+
+    casting_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+    inputs: MeihuaCastingInputs
+    method: Literal["time", "supplied_number", "sound_count", "observation", "supplied_hexagram"]
+    natural_language_classification: bool
+    provenance: MeihuaCastProvenance
+    source_dependency_id: str = Field(min_length=1)
+
+
+class MeihuaCalendarFacts(ContractModel):
+    """Calendar context for the cast; the derivation chain hangs off it."""
+
+    hour_ganzhi: str = Field(min_length=2)
+    month_branch: str = Field(min_length=1)
+    month_ganzhi: str = Field(min_length=2)
+
+
+class MeihuaCastTotals(ContractModel):
+    """The pre-modulo sums behind upper/lower trigrams and the moving line."""
+
+    lower: int = Field(ge=1)
+    moving: int = Field(ge=1)
+    upper: int = Field(ge=1)
+
+
 class MeihuaCoreFacts(ContractModel):
     """Additional calculated Meihua structure preserved for the result layer."""
 
@@ -1475,6 +1867,18 @@ class MeihuaCoreFacts(ContractModel):
     seasonal_strength: dict[str, MeihuaSeasonalStrengthFact] | None = None
     interpretive_candidates: MeihuaInterpretiveCandidates | None = None
     interpretation_status: str | None = Field(default=None, min_length=1)
+    casting: MeihuaCastingFacts | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    calendar: MeihuaCalendarFacts | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    totals: MeihuaCastTotals | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
 
 
 class MeihuaChartV1(ContractModel):
@@ -1894,22 +2298,337 @@ class DaliurenTimingCandidate(ContractModel):
     candidate_not_guarantee: Literal[True]
 
 
+class DaliurenDayHour(ContractModel):
+    """The day and hour ganzhi that anchor the plate."""
+
+    day: str = Field(min_length=2)
+    hour: str = Field(min_length=2)
+
+
+class DaliurenMonthGeneral(ContractModel):
+    branch: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+
+
+class DaliurenNoblePerson(ContractModel):
+    """Noble-person seat with its day/night basis and classical source."""
+
+    branch: str = Field(min_length=1)
+    day_night_profile: str = Field(min_length=1)
+    direction: Literal["forward", "backward"]
+    earth_position: str = Field(min_length=1)
+    period: Literal["day", "night"]
+    profile: str = Field(min_length=1)
+    source: str = Field(min_length=1)
+
+
+class DaliurenXunkong(ContractModel):
+    branches: tuple[str, str]
+    xun: str = Field(min_length=2)
+
+
+class DaliurenHeavenPlateCell(ContractModel):
+    """One heaven-plate seat: which heaven branch lands on which earth branch."""
+
+    earth: str = Field(min_length=1)
+    heaven: str = Field(min_length=1)
+
+
+class DaliurenGeneralCell(ContractModel):
+    """One heavenly-general seat aligned with the heaven/earth plates."""
+
+    earth: str = Field(min_length=1)
+    general: str = Field(min_length=1)
+    heaven: str = Field(min_length=1)
+
+
+class DaliurenLessonMethod(ContractModel):
+    """The nine-method issue-selection trace shared by lesson/transmission.
+
+    ``selection_trace`` stays a free mapping because its keys vary per
+    classical method; unknown top-level keys from future methods are
+    preserved instead of dropping the whole record.
+    """
+
+    model_config = ConfigDict(extra="allow", frozen=True)
+
+    calculated_transmissions: str = Field(min_length=3)
+    calculation_source: str = Field(min_length=1)
+    direct_candidates: tuple[str, ...]
+    direct_direction: str | None
+    primary: str = Field(min_length=1)
+    remote_day_over_god: tuple[str, ...]
+    remote_god_over_day: tuple[str, ...]
+    rule_order: tuple[str, ...] = Field(min_length=1)
+    selected_initial: str = Field(min_length=1)
+    selection_trace: dict[str, object]
+    source_anchor: str = Field(min_length=1)
+    source_label_variants: tuple[object, ...]
+    table_disagreement: bool
+    table_label: str = Field(min_length=1)
+    table_result_disagreement: bool
+    table_transmissions: str = Field(min_length=3)
+    use_method: str = Field(min_length=1)
+
+
+class DaliurenRuleSourceRef(ContractModel):
+    pack: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    quote_id: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    source_anchor: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+
+
+class DaliurenRuleEvidenceEntry(ContractModel):
+    """One matched or scope-boundary rule row; observation stays rule-shaped."""
+
+    model_config = ConfigDict(extra="allow", frozen=True)
+
+    activation_id: str = Field(min_length=1)
+    dependency_group: str = Field(min_length=1)
+    fact_paths: tuple[str, ...] = Field(min_length=1)
+    observation: dict[str, object]
+    polarity: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    rule_key: str = Field(min_length=1)
+    source_refs: tuple[DaliurenRuleSourceRef, ...] = Field(min_length=1)
+    status: str = Field(min_length=1)
+    weight_class: str = Field(min_length=1)
+    confidence_ceiling: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    stop_conditions: tuple[str, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+
+
+class DaliurenRuleNotEvaluatedEntry(ContractModel):
+    activation_id: str = Field(min_length=1)
+    reason: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    rule_key: str = Field(min_length=1)
+    source_refs: tuple[DaliurenRuleSourceRef, ...] = Field(min_length=1)
+    status: str = Field(min_length=1)
+
+
+class DaliurenRuleEvidence(ContractModel):
+    """Rule-catalog evidence for one dimension; never an event verdict."""
+
+    catalog_schema: str = Field(min_length=1)
+    hard_verdict: None = None
+    matched: tuple[DaliurenRuleEvidenceEntry, ...]
+    not_evaluated: tuple[DaliurenRuleNotEvaluatedEntry, ...]
+    requires_school_adjudication: bool
+    scope_boundaries: tuple[DaliurenRuleEvidenceEntry, ...]
+    status: str = Field(min_length=1)
+
+
+class DaliurenRelationFact(ContractModel):
+    """A subject/object five-element relation fact between two branches."""
+
+    object: str = Field(min_length=1)
+    object_element: str = Field(min_length=1)
+    object_value: str = Field(min_length=1)
+    relation: str = Field(min_length=1)
+    subject: str = Field(min_length=1)
+    subject_element: str = Field(min_length=1)
+    subject_value: str = Field(min_length=1)
+
+
+class DaliurenStageFlowEntry(DaliurenRelationFact):
+    from_stage: str = Field(min_length=1)
+    to_stage: str = Field(min_length=1)
+
+
+class DaliurenTransmissionToDayEntry(DaliurenRelationFact):
+    stage: str = Field(min_length=1)
+
+
+class DaliurenSixRelativeStage(ContractModel):
+    branch: str = Field(min_length=1)
+    six_relative: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenStageStatusEntry(ContractModel):
+    branch: str = Field(min_length=1)
+    heavenly_general: str = Field(min_length=1)
+    is_xunkong: bool
+    season_strength: str = Field(min_length=1)
+    six_relative: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenStageBranchDirection(ContractModel):
+    branch: str = Field(min_length=1)
+    declared_source_anchor: str = Field(min_length=1)
+    direction: str = Field(min_length=1)
+    direction_chinese: str = Field(min_length=1)
+    scope: str = Field(min_length=1)
+    source_binding_status: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenGeneralLanding(ContractModel):
+    """A heavenly-general landing correspondence with its classical anchor."""
+
+    heavenly_general: str = Field(min_length=1)
+    landing_branch: str = Field(min_length=1)
+    role: str = Field(min_length=1)
+    source_anchor: str = Field(min_length=1)
+    source_pack: str = Field(min_length=1)
+    source_rule: str = Field(min_length=1)
+    source_text: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+    status: str = Field(min_length=1)
+
+
+class DaliurenCandidateBranch(ContractModel):
+    anchor_earth_branch: str = Field(min_length=1)
+    branch: str = Field(min_length=1)
+    source_rule: str = Field(min_length=1)
+
+
+class DaliurenDimensionFact(ContractModel):
+    """Per-dimension calculated facts; extras vary by requested dimension."""
+
+    model_config = ConfigDict(extra="allow", frozen=True)
+
+    canonical_dimension: str = Field(min_length=1)
+    requested_dimension: str = Field(min_length=1)
+    rule_evidence: DaliurenRuleEvidence
+    status: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    source_rule_ids: tuple[str, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    initial_final_relation: DaliurenRelationFact | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    subject_object_relation: DaliurenRelationFact | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    stage_flow: tuple[DaliurenStageFlowEntry, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    transmissions_to_day: tuple[DaliurenTransmissionToDayEntry, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    six_relative_stages: tuple[DaliurenSixRelativeStage, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    stage_status: tuple[DaliurenStageStatusEntry, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    stage_branch_directions: tuple[DaliurenStageBranchDirection, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    general_landing_correspondences: tuple[DaliurenGeneralLanding, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    candidate_branch: DaliurenCandidateBranch | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    candidate_date: DaliurenTimingCandidate | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    relative_speed: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    target_contract_status: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    target_presence: bool | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    target_relative: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    target_general_modifier: tuple[object, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    target_strength: tuple[object, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    wealth_presence: bool | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    wealth_general_modifier: tuple[object, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    wealth_stage_strength: tuple[object, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    wealth_void_status: tuple[object, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+
+
 class DaliurenCoreFacts(ContractModel):
     """Runtime-owned six-ren plate and rule-trace facts; no event verdicts."""
 
-    day_hour: dict[str, object] | None = None
-    dimension_facts: dict[str, object] | None = None
-    earth_plate: tuple[str, ...] | None = None
-    heaven_plate: tuple[dict[str, object], ...] | None = None
-    heavenly_generals: tuple[dict[str, object], ...] | None = None
-    lesson_method: dict[str, object] | None = None
-    month_general: dict[str, object] | None = None
-    noble_person: dict[str, object] | None = None
+    day_hour: DaliurenDayHour | None = None
+    dimension_facts: dict[str, DaliurenDimensionFact] | None = None
+    earth_plate: tuple[str, ...] | None = Field(
+        default=None,
+        min_length=12,
+        max_length=12,
+    )
+    heaven_plate: tuple[DaliurenHeavenPlateCell, ...] | None = Field(
+        default=None,
+        min_length=12,
+        max_length=12,
+    )
+    heavenly_generals: tuple[DaliurenGeneralCell, ...] | None = Field(
+        default=None,
+        min_length=12,
+        max_length=12,
+    )
+    lesson_method: DaliurenLessonMethod | None = None
+    month_general: DaliurenMonthGeneral | None = None
+    noble_person: DaliurenNoblePerson | None = None
     plate_offset: int | None = None
     structural_patterns: tuple[str, ...] | None = None
-    transmission_method: dict[str, object] | None = None
+    transmission_method: DaliurenLessonMethod | None = None
     timing_candidates: tuple[DaliurenTimingCandidate, ...] | None = None
-    xunkong: dict[str, object] | None = None
+    xunkong: DaliurenXunkong | None = None
 
 
 class DaliurenChartV1(ContractModel):
@@ -2011,11 +2730,28 @@ class ArtSignal(ContractModel):
     fact_refs: tuple[str, ...]
 
 
+class ComparisonRow(ContractModel):
+    arts: tuple[
+        Literal["bazi", "ziwei", "qizheng", "liuyao", "qimen", "daliuren"],
+        ...,
+    ] = Field(min_length=1, max_length=3)
+    kind: Literal[
+        "source_bound_corroboration",
+        "source_disagreement_retained",
+        "missing_art",
+        "insufficient_arts",
+    ]
+    display_text: str = Field(min_length=1)
+    fact_refs: tuple[str, ...]
+    source_rule_id: str = Field(min_length=1)
+    signal_ids: tuple[str, ...] = ()
+
+
 class DimensionSynthesis(ContractModel):
     dimension_id: str = Field(min_length=1)
     signals: tuple[ArtSignal, ...]
-    convergence: tuple[str, ...]
-    disagreements: tuple[str, ...]
+    convergence: tuple[ComparisonRow, ...]
+    disagreements: tuple[ComparisonRow, ...]
     missing_art_ids: tuple[str, ...]
 
 

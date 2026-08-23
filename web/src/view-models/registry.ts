@@ -758,11 +758,26 @@ export type CrossArtSignal = {
 
 export type NatalArtId = "bazi" | "ziwei" | "qizheng";
 
+export type CrossArtComparisonRow = {
+  readonly arts: ReadonlyArray<
+    "bazi" | "ziwei" | "qizheng" | "liuyao" | "qimen" | "daliuren"
+  >;
+  readonly kind:
+    | "source_bound_corroboration"
+    | "source_disagreement_retained"
+    | "missing_art"
+    | "insufficient_arts";
+  readonly display_text: string;
+  readonly fact_refs: ReadonlyArray<string>;
+  readonly source_rule_id: string;
+  readonly signal_ids?: ReadonlyArray<string>;
+};
+
 export type CrossArtDimension = {
   readonly dimension_id: string;
   readonly signals: ReadonlyArray<CrossArtSignal>;
-  readonly convergence: ReadonlyArray<string>;
-  readonly disagreements: ReadonlyArray<string>;
+  readonly convergence: ReadonlyArray<CrossArtComparisonRow>;
+  readonly disagreements: ReadonlyArray<CrossArtComparisonRow>;
   readonly missing_art_ids: ReadonlyArray<string>;
 };
 
@@ -1026,6 +1041,7 @@ export type LiuyaoChartViewModel = {
     readonly useful_spirit_candidates: StructuredFactObject | null;
     readonly useful_spirit_selection: LiuyaoUsefulSpiritSelection | null;
     readonly xunkong: StructuredFactObject | null;
+    readonly source_conditioned_patterns?: ReadonlyArray<SourceConditionedPattern>;
   } | null;
 };
 

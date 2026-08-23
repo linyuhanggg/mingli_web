@@ -1,2 +1,36 @@
 @import "../../../ui/tokens.css";
 @import "../../../ui/base.css";
+
+/* Admin 不换肤（DESIGN.md §12）：应用根把基底 Token 覆写回中性灰白
+   （2026-08-21 纸墨换肤前 ui/tokens.css 的原值），不使用宣纸底与朱砂
+   强调；控件形状、状态语义、间距、字体与 C 端共享，不在此覆写。
+   本清单与 tests/contract/test_ui_token_authority.py 的
+   ADMIN_NEUTRAL_OVERRIDES 一一对应，增删改需同步该合同测试。 */
+:root {
+  --color-canvas: #fafafa;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f5f5f5;
+  --color-surface-muted: #eeeeee;
+  --color-surface-inverse: #0a0a0a;
+
+  --color-text: #0a0a0a;
+  --color-text-secondary: #525252;
+  --color-text-muted: #8a8a8a;
+  --color-text-inverse: #ffffff;
+
+  --color-border: #e5e5e5;
+  --color-border-strong: #d4d4d4;
+  --color-overlay: rgb(0 0 0 / 42%);
+
+  --color-action: #0a0a0a;
+  --color-action-hover: #262626;
+  --color-on-action: #ffffff;
+  --color-focus: #2563eb;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-on-accent: #ffffff;
+
+  --shadow-card-hover: 0 1px 2px rgb(0 0 0 / 4%), 0 4px 12px rgb(0 0 0 / 5%);
+  --shadow-float: 0 4px 16px rgb(0 0 0 / 8%);
+  --shadow-overlay: 0 16px 48px rgb(0 0 0 / 14%);
+}

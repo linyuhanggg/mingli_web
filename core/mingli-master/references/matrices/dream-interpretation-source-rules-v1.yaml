@@ -1,0 +1,97 @@
+schema_version: mingli-dream-interpretation-source-rules-v1
+updated_at: "2026-08-21"
+runtime_binding: not_in_runtime
+provider_status: local_provider_not_in_runtime
+method_id: yuqia-ji-zhanmeng-lookup-v1
+excluded_methods:
+  - zhou_gong_web_dictionary
+  - llm_generated_interpretation
+  - psychology_dreamwork
+  - liuyao_tengshe_mengmei_without_board
+  - daliuren_leixiang_mengxiang_without_board
+audit_policy:
+  research_source_root: external
+  research_sources_distribution: local_research_only
+  release_material: distilled_rules_provenance_and_checksums_only
+  note: >-
+    v1 freezes standalone 解梦 as exact omen-token lookup against 《玉匣记》
+    杂占「占梦」rows. The current Wikisource / local fulltext recension names
+    占夢 in the front-matter survey but has no 占梦 chapter in 杂占篇 and no
+    梦见/夢見 omen rows. Independent samples therefore pin unmatched
+    fail-closed, not invented Zhou Gong or LLM mappings. 卜筮正宗「腾蛇主梦寐」
+    and any 六壬梦象 remain board-dependent and out of this tool.
+    Local DreamInterpretationProvider may lookup the empty v1 table only.
+    This matrix is not in catalog or the signed Runtime.
+
+source_registry:
+  yuqia_ji_zhanmeng: &yuqia_ji_zhanmeng
+    title: 玉匣记
+    edition_or_recension: 维基文库电子整理本；杂占篇无占梦子目，v1 不自补周公表
+    normalized_path: references/fulltext/selection/yuqia-ji/fulltext.md
+    sha256: 93a9b8cde53e3fd6efafe509523fa3ec7c98181b7835c1933703f5cd5563d912
+    anchor: L12 前言点名占夢；L243-L291 杂占篇目录无占梦
+    exact_excerpt: 從祭祀、嫁娶、赴任、出行、開張、耕種、眼跳、耳鳴、占夢、秤骨
+    material: folklore omen lookup claimed in front matter; no omen table in this recension
+    license_status: ancient text public domain; normalized source local research only
+
+lookup: {}
+
+rules:
+  - id: dream-interpretation/yuqia-ji#DI-YQ-01
+    title: 前言点名占夢但不是查找表
+    status: verified
+    evidence_role: terminology_only
+    primary_sources: [*yuqia_ji_zhanmeng]
+    quote_index: YQ-Q0728
+    source_anchor: fulltext.md#L12
+    exact_excerpt: 從祭祀、嫁娶、赴任、出行、開張、耕種、眼跳、耳鳴、占夢、秤骨
+    statement: >-
+      本书前言把占夢列为通书杂术之一。这只证明主题被点名，不是梦兆查找表，
+      不得据此输出吉凶。
+    boundary:
+      - front-matter mention never yields exact_rule_bound
+      - do not invent Zhou Gong or model prose to fill the named topic
+
+  - id: dream-interpretation/yuqia-ji#DI-YQ-02
+    title: 当前杂占篇无占梦子目
+    status: verified
+    evidence_role: source_gap
+    primary_sources: [*yuqia_ji_zhanmeng]
+    source_anchor: fulltext.md#L274
+    exact_excerpt: 占面熱法            占眼跳法
+    statement: >-
+      杂占篇实有占面热、占眼跳、占耳鸣等时辰征兆表，没有占梦章节，
+      全文无梦见/夢見行。v1 lookup 必须为空。
+    boundary:
+      - 面热/眼跳/耳鸣 are not dream omens and must not be reused as 解梦 rows
+      - empty lookup is the sourced fact; model text must not fill the missing table
+
+  - id: dream-interpretation/yuqia-ji#DI-YQ-03
+    title: 独立解梦 fail-closed
+    status: verified
+    evidence_role: lookup_fact
+    primary_sources: [*yuqia_ji_zhanmeng]
+    source_anchor: fulltext.md#L12
+    exact_excerpt: 從祭祀、嫁娶、赴任、出行、開張、耕種、眼跳、耳鳴、占夢、秤骨
+    lookup: {}
+    statement: >-
+      无钉死梦兆行时，omen_match 为 null，source_status 为 unmatched，
+      hard_verdict 必须为 null。
+    boundary:
+      - unmatched never upgrades to a luck, wealth, illness, or personality verdict
+      - a later recension with real 占梦 rows needs a new source_rule_id, not silent table invention
+
+fail_closed:
+  - v1 lookup is empty; any omen_key or free-text dream is unmatched
+  - unmatched yields omen_match null, source_status unmatched, hard_verdict null
+  - extra fields named zhou_gong, interpretation, luck, verdict, psychology, llm are contract violations
+  - 腾蛇主梦寐 and 六壬梦象 require a completed board and are excluded from this tool
+  - no catalog entry or signed Runtime binding; local provider stays unmatched
+
+commentary_dependencies:
+  - path: references/books/selection/yuqia-ji/quote-index.md
+    anchor: YQ-Q0728
+    role: 前言点名占夢 short quote
+  - path: references/books/selection/yuqia-ji/index.md
+    anchor: 杂占篇
+    role: pack claims 占梦 among 杂占; current fulltext TOC does not contain that chapter

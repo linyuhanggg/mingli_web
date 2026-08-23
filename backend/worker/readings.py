@@ -25,10 +25,12 @@ from app.readings.models import ReadingJobRecord, ReadingRoot, ReadingVersion
 from app.readings.narrative_guard import NarrativeGuard
 from app.readings.orchestrator import (
     NarrativeModelPort,
+    OrchestratorInvariantError,
     ReadingOrchestrator,
     ReadingOutcome,
     RuntimePort,
 )
+from app.readings.relationship_deep_extract import relationship_deep_prepare_orchestrator
 from app.readings.presentation import ReadingDocumentBuilder
 from app.readings.public_copy import PublicCopyAssembler
 from app.readings.repository import SqlReadingRepository
@@ -278,6 +280,34 @@ class ReadingJobProcessor:
         }[status]
 
 
+_RELATIONSHIP_DEEP_NOT_APPLICABLE = "relationship_deep_extract_not_applicable"
+
+
+@dataclass(slots=True)
+class RelationshipDeepPrepareOrchestratorRunner:
+    repository: SqlReadingRepository
+    runtime: RuntimePort
+    model: NarrativeModelPort
+    clock: Clock
+    fallback: OrchestratorRunner
+
+    async def run(self, job_id: str) -> ReadingOutcome:
+        prepared = await relationship_deep_prepare_orchestrator(
+            repository=self.repository,
+            job_id=job_id,
+            runtime=self.runtime,
+            model=self.model,
+            clock=self.clock,
+        )
+        if prepared.errors == (_RELATIONSHIP_DEEP_NOT_APPLICABLE,):
+            return await self.fallback.run(job_id)
+        if prepared.errors:
+            raise OrchestratorInvariantError(prepared.errors[0])
+        if prepared.status is None:
+            raise OrchestratorInvariantError("relationship-deep prepare returned no status")
+        return ReadingOutcome(status=prepared.status, public_copy=prepared.public_copy)
+
+
 @dataclass(slots=True)
 class SqlReadingOrchestratorFactory:
     cipher: EnvelopeCipher
@@ -287,9 +317,10 @@ class SqlReadingOrchestratorFactory:
     alert_sink: AlertSink
     require_reading_document: bool = False
 
-    def __call__(self, session: AsyncSession) -> ReadingOrchestrator:
-        return ReadingOrchestrator(
-            repository=SqlReadingRepository(session, self.cipher),
+    def __call__(self, session: AsyncSession) -> OrchestratorRunner:
+        repository = SqlReadingRepository(session, self.cipher)
+        fallback = ReadingOrchestrator(
+            repository=repository,
             runtime=self.runtime,
             model=self.model,
             guard=NarrativeGuard(),
@@ -298,6 +329,13 @@ class SqlReadingOrchestratorFactory:
             require_reading_document=self.require_reading_document,
             clock=self.clock,
             alert_sink=self.alert_sink,
+        )
+        return RelationshipDeepPrepareOrchestratorRunner(
+            repository=repository,
+            runtime=self.runtime,
+            model=self.model,
+            clock=self.clock,
+            fallback=fallback,
         )
 
 

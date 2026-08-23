@@ -131,7 +131,7 @@ def test_name_analysis_samples_are_transcribed_not_computed() -> None:
     for rule in rules["rules"]:
         lookup.update(rule.get("lookup") or {})
     assert samples["schema_version"] == "mingli-algorithm-source-samples-v1"
-    assert rules["provider_status"] == "contract_only_no_provider"
+    assert rules["provider_status"] == "local_provider_not_in_runtime"
     assert lookup["赵"] == "角"
     assert lookup["钱"] == "徵"
     assert lookup["孙"] == "宫"
@@ -140,6 +140,35 @@ def test_name_analysis_samples_are_transcribed_not_computed() -> None:
     unmatched = samples["cases"]["name-analysis-unmatched-surname"]["expected"]
     assert unmatched["lookup_key"] not in lookup
     assert unmatched["hard_verdict"] is None
+    assert lookup["澹台"] == "角"
+    assert lookup["诸葛"] == "徵"
+    assert lookup["水丘"] == "宫"
+    assert lookup["令狐"] == "商"
+    assert lookup["皇甫"] == "羽"
+    assert "端木" not in lookup
+    assert "熊" not in lookup
+    assert "南官" not in lookup
+    assert "平" not in lookup
+    assert "鲜于" not in lookup
+    assert "陈" not in lookup
+    assert "陳" not in lookup
+    assert "曾" not in lookup
+    assert "史" not in lookup
+    assert "岑" not in lookup
+    assert "冀" not in lookup
+    assert "牛" not in lookup
+    duanmu = samples["cases"]["name-analysis-conflict-duanmu"]["expected"]
+    assert duanmu["match_status"] == "unmatched"
+    assert duanmu["hard_verdict"] is None
+    nanguan = samples["cases"]["name-analysis-ocr-nanguan"]["expected"]
+    assert nanguan["match_status"] == "unmatched"
+    assert nanguan["hard_verdict"] is None
+    chen = samples["cases"]["name-analysis-dup-chen"]["expected"]
+    assert chen["match_status"] == "unmatched"
+    assert chen["hard_verdict"] is None
+    cen = samples["cases"]["name-analysis-dup-cen"]["expected"]
+    assert cen["match_status"] == "unmatched"
+    assert cen["hard_verdict"] is None
 
 
 def test_name_analysis_is_not_wired_into_reading_document() -> None:
