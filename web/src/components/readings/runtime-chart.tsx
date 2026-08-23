@@ -31,6 +31,7 @@ import {
   formatLiuyaoRoleAdjudicationRows,
 } from "@/lib/reading-display";
 
+import { DaliurenBoard } from "./daliuren-board";
 import styles from "./runtime-chart.module.css";
 
 function Table({
@@ -1097,43 +1098,7 @@ function QimenChart({ view }: Readonly<{ view: QimenChartViewModel }>) {
 }
 
 function DaliurenChart({ view }: Readonly<{ view: DaliurenChartViewModel }>) {
-  const coreRows = view.core_facts
-    ? coreFactRows({
-        ...(view.core_facts as unknown as StructuredFactObject),
-        timing_candidates: null,
-      })
-    : [];
-  return (
-    <div className={styles.wrap} data-schema={view.schema_version}>
-      <Table
-        caption="四课"
-        headers={["课次", "上", "下"]}
-        rows={view.lessons.map((lesson) => [lesson.lesson_id, lesson.upper, lesson.lower])}
-      />
-      <Table
-        caption="三传"
-        headers={["阶段", "地支", "天将"]}
-        rows={view.transmissions.map((item) => [item.stage, item.branch, item.general])}
-      />
-      {coreRows.length ? (
-        <Table caption="大六壬结构事实" headers={["事实项", "状态"]} rows={coreRows} />
-      ) : null}
-      {view.core_facts?.timing_candidates?.length ? (
-        <Table
-          caption="有界应期候选"
-          headers={["候选日期", "干支 / 候选支", "距起课", "来源", "边界"]}
-          rows={view.core_facts.timing_candidates.map((candidate) => [
-            candidate.solar_date,
-            `${candidate.day_ganzhi} · ${candidate.branch}`,
-            `${candidate.days_after_cast} 天`,
-            `${candidate.source_rule} · ${candidate.source_pack}`,
-            "候选日期，不是现实保证",
-          ])}
-        />
-      ) : null}
-      <p className={styles.note}>只复述四课三传和已核验的有界应期候选；候选日期不是事件必然发生日，吉凶判断仍受服务端证据与边界约束。</p>
-    </div>
-  );
+  return <DaliurenBoard view={view} />;
 }
 
 function PhysiognomyChart({ view }: Readonly<{ view: PhysiognomyViewModel }>) {

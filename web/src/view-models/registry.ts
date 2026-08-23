@@ -774,6 +774,113 @@ export type CanwenViewModel = {
   readonly dimensions: ReadonlyArray<CrossArtDimension>;
 };
 
+export type DaliurenDayHour = {
+  readonly day: string;
+  readonly hour: string;
+};
+
+export type DaliurenMonthGeneral = {
+  readonly branch: string;
+  readonly name: string;
+};
+
+export type DaliurenNoblePerson = {
+  readonly branch: string;
+  readonly day_night_profile: string;
+  readonly direction: "forward" | "backward";
+  readonly earth_position: string;
+  readonly period: "day" | "night";
+  readonly profile: string;
+  readonly source: string;
+};
+
+export type DaliurenXunkong = {
+  readonly branches: readonly [string, string];
+  readonly xun: string;
+};
+
+export type DaliurenHeavenPlateCell = {
+  readonly earth: string;
+  readonly heaven: string;
+};
+
+export type DaliurenGeneralCell = {
+  readonly earth: string;
+  readonly general: string;
+  readonly heaven: string;
+};
+
+export type DaliurenLessonMethod = Readonly<{
+  readonly calculated_transmissions: string;
+  readonly calculation_source: string;
+  readonly direct_candidates: ReadonlyArray<string>;
+  readonly direct_direction: string | null;
+  readonly primary: string;
+  readonly remote_day_over_god: ReadonlyArray<string>;
+  readonly remote_god_over_day: ReadonlyArray<string>;
+  readonly rule_order: ReadonlyArray<string>;
+  readonly selected_initial: string;
+  readonly selection_trace: Readonly<Record<string, unknown>>;
+  readonly source_anchor: string;
+  readonly source_label_variants: ReadonlyArray<unknown>;
+  readonly table_disagreement: boolean;
+  readonly table_label: string;
+  readonly table_result_disagreement: boolean;
+  readonly table_transmissions: string;
+  readonly use_method: string;
+}> & Readonly<Record<string, unknown>>;
+
+export type DaliurenRuleSourceRef = {
+  readonly pack: string;
+  readonly rule_id: string;
+  readonly quote_id?: string;
+  readonly source_anchor?: string;
+};
+
+export type DaliurenRuleEvidenceEntry = Readonly<{
+  readonly activation_id: string;
+  readonly confidence_ceiling?: string;
+  readonly dependency_group: string;
+  readonly fact_paths: ReadonlyArray<string>;
+  readonly observation: Readonly<Record<string, unknown>>;
+  readonly polarity: string;
+  readonly rule_id: string;
+  readonly rule_key: string;
+  readonly source_refs: ReadonlyArray<DaliurenRuleSourceRef>;
+  readonly status: string;
+  readonly stop_conditions?: ReadonlyArray<string>;
+  readonly weight_class: string;
+}> & Readonly<Record<string, unknown>>;
+
+export type DaliurenRuleEvidence = {
+  readonly catalog_schema: string;
+  readonly hard_verdict: null;
+  readonly matched: ReadonlyArray<DaliurenRuleEvidenceEntry>;
+  readonly not_evaluated: ReadonlyArray<Readonly<Record<string, unknown>>>;
+  readonly requires_school_adjudication: boolean;
+  readonly scope_boundaries: ReadonlyArray<DaliurenRuleEvidenceEntry>;
+  readonly status: string;
+};
+
+export type DaliurenDimensionFact = Readonly<{
+  readonly canonical_dimension: string;
+  readonly requested_dimension: string;
+  readonly rule_evidence: DaliurenRuleEvidence;
+}> & Readonly<Record<string, unknown>>;
+
+export type DaliurenTimingCandidate = {
+  readonly id: "initial_group_upper_candidate";
+  readonly role: "event_response_candidate";
+  readonly anchor_earth_branch: string;
+  readonly branch: string;
+  readonly solar_date: string;
+  readonly day_ganzhi: string;
+  readonly days_after_cast: number;
+  readonly source_pack: string;
+  readonly source_rule: "LM-R21";
+  readonly candidate_not_guarantee: true;
+};
+
 export type DaliurenChartViewModel = {
   readonly schema_version: "daliuren-chart/v1";
   readonly subject_ref: string;
@@ -790,30 +897,18 @@ export type DaliurenChartViewModel = {
     { readonly stage: "final"; readonly branch: string; readonly general: string },
   ];
   readonly core_facts: {
-    readonly day_hour: StructuredFactObject | null;
-    readonly dimension_facts: StructuredFactObject | null;
+    readonly day_hour: DaliurenDayHour | null;
+    readonly dimension_facts: Readonly<Record<string, DaliurenDimensionFact>> | null;
     readonly earth_plate: ReadonlyArray<string> | null;
-    readonly heaven_plate: ReadonlyArray<StructuredFactObject> | null;
-    readonly heavenly_generals: ReadonlyArray<StructuredFactObject> | null;
-    readonly lesson_method: StructuredFactObject | null;
-    readonly month_general: StructuredFactObject | null;
-    readonly noble_person: StructuredFactObject | null;
+    readonly heaven_plate: ReadonlyArray<DaliurenHeavenPlateCell> | null;
+    readonly heavenly_generals: ReadonlyArray<DaliurenGeneralCell> | null;
+    readonly lesson_method: DaliurenLessonMethod | null;
+    readonly month_general: DaliurenMonthGeneral | null;
+    readonly noble_person: DaliurenNoblePerson | null;
     readonly plate_offset: number | null;
     readonly structural_patterns: ReadonlyArray<string> | null;
-    readonly transmission_method: StructuredFactObject | null;
-    readonly timing_candidates: ReadonlyArray<{
-      readonly id: "initial_group_upper_candidate";
-      readonly role: "event_response_candidate";
-      readonly anchor_earth_branch: string;
-      readonly branch: string;
-      readonly solar_date: string;
-      readonly day_ganzhi: string;
-      readonly days_after_cast: number;
-      readonly source_pack: string;
-      readonly source_rule: "LM-R21";
-      readonly candidate_not_guarantee: true;
-    }> | null;
-    readonly xunkong: StructuredFactObject | null;
+    readonly timing_candidates: ReadonlyArray<DaliurenTimingCandidate> | null;
+    readonly xunkong: DaliurenXunkong | null;
   } | null;
 };
 
