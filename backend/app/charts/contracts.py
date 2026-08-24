@@ -2034,8 +2034,30 @@ class DaliurenSixRelativeStage(ContractModel):
 class DaliurenStageStatusEntry(ContractModel):
     branch: str = Field(min_length=1)
     heavenly_general: str = Field(min_length=1)
-    is_xunkong: bool
-    season_strength: str = Field(min_length=1)
+    is_xunkong: bool = Field(strict=True)
+    season_strength: str | None = Field(min_length=1)
+    six_relative: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenTargetStrengthEntry(ContractModel):
+    branch: str = Field(min_length=1)
+    is_xunkong: bool = Field(strict=True)
+    season_strength: str | None = Field(min_length=1)
+    six_relative: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenWealthStageStrengthEntry(ContractModel):
+    branch: str = Field(min_length=1)
+    season_strength: str | None = Field(min_length=1)
+    six_relative: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenWealthVoidStatusEntry(ContractModel):
+    branch: str = Field(min_length=1)
+    is_xunkong: bool = Field(strict=True)
     six_relative: str = Field(min_length=1)
     stage: str = Field(min_length=1)
 
@@ -2090,6 +2112,10 @@ class DaliurenGeneralLanding(ContractModel):
         ):
             raise ValueError("missing source correspondences must omit source fields")
         return value
+
+
+class DaliurenGeneralModifierEntry(DaliurenGeneralLanding):
+    six_relative: str = Field(min_length=1)
 
 
 class DaliurenCandidateBranch(ContractModel):
@@ -2219,27 +2245,29 @@ class DaliurenDimensionFact(ContractModel):
     )
     target_presence: bool | None = Field(
         default=None,
+        strict=True,
     )
     target_relative: str | None = Field(
         default=None,
         min_length=1,
     )
-    target_general_modifier: tuple[object, ...] | None = Field(
+    target_general_modifier: tuple[DaliurenGeneralModifierEntry, ...] | None = Field(
         default=None,
     )
-    target_strength: tuple[object, ...] | None = Field(
+    target_strength: tuple[DaliurenTargetStrengthEntry, ...] | None = Field(
         default=None,
     )
     wealth_presence: bool | None = Field(
         default=None,
+        strict=True,
     )
-    wealth_general_modifier: tuple[object, ...] | None = Field(
+    wealth_general_modifier: tuple[DaliurenGeneralModifierEntry, ...] | None = Field(
         default=None,
     )
-    wealth_stage_strength: tuple[object, ...] | None = Field(
+    wealth_stage_strength: tuple[DaliurenWealthStageStrengthEntry, ...] | None = Field(
         default=None,
     )
-    wealth_void_status: tuple[object, ...] | None = Field(
+    wealth_void_status: tuple[DaliurenWealthVoidStatusEntry, ...] | None = Field(
         default=None,
     )
 
@@ -2266,6 +2294,18 @@ class DaliurenDimensionFact(ContractModel):
             raise ValueError(
                 f"{canonical} dimensions must use the complete Runtime v1 field set"
             )
+        nullable_fields = {"target_relative"} if canonical == "work" else set()
+        if canonical in {"work", "money"}:
+            null_fields = sorted(
+                field
+                for field in _DALIUREN_CANONICAL_DIMENSION_FIELDS[canonical]
+                if field not in nullable_fields and value[field] is None
+            )
+            if null_fields:
+                raise ValueError(
+                    f"{canonical} dimensions require non-null Runtime v1 fields: "
+                    + ", ".join(null_fields)
+                )
         return value
 
     @model_serializer(mode="wrap")

@@ -89,6 +89,33 @@ def _assert_runtime_rejects(
     assert expected_error in result.stdout
 
 
+def _assert_runtime_accepts(runtime_core_facts: dict[str, object]) -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "import json, sys\n"
+                "from reading_engine.liuren_contract import "
+                "validate_runtime_core_facts\n"
+                "validate_runtime_core_facts(json.load(sys.stdin))\n"
+            ),
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        env={
+            **os.environ,
+            "PYTHONPATH": str(CORE_SCRIPTS_PATH),
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PYTHONPYCACHEPREFIX": "/dev/null",
+        },
+        input=json.dumps(runtime_core_facts),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+
+
 def _state_dimension(
     payload: dict[str, object],
     correspondence: dict[str, object],
@@ -113,6 +140,101 @@ def _state_dimension(
         ],
         "general_landing_correspondences": [correspondence],
     }
+
+
+def _payload_with_state_work_money_dimensions() -> dict[str, object]:
+    payload = copy.deepcopy(_load_fixture())
+    relationship = payload["dimension_facts"]["relationship"]
+    rule_evidence = relationship["rule_evidence"]
+    stage_status = {
+        "branch": "辰",
+        "heavenly_general": "青龙",
+        "is_xunkong": False,
+        "season_strength": "旺",
+        "six_relative": "妻财",
+        "stage": "initial",
+    }
+    general_landing = {
+        "stage": "initial",
+        "heavenly_general": "青龙",
+        "landing_branch": "辰",
+        "source_pack": "san-shi/liuren-miben",
+        "source_rule": "LM-R01",
+        "role": "source_bound_correspondence",
+        "status": "source_correspondence_matched",
+        "source_text": "fixture source text",
+        "source_anchor": "fulltext.md#fixture",
+    }
+    general_modifier = {**general_landing, "six_relative": "妻财"}
+
+    payload["dimension_facts"].update(
+        {
+            "state": {
+                "requested_dimension": "state",
+                "canonical_dimension": "state",
+                "status": "calculated_facts_not_verdict",
+                "source_rule_ids": [],
+                "rule_evidence": copy.deepcopy(rule_evidence),
+                "stage_status": [copy.deepcopy(stage_status)],
+                "general_landing_correspondences": [
+                    copy.deepcopy(general_landing)
+                ],
+            },
+            "work": {
+                "requested_dimension": "work",
+                "canonical_dimension": "work",
+                "status": "calculated_facts_not_verdict",
+                "source_rule_ids": [],
+                "rule_evidence": copy.deepcopy(rule_evidence),
+                "six_relative_stages": copy.deepcopy(
+                    relationship["six_relative_stages"]
+                ),
+                "stage_status": [copy.deepcopy(stage_status)],
+                "subject_object_relation": copy.deepcopy(
+                    relationship["subject_object_relation"]
+                ),
+                "target_relative": "妻财",
+                "target_contract_status": "bound",
+                "target_presence": True,
+                "target_strength": [
+                    {
+                        "stage": "initial",
+                        "branch": "辰",
+                        "six_relative": "妻财",
+                        "season_strength": "旺",
+                        "is_xunkong": False,
+                    }
+                ],
+                "target_general_modifier": [copy.deepcopy(general_modifier)],
+            },
+            "money": {
+                "requested_dimension": "money",
+                "canonical_dimension": "money",
+                "status": "calculated_facts_not_verdict",
+                "source_rule_ids": [],
+                "rule_evidence": copy.deepcopy(rule_evidence),
+                "wealth_presence": True,
+                "wealth_stage_strength": [
+                    {
+                        "stage": "initial",
+                        "branch": "辰",
+                        "six_relative": "妻财",
+                        "season_strength": "旺",
+                    }
+                ],
+                "wealth_void_status": [
+                    {
+                        "stage": "initial",
+                        "branch": "辰",
+                        "six_relative": "妻财",
+                        "is_xunkong": False,
+                    }
+                ],
+                "wealth_general_modifier": [copy.deepcopy(general_modifier)],
+            },
+        }
+    )
+    return payload
 
 
 def test_daliuren_projector_maps_ming11_runtime_core_facts_fixture() -> None:
@@ -361,24 +483,21 @@ def test_daliuren_projector_requires_nullable_runtime_keys() -> None:
         ), field_path
 
 
-def test_daliuren_projector_preserves_explicit_dimension_nulls() -> None:
-    payload = copy.deepcopy(_load_fixture())
+def test_daliuren_projector_preserves_runtime_nullable_dimension_fields() -> None:
+    payload = _payload_with_state_work_money_dimensions()
     timing = payload["dimension_facts"]["timing"]
     timing["candidate_branch"] = None
     timing["candidate_date"] = None
     timing["relative_speed"] = None
 
-    work = copy.deepcopy(payload["dimension_facts"]["relationship"])
-    work["requested_dimension"] = "work"
-    work["canonical_dimension"] = "work"
-    del work["stage_flow"]
-    work["stage_status"] = []
-    work["target_contract_status"] = None
-    work["target_general_modifier"] = None
-    work["target_presence"] = None
+    work = payload["dimension_facts"]["work"]
     work["target_relative"] = None
-    work["target_strength"] = None
-    payload["dimension_facts"]["work"] = work
+    work["target_contract_status"] = "missing_target_relative"
+    work["target_presence"] = False
+    work["target_strength"] = []
+    work["target_general_modifier"] = []
+
+    _assert_runtime_accepts(payload)
 
     view_model = project_daliuren_view_model(_runtime_core_brief(payload))
 
@@ -391,14 +510,167 @@ def test_daliuren_projector_preserves_explicit_dimension_nulls() -> None:
     assert "stage_flow" not in timing_serialized
 
     work_serialized = serialized["core_facts"]["dimension_facts"]["work"]
-    assert work_serialized["target_contract_status"] is None
-    assert work_serialized["target_general_modifier"] is None
-    assert work_serialized["target_presence"] is None
     assert work_serialized["target_relative"] is None
-    assert work_serialized["target_strength"] is None
+    assert work_serialized["target_contract_status"] == "missing_target_relative"
+    assert work_serialized["target_presence"] is False
+    assert work_serialized["target_strength"] == []
+    assert work_serialized["target_general_modifier"] == []
 
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     Draft202012Validator(schema).validate(serialized)
+
+
+def test_daliuren_projector_accepts_state_work_money_control_samples() -> None:
+    payload = _payload_with_state_work_money_dimensions()
+
+    _assert_runtime_accepts(payload)
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.dimension_facts is not None
+    assert {"state", "work", "money"}.issubset(
+        view_model.core_facts.dimension_facts
+    )
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
+
+
+def test_daliuren_projector_accepts_nullable_stage_season_strength() -> None:
+    payload = _payload_with_state_work_money_dimensions()
+    payload["dimension_facts"]["state"]["stage_status"][0][
+        "season_strength"
+    ] = None
+
+    _assert_runtime_accepts(payload)
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is not None
+    serialized = view_model.model_dump(mode="json")
+    assert (
+        serialized["core_facts"]["dimension_facts"]["state"]["stage_status"][
+            0
+        ]["season_strength"]
+        is None
+    )
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    Draft202012Validator(schema).validate(serialized)
+
+
+def test_daliuren_projector_rejects_null_non_nullable_work_fields() -> None:
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    valid_view = project_daliuren_view_model(
+        _runtime_core_brief(_payload_with_state_work_money_dimensions())
+    )
+    assert isinstance(valid_view, DaliurenChartV1)
+    assert valid_view.core_facts is not None
+    valid_schema_payload = valid_view.model_dump(mode="json")
+
+    for field in (
+        "target_contract_status",
+        "target_presence",
+        "target_strength",
+        "target_general_modifier",
+    ):
+        payload = _payload_with_state_work_money_dimensions()
+        payload["dimension_facts"]["work"][field] = None
+
+        _assert_runtime_rejects(
+            payload,
+            f"dimension_facts.work.{field}",
+        )
+        view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+        assert isinstance(view_model, DaliurenChartV1), field
+        assert view_model.core_facts is None, field
+
+        schema_payload = copy.deepcopy(valid_schema_payload)
+        schema_payload["core_facts"]["dimension_facts"]["work"][field] = None
+        assert list(
+            Draft202012Validator(schema).iter_errors(schema_payload)
+        ), field
+
+
+def test_daliuren_projector_rejects_untyped_work_money_rows() -> None:
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    valid_view = project_daliuren_view_model(
+        _runtime_core_brief(_payload_with_state_work_money_dimensions())
+    )
+    assert isinstance(valid_view, DaliurenChartV1)
+    assert valid_view.core_facts is not None
+    valid_schema_payload = valid_view.model_dump(mode="json")
+    row_fields = (
+        ("work", "target_strength"),
+        ("work", "target_general_modifier"),
+        ("money", "wealth_stage_strength"),
+        ("money", "wealth_void_status"),
+        ("money", "wealth_general_modifier"),
+    )
+
+    for dimension, field in row_fields:
+        payload = _payload_with_state_work_money_dimensions()
+        payload["dimension_facts"][dimension][field] = [
+            {"internal_trace": "must-not-publish"}
+        ]
+
+        _assert_runtime_rejects(
+            payload,
+            f"dimension_facts.{dimension}.{field}[0]",
+        )
+        view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+        assert isinstance(view_model, DaliurenChartV1), (dimension, field)
+        assert view_model.core_facts is None, (dimension, field)
+
+        schema_payload = copy.deepcopy(valid_schema_payload)
+        schema_payload["core_facts"]["dimension_facts"][dimension][field] = [
+            {"internal_trace": "must-not-publish"}
+        ]
+        assert list(
+            Draft202012Validator(schema).iter_errors(schema_payload)
+        ), (dimension, field)
+
+
+def test_daliuren_projector_rejects_non_boolean_dimension_facts() -> None:
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    valid_view = project_daliuren_view_model(
+        _runtime_core_brief(_payload_with_state_work_money_dimensions())
+    )
+    assert isinstance(valid_view, DaliurenChartV1)
+    assert valid_view.core_facts is not None
+    valid_schema_payload = valid_view.model_dump(mode="json")
+    mutations = (
+        ("state", "stage_status", "is_xunkong"),
+        ("work", None, "target_presence"),
+        ("money", None, "wealth_presence"),
+    )
+
+    for dimension, row_field, field in mutations:
+        payload = _payload_with_state_work_money_dimensions()
+        dimension_payload = payload["dimension_facts"][dimension]
+        if row_field is None:
+            dimension_payload[field] = 1
+        else:
+            dimension_payload[row_field][0][field] = 1
+
+        _assert_runtime_rejects(payload, f"dimension_facts.{dimension}")
+        view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+        assert isinstance(view_model, DaliurenChartV1), (dimension, field)
+        assert view_model.core_facts is None, (dimension, field)
+
+        schema_payload = copy.deepcopy(valid_schema_payload)
+        schema_dimension = schema_payload["core_facts"]["dimension_facts"][
+            dimension
+        ]
+        if row_field is None:
+            schema_dimension[field] = 1
+        else:
+            schema_dimension[row_field][0][field] = 1
+        assert list(
+            Draft202012Validator(schema).iter_errors(schema_payload)
+        ), (dimension, field)
 
 
 def test_daliuren_projector_allows_empty_source_rule_ids_for_location() -> None:
