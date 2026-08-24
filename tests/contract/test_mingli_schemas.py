@@ -423,5 +423,25 @@ def test_daliuren_chart_schema_accepts_only_typed_source_pattern_fields(
     }
 
     validate_schema("views/daliuren-chart-v1.schema.json", payload)
-    payload["core_facts"]["source_conditioned_patterns"][0]["verdict"] = "forged"
-    reject_schema("views/daliuren-chart-v1.schema.json", payload)
+
+    mismatched_identity = copy.deepcopy(payload)
+    mismatched_identity["core_facts"]["source_conditioned_patterns"][0][
+        "local_rule_id"
+    ] = "liuren.structural.fanyin"
+    reject_schema("views/daliuren-chart-v1.schema.json", mismatched_identity)
+
+    duplicate_identity = copy.deepcopy(payload)
+    repeated_pattern = copy.deepcopy(
+        duplicate_identity["core_facts"]["source_conditioned_patterns"][0]
+    )
+    repeated_pattern["predicate_audit"].append("/audit:second-valid-string")
+    duplicate_identity["core_facts"]["source_conditioned_patterns"].append(
+        repeated_pattern
+    )
+    reject_schema("views/daliuren-chart-v1.schema.json", duplicate_identity)
+
+    unknown_field = copy.deepcopy(payload)
+    unknown_field["core_facts"]["source_conditioned_patterns"][0][
+        "verdict"
+    ] = "forged"
+    reject_schema("views/daliuren-chart-v1.schema.json", unknown_field)

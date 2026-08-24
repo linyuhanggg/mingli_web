@@ -1903,6 +1903,36 @@ class DaliurenTimingCandidate(ContractModel):
     candidate_not_guarantee: Literal[True]
 
 
+_DALIUREN_SOURCE_PATTERN_IDENTITIES = frozenset(
+    {
+        (
+            "DLR-07",
+            "liuren.structural.incomplete-four-lessons",
+            "四课不备",
+            "fulltext.md#L58",
+        ),
+        (
+            "DLR-08",
+            "liuren.structural.bazhuan-day",
+            "八专日",
+            "fulltext.md#L7556",
+        ),
+        (
+            "DLR-09",
+            "liuren.structural.fuyin",
+            "伏吟",
+            "fulltext.md#L7696",
+        ),
+        (
+            "DLR-10",
+            "liuren.structural.fanyin",
+            "反吟",
+            "fulltext.md#L7874",
+        ),
+    }
+)
+
+
 class DaliurenSourcePattern(ContractModel):
     """Audited structural-pattern match, never a divination verdict."""
 
@@ -1927,6 +1957,18 @@ class DaliurenSourcePattern(ContractModel):
     source_dependency_id: Literal[
         "liuren.source-conditioned-structural-patterns-v1"
     ]
+
+    @model_validator(mode="after")
+    def _uses_one_audited_rule_identity(self) -> DaliurenSourcePattern:
+        identity = (
+            self.rule_id,
+            self.local_rule_id,
+            self.title,
+            self.source_anchor,
+        )
+        if identity not in _DALIUREN_SOURCE_PATTERN_IDENTITIES:
+            raise ValueError("source pattern identity fields must match one audited rule")
+        return self
 
 
 class DaliurenDayHour(ContractModel):
@@ -2377,7 +2419,10 @@ class DaliurenCoreFacts(ContractModel):
     noble_person: DaliurenNoblePerson | None = None
     plate_offset: int | None = Field(default=None, ge=0, le=11, strict=True)
     structural_patterns: tuple[Annotated[str, Field(min_length=1)], ...] | None = None
-    source_conditioned_patterns: tuple[DaliurenSourcePattern, ...] = ()
+    source_conditioned_patterns: tuple[DaliurenSourcePattern, ...] = Field(
+        default=(),
+        max_length=4,
+    )
     timing_candidates: tuple[DaliurenTimingCandidate, ...] | None = None
     xunkong: DaliurenXunkong | None = None
 
@@ -2405,6 +2450,17 @@ class DaliurenCoreFacts(ContractModel):
                 "dimension_facts keys must match each row's requested_dimension: "
                 + ", ".join(mismatched)
             )
+        return value
+
+    @field_validator("source_conditioned_patterns")
+    @classmethod
+    def _source_pattern_identities_are_unique(
+        cls,
+        value: tuple[DaliurenSourcePattern, ...],
+    ) -> tuple[DaliurenSourcePattern, ...]:
+        identities = tuple(pattern.rule_id for pattern in value)
+        if len(identities) != len(set(identities)):
+            raise ValueError("source pattern identities must be unique")
         return value
 
     @model_validator(mode="after")

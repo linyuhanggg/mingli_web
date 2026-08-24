@@ -5492,15 +5492,36 @@ def _daliuren_source_conditioned_patterns(
             for index, pattern in enumerate(structural_patterns)
             if pattern == title
         ]
-        if not matching_indices or not any(
-            path
-            == f"fact:/chart_facts/output/structural_patterns/{index}"
-            for path in fact_paths
-            for index in matching_indices
+        if not matching_indices:
+            return None
+        if len(set(fact_paths)) != len(fact_paths) or len(set(predicate_audit)) != len(
+            predicate_audit
         ):
             return None
-        if not any(audit.endswith(f":eq:{title}") for audit in predicate_audit):
+
+        structural_fact_paths = {
+            index: f"fact:/chart_facts/output/structural_patterns/{index}"
+            for index in matching_indices
+        }
+        structural_predicate_audits = {
+            index: f"/chart_facts/output/structural_patterns/{index}:eq:{title}"
+            for index in matching_indices
+        }
+        published_indices = {
+            index
+            for index, expected_path in structural_fact_paths.items()
+            if expected_path in fact_paths
+        }
+        audited_indices = {
+            index
+            for index, expected_audit in structural_predicate_audits.items()
+            if expected_audit in predicate_audit
+        }
+        if not published_indices or published_indices != audited_indices:
             return None
+
+        allowed_fact_paths = set(structural_fact_paths.values())
+        allowed_predicate_audits = set(structural_predicate_audits.values())
 
         if title == "四课不备":
             if not isinstance(four_lessons, (list, tuple)) or len(four_lessons) != 4:
@@ -5515,10 +5536,24 @@ def _daliuren_source_conditioned_patterns(
                 lesson_uppers.add(upper)
             if len(lesson_uppers) != 3:
                 return None
-            if not any(
-                audit.endswith(":distinct_count_eq:3") for audit in predicate_audit
-            ):
+            four_lesson_fact_paths = {
+                f"fact:/chart_facts/output/four_lessons/{index}/upper"
+                for index in range(4)
+            }
+            four_lesson_audit = (
+                "/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3"
+            )
+            if not four_lesson_fact_paths.issubset(set(fact_paths)):
                 return None
+            if four_lesson_audit not in predicate_audit:
+                return None
+            allowed_fact_paths.update(four_lesson_fact_paths)
+            allowed_predicate_audits.add(four_lesson_audit)
+
+        if not set(fact_paths).issubset(allowed_fact_paths):
+            return None
+        if not set(predicate_audit).issubset(allowed_predicate_audits):
+            return None
 
         try:
             result.append(

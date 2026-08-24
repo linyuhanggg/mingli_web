@@ -8,7 +8,11 @@ import sys
 from pathlib import Path
 
 import pytest
-from app.charts.contracts import DaliurenChartV1
+from app.charts.contracts import (
+    DaliurenChartV1,
+    DaliurenCoreFacts,
+    DaliurenSourcePattern,
+)
 from app.charts.projectors import project_daliuren_view_model
 from jsonschema import Draft202012Validator
 
@@ -397,6 +401,73 @@ def test_daliuren_projector_fail_closes_incomplete_four_lessons_source() -> None
     assert isinstance(view_model, DaliurenChartV1)
     assert view_model.core_facts is not None
     assert view_model.core_facts.source_conditioned_patterns == ()
+
+
+def test_daliuren_projector_fail_closes_unbound_source_provenance() -> None:
+    unrelated_audit = copy.deepcopy(_load_fixture())
+    unrelated_audit["source_conditioned_patterns"][0]["predicate_audit"] = [
+        "/unrelated:eq:伏吟"
+    ]
+
+    mismatched_structural_index = copy.deepcopy(_load_fixture())
+    mismatched_structural_index["structural_patterns"] = ["八专日", "伏吟"]
+    mismatched_structural_index["source_conditioned_patterns"] = [
+        _source_pattern("伏吟")
+    ]
+    mismatched_structural_index["source_conditioned_patterns"][0]["fact_paths"] = [
+        "fact:/chart_facts/output/structural_patterns/1"
+    ]
+
+    private_input_path = copy.deepcopy(_load_fixture())
+    private_input_path["source_conditioned_patterns"][0]["fact_paths"].append(
+        "fact:/chart_facts/input/question"
+    )
+
+    incomplete_four_lessons_paths = copy.deepcopy(_load_fixture())
+    incomplete_four_lessons_paths["structural_patterns"] = ["四课不备"]
+    incomplete_four_lessons_paths["four_lessons"] = [
+        {"lesson": 1, "upper": "子", "lower": "庚"},
+        {"lesson": 2, "upper": "丑", "lower": "辰"},
+        {"lesson": 3, "upper": "寅", "lower": "申"},
+        {"lesson": 4, "upper": "子", "lower": "辰"},
+    ]
+    incomplete_four_lessons_paths["source_conditioned_patterns"] = [
+        _source_pattern("四课不备")
+    ]
+    incomplete_four_lessons_paths["source_conditioned_patterns"][0][
+        "predicate_audit"
+    ].append("/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3")
+
+    for payload in (
+        unrelated_audit,
+        mismatched_structural_index,
+        private_input_path,
+        incomplete_four_lessons_paths,
+    ):
+        view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+        assert isinstance(view_model, DaliurenChartV1)
+        assert view_model.core_facts is not None
+        assert view_model.core_facts.source_conditioned_patterns == ()
+
+
+def test_daliuren_contract_rejects_mismatched_or_duplicate_source_identity() -> None:
+    mismatched_identity = _source_pattern("伏吟")
+    mismatched_identity["local_rule_id"] = "liuren.structural.fanyin"
+
+    with pytest.raises(ValueError, match="identity fields must match"):
+        DaliurenSourcePattern.model_validate(mismatched_identity)
+
+    view_model = project_daliuren_view_model(_runtime_core_brief(_load_fixture()))
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is not None
+    duplicate_identity = view_model.core_facts.model_dump(mode="json")
+    duplicate_identity["source_conditioned_patterns"].append(
+        copy.deepcopy(duplicate_identity["source_conditioned_patterns"][0])
+    )
+
+    with pytest.raises(ValueError, match="identities must be unique"):
+        DaliurenCoreFacts.model_validate(duplicate_identity)
 
 
 def test_daliuren_projector_fail_closed_without_runtime_core_facts() -> None:

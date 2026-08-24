@@ -102,6 +102,30 @@
         "structural_patterns": {"type": ["array", "null"], "items": {"type": "string", "minLength": 1}},
         "source_conditioned_patterns": {
           "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "allOf": [
+            {
+              "contains": {"type": "object", "properties": {"rule_id": {"const": "DLR-07"}}, "required": ["rule_id"]},
+              "minContains": 0,
+              "maxContains": 1
+            },
+            {
+              "contains": {"type": "object", "properties": {"rule_id": {"const": "DLR-08"}}, "required": ["rule_id"]},
+              "minContains": 0,
+              "maxContains": 1
+            },
+            {
+              "contains": {"type": "object", "properties": {"rule_id": {"const": "DLR-09"}}, "required": ["rule_id"]},
+              "minContains": 0,
+              "maxContains": 1
+            },
+            {
+              "contains": {"type": "object", "properties": {"rule_id": {"const": "DLR-10"}}, "required": ["rule_id"]},
+              "minContains": 0,
+              "maxContains": 1
+            }
+          ],
           "items": {"$ref": "#/$defs/sourcePattern"}
         },
         "timing_candidates": {"type": ["array", "null"], "items": {"$ref": "#/$defs/timingCandidate"}},
@@ -156,7 +180,41 @@
         "source_dependency_id": {
           "const": "liuren.source-conditioned-structural-patterns-v1"
         }
-      }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "rule_id": {"const": "DLR-07"},
+            "local_rule_id": {"const": "liuren.structural.incomplete-four-lessons"},
+            "title": {"const": "四课不备"},
+            "source_anchor": {"const": "fulltext.md#L58"}
+          }
+        },
+        {
+          "properties": {
+            "rule_id": {"const": "DLR-08"},
+            "local_rule_id": {"const": "liuren.structural.bazhuan-day"},
+            "title": {"const": "八专日"},
+            "source_anchor": {"const": "fulltext.md#L7556"}
+          }
+        },
+        {
+          "properties": {
+            "rule_id": {"const": "DLR-09"},
+            "local_rule_id": {"const": "liuren.structural.fuyin"},
+            "title": {"const": "伏吟"},
+            "source_anchor": {"const": "fulltext.md#L7696"}
+          }
+        },
+        {
+          "properties": {
+            "rule_id": {"const": "DLR-10"},
+            "local_rule_id": {"const": "liuren.structural.fanyin"},
+            "title": {"const": "反吟"},
+            "source_anchor": {"const": "fulltext.md#L7874"}
+          }
+        }
+      ]
     },
     "dayHour": {
       "type": "object",
