@@ -205,8 +205,46 @@ class LiurenRuntimeContractTests(unittest.TestCase):
         self.assertIn("timing_candidates", with_unbounded_timing)
         self.assertEqual(with_unbounded_timing["timing_candidates"], [])
         self.assertIsNone(
+            with_unbounded_timing["dimension_facts"]["timing"]["candidate_branch"]
+        )
+        self.assertIsNone(
             with_unbounded_timing["dimension_facts"]["timing"]["candidate_date"]
         )
+
+    def test_timing_candidate_helper_keys_are_not_published(self) -> None:
+        facts, extension = _all_dimension_extension()
+        timing_candidates = copy.deepcopy(extension["timing"]["candidates"])
+        self.assertTrue(timing_candidates)
+        expected = copy.deepcopy(timing_candidates)
+        timing_candidates[0]["future_internal_trace"] = {"opaque": True}
+
+        contract = build_runtime_core_facts(
+            facts["output"],
+            extension["dimension_facts"],
+            timing_candidates=timing_candidates,
+        )
+
+        self.assertEqual(contract["timing_candidates"], expected)
+        self.assertNotIn("future_internal_trace", contract["timing_candidates"][0])
+        validate_runtime_core_facts(contract)
+
+    def test_timing_candidate_public_payloads_fail_closed(self) -> None:
+        contract = _contract(("timing",))
+        self.assertTrue(contract["timing_candidates"])
+
+        missing = copy.deepcopy(contract)
+        del missing["timing_candidates"][0]["id"]
+        with self.assertRaisesRegex(
+            LiurenRuntimeContractError, "missing required keys: id"
+        ):
+            validate_runtime_core_facts(missing)
+
+        unknown = copy.deepcopy(contract)
+        unknown["timing_candidates"][0]["future_public_field"] = True
+        with self.assertRaisesRegex(
+            LiurenRuntimeContractError, "contains unknown keys: future_public_field"
+        ):
+            validate_runtime_core_facts(unknown)
 
     def test_unknown_internal_adapter_keys_are_not_published(self) -> None:
         facts = _facts()

@@ -824,6 +824,10 @@ def build_runtime_core_facts(
         ),
     }
     if timing_candidates is not _MISSING:
-        contract["timing_candidates"] = copy.deepcopy(timing_candidates)
+        contract["timing_candidates"] = _project_mapping_rows(
+            timing_candidates,
+            fields=_TIMING_CANDIDATE_FIELDS,
+            path="timing_candidates",
+        )
     validate_runtime_core_facts(contract)
     return contract
