@@ -2175,6 +2175,17 @@ describe("大六壬 S3 M1 起课口径条", () => {
     expect(within(caliber()).getByText("这件事何时可能出现回应？")).toBeVisible();
   });
 
+  it("keeps the long-question disclosure target at least 44 by 44 pixels", () => {
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/readings/daliuren-caliber-bar.module.css"),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /\.summary\s*\{[^}]*min-height:\s*var\(--target-min\);[^}]*min-width:\s*var\(--target-min\);/s,
+    );
+  });
+
   it("renders typed caliber fields and hides internal field names", () => {
     render(
       <DaliurenBoard

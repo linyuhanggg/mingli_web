@@ -25,6 +25,7 @@
   display: inline-flex;
   align-items: center;
   min-height: var(--target-min);
+  min-width: var(--target-min);
   cursor: pointer;
   color: var(--color-text);
   font-size: var(--font-size-label);
