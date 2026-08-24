@@ -424,6 +424,116 @@ def test_daliuren_chart_schema_accepts_only_typed_source_pattern_fields(
 
     validate_schema("views/daliuren-chart-v1.schema.json", payload)
 
+    for rule_id, local_rule_id, title, source_anchor in (
+        (
+            "DLR-08",
+            "liuren.structural.bazhuan-day",
+            "八专日",
+            "fulltext.md#L7556",
+        ),
+        (
+            "DLR-10",
+            "liuren.structural.fanyin",
+            "反吟",
+            "fulltext.md#L7874",
+        ),
+    ):
+        rule_payload = copy.deepcopy(payload)
+        rule_payload["core_facts"]["structural_patterns"] = [title]
+        rule_pattern = rule_payload["core_facts"]["source_conditioned_patterns"][0]
+        rule_pattern.update(
+            {
+                "rule_id": rule_id,
+                "local_rule_id": local_rule_id,
+                "title": title,
+                "source_anchor": source_anchor,
+                "predicate_audit": [
+                    f"/chart_facts/output/structural_patterns/0:eq:{title}"
+                ],
+            }
+        )
+        validate_schema("views/daliuren-chart-v1.schema.json", rule_payload)
+
+    second_index_payload = copy.deepcopy(payload)
+    second_index_payload["core_facts"]["structural_patterns"] = ["未映射课体", "伏吟"]
+    second_index_pattern = second_index_payload["core_facts"][
+        "source_conditioned_patterns"
+    ][0]
+    second_index_pattern["fact_paths"] = [
+        "fact:/chart_facts/output/structural_patterns/1"
+    ]
+    second_index_pattern["predicate_audit"] = [
+        "/chart_facts/output/structural_patterns/1:eq:伏吟"
+    ]
+    validate_schema("views/daliuren-chart-v1.schema.json", second_index_payload)
+
+    private_fact_path = copy.deepcopy(payload)
+    private_fact_path["core_facts"]["source_conditioned_patterns"][0][
+        "fact_paths"
+    ] = ["fact:/chart_facts/input/question"]
+    reject_schema("views/daliuren-chart-v1.schema.json", private_fact_path)
+
+    unrelated_predicate_audit = copy.deepcopy(payload)
+    unrelated_predicate_audit["core_facts"]["source_conditioned_patterns"][0][
+        "predicate_audit"
+    ] = ["/unrelated:eq:伏吟"]
+    reject_schema("views/daliuren-chart-v1.schema.json", unrelated_predicate_audit)
+
+    forged_provenance = copy.deepcopy(payload)
+    forged_pattern = forged_provenance["core_facts"][
+        "source_conditioned_patterns"
+    ][0]
+    forged_pattern["fact_paths"] = ["fact:/chart_facts/input/question"]
+    forged_pattern["predicate_audit"] = ["/unrelated:eq:伏吟"]
+    reject_schema("views/daliuren-chart-v1.schema.json", forged_provenance)
+
+    mismatched_path_audit_index = copy.deepcopy(payload)
+    mismatched_path_audit_index["core_facts"]["source_conditioned_patterns"][0][
+        "fact_paths"
+    ] = ["fact:/chart_facts/output/structural_patterns/1"]
+    reject_schema("views/daliuren-chart-v1.schema.json", mismatched_path_audit_index)
+
+    incomplete_four_lessons = copy.deepcopy(payload)
+    incomplete_four_lessons["lessons"][2]["upper"] = "寅"
+    incomplete_four_lessons["core_facts"]["structural_patterns"] = ["四课不备"]
+    incomplete_pattern = incomplete_four_lessons["core_facts"][
+        "source_conditioned_patterns"
+    ][0]
+    incomplete_pattern.update(
+        {
+            "rule_id": "DLR-07",
+            "local_rule_id": "liuren.structural.incomplete-four-lessons",
+            "title": "四课不备",
+            "source_anchor": "fulltext.md#L58",
+            "fact_paths": [
+                "fact:/chart_facts/output/structural_patterns/0",
+                "fact:/chart_facts/output/four_lessons/0/upper",
+                "fact:/chart_facts/output/four_lessons/1/upper",
+                "fact:/chart_facts/output/four_lessons/2/upper",
+                "fact:/chart_facts/output/four_lessons/3/upper",
+            ],
+            "predicate_audit": [
+                "/chart_facts/output/structural_patterns/0:eq:四课不备",
+                "/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3",
+            ],
+        }
+    )
+    validate_schema("views/daliuren-chart-v1.schema.json", incomplete_four_lessons)
+
+    missing_four_lesson_provenance = copy.deepcopy(incomplete_four_lessons)
+    missing_pattern = missing_four_lesson_provenance["core_facts"][
+        "source_conditioned_patterns"
+    ][0]
+    missing_pattern["fact_paths"] = [
+        "fact:/chart_facts/output/structural_patterns/0"
+    ]
+    missing_pattern["predicate_audit"] = [
+        "/chart_facts/output/structural_patterns/0:eq:四课不备"
+    ]
+    reject_schema(
+        "views/daliuren-chart-v1.schema.json", missing_four_lesson_provenance
+    )
+
     mismatched_identity = copy.deepcopy(payload)
     mismatched_identity["core_facts"]["source_conditioned_patterns"][0][
         "local_rule_id"
