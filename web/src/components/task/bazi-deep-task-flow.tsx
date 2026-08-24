@@ -69,7 +69,9 @@ export type BaziDeepTaskFlowProps = {
   previewReadingId: string;
   profileVersionId: string;
   query: string;
+  startedAt?: number;
   onBack: () => void;
+  onRestart?: () => void;
 };
 
 type PollMode = "preview" | "deep";
@@ -121,9 +123,9 @@ export function stateForDeliveryState(
 function statusDescription(state: BaziDeepTaskState): { title: string; text: string } {
   switch (state) {
     case "preview_loading":
-      return { title: "正在准备免费盘面", text: "服务端正在处理确定性盘面，离开页面后任务仍会继续。" };
+      return { title: "正在准备免费盘面", text: "盘面正在生成，离开页面后仍会继续处理。" };
     case "free":
-      return { title: "免费盘面已就绪", text: "下面只展示服务端返回的确定性事实；浏览器不重新排盘。" };
+      return { title: "免费盘面已就绪", text: "下面展示服务端返回的盘面与依据；浏览器不重新排盘。" };
     case "unauthenticated":
       return { title: "深读需要登录", text: "登录只用于接管当前任务和后续履约，不会重复提交出生资料。" };
     case "unpaid":
@@ -141,7 +143,7 @@ function statusDescription(state: BaziDeepTaskState): { title: string; text: str
     case "running":
       return { title: "深读生成中", text: "事实整理和正文生成正在服务端进行，请稍候。" };
     case "succeeded":
-      return { title: "深读已交付", text: "最终结果已由服务端接纳并固定保存。" };
+      return { title: "深读已交付", text: "最终结果已经固定保存，可以随时回看。" };
     case "failed":
       return { title: "任务暂未完成", text: "没有展示未确认的深读内容；可按页面提示重试或稍后恢复。" };
   }
@@ -182,7 +184,9 @@ export function BaziDeepTaskFlow({
   previewReadingId,
   profileVersionId,
   query,
+  startedAt,
   onBack,
+  onRestart,
 }: BaziDeepTaskFlowProps) {
   const router = useRouter();
   const session = useOptionalAccountSession();
@@ -472,14 +476,12 @@ export function BaziDeepTaskFlow({
         <p className={styles.toolbarNote}>当前任务状态由服务端确认</p>
       </header>
 
+      {accessState !== "preview_loading" ? (
       <section className={styles.section} aria-labelledby="bazi-deep-status-title">
         <div className={styles.statusCopy}>
           <h2 id="bazi-deep-status-title">任务进度</h2>
           <p>{phase.text}</p>
         </div>
-        {accessState === "preview_loading" ? (
-          <Status state="processing" title={phase.title} description={phase.text} />
-        ) : null}
         {accessState === "failed" ? (
           <Status
             actions={
@@ -537,9 +539,11 @@ export function BaziDeepTaskFlow({
           <Status state="success" title={phase.title} description={phase.text} />
         ) : null}
       </section>
+      ) : null}
 
       {(
-        accessState === "free"
+        accessState === "preview_loading"
+        || accessState === "free"
         || accessState === "unauthenticated"
         || accessState === "unpaid"
         || accessState === "awaiting_fulfillment"
@@ -552,11 +556,15 @@ export function BaziDeepTaskFlow({
       ) ? (
         <section className={styles.section} aria-labelledby="bazi-free-result-title">
           <div className={styles.statusCopy}>
-            <h2 id="bazi-free-result-title">免费确定性盘面</h2>
+            <h2 id="bazi-free-result-title">免费盘面</h2>
             <p>盘面和事实由服务端排定；这里不展示尚未生成的深读内容。</p>
           </div>
           <div className={styles.result}>
-            <ReadingResult readingId={previewReadingId} />
+            <ReadingResult
+              readingId={previewReadingId}
+              onRestart={onRestart}
+              startedAt={startedAt}
+            />
           </div>
         </section>
       ) : null}

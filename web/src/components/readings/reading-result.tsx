@@ -38,6 +38,10 @@ import { RuntimeChart } from "./runtime-chart";
 import { VerificationForm } from "./verification-form";
 
 const DEFAULT_POLL_MS = 2000;
+const POLLING_CAP_MS = 10 * 60 * 1000;
+const LOADING_REVEAL_MS = 300;
+const HISTORY_ESCAPE_MS = 15 * 1000;
+const RETRY_ESCAPE_MS = 60 * 1000;
 const RUNTIME_CHART_VERSIONS = new Set([
   "hecan-view/v1",
   "canwen-view/v1",
@@ -69,6 +73,19 @@ const RELATIONSHIP_PRODUCT_IDS = new Set([
   "qizheng-relationship",
 ]);
 const RESULT_READY_STATUSES = new Set(["prepared", "completing", "accepted"]);
+
+function validStartedAt(value: number | undefined): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+function elapsedSince(startedAt: number): number {
+  return Math.max(0, Date.now() - startedAt);
+}
+
+function serverStartedAt(value: string | undefined): number | null {
+  const parsed = typeof value === "string" ? Date.parse(value) : Number.NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
 
 type StatusTone = "processing" | "success" | "error";
 
@@ -212,13 +229,109 @@ function ArchiveRail({
   );
 }
 
-export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
+function WaitingStatus({
+  context,
+  elapsedMs,
+  onRestart,
+  onRetry,
+}: Readonly<{
+  context?: string;
+  elapsedMs: number;
+  onRestart?: () => void;
+  onRetry: () => void;
+}>) {
+  const elapsedSeconds = Math.floor(elapsedMs / 1000);
+  const canLeaveForHistory = elapsedMs >= HISTORY_ESCAPE_MS;
+  const canRestart = elapsedMs >= RETRY_ESCAPE_MS;
+  const pollingEnded = elapsedMs >= POLLING_CAP_MS;
+  const isLongWait = elapsedMs >= HISTORY_ESCAPE_MS;
+  const isBusy = elapsedMs >= RETRY_ESCAPE_MS;
+  const title = isBusy
+    ? "这次排盘比平时久"
+    : isLongWait
+      ? "仍在认真排盘"
+      : "正在为你排盘";
+  const description = pollingEnded
+    ? "自动检查已暂停。资料仍然保留，可以重新发起或稍后查看。"
+    : isBusy
+      ? "可能服务繁忙；资料不会丢。可以重试新任务，或稍后在推演历史查看。"
+      : isLongWait
+        ? "仍在认真排盘。你可以离开，完成后在推演历史找到它。"
+        : "通常需要 5–15 秒。可以留在这里等待结果。";
+
+  return (
+    <section aria-atomic="true" aria-busy={!pollingEnded} role="status">
+      <p>排盘进度</p>
+      <h2>
+        {title}
+        <span aria-hidden="true"> · 已等待 {elapsedSeconds} 秒</span>
+      </h2>
+      <p>{description}</p>
+      {context ? <p>{context}</p> : null}
+      <ol aria-label="排盘进度阶段">
+        <li>资料已提交</li>
+        <li aria-current="step">盘面生成中</li>
+        <li>排版交付</li>
+      </ol>
+      {canLeaveForHistory ? (
+        <div className={surface.actionRow}>
+          {canRestart ? (
+            <button type="button" onClick={onRestart ?? onRetry}>
+              {onRestart ? "重试（保留原资料）" : "重新检查状态"}
+            </button>
+          ) : null}
+          <Link data-variant="secondary" href="/account/history">
+            稍后查看
+          </Link>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+type ReadingResultProps = Readonly<{
+  readingId: string;
+  onRestart?: () => void;
+  startedAt?: number;
+}>;
+
+export function ReadingResult(props: ReadingResultProps) {
+  const instanceKey = `${props.readingId}:${props.startedAt ?? "fresh"}`;
+  return <ReadingResultForVersion key={instanceKey} {...props} />;
+}
+
+function ReadingResultForVersion({
+  readingId,
+  onRestart,
+  startedAt,
+}: ReadingResultProps) {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<ReadingVersionSummary | null>(null);
   const [result, setResult] = useState<ReadingResultResponse | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [retryKey, setRetryKey] = useState(0);
+  const [timerStartedAt, setTimerStartedAt] = useState<number>(
+    () => (validStartedAt(startedAt) ? startedAt : Date.now()),
+  );
+  const [elapsedMs, setElapsedMs] = useState(
+    () => (validStartedAt(startedAt) ? elapsedSince(startedAt) : 0),
+  );
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const updateElapsed = () => setElapsedMs(elapsedSince(timerStartedAt));
+    const currentElapsed = elapsedSince(timerStartedAt);
+    const boundaryTimers = [LOADING_REVEAL_MS, HISTORY_ESCAPE_MS, RETRY_ESCAPE_MS]
+      .filter((boundary) => boundary > currentElapsed)
+      .map((boundary) => window.setTimeout(updateElapsed, boundary - currentElapsed));
+    const elapsedTimer = window.setInterval(updateElapsed, 1000);
+    updateElapsed();
+
+    return () => {
+      for (const timer of boundaryTimers) window.clearTimeout(timer);
+      window.clearInterval(elapsedTimer);
+    };
+  }, [timerStartedAt]);
 
   useEffect(() => {
     let cancelled = false;
@@ -234,6 +347,12 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
       try {
         const response = await pollReading(readingId);
         if (cancelled) return;
+        const authoritativeStartedAt = serverStartedAt(response.created_at);
+        if (authoritativeStartedAt !== null) {
+          setTimerStartedAt((current) =>
+            current === authoritativeStartedAt ? current : authoritativeStartedAt,
+          );
+        }
         setSummary(response);
         setError(null);
         setLoading(false);
@@ -319,12 +438,21 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     loading ||
     (summary && RESULT_READY_STATUSES.has(summary.status) && !result)
   ) {
+    if (elapsedMs < LOADING_REVEAL_MS) {
+      return (
+        <article
+          aria-busy="true"
+          aria-label="正在读取结果"
+          className={surface.readingBody}
+        />
+      );
+    }
     return (
       <article className={surface.readingBody}>
-        <Status
-          description="页面只展示服务端公开摘要；状态与正文分开保存。"
-          state="loading"
-          title="正在读取结果…"
+        <WaitingStatus
+          elapsedMs={elapsedMs}
+          onRestart={onRestart}
+          onRetry={handleRetry}
         />
       </article>
     );
@@ -1123,18 +1251,55 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     );
   }
 
+  if (summary.status === "runtime_unknown") {
+    return (
+      <div className={surface.readingLayout}>
+        <article className={surface.readingBody}>
+          <Status
+            actions={(
+              <button type="button" onClick={handleRetry}>
+                重新检查状态
+              </button>
+            )}
+            description="运行状态暂时未知，资料仍然保留，可以重新检查。"
+            state="unavailable"
+            title="暂时无法确认进度"
+          />
+        </article>
+        <ArchiveRail readingId={readingId} summary={summary} result={null} />
+      </div>
+    );
+  }
+
   const meta = statusMeta(summary.status);
+  if (meta.tone === "processing") {
+    if (elapsedMs < LOADING_REVEAL_MS) {
+      return (
+        <article
+          aria-busy="true"
+          aria-label="正在准备排盘结果"
+          className={surface.readingBody}
+        />
+      );
+    }
+    return (
+      <div className={surface.readingLayout}>
+        <article className={surface.readingBody}>
+          <WaitingStatus
+            context={`${meta.text} 目标日期：${formatHorizon(summary.horizon)}`}
+            elapsedMs={elapsedMs}
+            onRestart={onRestart}
+            onRetry={handleRetry}
+          />
+        </article>
+        <ArchiveRail readingId={readingId} summary={summary} result={null} />
+      </div>
+    );
+  }
   return (
     <div className={surface.readingLayout}>
       <article className={surface.readingBody}>
         <Status
-          actions={
-            summary.status === "runtime_unknown" ? (
-              <button type="button" onClick={handleRetry}>
-                重新检查状态
-              </button>
-            ) : null
-          }
           description={`${meta.text} 目标日期：${formatHorizon(summary.horizon)}`}
           state={meta.tone === "error" ? "error" : "processing"}
           title={meta.label}

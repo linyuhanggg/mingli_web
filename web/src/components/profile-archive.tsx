@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import * as profileApi from "@/lib/api";
 
 import {
   ApiError,
@@ -12,6 +13,11 @@ import {
   type ProfileSummary,
 } from "@/lib/api";
 import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
+import {
+  consumeProfileSavedFlash,
+  profileBirthDate,
+  profileDisplayName,
+} from "@/lib/profile-display-metadata";
 
 import surface from "./app-surface.module.css";
 import { StatusPanel } from "./status-panel";
@@ -36,6 +42,46 @@ function errorMessage(error: unknown): string {
   return "读取档案失败，请稍后重试。";
 }
 
+type ProfileDisplayFields = {
+  readonly display_name?: string | null;
+  readonly birth_date?: string | null;
+};
+
+type DisplayProfile = ProfileSummary & ProfileDisplayFields;
+
+async function persistProfileDisplayName(
+  profileId: string,
+  displayName: string,
+): Promise<DisplayProfile> {
+  const injectedUpdate = (profileApi as typeof profileApi & {
+    updateProfileDisplayName?: (
+      targetProfileId: string,
+      targetDisplayName: string,
+    ) => Promise<DisplayProfile>;
+  }).updateProfileDisplayName;
+  if (injectedUpdate) {
+    return injectedUpdate(profileId, displayName);
+  }
+
+  const csrf = await profileApi.getCsrfToken();
+  const response = await fetch(`/api/v1/profiles/${encodeURIComponent(profileId)}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrf,
+    },
+    body: JSON.stringify({ display_name: displayName }),
+  });
+  const body = response.headers.get("content-type")?.includes("json")
+    ? await response.json() as DisplayProfile & { title?: string }
+    : null;
+  if (!response.ok || !body) {
+    throw new ApiError(body?.title ?? "名称保存失败，请稍后重试。", response.status);
+  }
+  return body;
+}
+
 export function ProfileArchive() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,6 +93,14 @@ export function ProfileArchive() {
   const [attempt, setAttempt] = useState(0);
   const [startingId, setStartingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [savedFlash, setSavedFlash] = useState(() =>
+    justCreated ? consumeProfileSavedFlash() : null,
+  );
+  const [showSavedBanner, setShowSavedBanner] = useState(justCreated);
+  const [renamingProfileId, setRenamingProfileId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [renameError, setRenameError] = useState("");
+  const [renameBusy, setRenameBusy] = useState(false);
   const intentKeyRef = useRef<IntentKey | null>(null);
 
   useEffect(() => {
@@ -106,12 +160,55 @@ export function ProfileArchive() {
     }
   }
 
+  function startRename(profile: ProfileSummary) {
+    setRenamingProfileId(profile.profile_id);
+    setRenameValue(profileDisplayName(profile));
+    setRenameError("");
+  }
+
+  async function saveRename(profile: ProfileSummary) {
+    const nextName = renameValue.trim();
+    if (!nextName) {
+      setRenameError("请填写档案名称");
+      return;
+    }
+    setRenameBusy(true);
+    setRenameError("");
+    try {
+      const updated = await persistProfileDisplayName(profile.profile_id, nextName);
+      setProfiles((current) =>
+        current?.map((entry) =>
+          entry.profile_id === updated.profile_id ? updated : entry,
+        ) ?? current,
+      );
+      if (savedFlash?.profileId === profile.profile_id) {
+        const returnedName = updated.display_name?.trim();
+        if (updated.profile_id === profile.profile_id && returnedName) {
+          setSavedFlash({
+            name: profileDisplayName(updated),
+            profileId: updated.profile_id,
+          });
+        } else {
+          setShowSavedBanner(false);
+        }
+      }
+      setRenamingProfileId(null);
+      setRenameValue("");
+    } catch (reason) {
+      setRenameError(
+        reason instanceof Error ? reason.message : "名称保存失败，请稍后重试。",
+      );
+    } finally {
+      setRenameBusy(false);
+    }
+  }
+
   if (loading) {
     return (
       <StatusPanel
         state="loading"
         title="正在读取档案…"
-        description="不可变档案版本正在抵达，请稍候。"
+        description="正在准备档案列表，请稍候。"
       />
     );
   }
@@ -169,14 +266,17 @@ export function ProfileArchive() {
   }
 
   const latest = profiles[0];
+  const hasDisplayMetadata = profiles.some(
+    (profile) => "display_name" in profile || "birth_date" in profile,
+  );
 
   return (
     <>
-      {justCreated ? (
+      {showSavedBanner ? (
         <StatusPanel
           state="success"
-          title="档案已保存"
-          description="新的不可变档案版本已经落库。下一步可以直接看八字概览，或发起今日/近七日。"
+          title={savedFlash ? `“${savedFlash.name}”已保存` : "档案已保存"}
+          description="下一步可以直接查看八字概览，或发起今日、近七日主题。"
           actionHref={`/app/bazi?profile=${encodeURIComponent(latest.profile_version_id)}`}
           actionLabel="查看八字概览"
         />
@@ -193,9 +293,13 @@ export function ProfileArchive() {
       <section className={surface.paper} aria-labelledby="profile-archive-title">
         <div className={surface.sectionHeader}>
           <div>
-            <h2 id="profile-archive-title">已保存的档案版本</h2>
+            <h2 id="profile-archive-title">
+              {hasDisplayMetadata ? "已保存的档案" : "已保存的档案版本"}
+            </h2>
             <p>
-              这里只展示服务端返回的安全字段。建档后先从这里看八字，或继续今日/近七日。
+              {hasDisplayMetadata
+                ? "名称用于帮助辨认；每次更新都会保留一个可回看的版本。"
+                : "这里只展示服务端返回的安全字段。建档后先从这里看八字，或继续今日/近七日。"}
             </p>
           </div>
         </div>
@@ -203,14 +307,71 @@ export function ProfileArchive() {
           {profiles.map((entry) => (
             <li key={entry.profile_version_id} className={styles.profileItem}>
               <div className={styles.profileMain}>
-                <strong className={styles.profileName}>
-                  {formatProfileOption(entry)}
-                </strong>
+                {renamingProfileId === entry.profile_id ? (
+                  <div aria-busy={renameBusy} className={styles.renameRow}>
+                    <label className={styles.srOnly} htmlFor={`rename-${entry.profile_id}`}>
+                      档案名称
+                    </label>
+                    <input
+                      aria-describedby={renameError ? `rename-error-${entry.profile_id}` : undefined}
+                      aria-invalid={Boolean(renameError)}
+                      autoFocus
+                      disabled={renameBusy}
+                      id={`rename-${entry.profile_id}`}
+                      maxLength={80}
+                      onChange={(event) => {
+                        setRenameValue(event.currentTarget.value);
+                        if (renameError) setRenameError("");
+                      }}
+                      value={renameValue}
+                    />
+                    <button
+                      aria-busy={renameBusy}
+                      disabled={renameBusy}
+                      type="button"
+                      onClick={() => void saveRename(entry)}
+                    >
+                      {renameBusy ? "正在保存…" : "保存名称"}
+                    </button>
+                    <button
+                      data-variant="secondary"
+                      disabled={renameBusy}
+                      type="button"
+                      onClick={() => setRenamingProfileId(null)}
+                    >
+                      取消
+                    </button>
+                    {renameError ? (
+                      <span id={`rename-error-${entry.profile_id}`} role="alert">
+                        {renameError}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : (
+                  <strong className={styles.profileName}>
+                    {hasDisplayMetadata
+                      ? profileDisplayName(entry)
+                      : formatProfileOption(entry)}
+                  </strong>
+                )}
                 <span className={styles.profileMeta}>
-                  确认于 {formatProfileTime(entry.created_at)}
+                  {profileBirthDate(entry)} · v{entry.version} · 更新于 {formatProfileTime(entry.created_at)}
                 </span>
               </div>
               <div className={styles.profileActions}>
+                <button
+                  type="button"
+                  className={surface.secondaryButton}
+                  onClick={() => startRename(entry)}
+                >
+                  重命名
+                </button>
+                <Link
+                  className={surface.secondaryButton}
+                  href={`/account/profiles/${encodeURIComponent(entry.profile_id)}`}
+                >
+                  查看版本
+                </Link>
                 <button
                   type="button"
                   className={surface.secondaryButton}

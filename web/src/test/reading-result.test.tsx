@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -223,6 +223,7 @@ function callsTo(fetchMock: ReturnType<typeof vi.fn>, suffix: string) {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.useRealTimers();
   routerPush.mockReset();
 });
 
@@ -231,6 +232,66 @@ beforeEach(() => {
 });
 
 describe("ReadingVersionSummary polling and explicit result fetch", () => {
+  it.each([
+    {
+      elapsedMs: 14_999,
+      before: "正在为你排盘",
+      after: "仍在认真排盘",
+      action: "稍后查看",
+    },
+    {
+      elapsedMs: 59_999,
+      before: "仍在认真排盘",
+      after: "这次排盘比平时久",
+      action: "重试（保留原资料）",
+    },
+  ])(
+    "continues a restored Reading across the $elapsedMs ms boundary",
+    async ({ elapsedMs, before, after, action }) => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+      vi.stubGlobal("fetch", vi.fn<typeof fetch>(() => new Promise<Response>(() => {})));
+
+      render(
+        <ReadingResult
+          readingId={VERSION_ID}
+          onRestart={vi.fn()}
+          startedAt={Date.now() - elapsedMs}
+        />,
+      );
+      await act(async () => vi.advanceTimersByTime(0));
+
+      expect(screen.getByRole("status")).toHaveTextContent(before);
+      expect(screen.queryByRole(action === "稍后查看" ? "link" : "button", { name: action }))
+        .not.toBeInTheDocument();
+
+      await act(async () => vi.advanceTimersByTime(1));
+
+      expect(screen.getByRole("status")).toHaveTextContent(after);
+      expect(screen.getByRole(action === "稍后查看" ? "link" : "button", { name: action }))
+        .toBeVisible();
+    },
+  );
+
+  it("prefers the server created_at over a fresh component mount", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>(async () =>
+        jsonResponse(
+          readingSummary("input_ready", { created_at: "2026-08-25T00:00:00Z" }),
+        ),
+      ),
+    );
+
+    render(<ReadingResult readingId={VERSION_ID} onRestart={vi.fn()} />);
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+
+    expect(screen.getByRole("status")).toHaveTextContent("这次排盘比平时久");
+    expect(screen.getByRole("button", { name: "重试（保留原资料）" })).toBeVisible();
+  });
+
   it("polls the summary, then GETs /result and renders the exact Accepted Copy", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
