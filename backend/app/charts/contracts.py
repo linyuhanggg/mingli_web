@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Annotated, Literal
 
 from pydantic import (
@@ -2064,6 +2065,67 @@ class DaliurenCandidateBranch(ContractModel):
     source_rule: str = Field(min_length=1)
 
 
+_DALIUREN_DIMENSION_ENVELOPE_FIELDS = frozenset(
+    {
+        "requested_dimension",
+        "canonical_dimension",
+        "status",
+        "source_rule_ids",
+        "rule_evidence",
+    }
+)
+_DALIUREN_CANONICAL_DIMENSION_FIELDS = {
+    "outcome": frozenset(
+        {
+            "subject_object_relation",
+            "transmissions_to_day",
+            "initial_final_relation",
+            "stage_flow",
+        }
+    ),
+    "timing": frozenset(
+        {"relative_speed", "candidate_branch", "candidate_date"}
+    ),
+    "state": frozenset({"stage_status", "general_landing_correspondences"}),
+    "location": frozenset({"stage_branch_directions"}),
+    "relationship": frozenset(
+        {"six_relative_stages", "subject_object_relation", "stage_flow"}
+    ),
+    "work": frozenset(
+        {
+            "six_relative_stages",
+            "stage_status",
+            "subject_object_relation",
+            "target_relative",
+            "target_contract_status",
+            "target_presence",
+            "target_strength",
+            "target_general_modifier",
+        }
+    ),
+    "money": frozenset(
+        {
+            "wealth_presence",
+            "wealth_stage_strength",
+            "wealth_void_status",
+            "wealth_general_modifier",
+        }
+    ),
+}
+_DALIUREN_REQUESTED_TO_CANONICAL = {
+    "outcome": "outcome",
+    "timing": "timing",
+    "state": "state",
+    "current_state": "state",
+    "location": "location",
+    "location_direction": "location",
+    "relationship": "relationship",
+    "work": "work",
+    "career": "work",
+    "money": "money",
+}
+
+
 class DaliurenDimensionFact(ContractModel):
     canonical_dimension: str = Field(min_length=1)
     requested_dimension: str = Field(min_length=1)
@@ -2134,6 +2196,31 @@ class DaliurenDimensionFact(ContractModel):
         default=None,
     )
 
+    @model_validator(mode="before")
+    @classmethod
+    def _uses_exact_runtime_canonical_field_set(cls, value: object) -> object:
+        """Reject omitted or cross-dimension fields in Runtime v1 rows."""
+
+        if not isinstance(value, Mapping):
+            return value
+        requested = value.get("requested_dimension")
+        canonical = value.get("canonical_dimension")
+        if not isinstance(requested, str) or not isinstance(canonical, str):
+            return value
+        expected_canonical = _DALIUREN_REQUESTED_TO_CANONICAL.get(requested)
+        if expected_canonical != canonical:
+            raise ValueError(
+                "canonical_dimension must match requested_dimension in Runtime v1"
+            )
+        expected_fields = _DALIUREN_DIMENSION_ENVELOPE_FIELDS | (
+            _DALIUREN_CANONICAL_DIMENSION_FIELDS[canonical]
+        )
+        if set(value) != expected_fields:
+            raise ValueError(
+                f"{canonical} dimensions must use the complete Runtime v1 field set"
+            )
+        return value
+
     @model_serializer(mode="wrap")
     def _serialize_only_runtime_fields(
         self,
@@ -2149,20 +2236,7 @@ class DaliurenDimensionFact(ContractModel):
         }
 
 
-_DALIUREN_REQUESTED_DIMENSIONS = frozenset(
-    {
-        "outcome",
-        "timing",
-        "state",
-        "current_state",
-        "location",
-        "location_direction",
-        "relationship",
-        "work",
-        "career",
-        "money",
-    }
-)
+_DALIUREN_REQUESTED_DIMENSIONS = frozenset(_DALIUREN_REQUESTED_TO_CANONICAL)
 
 
 class DaliurenCoreFacts(ContractModel):
@@ -2188,7 +2262,7 @@ class DaliurenCoreFacts(ContractModel):
     lesson_method: DaliurenLessonMethod | None = None
     month_general: DaliurenMonthGeneral | None = None
     noble_person: DaliurenNoblePerson | None = None
-    plate_offset: int | None = Field(default=None, ge=0, le=11)
+    plate_offset: int | None = Field(default=None, ge=0, le=11, strict=True)
     structural_patterns: tuple[str, ...] | None = None
     timing_candidates: tuple[DaliurenTimingCandidate, ...] | None = None
     xunkong: DaliurenXunkong | None = None

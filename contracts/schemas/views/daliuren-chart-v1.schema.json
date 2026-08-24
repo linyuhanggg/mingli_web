@@ -199,7 +199,37 @@
         "wealth_general_modifier": {"type": ["array", "null"]},
         "wealth_stage_strength": {"type": ["array", "null"]},
         "wealth_void_status": {"type": ["array", "null"]}
-      }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"canonical_dimension": {"const": "outcome"}}},
+          "then": {"required": ["subject_object_relation", "transmissions_to_day", "initial_final_relation", "stage_flow"]}
+        },
+        {
+          "if": {"properties": {"canonical_dimension": {"const": "timing"}}},
+          "then": {"required": ["relative_speed", "candidate_branch", "candidate_date"]}
+        },
+        {
+          "if": {"properties": {"canonical_dimension": {"const": "state"}}},
+          "then": {"required": ["stage_status", "general_landing_correspondences"]}
+        },
+        {
+          "if": {"properties": {"canonical_dimension": {"const": "location"}}},
+          "then": {"required": ["stage_branch_directions"]}
+        },
+        {
+          "if": {"properties": {"canonical_dimension": {"const": "relationship"}}},
+          "then": {"required": ["six_relative_stages", "subject_object_relation", "stage_flow"]}
+        },
+        {
+          "if": {"properties": {"canonical_dimension": {"const": "work"}}},
+          "then": {"required": ["six_relative_stages", "stage_status", "subject_object_relation", "target_relative", "target_contract_status", "target_presence", "target_strength", "target_general_modifier"]}
+        },
+        {
+          "if": {"properties": {"canonical_dimension": {"const": "money"}}},
+          "then": {"required": ["wealth_presence", "wealth_stage_strength", "wealth_void_status", "wealth_general_modifier"]}
+        }
+      ]
     },
     "ruleEvidence": {
       "type": "object",

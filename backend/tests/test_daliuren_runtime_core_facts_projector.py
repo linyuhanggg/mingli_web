@@ -160,6 +160,7 @@ def test_daliuren_projector_preserves_explicit_dimension_nulls() -> None:
     work = copy.deepcopy(payload["dimension_facts"]["relationship"])
     work["requested_dimension"] = "work"
     work["canonical_dimension"] = "work"
+    del work["stage_flow"]
     work["stage_status"] = []
     work["target_contract_status"] = None
     work["target_general_modifier"] = None
@@ -195,6 +196,10 @@ def test_daliuren_projector_allows_empty_source_rule_ids_for_location() -> None:
     location["canonical_dimension"] = "location"
     location["requested_dimension"] = "location"
     location["source_rule_ids"] = []
+    del location["six_relative_stages"]
+    del location["subject_object_relation"]
+    del location["stage_flow"]
+    location["stage_branch_directions"] = []
     payload["dimension_facts"]["location"] = location
 
     view_model = project_daliuren_view_model(_runtime_core_brief(payload))
@@ -283,6 +288,57 @@ def test_daliuren_projector_fails_closed_when_any_required_runtime_field_is_miss
         payload.pop(field)
 
         assert project_daliuren_view_model(_runtime_core_brief(payload)) is None, field
+
+
+def test_daliuren_projector_fails_closed_when_required_core_fields_are_malformed() -> None:
+    malformed_core_fields: dict[str, object] = {
+        "day_hour": "bad",
+        "earth_plate": "bad",
+        "heaven_plate": [],
+        "heavenly_generals": [],
+        "month_general": "bad",
+        "noble_person": "bad",
+        "lesson_method": "bad",
+        "plate_offset": True,
+        "xunkong": "bad",
+        "structural_patterns": {"bad": "shape"},
+        "dimension_facts": "bad",
+    }
+    for field, malformed_value in malformed_core_fields.items():
+        payload = copy.deepcopy(_load_fixture())
+        payload[field] = malformed_value
+
+        view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+        assert isinstance(view_model, DaliurenChartV1), field
+        assert view_model.core_facts is None, field
+
+    for field in ("four_lessons", "three_transmissions"):
+        payload = copy.deepcopy(_load_fixture())
+        payload[field] = []
+
+        assert project_daliuren_view_model(_runtime_core_brief(payload)) is None, field
+
+
+def test_daliuren_projector_rejects_incomplete_canonical_dimension_fields() -> None:
+    for field in ("candidate_branch", "candidate_date", "relative_speed"):
+        payload = copy.deepcopy(_load_fixture())
+        del payload["dimension_facts"]["timing"][field]
+
+        view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+        assert isinstance(view_model, DaliurenChartV1), field
+        assert view_model.core_facts is None, field
+
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    valid_payload = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    for field in ("candidate_branch", "candidate_date", "relative_speed"):
+        schema_payload = copy.deepcopy(valid_payload)
+        del schema_payload["core_facts"]["dimension_facts"]["timing"][field]
+
+        assert list(Draft202012Validator(schema).iter_errors(schema_payload)), field
 
 
 def test_daliuren_projector_fail_closed_on_unknown_lesson_method_key() -> None:

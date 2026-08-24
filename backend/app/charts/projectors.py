@@ -5360,44 +5360,24 @@ def _daliuren_core_facts_from_runtime(
 ) -> DaliurenCoreFacts | None:
     """Project pinned core facts from the validated Runtime bundle."""
 
-    kwargs: dict[str, object] = {}
-    for field in (
+    required_core_fields = (
         "day_hour",
+        "dimension_facts",
+        "earth_plate",
+        "heaven_plate",
+        "heavenly_generals",
         "lesson_method",
         "month_general",
         "noble_person",
+        "plate_offset",
+        "structural_patterns",
         "xunkong",
-    ):
-        if field in payload and payload[field] is not None:
-            kwargs[field] = payload[field]
-
-    dimension_facts = payload.get("dimension_facts")
-    if isinstance(dimension_facts, Mapping) and dimension_facts:
-        kwargs["dimension_facts"] = dict(dimension_facts)
-
-    for field in ("heaven_plate", "heavenly_generals"):
-        value = payload.get(field)
-        if isinstance(value, list) and value:
-            kwargs[field] = value
-
-    earth_plate = payload.get("earth_plate")
-    if isinstance(earth_plate, list) and earth_plate:
-        kwargs["earth_plate"] = earth_plate
-
-    structural_patterns = payload.get("structural_patterns")
-    if isinstance(structural_patterns, list):
-        kwargs["structural_patterns"] = structural_patterns
-
-    plate_offset = payload.get("plate_offset")
-    if isinstance(plate_offset, int) and not isinstance(plate_offset, bool):
-        kwargs["plate_offset"] = plate_offset
-
-    timing_candidates = payload.get("timing_candidates")
-    if isinstance(timing_candidates, list):
-        kwargs["timing_candidates"] = timing_candidates
-
-    if not kwargs:
-        return None
+    )
+    # Required Runtime fields must be handed to Pydantic unchanged. Filtering
+    # by shape here would silently turn malformed required facts into defaults.
+    kwargs = {field: payload[field] for field in required_core_fields}
+    if "timing_candidates" in payload:
+        kwargs["timing_candidates"] = payload["timing_candidates"]
     try:
         return DaliurenCoreFacts.model_validate(kwargs)
     except ValidationError:
