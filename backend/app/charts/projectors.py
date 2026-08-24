@@ -5274,6 +5274,14 @@ _DALIUREN_RUNTIME_REQUIRED_FIELDS = (
     "structural_patterns",
     "dimension_facts",
 )
+_DALIUREN_RUNTIME_OPTIONAL_FIELDS = ("timing_candidates",)
+_DALIUREN_RUNTIME_ENVELOPE_FIELDS = frozenset(
+    {
+        "schema_version",
+        *_DALIUREN_RUNTIME_REQUIRED_FIELDS,
+        *_DALIUREN_RUNTIME_OPTIONAL_FIELDS,
+    }
+)
 _DALIUREN_RUNTIME_TRANSMISSION_FIELDS = frozenset(
     {"stage", "branch", "heavenly_general", "six_relative"}
 )
@@ -5290,6 +5298,12 @@ def _daliuren_runtime_core_facts_payload(facts: object) -> Mapping[str, object] 
     if not isinstance(payload, Mapping):
         return None
     if payload.get("schema_version") != _DALIUREN_RUNTIME_CORE_FACTS_VERSION:
+        return None
+    if set(payload) - _DALIUREN_RUNTIME_ENVELOPE_FIELDS:
+        return None
+    if "timing_candidates" in payload and not isinstance(
+        payload["timing_candidates"], list
+    ):
         return None
     return payload
 

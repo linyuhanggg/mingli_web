@@ -2145,7 +2145,7 @@ class DaliurenDimensionFact(ContractModel):
     requested_dimension: str = Field(min_length=1)
     rule_evidence: DaliurenRuleEvidence
     status: Literal["calculated_facts_not_verdict"]
-    source_rule_ids: tuple[str, ...]
+    source_rule_ids: tuple[Annotated[str, Field(min_length=1)], ...]
     initial_final_relation: DaliurenRelationFact | None = Field(
         default=None,
     )

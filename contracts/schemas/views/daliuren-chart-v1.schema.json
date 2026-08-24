@@ -217,6 +217,28 @@
         "wealth_stage_strength": {"type": ["array", "null"]},
         "wealth_void_status": {"type": ["array", "null"]}
       },
+      "dependentSchemas": {
+        "initial_final_relation": {"properties": {"canonical_dimension": {"const": "outcome"}}},
+        "transmissions_to_day": {"properties": {"canonical_dimension": {"const": "outcome"}}},
+        "subject_object_relation": {"properties": {"canonical_dimension": {"enum": ["outcome", "relationship", "work"]}}},
+        "stage_flow": {"properties": {"canonical_dimension": {"enum": ["outcome", "relationship"]}}},
+        "candidate_branch": {"properties": {"canonical_dimension": {"const": "timing"}}},
+        "candidate_date": {"properties": {"canonical_dimension": {"const": "timing"}}},
+        "relative_speed": {"properties": {"canonical_dimension": {"const": "timing"}}},
+        "stage_status": {"properties": {"canonical_dimension": {"enum": ["state", "work"]}}},
+        "general_landing_correspondences": {"properties": {"canonical_dimension": {"const": "state"}}},
+        "stage_branch_directions": {"properties": {"canonical_dimension": {"const": "location"}}},
+        "six_relative_stages": {"properties": {"canonical_dimension": {"enum": ["relationship", "work"]}}},
+        "target_contract_status": {"properties": {"canonical_dimension": {"const": "work"}}},
+        "target_presence": {"properties": {"canonical_dimension": {"const": "work"}}},
+        "target_relative": {"properties": {"canonical_dimension": {"const": "work"}}},
+        "target_general_modifier": {"properties": {"canonical_dimension": {"const": "work"}}},
+        "target_strength": {"properties": {"canonical_dimension": {"const": "work"}}},
+        "wealth_presence": {"properties": {"canonical_dimension": {"const": "money"}}},
+        "wealth_general_modifier": {"properties": {"canonical_dimension": {"const": "money"}}},
+        "wealth_stage_strength": {"properties": {"canonical_dimension": {"const": "money"}}},
+        "wealth_void_status": {"properties": {"canonical_dimension": {"const": "money"}}}
+      },
       "allOf": [
         {
           "if": {"properties": {"canonical_dimension": {"const": "outcome"}}},

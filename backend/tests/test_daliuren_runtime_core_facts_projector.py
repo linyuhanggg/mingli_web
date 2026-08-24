@@ -124,6 +124,17 @@ def test_daliuren_projector_fail_closed_on_wrong_schema_version() -> None:
     assert project_daliuren_view_model(_runtime_core_brief(payload)) is None
 
 
+def test_daliuren_projector_rejects_unknown_or_malformed_runtime_envelope_fields() -> None:
+    unknown_envelope_field = copy.deepcopy(_load_fixture())
+    unknown_envelope_field["internal_trace"] = {"runtime": "private"}
+
+    malformed_optional_field = copy.deepcopy(_load_fixture())
+    malformed_optional_field["timing_candidates"] = {"not": "an array"}
+
+    for payload in (unknown_envelope_field, malformed_optional_field):
+        assert project_daliuren_view_model(_runtime_core_brief(payload)) is None
+
+
 def test_daliuren_projector_preserves_empty_runtime_arrays() -> None:
     omitted_payload = copy.deepcopy(_load_fixture())
     omitted_payload.pop("timing_candidates")
@@ -211,6 +222,25 @@ def test_daliuren_projector_allows_empty_source_rule_ids_for_location() -> None:
 
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
+
+
+def test_daliuren_projector_rejects_empty_source_rule_ids() -> None:
+    payload = copy.deepcopy(_load_fixture())
+    payload["dimension_facts"]["relationship"]["source_rule_ids"] = [""]
+
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is None
+
+    schema_payload = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    schema_payload["core_facts"]["dimension_facts"]["relationship"][
+        "source_rule_ids"
+    ] = [""]
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert list(Draft202012Validator(schema).iter_errors(schema_payload))
 
 
 def test_daliuren_projector_fails_closed_when_adjudication_is_not_true() -> None:
@@ -339,6 +369,29 @@ def test_daliuren_projector_rejects_incomplete_canonical_dimension_fields() -> N
         del schema_payload["core_facts"]["dimension_facts"]["timing"][field]
 
         assert list(Draft202012Validator(schema).iter_errors(schema_payload)), field
+
+
+def test_daliuren_projector_rejects_cross_dimension_fields() -> None:
+    payload = copy.deepcopy(_load_fixture())
+    payload["dimension_facts"]["relationship"]["candidate_date"] = copy.deepcopy(
+        payload["dimension_facts"]["timing"]["candidate_date"]
+    )
+
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is None
+
+    schema_payload = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    schema_payload["core_facts"]["dimension_facts"]["relationship"][
+        "candidate_date"
+    ] = copy.deepcopy(
+        schema_payload["core_facts"]["dimension_facts"]["timing"]["candidate_date"]
+    )
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert list(Draft202012Validator(schema).iter_errors(schema_payload))
 
 
 def test_daliuren_projector_fail_closed_on_unknown_lesson_method_key() -> None:
