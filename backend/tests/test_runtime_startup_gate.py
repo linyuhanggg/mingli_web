@@ -111,7 +111,11 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _build_signed_release_fixture(root: Path) -> str:
+def _build_signed_release_fixture(
+    root: Path,
+    *,
+    source_commit: str = "fixture-commit",
+) -> str:
     runtime_root = root / "resources" / "runtime"
     providers_root = runtime_root / "providers"
     providers_root.mkdir(parents=True)
@@ -240,7 +244,7 @@ def _build_signed_release_fixture(root: Path) -> str:
             {
                 "schema_version": 3,
                 "release": "fixture-release",
-                "source_commit": "fixture-commit",
+                "source_commit": source_commit,
                 "files": files,
                 "modes": {
                     relative: stat.S_IMODE((root / relative).stat().st_mode) for relative in files
@@ -736,6 +740,16 @@ _PREVIOUS_V53_TIME_CHECK_SOURCE_COMMIT = (
     "663543e65ae037843b03dca1dec9486293affc9d"
 )
 _PREVIOUS_V53_TIME_CHECK_FILE_COUNT = 220
+_PREVIOUS_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
+    "1eb2fbf67024e7f7e324b9b85d17a3044f9284923e81dcd6fe6941b8fb25424a"
+)
+_PREVIOUS_ADMITTED_V53_SOURCE_COMMIT = (
+    "0f99c8b37a8f11074e9afb3e4f09ea374949397d"
+)
+_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
+    "c3f273c7162fc72f25e3492ff087c419a4ea7f5ddbd7eb34fd4e870c05e5e05e"
+)
+_ADMITTED_V53_SOURCE_COMMIT = "34248ac5b0ef3786f18f0748a5161bc7fa4d9466"
 
 
 def test_runtime_startup_gate_admits_the_time_check_gap7_release_profile(
@@ -766,19 +780,67 @@ def test_runtime_startup_gate_admits_the_time_check_gap7_release_profile(
 
     assert V53_TIME_CHECK_RELEASE_FILE_COUNT == 224
     assert gate.expected_release_manifest_sha256 == profile["release_manifest_sha256"]
-    assert gate.expected_release_manifest_sha256 == (
-        "1eb2fbf67024e7f7e324b9b85d17a3044f9284923e81dcd6fe6941b8fb25424a"
-    )
+    assert gate.expected_release_manifest_sha256 == _ADMITTED_V53_RELEASE_MANIFEST_SHA
     assert gate.expected_release_file_count == 224
     assert gate.release_inspector.expected_release_file_count == 224
-    assert gate.release_inspector.expected_source_commit == (
-        "0f99c8b37a8f11074e9afb3e4f09ea374949397d"
-    )
+    assert gate.release_inspector.expected_source_commit == _ADMITTED_V53_SOURCE_COMMIT
     assert gate.release_inspector.expected_release_name == profile["release_name"]
     assert gate.expected_capability_ids == V53_TIME_CHECK_RELEASE_CAPABILITY_IDS
     assert gate.expected_capability_shape_sha256 == (
         "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
     )
+
+
+async def test_runtime_startup_gate_rejects_the_previous_admitted_manifest_identity(
+    tmp_path: Path,
+) -> None:
+    description = await _fake_description()
+    launcher = _write_executable(tmp_path / "runtime-fixture", description.to_dict())
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    runtime = OneShotMingliRuntimeAdapter(
+        launcher_path=launcher,
+        runtime_python_path=Path("/usr/bin/python3"),
+        state_root=state_root,
+        timeout_seconds=1,
+    )
+    inventory = replace(
+        _inventory(),
+        release_manifest_sha256=_PREVIOUS_ADMITTED_V53_RELEASE_MANIFEST_SHA,
+    )
+    gate = RuntimeStartupGate(
+        runtime=runtime,
+        release_inspector=StaticReleaseInspector(inventory),
+        expected_manifest_digest=description.manifest_digest,
+        expected_release_manifest_sha256=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
+        expected_capability_shape_sha256=runtime_capability_shape_sha256(
+            description.capabilities
+        ),
+    )
+
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        await gate.startup()
+    with pytest.raises(RuntimeStartupError, match="not ready"):
+        await gate.readiness_probe()
+
+
+def test_filesystem_release_inspector_rejects_the_previous_admitted_source_identity(
+    tmp_path: Path,
+) -> None:
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    manifest_sha256 = _build_signed_release_fixture(
+        release_root,
+        source_commit=_PREVIOUS_ADMITTED_V53_SOURCE_COMMIT,
+    )
+
+    with pytest.raises(RuntimeStartupError, match="release identity mismatch"):
+        FileSystemRuntimeReleaseInspector(
+            release_root=release_root,
+            expected_release_manifest_sha256=manifest_sha256,
+            expected_release_name="fixture-release",
+            expected_source_commit=_ADMITTED_V53_SOURCE_COMMIT,
+        ).inspect()
 
 
 def test_runtime_startup_gate_rejects_stale_v53_time_check_digests(
