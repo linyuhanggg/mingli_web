@@ -540,6 +540,18 @@ def test_daliuren_chart_schema_accepts_only_typed_source_pattern_fields(
     )
     validate_schema("views/daliuren-chart-v1.schema.json", incomplete_four_lessons)
 
+    forged_incomplete_four_lessons_audit = copy.deepcopy(incomplete_four_lessons)
+    for lesson, upper in zip(
+        forged_incomplete_four_lessons_audit["lessons"],
+        ("子", "丑", "寅", "卯"),
+        strict=True,
+    ):
+        lesson["upper"] = upper
+    reject_schema(
+        "views/daliuren-chart-v1.schema.json",
+        forged_incomplete_four_lessons_audit,
+    )
+
     missing_four_lesson_provenance = copy.deepcopy(incomplete_four_lessons)
     missing_pattern = missing_four_lesson_provenance["core_facts"][
         "source_conditioned_patterns"

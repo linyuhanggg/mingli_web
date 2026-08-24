@@ -41,7 +41,64 @@
     },
     "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]}
   },
+  "allOf": [
+    {
+      "if": {
+        "required": ["core_facts"],
+        "properties": {
+          "core_facts": {
+            "type": "object",
+            "required": ["source_conditioned_patterns"],
+            "properties": {
+              "source_conditioned_patterns": {
+                "type": "array",
+                "contains": {
+                  "type": "object",
+                  "required": ["rule_id"],
+                  "properties": {"rule_id": {"const": "DLR-07"}}
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "lessons": {"$ref": "#/$defs/threeDistinctLessonUppers"}
+        }
+      }
+    }
+  ],
   "$defs": {
+    "threeDistinctLessonUppers": {
+      "description": "For four lessons, exactly three distinct branch uppers means exactly one branch occurs twice.",
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["upper"],
+        "properties": {
+          "upper": {
+            "enum": ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+          }
+        }
+      },
+      "oneOf": [
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "子"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "丑"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "寅"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "卯"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "辰"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "巳"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "午"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "未"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "申"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "酉"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "戌"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "亥"}}}, "minContains": 2, "maxContains": 2}
+      ]
+    },
     "coreFacts": {
       "type": "object",
       "additionalProperties": false,
