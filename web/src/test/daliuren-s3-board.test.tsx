@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { DaliurenBoard } from "@/components/readings/daliuren-board";
-import type { DaliurenChartViewModel } from "@/view-models/registry";
+import type { DaliurenChartViewModel, DaliurenNoblePerson } from "@/view-models/registry";
 
 afterEach(cleanup);
 
@@ -119,6 +119,26 @@ function board() {
 }
 
 describe("大六壬 S3 课传盘面", () => {
+  it("accepts the Runtime golden noble-person direction without a cast", () => {
+    const payload: unknown = JSON.parse(
+      readFileSync(resolve(process.cwd(), "../backend/tests/fixtures/liuren-runtime-core-facts-v1.json"), "utf8"),
+    );
+    if (typeof payload !== "object" || payload === null || !("noble_person" in payload)) {
+      throw new Error("Daliuren Runtime golden fixture has no noble_person");
+    }
+    const noblePerson = payload.noble_person;
+    if (typeof noblePerson !== "object" || noblePerson === null || !("direction" in noblePerson)) {
+      throw new Error("Daliuren Runtime golden noble_person has no direction");
+    }
+    const { direction } = noblePerson;
+    if (direction !== "forward" && direction !== "reverse") {
+      throw new Error("Daliuren Runtime golden noble_person has an unsupported direction");
+    }
+    const typedDirection: DaliurenNoblePerson["direction"] = direction;
+
+    expect(typedDirection).toBe("reverse");
+  });
+
   it("renders four lessons right-to-left with server lesson names and upper above lower", () => {
     render(<DaliurenBoard view={chart()} />);
 

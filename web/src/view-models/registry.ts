@@ -787,7 +787,7 @@ export type DaliurenMonthGeneral = {
 export type DaliurenNoblePerson = {
   readonly branch: string;
   readonly day_night_profile: string;
-  readonly direction: "forward" | "backward";
+  readonly direction: "forward" | "reverse";
   readonly earth_position: string;
   readonly period: "day" | "night";
   readonly profile: string;
