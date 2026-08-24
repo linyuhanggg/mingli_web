@@ -1,8 +1,17 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 
 class ContractModel(BaseModel):
@@ -1888,28 +1897,513 @@ class DaliurenTimingCandidate(ContractModel):
     branch: str = Field(min_length=1)
     solar_date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
     day_ganzhi: str = Field(min_length=2)
-    days_after_cast: int = Field(ge=1, le=12)
+    days_after_cast: int = Field(ge=1, le=12, strict=True)
     source_pack: str = Field(min_length=1)
     source_rule: Literal["LM-R21"]
     candidate_not_guarantee: Literal[True]
 
 
+class DaliurenDayHour(ContractModel):
+    day: str = Field(min_length=2)
+    hour: str = Field(min_length=2)
+
+
+class DaliurenMonthGeneral(ContractModel):
+    branch: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+
+
+class DaliurenNoblePerson(ContractModel):
+    branch: str = Field(min_length=1)
+    day_night_profile: str = Field(min_length=1)
+    direction: str = Field(min_length=1)
+    earth_position: str = Field(min_length=1)
+    period: Literal["day", "night"]
+    profile: str = Field(min_length=1)
+    source: str = Field(min_length=1)
+
+
+class DaliurenXunkong(ContractModel):
+    branches: tuple[
+        Annotated[str, Field(min_length=1)],
+        Annotated[str, Field(min_length=1)],
+    ]
+    xun: str = Field(min_length=2)
+
+
+class DaliurenHeavenPlateCell(ContractModel):
+    earth: str = Field(min_length=1)
+    heaven: str = Field(min_length=1)
+
+
+class DaliurenGeneralCell(ContractModel):
+    earth: str = Field(min_length=1)
+    general: str = Field(min_length=1)
+    heaven: str = Field(min_length=1)
+
+
+class DaliurenLessonMethod(ContractModel):
+    """Stable nine-method fields from mingli-liuren-runtime-core-facts-v1."""
+
+    calculated_transmissions: str = Field(min_length=3)
+    calculation_source: str = Field(min_length=1)
+    direct_direction: str | None
+    primary: str = Field(min_length=1)
+    selected_initial: str = Field(min_length=1)
+    source_anchor: str = Field(min_length=1)
+    use_method: str = Field(min_length=1)
+
+
+class DaliurenRuleSourceRef(ContractModel):
+    pack: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    quote_id: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    source_anchor: str = Field(min_length=1)
+
+
+class DaliurenRuleEvidenceEntry(ContractModel):
+    activation_id: str = Field(min_length=1)
+    dependency_group: str = Field(min_length=1)
+    fact_paths: tuple[Annotated[str, Field(min_length=1)], ...]
+    observation: dict[str, object]
+    polarity: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    rule_key: str = Field(min_length=1)
+    source_refs: tuple[DaliurenRuleSourceRef, ...] = Field(min_length=1)
+    status: str = Field(min_length=1)
+    weight_class: str = Field(min_length=1)
+    confidence_ceiling: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    stop_conditions: tuple[Annotated[str, Field(min_length=1)], ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+
+
+class DaliurenRuleNotEvaluatedEntry(ContractModel):
+    activation_id: str = Field(min_length=1)
+    reason: str = Field(min_length=1)
+    rule_id: str = Field(min_length=1)
+    rule_key: str = Field(min_length=1)
+    source_refs: tuple[DaliurenRuleSourceRef, ...] = Field(min_length=1)
+    status: str = Field(min_length=1)
+
+
+class DaliurenRuleEvidence(ContractModel):
+    catalog_schema: str = Field(min_length=1)
+    hard_verdict: None
+    matched: tuple[DaliurenRuleEvidenceEntry, ...]
+    not_evaluated: tuple[DaliurenRuleNotEvaluatedEntry, ...]
+    requires_school_adjudication: Literal[True]
+    scope_boundaries: tuple[DaliurenRuleEvidenceEntry, ...]
+    status: str = Field(min_length=1)
+
+
+class DaliurenRelationFact(ContractModel):
+    object: str = Field(min_length=1)
+    object_element: str = Field(min_length=1)
+    object_value: str = Field(min_length=1)
+    relation: str = Field(min_length=1)
+    subject: str = Field(min_length=1)
+    subject_element: str = Field(min_length=1)
+    subject_value: str = Field(min_length=1)
+
+
+class DaliurenStageFlowEntry(DaliurenRelationFact):
+    from_stage: str = Field(min_length=1)
+    to_stage: str = Field(min_length=1)
+
+
+class DaliurenTransmissionToDayEntry(DaliurenRelationFact):
+    stage: str = Field(min_length=1)
+
+
+class DaliurenSixRelativeStage(ContractModel):
+    branch: str = Field(min_length=1)
+    six_relative: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenStageStatusEntry(ContractModel):
+    branch: str = Field(min_length=1)
+    heavenly_general: str = Field(min_length=1)
+    is_xunkong: bool = Field(strict=True)
+    season_strength: str | None = Field(min_length=1)
+    six_relative: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenTargetStrengthEntry(ContractModel):
+    branch: str = Field(min_length=1)
+    is_xunkong: bool = Field(strict=True)
+    season_strength: str | None = Field(min_length=1)
+    six_relative: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenWealthStageStrengthEntry(ContractModel):
+    branch: str = Field(min_length=1)
+    season_strength: str | None = Field(min_length=1)
+    six_relative: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenWealthVoidStatusEntry(ContractModel):
+    branch: str = Field(min_length=1)
+    is_xunkong: bool = Field(strict=True)
+    six_relative: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenStageBranchDirection(ContractModel):
+    branch: str = Field(min_length=1)
+    declared_source_anchor: str = Field(min_length=1)
+    direction: str = Field(min_length=1)
+    direction_chinese: str = Field(min_length=1)
+    scope: str = Field(min_length=1)
+    source_binding_status: str = Field(min_length=1)
+    stage: str = Field(min_length=1)
+
+
+class DaliurenGeneralLanding(ContractModel):
+    heavenly_general: str = Field(min_length=1)
+    landing_branch: str = Field(min_length=1)
+    role: str = Field(min_length=1)
+    source_anchor: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    source_pack: str = Field(min_length=1)
+    source_rule: str = Field(min_length=1)
+    source_text: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    stage: str = Field(min_length=1)
+    status: Literal[
+        "source_correspondence_matched",
+        "no_exact_source_correspondence",
+    ]
+
+    @model_validator(mode="before")
+    @classmethod
+    def _source_fields_match_status(cls, value: object) -> object:
+        if not isinstance(value, Mapping):
+            return value
+        source_fields = frozenset({"source_anchor", "source_text"})
+        present_source_fields = source_fields.intersection(value)
+        if (
+            value.get("status") == "source_correspondence_matched"
+            and present_source_fields != source_fields
+        ):
+            raise ValueError("matched source correspondences require source fields")
+        if (
+            value.get("status") == "no_exact_source_correspondence"
+            and present_source_fields
+        ):
+            raise ValueError("missing source correspondences must omit source fields")
+        return value
+
+
+class DaliurenGeneralModifierEntry(DaliurenGeneralLanding):
+    six_relative: str = Field(min_length=1)
+
+
+class DaliurenCandidateBranch(ContractModel):
+    anchor_earth_branch: str = Field(min_length=1)
+    branch: str = Field(min_length=1)
+    source_rule: str = Field(min_length=1)
+
+
+_DALIUREN_DIMENSION_ENVELOPE_FIELDS = frozenset(
+    {
+        "requested_dimension",
+        "canonical_dimension",
+        "status",
+        "source_rule_ids",
+        "rule_evidence",
+    }
+)
+_DALIUREN_CANONICAL_DIMENSION_FIELDS = {
+    "outcome": frozenset(
+        {
+            "subject_object_relation",
+            "transmissions_to_day",
+            "initial_final_relation",
+            "stage_flow",
+        }
+    ),
+    "timing": frozenset(
+        {"relative_speed", "candidate_branch", "candidate_date"}
+    ),
+    "state": frozenset({"stage_status", "general_landing_correspondences"}),
+    "location": frozenset({"stage_branch_directions"}),
+    "relationship": frozenset(
+        {"six_relative_stages", "subject_object_relation", "stage_flow"}
+    ),
+    "work": frozenset(
+        {
+            "six_relative_stages",
+            "stage_status",
+            "subject_object_relation",
+            "target_relative",
+            "target_contract_status",
+            "target_presence",
+            "target_strength",
+            "target_general_modifier",
+        }
+    ),
+    "money": frozenset(
+        {
+            "wealth_presence",
+            "wealth_stage_strength",
+            "wealth_void_status",
+            "wealth_general_modifier",
+        }
+    ),
+}
+_DALIUREN_REQUESTED_TO_CANONICAL = {
+    "outcome": "outcome",
+    "timing": "timing",
+    "state": "state",
+    "current_state": "state",
+    "location": "location",
+    "location_direction": "location",
+    "relationship": "relationship",
+    "work": "work",
+    "career": "work",
+    "money": "money",
+}
+_DALIUREN_EARTH_PLATE_ORDER = (
+    "子",
+    "丑",
+    "寅",
+    "卯",
+    "辰",
+    "巳",
+    "午",
+    "未",
+    "申",
+    "酉",
+    "戌",
+    "亥",
+)
+
+
+class DaliurenDimensionFact(ContractModel):
+    canonical_dimension: str = Field(min_length=1)
+    requested_dimension: str = Field(min_length=1)
+    rule_evidence: DaliurenRuleEvidence
+    status: Literal["calculated_facts_not_verdict"]
+    source_rule_ids: tuple[Annotated[str, Field(min_length=1)], ...]
+    initial_final_relation: DaliurenRelationFact | None = Field(
+        default=None,
+    )
+    subject_object_relation: DaliurenRelationFact | None = Field(
+        default=None,
+    )
+    stage_flow: tuple[DaliurenStageFlowEntry, ...] | None = Field(
+        default=None,
+    )
+    transmissions_to_day: tuple[DaliurenTransmissionToDayEntry, ...] | None = Field(
+        default=None,
+    )
+    six_relative_stages: tuple[DaliurenSixRelativeStage, ...] | None = Field(
+        default=None,
+    )
+    stage_status: tuple[DaliurenStageStatusEntry, ...] | None = Field(
+        default=None,
+    )
+    stage_branch_directions: tuple[DaliurenStageBranchDirection, ...] | None = Field(
+        default=None,
+    )
+    general_landing_correspondences: tuple[DaliurenGeneralLanding, ...] | None = Field(
+        default=None,
+    )
+    candidate_branch: DaliurenCandidateBranch | None = Field(
+        default=None,
+    )
+    candidate_date: DaliurenTimingCandidate | None = Field(
+        default=None,
+    )
+    relative_speed: str | None = Field(
+        default=None,
+        min_length=1,
+    )
+    target_contract_status: str | None = Field(
+        default=None,
+        min_length=1,
+    )
+    target_presence: bool | None = Field(
+        default=None,
+        strict=True,
+    )
+    target_relative: str | None = Field(
+        default=None,
+        min_length=1,
+    )
+    target_general_modifier: tuple[DaliurenGeneralModifierEntry, ...] | None = Field(
+        default=None,
+    )
+    target_strength: tuple[DaliurenTargetStrengthEntry, ...] | None = Field(
+        default=None,
+    )
+    wealth_presence: bool | None = Field(
+        default=None,
+        strict=True,
+    )
+    wealth_general_modifier: tuple[DaliurenGeneralModifierEntry, ...] | None = Field(
+        default=None,
+    )
+    wealth_stage_strength: tuple[DaliurenWealthStageStrengthEntry, ...] | None = Field(
+        default=None,
+    )
+    wealth_void_status: tuple[DaliurenWealthVoidStatusEntry, ...] | None = Field(
+        default=None,
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _uses_exact_runtime_canonical_field_set(cls, value: object) -> object:
+        """Reject omitted or cross-dimension fields in Runtime v1 rows."""
+
+        if not isinstance(value, Mapping):
+            return value
+        requested = value.get("requested_dimension")
+        canonical = value.get("canonical_dimension")
+        if not isinstance(requested, str) or not isinstance(canonical, str):
+            return value
+        expected_canonical = _DALIUREN_REQUESTED_TO_CANONICAL.get(requested)
+        if expected_canonical != canonical:
+            raise ValueError(
+                "canonical_dimension must match requested_dimension in Runtime v1"
+            )
+        expected_fields = _DALIUREN_DIMENSION_ENVELOPE_FIELDS | (
+            _DALIUREN_CANONICAL_DIMENSION_FIELDS[canonical]
+        )
+        if set(value) != expected_fields:
+            raise ValueError(
+                f"{canonical} dimensions must use the complete Runtime v1 field set"
+            )
+        nullable_fields = {"target_relative"} if canonical == "work" else set()
+        if canonical in {"work", "money"}:
+            null_fields = sorted(
+                field
+                for field in _DALIUREN_CANONICAL_DIMENSION_FIELDS[canonical]
+                if field not in nullable_fields and value[field] is None
+            )
+            if null_fields:
+                raise ValueError(
+                    f"{canonical} dimensions require non-null Runtime v1 fields: "
+                    + ", ".join(null_fields)
+                )
+        return value
+
+    @model_serializer(mode="wrap")
+    def _serialize_only_runtime_fields(
+        self,
+        handler: SerializerFunctionWrapHandler,
+    ) -> dict[str, object]:
+        """Keep explicit Runtime nulls while omitting fields absent for this dimension."""
+
+        serialized = handler(self)
+        return {
+            key: value
+            for key, value in serialized.items()
+            if key in self.model_fields_set or value is not None
+        }
+
+
+_DALIUREN_REQUESTED_DIMENSIONS = frozenset(_DALIUREN_REQUESTED_TO_CANONICAL)
+
+
 class DaliurenCoreFacts(ContractModel):
     """Runtime-owned six-ren plate and rule-trace facts; no event verdicts."""
 
-    day_hour: dict[str, object] | None = None
-    dimension_facts: dict[str, object] | None = None
-    earth_plate: tuple[str, ...] | None = None
-    heaven_plate: tuple[dict[str, object], ...] | None = None
-    heavenly_generals: tuple[dict[str, object], ...] | None = None
-    lesson_method: dict[str, object] | None = None
-    month_general: dict[str, object] | None = None
-    noble_person: dict[str, object] | None = None
-    plate_offset: int | None = None
-    structural_patterns: tuple[str, ...] | None = None
-    transmission_method: dict[str, object] | None = None
+    day_hour: DaliurenDayHour | None = None
+    dimension_facts: dict[str, DaliurenDimensionFact] | None = None
+    earth_plate: tuple[str, ...] | None = Field(
+        default=None,
+        min_length=12,
+        max_length=12,
+    )
+    heaven_plate: tuple[DaliurenHeavenPlateCell, ...] | None = Field(
+        default=None,
+        min_length=12,
+        max_length=12,
+    )
+    heavenly_generals: tuple[DaliurenGeneralCell, ...] | None = Field(
+        default=None,
+        min_length=12,
+        max_length=12,
+    )
+    lesson_method: DaliurenLessonMethod | None = None
+    month_general: DaliurenMonthGeneral | None = None
+    noble_person: DaliurenNoblePerson | None = None
+    plate_offset: int | None = Field(default=None, ge=0, le=11, strict=True)
+    structural_patterns: tuple[Annotated[str, Field(min_length=1)], ...] | None = None
     timing_candidates: tuple[DaliurenTimingCandidate, ...] | None = None
-    xunkong: dict[str, object] | None = None
+    xunkong: DaliurenXunkong | None = None
+
+    @field_validator("dimension_facts")
+    @classmethod
+    def _dimension_facts_use_runtime_requested_dimensions(
+        cls,
+        value: dict[str, DaliurenDimensionFact] | None,
+    ) -> dict[str, DaliurenDimensionFact] | None:
+        if value is None:
+            return value
+        unknown = sorted(set(value) - _DALIUREN_REQUESTED_DIMENSIONS)
+        if unknown:
+            raise ValueError(
+                "dimension_facts contains unsupported requested dimensions: "
+                + ", ".join(unknown)
+            )
+        mismatched = sorted(
+            key
+            for key, dimension in value.items()
+            if dimension.requested_dimension != key
+        )
+        if mismatched:
+            raise ValueError(
+                "dimension_facts keys must match each row's requested_dimension: "
+                + ", ".join(mismatched)
+            )
+        return value
+
+    @model_validator(mode="after")
+    def _uses_runtime_v1_plate_topology(self) -> DaliurenCoreFacts:
+        """Keep the three published plate layers internally aligned."""
+
+        if (
+            self.earth_plate is None
+            or self.heaven_plate is None
+            or self.heavenly_generals is None
+        ):
+            return self
+        if self.earth_plate != _DALIUREN_EARTH_PLATE_ORDER:
+            raise ValueError("earth_plate must use fixed Zi-through-Hai order")
+        heaven_values = tuple(cell.heaven for cell in self.heaven_plate)
+        if tuple(cell.earth for cell in self.heaven_plate) != self.earth_plate:
+            raise ValueError("heaven_plate earth values must align with earth_plate")
+        if set(heaven_values) != set(_DALIUREN_EARTH_PLATE_ORDER):
+            raise ValueError("heaven_plate must be a branch permutation")
+        if any(
+            general.earth != self.earth_plate[index]
+            or general.heaven != heaven_values[index]
+            for index, general in enumerate(self.heavenly_generals)
+        ):
+            raise ValueError("heavenly_generals must align with heaven_plate")
+        return self
 
 
 class DaliurenChartV1(ContractModel):

@@ -123,12 +123,12 @@ _REQUIRED_SINGLE_CALCULATED_FACTS = {
     "fengshui": ("compass", "liqi", "source_conditioned_patterns"),
     "qimen": ("board_digest", "calculated_board_scope", "named_patterns"),
     "liuren": (
+        "runtime_core_facts",
         "four_lessons",
         "earth_plate",
         "heaven_plate",
         "heavenly_generals",
         "lesson_method",
-        "transmission_method",
         "xunkong",
         "dimension_facts",
         "timing_candidates",

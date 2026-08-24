@@ -143,6 +143,24 @@ def test_v53_bazi_declares_san_yuan_public_fact() -> None:
     assert "san_yuan" in runtime["outputs"]
 
 
+def test_v53_liuren_declares_runtime_core_facts_extension_binding() -> None:
+    provider = json.loads(
+        (
+            MINGLI_CORE_ROOT
+            / "resources/runtime/providers/liuren.json"
+        ).read_text(encoding="utf-8")
+    )
+    runtime = provider["runtime_capability"]
+    extension_bindings = {
+        item["name"]: tuple(item["json_pointers"])
+        for item in runtime["extension_output_bindings"]
+    }
+    assert extension_bindings["runtime_core_facts"] == (
+        "/fact_extension/facts/runtime_core_facts",
+    )
+    assert "runtime_core_facts" in runtime["extension_outputs"]
+
+
 @pytest.mark.parametrize("provider_id", ["bazi", "fengshui", "liuyao", "meihua"])
 def test_v53_source_conditioned_patterns_are_manifest_bound(provider_id: str) -> None:
     """Every V53 source-conditioned core output must survive the public contract."""

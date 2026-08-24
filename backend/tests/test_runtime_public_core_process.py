@@ -192,8 +192,9 @@ async def test_real_runtime_projects_public_natal_and_divination_core() -> None:
     assert isinstance(daliuren_view, DaliurenChartV1)
     assert daliuren_view.core_facts is not None
     assert daliuren_view.core_facts.heaven_plate is not None
-    assert daliuren_view.core_facts.transmission_method is not None
+    assert daliuren_view.core_facts.lesson_method is not None
     assert daliuren_view.core_facts.timing_candidates is not None
+    assert daliuren_view.core_facts.dimension_facts is not None
 
     daliuren_timing = await runtime.execute(
         compile_liuren_prepare(
