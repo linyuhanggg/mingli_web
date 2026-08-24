@@ -170,35 +170,30 @@ def _calculated_fact_values(
     return values
 
 
-def _assert_bazi_reasoning_sources_are_shipped(
-    reasoning_tools: object,
-) -> None:
-    """Every Bazi reasoning source ref must resolve inside the frozen release."""
+_BAZI_PRIVATE_PROJECTION_KEYS = frozenset(
+    {
+        "binding_digest",
+        "fact_paths",
+        "fact_refs",
+        "predicate_audit",
+        "rule_record_digest",
+        "source_ref",
+        "source_refs",
+        "tool_digest",
+    }
+)
 
-    assert isinstance(reasoning_tools, dict)
-    release_root = MINGLI_RUNTIME_RELEASE_ROOT
-    for tool_id, tool in reasoning_tools.items():
-        assert isinstance(tool, dict), tool_id
-        source_refs = tool.get("source_refs")
-        assert isinstance(source_refs, list) and source_refs, tool_id
-        for source_ref in source_refs:
-            assert isinstance(source_ref, dict), (tool_id, source_ref)
-            pack = source_ref.get("pack")
-            rule_id = source_ref.get("rule_id")
-            assert isinstance(pack, str) and pack, (tool_id, source_ref)
-            assert isinstance(rule_id, str) and rule_id, (tool_id, source_ref)
-            anchor = source_ref.get("source_anchor")
-            if isinstance(anchor, str) and anchor:
-                source_path = release_root / anchor.split("#", 1)[0]
-            else:
-                source_path = release_root / "references" / "books" / pack / "rules.md"
-            assert source_path.is_file(), (tool_id, source_ref, source_path)
-            rule_token = rule_id.split("~", 1)[0]
-            assert rule_token in source_path.read_text(encoding="utf-8"), (
-                tool_id,
-                source_ref,
-                source_path,
-            )
+
+def _assert_bazi_private_evidence_is_not_public(value: object) -> None:
+    """Bazi public facts must not expose the private evidence pipeline."""
+
+    if isinstance(value, dict):
+        assert _BAZI_PRIVATE_PROJECTION_KEYS.isdisjoint(value)
+        for nested in value.values():
+            _assert_bazi_private_evidence_is_not_public(nested)
+    elif isinstance(value, (list, tuple)):
+        for nested in value:
+            _assert_bazi_private_evidence_is_not_public(nested)
 
 
 def _assert_runtime_golden_facts(
@@ -278,11 +273,11 @@ def _assert_runtime_golden_facts(
         assert month_order["status"] == "adjudicated_month_order_state", label
         assert month_order["whole_chart_strength_verdict"] is None, label
         assert month_order["useful_god_verdict"] is None, label
-        assert month_order["source_ref"]["verification_status"] == "verified", label
+        _assert_bazi_private_evidence_is_not_public(month_order)
         assert candidates["structure"]["status"] == "candidate_only", label
         assert len(candidates["salience_signals"]) == 9, label
         reasoning_tools = candidates["reasoning_tools"]
-        _assert_bazi_reasoning_sources_are_shipped(reasoning_tools)
+        _assert_bazi_private_evidence_is_not_public(reasoning_tools)
         expected_tools = {
             "strength_evidence",
             "tiaohou_candidates",
@@ -340,9 +335,6 @@ def _assert_runtime_golden_facts(
             "食神格入口"
         ), label
         assert pattern_adjudication["output"]["hard_verdict"] is None, label
-        assert pattern_adjudication["source_refs"][0][
-            "verification_status"
-        ] == "verified", label
         assert reasoning_tools["domain_work"]["output"]["status"] == (
             "indicators_only"
         ), label
@@ -360,10 +352,6 @@ def _assert_runtime_golden_facts(
         ), label
         assert arbitration["output"]["selected_primary_view"] is None, label
         assert arbitration["output"]["hard_verdict"] is None, label
-        assert all(
-            isinstance(tool["tool_digest"], str) and len(tool["tool_digest"]) == 64
-            for tool in reasoning_tools.values()
-        ), label
         assert all(
             candidates[section]["hard_verdict"] is None
             for section in (
@@ -435,26 +423,34 @@ def _assert_runtime_golden_facts(
         ), label
     elif capability_id == "liuyao":
         source_patterns = values["source_conditioned_patterns"]
-        expected_source_pattern_ids = [
+        required_source_pattern_ids = {
             "BSZZ-M01",
             "HJC-M001",
             "HZL-M001",
             "ZZR-M001",
-        ]
+        }
         if label in {
             "liuyao-finance",
             "liuyao-two-present-single-moving",
         }:
-            expected_source_pattern_ids.insert(2, "HJC-R009")
+            required_source_pattern_ids.update({"HJC-R009", "ZR-05-05"})
         if label == "liuyao-two-present-single-moving":
-            expected_source_pattern_ids.insert(4, "ZR-04-04")
-        assert [item["local_rule_id"] for item in source_patterns] == (
-            expected_source_pattern_ids
-        ), label
+            required_source_pattern_ids.add("ZR-04-04")
+        source_pattern_ids = [item["local_rule_id"] for item in source_patterns]
+        assert required_source_pattern_ids <= set(source_pattern_ids), label
+        ordered_rule_ids = [item["rule_id"] for item in source_patterns]
+        assert ordered_rule_ids == sorted(ordered_rule_ids), label
+        assert len(ordered_rule_ids) == len(set(ordered_rule_ids)), label
         assert all(
             item["status"] == "predicate_matched_not_verdict"
             and item["source_dependency_id"]
             == "liuyao.source-conditioned-patterns"
+            and isinstance(item["source_pack"], str)
+            and bool(item["source_pack"])
+            and isinstance(item["source_anchor"], str)
+            and bool(item["source_anchor"])
+            and bool(item["fact_paths"])
+            and bool(item["predicate_audit"])
             and "verdict" not in item
             for item in source_patterns
         ), label
@@ -673,6 +669,7 @@ def _assert_runtime_golden_facts(
                 "ranking.eligible_date_time_candidate_ids": 0,
                 "ranking.ordered_candidate_ids": 1,
                 "ranking.ordered_date_time_candidate_ids": 13,
+                "source_conditioned_patterns": 1,
             }, label
             assert values["no_valid_candidate"] is True, label
             ranking = values["ranking"]
@@ -810,20 +807,8 @@ def _assert_runtime_golden_facts(
         comparison = values["source_comparison"]
         assert isinstance(comparison, dict), label
         assert comparison["disagreements_retained"] is True, label
-        patterns = values["source_conditioned_patterns"]
-        assert isinstance(patterns, list), label
-        expected_pattern_ids = {
-            "face": ["LZ-R01", "SR-02-04"],
-            "combined": ["LZ-R01"],
-            "palm": [],
-            "posture": [],
-        }[str(values.get("observation_scope"))]
-        assert [item["local_rule_id"] for item in patterns] == expected_pattern_ids, label
-        assert all(
-            item["status"] == "predicate_matched_not_verdict"
-            and "verdict" not in item
-            for item in patterns
-        ), label
+        assert "active_source_rule_ids" not in values, label
+        assert "source_conditioned_patterns" not in values, label
     elif capability_id == "time-check":
         assert values["candidate_count"] == 12, label
         candidates = values["candidates"]

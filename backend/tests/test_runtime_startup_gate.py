@@ -9,6 +9,8 @@ from typing import Any
 
 import pytest
 from app.adapters.runtime import (
+    V53_TIME_CHECK_RELEASE_FILE_COUNT,
+    V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT,
     FakeMingliRuntimeAdapter,
     FileSystemRuntimeReleaseInspector,
     OneShotMingliRuntimeAdapter,
@@ -717,6 +719,68 @@ def test_runtime_startup_gate_admits_the_relationship_release_profile(
     )
     assert gate.release_inspector.expected_release_name == (
         "mingli-master-portable-core-v52-relationship"
+    )
+
+
+def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
+    tmp_path: Path,
+) -> None:
+    from app.config import _RUNTIME_RELEASE_PROFILES, Settings
+
+    launcher = tmp_path / "runtime-v53-fixture"
+    launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    launcher.chmod(0o700)
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
+    settings = Settings(
+        runtime_adapter="one-shot",
+        runtime_release_profile="v53-time-check",
+        runtime_launcher_path=launcher,
+        runtime_python_path=Path("/usr/bin/python3"),
+        runtime_release_root=release_root,
+        runtime_state_root=state_root,
+        runtime_expected_manifest_digest=profile["manifest_digest"],
+        runtime_expected_capability_shape_sha256=profile[
+            "capability_shape_sha256"
+        ],
+    )
+
+    gate = build_runtime_startup_gate(settings)
+
+    assert profile == {
+        "manifest_digest": (
+            "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22"
+        ),
+        "capability_shape_sha256": (
+            "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
+        ),
+        "release_manifest_sha256": (
+            "c52b4fae573b5ea68bd78f20fc324f5254c7349b64512e494ad9dc1229764180"
+        ),
+        "release_name": "mingli-master-portable-core",
+        "source_commit": "c8f4383f416d956a217b14db594983866f93d6ed",
+    }
+    assert gate.expected_manifest_digest == profile["manifest_digest"]
+    assert gate.expected_capability_shape_sha256 == profile[
+        "capability_shape_sha256"
+    ]
+    assert gate.expected_release_manifest_sha256 == profile[
+        "release_manifest_sha256"
+    ]
+    assert gate.release_inspector.expected_source_commit == profile["source_commit"]
+    assert gate.expected_release_file_count == V53_TIME_CHECK_RELEASE_FILE_COUNT
+    assert (
+        gate.release_inspector.expected_release_file_count
+        == V53_TIME_CHECK_RELEASE_FILE_COUNT
+    )
+    assert V53_TIME_CHECK_RELEASE_FILE_COUNT == 222
+    assert V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT == 223
+    assert (
+        V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT
+        == V53_TIME_CHECK_RELEASE_FILE_COUNT + 1
     )
 
 
