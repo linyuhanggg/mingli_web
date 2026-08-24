@@ -9,13 +9,13 @@ from typing import Any
 
 import pytest
 from app.adapters.runtime import (
+    V53_TIME_CHECK_RELEASE_FILE_COUNT,
     FakeMingliRuntimeAdapter,
     FileSystemRuntimeReleaseInspector,
     OneShotMingliRuntimeAdapter,
     RuntimeReleaseInventory,
     RuntimeStartupError,
     RuntimeStartupGate,
-    V53_TIME_CHECK_RELEASE_FILE_COUNT,
     build_runtime_startup_gate,
     runtime_capability_shape_sha256,
 )
@@ -26,8 +26,8 @@ from app.readings.capability_policy import (
     CapabilityNotExposedError,
     require_p0_capability,
 )
-from mingli_paths import PROJECT_ROOT
 from app.readings.runtime_contracts import Describe, Described
+from mingli_paths import PROJECT_ROOT
 from pydantic import ValidationError
 
 
@@ -741,7 +741,7 @@ _PREVIOUS_V53_TIME_CHECK_FILE_COUNT = 220
 def test_runtime_startup_gate_admits_the_time_check_gap7_release_profile(
     tmp_path: Path,
 ) -> None:
-    from app.config import Settings, _RUNTIME_RELEASE_PROFILES
+    from app.config import _RUNTIME_RELEASE_PROFILES, Settings
 
     profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
     launcher = tmp_path / "runtime-time-check-fixture"
@@ -764,13 +764,21 @@ def test_runtime_startup_gate_admits_the_time_check_gap7_release_profile(
 
     gate = build_runtime_startup_gate(settings)
 
-    assert V53_TIME_CHECK_RELEASE_FILE_COUNT == 221
+    assert V53_TIME_CHECK_RELEASE_FILE_COUNT == 224
     assert gate.expected_release_manifest_sha256 == profile["release_manifest_sha256"]
-    assert gate.expected_release_file_count == 221
-    assert gate.release_inspector.expected_release_file_count == 221
-    assert gate.release_inspector.expected_source_commit == profile["source_commit"]
+    assert gate.expected_release_manifest_sha256 == (
+        "1eb2fbf67024e7f7e324b9b85d17a3044f9284923e81dcd6fe6941b8fb25424a"
+    )
+    assert gate.expected_release_file_count == 224
+    assert gate.release_inspector.expected_release_file_count == 224
+    assert gate.release_inspector.expected_source_commit == (
+        "0f99c8b37a8f11074e9afb3e4f09ea374949397d"
+    )
     assert gate.release_inspector.expected_release_name == profile["release_name"]
     assert gate.expected_capability_ids == V53_TIME_CHECK_RELEASE_CAPABILITY_IDS
+    assert gate.expected_capability_shape_sha256 == (
+        "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
+    )
 
 
 def test_runtime_startup_gate_rejects_stale_v53_time_check_digests(
