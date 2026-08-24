@@ -52,17 +52,34 @@
             {
               "type": "object",
               "minProperties": 1,
-              "propertyNames": {
-                "enum": ["outcome", "timing", "state", "current_state", "location", "location_direction", "relationship", "work", "career", "money"]
-              },
-              "additionalProperties": {"$ref": "#/$defs/dimensionFact"}
+              "additionalProperties": false,
+              "properties": {
+                "outcome": {"$ref": "#/$defs/outcomeDimensionFact"},
+                "timing": {"$ref": "#/$defs/timingDimensionFact"},
+                "state": {"$ref": "#/$defs/stateDimensionFact"},
+                "current_state": {"$ref": "#/$defs/currentStateDimensionFact"},
+                "location": {"$ref": "#/$defs/locationDimensionFact"},
+                "location_direction": {"$ref": "#/$defs/locationDirectionDimensionFact"},
+                "relationship": {"$ref": "#/$defs/relationshipDimensionFact"},
+                "work": {"$ref": "#/$defs/workDimensionFact"},
+                "career": {"$ref": "#/$defs/careerDimensionFact"},
+                "money": {"$ref": "#/$defs/moneyDimensionFact"}
+              }
             },
             {"type": "null"}
           ]
         },
         "earth_plate": {
           "oneOf": [
-            {"type": "array", "minItems": 12, "maxItems": 12, "items": {"type": "string", "minLength": 1}},
+            {
+              "type": "array",
+              "prefixItems": [
+                {"const": "子"}, {"const": "丑"}, {"const": "寅"}, {"const": "卯"},
+                {"const": "辰"}, {"const": "巳"}, {"const": "午"}, {"const": "未"},
+                {"const": "申"}, {"const": "酉"}, {"const": "戌"}, {"const": "亥"}
+              ],
+              "items": false
+            },
             {"type": "null"}
           ]
         },
@@ -177,7 +194,7 @@
         "canonical_dimension": {"type": "string", "minLength": 1},
         "requested_dimension": {"type": "string", "minLength": 1},
         "rule_evidence": {"$ref": "#/$defs/ruleEvidence"},
-        "status": {"type": "string", "minLength": 1},
+        "status": {"const": "calculated_facts_not_verdict"},
         "source_rule_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
         "initial_final_relation": {"oneOf": [{"$ref": "#/$defs/relationFact"}, {"type": "null"}]},
         "subject_object_relation": {"oneOf": [{"$ref": "#/$defs/relationFact"}, {"type": "null"}]},
@@ -229,6 +246,66 @@
           "if": {"properties": {"canonical_dimension": {"const": "money"}}},
           "then": {"required": ["wealth_presence", "wealth_stage_strength", "wealth_void_status", "wealth_general_modifier"]}
         }
+      ]
+    },
+    "outcomeDimensionFact": {
+      "allOf": [
+        {"$ref": "#/$defs/dimensionFact"},
+        {"properties": {"requested_dimension": {"const": "outcome"}, "canonical_dimension": {"const": "outcome"}}}
+      ]
+    },
+    "timingDimensionFact": {
+      "allOf": [
+        {"$ref": "#/$defs/dimensionFact"},
+        {"properties": {"requested_dimension": {"const": "timing"}, "canonical_dimension": {"const": "timing"}}}
+      ]
+    },
+    "stateDimensionFact": {
+      "allOf": [
+        {"$ref": "#/$defs/dimensionFact"},
+        {"properties": {"requested_dimension": {"const": "state"}, "canonical_dimension": {"const": "state"}}}
+      ]
+    },
+    "currentStateDimensionFact": {
+      "allOf": [
+        {"$ref": "#/$defs/dimensionFact"},
+        {"properties": {"requested_dimension": {"const": "current_state"}, "canonical_dimension": {"const": "state"}}}
+      ]
+    },
+    "locationDimensionFact": {
+      "allOf": [
+        {"$ref": "#/$defs/dimensionFact"},
+        {"properties": {"requested_dimension": {"const": "location"}, "canonical_dimension": {"const": "location"}}}
+      ]
+    },
+    "locationDirectionDimensionFact": {
+      "allOf": [
+        {"$ref": "#/$defs/dimensionFact"},
+        {"properties": {"requested_dimension": {"const": "location_direction"}, "canonical_dimension": {"const": "location"}}}
+      ]
+    },
+    "relationshipDimensionFact": {
+      "allOf": [
+        {"$ref": "#/$defs/dimensionFact"},
+        {"properties": {"requested_dimension": {"const": "relationship"}, "canonical_dimension": {"const": "relationship"}}}
+      ]
+    },
+    "workDimensionFact": {
+      "allOf": [
+        {"$ref": "#/$defs/dimensionFact"},
+        {"properties": {"requested_dimension": {"const": "work"}, "canonical_dimension": {"const": "work"}}}
+      ]
+    },
+    "careerDimensionFact": {
+      "allOf": [
+        {"$ref": "#/$defs/dimensionFact"},
+        {"properties": {"requested_dimension": {"const": "career"}, "canonical_dimension": {"const": "work"}}}
+      ]
+    },
+    "moneyDimensionFact": {
+      "allOf": [
+        {"$ref": "#/$defs/dimensionFact"},
+        {"properties": {"requested_dimension": {"const": "money"}, "canonical_dimension": {"const": "money"}}}
       ]
     },
     "ruleEvidence": {

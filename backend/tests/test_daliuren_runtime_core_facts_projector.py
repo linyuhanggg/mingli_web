@@ -351,3 +351,88 @@ def test_daliuren_projector_fail_closed_on_unknown_lesson_method_key() -> None:
 
     assert isinstance(view_model, DaliurenChartV1)
     assert view_model.core_facts is None
+
+
+def test_daliuren_projector_rejects_dimension_key_and_status_mismatches() -> None:
+    key_mismatch = copy.deepcopy(_load_fixture())
+    key_mismatch["dimension_facts"]["relationship"]["requested_dimension"] = "timing"
+    key_mismatch["dimension_facts"]["relationship"]["canonical_dimension"] = "timing"
+
+    invalid_status = copy.deepcopy(_load_fixture())
+    invalid_status["dimension_facts"]["relationship"]["status"] = "verdict"
+
+    for payload in (key_mismatch, invalid_status):
+        view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+        assert isinstance(view_model, DaliurenChartV1)
+        assert view_model.core_facts is None
+
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    valid_payload = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    schema_key_mismatch = copy.deepcopy(valid_payload)
+    schema_key_mismatch["core_facts"]["dimension_facts"]["relationship"][
+        "requested_dimension"
+    ] = "timing"
+    assert list(Draft202012Validator(schema).iter_errors(schema_key_mismatch))
+
+    schema_status_mismatch = copy.deepcopy(valid_payload)
+    schema_status_mismatch["core_facts"]["dimension_facts"]["relationship"][
+        "status"
+    ] = "verdict"
+    assert list(Draft202012Validator(schema).iter_errors(schema_status_mismatch))
+
+
+def test_daliuren_projector_rejects_invalid_plate_topology() -> None:
+    shuffled_earth = copy.deepcopy(_load_fixture())
+    shuffled_earth["earth_plate"][0], shuffled_earth["earth_plate"][1] = (
+        shuffled_earth["earth_plate"][1],
+        shuffled_earth["earth_plate"][0],
+    )
+
+    duplicated_heaven = copy.deepcopy(_load_fixture())
+    duplicated_heaven["heaven_plate"][1]["heaven"] = "子"
+
+    misaligned_general = copy.deepcopy(_load_fixture())
+    misaligned_general["heavenly_generals"][0]["heaven"] = "亥"
+
+    for payload in (shuffled_earth, duplicated_heaven, misaligned_general):
+        view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+        assert isinstance(view_model, DaliurenChartV1)
+        assert view_model.core_facts is None
+
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    schema_payload = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    schema_payload["core_facts"]["earth_plate"][0] = "丑"
+    assert list(Draft202012Validator(schema).iter_errors(schema_payload))
+
+
+def test_daliuren_projector_rejects_legacy_transmission_rows() -> None:
+    missing_six_relative = copy.deepcopy(_load_fixture())
+    del missing_six_relative["three_transmissions"][0]["six_relative"]
+
+    legacy_general_alias = copy.deepcopy(_load_fixture())
+    legacy_general_alias["three_transmissions"][0]["general"] = (
+        legacy_general_alias["three_transmissions"][0].pop("heavenly_general")
+    )
+
+    unknown_field = copy.deepcopy(_load_fixture())
+    unknown_field["three_transmissions"][0]["internal_trace"] = {}
+
+    out_of_order = copy.deepcopy(_load_fixture())
+    out_of_order["three_transmissions"][0], out_of_order["three_transmissions"][1] = (
+        out_of_order["three_transmissions"][1],
+        out_of_order["three_transmissions"][0],
+    )
+
+    for payload in (
+        missing_six_relative,
+        legacy_general_alias,
+        unknown_field,
+        out_of_order,
+    ):
+        assert project_daliuren_view_model(_runtime_core_brief(payload)) is None

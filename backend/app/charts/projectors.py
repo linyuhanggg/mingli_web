@@ -5274,6 +5274,10 @@ _DALIUREN_RUNTIME_REQUIRED_FIELDS = (
     "structural_patterns",
     "dimension_facts",
 )
+_DALIUREN_RUNTIME_TRANSMISSION_FIELDS = frozenset(
+    {"stage", "branch", "heavenly_general", "six_relative"}
+)
+_DALIUREN_RUNTIME_TRANSMISSION_STAGES = ("initial", "middle", "final")
 
 
 def _daliuren_runtime_core_facts_payload(facts: object) -> Mapping[str, object] | None:
@@ -5330,16 +5334,26 @@ def _daliuren_transmissions_from_runtime(
 ) -> tuple[DaliurenTransmission, ...] | None:
     if not isinstance(raw_transmissions, list):
         return None
+    if len(raw_transmissions) != len(_DALIUREN_RUNTIME_TRANSMISSION_STAGES):
+        return None
     transmissions: list[DaliurenTransmission] = []
-    for raw in raw_transmissions:
-        if not isinstance(raw, Mapping):
+    for expected_stage, raw in zip(
+        _DALIUREN_RUNTIME_TRANSMISSION_STAGES,
+        raw_transmissions,
+        strict=True,
+    ):
+        if not isinstance(raw, Mapping) or set(raw) != _DALIUREN_RUNTIME_TRANSMISSION_FIELDS:
             return None
         stage = raw.get("stage")
         branch = raw.get("branch")
-        general = raw.get("heavenly_general", raw.get("general"))
-        if stage not in {"initial", "middle", "final"}:
+        general = raw.get("heavenly_general")
+        six_relative = raw.get("six_relative")
+        if stage != expected_stage:
             return None
-        if not all(isinstance(item, str) and item.strip() for item in (branch, general)):
+        if not all(
+            isinstance(item, str) and item.strip()
+            for item in (branch, general, six_relative)
+        ):
             return None
         transmissions.append(
             DaliurenTransmission(
@@ -5348,10 +5362,6 @@ def _daliuren_transmissions_from_runtime(
                 general=cast(str, general),
             )
         )
-    if len(transmissions) != 3:
-        return None
-    order = {"initial": 0, "middle": 1, "final": 2}
-    transmissions.sort(key=lambda item: order[item.stage])
     return tuple(transmissions)
 
 

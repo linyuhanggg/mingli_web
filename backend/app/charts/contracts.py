@@ -2124,13 +2124,27 @@ _DALIUREN_REQUESTED_TO_CANONICAL = {
     "career": "work",
     "money": "money",
 }
+_DALIUREN_EARTH_PLATE_ORDER = (
+    "子",
+    "丑",
+    "寅",
+    "卯",
+    "辰",
+    "巳",
+    "午",
+    "未",
+    "申",
+    "酉",
+    "戌",
+    "亥",
+)
 
 
 class DaliurenDimensionFact(ContractModel):
     canonical_dimension: str = Field(min_length=1)
     requested_dimension: str = Field(min_length=1)
     rule_evidence: DaliurenRuleEvidence
-    status: str = Field(min_length=1)
+    status: Literal["calculated_facts_not_verdict"]
     source_rule_ids: tuple[str, ...]
     initial_final_relation: DaliurenRelationFact | None = Field(
         default=None,
@@ -2281,7 +2295,42 @@ class DaliurenCoreFacts(ContractModel):
                 "dimension_facts contains unsupported requested dimensions: "
                 + ", ".join(unknown)
             )
+        mismatched = sorted(
+            key
+            for key, dimension in value.items()
+            if dimension.requested_dimension != key
+        )
+        if mismatched:
+            raise ValueError(
+                "dimension_facts keys must match each row's requested_dimension: "
+                + ", ".join(mismatched)
+            )
         return value
+
+    @model_validator(mode="after")
+    def _uses_runtime_v1_plate_topology(self) -> DaliurenCoreFacts:
+        """Keep the three published plate layers internally aligned."""
+
+        if (
+            self.earth_plate is None
+            or self.heaven_plate is None
+            or self.heavenly_generals is None
+        ):
+            return self
+        if self.earth_plate != _DALIUREN_EARTH_PLATE_ORDER:
+            raise ValueError("earth_plate must use fixed Zi-through-Hai order")
+        heaven_values = tuple(cell.heaven for cell in self.heaven_plate)
+        if tuple(cell.earth for cell in self.heaven_plate) != self.earth_plate:
+            raise ValueError("heaven_plate earth values must align with earth_plate")
+        if set(heaven_values) != set(_DALIUREN_EARTH_PLATE_ORDER):
+            raise ValueError("heaven_plate must be a branch permutation")
+        if any(
+            general.earth != self.earth_plate[index]
+            or general.heaven != heaven_values[index]
+            for index, general in enumerate(self.heavenly_generals)
+        ):
+            raise ValueError("heavenly_generals must align with heaven_plate")
+        return self
 
 
 class DaliurenChartV1(ContractModel):
