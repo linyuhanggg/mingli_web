@@ -157,6 +157,61 @@ const LOCATION_DIRECTION_KEYS = [
   "scope",
 ] as const;
 const LOCATION_STAGES = ["initial", "middle", "final"] as const;
+const RELATION_FACT_KEYS = [
+  "object",
+  "object_element",
+  "object_value",
+  "relation",
+  "subject",
+  "subject_element",
+  "subject_value",
+] as const;
+const TRANSMISSION_RELATION_KEYS = [...RELATION_FACT_KEYS, "stage"] as const;
+const STAGE_FLOW_KEYS = [...RELATION_FACT_KEYS, "from_stage", "to_stage"] as const;
+const FIVE_ELEMENTS = ["木", "火", "土", "金", "水"] as const;
+const ELEMENT_GENERATES = Object.freeze({
+  木: "火",
+  火: "土",
+  土: "金",
+  金: "水",
+  水: "木",
+}) satisfies Readonly<Record<FiveElement, FiveElement>>;
+const ELEMENT_OVERCOMES = Object.freeze({
+  木: "土",
+  火: "金",
+  土: "水",
+  金: "木",
+  水: "火",
+}) satisfies Readonly<Record<FiveElement, FiveElement>>;
+const DETERMINISTIC_RELATION_FACTS = Object.freeze({
+  object_generates_subject: "后者生前者",
+  object_overcomes_subject: "后者克前者",
+  same_element: "五行同类",
+  subject_generates_object: "前者生后者",
+  subject_overcomes_object: "前者克后者",
+});
+
+type FiveElement = (typeof FIVE_ELEMENTS)[number];
+type DeterministicRelation = keyof typeof DETERMINISTIC_RELATION_FACTS;
+
+type DeterministicRelationFact = {
+  object: string;
+  objectElement: FiveElement;
+  objectValue: string;
+  relation: DeterministicRelation;
+  subject: string;
+  subjectElement: FiveElement;
+  subjectValue: string;
+};
+
+type TransmissionRelationFact = DeterministicRelationFact & {
+  stage: DaliurenTransmissionStage;
+};
+
+type StageFlowFact = DeterministicRelationFact & {
+  fromStage: DaliurenTransmissionStage;
+  toStage: DaliurenTransmissionStage;
+};
 
 type EvidenceEntry = {
   marker: string;
@@ -203,6 +258,69 @@ function isSeasonStrength(value: unknown): value is DaliurenSeasonStrength {
 
 function isSixRelative(value: unknown): value is DaliurenSixRelative {
   return typeof value === "string" && SIX_RELATIVES.has(value as DaliurenSixRelative);
+}
+
+function isFiveElement(value: unknown): value is FiveElement {
+  return typeof value === "string" && FIVE_ELEMENTS.includes(value as FiveElement);
+}
+
+function directedRelation(subject: FiveElement, object: FiveElement): DeterministicRelation {
+  if (subject === object) return "same_element";
+  if (ELEMENT_GENERATES[subject] === object) return "subject_generates_object";
+  if (ELEMENT_GENERATES[object] === subject) return "object_generates_subject";
+  if (ELEMENT_OVERCOMES[subject] === object) return "subject_overcomes_object";
+  return "object_overcomes_subject";
+}
+
+function parseRelationFact(
+  value: unknown,
+  subject: string,
+  object: string,
+  exactKeys: readonly string[] = RELATION_FACT_KEYS,
+): DeterministicRelationFact | null {
+  if (!isRecord(value) || !hasExactKeys(value, exactKeys)) return null;
+  const subjectValue = readString(value, "subject_value");
+  const objectValue = readString(value, "object_value");
+  if (
+    value.subject !== subject ||
+    value.object !== object ||
+    !subjectValue ||
+    !objectValue ||
+    !isFiveElement(value.subject_element) ||
+    !isFiveElement(value.object_element)
+  ) {
+    return null;
+  }
+  const relation = directedRelation(value.subject_element, value.object_element);
+  if (value.relation !== relation) return null;
+  return {
+    object,
+    objectElement: value.object_element,
+    objectValue,
+    relation,
+    subject,
+    subjectElement: value.subject_element,
+    subjectValue,
+  };
+}
+
+function parseTransmissionRelation(
+  value: unknown,
+  stage: DaliurenTransmissionStage,
+): TransmissionRelationFact | null {
+  const relation = parseRelationFact(value, "transmission_branch", "day_stem", TRANSMISSION_RELATION_KEYS);
+  if (!relation || !isRecord(value) || value.stage !== stage) return null;
+  return { ...relation, stage };
+}
+
+function parseStageFlowRelation(
+  value: unknown,
+  fromStage: DaliurenTransmissionStage,
+  toStage: DaliurenTransmissionStage,
+): StageFlowFact | null {
+  const relation = parseRelationFact(value, "from_branch", "to_branch", STAGE_FLOW_KEYS);
+  if (!relation || !isRecord(value) || value.from_stage !== fromStage || value.to_stage !== toStage) return null;
+  return { ...relation, fromStage, toStage };
 }
 
 function isLocationDirection<Stage extends DaliurenTransmissionStage>(
@@ -714,6 +832,94 @@ function parseTopLevelTimingFact(value: Record<string, unknown>): EvidenceEntry 
   };
 }
 
+function relationFactText(value: DeterministicRelationFact): string {
+  return `${value.subjectValue}（${value.subjectElement}）与${value.objectValue}（${value.objectElement}）：${DETERMINISTIC_RELATION_FACTS[value.relation]}`;
+}
+
+function parseTopLevelOutcomeFacts(value: Record<string, unknown>): readonly EvidenceEntry[] | null {
+  if (value.status !== "calculated_facts_not_verdict") return null;
+  const sourceRuleIds = value.source_rule_ids;
+  if (
+    !Array.isArray(sourceRuleIds) ||
+    !sourceRuleIds.every((ruleId) => typeof ruleId === "string" && Boolean(ruleId.trim()))
+  ) {
+    return null;
+  }
+
+  const subjectObject = parseRelationFact(value.subject_object_relation, "day_stem", "day_branch");
+  const transmissionRows = value.transmissions_to_day;
+  const initialFinal = parseRelationFact(value.initial_final_relation, "initial_branch", "final_branch");
+  const flowRows = value.stage_flow;
+  if (
+    !subjectObject ||
+    !Array.isArray(transmissionRows) ||
+    transmissionRows.length !== LOCATION_STAGES.length ||
+    !initialFinal ||
+    !Array.isArray(flowRows) ||
+    flowRows.length !== 2
+  ) {
+    return null;
+  }
+
+  const transmissions = LOCATION_STAGES.map((stage, index) =>
+    parseTransmissionRelation(transmissionRows[index], stage),
+  );
+  const flows = [
+    parseStageFlowRelation(flowRows[0], "initial", "middle"),
+    parseStageFlowRelation(flowRows[1], "middle", "final"),
+  ] as const;
+  if (transmissions.some((row) => row === null) || flows.some((row) => row === null)) return null;
+  const typedTransmissions = transmissions as readonly TransmissionRelationFact[];
+  const typedFlows = flows as readonly StageFlowFact[];
+  if (
+    typedTransmissions.some(
+      (row) =>
+        row.objectValue !== subjectObject.subjectValue ||
+        row.objectElement !== subjectObject.subjectElement,
+    ) ||
+    initialFinal.subjectValue !== typedTransmissions[0]?.subjectValue ||
+    initialFinal.subjectElement !== typedTransmissions[0]?.subjectElement ||
+    initialFinal.objectValue !== typedTransmissions[2]?.subjectValue ||
+    initialFinal.objectElement !== typedTransmissions[2]?.subjectElement ||
+    typedFlows.some(
+      (row, index) =>
+        row.subjectValue !== typedTransmissions[index]?.subjectValue ||
+        row.subjectElement !== typedTransmissions[index]?.subjectElement ||
+        row.objectValue !== typedTransmissions[index + 1]?.subjectValue ||
+        row.objectElement !== typedTransmissions[index + 1]?.subjectElement,
+    )
+  ) {
+    return null;
+  }
+
+  return [
+    {
+      marker: "主客五行",
+      fact: `日干与日支：${relationFactText(subjectObject)}`,
+      sources: [],
+    },
+    {
+      marker: "三传五行",
+      fact: `三传与日干：${typedTransmissions
+        .map((row) => `${STAGE_FACTS[row.stage]} ${relationFactText(row)}`)
+        .join("；")}`,
+      sources: [],
+    },
+    {
+      marker: "初末五行",
+      fact: `初末关系：${relationFactText(initialFinal)}`,
+      sources: [],
+    },
+    {
+      marker: "传间流转",
+      fact: `三传流转：${typedFlows
+        .map((row) => `${STAGE_FACTS[row.fromStage]}至${STAGE_FACTS[row.toStage]} ${relationFactText(row)}`)
+        .join("；")}`,
+      sources: [],
+    },
+  ];
+}
+
 function parseDimension(value: unknown): EvidenceGroup | null {
   if (!isRecord(value)) return null;
   const dimension = readString(value, "canonical_dimension");
@@ -761,6 +967,10 @@ function parseDimension(value: unknown): EvidenceGroup | null {
     if (entry) entries.push(entry);
   }
   entries.push(...parseScopeBoundaryFacts(value, dimension, evidence.scope_boundaries));
+  if (dimension === "outcome" && evidence.matched.length === 0 && evidence.scope_boundaries.length === 0) {
+    const outcomeEntries = parseTopLevelOutcomeFacts(value);
+    if (outcomeEntries) entries.push(...outcomeEntries);
+  }
   if (dimension === "timing" && evidence.matched.length === 0 && evidence.scope_boundaries.length === 0) {
     const timingEntry = parseTopLevelTimingFact(value);
     if (timingEntry) entries.push(timingEntry);

@@ -1458,6 +1458,139 @@ describe("大六壬 S3 M6a 维度证据", () => {
     expect(money).not.toHaveTextContent(/wealth_presence|stage|is_xunkong/);
   });
 
+  it("renders typed top-level outcome facts when no judgment rule matches", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            outcome: dimension({
+              canonical_dimension: "outcome",
+              requested_dimension: "outcome",
+              status: "calculated_facts_not_verdict",
+              source_rule_ids: [],
+              subject_object_relation: {
+                subject: "day_stem",
+                subject_value: "甲",
+                subject_element: "木",
+                object: "day_branch",
+                object_value: "寅",
+                object_element: "木",
+                relation: "same_element",
+              },
+              transmissions_to_day: [
+                {
+                  stage: "initial",
+                  subject: "transmission_branch",
+                  subject_value: "巳",
+                  subject_element: "火",
+                  object: "day_stem",
+                  object_value: "甲",
+                  object_element: "木",
+                  relation: "object_generates_subject",
+                },
+                {
+                  stage: "middle",
+                  subject: "transmission_branch",
+                  subject_value: "申",
+                  subject_element: "金",
+                  object: "day_stem",
+                  object_value: "甲",
+                  object_element: "木",
+                  relation: "subject_overcomes_object",
+                },
+                {
+                  stage: "final",
+                  subject: "transmission_branch",
+                  subject_value: "子",
+                  subject_element: "水",
+                  object: "day_stem",
+                  object_value: "甲",
+                  object_element: "木",
+                  relation: "subject_generates_object",
+                },
+              ],
+              initial_final_relation: {
+                subject: "initial_branch",
+                subject_value: "巳",
+                subject_element: "火",
+                object: "final_branch",
+                object_value: "子",
+                object_element: "水",
+                relation: "object_overcomes_subject",
+              },
+              stage_flow: [
+                {
+                  from_stage: "initial",
+                  to_stage: "middle",
+                  subject: "from_branch",
+                  subject_value: "巳",
+                  subject_element: "火",
+                  object: "to_branch",
+                  object_value: "申",
+                  object_element: "金",
+                  relation: "subject_overcomes_object",
+                },
+                {
+                  from_stage: "middle",
+                  to_stage: "final",
+                  subject: "from_branch",
+                  subject_value: "申",
+                  subject_element: "金",
+                  object: "to_branch",
+                  object_value: "子",
+                  object_element: "水",
+                  relation: "subject_generates_object",
+                },
+              ],
+              rule_evidence: evidence({ matched: [], status: "not_bound" }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    const outcome = within(panel()).getByRole("group", { name: "结果" });
+    expect(outcome).toHaveTextContent("日干与日支：甲（木）与寅（木）：五行同类");
+    expect(outcome).toHaveTextContent("三传与日干：初传 巳（火）与甲（木）：后者生前者");
+    expect(outcome).toHaveTextContent("初末关系：巳（火）与子（水）：后者克前者");
+    expect(outcome).toHaveTextContent("三传流转：初传至中传 巳（火）与申（金）：前者克后者");
+    expect(outcome).not.toHaveTextContent(/same_element|object_generates_subject|subject_overcomes_object|吉凶|成败|保证/);
+  });
+
+  it("fails closed for malformed or internally inconsistent top-level outcome facts", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            outcome: dimension({
+              canonical_dimension: "outcome",
+              requested_dimension: "outcome",
+              status: "calculated_facts_not_verdict",
+              source_rule_ids: [],
+              subject_object_relation: {
+                subject: "day_stem",
+                subject_value: "甲",
+                subject_element: "木",
+                object: "day_branch",
+                object_value: "寅",
+                object_element: "木",
+                relation: "same_element",
+                raw_dump: "不得展示",
+              },
+              transmissions_to_day: [],
+              initial_final_relation: {},
+              stage_flow: [],
+              rule_evidence: evidence({ matched: [], status: "not_bound" }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/不得展示|日干与日支|三传与日干|初末关系|三传流转/);
+  });
+
   it.each([
     [
       "money",
@@ -2435,6 +2568,50 @@ describe("大六壬 S3 天地盘旬空角标", () => {
     await user.click(screen.getByText("天地盘"));
     return screen.getByRole("table", { name: "天地盘" }).closest("[data-slot='heaven-earth']") as HTMLElement;
   }
+
+  it("propagates focus, hover and click-lock facts into the ring and semantic table", async () => {
+    const user = userEvent.setup();
+    render(
+      <DaliurenBoard
+        view={plate({
+          heaven_plate: [
+            { earth: "辰", heaven: "巳" },
+            { earth: "巳", heaven: "亥" },
+          ],
+        })}
+      />,
+    );
+
+    const panel = await openPlate();
+    const boardFact = screen.getByRole("button", { name: "一课·日干 上神 巳" });
+    const earthRing = panel.querySelector('ol [data-branch="巳"]') as HTMLElement;
+    const heavenRing = panel.querySelector('ol [data-branch="辰"]') as HTMLElement;
+    const earthRow = panel.querySelector('table [data-branch="巳"]') as HTMLElement;
+    const heavenRow = panel.querySelector('table [data-branch="辰"]') as HTMLElement;
+    const linkedPlatePositions = [earthRing, heavenRing, earthRow, heavenRow];
+
+    for (const position of linkedPlatePositions) expect(position).toHaveAttribute("data-active", "false");
+
+    act(() => boardFact.focus());
+    for (const position of linkedPlatePositions) expect(position).toHaveAttribute("data-active", "true");
+    expect(boardFact).toHaveAttribute("aria-pressed", "false");
+
+    act(() => boardFact.blur());
+    for (const position of linkedPlatePositions) expect(position).toHaveAttribute("data-active", "false");
+
+    await user.hover(boardFact);
+    for (const position of linkedPlatePositions) expect(position).toHaveAttribute("data-active", "true");
+    await user.unhover(boardFact);
+    for (const position of linkedPlatePositions) expect(position).toHaveAttribute("data-active", "false");
+
+    await user.click(boardFact);
+    for (const position of linkedPlatePositions) expect(position).toHaveAttribute("data-active", "true");
+    expect(boardFact).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(boardFact);
+    for (const position of linkedPlatePositions) expect(position).toHaveAttribute("data-active", "false");
+    expect(boardFact).toHaveAttribute("aria-pressed", "false");
+  });
 
   it("marks matching earth-plate branches from xunkong.branches only", async () => {
     render(

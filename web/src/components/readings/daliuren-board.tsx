@@ -435,6 +435,7 @@ export function DaliurenBoard({
 
       {mode === "ready" ? (
         <DaliurenHeavenEarthPlate
+          activeFact={activeFact}
           anchorEarthBranches={anchored}
           earthPlate={view?.core_facts?.earth_plate ?? null}
           heavenPlate={view?.core_facts?.heaven_plate ?? null}

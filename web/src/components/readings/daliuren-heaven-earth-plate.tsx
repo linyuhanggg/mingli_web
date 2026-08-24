@@ -7,6 +7,7 @@ import styles from "./daliuren-heaven-earth-plate.module.css";
 type CoreFacts = NonNullable<DaliurenChartViewModel["core_facts"]>;
 
 export type DaliurenHeavenEarthPlateProps = {
+  activeFact?: string | null;
   anchorEarthBranches?: ReadonlySet<string>;
   earthPlate: CoreFacts["earth_plate"];
   heavenPlate?: CoreFacts["heaven_plate"];
@@ -66,6 +67,7 @@ function mapByEarth(
 }
 
 export function DaliurenHeavenEarthPlate({
+  activeFact = null,
   anchorEarthBranches = new Set(),
   earthPlate,
   heavenPlate = null,
@@ -87,6 +89,7 @@ export function DaliurenHeavenEarthPlate({
   const noble = readString(noblePerson, "earth_position");
   const nobleEarthPosition = noble && earthSet.has(noble) ? noble : null;
   const offset = typeof plateOffset === "number" && Number.isFinite(plateOffset) ? plateOffset : null;
+  const active = typeof activeFact === "string" ? activeFact.trim() : "";
 
   return (
     <details
@@ -101,27 +104,33 @@ export function DaliurenHeavenEarthPlate({
           className={styles.ring}
           data-ring="earth"
         >
-          {earth.map((branch, index) => (
-            <li
-              className={styles.spoke}
-              data-branch={branch}
-              data-noble={nobleEarthPosition === branch ? "true" : undefined}
-              data-timing={timingAnchors.has(branch) ? "true" : undefined}
-              data-void={voids.has(branch) ? "true" : undefined}
-              key={branch}
-              style={{ ["--spoke" as string]: String(index) }}
-            >
-              <span className={styles.earth}>{branch}</span>
-              {timingAnchors.has(branch) ? <TimingMark /> : null}
-              {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
-              {showHeaven && heavens.get(branch) ? (
-                <span className={styles.heaven}>{heavens.get(branch)}</span>
-              ) : null}
-              {showGeneral && generals.get(branch) ? (
-                <span className={styles.general}>{generals.get(branch)}</span>
-              ) : null}
-            </li>
-          ))}
+          {earth.map((branch, index) => {
+            const heaven = heavens.get(branch) ?? null;
+            const earthActive = Boolean(active) && active === branch;
+            const heavenActive = Boolean(active) && active === heaven;
+            return (
+              <li
+                className={styles.spoke}
+                data-active={earthActive || heavenActive ? "true" : "false"}
+                data-branch={branch}
+                data-noble={nobleEarthPosition === branch ? "true" : undefined}
+                data-timing={timingAnchors.has(branch) ? "true" : undefined}
+                data-void={voids.has(branch) ? "true" : undefined}
+                key={branch}
+                style={{ ["--spoke" as string]: String(index) }}
+              >
+                <span className={styles.earth} data-active={earthActive ? "true" : "false"}>{branch}</span>
+                {timingAnchors.has(branch) ? <TimingMark /> : null}
+                {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
+                {showHeaven && heaven ? (
+                  <span className={styles.heaven} data-active={heavenActive ? "true" : "false"}>{heaven}</span>
+                ) : null}
+                {showGeneral && generals.get(branch) ? (
+                  <span className={styles.general}>{generals.get(branch)}</span>
+                ) : null}
+              </li>
+            );
+          })}
         </ol>
         <table className={styles.table} aria-label="天地盘">
           <thead>
@@ -132,26 +141,32 @@ export function DaliurenHeavenEarthPlate({
             </tr>
           </thead>
           <tbody>
-            {earth.map((branch) => (
-              <tr
-                data-branch={branch}
-                data-noble={nobleEarthPosition === branch ? "true" : undefined}
-                data-timing={timingAnchors.has(branch) ? "true" : undefined}
-                data-void={voids.has(branch) ? "true" : undefined}
-                key={branch}
-              >
-                <th scope="row">
-                  {branch}
-                  {nobleEarthPosition === branch ? (
-                    <span className={styles.nobleBadge}>贵人落地</span>
-                  ) : null}
-                  {timingAnchors.has(branch) ? <TimingMark /> : null}
-                  {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
-                </th>
-                {showHeaven ? <td>{heavens.get(branch) ?? ""}</td> : null}
-                {showGeneral ? <td>{generals.get(branch) ?? ""}</td> : null}
-              </tr>
-            ))}
+            {earth.map((branch) => {
+              const heaven = heavens.get(branch) ?? null;
+              const earthActive = Boolean(active) && active === branch;
+              const heavenActive = Boolean(active) && active === heaven;
+              return (
+                <tr
+                  data-active={earthActive || heavenActive ? "true" : "false"}
+                  data-branch={branch}
+                  data-noble={nobleEarthPosition === branch ? "true" : undefined}
+                  data-timing={timingAnchors.has(branch) ? "true" : undefined}
+                  data-void={voids.has(branch) ? "true" : undefined}
+                  key={branch}
+                >
+                  <th data-active={earthActive ? "true" : "false"} scope="row">
+                    {branch}
+                    {nobleEarthPosition === branch ? (
+                      <span className={styles.nobleBadge}>贵人落地</span>
+                    ) : null}
+                    {timingAnchors.has(branch) ? <TimingMark /> : null}
+                    {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
+                  </th>
+                  {showHeaven ? <td data-active={heavenActive ? "true" : "false"}>{heaven ?? ""}</td> : null}
+                  {showGeneral ? <td>{generals.get(branch) ?? ""}</td> : null}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
