@@ -38,7 +38,6 @@ from app.readings.request_compiler import (
 )
 from app.readings.runtime_contracts import Prepare
 from app.readings.status import ReadingStatus
-
 from mingli_paths import MINGLI_RUNTIME_RELEASE_ROOT
 
 # isort: split
