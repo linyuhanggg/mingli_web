@@ -207,15 +207,15 @@
         "candidate_branch": {"oneOf": [{"$ref": "#/$defs/candidateBranch"}, {"type": "null"}]},
         "candidate_date": {"oneOf": [{"$ref": "#/$defs/timingCandidate"}, {"type": "null"}]},
         "relative_speed": {"type": ["string", "null"], "minLength": 1},
-        "target_contract_status": {"type": ["string", "null"], "minLength": 1},
-        "target_presence": {"type": ["boolean", "null"]},
+        "target_contract_status": {"type": "string", "minLength": 1},
+        "target_presence": {"type": "boolean"},
         "target_relative": {"type": ["string", "null"], "minLength": 1},
-        "target_general_modifier": {"type": ["array", "null"]},
-        "target_strength": {"type": ["array", "null"]},
-        "wealth_presence": {"type": ["boolean", "null"]},
-        "wealth_general_modifier": {"type": ["array", "null"]},
-        "wealth_stage_strength": {"type": ["array", "null"]},
-        "wealth_void_status": {"type": ["array", "null"]}
+        "target_general_modifier": {"type": "array", "items": {"$ref": "#/$defs/generalModifierEntry"}},
+        "target_strength": {"type": "array", "items": {"$ref": "#/$defs/targetStrengthEntry"}},
+        "wealth_presence": {"type": "boolean"},
+        "wealth_general_modifier": {"type": "array", "items": {"$ref": "#/$defs/generalModifierEntry"}},
+        "wealth_stage_strength": {"type": "array", "items": {"$ref": "#/$defs/wealthStageStrengthEntry"}},
+        "wealth_void_status": {"type": "array", "items": {"$ref": "#/$defs/wealthVoidStatusEntry"}}
       },
       "dependentSchemas": {
         "initial_final_relation": {"properties": {"canonical_dimension": {"const": "outcome"}}},
@@ -469,7 +469,41 @@
         "branch": {"type": "string", "minLength": 1},
         "heavenly_general": {"type": "string", "minLength": 1},
         "is_xunkong": {"type": "boolean"},
-        "season_strength": {"type": "string", "minLength": 1},
+        "season_strength": {"type": ["string", "null"], "minLength": 1},
+        "six_relative": {"type": "string", "minLength": 1},
+        "stage": {"type": "string", "minLength": 1}
+      }
+    },
+    "targetStrengthEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "is_xunkong", "season_strength", "six_relative", "stage"],
+      "properties": {
+        "branch": {"type": "string", "minLength": 1},
+        "is_xunkong": {"type": "boolean"},
+        "season_strength": {"type": ["string", "null"], "minLength": 1},
+        "six_relative": {"type": "string", "minLength": 1},
+        "stage": {"type": "string", "minLength": 1}
+      }
+    },
+    "wealthStageStrengthEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "season_strength", "six_relative", "stage"],
+      "properties": {
+        "branch": {"type": "string", "minLength": 1},
+        "season_strength": {"type": ["string", "null"], "minLength": 1},
+        "six_relative": {"type": "string", "minLength": 1},
+        "stage": {"type": "string", "minLength": 1}
+      }
+    },
+    "wealthVoidStatusEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "is_xunkong", "six_relative", "stage"],
+      "properties": {
+        "branch": {"type": "string", "minLength": 1},
+        "is_xunkong": {"type": "boolean"},
         "six_relative": {"type": "string", "minLength": 1},
         "stage": {"type": "string", "minLength": 1}
       }
@@ -496,6 +530,38 @@
         "heavenly_general": {"type": "string", "minLength": 1},
         "landing_branch": {"type": "string", "minLength": 1},
         "role": {"type": "string", "minLength": 1},
+        "source_anchor": {"type": "string", "minLength": 1},
+        "source_pack": {"type": "string", "minLength": 1},
+        "source_rule": {"type": "string", "minLength": 1},
+        "source_text": {"type": "string", "minLength": 1},
+        "stage": {"type": "string", "minLength": 1},
+        "status": {"enum": ["source_correspondence_matched", "no_exact_source_correspondence"]}
+      },
+      "oneOf": [
+        {
+          "properties": {"status": {"const": "source_correspondence_matched"}},
+          "required": ["source_anchor", "source_text"]
+        },
+        {
+          "properties": {"status": {"const": "no_exact_source_correspondence"}},
+          "not": {
+            "anyOf": [
+              {"required": ["source_anchor"]},
+              {"required": ["source_text"]}
+            ]
+          }
+        }
+      ]
+    },
+    "generalModifierEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["heavenly_general", "landing_branch", "role", "six_relative", "source_pack", "source_rule", "stage", "status"],
+      "properties": {
+        "heavenly_general": {"type": "string", "minLength": 1},
+        "landing_branch": {"type": "string", "minLength": 1},
+        "role": {"type": "string", "minLength": 1},
+        "six_relative": {"type": "string", "minLength": 1},
         "source_anchor": {"type": "string", "minLength": 1},
         "source_pack": {"type": "string", "minLength": 1},
         "source_rule": {"type": "string", "minLength": 1},
