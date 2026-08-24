@@ -130,6 +130,7 @@
 .txButton[data-active="true"] {
   border-color: var(--color-accent);
   background: var(--color-surface-muted);
+  font-weight: 700;
 }
 
 .upper:focus-visible,
@@ -229,6 +230,7 @@
 }
 
 .branchLink {
+  min-width: var(--target-min);
   min-height: var(--target-min);
   padding: 0;
   border: 0;

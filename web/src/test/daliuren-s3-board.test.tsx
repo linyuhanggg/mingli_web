@@ -306,19 +306,36 @@ describe("大六壬 S3 课传盘面", () => {
     expect(screen.queryByRole("table", { name: "应期候选" })).not.toBeInTheDocument();
   });
 
-  it("highlights a lesson cell or transmission row on click and focus", async () => {
+  it("links equal facts and clears the click lock on repeat activation or Escape", async () => {
     const user = userEvent.setup();
     render(<DaliurenBoard view={chart()} />);
 
-    const upper = screen.getByRole("button", { name: "一课·日干 上神 巳" });
-    await user.click(upper);
-    expect(upper).toHaveAttribute("data-active", "true");
-    expect(upper).toHaveFocus();
+    const firstUpper = screen.getByRole("button", { name: "一课·日干 上神 巳" });
+    const secondLower = screen.getByRole("button", { name: "二课·日支 下神 巳" });
+    const finalTx = screen.getByRole("button", { name: "末传 巳 白虎" });
+    const linkedSi = [firstUpper, secondLower, finalTx];
 
-    const tx = screen.getByRole("button", { name: "末传 巳 白虎" });
-    await user.click(tx);
-    expect(tx).toHaveAttribute("data-active", "true");
-    expect(screen.getByRole("button", { name: "一课·日干 上神 巳" })).toHaveAttribute("data-active", "false");
+    for (const cell of linkedSi) {
+      expect(cell).toHaveAttribute("data-active", "false");
+      expect(cell).toHaveAttribute("aria-pressed", "false");
+    }
+
+    await user.click(firstUpper);
+    for (const cell of linkedSi) {
+      expect(cell).toHaveAttribute("data-active", "true");
+      expect(cell).toHaveAttribute("aria-pressed", "true");
+    }
+    expect(firstUpper).toHaveFocus();
+
+    await user.click(firstUpper);
+    for (const cell of linkedSi) expect(cell).toHaveAttribute("data-active", "false");
+    expect(firstUpper).toHaveFocus();
+
+    await user.click(finalTx);
+    for (const cell of linkedSi) expect(cell).toHaveAttribute("data-active", "true");
+    await user.keyboard("{Escape}");
+    for (const cell of linkedSi) expect(cell).toHaveAttribute("data-active", "false");
+    expect(finalTx).toHaveFocus();
   });
 
   it("moves among the eight lesson cells and three transmission rows with arrow keys", async () => {
@@ -392,6 +409,17 @@ describe("大六壬 S3 课传盘面", () => {
     await user.click(screen.getByRole("button", { name: "候选支 酉" }));
     expect(screen.getByRole("button", { name: "初传 酉 贵人" })).toHaveAttribute("data-active", "true");
     expect(screen.getByRole("button", { name: "末传 巳 白虎" })).toHaveAttribute("data-active", "false");
+  });
+
+  it("keeps matched timing candidate controls at least 44 by 44 pixels", () => {
+    render(
+      <DaliurenBoard view={chart({ core_facts: emptyFacts({ timing_candidates: [candidate()] }) })} />,
+    );
+
+    expect(screen.getByRole("button", { name: "候选支 酉" })).toBeVisible();
+    const css = boardCss();
+    expect(css).toMatch(/\.branchLink\s*\{[^}]*min-width:\s*var\(--target-min\)/s);
+    expect(css).toMatch(/\.branchLink\s*\{[^}]*min-height:\s*var\(--target-min\)/s);
   });
 
   it("renders an unmatched candidate branch as text and marks its earth-plate anchor", async () => {

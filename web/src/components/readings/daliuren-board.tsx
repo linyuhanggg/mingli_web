@@ -115,6 +115,17 @@ function transmissionCellForBranch(
   return hit ? (`tx-${hit.stage}` as CellId) : null;
 }
 
+function cellFact(
+  id: CellId,
+  lessons: DaliurenChartViewModel["lessons"],
+  transmissions: DaliurenChartViewModel["transmissions"],
+): string {
+  const lesson = parseLesson(id);
+  if (lesson) return lessons[lesson.index]?.[lesson.part].trim() ?? "";
+  const stage = id.slice(3) as StageId;
+  return transmissions.find((item) => item.stage === stage)?.branch.trim() ?? "";
+}
+
 function isNavigationKey(key: string): key is NavigationKey {
   return NAVIGATION_KEYS.has(key);
 }
@@ -161,7 +172,8 @@ export function DaliurenBoard({
   offer?: DaliurenS4Offer | null;
   s4Phase?: DaliurenS4Phase;
 }>) {
-  const [activeId, setActiveId] = useState<CellId>(FIRST_CELL);
+  const [activeFact, setActiveFact] = useState<string | null>(null);
+  const [rovingId, setRovingId] = useState<CellId>(FIRST_CELL);
   const cellRefs = useRef<Partial<Record<CellId, HTMLButtonElement | null>>>({});
   const lessons = view?.lessons ?? EMPTY_LESSONS;
   const transmissions = view?.transmissions ?? EMPTY_TRANSMISSIONS;
@@ -172,15 +184,34 @@ export function DaliurenBoard({
   );
   const voids = mode === "ready" && view?.core_facts ? voidBranches(view.core_facts.xunkong) : new Set<string>();
 
-  function activate(id: CellId) {
-    setActiveId(id);
+  function isActive(value: string): boolean {
+    const fact = value.trim();
+    return Boolean(fact && activeFact === fact);
+  }
+
+  function focusAndLock(id: CellId) {
+    const fact = cellFact(id, lessons, transmissions);
+    setRovingId(id);
+    setActiveFact(fact || null);
+    cellRefs.current[id]?.focus();
+  }
+
+  function toggleLock(id: CellId) {
+    const fact = cellFact(id, lessons, transmissions);
+    setRovingId(id);
+    setActiveFact((current) => (fact && current !== fact ? fact : null));
     cellRefs.current[id]?.focus();
   }
 
   function onCellKeyDown(event: KeyboardEvent<HTMLButtonElement>, id: CellId) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setActiveFact(null);
+      return;
+    }
     if (!isNavigationKey(event.key)) return;
     event.preventDefault();
-    activate(neighbor(id, event.key));
+    focusAndLock(neighbor(id, event.key));
   }
 
   return (
@@ -209,14 +240,15 @@ export function DaliurenBoard({
                     type="button"
                     data-cell={upperId}
                     data-element={branchElement(lesson.upper)}
-                    data-active={activeId === upperId ? "true" : "false"}
+                    data-active={isActive(lesson.upper) ? "true" : "false"}
                     data-void={isVoidCell(lesson.upper, voids) ? "true" : undefined}
-                    tabIndex={activeId === upperId ? 0 : -1}
+                    tabIndex={rovingId === upperId ? 0 : -1}
+                    aria-pressed={isActive(lesson.upper)}
                     aria-label={`${lesson.lesson_id} 上神 ${lesson.upper}`}
                     ref={(node) => {
                       cellRefs.current[upperId] = node;
                     }}
-                    onClick={() => activate(upperId)}
+                    onClick={() => toggleLock(upperId)}
                     onKeyDown={(event) => onCellKeyDown(event, upperId)}
                   >
                     {lesson.upper}
@@ -232,14 +264,15 @@ export function DaliurenBoard({
                     type="button"
                     data-cell={lowerId}
                     data-element={branchElement(lesson.lower)}
-                    data-active={activeId === lowerId ? "true" : "false"}
+                    data-active={isActive(lesson.lower) ? "true" : "false"}
                     data-void={isVoidCell(lesson.lower, voids) ? "true" : undefined}
-                    tabIndex={activeId === lowerId ? 0 : -1}
+                    tabIndex={rovingId === lowerId ? 0 : -1}
+                    aria-pressed={isActive(lesson.lower)}
                     aria-label={`${lesson.lesson_id} 下神 ${lesson.lower}`}
                     ref={(node) => {
                       cellRefs.current[lowerId] = node;
                     }}
-                    onClick={() => activate(lowerId)}
+                    onClick={() => toggleLock(lowerId)}
                     onKeyDown={(event) => onCellKeyDown(event, lowerId)}
                   >
                     {lesson.lower}
@@ -263,14 +296,15 @@ export function DaliurenBoard({
                     className={styles.txButton}
                     type="button"
                     data-cell={id}
-                    data-active={activeId === id ? "true" : "false"}
+                    data-active={isActive(item.branch) ? "true" : "false"}
                     data-void={isVoidCell(item.branch, voids) ? "true" : undefined}
-                    tabIndex={activeId === id ? 0 : -1}
+                    tabIndex={rovingId === id ? 0 : -1}
+                    aria-pressed={isActive(item.branch)}
                     aria-label={`${STAGE_LABEL[item.stage]} ${item.branch} ${item.general}`}
                     ref={(node) => {
                       cellRefs.current[id] = node;
                     }}
-                    onClick={() => activate(id)}
+                    onClick={() => toggleLock(id)}
                     onKeyDown={(event) => onCellKeyDown(event, id)}
                   >
                     <span className={styles.stage}>{STAGE_LABEL[item.stage]}</span>
@@ -308,7 +342,10 @@ export function DaliurenBoard({
             </thead>
             <tbody>
               {lessons.map((lesson, index) => (
-                <tr data-active={activeId.startsWith(`lesson-${index}-`) ? "true" : "false"} key={lesson.lesson_id || `lesson-${index}`}>
+                <tr
+                  data-active={isActive(lesson.upper) || isActive(lesson.lower) ? "true" : "false"}
+                  key={lesson.lesson_id || `lesson-${index}`}
+                >
                   <td>{lesson.lesson_id}</td>
                   <td>{lesson.upper}</td>
                   <td>{lesson.lower}</td>
@@ -327,7 +364,7 @@ export function DaliurenBoard({
             </thead>
             <tbody>
               {transmissions.map((item) => (
-                <tr data-active={activeId === `tx-${item.stage}` ? "true" : "false"} key={item.stage}>
+                <tr data-active={isActive(item.branch) ? "true" : "false"} key={item.stage}>
                   <td>{STAGE_LABEL[item.stage]}</td>
                   <td>{item.branch}</td>
                   <td>{item.general}</td>
@@ -389,7 +426,12 @@ export function DaliurenBoard({
                           className={styles.branchLink}
                           type="button"
                           aria-label={`候选支 ${item.branch}`}
-                          onClick={() => activate(target)}
+                          onClick={() => toggleLock(target)}
+                          onKeyDown={(event) => {
+                            if (event.key !== "Escape") return;
+                            event.preventDefault();
+                            setActiveFact(null);
+                          }}
                         >
                           {item.branch}
                         </button>
