@@ -7,6 +7,7 @@ import styles from "./daliuren-heaven-earth-plate.module.css";
 type CoreFacts = NonNullable<DaliurenChartViewModel["core_facts"]>;
 
 export type DaliurenHeavenEarthPlateProps = {
+  anchorEarthBranches?: ReadonlySet<string>;
   earthPlate: CoreFacts["earth_plate"];
   heavenPlate?: CoreFacts["heaven_plate"];
   heavenlyGenerals?: CoreFacts["heavenly_generals"];
@@ -14,6 +15,14 @@ export type DaliurenHeavenEarthPlateProps = {
   noblePerson?: CoreFacts["noble_person"];
   xunkong?: CoreFacts["xunkong"];
 };
+
+function TimingMark() {
+  return (
+    <span className={styles.timingBadge} data-badge="timing">
+      应期
+    </span>
+  );
+}
 
 function readString(value: unknown, key: string): string | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -57,6 +66,7 @@ function mapByEarth(
 }
 
 export function DaliurenHeavenEarthPlate({
+  anchorEarthBranches = new Set(),
   earthPlate,
   heavenPlate = null,
   heavenlyGenerals = null,
@@ -70,11 +80,12 @@ export function DaliurenHeavenEarthPlate({
   const earthSet = new Set(earth);
   const heavens = mapByEarth(heavenPlate, earthSet, "heaven");
   const generals = mapByEarth(heavenlyGenerals, earthSet, "general");
+  const timingAnchors = new Set([...anchorEarthBranches].filter((branch) => earthSet.has(branch)));
   const voids = voidBranches(xunkong);
   const showHeaven = heavens.size > 0;
   const showGeneral = generals.size > 0;
-  const noble = readString(noblePerson, "branch");
-  const nobleBranch = noble && earthSet.has(noble) ? noble : null;
+  const noble = readString(noblePerson, "earth_position");
+  const nobleEarthPosition = noble && earthSet.has(noble) ? noble : null;
   const offset = typeof plateOffset === "number" && Number.isFinite(plateOffset) ? plateOffset : null;
 
   return (
@@ -95,12 +106,14 @@ export function DaliurenHeavenEarthPlate({
             <li
               className={styles.spoke}
               data-branch={branch}
-              data-noble={nobleBranch === branch ? "true" : undefined}
+              data-noble={nobleEarthPosition === branch ? "true" : undefined}
+              data-timing={timingAnchors.has(branch) ? "true" : undefined}
               data-void={voids.has(branch) ? "true" : undefined}
               key={branch}
               style={{ ["--spoke" as string]: String(index) }}
             >
               <span className={styles.earth}>{branch}</span>
+              {timingAnchors.has(branch) ? <TimingMark /> : null}
               {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
               {showHeaven && heavens.get(branch) ? (
                 <span className={styles.heaven}>{heavens.get(branch)}</span>
@@ -123,12 +136,14 @@ export function DaliurenHeavenEarthPlate({
             {earth.map((branch) => (
               <tr
                 data-branch={branch}
-                data-noble={nobleBranch === branch ? "true" : undefined}
+                data-noble={nobleEarthPosition === branch ? "true" : undefined}
+                data-timing={timingAnchors.has(branch) ? "true" : undefined}
                 data-void={voids.has(branch) ? "true" : undefined}
                 key={branch}
               >
                 <th scope="row">
                   {branch}
+                  {timingAnchors.has(branch) ? <TimingMark /> : null}
                   {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
                 </th>
                 {showHeaven ? <td>{heavens.get(branch) ?? ""}</td> : null}

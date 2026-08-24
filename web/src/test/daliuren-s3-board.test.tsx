@@ -218,8 +218,7 @@ describe("大六壬 S3 课传盘面", () => {
     expect(screen.queryByText("san-shi/liuren-miben")).not.toBeInTheDocument();
     expect(screen.queryByText("candidate_not_guarantee")).not.toBeInTheDocument();
     expect(screen.queryByText("有界应期候选")).not.toBeInTheDocument();
-    expect(board().querySelector("[data-stage='final'] [data-badge='timing']")).toBeTruthy();
-    expect(board().querySelector("[data-stage='initial'] [data-badge='timing']")).toBeFalsy();
+    expect(board().querySelector("[data-stage] [data-badge='timing']")).toBeNull();
 
     rerender(<DaliurenBoard view={chart({ core_facts: emptyFacts({ timing_candidates: null }) })} />);
     expect(screen.queryByRole("table", { name: "应期候选" })).not.toBeInTheDocument();
@@ -295,6 +294,37 @@ describe("大六壬 S3 课传盘面", () => {
     await user.click(screen.getByRole("button", { name: "候选支 酉" }));
     expect(screen.getByRole("button", { name: "初传 酉 贵人" })).toHaveAttribute("data-active", "true");
     expect(screen.getByRole("button", { name: "末传 巳 白虎" })).toHaveAttribute("data-active", "false");
+  });
+
+  it("renders an unmatched candidate branch as text and marks its earth-plate anchor", async () => {
+    const user = userEvent.setup();
+    render(
+      <DaliurenBoard
+        view={chart({
+          transmissions: [
+            { stage: "initial", branch: "辰", general: "六合" },
+            { stage: "middle", branch: "酉", general: "太阴" },
+            { stage: "final", branch: "卯", general: "朱雀" },
+          ],
+          core_facts: emptyFacts({
+            earth_plate: ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"],
+            timing_candidates: [candidate({ branch: "未", anchor_earth_branch: "未" })],
+          }),
+        })}
+      />,
+    );
+
+    const timingTable = screen.getByRole("table", { name: "应期候选" });
+    expect(within(timingTable).getByText("未")).toBeVisible();
+    expect(within(timingTable).queryByRole("button", { name: "候选支 未" })).not.toBeInTheDocument();
+    expect(board().querySelector("[data-stage] [data-badge='timing']")).toBeNull();
+
+    await user.click(screen.getByText("天地盘"));
+    const earthTable = screen.getByRole("table", { name: "天地盘" });
+    const anchor = earthTable.querySelector('[data-branch="未"]') as HTMLElement;
+    expect(anchor).toHaveAttribute("data-timing", "true");
+    expect(within(anchor).getByText("应期")).toBeVisible();
+    expect(earthTable.querySelector('[data-branch="辰"]')).not.toHaveAttribute("data-timing");
   });
 
   it("uses paper-ink tokens, traditional column order and stair indents without glow or luck dye", () => {
@@ -458,7 +488,7 @@ describe("大六壬 S3 M4 天地盘", () => {
     expect(within(table).queryByText("螣蛇")).not.toBeInTheDocument();
   });
 
-  it("marks a noble branch from the typed branch field without inventing day-night copy", async () => {
+  it("marks the noble person's earth position instead of its heaven-plate branch", async () => {
     const user = userEvent.setup();
     const { rerender } = render(
       <DaliurenBoard
@@ -467,7 +497,7 @@ describe("大六壬 S3 M4 天地盘", () => {
             branch: "卯",
             day_night_profile: "甲戊庚牛羊",
             direction: "forward",
-            earth_position: "卯",
+            earth_position: "未",
             period: "day",
             profile: "昼贵人",
             source: "runtime_core_facts",
@@ -477,9 +507,12 @@ describe("大六壬 S3 M4 天地盘", () => {
     );
 
     await user.click(screen.getByText("天地盘"));
-    expect(screen.getByRole("table", { name: "天地盘" }).querySelector('[data-branch="卯"]')).toHaveAttribute(
+    expect(screen.getByRole("table", { name: "天地盘" }).querySelector('[data-branch="未"]')).toHaveAttribute(
       "data-noble",
       "true",
+    );
+    expect(screen.getByRole("table", { name: "天地盘" }).querySelector('[data-branch="卯"]')).not.toHaveAttribute(
+      "data-noble",
     );
     expect(screen.queryByText(/昼|夜|昼夜/)).not.toBeInTheDocument();
 

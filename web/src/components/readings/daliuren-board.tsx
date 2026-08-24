@@ -265,11 +265,6 @@ export function DaliurenBoard({
                     <span className={styles.general} data-chip="general">
                       {item.general}
                     </span>
-                    {anchored.has(item.branch) ? (
-                      <span className={styles.timingBadge} data-badge="timing">
-                        应期
-                      </span>
-                    ) : null}
                     {isVoidCell(item.branch, voids) ? <VoidMark /> : null}
                   </button>
                 ) : (
@@ -330,6 +325,7 @@ export function DaliurenBoard({
 
       {mode === "ready" ? (
         <DaliurenHeavenEarthPlate
+          anchorEarthBranches={anchored}
           earthPlate={view?.core_facts?.earth_plate ?? null}
           heavenPlate={view?.core_facts?.heaven_plate ?? null}
           heavenlyGenerals={view?.core_facts?.heavenly_generals ?? null}
@@ -373,16 +369,18 @@ export function DaliurenBoard({
                   <tr key={`${item.solar_date}-${item.branch}-${item.days_after_cast}`}>
                     <td className={styles.date}>{`${item.solar_date} · ${item.day_ganzhi}日`}</td>
                     <td>
-                      <button
-                        className={styles.branchLink}
-                        type="button"
-                        aria-label={`候选支 ${item.branch}`}
-                        onClick={() => {
-                          if (target) activate(target);
-                        }}
-                      >
-                        {item.branch}
-                      </button>
+                      {target ? (
+                        <button
+                          className={styles.branchLink}
+                          type="button"
+                          aria-label={`候选支 ${item.branch}`}
+                          onClick={() => activate(target)}
+                        >
+                          {item.branch}
+                        </button>
+                      ) : (
+                        <span className={styles.branch}>{item.branch}</span>
+                      )}
                     </td>
                     <td>{`第 ${item.days_after_cast} 天`}</td>
                     <td className={styles.source}>{sourceLabel(item.source_pack, item.source_rule)}</td>
