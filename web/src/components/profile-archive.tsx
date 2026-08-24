@@ -250,7 +250,7 @@ export function ProfileArchive() {
           state="empty"
           title="还没有已保存的档案"
           description="先核对出生资料并确认一次；服务端成功落库后，这里才会出现不可变档案版本。"
-          actionHref="/app/profile/new"
+          actionHref="/account/profiles/new"
           actionLabel="开始建立档案"
         />
         <nav className={styles.emptyFlows} aria-label="可用入口">
@@ -400,7 +400,7 @@ export function ProfileArchive() {
           ))}
         </ul>
         <div className={surface.actionRow}>
-          <Link className={surface.secondaryButton} href="/app/profile/new">
+          <Link className={surface.secondaryButton} href="/account/profiles/new">
             新建档案版本
           </Link>
           <Link className={surface.secondaryButton} href="/app/bazi">

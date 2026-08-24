@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import AccountProfilesPage from "@/app/account/profiles/page";
 import AccountProfileDetailPage from "@/app/account/profiles/[profileId]/page";
+import AccountNewProfilePage from "@/app/account/profiles/new/page";
 import { ApiError } from "@/lib/api";
 
 const api = vi.hoisted(() => ({
@@ -97,6 +98,17 @@ describe("account profile route wiring", () => {
     expect(api.listProfiles).not.toHaveBeenCalled();
   });
 
+  it("exposes the canonical new-profile form only after login", async () => {
+    api.getAccount.mockResolvedValue(account);
+
+    render(<AccountNewProfilePage />);
+
+    expect(await screen.findByRole("heading", { name: "新建档案" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "建立命理档案" })).toBeVisible();
+    expect(screen.getByLabelText("档案名称")).toBeEnabled();
+    expect(screen.getByRole("button", { name: "保存档案" })).toBeEnabled();
+  });
+
   it("shows immutable server-returned profile versions after login", async () => {
     api.getAccount.mockResolvedValue(account);
     api.listProfiles.mockResolvedValue({
@@ -120,7 +132,7 @@ describe("account profile route wiring", () => {
     expect(screen.getByText(/1965-02-03 · v3 · 更新于/)).toBeVisible();
     expect(screen.getByRole("link", { name: "新建档案版本" })).toHaveAttribute(
       "href",
-      "/app/profile/new",
+      "/account/profiles/new",
     );
   });
 

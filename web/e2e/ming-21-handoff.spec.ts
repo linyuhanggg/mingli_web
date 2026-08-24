@@ -35,6 +35,9 @@ function waitingSummary(readingId = WAITING_READING_ID, productId = "meihua") {
 }
 
 async function installApiMocks(page: Page) {
+  let draftLabel = "";
+  let profiles: Array<Record<string, unknown>> = [];
+
   await page.context().addCookies([
     {
       name: "mingli_csrf",
@@ -63,7 +66,35 @@ async function installApiMocks(page: Page) {
       return;
     }
     if (method === "GET" && path === "/api/v1/profiles") {
-      await json(route, { profiles: [] });
+      await json(route, { profiles });
+      return;
+    }
+    if (method === "POST" && path === "/api/v1/profiles/drafts") {
+      const body = request.postDataJSON() as { label?: string };
+      draftLabel = body.label?.trim() ?? "";
+      await json(route, {
+        draft_id: "11111111-1111-4111-8111-111111111111",
+        status: "draft",
+      });
+      return;
+    }
+    if (
+      method === "POST"
+      && path === "/api/v1/profiles/drafts/11111111-1111-4111-8111-111111111111/confirm"
+    ) {
+      const body = request.postDataJSON() as { birth_datetime?: string };
+      profiles = [
+        {
+          profile_id: "22222222-2222-4222-8222-222222222222",
+          profile_version_id: "33333333-3333-4333-8333-333333333333",
+          subject_ref: "profile-version:33333333-3333-4333-8333-333333333333",
+          version: 1,
+          display_name: draftLabel,
+          birth_date: body.birth_datetime?.slice(0, 10) ?? null,
+          created_at: "2026-08-25T00:00:00Z",
+        },
+      ];
+      await json(route, profiles[0]);
       return;
     }
     if (method === "GET" && path === `/api/v1/readings/${WAITING_READING_ID}`) {
@@ -105,16 +136,38 @@ test.beforeEach(async ({ page }) => {
   await installApiMocks(page);
 });
 
-test("profile empty state preserves the base creation boundary", async ({
+test("profile empty state completes the canonical creation flow", async ({
   page,
 }, testInfo) => {
   await page.goto("/account/profiles", { waitUntil: "domcontentloaded" });
 
   const createLink = page.getByRole("link", { name: "开始建立档案" });
   await expect(page.getByRole("heading", { name: "还没有已保存的档案" })).toBeVisible();
-  await expect(createLink).toHaveAttribute("href", "/app/profile/new");
   await expectNoHorizontalOverflow(page, `${testInfo.project.name} profile empty state`);
   await screenshot(page, testInfo.project.name, "profile-empty");
+
+  await createLink.click();
+  await expect(page).toHaveURL(/\/account\/profiles\/new$/);
+  await expect(page.getByRole("heading", { name: "建立命理档案" })).toBeVisible();
+
+  await page.getByLabel("档案名称").fill("四视口验收档案");
+  await page.getByLabel("出生时间").fill("1992-06-18T09:30");
+  await page.getByLabel("出生地点").fill("浙江省杭州市");
+  await page.getByLabel("性别").selectOption("female");
+  await page.getByLabel("时间口径").selectOption("civil");
+  await page.getByLabel("子时口径").selectOption("midnight");
+  await expectNoHorizontalOverflow(page, `${testInfo.project.name} profile form`);
+  await screenshot(page, testInfo.project.name, "profile-form-complete");
+
+  await page.getByRole("button", { name: "保存档案" }).click();
+  await expect(page).toHaveURL(/\/account\/profiles\?created=1$/);
+  await expect(
+    page.getByRole("status", { name: "“四视口验收档案”已保存" }),
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "已保存的档案" })).toBeVisible();
+  await expect(page.getByText("四视口验收档案", { exact: true })).toBeVisible();
+  await expectNoHorizontalOverflow(page, `${testInfo.project.name} saved profile list`);
+  await screenshot(page, testInfo.project.name, "profile-saved");
 });
 
 test("mobile input geometry and recoverable reading waiting state stay usable", async ({
