@@ -517,6 +517,26 @@ class ReleaseDeployTests(unittest.TestCase):
         self.assertEqual(len(commit), 40)
 
 
+class ProductionLauncherModeContractTests(unittest.TestCase):
+    """The signed direct entrypoint must remain directly spawnable."""
+
+    def test_committed_launcher_modes_match_the_production_spawn_contract(self) -> None:
+        source = Path(__file__).resolve().parents[1]
+        paths = (
+            "scripts/run_reading_transaction.sh",
+            "scripts/runtime_launcher.py",
+        )
+
+        modes = release_deploy.committed_release_modes(
+            source,
+            paths,
+            release_deploy.source_commit(source),
+        )
+
+        self.assertEqual(modes["scripts/run_reading_transaction.sh"], 0o755)
+        self.assertEqual(modes["scripts/runtime_launcher.py"], 0o644)
+
+
 class ReleaseSourceVerificationTests(unittest.TestCase):
     """The release gate must audit the checkout being released."""
 
