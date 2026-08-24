@@ -881,6 +881,25 @@ export type DaliurenTimingCandidate = {
   readonly candidate_not_guarantee: true;
 };
 
+export type DaliurenRelationshipObservation = Readonly<{
+  readonly relation: "subject_overcomes_object" | "object_overcomes_subject";
+}>;
+
+export type DaliurenTimingObservation = Readonly<{
+  readonly candidate_branch: Readonly<{
+    readonly anchor_earth_branch: string;
+    readonly branch: string;
+    readonly source_rule: "LM-R21";
+  }>;
+  readonly candidate_date: DaliurenTimingCandidate | null;
+  readonly relative_speed: "relatively_faster" | "relatively_slower" | null;
+}>;
+
+export type DaliurenDimensionObservationMap = Readonly<{
+  readonly relationship: DaliurenRelationshipObservation;
+  readonly timing: DaliurenTimingObservation;
+}>;
+
 export type DaliurenChartViewModel = {
   readonly schema_version: "daliuren-chart/v1";
   readonly subject_ref: string;

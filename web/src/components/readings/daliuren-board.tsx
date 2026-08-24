@@ -17,6 +17,7 @@ type LessonIndex = 0 | 1 | 2 | 3;
 type LessonPart = "upper" | "lower";
 type StageId = DaliurenChartViewModel["transmissions"][number]["stage"];
 type CellId = `lesson-${LessonIndex}-${LessonPart}` | `tx-${StageId}`;
+type NavigationKey = "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown" | "Home" | "End";
 
 const BRANCH_ELEMENTS: Readonly<Record<string, string>> = {
   子: "water",
@@ -40,6 +41,16 @@ const STAGE_LABEL: Readonly<Record<StageId, string>> = {
 };
 
 const VISUAL_LESSONS = [3, 2, 1, 0] as const;
+const FIRST_CELL: CellId = "lesson-0-upper";
+const LAST_CELL: CellId = "tx-final";
+const NAVIGATION_KEYS: ReadonlySet<string> = new Set([
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowUp",
+  "ArrowDown",
+  "Home",
+  "End",
+]);
 const SOURCE_PACK_LABELS: Readonly<Record<string, string>> = {
   "san-shi/liuren-miben": "大六壬秘本",
 };
@@ -104,7 +115,13 @@ function transmissionCellForBranch(
   return hit ? (`tx-${hit.stage}` as CellId) : null;
 }
 
-function neighbor(id: CellId, key: string): CellId {
+function isNavigationKey(key: string): key is NavigationKey {
+  return NAVIGATION_KEYS.has(key);
+}
+
+function neighbor(id: CellId, key: NavigationKey): CellId {
+  if (key === "Home") return FIRST_CELL;
+  if (key === "End") return LAST_CELL;
   const lesson = parseLesson(id);
   if (lesson) {
     const visual = VISUAL_LESSONS.indexOf(lesson.index);
@@ -144,7 +161,7 @@ export function DaliurenBoard({
   offer?: DaliurenS4Offer | null;
   s4Phase?: DaliurenS4Phase;
 }>) {
-  const [activeId, setActiveId] = useState<CellId>("lesson-0-upper");
+  const [activeId, setActiveId] = useState<CellId>(FIRST_CELL);
   const cellRefs = useRef<Partial<Record<CellId, HTMLButtonElement | null>>>({});
   const lessons = view?.lessons ?? EMPTY_LESSONS;
   const transmissions = view?.transmissions ?? EMPTY_TRANSMISSIONS;
@@ -161,9 +178,7 @@ export function DaliurenBoard({
   }
 
   function onCellKeyDown(event: KeyboardEvent<HTMLButtonElement>, id: CellId) {
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight" && event.key !== "ArrowUp" && event.key !== "ArrowDown") {
-      return;
-    }
+    if (!isNavigationKey(event.key)) return;
     event.preventDefault();
     activate(neighbor(id, event.key));
   }

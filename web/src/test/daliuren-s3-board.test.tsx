@@ -272,6 +272,27 @@ describe("大六壬 S3 课传盘面", () => {
     expect(screen.getByRole("button", { name: "三课·辰干 上神 酉" })).toHaveFocus();
   });
 
+  it("moves from a transmission to the first and last plate cells with Home and End", async () => {
+    const user = userEvent.setup();
+    render(<DaliurenBoard view={chart()} />);
+
+    const middle = screen.getByRole("button", { name: "中传 未 太阴" });
+    const first = screen.getByRole("button", { name: "一课·日干 上神 巳" });
+    const last = screen.getByRole("button", { name: "末传 巳 白虎" });
+
+    await user.click(middle);
+    await user.keyboard("{Home}");
+    expect(first).toHaveFocus();
+    expect(first).toHaveAttribute("tabindex", "0");
+    expect(middle).toHaveAttribute("tabindex", "-1");
+
+    await user.click(middle);
+    await user.keyboard("{End}");
+    expect(last).toHaveFocus();
+    expect(last).toHaveAttribute("tabindex", "0");
+    expect(middle).toHaveAttribute("tabindex", "-1");
+  });
+
   it("exposes semantic tables as the accessible alternative", () => {
     render(<DaliurenBoard view={chart()} />);
 
@@ -734,6 +755,14 @@ describe("大六壬 S3 M5 课式与传法", () => {
 describe("大六壬 S3 M6a 维度证据", () => {
   type FactObject = NonNullable<CoreFacts["dimension_facts"]>;
 
+  function goldenDimensionFacts(): FactObject {
+    const payload = JSON.parse(
+      readFileSync(resolve(process.cwd(), "../backend/tests/fixtures/liuren-runtime-core-facts-v1.json"), "utf8"),
+    ) as { dimension_facts?: FactObject };
+    if (!payload.dimension_facts) throw new Error("Daliuren Runtime golden fixture has no dimension_facts");
+    return payload.dimension_facts;
+  }
+
   function matchedEntry(overrides: Record<string, unknown> = {}) {
     return {
       activation_id: "act-1",
@@ -796,6 +825,71 @@ describe("大六壬 S3 M6a 维度证据", () => {
   function panel() {
     return screen.getByRole("region", { name: "维度证据" });
   }
+
+  it("renders the real Runtime relationship and timing observations through frozen field mappings", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: emptyFacts({ dimension_facts: goldenDimensionFacts() }),
+        })}
+      />,
+    );
+
+    const block = panel();
+    const relationship = within(block).getByRole("group", { name: "relationship" });
+    const timing = within(block).getByRole("group", { name: "timing" });
+    expect(within(relationship).getByText("LR-17")).toBeVisible();
+    expect(within(relationship).getByText("主客关系：客体克主体")).toBeVisible();
+    expect(within(timing).getByText("LM-R21")).toBeVisible();
+    expect(
+      within(timing).getByText("规则候选支：未 · 候选日期：2026-07-20（乙未日） · 相对节奏：较快"),
+    ).toBeVisible();
+    expect(block).not.toHaveTextContent(/object_overcomes_subject|candidate_branch|candidate_date|relative_speed/);
+    expect(block).not.toHaveTextContent(/hard_verdict|吉凶|成败|大吉|大凶/);
+  });
+
+  it("fails closed for extra or malformed relationship and timing observation fields", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            relationship: dimension({
+              canonical_dimension: "relationship",
+              requested_dimension: "relationship",
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    rule_id: "LR-17",
+                    observation: { relation: "object_overcomes_subject", raw_dump: "不得展示" },
+                  }),
+                ],
+              }),
+            }),
+            timing: dimension({
+              canonical_dimension: "timing",
+              requested_dimension: "timing",
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    rule_id: "LM-R21",
+                    observation: {
+                      candidate_branch: { branch: "未" },
+                      candidate_date: null,
+                      relative_speed: "relatively_faster",
+                    },
+                  }),
+                ],
+              }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(screen.queryByText("不得展示")).not.toBeInTheDocument();
+    expect(screen.queryByText(/object_overcomes_subject|relatively_faster/)).not.toBeInTheDocument();
+  });
 
   it("renders grouped matched facts with rule id and observation, and hides not_evaluated", () => {
     render(
