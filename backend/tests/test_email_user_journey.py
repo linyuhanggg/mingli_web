@@ -319,10 +319,12 @@ async def test_email_registration_login_full_journey(
             "profiles": [
                 {
                     "profile_id": confirmed["profile_id"],
-                    "profile_version_id": confirmed["profile_version_id"],
-                    "subject_ref": confirmed["subject_ref"],
-                    "version": 1,
-                    "created_at": confirmed["created_at"],
+                        "profile_version_id": confirmed["profile_version_id"],
+                        "subject_ref": confirmed["subject_ref"],
+                        "version": 1,
+                        "display_name": "本人",
+                        "birth_date": "1994-04-30",
+                        "created_at": confirmed["created_at"],
                 }
             ]
         }

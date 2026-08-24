@@ -938,7 +938,7 @@ paths:
             format: uuid
       responses:
         "200":
-          description: Public version metadata only; payloads stay encrypted
+          description: Owner-only private/no-store display metadata; encrypted payloads stay private
           content:
             application/json:
               schema:
@@ -954,7 +954,7 @@ paths:
       summary: List immutable Profile Versions owned by the current session
       responses:
         "200":
-          description: Public profile metadata only; payloads stay encrypted
+          description: Owner-only private/no-store profile summaries; encrypted payloads stay private
           content:
             application/json:
               schema:
@@ -962,6 +962,41 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
   /api/v1/profiles/{profile_id}:
+    patch:
+      operationId: updateProfileDisplayName
+      tags: [Profiles]
+      summary: Update only the persisted display name of one owned Subject Profile
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - name: profile_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileDisplayNameUpdateRequest"
+      responses:
+        "200":
+          description: Owner-only private/no-store summary with the updated display name
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
     delete:
       operationId: deleteProfile
       tags: [Profiles]
@@ -3236,6 +3271,7 @@ components:
           type: string
           minLength: 1
           maxLength: 80
+          pattern: ".*\\S.*"
     ProfileDraftResponse:
       type: object
       additionalProperties: false
@@ -3368,10 +3404,22 @@ components:
           default: false
         difference_acknowledged:
           type: boolean
+    ProfileDisplayNameUpdateRequest:
+      type: object
+      additionalProperties: false
+      required: [display_name]
+      properties:
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          pattern: ".*\\S.*"
     ProfileSummary:
       type: object
       additionalProperties: false
-      required: [profile_id, profile_version_id, subject_ref, version, created_at]
+      required:
+        [profile_id, profile_version_id, subject_ref, version, display_name,
+        birth_date, created_at]
       properties:
         profile_id:
           type: string
@@ -3384,6 +3432,14 @@ components:
         version:
           type: integer
           minimum: 1
+        display_name:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 80
+        birth_date:
+          type: [string, "null"]
+          format: date
+          description: Owner-only calendar-date projection; more precise birth fields stay encrypted
         created_at:
           type: string
           format: date-time

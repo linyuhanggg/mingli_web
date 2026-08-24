@@ -138,6 +138,48 @@ def test_phase_two_contracts_never_expose_runtime_or_birth_secrets() -> None:
         assert banned not in response_text, f"response exposes decrypted birth data {banned!r}"
 
 
+def test_profile_display_contract_is_owner_only_minimized_and_rename_only() -> None:
+    document = load_openapi_document()
+    paths = document["paths"]
+    schemas = document["components"]["schemas"]
+
+    summary = schemas["ProfileSummary"]
+    assert {"display_name", "birth_date"} <= set(summary["required"])
+    assert summary["properties"]["display_name"] == {
+        "type": ["string", "null"],
+        "minLength": 1,
+        "maxLength": 80,
+    }
+    assert summary["properties"]["birth_date"]["type"] == ["string", "null"]
+    assert summary["properties"]["birth_date"]["format"] == "date"
+
+    rename = paths["/api/v1/profiles/{profile_id}"]["patch"]
+    assert rename["operationId"] == "updateProfileDisplayName"
+    assert {item.get("$ref") for item in rename["parameters"] if "$ref" in item} == {
+        "#/components/parameters/CsrfToken"
+    }
+    assert rename["requestBody"]["content"]["application/json"]["schema"] == {
+        "$ref": "#/components/schemas/ProfileDisplayNameUpdateRequest"
+    }
+    rename_request = schemas["ProfileDisplayNameUpdateRequest"]
+    assert rename_request["additionalProperties"] is False
+    assert rename_request["required"] == ["display_name"]
+    assert set(rename_request["properties"]) == {"display_name"}
+    assert schemas["ProfileDraftRequest"]["properties"]["label"]["pattern"] == (
+        rename_request["properties"]["display_name"]["pattern"]
+    )
+
+    list_description = paths["/api/v1/profiles"]["get"]["responses"]["200"][
+        "description"
+    ].lower()
+    detail_description = paths["/api/v1/profiles/{profile_id}/versions"]["get"][
+        "responses"
+    ]["200"]["description"].lower()
+    for description in (list_description, detail_description):
+        assert "owner-only" in description
+        assert "private/no-store" in description
+
+
 def test_reading_result_contract_exposes_the_runtime_view_model_slot() -> None:
     schema = load_openapi_document()["components"]["schemas"]["ReadingResultResponse"]
 
@@ -214,6 +256,7 @@ def test_phase_two_mutating_routes_declare_csrf_and_idempotency() -> None:
     csrf_mutating_paths = {
         "/api/v1/profiles/drafts": "post",
         "/api/v1/profiles/drafts/{draft_id}/confirm": "post",
+        "/api/v1/profiles/{profile_id}": "patch",
         "/api/v1/readings/preview": "post",
         "/api/v1/readings/chart-similarity": "post",
         "/api/v1/readings/canwen": "post",
