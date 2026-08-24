@@ -262,6 +262,8 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
       await act(async () => vi.advanceTimersByTime(0));
 
       expect(screen.getByRole("status")).toHaveTextContent(before);
+      expect(screen.queryByRole("list", { name: "排盘进度阶段" }))
+        .not.toBeInTheDocument();
       expect(screen.queryByRole(action === "稍后查看" ? "link" : "button", { name: action }))
         .not.toBeInTheDocument();
 
@@ -272,6 +274,72 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
         .toBeVisible();
     },
   );
+
+  it.each([
+    ["input_ready", undefined, "资料已提交"],
+    ["input_ready", "queued", "资料已提交"],
+    ["prepared", undefined, "盘面已好"],
+    ["completing", undefined, "解读整理中"],
+  ])(
+    "maps the authoritative %s/%s stage without inventing progress",
+    async (status, deliveryState, currentStep) => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+      const fetchMock = vi.fn<typeof fetch>(async (url) => {
+        if (String(url).endsWith("/result")) {
+          return new Promise<Response>(() => {});
+        }
+        return jsonResponse(
+          readingSummary(status, {
+            created_at: "2026-08-25T00:01:00Z",
+            delivery_state: deliveryState,
+          }),
+        );
+      });
+      vi.stubGlobal("fetch", fetchMock);
+
+      const { unmount } = render(<ReadingResult readingId={VERSION_ID} />);
+      await act(async () => vi.advanceTimersByTimeAsync(300));
+
+      const progress = screen.getByRole("list", { name: "排盘进度阶段" });
+      expect(progress.querySelector("[aria-current='step']")).toHaveTextContent(currentStep);
+      expect(progress.querySelectorAll("[aria-current='step']")).toHaveLength(1);
+      unmount();
+    },
+  );
+
+  it("polls immediately, then backs off 1 → 2 → 4 seconds and stays capped", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse(
+        readingSummary("input_ready", { created_at: "2026-08-25T00:01:00Z" }),
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { unmount } = render(<ReadingResult readingId={VERSION_ID} />);
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(1);
+
+    await act(async () => vi.advanceTimersByTimeAsync(999));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(1);
+    await act(async () => vi.advanceTimersByTimeAsync(1));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(2);
+
+    await act(async () => vi.advanceTimersByTimeAsync(1_999));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(2);
+    await act(async () => vi.advanceTimersByTimeAsync(1));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(3);
+
+    await act(async () => vi.advanceTimersByTimeAsync(3_999));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(3);
+    await act(async () => vi.advanceTimersByTimeAsync(1));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(4);
+    await act(async () => vi.advanceTimersByTimeAsync(4_000));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(5);
+    unmount();
+  });
 
   it("prefers the server created_at over a fresh component mount", async () => {
     vi.useFakeTimers();
@@ -310,6 +378,7 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     const acceptedRegion = await screen.findByRole("region", { name: "判断" });
     const copy = within(acceptedRegion).getByText(acceptedCopyQuery);
     expect(copy.textContent).toBe(acceptedCopy);
+    expect(screen.getByText("解读已完成，可随时回看。")).toBeVisible();
     expect(screen.queryByRole("heading", { name: "分享" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("追问")).not.toBeInTheDocument();
     expect(fetchMock.mock.calls.map(([url]) => String(url)).slice(0, 2)).toEqual([
@@ -591,11 +660,11 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
   });
 
   it.each([
-    ["input_ready", "准备解读"],
-    ["prepared", "事实已准备"],
-    ["completing", "正在接纳正文"],
-    ["delayed", "交付延迟"],
-  ])("shows the real %s state and the server-provided horizon", async (status, text) => {
+    ["input_ready", "准备解读", "事实已就绪，正在准备解读。"],
+    ["prepared", "盘面已好", "盘面已好，正在撰写解读。"],
+    ["completing", "正在整理解读", "解读写好了，正在装订成册。"],
+    ["delayed", "仍在处理中", "今天排队的人有点多，继续为你处理中。"],
+  ])("shows the real %s state and the server-provided horizon", async (status, text, description) => {
     const fetchMock = vi.fn<typeof fetch>(async (url) =>
       String(url).endsWith("/result")
         ? jsonResponse(readingResult({ status }))
@@ -608,6 +677,7 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     const matches = await screen.findAllByText(text);
     expect(matches.length).toBeGreaterThan(0);
     expect(matches[0]).toBeVisible();
+    expect(screen.getAllByText(description, { exact: false }).length).toBeGreaterThan(0);
     const horizons = screen.getAllByText(/2026年8月10日.*2026年8月16日/);
     expect(horizons.length).toBeGreaterThan(0);
     expect(screen.queryByText(/排队中/)).not.toBeInTheDocument();
@@ -621,7 +691,9 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    expect(await screen.findByText(/运行状态暂时未知/)).toBeVisible();
+    expect(
+      await screen.findByText("运行状态暂时未知，资料仍然保留，可以重新检查。"),
+    ).toBeVisible();
     expect(screen.getByRole("button", { name: /重新检查状态/ })).toBeVisible();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });

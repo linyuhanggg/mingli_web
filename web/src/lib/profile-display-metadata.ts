@@ -1,4 +1,5 @@
 import type { ProfileSummary } from "@/lib/api/contracts";
+import { formatProfileOption } from "@/lib/api/account";
 
 const FLASH_KEY = "mingli.profile-saved-flash.v2";
 const LEGACY_FLASH_KEY = "mingli.profile-saved-flash.v1";
@@ -39,7 +40,13 @@ export function profileBirthDate(profile: ProfileSummary): string {
 }
 
 export function formatProfileDisplayOption(profile: ProfileSummary): string {
-  return `${profileDisplayName(profile)} · ${profileBirthDate(profile)}`;
+  const fields = displayFields(profile);
+  const name = normalizedName(fields.display_name ?? "");
+  const birthDate = fields.birth_date;
+  if (!name || !birthDate || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+    return formatProfileOption(profile);
+  }
+  return `${name} · ${birthDate}`;
 }
 
 export function findProfileWithDisplayName(

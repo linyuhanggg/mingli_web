@@ -75,8 +75,8 @@ describe("ProductTaskPage input shell", () => {
     expect(trustRail).toBeVisible();
     expect(trustRail).toHaveTextContent("提交后填入你的盘");
     expect(trustRail).toHaveTextContent("示意骨架");
-    expect(trustRail).toHaveTextContent("verified_exact");
-    expect(trustRail).toHaveTextContent("《滴天髓》");
+    expect(trustRail).toHaveTextContent("精确匹配《滴天髓·通神论》");
+    expect(trustRail).not.toHaveTextContent(/verified_exact|ViewModel|不可变|落库|接纳|句柄|payment_id/);
     expect(trustRail).toHaveTextContent("1. 提交资料");
     expect(trustRail).toHaveTextContent("2. 生成事实盘");
     expect(trustRail).toHaveTextContent("3. 核对引文");
@@ -106,11 +106,11 @@ describe("ProductTaskPage input shell", () => {
     expect(screen.queryByRole("checkbox", { name: /不知道出生时辰/ })).not.toBeInTheDocument();
     expect(screen.queryByText("排盘资料")).not.toBeInTheDocument();
 
-    const submit = screen.getByRole("button", { name: "立即排盘（免费）· 查看八字四柱" });
+    const submit = screen.getByRole("button", { name: "免费排盘 · 查看四柱" });
     expect(submit).toBeEnabled();
     await waitFor(() => expect(listProfiles).toHaveBeenCalled());
     expect(submit).toBeEnabled();
-    expect(submit).toHaveTextContent("立即排盘（免费）· 查看八字四柱");
+    expect(submit).toHaveTextContent("免费排盘 · 查看四柱");
 
     expect(css).toMatch(/\.placeSwitch\s*\{[^}]*min-height:\s*var\(--target-min\)/s);
     expect(css).toMatch(/\.main\s*\{[^}]*scroll-padding-bottom:\s*calc\(var\(--nav-bottom\)/s);

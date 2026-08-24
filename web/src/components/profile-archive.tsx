@@ -1,18 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import * as profileApi from "@/lib/api";
 
 import {
   ApiError,
   formatProfileOption,
   listProfiles,
-  startPreviewReading,
   type ProfileSummary,
 } from "@/lib/api";
-import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
 import {
   consumeProfileSavedFlash,
   profileBirthDate,
@@ -83,7 +81,6 @@ async function persistProfileDisplayName(
 }
 
 export function ProfileArchive() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const justCreated = searchParams.get("created") === "1";
   const [loading, setLoading] = useState(true);
@@ -91,8 +88,6 @@ export function ProfileArchive() {
   const [error, setError] = useState<string | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const [startingId, setStartingId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
   const [savedFlash, setSavedFlash] = useState(() =>
     justCreated ? consumeProfileSavedFlash() : null,
   );
@@ -101,7 +96,6 @@ export function ProfileArchive() {
   const [renameValue, setRenameValue] = useState("");
   const [renameError, setRenameError] = useState("");
   const [renameBusy, setRenameBusy] = useState(false);
-  const intentKeyRef = useRef<IntentKey | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -136,28 +130,7 @@ export function ProfileArchive() {
     setError(null);
     setSessionExpired(false);
     setProfiles(null);
-    setActionError(null);
     setAttempt((value) => value + 1);
-  }
-
-  async function handleStartBazi(profileVersionId: string) {
-    if (startingId) return;
-    setStartingId(profileVersionId);
-    setActionError(null);
-    const payload = {
-      profile_version_id: profileVersionId,
-      query: "查看这个档案的事业与工作主题",
-      dimension_ids: ["career"] as ("overview" | "career")[],
-    };
-    const intent = stableKeyForIntent(intentKeyRef.current, payload);
-    intentKeyRef.current = intent;
-    try {
-      const response = await startPreviewReading(payload, intent.key);
-      router.push(`/app/readings/${response.reading_version_id}`);
-    } catch (err) {
-      setActionError(errorMessage(err));
-      setStartingId(null);
-    }
   }
 
   function startRename(profile: ProfileSummary) {
@@ -249,7 +222,7 @@ export function ProfileArchive() {
         <StatusPanel
           state="empty"
           title="还没有已保存的档案"
-          description="先核对出生资料并确认一次；服务端成功落库后，这里才会出现不可变档案版本。"
+          description="保存第一份出生资料后，这里会成为你的档案柜。"
           actionHref="/account/profiles/new"
           actionLabel="开始建立档案"
         />
@@ -266,6 +239,9 @@ export function ProfileArchive() {
   }
 
   const latest = profiles[0];
+  const savedProfile = savedFlash
+    ? profiles.find((profile) => profile.profile_id === savedFlash.profileId) ?? latest
+    : latest;
   const hasDisplayMetadata = profiles.some(
     (profile) => "display_name" in profile || "birth_date" in profile,
   );
@@ -276,17 +252,9 @@ export function ProfileArchive() {
         <StatusPanel
           state="success"
           title={savedFlash ? `“${savedFlash.name}”已保存` : "档案已保存"}
-          description="下一步可以直接查看八字概览，或发起今日、近七日主题。"
-          actionHref={`/app/bazi?profile=${encodeURIComponent(latest.profile_version_id)}`}
-          actionLabel="查看八字概览"
-        />
-      ) : null}
-
-      {actionError ? (
-        <StatusPanel
-          state="error"
-          title="无法启动事业主题概览"
-          description={actionError}
+          description="可以用这份档案继续排八字，或查看今日、近七日主题。"
+          actionHref={`/app/bazi?profile=${encodeURIComponent(savedProfile.profile_version_id)}`}
+          actionLabel="用这份档案排八字"
         />
       ) : null}
 
@@ -372,17 +340,12 @@ export function ProfileArchive() {
                 >
                   查看版本
                 </Link>
-                <button
-                  type="button"
+                <Link
                   className={surface.secondaryButton}
-                  disabled={startingId === entry.profile_version_id}
-                  aria-busy={startingId === entry.profile_version_id}
-                  onClick={() => handleStartBazi(entry.profile_version_id)}
+                  href={`/app/bazi?profile=${encodeURIComponent(entry.profile_version_id)}`}
                 >
-                  {startingId === entry.profile_version_id
-                    ? "正在启动事业主题…"
-                    : "查看事业主题概览"}
-                </button>
+                  用这份档案排八字
+                </Link>
                 <Link
                   className={surface.secondaryButton}
                   href={`/app/fortune/today?profile=${encodeURIComponent(entry.profile_version_id)}`}
@@ -401,10 +364,10 @@ export function ProfileArchive() {
         </ul>
         <div className={surface.actionRow}>
           <Link className={surface.secondaryButton} href="/account/profiles/new">
-            新建档案版本
+            新建档案
           </Link>
           <Link className={surface.secondaryButton} href="/app/bazi">
-            选择档案并查看事业主题
+            选择档案排八字
           </Link>
           <Link className={surface.secondaryButton} href="/account/history">
             查看解读历史

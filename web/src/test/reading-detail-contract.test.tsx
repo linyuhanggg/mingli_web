@@ -166,7 +166,7 @@ describe("reading detail component", () => {
     });
     expect(within(rail).getByText("报告版本")).toBeInTheDocument();
     expect(within(rail).getByText("v1")).toBeInTheDocument();
-    expect(within(rail).getByText("已交付")).toBeInTheDocument();
+    expect(within(rail).getByText("解读已完成")).toBeInTheDocument();
     expect(within(rail).getByText(/不会覆盖本次内容/)).toBeInTheDocument();
     expect(within(rail).queryByText("术法")).not.toBeInTheDocument();
     expect(within(rail).queryByText("对象")).not.toBeInTheDocument();
@@ -193,9 +193,9 @@ describe("reading detail component", () => {
     expect(statusSource).toContain('role={state === "error" ? "alert" : "status"}');
     for (const label of [
       "准备解读",
-      "事实已准备",
-      "正在接纳正文",
-      "交付延迟",
+      "盘面已好",
+      "正在整理解读",
+      "仍在处理中",
       "等待输入",
       "本次解读已停止",
       "正在读取结果",

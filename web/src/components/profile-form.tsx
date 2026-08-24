@@ -114,40 +114,85 @@ function ProfileNameConflictDialog({
           <DialogPrimitive.Description>
             选择如何保存。更新会追加新版本，所有历史版本都能继续回看。
           </DialogPrimitive.Description>
-          <div className={formControls.field}>
-            <button autoFocus disabled={busy} onClick={onUpdate} type="button">
+          <div
+            className={formControls.field}
+            style={{ gap: "1rem", marginTop: "1.25rem" }}
+          >
+            <button
+              autoFocus
+              className={clsx(formControls.action, formControls.actionPrimary)}
+              data-variant="primary"
+              disabled={busy}
+              onClick={onUpdate}
+              style={{ width: "100%" }}
+              type="button"
+            >
               {busy ? "正在保存…" : `更新“${existingName}”`}
             </button>
-            <label htmlFor="profile-conflict-new-name">另存为新档案</label>
-            <input
-              aria-describedby={nameError ? "profile-conflict-new-name-error" : undefined}
-              aria-invalid={Boolean(nameError)}
-              className={formControls.input}
-              disabled={busy}
-              id="profile-conflict-new-name"
-              maxLength={80}
-              onChange={(event) => {
-                setNextName(event.currentTarget.value);
-                if (nameError) setNameError("");
+            <div
+              aria-labelledby="profile-conflict-save-as-title"
+              data-variant="secondary-card"
+              role="group"
+              style={{
+                display: "grid",
+                gap: "0.65rem",
+                padding: "1rem",
+                border: "1px solid var(--color-border-strong)",
+                borderRadius: "var(--radius-control)",
+                background: "var(--color-surface-subtle)",
               }}
-              type="text"
-              value={nextName}
-            />
-            {nameError ? (
-              <p className={formControls.error} id="profile-conflict-new-name-error" role="alert">
-                {nameError}
-              </p>
-            ) : null}
-            <button disabled={busy} onClick={handleSaveAs} type="button">
-              另存为新档案
-            </button>
-            <button disabled={busy} onClick={onCancel} type="button">
-              取消
-            </button>
+            >
+              <strong id="profile-conflict-save-as-title">另存为新档案</strong>
+              <span style={{ color: "var(--color-text-secondary)", fontSize: "var(--font-size-aux)" }}>
+                保留原档案不变，用新名称再保存一份。
+              </span>
+              <label htmlFor="profile-conflict-new-name">新档案名称</label>
+              <input
+                aria-describedby={nameError ? "profile-conflict-new-name-error" : undefined}
+                aria-invalid={Boolean(nameError)}
+                className={formControls.input}
+                disabled={busy}
+                id="profile-conflict-new-name"
+                maxLength={80}
+                onChange={(event) => {
+                  setNextName(event.currentTarget.value);
+                  if (nameError) setNameError("");
+                }}
+                type="text"
+                value={nextName}
+              />
+              {nameError ? (
+                <p className={formControls.error} id="profile-conflict-new-name-error" role="alert">
+                  {nameError}
+                </p>
+              ) : null}
+              <button
+                className={clsx(formControls.action, formControls.actionSecondary)}
+                data-variant="secondary"
+                disabled={busy}
+                onClick={handleSaveAs}
+                type="button"
+              >
+                另存为新档案
+              </button>
+            </div>
+            <DialogPrimitive.Close asChild>
+              <button
+                data-variant="ghost"
+                disabled={busy}
+                style={{
+                  minHeight: "2.75rem",
+                  border: 0,
+                  background: "transparent",
+                  color: "var(--color-text-secondary)",
+                  cursor: busy ? "not-allowed" : "pointer",
+                }}
+                type="button"
+              >
+                取消
+              </button>
+            </DialogPrimitive.Close>
           </div>
-          <DialogPrimitive.Close aria-label="关闭重名处理" disabled={busy}>
-            ×
-          </DialogPrimitive.Close>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
@@ -541,7 +586,7 @@ export function ProfileForm() {
               autoComplete="off"
               spellCheck="false"
               list="profile-timezone-options"
-              placeholder="输入并选择，例如 Asia/Shanghai…"
+              placeholder="例如 Asia/Shanghai，请从列表选择"
               disabled={busy}
               required
               aria-required="true"
@@ -562,7 +607,7 @@ export function ProfileForm() {
               </p>
             ) : null}
             <p className={formControls.hint} id="profile-timezone-help">
-              按出生城市主动确认；输入地区或城市可筛选完整 IANA 列表，界面不会读取设备时区。
+              请输入并从列表选择出生城市对应的 IANA 时区；界面不会读取设备时区。
             </p>
           </div>
 

@@ -182,7 +182,7 @@ function InputTrustRail({ product }: { product: ProductDefinition }) {
         <div className={styles.trustRailHeader}>
           <span>盘面骨架</span>
           <h2 id="task-plate-preview-title">提交后填入你的盘</h2>
-          <p>以下干支只作示意骨架；真实盘面只使用提交后返回的版本化 ViewModel。</p>
+          <p>先看看结果的样式；真实盘面以提交后返回为准。</p>
         </div>
         <dl className={styles.plateSkeleton} aria-label="示意骨架，不是真实盘面">
           <div>
@@ -209,7 +209,7 @@ function InputTrustRail({ product }: { product: ProductDefinition }) {
         <blockquote>
           <p>「天道有寒暖，发育万物，人道得之，不可过也。」</p>
         </blockquote>
-        <cite>《滴天髓》通神论 · verified_exact</cite>
+        <cite>引文核对：精确匹配《滴天髓·通神论》</cite>
       </figure>
       <section className={styles.trustSteps} aria-labelledby="task-trust-steps-title">
         <h2 id="task-trust-steps-title">三步看懂结果</h2>
@@ -883,9 +883,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               返回录入
             </button>
           )}
-          description="当前没有已确认的任务句柄，不会伪造盘面。"
+          description="返回录入后，可以用原资料重新开始。"
           state="empty"
-          title="还没有可恢复的盘面"
+          title="上一次排盘没有完成"
         />
       ) : null}
       {stage === "workbench" && product.id !== "bazi" && inlineReadingId ? (

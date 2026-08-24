@@ -6,6 +6,8 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 const WAITING_READING_ID = "ming-21-waiting-reading";
 const BAZI_WAITING_READING_ID = "ming-21-bazi-waiting-reading";
 let waitingStartedAt = new Date().toISOString();
+type ApiState = { profiles: Array<Record<string, unknown>> };
+const apiStateByPage = new WeakMap<Page, ApiState>();
 
 async function json(route: Route, body: unknown, status = 200) {
   await route.fulfill({
@@ -36,7 +38,8 @@ function waitingSummary(readingId = WAITING_READING_ID, productId = "meihua") {
 
 async function installApiMocks(page: Page) {
   let draftLabel = "";
-  let profiles: Array<Record<string, unknown>> = [];
+  const state: ApiState = { profiles: [] };
+  apiStateByPage.set(page, state);
 
   await page.context().addCookies([
     {
@@ -66,7 +69,7 @@ async function installApiMocks(page: Page) {
       return;
     }
     if (method === "GET" && path === "/api/v1/profiles") {
-      await json(route, { profiles });
+      await json(route, { profiles: state.profiles });
       return;
     }
     if (method === "POST" && path === "/api/v1/profiles/drafts") {
@@ -83,7 +86,7 @@ async function installApiMocks(page: Page) {
       && path === "/api/v1/profiles/drafts/11111111-1111-4111-8111-111111111111/confirm"
     ) {
       const body = request.postDataJSON() as { birth_datetime?: string };
-      profiles = [
+      state.profiles = [
         {
           profile_id: "22222222-2222-4222-8222-222222222222",
           profile_version_id: "33333333-3333-4333-8333-333333333333",
@@ -94,7 +97,7 @@ async function installApiMocks(page: Page) {
           created_at: "2026-08-25T00:00:00Z",
         },
       ];
-      await json(route, profiles[0]);
+      await json(route, state.profiles[0]);
       return;
     }
     if (method === "GET" && path === `/api/v1/readings/${WAITING_READING_ID}`) {
@@ -107,6 +110,12 @@ async function installApiMocks(page: Page) {
     }
     await json(route, { title: "Unhandled e2e API", detail: `${method} ${path}` }, 599);
   });
+}
+
+function seedProfiles(page: Page, profiles: ApiState["profiles"]) {
+  const state = apiStateByPage.get(page);
+  if (!state) throw new Error("API mocks must be installed before seeding profiles");
+  state.profiles = profiles;
 }
 
 async function expectNoHorizontalOverflow(page: Page, label: string) {
@@ -143,6 +152,7 @@ test("profile empty state completes the canonical creation flow", async ({
 
   const createLink = page.getByRole("link", { name: "开始建立档案" });
   await expect(page.getByRole("heading", { name: "还没有已保存的档案" })).toBeVisible();
+  await expect(page.getByText("保存第一份出生资料后，这里会成为你的档案柜。")).toBeVisible();
   await expectNoHorizontalOverflow(page, `${testInfo.project.name} profile empty state`);
   await screenshot(page, testInfo.project.name, "profile-empty");
 
@@ -166,15 +176,83 @@ test("profile empty state completes the canonical creation flow", async ({
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: "已保存的档案" })).toBeVisible();
   await expect(page.getByText("四视口验收档案", { exact: true })).toBeVisible();
+  const savedAction = page.getByRole("link", { name: "用这份档案排八字" });
+  await expect(savedAction).toHaveCount(2);
+  await expect(savedAction.first()).toHaveAttribute(
+    "href",
+    "/app/bazi?profile=33333333-3333-4333-8333-333333333333",
+  );
   await expectNoHorizontalOverflow(page, `${testInfo.project.name} saved profile list`);
   await screenshot(page, testInfo.project.name, "profile-saved");
+
+  await page.getByRole("link", { name: "新建档案" }).click();
+  await page.getByLabel("档案名称").fill("四视口验收档案");
+  await page.getByLabel("出生时间").fill("1992-06-18T09:30");
+  await page.getByLabel("出生地点").fill("浙江省杭州市");
+  await page.getByLabel("性别").selectOption("female");
+  await page.getByLabel("时间口径").selectOption("civil");
+  await page.getByLabel("子时口径").selectOption("midnight");
+  const saveProfile = page.getByRole("button", { name: "保存档案" });
+  await saveProfile.click();
+
+  const update = page.getByRole("button", { name: "更新“四视口验收档案”" });
+  await expect(page.getByRole("dialog", { name: "已有同名档案“四视口验收档案”" })).toBeVisible();
+  await expect(update).toBeFocused();
+  await expect(update).toHaveAttribute("data-variant", "primary");
+  await expect(page.getByRole("group", { name: "另存为新档案" })).toHaveAttribute(
+    "data-variant",
+    "secondary-card",
+  );
+  await expect(page.getByRole("button", { name: "另存为新档案" })).toHaveAttribute(
+    "data-variant",
+    "secondary",
+  );
+  const cancel = page.getByRole("button", { name: "取消" });
+  await expect(cancel).toHaveAttribute("data-variant", "ghost");
+  await expectNoHorizontalOverflow(page, `${testInfo.project.name} profile conflict dialog`);
+  await screenshot(page, testInfo.project.name, "profile-conflict");
+  await cancel.click();
+  await expect(saveProfile).toBeFocused();
 });
 
 test("mobile input geometry and recoverable reading waiting state stay usable", async ({
   page,
 }, testInfo) => {
+  seedProfiles(page, [
+    {
+      profile_id: "44444444-4444-4444-8444-444444444444",
+      profile_version_id: "55555555-5555-4555-8555-555555555555",
+      subject_ref: "profile-version:55555555-5555-4555-8555-555555555555",
+      version: 2,
+      display_name: "四视口档案",
+      birth_date: "1992-06-18",
+      created_at: "2026-08-25T01:00:00Z",
+    },
+    {
+      profile_id: "66666666-6666-4666-8666-666666666666",
+      profile_version_id: "77777777-7777-4777-8777-777777777777",
+      subject_ref: "profile-version:77777777-7777-4777-8777-777777777777",
+      version: 1,
+      display_name: "仅有名称",
+      birth_date: null,
+      created_at: "2026-08-24T01:00:00Z",
+    },
+  ]);
   await page.goto("/bazi", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("button", { name: /^立即排盘（免费）/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^免费排盘/ })).toBeVisible();
+  const profileSelect = page.getByRole("combobox", { name: "排盘资料" });
+  await expect(profileSelect.locator("option").nth(0)).toHaveText("四视口档案 · 1992-06-18");
+  await expect(profileSelect.locator("option").nth(1)).toHaveText(/^档案 1 · /);
+  await expect(page.getByText("将直接使用这份已保存资料；如出生信息有变化，选重新录入。")).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(
+    /verified_exact|ViewModel|不可变|落库|接纳|句柄|payment_id/,
+  );
+  await screenshot(page, testInfo.project.name, "bazi-profile-friendly");
+  await profileSelect.selectOption("77777777-7777-4777-8777-777777777777");
+  await expect(profileSelect).toHaveValue("77777777-7777-4777-8777-777777777777");
+  await screenshot(page, testInfo.project.name, "bazi-profile-fallback");
+  await profileSelect.selectOption("");
+  await expect(page.getByText("将核对出生资料并保存为新档案。")).toBeVisible();
   await expectNoHorizontalOverflow(page, `${testInfo.project.name} bazi input`);
 
   if (testInfo.project.name === "360") {
@@ -252,7 +330,12 @@ test("mobile input geometry and recoverable reading waiting state stay usable", 
   const waiting = page.getByRole("status").filter({ hasText: "正在为你排盘" });
   await expect(waiting).toBeVisible();
   await expect(waiting).toContainText("通常需要 5–15 秒");
-  await expect(page.getByRole("list", { name: "排盘进度阶段" })).toContainText("资料已提交");
+  const progress = page.getByRole("list", { name: "排盘进度阶段" });
+  await expect(progress).toContainText("资料已提交");
+  await expect(progress.locator('[aria-current="step"]')).toHaveText("资料已提交");
+  await expect(page.locator("body")).not.toContainText(
+    /verified_exact|ViewModel|不可变|落库|接纳|句柄|payment_id/,
+  );
   await expectNoHorizontalOverflow(page, `${testInfo.project.name} waiting state`);
   await screenshot(page, testInfo.project.name, "reading-waiting");
 });

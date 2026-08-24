@@ -39,11 +39,13 @@ afterEach(cleanup);
 
 function submitButton(productId: string) {
   const labels: Record<string, RegExp> = {
-    liuyao: /^立即起卦 · 查看本卦与变卦$/,
-    wenshi: /^立即起卦 · 三术分别呈现$/,
+    liuyao: /^起卦 · 查看本卦与变卦$/,
+    wenshi: /^起卦 · 三术分别呈现$/,
     jianxiang: /^开始观照 · 生成结构化观察$/,
   };
-  return screen.getByRole("button", { name: labels[productId] ?? /^(立即|开始)/ });
+  return screen.getByRole("button", {
+    name: labels[productId] ?? /^(免费排盘|起卦|起盘|起局|起课|排列候选|开始)/,
+  });
 }
 
 describe("P2 product interaction contracts", () => {

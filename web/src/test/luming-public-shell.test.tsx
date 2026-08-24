@@ -28,7 +28,7 @@ afterEach(cleanup);
 
 const LUMING_LEAD = "填出生资料，先拿到四柱纳音和可回溯的依据。";
 const LUMING_LUNAR_HINT = "请填写公历出生日期。";
-const LUMING_SUBMIT = "立即排盘（免费）· 查看禄命纳音";
+const LUMING_SUBMIT = "免费排盘 · 查看禄命纳音";
 
 function taskShellCss() {
   return readFileSync(resolve(process.cwd(), "src/components/task/task-shell.module.css"), "utf8");

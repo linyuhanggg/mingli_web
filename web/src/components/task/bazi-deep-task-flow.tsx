@@ -127,23 +127,23 @@ function statusDescription(state: BaziDeepTaskState): { title: string; text: str
     case "free":
       return { title: "免费盘面已就绪", text: "下面展示服务端返回的盘面与依据；浏览器不重新排盘。" };
     case "unauthenticated":
-      return { title: "深读需要登录", text: "登录只用于接管当前任务和后续履约，不会重复提交出生资料。" };
+      return { title: "深读需要登录", text: "登录只用于接续当前任务并保存结果，不会重复提交出生资料。" };
     case "unpaid":
-      return { title: "尚未确认付费", text: "可从当前免费盘面发起服务端结账；未确认到账前不会绑定履约，也不会读取深读结果。" };
+      return { title: "尚未确认付费", text: "可以从当前免费盘面前往支付；到账确认前不会开始深读，也不会读取深读结果。" };
     case "awaiting_fulfillment":
-      return { title: "正在准备履约", text: "服务端正在创建当前盘面的深读任务和结账会话。" };
+      return { title: "正在准备深读", text: "正在为当前盘面创建深读任务。" };
     case "checkout_pending":
-      return { title: "等待支付确认", text: "请完成服务端提供的支付步骤；只有后端确认 Payment 后才会绑定深读。" };
+      return { title: "等待支付确认", text: "请在打开的支付页面完成付款；支付确认后才会开始深读。" };
     case "checkout_unavailable":
-      return { title: "支付暂时不可用", text: "当前支付适配器没有返回可用结账，不会创建成功付款，也不会启动深读履约。" };
+      return { title: "支付暂时不可用", text: "当前没有可用的支付方式，不会创建付款记录，也不会开始深读。" };
     case "checkout_failed":
-      return { title: "支付会话未完成", text: "结账会话没有完成确认；可以稍后重试，当前没有读取深读结果。" };
+      return { title: "支付未完成", text: "支付尚未确认；可以稍后重试，当前不会读取深读结果。" };
     case "queued":
-      return { title: "已进入深读队列", text: "付款权益已绑定到当前任务，服务端会继续处理。" };
+      return { title: "已进入深读队列", text: "支付已确认，系统会继续处理当前任务。" };
     case "running":
       return { title: "深读生成中", text: "事实整理和正文生成正在服务端进行，请稍候。" };
     case "succeeded":
-      return { title: "深读已交付", text: "最终结果已经固定保存，可以随时回看。" };
+      return { title: "深读已完成", text: "最终结果已经保存，可以随时回看。" };
     case "failed":
       return { title: "任务暂未完成", text: "没有展示未确认的深读内容；可按页面提示重试或稍后恢复。" };
   }
@@ -156,9 +156,9 @@ function errorHttpStatus(error: unknown): number | null {
 function readableError(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.status === 401) return "登录状态已失效，请重新登录后再继续。";
-    if (error.status === 403) return "服务端没有确认可用的付费权益，当前未绑定任何履约。";
+    if (error.status === 403) return "尚未确认可用的深读权益，当前不会开始深读。";
     if (error.status === 404) return "任务不存在或已不属于当前会话，未加载任何结果。";
-    if (error.status === 409) return "当前任务的履约状态已变化，请刷新后恢复。";
+    if (error.status === 409) return "当前任务状态已更新，请刷新后继续。";
     if (error.status === 422) return "支付请求参数尚未完成服务端校验，请稍后重试。";
     if (error.status === 503) return "支付入口暂时不可用，当前没有创建成功付款。";
   }
@@ -284,7 +284,7 @@ export function BaziDeepTaskFlow({
     if (accessState !== "unpaid" || session?.state.status !== "signedIn") return;
     if (!profileVersionId) {
       setState("checkout_failed");
-      setError("当前资料版本尚未确认，不能创建深读结账。");
+      setError("当前资料尚未确认，不能开始深读支付。");
       return;
     }
     setError(null);
@@ -318,7 +318,7 @@ export function BaziDeepTaskFlow({
         checkout.order.product_id !== "bazi-deep"
         || checkout.order.reading_version_id !== deep.reading_version_id
       ) {
-        throw new Error("服务端结账目标与当前深读不一致，未绑定任何付款。");
+        throw new Error("支付订单与当前深读不一致，已停止继续处理。");
       }
       setCheckoutOrderId(checkout.order.order_id);
       const redirectUrl = safeCheckoutRedirect(checkout.redirect_url);
@@ -364,7 +364,7 @@ export function BaziDeepTaskFlow({
           || checkout.order.reading_version_id !== readingId
         ) {
           setState("checkout_failed");
-          setError("服务端结账目标与当前深读不一致，未绑定任何付款。");
+          setError("支付订单与当前深读不一致，已停止继续处理。");
           return;
         }
         const redirectUrl = safeCheckoutRedirect(checkout.redirect_url);
@@ -523,7 +523,7 @@ export function BaziDeepTaskFlow({
         ) : null}
         {accessState === "checkout_unavailable" ? (
           <Status
-            actions={<Link href="/pricing">查看交付说明</Link>}
+            actions={<Link href="/pricing">查看付费说明</Link>}
             description={error ?? phase.text}
             state="unavailable"
             title={phase.title}
@@ -588,15 +588,15 @@ export function BaziDeepTaskFlow({
         <section className={styles.section} aria-labelledby="bazi-deep-offer-title">
           <div className={styles.statusCopy}>
             <h2 id="bazi-deep-offer-title">八字深读</h2>
-            <p>深读会绑定当前免费盘面的资料版本，完成后再交付结构化报告与追问权益。</p>
+            <p>深读会使用当前免费盘面的出生资料，完成后提供完整报告和后续追问。</p>
           </div>
           <Status state="unavailable" title={statusDescription("unpaid").title} description={statusDescription("unpaid").text} />
-          <p className={styles.securityNote}>不会创建 mock 订单、不会接受手工付款号，也不会在未付款时请求或展示深读结果。支付适配器不可用时会明确停在这里。</p>
+          <p className={styles.securityNote}>只有支付确认后才会开始深读；支付暂时不可用时会明确提示。</p>
           <div className={styles.actionRow}>
             <button className={styles.primaryAction} onClick={() => void beginCheckout()} type="button">
-              开始安全结账
+              前往支付
             </button>
-            <Link className={styles.secondaryAction} href="/pricing">查看交付说明</Link>
+            <Link className={styles.secondaryAction} href="/pricing">查看付费说明</Link>
           </div>
         </section>
       ) : null}
@@ -605,7 +605,7 @@ export function BaziDeepTaskFlow({
         <section className={styles.section} aria-labelledby="bazi-checkout-pending-title">
           <div className={styles.statusCopy}>
             <h2 id="bazi-checkout-pending-title">等待支付确认</h2>
-            <p>完成支付后，本页面会读取当前账户的结账状态；只有服务端返回 confirmed payment_id 才会绑定履约。</p>
+            <p>请在打开的支付页面完成付款。支付确认后才会开始深读。</p>
           </div>
           {checkoutUrl ? (
             <div className={styles.actionRow}>
@@ -622,23 +622,23 @@ export function BaziDeepTaskFlow({
             actions={(
               <>
                 <button onClick={retry} type="button">重新检查支付</button>
-                <Link data-variant="secondary" href="/pricing">查看交付说明</Link>
+                <Link data-variant="secondary" href="/pricing">查看付费说明</Link>
               </>
             )}
             description={error ?? statusDescription("checkout_unavailable").text}
             state="unavailable"
             title="支付暂时不可用"
           />
-          <p className={styles.securityNote}>当前 Fake/不可用适配器不会被当成成功付款；请稍后重试或查看交付说明。</p>
+          <p className={styles.securityNote}>当前支付方式不可用时不会误认为付款成功；请稍后重试或查看付费说明。</p>
         </section>
       ) : null}
 
       {accessState === "checkout_failed" ? (
         <section className={styles.section} aria-labelledby="bazi-checkout-failed-title">
-          <Status state="error" title="支付会话未完成" description={error ?? statusDescription("checkout_failed").text} />
-          <p className={styles.securityNote}>没有确认 Payment，不会绑定履约，也不会请求深读结果。</p>
+          <Status state="error" title="支付未完成" description={error ?? statusDescription("checkout_failed").text} />
+          <p className={styles.securityNote}>尚未确认付款，因此不会开始深读或展示结果。</p>
           <div className={styles.actionRow}>
-            <button className={styles.primaryAction} onClick={retry} type="button">重试结账状态</button>
+            <button className={styles.primaryAction} onClick={retry} type="button">重新检查支付</button>
             <button className={styles.secondaryAction} onClick={onBack} type="button">返回修改资料</button>
           </div>
         </section>
@@ -648,7 +648,7 @@ export function BaziDeepTaskFlow({
         <section className={styles.section} aria-labelledby="bazi-deep-result-title">
           <div className={styles.statusCopy}>
             <h2 id="bazi-deep-result-title">八字深读结果</h2>
-            <p>下面的最终报告由服务端接受后提供；前台不自行生成或补写结论。</p>
+            <p>下面展示已经完成的最终报告；前台不自行生成或补写结论。</p>
           </div>
           <div className={styles.result}>
             <ReadingResult readingId={deepReadingId} />

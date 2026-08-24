@@ -78,7 +78,7 @@ describe("Web UI Lab interactions", () => {
     renderLab();
 
     expect(screen.getByRole("form", { name: "八字任务输入" })).toBeVisible();
-    await user.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    await user.click(screen.getByRole("button", { name: /^免费排盘/ }));
 
     expect(screen.getByRole("heading", { name: "请先修正以下输入" })).toBeVisible();
     expect(screen.getByLabelText("受测对象")).toHaveFocus();

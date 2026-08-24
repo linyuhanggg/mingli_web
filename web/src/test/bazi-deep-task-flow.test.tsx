@@ -160,7 +160,8 @@ describe("Bazi deep task state contract", () => {
     );
 
     expect(await screen.findByText("尚未确认付费")).toBeVisible();
-    expect(screen.getByText(/不会创建 mock 订单/)).toBeVisible();
+    expect(screen.getByText(/只有支付确认后才会开始深读/)).toBeVisible();
+    expect(document.body).not.toHaveTextContent(/payment_id|Payment|履约|结账|Fake|mock/);
     expect(mockStartBaziDeepReading).not.toHaveBeenCalled();
     expect(mockBindReadingFulfillment).not.toHaveBeenCalled();
   });
@@ -199,7 +200,7 @@ describe("Bazi deep task state contract", () => {
     );
 
     expect(await screen.findByText("尚未确认付费")).toBeVisible();
-    await userEvent.click(screen.getByRole("button", { name: "开始安全结账" }));
+    await userEvent.click(screen.getByRole("button", { name: "前往支付" }));
     await waitFor(() => expect(mockCreateBaziDeepCheckout).toHaveBeenCalledWith(
       { reading_version_id: "deep-1" },
       expect.any(String),
@@ -216,6 +217,8 @@ describe("Bazi deep task state contract", () => {
     });
     expect(JSON.stringify(mockCreateBaziDeepCheckout.mock.calls[0]?.[0])).not.toMatch(/policy/);
     expect((await screen.findAllByText("等待支付确认")).length).toBeGreaterThan(0);
+    expect(screen.getByText("请在打开的支付页面完成付款。支付确认后才会开始深读。")).toBeVisible();
+    expect(document.body).not.toHaveTextContent(/payment_id|Payment|履约|结账|Fake|mock/);
     await waitFor(() => expect(mockGetBaziDeepCheckout).toHaveBeenCalledWith("order-1"));
     releaseCheckout?.(checkoutConfirmed);
     await waitFor(() => expect(mockBindReadingFulfillment).toHaveBeenCalled());
@@ -232,7 +235,7 @@ describe("Bazi deep task state contract", () => {
 
     releaseBinding?.({ status: "running" });
     await waitFor(() => expect(screen.getByText("已进入深读队列")).toBeVisible());
-    await waitFor(() => expect(screen.getByText("深读已交付")).toBeVisible());
+    await waitFor(() => expect(screen.getByText("深读已完成")).toBeVisible());
     expect(screen.getByTestId("reading-result-deep-1")).toBeVisible();
   });
 
@@ -253,7 +256,7 @@ describe("Bazi deep task state contract", () => {
       />,
     );
 
-    await userEvent.click(await screen.findByRole("button", { name: "开始安全结账" }));
+    await userEvent.click(await screen.findByRole("button", { name: "前往支付" }));
     expect(await screen.findByText("confirmed payment is required")).toBeVisible();
     expect(screen.queryByTestId("reading-result-deep-1")).not.toBeInTheDocument();
   });
@@ -273,7 +276,7 @@ describe("Bazi deep task state contract", () => {
       />,
     );
 
-    await userEvent.click(await screen.findByRole("button", { name: "开始安全结账" }));
+    await userEvent.click(await screen.findByRole("button", { name: "前往支付" }));
     expect((await screen.findAllByText("支付暂时不可用")).length).toBeGreaterThan(0);
     expect(mockBindReadingFulfillment).not.toHaveBeenCalled();
     expect(screen.queryByTestId("reading-result-deep-1")).not.toBeInTheDocument();
@@ -295,7 +298,7 @@ describe("Bazi deep task state contract", () => {
       />,
     );
 
-    await userEvent.click(await screen.findByRole("button", { name: "开始安全结账" }));
+    await userEvent.click(await screen.findByRole("button", { name: "前往支付" }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/auth/consent"));
     expect(mockCreateBaziDeepCheckout).not.toHaveBeenCalled();
     expect(screen.queryByText("Policy version is not current")).not.toBeInTheDocument();

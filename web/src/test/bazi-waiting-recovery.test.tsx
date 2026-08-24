@@ -63,7 +63,7 @@ vi.mock("@/components/task/product-input-form", async (importOriginal) => ({
         onClick={() => onConfirm(formValues)}
         type="button"
       >
-        立即排盘（免费）
+        免费排盘
       </button>
     </section>
   ),
@@ -137,7 +137,7 @@ describe("real Bazi workbench waiting recovery", () => {
     });
 
     expect(screen.getByText("档案已就绪")).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "立即排盘（免费）" }));
+    fireEvent.click(screen.getByRole("button", { name: "免费排盘" }));
     await act(async () => {
       await Promise.resolve();
       await Promise.resolve();

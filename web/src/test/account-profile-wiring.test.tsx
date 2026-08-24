@@ -130,9 +130,13 @@ describe("account profile route wiring", () => {
     expect(await screen.findByRole("heading", { name: "已保存的档案" })).toBeVisible();
     expect(screen.getByText("母亲")).toBeVisible();
     expect(screen.getByText(/1965-02-03 · v3 · 更新于/)).toBeVisible();
-    expect(screen.getByRole("link", { name: "新建档案版本" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "新建档案" })).toHaveAttribute(
       "href",
       "/account/profiles/new",
+    );
+    expect(screen.getByRole("link", { name: "用这份档案排八字" })).toHaveAttribute(
+      "href",
+      "/app/bazi?profile=22222222-2222-4222-8222-222222222222",
     );
   });
 
@@ -233,6 +237,13 @@ describe("account profile route wiring", () => {
     render(<AccountProfilesPage />);
 
     expect(await screen.findByRole("status", { name: "“母亲”已保存" })).toBeVisible();
+    expect(screen.getAllByRole("link", { name: "用这份档案排八字" })).toHaveLength(2);
+    for (const link of screen.getAllByRole("link", { name: "用这份档案排八字" })) {
+      expect(link).toHaveAttribute(
+        "href",
+        "/app/bazi?profile=22222222-2222-4222-8222-222222222222",
+      );
+    }
   });
 
   it("syncs the one-time saved banner from the server PATCH response", async () => {

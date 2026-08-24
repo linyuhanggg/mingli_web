@@ -37,7 +37,7 @@ import { ReadingExportPanel } from "./reading-export-panel";
 import { RuntimeChart } from "./runtime-chart";
 import { VerificationForm } from "./verification-form";
 
-const DEFAULT_POLL_MS = 2000;
+const POLL_DELAYS_MS = [1000, 2000, 4000] as const;
 const POLLING_CAP_MS = 10 * 60 * 1000;
 const LOADING_REVEAL_MS = 300;
 const HISTORY_ESCAPE_MS = 15 * 1000;
@@ -101,20 +101,20 @@ function statusMeta(
       };
     case "prepared":
       return {
-        label: "事实已准备",
-        text: "确定性事实已就绪，正在生成正文。",
+        label: "盘面已好",
+        text: "盘面已好，正在撰写解读。",
         tone: "processing",
       };
     case "completing":
       return {
-        label: "正在接纳正文",
-        text: "服务端正在接纳并固定正文。",
+        label: "正在整理解读",
+        text: "解读写好了，正在装订成册。",
         tone: "processing",
       };
     case "delayed":
       return {
-        label: "交付延迟",
-        text: "服务繁忙，正在继续处理。",
+        label: "仍在处理中",
+        text: "今天排队的人有点多，继续为你处理中。",
         tone: "processing",
       };
     case "waiting_input":
@@ -131,8 +131,8 @@ function statusMeta(
       };
     case "accepted":
       return {
-        label: "已交付",
-        text: "正文已接纳并固定，可随时回看。",
+        label: "解读已完成",
+        text: "解读已完成，可随时回看。",
         tone: "success",
       };
     case "runtime_unknown":
@@ -215,6 +215,7 @@ function ArchiveRail({
             {meta.label}
           </span>
         </p>
+        <p className={surface.railNote}>{meta.text}</p>
         <p className={surface.railNote}>
           这份报告保留当前版本，后续修改不会覆盖本次内容。
         </p>
@@ -231,14 +232,18 @@ function ArchiveRail({
 
 function WaitingStatus({
   context,
+  deliveryState,
   elapsedMs,
   onRestart,
   onRetry,
+  status,
 }: Readonly<{
   context?: string;
+  deliveryState?: ReadingVersionSummary["delivery_state"];
   elapsedMs: number;
   onRestart?: () => void;
   onRetry: () => void;
+  status?: ReadingVersionSummary["status"];
 }>) {
   const elapsedSeconds = Math.floor(elapsedMs / 1000);
   const canLeaveForHistory = elapsedMs >= HISTORY_ESCAPE_MS;
@@ -258,6 +263,14 @@ function WaitingStatus({
       : isLongWait
         ? "仍在认真排盘。你可以离开，完成后在推演历史找到它。"
         : "通常需要 5–15 秒。可以留在这里等待结果。";
+  const activeProgressIndex = status === "completing"
+    ? 2
+    : status === "prepared"
+      ? 1
+      : status === "input_ready" || deliveryState === "queued"
+        ? 0
+        : null;
+  const progressSteps = ["资料已提交", "盘面已好", "解读整理中"];
 
   return (
     <section aria-atomic="true" aria-busy={!pollingEnded} role="status">
@@ -268,11 +281,19 @@ function WaitingStatus({
       </h2>
       <p>{description}</p>
       {context ? <p>{context}</p> : null}
-      <ol aria-label="排盘进度阶段">
-        <li>资料已提交</li>
-        <li aria-current="step">盘面生成中</li>
-        <li>排版交付</li>
-      </ol>
+      {activeProgressIndex === null ? null : (
+        <ol aria-label="排盘进度阶段">
+          {progressSteps.map((step, index) => (
+            <li
+              aria-current={index === activeProgressIndex ? "step" : undefined}
+              data-state={index < activeProgressIndex ? "complete" : index === activeProgressIndex ? "active" : "pending"}
+              key={step}
+            >
+              {step}
+            </li>
+          ))}
+        </ol>
+      )}
       {canLeaveForHistory ? (
         <div className={surface.actionRow}>
           {canRestart ? (
@@ -336,10 +357,18 @@ function ReadingResultForVersion({
   useEffect(() => {
     let cancelled = false;
     let pollTimer: ReturnType<typeof setTimeout> | null = null;
+    let pollAttempt = 0;
 
     function schedule(delayMs: number) {
       if (cancelled) return;
       pollTimer = setTimeout(run, delayMs);
+    }
+
+    function scheduleNextPoll() {
+      const delay = POLL_DELAYS_MS[Math.min(pollAttempt, POLL_DELAYS_MS.length - 1)]
+        ?? POLL_DELAYS_MS[2];
+      pollAttempt += 1;
+      schedule(delay);
     }
 
     async function run() {
@@ -362,7 +391,7 @@ function ReadingResultForVersion({
           if (cancelled) return;
           setResult(nextResult);
           if (response.status === "accepted") return;
-          schedule(DEFAULT_POLL_MS);
+          scheduleNextPoll();
           return;
         }
 
@@ -374,7 +403,7 @@ function ReadingResultForVersion({
           return;
         }
 
-        schedule(DEFAULT_POLL_MS);
+        scheduleNextPoll();
       } catch (err) {
         if (cancelled) return;
         setLoading(false);
@@ -450,9 +479,11 @@ function ReadingResultForVersion({
     return (
       <article className={surface.readingBody}>
         <WaitingStatus
+          deliveryState={summary?.delivery_state}
           elapsedMs={elapsedMs}
           onRestart={onRestart}
           onRetry={handleRetry}
+          status={summary?.status}
         />
       </article>
     );
@@ -1125,7 +1156,7 @@ function ReadingResultForVersion({
             <h2>{productId === "bazi-deep" ? "八字深度解读" : "八字命盘"}</h2>
             <p>
               {productId === "bazi-deep"
-                ? "盘面事实与已接纳解读分开展示，便于逐项核对。"
+                ? "盘面事实与已经完成的解读分开展示，便于逐项核对。"
                 : "四柱、日主、月令、大运与已返回的盘面事实。"}
             </p>
           </header>
@@ -1187,11 +1218,11 @@ function ReadingResultForVersion({
               <h2 id="reading-note-title">阅读说明</h2>
               {productId === "bazi-deep" ? (
                 <p className={surface.inlineNote}>
-                  深度解读只采用本次盘面与已接纳正文，不会把内部字段当作结论展示。
+                  深度解读只采用本次盘面与已经整理完成的正文，不会把内部字段当作结论展示。
                 </p>
               ) : (
                 <p className={surface.inlineNote}>
-                  当前是免费排盘预览，只提供命盘与确定性事实。完整深度解读待接入。
+                  当前是免费排盘预览，只提供命盘与已确认的盘面事实。完整深度解读待接入。
                 </p>
               )}
               <LimitNotice limits={result.fact_panel?.limits ?? null} />
@@ -1287,9 +1318,11 @@ function ReadingResultForVersion({
         <article className={surface.readingBody}>
           <WaitingStatus
             context={`${meta.text} 目标日期：${formatHorizon(summary.horizon)}`}
+            deliveryState={summary.delivery_state}
             elapsedMs={elapsedMs}
             onRestart={onRestart}
             onRetry={handleRetry}
+            status={summary.status}
           />
         </article>
         <ArchiveRail readingId={readingId} summary={summary} result={null} />

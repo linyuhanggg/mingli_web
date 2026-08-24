@@ -12,6 +12,7 @@ import QimenPage from "@/app/qimen/page";
 import QizhengPage from "@/app/qizheng/page";
 import WenshiPage from "@/app/wenshi/page";
 import ZiweiPage from "@/app/ziwei/page";
+import { formatProfileOption } from "@/lib/api";
 
 const mockRouterPush = vi.hoisted(() => vi.fn());
 const mockCreateProfileDraft = vi.hoisted(() => vi.fn());
@@ -69,6 +70,8 @@ mockGetCapabilityProjection.mockResolvedValue({
   ],
 });
 beforeEach(() => {
+  window.localStorage.clear();
+  window.sessionStorage.clear();
   mockListProfiles.mockReset().mockResolvedValue({ profiles: [] });
 });
 
@@ -100,7 +103,7 @@ describe("primary product route contract", () => {
     mockPollReading.mockResolvedValue({ status: "accepted" });
     render(<BaziPage />);
 
-    const submit = await screen.findByRole("button", { name: /^立即排盘（免费）/ });
+    const submit = await screen.findByRole("button", { name: /^免费排盘/ });
 
     await user.click(submit);
     expect(await screen.findByText("请填写受测对象")).toBeVisible();
@@ -115,7 +118,9 @@ describe("primary product route contract", () => {
     await user.selectOptions(screen.getByLabelText("出生城市"), "常州市");
     await user.selectOptions(screen.getByLabelText("出生区县"), "金坛区");
     await user.click(screen.getByRole("radio", { name: "男" }));
-    expect(screen.getByText("江苏省 / 常州市 / 金坛区")).toBeVisible();
+    expect(screen.getByLabelText("出生省份")).toHaveValue("江苏省");
+    expect(screen.getByLabelText("出生城市")).toHaveValue("常州市");
+    expect(screen.getByLabelText("出生区县")).toHaveValue("金坛区");
     await user.click(submit);
 
     await waitFor(() => expect(mockStartPreviewReading).toHaveBeenCalled());
@@ -125,7 +130,7 @@ describe("primary product route contract", () => {
       expect.any(String),
     );
     expect(await screen.findByRole("heading", { name: "八字工作台" })).toBeVisible();
-    expect(screen.getByRole("heading", { name: "免费确定性盘面" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "免费盘面" })).toBeVisible();
     expect(mockRouterPush).not.toHaveBeenCalled();
   });
 
@@ -143,6 +148,8 @@ describe("primary product route contract", () => {
           profile_version_id: savedProfileVersionId,
           subject_ref: `profile-version:${savedProfileVersionId}`,
           version: 3,
+          display_name: "母亲",
+          birth_date: "1965-02-03",
           created_at: "2026-08-19T01:30:00Z",
         },
       ],
@@ -153,10 +160,16 @@ describe("primary product route contract", () => {
 
     const profileSelect = await screen.findByRole("combobox", { name: "排盘资料" });
     expect(profileSelect).toHaveValue(savedProfileVersionId);
+    expect(profileSelect).toHaveDisplayValue("母亲 · 1965-02-03");
     expect(screen.queryByLabelText("出生年份")).not.toBeInTheDocument();
-    expect(screen.getByText(/直接使用已保存的不可变档案版本/)).toBeVisible();
+    expect(profileSelect.closest("fieldset")).toHaveTextContent(
+      "将直接使用这份已保存资料；如出生信息有变化，选重新录入。",
+    );
+    expect(document.body).not.toHaveTextContent(
+      /verified_exact|ViewModel|不可变|落库|接纳|句柄|payment_id/,
+    );
 
-    await user.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    await user.click(screen.getByRole("button", { name: /^免费排盘/ }));
 
     await waitFor(() => expect(mockStartPreviewReading).toHaveBeenCalledTimes(1));
     expect(mockStartPreviewReading).toHaveBeenCalledWith(
@@ -165,5 +178,24 @@ describe("primary product route contract", () => {
     );
     expect(mockCreateProfileDraft).not.toHaveBeenCalled();
     expect(mockConfirmProfileDraft).not.toHaveBeenCalled();
+  });
+
+  it("falls back to the existing server profile label when a friendly field is missing", async () => {
+    const legacyProfile = {
+      profile_id: "44444444-4444-4444-8444-444444444444",
+      profile_version_id: "55555555-5555-4555-8555-555555555555",
+      subject_ref: "profile-version:55555555-5555-4555-8555-555555555555",
+      version: 2,
+      display_name: "缺少生日的档案",
+      birth_date: null,
+      created_at: "2026-08-19T01:30:00Z",
+    };
+    mockListProfiles.mockResolvedValue({ profiles: [legacyProfile] });
+
+    render(<BaziPage />);
+
+    const profileSelect = await screen.findByRole("combobox", { name: "排盘资料" });
+    expect(profileSelect).toHaveDisplayValue(formatProfileOption(legacyProfile));
+    expect(profileSelect).not.toHaveDisplayValue("缺少生日的档案 · 生日未记录");
   });
 });

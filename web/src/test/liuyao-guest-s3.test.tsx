@@ -71,7 +71,7 @@ describe("/liuyao guest stays on S3", () => {
     render(<ProductTaskPage productId="liuyao" />);
     await fillShared(user);
     await fillLines(user);
-    await user.click(screen.getByRole("button", { name: /立即起卦/ }));
+    await user.click(screen.getByRole("button", { name: /起卦/ }));
     await waitFor(() => expect(mockStartLiuyaoReading).toHaveBeenCalledTimes(1));
 
     const board = await screen.findByTestId("liuyao-inline-result");
