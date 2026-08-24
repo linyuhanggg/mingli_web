@@ -1308,8 +1308,6 @@ describe("大六壬 S3 M6a 维度证据", () => {
               requested_dimension: "timing",
               source_rule_ids: ["DLR-16"],
               relative_speed: "relatively_faster",
-              candidate_branch: null,
-              candidate_date: null,
               rule_evidence: evidence({ matched: [], status: "not_bound" }),
             }),
             work: dimension({

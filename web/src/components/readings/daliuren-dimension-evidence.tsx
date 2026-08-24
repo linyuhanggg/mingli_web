@@ -643,7 +643,12 @@ function parseScopeBoundaryFacts(
 }
 
 function parseTopLevelTimingFact(value: Record<string, unknown>): EvidenceEntry | null {
-  if (value.candidate_branch !== null || value.candidate_date !== null) return null;
+  if (
+    (value.candidate_branch !== null && value.candidate_branch !== undefined) ||
+    (value.candidate_date !== null && value.candidate_date !== undefined)
+  ) {
+    return null;
+  }
   const relativeSpeed = readString(value, "relative_speed");
   if (!relativeSpeed || !hasOwnKey(RELATIVE_SPEED_FACTS, relativeSpeed)) return null;
   const sourceRuleIds = value.source_rule_ids;
