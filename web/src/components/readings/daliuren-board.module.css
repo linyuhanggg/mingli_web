@@ -48,7 +48,7 @@
 .upper,
 .lower {
   display: grid;
-  min-width: 2.5rem;
+  min-width: var(--target-min);
   min-height: var(--target-min);
   place-items: center;
   padding: 0.15rem 0.35rem;

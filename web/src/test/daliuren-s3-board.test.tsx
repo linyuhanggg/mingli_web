@@ -214,6 +214,16 @@ describe("大六壬 S3 课传盘面", () => {
     expect(columns[1]?.querySelector("[data-cell='lesson-1-upper']")).toHaveAttribute("data-element", "wood");
   });
 
+  it("keeps ordinary lesson cells at least 44 by 44 pixels", () => {
+    render(<DaliurenBoard view={chart()} />);
+
+    expect(screen.getByRole("button", { name: "一课·日干 上神 巳" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "一课·日干 下神 丁" })).toBeVisible();
+    expect(boardCss()).toMatch(
+      /\.upper,\s*\.lower\s*\{[^}]*min-width:\s*var\(--target-min\);[^}]*min-height:\s*var\(--target-min\);/s,
+    );
+  });
+
   it("renders three transmission stairs with mapped stage labels and neutral general chips", () => {
     render(<DaliurenBoard view={chart()} />);
 
