@@ -3,10 +3,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, Info, Upload } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
-import { useForm, useWatch, type FieldErrors, type UseFormRegister } from "react-hook-form";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
+import {
+  useForm,
+  useWatch,
+  type FieldErrors,
+  type FieldPath,
+  type UseFormRegister,
+  type UseFormSetValue,
+} from "react-hook-form";
 import { z } from "zod";
 
+import { HexagramFigure, LineGlyph, TrigramGlyph, TRIGRAM_NAMES } from "@/components/readings/hexagram-glyphs";
 import { Status } from "@/components/ui/status";
 import { IanaTimeZoneOptions } from "@/components/iana-timezone-options";
 import { formatProfileOption, type ProfileSummary } from "@/lib/api";
@@ -19,6 +27,25 @@ import {
 import { isIanaTimeZone } from "@/lib/iana-timezones";
 import type { ProductDefinition } from "@/products/catalog";
 
+import {
+  LIUYAO_COIN_KEY,
+  LIUYAO_LINE_NAMES,
+  LIUYAO_LINE_OPTIONS,
+  LIUYAO_LINE_PROCESS_HINT,
+} from "./liuyao-entry-copy";
+import {
+  MEIHUA_CASTING_LABELS,
+  MEIHUA_S1_CASTING_METHOD_HELP,
+  MEIHUA_S1_EVENT_TIME_HELP,
+  MEIHUA_S1_HEXAGRAM_HELP,
+  MEIHUA_S1_ISSUE_HELP,
+  MEIHUA_S1_NUMBER_SOURCE_HELP,
+  MEIHUA_S1_NUMBER_SOURCE_PLACEHOLDER,
+  MEIHUA_S1_OBSERVATION_HELP,
+  MEIHUA_S1_SOUND_SOURCE_PLACEHOLDER,
+  MEIHUA_S1_TIME_HELP,
+  MEIHUA_TRIGRAM_OPTION_MARK,
+} from "./meihua-entry-copy";
 import styles from "./task-shell.module.css";
 
 const taskSchemaBase = z.object({
@@ -909,6 +936,7 @@ export function ProductInputForm({
   busy = false,
   submitError = null,
   submitErrorState = "unavailable",
+  serverFieldError = null,
 }: {
   product: ProductDefinition;
   initialValues?: TaskFormValues;
@@ -924,6 +952,7 @@ export function ProductInputForm({
   busy?: boolean;
   submitError?: string | null;
   submitErrorState?: "unavailable" | "error";
+  serverFieldError?: { name: keyof TaskFormValues; message: string; index?: number } | null;
 }) {
   const schema = useMemo(
     () => schemaFor(product, Boolean(selectedProfileVersionId)),
@@ -935,6 +964,7 @@ export function ProductInputForm({
     formState: { errors },
     handleSubmit,
     register,
+    setError,
     setValue,
   } = useForm<TaskFormValues>({
     resolver: zodResolver(schema),
@@ -952,6 +982,8 @@ export function ProductInputForm({
   const summaryValues = useWatch({ control }) as TaskFormValues;
   const focus = useWatch({ control, name: "focus" });
   const meihuaCastingMethod = useWatch({ control, name: "meihuaCastingMethod" });
+  const meihuaUpperTrigram = useWatch({ control, name: "meihuaUpperTrigram" });
+  const meihuaLowerTrigram = useWatch({ control, name: "meihuaLowerTrigram" });
   const observationMode = useWatch({ control, name: "observationMode" });
   const observationRegion = useWatch({ control, name: "observationRegion" });
   const observationOptions = OBSERVATION_OPTIONS[observationMode] ?? FACE_DESCRIPTOR_OPTIONS;
@@ -976,6 +1008,21 @@ export function ProductInputForm({
       "coordinateSource",
     ]);
   }, [clearErrors, selectedProfileVersionId]);
+  useEffect(() => {
+    if (!serverFieldError) return;
+    if (serverFieldError.name === "lines") {
+      const index = Math.min(Math.max(serverFieldError.index ?? 0, 0), 5);
+      setError(`lines.${index}` as FieldPath<TaskFormValues>, {
+        type: "server",
+        message: serverFieldError.message,
+      });
+      document.getElementById(`${product.id}-line-${index}`)?.focus();
+      return;
+    }
+    setError(serverFieldError.name, { type: "server", message: serverFieldError.message });
+    const inputId = taskErrorFields[serverFieldError.name]?.id;
+    if (inputId) document.getElementById(inputId)?.focus();
+  }, [product.id, serverFieldError, setError]);
   const validationErrors = Object.keys(errors)
     .map((fieldName) => taskErrorField(product.id, fieldName, errors))
     .filter((field): field is { id: string; label: string } => Boolean(field));
@@ -1020,7 +1067,19 @@ export function ProductInputForm({
       className={styles.formPanel}
       data-compact-natal={isCompactBaziInput ? "true" : undefined}
       noValidate
-      onSubmit={handleSubmit((values) => onConfirm({ ...values, unknownTime: false }), handleInvalid)}
+      onSubmit={handleSubmit((values) => {
+        clearErrors([
+          "lines",
+          "meihuaCastingMethod",
+          "meihuaNumber",
+          "meihuaCount",
+          "meihuaUpperTrigram",
+          "meihuaLowerTrigram",
+          "meihuaMovingLine",
+          "meihuaSource",
+        ]);
+        onConfirm({ ...values, unknownTime: false });
+      }, handleInvalid)}
     >
       {!isCompactBaziInput ? (
         <div className={styles.formHeader}>
@@ -1299,7 +1358,7 @@ export function ProductInputForm({
       {product.group === "event" || product.id === "wenshi" ? (
         <fieldset className={styles.fieldGroup}>
           <legend>{product.id === "wenshi" ? "同一问题与时空" : "问题与事件时空"}</legend>
-          <Field htmlFor={`${product.id}-issue`} label={product.id === "wenshi" ? "同一问题" : "当前问题"} error={errors.issue?.message} help="只写一件事，说明对象、目标和希望判断的时间范围。">
+          <Field htmlFor={`${product.id}-issue`} label={product.id === "wenshi" ? "同一问题" : "当前问题"} error={errors.issue?.message} help={product.id === "meihua" ? MEIHUA_S1_ISSUE_HELP : "只写一件事，说明对象、目标和希望判断的时间范围。"}>
             <textarea id={`${product.id}-issue`} rows={4} aria-describedby={errors.issue ? `${product.id}-issue-error` : `${product.id}-issue-help`} {...register("issue")} />
           </Field>
           {product.id !== "wenshi" ? (
@@ -1324,7 +1383,7 @@ export function ProductInputForm({
             </Field>
           ) : null}
           {product.id !== "selection" ? (
-            <Field htmlFor={`${product.id}-event-time`} label={product.id === "wenshi" ? "同一事件时空" : product.id === "taiyi" ? "参考时间" : "事件时间"} error={errors.eventTime?.message} help="默认使用你明确选择的当地时间，不读取设备位置。">
+            <Field htmlFor={`${product.id}-event-time`} label={product.id === "wenshi" ? "同一事件时空" : product.id === "taiyi" ? "参考时间" : "事件时间"} error={errors.eventTime?.message} help={product.id === "meihua" ? MEIHUA_S1_EVENT_TIME_HELP : "默认使用你明确选择的当地时间，不读取设备位置。"}>
               <input id={`${product.id}-event-time`} type="datetime-local" aria-describedby={errors.eventTime ? `${product.id}-event-time-error` : `${product.id}-event-time-help`} {...register("eventTime")} />
             </Field>
           ) : null}
@@ -1385,8 +1444,8 @@ export function ProductInputForm({
           ) : null}
           {product.id === "meihua" ? (
             <>
-              <Field htmlFor="meihua-casting-method" label="梅花起卦方式" error={errors.meihuaCastingMethod?.message} help="按实际采用的起法提交，不会把数字、声音或观测资料改成时间起卦。">
-                <select id="meihua-casting-method" {...register("meihuaCastingMethod")}>
+              <Field htmlFor="meihua-casting-method" label="梅花起卦方式" error={errors.meihuaCastingMethod?.message} help={MEIHUA_S1_CASTING_METHOD_HELP}>
+                <select id="meihua-casting-method" aria-describedby={errors.meihuaCastingMethod ? "meihua-casting-method-error" : "meihua-casting-method-help"} {...register("meihuaCastingMethod")}>
                   <option value="time">按时间起卦</option>
                   <option value="supplied_number">按数字起卦</option>
                   <option value="sound_count">按声数起卦</option>
@@ -1394,59 +1453,97 @@ export function ProductInputForm({
                   <option value="supplied_hexagram">提供完整卦象</option>
                 </select>
               </Field>
-              {meihuaCastingMethod === "supplied_number" ? (
-                <>
-                  <Field htmlFor="meihua-number" label="起卦数字" error={errors.meihuaNumber?.message}>
-                    <input id="meihua-number" type="number" min="1" step="1" {...register("meihuaNumber")} />
-                  </Field>
-                  <Field htmlFor="meihua-source" label="数字资料来源" error={errors.meihuaSource?.message} help="只记录来源，不让系统从自然语言自行猜卦。">
-                    <input id="meihua-source" {...register("meihuaSource")} placeholder="例如：用户现场报数" />
-                  </Field>
-                </>
-              ) : null}
-              {meihuaCastingMethod === "sound_count" ? (
-                <>
-                  <Field htmlFor="meihua-count" label="声数" error={errors.meihuaCount?.message}>
-                    <input id="meihua-count" type="number" min="1" step="1" {...register("meihuaCount")} />
-                  </Field>
-                  <Field htmlFor="meihua-source" label="声数观察来源" error={errors.meihuaSource?.message}>
-                    <input id="meihua-source" {...register("meihuaSource")} placeholder="例如：现场声音计数" />
-                  </Field>
-                </>
-              ) : null}
-              {meihuaCastingMethod === "observation" || meihuaCastingMethod === "supplied_hexagram" ? (
-                <>
-                  <div className={styles.twoColumns}>
-                    <Field htmlFor="meihua-upper-trigram" label="上卦" error={errors.meihuaUpperTrigram?.message}>
-                      <select id="meihua-upper-trigram" {...register("meihuaUpperTrigram")}>
-                        {(["乾", "兑", "离", "震", "巽", "坎", "艮", "坤"] as const).map((trigram) => <option key={trigram} value={trigram}>{trigram}</option>)}
-                      </select>
+              <div className={styles.meihuaMethodFields} data-method={meihuaCastingMethod} key={meihuaCastingMethod}>
+                {meihuaCastingMethod === "time" ? <p>{MEIHUA_S1_TIME_HELP}</p> : null}
+                {meihuaCastingMethod === "supplied_number" ? (
+                  <>
+                    <Field htmlFor="meihua-number" label="起卦数字" error={errors.meihuaNumber?.message}>
+                      <input id="meihua-number" type="number" min="1" step="1" aria-describedby={errors.meihuaNumber ? "meihua-number-error" : undefined} {...register("meihuaNumber")} />
                     </Field>
-                    <Field htmlFor="meihua-lower-trigram" label="下卦" error={errors.meihuaLowerTrigram?.message}>
-                      <select id="meihua-lower-trigram" {...register("meihuaLowerTrigram")}>
-                        {(["乾", "兑", "离", "震", "巽", "坎", "艮", "坤"] as const).map((trigram) => <option key={trigram} value={trigram}>{trigram}</option>)}
-                      </select>
+                    <Field htmlFor="meihua-source" label="数字资料来源" error={errors.meihuaSource?.message} help={MEIHUA_S1_NUMBER_SOURCE_HELP}>
+                      <input
+                        id="meihua-source"
+                        aria-describedby={errors.meihuaSource ? "meihua-source-error" : "meihua-source-help"}
+                        aria-invalid={errors.meihuaSource ? true : undefined}
+                        placeholder={MEIHUA_S1_NUMBER_SOURCE_PLACEHOLDER}
+                        {...register("meihuaSource")}
+                      />
                     </Field>
-                  </div>
-                  {meihuaCastingMethod === "supplied_hexagram" ? (
-                    <Field htmlFor="meihua-moving-line" label="动爻" error={errors.meihuaMovingLine?.message}>
-                      <select id="meihua-moving-line" {...register("meihuaMovingLine")}>
-                        {[1, 2, 3, 4, 5, 6].map((line) => <option key={line} value={line}>{line} 爻</option>)}
-                      </select>
+                  </>
+                ) : null}
+                {meihuaCastingMethod === "sound_count" ? (
+                  <>
+                    <Field htmlFor="meihua-count" label="声数" error={errors.meihuaCount?.message}>
+                      <input id="meihua-count" type="number" min="1" step="1" aria-describedby={errors.meihuaCount ? "meihua-count-error" : undefined} {...register("meihuaCount")} />
                     </Field>
-                  ) : null}
-                  <Field htmlFor="meihua-source" label={meihuaCastingMethod === "observation" ? "观察来源" : "卦象资料来源"} error={errors.meihuaSource?.message}>
-                    <input id="meihua-source" {...register("meihuaSource")} placeholder="例如：用户现场记录" />
-                  </Field>
-                </>
-              ) : null}
+                    <Field htmlFor="meihua-source" label="声数观察来源" error={errors.meihuaSource?.message}>
+                      <input
+                        id="meihua-source"
+                        aria-describedby={errors.meihuaSource ? "meihua-source-error" : undefined}
+                        aria-invalid={errors.meihuaSource ? true : undefined}
+                        placeholder={MEIHUA_S1_SOUND_SOURCE_PLACEHOLDER}
+                        {...register("meihuaSource")}
+                      />
+                    </Field>
+                  </>
+                ) : null}
+                {meihuaCastingMethod === "observation" || meihuaCastingMethod === "supplied_hexagram" ? (
+                  <>
+                    <p>{meihuaCastingMethod === "observation" ? MEIHUA_S1_OBSERVATION_HELP : MEIHUA_S1_HEXAGRAM_HELP}</p>
+                    <div className={styles.meihuaTrigramRow}>
+                      <Field htmlFor="meihua-upper-trigram" label="上卦" error={errors.meihuaUpperTrigram?.message}>
+                        <div className={styles.meihuaTrigramPick}>
+                          <select id="meihua-upper-trigram" aria-describedby={errors.meihuaUpperTrigram ? "meihua-upper-trigram-error" : undefined} {...register("meihuaUpperTrigram")}>
+                            {TRIGRAM_NAMES.map((trigram) => (
+                              <option key={trigram} value={trigram}>{`${MEIHUA_TRIGRAM_OPTION_MARK[trigram]} ${trigram}`}</option>
+                            ))}
+                          </select>
+                          <span aria-hidden="true">
+                            <TrigramGlyph name={meihuaUpperTrigram} size="s" />
+                          </span>
+                        </div>
+                      </Field>
+                      <Field htmlFor="meihua-lower-trigram" label="下卦" error={errors.meihuaLowerTrigram?.message}>
+                        <div className={styles.meihuaTrigramPick}>
+                          <select id="meihua-lower-trigram" aria-describedby={errors.meihuaLowerTrigram ? "meihua-lower-trigram-error" : undefined} {...register("meihuaLowerTrigram")}>
+                            {TRIGRAM_NAMES.map((trigram) => (
+                              <option key={trigram} value={trigram}>{`${MEIHUA_TRIGRAM_OPTION_MARK[trigram]} ${trigram}`}</option>
+                            ))}
+                          </select>
+                          <span aria-hidden="true">
+                            <TrigramGlyph name={meihuaLowerTrigram} size="s" />
+                          </span>
+                        </div>
+                      </Field>
+                    </div>
+                    {meihuaCastingMethod === "supplied_hexagram" ? (
+                      <Field htmlFor="meihua-moving-line" label="动爻" error={errors.meihuaMovingLine?.message}>
+                        <select id="meihua-moving-line" aria-describedby={errors.meihuaMovingLine ? "meihua-moving-line-error" : undefined} {...register("meihuaMovingLine")}>
+                          {[1, 2, 3, 4, 5, 6].map((line) => <option key={line} value={line}>{line} 爻</option>)}
+                        </select>
+                      </Field>
+                    ) : null}
+                    <Field htmlFor="meihua-source" label={meihuaCastingMethod === "observation" ? "观察来源" : "卦象资料来源"} error={errors.meihuaSource?.message}>
+                      <input
+                        id="meihua-source"
+                        aria-describedby={errors.meihuaSource ? "meihua-source-error" : undefined}
+                        aria-invalid={errors.meihuaSource ? true : undefined}
+                        placeholder="例如：用户现场记录"
+                        {...register("meihuaSource")}
+                      />
+                    </Field>
+                  </>
+                ) : null}
+              </div>
             </>
           ) : null}
           {product.id === "liuyao" || product.id === "wenshi" ? (
             <SixLineProcess
+              castingMode={focus}
               errors={errors.lines}
+              lines={summaryValues.lines ?? defaultValues.lines}
               productId={product.id}
-              register={register}
+              setValue={setValue}
             />
           ) : null}
         </fieldset>
@@ -1727,6 +1824,62 @@ function label(value: string) {
   return VALUE_LABELS[value] ?? value;
 }
 
+function meihuaCastingLabel(method: string) {
+  return MEIHUA_CASTING_LABELS[method as keyof typeof MEIHUA_CASTING_LABELS] ?? method;
+}
+
+function liuyaoRecordFigure(lines: readonly string[]) {
+  const glyphs = lines.map((value) => LIUYAO_LINE_OPTIONS.find((option) => option.value === value));
+  if (glyphs.length !== 6 || glyphs.some((line) => line == null)) return "";
+  return (
+    <div aria-label="六爻记录" className={styles.submitSummaryFigure} role="group">
+      <HexagramFigure
+        lines={glyphs.flatMap((line) => (line ? [{ moving: line.moving, yang: line.yang }] : []))}
+        size="s"
+      />
+    </div>
+  );
+}
+
+function meihuaTrigramEcho(name: string) {
+  if (!name) return "";
+  return (
+    <span className={styles.submitSummaryTrigram}>
+      <TrigramGlyph name={name} size="s" />
+    </span>
+  );
+}
+
+function meihuaMethodParamRows(values: TaskFormValues): Array<readonly [string, ReactNode]> {
+  switch (values.meihuaCastingMethod) {
+    case "supplied_number":
+      return [
+        ["起卦数字", values.meihuaNumber],
+        ["数字资料来源", values.meihuaSource],
+      ];
+    case "sound_count":
+      return [
+        ["声数", values.meihuaCount],
+        ["声数观察来源", values.meihuaSource],
+      ];
+    case "observation":
+      return [
+        ["上卦", meihuaTrigramEcho(values.meihuaUpperTrigram)],
+        ["下卦", meihuaTrigramEcho(values.meihuaLowerTrigram)],
+        ["观察来源", values.meihuaSource],
+      ];
+    case "supplied_hexagram":
+      return [
+        ["上卦", meihuaTrigramEcho(values.meihuaUpperTrigram)],
+        ["下卦", meihuaTrigramEcho(values.meihuaLowerTrigram)],
+        ["动爻", values.meihuaMovingLine ? `${values.meihuaMovingLine} 爻` : ""],
+        ["卦象资料来源", values.meihuaSource],
+      ];
+    default:
+      return [];
+  }
+}
+
 function focusLabel(productId: string, value: string) {
   const productOptions = productId === "taiyi"
     ? TAIYI_FOCUS_OPTIONS
@@ -1763,7 +1916,7 @@ function SubmitSummary({
   );
   if (!started) return null;
 
-  const rows: Array<readonly [string, string]> = [];
+  const rows: Array<readonly [string, ReactNode]> = [];
 
   const usesCrossProfile = product.id === "hecan" || product.id === "canwen";
 
@@ -1796,6 +1949,22 @@ function SubmitSummary({
     rows.push(["出生地点", values.location]);
     rows.push(["出生时区", values.timezone]);
     rows.push(["时间口径", label(values.timeStandard)]);
+  } else if (product.id === "meihua") {
+    rows.push(["问题", values.issue]);
+    if (values.focus) rows.push(["判断侧重", focusLabel(product.id, values.focus)]);
+    rows.push(["梅花起卦方式", meihuaCastingLabel(values.meihuaCastingMethod)]);
+    rows.push(["事件时间", values.eventTime]);
+    if (values.timeStandard) rows.push(["事件时间口径", label(values.timeStandard)]);
+    rows.push(["事件地点", values.location]);
+    rows.push(["事件时区", values.timezone]);
+    rows.push(...meihuaMethodParamRows(values));
+  } else if (product.id === "liuyao") {
+    rows.push(["问题", values.issue]);
+    if (values.focus) rows.push(["起卦方式", label(values.focus)]);
+    rows.push(["事件时间", values.eventTime]);
+    rows.push(["事件地点", values.location]);
+    rows.push(["事件时区", values.timezone]);
+    rows.push(["六爻记录", liuyaoRecordFigure(values.lines ?? [])]);
   } else {
     rows.push(["受测对象", values.subject]);
     rows.push(["问题", values.issue]);
@@ -1866,44 +2035,72 @@ function ProductSpecificNatalOptions({
   return null;
 }
 
-const lineNames = ["初爻", "二爻", "三爻", "四爻", "五爻", "上爻"] as const;
-
 function SixLineProcess({
+  castingMode,
   errors,
+  lines,
   productId,
-  register,
+  setValue,
 }: {
+  castingMode: string;
   errors: FieldErrors<TaskFormValues>["lines"];
+  lines: readonly string[];
   productId: string;
-  register: UseFormRegister<TaskFormValues>;
+  setValue: UseFormSetValue<TaskFormValues>;
 }) {
   return (
     <fieldset className={styles.lineProcess}>
       <legend>六爻起卦作为第一步</legend>
-      <p>按实际起卦顺序记录初爻到上爻；六次全部完成后才能继续，不会随机补数。</p>
-      <div>
-        {lineNames.map((line, index) => {
+      <p>{LIUYAO_LINE_PROCESS_HINT}</p>
+      {productId === "liuyao" && castingMode === "coins" ? (
+        <aside className={styles.lineRecorderKey}>{LIUYAO_COIN_KEY}</aside>
+      ) : null}
+      <div className={styles.lineRecorder}>
+        {LIUYAO_LINE_NAMES.map((line, index) => {
           const inputId = `${productId}-line-${index}`;
           const error = Array.isArray(errors) ? errors[index]?.message : undefined;
+          const selected = LIUYAO_LINE_OPTIONS.find((option) => option.value === lines[index]);
+          const groupName = `${productId}-line-${index}-value`;
           return (
-            <div className={styles.lineEntry} key={line}>
-              <label htmlFor={inputId}>{line}</label>
-              <select
-                aria-describedby={error ? `${inputId}-error` : undefined}
-                aria-invalid={Boolean(error)}
-                autoComplete="off"
-                id={inputId}
-                required
-                {...register(`lines.${index}` as const)}
-              >
-                <option value="">请选择</option>
-                <option value="old-yin">老阴（6 · 动爻）</option>
-                <option value="young-yang">少阳（7 · 静爻）</option>
-                <option value="young-yin">少阴（8 · 静爻）</option>
-                <option value="old-yang">老阳（9 · 动爻）</option>
-              </select>
+            <fieldset
+              aria-describedby={error ? `${inputId}-error` : undefined}
+              aria-invalid={error ? true : undefined}
+              className={styles.lineEntry}
+              id={inputId}
+              key={line}
+              tabIndex={-1}
+            >
+              <legend className={styles.lineEntryHead}>
+                <span>{`${line} · 第 ${index + 1} 次`}</span>
+                {selected ? (
+                  <span aria-hidden="true" className={styles.lineRecorderGlyph}>
+                    <LineGlyph moving={selected.moving} size="s" yang={selected.yang} />
+                  </span>
+                ) : null}
+              </legend>
+              <div className={styles.lineRecorderOptions} role="presentation">
+                {LIUYAO_LINE_OPTIONS.map((option) => (
+                  <label
+                    className={styles.segment}
+                    data-selected={lines[index] === option.value ? "true" : "false"}
+                    key={option.value}
+                  >
+                    <input
+                      checked={lines[index] === option.value}
+                      name={groupName}
+                      onChange={() => setValue(`lines.${index}`, option.value, { shouldDirty: true })}
+                      type="radio"
+                      value={option.value}
+                    />
+                    <span aria-hidden="true" className={styles.lineRecorderGlyph}>
+                      <LineGlyph moving={option.moving} size="s" yang={option.yang} />
+                    </span>
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
               {error ? <span className={styles.error} id={`${inputId}-error`} role="alert">{error}</span> : null}
-            </div>
+            </fieldset>
           );
         })}
       </div>

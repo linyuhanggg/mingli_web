@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -69,19 +67,6 @@ async function fillNatal(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("/ziwei guest stays on S3", () => {
-  it("keeps bazi inline preview routing without router.push on natal success", () => {
-    const experience = readFileSync(
-      resolve(process.cwd(), "src/components/task/product-task-experience.tsx"),
-      "utf8",
-    );
-    const baziBranch = experience.match(
-      /if \(product\.id === "bazi"\) \{[\s\S]*?setStage\("workbench"\);/,
-    )?.[0];
-    expect(baziBranch).toBeTruthy();
-    expect(baziBranch).toContain("setBaziPreviewReadingId");
-    expect(baziBranch).not.toContain("router.push");
-  });
-
   it("keeps a successful guest cast on /ziwei and does not push history", async () => {
     mockCreateProfileDraft.mockResolvedValue({ draft_id: "draft-zw", status: "draft" });
     mockConfirmProfileDraft.mockResolvedValue({

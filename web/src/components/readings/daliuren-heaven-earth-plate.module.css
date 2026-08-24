@@ -1,0 +1,118 @@
+.panel {
+  min-width: 0;
+  color: var(--color-text);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--target-min);
+  padding: 0 var(--space-sm);
+  cursor: pointer;
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.summary:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.body {
+  display: grid;
+  gap: var(--space-sm);
+  min-width: 0;
+  padding: 0 var(--space-sm) var(--space-sm);
+}
+
+.ring {
+  --plate-offset: 0;
+  display: none;
+  position: relative;
+  width: min(100%, 22rem);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.spoke {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  min-width: 1.75rem;
+  min-height: var(--target-min);
+  margin: 0;
+  transform: rotate(calc((var(--spoke) + var(--plate-offset)) * 30deg)) translateY(-7.2rem)
+    rotate(calc((var(--spoke) + var(--plate-offset)) * -30deg));
+  transform-origin: center;
+}
+
+.earth {
+  font-family: var(--font-domain);
+  font-size: var(--font-size-label);
+}
+
+.heaven,
+.general {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}
+
+.spoke[data-noble="true"] .earth,
+.table tr[data-noble="true"] th {
+  border: 1px solid var(--color-evidence);
+  color: var(--color-evidence);
+}
+
+.voidBadge {
+  display: inline-flex;
+  min-width: 1.1rem;
+  margin-inline-start: 0.25rem;
+  justify-content: center;
+  border: 1px solid var(--color-text);
+  color: var(--color-text);
+  font-size: var(--font-size-meta);
+}
+
+.spoke[data-void="true"] .earth,
+.table tr[data-void="true"] th {
+  outline: 1px solid var(--color-text);
+  outline-offset: -1px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-aux);
+}
+
+.table th,
+.table td {
+  padding: 0.35rem 0.45rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  min-height: var(--target-min);
+}
+
+.table th[scope="row"] {
+  font-family: var(--font-domain);
+  font-weight: 650;
+}
+
+@media (min-width: 64rem) {
+  .ring {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spoke {
+    transition: none;
+  }
+}

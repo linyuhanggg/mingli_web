@@ -7,9 +7,12 @@ import {
   ApiError,
   getReadingResult,
   pollReading,
+  startPreviewReading,
+  type PreviewStartRequest,
   type ReadingResultResponse,
   type ReadingVersionSummary,
 } from "@/lib/api";
+import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
 import { Status, type StatusState } from "@/components/ui/status";
 import {
   buildBaziChartView,
@@ -24,7 +27,18 @@ import {
 import surface from "@/components/app-surface.module.css";
 
 import { AcceptedCopy } from "./accepted-copy";
-import { BaziChart } from "./bazi-chart";
+import {
+  MEIHUA_JUDGMENT_EMPTY,
+  MEIHUA_JUDGMENT_EMPTY_HINT,
+  MEIHUA_JUDGMENT_GENERATING,
+} from "./meihua-copy";
+import {
+  BaziChart,
+  countPreviewTargets,
+  previewQueryForTimeLayer,
+  singleLayerPreviewTarget,
+} from "./bazi-chart";
+import { collectNatalFindingSource } from "./bazi-chart-findings";
 import { EvidenceList } from "./evidence-list";
 import { FactPanel } from "./fact-panel";
 import { FollowUpForm } from "./follow-up-form";
@@ -69,6 +83,27 @@ const RELATIONSHIP_PRODUCT_IDS = new Set([
   "qizheng-relationship",
 ]);
 const RESULT_READY_STATUSES = new Set(["prepared", "completing", "accepted"]);
+const LAYER_REQUEST_FAIL_STATUSES = new Set([
+  "waiting_input",
+  "terminal_stopped",
+  "runtime_unknown",
+]);
+const LAYER_REQUEST_TIMEOUT_MS = 60_000;
+
+function wait(ms: number) {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function careerDimensions(
+  dimensionIds: ReadonlyArray<string> | undefined,
+): PreviewStartRequest["dimension_ids"] {
+  const allowed = (dimensionIds ?? []).filter(
+    (id): id is "overview" | "career" => id === "overview" || id === "career",
+  );
+  return allowed.length > 0 ? allowed : ["career"];
+}
 
 type StatusTone = "processing" | "success" | "error";
 
@@ -218,7 +253,28 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
   const [result, setResult] = useState<ReadingResultResponse | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [retryKey, setRetryKey] = useState(0);
+  const [displayedReadingId, setDisplayedReadingId] = useState(readingId);
+  const [sourceReadingId, setSourceReadingId] = useState(readingId);
+  const [pendingLayerId, setPendingLayerId] = useState<string | null>(null);
+  const [layerError, setLayerError] = useState<string | null>(null);
+  const [appliedLayerId, setAppliedLayerId] = useState("natal");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const layerIntentRef = useRef<IntentKey | null>(null);
+  const layerRequestRef = useRef(false);
+  const latestReadingIdRef = useRef(readingId);
+
+  if (readingId !== sourceReadingId) {
+    setSourceReadingId(readingId);
+    setDisplayedReadingId(readingId);
+    setAppliedLayerId("natal");
+    setLayerError(null);
+    setPendingLayerId(null);
+  }
+
+  useEffect(() => {
+    latestReadingIdRef.current = readingId;
+    layerRequestRef.current = false;
+  }, [readingId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -232,14 +288,14 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     async function run() {
       if (cancelled) return;
       try {
-        const response = await pollReading(readingId);
+        const response = await pollReading(displayedReadingId);
         if (cancelled) return;
         setSummary(response);
         setError(null);
         setLoading(false);
 
         if (RESULT_READY_STATUSES.has(response.status)) {
-          const nextResult = await getReadingResult(readingId);
+          const nextResult = await getReadingResult(displayedReadingId);
           if (cancelled) return;
           setResult(nextResult);
           if (response.status === "accepted") return;
@@ -275,7 +331,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
         timerRef.current = null;
       }
     };
-  }, [readingId, retryKey]);
+  }, [displayedReadingId, retryKey]);
 
   function handleRetry() {
     setLoading(true);
@@ -291,6 +347,85 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     setSummary(null);
     setResult(null);
     setRetryKey((value) => value + 1);
+  }
+
+  async function requestBaziTimeLayer(layerId: string) {
+    if (layerRequestRef.current) return;
+    const originReadingId = readingId;
+    const profileVersionId = summary?.profile_version_id;
+    if (!profileVersionId) {
+      setLayerError("当前盘面没有绑定的资料版本，无法改换时间层。");
+      return;
+    }
+    const target = singleLayerPreviewTarget(layerId);
+    if (countPreviewTargets(target) > 1) {
+      setLayerError("一次预览只能取一层目标时间，未改动当前盘面。");
+      return;
+    }
+    layerRequestRef.current = true;
+    setLayerError(null);
+    setPendingLayerId(layerId);
+    try {
+      const payload: PreviewStartRequest = {
+        profile_version_id: profileVersionId,
+        query: previewQueryForTimeLayer(layerId),
+        dimension_ids: careerDimensions(summary?.dimension_ids),
+        ...target,
+      };
+      if (countPreviewTargets(payload) > 1) {
+        throw new Error("一次预览只能带一层目标时间");
+      }
+      const intent = stableKeyForIntent(layerIntentRef.current, {
+        product: "bazi",
+        profile_version_id: profileVersionId,
+        layer: layerId,
+        target,
+      });
+      layerIntentRef.current = intent;
+      const started = await startPreviewReading(payload, intent.key);
+      const nextId = started.reading_version_id;
+      const deadline = Date.now() + LAYER_REQUEST_TIMEOUT_MS;
+      let nextSummary = started;
+      while (Date.now() < deadline) {
+        if (RESULT_READY_STATUSES.has(nextSummary.status)) {
+          const nextResult = await getReadingResult(nextId);
+          const nextView = nextResult.view_model;
+          const nextChart =
+            nextView?.schema_version === "bazi-chart/v1"
+              ? buildBaziChartViewFromViewModel(nextView)
+              : null;
+          if (!nextChart?.pillars) {
+            setLayerError(
+              "这次时间层请求没有返回可展示的盘面，仍显示刚才那张已确认的盘。",
+            );
+            return;
+          }
+          if (latestReadingIdRef.current !== originReadingId) return;
+          setSummary(nextSummary);
+          setResult(nextResult);
+          setDisplayedReadingId(nextId);
+          setAppliedLayerId(layerId);
+          setLayerError(null);
+          return;
+        }
+        if (LAYER_REQUEST_FAIL_STATUSES.has(nextSummary.status)) {
+          setLayerError("这次时间层请求没有成功，仍显示刚才那张已确认的盘。");
+          return;
+        }
+        await wait(DEFAULT_POLL_MS);
+        nextSummary = await pollReading(nextId);
+      }
+      setLayerError("时间层请求仍在处理，尚未返回盘面。仍显示刚才那张已确认的盘。");
+    } catch (err) {
+      setLayerError(
+        err instanceof ApiError
+          ? err.message
+          : "这次时间层请求没有成功，仍显示刚才那张已确认的盘。",
+      );
+    } finally {
+      setPendingLayerId(null);
+      layerRequestRef.current = false;
+    }
   }
 
   if (error) {
@@ -396,6 +531,9 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     const isLiuyao = summary.capability_id === "liuyao";
     const isQimen = summary.capability_id === "qimen";
     const isDaliuren = summary.capability_id === "daliuren";
+    const isMeihua =
+      summary.capability_id === "meihua" ||
+      result.view_model?.schema_version === "meihua-chart/v1";
     const hasTypedLiuyao = result.view_model?.schema_version === "liuyao-chart/v1";
     const hasRawLiuyao = isLiuyao && !hasTypedLiuyao;
     const hasRuntimeChart = Boolean(
@@ -468,6 +606,52 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     }
 
     if (!isNatalChart && !isFortune && !isLiuyao && !isQimen && !isDaliuren) {
+      const meihuaSkipJudgment =
+        isMeihua && capabilityTier === "B" && !result.accepted_copy;
+      const meihuaEmptyText =
+        isMeihua && !result.accepted_copy
+          ? summary.status === "completing"
+            ? MEIHUA_JUDGMENT_GENERATING
+            : MEIHUA_JUDGMENT_EMPTY
+          : undefined;
+      const meihuaEmptyHint =
+        isMeihua && !result.accepted_copy && summary.status !== "completing"
+          ? MEIHUA_JUDGMENT_EMPTY_HINT
+          : undefined;
+      const runtimeChart =
+        hasRuntimeChart && result.view_model && showRuntimeChart ? (
+          <section
+            className={surface.readingSection}
+            aria-labelledby="reading-runtime-chart-title"
+          >
+            <span className={surface.sectionIndex} aria-hidden="true">
+              {isMeihua
+                ? "01"
+                : String(2 + (hasFortuneTimeline ? 1 : 0) + (hasRawLiuyao ? 1 : 0)).padStart(2, "0")}
+            </span>
+            <div>
+              <h2 id="reading-runtime-chart-title">盘面事实</h2>
+              <p className={surface.inlineNote}>
+                盘面由服务端排定；浏览器只负责展示，不重新计算。
+              </p>
+              {capabilityTier === "B" ? (
+                <p className={surface.inlineNote} data-capability-tier="B">
+                  当前只提供确定性盘面与事实，不提供断语。
+                </p>
+              ) : null}
+              <RuntimeChart
+                viewModel={result.view_model}
+                capability={result.capability}
+                reportClaims={
+                  result.view_model.schema_version === "meihua-chart/v1" ||
+                  result.view_model.schema_version === "liuyao-chart/v1"
+                    ? result.document?.claims
+                    : undefined
+                }
+              />
+            </div>
+          </section>
+        ) : null;
       return (
         <div className={surface.readingLayout}>
           <article className={surface.readingBody} aria-label="解读正文">
@@ -479,18 +663,26 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               </p>
             </header>
 
-            <section
-              className={surface.readingSection}
-              aria-labelledby="reading-judgment-title"
-            >
-              <span className={surface.sectionIndex} aria-hidden="true">
-                01
-              </span>
-              <div>
-                <h2 id="reading-judgment-title">判断</h2>
-                <AcceptedCopy text={result.accepted_copy} />
-              </div>
-            </section>
+            {isMeihua ? runtimeChart : null}
+
+            {meihuaSkipJudgment ? null : (
+              <section
+                className={surface.readingSection}
+                aria-labelledby="reading-judgment-title"
+              >
+                <span className={surface.sectionIndex} aria-hidden="true">
+                  {isMeihua ? "02" : "01"}
+                </span>
+                <div>
+                  <h2 id="reading-judgment-title">判断</h2>
+                  <AcceptedCopy
+                    text={result.accepted_copy}
+                    emptyText={meihuaEmptyText}
+                    emptyHint={meihuaEmptyHint}
+                  />
+                </div>
+              </section>
+            )}
 
             {hasFortuneTimeline ? (
               <section
@@ -530,28 +722,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               </section>
             ) : null}
 
-            {hasRuntimeChart && result.view_model && showRuntimeChart ? (
-              <section
-                className={surface.readingSection}
-                aria-labelledby="reading-runtime-chart-title"
-              >
-                <span className={surface.sectionIndex} aria-hidden="true">
-                  {String(2 + (hasFortuneTimeline ? 1 : 0) + (hasRawLiuyao ? 1 : 0)).padStart(2, "0")}
-                </span>
-                <div>
-                  <h2 id="reading-runtime-chart-title">盘面事实</h2>
-                  <p className={surface.inlineNote}>
-                    盘面由服务端排定；浏览器只负责展示，不重新计算。
-                  </p>
-                  {capabilityTier === "B" ? (
-                    <p className={surface.inlineNote} data-capability-tier="B">
-                      当前只提供确定性盘面与事实，不提供断语。
-                    </p>
-                  ) : null}
-                  <RuntimeChart viewModel={result.view_model} capability={result.capability} />
-                </div>
-              </section>
-            ) : null}
+            {isMeihua ? null : runtimeChart}
 
             {capabilityTier === "C" ? (
               <p className={surface.inlineNote} data-capability-tier="C">
@@ -1040,10 +1211,21 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
                     点击四柱可核对详细盘面；页面只展示系统已经计算并公开的事实。
                   </p>
                   <BaziChart
+                    key={displayedReadingId}
                     chart={chart}
                     title="八字命盘"
                     evidence={result.fact_panel?.evidence ?? []}
+                    findings={collectNatalFindingSource(
+                      result.fact_panel,
+                      result.view_model,
+                    )}
                     showInterpretiveSections={capabilityTier === "A"}
+                    initialLayerId={appliedLayerId}
+                    onRequestLayer={
+                      summary.profile_version_id ? requestBaziTimeLayer : undefined
+                    }
+                    pendingLayerId={pendingLayerId}
+                    layerError={layerError}
                   />
                 </>
               )}

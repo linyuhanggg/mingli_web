@@ -6,7 +6,7 @@ import userEvent from "@testing-library/user-event";
 import type { ComponentPropsWithoutRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { SiteHeader } from "@/components/site-header";
+import { MobileNavigation, SiteHeader } from "@/components/site-header";
 import { ApiError } from "@/lib/api";
 
 const { getAccountMock } = vi.hoisted(() => ({ getAccountMock: vi.fn() }));
@@ -73,7 +73,7 @@ describe("public shell navigation", () => {
       "href",
       "/library",
     );
-    expect(screen.getByRole("link", { name: "正在确认登录状态" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "正在确认" })).toHaveAttribute(
       "href",
       "/account",
     );
@@ -207,7 +207,8 @@ describe("public shell navigation", () => {
 
   it("provides the five-item mobile bottom bar and a full-screen divination drawer", async () => {
     const user = userEvent.setup();
-    render(<SiteHeader />);
+    getAccountMock.mockRejectedValueOnce(new ApiError("未登录", 401));
+    render(<MobileNavigation pathname="/" />);
 
     const bottomBar = screen.getByLabelText("移动底栏");
     expect(within(bottomBar).getAllByRole("link", { hidden: true })).toHaveLength(4);
@@ -220,10 +221,11 @@ describe("public shell navigation", () => {
       "href",
       "/daily",
     );
-    expect(within(bottomBar).getByRole("link", { name: "我的", hidden: true })).toHaveAttribute(
+    expect(await within(bottomBar).findByRole("link", { name: "登录", hidden: true })).toHaveAttribute(
       "href",
-      "/account",
+      "/auth/login",
     );
+    expect(within(bottomBar).queryByRole("link", { name: "我的", hidden: true })).not.toBeInTheDocument();
 
     const trigger = within(bottomBar).getByRole("button", { name: "打开术数菜单", hidden: true });
     await user.click(trigger);
@@ -236,7 +238,7 @@ describe("public shell navigation", () => {
 
   it("closes the mobile drawer when browser back is dispatched", async () => {
     const user = userEvent.setup();
-    render(<SiteHeader />);
+    render(<MobileNavigation pathname="/" />);
 
     const bottomBar = screen.getByLabelText("移动底栏");
     const trigger = within(bottomBar).getByRole("button", { name: "打开术数菜单", hidden: true });
@@ -252,7 +254,7 @@ describe("public shell navigation", () => {
 
   it("uses the drawer history entry for link navigation and closes the drawer", async () => {
     const user = userEvent.setup();
-    render(<SiteHeader />);
+    render(<MobileNavigation pathname="/" />);
 
     const bottomBar = screen.getByLabelText("移动底栏");
     await user.click(

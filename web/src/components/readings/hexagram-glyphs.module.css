@@ -1,0 +1,118 @@
+.lineGlyph {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  width: 100%;
+  min-height: 0.7rem;
+}
+
+.bar {
+  display: block;
+  flex: 1;
+  height: 0.28rem;
+  background: var(--color-action);
+}
+
+.lineGlyph[data-kind="yin"] .gap {
+  flex: 0 0 0.45rem;
+}
+
+.lineGlyph[data-size="s"] .bar {
+  height: 0.18rem;
+}
+
+.lineGlyph[data-size="l"] .bar {
+  height: 0.36rem;
+}
+
+.lineGlyph[data-moving="true"] .bar {
+  background: var(--color-action);
+}
+
+.movingMark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  color: var(--color-accent);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cinnabar {
+  display: block;
+  width: 0.28rem;
+  height: 0.28rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+}
+
+.trigram {
+  display: inline-grid;
+  justify-items: center;
+  gap: 0.15rem;
+}
+
+.trigramFigure {
+  display: grid;
+  gap: 0.12rem;
+  width: 1.7rem;
+}
+
+.trigram[data-size="m"] .trigramFigure {
+  width: 2.4rem;
+  gap: 0.18rem;
+}
+
+.trigramName {
+  color: var(--color-text);
+  font-family: var(--font-domain);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.figure {
+  display: grid;
+  gap: 0.42rem;
+  margin: 0;
+  padding: 0.4rem 0;
+  list-style: none;
+}
+
+.figure[data-size="s"] {
+  gap: 0.22rem;
+}
+
+.figure[data-silhouette="true"] .bar {
+  background: transparent;
+  border-top: 1px dashed var(--color-border-strong);
+  height: 0;
+}
+
+.header {
+  display: grid;
+  gap: 0.25rem;
+  justify-items: center;
+}
+
+.hexName {
+  color: var(--color-text);
+  font-family: var(--font-domain);
+  font-size: var(--font-size-card);
+  font-weight: 650;
+  line-height: var(--line-height-title);
+}
+
+@media (max-width: 47.999rem) {
+  .hexName {
+    font-size: var(--font-size-emphasis);
+  }
+}
+
+.compose {
+  display: inline-flex;
+  align-items: end;
+  gap: 0.35rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}

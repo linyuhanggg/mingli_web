@@ -964,10 +964,13 @@ it("renders Meihua source-adjudicated relation polarity without inventing an eve
     />,
   );
 
-  expect(screen.getByText("体用关系来源裁定（未形成事件结论）")).toBeVisible();
-  expect(screen.getByText("体用比和")).toBeVisible();
+  expect(screen.getByRole("heading", { name: "古籍极性" })).toBeVisible();
+  expect(screen.getAllByText("比和").length).toBeGreaterThan(0);
   expect(screen.getByText("关系极性已裁定")).toBeVisible();
-  expect(screen.getByText(/综合成败与应期仍待正式合成裁决/)).toBeVisible();
+  expect(
+    screen.getByText("以上是古籍已裁定的关系极性。这件事成不成、吉凶、应期，本页不断。"),
+  ).toBeVisible();
+  expect(screen.queryByText("以上为古籍已裁定的关系极性，事件成败不在本页判断")).toBeNull();
   expect(screen.queryByText("体用关系候选（非最终结论）")).toBeNull();
 });
 
@@ -1235,9 +1238,56 @@ it("renders a bounded Daliuren timing candidate as a non-guaranteed date", () =>
     />,
   );
 
-  expect(screen.getByText("有界应期候选")).toBeVisible();
-  expect(screen.getByText("2026-08-21")).toBeVisible();
-  expect(screen.getByText("丁卯 · 酉")).toBeVisible();
-  expect(screen.getByText("LM-R21 · san-shi/liuren-miben")).toBeVisible();
-  expect(screen.getByText("候选日期，不是现实保证")).toBeVisible();
+  expect(screen.getByRole("region", { name: "课传" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "初传 酉 朱雀" })).toBeVisible();
+  expect(screen.getByText(/2026-08-21/)).toBeVisible();
+  expect(screen.getByText("以下为古籍规则产生的候选日期，不是保证的应期")).toBeVisible();
+  expect(screen.queryByText("有界应期候选")).not.toBeInTheDocument();
+  expect(screen.queryByText("丁卯 · 酉")).not.toBeInTheDocument();
+  expect(screen.queryByText("LM-R21 · san-shi/liuren-miben")).not.toBeInTheDocument();
+  expect(screen.queryByText("候选日期，不是现实保证")).not.toBeInTheDocument();
+});
+
+it("renders DaliurenBoard for daliuren-chart/v1 and fail-closes missing timing_candidates", () => {
+  render(
+    <RuntimeChart
+      viewModel={{
+        schema_version: "daliuren-chart/v1",
+        subject_ref: "liuren:timing-fixture",
+        question: "这件事何时可能出现回应？",
+        lessons: [
+          { lesson_id: "1", upper: "酉", lower: "庚" },
+          { lesson_id: "2", upper: "戌", lower: "酉" },
+          { lesson_id: "3", upper: "子", lower: "申" },
+          { lesson_id: "4", upper: "丑", lower: "子" },
+        ],
+        transmissions: [
+          { stage: "initial", branch: "酉", general: "朱雀" },
+          { stage: "middle", branch: "戌", general: "六合" },
+          { stage: "final", branch: "亥", general: "勾陈" },
+        ],
+        core_facts: {
+          day_hour: null,
+          dimension_facts: null,
+          earth_plate: null,
+          heaven_plate: null,
+          heavenly_generals: null,
+          lesson_method: null,
+          month_general: null,
+          noble_person: null,
+          plate_offset: null,
+          structural_patterns: null,
+          transmission_method: null,
+          timing_candidates: null,
+          xunkong: null,
+        },
+      }}
+    />,
+  );
+
+  expect(screen.getByRole("region", { name: "课传" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "初传 酉 朱雀" })).toBeVisible();
+  expect(screen.queryByText("2026-08-21")).not.toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "应期" })).not.toBeInTheDocument();
+  expect(screen.queryByText("有界应期候选")).not.toBeInTheDocument();
 });

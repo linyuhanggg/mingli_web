@@ -268,8 +268,9 @@ describe("BaziChart evidence-first slice", () => {
     expect(screen.getByText("第二段逐字原文。")).toBeVisible();
     expect(screen.getByText("原文")).toBeVisible();
     expect(screen.getByText("可回溯出处")).toBeVisible();
-    expect(screen.getAllByText("测试古籍")).toHaveLength(3);
-    expect(screen.getAllByText(/L10-L12|L20-L21/)).toHaveLength(3);
+    // DESIGN §23-6：首屏固定引文卡废止，出处只在证据抽屉内出现（每条 citation 一次）。
+    expect(screen.getAllByText("测试古籍")).toHaveLength(2);
+    expect(screen.getAllByText(/L10-L12|L20-L21/)).toHaveLength(2);
     expect(screen.getByText("日主天干为丙")).toBeVisible();
     expect(screen.getByText("/unknown/path:exists:()")).toBeVisible();
     expect(screen.queryByText("/day_master/stem")).not.toBeInTheDocument();
@@ -318,35 +319,45 @@ describe("BaziChart evidence-first slice", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("projects only public candidate facts, boundaries, and pending language", () => {
+  it("projects only public candidate facts, boundaries, and pending language", async () => {
+    const user = userEvent.setup();
     render(<BaziChart chart={chart} evidence={[]} />);
 
-    expect(screen.queryByText(/偏强|偏弱|总分|吉|凶/)).not.toBeInTheDocument();
+    // G2：无合成评分、无强弱档位、无体感校准；不显示裁决状态枚举与规则号。
+    expect(screen.queryByText(/偏强|偏弱|总分|吉|凶|体感校准/)).not.toBeInTheDocument();
     expect(screen.queryByText("evidence_only")).not.toBeInTheDocument();
     expect(screen.queryByText("candidate_only")).not.toBeInTheDocument();
-    expect(screen.queryByText("unknown_tool")).not.toBeInTheDocument();
-    expect(screen.queryByText("custom_key")).not.toBeInTheDocument();
-    expect(screen.queryByText("raw-enum-value")).not.toBeInTheDocument();
-    expect(screen.queryByText("nested_key")).not.toBeInTheDocument();
-    expect(screen.queryByText("nested-raw-value")).not.toBeInTheDocument();
-    expect(screen.queryByText("raw-one")).not.toBeInTheDocument();
-    expect(screen.queryByText("raw-two")).not.toBeInTheDocument();
-    expect(screen.queryByText("custom_count")).not.toBeInTheDocument();
-    expect(screen.queryByText("7")).not.toBeInTheDocument();
     expect(screen.queryByText("R-02-04")).not.toBeInTheDocument();
-    expect(screen.getByText("候选事实")).toBeVisible();
-    expect(screen.getByText("支持性事实")).toBeVisible();
-    expect(screen.getByText("中性盘面事实")).toBeVisible();
+
+    // M5 旺衰证据：证据清单，不是评分。
+    expect(screen.getByRole("heading", { name: "旺衰证据" })).toBeVisible();
+    expect(screen.getByText(/月令状态：/)).toBeVisible();
+    expect(screen.getByText("同类 2 见")).toBeVisible();
+    expect(screen.getByText("生扶（木）1 见")).toBeVisible();
+    expect(screen.getByText("未裁定边界")).toBeVisible();
     expect(screen.getByText(/全局身强身弱与唯一用神仍未裁定/)).toBeVisible();
-    expect(screen.getByText("全局强弱证据（未裁定）")).toBeVisible();
-    expect(screen.getByText("证据边界")).toBeVisible();
+
+    // M6 格局候选：标题带「候选」，boundary 必显。
+    expect(screen.getByRole("heading", { name: "格局候选" })).toBeVisible();
+    expect(screen.getByText("月令主气 甲 · 比肩")).toBeVisible();
+    expect(screen.getByText("主气已透干")).toBeVisible();
+    expect(screen.getByText("可见位置：月柱")).toBeVisible();
+    expect(screen.getByText("结构候选仍待裁定")).toBeVisible();
+
+    // M7 合化候选：待古法裁定；机械候选默认收进折叠。
     expect(
-      screen.getByText(
-        /结构候选：月令主气 甲 · 比肩；主气可见：是；可见位置：月柱；结构候选仍待裁定；候选，待裁定/,
-      ),
+      screen.getByText("天干合化候选 0 项 · 地支成局候选 0 项"),
     ).toBeVisible();
-    expect(screen.queryByText(/结构候选：月令主气 木/)).not.toBeInTheDocument();
-    expect(screen.getByText(/合化与从格.*待.*裁定/)).toBeVisible();
+    expect(screen.getByText("合化与从格仍待经典裁决")).toBeVisible();
+
+    // §19.2：未知 reasoning_tools 键原值保留，但默认折叠，不进默认视野。
+    const fold = screen.getByText("更多机械候选");
+    expect(fold).toBeVisible();
+    expect(screen.getByText(/unknown_tool/)).not.toBeVisible();
+    expect(screen.getByText(/raw-enum-value/)).not.toBeVisible();
+    await user.click(fold);
+    expect(screen.getByText(/unknown_tool/)).toBeVisible();
+    expect(screen.getByText(/raw-enum-value/)).toBeVisible();
   });
 
   it("shows the exact G3 time facts returned by Runtime", () => {

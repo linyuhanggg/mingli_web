@@ -42,8 +42,13 @@ type Layout = "ring" | "list";
 
 const NARROW_LIST_QUERY = "(max-width: 22.5rem)";
 
+function readNarrowList(): boolean {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+  return window.matchMedia(NARROW_LIST_QUERY).matches;
+}
+
 function useResolvedLayout(explicit?: Layout): Layout {
-  const [narrow, setNarrow] = useState(false);
+  const [narrow, setNarrow] = useState(readNarrowList);
   useEffect(() => {
     if (explicit) return;
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
@@ -305,14 +310,21 @@ function SemanticTable({ view }: { view: ZiweiChartViewModel }) {
         </tr>
       </thead>
       <tbody>
-        {view.palaces.map((palace) => (
-          <tr key={palace.palace_id}>
-            <td>{palace.label}</td>
-            <td>{palace.major_stars.join(" ")}</td>
-            <td>{ganzhiText(palace) ?? ""}</td>
-            <td>{decadeText(palace.decadal) ?? ""}</td>
-          </tr>
-        ))}
+        {view.palaces.map((palace) => {
+          const stars = [
+            ...palace.major_stars,
+            ...(palace.minor_stars ?? []).map((star) => star.name).filter(Boolean),
+            ...(palace.adjective_stars ?? []).map((star) => star.name).filter(Boolean),
+          ];
+          return (
+            <tr key={palace.palace_id}>
+              <td>{palace.label}</td>
+              <td>{palace.major_stars.join(" ")}</td>
+              <td>{ganzhiText(palace) ?? ""}</td>
+              <td>{decadeText(palace.decadal) ?? ""}</td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );

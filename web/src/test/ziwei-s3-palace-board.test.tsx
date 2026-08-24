@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -1533,7 +1533,7 @@ describe("紫微 S3 360 默认窄屏真渲 list", () => {
     const user = userEvent.setup();
     render(<ZiweiPalaceBoard view={chart()} />);
 
-    await waitFor(() => expect(screen.queryByRole("grid", { name: "十二宫环盘" })).not.toBeInTheDocument());
+    expect(screen.queryByRole("grid", { name: "十二宫环盘" })).not.toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "宫位缩略" })).toBeVisible();
     expect(screen.getByRole("list", { name: "十二宫列表" })).toBeVisible();
     expect(screen.getByRole("navigation", { name: "宫位缩略" }).querySelectorAll("button[data-branch]")).toHaveLength(12);

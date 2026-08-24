@@ -1,80 +1,374 @@
-.board {
+/* 八字 S3 盘面态（bazi-flow-spec S3；视觉语言 DESIGN §2–§4 纸墨档案）。
+   质感只来自纸面层次、1px 墨线、字阶与按柱对齐的网格；
+   朱砂只作交互强调，金只作证据标记，五行域色只染干支事实。 */
+
+.workspace {
   display: grid;
   container-type: inline-size;
   gap: 1rem;
   min-width: 0;
   padding: 1rem;
   border: 1px solid var(--color-border);
-  border-radius: calc(var(--radius-panel) - 0.2rem);
+  border-radius: var(--radius-panel);
   background: var(--color-surface);
 }
 
-.brandBlock {
+.header {
   display: grid;
-  gap: 0.2rem;
-  text-align: center;
+  gap: 0.3rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.brand {
+.kicker {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.title {
+  margin: 0.1rem 0 0;
+  color: var(--color-text);
+  font-size: var(--font-size-card);
+  font-weight: 650;
+}
+
+.headerMeta {
   margin: 0;
   color: var(--color-text-secondary);
   font-size: var(--font-size-aux);
-  font-weight: 780;
 }
 
-.brandSub {
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: var(--font-size-card);
-  font-weight: 600;
+/* ---------- 时间层 chips（SegmentedControl 语义，§7.2/§13） ---------- */
+
+.chipsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-height: var(--target-min);
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
   color: var(--color-text);
-}
-
-.brandMeta {
-  margin: 0;
-  color: var(--color-text-secondary);
+  font: inherit;
   font-size: var(--font-size-label);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-feedback) ease,
+    background-color var(--duration-feedback) ease;
 }
 
-.firstScreenCitation {
-  margin: 0;
-  padding: 0.75rem 0.8rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
+.chip[data-active="true"] {
+  border-color: var(--color-accent);
+  font-weight: 700;
+}
+
+.chip[data-active="true"] .chipLabel {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+.chip:disabled {
+  cursor: not-allowed;
+  border-style: dashed;
+  border-color: var(--color-border);
   background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
 }
 
-.firstScreenCitation figcaption {
+.chipReason {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+}
+
+.chipBlock {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.chip[data-pending="true"] {
+  border-style: dotted;
+  border-color: var(--color-accent);
+}
+
+.chipError {
   margin: 0;
   color: var(--color-text);
-  font-size: var(--font-size-label);
+  font-size: var(--font-size-aux);
+  line-height: 1.55;
+}
+
+/* ---------- M1 时间口径条（G3） ---------- */
+
+.basisBar {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.basisBanner {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  line-height: 1.55;
+}
+
+.basisBanner strong {
+  color: var(--color-accent);
   font-weight: 750;
 }
 
-.firstScreenCitation figcaption span {
-  color: var(--color-text-secondary);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+.basisDetails {
+  min-width: 0;
+  padding: 0.15rem 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
+.basisCalm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.75rem;
+  min-height: var(--target-min);
+  padding: 0.45rem 0.15rem;
+  font-size: var(--font-size-aux);
+  cursor: pointer;
+}
 
-.pillarGrid {
+.basisPolicy {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.basisState {
+  color: var(--color-text-secondary);
+}
+
+.basisToggle {
+  margin-left: auto;
+  color: var(--color-accent);
+  font-weight: 650;
+}
+
+.timeBasisList {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem 0.8rem;
+  min-width: 0;
+  margin: 0.2rem 0 0.6rem;
+}
+
+.timeBasisList > div {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, auto) minmax(0, 1fr);
   gap: 0.55rem;
+  min-width: 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.timeBasisList dt,
+.timeBasisList dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.timeBasisList dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.timeBasisList dd {
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.55;
+}
+
+/* ---------- 双栏（≥62rem 容器宽度进入左盘右读，右栏 ≥360px） ---------- */
+
+.stage {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.board {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.reading {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  align-content: start;
+}
+
+@container (min-width: 62rem) {
+  .stage {
+    grid-template-columns: minmax(30rem, 32.5rem) minmax(22.5rem, 1fr);
+    align-items: start;
+  }
+
+  .sectionNav {
+    display: none;
+  }
+}
+
+/* ---------- 粘性章节导航（<62rem 单列时） ---------- */
+
+.sectionNav {
+  position: sticky;
+  top: 0.5rem;
+  z-index: var(--z-sticky);
+  min-width: 0;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.sectionNav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sectionNav a {
+  display: inline-block;
+  padding: 0.25rem 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+  font-weight: 650;
+}
+
+.sectionNav a:hover,
+.sectionNav a:focus-visible {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+/* ---------- M2 四柱矩阵 ---------- */
+
+.folio {
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.folioMeta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 0 0.75rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}
+
+.folioSeal {
+  color: var(--color-accent);
+  font-weight: 760;
+  letter-spacing: 0.08em;
+}
+
+.chapterIndex {
+  margin: 0 0 0.35rem;
+  color: var(--color-accent);
+  font-size: 0.75rem;
+  font-weight: 760;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.readingChapter {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.matrixGroup {
+  min-width: 0;
+}
+
+.matrixViewport {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.matrix {
+  width: 100%;
+  min-width: 19rem;
+  border-collapse: collapse;
+  table-layout: fixed;
+  color: var(--color-text);
+}
+
+.matrix thead td.cornerCell {
+  width: 4.2rem;
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.pillarHead {
+  padding: 0;
+  border-bottom: 1px solid var(--color-border-strong);
+  vertical-align: bottom;
+}
+
+.pillarCard[data-empty="true"] {
+  min-height: 8.5rem;
+  pointer-events: none;
+}
+
+.pillarCard[data-empty="true"] .glyphEmpty {
+  width: 1.6rem;
+  height: 2.2rem;
+  border-radius: 2px;
+  background: var(--color-border);
+  opacity: 0.35;
 }
 
 .pillarCard {
-  position: relative;
   display: grid;
-  gap: 0.15rem;
+  gap: 0.2rem;
   justify-items: center;
+  width: 100%;
   min-width: 0;
-  min-height: 6.5rem;
-  padding: 0.75rem 0.4rem 0.7rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface-subtle);
+  min-height: 8.5rem;
+  padding: 0.6rem 0.25rem 0.55rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  background: none;
   color: inherit;
   font: inherit;
   text-align: center;
@@ -85,8 +379,8 @@
 }
 
 .pillarCard:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-canvas);
+  border-color: var(--color-border);
+  background: var(--color-surface-subtle);
 }
 
 .pillarCard:focus-visible {
@@ -94,43 +388,113 @@
 }
 
 .pillarCard[data-selected="true"] {
-  border-color: var(--color-action);
-  background: var(--color-surface-muted);
+  border-color: var(--color-accent);
+  background: var(--color-surface-subtle);
   font-weight: 700;
 }
 
 .pillarLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   color: var(--color-text-secondary);
   font-size: var(--font-size-meta);
   font-weight: 750;
   letter-spacing: 0.06em;
 }
 
-.pillarStem,
-.pillarBranch {
+.changedMark {
+  padding: 0 0.3rem;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  color: var(--color-accent);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* 域字大字（§4：40px 大字行、28px 格内；宋体域字不做负字距）。
+   data-element 五行染色只作用于干支事实本身。 */
+.glyphDisplay,
+.glyphCell {
   font-family: var(--font-domain);
-  font-size: clamp(1.35rem, 3vw, 1.7rem);
   font-weight: 600;
   line-height: 1.1;
   color: var(--color-text);
 }
 
-.pillarFull {
-  margin-top: 0.15rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-aux);
-  font-variant-numeric: tabular-nums;
+.glyphDisplay {
+  padding: 0 0.2rem;
+  border: 2px solid transparent;
+  border-radius: var(--radius-card);
+  font-size: clamp(26px, 7.5cqw, var(--font-size-domain-display));
 }
 
-/* §21.3 第 1 级：克制的来源标记，只在该柱确有已核验古法条目时出现。 */
+.glyphCell {
+  font-size: clamp(18px, 4cqw, var(--font-size-domain-cell));
+}
+
+.glyphDisplay[data-element="wood"],
+.glyphCell[data-element="wood"] { color: var(--element-wood); }
+
+.glyphDisplay[data-element="fire"],
+.glyphCell[data-element="fire"] { color: var(--element-fire); }
+
+.glyphDisplay[data-element="earth"],
+.glyphCell[data-element="earth"] { color: var(--element-earth); }
+
+.glyphDisplay[data-element="metal"],
+.glyphCell[data-element="metal"] { color: var(--element-metal); }
+
+.glyphDisplay[data-element="water"],
+.glyphCell[data-element="water"] { color: var(--element-water); }
+
+/* 日主格朱砂描边常驻（flow-spec S3-M2） */
+.glyphDisplay[data-day-master="true"] {
+  border-color: var(--color-accent);
+}
+
+.glyphEmpty {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-emphasis);
+  line-height: 1.4;
+}
+
+.stemGod {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+  line-height: 1.3;
+}
+
+.branchWrap {
+  position: relative;
+  display: inline-grid;
+  justify-items: center;
+}
+
+.voidMark {
+  position: absolute;
+  top: -0.2rem;
+  right: -0.9rem;
+  padding: 0 0.2rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-meta);
+  line-height: 1.4;
+}
+
+/* §21.3 第 1 级：证据金来源标记，只在该柱确有已核验古法条目时出现。 */
 .pillarSourceMark {
   display: grid;
   justify-items: center;
   gap: 0.15rem;
-  margin-top: 0.3rem;
-  padding: 0.05rem 0.35rem;
-  border: 1px solid var(--color-border-strong);
+  margin-top: 0.2rem;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--color-evidence-line);
   border-radius: var(--radius-pill);
+  background: var(--color-evidence-wash);
   color: var(--color-text-secondary);
   font-size: var(--font-size-meta);
   font-variant-numeric: tabular-nums;
@@ -154,176 +518,116 @@
 .pillarCard:hover .pillarSourceMark,
 .pillarCard:focus-visible .pillarSourceMark,
 .pillarCard[data-selected="true"] .pillarSourceMark {
-  border-color: var(--color-action);
   color: var(--color-text);
 }
 
-.visuallyHidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+/* 矩阵事实行 */
+.matrix tbody th {
+  position: sticky;
+  left: 0;
+  padding: 0.5rem 0.4rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 750;
+  text-align: left;
+  vertical-align: top;
 }
 
+.matrix tbody td {
+  padding: 0.5rem 0.3rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-aux);
+  text-align: center;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.matrix tbody td[data-active-col="true"] {
+  background: var(--color-surface-subtle);
+}
+
+/* 流年柱叠加列（§21.2：容器不卸载，只过渡新列与标记） */
+.transitHead {
+  display: grid;
+  gap: 0.2rem;
+  justify-items: center;
+  padding: 0.6rem 0.25rem 0.55rem;
+  border-bottom: 1px solid var(--color-border-strong);
+  border-left: 1px dashed var(--color-border-strong);
+  vertical-align: bottom;
+}
+
+.transitHead,
+.matrix td[data-active="true"] {
+  transition: opacity var(--duration-overlay) var(--ease-out);
+}
+
+@starting-style {
+  .transitHead,
+  .matrix td[data-active="true"] {
+    opacity: 0;
+  }
+}
+
+.matrix td[data-active="true"] {
+  border-left: 1px dashed var(--color-border-strong);
+}
+
+.hiddenStack {
+  display: grid;
+  gap: 0.15rem;
+  justify-items: center;
+}
+
+.hiddenStem {
+  font-family: var(--font-domain);
+  line-height: 1.2;
+}
+
+.hiddenStem[data-rank="main"] {
+  font-size: clamp(16px, 3.4cqw, var(--font-size-domain-cell));
+}
+
+.hiddenStem[data-rank="rest"] {
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+.hiddenStem[data-element="wood"] { color: var(--element-wood); }
+.hiddenStem[data-element="fire"] { color: var(--element-fire); }
+.hiddenStem[data-element="earth"] { color: var(--element-earth); }
+.hiddenStem[data-element="metal"] { color: var(--element-metal); }
+.hiddenStem[data-element="water"] { color: var(--element-water); }
+
+.hiddenGod {
+  font-size: var(--font-size-aux);
+  color: var(--color-text);
+}
+
+.shenshaChip {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  font-size: var(--font-size-meta);
+  font-weight: 650;
+}
+
+/* 联动高亮（§21.1：只用边框、底色与字重） */
 .factHighlight,
-.pillarStem[data-fact-highlight="true"],
-.pillarBranch[data-fact-highlight="true"] {
-  border: 1px solid var(--color-action);
+.glyphDisplay[data-fact-highlight="true"],
+.glyphCell[data-fact-highlight="true"] {
+  border: 1px solid var(--color-accent);
   border-radius: 0.2rem;
   background: var(--color-surface-muted);
   font-weight: 750;
 }
 
-.layerNote {
-  display: grid;
-  gap: 0.4rem;
-  padding: 1.2rem 1rem;
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface-subtle);
-}
-
-.layerNoteTitle {
-  margin: 0;
-  color: var(--color-action);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-body);
-  font-weight: 600;
-}
-
-.layerNoteText {
-  margin: 0;
-  color: var(--color-text-secondary);
-  line-height: 1.65;
-}
-
-.highlights {
-  display: grid;
-  gap: 0.55rem;
-}
-
-.highlights h4 {
-  margin: 0;
-  font-size: var(--font-size-label);
-  font-weight: 750;
-  color: var(--color-action);
-}
-
-.highlights ul {
-  display: grid;
-  gap: 0.55rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.highlights li {
-  display: grid;
-  gap: 0.15rem;
-  padding: 0.7rem 0.8rem;
-  border: 1px solid var(--color-border);
-  border-color: var(--color-text-secondary);
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
-}
-
-.highlights li[data-tone="emphasis"] {
-  border-color: var(--color-action-hover);
-}
-
-.highlights li[data-tone="caution"] {
-  border-color: var(--color-danger);
-}
-
-.highlights strong {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-aux);
-  letter-spacing: 0.03em;
-}
-
-.highlights span {
-  color: var(--color-text);
-  line-height: 1.6;
-  overflow-wrap: anywhere;
-}
-
-.coreFacts {
-  display: grid;
-  gap: 0.7rem;
-  padding-top: 0.2rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.coreFacts summary {
-  color: var(--color-action);
-  font-size: var(--font-size-label);
-  font-weight: 750;
-  cursor: pointer;
-}
-
-.coreFactsList {
-  display: grid;
-  gap: 0.55rem;
-  margin: 0;
-}
-
-.coreFactsList div {
-  display: grid;
-  grid-template-columns: minmax(4.5rem, auto) minmax(0, 1fr);
-  gap: 0.65rem;
-  padding: 0.55rem 0.65rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface-subtle);
-}
-
-.coreFactsList dt {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-aux);
-  font-weight: 700;
-}
-
-.coreFactsList dd {
-  min-width: 0;
-  margin: 0;
-  color: var(--color-text);
-  font-size: var(--font-size-aux);
-  line-height: 1.55;
-  overflow-wrap: anywhere;
-}
-
-.termDef {
-  display: block;
-  margin-top: 0.2rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
-  line-height: 1.5;
-}
-
-.coreFactsNote {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
-  line-height: 1.55;
-}
-
-.timeBasis,
-.candidateSection,
-.evidenceDrawer {
-  display: grid;
-  gap: 0.7rem;
-  min-width: 0;
-  padding-top: 0.8rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.timeBasis {
-  padding-bottom: 0.15rem;
-}
+/* ---------- 通用小节 ---------- */
 
 .sectionHeading {
   display: grid;
@@ -336,8 +640,11 @@
 }
 
 .sectionHeading h4 {
-  color: var(--color-action);
-  font-size: var(--font-size-label);
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  color: var(--color-text);
+  font-size: clamp(1.5rem, 2vw, 1.75rem);
   font-weight: 750;
 }
 
@@ -348,22 +655,58 @@
   overflow-wrap: anywhere;
 }
 
-.timeBasisList,
-.candidateBoundary,
-.evidenceItem dl {
+.panel {
   display: grid;
-  gap: 0.4rem 0.8rem;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.8rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.findingList {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.findingCard {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0.8rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.findingCard h4,
+.findingCard p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.findingCard h4 {
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  font-weight: 750;
+}
+
+.findingCard p {
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  line-height: 1.7;
+}
+
+.metaList {
+  display: grid;
+  gap: 0.45rem;
   min-width: 0;
   margin: 0;
 }
 
-.timeBasisList {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.timeBasisList > div,
-.candidateBoundary > div,
-.evidenceItem dl > div {
+.metaList > div {
   display: grid;
   grid-template-columns: minmax(4.5rem, auto) minmax(0, 1fr);
   gap: 0.55rem;
@@ -372,81 +715,521 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-.timeBasisList dt,
-.timeBasisList dd,
-.candidateBoundary dt,
-.candidateBoundary dd,
-.evidenceItem dt,
-.evidenceItem dd {
+.metaList dt,
+.metaList dd {
   min-width: 0;
   margin: 0;
   overflow-wrap: anywhere;
 }
 
-.timeBasisList dt,
-.candidateBoundary dt,
-.evidenceItem dt {
+.metaList dt {
   color: var(--color-text-secondary);
   font-size: var(--font-size-meta);
   font-weight: 700;
 }
 
-.timeBasisList dd,
-.candidateBoundary dd,
-.evidenceItem dd {
+.metaList dd {
   color: var(--color-text);
   font-size: var(--font-size-aux);
   line-height: 1.55;
 }
 
-.candidateGroups {
+.plainList {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.8rem;
-  min-width: 0;
-}
-
-.candidateGroups > div {
-  min-width: 0;
-  padding-left: 0.7rem;
-  border-left: 2px solid var(--color-border);
-}
-
-.candidateGroups h5 {
-  margin: 0 0 0.35rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
-  font-weight: 750;
-}
-
-.candidateFactLabel {
-  margin: 0 0 0.35rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
-  line-height: 1.5;
-}
-
-.candidateGroups ul {
-  display: grid;
-  gap: 0.25rem;
+  gap: 0.3rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.candidateGroups li {
+.plainList li {
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.footnote {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.termDef {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  line-height: 1.5;
+}
+
+.foldBlock {
+  min-width: 0;
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.foldBlock summary {
+  min-height: var(--target-min);
+  display: flex;
+  align-items: center;
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tableViewport {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.factTable {
+  width: 100%;
+  min-width: 26rem;
+  border-collapse: collapse;
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  line-height: 1.5;
+}
+
+.factTable caption {
+  margin-bottom: 0.45rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 750;
+  text-align: left;
+}
+
+.factTable th,
+.factTable td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.factTable thead th {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 750;
+}
+
+.factTable tbody th {
+  font-weight: 700;
+}
+
+/* ---------- 关系连线 ---------- */
+
+.relationSection {
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.relationSvg {
+  display: block;
+  width: 100%;
+  height: 3rem;
+  margin-top: -0.6rem;
+  overflow: visible;
+}
+
+.relationArc {
+  fill: none;
+  stroke: var(--color-border-strong);
+  stroke-width: 1.5;
+}
+
+.relationArc[data-category="冲"] {
+  stroke-dasharray: 5 3;
+}
+
+.relationArc[data-fact-highlight="true"] {
+  stroke: var(--color-text-secondary);
+  stroke-width: 2.5;
+}
+
+.relationChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.relationChips li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-width: 0;
+  font-size: var(--font-size-aux);
+}
+
+.relationMeta {
+  color: var(--color-text-secondary);
+}
+
+.relationTag {
+  display: inline-block;
+  padding: 0.12rem 0.4rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.relationTag[data-category="冲"] {
+  border-style: dashed;
+}
+
+.relationTag[data-fact-highlight="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  font-weight: 800;
+}
+
+/* ---------- M8 大运轨 ---------- */
+
+.luckSection {
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.luckStatus {
+  padding: 0.05rem 0.45rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 650;
+}
+
+.luckMissing {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+  line-height: 1.6;
+}
+
+.luckTrackViewport {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.luckTrack {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(4.6rem, 1fr);
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.luckStep {
+  display: grid;
+  gap: 0.2rem;
+  justify-items: center;
+  min-width: 0;
+  padding: 0.5rem 0.3rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-subtle);
+  text-align: center;
+}
+
+.luckStep[data-active="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+  font-weight: 700;
+}
+
+.luckSeq {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+  letter-spacing: 0.04em;
+}
+
+.luckGanzhi {
+  display: inline-flex;
+  gap: 0.1rem;
+}
+
+.luckAges {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.luckActiveMark {
+  padding: 0 0.35rem;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  color: var(--color-accent);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.unavailableFacts {
+  padding: 0.7rem 0.8rem;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-subtle);
+}
+
+.unavailableFacts h5 {
+  margin: 0 0 0.35rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}
+
+.unavailableFacts ul {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.unavailableFacts li {
   color: var(--color-text);
   font-size: var(--font-size-aux);
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
 
-.candidateBoundary {
-  padding-top: 0.4rem;
+/* ---------- M4 五行盘点 ---------- */
+
+.elementRows {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.evidenceDrawer summary {
-  color: var(--color-action);
+.elementRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.7rem;
+  min-width: 0;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-card);
+}
+
+.elementRow[data-fact-highlight="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-surface-subtle);
+  font-weight: 750;
+}
+
+.elementName {
+  font-family: var(--font-domain);
+  font-size: var(--font-size-emphasis);
+  font-weight: 650;
+}
+
+.elementName[data-element="wood"] { color: var(--element-wood); }
+.elementName[data-element="fire"] { color: var(--element-fire); }
+.elementName[data-element="earth"] { color: var(--element-earth); }
+.elementName[data-element="metal"] { color: var(--element-metal); }
+.elementName[data-element="water"] { color: var(--element-water); }
+
+.elementText {
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+}
+
+.elementCounts {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.8rem;
+  margin-left: auto;
+}
+
+.elementCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 计数点：不是进度条，无底轨（flow-spec S3-M4） */
+.dotGroup {
+  display: inline-flex;
+  gap: 0.14rem;
+}
+
+.dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+}
+
+.dot[data-element="wood"] { background: var(--element-wood); }
+.dot[data-element="fire"] { background: var(--element-fire); }
+.dot[data-element="earth"] { background: var(--element-earth); }
+.dot[data-element="metal"] { background: var(--element-metal); }
+.dot[data-element="water"] { background: var(--element-water); }
+
+/* ---------- M5–M7 候选与证据 ---------- */
+
+.seasonalLine {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: var(--font-size-body);
+}
+
+.seasonalLine strong {
+  font-family: var(--font-domain);
+  font-size: var(--font-size-domain-cell);
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.evidenceCountList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.evidenceCountList li {
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 证据金徽章：金只作线与底，文字仍是墨（§3） */
+.evidenceBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.7rem;
+  padding: 0.05rem 0.55rem;
+  border: 1px solid var(--color-evidence-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-evidence-wash);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.evidencePlain {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}
+
+.mechanicalBody {
+  display: grid;
+  gap: 0.7rem;
+  padding-top: 0.5rem;
+}
+
+.mechanicalItem {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+  padding-left: 0.7rem;
+  border-left: 2px solid var(--color-border);
+}
+
+.mechanicalTitle {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.mechanicalRaw {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.freeSummary {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  line-height: 1.7;
+}
+
+.highlights {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.highlights li {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-subtle);
+}
+
+.highlights strong {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  letter-spacing: 0.03em;
+}
+
+.highlights span {
+  color: var(--color-text);
+  font-size: var(--font-size-aux);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- M12 古籍命中抽屉（§19.1 证据金语言） ---------- */
+
+.evidenceDrawer {
+  display: grid;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: 0.15rem 0;
+  border-top: 1px solid var(--color-evidence-line);
+  border-bottom: 1px solid var(--color-evidence-line);
+}
+
+.evidenceSummary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: var(--target-min);
+  padding: 0.3rem 0.2rem;
+  color: var(--color-text);
   font-size: var(--font-size-label);
   font-weight: 750;
   line-height: 1.5;
@@ -454,21 +1237,33 @@
   cursor: pointer;
 }
 
+.evidenceSummary::after {
+  content: "可翻回原书";
+  padding: 0.02rem 0.45rem;
+  border: 1px solid var(--color-evidence-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-evidence-wash);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 650;
+}
+
 .evidenceList {
   display: grid;
   gap: 0.8rem;
   min-width: 0;
+  padding-bottom: 0.6rem;
 }
 
 .evidenceItem {
   min-width: 0;
   padding: 0.1rem 0 0.75rem 0.8rem;
-  border-left: 2px solid var(--color-action);
+  border-left: 2px solid var(--color-evidence-line);
   border-bottom: 1px solid var(--color-border);
 }
 
 .evidenceItem[data-focused="true"] {
-  background: var(--color-surface-muted);
+  background: var(--color-evidence-wash);
 }
 
 .evidenceItem h5,
@@ -494,23 +1289,20 @@
   font-weight: 700;
 }
 
+/* 古籍引文原文：域字宋体（§4） */
 .evidenceQuote {
   min-width: 0;
   margin: 0;
   padding: 0.65rem 0.75rem;
-  border-left: 2px solid var(--color-border-strong);
+  border-left: 2px solid var(--color-evidence-line);
   background: var(--color-surface-subtle);
   color: var(--color-text);
-  font-size: var(--font-size-aux);
-  line-height: 1.7;
+  font-family: var(--font-domain);
+  font-size: var(--font-size-body);
+  line-height: 1.8;
   overflow-wrap: anywhere;
 }
 
-/*
- * 命中链路（§21.3 第三级）。
- * 曲线由 BaziEvidenceGraph 量测节点锚点后绘制，这里只负责节点的尺寸与层级：
- * 条件节点贴住通道右缘、出处节点贴住左缘，中间留出画曲线的通道。
- */
 .evidenceGraph {
   min-width: 0;
   margin-top: 0.7rem;
@@ -541,7 +1333,7 @@
 }
 
 .evidenceGraphDotTarget {
-  fill: var(--color-accent);
+  fill: var(--color-evidence);
 }
 
 .evidenceGraph > .evidenceGraphCanvas > .evidenceGraphColumns {
@@ -559,6 +1351,12 @@
   min-width: 0;
   padding-bottom: 0;
   border-bottom: 0;
+}
+
+.evidenceGraphColumns dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
 }
 
 .evidenceGraphColumns > .evidenceGraphFacts > dd,
@@ -584,7 +1382,7 @@
   min-width: 0;
   padding: 0.4rem 0.65rem;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   color: var(--color-text-secondary);
   font-size: var(--font-size-meta);
@@ -595,9 +1393,9 @@
 .evidenceGraphSourceNode {
   min-width: 0;
   padding: 0.55rem 0.75rem;
-  border: 1px solid var(--color-accent);
-  border-radius: var(--radius-control);
-  background: var(--surface-info);
+  border: 1px solid var(--color-evidence-line);
+  border-radius: var(--radius-card);
+  background: var(--color-evidence-wash);
   color: var(--color-text);
   font-size: var(--font-size-aux);
   line-height: 1.55;
@@ -644,403 +1442,11 @@
   line-height: 1.55;
 }
 
-.relationSection,
-.elementSection,
-.luckSection,
-.temporalSection {
-  display: grid;
-  gap: 0.75rem;
-  min-width: 0;
-  padding-top: 0.8rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.relationViewport,
-.relationTableViewport,
-.elementTableViewport,
-.luckTableViewport,
-.temporalTableViewport {
-  max-width: 100%;
-  min-width: 0;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-}
-
-.relationDiagram {
-  display: grid;
-  gap: 0.2rem;
-  min-width: 34rem;
-  padding: 0.75rem 0.5rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface-subtle);
-}
-
-.relationRow {
-  display: grid;
-  grid-template-columns: 4rem repeat(4, minmax(5rem, 1fr));
-  align-items: center;
-  min-height: 2.2rem;
-}
-
-.relationRowLabel {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
-  font-weight: 750;
-}
-
-.relationCell {
-  display: grid;
-  min-width: 0;
-  justify-items: center;
-  color: var(--color-text);
-  font-size: var(--font-size-body);
-  font-weight: 650;
-}
-
-.relationSvg {
-  display: block;
-  width: calc(100% - 4rem);
-  min-width: 30rem;
-  height: 3.1rem;
-  margin-left: 4rem;
-  overflow: visible;
-}
-
-.relationLine {
-  fill: none;
-  stroke: var(--color-border-strong);
-  stroke-width: 2;
-}
-
-.relationLine[data-category="合会"] {
-  stroke: var(--color-border-strong);
-}
-
-.relationLine[data-category="冲"] {
-  stroke: var(--color-text-secondary);
-  stroke-dasharray: 5 3;
-}
-
-.relationLine[data-category="刑"],
-.relationLine[data-category="害"],
-.relationLine[data-category="破"],
-.relationLine[data-category="其他"] {
-  stroke: var(--color-border-strong);
-}
-
-.relationLine[data-fact-highlight="true"] {
-  stroke-width: 3;
-}
-
-.relationTable,
-.elementTable,
-.luckTable,
-.temporalTable {
-  width: 100%;
-  min-width: 34rem;
-  border-collapse: collapse;
-  color: var(--color-text);
-  font-size: var(--font-size-aux);
-  line-height: 1.5;
-}
-
-.elementTable,
-.luckTable {
-  min-width: 30rem;
-}
-
-.temporalTable {
-  min-width: 54rem;
-}
-
-.relationTable caption,
-.elementTable caption,
-.luckTable caption,
-.temporalTable caption {
-  margin-bottom: 0.45rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
-  font-weight: 750;
-  text-align: left;
-}
-
-.relationTable th,
-.relationTable td,
-.elementTable th,
-.elementTable td,
-.luckTable th,
-.luckTable td,
-.temporalTable th,
-.temporalTable td {
-  padding: 0.55rem 0.65rem;
-  border-bottom: 1px solid var(--color-border);
-  vertical-align: top;
-  text-align: left;
-  overflow-wrap: anywhere;
-}
-
-.relationTable thead th,
-.elementTable thead th,
-.luckTable thead th,
-.temporalTable thead th {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
-  font-weight: 750;
-}
-
-.relationTable tbody th,
-.elementTable tbody th,
-.luckTable tbody th,
-.temporalTable tbody th {
-  font-weight: 700;
-}
-
-.relationTag {
-  display: inline-block;
-  padding: 0.12rem 0.35rem;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 999px;
-  background: var(--color-surface-subtle);
-  color: var(--color-text-secondary);
-  font-weight: 700;
-}
-
-.relationTag[data-category="合会"] {
-  border-color: var(--color-border-strong);
-}
-
-.relationTag[data-category="冲"] {
-  border-style: dashed;
-}
-
-.relationTag[data-fact-highlight="true"] {
-  border-color: var(--color-action);
-  background: var(--color-surface-muted);
-  font-weight: 800;
-}
-
-.elementChart {
-  display: grid;
-  gap: 0.45rem;
-  min-width: 0;
-  padding: 0.7rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface-subtle);
-}
-
-.elementRow {
-  display: grid;
-  grid-template-columns: 2.5rem minmax(0, 1fr) minmax(5rem, auto);
-  align-items: center;
-  gap: 0.65rem;
-  min-width: 0;
-  padding: 0.25rem 0.35rem;
-  border: 1px solid transparent;
-  border-radius: 0.3rem;
-}
-
-.elementRow[data-fact-highlight="true"] {
-  border-color: var(--color-action);
-  background: var(--color-surface-muted);
-  font-weight: 750;
-}
-
-.elementLabel {
-  color: var(--color-text);
-  font-size: var(--font-size-label);
-  font-weight: 700;
-}
-
-.elementBarTrack {
-  min-width: 0;
-  height: 0.65rem;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-canvas);
-}
-
-.elementBar {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--color-action-hover);
-}
-
-.elementCount {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.luckMeta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.45rem 0.8rem;
-  margin: 0;
-}
-
-.luckMeta > div {
-  display: grid;
-  grid-template-columns: minmax(4.5rem, auto) minmax(0, 1fr);
-  gap: 0.55rem;
-  min-width: 0;
-  padding: 0.5rem 0.6rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface-subtle);
-}
-
-.luckMeta dt,
-.luckMeta dd {
-  min-width: 0;
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
-.luckMeta dt {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
-  font-weight: 700;
-}
-
-.luckMeta dd {
-  color: var(--color-text);
-  font-size: var(--font-size-aux);
-}
-
-.unavailableFacts {
-  padding: 0.7rem 0.8rem;
-  border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-control);
-  background: var(--color-surface-subtle);
-}
-
-.unavailableFacts h5 {
-  margin: 0 0 0.35rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
-}
-
-.unavailableFacts ul,
-.ruleTraceList {
-  display: grid;
-  gap: 0.25rem;
-  margin: 0;
-  padding-left: 1.15rem;
-}
-
-.unavailableFacts li,
-.ruleTraceList li {
-  color: var(--color-text);
-  font-size: var(--font-size-aux);
-  line-height: 1.55;
-  overflow-wrap: anywhere;
-}
-
-.temporalSection {
-  gap: 0.9rem;
-}
-
-.temporalDetail {
-  display: grid;
-  gap: 0.7rem;
-  min-width: 0;
-  padding-top: 0.7rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.temporalDetail summary {
-  color: var(--color-action);
-  font-size: var(--font-size-label);
-  font-weight: 750;
-  cursor: pointer;
-}
-
-.temporalFactGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-  min-width: 0;
-}
-
-.temporalFactBlock {
-  min-width: 0;
-  padding: 0.65rem 0.7rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface-subtle);
-}
-
-.temporalFactBlock h5 {
-  margin: 0 0 0.45rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
-  font-weight: 750;
-}
-
-.temporalFactList {
-  display: grid;
-  gap: 0.35rem;
-  margin: 0;
-}
-
-.temporalFactList > div {
-  display: grid;
-  grid-template-columns: minmax(5rem, auto) minmax(0, 1fr);
-  gap: 0.5rem;
-  min-width: 0;
-}
-
-.temporalFactList dt,
-.temporalFactList dd {
-  min-width: 0;
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
-.temporalFactList dt {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-meta);
-  font-weight: 700;
-}
-
-.temporalFactList dd {
-  color: var(--color-text);
-  font-size: var(--font-size-aux);
-  line-height: 1.55;
-}
-
-@container (min-width: 34rem) {
-  .pillarGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .pillarCard {
+  .pillarCard,
+  .chip,
+  .transitHead,
+  .matrix td[data-active="true"] {
     transition: none;
-  }
-}
-
-@container (max-width: 33.99rem) {
-  .timeBasisList,
-  .candidateGroups,
-  .luckMeta,
-  .temporalFactGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .elementRow {
-    grid-template-columns: 2.5rem minmax(0, 1fr);
-  }
-
-  .elementCount {
-    grid-column: 2;
-    text-align: left;
   }
 }

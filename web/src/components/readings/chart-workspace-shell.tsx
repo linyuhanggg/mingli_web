@@ -82,6 +82,7 @@ export function ChartWorkspaceShell({
                 className={styles.layerPanel}
                 tabIndex={active ? 0 : -1}
               >
+                <div className={styles.folio}>
                 <div
                   className={styles.board}
                   role="group"
@@ -94,6 +95,7 @@ export function ChartWorkspaceShell({
                   ) : (
                     renderBoard(layer)
                   )}
+                </div>
                 </div>
               </div>
             );

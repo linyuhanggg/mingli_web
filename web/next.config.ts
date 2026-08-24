@@ -49,6 +49,8 @@ const legacyRedirects = [
   { source: "/app/bazi", destination: "/bazi", permanent: false },
   { source: "/app/ask/liuyao", destination: "/liuyao", permanent: false },
   { source: "/canwen", destination: "/hecan", permanent: true },
+  { source: "/time-check", destination: "/tools/time-check", permanent: false },
+  { source: "/zeri", destination: "/selection", permanent: false },
 ] as const;
 
 const nextConfig: NextConfig = {

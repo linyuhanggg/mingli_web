@@ -381,7 +381,7 @@
 .quickStartHead h2 {
   margin: 0;
   color: var(--home-ink);
-  font-size: var(--font-size-card);
+  font-size: var(--font-size-chapter);
   font-weight: 720;
   letter-spacing: -0.02em;
 }
@@ -472,6 +472,11 @@
   transform-origin: left center;
 }
 
+.mechanismLayout {
+  display: grid;
+  gap: var(--space-xl);
+}
+
 .mechanism ul {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -512,10 +517,11 @@
   gap: var(--space-lg);
 }
 
-.sectionHead h2 {
+.sectionHead h2,
+.chapterTitle {
   margin: 0;
   color: var(--home-ink);
-  font-size: var(--font-size-section);
+  font-size: var(--font-size-chapter);
   font-weight: 720;
   letter-spacing: -0.025em;
 }
@@ -637,7 +643,7 @@
 
 .observation h2 {
   margin: 0;
-  font-size: var(--font-size-section);
+  font-size: var(--font-size-chapter);
   font-weight: 700;
 }
 
@@ -1042,7 +1048,7 @@
 
 .closing h2 {
   margin: 0 0 0.5rem;
-  font-size: var(--font-size-section);
+  font-size: var(--font-size-chapter);
   font-weight: 720;
   letter-spacing: -0.02em;
 }
@@ -1085,9 +1091,57 @@
   display: block;
   margin-bottom: 0.35rem;
   color: var(--home-cinnabar);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
+  font-weight: 760;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.folio {
+  display: none;
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--home-line-strong);
+  border-radius: var(--radius-card);
+  background: var(--home-paper-surface);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.folioMeta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 0 0.75rem;
+  color: var(--home-ink-soft);
+  font-size: var(--font-size-meta);
+}
+
+.folioSeal {
+  color: var(--home-cinnabar);
   font-weight: 760;
   letter-spacing: 0.08em;
+}
+
+.folioCaption {
+  margin: 0.75rem 0 0;
+  color: var(--home-ink-soft);
+  font-size: var(--font-size-aux);
+  line-height: var(--line-height-body);
+}
+
+@media (min-width: 48rem) {
+  .mechanismLayout {
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+    align-items: start;
+  }
+
+  .mechanismLayout ul {
+    grid-template-columns: 1fr;
+  }
+
+  .folio {
+    display: block;
+  }
 }
 
 .quickIndex {

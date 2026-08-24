@@ -84,15 +84,17 @@ const baziCapabilityA = {
   source_status: "available" as const,
 };
 
-const meihuaCapabilityB = {
+// 2026-08-21 用户裁决后的真实后端行为：judgment_rule_count > 0 一律 A 档，
+// user_decision_pending 恒为 false（字段保留在合同里，但后端不再产出 true）。
+const meihuaCapabilityA = {
   capability_id: "meihua",
   label: "梅花易数",
-  tier: "B" as const,
+  tier: "A" as const,
   source_system: "divination",
   runtime_active_rule_count: 3,
   judgment_rule_count: 3,
   source_status: "available" as const,
-  user_decision_pending: true,
+  user_decision_pending: false,
 };
 
 function factPanel() {
@@ -409,7 +411,7 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
           readingResult({
             status: "prepared",
             accepted_copy: null,
-            capability: meihuaCapabilityB,
+            capability: meihuaCapabilityA,
             view_model: {
               schema_version: "meihua-chart/v1",
               subject_ref: "meihua:test",
@@ -451,7 +453,19 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
 
     expect(await screen.findByText("按时间起卦")).toBeVisible();
     expect(screen.getByText("水雷屯")).toBeVisible();
-    expect(screen.getAllByText("calculated_relation_not_verdict").length).toBe(2);
+    expect(screen.getByText("已计算的五行关系，不是吉凶")).toBeVisible();
+    expect(screen.queryByText("calculated_relation_not_verdict")).not.toBeInTheDocument();
+    expect(screen.queryByText("服务端尚未返回已接纳正文。")).not.toBeInTheDocument();
+    expect(screen.getByText("这一问还没有可发布的判断。上面的盘面和关系事实可以先看。")).toBeVisible();
+    const chartHeading = screen.getByRole("heading", { name: "盘面事实" });
+    const judgmentHeading = screen.getByRole("heading", { name: "判断" });
+    expect(
+      chartHeading.compareDocumentPosition(judgmentHeading) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    // A 档梅花不再出现 B 档专属的「不提供断语」注记。
+    expect(
+      screen.queryByText("当前只提供确定性盘面与事实，不提供断语。"),
+    ).not.toBeInTheDocument();
     expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith("/result"))).toBe(true);
     expect(screen.queryByText("复核与追问")).not.toBeInTheDocument();
     unmount();
@@ -474,7 +488,15 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
                 {
                   dimension_id: "career",
                   signals: [],
-                  convergence: ["两术目前只声明共同事实范围。"],
+                  convergence: [
+                    {
+                      arts: ["bazi", "ziwei"],
+                      kind: "source_bound_corroboration",
+                      display_text: "两术目前只声明共同事实范围。",
+                      fact_refs: ["fact:profile/calculated/bazi/career"],
+                      source_rule_id: "cross-art-synthesis/guotian-jing#CAS-GX-01",
+                    },
+                  ],
                   disagreements: [],
                   missing_art_ids: [],
                 },
@@ -1509,6 +1531,68 @@ describe("bazi chart workspace", () => {
     expect(screen.queryByRole("heading", { name: "依据与边界" })).not.toBeInTheDocument();
   });
 
+  it("renders natal finding cards from claim_units and does not leak internal keys", async () => {
+    const pillarBody =
+      "四柱以日干己为主：年柱庚辰为本，月柱丙戌为提纲，时柱丁卯为辅佐。这只是四柱判读次序的定位，格局、旺衰与吉凶仍未裁定。";
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      if (String(url).endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            accepted_copy: null,
+            capability: baziCapabilityA,
+            fact_panel: factPanel(),
+            view_model: {
+              schema_version: "bazi-chart/v1",
+              subject_ref: "profile-version:secret-profile-id",
+              pillars: [
+                { position: "year", stem: "庚", branch: "辰" },
+                { position: "month", stem: "丙", branch: "戌" },
+                { position: "day", stem: "己", branch: "酉" },
+                { position: "hour", stem: "丁", branch: "卯" },
+              ],
+              element_balance: [],
+              time_layers: [],
+              core_facts: null,
+              claim_units: [
+                {
+                  claim_unit_id: "bazi.pillar-roles-v1",
+                  public_text: pillarBody,
+                  year_pillar: "庚辰",
+                },
+              ],
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          product_id: "bazi",
+          object_id: "natal",
+          dimension_ids: ["career"],
+          horizon: { kind_id: "life", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByRole("heading", { name: "柱位职分" })).toBeVisible();
+    expect(screen.getByText(pillarBody)).toBeVisible();
+    expect(screen.getByRole("region", { name: "盘面说明" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "排盘结果" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "阅读说明" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "深读" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "判断" })).not.toBeInTheDocument();
+    const visible = document.body.textContent ?? "";
+    expect(visible).not.toContain("bazi.pillar-roles-v1");
+    expect(visible).not.toContain("claim_unit_id");
+    expect(visible).not.toContain("year_pillar");
+    expect(visible).not.toContain("finding:opaque-1");
+    expect(visible).not.toContain("不要显示");
+  });
+
   it("fails closed when the Bazi Runtime capability projection is missing", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
@@ -1754,16 +1838,19 @@ describe("bazi chart workspace", () => {
     expect(screen.getByRole("article", { name: "解读正文" })).toBeVisible();
     expect(screen.getAllByText("八字命盘").length).toBeGreaterThan(0);
     expect(screen.getByText("年柱")).toBeVisible();
-    expect(screen.getAllByText("庚辰").length).toBeGreaterThan(0);
+    // 四柱矩阵大字行按干、支分格渲染（flow-spec S3-M2）。
+    const yearPillar = screen.getByRole("button", { name: /年柱/ });
+    expect(yearPillar).toHaveTextContent(/庚[\s\S]*辰/);
     expect(screen.getAllByText(/日主.*己/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/当前大运|大运 戊子|戊子/).length).toBeGreaterThan(0);
-    expect(screen.getByText("全局强弱证据（未裁定）")).toBeVisible();
-    expect(screen.getByText("月令状态裁定")).toBeVisible();
-    expect(screen.getByText(/月令状态 旺/)).toBeVisible();
-    expect(screen.getByText(/同类 5 项；生扶 火 3 项/)).toBeVisible();
+    expect(screen.getByRole("heading", { name: "旺衰证据" })).toBeVisible();
+    expect(screen.getByText(/月令状态：/)).toHaveTextContent("月令状态：旺");
+    expect(screen.getByText("同类 5 见")).toBeVisible();
+    expect(screen.getByText("生扶（火）3 见")).toBeVisible();
     expect(screen.getByText(/不等于旺衰定论/)).toBeVisible();
     expect(screen.getByText("十二长生")).toBeVisible();
-    expect(screen.getByText(/年柱 庚辰：养；月柱 丙戌：冠带/)).toBeVisible();
+    expect(screen.getByText("养")).toBeVisible();
+    expect(screen.getByText("冠带")).toBeVisible();
     expect(screen.getByText("旬空")).toBeVisible();
     expect(screen.getByText(/己酉 属 甲申 旬：午、未/)).toBeVisible();
     expect(screen.queryByText("当前结构更支持持续积累。")).not.toBeInTheDocument();
