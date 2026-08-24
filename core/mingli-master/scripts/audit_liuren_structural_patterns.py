@@ -7,7 +7,9 @@ import hashlib
 import json
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
+
+import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,6 +39,64 @@ def _section(text: str, heading: str, level: int) -> str | None:
     return match.group("body") if match else None
 
 
+def _normalized_source(
+    manifest: Any,
+    *,
+    root: Path,
+    findings: list[str],
+) -> tuple[str, str, str, list[str]]:
+    """Load the manifest-declared normalized source and verify its digest."""
+
+    if not isinstance(manifest, Mapping):
+        findings.append("source manifest must be an object")
+        return "", "", "", []
+    local_files = manifest.get("local_files")
+    if not isinstance(local_files, list):
+        findings.append("source manifest local_files missing")
+        return "", "", "", []
+    candidates = [
+        row
+        for row in local_files
+        if isinstance(row, Mapping) and row.get("role") == "normalized_search_text"
+    ]
+    if len(candidates) != 1:
+        findings.append("source manifest must declare one normalized_search_text")
+        return "", "", "", []
+
+    entry = candidates[0]
+    relative_path = entry.get("path")
+    declared_sha256 = entry.get("sha256")
+    if not isinstance(relative_path, str) or not relative_path.strip():
+        findings.append("normalized source path missing")
+        return "", "", "", []
+    if not isinstance(declared_sha256, str) or re.fullmatch(
+        r"[0-9a-f]{64}", declared_sha256
+    ) is None:
+        findings.append("normalized source manifest digest is invalid")
+        declared_sha256 = ""
+
+    source_path = (root / relative_path).resolve()
+    try:
+        source_path.relative_to(root.resolve())
+    except ValueError:
+        findings.append("normalized source path escapes repository root")
+        return relative_path, declared_sha256, "", []
+    if not source_path.is_file():
+        findings.append(f"normalized source file missing: {relative_path}")
+        return relative_path, declared_sha256, "", []
+
+    source_bytes = source_path.read_bytes()
+    observed_sha256 = hashlib.sha256(source_bytes).hexdigest()
+    if observed_sha256 != declared_sha256:
+        findings.append("normalized source digest mismatch")
+    try:
+        source_lines = source_bytes.decode("utf-8").splitlines()
+    except UnicodeDecodeError:
+        findings.append("normalized source must be UTF-8")
+        source_lines = []
+    return relative_path, declared_sha256, observed_sha256, source_lines
+
+
 def audit_liuren_structural_patterns() -> dict[str, Any]:
     payload = json.loads(RULE_CATALOG.read_text(encoding="utf-8"))
     catalog = payload.get("source_conditioned_patterns")
@@ -54,8 +114,34 @@ def audit_liuren_structural_patterns() -> dict[str, Any]:
     pack_root = ROOT / "references/books" / EXPECTED_SOURCE_PACK
     rules_text = (pack_root / "rules.md").read_text(encoding="utf-8")
     quotes_text = (pack_root / "quote-index.md").read_text(encoding="utf-8")
-    manifest_text = (pack_root / "source-manifest.yaml").read_text(encoding="utf-8")
-    span_match = re.search(r'line_span: "L(\d+)-L(\d+)"', manifest_text)
+    manifest_path = pack_root / "source-manifest.yaml"
+    try:
+        manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError):
+        manifest = None
+        findings.append("source manifest is missing or invalid")
+    (
+        normalized_source_path,
+        declared_source_sha256,
+        observed_source_sha256,
+        normalized_source_lines,
+    ) = _normalized_source(manifest, root=ROOT, findings=findings)
+    coverage = (
+        manifest.get("chapter_coverage")
+        if isinstance(manifest, Mapping)
+        else None
+    )
+    normalized_coverage = (
+        coverage.get("normalized_containers")
+        if isinstance(coverage, Mapping)
+        else None
+    )
+    line_span = (
+        normalized_coverage.get("line_span")
+        if isinstance(normalized_coverage, Mapping)
+        else None
+    )
+    span_match = re.fullmatch(r"L(\d+)-L(\d+)", str(line_span or ""))
     manifest_span = (
         (int(span_match.group(1)), int(span_match.group(2)))
         if span_match
@@ -101,11 +187,29 @@ def audit_liuren_structural_patterns() -> dict[str, Any]:
         observed_digest = hashlib.sha256(observed_quote.encode("utf-8")).hexdigest()
         if observed_digest != raw.get("source_excerpt_sha256"):
             findings.append(f"{title}: source excerpt digest mismatch")
-        anchor_line_match = re.search(r"#?L(\d+)$", source_anchor)
+        anchor_line_match = re.fullmatch(
+            r"(?P<file>[^#/]+)#L(?P<line>[1-9]\d*)",
+            source_anchor,
+        )
         if manifest_span is None or anchor_line_match is None:
             findings.append(f"{title}: source manifest coverage is not auditable")
-        elif not manifest_span[0] <= int(anchor_line_match.group(1)) <= manifest_span[1]:
+        elif not (
+            manifest_span[0]
+            <= int(anchor_line_match.group("line"))
+            <= manifest_span[1]
+        ):
             findings.append(f"{title}: source manifest does not cover anchor")
+        if anchor_line_match is not None and normalized_source_path:
+            if anchor_line_match.group("file") != Path(normalized_source_path).name:
+                findings.append(f"{title}: source anchor file mismatch")
+            else:
+                anchor_line = int(anchor_line_match.group("line"))
+                if not 1 <= anchor_line <= len(normalized_source_lines):
+                    findings.append(f"{title}: source anchor line is unavailable")
+                elif observed_quote not in normalized_source_lines[anchor_line - 1]:
+                    findings.append(
+                        f"{title}: exact quote missing from normalized source line"
+                    )
 
         audited.append(
             {
@@ -123,6 +227,10 @@ def audit_liuren_structural_patterns() -> dict[str, Any]:
         "catalog_schema": payload.get("schema_version"),
         "pattern_count": len(catalog),
         "anchored_pattern_count": len(audited),
+        "normalized_source_path": normalized_source_path,
+        "manifest_normalized_source_sha256": declared_source_sha256,
+        "observed_normalized_source_sha256": observed_source_sha256,
+        "normalized_source_line_count": len(normalized_source_lines),
         "patterns": audited,
         "findings": findings,
         "ready": not findings,
