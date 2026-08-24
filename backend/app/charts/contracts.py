@@ -2,7 +2,15 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 
 class ContractModel(BaseModel):
@@ -1950,16 +1958,10 @@ class DaliurenRuleSourceRef(ContractModel):
         min_length=1,
         exclude_if=lambda value: value is None,
     )
-    source_anchor: str | None = Field(
-        default=None,
-        min_length=1,
-        exclude_if=lambda value: value is None,
-    )
+    source_anchor: str = Field(min_length=1)
 
 
 class DaliurenRuleEvidenceEntry(ContractModel):
-    model_config = ConfigDict(extra="allow", frozen=True)
-
     activation_id: str = Field(min_length=1)
     dependency_group: str = Field(min_length=1)
     fact_paths: tuple[str, ...] = Field(min_length=1)
@@ -2063,8 +2065,6 @@ class DaliurenCandidateBranch(ContractModel):
 
 
 class DaliurenDimensionFact(ContractModel):
-    model_config = ConfigDict(extra="allow", frozen=True)
-
     canonical_dimension: str = Field(min_length=1)
     requested_dimension: str = Field(min_length=1)
     rule_evidence: DaliurenRuleEvidence
@@ -2072,87 +2072,97 @@ class DaliurenDimensionFact(ContractModel):
     source_rule_ids: tuple[str, ...] = Field(min_length=1)
     initial_final_relation: DaliurenRelationFact | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     subject_object_relation: DaliurenRelationFact | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     stage_flow: tuple[DaliurenStageFlowEntry, ...] | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     transmissions_to_day: tuple[DaliurenTransmissionToDayEntry, ...] | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     six_relative_stages: tuple[DaliurenSixRelativeStage, ...] | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     stage_status: tuple[DaliurenStageStatusEntry, ...] | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     stage_branch_directions: tuple[DaliurenStageBranchDirection, ...] | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     general_landing_correspondences: tuple[DaliurenGeneralLanding, ...] | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     candidate_branch: DaliurenCandidateBranch | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     candidate_date: DaliurenTimingCandidate | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     relative_speed: str | None = Field(
         default=None,
         min_length=1,
-        exclude_if=lambda value: value is None,
     )
     target_contract_status: str | None = Field(
         default=None,
         min_length=1,
-        exclude_if=lambda value: value is None,
     )
     target_presence: bool | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     target_relative: str | None = Field(
         default=None,
         min_length=1,
-        exclude_if=lambda value: value is None,
     )
     target_general_modifier: tuple[object, ...] | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     target_strength: tuple[object, ...] | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     wealth_presence: bool | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     wealth_general_modifier: tuple[object, ...] | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     wealth_stage_strength: tuple[object, ...] | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
     wealth_void_status: tuple[object, ...] | None = Field(
         default=None,
-        exclude_if=lambda value: value is None,
     )
+
+    @model_serializer(mode="wrap")
+    def _serialize_only_runtime_fields(
+        self,
+        handler: SerializerFunctionWrapHandler,
+    ) -> dict[str, object]:
+        """Keep explicit Runtime nulls while omitting fields absent for this dimension."""
+
+        serialized = handler(self)
+        return {
+            key: value
+            for key, value in serialized.items()
+            if key in self.model_fields_set or value is not None
+        }
+
+
+_DALIUREN_REQUESTED_DIMENSIONS = frozenset(
+    {
+        "outcome",
+        "timing",
+        "state",
+        "current_state",
+        "location",
+        "location_direction",
+        "relationship",
+        "work",
+        "career",
+        "money",
+    }
+)
 
 
 class DaliurenCoreFacts(ContractModel):
@@ -2182,6 +2192,22 @@ class DaliurenCoreFacts(ContractModel):
     structural_patterns: tuple[str, ...] | None = None
     timing_candidates: tuple[DaliurenTimingCandidate, ...] | None = None
     xunkong: DaliurenXunkong | None = None
+
+    @field_validator("dimension_facts")
+    @classmethod
+    def _dimension_facts_use_runtime_requested_dimensions(
+        cls,
+        value: dict[str, DaliurenDimensionFact] | None,
+    ) -> dict[str, DaliurenDimensionFact] | None:
+        if value is None:
+            return value
+        unknown = sorted(set(value) - _DALIUREN_REQUESTED_DIMENSIONS)
+        if unknown:
+            raise ValueError(
+                "dimension_facts contains unsupported requested dimensions: "
+                + ", ".join(unknown)
+            )
+        return value
 
 
 class DaliurenChartV1(ContractModel):

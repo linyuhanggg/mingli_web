@@ -5385,7 +5385,7 @@ def _daliuren_core_facts_from_runtime(
         kwargs["earth_plate"] = earth_plate
 
     structural_patterns = payload.get("structural_patterns")
-    if isinstance(structural_patterns, list) and structural_patterns:
+    if isinstance(structural_patterns, list):
         kwargs["structural_patterns"] = structural_patterns
 
     plate_offset = payload.get("plate_offset")

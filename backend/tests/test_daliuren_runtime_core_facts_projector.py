@@ -124,7 +124,7 @@ def test_daliuren_projector_fail_closed_on_wrong_schema_version() -> None:
     assert project_daliuren_view_model(_runtime_core_brief(payload)) is None
 
 
-def test_daliuren_projector_preserves_timing_candidates_omission_and_empty_array() -> None:
+def test_daliuren_projector_preserves_empty_runtime_arrays() -> None:
     omitted_payload = copy.deepcopy(_load_fixture())
     omitted_payload.pop("timing_candidates")
     omitted_view = project_daliuren_view_model(_runtime_core_brief(omitted_payload))
@@ -133,12 +133,92 @@ def test_daliuren_projector_preserves_timing_candidates_omission_and_empty_array
     empty_payload["timing_candidates"] = []
     empty_view = project_daliuren_view_model(_runtime_core_brief(empty_payload))
 
+    empty_patterns_payload = copy.deepcopy(_load_fixture())
+    empty_patterns_payload["structural_patterns"] = []
+    empty_patterns_view = project_daliuren_view_model(
+        _runtime_core_brief(empty_patterns_payload)
+    )
+
     assert isinstance(omitted_view, DaliurenChartV1)
     assert omitted_view.core_facts is not None
     assert omitted_view.core_facts.timing_candidates is None
     assert isinstance(empty_view, DaliurenChartV1)
     assert empty_view.core_facts is not None
     assert empty_view.core_facts.timing_candidates == ()
+    assert isinstance(empty_patterns_view, DaliurenChartV1)
+    assert empty_patterns_view.core_facts is not None
+    assert empty_patterns_view.core_facts.structural_patterns == ()
+
+
+def test_daliuren_projector_preserves_explicit_dimension_nulls() -> None:
+    payload = copy.deepcopy(_load_fixture())
+    timing = payload["dimension_facts"]["timing"]
+    timing["candidate_branch"] = None
+    timing["candidate_date"] = None
+    timing["relative_speed"] = None
+
+    work = copy.deepcopy(payload["dimension_facts"]["relationship"])
+    work["requested_dimension"] = "work"
+    work["canonical_dimension"] = "work"
+    work["stage_status"] = []
+    work["target_contract_status"] = None
+    work["target_general_modifier"] = None
+    work["target_presence"] = None
+    work["target_relative"] = None
+    work["target_strength"] = None
+    payload["dimension_facts"]["work"] = work
+
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    serialized = view_model.model_dump(mode="json")
+    timing_serialized = serialized["core_facts"]["dimension_facts"]["timing"]
+    assert timing_serialized["candidate_branch"] is None
+    assert timing_serialized["candidate_date"] is None
+    assert timing_serialized["relative_speed"] is None
+    assert "stage_flow" not in timing_serialized
+
+    work_serialized = serialized["core_facts"]["dimension_facts"]["work"]
+    assert work_serialized["target_contract_status"] is None
+    assert work_serialized["target_general_modifier"] is None
+    assert work_serialized["target_presence"] is None
+    assert work_serialized["target_relative"] is None
+    assert work_serialized["target_strength"] is None
+
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    Draft202012Validator(schema).validate(serialized)
+
+
+def test_daliuren_projector_fails_closed_on_unknown_runtime_fields() -> None:
+    mutations: list[dict[str, object]] = []
+
+    unknown_dimension_field = copy.deepcopy(_load_fixture())
+    unknown_dimension_field["dimension_facts"]["relationship"]["internal_trace"] = {}
+    mutations.append(unknown_dimension_field)
+
+    unknown_evidence_field = copy.deepcopy(_load_fixture())
+    unknown_evidence_field["dimension_facts"]["relationship"]["rule_evidence"]["matched"][
+        0
+    ]["internal_trace"] = {}
+    mutations.append(unknown_evidence_field)
+
+    unknown_requested_dimension = copy.deepcopy(_load_fixture())
+    unknown_requested_dimension["dimension_facts"]["internal"] = copy.deepcopy(
+        unknown_requested_dimension["dimension_facts"]["relationship"]
+    )
+    mutations.append(unknown_requested_dimension)
+
+    missing_source_anchor = copy.deepcopy(_load_fixture())
+    del missing_source_anchor["dimension_facts"]["relationship"]["rule_evidence"][
+        "matched"
+    ][0]["source_refs"][0]["source_anchor"]
+    mutations.append(missing_source_anchor)
+
+    for payload in mutations:
+        view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+        assert isinstance(view_model, DaliurenChartV1)
+        assert view_model.core_facts is None
 
 
 def test_daliuren_projector_fails_closed_when_any_required_runtime_field_is_missing() -> None:

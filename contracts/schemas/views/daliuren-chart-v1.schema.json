@@ -52,6 +52,9 @@
             {
               "type": "object",
               "minProperties": 1,
+              "propertyNames": {
+                "enum": ["outcome", "timing", "state", "current_state", "location", "location_direction", "relationship", "work", "career", "money"]
+              },
               "additionalProperties": {"$ref": "#/$defs/dimensionFact"}
             },
             {"type": "null"}
@@ -168,7 +171,7 @@
     },
     "dimensionFact": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["canonical_dimension", "requested_dimension", "rule_evidence", "status", "source_rule_ids"],
       "properties": {
         "canonical_dimension": {"type": "string", "minLength": 1},
@@ -176,26 +179,26 @@
         "rule_evidence": {"$ref": "#/$defs/ruleEvidence"},
         "status": {"type": "string", "minLength": 1},
         "source_rule_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
-        "initial_final_relation": {"$ref": "#/$defs/relationFact"},
-        "subject_object_relation": {"$ref": "#/$defs/relationFact"},
-        "stage_flow": {"type": "array", "items": {"$ref": "#/$defs/stageFlowEntry"}},
-        "transmissions_to_day": {"type": "array", "items": {"$ref": "#/$defs/transmissionToDayEntry"}},
-        "six_relative_stages": {"type": "array", "items": {"$ref": "#/$defs/sixRelativeStage"}},
-        "stage_status": {"type": "array", "items": {"$ref": "#/$defs/stageStatusEntry"}},
-        "stage_branch_directions": {"type": "array", "items": {"$ref": "#/$defs/stageBranchDirection"}},
-        "general_landing_correspondences": {"type": "array", "items": {"$ref": "#/$defs/generalLanding"}},
+        "initial_final_relation": {"oneOf": [{"$ref": "#/$defs/relationFact"}, {"type": "null"}]},
+        "subject_object_relation": {"oneOf": [{"$ref": "#/$defs/relationFact"}, {"type": "null"}]},
+        "stage_flow": {"type": ["array", "null"], "items": {"$ref": "#/$defs/stageFlowEntry"}},
+        "transmissions_to_day": {"type": ["array", "null"], "items": {"$ref": "#/$defs/transmissionToDayEntry"}},
+        "six_relative_stages": {"type": ["array", "null"], "items": {"$ref": "#/$defs/sixRelativeStage"}},
+        "stage_status": {"type": ["array", "null"], "items": {"$ref": "#/$defs/stageStatusEntry"}},
+        "stage_branch_directions": {"type": ["array", "null"], "items": {"$ref": "#/$defs/stageBranchDirection"}},
+        "general_landing_correspondences": {"type": ["array", "null"], "items": {"$ref": "#/$defs/generalLanding"}},
         "candidate_branch": {"oneOf": [{"$ref": "#/$defs/candidateBranch"}, {"type": "null"}]},
         "candidate_date": {"oneOf": [{"$ref": "#/$defs/timingCandidate"}, {"type": "null"}]},
-        "relative_speed": {"type": "string", "minLength": 1},
-        "target_contract_status": {"type": "string", "minLength": 1},
-        "target_presence": {"type": "boolean"},
-        "target_relative": {"type": "string", "minLength": 1},
-        "target_general_modifier": {"type": "array"},
-        "target_strength": {"type": "array"},
-        "wealth_presence": {"type": "boolean"},
-        "wealth_general_modifier": {"type": "array"},
-        "wealth_stage_strength": {"type": "array"},
-        "wealth_void_status": {"type": "array"}
+        "relative_speed": {"type": ["string", "null"], "minLength": 1},
+        "target_contract_status": {"type": ["string", "null"], "minLength": 1},
+        "target_presence": {"type": ["boolean", "null"]},
+        "target_relative": {"type": ["string", "null"], "minLength": 1},
+        "target_general_modifier": {"type": ["array", "null"]},
+        "target_strength": {"type": ["array", "null"]},
+        "wealth_presence": {"type": ["boolean", "null"]},
+        "wealth_general_modifier": {"type": ["array", "null"]},
+        "wealth_stage_strength": {"type": ["array", "null"]},
+        "wealth_void_status": {"type": ["array", "null"]}
       }
     },
     "ruleEvidence": {
@@ -214,7 +217,7 @@
     },
     "ruleEvidenceEntry": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": ["activation_id", "dependency_group", "fact_paths", "observation", "polarity", "rule_id", "rule_key", "source_refs", "status", "weight_class"],
       "properties": {
         "activation_id": {"type": "string", "minLength": 1},
@@ -247,7 +250,7 @@
     "ruleSourceRef": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["pack", "rule_id"],
+      "required": ["pack", "rule_id", "source_anchor"],
       "properties": {
         "pack": {"type": "string", "minLength": 1},
         "rule_id": {"type": "string", "minLength": 1},
