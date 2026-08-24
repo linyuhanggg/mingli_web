@@ -1,9 +1,9 @@
 inputs:
-  algorithm_source_manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+  algorithm_source_manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
   classical_evidence_bindings_sha256: 73c5a8a5d2041e7d49f838c70d0ca184fee060fd355a8f29b0fd6f9a0a7abc8d
   evidence_index_sha256: bdb407825b109a17d9cae6d328188561dd099e5a2c7ce56e963729d8d6abe8f3
   evidence_scope_bindings_sha256: 1dc48dc1bc21f3c14960522f59d5ec6567efefbf9462c106270fe1bbb1aef07b
-  generator_input_fingerprint: f49933ab8446cb7a14e3b53baa02aaa6e66ddee0d7f34be0043f541ded087575
+  generator_input_fingerprint: d0ff1871edb660d60986f041693c4047de5fe90aa8c3ae64de7b24346be4f15c
   runtime_integrity_artifacts:
     requirements-runtime-build.lock: c3330740d9957f2314698a834848ebff9ec69fa39cb3af8088819bea3881497d
     requirements-runtime.lock: 8ec4ad86fedc357ba366ce0f55cd1b450747c47d0f334d2697d97b9c66e038f3
@@ -112,7 +112,7 @@ providers:
         version: qiongtong-day-master-month-v1
       - id: bazi.shensha.yima-taohua-auxiliary
         version: sanming-yima-taohua-auxiliary-v1
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 5
       reported_dependency_count_key: algorithm_dependencies
@@ -400,9 +400,9 @@ providers:
         extension_request_digests:
         - a9577cac98331b9d2d14a880fcdfaefff3634fd2acc41ae9b96b914a8214577a
         extension_result_digests:
-        - a4ce9c718f81748ec8cdcb1862c0fd7ab0f9acaa3b243b5810ee2f0bde93a626
+        - 5df415150f9b8a067a5c801c618910357a8696d614625f34aca42ebcaeb7e10d
         facts_digests:
-        - af5c3fc9b848db3be442e4d7d300cebfdae14bed2af8ee1f976042eb3ea165d0
+        - 88a00d543b9e6054f241d62f6d6709db73a5679199101a9a2418f7072b2abf91
         fixture_identity_digest: 18d3b784ac7bc79b36bccdc9547eaa366db5355f5523d51ca3dfc39215542411
         fixture_input_bound: true
         input_hashes:
@@ -413,7 +413,7 @@ providers:
         request_digests:
         - 46d61fad87391196ab94b3e6f55d389c42dab6da87bdaea506142ea10b374207
         result_hashes:
-        - 89b899796cec3b7c07599ef7b2c30d31fb1d4d88df84a35b78ce3b19f34ec7b2
+        - 91dda6739c55cc940bfb35b48bbe6147ab0b4e80297bd2eacf8a5e379f01e449
         semantic_extension_request_digests:
         - 1429902a979210898470923bdf6e49aa27c64be66a4207edf1c2bdf927cc30fb
       - calculation_request_digests:
@@ -426,7 +426,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - 0ba5fc068c12b6c8e4fa7632f73c38aa0054ddd5dad280819ef90d1ab0c44c5d
+        - 89dd9164f9341a3b0ba663ea5ebb89edf84588f819e1bcd1d3abeac096c29fea
         fixture_identity_digest: b4c99f8ac42add55ec2e5bc4a3f15d104a3544f06583d876b34012e30a7786f0
         fixture_input_bound: true
         input_hashes:
@@ -437,7 +437,7 @@ providers:
         request_digests:
         - 32bebfc76f64d16e0dc1789f304bb566a7fab97f8d52f4dd66e1da83bfc583a9
         result_hashes:
-        - 329fa482decbcdf2ac446c738950f9feb4b664554350ca4e2568eff7dd7415e2
+        - f1222c82abcd6bac25a61120f115247254fc652cf933ca7beda92b879e5fa934
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 7ff84bf9a7179fbf87da44321e13e8f6ecc81dc5c2016e2fd68013f5850e2c2a
@@ -449,7 +449,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - 10e1eeaf6fe1346af56111b02792b85f17b262690003c56685ca7fa3aa55dd6f
+        - d06eb5d1370142ca7afef226460d15395561a7ae7e4aa46e9bece306d33cc54e
         fixture_identity_digest: 2bbbd760d46bfcff0268249d65844660910d3c529bbc24f333458d5601d9919e
         fixture_input_bound: true
         input_hashes:
@@ -460,7 +460,7 @@ providers:
         request_digests:
         - eae58d105207ab6bbb7ff1c0abc4dfb1ad0d66d86dbe82d6b9758a6cc74212c3
         result_hashes:
-        - 426b090de96bc0c78ae9259b2717f83aae136fd3baec70d39f409ffed42901dc
+        - 082e37df48aec8d2fd9bf30ff114b184bf3ae1da11f2ef432fe224b15562885c
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - cf4d382f529b41b5e234f0d6dfeee5e62c38cb07d4c3b4d649ac14a3453dc8e6
@@ -472,7 +472,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - 381bf5cc750b6fbccd3a20b91da5d21146e1477c9b55ec18a467b9da9d476e68
+        - 23867d5f4b528706a082cd49a77833a37485c2040dce4d00fb4d4ece39e2d4de
         fixture_identity_digest: 2edec1fd01b2b808bbf49c10f0586f143515622cd15721242172f1089e28f5fb
         fixture_input_bound: true
         input_hashes:
@@ -483,7 +483,7 @@ providers:
         request_digests:
         - 1652cd49d1e6f3fd5b82c934475942c5749b0b702b8f0656253a58bf5cc7a168
         result_hashes:
-        - d3a39a28a37052e70eac5f3a075060895ed174fac4d967a8cfb4511d691ee889
+        - e33f9ed00a645074d1315c72a8099557499b04e1e584926667c663519417aa43
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - c80af3e84dbc95748a34abff362b6e6397bb1627e2c55f6bbcb06f173cc9e4b4
@@ -495,7 +495,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - e2cb3b194257e548663122bf2a97899debbd91f1a6f05e85c62c8b524ce53af7
+        - 3f08175e2eef1649a910b540b1c171f51be2a31e0ac4971e7d98dd39f8c670ff
         fixture_identity_digest: eadd4b2caf327b71df51caacb81b7ca8fa400218791dbc41df98ecab2f76231a
         fixture_input_bound: true
         input_hashes:
@@ -506,7 +506,7 @@ providers:
         request_digests:
         - c7b72eab329995337942a943034ed7f473d382c2c02c3cea33555b7b342ca2d4
         result_hashes:
-        - 76a247634718a5409de057c165e9a85b9e3565495aaf0db0a54338a17ca05656
+        - ad05fb2c8528faa21cd3271f30840c841b587bb03769ccfc0dbfff42490f7ae7
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - e2e177fb92083559b2c4d6d00ee78df5f3d8574aaf8204b476f3a2cbce892d45
@@ -518,7 +518,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - e1bf2663aa783a23648e9f611c02d9c7bec54d02c98546527e62c2a3f96af5f4
+        - 25f18edbe9fd1c578515ecb58f058eadaca49c6853baf408a61e88f7fcacfa1d
         fixture_identity_digest: 9c071e792a27a26b416b2c51877764b86411cf2fc62379233f58fae258dde768
         fixture_input_bound: true
         input_hashes:
@@ -529,7 +529,7 @@ providers:
         request_digests:
         - f4407add9cec130217d00af7df7e3533d65d9d4eee6811895c248ac6cd5a14af
         result_hashes:
-        - b1370628bf8b3867e43252d3d24793718b7212f928918099031baef9a007b864
+        - 28ac4b4dc6735e1f9ff40e37fd1927a67fa0161a3337cc068da6e61ec9bec352
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 1552efb0c4b4eaffdd4307b41d8b9f47f32879001937ed8eded7cd5b10bd88fc
@@ -541,7 +541,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - bdbe8ebd77f51bfe6f6851d6ca0b79562666dcb29df146cd5445640bec7414b4
+        - 013559fcf745a7cb8ddb5e6fc8faad991f19de2e121073655d480cf913d90314
         fixture_identity_digest: 7532f631e26523431694a26ff2952aebe21d1c8e6796ef79eb15f8200e3e4849
         fixture_input_bound: true
         input_hashes:
@@ -552,7 +552,7 @@ providers:
         request_digests:
         - 959e80905888ace11638bd601857459b278db761d1c5939079a464a50353c433
         result_hashes:
-        - e472f34e5c7eac0a7a4de40e0fb38da0cea55c785e525d46612471928e314e38
+        - e95081a8f4480f49b31b35bffad58629caaa51c4227c39f121b407ede8bbd555
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - f5a6c75120f8133c49adcb16d4e624f0e24f0a8b3a61b7c9418e25aca124f710
@@ -564,7 +564,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - f4ca4e5e8abf074ad11e54aa044274f09c6357caeb71d00b3a960df451a316bb
+        - 66b1bd7126890fb4ead23f4a5eb15b0c1c593dd4107bc48fa32e3a377e6bea4e
         fixture_identity_digest: e99abf5680e9469cb4c1853b2f6187cc36c6db4c6d4c2685b8a0ca37b85b6d9b
         fixture_input_bound: true
         input_hashes:
@@ -575,7 +575,7 @@ providers:
         request_digests:
         - e49c15c5fbe32d3e823e5e93b5262ba3ebf5886f6e92a9a6abfb0e5334a11fe8
         result_hashes:
-        - c6af2b74179026b5a93e11eea5c49ececfe8812608ab5097250ea766e3a64edb
+        - b22f8a7f37af6b88877af4be79ce0317b10b495bca746af01f17bdcc62b289f5
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 320079352a31b8e66c6b41efe22d3bd66531da0f21e1b41d754ef4beae94d9d9
@@ -587,7 +587,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - 2414ee997a42ee4503077e1b9215bb6e541cef8fc13a986d32aa16d8f1d378e9
+        - 5a6d0dcd52b06a4660b0ede268997680e6c756bb0bd7334768da5ee234e518a8
         fixture_identity_digest: 490a4f8ac643dfdc221ed1870ef16c30e4a04bc934c34da98acd30f962ffa09e
         fixture_input_bound: true
         input_hashes:
@@ -598,7 +598,7 @@ providers:
         request_digests:
         - 9851faac7d9558f57828038afd7027af691041dbc921e854e85b7f3c4ca9ce42
         result_hashes:
-        - 89d402d10c0f3307e7fc647e6d7d2739d422e1bcf491924801939da4a4477809
+        - 45a8c7db9cd7ff8e8840fb861d141640793984513a20b4ceca944c77a21b9f82
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - c3e5cbfe53363267eccbd6e1a40b608036d684cbc8f2ef96174fce58aca030b8
@@ -610,7 +610,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - e6cc0daea65e780ed92fe5517cc655746dc6f439e5599f9a01f4b4fe4e945e2c
+        - 1ca95b43c7b098d82eaab41a71f0fdb532892ffbc18f6fc90be837129bbbfc55
         fixture_identity_digest: c6127c418a2c05233ee790a956da29d2d65ba62087823157e9cba91f14713949
         fixture_input_bound: true
         input_hashes:
@@ -621,7 +621,7 @@ providers:
         request_digests:
         - aba517f017c7d141ef9979812859179647a39d34a1e42b298b3d9e6c152dbb36
         result_hashes:
-        - e2c263e47038a6f0e5bf3a2e060f330c51203cb81c409ae54dc1c39374965fc6
+        - e2782d69b6da2e89980119dc2544c44fd74d73dfdd5e86d473faaed60ecd9241
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 31ac43bf9b48632870aadb59e2783a634d2b271c00a14ac0c7220dc76770d266
@@ -633,7 +633,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - c2720d3203296c9a6b6092740ab51e528ca75e41ab902ed267bd1202216b9827
+        - 049d196e663238fcfc4a510cfd10ff141d0685895301f6c82a50ee505e759df9
         fixture_identity_digest: f9fea5134af4dde5432c023b888fb5fbf37d625b33cb0949ab431e18e401f2e4
         fixture_input_bound: true
         input_hashes:
@@ -644,7 +644,7 @@ providers:
         request_digests:
         - 2cda7bb9035cd55726f9eb2e36dddce2c3950762ddb8f3ccb2abe95b97a4ebb0
         result_hashes:
-        - 70793457290e5f41b5da5728240508b2c2ecb503f8a2e96f3d57ec7cf59ed9eb
+        - 449f25916800cbed1f848e8485b478c96b5f333136686f7792488eb15df5e0a5
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - b0d92b4ca81d1de097cdd51211b0ad158590c23be2c8229b13ecda5455947c5a
@@ -656,7 +656,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - 93721d79a99157a50a80ed0f222deb11e46039476f44751d898a97f6f50c0bf5
+        - a628d1c9badb30852c383b4526f686418e9203d984d3829caa448f468b50a0c4
         fixture_identity_digest: d1418560e1ffdea5d52929490d4eb0dd6d648e12617400fb95274a90b859f04a
         fixture_input_bound: true
         input_hashes:
@@ -667,7 +667,7 @@ providers:
         request_digests:
         - addcdd6879cb2e8b203c4f054fc0b0e4ec8b4c6dcbfc0f4422b1d73e5d05ab5f
         result_hashes:
-        - 05c8b4325d56c1c2df1200ddeb56a9af55d7e84013b8bee5a9a0618bdac020b9
+        - c08023b81f7ef1c03870aa5732e3cae6234c8edb2bb9ed6948ae24a7784f4688
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 8a00eb129636584b7fe5342d43c4748ff2546cc9efa18ff0c1e320f289fee840
@@ -679,7 +679,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - ef532decdd98ecd6ca76558a09bdcc86177de4e818b1ff73742cc4f82f1b8512
+        - 4f853c1f1c4a70032d71f17659e35d07a1685bf765cc4df5e1466db8d817188d
         fixture_identity_digest: 51680f0753206394a3bad0d274eaf4c81d4d527841d4d5d4d52de4a4fb714a2c
         fixture_input_bound: true
         input_hashes:
@@ -690,7 +690,7 @@ providers:
         request_digests:
         - 04797e5fcc65125773327edbddac204a1b0f0b46b423539a6995052194a03b91
         result_hashes:
-        - b5b865d85f7fb2e047c5b672e461f36e4de5d4edeaf570155121eaa116560779
+        - 432a29580ac480e400bd1c99df557084a99086eeee409f99cade20b8a78c4d38
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - f5d73e4c4b0143ca5b093b0b4ca378c7c20b80b5204f2dcc6fd1da55dece622e
@@ -702,7 +702,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - 00c2ca4d79acf76a4cc11ad3b73247cc2079a6a60449db5969e0ac7b58c697a6
+        - 765c6ab389d3ff4c752dd53c93339c563514be25770041d31a1851ae22d2b5bc
         fixture_identity_digest: 66ad0c8c23b1f2d2ea792658d2dd8f7ce29e935edd01c90cbfab4442d6ffff9a
         fixture_input_bound: true
         input_hashes:
@@ -713,7 +713,7 @@ providers:
         request_digests:
         - 79496001578373781b2b7a50be39b996fe79c073f9981557795794c9254d232b
         result_hashes:
-        - ad5493bb4c08a84b562f850c6a056f5f649174b7f48805f13fd0b26182476cc9
+        - 2bc5cc4cf7ff92a93fd9350111457808f388cc1dd7beb13e9cfaf21a447aa7f6
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - e4bce7a7f0572024e10b1c630c490d74dd74cffe0ebe86357311cf3f7844965c
@@ -725,7 +725,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - 9086a9c01778eac584de612e839f5a30b8b4d93ed1683c3ede95d5537268a6f9
+        - faf17e7e66576c8cd3d290465d5f36a42eed231ec012b1952cfffb9644519f52
         fixture_identity_digest: 7804945eaee9883e30130ab6e823f446ffd3e161cc929714614c660ea72048f6
         fixture_input_bound: true
         input_hashes:
@@ -736,7 +736,7 @@ providers:
         request_digests:
         - 5892de96a69dc598c7674c3130fe69030c1ab989f7e4a89f17a73c32e62b9ff6
         result_hashes:
-        - b6854791eccdd458196f056640a19349779bc2114d53c4ce3ac2f9c8e551952f
+        - f14c92eef22cbf0c8bb697480061a4bb16b16aab1028a61dc101e770d24edfe5
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - bc56f86abb1f60fedf5a968e55bf227249d7a846aed142ccc4308b855451603e
@@ -748,7 +748,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - a09cd4e1e6bd00f04da86ed789e83f833ab4c452e6bdab297a01cb6469f59f04
+        - 31e62f1cd777170fbcea9c011e018942fffc11d9ad4cc4910af6c38453d0ae55
         fixture_identity_digest: a81fa7e75a4ef86ff89bebd18b51d8abdec212d3b19776af2b527180b648bd17
         fixture_input_bound: true
         input_hashes:
@@ -759,7 +759,7 @@ providers:
         request_digests:
         - d39ec8e95614051509f039202c67967dfd912af387749b30e1d2af4b14574890
         result_hashes:
-        - 38e3e6bd3c1617646e2d6c37f2c3b9f70ac1f5dc5b1cbd81b7162b1296983177
+        - b4793e39f02f3f6ef9beeda710183de0f3e439312f8962dfe4af464b04895ef5
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 9b71eba63a21df9312c5b3fb4154958ab8ede9dfc24630a0533c675355c57852
@@ -771,7 +771,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - 0177943a30c1fcb005952f0970ec6651836f4c4e404a9f0d76ef9b03b835ab87
+        - cf6a85204f2d8d95943f402184ac80f002b698c5865792431124e0092b18124e
         fixture_identity_digest: 2069b6f32f15631604d9fd4d6bc7d21f599a9a69a0d0eeca4476bb7b25f12c7b
         fixture_input_bound: true
         input_hashes:
@@ -782,7 +782,7 @@ providers:
         request_digests:
         - 47f1915d9cd361c39ba0d4e2ee502de73ee47f7b4ace0631285cbe035618f305
         result_hashes:
-        - 4a1ef50c2bc87535e725ae13b0abba867ca892537c17f7b6a2a0f4d6814f69c1
+        - 5be9ee63ba11770aa8b4db37f5eeeadb4d151355ff4ae90e27f1e472dd055809
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - fd90e20fbbd4c382aabd794a60d82d04615a031252f57ad257900faf7ec37d75
@@ -794,7 +794,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - 4ed99c533a6411e9e9e5c479d3db7376dc310b5c2ec3f04d85ff7fe2d977881b
+        - fd5abdc3e5ee0d081d3bfe3906432401fbbd14ff7157d2f8442290b45f82ba87
         fixture_identity_digest: 6f0b85739126529cbb0958a95c8ce06df6da951f9cd2c5d8dc31e09a5a98e472
         fixture_input_bound: true
         input_hashes:
@@ -805,7 +805,7 @@ providers:
         request_digests:
         - 4852b185f45d0cc84a5423349f63423a4d6f72edbd1c22aaaf5355cbd4cdeefe
         result_hashes:
-        - 6075934f3c06df53e8fba65624ec56b0efaabdcd54204182827b423b53f7c62b
+        - 3ebbd7621855e40553e001598db723815656cb192e5225fe162c755314f3f920
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 1e226949d86ed5d0500cc5d7e89205a24da0cab44599abd5fc42b87f3687b9c9
@@ -817,7 +817,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - 51911569c1b0a392c626db71a9a90b31ff8817baa2b5bdabdb8010657684a502
+        - 81e6cf53f38b5d30beb7e0f9184f4048b3c9b74338768a3d4cd6a0e79c626c8a
         fixture_identity_digest: 6d8ede830bb0f7c1b2036a40465cedfa23506156faa924a22e4993f92d06c7fd
         fixture_input_bound: true
         input_hashes:
@@ -828,7 +828,7 @@ providers:
         request_digests:
         - da9ee075ed2265e5939c1f38254433b88de481e6f78b00de975241cf97495ab7
         result_hashes:
-        - a111fd50a392efca54663718b11d65674fa7e0341dd9f7eb68f9f48a984506b6
+        - b79e8142632b6d531e702170e276b6ae04b70a36cf3db71e52c1316e971a8e75
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - ebaf823aa89f54304261cdc1ac69996ac42aaecbace36f2ad75da3bfe417b554
@@ -840,7 +840,7 @@ providers:
         extension_request_digests: []
         extension_result_digests: []
         facts_digests:
-        - 96d4a13002ae1e8fd640db5fc2448ed40b005eb1b293ebeecc3e7ab12eb88fbf
+        - efc685ee8e6fab6308366a756caed5adc06b240d02189fe9a3216481d0fe18ad
         fixture_identity_digest: 5ba3b6f8f519f4c044c39becea4c2437a756acdf0f2c60af4d1ce87e8a0a9243
         fixture_input_bound: true
         input_hashes:
@@ -851,7 +851,7 @@ providers:
         request_digests:
         - 44eeea3d699ebfb44452517f915fe0e17c8012a5b3e9a791f1af00d99fc0508f
         result_hashes:
-        - 981eac744dee8ff60bfa123e7e8f24c6943c7c65df1c28b6d77a294928cd0176
+        - ec522ad9181191227319779fbc01aa8e0120ad2f3691863202e6a3cbbc924720
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - fc145797a4c49fa5269e1a38b2c1ec27cf8c532318f2e01895f151f294c8fb29
@@ -864,9 +864,9 @@ providers:
         extension_request_digests:
         - 0bae688580be3ae08e80fe3b0a6d1ff715655e7bc2b216ffa064ccb9b511ba52
         extension_result_digests:
-        - 19721c8a50b2a999a2a69f4ba18bb0ed1705920b87b09be1aee639092bb3729d
+        - 31bbe658b7310fdafd6cc83b0d462be264a3a4ffbac9d9cd7eb90c8cb06d8ef4
         facts_digests:
-        - cb8b69cfe1cb5d4be8c39edd80f1f4c527d1f6d1922538f5970c8e639a055069
+        - 6b1b8da8877f0d8d0837a77a26dd9bbaa7ddb8ffe97d54db350bfcf44d9407d7
         fixture_identity_digest: a600c5860533222c1fa1a87f1797d4304122086b4cad961b1ada4b760deb195d
         fixture_input_bound: true
         input_hashes:
@@ -877,7 +877,7 @@ providers:
         request_digests:
         - f8e4be5989102553d41b0cb7fc8924fae5c1257512e9676234db6a51e4e0e0d0
         result_hashes:
-        - a2433606ecec802a86f2bb8dd840188951d69c682993bf29a7bcad4d797388b0
+        - 11d7affae610c23cc38e6044c60213ae6dd548e793e663da09b937265486a118
         semantic_extension_request_digests:
         - 47fcc791f1061a44c8e5be9804fa7edfe5e0db800d470fcaa7de25b8f971cddb
       - calculation_request_digests:
@@ -891,9 +891,9 @@ providers:
         extension_request_digests:
         - 527ca516f085082ee2c541e17f294ca18126cd93a1a6bb0be75bbb367d05da94
         extension_result_digests:
-        - b7865393ef4448eeb328075f909765d2ccbbcc52ff6e2b4f4dfa95f1fbef7c60
+        - a8ddc029eb1912bc69fb0d6fbacad6f703c4931bdf6b66e0f1ebfea65d1813af
         facts_digests:
-        - cb8b69cfe1cb5d4be8c39edd80f1f4c527d1f6d1922538f5970c8e639a055069
+        - 6b1b8da8877f0d8d0837a77a26dd9bbaa7ddb8ffe97d54db350bfcf44d9407d7
         fixture_identity_digest: b1f73e3005a2aabc74b39737bc46270b1d0cc0cec2336859e57948cb144a4950
         fixture_input_bound: true
         input_hashes:
@@ -904,7 +904,7 @@ providers:
         request_digests:
         - 810726bf9a338dde3d492770536d4b1016fb3c64b7355ac607917447e7cde9e5
         result_hashes:
-        - 28d873ff5e55850fc620b309b1b7cf9ef6e9366a58774c797a718e11f5e53b5d
+        - 04f29bfdac6fc4f7a9087dc2434bb5dad564d1ecd6b75350e0fe5a4c5dcb01df
         semantic_extension_request_digests:
         - 98dd9bbdc6d46c10efa9f3c11941da2462be661910538ffcef5437c0c2c16340
       - calculation_request_digests:
@@ -918,9 +918,9 @@ providers:
         extension_request_digests:
         - 6a19f5fca3fb5dc6297076307ec135fc65844f180bf36c5305ec9d2343149a79
         extension_result_digests:
-        - 2a860e88d20117812ab910e26133f215d03ca88a9b875aa2eb39abae27de36ef
+        - f84a41e6fdf98bc9ab3890e84818ce09eeaf37f58e32e10f2839745b87cffd72
         facts_digests:
-        - 918cf730b70b50d61ce573d473ea414948b3292b41fcf404808a80a050a8c8d9
+        - c518bc0e32f4fd7aa47d9806e987eedabf4e0657ce0e7b221904eefe54e11496
         fixture_identity_digest: 7168e37df752c4891034989cb3386108af7da35b2df6e2ecdf5426bc660c0795
         fixture_input_bound: true
         input_hashes:
@@ -931,7 +931,7 @@ providers:
         request_digests:
         - f57310f642ee126eb4c30e13947e2107aec4b40d123985b98c4ac5867845aa96
         result_hashes:
-        - 84fe249f4e624b98b505dc52e5c66225547df6e17b3c6661190b775f3a751c32
+        - fbfa0bd99c97dbdb7cdc76bc09202252435126a29c0c1ea1d6945e5f941a8b5d
         semantic_extension_request_digests:
         - 9edc74b235c93ef7e6634a0eef0e7f238d0dab88748ef4375911ba0e6dcbb840
       - calculation_request_digests:
@@ -945,9 +945,9 @@ providers:
         extension_request_digests:
         - 471638fbfcbee6cfbcfc421162e2d2eb6c6065a356ab6bdd000fe15338d0c8f8
         extension_result_digests:
-        - 107257063346f65df372889010c6d88484fae54eeaac67b0ef098ed8fae3a28b
+        - 51806f771e084d4142ba766a768f184a44124d98316bc1ebb05a3200127ccb04
         facts_digests:
-        - 918cf730b70b50d61ce573d473ea414948b3292b41fcf404808a80a050a8c8d9
+        - c518bc0e32f4fd7aa47d9806e987eedabf4e0657ce0e7b221904eefe54e11496
         fixture_identity_digest: 3003c6fe44abb5262d41d3f09bee5aa32edac47428693f56802a97d341d73fc4
         fixture_input_bound: true
         input_hashes:
@@ -958,7 +958,7 @@ providers:
         request_digests:
         - 8eaca99a9c863e1a83f11f5b164aef62d6b2bcf8dcdb291c4035f0c7be01ef98
         result_hashes:
-        - 2054e4d3b4231867734470b246b03fde49cdd5cf7458c191492fc5f8acf86511
+        - 77f74f5d7377149b47f4ea142eaab736e498bd27dd31c33556a0008ec54da21a
         semantic_extension_request_digests:
         - 8e8e61b86a11d81271e9a8e1353db08d8975bdcd57b7f5f23cf770499b85a123
       - calculation_request_digests:
@@ -972,9 +972,9 @@ providers:
         extension_request_digests:
         - 811ac990b36d131d7f67d1a20267c05d2bb43b5acac0f07a21ec7f30f09b1890
         extension_result_digests:
-        - e30cf1eec80eb34b59274a4b42b4edfc02f660e1058f932b269bf9744bf3d91d
+        - fd150a961e9fc3f1efa9e254feab6c4ea76b556195e4c2d29b9d82f5a1ef9761
         facts_digests:
-        - cb8b69cfe1cb5d4be8c39edd80f1f4c527d1f6d1922538f5970c8e639a055069
+        - 6b1b8da8877f0d8d0837a77a26dd9bbaa7ddb8ffe97d54db350bfcf44d9407d7
         fixture_identity_digest: bc09cceaf8329d2692544db22ddb14f5d87730e914580d463978f76b5ad1eb11
         fixture_input_bound: true
         input_hashes:
@@ -985,7 +985,7 @@ providers:
         request_digests:
         - e430c950e1ae9f5e45587e14f84f4d1f171d8ae1b41392a8aa570d109d844a96
         result_hashes:
-        - 1a6f6c9ce1756162dc68b39a047b0509bbb2a168a33604e5d4e420f95df8404e
+        - 8e3552d23a2ac42f6a032f1fdd00344b073c21310248eb9b788c95bf938fcb6d
         semantic_extension_request_digests:
         - 9769c702721de2a2a6289d85b42372612b7e6fe13b2ba5938db628ef8b90af94
       - calculation_request_digests:
@@ -999,9 +999,9 @@ providers:
         extension_request_digests:
         - 1c0286bb3912c1d517ac0268ff9a5e384a46e6368bb72fe38cdd815cde6aa459
         extension_result_digests:
-        - 5466f310e2dc53c7bb8d97a4903b44a4416f718509cb4c769ed9bbb506d786b0
+        - 41bfcef2a2a6997845c4f6decfe6123efe08e8743574c578c932ba05c46930b3
         facts_digests:
-        - cb8b69cfe1cb5d4be8c39edd80f1f4c527d1f6d1922538f5970c8e639a055069
+        - 6b1b8da8877f0d8d0837a77a26dd9bbaa7ddb8ffe97d54db350bfcf44d9407d7
         fixture_identity_digest: 047d06f402e1e93aa002ed9af4d7ec4e6cfb70dd99d13dd49f3ca2a45b8ef6d4
         fixture_input_bound: true
         input_hashes:
@@ -1012,7 +1012,7 @@ providers:
         request_digests:
         - e1b208701d95baab83a62b2f9caaa490845defeb14ce6e098118093b8b5be076
         result_hashes:
-        - dd2d1a17dc69e021c8c4b2e9f2cf45d8118c80dc8641f6d11a101a059730a58f
+        - aa50871172bea27ba9116370a245ed8bd320c82ee792d1c78435a88fa71e7d8a
         semantic_extension_request_digests:
         - b79453c4fa19546f50ebf097d6f87c128b1ce03520dee60044948256580e67b3
       - calculation_request_digests:
@@ -1026,9 +1026,9 @@ providers:
         extension_request_digests:
         - 69d1dc28f0a1a9c6b3b064e0141dd6ba9c4b506a099cc854375bd6d757664916
         extension_result_digests:
-        - 62c0f769767995b2d225e36c83e44d47e3dd0fe842904d4e10bbfa5ce83bd090
+        - 2e5a851e66c0cc0e3196d3c60930e5e5091ae79f6e908a233ec3fc475dc37aec
         facts_digests:
-        - cb8b69cfe1cb5d4be8c39edd80f1f4c527d1f6d1922538f5970c8e639a055069
+        - 6b1b8da8877f0d8d0837a77a26dd9bbaa7ddb8ffe97d54db350bfcf44d9407d7
         fixture_identity_digest: c1c9d8429c062bae7d3eb6494ad982545a4e9e321ef28c22f18f384c63cd9a1e
         fixture_input_bound: true
         input_hashes:
@@ -1039,7 +1039,7 @@ providers:
         request_digests:
         - 5185ba125aca87006812c95e9fccaef00414c4572f2accfd8cdd0f7231ce56de
         result_hashes:
-        - 513341d0396a8c9ecfff72df1356db9a539c983188b6f0a046086efb105967c4
+        - 64d0ed2303e2b53b733793f28f10d9c05b85edd80fd77d5c4d380cda45b974e6
         semantic_extension_request_digests:
         - 33f744f981bc6b7c7c7c2810374f1c65355b8f4d9bc7d573f2d03d47eb761173
       - calculation_request_digests:
@@ -1053,9 +1053,9 @@ providers:
         extension_request_digests:
         - b7e45ee291332597cf70704755fbba20efc60e4e32780d14e50fa2140f2cb0c2
         extension_result_digests:
-        - 3680b6ae838e4b75163fba414adb1943fe18c643a7b29631d60640fc8b76c5e5
+        - fe6f488e1b4d6b99ef555211e4e5e4e9804bba4b81cb0a6fb5f59d8dd0a71db8
         facts_digests:
-        - cb8b69cfe1cb5d4be8c39edd80f1f4c527d1f6d1922538f5970c8e639a055069
+        - 6b1b8da8877f0d8d0837a77a26dd9bbaa7ddb8ffe97d54db350bfcf44d9407d7
         fixture_identity_digest: f899f4ebd102157f9dc2078c3d31ed40e357294268e694554bf1fda262fcbf4a
         fixture_input_bound: true
         input_hashes:
@@ -1066,7 +1066,7 @@ providers:
         request_digests:
         - 53be1957ba800d8b3da5205f6384079bb0859048656e610e2ed8af98e75b085e
         result_hashes:
-        - 96c66e6e18658046c42c34779ea67007c87f3d2284771a8050a80e105b60e7ca
+        - b529af98fa032aa8e3235d1a74ebaede8d16bc5a7d259a37e28ed89e898fa357
         semantic_extension_request_digests:
         - f5ea24ee4be241c38b1340c7cccd57c243a9612ef6260a5abd512a0b18c53567
       - calculation_request_digests:
@@ -1080,9 +1080,9 @@ providers:
         extension_request_digests:
         - 11284ba7876019ba0f7cdd290eb8fc5adac002304eba67f041b4788a69574316
         extension_result_digests:
-        - 5a7f4019d13275b3a40f659b5000a88ffbb19786fee4ef0817032c6e6340dba4
+        - 2a91fa99f3531964c4391d50c49066f8e37226e8a37981033690c34f0b8d5d92
         facts_digests:
-        - cb8b69cfe1cb5d4be8c39edd80f1f4c527d1f6d1922538f5970c8e639a055069
+        - 6b1b8da8877f0d8d0837a77a26dd9bbaa7ddb8ffe97d54db350bfcf44d9407d7
         fixture_identity_digest: a90c7c37c703c1fca53e14edfbf5bd670e9f36ab71f70b3402b6fe1b86337eab
         fixture_input_bound: true
         input_hashes:
@@ -1093,7 +1093,7 @@ providers:
         request_digests:
         - cd496717f0f9927e89b2ece18fa01def65de4b7d853310c95e7e716cc310f2cd
         result_hashes:
-        - 93599903387a344c35e81426943020304da405b8415460ebe6262f43142ac123
+        - 3d4b540619e9972d93f5cfd5de56366154e14ef363eb6ee1618e99640adb45ca
         semantic_extension_request_digests:
         - b8b65f6fe7bbaf1927a0900ba33a1e266935a20204b6af4bfbd25668b6984d1d
       - calculation_request_digests:
@@ -1107,9 +1107,9 @@ providers:
         extension_request_digests:
         - ad210b374dc310d541db80445c4f764a925c1273b2cef66495dbee45cf629d56
         extension_result_digests:
-        - 6443b025a458ee5cd59f14368727cae6e4c7e779102d45e5ca0be06d43b19946
+        - dc9d7b192a37611b098ecc629ac23158f258fbc10d1b0b2da4dcd2c3b0a592f7
         facts_digests:
-        - cb8b69cfe1cb5d4be8c39edd80f1f4c527d1f6d1922538f5970c8e639a055069
+        - 6b1b8da8877f0d8d0837a77a26dd9bbaa7ddb8ffe97d54db350bfcf44d9407d7
         fixture_identity_digest: 688ac9f3fc06c307b49b4ad45e5941c6ecca24db0ca1ffee37f57e17d463fd9a
         fixture_input_bound: true
         input_hashes:
@@ -1120,7 +1120,7 @@ providers:
         request_digests:
         - 3324aed714c5d80a59a663ee1c36941b0202c89ada11d70435b582477e25cc2b
         result_hashes:
-        - 79828eb9c7dea1741b102ac3eee4ec8028943f997dd2d811bfe12211bdbb5f2a
+        - 4c2ba3c2479a40ab09a6d73b0aec624e3d4b2c8bf9b292b66027809ab64dea23
         semantic_extension_request_digests:
         - 01a838b1f0c3373f9fc14eb0b3adf396c76342ccad0d5651ce0484eebdf25d4a
       deterministic_input_replays: 34
@@ -1166,7 +1166,7 @@ providers:
         extension_request_digests:
         - 11284ba7876019ba0f7cdd290eb8fc5adac002304eba67f041b4788a69574316
         extension_result_digests:
-        - 5a7f4019d13275b3a40f659b5000a88ffbb19786fee4ef0817032c6e6340dba4
+        - 2a91fa99f3531964c4391d50c49066f8e37226e8a37981033690c34f0b8d5d92
         fixture_identity_digest: a90c7c37c703c1fca53e14edfbf5bd670e9f36ab71f70b3402b6fe1b86337eab
         fixture_input_bound: true
         input_hashes:
@@ -1178,7 +1178,7 @@ providers:
         request_digests:
         - cd496717f0f9927e89b2ece18fa01def65de4b7d853310c95e7e716cc310f2cd
         result_hashes:
-        - 93599903387a344c35e81426943020304da405b8415460ebe6262f43142ac123
+        - 3d4b540619e9972d93f5cfd5de56366154e14ef363eb6ee1618e99640adb45ca
         semantic_extension_request_digests:
         - b8b65f6fe7bbaf1927a0900ba33a1e266935a20204b6af4bfbd25668b6984d1d
       - calculation_request_digests:
@@ -1195,7 +1195,7 @@ providers:
         extension_request_digests:
         - ad210b374dc310d541db80445c4f764a925c1273b2cef66495dbee45cf629d56
         extension_result_digests:
-        - 6443b025a458ee5cd59f14368727cae6e4c7e779102d45e5ca0be06d43b19946
+        - dc9d7b192a37611b098ecc629ac23158f258fbc10d1b0b2da4dcd2c3b0a592f7
         fixture_identity_digest: 688ac9f3fc06c307b49b4ad45e5941c6ecca24db0ca1ffee37f57e17d463fd9a
         fixture_input_bound: true
         input_hashes:
@@ -1207,7 +1207,7 @@ providers:
         request_digests:
         - 3324aed714c5d80a59a663ee1c36941b0202c89ada11d70435b582477e25cc2b
         result_hashes:
-        - 79828eb9c7dea1741b102ac3eee4ec8028943f997dd2d811bfe12211bdbb5f2a
+        - 4c2ba3c2479a40ab09a6d73b0aec624e3d4b2c8bf9b292b66027809ab64dea23
         semantic_extension_request_digests:
         - 01a838b1f0c3373f9fc14eb0b3adf396c76342ccad0d5651ce0484eebdf25d4a
       - calculation_request_digests:
@@ -1224,7 +1224,7 @@ providers:
         extension_request_digests:
         - 1c0286bb3912c1d517ac0268ff9a5e384a46e6368bb72fe38cdd815cde6aa459
         extension_result_digests:
-        - 5466f310e2dc53c7bb8d97a4903b44a4416f718509cb4c769ed9bbb506d786b0
+        - 41bfcef2a2a6997845c4f6decfe6123efe08e8743574c578c932ba05c46930b3
         fixture_identity_digest: 047d06f402e1e93aa002ed9af4d7ec4e6cfb70dd99d13dd49f3ca2a45b8ef6d4
         fixture_input_bound: true
         input_hashes:
@@ -1236,7 +1236,7 @@ providers:
         request_digests:
         - e1b208701d95baab83a62b2f9caaa490845defeb14ce6e098118093b8b5be076
         result_hashes:
-        - dd2d1a17dc69e021c8c4b2e9f2cf45d8118c80dc8641f6d11a101a059730a58f
+        - aa50871172bea27ba9116370a245ed8bd320c82ee792d1c78435a88fa71e7d8a
         semantic_extension_request_digests:
         - b79453c4fa19546f50ebf097d6f87c128b1ce03520dee60044948256580e67b3
       - calculation_request_digests:
@@ -1253,7 +1253,7 @@ providers:
         extension_request_digests:
         - 811ac990b36d131d7f67d1a20267c05d2bb43b5acac0f07a21ec7f30f09b1890
         extension_result_digests:
-        - e30cf1eec80eb34b59274a4b42b4edfc02f660e1058f932b269bf9744bf3d91d
+        - fd150a961e9fc3f1efa9e254feab6c4ea76b556195e4c2d29b9d82f5a1ef9761
         fixture_identity_digest: bc09cceaf8329d2692544db22ddb14f5d87730e914580d463978f76b5ad1eb11
         fixture_input_bound: true
         input_hashes:
@@ -1265,7 +1265,7 @@ providers:
         request_digests:
         - e430c950e1ae9f5e45587e14f84f4d1f171d8ae1b41392a8aa570d109d844a96
         result_hashes:
-        - 1a6f6c9ce1756162dc68b39a047b0509bbb2a168a33604e5d4e420f95df8404e
+        - 8e3552d23a2ac42f6a032f1fdd00344b073c21310248eb9b788c95bf938fcb6d
         semantic_extension_request_digests:
         - 9769c702721de2a2a6289d85b42372612b7e6fe13b2ba5938db628ef8b90af94
       - calculation_request_digests:
@@ -1282,7 +1282,7 @@ providers:
         extension_request_digests:
         - b7e45ee291332597cf70704755fbba20efc60e4e32780d14e50fa2140f2cb0c2
         extension_result_digests:
-        - 3680b6ae838e4b75163fba414adb1943fe18c643a7b29631d60640fc8b76c5e5
+        - fe6f488e1b4d6b99ef555211e4e5e4e9804bba4b81cb0a6fb5f59d8dd0a71db8
         fixture_identity_digest: f899f4ebd102157f9dc2078c3d31ed40e357294268e694554bf1fda262fcbf4a
         fixture_input_bound: true
         input_hashes:
@@ -1294,7 +1294,7 @@ providers:
         request_digests:
         - 53be1957ba800d8b3da5205f6384079bb0859048656e610e2ed8af98e75b085e
         result_hashes:
-        - 96c66e6e18658046c42c34779ea67007c87f3d2284771a8050a80e105b60e7ca
+        - b529af98fa032aa8e3235d1a74ebaede8d16bc5a7d259a37e28ed89e898fa357
         semantic_extension_request_digests:
         - f5ea24ee4be241c38b1340c7cccd57c243a9612ef6260a5abd512a0b18c53567
       - calculation_request_digests:
@@ -1311,7 +1311,7 @@ providers:
         extension_request_digests:
         - 69d1dc28f0a1a9c6b3b064e0141dd6ba9c4b506a099cc854375bd6d757664916
         extension_result_digests:
-        - 62c0f769767995b2d225e36c83e44d47e3dd0fe842904d4e10bbfa5ce83bd090
+        - 2e5a851e66c0cc0e3196d3c60930e5e5091ae79f6e908a233ec3fc475dc37aec
         fixture_identity_digest: c1c9d8429c062bae7d3eb6494ad982545a4e9e321ef28c22f18f384c63cd9a1e
         fixture_input_bound: true
         input_hashes:
@@ -1323,7 +1323,7 @@ providers:
         request_digests:
         - 5185ba125aca87006812c95e9fccaef00414c4572f2accfd8cdd0f7231ce56de
         result_hashes:
-        - 513341d0396a8c9ecfff72df1356db9a539c983188b6f0a046086efb105967c4
+        - 64d0ed2303e2b53b733793f28f10d9c05b85edd80fd77d5c4d380cda45b974e6
         semantic_extension_request_digests:
         - 33f744f981bc6b7c7c7c2810374f1c65355b8f4d9bc7d573f2d03d47eb761173
       - calculation_request_digests:
@@ -1340,7 +1340,7 @@ providers:
         extension_request_digests:
         - 6a19f5fca3fb5dc6297076307ec135fc65844f180bf36c5305ec9d2343149a79
         extension_result_digests:
-        - 2a860e88d20117812ab910e26133f215d03ca88a9b875aa2eb39abae27de36ef
+        - f84a41e6fdf98bc9ab3890e84818ce09eeaf37f58e32e10f2839745b87cffd72
         fixture_identity_digest: 7168e37df752c4891034989cb3386108af7da35b2df6e2ecdf5426bc660c0795
         fixture_input_bound: true
         input_hashes:
@@ -1352,7 +1352,7 @@ providers:
         request_digests:
         - f57310f642ee126eb4c30e13947e2107aec4b40d123985b98c4ac5867845aa96
         result_hashes:
-        - 84fe249f4e624b98b505dc52e5c66225547df6e17b3c6661190b775f3a751c32
+        - fbfa0bd99c97dbdb7cdc76bc09202252435126a29c0c1ea1d6945e5f941a8b5d
         semantic_extension_request_digests:
         - 9edc74b235c93ef7e6634a0eef0e7f238d0dab88748ef4375911ba0e6dcbb840
       - calculation_request_digests:
@@ -1369,7 +1369,7 @@ providers:
         extension_request_digests:
         - 803db565c66d0602264b68269afd7501363b486a6f1e0608f8a54159d92b4c7c
         extension_result_digests:
-        - 8d388682fc375e79ce09d852643f39e149efc5ff7fb646eb817ac86443bbe062
+        - 863709221df5a467bc0d90d168fb119ddc01315c762bfd5405964859e577793a
         fixture_identity_digest: 46952b3005419feea405fc031b96cda9c40fd1ffcc827656e3b46bc5fded4fea
         fixture_input_bound: true
         input_hashes:
@@ -1381,7 +1381,7 @@ providers:
         request_digests:
         - 3119526b59ec1c91d37b4a8ee80a362d09bd435c15c798031b8fd289afdb3322
         result_hashes:
-        - 3face75f439156f40545b081b2909b31b05095a824e723d831310eb00f29139f
+        - 60bc62364b71c5672f4aef0badf3b6decce21467d22d40f1f4b965294f5146f6
         semantic_extension_request_digests:
         - 9edc74b235c93ef7e6634a0eef0e7f238d0dab88748ef4375911ba0e6dcbb840
       - calculation_request_digests:
@@ -1398,7 +1398,7 @@ providers:
         extension_request_digests:
         - 471638fbfcbee6cfbcfc421162e2d2eb6c6065a356ab6bdd000fe15338d0c8f8
         extension_result_digests:
-        - 107257063346f65df372889010c6d88484fae54eeaac67b0ef098ed8fae3a28b
+        - 51806f771e084d4142ba766a768f184a44124d98316bc1ebb05a3200127ccb04
         fixture_identity_digest: 3003c6fe44abb5262d41d3f09bee5aa32edac47428693f56802a97d341d73fc4
         fixture_input_bound: true
         input_hashes:
@@ -1410,7 +1410,7 @@ providers:
         request_digests:
         - 8eaca99a9c863e1a83f11f5b164aef62d6b2bcf8dcdb291c4035f0c7be01ef98
         result_hashes:
-        - 2054e4d3b4231867734470b246b03fde49cdd5cf7458c191492fc5f8acf86511
+        - 77f74f5d7377149b47f4ea142eaab736e498bd27dd31c33556a0008ec54da21a
         semantic_extension_request_digests:
         - 8e8e61b86a11d81271e9a8e1353db08d8975bdcd57b7f5f23cf770499b85a123
       - calculation_request_digests:
@@ -1427,7 +1427,7 @@ providers:
         extension_request_digests:
         - d891520e731279439b412eb93dad1cc53f2c803a4ca75cc2d100b1ee6f865210
         extension_result_digests:
-        - 25dfb41bee75cb97b70d848cfe65b6517d1f2cd1ba8a091bbda94597361d568f
+        - 969d682ee3dbabdd0f9be8704964116b4268955176a8c71e9b969f8881321a2b
         fixture_identity_digest: 7411c2bbcafe09a140a5bfc7adef3b8064646e382db584181abe7a8aa8b8d571
         fixture_input_bound: true
         input_hashes:
@@ -1439,7 +1439,7 @@ providers:
         request_digests:
         - 00905dc8ac0856129d142751afc41dda74e6b7b6b1d945e515999dbe957b5377
         result_hashes:
-        - 537d317d89975ff31719b5117690825b996930909866c316d50da5306dddefcc
+        - 64187969ee07a6cd41a06b774ccd8f19cdb3da50ed3ece82a40da820baca2adc
         semantic_extension_request_digests:
         - 8e8e61b86a11d81271e9a8e1353db08d8975bdcd57b7f5f23cf770499b85a123
       - calculation_request_digests:
@@ -1456,7 +1456,7 @@ providers:
         extension_request_digests:
         - 0bae688580be3ae08e80fe3b0a6d1ff715655e7bc2b216ffa064ccb9b511ba52
         extension_result_digests:
-        - 19721c8a50b2a999a2a69f4ba18bb0ed1705920b87b09be1aee639092bb3729d
+        - 31bbe658b7310fdafd6cc83b0d462be264a3a4ffbac9d9cd7eb90c8cb06d8ef4
         fixture_identity_digest: a600c5860533222c1fa1a87f1797d4304122086b4cad961b1ada4b760deb195d
         fixture_input_bound: true
         input_hashes:
@@ -1468,7 +1468,7 @@ providers:
         request_digests:
         - f8e4be5989102553d41b0cb7fc8924fae5c1257512e9676234db6a51e4e0e0d0
         result_hashes:
-        - a2433606ecec802a86f2bb8dd840188951d69c682993bf29a7bcad4d797388b0
+        - 11d7affae610c23cc38e6044c60213ae6dd548e793e663da09b937265486a118
         semantic_extension_request_digests:
         - 47fcc791f1061a44c8e5be9804fa7edfe5e0db800d470fcaa7de25b8f971cddb
       - calculation_request_digests:
@@ -1485,7 +1485,7 @@ providers:
         extension_request_digests:
         - c8025ad7209797f03a91cf902c03142d3f8a1382458de2b4a7434d66b40d5475
         extension_result_digests:
-        - eba8ac866a6858a1a2b92e509974561829552213a49456d4b039bf5ddcc47d5f
+        - 23726cad695772045d774c169e70b98cb787329050b7ad8efba8214b224c5ff6
         fixture_identity_digest: dd984f4c1bbb5c8ad5efed363e7f3ef08b6244d4b632a5f18c77226cfef668a3
         fixture_input_bound: true
         input_hashes:
@@ -1497,7 +1497,7 @@ providers:
         request_digests:
         - 6a269ea6648c6aae12a81e308a81d98fb9558648d69a41514974e19317e878e5
         result_hashes:
-        - 6731ab12fbb871bb6a374dfc985d264db47fe877285875ad3cafdcc73314f834
+        - 7052a032827e36bec737e375b65b65cce78e3c978380792179c9e497f5c4f734
         semantic_extension_request_digests:
         - 47fcc791f1061a44c8e5be9804fa7edfe5e0db800d470fcaa7de25b8f971cddb
       - calculation_request_digests:
@@ -1514,7 +1514,7 @@ providers:
         extension_request_digests:
         - 527ca516f085082ee2c541e17f294ca18126cd93a1a6bb0be75bbb367d05da94
         extension_result_digests:
-        - b7865393ef4448eeb328075f909765d2ccbbcc52ff6e2b4f4dfa95f1fbef7c60
+        - a8ddc029eb1912bc69fb0d6fbacad6f703c4931bdf6b66e0f1ebfea65d1813af
         fixture_identity_digest: b1f73e3005a2aabc74b39737bc46270b1d0cc0cec2336859e57948cb144a4950
         fixture_input_bound: true
         input_hashes:
@@ -1526,7 +1526,7 @@ providers:
         request_digests:
         - 810726bf9a338dde3d492770536d4b1016fb3c64b7355ac607917447e7cde9e5
         result_hashes:
-        - 28d873ff5e55850fc620b309b1b7cf9ef6e9366a58774c797a718e11f5e53b5d
+        - 04f29bfdac6fc4f7a9087dc2434bb5dad564d1ecd6b75350e0fe5a4c5dcb01df
         semantic_extension_request_digests:
         - 98dd9bbdc6d46c10efa9f3c11941da2462be661910538ffcef5437c0c2c16340
       - calculation_request_digests:
@@ -1543,7 +1543,7 @@ providers:
         extension_request_digests:
         - d23db973b5824e8c9071b7a20791e2e888545ab1e9dcf0c114172effba6c7c1c
         extension_result_digests:
-        - 6ee7601fa92d53c15ed79cb1d37b0458af0067fbe2fc91b4468f5801c9ed324e
+        - 2981b8d1846cbddf4e25e529fac512bc6a75741c9aebbd63b5acf02a47734259
         fixture_identity_digest: e3eec89171f87de3d596cb46303bfb981e19ab63fc3ac050d1b91ec6086e7b0d
         fixture_input_bound: true
         input_hashes:
@@ -1555,7 +1555,7 @@ providers:
         request_digests:
         - 6afb4bc79fd8054020d0991b52479883a951ca984cfa3cadeb573b880b494011
         result_hashes:
-        - 7c9f04f17ace50cafd8853627c13c4bc2cd72c338b7d107a2fe44d384197d53f
+        - a50ff5fc560dc6b7179cb3241c11c90989dfb44cfbb09723920a2c7d2b7cc91e
         semantic_extension_request_digests:
         - 98dd9bbdc6d46c10efa9f3c11941da2462be661910538ffcef5437c0c2c16340
       - calculation_request_digests:
@@ -1581,7 +1581,7 @@ providers:
         request_digests:
         - 959e80905888ace11638bd601857459b278db761d1c5939079a464a50353c433
         result_hashes:
-        - e472f34e5c7eac0a7a4de40e0fb38da0cea55c785e525d46612471928e314e38
+        - e95081a8f4480f49b31b35bffad58629caaa51c4227c39f121b407ede8bbd555
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - f5a6c75120f8133c49adcb16d4e624f0e24f0a8b3a61b7c9418e25aca124f710
@@ -1606,7 +1606,7 @@ providers:
         request_digests:
         - e49c15c5fbe32d3e823e5e93b5262ba3ebf5886f6e92a9a6abfb0e5334a11fe8
         result_hashes:
-        - c6af2b74179026b5a93e11eea5c49ececfe8812608ab5097250ea766e3a64edb
+        - b22f8a7f37af6b88877af4be79ce0317b10b495bca746af01f17bdcc62b289f5
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 320079352a31b8e66c6b41efe22d3bd66531da0f21e1b41d754ef4beae94d9d9
@@ -1631,7 +1631,7 @@ providers:
         request_digests:
         - 9851faac7d9558f57828038afd7027af691041dbc921e854e85b7f3c4ca9ce42
         result_hashes:
-        - 89d402d10c0f3307e7fc647e6d7d2739d422e1bcf491924801939da4a4477809
+        - 45a8c7db9cd7ff8e8840fb861d141640793984513a20b4ceca944c77a21b9f82
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - cf4d382f529b41b5e234f0d6dfeee5e62c38cb07d4c3b4d649ac14a3453dc8e6
@@ -1656,7 +1656,7 @@ providers:
         request_digests:
         - 1652cd49d1e6f3fd5b82c934475942c5749b0b702b8f0656253a58bf5cc7a168
         result_hashes:
-        - d3a39a28a37052e70eac5f3a075060895ed174fac4d967a8cfb4511d691ee889
+        - e33f9ed00a645074d1315c72a8099557499b04e1e584926667c663519417aa43
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - c80af3e84dbc95748a34abff362b6e6397bb1627e2c55f6bbcb06f173cc9e4b4
@@ -1681,7 +1681,7 @@ providers:
         request_digests:
         - c7b72eab329995337942a943034ed7f473d382c2c02c3cea33555b7b342ca2d4
         result_hashes:
-        - 76a247634718a5409de057c165e9a85b9e3565495aaf0db0a54338a17ca05656
+        - ad05fb2c8528faa21cd3271f30840c841b587bb03769ccfc0dbfff42490f7ae7
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - e2e177fb92083559b2c4d6d00ee78df5f3d8574aaf8204b476f3a2cbce892d45
@@ -1706,7 +1706,7 @@ providers:
         request_digests:
         - f4407add9cec130217d00af7df7e3533d65d9d4eee6811895c248ac6cd5a14af
         result_hashes:
-        - b1370628bf8b3867e43252d3d24793718b7212f928918099031baef9a007b864
+        - 28ac4b4dc6735e1f9ff40e37fd1927a67fa0161a3337cc068da6e61ec9bec352
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 3994c60c7aec8a7f1ae466169f7c9a5d2d5b9dfef71268ca0165cb111e9f5736
@@ -1722,7 +1722,7 @@ providers:
         extension_request_digests:
         - a9577cac98331b9d2d14a880fcdfaefff3634fd2acc41ae9b96b914a8214577a
         extension_result_digests:
-        - a4ce9c718f81748ec8cdcb1862c0fd7ab0f9acaa3b243b5810ee2f0bde93a626
+        - 5df415150f9b8a067a5c801c618910357a8696d614625f34aca42ebcaeb7e10d
         fixture_identity_digest: 18d3b784ac7bc79b36bccdc9547eaa366db5355f5523d51ca3dfc39215542411
         fixture_input_bound: true
         input_hashes:
@@ -1734,7 +1734,7 @@ providers:
         request_digests:
         - 46d61fad87391196ab94b3e6f55d389c42dab6da87bdaea506142ea10b374207
         result_hashes:
-        - 89b899796cec3b7c07599ef7b2c30d31fb1d4d88df84a35b78ce3b19f34ec7b2
+        - 91dda6739c55cc940bfb35b48bbe6147ab0b4e80297bd2eacf8a5e379f01e449
         semantic_extension_request_digests:
         - 1429902a979210898470923bdf6e49aa27c64be66a4207edf1c2bdf927cc30fb
       - calculation_request_digests:
@@ -1760,7 +1760,7 @@ providers:
         request_digests:
         - 32bebfc76f64d16e0dc1789f304bb566a7fab97f8d52f4dd66e1da83bfc583a9
         result_hashes:
-        - 329fa482decbcdf2ac446c738950f9feb4b664554350ca4e2568eff7dd7415e2
+        - f1222c82abcd6bac25a61120f115247254fc652cf933ca7beda92b879e5fa934
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 7ff84bf9a7179fbf87da44321e13e8f6ecc81dc5c2016e2fd68013f5850e2c2a
@@ -1785,7 +1785,7 @@ providers:
         request_digests:
         - eae58d105207ab6bbb7ff1c0abc4dfb1ad0d66d86dbe82d6b9758a6cc74212c3
         result_hashes:
-        - 426b090de96bc0c78ae9259b2717f83aae136fd3baec70d39f409ffed42901dc
+        - 082e37df48aec8d2fd9bf30ff114b184bf3ae1da11f2ef432fe224b15562885c
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - c3e5cbfe53363267eccbd6e1a40b608036d684cbc8f2ef96174fce58aca030b8
@@ -1810,7 +1810,7 @@ providers:
         request_digests:
         - aba517f017c7d141ef9979812859179647a39d34a1e42b298b3d9e6c152dbb36
         result_hashes:
-        - e2c263e47038a6f0e5bf3a2e060f330c51203cb81c409ae54dc1c39374965fc6
+        - e2782d69b6da2e89980119dc2544c44fd74d73dfdd5e86d473faaed60ecd9241
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 31ac43bf9b48632870aadb59e2783a634d2b271c00a14ac0c7220dc76770d266
@@ -1835,7 +1835,7 @@ providers:
         request_digests:
         - 2cda7bb9035cd55726f9eb2e36dddce2c3950762ddb8f3ccb2abe95b97a4ebb0
         result_hashes:
-        - 70793457290e5f41b5da5728240508b2c2ecb503f8a2e96f3d57ec7cf59ed9eb
+        - 449f25916800cbed1f848e8485b478c96b5f333136686f7792488eb15df5e0a5
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - b0d92b4ca81d1de097cdd51211b0ad158590c23be2c8229b13ecda5455947c5a
@@ -1860,7 +1860,7 @@ providers:
         request_digests:
         - addcdd6879cb2e8b203c4f054fc0b0e4ec8b4c6dcbfc0f4422b1d73e5d05ab5f
         result_hashes:
-        - 05c8b4325d56c1c2df1200ddeb56a9af55d7e84013b8bee5a9a0618bdac020b9
+        - c08023b81f7ef1c03870aa5732e3cae6234c8edb2bb9ed6948ae24a7784f4688
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 8a00eb129636584b7fe5342d43c4748ff2546cc9efa18ff0c1e320f289fee840
@@ -1885,7 +1885,7 @@ providers:
         request_digests:
         - 04797e5fcc65125773327edbddac204a1b0f0b46b423539a6995052194a03b91
         result_hashes:
-        - b5b865d85f7fb2e047c5b672e461f36e4de5d4edeaf570155121eaa116560779
+        - 432a29580ac480e400bd1c99df557084a99086eeee409f99cade20b8a78c4d38
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - fd90e20fbbd4c382aabd794a60d82d04615a031252f57ad257900faf7ec37d75
@@ -1910,7 +1910,7 @@ providers:
         request_digests:
         - 4852b185f45d0cc84a5423349f63423a4d6f72edbd1c22aaaf5355cbd4cdeefe
         result_hashes:
-        - 6075934f3c06df53e8fba65624ec56b0efaabdcd54204182827b423b53f7c62b
+        - 3ebbd7621855e40553e001598db723815656cb192e5225fe162c755314f3f920
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - f5d73e4c4b0143ca5b093b0b4ca378c7c20b80b5204f2dcc6fd1da55dece622e
@@ -1935,7 +1935,7 @@ providers:
         request_digests:
         - 79496001578373781b2b7a50be39b996fe79c073f9981557795794c9254d232b
         result_hashes:
-        - ad5493bb4c08a84b562f850c6a056f5f649174b7f48805f13fd0b26182476cc9
+        - 2bc5cc4cf7ff92a93fd9350111457808f388cc1dd7beb13e9cfaf21a447aa7f6
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - e4bce7a7f0572024e10b1c630c490d74dd74cffe0ebe86357311cf3f7844965c
@@ -1960,7 +1960,7 @@ providers:
         request_digests:
         - 5892de96a69dc598c7674c3130fe69030c1ab989f7e4a89f17a73c32e62b9ff6
         result_hashes:
-        - b6854791eccdd458196f056640a19349779bc2114d53c4ce3ac2f9c8e551952f
+        - f14c92eef22cbf0c8bb697480061a4bb16b16aab1028a61dc101e770d24edfe5
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 1e226949d86ed5d0500cc5d7e89205a24da0cab44599abd5fc42b87f3687b9c9
@@ -1985,7 +1985,7 @@ providers:
         request_digests:
         - da9ee075ed2265e5939c1f38254433b88de481e6f78b00de975241cf97495ab7
         result_hashes:
-        - a111fd50a392efca54663718b11d65674fa7e0341dd9f7eb68f9f48a984506b6
+        - b79e8142632b6d531e702170e276b6ae04b70a36cf3db71e52c1316e971a8e75
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 9b71eba63a21df9312c5b3fb4154958ab8ede9dfc24630a0533c675355c57852
@@ -2010,7 +2010,7 @@ providers:
         request_digests:
         - 47f1915d9cd361c39ba0d4e2ee502de73ee47f7b4ace0631285cbe035618f305
         result_hashes:
-        - 4a1ef50c2bc87535e725ae13b0abba867ca892537c17f7b6a2a0f4d6814f69c1
+        - 5be9ee63ba11770aa8b4db37f5eeeadb4d151355ff4ae90e27f1e472dd055809
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - bc56f86abb1f60fedf5a968e55bf227249d7a846aed142ccc4308b855451603e
@@ -2035,7 +2035,7 @@ providers:
         request_digests:
         - d39ec8e95614051509f039202c67967dfd912af387749b30e1d2af4b14574890
         result_hashes:
-        - 38e3e6bd3c1617646e2d6c37f2c3b9f70ac1f5dc5b1cbd81b7162b1296983177
+        - b4793e39f02f3f6ef9beeda710183de0f3e439312f8962dfe4af464b04895ef5
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - ebaf823aa89f54304261cdc1ac69996ac42aaecbace36f2ad75da3bfe417b554
@@ -2060,7 +2060,7 @@ providers:
         request_digests:
         - 44eeea3d699ebfb44452517f915fe0e17c8012a5b3e9a791f1af00d99fc0508f
         result_hashes:
-        - 981eac744dee8ff60bfa123e7e8f24c6943c7c65df1c28b6d77a294928cd0176
+        - ec522ad9181191227319779fbc01aa8e0120ad2f3691863202e6a3cbbc924720
         semantic_extension_request_digests: []
       provider_identity_matches: true
       provider_input_payloads_are_distinct: false
@@ -2553,10 +2553,10 @@ providers:
     live_contract:
       deterministic: true
       extension_digests:
-        day: 980fa9c7db1143143238b793338f32f70adb9f0dd1485c981dd66925bffff11e
-        life: fa60e4eaf8a354a388ad3d672a2a757f53016e3748012814cdf2284633e72d12
-        month: 8e2a6cc99947e135bfb19bb0436eda0850d5d0ef1aca59135843d5c4edf87fdd
-        year: 5d8af3e43835feda9244b0f34b8c3c7c39ee0a44cd0d547f1d42c943698b8fd0
+        day: 2f8ada6077ebc5f65f3c6cccf725d4e657ed9bbba1a3f8e5443261bf0688d967
+        life: de61438e0de62f327d9357140b1816fe3d8f4c993140fabb0dd79bdbe27745d4
+        month: 2859e1ff62c7db72bb300712b407010afd55953406c3780c35aa0d976264f6d7
+        year: 5efdd0c7b4b1775ce4170f50aeccce99eee3a4786ee39295e53917e1ad9db8f3
       findings: []
       resolved_extension_bindings:
       - day_layers
@@ -3089,7 +3089,7 @@ providers:
         version: yangzhai-shishu-bazhai-v1
       - id: fengshui.observation.compass-layout-contract
         version: fengshui-observation-compass-v1
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 3
       reported_dependency_count_key: algorithm_dependencies
@@ -5034,7 +5034,7 @@ providers:
       live_declared_dependencies:
       - id: fortune.bounded-target-period-over-bazi
         version: fortune-v6-one-explicit-period
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 1
       reported_dependency_count_key: algorithm_dependencies
@@ -5273,9 +5273,9 @@ providers:
         extension_request_digests:
         - 91068a80a261fcfd23f4212b1667d4b24951926dfb41b68d0774d86aa421a850
         extension_result_digests:
-        - d06223d0ae1588fcaf63288a4d4641770c6f8ac86f08d62ae6e1508a07363490
+        - 5d0de9cbdc485c9359dfd6135d34d613fbf70f3ca1b9d41435847e16a07ca9cb
         facts_digests:
-        - c32219391ef3b410bed5216b70618e2e78b23f85eb2a5dcb38dd66529cdb9588
+        - 36d7cb7491130ca40df19cc18d472826265f400bff939fac24dce7502e275303
         fixture_identity_digest: b37b6aa6cc889ab7c046354c26cdec22ec4407c558cce5daec0835f7cddfbb1d
         fixture_input_bound: true
         input_hashes:
@@ -5286,7 +5286,7 @@ providers:
         request_digests:
         - afdbffefdecf60fee0e6e79e65ecb74c7d6b5e69a56ba539245d87e0a94620c7
         result_hashes:
-        - b187920b9088f26e585f22b16eea3c28a5542e0b7703b02fd91f96fb44095271
+        - 75db24c6725f021b7418eede3631937463b69c58f13dae90464be82382fc2d49
         semantic_extension_request_digests:
         - d5cf8431f4ae20af8e59722297afa6edc443381e2a33e57b55c94189c68bf15a
       - calculation_request_digests:
@@ -5300,9 +5300,9 @@ providers:
         extension_request_digests:
         - c314f6495ceb11af2330d233ad63f678ef840d6c024aa08607e7e56b91b9c968
         extension_result_digests:
-        - 106c1a5ea8e709a8181babf7c53960ff77a66509de0e37f0bab167ce095d275f
+        - 430187a91a3e7bd7d830f927801c7fb3cb279260401988b035e8405a9d4e1e7c
         facts_digests:
-        - 301300fd7957053f436d527bf8d9a4547bae96ea0d817324dc49ecc0f89fcf3a
+        - 3c8444294d060f1a6b8dbb183ba0f3a6eca3d8d5381ef3ef3c16ca113fccb4af
         fixture_identity_digest: 54bf6ba12b0a2f22f8761b0b38500a2755ee88bf4ccdf62fe43a20c49f47178a
         fixture_input_bound: true
         input_hashes:
@@ -5313,7 +5313,7 @@ providers:
         request_digests:
         - 42ee858388251bb0f233fba179ca2875ac2e3f96b1e47f768af747628d96bfec
         result_hashes:
-        - b84149db502d487c64f0c5877834790fb1bef5bf6407ea03578c3ac5f247a3ee
+        - 8f7e96de8f469401bb75bef591fc601821fd3b75adcd2f6bc96eeb5d4a8a2021
         semantic_extension_request_digests:
         - d98bc3ff498bd06ec1c2d06905a83515d17d071ace3a893b395c53a41ab37092
       - calculation_request_digests:
@@ -5327,9 +5327,9 @@ providers:
         extension_request_digests:
         - f6c6707fb101b1061381ac73275fc7e54a4663ffced93bce3ced11ebaccd26ae
         extension_result_digests:
-        - 2dee09eebc8d5d9eb7c2019f3cc273736968343648da1fbc42173abed6426cf7
+        - 5cda479e859cd5bdbc5d678c24c2c4f02be2d0bf3c0c781e63910c8e41324da4
         facts_digests:
-        - 61c5c8e6eeab3c947d90f7518e8f88ab8d65857155777be0c15090ebcb29206a
+        - 8e589447d4d1053f01b785cfbe90dd9bea05644b6800623d1817b68a0cc3a30a
         fixture_identity_digest: 4991d8857752a2720cd93a30ee9ee60e832548caa10ab1cf7f7953ef692915ea
         fixture_input_bound: true
         input_hashes:
@@ -5340,7 +5340,7 @@ providers:
         request_digests:
         - 463a887dc2f01b62a87b86218115c7877d05fac9665cbb78cb5d6087c1fc5d71
         result_hashes:
-        - 315bf22d06ed3f4603feac887731607fc9cefa41a78bcff999586ac77ce9067e
+        - b2ba74a3f5dc29e5aeaf27333e112c6d7c075daf7b0dfc0a97280b1c4ea5a69e
         semantic_extension_request_digests:
         - 023f86c5239024feb79a5b356e15c12a379e7bf033a17485b8efccbdbf9aa954
       - calculation_request_digests:
@@ -5354,9 +5354,9 @@ providers:
         extension_request_digests:
         - 1a1107ab9be6dadcc7eb81cc1ddeffd19baf421ab2187e5df2a81ca16ca91241
         extension_result_digests:
-        - b729bd58c9d206484d897f897d75e76fcbd53f18931e70ca6cdfe3bbd3748bc8
+        - 2882a644774dfe44f5448fbaafd87d457506cb952298e5d8d399b8f841fb2773
         facts_digests:
-        - 3ebbcf4eb7d7e13ffb00e2bd810607f9b15c32f82614c3c99e9ee9e049cec938
+        - cde306cfe3a41cd620acc6957a6e047d7217ef5e64b6de4c101080348dd27b6f
         fixture_identity_digest: 8958f7bb3c74b9033c497182dcef3364ae8b7d87473c0e100cedd3c8c978bf57
         fixture_input_bound: true
         input_hashes:
@@ -5367,7 +5367,7 @@ providers:
         request_digests:
         - 3e64e1b33259d6291ae8ad0a761f9f604c63a4efb201558f6b532d51801ae71e
         result_hashes:
-        - 6bf23438f84207df75e4331af0a8857272d33b57540e493c04d3fc7e1946f8fe
+        - e61a2cf8462cb47e16953948efd8ae23051a25be173f140e58464638d89e7ecd
         semantic_extension_request_digests:
         - b149bdabdad92f9a4060b592c7f75afe6a41f88cafff105697574af27c70e71b
       - calculation_request_digests:
@@ -5381,9 +5381,9 @@ providers:
         extension_request_digests:
         - a636621fe3d96fd3f5f4e1e896c3404bc26d85da311691f8829927fa90f40bff
         extension_result_digests:
-        - e926ddbb2097305aa1c412219037ef5ba47bb82fc64de17eb0166694ca836a43
+        - 6e7cf893e720d764d5a98f4ff45059c5bf52c685c1f76809f5a5c96a857fb23e
         facts_digests:
-        - e18d3f5c21c3e98eff95303da3d3daebe47743069d646838da4a31d2f2d04579
+        - 717775ada51a0c4709403b54a7db8aaea09c6c70137250179797249d8327418b
         fixture_identity_digest: 661a636f970af3dac53c77c0bf1aa5b2553f60b6800f336ffa4d608b4a7fd513
         fixture_input_bound: true
         input_hashes:
@@ -5394,7 +5394,7 @@ providers:
         request_digests:
         - 30858475975ec353e35404a4bd3b3043e0f62406f16dbf4b6b717f057dc9c273
         result_hashes:
-        - c55409974e33702198e9a7e075139c6bf48fb52c681f3a3d894a03dcc4dd5477
+        - 3edb45c0e5a586ba91fbda23f7809b3db6c44e64602029ebc37f8678d25c4e22
         semantic_extension_request_digests:
         - 2faa2d48588ff9318361339eccb4765e6b466dd0a0971d34c8277be3feeab1dc
       - calculation_request_digests:
@@ -5408,9 +5408,9 @@ providers:
         extension_request_digests:
         - e1903d71d86ac73e60fc5237bb58c170498e0eacad19d2584d8a1f6cc58b25b5
         extension_result_digests:
-        - fb3ff1d38dfeb4be069bf1b1f7750c267e9f03216a42d580f59bc87ad45eebc9
+        - c08f21f5dea4d9f646e7f3528a3995f3cc5d9c2daab19125007a8226c1d9d249
         facts_digests:
-        - 3e2c016cbfb9c7f266f607af416606733fec46c928b9804159cf80d19f97a7bc
+        - 23246b52a0eb15f0ac8b776ad903961d3053d5a2550824b1b2b7dd6f81de2bb4
         fixture_identity_digest: 185cf53fdf5c0893da24bb11e04fc4b19b365d9777a8068d336375c947f3bbe6
         fixture_input_bound: true
         input_hashes:
@@ -5421,7 +5421,7 @@ providers:
         request_digests:
         - ed5b86a764cfded976f2119464a59aab30612e283115d43dd4c2528175dfa977
         result_hashes:
-        - 1294a52853cec717d0f6fb8896874d383de44733159673e670c10243b8bb886b
+        - 878757960c54fd7e30e07ff3e3849a69bb03afc9d11f25639b6ad5d1c4583483
         semantic_extension_request_digests:
         - 2ff9b73a8cdac479e884a761ca94b83f981d0e54a49130b3375d4456f94e1720
       - calculation_request_digests:
@@ -5435,9 +5435,9 @@ providers:
         extension_request_digests:
         - 0e130d3fa3d1fdd5119ef02589b0d0b224194ad3734a279482d604b694d6c9cd
         extension_result_digests:
-        - 9526e52f0f41021b8ba4ab23a5c77126e24bf2bc0f9038263d1c1ce0ae85dd52
+        - de37895abf1d1c868a417c0fc49826fec7ceb06e46d41ab060f15c0ec8f01e23
         facts_digests:
-        - 37c3d536328b8e93ecb85e785efe3767ce6e2bae67e279c48afb651ddd900132
+        - 0e710b683cdb692e6c5ac2b560301e7852c5ff0baa37fd4780950e665497500e
         fixture_identity_digest: 889740363e6443f41cc56eb950d03d442d11458febeb3812bd99e12fd725fec1
         fixture_input_bound: true
         input_hashes:
@@ -5448,7 +5448,7 @@ providers:
         request_digests:
         - 6c5c4dabaab45b09e0446cd3d90ddf38c2b4eacf8a1d710c4e0a0a84ab186fbf
         result_hashes:
-        - 9d315bd56464ddb45e8228b83eb1556a219a832a5feb70e93a8f8590f3fae26a
+        - 35323f126c7382c8fa8e32cac42aa052c87418e00c8347dd7bf93a72bf238d2b
         semantic_extension_request_digests:
         - acc2def6688933850d3b286d197980a01e6d872f0d7f904d4ceac4b30ffaf962
       - calculation_request_digests:
@@ -5462,9 +5462,9 @@ providers:
         extension_request_digests:
         - d6f636ba6ae92fe2f110cd83a1c1b8d996eebea023a0561aab7db90084efe5f7
         extension_result_digests:
-        - a9fe4a666e54c1dcb1fde625873a1a8810b853fbb563f3310988088939c76b3e
+        - 31378369badb182c13f0e5716aa89b21e5002dbd716411b99ebe30e00bccdd5e
         facts_digests:
-        - 940a69184c9ddec59c9c8e1bc3abd6f796d5b153ad54313831cbc2a9abf395a7
+        - 75f2731f73ffecac4daf1e11b8d84fd5ed0154ab20900995929a8c6f9411cb83
         fixture_identity_digest: 0a4af25dc3aac3be93dcfc8e8287c64eb11b51a2b0190b5b87387fe217da06e9
         fixture_input_bound: true
         input_hashes:
@@ -5475,7 +5475,7 @@ providers:
         request_digests:
         - 6b51b59e077cad57465f5dabf654a0607f2e92ca116cd23dda336478fa4fb867
         result_hashes:
-        - 4227f015737079218280c949c79098b29e1bd6a44bf42916a85487bc52f4ef15
+        - 2883c80af5fed3db440e9862dba619c367c178a8a54891cca3db685a3332128f
         semantic_extension_request_digests:
         - 004bebd0bc0d3bf0856409974c66d66b76c64dfe76947becc65b25e1c9b10259
       - calculation_request_digests:
@@ -5489,9 +5489,9 @@ providers:
         extension_request_digests:
         - 446d38308d7cbf65a5a4cf17431548fde6dc70d7ca9491c60e72d48a7999f756
         extension_result_digests:
-        - 2dbaea386d297878642554c7ea36cfcb58e756fb340d9db23a4400a4859fd080
+        - 12ae3e72723eeaa9cd883061eafa8269f49d62851277bd8879129b9e1d8dfd40
         facts_digests:
-        - bfad2205856e90aeb6d9dcd5fab5f2d57315dffa6f8e9104dd23938bfa5f4353
+        - f13484446debbd9d7b5d6f006ccecf49490445ae24a978ab9f25a41f8466aef1
         fixture_identity_digest: b10b3a3ee207e4101821ae3efbd976fec26e16fcfad6f29096100c24a0f9f480
         fixture_input_bound: true
         input_hashes:
@@ -5502,7 +5502,7 @@ providers:
         request_digests:
         - fb2a122188ca7ed326b0932719846ea76145034e92ec12e66efcc43b5caf04e1
         result_hashes:
-        - bab84b4ea7b170ad81d225c4c93d414abafb50c80aa90ebed275b197a5fb1dc0
+        - 82565faecd26303570eba5a9850a6fbd80c9b546d64fab8585b07d7e790221d5
         semantic_extension_request_digests:
         - 64c6083a893b0acdff0477ce11d8aa20b5fc2893a0b6dd294b636d652cb06e6f
       - calculation_request_digests:
@@ -5516,9 +5516,9 @@ providers:
         extension_request_digests:
         - 991eb415ffc9da09d6282333130fd206ccbc747410e5d75052008b2f5a1c6204
         extension_result_digests:
-        - 89e1d284159d34cd95896deaf6d084ac52aa746a6a18b98debde52d1a2d3a551
+        - 4c0a663a3a7f5f5355c4ffc848e8fa098ee719be1139ad9d201e7469b99827c6
         facts_digests:
-        - 35a249b2cdb06cf9feb563e5e19d5cbc96cbd3c44566413e18fc719e1bb3a4f1
+        - 16861c6e7347c4088543391a915b816c7d1c48336ffe981a2059fad61b45c543
         fixture_identity_digest: 4fd665ccd4535467745311bc97fe3d4b4e4727096ca718513e06acbc3c5f598c
         fixture_input_bound: true
         input_hashes:
@@ -5529,7 +5529,7 @@ providers:
         request_digests:
         - 1171796614edcf301e8d45341b54e79168423a5f61d5daf4063f2f90a0c1c4c8
         result_hashes:
-        - 82e2bf974c4aa9aae7745c481b29f78b285e9c246ac78d2495b0f3e18d5b86dc
+        - e062e93f1b02915b6fd4386be56779d7655354c53dd5d5aa2b2def91d63ac3bd
         semantic_extension_request_digests:
         - c6c84b1339ed8eb5356ca33bca4098a1179a3e1a418fe4401119a0931d3005f1
       - calculation_request_digests:
@@ -5543,9 +5543,9 @@ providers:
         extension_request_digests:
         - fddedecf8e0324aaec159d440ee8862b14765720332362844260d61310f151c2
         extension_result_digests:
-        - 6d6cc44af5379672e15dbd2425488d6570ea0aaf1e95b6e877c3d1435ff4968e
+        - 70bf851f99738d27450e9f5c1b21e750def20862bfce89a7952c639a25cc9819
         facts_digests:
-        - 9b91962f8e692820abc2c061fa5fc994680d1ecca3d2775db027d45b6ebe1531
+        - 31c8474677c1554ab1645b4b3592da310abd4f672051a0685b13aaa4c6085c87
         fixture_identity_digest: ff1ab70be136e99756444e5cf9a584aa8675f736034594e3f8c46ca0961a6e2c
         fixture_input_bound: true
         input_hashes:
@@ -5556,7 +5556,7 @@ providers:
         request_digests:
         - b4e479c83d8534dc9238c92e60d11f79848a01ce2f6a9cf1d1f15cd99838deea
         result_hashes:
-        - e4004769e679dca74599a9fd6257f31b484705d70033fc3e659535dadcbfab0b
+        - 171771cf2e5a710c2084ae0d386f2af63e11260345e013f8d5f344575ae7da7d
         semantic_extension_request_digests:
         - 469a3539b9139d335508f0cf929ca64e458b857933fdf3a367a434791fe499d8
       - calculation_request_digests:
@@ -5570,9 +5570,9 @@ providers:
         extension_request_digests:
         - c77a461c740f103da01e4e903a7b4e914bd84492fcf888f8034ab256595065d5
         extension_result_digests:
-        - bbac3da025bd9ec168aaa353abea98eaaa797feaa7e174656b9ca4648dedfe2f
+        - daf27886f4b3c7d4456f27c9137c77e50ac41ce5c8525cdf031f7d16e30bd196
         facts_digests:
-        - f243c176759b26914987bffdc5348df8c35ae57b79cf4fadbfe82552aea676ad
+        - b433eaa02c3f1ea647ea707c66e2df53bdf8581480a90729268f26bdc295a457
         fixture_identity_digest: a1964b79abe176de99c526032de7b16c56074b9523a23542afdbcea120a0830e
         fixture_input_bound: true
         input_hashes:
@@ -5583,7 +5583,7 @@ providers:
         request_digests:
         - e98a2035b8eab9f173b03bff39a67476385530f648bb086cec8485bf98cc369a
         result_hashes:
-        - 6bd9cf3a385c205adc68cb3a08e583c603e4810dc40687c3ec2da18c2e317195
+        - 962f4c436623ed4c805243b151c3947df9685bee5e9d63ce521e5dad1d176dca
         semantic_extension_request_digests:
         - 06727d959e8ba14ec645d56ebb8aaa5c3ee965a3761e607d2c16c3d88f39e6da
       - calculation_request_digests:
@@ -5597,9 +5597,9 @@ providers:
         extension_request_digests:
         - 4e0d61e7409a75e945eee45e240b88b3f6fd2d4485b93bcf863333433f9e467f
         extension_result_digests:
-        - 0b83c905a1ec0cc2ee951ef58e4b8a0ca6099c9d2ccc538206f7c3d6ac7f16f4
+        - f641c39e5cf329288fdc15bc3326387f528f12ff68117537aaa69844f23e4df5
         facts_digests:
-        - 8554c4f667b3286e3d38cfeb8fedf2c61150f2afc114fffda25a1a69c3fa6fa1
+        - 0b85386196d1ff24d120681650a3c731f8c7ecab2cc3bd1d037bfdc6ce1532b1
         fixture_identity_digest: 6754088a5027dbba52689d5d7ab0da4e18641cfb8357f00ecc8d09610fdd39d4
         fixture_input_bound: true
         input_hashes:
@@ -5610,7 +5610,7 @@ providers:
         request_digests:
         - ed96b2a12227473450b517b13dd21f663272de171059c83828c9db229716657d
         result_hashes:
-        - c84b4e6d3a39b7de70a356524c40917fade726a44108bd685e5d164368060a9b
+        - 5e12e881ef30ebe09b5d1b5036cf9b9d6214f3aeb7acc1f3532b575f93245440
         semantic_extension_request_digests:
         - 8504da4ef3e7611e1358c591f41e7a4ca527d6180bff0806b3082e2cddece835
       - calculation_request_digests:
@@ -5624,9 +5624,9 @@ providers:
         extension_request_digests:
         - 32fd3cb32609f99aba73e31cfc637fef3720c6b5c541ee2fcbe6f2d64a72966c
         extension_result_digests:
-        - f257de9017fc6066e04bd29fb1da2b90b326a74e64b9714ee7b3effc34901ad0
+        - 32830661952d04332bee6545d3fa2816a1d04fb7066a54d8d5e5135b4ccefe69
         facts_digests:
-        - 5d79e4e1f9a0d308e73ac90f5e83102c384ef49c5bbe8b7980f2f9f767e3f52d
+        - ad93632ec4d6251fa12d01d2117c6854acda3a2fceeb902eff96cfb049603b70
         fixture_identity_digest: 123c1f9f0d3b141af659b1d2cbe95e6ff9e5facde8daf8e3cd7f0bdc5078b9dd
         fixture_input_bound: true
         input_hashes:
@@ -5637,7 +5637,7 @@ providers:
         request_digests:
         - eae58559958cfc6238b0a818300c3f02cfc2b7d5be76a1afa783164da72e76bd
         result_hashes:
-        - 2509de158760ac770c9eb377af425e2696f508eb3eea6f8b08d7796b2fcefc5c
+        - adee7ca19ee5e98149d3546234f5753f1b17cb43d2d8d593a26409809c5d16cc
         semantic_extension_request_digests:
         - 6261b60d4666815413e1e78f93953d6f4673a80d2e0649fd4093e5e2103d4c7f
       - calculation_request_digests:
@@ -5651,9 +5651,9 @@ providers:
         extension_request_digests:
         - b6bf23c09d4b16ca8e8bac9e1de9c2deaa8536601be0288c03422f189b7278af
         extension_result_digests:
-        - a243eb9941e94d49f404c7b3729cbc82aea1f8d4d636de5f0d71369e1b49bd6a
+        - 35620ac9819e2f81f07ec08c2904b5c9be7f7c5d3e22ccf17e083b0366db1288
         facts_digests:
-        - 30d60048acec58e64a6a65ea26fca90b6b3bc5eb8ee6ad06c1b26581e96b40ff
+        - b9cd94829dfa8225422119a12e101a199a74b7ebb1c333a7463e8a8ebd95643d
         fixture_identity_digest: 39a90390cd3378bc840287b59ab625e921be9eb18cee218dd7b9158099fcf338
         fixture_input_bound: true
         input_hashes:
@@ -5664,7 +5664,7 @@ providers:
         request_digests:
         - e1bc82ed2595accf552f83fa77866f4b28e6323b28d8859bf093a95de95fec45
         result_hashes:
-        - d75606953b82ecc84119686236798131ae1a4a8c1b9adf4e3779b42088a17938
+        - b8309669ce616135f2b5e05858adb884450e68f82d0df3c190d3a90befc4d1a5
         semantic_extension_request_digests:
         - 14b2b802c7d9926a9eba9ebd0ba096cbb7520eb3e1f37cfa4520d92390147529
       - calculation_request_digests:
@@ -5678,9 +5678,9 @@ providers:
         extension_request_digests:
         - a18e99c378600e5596f41b5d296341f407634fc24f0d8e499546c7f9b8c8d709
         extension_result_digests:
-        - 81997a47957728683536304c36cfb01f11464f80a8ae92a33a7f6bfc90407f1d
+        - b10238e31d224fd949be1cb754e466e8ecdbe53da735abc52ff0082ea5595880
         facts_digests:
-        - 73d83a1388c790e2d5f93f889fa00e074512a9401dbc5133164bb3d9e1092dab
+        - 0f08f20e7651c9813730f91d3da4cd5fde5b2cbfe754a9523c68e285ac62934e
         fixture_identity_digest: 220ca53cce0303762973d23e7a5a2497fc561e14b11da2bd4ffbd7b1f8fa4410
         fixture_input_bound: true
         input_hashes:
@@ -5691,7 +5691,7 @@ providers:
         request_digests:
         - ad2bd2509baba2d0092dbf7c0cb146b9986df46cffa8eb21268ae79219d5e655
         result_hashes:
-        - 087ebd81c21ffe2c9aa395dc99ed9380bd6f4ed4992778137f1308fba44e691c
+        - 18bacfce0e040f2a41a20da4d38b79d65ad15d143e15625026690b5c94ed914a
         semantic_extension_request_digests:
         - a92f6d83ea4849a65afd81453930ecd0df7e32264900e930ea17bf9e02be9228
       - calculation_request_digests:
@@ -5705,9 +5705,9 @@ providers:
         extension_request_digests:
         - 2e2fd692df28e4c102e6455a59b635520774a1bcbfb350a74d05ad5855946930
         extension_result_digests:
-        - a194f99b527738a67fc0bc39f7e301987ddc092d217b95a7946fed605dbaca77
+        - 0a990b125004b416f7dfdc4759f9125d8a71010bfd086d29c9f2839c6e9791f2
         facts_digests:
-        - e87cdba20c6fc0e7d7b093055283c08ccc365f214a9da1a72fc56d3aed42ca71
+        - 532c86925b6d6fa26280aa3ef94d87b2240ad1c435e4620e47bdf3d4baa0bcc3
         fixture_identity_digest: e5e435ca0842af2b4781307e27fad668f708948611e0ddc9f6800ef2da79872a
         fixture_input_bound: true
         input_hashes:
@@ -5718,7 +5718,7 @@ providers:
         request_digests:
         - 1e9c69dbb0cbde5dc5f8c3044803790cafdbd6c758ecb9c5d7cbd3efcd59c258
         result_hashes:
-        - 4dee383c94a34d0748f4d1a9df040a00bd898e954ea3f1490d61de1cbd56b405
+        - eeabf08947a3c1ce1432169178a49ba2335454b94fb0effb725de22ec6eb3744
         semantic_extension_request_digests:
         - 42c9bd44e6fc24d5886f6a34fe78fdd224887604ed4c25d16bc08e2413c58687
       - calculation_request_digests:
@@ -5732,9 +5732,9 @@ providers:
         extension_request_digests:
         - f5fb98beacef1fa933d702ed148066906131fd7644574957420676980564260b
         extension_result_digests:
-        - 2f02ce1ffbdfbe7ce99742312ce4427e1b6c144e7e01fd5e5151d1ceb2144bce
+        - df45e0dee9ed9a21d37495f32445fde12f675e3fdf87ee66068e4971e6f5b1ab
         facts_digests:
-        - 07ea43608c3706875e1581e9e94aba024f181004a481e29752565434d1ed4999
+        - d4dc4cd12802df8801496c39e056b862ef32bac3a5fb2f2d7ff6f3b0377c9ad5
         fixture_identity_digest: 37219b0760810963327e3741b08989c1c1fab9e585edd0250c6e1943e1214deb
         fixture_input_bound: true
         input_hashes:
@@ -5745,7 +5745,7 @@ providers:
         request_digests:
         - cda696fe65fcdd92d5d9ebcb1a7095b4a021e98b4be912671ca091a0b6fa86e0
         result_hashes:
-        - d1726d0402263cc7be639231ce93b251cb33b87c323cd050feb70eca70cedb30
+        - 584d913ab3bf54c52eef0ec967d475426927433759e962bbaf2a5046e85adfea
         semantic_extension_request_digests:
         - 06f924c3fe141ba86b75fa0f7483d8ea409bcb847a973b11b9409d1dec34f70f
       - calculation_request_digests:
@@ -5759,9 +5759,9 @@ providers:
         extension_request_digests:
         - 8d00da27bdba4f3648e56c9d05a7c7e32bf9bfa6739db4f658b553a4d970bffa
         extension_result_digests:
-        - d1492a8637c568d5ad9abc9b7c31da8267472de6b7555c6a71b12067a86d47f1
+        - e58d74a8d6fffb1f68575fa119de1760a19480e081547272361fe264e5037ebb
         facts_digests:
-        - 63a005cf6b95918a8bde293caa9a6cab60e908dd4806c6a90b404d6c325658d5
+        - 2bd36fde32e8ccbb319ca66b9d7ecbe83555fe95e892ad178df8b2ce1c086d91
         fixture_identity_digest: bbcf8af4f02f53f6fdccc0009ee30f2d64455f0973caa16b70c50311325f1cb0
         fixture_input_bound: true
         input_hashes:
@@ -5772,7 +5772,7 @@ providers:
         request_digests:
         - 73094bfd6575561d881d38822634eda7df2deab59a28d50d9dbdd7f743aa0fa7
         result_hashes:
-        - f93b7604c33bd8f4148ca408f7b0408961bf083ed83650a52eb791e7c13b0cde
+        - f182a9f8753c981307b3b377599e560e784acd04f67e3fbb0ad823b1408181c0
         semantic_extension_request_digests:
         - 9c2deb17e50b2b06033c24d3a9f188af28317894cfe43411d266e6440440b2b5
       - calculation_request_digests:
@@ -5786,9 +5786,9 @@ providers:
         extension_request_digests:
         - 9925e17f8997850267d0718d146be37fa5f230df74c051ff42fc8720111e55d8
         extension_result_digests:
-        - b85b417543434844a7b9def323e350b26fc0f69d9b2d97ce219cf058e873e9f8
+        - 17f7cb21111a625e3059dee70b351a4b83825778adad31d3bafd9fe777dab410
         facts_digests:
-        - bad7fb326b6a1a0ec4ed74b185325ef66a362cd284dd8237ef85f1e1cc0bc27e
+        - ddf462ec7e3ffee391a62b8fee967f4b7c7ff349ce0bb7eb93bd5a3ee8375ed5
         fixture_identity_digest: d45f93055d89b3d6208642996ccc96b0a42b5c39d8782153d57fa9826fab2c49
         fixture_input_bound: true
         input_hashes:
@@ -5799,7 +5799,7 @@ providers:
         request_digests:
         - 1af5d9e3d36921ae5ae1d49a152be64f1843fe4047a068f421898614a8ffb9c8
         result_hashes:
-        - f31347228b8ceeda87d772d5686526165a6a79f76a9d77fe51349ec497028af7
+        - 88111075edfec5659bba240a692de9a746a2d84a2a748117dd2ece67a05945f4
         semantic_extension_request_digests:
         - 0929bbe566f6b4156d160d18ebbfc58b064ae4df56f01d86bdf061235d300592
       - calculation_request_digests:
@@ -5813,9 +5813,9 @@ providers:
         extension_request_digests:
         - c2baabcaea0294f8ef0969322a98b1b8247c836ecdcc15e9a55b535577ff3288
         extension_result_digests:
-        - cdb1845badb851d648e120476bc03e03b42f53d49f80959872628ac4ee0c2da5
+        - fd8b08da626a800532665324d8c6a50457840a80653fe096a904ff96a839c37a
         facts_digests:
-        - e762bda82ae9d20db69bbb26e5b614331f6d58543b96654c057ee7bbaa78ad2d
+        - 0b216971e8f85cd7f7c9937b1514d45011c8ad9f40b9dbaadfb0eca142a48796
         fixture_identity_digest: eed4c16c752c031385e85829dc2c5f8c5b97f966fb9cec27536183dda7d59f93
         fixture_input_bound: true
         input_hashes:
@@ -5826,7 +5826,7 @@ providers:
         request_digests:
         - c17c5fceff56ad1d0d7c27cf00ad9db0da55a9bccce1e79e19ca6660d009028c
         result_hashes:
-        - 79ec5398ce68bca1eeae8b7208c444713b7683497e6fb408491027679d073755
+        - 4f0e52926976cc10ed3c15fc8840273aa29800c8a712c56b0fcb1c17e65f7d90
         semantic_extension_request_digests:
         - b23b10067f8e69eebf22f5bf579b731efd38b86cb13e35f57ecfbfc67c86a126
       - calculation_request_digests:
@@ -5840,9 +5840,9 @@ providers:
         extension_request_digests:
         - 1e2e9b0a304f8046f19f381c4772fef9e3118f173c97bb5e538f26a9a225ba6f
         extension_result_digests:
-        - 5aaeedacf5f9d6edbefc16231fe918239baa65c3635e14c00f36612a44dee351
+        - 7cf2c6616f7da10ed81ec31679fcddc41b6d9c2ec19925e3983dccea19e7971d
         facts_digests:
-        - 9bf7c2024afcf094df655aeb4b372c6c66be9f2a2efac37bb3295a95717d259d
+        - 47284c4d3d05e5c2b98ea0c9b883e4f66b3e8f2ec88ee0f11a08535cb5b0bbb2
         fixture_identity_digest: db368d1d7019923031626dabe731c6af85226f31f3b09b7508a01a0fe7e91b1d
         fixture_input_bound: true
         input_hashes:
@@ -5853,7 +5853,7 @@ providers:
         request_digests:
         - d615d9761e51951921aa47dcff80fca92b4217ab2b7e8763e427c5ae1e0d16ba
         result_hashes:
-        - 8a22c95f1a8cf716efcec97250c53d8098ff0287c2300b61ecd6a414c517f9a2
+        - bd68d06f6731c6e03332c76e8f4773b184df6c650e746a3f21fc69cd9b0efe44
         semantic_extension_request_digests:
         - 802b77aca0a9d2bf3cdef1cfe1738f281ec2651fc79a3d05a01064a9cd5fffc1
       - calculation_request_digests:
@@ -5867,9 +5867,9 @@ providers:
         extension_request_digests:
         - c2152c03d5283d8ebe24d8d51094b6f56e23f703077186982adf65e2f877a127
         extension_result_digests:
-        - 5d6d0cf4457364e5d67d9b7a65bbd5650eea6cb8f0ca39217d8203540a9ad1dc
+        - 9bc51080d01d5c2351392f317d4e755631375a028dcf9a119dac3f7b5871a72c
         facts_digests:
-        - 818093f0cf3a045fbed0d0d2f18ffdc15ecebe8f390b16d4d50eceb0948e169c
+        - 8e39e991246a3906ab0bbe60548358a243db85ec99299788719b2ce02bbab5d0
         fixture_identity_digest: 833d676cd4ddec6f259d16a857b723e6512b42082381450a31d0f8a1efa94d73
         fixture_input_bound: true
         input_hashes:
@@ -5880,7 +5880,7 @@ providers:
         request_digests:
         - 8bfd1c9dc494306c0ccd9413c863d3a22b3a8bb83c5b52cde400c3893ee78e24
         result_hashes:
-        - 51142e3092b23b3f2ce556c34bbd4cf9135252783e77d9060d67abf450969a77
+        - bf2dd34e03f06b45b8ec2bfcf9088cd783fb2cdb968452ecc2cdd56f2f987b7a
         semantic_extension_request_digests:
         - 0617a9057dee8637a7fb26affcb8dca1f9332331013322002dfd7f4e8adeff12
       - calculation_request_digests:
@@ -5894,9 +5894,9 @@ providers:
         extension_request_digests:
         - 891beee9741d9e463745b8f44e1b79f644579db31cb38783b170aae319707eee
         extension_result_digests:
-        - 48049d2e1dbfa446d7ae3402fa92b2ed42e3b8cf1aa923d1ff238f53c6c9d20b
+        - 61fe5cda10212c14d335f988efdac077335aa6413d2337870800132b8d6c0edb
         facts_digests:
-        - 1654fa5c6a994d26c09d269dc52a455177c3909fec41414df4b7488dd84b3561
+        - 712f6603405d00f8b09f7dec79775eeab70b6a83b7682d99758153eb68a1fb60
         fixture_identity_digest: 11ad02850d383e5d47f433aacfdad0dee2f1c83ce31495e114b600cc29959203
         fixture_input_bound: true
         input_hashes:
@@ -5907,7 +5907,7 @@ providers:
         request_digests:
         - 69d2a28c5971bf1795c7ca696bd566d3eaaa1e8582763651dc60dfe065c2f73e
         result_hashes:
-        - b9a797cb5d1d6d2602aceeabe31e77e445b60fe8f8b639efb788609c0733a4db
+        - b6f73a2a1a74e0eae913624d7cc1c583699a4b9dab572662d86b55d7fc87797c
         semantic_extension_request_digests:
         - 4a6ea0744190b8a8158d5137f38c073b1bb73bc24499c9b596bb9537d2152482
       - calculation_request_digests:
@@ -5921,9 +5921,9 @@ providers:
         extension_request_digests:
         - e9c0c5dded8eea9e6318674ed71ccd12731d2feba0943b6e1d3d0d7f23ac5692
         extension_result_digests:
-        - 419648538c0e7decdfd44f257fcf50da62ee6106f214a840d3123136b39c15dc
+        - 4175673cc672371bc8688b0e58af531eadddaff04f23dfa40bfc2c39f5de65b2
         facts_digests:
-        - 15eb6e595ecf65d59110a444e517435a6c9eff0abcc1980527fe6fabfcb62625
+        - 847500879d95410c86b1b6c0fa0910211ea065a156905fcdc7fdd0802a953676
         fixture_identity_digest: dbcce319106e07f81dc91c9f3007592e07d5e529cd337b21cbcac400853d2abb
         fixture_input_bound: true
         input_hashes:
@@ -5934,7 +5934,7 @@ providers:
         request_digests:
         - 6eeabb0fe11ded0fd8a1448d1e3ffbc1182e6eefe97629dff17cca061019b9ce
         result_hashes:
-        - a83ecc1c82abda9c6a25be789fe4871dbf8190bb8ccc8ce56a99cf14ec227ad7
+        - 9fe1cdf4f516a19ef0fe3f47aa994c86ffd79fc49532a111752d7fd7ac2c7306
         semantic_extension_request_digests:
         - 324c5d7a00fcbf3f5b13eb94c35567668cf4ecf7c3f355c9af707e125b6ec298
       - calculation_request_digests:
@@ -5948,9 +5948,9 @@ providers:
         extension_request_digests:
         - 470f34ffc5939442bf7baff290fe2fe125f4c0e57c1d59ac86ea5795cb3bd585
         extension_result_digests:
-        - a570e76365dcfcffc183e368976740aada7873f876bbce90f8b973849b85ffec
+        - 87c5800a205a20cfcc1483d5bec8308798073a176cbecac77450b71faadac596
         facts_digests:
-        - ff0e49d3f5b5bfb90b1c9292dae5723dca92279908fbd1738ccf45cdc7389696
+        - aa82332226a8fc219467d0c77da1d71d01c785ee77329472c4f72f10f3229a66
         fixture_identity_digest: 0228aa2afd9fbbe2e5fe6a0bc6375a868abdd997d0e0ad1328655fb721a7c6ba
         fixture_input_bound: true
         input_hashes:
@@ -5961,7 +5961,7 @@ providers:
         request_digests:
         - 40911399e475daa49b9937ebd310ce1234ffcdb27f571100ec0018ebd10e7885
         result_hashes:
-        - 609b947f679ebbf40cb7808abf27ece726cb63b831acac8f3ec368df40c81c88
+        - ff2c21642c953948b27b6363b27cd02d0c9a182a8f22872772953b9fbc28073c
         semantic_extension_request_digests:
         - 347339a370ca2d7b319e5d3da3e100dc065694da28a1e6dadff96061a32e44b9
       - calculation_request_digests:
@@ -5975,9 +5975,9 @@ providers:
         extension_request_digests:
         - 4676a2c52329f825864ef33e620384820806ef07646f9a6f3fb00eaa3a438a30
         extension_result_digests:
-        - 1463d64c093c4df971bc3b008a886a3d40285b648f58f243baa3eecb09e1d189
+        - 1bac4f3f9b60df444c163df4da6f738b43eac5dac696ddb28435b579afdf7fbc
         facts_digests:
-        - cd0b445915d31efc8c9707ffe3a8ae8514ea1b67ce441993b107057214f94e4d
+        - 27a1e3f28e2d176b3628ce0411d1766020004bff0a4f8e152ed808b798e0ea63
         fixture_identity_digest: 9b4723098fac8a38eb649c9c8889ccd96468026f2ee1fbbea036bc8b4f72a031
         fixture_input_bound: true
         input_hashes:
@@ -5988,7 +5988,7 @@ providers:
         request_digests:
         - 486ba54e3d550de64878d05acea7b4f87429cfd871da439b651471fc4bdbafd5
         result_hashes:
-        - 6259618ceb2b5c685a522b151dcca3cf9c74f787201b1def5b4e300b04c01d99
+        - b89277f385fd13f4fbf3a72baaaddf06c74a08b60cee7a053988c45c77394eda
         semantic_extension_request_digests:
         - cef9901bf4d02fc54bb95fa483b313e93c001519d92a699ad0b9d7fd4f5246dc
       - calculation_request_digests:
@@ -6002,9 +6002,9 @@ providers:
         extension_request_digests:
         - 153c6fa30db4be311057138425656e685ba9b9aae0a516919e0da49581fcaa0d
         extension_result_digests:
-        - 0d7d18688863dac760f303c483ce3fcacf84d9ef80c72782b71d8ec21efd1c13
+        - 793725ed5ae45128fff68352d8a159237bbbff260d6359da9fc009c36406f0b8
         facts_digests:
-        - cc0d47ab56952d14c18c8d80ca28cad116ec88a779e41daa1ef0463afd51446c
+        - bd7574fba3f4f12aa1c6b185db36cc4b758e57ef73d9568ef5b8ed9b78266bd2
         fixture_identity_digest: 2d5ab12e2aabea4997678247b08de36d77e0b310c3307183a035052e78454b80
         fixture_input_bound: true
         input_hashes:
@@ -6015,7 +6015,7 @@ providers:
         request_digests:
         - 404aa5f5eb81a156b4a3fb7a65a64c0392b18fd1da15be0381954e22ad760abf
         result_hashes:
-        - e85ca6dcc668b2ef2af2738f07825063276392b35075aae73399e707f331e4ae
+        - 242e05f888aeab91543df1c05f1df823064651a2b0878d584b1d256f99d0eec2
         semantic_extension_request_digests:
         - df2ffeef011b737a8778f08f544c43f6a81f06ca771bab74a0c18ed48ad47065
       - calculation_request_digests:
@@ -6029,9 +6029,9 @@ providers:
         extension_request_digests:
         - a5f43359021321336a4fe8362030abb6cd9ce8fbae23d4f96ce05d65088329cd
         extension_result_digests:
-        - eb3d8355b079ef9a08cd6454711ca1a8ad9c735c0620cf2982add3f7ced151e1
+        - 525d8a8f99bd9f0d8a304cbe6abd31e932fb5f70c0be9bae17550e8bbebf4f91
         facts_digests:
-        - 4f9c63cc36ff05a6d32bddfbd9aaf0be49c87ed4fed4bfd298ed7dce11182f1d
+        - d0cc7bb226e554a0bac1e9526b3635b0cacc2d9dcea162275a87cfda3d2111b8
         fixture_identity_digest: fca5501ca4fb2fc5443c8ad9b4379bb603ce52d5af165384817104e865605bcf
         fixture_input_bound: true
         input_hashes:
@@ -6042,7 +6042,7 @@ providers:
         request_digests:
         - 0c96c6fb025d35ad879fbe8a0d201a67621a90a2becda07bd5cd305e20ebcb28
         result_hashes:
-        - fb419d492ca300be61d91633db220f487efb7e3ba7ee0ebc8c7eb184acea8700
+        - 28621e2dd36d26488952111bb556ba1cecd814b6193bec53164245ac14115cdc
         semantic_extension_request_digests:
         - 0dcaefc71f37182cd9e66b027d4d7b1fec35568f3443d37ceccabbfbc00f8498
       - calculation_request_digests:
@@ -6056,9 +6056,9 @@ providers:
         extension_request_digests:
         - 03ba0c36128cccc2a7ee77d419d459ee333ac1cb004b632cbeeca1716485f0d1
         extension_result_digests:
-        - b3da7e20aa826abc9841e9ca7025869c99bcbc7a77551538d59b422f18078c5d
+        - 2147eb631a1a1e1c07e72aca40313263918ad9906978680f6074e2b542e5fb18
         facts_digests:
-        - 35299e1d1226c2ea88a0e51f96f490073566ffb21ef47263fe0d2a7cf3586bbb
+        - 9fbeb973898c36632dbbc0944b95864eb07bb1f6d2ab60868a68575d5c570743
         fixture_identity_digest: b78d3c24ed49a2ad23713f6671ef9066ab6da03247fe33571eca22989668f93d
         fixture_input_bound: true
         input_hashes:
@@ -6069,7 +6069,7 @@ providers:
         request_digests:
         - da720cb14e868479aa56befadf76bc3d4c70be53caf8a16d3920392d9e631ca7
         result_hashes:
-        - 8e42c59b5ea156b0f367e41bb4061c8db94370979e0cd5ae18895de5d55de4e8
+        - b9d270034e2e27fed1e0ef6eeab7514e041af48cbad79e811edd5767bdc4db85
         semantic_extension_request_digests:
         - b2ab2ee6d3823f30730aa29d87d8a6b45b485eaade9bd454c7f98a8979aff15a
       - calculation_request_digests:
@@ -6083,9 +6083,9 @@ providers:
         extension_request_digests:
         - 0df11f219f29340ba0d5e6819be603acbf0f21baabab63aa11cd5b7882233ea6
         extension_result_digests:
-        - 46f35d60bb71b5be5c78cfe3ba3b263b74d8d531a2f4bbdd56b69a8d3666a41e
+        - 76a8f404c8a6a332c265dcbb642706938bf306a0d6dadcfe17c95bd1e3ae392b
         facts_digests:
-        - 98a46bd86518077e2f54c40f6cb9d4eab583e6c0d11a2d07ee31df79240d7cb5
+        - 25069c761278f9a5579be2b42798c756f1e95350ac6903d7a99c5876f2b53dc7
         fixture_identity_digest: 5d24fb4707a53849fdec17759492d5b2985a7abfcd76823563a6663bc6e76aab
         fixture_input_bound: true
         input_hashes:
@@ -6096,7 +6096,7 @@ providers:
         request_digests:
         - e044cde9d05d4e68aa95154d2f4c08111694e417504341aa601678442bded80b
         result_hashes:
-        - f665613810fab82d4bd83cb89ca98904c15c6f285f9f3e7d57ca6abd40e909c2
+        - d2feff8056d06b7a62e765052ba4f19db98c552e89a2f12562f90ca5bc4ff3d6
         semantic_extension_request_digests:
         - 476c85f5b64e8a3cdd758ef32600c7cdafa155b89ea54fe2cee5daf22cfa20af
       - calculation_request_digests:
@@ -6110,9 +6110,9 @@ providers:
         extension_request_digests:
         - a67c3bcfea96a7e80078c13266a98cc799c8717dc845a880f47268876d1b21ec
         extension_result_digests:
-        - 4ef48c79de66746cfdcc7b00b976fc62dc412352932b93d4055fba07d05f58f3
+        - d37602f9018c94567cb6fa0fb03484f71e05f2a6dec959c2422dd1bf9ae14842
         facts_digests:
-        - 7dc3781623ad222be8dc6106bdf5bbf6fd17d4c66912c70dc6747d5aa2099965
+        - 826178d5b8475703d3dfdbed148f3029f935f89f3618d9cbff4400b5845e05ec
         fixture_identity_digest: 522c7a10d43573ef0d22b9804bd45f27395d1df63189707b1efbdd490ca97b8d
         fixture_input_bound: true
         input_hashes:
@@ -6123,7 +6123,7 @@ providers:
         request_digests:
         - 2cc68e5dfdc7fe127ee35c79936e69c91a2a64bf94677ba8cc91da5786822684
         result_hashes:
-        - 21924d43e0744166ebaa560f08b7e9988cfc01ac769d48399e921719061331a9
+        - 57c8642fb436e74770b5e5e74a2b8475a0ab577a619567bd1b303f503c42812e
         semantic_extension_request_digests:
         - 75bd2470a27193d06fa99d4830e1838e1836b6773eeaf964c9716e0429f5079b
       - calculation_request_digests:
@@ -6137,9 +6137,9 @@ providers:
         extension_request_digests:
         - 5faf0887c93d4f06c6b9e4cfca23abe81b9b54a786905d901c2e2ed26d935945
         extension_result_digests:
-        - 970273505ca453830b5b47b36efe1449de7ea8b21a64dccc754e5a2abf4d0681
+        - 39680cb6cbd60f39c580c3b99c933f3295dc35b6e96dd509614d4fa780463ca3
         facts_digests:
-        - 37bcc06df6a5b64a37ed727d41743787a308aec0a6147cb166aeba030023090a
+        - fcca3681719d2cac72a0e5316cc20bda0e1a15f303a820ff9ef33e73a52503f9
         fixture_identity_digest: ce0ffa028de0446e40f080df5a57ddb5be56be87cf7093e4fa6c5b38595e5d7e
         fixture_input_bound: true
         input_hashes:
@@ -6150,7 +6150,7 @@ providers:
         request_digests:
         - af4b721bd05fe465916cd2f8954aa64d66381cf7b833247eb59473cbad811b26
         result_hashes:
-        - 64417dfb6e5e3403e8c30c95ad0f6a99a68274587a44a7a5f6d14e626a13c347
+        - f8c7dd2633a09a9bc0836967dcf32d7b2c2ae673db15d79efa9a6831807bfe64
         semantic_extension_request_digests:
         - 023f86c5239024feb79a5b356e15c12a379e7bf033a17485b8efccbdbf9aa954
       - calculation_request_digests:
@@ -6164,9 +6164,9 @@ providers:
         extension_request_digests:
         - 1ed4b73b405418995015ea4e0523d707c230fe3699b3a11c7fda5292abe181ab
         extension_result_digests:
-        - 5d0bf8e1736031c2aab121e9524e6c218479f20da497f4531cd2b0bdcc0d98ef
+        - 2ae3985b44154a8e503287569eb198f36e0b9fa2211c350086d4559ec7c6aea0
         facts_digests:
-        - 9b9ab1906ea632acf313feb3d508f7bd6b9797d417be15d956438ecf4b8b8064
+        - b2463d7cc94fdfcdd04eb5bebef57598c2a337a1a3cb96ce902533c98047e927
         fixture_identity_digest: 407627e94e1d36a7bfb9dd83cef72dd8a0982d106ef98175f2ffa311ad2984f8
         fixture_input_bound: true
         input_hashes:
@@ -6177,7 +6177,7 @@ providers:
         request_digests:
         - 11b56f4c171e46520ca96dbb92d0cb56e8fa5713fd344522796f1a4dc73ef99d
         result_hashes:
-        - 51dd8c65bf82e38ca77aaf9772a4a7099b81b5bb1721216ced036e942054ef08
+        - 844a11ee9b9f7db6ad146884b917927aff93fe8bdfc33eb0610a0a7268c4c5e9
         semantic_extension_request_digests:
         - 023f86c5239024feb79a5b356e15c12a379e7bf033a17485b8efccbdbf9aa954
       - calculation_request_digests:
@@ -6191,9 +6191,9 @@ providers:
         extension_request_digests:
         - 059e4b02d131beec9362fcebbcdd3f4d6ba7851deafc12d49d9c2d02ae589567
         extension_result_digests:
-        - 771c68d13286ef22a366ed5529cc2412511d115497bb7374f30f153d7ccefcbb
+        - 898d551082819a0aa2d693b3ebfb1c9452de2b16c76795b2167706e02e67df05
         facts_digests:
-        - 1d54fff94b3093188fdd8bd46bbfaa4d2d00a3ac17e00b611ef37107abe7d694
+        - 634221182369dd4ce6ba0b5456032d608acd5d8df6b0230c8bb255e04af7b96b
         fixture_identity_digest: fd11804742cbf21546dd39024aeebb8c134d2db02e2b8da7b26e61613b19a331
         fixture_input_bound: true
         input_hashes:
@@ -6204,7 +6204,7 @@ providers:
         request_digests:
         - c64b3e1e563c5c374cbd62d21b12a06365d3121aa1e9c05a1e44fc4a70185496
         result_hashes:
-        - a39e5ae481083c2c321881794ed66d9a29da9385c9f34fe4aefbe0a7504361bb
+        - 08b517f0a4bdb59a7230659f6c5847ea95693fe5fe998a97d3a78f4b30532609
         semantic_extension_request_digests:
         - 2ff9b73a8cdac479e884a761ca94b83f981d0e54a49130b3375d4456f94e1720
       - calculation_request_digests:
@@ -6218,9 +6218,9 @@ providers:
         extension_request_digests:
         - 6060a159a549ba58f4ca6df7aa4e8e2e42ce9992d7a648300f4455047b446190
         extension_result_digests:
-        - 7bf4368eb216226bb955d7a19df22573c47e9029454d41b5f82705ecdf7e06f3
+        - 7b44d1beced07f188df6def4dacb7ab44625882218e25716473aace747a210d7
         facts_digests:
-        - c867783eada51047869eb3f9059c704235cf40da7fc0d4adac2e74a3c9f550e2
+        - 9a013179e73a13eb5d58c11008a27fa08bd2ed0aefcf789de2e9e33ae1862967
         fixture_identity_digest: 1874947ff98061f48fab08212e580aa2ea292ffe7d158eeb6581ba789cba7341
         fixture_input_bound: true
         input_hashes:
@@ -6231,7 +6231,7 @@ providers:
         request_digests:
         - 52d7059636665db1f2bfb6129071cd2923a88c1da238ff41deb06173dd5991e7
         result_hashes:
-        - 0358e0a152cc119dcc9be8bf9d5dcf6c0176c78711fc4fcc09a3c9b8f7aa22ef
+        - 1ad4dec0397431b8e2fea5b240cc67621a75e700185253f6f3430b16705e8e08
         semantic_extension_request_digests:
         - acc2def6688933850d3b286d197980a01e6d872f0d7f904d4ceac4b30ffaf962
       deterministic_input_replays: 36
@@ -6279,7 +6279,7 @@ providers:
         extension_request_digests:
         - 91068a80a261fcfd23f4212b1667d4b24951926dfb41b68d0774d86aa421a850
         extension_result_digests:
-        - d06223d0ae1588fcaf63288a4d4641770c6f8ac86f08d62ae6e1508a07363490
+        - 5d0de9cbdc485c9359dfd6135d34d613fbf70f3ca1b9d41435847e16a07ca9cb
         fixture_identity_digest: b37b6aa6cc889ab7c046354c26cdec22ec4407c558cce5daec0835f7cddfbb1d
         fixture_input_bound: true
         input_hashes:
@@ -6291,7 +6291,7 @@ providers:
         request_digests:
         - afdbffefdecf60fee0e6e79e65ecb74c7d6b5e69a56ba539245d87e0a94620c7
         result_hashes:
-        - b187920b9088f26e585f22b16eea3c28a5542e0b7703b02fd91f96fb44095271
+        - 75db24c6725f021b7418eede3631937463b69c58f13dae90464be82382fc2d49
         semantic_extension_request_digests:
         - d5cf8431f4ae20af8e59722297afa6edc443381e2a33e57b55c94189c68bf15a
       - calculation_request_digests:
@@ -6308,7 +6308,7 @@ providers:
         extension_request_digests:
         - c314f6495ceb11af2330d233ad63f678ef840d6c024aa08607e7e56b91b9c968
         extension_result_digests:
-        - 106c1a5ea8e709a8181babf7c53960ff77a66509de0e37f0bab167ce095d275f
+        - 430187a91a3e7bd7d830f927801c7fb3cb279260401988b035e8405a9d4e1e7c
         fixture_identity_digest: 54bf6ba12b0a2f22f8761b0b38500a2755ee88bf4ccdf62fe43a20c49f47178a
         fixture_input_bound: true
         input_hashes:
@@ -6320,7 +6320,7 @@ providers:
         request_digests:
         - 42ee858388251bb0f233fba179ca2875ac2e3f96b1e47f768af747628d96bfec
         result_hashes:
-        - b84149db502d487c64f0c5877834790fb1bef5bf6407ea03578c3ac5f247a3ee
+        - 8f7e96de8f469401bb75bef591fc601821fd3b75adcd2f6bc96eeb5d4a8a2021
         semantic_extension_request_digests:
         - d98bc3ff498bd06ec1c2d06905a83515d17d071ace3a893b395c53a41ab37092
       - calculation_request_digests:
@@ -6337,7 +6337,7 @@ providers:
         extension_request_digests:
         - f6c6707fb101b1061381ac73275fc7e54a4663ffced93bce3ced11ebaccd26ae
         extension_result_digests:
-        - 2dee09eebc8d5d9eb7c2019f3cc273736968343648da1fbc42173abed6426cf7
+        - 5cda479e859cd5bdbc5d678c24c2c4f02be2d0bf3c0c781e63910c8e41324da4
         fixture_identity_digest: 4991d8857752a2720cd93a30ee9ee60e832548caa10ab1cf7f7953ef692915ea
         fixture_input_bound: true
         input_hashes:
@@ -6349,7 +6349,7 @@ providers:
         request_digests:
         - 463a887dc2f01b62a87b86218115c7877d05fac9665cbb78cb5d6087c1fc5d71
         result_hashes:
-        - 315bf22d06ed3f4603feac887731607fc9cefa41a78bcff999586ac77ce9067e
+        - b2ba74a3f5dc29e5aeaf27333e112c6d7c075daf7b0dfc0a97280b1c4ea5a69e
         semantic_extension_request_digests:
         - 023f86c5239024feb79a5b356e15c12a379e7bf033a17485b8efccbdbf9aa954
       - calculation_request_digests:
@@ -6366,7 +6366,7 @@ providers:
         extension_request_digests:
         - 1a1107ab9be6dadcc7eb81cc1ddeffd19baf421ab2187e5df2a81ca16ca91241
         extension_result_digests:
-        - b729bd58c9d206484d897f897d75e76fcbd53f18931e70ca6cdfe3bbd3748bc8
+        - 2882a644774dfe44f5448fbaafd87d457506cb952298e5d8d399b8f841fb2773
         fixture_identity_digest: 8958f7bb3c74b9033c497182dcef3364ae8b7d87473c0e100cedd3c8c978bf57
         fixture_input_bound: true
         input_hashes:
@@ -6378,7 +6378,7 @@ providers:
         request_digests:
         - 3e64e1b33259d6291ae8ad0a761f9f604c63a4efb201558f6b532d51801ae71e
         result_hashes:
-        - 6bf23438f84207df75e4331af0a8857272d33b57540e493c04d3fc7e1946f8fe
+        - e61a2cf8462cb47e16953948efd8ae23051a25be173f140e58464638d89e7ecd
         semantic_extension_request_digests:
         - b149bdabdad92f9a4060b592c7f75afe6a41f88cafff105697574af27c70e71b
       - calculation_request_digests:
@@ -6395,7 +6395,7 @@ providers:
         extension_request_digests:
         - a636621fe3d96fd3f5f4e1e896c3404bc26d85da311691f8829927fa90f40bff
         extension_result_digests:
-        - e926ddbb2097305aa1c412219037ef5ba47bb82fc64de17eb0166694ca836a43
+        - 6e7cf893e720d764d5a98f4ff45059c5bf52c685c1f76809f5a5c96a857fb23e
         fixture_identity_digest: 661a636f970af3dac53c77c0bf1aa5b2553f60b6800f336ffa4d608b4a7fd513
         fixture_input_bound: true
         input_hashes:
@@ -6407,7 +6407,7 @@ providers:
         request_digests:
         - 30858475975ec353e35404a4bd3b3043e0f62406f16dbf4b6b717f057dc9c273
         result_hashes:
-        - c55409974e33702198e9a7e075139c6bf48fb52c681f3a3d894a03dcc4dd5477
+        - 3edb45c0e5a586ba91fbda23f7809b3db6c44e64602029ebc37f8678d25c4e22
         semantic_extension_request_digests:
         - 2faa2d48588ff9318361339eccb4765e6b466dd0a0971d34c8277be3feeab1dc
       - calculation_request_digests:
@@ -6424,7 +6424,7 @@ providers:
         extension_request_digests:
         - e1903d71d86ac73e60fc5237bb58c170498e0eacad19d2584d8a1f6cc58b25b5
         extension_result_digests:
-        - fb3ff1d38dfeb4be069bf1b1f7750c267e9f03216a42d580f59bc87ad45eebc9
+        - c08f21f5dea4d9f646e7f3528a3995f3cc5d9c2daab19125007a8226c1d9d249
         fixture_identity_digest: 185cf53fdf5c0893da24bb11e04fc4b19b365d9777a8068d336375c947f3bbe6
         fixture_input_bound: true
         input_hashes:
@@ -6436,7 +6436,7 @@ providers:
         request_digests:
         - ed5b86a764cfded976f2119464a59aab30612e283115d43dd4c2528175dfa977
         result_hashes:
-        - 1294a52853cec717d0f6fb8896874d383de44733159673e670c10243b8bb886b
+        - 878757960c54fd7e30e07ff3e3849a69bb03afc9d11f25639b6ad5d1c4583483
         semantic_extension_request_digests:
         - 2ff9b73a8cdac479e884a761ca94b83f981d0e54a49130b3375d4456f94e1720
       - calculation_request_digests:
@@ -6453,7 +6453,7 @@ providers:
         extension_request_digests:
         - 0e130d3fa3d1fdd5119ef02589b0d0b224194ad3734a279482d604b694d6c9cd
         extension_result_digests:
-        - 9526e52f0f41021b8ba4ab23a5c77126e24bf2bc0f9038263d1c1ce0ae85dd52
+        - de37895abf1d1c868a417c0fc49826fec7ceb06e46d41ab060f15c0ec8f01e23
         fixture_identity_digest: 889740363e6443f41cc56eb950d03d442d11458febeb3812bd99e12fd725fec1
         fixture_input_bound: true
         input_hashes:
@@ -6465,7 +6465,7 @@ providers:
         request_digests:
         - 6c5c4dabaab45b09e0446cd3d90ddf38c2b4eacf8a1d710c4e0a0a84ab186fbf
         result_hashes:
-        - 9d315bd56464ddb45e8228b83eb1556a219a832a5feb70e93a8f8590f3fae26a
+        - 35323f126c7382c8fa8e32cac42aa052c87418e00c8347dd7bf93a72bf238d2b
         semantic_extension_request_digests:
         - acc2def6688933850d3b286d197980a01e6d872f0d7f904d4ceac4b30ffaf962
       - calculation_request_digests:
@@ -6482,7 +6482,7 @@ providers:
         extension_request_digests:
         - 0df11f219f29340ba0d5e6819be603acbf0f21baabab63aa11cd5b7882233ea6
         extension_result_digests:
-        - 46f35d60bb71b5be5c78cfe3ba3b263b74d8d531a2f4bbdd56b69a8d3666a41e
+        - 76a8f404c8a6a332c265dcbb642706938bf306a0d6dadcfe17c95bd1e3ae392b
         fixture_identity_digest: 5d24fb4707a53849fdec17759492d5b2985a7abfcd76823563a6663bc6e76aab
         fixture_input_bound: true
         input_hashes:
@@ -6494,7 +6494,7 @@ providers:
         request_digests:
         - e044cde9d05d4e68aa95154d2f4c08111694e417504341aa601678442bded80b
         result_hashes:
-        - f665613810fab82d4bd83cb89ca98904c15c6f285f9f3e7d57ca6abd40e909c2
+        - d2feff8056d06b7a62e765052ba4f19db98c552e89a2f12562f90ca5bc4ff3d6
         semantic_extension_request_digests:
         - 476c85f5b64e8a3cdd758ef32600c7cdafa155b89ea54fe2cee5daf22cfa20af
       - calculation_request_digests:
@@ -6511,7 +6511,7 @@ providers:
         extension_request_digests:
         - d6f636ba6ae92fe2f110cd83a1c1b8d996eebea023a0561aab7db90084efe5f7
         extension_result_digests:
-        - a9fe4a666e54c1dcb1fde625873a1a8810b853fbb563f3310988088939c76b3e
+        - 31378369badb182c13f0e5716aa89b21e5002dbd716411b99ebe30e00bccdd5e
         fixture_identity_digest: 0a4af25dc3aac3be93dcfc8e8287c64eb11b51a2b0190b5b87387fe217da06e9
         fixture_input_bound: true
         input_hashes:
@@ -6523,7 +6523,7 @@ providers:
         request_digests:
         - 6b51b59e077cad57465f5dabf654a0607f2e92ca116cd23dda336478fa4fb867
         result_hashes:
-        - 4227f015737079218280c949c79098b29e1bd6a44bf42916a85487bc52f4ef15
+        - 2883c80af5fed3db440e9862dba619c367c178a8a54891cca3db685a3332128f
         semantic_extension_request_digests:
         - 004bebd0bc0d3bf0856409974c66d66b76c64dfe76947becc65b25e1c9b10259
       - calculation_request_digests:
@@ -6540,7 +6540,7 @@ providers:
         extension_request_digests:
         - 446d38308d7cbf65a5a4cf17431548fde6dc70d7ca9491c60e72d48a7999f756
         extension_result_digests:
-        - 2dbaea386d297878642554c7ea36cfcb58e756fb340d9db23a4400a4859fd080
+        - 12ae3e72723eeaa9cd883061eafa8269f49d62851277bd8879129b9e1d8dfd40
         fixture_identity_digest: b10b3a3ee207e4101821ae3efbd976fec26e16fcfad6f29096100c24a0f9f480
         fixture_input_bound: true
         input_hashes:
@@ -6552,7 +6552,7 @@ providers:
         request_digests:
         - fb2a122188ca7ed326b0932719846ea76145034e92ec12e66efcc43b5caf04e1
         result_hashes:
-        - bab84b4ea7b170ad81d225c4c93d414abafb50c80aa90ebed275b197a5fb1dc0
+        - 82565faecd26303570eba5a9850a6fbd80c9b546d64fab8585b07d7e790221d5
         semantic_extension_request_digests:
         - 64c6083a893b0acdff0477ce11d8aa20b5fc2893a0b6dd294b636d652cb06e6f
       - calculation_request_digests:
@@ -6569,7 +6569,7 @@ providers:
         extension_request_digests:
         - 991eb415ffc9da09d6282333130fd206ccbc747410e5d75052008b2f5a1c6204
         extension_result_digests:
-        - 89e1d284159d34cd95896deaf6d084ac52aa746a6a18b98debde52d1a2d3a551
+        - 4c0a663a3a7f5f5355c4ffc848e8fa098ee719be1139ad9d201e7469b99827c6
         fixture_identity_digest: 4fd665ccd4535467745311bc97fe3d4b4e4727096ca718513e06acbc3c5f598c
         fixture_input_bound: true
         input_hashes:
@@ -6581,7 +6581,7 @@ providers:
         request_digests:
         - 1171796614edcf301e8d45341b54e79168423a5f61d5daf4063f2f90a0c1c4c8
         result_hashes:
-        - 82e2bf974c4aa9aae7745c481b29f78b285e9c246ac78d2495b0f3e18d5b86dc
+        - e062e93f1b02915b6fd4386be56779d7655354c53dd5d5aa2b2def91d63ac3bd
         semantic_extension_request_digests:
         - c6c84b1339ed8eb5356ca33bca4098a1179a3e1a418fe4401119a0931d3005f1
       - calculation_request_digests:
@@ -6598,7 +6598,7 @@ providers:
         extension_request_digests:
         - fddedecf8e0324aaec159d440ee8862b14765720332362844260d61310f151c2
         extension_result_digests:
-        - 6d6cc44af5379672e15dbd2425488d6570ea0aaf1e95b6e877c3d1435ff4968e
+        - 70bf851f99738d27450e9f5c1b21e750def20862bfce89a7952c639a25cc9819
         fixture_identity_digest: ff1ab70be136e99756444e5cf9a584aa8675f736034594e3f8c46ca0961a6e2c
         fixture_input_bound: true
         input_hashes:
@@ -6610,7 +6610,7 @@ providers:
         request_digests:
         - b4e479c83d8534dc9238c92e60d11f79848a01ce2f6a9cf1d1f15cd99838deea
         result_hashes:
-        - e4004769e679dca74599a9fd6257f31b484705d70033fc3e659535dadcbfab0b
+        - 171771cf2e5a710c2084ae0d386f2af63e11260345e013f8d5f344575ae7da7d
         semantic_extension_request_digests:
         - 469a3539b9139d335508f0cf929ca64e458b857933fdf3a367a434791fe499d8
       - calculation_request_digests:
@@ -6627,7 +6627,7 @@ providers:
         extension_request_digests:
         - c77a461c740f103da01e4e903a7b4e914bd84492fcf888f8034ab256595065d5
         extension_result_digests:
-        - bbac3da025bd9ec168aaa353abea98eaaa797feaa7e174656b9ca4648dedfe2f
+        - daf27886f4b3c7d4456f27c9137c77e50ac41ce5c8525cdf031f7d16e30bd196
         fixture_identity_digest: a1964b79abe176de99c526032de7b16c56074b9523a23542afdbcea120a0830e
         fixture_input_bound: true
         input_hashes:
@@ -6639,7 +6639,7 @@ providers:
         request_digests:
         - e98a2035b8eab9f173b03bff39a67476385530f648bb086cec8485bf98cc369a
         result_hashes:
-        - 6bd9cf3a385c205adc68cb3a08e583c603e4810dc40687c3ec2da18c2e317195
+        - 962f4c436623ed4c805243b151c3947df9685bee5e9d63ce521e5dad1d176dca
         semantic_extension_request_digests:
         - 06727d959e8ba14ec645d56ebb8aaa5c3ee965a3761e607d2c16c3d88f39e6da
       - calculation_request_digests:
@@ -6656,7 +6656,7 @@ providers:
         extension_request_digests:
         - 4e0d61e7409a75e945eee45e240b88b3f6fd2d4485b93bcf863333433f9e467f
         extension_result_digests:
-        - 0b83c905a1ec0cc2ee951ef58e4b8a0ca6099c9d2ccc538206f7c3d6ac7f16f4
+        - f641c39e5cf329288fdc15bc3326387f528f12ff68117537aaa69844f23e4df5
         fixture_identity_digest: 6754088a5027dbba52689d5d7ab0da4e18641cfb8357f00ecc8d09610fdd39d4
         fixture_input_bound: true
         input_hashes:
@@ -6668,7 +6668,7 @@ providers:
         request_digests:
         - ed96b2a12227473450b517b13dd21f663272de171059c83828c9db229716657d
         result_hashes:
-        - c84b4e6d3a39b7de70a356524c40917fade726a44108bd685e5d164368060a9b
+        - 5e12e881ef30ebe09b5d1b5036cf9b9d6214f3aeb7acc1f3532b575f93245440
         semantic_extension_request_digests:
         - 8504da4ef3e7611e1358c591f41e7a4ca527d6180bff0806b3082e2cddece835
       - calculation_request_digests:
@@ -6685,7 +6685,7 @@ providers:
         extension_request_digests:
         - 32fd3cb32609f99aba73e31cfc637fef3720c6b5c541ee2fcbe6f2d64a72966c
         extension_result_digests:
-        - f257de9017fc6066e04bd29fb1da2b90b326a74e64b9714ee7b3effc34901ad0
+        - 32830661952d04332bee6545d3fa2816a1d04fb7066a54d8d5e5135b4ccefe69
         fixture_identity_digest: 123c1f9f0d3b141af659b1d2cbe95e6ff9e5facde8daf8e3cd7f0bdc5078b9dd
         fixture_input_bound: true
         input_hashes:
@@ -6697,7 +6697,7 @@ providers:
         request_digests:
         - eae58559958cfc6238b0a818300c3f02cfc2b7d5be76a1afa783164da72e76bd
         result_hashes:
-        - 2509de158760ac770c9eb377af425e2696f508eb3eea6f8b08d7796b2fcefc5c
+        - adee7ca19ee5e98149d3546234f5753f1b17cb43d2d8d593a26409809c5d16cc
         semantic_extension_request_digests:
         - 6261b60d4666815413e1e78f93953d6f4673a80d2e0649fd4093e5e2103d4c7f
       - calculation_request_digests:
@@ -6714,7 +6714,7 @@ providers:
         extension_request_digests:
         - b6bf23c09d4b16ca8e8bac9e1de9c2deaa8536601be0288c03422f189b7278af
         extension_result_digests:
-        - a243eb9941e94d49f404c7b3729cbc82aea1f8d4d636de5f0d71369e1b49bd6a
+        - 35620ac9819e2f81f07ec08c2904b5c9be7f7c5d3e22ccf17e083b0366db1288
         fixture_identity_digest: 39a90390cd3378bc840287b59ab625e921be9eb18cee218dd7b9158099fcf338
         fixture_input_bound: true
         input_hashes:
@@ -6726,7 +6726,7 @@ providers:
         request_digests:
         - e1bc82ed2595accf552f83fa77866f4b28e6323b28d8859bf093a95de95fec45
         result_hashes:
-        - d75606953b82ecc84119686236798131ae1a4a8c1b9adf4e3779b42088a17938
+        - b8309669ce616135f2b5e05858adb884450e68f82d0df3c190d3a90befc4d1a5
         semantic_extension_request_digests:
         - 14b2b802c7d9926a9eba9ebd0ba096cbb7520eb3e1f37cfa4520d92390147529
       - calculation_request_digests:
@@ -6743,7 +6743,7 @@ providers:
         extension_request_digests:
         - a18e99c378600e5596f41b5d296341f407634fc24f0d8e499546c7f9b8c8d709
         extension_result_digests:
-        - 81997a47957728683536304c36cfb01f11464f80a8ae92a33a7f6bfc90407f1d
+        - b10238e31d224fd949be1cb754e466e8ecdbe53da735abc52ff0082ea5595880
         fixture_identity_digest: 220ca53cce0303762973d23e7a5a2497fc561e14b11da2bd4ffbd7b1f8fa4410
         fixture_input_bound: true
         input_hashes:
@@ -6755,7 +6755,7 @@ providers:
         request_digests:
         - ad2bd2509baba2d0092dbf7c0cb146b9986df46cffa8eb21268ae79219d5e655
         result_hashes:
-        - 087ebd81c21ffe2c9aa395dc99ed9380bd6f4ed4992778137f1308fba44e691c
+        - 18bacfce0e040f2a41a20da4d38b79d65ad15d143e15625026690b5c94ed914a
         semantic_extension_request_digests:
         - a92f6d83ea4849a65afd81453930ecd0df7e32264900e930ea17bf9e02be9228
       - calculation_request_digests:
@@ -6772,7 +6772,7 @@ providers:
         extension_request_digests:
         - 2e2fd692df28e4c102e6455a59b635520774a1bcbfb350a74d05ad5855946930
         extension_result_digests:
-        - a194f99b527738a67fc0bc39f7e301987ddc092d217b95a7946fed605dbaca77
+        - 0a990b125004b416f7dfdc4759f9125d8a71010bfd086d29c9f2839c6e9791f2
         fixture_identity_digest: e5e435ca0842af2b4781307e27fad668f708948611e0ddc9f6800ef2da79872a
         fixture_input_bound: true
         input_hashes:
@@ -6784,7 +6784,7 @@ providers:
         request_digests:
         - 1e9c69dbb0cbde5dc5f8c3044803790cafdbd6c758ecb9c5d7cbd3efcd59c258
         result_hashes:
-        - 4dee383c94a34d0748f4d1a9df040a00bd898e954ea3f1490d61de1cbd56b405
+        - eeabf08947a3c1ce1432169178a49ba2335454b94fb0effb725de22ec6eb3744
         semantic_extension_request_digests:
         - 42c9bd44e6fc24d5886f6a34fe78fdd224887604ed4c25d16bc08e2413c58687
       - calculation_request_digests:
@@ -6801,7 +6801,7 @@ providers:
         extension_request_digests:
         - f5fb98beacef1fa933d702ed148066906131fd7644574957420676980564260b
         extension_result_digests:
-        - 2f02ce1ffbdfbe7ce99742312ce4427e1b6c144e7e01fd5e5151d1ceb2144bce
+        - df45e0dee9ed9a21d37495f32445fde12f675e3fdf87ee66068e4971e6f5b1ab
         fixture_identity_digest: 37219b0760810963327e3741b08989c1c1fab9e585edd0250c6e1943e1214deb
         fixture_input_bound: true
         input_hashes:
@@ -6813,7 +6813,7 @@ providers:
         request_digests:
         - cda696fe65fcdd92d5d9ebcb1a7095b4a021e98b4be912671ca091a0b6fa86e0
         result_hashes:
-        - d1726d0402263cc7be639231ce93b251cb33b87c323cd050feb70eca70cedb30
+        - 584d913ab3bf54c52eef0ec967d475426927433759e962bbaf2a5046e85adfea
         semantic_extension_request_digests:
         - 06f924c3fe141ba86b75fa0f7483d8ea409bcb847a973b11b9409d1dec34f70f
       - calculation_request_digests:
@@ -6830,7 +6830,7 @@ providers:
         extension_request_digests:
         - 8d00da27bdba4f3648e56c9d05a7c7e32bf9bfa6739db4f658b553a4d970bffa
         extension_result_digests:
-        - d1492a8637c568d5ad9abc9b7c31da8267472de6b7555c6a71b12067a86d47f1
+        - e58d74a8d6fffb1f68575fa119de1760a19480e081547272361fe264e5037ebb
         fixture_identity_digest: bbcf8af4f02f53f6fdccc0009ee30f2d64455f0973caa16b70c50311325f1cb0
         fixture_input_bound: true
         input_hashes:
@@ -6842,7 +6842,7 @@ providers:
         request_digests:
         - 73094bfd6575561d881d38822634eda7df2deab59a28d50d9dbdd7f743aa0fa7
         result_hashes:
-        - f93b7604c33bd8f4148ca408f7b0408961bf083ed83650a52eb791e7c13b0cde
+        - f182a9f8753c981307b3b377599e560e784acd04f67e3fbb0ad823b1408181c0
         semantic_extension_request_digests:
         - 9c2deb17e50b2b06033c24d3a9f188af28317894cfe43411d266e6440440b2b5
       - calculation_request_digests:
@@ -6859,7 +6859,7 @@ providers:
         extension_request_digests:
         - 9925e17f8997850267d0718d146be37fa5f230df74c051ff42fc8720111e55d8
         extension_result_digests:
-        - b85b417543434844a7b9def323e350b26fc0f69d9b2d97ce219cf058e873e9f8
+        - 17f7cb21111a625e3059dee70b351a4b83825778adad31d3bafd9fe777dab410
         fixture_identity_digest: d45f93055d89b3d6208642996ccc96b0a42b5c39d8782153d57fa9826fab2c49
         fixture_input_bound: true
         input_hashes:
@@ -6871,7 +6871,7 @@ providers:
         request_digests:
         - 1af5d9e3d36921ae5ae1d49a152be64f1843fe4047a068f421898614a8ffb9c8
         result_hashes:
-        - f31347228b8ceeda87d772d5686526165a6a79f76a9d77fe51349ec497028af7
+        - 88111075edfec5659bba240a692de9a746a2d84a2a748117dd2ece67a05945f4
         semantic_extension_request_digests:
         - 0929bbe566f6b4156d160d18ebbfc58b064ae4df56f01d86bdf061235d300592
       - calculation_request_digests:
@@ -6888,7 +6888,7 @@ providers:
         extension_request_digests:
         - c2baabcaea0294f8ef0969322a98b1b8247c836ecdcc15e9a55b535577ff3288
         extension_result_digests:
-        - cdb1845badb851d648e120476bc03e03b42f53d49f80959872628ac4ee0c2da5
+        - fd8b08da626a800532665324d8c6a50457840a80653fe096a904ff96a839c37a
         fixture_identity_digest: eed4c16c752c031385e85829dc2c5f8c5b97f966fb9cec27536183dda7d59f93
         fixture_input_bound: true
         input_hashes:
@@ -6900,7 +6900,7 @@ providers:
         request_digests:
         - c17c5fceff56ad1d0d7c27cf00ad9db0da55a9bccce1e79e19ca6660d009028c
         result_hashes:
-        - 79ec5398ce68bca1eeae8b7208c444713b7683497e6fb408491027679d073755
+        - 4f0e52926976cc10ed3c15fc8840273aa29800c8a712c56b0fcb1c17e65f7d90
         semantic_extension_request_digests:
         - b23b10067f8e69eebf22f5bf579b731efd38b86cb13e35f57ecfbfc67c86a126
       - calculation_request_digests:
@@ -6917,7 +6917,7 @@ providers:
         extension_request_digests:
         - 1e2e9b0a304f8046f19f381c4772fef9e3118f173c97bb5e538f26a9a225ba6f
         extension_result_digests:
-        - 5aaeedacf5f9d6edbefc16231fe918239baa65c3635e14c00f36612a44dee351
+        - 7cf2c6616f7da10ed81ec31679fcddc41b6d9c2ec19925e3983dccea19e7971d
         fixture_identity_digest: db368d1d7019923031626dabe731c6af85226f31f3b09b7508a01a0fe7e91b1d
         fixture_input_bound: true
         input_hashes:
@@ -6929,7 +6929,7 @@ providers:
         request_digests:
         - d615d9761e51951921aa47dcff80fca92b4217ab2b7e8763e427c5ae1e0d16ba
         result_hashes:
-        - 8a22c95f1a8cf716efcec97250c53d8098ff0287c2300b61ecd6a414c517f9a2
+        - bd68d06f6731c6e03332c76e8f4773b184df6c650e746a3f21fc69cd9b0efe44
         semantic_extension_request_digests:
         - 802b77aca0a9d2bf3cdef1cfe1738f281ec2651fc79a3d05a01064a9cd5fffc1
       - calculation_request_digests:
@@ -6946,7 +6946,7 @@ providers:
         extension_request_digests:
         - c2152c03d5283d8ebe24d8d51094b6f56e23f703077186982adf65e2f877a127
         extension_result_digests:
-        - 5d6d0cf4457364e5d67d9b7a65bbd5650eea6cb8f0ca39217d8203540a9ad1dc
+        - 9bc51080d01d5c2351392f317d4e755631375a028dcf9a119dac3f7b5871a72c
         fixture_identity_digest: 833d676cd4ddec6f259d16a857b723e6512b42082381450a31d0f8a1efa94d73
         fixture_input_bound: true
         input_hashes:
@@ -6958,7 +6958,7 @@ providers:
         request_digests:
         - 8bfd1c9dc494306c0ccd9413c863d3a22b3a8bb83c5b52cde400c3893ee78e24
         result_hashes:
-        - 51142e3092b23b3f2ce556c34bbd4cf9135252783e77d9060d67abf450969a77
+        - bf2dd34e03f06b45b8ec2bfcf9088cd783fb2cdb968452ecc2cdd56f2f987b7a
         semantic_extension_request_digests:
         - 0617a9057dee8637a7fb26affcb8dca1f9332331013322002dfd7f4e8adeff12
       - calculation_request_digests:
@@ -6975,7 +6975,7 @@ providers:
         extension_request_digests:
         - 891beee9741d9e463745b8f44e1b79f644579db31cb38783b170aae319707eee
         extension_result_digests:
-        - 48049d2e1dbfa446d7ae3402fa92b2ed42e3b8cf1aa923d1ff238f53c6c9d20b
+        - 61fe5cda10212c14d335f988efdac077335aa6413d2337870800132b8d6c0edb
         fixture_identity_digest: 11ad02850d383e5d47f433aacfdad0dee2f1c83ce31495e114b600cc29959203
         fixture_input_bound: true
         input_hashes:
@@ -6987,7 +6987,7 @@ providers:
         request_digests:
         - 69d2a28c5971bf1795c7ca696bd566d3eaaa1e8582763651dc60dfe065c2f73e
         result_hashes:
-        - b9a797cb5d1d6d2602aceeabe31e77e445b60fe8f8b639efb788609c0733a4db
+        - b6f73a2a1a74e0eae913624d7cc1c583699a4b9dab572662d86b55d7fc87797c
         semantic_extension_request_digests:
         - 4a6ea0744190b8a8158d5137f38c073b1bb73bc24499c9b596bb9537d2152482
       - calculation_request_digests:
@@ -7004,7 +7004,7 @@ providers:
         extension_request_digests:
         - e9c0c5dded8eea9e6318674ed71ccd12731d2feba0943b6e1d3d0d7f23ac5692
         extension_result_digests:
-        - 419648538c0e7decdfd44f257fcf50da62ee6106f214a840d3123136b39c15dc
+        - 4175673cc672371bc8688b0e58af531eadddaff04f23dfa40bfc2c39f5de65b2
         fixture_identity_digest: dbcce319106e07f81dc91c9f3007592e07d5e529cd337b21cbcac400853d2abb
         fixture_input_bound: true
         input_hashes:
@@ -7016,7 +7016,7 @@ providers:
         request_digests:
         - 6eeabb0fe11ded0fd8a1448d1e3ffbc1182e6eefe97629dff17cca061019b9ce
         result_hashes:
-        - a83ecc1c82abda9c6a25be789fe4871dbf8190bb8ccc8ce56a99cf14ec227ad7
+        - 9fe1cdf4f516a19ef0fe3f47aa994c86ffd79fc49532a111752d7fd7ac2c7306
         semantic_extension_request_digests:
         - 324c5d7a00fcbf3f5b13eb94c35567668cf4ecf7c3f355c9af707e125b6ec298
       - calculation_request_digests:
@@ -7033,7 +7033,7 @@ providers:
         extension_request_digests:
         - 470f34ffc5939442bf7baff290fe2fe125f4c0e57c1d59ac86ea5795cb3bd585
         extension_result_digests:
-        - a570e76365dcfcffc183e368976740aada7873f876bbce90f8b973849b85ffec
+        - 87c5800a205a20cfcc1483d5bec8308798073a176cbecac77450b71faadac596
         fixture_identity_digest: 0228aa2afd9fbbe2e5fe6a0bc6375a868abdd997d0e0ad1328655fb721a7c6ba
         fixture_input_bound: true
         input_hashes:
@@ -7045,7 +7045,7 @@ providers:
         request_digests:
         - 40911399e475daa49b9937ebd310ce1234ffcdb27f571100ec0018ebd10e7885
         result_hashes:
-        - 609b947f679ebbf40cb7808abf27ece726cb63b831acac8f3ec368df40c81c88
+        - ff2c21642c953948b27b6363b27cd02d0c9a182a8f22872772953b9fbc28073c
         semantic_extension_request_digests:
         - 347339a370ca2d7b319e5d3da3e100dc065694da28a1e6dadff96061a32e44b9
       - calculation_request_digests:
@@ -7062,7 +7062,7 @@ providers:
         extension_request_digests:
         - 4676a2c52329f825864ef33e620384820806ef07646f9a6f3fb00eaa3a438a30
         extension_result_digests:
-        - 1463d64c093c4df971bc3b008a886a3d40285b648f58f243baa3eecb09e1d189
+        - 1bac4f3f9b60df444c163df4da6f738b43eac5dac696ddb28435b579afdf7fbc
         fixture_identity_digest: 9b4723098fac8a38eb649c9c8889ccd96468026f2ee1fbbea036bc8b4f72a031
         fixture_input_bound: true
         input_hashes:
@@ -7074,7 +7074,7 @@ providers:
         request_digests:
         - 486ba54e3d550de64878d05acea7b4f87429cfd871da439b651471fc4bdbafd5
         result_hashes:
-        - 6259618ceb2b5c685a522b151dcca3cf9c74f787201b1def5b4e300b04c01d99
+        - b89277f385fd13f4fbf3a72baaaddf06c74a08b60cee7a053988c45c77394eda
         semantic_extension_request_digests:
         - cef9901bf4d02fc54bb95fa483b313e93c001519d92a699ad0b9d7fd4f5246dc
       - calculation_request_digests:
@@ -7091,7 +7091,7 @@ providers:
         extension_request_digests:
         - 153c6fa30db4be311057138425656e685ba9b9aae0a516919e0da49581fcaa0d
         extension_result_digests:
-        - 0d7d18688863dac760f303c483ce3fcacf84d9ef80c72782b71d8ec21efd1c13
+        - 793725ed5ae45128fff68352d8a159237bbbff260d6359da9fc009c36406f0b8
         fixture_identity_digest: 2d5ab12e2aabea4997678247b08de36d77e0b310c3307183a035052e78454b80
         fixture_input_bound: true
         input_hashes:
@@ -7103,7 +7103,7 @@ providers:
         request_digests:
         - 404aa5f5eb81a156b4a3fb7a65a64c0392b18fd1da15be0381954e22ad760abf
         result_hashes:
-        - e85ca6dcc668b2ef2af2738f07825063276392b35075aae73399e707f331e4ae
+        - 242e05f888aeab91543df1c05f1df823064651a2b0878d584b1d256f99d0eec2
         semantic_extension_request_digests:
         - df2ffeef011b737a8778f08f544c43f6a81f06ca771bab74a0c18ed48ad47065
       - calculation_request_digests:
@@ -7120,7 +7120,7 @@ providers:
         extension_request_digests:
         - a5f43359021321336a4fe8362030abb6cd9ce8fbae23d4f96ce05d65088329cd
         extension_result_digests:
-        - eb3d8355b079ef9a08cd6454711ca1a8ad9c735c0620cf2982add3f7ced151e1
+        - 525d8a8f99bd9f0d8a304cbe6abd31e932fb5f70c0be9bae17550e8bbebf4f91
         fixture_identity_digest: fca5501ca4fb2fc5443c8ad9b4379bb603ce52d5af165384817104e865605bcf
         fixture_input_bound: true
         input_hashes:
@@ -7132,7 +7132,7 @@ providers:
         request_digests:
         - 0c96c6fb025d35ad879fbe8a0d201a67621a90a2becda07bd5cd305e20ebcb28
         result_hashes:
-        - fb419d492ca300be61d91633db220f487efb7e3ba7ee0ebc8c7eb184acea8700
+        - 28621e2dd36d26488952111bb556ba1cecd814b6193bec53164245ac14115cdc
         semantic_extension_request_digests:
         - 0dcaefc71f37182cd9e66b027d4d7b1fec35568f3443d37ceccabbfbc00f8498
       - calculation_request_digests:
@@ -7149,7 +7149,7 @@ providers:
         extension_request_digests:
         - a67c3bcfea96a7e80078c13266a98cc799c8717dc845a880f47268876d1b21ec
         extension_result_digests:
-        - 4ef48c79de66746cfdcc7b00b976fc62dc412352932b93d4055fba07d05f58f3
+        - d37602f9018c94567cb6fa0fb03484f71e05f2a6dec959c2422dd1bf9ae14842
         fixture_identity_digest: 522c7a10d43573ef0d22b9804bd45f27395d1df63189707b1efbdd490ca97b8d
         fixture_input_bound: true
         input_hashes:
@@ -7161,7 +7161,7 @@ providers:
         request_digests:
         - 2cc68e5dfdc7fe127ee35c79936e69c91a2a64bf94677ba8cc91da5786822684
         result_hashes:
-        - 21924d43e0744166ebaa560f08b7e9988cfc01ac769d48399e921719061331a9
+        - 57c8642fb436e74770b5e5e74a2b8475a0ab577a619567bd1b303f503c42812e
         semantic_extension_request_digests:
         - 75bd2470a27193d06fa99d4830e1838e1836b6773eeaf964c9716e0429f5079b
       - calculation_request_digests:
@@ -7178,7 +7178,7 @@ providers:
         extension_request_digests:
         - 03ba0c36128cccc2a7ee77d419d459ee333ac1cb004b632cbeeca1716485f0d1
         extension_result_digests:
-        - b3da7e20aa826abc9841e9ca7025869c99bcbc7a77551538d59b422f18078c5d
+        - 2147eb631a1a1e1c07e72aca40313263918ad9906978680f6074e2b542e5fb18
         fixture_identity_digest: b78d3c24ed49a2ad23713f6671ef9066ab6da03247fe33571eca22989668f93d
         fixture_input_bound: true
         input_hashes:
@@ -7190,7 +7190,7 @@ providers:
         request_digests:
         - da720cb14e868479aa56befadf76bc3d4c70be53caf8a16d3920392d9e631ca7
         result_hashes:
-        - 8e42c59b5ea156b0f367e41bb4061c8db94370979e0cd5ae18895de5d55de4e8
+        - b9d270034e2e27fed1e0ef6eeab7514e041af48cbad79e811edd5767bdc4db85
         semantic_extension_request_digests:
         - b2ab2ee6d3823f30730aa29d87d8a6b45b485eaade9bd454c7f98a8979aff15a
       - calculation_request_digests:
@@ -7207,7 +7207,7 @@ providers:
         extension_request_digests:
         - 1ed4b73b405418995015ea4e0523d707c230fe3699b3a11c7fda5292abe181ab
         extension_result_digests:
-        - 5d0bf8e1736031c2aab121e9524e6c218479f20da497f4531cd2b0bdcc0d98ef
+        - 2ae3985b44154a8e503287569eb198f36e0b9fa2211c350086d4559ec7c6aea0
         fixture_identity_digest: 407627e94e1d36a7bfb9dd83cef72dd8a0982d106ef98175f2ffa311ad2984f8
         fixture_input_bound: true
         input_hashes:
@@ -7219,7 +7219,7 @@ providers:
         request_digests:
         - 11b56f4c171e46520ca96dbb92d0cb56e8fa5713fd344522796f1a4dc73ef99d
         result_hashes:
-        - 51dd8c65bf82e38ca77aaf9772a4a7099b81b5bb1721216ced036e942054ef08
+        - 844a11ee9b9f7db6ad146884b917927aff93fe8bdfc33eb0610a0a7268c4c5e9
         semantic_extension_request_digests:
         - 023f86c5239024feb79a5b356e15c12a379e7bf033a17485b8efccbdbf9aa954
       - calculation_request_digests:
@@ -7236,7 +7236,7 @@ providers:
         extension_request_digests:
         - 5faf0887c93d4f06c6b9e4cfca23abe81b9b54a786905d901c2e2ed26d935945
         extension_result_digests:
-        - 970273505ca453830b5b47b36efe1449de7ea8b21a64dccc754e5a2abf4d0681
+        - 39680cb6cbd60f39c580c3b99c933f3295dc35b6e96dd509614d4fa780463ca3
         fixture_identity_digest: ce0ffa028de0446e40f080df5a57ddb5be56be87cf7093e4fa6c5b38595e5d7e
         fixture_input_bound: true
         input_hashes:
@@ -7248,7 +7248,7 @@ providers:
         request_digests:
         - af4b721bd05fe465916cd2f8954aa64d66381cf7b833247eb59473cbad811b26
         result_hashes:
-        - 64417dfb6e5e3403e8c30c95ad0f6a99a68274587a44a7a5f6d14e626a13c347
+        - f8c7dd2633a09a9bc0836967dcf32d7b2c2ae673db15d79efa9a6831807bfe64
         semantic_extension_request_digests:
         - 023f86c5239024feb79a5b356e15c12a379e7bf033a17485b8efccbdbf9aa954
       - calculation_request_digests:
@@ -7265,7 +7265,7 @@ providers:
         extension_request_digests:
         - 6060a159a549ba58f4ca6df7aa4e8e2e42ce9992d7a648300f4455047b446190
         extension_result_digests:
-        - 7bf4368eb216226bb955d7a19df22573c47e9029454d41b5f82705ecdf7e06f3
+        - 7b44d1beced07f188df6def4dacb7ab44625882218e25716473aace747a210d7
         fixture_identity_digest: 1874947ff98061f48fab08212e580aa2ea292ffe7d158eeb6581ba789cba7341
         fixture_input_bound: true
         input_hashes:
@@ -7277,7 +7277,7 @@ providers:
         request_digests:
         - 52d7059636665db1f2bfb6129071cd2923a88c1da238ff41deb06173dd5991e7
         result_hashes:
-        - 0358e0a152cc119dcc9be8bf9d5dcf6c0176c78711fc4fcc09a3c9b8f7aa22ef
+        - 1ad4dec0397431b8e2fea5b240cc67621a75e700185253f6f3430b16705e8e08
         semantic_extension_request_digests:
         - acc2def6688933850d3b286d197980a01e6d872f0d7f904d4ceac4b30ffaf962
       - calculation_request_digests:
@@ -7294,7 +7294,7 @@ providers:
         extension_request_digests:
         - 059e4b02d131beec9362fcebbcdd3f4d6ba7851deafc12d49d9c2d02ae589567
         extension_result_digests:
-        - 771c68d13286ef22a366ed5529cc2412511d115497bb7374f30f153d7ccefcbb
+        - 898d551082819a0aa2d693b3ebfb1c9452de2b16c76795b2167706e02e67df05
         fixture_identity_digest: fd11804742cbf21546dd39024aeebb8c134d2db02e2b8da7b26e61613b19a331
         fixture_input_bound: true
         input_hashes:
@@ -7306,7 +7306,7 @@ providers:
         request_digests:
         - c64b3e1e563c5c374cbd62d21b12a06365d3121aa1e9c05a1e44fc4a70185496
         result_hashes:
-        - a39e5ae481083c2c321881794ed66d9a29da9385c9f34fe4aefbe0a7504361bb
+        - 08b517f0a4bdb59a7230659f6c5847ea95693fe5fe998a97d3a78f4b30532609
         semantic_extension_request_digests:
         - 2ff9b73a8cdac479e884a761ca94b83f981d0e54a49130b3375d4456f94e1720
       provider_identity_matches: true
@@ -7647,8 +7647,8 @@ providers:
     live_contract:
       deterministic: true
       extension_digests:
-        day: b03058f199fec999317925d9c81d1ecc682ece9f6790d379dae773f4c18530c1
-        week: b03058f199fec999317925d9c81d1ecc682ece9f6790d379dae773f4c18530c1
+        day: 86889880c854f5166898a4ea1c943a81066642ecce04901fdc015841458860fb
+        week: 86889880c854f5166898a4ea1c943a81066642ecce04901fdc015841458860fb
       findings: []
       resolved_extension_bindings:
       - available_periods
@@ -8065,7 +8065,7 @@ providers:
         version: liuren-miben-branch-directions-v1
       - id: liuren.timing.initial-group-seasonal-upper
         version: liuren-miben-LM-R21-v1
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 6
       reported_dependency_count_key: algorithm_dependencies
@@ -8259,12 +8259,16 @@ providers:
       exact_horizons: []
       extension_output_bindings:
       - json_pointers:
+        - /fact_extension/facts/runtime_core_facts
+        name: runtime_core_facts
+      - json_pointers:
         - /fact_extension/facts/dimension_facts
         name: dimension_facts
       - json_pointers:
         - /fact_extension/facts/timing/candidates
         name: timing_candidates
       extension_outputs:
+      - runtime_core_facts
       - dimension_facts
       - timing_candidates
       horizons:
@@ -8325,8 +8329,8 @@ providers:
       findings: []
       provider:
         capability_mode: calculation
-        provider_id: mingli-master.liuren.v7
-        provider_version: mingli-liuren-pipeline-v5-rule-evidence
+        provider_id: mingli-master.liuren.v8
+        provider_version: mingli-liuren-pipeline-v6-runtime-contract
       provider_ready: true
       random_cast_contract: {}
       schema_version: mingli-liuren-completeness-audit-v1
@@ -8350,7 +8354,7 @@ providers:
         extension_request_digests:
         - 012d117d60b8ee4155ea8f50081c9546a549dbcb03d0505009609e6ad9cd076b
         extension_result_digests:
-        - 1ba12e7f168e21e839436ab11b1e8eb64a2f1f41ae12d354278607826fff7a4e
+        - 94577481dc037493fd8aedda1704f60f7738ea467418088084e308c615cfc645
         facts_digests:
         - 1c60f01742d024afdce894d8b01749ce0b772bbc8cbf921cb632d7b77ca91c95
         fixture_identity_digest: 6a0d8f28552604d384393ec91957eb042951700183f8428b2e3ac0c4b5b3bcfc
@@ -8363,7 +8367,7 @@ providers:
         request_digests:
         - 13ec042a619a02faf172c19c1d3c2a1150a677a687caf39e834e95ab870d541b
         result_hashes:
-        - 3e46fec76fe263e494fa226876d097c3549f51b1c5b0e3c6558d120574c442ae
+        - da7027d8a533ced1811a861e8e93c97c1468d7202c4487ece51a46b51274d5d6
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -8377,7 +8381,7 @@ providers:
         extension_request_digests:
         - 4b59ba987db3b528b029f72b6ea418a405ecb147b7d39b0f35d7f1a2b01b2152
         extension_result_digests:
-        - fbc4508cfb7d877e30807bae17a5e3bddbe1b0f3ba6e3d858880f5f3381f4267
+        - dfff4df5fc9697a888df85f1f01f51c1886437f789937976bcc97e1efd4fe2b0
         facts_digests:
         - 65ac51a185692013ca1640c40f6122114425aff50c8b5de2dc7a5428a2d02e51
         fixture_identity_digest: fcf52f2a74c1a2cb891497c5521334509b0ff7e8be3894b8e271d57444dbf94a
@@ -8390,7 +8394,7 @@ providers:
         request_digests:
         - c21d126c7c6d295bc927cfce2b9854bcb9216be4ae86068031a4c5948d895323
         result_hashes:
-        - 52b623fd4346989a13ed37297e726dee821dd7694f5a371fa48e5bfca19c7f1f
+        - 6b28ece2bac9843a00bf0c2d6235823b0a3992d64e64b0556a12851279e004f5
         semantic_extension_request_digests:
         - b4a3dace16e35b371886ac31c6921478a6c07e38dce6d1ee2bcaa479f215ca5e
       - calculation_request_digests:
@@ -8404,7 +8408,7 @@ providers:
         extension_request_digests:
         - b98b2b9cfa43a3bc5af204edea639b4dc12a7a299ee527fa3ebd0854a459394e
         extension_result_digests:
-        - 3cf032f213d92ceb955a5ee8e6d7049d39cde64f59dea673e7ac6bac66fe104a
+        - be7aacb85895caf2a34c3e844a71a56314f506fb59d0ec870bff6bd1243408c2
         facts_digests:
         - 92efd52237c22f5e5a71bf11c838d6b2e284996a62db061948213dbef1365012
         fixture_identity_digest: 048ab0b9a9ad8da97e2d225a51766bee3d14872588e764bd014848747d1d954a
@@ -8417,7 +8421,7 @@ providers:
         request_digests:
         - 8d120063d9b7d4b281bdd26a947fcc8cee0517966703b31ab6ba2e33dcc9ed1a
         result_hashes:
-        - 9d904e3e53a9513f00da2a6b46ea57d05e075627f317d41c4558b321a7c98287
+        - 8e383b8c5ad684977b534c5783191d1dd35ca90412e1388ad8c1a5de18d43646
         semantic_extension_request_digests:
         - 1b4e4a234c3d8f691f83558a5f300dd6e38e06f8779bce92e0d188c965d9882f
       - calculation_request_digests:
@@ -8431,7 +8435,7 @@ providers:
         extension_request_digests:
         - 8c2ff07bb9bcd99092f1adc0809425d8ebb49e69305a044ab7bb0784f5471c51
         extension_result_digests:
-        - 7a42cdb3a611d018132686d4502029e29c3e7eeca5573b3645526ccf6f443e93
+        - d18a750de28630e1bd46139505b59401efcb489c25a12212869697bc04b02096
         facts_digests:
         - a71c20bb2a81d43a6b186cb8cfa3a59435c36bcdf4be1c04a5d198e58c96d1d2
         fixture_identity_digest: 3c4bddddea25764e7c7995427a40f54d1619b58ec954f953457ee9486f5539f5
@@ -8444,7 +8448,7 @@ providers:
         request_digests:
         - b0b66964084364eaaf39e2e99fa93f902ee577cebd3eb0c8a0e3e33db8adaf4c
         result_hashes:
-        - afd8c95df0a7ae668dc9282e742387fa21cfa6fcc9243b8fdf67020f655370e1
+        - a03fa130cd243073e98e92c6620e3e2a62f48771d1023b28db84012e96c8e048
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -8458,7 +8462,7 @@ providers:
         extension_request_digests:
         - c028defb8eedb7e03253fd8b785f8c933fcd4fcfac4349b62cfe1c8c9891147e
         extension_result_digests:
-        - f318c02ad63b147dead470fd2336a0cfd45e3674fde59b3541846bcfbf531027
+        - 6955db41a3495b0b50faf8cb13bd1ffe7a9abc76b826759b7b21538643204605
         facts_digests:
         - 2b8dca980c44b1c593e59c1ef75dacee7117f7aab4c7991cdeb10d8fd1113d2a
         fixture_identity_digest: d240e624cc0926dbeaaac973e76a2eb85e18116ee13d7abad827371e5e06a51b
@@ -8471,7 +8475,7 @@ providers:
         request_digests:
         - c65e23e6a37a24aed37c06b0c3180dfa0b23d51351e017dc9734fce7b11e5193
         result_hashes:
-        - cd258d62000abd83224fa5af8a0295886c5ffa4e7555e486752b6eb3cdd59c8e
+        - 1ebeaea33b59651968d5079337d3e89bebf534243c4c246f41fb8938a50377bd
         semantic_extension_request_digests:
         - d491386ee3eb983970b5ddefaf4ac56a72b08d02677f7610d868de7d6d43ea5d
       - calculation_request_digests:
@@ -8485,7 +8489,7 @@ providers:
         extension_request_digests:
         - e7a71fb0e0a09ccf8aaa4c38b380c2ed54ce66992ba07db50b9fea94629b993b
         extension_result_digests:
-        - 27c2f199e688f24adb9c49013e2507853646f00c807de2983f5b165164a13ae1
+        - b37b10aa3059a432b237cc1feb14ea6009298b1816424eef7486cfa259f0792a
         facts_digests:
         - b307659da864f2f70ec265b49e6a453cb786aebf7daf92f70db3d647111cfae5
         fixture_identity_digest: 273702874078a44f587ce56cdc630d9c84c390163dc08e457ed96928ce901ea2
@@ -8498,7 +8502,7 @@ providers:
         request_digests:
         - 752bea10feaf0eacbe0b962adfe5eaeaa11afec8a93292eb58f36fd25d582bf2
         result_hashes:
-        - 05699e38069bc01bcc428434d6359c61f8ee70774801077a28ac176d5ee4e575
+        - 07ab1b1ade840068d6ae6860299b5cfe8c198a7f9ff4f104a60dfd2258d07167
         semantic_extension_request_digests:
         - f7eedd0e45b40b9f6528d5ea13b85d1c1afb47ff079b038402f9288b689f6313
       - calculation_request_digests:
@@ -8512,7 +8516,7 @@ providers:
         extension_request_digests:
         - b86afbd897f2b895b954feb4fb223577fc7e04fb7c25bbdb824e308f59ff16db
         extension_result_digests:
-        - 8b31b22689064310c0bfd04b5167526c7e8bc7945fe190d67fbb913f97ec5c43
+        - dc53e481f7141b32cfa87a13d55a85b437d444fd78481281c293e7e85aecad49
         facts_digests:
         - 5745d284a6d0e62009200929e2b56c2715fbf8e015ff810eb2dc634d572a8ab3
         fixture_identity_digest: 6fcda820368820404aa464fffc87cf6d74ab7361d234ba575edd7e1449b461e5
@@ -8525,7 +8529,7 @@ providers:
         request_digests:
         - a08a704457e846ed9ea110dae57eda9ab4729178fb6da12db5f3bdc56850bbff
         result_hashes:
-        - 127f4e17582e1c01bcee27d6e491ce33e01eebc35cbfe7b7b184deaf6798b2a0
+        - b48f5eb4f1c53bf8466f06eb048b7ef2cc046e6c6059b623ecb91681c1050c77
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -8539,7 +8543,7 @@ providers:
         extension_request_digests:
         - 297b941fdee7a70a1be63ee65a0c8dd9d95492b47aa75dd1bb2f47575f50379f
         extension_result_digests:
-        - 959a772bdaf4a077dea893f3b2dac666f11b821478ff77aa1cbe7b4cc2241ba3
+        - 5bb55fe6fe151ee0285432ee92de554aa077c4d0bac84460f4f1d88d386f3ab6
         facts_digests:
         - 646bcc26142f033ceeb8fdb6cc07bbd03da9f3469f05a12ed5408088eb8e5fae
         fixture_identity_digest: c6c03840d17ae6668ca657b57c5b85de67ac0bf638595f7efc9f9a1b2fb2d08f
@@ -8552,7 +8556,7 @@ providers:
         request_digests:
         - 3f9d5e81d38590a5393d8e5ecb8afe8cc69b07ed9df06e682b7748012ab64159
         result_hashes:
-        - f10d31c1dcdc0169a473040f40ee8d415df2242f03ad1df998a63f7c2b40a782
+        - 868d7fcf96052d84a5490883677af6e45c9027f5efa3ae231c414e4d07c0caa9
         semantic_extension_request_digests:
         - e50ba698d4567ad04e469266f0406ea75040283c1015aa9e1bb745d0f89c31ba
       - calculation_request_digests:
@@ -8566,7 +8570,7 @@ providers:
         extension_request_digests:
         - 9f9c7972965fe3382e6fd2916063a2fe2f192c175e851b403d2c61c87d096977
         extension_result_digests:
-        - 964cd810e111915ec920a5bdb1db2e214cb5dd03811628d5212d7eb246d16509
+        - d91c853dcddb28090a1dacbc6afb7701d49aa7a07261ca9fa415c827d64a783c
         facts_digests:
         - af986bdf09beff3577cab6522b543679faa12e16ec8f1e99b27ec448ebf34ff3
         fixture_identity_digest: a52bdf328e757280e9c4e367f4625de18f3c0e7043b780625ba80cdf1bc7dedc
@@ -8579,7 +8583,7 @@ providers:
         request_digests:
         - 3ddfff726eb59d13f06b69d8a7a2d8bc296d76d21b2683520635dcff6720e7c4
         result_hashes:
-        - 874da8596c3a3b2c11d4b7041864a2458dd882244fd0b295c629a1f7ece7ba77
+        - 482cf45ae87e1207071922a1ab33195f352ab71ff6baeaf2a61888b0f7aaed1b
         semantic_extension_request_digests:
         - 3e6b8283ea3a44c30da0bea26f05f563c9de4145d64d4a30c8957d43ca89cb37
       - calculation_request_digests:
@@ -8593,7 +8597,7 @@ providers:
         extension_request_digests:
         - 22516e3398c79f2213009be67fde1da8246644883f561aace53ff2eaec021b02
         extension_result_digests:
-        - e94a6fa032c16163406c55ad1c4a67f13c5e33e7915f73a4373ecf3a4c3108ef
+        - ff9850efa7491a944a12caea7e251c1860da96c6d1b6ab10de657f07e407474a
         facts_digests:
         - 6586c7fd00a0aa6758c4c8f37ec696be4ea3682cd7bfd575af2d61e51dd59a13
         fixture_identity_digest: 3efcd3ddaf5bee66f567186619b4951eaa4724c253ec050cf6183cb8d99ba466
@@ -8606,7 +8610,7 @@ providers:
         request_digests:
         - 34cab8bcb5cab97849850f2fa9910c94c3e76d86e5baa51e55f8de0d057d0e6c
         result_hashes:
-        - d7aeff014445857e855fe0f3fa4fec2e62b61fe80c04f302418b078dc00f1a71
+        - 32c1b9cb99d2f8e26d6fee782d3be6ed3b22af8eaf33966789691ad427e55df1
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -8620,7 +8624,7 @@ providers:
         extension_request_digests:
         - 792d00921d49543fcf988b043478cf09f8c34ad8fd82701ce46233cd2fb0b7fc
         extension_result_digests:
-        - 82b40f27920c2a9af03a2ac91a944a1b6408516532d068f7b4f74237b509d08a
+        - 6bc58234dfb9a1aaee491b9f6d4e4df62e18e2c54b16af29f6f6609d13ecf16a
         facts_digests:
         - c3aec1cb413394ce4d192984c0ba00e67bf39d25f0ec42bf081707970e1b4d88
         fixture_identity_digest: 8975a3cb238569ff27f2c54bbc503d7581071394ce0795e0c891cd9d992284dd
@@ -8633,7 +8637,7 @@ providers:
         request_digests:
         - 99823b141cda1d4c6708275e1e65163772215a6b38e129249bbae4d2bb40b33c
         result_hashes:
-        - 555d3332b00a8c198f334ad6240d601f1777dc7e15c21417b2e5f26044961ec0
+        - a5fe04a2249ca7e1d112f582d07cbff0c3c1510bb4403f20d261d41f86fdd9fb
         semantic_extension_request_digests:
         - dce293d5b711c21dda2ec5ef857a30421c16f64ac12df27702c47318557de03c
       - calculation_request_digests:
@@ -8647,7 +8651,7 @@ providers:
         extension_request_digests:
         - 618b99aa5cf4eb58859acd6f61d8e0593b41111031d1b4fe82761af93d3d9366
         extension_result_digests:
-        - 63ac72d0dc1278406565f64dc6916f9908ab56cc9cff43162b869c30f2ec7881
+        - 9c3716993336e39f12e277a63c2e65053f1f025d56587eeaeb57e837ff545ddd
         facts_digests:
         - 011826f63237f13ff0c48ad17f209c8146418d003d8203e7ba178326d28d2d8e
         fixture_identity_digest: 4e56e61b628d0a445f636cba4a423b740f02d730436e5d61d3301e899b3e0528
@@ -8660,7 +8664,7 @@ providers:
         request_digests:
         - af9e1f27e8d7c1fb176c84adc5fabea0e24c310019650d522e71d22c7b49045d
         result_hashes:
-        - 8eb398d045ad05166ecf3397ec866619fd8ca8135d1226ef71d433efaea2b7d5
+        - 5af94d53c8462fea23d080f6dcc6e416fe4cc37cce380c0fb19a67e59727aa49
         semantic_extension_request_digests:
         - b9a1135ec58e2ad911d78d39fccd1d438a243bd5c629d7634dbf25af9c83d73b
       - calculation_request_digests:
@@ -8674,7 +8678,7 @@ providers:
         extension_request_digests:
         - 82308a269352f4bae2e0d918570420aedc7c30f5612d3aa44767267855cf7fc6
         extension_result_digests:
-        - 70d0b9b9ee8b836dd7c9a451cc058f878bda446283a372a742bb2a81d41f7fb5
+        - 1d98c4e500f768813818eb6879e7dddb51c457e00905b573dfca902070fdb97f
         facts_digests:
         - 0b244c17b6121058fe3e96423bda0063bc3dd885c6738d4a9c8e3161fd0e2268
         fixture_identity_digest: b2873f27172471da5dc2a6fbf4eec0774001077f85e6d3e04da3a989a04d11a0
@@ -8687,7 +8691,7 @@ providers:
         request_digests:
         - 8be8ea7c0a0e91f71f9a9823fe03f5d9adae6dba91732a1506ead9123942d836
         result_hashes:
-        - 82214c0ff9377652467e5a7d2f9bf70aa264b133e0fce3a0133629d5d0d740bc
+        - 5731fb96313ecfdd08cecc8f8847e9a2b49bfc4ffedb5488daed58487d08b0c6
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -8701,7 +8705,7 @@ providers:
         extension_request_digests:
         - 7e8457c25e3f39102a2093da48dc8e8a6aca62a9c0a7bd0083f4b7b55cc72414
         extension_result_digests:
-        - dd4b57341feefc0d6fe2b75a5cc29bc2360865f33ab3ed132bf2f508eb12cabf
+        - 4f43f0c44c7c6688715f670e4001ac4c778a2fdf9038eae0ee6565d54402d599
         facts_digests:
         - cfeb0d62d4a1029fe043c50ee26e50696305cfaebf7daec445cce262b6291dde
         fixture_identity_digest: 21c1e578bffd20cff60ec7cd7e310581313ca3d404c959f6f19f8ef8ae73b08c
@@ -8714,7 +8718,7 @@ providers:
         request_digests:
         - c37e6d12e81370cf4d509f1b68ff1b0522c1649c39be7f0217ce2b7fa8d09bf0
         result_hashes:
-        - e36a006c4c1cc01866b56b0d1c6f64bde7c2e3bb03faf79908c2f95bdfe94ac4
+        - ce550241d299a10749564ed43c407a42d4ad333b49f45340fb3a9407fb5ad9a0
         semantic_extension_request_digests:
         - f090bf2ef90871a1df631f5b620237b4939c9f7b20861b7fdb35aab06c103580
       - calculation_request_digests:
@@ -8728,7 +8732,7 @@ providers:
         extension_request_digests:
         - d3b2715417aff64fd92c89516cfaaaaff6d7d511d30eda2c687bafa10675970a
         extension_result_digests:
-        - 11795acd9545f40d05a2ffda8523f28e8173e0c793d0bb3c15b3fc6debe81a8b
+        - 83dd2aa22f6fcfc55e1f7375acde3f72c6550d369d7d871f8d386f43aa216770
         facts_digests:
         - 3a2ee8768e7e9b2d46b2d6b2bde8906a91015981241e61a131e28b8549bd16ea
         fixture_identity_digest: b05c7f4cfe69802d232e130215762e7d18e60421028c641423f987d9aa37f062
@@ -8741,7 +8745,7 @@ providers:
         request_digests:
         - e0a5d5baf7e409219f52756678d1794316c9feba96a628bc12b41dbfded67869
         result_hashes:
-        - b675287950aeb0eb1fb71c546928a53ecfeb88023f7b69031b563e1390317a0f
+        - 391e5f30305a43ef405c082124e73c5393f831bf3fe7d83b6ae2e3d1f71eaffb
         semantic_extension_request_digests:
         - 38f926fadb99d0bfeffdccec893f75d7dd1c12d28d582445df22d9bc2a80c743
       - calculation_request_digests:
@@ -8755,7 +8759,7 @@ providers:
         extension_request_digests:
         - aea2efa02ef1907778bbd23ab2b1379fa80ab1405e9108af95ab5d1137824be1
         extension_result_digests:
-        - 4a7a3079e0494a60d4d19e8ff65ea25587e49013f798feb059744cc3d7d6447e
+        - 7359164024c20b353321a02c0212aabae4b590b625aa813d18267bb72982959f
         facts_digests:
         - 5739d52bbc70e7073786ff09bc0e2d75d0a0bb9bd1430f73160dec417155e503
         fixture_identity_digest: 6261cbd2d00b13a6a7beadfa5662864a0e66b1c9de11e1500b95829bd8aa9c68
@@ -8768,7 +8772,7 @@ providers:
         request_digests:
         - ad63a7eea8def435bf70d281c4ad93e69ca8e7e292105f05f085fbc81301dc45
         result_hashes:
-        - 4b2251d6dfc47c4a5d297c95347baef0f939a1f78f8c10d774d9ec6412ea4fb7
+        - 964740bcb2faf8482df28f2ac62962d6437cdb5457a45b33b7c6ebfb1a80b903
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -8782,7 +8786,7 @@ providers:
         extension_request_digests:
         - ce585a09c61596a2d6a9b806331d3963b60257966a2188ddfa0a3a0fd74df3a7
         extension_result_digests:
-        - 2295e3f570ee5b9831521113afc33791063738aa3a11a22af9fe6cccab5d24d1
+        - cafb38500fdd6d1a914fd163c8f4e67d1f9edad2e55b2fd7c20b354818525492
         facts_digests:
         - 7cce217669a93c37e3be5cace320b2bef5416e616dbec067ff2d55cefe3faf45
         fixture_identity_digest: e4ef89c03d161dfa25e189f782ba18c387f14bf42a0fbf74907814d34d871f24
@@ -8795,7 +8799,7 @@ providers:
         request_digests:
         - 3133eb4b9f129427b83b77c9fecd67cc328e0c46e014eebaebc3a0eedb8f6f80
         result_hashes:
-        - f5c6f113af121a7181cb33822cb53e5908f74b3ac31a0de17668c5a0e17045d4
+        - f12594951fe135ae0d10f4f924c5af03fc714e7e58878d455b8ea8669a8240cd
         semantic_extension_request_digests:
         - d8ac671252cdfc01fc01bcd3cca3d127a5667fbfedc30525d82cc18a4a4a1739
       - calculation_request_digests:
@@ -8809,7 +8813,7 @@ providers:
         extension_request_digests:
         - 4e4ba5c4b424ce0904c2fddc358685110fdd791345227c30c829221bc8aa4e7b
         extension_result_digests:
-        - f0d088682c96f591e5048055bcb5592b6429b665ff20ead051907ce2c27764b3
+        - ede9853a9bf2eb06fb57584ea3d4ea7a4464a13c8718b951c2dd82346c48b711
         facts_digests:
         - 6c01461b559996e0e75104aa098db1e69c15053d61b0e2bc4d8c34f962454436
         fixture_identity_digest: ad0def2ef32755597150d88791925c6d664dce5b26544a60fce6a1a204fdbe36
@@ -8822,7 +8826,7 @@ providers:
         request_digests:
         - 36e285f3c89f4b1dced23c117d7c5fc792497f7f7d52a4c8799d005df1cf8817
         result_hashes:
-        - 6ee9f6dbf2d474deddb73a53b6a06d5988dfb1490d05cea8bc6df6a2058bcc9e
+        - 43dd9eab6d555f5fcfab3082d22d8c52c5810edd98efcbbaab63e597f2723724
         semantic_extension_request_digests:
         - 13b815b6da1fe8c4caa9245a3286121cebb75f23d6f6f9d2701d025d170cbff7
       - calculation_request_digests:
@@ -8836,7 +8840,7 @@ providers:
         extension_request_digests:
         - 0f345d314e48114e73ab2317f04d7bd8cb3d528e67650aec3ee525a96ef0bf81
         extension_result_digests:
-        - becaf44628a096d07fb4b11062548ec1f465dada5ab0c720224d365ac56073af
+        - 4125064cc2b34fe8cc5e3b274eff13cf77d72e78527459a290752dad34d33583
         facts_digests:
         - 4c94d6289623ba461107426b3d2e917729a57727b0579b146111bdbc42a27896
         fixture_identity_digest: 9a3e9ead629c03c750745e09983f4178c2285420fd24132c06716f0cc31fd112
@@ -8849,7 +8853,7 @@ providers:
         request_digests:
         - 81c0e4bf3be475ad18cb8e5168405c8b1a6ff3e4eacaa5c6b223c475c272c607
         result_hashes:
-        - ed93943abdf5514bc743886faf47adea1a212fc64c912329f108b03e2ee3b10d
+        - 35cf1edc9b57911ada0bc1b95cf9a7d37529bdbe1a32b6397000169d9c7ad8f6
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -8863,7 +8867,7 @@ providers:
         extension_request_digests:
         - d44f54a2f79b9a1376df968a25493de826c79ee4eb4f02253506eeb6969c85b9
         extension_result_digests:
-        - 7599cc5b9907306590531fb91301a09ca83039f351286fe8a7b53bb7e0926a25
+        - cec01e6515522c85a6bdc05dbcce12f989df54febc56fbe043b9060c6639f29d
         facts_digests:
         - 1ede32b5f406c69b665f29f8ea6531e1d35a3f3603c94605394361227d066a5b
         fixture_identity_digest: b66bcdae476ffc983bcb9517e97c7f3589514333b4718a1c30d226fbf60bfbcb
@@ -8876,7 +8880,7 @@ providers:
         request_digests:
         - 402a26c0e271f4f87a2ba681461cadca5d310baa7985a07ba223a401ed39607d
         result_hashes:
-        - e2f9efa547cf4e3d21c70187ff1cadf9c55b224bf5903bdf06518379fa25a957
+        - 1f830f2764e9966b02d897eb195eba486ac1cfcf718f817d2837a27d0d592de5
         semantic_extension_request_digests:
         - 7043dfff9fb8f341f8ad5c0aebb4ed9495c7d366d1ca13bf0393b516ceba6d86
       - calculation_request_digests:
@@ -8890,7 +8894,7 @@ providers:
         extension_request_digests:
         - f28d035e8ab78079a39208d021aa993ef552713752c369123f35264085c15ceb
         extension_result_digests:
-        - 69d8f77c7224f14af99d83dbed9910faa6370ba3927a067ea429a9828e3d3955
+        - 7b26d930c0deb376f527d7147ad1c6c945e5765b49ab246a174be0f921c5375a
         facts_digests:
         - 4d068a5f8238e31be73cb1c25e5408aa16be1e88003083d7d027f48eed1f6b86
         fixture_identity_digest: d83d9182aa3c99dfb45f50e865c581bb40d325853433608d092dca7866d9e9e2
@@ -8903,7 +8907,7 @@ providers:
         request_digests:
         - a0edc20dee51ab2de02c70f308e2d54733303fb60b8ef1147d4f2ad89738f601
         result_hashes:
-        - 111bf97c5db4f4f6fe470afe588e0c916c50a3e66a01d8108a8801299609931d
+        - e1fcb639ffdb81a1fb512df37202a55e89cbd35d95c96566d1c838e4c9eb363a
         semantic_extension_request_digests:
         - d7223ffeec33c01ce48ce035ffc308084eb6b77f32894007d2f8f7dfb8fd5cf2
       - calculation_request_digests:
@@ -8917,7 +8921,7 @@ providers:
         extension_request_digests:
         - e3e2a2004ce1163599f3284f82bc387d19800728b1399a3cd18f26a7ecae9824
         extension_result_digests:
-        - 4cc18bcdfb0dd4f4dcdf98ed035400b80477320b71cf4c40d85030ef0fb62b25
+        - e16e7767558e003e7c038f50c1a001fd911ece919674b3462ed4e4bb80b07819
         facts_digests:
         - 4e6668f2baf9cbdef7689121fb612a8459d62879a4bf0f3bb33216039075005b
         fixture_identity_digest: 1bc22a6dda78f129dbe075c1537a9f3b7757953b99899713a2b18095db9fae8c
@@ -8930,7 +8934,7 @@ providers:
         request_digests:
         - 94b923be88bbfc30a3b70b04913612567b774728f440129d4f73d4e4f16bb63f
         result_hashes:
-        - 05bf31bb77786b9246e69d95e9ddae583c66f276648de64d4d1e02f176bf3ab4
+        - 6a36a44828c622e98bfd29fa694c374c70acf9772f46ae7e1161642ab6796798
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -8944,7 +8948,7 @@ providers:
         extension_request_digests:
         - a6a472d7c2bfaa749e4c629ae724ea63e0d4d04a23415d1903838ba87febfc36
         extension_result_digests:
-        - 866840e78237a069e2646d2bc89b2d393364b2ab963a9413572a557479033b04
+        - 6f831c0bbff33f1e921023fe233ccf80da2812c03e38e9a52ec7529b04ec0a91
         facts_digests:
         - b9fed409d2a233ac0637ada0dc1b5c6ec06b687a1131fd560a2771dec2f7b58e
         fixture_identity_digest: 64ad73c28755e9c6b356e90c6698215e979b85f77b761edfdaba2e08a77f75ac
@@ -8957,7 +8961,7 @@ providers:
         request_digests:
         - 74352ee2103ac15922791a77c900606bb50fad6c264b0edc21e62c79312d2d4f
         result_hashes:
-        - 2fe12bbff92cdaa1ee9e6e7cdaee84962f4874d3306d33393ef3c514bdffe022
+        - e3081d6ac060946a1434928b4e54a2eedc1a2b6f78d3f075aa4d8fbc97536470
         semantic_extension_request_digests:
         - ccfe3fdfa1617c50ce0589247fe17ca11fbee310f29f94ae5b39d62850385e6e
       - calculation_request_digests:
@@ -8971,7 +8975,7 @@ providers:
         extension_request_digests:
         - b7312ba0a78fd915fa7cbc720b26684d56bc40e87dd52ad852dd37bd3e5b0298
         extension_result_digests:
-        - eae8fc19e1030d5e44c2b93e65cf2e2e87acfc38f9cf4ad41ae31684644f2396
+        - c66b98f758dcd0bba2772bb5ad285f2b692c646022e05cfc29dbaa6001ba6879
         facts_digests:
         - 3a56d9a52285d5336ad1ed638e89f4632be3cee16d9d518990111d0a8b1c9418
         fixture_identity_digest: 1631ffdb360ab22d1b18966faa5ed4e94c200548712f4bced9824343fa793e89
@@ -8984,7 +8988,7 @@ providers:
         request_digests:
         - 5077bef4afb44927a2878533cde909b953a1dc188fb35402987cc5f8e293f3de
         result_hashes:
-        - 976cfa1153bec2b6e50f18be30219cd62c5878ef0d6c2dbf661a8a865f9a4563
+        - d6cab5a6d9f29a37b5e910179f64711b8bf3650e7168e4cd0bd1db8bccb95d1a
         semantic_extension_request_digests:
         - ac1648be9c0cf79cc514c917517b47f1816edba52f46d3cbe815699af8e00526
       - calculation_request_digests:
@@ -8998,7 +9002,7 @@ providers:
         extension_request_digests:
         - 8b5ae1b2191779c41bc9b82f124e2e1fc7b6e21a324ec5f9beb9d884a4ae6b53
         extension_result_digests:
-        - a028e2a6a0cbf2273d4b58cd477e26627cc2f7558d7fe4c6e2b0974b416eeac9
+        - 69d65a6ee3cd8c3720123c671f594287833593a4f8fc902b7c4f52b4235674e4
         facts_digests:
         - e0affcd22445259b5d0059f3a5bc6f9a1050279dda0882bdb916725b17c12e01
         fixture_identity_digest: caf8911b54b49e3c8f2a6169af11ff5a0e490d5939420f5665db16be2e785bf6
@@ -9011,7 +9015,7 @@ providers:
         request_digests:
         - cf197bb35aff1843ea026841ba0f9e1186a63e03da7a7939d8183dfdb6bb3ab3
         result_hashes:
-        - 136269e6aae79d3476f868f5202a0ce323fa27afec50047bad069ddd8dce2492
+        - 086f2db3cb42c363afc9824fae6dc2c9b63b8708c270ef3c929fdc23beaadce4
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -9025,7 +9029,7 @@ providers:
         extension_request_digests:
         - c8f675ab78f4610ec4ae175786e99aaf7bbfb4e1d89db7ad09d77ff884fd7bb2
         extension_result_digests:
-        - 69e523b4ba4bf30b91f0198bf8a3d7c6a06b6787f748ed70dc21df5f9bf43c2b
+        - 8e269f3d17ece3ac3acc883e49d13e32791d4e665d209269df200d682ecc98f0
         facts_digests:
         - 65f33c55b21bcbab3c80ddf69ec48f5bb06fc7404dcebedb3d85d4bbfa5e4888
         fixture_identity_digest: 25c0b08f69553ee3625e6634043cc94e336b9aa81c27e1a53e8423e27dc8a494
@@ -9038,7 +9042,7 @@ providers:
         request_digests:
         - 6a4d108be78405d3a8e29a9e5682af735be2adc0d93bd848cd158f39902a88db
         result_hashes:
-        - 244f05df639d01ab276a6ac3708d41ba935149481dd7b68bf318dd8bde57f477
+        - 943346d38fe1d7c69696fa1fa9392758d45e5ad888061a00c245a16fd9f3deec
         semantic_extension_request_digests:
         - bcef1ef87b4346c52a58dc32efb81425ef8368f8c402c2b3c192ee5a1e0fcf40
       - calculation_request_digests:
@@ -9052,7 +9056,7 @@ providers:
         extension_request_digests:
         - d52c1145edeff54372300589aa241cc4c9aea01a1181f8dd8930b7a82217ff8b
         extension_result_digests:
-        - 3ee186478c65f16b257669500fc3b7cf18dc493bc63c4cc5a859b30fb46726eb
+        - ec76e32408331472035d1ed569d580c343416fe63a3118326a950ce5f0efe070
         facts_digests:
         - 3055ea6d12e864723f810ccc73126fa5119a4c4717adb3a782b03241417b1bd6
         fixture_identity_digest: 928b30e8885a7b7d0420ceeaec7ae52dd6b807ae5f5739b78a6d2ae9d62c83f1
@@ -9065,7 +9069,7 @@ providers:
         request_digests:
         - 7bde2524b3ec820d57a0b201e775202772ed9075e0b2d9553e3a7386a8fc001e
         result_hashes:
-        - 8b65ef6c45fefaec985f78a35c7e5cba100bea8acebdccb065f51495e4e80f43
+        - ed9a5a8f134bfde0271f2cb25f5b18c34a56963da3f812857f06ac4619746c6b
         semantic_extension_request_digests:
         - e6c9f58c7ab5bc0e1f6b797f8d9f09b1702fbdc83f8985e3cd535b76b8254eb6
       - calculation_request_digests:
@@ -9079,7 +9083,7 @@ providers:
         extension_request_digests:
         - 47fe1051461d9255f520ac3debd77b173f12e7c424a9fdd8b3116e6d5c20daff
         extension_result_digests:
-        - dbea89b8f49f6e3909e120fc3c871257b05cea1cc30b4a5ebbc629c02a31e2f3
+        - 351dea4357877cefde9d6e53f1f162ef8360ea7d7ad0e5e326b8cc1c163c5413
         facts_digests:
         - 0690c8222f9a82b81aa85a56563d7e380a2194343f3d447ceefb3d61d764c753
         fixture_identity_digest: 1a1c587f732ac9d210cafdaa00afd4772a2395bc5bb549918bbdd8da07e34888
@@ -9092,7 +9096,7 @@ providers:
         request_digests:
         - 011551d4e7272416fd8a9220e770c1f44f2505e759e6e1c1689df12d7b5ed317
         result_hashes:
-        - 9ede7c4362142a4749ae54ac7743399246de6427338924f02e0a6c88c2e1533b
+        - 8e056cdfa183ae281c7fd982338102b8b7f0ca185316698677bcc9e6420b11dc
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -9106,7 +9110,7 @@ providers:
         extension_request_digests:
         - 2c3b46583e18febf4a2d2358ad9d377f07695c0e867b8c7274f671dbad663895
         extension_result_digests:
-        - 74129c670eca31d9e1d8fec4cdd94846f629fb95f2c0dd63fa9d377f502b616b
+        - 4a5d7a78be244f8280d8cc9361b6814fab5de1b2f0c876ed9e6803b569236a38
         facts_digests:
         - 0b0e295f8f2091eb9c835f90b1216c2472345750573d2893c6c286242bcc3af9
         fixture_identity_digest: 3cf2e23157da75b30df8510466863ab4e052fbfc9c61a9d9a58acacb535fad52
@@ -9119,7 +9123,7 @@ providers:
         request_digests:
         - de1bc8968fbde5f33d7ece025efb7f7646eb5980307948403a65ad5a93500ce0
         result_hashes:
-        - 697106bf92d69091222492e4a9133c3bc847d915b46076661c8a1088e783bd20
+        - a32b33a194552cd61c8c25ec0a4630a9aa5f274f19ce3dfa504f8eadf28bfe1b
         semantic_extension_request_digests:
         - 4a43f7c1e41f82b9734071af48dfe9a9785c9414dd6527b6fe94e2e530b7b0f0
       - calculation_request_digests:
@@ -9133,7 +9137,7 @@ providers:
         extension_request_digests:
         - 75bbe784d7b5064265e2ad1e70ec22f59586909caa3f957b9af937bd215167f4
         extension_result_digests:
-        - c31ea45246eeb4cb671df858e0ede5e070effc9c1484751cd5a331ea24c2c285
+        - 755c26addf1c3b00d0e48b534ad33fb0708c41a8a465e6a50e74880cedd455e0
         facts_digests:
         - 4dc1931e543ea1a1a62c72a3c0ccbb720cc6593c069bf4984f38fb920cb4c3a6
         fixture_identity_digest: 14ff10bdafb355d163b99430461d206ae1c9b2e706bdbe99bab9752828f55cba
@@ -9146,7 +9150,7 @@ providers:
         request_digests:
         - 5a30543178aca83846d8127efee5376cfd7209ba50fcdfd3e0c2b7bad3bc063e
         result_hashes:
-        - 1e367a6e9ef323e163b3abd0cb383e154741dbfa47e57452438c476850945564
+        - 3224457894d197571c229c71c60397175a40a75f790e206a67702d605955cbf6
         semantic_extension_request_digests:
         - 8499629df344ae1b9af524cd2dd1889f313a94d7799410b78ed4b131ca463a42
       - calculation_request_digests:
@@ -9160,7 +9164,7 @@ providers:
         extension_request_digests:
         - b2d1d14b60ca0bae258d5c97444753ae9dce8c688d88bff2d00ca6d34040e442
         extension_result_digests:
-        - 0b3226082812d1a5a3b60b7a2c52baae6387f1c4184474f7b3af17802eb92195
+        - 3a02b4a2b221827bcf5946ca1c3d8bcec9860507692eff87e9ffbb8b857f7f56
         facts_digests:
         - 633be845921807d0b63f87e6f1c812ebcf0f2c383b7210179e168d9b5f6ea274
         fixture_identity_digest: 3f5a6fdf30a4c3c774caae456912e8ce4d3da96e4700cd786a520a6cacf32d30
@@ -9173,7 +9177,7 @@ providers:
         request_digests:
         - 28a636cd72b9c3aa5ad4c63b005fcb117a743e7047847b6f8c4505295e12c9f5
         result_hashes:
-        - adf18fbe3583bcfa7a8edc0b646e873043f6e2e1d0ae2b84c89e9d961a4083a4
+        - 1b3785c5a6e983656c28d8279379b884347ed7db49d3288924bf305fc75a4413
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -9187,7 +9191,7 @@ providers:
         extension_request_digests:
         - 5bcb794f15609c4516d3db4a89c3515c6b2ff7817703c00a99914b71c92baf24
         extension_result_digests:
-        - a7588c32322610f552bfc58c5949ecf5f6312fe6317340318b4e3fe52fe22712
+        - bd8bec46b3378acda6cc2c97c8798a520fb5b916f1a6195f5b9e39ea52691059
         facts_digests:
         - 84baa656f2f1bebcf3e099a5c1da910a1a5d2298ba34441b6d085fde59b079fe
         fixture_identity_digest: 7190db5076f815e50aafe398ca3766d27ca0fbc57b2bab6dcc8b2f8cb2bb0268
@@ -9200,7 +9204,7 @@ providers:
         request_digests:
         - f7cf93e966b5fd5cad3ed8f3d4363b085df19f9cb5b21e7335422faee1394ecd
         result_hashes:
-        - ac6b72f8b1a2f493d291d7a02f480ae955577d60c9370504b1ea2ac90bd25c91
+        - 84a70c8bdfbeca236980f5d6281547be76401db6b334025d16f8133c34b58ccd
         semantic_extension_request_digests:
         - 6700e43e28b91b9bdedf16aacda650ada0d3d22e7528de7882a0d0587401d90e
       - calculation_request_digests:
@@ -9214,7 +9218,7 @@ providers:
         extension_request_digests:
         - cb8ab540f7bf17afc50608cbfeec607dad24c6ba5dbdb4518eb4c3e26a08b054
         extension_result_digests:
-        - 7aa69fc8dfcab1e64b16c94378acb2f5fd615d225ca9991b3aee0f8e7e464fe0
+        - 03a2c6f47b0da39157edcbf8cbf0ce54f5858566f7874fbfd068b3cfe8d2abe1
         facts_digests:
         - 8b5b9f35fb94a1b3c895d0a3a991287dd86655596ba2e1036e1dbb5bd2b47de0
         fixture_identity_digest: 5301876a8e3ce551ebe5ea045b626ba28b0af04f3326349cbe25a7e5db62b10c
@@ -9227,7 +9231,7 @@ providers:
         request_digests:
         - 87fef055cb0c567fe676352242b760c1eb1499b060fc4accb3db9fcc2f8be526
         result_hashes:
-        - 48b438d2344fcc6db78b817d6f81960539ad6c62b3bd85846dea1e60e2eb6bb6
+        - d0d296cb68d280565b46b8b65681b162106e9640e9e1525e623e714ccf8a42c9
         semantic_extension_request_digests:
         - 937c9d374e836a2b583a07002519336412ee818daa91c0112db4d61d3f5f55ff
       - calculation_request_digests:
@@ -9241,7 +9245,7 @@ providers:
         extension_request_digests:
         - f47c078649f61e620ca5874d324c81b371023049a04868c37d982fa7e0843d8e
         extension_result_digests:
-        - bd5d021c1a6b58a7560b91fcfe99cc4ce9973d396a05b4bb7c901bc540d5cbb1
+        - 2c42839aa4ec659c0ddf254368561ec5808c4f65ce06e178945a5dd5af67a889
         facts_digests:
         - 60049d01e3ae63b31a60c1c1e97bc2ab59ea14b12a988b9f13e35653e2c4f349
         fixture_identity_digest: c33f662eeccd33f9788cfef16a4e4134c1f28ef2da1eb50950b655b65423a9e1
@@ -9254,7 +9258,7 @@ providers:
         request_digests:
         - 548a89679bd06bba198986298fa328fd8c9976425c98ba29d9a4246bf4a793c0
         result_hashes:
-        - 229a141ad35f23aef073991732f01a1ea13787032fd29176f23dd772210a3780
+        - 54970312a7ab81a7780786aac653312fb6ed30a29ce18ee354e0c9375566e1c9
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -9268,7 +9272,7 @@ providers:
         extension_request_digests:
         - a570bf8f606caa3f230ecd8b15496f53a0986a4b880ee85b112547b43e78a9dc
         extension_result_digests:
-        - 7bef67aa3bdd0ef6c2976951a27fe734ab6a1ca74efd1fc98075d88e2ae032fa
+        - 1073c9654d88a612adfbc43a294370bee19eb8e7a6699b5fd37c34e87c399440
         facts_digests:
         - 232ac2b39975633d3ec0f9303ba2b7a1c40037715734319bbbbe5de00cbcb974
         fixture_identity_digest: 5f4460f121caaf0505c45603298f3234af37a3ea448d8421abdb8dc7ec1c5c73
@@ -9281,7 +9285,7 @@ providers:
         request_digests:
         - 051d50ebf1b952f8dd4cd85005db3f4c4ef4ce3dd50dd2363c5c2fddf0d78432
         result_hashes:
-        - 169626140be248027076c37817c6ba9e09a27d060e36de3cbb6e4619b260fafc
+        - 8667faa489abc2976302a2b033fa2d05b9e68be0bd5cb3a98200947012c33b63
         semantic_extension_request_digests:
         - 5dcf56779e5f9b1baee0013114ccfd7b019ca45ff68798f0a59ac1d3a955060a
       - calculation_request_digests:
@@ -9295,7 +9299,7 @@ providers:
         extension_request_digests:
         - 0823bf09f1c94d2aa32db5d7613a701b5cf8cf259d6741cda8d9dd83fcb9b04c
         extension_result_digests:
-        - 12308e9063f504a867bb6da9bcd28705bf0fe32c7972c8929c314a6a28540b15
+        - bcf4ebe1e5db7806ac4a1bdef313ad8737074f5348e6c29fa151ae7892bd5394
         facts_digests:
         - 2e1148d95a722d31ce2fa587728607875c985350807e41c46ec886521d6ba05d
         fixture_identity_digest: addddff82f38e66bb909a23e6b11c6c98489fd7a7f22b793edaa94db47ed5092
@@ -9308,7 +9312,7 @@ providers:
         request_digests:
         - de28b776f65a3e011969a41256be2ebc326a3e2b4dd62d6cadfab175b2e6fcb9
         result_hashes:
-        - 5fef14dc6774b00ca8733f105a57b711682f05f24b078490629cebd0f0df5fb1
+        - 0b0bec1183121d479aa9165e53adc609032fcda1e57cb741d17bb60d2f88fd20
         semantic_extension_request_digests:
         - 937c9d374e836a2b583a07002519336412ee818daa91c0112db4d61d3f5f55ff
       - calculation_request_digests:
@@ -9322,7 +9326,7 @@ providers:
         extension_request_digests:
         - c4d071beb72264b77be9b3c4251d04950b878703a5ebd915fe894ddded9e49ad
         extension_result_digests:
-        - 3a549f2cdf7a2ec90f818e9420bc9505d0d3fc2b5c81bab9d3e272d0d45496e5
+        - c5b5a7b8aeeb98451d8bdb54da7e18850a647080804ea121d5a357183a43df79
         facts_digests:
         - 60c6e7ff98b4b1225fc2678e088476727fa3ce177ed8f31aea028ff2a099ff53
         fixture_identity_digest: 448a970b383de08367728e78f56ea5c078a7518384dbdc1a59ff0e7a0088d943
@@ -9335,7 +9339,7 @@ providers:
         request_digests:
         - b4a692e57cfb18bbb48bb4eaac93e3ec9172ea552b5ce5983750ee1ff7778b11
         result_hashes:
-        - 044e81e0f5f2caeea6b908eb0755b37fce62ab05dc69b56a9fa6baa68157af14
+        - 57d1d54cf364acef03f6ff29273d6906d3c4d7f4049a736af969e2efcba1e368
         semantic_extension_request_digests:
         - dd254711ebcbbf8a0015816610f8826ad6f94b6d4a2d5d1871b30c3e8da9db09
       - calculation_request_digests:
@@ -9349,7 +9353,7 @@ providers:
         extension_request_digests:
         - 1d6c4f2fa42bb91efbc6198df5194aa85547a7dd0d108879a82024b5beaf4e6a
         extension_result_digests:
-        - 4389b64df5a085c8ee7bf2bc572f618ea1e66c3bcfd4436d5519ae95f055ecbe
+        - 9790f5746ed875d199d816f2fcc4830e93149881131d426c042e6cadd17a912e
         facts_digests:
         - f7ce55573fa456eafcbf41d38a274ebbbe9b0b26bc4710a66a97534a863424ce
         fixture_identity_digest: 7ba984aea4f463ed8d2964f1a296023b6f5f412186c0fe3b63a95e60203e00d7
@@ -9362,7 +9366,7 @@ providers:
         request_digests:
         - 556e3720b2566e34a6049c403d35fc3dd737c3e5acf71591977c14453affa248
         result_hashes:
-        - 76a4395b82db1e2845466dff34e3b690c69df9f37db578ab03269333e63c479b
+        - 49ebf0a7d1919c02ee943d1907602bd94b7ffb13afafd2d169cbee950e2031d7
         semantic_extension_request_digests:
         - 9b746ba3365c6173837721c4fd8d04f9379735a00eca3528b34727504bcd2eec
       - calculation_request_digests:
@@ -9376,7 +9380,7 @@ providers:
         extension_request_digests:
         - f3d50989305873ee088c55f034a65d65105804445a778512fd940d672be3baee
         extension_result_digests:
-        - 9189883141df5806fe0608da4c841c0257774b647142bc0d75aff0ab737cdff5
+        - e3282b18dfd828b0256d777fff631ae4cadd0318ab604c27de0df7981ddf3445
         facts_digests:
         - 47bdaf79997cea0e4edce6dd45a827c030c036493be2f95cd2a586b625e57a2a
         fixture_identity_digest: c1dc723c3705987a2880cb793beee46cd025fabf1641271627b032a58b01a20f
@@ -9389,7 +9393,7 @@ providers:
         request_digests:
         - 27b4be4be861f17a73feab8450d70e2f49421eb36afced0832bf1255571f9419
         result_hashes:
-        - 6f0601620f452dc6ce756ec99ff89eeeb906ba26ceb6ecb65a0193b150abf94e
+        - eb53e5f3bbb6f0233768e6e7fb2c821df5cf0e4fa424efbde3ffb922f9b19323
         semantic_extension_request_digests:
         - 8499629df344ae1b9af524cd2dd1889f313a94d7799410b78ed4b131ca463a42
       deterministic_input_replays: 47
@@ -9440,7 +9444,7 @@ providers:
         request_digests:
         - 191d5bfd82026c126176a3e0993450c74b8aa4716ee0ecc8af0b8daf27ea221e
         result_hashes:
-        - 41c7539d2f7653e467c198a3f35a6b104a35ff352d3eaf8fcab8aff73c8a5a5c
+        - f172bc9bdcb4919a551cd0fa5dbfc0d564c14b452b7aa9be80a995d7b0424686
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - d06845ebc20a8f1fa42c224b6a0cb566d34bcfab96f537aa1c8e73f51763a5e8
@@ -9465,7 +9469,7 @@ providers:
         request_digests:
         - 8b3919c0a1070074aeb233a79662f001111126535d35956802c627e69d9dd70d
         result_hashes:
-        - 9e9b7b1c3fa82cb8b666ec6df6ae13d9e0052eba95de983cc0e37e89321354bb
+        - abb6e93930fca28ac90037805ada1cbc9172dfb95ddea54de79b5c164dcafceb
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 8c158ede6c513379236053fe041e48e262cb420557254ea035d6ad584cc985fc
@@ -9490,7 +9494,7 @@ providers:
         request_digests:
         - ce13835e5b4e3a1d2fe93324af8f1db2db29d7e81c72665133925a4c3845f9fb
         result_hashes:
-        - 8863c52650d06d790714ccf076d31b49fc9e226095bcc925c8f7ba3739477ad2
+        - b0bfcfd111228fe361a8296aecdd98e22cf2225745544df6dd9da02405cdce74
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 71ef86cff1969370272c2ee048d3d46682d8bae165704b9297e261f49a407032
@@ -9515,7 +9519,7 @@ providers:
         request_digests:
         - 803a4c1c03a5b210c0ed5d65cadbb927b28e84717546edaa7201ad56cd6f76dc
         result_hashes:
-        - a2cef596561118f6412984811a14284b6721c66147d02c27a8e3ef45663387a7
+        - 72aed0c76d77f5b16b329db87ce14c2044e05c4e483b377595e097a3fca10ddf
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - c3aadf9eb7063226d5fb4ca37e365b673e54d396f3a5a283763606ac0bba012c
@@ -9540,7 +9544,7 @@ providers:
         request_digests:
         - f5d4561e37523731293602d22c2a8a0cd2ebd4cf5b912b7c0f7ecf9cee4d5161
         result_hashes:
-        - 10984a68a5714249f53b2577a7f2c2745bcb3a66c7fa5284c5e75bbdd4b568d9
+        - f7b41866ea42516aac8d62694c7182e34605bea052fa1de6753c8aacf810df2a
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 64febc62d4b048ec43e8f58daba2bc7ee7c27443177a6f8b20e853a3590e4979
@@ -9565,7 +9569,7 @@ providers:
         request_digests:
         - 6496ae06f5509cf515bc2a7d77951eef21fa20fc88ccf8415340efac4788b3d0
         result_hashes:
-        - 89fe794ae83d6156cf7918e25d2dbb5c9d7612d79e74d884bd89d8aab072a136
+        - f14963686987cb6afb6b8fbf73f0cc6b321597f5a0d505c8d26bfc52a99f5044
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - b4488fc1cd8e66a887e2fc1dec88e445be5d94a15f0c01bc8b54c3744ff71e0a
@@ -9590,7 +9594,7 @@ providers:
         request_digests:
         - 7e86b7f42981bf8146c3724e941c698b0db4e51c4ddaa1e3c88f5377d2a759aa
         result_hashes:
-        - 5b595fea5928c1c576573db57ace780d174c24605b5016140a059f86e027b80d
+        - 29967112557586a215eb80e535683637f60b118e65ac3af64c93d4beac69f4bd
         semantic_extension_request_digests: []
       - calculation_request_digests:
         - 7401e85382828a71e5b302544f5445be81c790a284e99a2368775150a7d2a98e
@@ -9615,7 +9619,7 @@ providers:
         request_digests:
         - 796faddd12b583c82fab23d491fddabfeacbdc7b2c91b517cec525c75d6f4810
         result_hashes:
-        - f5558df165677425783e5ae7d76d10cfd7a1911d049b1175f5c0072d19c5f683
+        - 1f25d6b88b9f37267ed13d02d588324bca22974dd26e3f92a659a3615edd6ad5
         semantic_extension_request_digests: []
       provider_identity_matches: true
       provider_input_payloads_are_distinct: true
@@ -10087,12 +10091,13 @@ providers:
     live_contract:
       deterministic: true
       extension_digests:
-        day: 246dab15fedff73112be6fc1ee6c6ec3870922bd44a5866f2d5964d2f0ffb406
-        instant: bf3f7594d0db993004fe748a8a637682a65aa054b99004f22bfc7596a4f7da3c
-        month: 1fb726d6942ceb857dd115b0011632e3de37cea813e4f37bbf840498226047f2
+        day: 386966df9e8ab1c1d5ba8773dc6087ff737d1aa00348d10ced406acb0a7d4b24
+        instant: c67fd84ff4ed20e1b815615e00097884af0a4d8bd40293d9895cea8fc8c066e5
+        month: ea32dacd4c25139b39f92f34f9768d47d81006ea0597be1cf9ba8d1d83408090
       findings: []
       resolved_extension_bindings:
       - dimension_facts
+      - runtime_core_facts
       - timing_candidates
       resolved_output_bindings:
       - four_lessons
@@ -10108,12 +10113,12 @@ providers:
     runtime:
       class: reading_engine.providers.LiurenProvider
       expected_class: reading_engine.providers.LiurenProvider
-      expected_provider_id: mingli-master.liuren.v7
-      expected_provider_version: mingli-liuren-pipeline-v5-rule-evidence
+      expected_provider_id: mingli-master.liuren.v8
+      expected_provider_version: mingli-liuren-pipeline-v6-runtime-contract
       generic: false
       identity_matches: true
-      provider_id: mingli-master.liuren.v7
-      provider_version: mingli-liuren-pipeline-v5-rule-evidence
+      provider_id: mingli-master.liuren.v8
+      provider_version: mingli-liuren-pipeline-v6-runtime-contract
     source_applicability:
       accepted_fixture_case_ids:
       - daquan-L6876
@@ -10625,7 +10630,7 @@ providers:
         version: liuyao-six-spirits-day-stem-v1
       - id: liuyao.relations.returning-and-useful-spirit-candidates
         version: liuyao-returning-relations-candidates-v1
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 6
       reported_dependency_count_key: algorithm_dependencies
@@ -12866,7 +12871,7 @@ providers:
         version: verified-evidence-rules-v1
       - id: luming.three-yuan-and-taiyuan
         version: luoluzi-three-yuan/taiyuan-declared-v1
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 4
       reported_dependency_count_key: algorithm_dependencies
@@ -17231,7 +17236,7 @@ providers:
         version: meihua-explicit-methods-v1
       - id: meihua.plate.main-mutual-changed
         version: meihua-mutual-change-v1
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 3
       reported_dependency_count_key: algorithm_dependencies
@@ -19962,7 +19967,7 @@ providers:
         version: physiognomy-visible-only-normalization-v1
       - id: physiognomy.observation.image-quality-regions
         version: physiognomy-visible-observation-v1
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 3
       reported_dependency_count_key: algorithm_dependencies
@@ -21436,7 +21441,7 @@ providers:
         version: qimen-rotating-chief-director-v1
       - id: qimen.plate.instruments-wonders-palaces
         version: qimen-nine-palace-earth-plate-v1
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 5
       reported_dependency_count_key: algorithm_dependencies
@@ -23630,7 +23635,7 @@ providers:
         version: cnlunar-0.2.4/xieji-official-cnlunar-v1
       - id: selection.source-conditioned-patterns
         version: verified-evidence-rules-v1
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 6
       reported_dependency_count_key: algorithm_dependencies
@@ -25450,7 +25455,7 @@ providers:
         version: taiyi-jinjing-annual-host-guest-v1
       - id: taiyi.plate.taiyi-tianmu-jishen-shiji
         version: taiyi-jinjing-annual-yang-core-board-v1
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 6
       reported_dependency_count_key: algorithm_dependencies
@@ -27583,7 +27588,7 @@ providers:
         version: verified-evidence-rules-v1
       - id: xingming.transformations.ten-stem-table
         version: xingxue-ten-stem-transformations-v1
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 7
       reported_dependency_count_key: algorithm_dependencies
@@ -29837,7 +29842,7 @@ providers:
         version: iztro-2.5.8/default/fix-leap/zh-CN
       - id: ziwei.source-conditioned-patterns
         version: verified-evidence-rules-v1
-      manifest_sha256: e4faaaab1edab5ec76dc1afc4b24a6c91a3953e0afd63f57cc63fb693c0d317c
+      manifest_sha256: c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb
       provenance_complete: true
       reported_dependency_count: 4
       reported_dependency_count_key: algorithm_dependencies

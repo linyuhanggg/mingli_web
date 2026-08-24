@@ -2605,7 +2605,7 @@ def _fengshui_incomplete_dimensions(output: Mapping[str, Any]) -> set[str]:
 
 
 class LiurenProvider(_AdapterSeam, _SourceRouteMixin):
-    provider_id = "mingli-master.liuren.v7"
+    provider_id = "mingli-master.liuren.v8"
     SOURCE_ROUTE = {
         "plan_system": "liuren",
         "subsystem": None,
