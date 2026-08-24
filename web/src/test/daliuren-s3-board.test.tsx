@@ -463,9 +463,24 @@ describe("大六壬 S3 课传盘面", () => {
       <DaliurenBoard view={chart({ core_facts: emptyFacts({ timing_candidates: [candidate()] }) })} />,
     );
 
-    await user.click(screen.getByRole("button", { name: "候选支 酉" }));
-    expect(screen.getByRole("button", { name: "初传 酉 贵人" })).toHaveAttribute("data-active", "true");
-    expect(screen.getByRole("button", { name: "末传 巳 白虎" })).toHaveAttribute("data-active", "false");
+    const candidateButton = screen.getByRole("button", { name: "候选支 酉" });
+    const initial = screen.getByRole("button", { name: "初传 酉 贵人" });
+    const final = screen.getByRole("button", { name: "末传 巳 白虎" });
+
+    act(() => candidateButton.focus());
+    expect(initial).toHaveAttribute("data-active", "true");
+    expect(final).toHaveAttribute("data-active", "false");
+    act(() => candidateButton.blur());
+    expect(initial).toHaveAttribute("data-active", "false");
+
+    await user.hover(candidateButton);
+    expect(initial).toHaveAttribute("data-active", "true");
+    await user.unhover(candidateButton);
+    expect(initial).toHaveAttribute("data-active", "false");
+
+    await user.click(candidateButton);
+    expect(initial).toHaveAttribute("data-active", "true");
+    expect(final).toHaveAttribute("data-active", "false");
   });
 
   it("keeps matched timing candidate controls at least 44 by 44 pixels", () => {
@@ -1261,6 +1276,147 @@ describe("大六壬 S3 M6a 维度证据", () => {
       "来源标注 · liuren-miben L569",
       "来源标注 · liuren-miben L565",
     ]);
+  });
+
+  it("renders typed no-match money, work and timing facts without inventing a verdict", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            money: dimension({
+              canonical_dimension: "money",
+              requested_dimension: "money",
+              source_rule_ids: ["LM-R20"],
+              wealth_presence: false,
+              wealth_stage_strength: [],
+              wealth_void_status: [],
+              wealth_general_modifier: [],
+              rule_evidence: evidence({
+                matched: [],
+                status: "scope_boundary",
+                scope_boundaries: [
+                  matchedEntry({
+                    rule_id: "LM-R20",
+                    status: "scope_boundary",
+                    observation: { wealth_presence: false },
+                  }),
+                ],
+              }),
+            }),
+            timing: dimension({
+              canonical_dimension: "timing",
+              requested_dimension: "timing",
+              source_rule_ids: ["DLR-16"],
+              relative_speed: "relatively_faster",
+              candidate_branch: null,
+              candidate_date: null,
+              rule_evidence: evidence({ matched: [], status: "not_bound" }),
+            }),
+            work: dimension({
+              canonical_dimension: "work",
+              requested_dimension: "work",
+              source_rule_ids: [],
+              target_relative: "官鬼",
+              target_contract_status: "bound",
+              target_presence: false,
+              target_strength: [],
+              target_general_modifier: [],
+              rule_evidence: evidence({
+                matched: [],
+                status: "scope_boundary",
+                scope_boundaries: [
+                  matchedEntry({
+                    rule_id: "LR-19",
+                    status: "scope_boundary",
+                    observation: {
+                      target_relative: "官鬼",
+                      target_presence: false,
+                      target_contract_status: "bound",
+                    },
+                  }),
+                ],
+              }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    const block = panel();
+    expect(within(block).getByRole("group", { name: "求财" })).toHaveTextContent("妻财未入三传");
+    expect(within(block).getByRole("group", { name: "事业" })).toHaveTextContent(
+      "工作所取六亲：官鬼 · 未入三传",
+    );
+    expect(within(block).getByRole("group", { name: "时机" })).toHaveTextContent("相对节奏：较快");
+    expect(block).not.toHaveTextContent(/wealth_presence|target_presence|relative_speed|吉凶|成败|保证/);
+  });
+
+  it("fails closed when no-match deterministic fields disagree with their typed scope boundary", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            money: dimension({
+              canonical_dimension: "money",
+              requested_dimension: "money",
+              source_rule_ids: ["LM-R20"],
+              wealth_presence: false,
+              wealth_stage_strength: [],
+              wealth_void_status: [],
+              wealth_general_modifier: [],
+              rule_evidence: evidence({
+                matched: [],
+                status: "scope_boundary",
+                scope_boundaries: [
+                  matchedEntry({
+                    rule_id: "LM-R20",
+                    status: "scope_boundary",
+                    observation: { wealth_presence: true },
+                  }),
+                ],
+              }),
+            }),
+            timing: dimension({
+              canonical_dimension: "timing",
+              requested_dimension: "timing",
+              source_rule_ids: ["DLR-16"],
+              relative_speed: "unresolved",
+              candidate_branch: null,
+              candidate_date: null,
+              rule_evidence: evidence({ matched: [], status: "not_bound" }),
+            }),
+            work: dimension({
+              canonical_dimension: "work",
+              requested_dimension: "work",
+              source_rule_ids: [],
+              target_relative: "官鬼",
+              target_contract_status: "bound",
+              target_presence: false,
+              target_strength: [],
+              target_general_modifier: [],
+              rule_evidence: evidence({
+                matched: [],
+                status: "scope_boundary",
+                scope_boundaries: [
+                  matchedEntry({
+                    rule_id: "LR-19",
+                    status: "scope_boundary",
+                    observation: {
+                      target_relative: "妻财",
+                      target_presence: false,
+                      target_contract_status: "bound",
+                    },
+                  }),
+                ],
+              }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/妻财未入三传|工作所取六亲|相对节奏|unresolved/);
   });
 
   it("fails closed when a location row breaks the typed candidate or source-boundary contract", () => {

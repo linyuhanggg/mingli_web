@@ -485,11 +485,15 @@ export function DaliurenBoard({
                           type="button"
                           aria-label={`候选支 ${item.branch}`}
                           onClick={() => toggleLock(target)}
+                          onBlur={() => stopFocusPreview(item.branch)}
+                          onFocus={() => startFocusPreview(item.branch)}
                           onKeyDown={(event) => {
                             if (event.key !== "Escape") return;
                             event.preventDefault();
                             clearLock();
                           }}
+                          onPointerEnter={() => startHoverPreview(item.branch)}
+                          onPointerLeave={() => stopHoverPreview(item.branch)}
                         >
                           {item.branch}
                         </button>

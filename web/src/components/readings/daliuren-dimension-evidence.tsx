@@ -15,8 +15,10 @@ import type {
   DaliurenSixRelative,
   DaliurenStateObservation,
   DaliurenStageBranchDirection,
+  DaliurenTimingCandidateObservation,
   DaliurenTimingObservation,
   DaliurenTransmissionStage,
+  DaliurenWorkPresentObservation,
   DaliurenWorkObservation,
 } from "@/view-models/registry";
 
@@ -27,8 +29,8 @@ type WealthPresentObservation = Extract<DaliurenMoneyObservation, { readonly wea
 type WealthStage = WealthPresentObservation["wealth_stages"][number];
 type WealthVoidObservation = Extract<DaliurenMoneyObservation, { readonly wealth_void_rows: ReadonlyArray<unknown> }>;
 type WealthVoidRow = WealthVoidObservation["wealth_void_rows"][number];
-type WorkStrength = DaliurenWorkObservation["target_strength"][number];
-type WorkGeneralModifier = DaliurenWorkObservation["target_general_modifier"][number];
+type WorkStrength = DaliurenWorkPresentObservation["target_strength"][number];
+type WorkGeneralModifier = DaliurenWorkPresentObservation["target_general_modifier"][number];
 type LocationDirection = DaliurenLocationObservation["stage_branch_directions"][number];
 type DaliurenDimensionId = keyof DaliurenDimensionObservationMap;
 
@@ -93,6 +95,7 @@ const OUTCOME_TRANSMISSION_KEYS = ["relations"] as const;
 const MIDDLE_VOID_KEYS = ["stage", "branch", "is_xunkong"] as const;
 const RELATIONSHIP_OBSERVATION_KEYS = ["relation"] as const;
 const TIMING_OBSERVATION_KEYS = ["candidate_branch", "candidate_date", "relative_speed"] as const;
+const TIMING_PACE_KEYS = ["relative_speed"] as const;
 const CANDIDATE_BRANCH_KEYS = ["anchor_earth_branch", "branch", "source_rule"] as const;
 const CANDIDATE_DATE_KEYS = [
   "id",
@@ -107,6 +110,7 @@ const CANDIDATE_DATE_KEYS = [
   "candidate_not_guarantee",
 ] as const;
 const WEALTH_PRESENT_KEYS = ["wealth_presence", "wealth_stages"] as const;
+const WEALTH_ABSENT_KEYS = ["wealth_presence"] as const;
 const WEALTH_STAGE_KEYS = ["stage", "branch", "six_relative", "season_strength"] as const;
 const WEALTH_VOID_KEYS = ["wealth_void_rows"] as const;
 const WEALTH_VOID_ROW_KEYS = ["stage", "branch", "six_relative", "is_xunkong"] as const;
@@ -132,6 +136,7 @@ const GENERAL_LANDING_UNAVAILABLE_KEYS = [
   "status",
 ] as const;
 const WORK_OBSERVATION_KEYS = ["target_relative", "target_strength", "target_general_modifier"] as const;
+const WORK_ABSENT_KEYS = ["target_relative", "target_presence", "target_contract_status"] as const;
 const TARGET_STRENGTH_KEYS = [
   "stage",
   "branch",
@@ -286,7 +291,7 @@ function isRelationshipObservation(value: unknown): value is DaliurenRelationshi
   return Boolean(relation && hasOwnKey(RELATIONSHIP_FACTS, relation));
 }
 
-function isCandidateBranch(value: unknown): value is DaliurenTimingObservation["candidate_branch"] {
+function isCandidateBranch(value: unknown): value is DaliurenTimingCandidateObservation["candidate_branch"] {
   return (
     isRecord(value) &&
     hasExactKeys(value, CANDIDATE_BRANCH_KEYS) &&
@@ -296,7 +301,7 @@ function isCandidateBranch(value: unknown): value is DaliurenTimingObservation["
   );
 }
 
-function isCandidateDate(value: unknown): value is NonNullable<DaliurenTimingObservation["candidate_date"]> {
+function isCandidateDate(value: unknown): value is NonNullable<DaliurenTimingCandidateObservation["candidate_date"]> {
   return (
     isRecord(value) &&
     hasExactKeys(value, CANDIDATE_DATE_KEYS) &&
@@ -315,7 +320,11 @@ function isCandidateDate(value: unknown): value is NonNullable<DaliurenTimingObs
 }
 
 function isTimingObservation(value: unknown): value is DaliurenTimingObservation {
-  if (!isRecord(value) || !hasExactKeys(value, TIMING_OBSERVATION_KEYS)) return false;
+  if (!isRecord(value)) return false;
+  if (hasExactKeys(value, TIMING_PACE_KEYS)) {
+    return typeof value.relative_speed === "string" && hasOwnKey(RELATIVE_SPEED_FACTS, value.relative_speed);
+  }
+  if (!hasExactKeys(value, TIMING_OBSERVATION_KEYS)) return false;
   const candidateBranch = value.candidate_branch;
   const candidateDate = value.candidate_date;
   const relativeSpeed = value.relative_speed;
@@ -367,6 +376,7 @@ function isMoneyObservation(value: unknown): value is DaliurenMoneyObservation {
       value.wealth_stages.every(isWealthStage)
     );
   }
+  if (hasExactKeys(value, WEALTH_ABSENT_KEYS)) return value.wealth_presence === false;
   if (hasExactKeys(value, WEALTH_VOID_KEYS)) {
     return (
       Array.isArray(value.wealth_void_rows) &&
@@ -379,6 +389,7 @@ function isMoneyObservation(value: unknown): value is DaliurenMoneyObservation {
 
 function moneyFact(value: unknown): string | null {
   if (!isMoneyObservation(value)) return null;
+  if ("wealth_presence" in value && value.wealth_presence === false) return "妻财未入三传";
   if ("wealth_stages" in value) {
     const stages = value.wealth_stages
       .map((row) => `${STAGE_FACTS[row.stage]} ${row.branch}（${SEASON_STRENGTH_FACTS[row.season_strength]}）`)
@@ -470,7 +481,15 @@ function isWorkGeneralModifier(value: unknown): value is WorkGeneralModifier {
 }
 
 function isWorkObservation(value: unknown): value is DaliurenWorkObservation {
-  if (!isRecord(value) || !hasExactKeys(value, WORK_OBSERVATION_KEYS)) return false;
+  if (!isRecord(value)) return false;
+  if (hasExactKeys(value, WORK_ABSENT_KEYS)) {
+    return (
+      isSixRelative(value.target_relative) &&
+      value.target_presence === false &&
+      value.target_contract_status === "bound"
+    );
+  }
+  if (!hasExactKeys(value, WORK_OBSERVATION_KEYS)) return false;
   if (
     !isSixRelative(value.target_relative) ||
     !Array.isArray(value.target_strength) ||
@@ -489,6 +508,7 @@ function isWorkObservation(value: unknown): value is DaliurenWorkObservation {
 
 function workFact(value: unknown): string | null {
   if (!isWorkObservation(value)) return null;
+  if ("target_presence" in value) return `工作所取六亲：${value.target_relative} · 未入三传`;
   const strengths = value.target_strength
     .map(
       (row) =>
@@ -517,6 +537,7 @@ function relationshipFact(value: unknown): string | null {
 
 function timingFact(value: unknown): string | null {
   if (!isTimingObservation(value)) return null;
+  if (!("candidate_branch" in value)) return `相对节奏：${RELATIVE_SPEED_FACTS[value.relative_speed]}`;
   const facts = [`规则候选支：${value.candidate_branch.branch}`];
   if (value.candidate_date) {
     facts.push(`候选日期：${value.candidate_date.solar_date}（${value.candidate_date.day_ganzhi}日）`);
@@ -572,6 +593,74 @@ function parseEntry(value: unknown, dimension: DaliurenDimensionId): EvidenceEnt
   };
 }
 
+function isEmptyArray(value: unknown): value is readonly [] {
+  return Array.isArray(value) && value.length === 0;
+}
+
+function parseScopeBoundaryEntry(value: unknown, dimension: DaliurenDimensionId): EvidenceEntry | null {
+  if (!isRecord(value) || value.status !== "scope_boundary") return null;
+  return parseEntry(value, dimension);
+}
+
+function parseScopeBoundaryFacts(
+  value: Record<string, unknown>,
+  dimension: DaliurenDimensionId,
+  scopeBoundaries: readonly unknown[],
+): readonly EvidenceEntry[] {
+  if (dimension === "money") {
+    if (
+      value.wealth_presence !== false ||
+      !isEmptyArray(value.wealth_stage_strength) ||
+      !isEmptyArray(value.wealth_void_status) ||
+      !isEmptyArray(value.wealth_general_modifier)
+    ) {
+      return [];
+    }
+    const entries = scopeBoundaries
+      .map((entry) => parseScopeBoundaryEntry(entry, dimension))
+      .filter((entry): entry is EvidenceEntry => entry?.fact === "妻财未入三传");
+    return entries.length === scopeBoundaries.length ? entries : [];
+  }
+  if (dimension === "work") {
+    const targetRelative = readString(value, "target_relative");
+    if (
+      !targetRelative ||
+      !isSixRelative(targetRelative) ||
+      value.target_presence !== false ||
+      value.target_contract_status !== "bound" ||
+      !isEmptyArray(value.target_strength) ||
+      !isEmptyArray(value.target_general_modifier)
+    ) {
+      return [];
+    }
+    const expectedFact = `工作所取六亲：${targetRelative} · 未入三传`;
+    const entries = scopeBoundaries
+      .map((entry) => parseScopeBoundaryEntry(entry, dimension))
+      .filter((entry): entry is EvidenceEntry => entry?.fact === expectedFact);
+    return entries.length === scopeBoundaries.length ? entries : [];
+  }
+  return [];
+}
+
+function parseTopLevelTimingFact(value: Record<string, unknown>): EvidenceEntry | null {
+  if (value.candidate_branch !== null || value.candidate_date !== null) return null;
+  const relativeSpeed = readString(value, "relative_speed");
+  if (!relativeSpeed || !hasOwnKey(RELATIVE_SPEED_FACTS, relativeSpeed)) return null;
+  const sourceRuleIds = value.source_rule_ids;
+  if (
+    !Array.isArray(sourceRuleIds) ||
+    sourceRuleIds.length === 0 ||
+    !sourceRuleIds.every((ruleId) => typeof ruleId === "string" && Boolean(ruleId.trim()))
+  ) {
+    return null;
+  }
+  return {
+    marker: sourceRuleIds.map((ruleId) => ruleId.trim()).join(" · "),
+    fact: `相对节奏：${RELATIVE_SPEED_FACTS[relativeSpeed]}`,
+    sources: [],
+  };
+}
+
 function parseDimension(value: unknown): EvidenceGroup | null {
   if (!isRecord(value)) return null;
   const dimension = readString(value, "canonical_dimension");
@@ -582,7 +671,7 @@ function parseDimension(value: unknown): EvidenceGroup | null {
   if (!Object.prototype.hasOwnProperty.call(evidence, "hard_verdict") || evidence.hard_verdict !== null) {
     return null;
   }
-  if (!Array.isArray(evidence.matched)) return null;
+  if (!Array.isArray(evidence.matched) || !Array.isArray(evidence.scope_boundaries)) return null;
   if (dimension === "location") {
     if (requested !== "location" && requested !== "location_direction") return null;
     const observation = { stage_branch_directions: value.stage_branch_directions };
@@ -607,6 +696,11 @@ function parseDimension(value: unknown): EvidenceGroup | null {
   for (const item of evidence.matched) {
     const entry = parseEntry(item, dimension);
     if (entry) entries.push(entry);
+  }
+  entries.push(...parseScopeBoundaryFacts(value, dimension, evidence.scope_boundaries));
+  if (dimension === "timing" && evidence.matched.length === 0 && evidence.scope_boundaries.length === 0) {
+    const timingEntry = parseTopLevelTimingFact(value);
+    if (timingEntry) entries.push(timingEntry);
   }
   return entries.length ? { dimension, entries } : null;
 }

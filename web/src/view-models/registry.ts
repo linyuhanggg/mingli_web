@@ -852,13 +852,6 @@ export type DaliurenRuleEvidence = {
   readonly status: string;
 };
 
-export type DaliurenDimensionFact = Readonly<{
-  readonly canonical_dimension: string;
-  readonly requested_dimension: string;
-  readonly rule_evidence: DaliurenRuleEvidence;
-  readonly stage_branch_directions?: DaliurenLocationObservation["stage_branch_directions"];
-}> & Readonly<Record<string, unknown>>;
-
 export type DaliurenTimingCandidate = {
   readonly id: "initial_group_upper_candidate";
   readonly role: "event_response_candidate";
@@ -938,15 +931,25 @@ export type DaliurenRelationshipObservation = Readonly<{
   readonly relation: "subject_overcomes_object" | "object_overcomes_subject";
 }>;
 
-export type DaliurenTimingObservation = Readonly<{
-  readonly candidate_branch: Readonly<{
-    readonly anchor_earth_branch: string;
-    readonly branch: string;
-    readonly source_rule: "LM-R21";
-  }>;
-  readonly candidate_date: DaliurenTimingCandidate | null;
-  readonly relative_speed: "relatively_faster" | "relatively_slower" | null;
+export type DaliurenRelativeSpeed = "relatively_faster" | "relatively_slower";
+
+export type DaliurenCandidateBranch = Readonly<{
+  readonly anchor_earth_branch: string;
+  readonly branch: string;
+  readonly source_rule: "LM-R21";
 }>;
+
+export type DaliurenTimingCandidateObservation = Readonly<{
+  readonly candidate_branch: DaliurenCandidateBranch;
+  readonly candidate_date: DaliurenTimingCandidate | null;
+  readonly relative_speed: DaliurenRelativeSpeed | null;
+}>;
+
+export type DaliurenTimingPaceObservation = Readonly<{
+  readonly relative_speed: DaliurenRelativeSpeed;
+}>;
+
+export type DaliurenTimingObservation = DaliurenTimingCandidateObservation | DaliurenTimingPaceObservation;
 
 export type DaliurenMoneyObservation =
   | Readonly<{
@@ -969,6 +972,9 @@ export type DaliurenMoneyObservation =
           readonly is_xunkong: true;
         }>
       >;
+    }>
+  | Readonly<{
+      readonly wealth_presence: false;
     }>
   | DaliurenMiddleVoidObservation;
 
@@ -1000,7 +1006,7 @@ export type DaliurenStateObservation = Readonly<{
   readonly correspondences: ReadonlyArray<DaliurenGeneralLandingCorrespondence>;
 }>;
 
-export type DaliurenWorkObservation = Readonly<{
+export type DaliurenWorkPresentObservation = Readonly<{
   readonly target_relative: DaliurenSixRelative;
   readonly target_strength: ReadonlyArray<
     Readonly<{
@@ -1019,6 +1025,14 @@ export type DaliurenWorkObservation = Readonly<{
   >;
 }>;
 
+export type DaliurenWorkAbsentObservation = Readonly<{
+  readonly target_relative: DaliurenSixRelative;
+  readonly target_presence: false;
+  readonly target_contract_status: "bound";
+}>;
+
+export type DaliurenWorkObservation = DaliurenWorkPresentObservation | DaliurenWorkAbsentObservation;
+
 export type DaliurenDimensionObservationMap = Readonly<{
   readonly outcome: DaliurenOutcomeObservation;
   readonly location: DaliurenLocationObservation;
@@ -1028,6 +1042,27 @@ export type DaliurenDimensionObservationMap = Readonly<{
   readonly timing: DaliurenTimingObservation;
   readonly work: DaliurenWorkObservation;
 }>;
+
+export type DaliurenDimensionFact = Readonly<{
+  readonly canonical_dimension: string;
+  readonly requested_dimension: string;
+  readonly rule_evidence: DaliurenRuleEvidence;
+  readonly status?: "calculated_facts_not_verdict";
+  readonly source_rule_ids?: ReadonlyArray<string>;
+  readonly stage_branch_directions?: DaliurenLocationObservation["stage_branch_directions"];
+  readonly relative_speed?: DaliurenRelativeSpeed | null;
+  readonly candidate_branch?: DaliurenCandidateBranch | null;
+  readonly candidate_date?: DaliurenTimingCandidate | null;
+  readonly target_relative?: DaliurenSixRelative | null;
+  readonly target_contract_status?: "bound" | "missing_target_relative";
+  readonly target_presence?: boolean;
+  readonly target_strength?: ReadonlyArray<Readonly<Record<string, unknown>>>;
+  readonly target_general_modifier?: ReadonlyArray<Readonly<Record<string, unknown>>>;
+  readonly wealth_presence?: boolean;
+  readonly wealth_stage_strength?: ReadonlyArray<Readonly<Record<string, unknown>>>;
+  readonly wealth_void_status?: ReadonlyArray<Readonly<Record<string, unknown>>>;
+  readonly wealth_general_modifier?: ReadonlyArray<Readonly<Record<string, unknown>>>;
+}> & Readonly<Record<string, unknown>>;
 
 export type DaliurenChartViewModel = {
   readonly schema_version: "daliuren-chart/v1";
