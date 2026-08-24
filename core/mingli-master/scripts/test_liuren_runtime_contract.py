@@ -321,6 +321,76 @@ class LiurenRuntimeContractTests(unittest.TestCase):
                 self.assertNotIn("future_internal_trace", payload)
         validate_runtime_core_facts(contract)
 
+    def test_rule_evidence_helper_keys_are_not_published_recursively(self) -> None:
+        facts, extension = _all_dimension_extension()
+        evidence = extension["dimension_facts"]["outcome"]["rule_evidence"]
+        matched = evidence["matched"][0]
+        matched_source = matched["source_refs"][0]
+        not_evaluated = evidence["not_evaluated"][0]
+        not_evaluated_source = not_evaluated["source_refs"][0]
+
+        projected_layers = (
+            evidence,
+            matched,
+            matched_source,
+            not_evaluated,
+            not_evaluated_source,
+        )
+        for layer in projected_layers:
+            layer["future_internal_trace"] = {"opaque": True}
+        matched["observation"]["future_observation_detail"] = {"opaque": True}
+
+        contract = build_runtime_core_facts(
+            facts["output"],
+            extension["dimension_facts"],
+            timing_candidates=extension["timing"]["candidates"],
+        )
+
+        projected = contract["dimension_facts"]["outcome"]["rule_evidence"]
+        projected_matched = projected["matched"][0]
+        projected_not_evaluated = projected["not_evaluated"][0]
+        for layer in (
+            projected,
+            projected_matched,
+            projected_matched["source_refs"][0],
+            projected_not_evaluated,
+            projected_not_evaluated["source_refs"][0],
+        ):
+            self.assertNotIn("future_internal_trace", layer)
+        self.assertEqual(
+            projected_matched["observation"]["future_observation_detail"],
+            {"opaque": True},
+        )
+        validate_runtime_core_facts(contract)
+
+    def test_rule_evidence_public_payloads_fail_closed_recursively(self) -> None:
+        for label in (
+            "evidence",
+            "matched",
+            "matched_source",
+            "not_evaluated",
+            "not_evaluated_source",
+        ):
+            with self.subTest(label=label):
+                contract = _contract(("outcome",))
+                evidence = contract["dimension_facts"]["outcome"]["rule_evidence"]
+                matched = evidence["matched"][0]
+                not_evaluated = evidence["not_evaluated"][0]
+                layers = {
+                    "evidence": evidence,
+                    "matched": matched,
+                    "matched_source": matched["source_refs"][0],
+                    "not_evaluated": not_evaluated,
+                    "not_evaluated_source": not_evaluated["source_refs"][0],
+                }
+                layers[label]["future_public_field"] = True
+
+                with self.assertRaisesRegex(
+                    LiurenRuntimeContractError,
+                    "contains unknown keys: future_public_field",
+                ):
+                    validate_runtime_core_facts(contract)
+
     def test_missing_required_key_is_rejected(self) -> None:
         contract = _contract()
         del contract["month_general"]

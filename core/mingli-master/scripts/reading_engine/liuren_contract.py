@@ -316,6 +316,74 @@ def _project_mapping_rows(
     ]
 
 
+def _project_source_refs(value: Any, path: str) -> list[dict[str, Any]]:
+    return _project_mapping_rows(
+        value,
+        fields=(*_SOURCE_REF_REQUIRED, *_SOURCE_REF_OPTIONAL),
+        path=path,
+    )
+
+
+def _project_evidence_record(value: Any, path: str) -> dict[str, Any]:
+    item = _mapping(value, path)
+    projected: dict[str, Any] = {}
+    for field in (*_EVIDENCE_RECORD_REQUIRED, *_EVIDENCE_RECORD_OPTIONAL):
+        if field not in item:
+            continue
+        if field == "source_refs":
+            projected[field] = _project_source_refs(
+                item[field],
+                f"{path}.source_refs",
+            )
+        elif field == "observation":
+            projected[field] = copy.deepcopy(
+                _mapping(item[field], f"{path}.observation")
+            )
+        else:
+            projected[field] = copy.deepcopy(item[field])
+    return projected
+
+
+def _project_not_evaluated_record(value: Any, path: str) -> dict[str, Any]:
+    item = _mapping(value, path)
+    projected: dict[str, Any] = {}
+    for field in _NOT_EVALUATED_FIELDS:
+        if field not in item:
+            continue
+        if field == "source_refs":
+            projected[field] = _project_source_refs(
+                item[field],
+                f"{path}.source_refs",
+            )
+        else:
+            projected[field] = copy.deepcopy(item[field])
+    return projected
+
+
+def _project_rule_evidence(value: Any, path: str) -> dict[str, Any]:
+    item = _mapping(value, path)
+    projected: dict[str, Any] = {}
+    for field in _EVIDENCE_FIELDS:
+        if field not in item:
+            continue
+        field_path = f"{path}.{field}"
+        if field in {"matched", "scope_boundaries"}:
+            rows = _sequence(item[field], field_path)
+            projected[field] = [
+                _project_evidence_record(row, f"{field_path}[{index}]")
+                for index, row in enumerate(rows)
+            ]
+        elif field == "not_evaluated":
+            rows = _sequence(item[field], field_path)
+            projected[field] = [
+                _project_not_evaluated_record(row, f"{field_path}[{index}]")
+                for index, row in enumerate(rows)
+            ]
+        else:
+            projected[field] = copy.deepcopy(item[field])
+    return projected
+
+
 def _project_dimension_payload(value: Any, *, field: str, path: str) -> Any:
     object_fields = _DIMENSION_OBJECT_FIELDS.get(field)
     if object_fields is not None:
@@ -349,6 +417,11 @@ def _project_dimension_facts(value: Any, path: str) -> dict[str, Any]:
                     item[field],
                     field=field,
                     path=f"{dimension_path}.{field}",
+                )
+            elif field == "rule_evidence":
+                row[field] = _project_rule_evidence(
+                    item[field],
+                    f"{dimension_path}.rule_evidence",
                 )
             else:
                 row[field] = copy.deepcopy(item[field])
