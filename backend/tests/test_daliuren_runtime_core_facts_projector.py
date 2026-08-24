@@ -57,6 +57,14 @@ def _load_fixture() -> dict[str, object]:
     return json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
 
 
+def _runtime_contract_payload(
+    runtime_core_facts: dict[str, object],
+) -> dict[str, object]:
+    payload = copy.deepcopy(runtime_core_facts)
+    payload.pop("source_conditioned_patterns", None)
+    return payload
+
+
 def _assert_runtime_rejects(
     runtime_core_facts: dict[str, object],
     expected_error: str,
@@ -85,7 +93,7 @@ def _assert_runtime_rejects(
             "PYTHONDONTWRITEBYTECODE": "1",
             "PYTHONPYCACHEPREFIX": "/dev/null",
         },
-        input=json.dumps(runtime_core_facts),
+        input=json.dumps(_runtime_contract_payload(runtime_core_facts)),
         capture_output=True,
         text=True,
         check=False,
@@ -113,7 +121,7 @@ def _assert_runtime_accepts(runtime_core_facts: dict[str, object]) -> None:
             "PYTHONDONTWRITEBYTECODE": "1",
             "PYTHONPYCACHEPREFIX": "/dev/null",
         },
-        input=json.dumps(runtime_core_facts),
+        input=json.dumps(_runtime_contract_payload(runtime_core_facts)),
         capture_output=True,
         text=True,
         check=False,

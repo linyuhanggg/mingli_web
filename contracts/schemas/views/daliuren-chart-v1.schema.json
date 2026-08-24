@@ -130,7 +130,265 @@
         },
         "timing_candidates": {"type": ["array", "null"], "items": {"$ref": "#/$defs/timingCandidate"}},
         "xunkong": {"oneOf": [{"$ref": "#/$defs/xunkong"}, {"type": "null"}]}
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "四课不备"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/0"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 1, "prefixItems": [{"const": "四课不备"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "八专日"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/0"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 1, "prefixItems": [{"const": "八专日"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "伏吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/0"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 1, "prefixItems": [{"const": "伏吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "反吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/0"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 1, "prefixItems": [{"const": "反吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "四课不备"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/1"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 2, "prefixItems": [{}, {"const": "四课不备"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "八专日"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/1"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 2, "prefixItems": [{}, {"const": "八专日"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "伏吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/1"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 2, "prefixItems": [{}, {"const": "伏吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "反吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/1"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 2, "prefixItems": [{}, {"const": "反吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "四课不备"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/2"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 3, "prefixItems": [{}, {}, {"const": "四课不备"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "八专日"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/2"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 3, "prefixItems": [{}, {}, {"const": "八专日"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "伏吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/2"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 3, "prefixItems": [{}, {}, {"const": "伏吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "反吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/2"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 3, "prefixItems": [{}, {}, {"const": "反吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "四课不备"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/3"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 4, "prefixItems": [{}, {}, {}, {"const": "四课不备"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "八专日"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/3"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 4, "prefixItems": [{}, {}, {}, {"const": "八专日"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "伏吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/3"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 4, "prefixItems": [{}, {}, {}, {"const": "伏吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "反吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/3"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 4, "prefixItems": [{}, {}, {}, {"const": "反吟"}]}}
+          }
+        }
+      ]
     },
     "sourcePattern": {
       "type": "object",

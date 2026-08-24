@@ -467,6 +467,26 @@ def test_daliuren_chart_schema_accepts_only_typed_source_pattern_fields(
     ]
     validate_schema("views/daliuren-chart-v1.schema.json", second_index_payload)
 
+    mismatched_structural_title = copy.deepcopy(payload)
+    mismatched_structural_title["core_facts"]["structural_patterns"][0] = "反吟"
+    reject_schema(
+        "views/daliuren-chart-v1.schema.json", mismatched_structural_title
+    )
+
+    out_of_bounds_structural_index = copy.deepcopy(payload)
+    out_of_bounds_pattern = out_of_bounds_structural_index["core_facts"][
+        "source_conditioned_patterns"
+    ][0]
+    out_of_bounds_pattern["fact_paths"] = [
+        "fact:/chart_facts/output/structural_patterns/3"
+    ]
+    out_of_bounds_pattern["predicate_audit"] = [
+        "/chart_facts/output/structural_patterns/3:eq:伏吟"
+    ]
+    reject_schema(
+        "views/daliuren-chart-v1.schema.json", out_of_bounds_structural_index
+    )
+
     private_fact_path = copy.deepcopy(payload)
     private_fact_path["core_facts"]["source_conditioned_patterns"][0][
         "fact_paths"
