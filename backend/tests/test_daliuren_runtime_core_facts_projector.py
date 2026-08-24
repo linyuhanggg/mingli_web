@@ -43,6 +43,32 @@ def _load_fixture() -> dict[str, object]:
     return json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
 
 
+def _state_dimension(
+    payload: dict[str, object],
+    correspondence: dict[str, object],
+) -> dict[str, object]:
+    return {
+        "requested_dimension": "state",
+        "canonical_dimension": "state",
+        "status": "calculated_facts_not_verdict",
+        "source_rule_ids": [],
+        "rule_evidence": copy.deepcopy(
+            payload["dimension_facts"]["relationship"]["rule_evidence"]
+        ),
+        "stage_status": [
+            {
+                "branch": "酉",
+                "heavenly_general": "天空",
+                "is_xunkong": False,
+                "season_strength": "休",
+                "six_relative": "兄弟",
+                "stage": "initial",
+            }
+        ],
+        "general_landing_correspondences": [correspondence],
+    }
+
+
 def test_daliuren_projector_maps_ming11_runtime_core_facts_fixture() -> None:
     view_model = project_daliuren_view_model(_runtime_core_brief(_load_fixture()))
 
@@ -176,6 +202,117 @@ def test_daliuren_projector_rejects_empty_structural_pattern_entries() -> None:
     schema_payload["core_facts"]["structural_patterns"] = [""]
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     assert list(Draft202012Validator(schema).iter_errors(schema_payload))
+
+
+def test_daliuren_projector_preserves_missing_source_correspondence_shape() -> None:
+    correspondence = {
+        "stage": "initial",
+        "heavenly_general": "天空",
+        "landing_branch": "酉",
+        "source_pack": "san-shi/liuren-miben",
+        "source_rule": "LM-R01",
+        "role": "imagery_correspondence_not_observed_activity",
+        "status": "no_exact_source_correspondence",
+    }
+    payload = copy.deepcopy(_load_fixture())
+    payload["dimension_facts"]["state"] = _state_dimension(
+        payload,
+        correspondence,
+    )
+
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.dimension_facts is not None
+    state = view_model.core_facts.dimension_facts["state"]
+    assert state.general_landing_correspondences is not None
+    assert state.general_landing_correspondences[0].source_anchor is None
+    serialized = view_model.model_dump(mode="json")
+    serialized_correspondence = serialized["core_facts"]["dimension_facts"][
+        "state"
+    ]["general_landing_correspondences"][0]
+    assert "source_anchor" not in serialized_correspondence
+    assert "source_text" not in serialized_correspondence
+
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    Draft202012Validator(schema).validate(serialized)
+
+
+def test_daliuren_projector_enforces_status_specific_source_fields() -> None:
+    common_fields = {
+        "stage": "initial",
+        "heavenly_general": "天空",
+        "landing_branch": "酉",
+        "source_pack": "san-shi/liuren-miben",
+        "source_rule": "LM-R01",
+        "role": "imagery_correspondence_not_observed_activity",
+    }
+    invalid_correspondences = (
+        {
+            **common_fields,
+            "source_anchor": "fulltext.md#forged",
+            "source_text": "forged",
+            "status": "no_exact_source_correspondence",
+        },
+        {
+            **common_fields,
+            "status": "source_correspondence_matched",
+        },
+    )
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+
+    for correspondence in invalid_correspondences:
+        payload = copy.deepcopy(_load_fixture())
+        payload["dimension_facts"]["state"] = _state_dimension(
+            payload,
+            correspondence,
+        )
+
+        view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+        assert isinstance(view_model, DaliurenChartV1)
+        assert view_model.core_facts is None
+
+        schema_payload = project_daliuren_view_model(
+            _runtime_core_brief(_load_fixture())
+        ).model_dump(mode="json")
+        schema_payload["core_facts"]["dimension_facts"]["state"] = (
+            _state_dimension(payload, correspondence)
+        )
+        assert list(Draft202012Validator(schema).iter_errors(schema_payload))
+
+
+def test_daliuren_projector_requires_nullable_runtime_keys() -> None:
+    field_paths = (
+        ("lesson_method", "direct_direction"),
+        ("dimension_facts", "relationship", "rule_evidence", "hard_verdict"),
+    )
+    valid_schema_payload = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+
+    for field_path in field_paths:
+        payload = copy.deepcopy(_load_fixture())
+        runtime_parent = payload
+        for field in field_path[:-1]:
+            runtime_parent = runtime_parent[field]
+        del runtime_parent[field_path[-1]]
+
+        view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+        assert isinstance(view_model, DaliurenChartV1), field_path
+        assert view_model.core_facts is None, field_path
+
+        schema_payload = copy.deepcopy(valid_schema_payload)
+        schema_parent = schema_payload["core_facts"]
+        for field in field_path[:-1]:
+            schema_parent = schema_parent[field]
+        del schema_parent[field_path[-1]]
+        assert list(
+            Draft202012Validator(schema).iter_errors(schema_payload)
+        ), field_path
 
 
 def test_daliuren_projector_preserves_explicit_dimension_nulls() -> None:

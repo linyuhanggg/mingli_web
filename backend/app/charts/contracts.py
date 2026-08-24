@@ -1944,7 +1944,7 @@ class DaliurenLessonMethod(ContractModel):
 
     calculated_transmissions: str = Field(min_length=3)
     calculation_source: str = Field(min_length=1)
-    direct_direction: str | None = None
+    direct_direction: str | None
     primary: str = Field(min_length=1)
     selected_initial: str = Field(min_length=1)
     source_anchor: str = Field(min_length=1)
@@ -1995,7 +1995,7 @@ class DaliurenRuleNotEvaluatedEntry(ContractModel):
 
 class DaliurenRuleEvidence(ContractModel):
     catalog_schema: str = Field(min_length=1)
-    hard_verdict: None = None
+    hard_verdict: None
     matched: tuple[DaliurenRuleEvidenceEntry, ...]
     not_evaluated: tuple[DaliurenRuleNotEvaluatedEntry, ...]
     requires_school_adjudication: Literal[True]
@@ -2051,12 +2051,42 @@ class DaliurenGeneralLanding(ContractModel):
     heavenly_general: str = Field(min_length=1)
     landing_branch: str = Field(min_length=1)
     role: str = Field(min_length=1)
-    source_anchor: str = Field(min_length=1)
+    source_anchor: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
     source_pack: str = Field(min_length=1)
     source_rule: str = Field(min_length=1)
-    source_text: str = Field(min_length=1)
+    source_text: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
     stage: str = Field(min_length=1)
-    status: str = Field(min_length=1)
+    status: Literal[
+        "source_correspondence_matched",
+        "no_exact_source_correspondence",
+    ]
+
+    @model_validator(mode="before")
+    @classmethod
+    def _source_fields_match_status(cls, value: object) -> object:
+        if not isinstance(value, Mapping):
+            return value
+        source_fields = frozenset({"source_anchor", "source_text"})
+        present_source_fields = source_fields.intersection(value)
+        if (
+            value.get("status") == "source_correspondence_matched"
+            and present_source_fields != source_fields
+        ):
+            raise ValueError("matched source correspondences require source fields")
+        if (
+            value.get("status") == "no_exact_source_correspondence"
+            and present_source_fields
+        ):
+            raise ValueError("missing source correspondences must omit source fields")
+        return value
 
 
 class DaliurenCandidateBranch(ContractModel):

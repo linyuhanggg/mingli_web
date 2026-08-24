@@ -491,7 +491,7 @@
     "generalLanding": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["heavenly_general", "landing_branch", "role", "source_anchor", "source_pack", "source_rule", "source_text", "stage", "status"],
+      "required": ["heavenly_general", "landing_branch", "role", "source_pack", "source_rule", "stage", "status"],
       "properties": {
         "heavenly_general": {"type": "string", "minLength": 1},
         "landing_branch": {"type": "string", "minLength": 1},
@@ -501,8 +501,23 @@
         "source_rule": {"type": "string", "minLength": 1},
         "source_text": {"type": "string", "minLength": 1},
         "stage": {"type": "string", "minLength": 1},
-        "status": {"type": "string", "minLength": 1}
-      }
+        "status": {"enum": ["source_correspondence_matched", "no_exact_source_correspondence"]}
+      },
+      "oneOf": [
+        {
+          "properties": {"status": {"const": "source_correspondence_matched"}},
+          "required": ["source_anchor", "source_text"]
+        },
+        {
+          "properties": {"status": {"const": "no_exact_source_correspondence"}},
+          "not": {
+            "anyOf": [
+              {"required": ["source_anchor"]},
+              {"required": ["source_text"]}
+            ]
+          }
+        }
+      ]
     },
     "candidateBranch": {
       "type": "object",
