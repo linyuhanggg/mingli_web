@@ -396,6 +396,53 @@ class ReleaseDeployTests(unittest.TestCase):
 
         self.assertEqual(manifest["modes"]["scripts/runner.py"], 0o755)
 
+    def test_committed_modes_are_relative_to_a_nested_release_root(self) -> None:
+        repository = self.root / "repository"
+        source = repository / "core" / "mingli-master"
+        (source / "scripts").mkdir(parents=True)
+        (source / "SKILL.md").write_text("release\n", encoding="utf-8")
+        nested_runner = source / "scripts" / "runner.py"
+        nested_runner.write_text("print('nested')\n", encoding="utf-8")
+        nested_runner.chmod(0o755)
+
+        # A root-level decoy with the same source-relative name must never
+        # supply mode metadata for the nested Core release.
+        (repository / "scripts").mkdir()
+        (repository / "SKILL.md").write_text("decoy\n", encoding="utf-8")
+        root_runner = repository / "scripts" / "runner.py"
+        root_runner.write_text("print('decoy')\n", encoding="utf-8")
+        root_runner.chmod(0o644)
+
+        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "config", "user.name", "Test"],
+            check=True,
+        )
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(repository),
+                "config",
+                "user.email",
+                "test@example.invalid",
+            ],
+            check=True,
+        )
+        subprocess.run(["git", "-C", str(repository), "add", "."], check=True)
+        subprocess.run(
+            ["git", "-C", str(repository), "commit", "-qm", "fixture"],
+            check=True,
+        )
+
+        manifest = release_deploy.build_committed_manifest(
+            source,
+            self.files,
+            release_deploy.source_commit(source),
+        )
+
+        self.assertEqual(manifest["modes"]["scripts/runner.py"], 0o755)
+
     def test_verify_rejects_an_executable_mode_mismatch(self) -> None:
         runner = self.source / "scripts" / "runner.py"
         runner.chmod(0o755)

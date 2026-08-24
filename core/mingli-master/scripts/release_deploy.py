@@ -198,6 +198,12 @@ def committed_release_modes(
     commit: str,
 ) -> dict[str, int]:
     expected = {_safe_relative_path(path) for path in relative_paths}
+    source_prefix = subprocess.run(
+        ["git", "-C", str(source), "rev-parse", "--show-prefix"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
     result = subprocess.run(
         ["git", "-C", str(source), "ls-tree", "-rz", "--full-tree", "-r", commit],
         check=True,
@@ -210,6 +216,10 @@ def committed_release_modes(
         metadata, encoded_path = raw.split(b"\t", 1)
         git_mode, object_type, _ = metadata.split(b" ", 2)
         relative = encoded_path.decode("utf-8")
+        if source_prefix:
+            if not relative.startswith(source_prefix):
+                continue
+            relative = relative[len(source_prefix) :]
         if relative not in expected:
             continue
         if object_type != b"blob" or git_mode not in {b"100644", b"100755"}:
