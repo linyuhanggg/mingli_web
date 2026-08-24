@@ -1097,8 +1097,14 @@ function QimenChart({ view }: Readonly<{ view: QimenChartViewModel }>) {
   );
 }
 
-function DaliurenChart({ view }: Readonly<{ view: DaliurenChartViewModel }>) {
-  return <DaliurenBoard view={view} />;
+function DaliurenChart({
+  view,
+  showInterpretiveSections,
+}: Readonly<{
+  view: DaliurenChartViewModel;
+  showInterpretiveSections: boolean;
+}>) {
+  return <DaliurenBoard view={view} showInterpretiveSections={showInterpretiveSections} />;
 }
 
 function PhysiognomyChart({ view }: Readonly<{ view: PhysiognomyViewModel }>) {
@@ -1600,7 +1606,7 @@ export function RuntimeChart({
     case "qimen-chart/v1":
       return <QimenChart view={viewModel} />;
     case "daliuren-chart/v1":
-      return <DaliurenChart view={viewModel} />;
+      return <DaliurenChart view={viewModel} showInterpretiveSections={showInterpretiveSections} />;
     case "physiognomy-view/v1":
       return <PhysiognomyChart view={viewModel} />;
     case "five-elements-facts-view/v1":

@@ -2,8 +2,10 @@
 
 import type {
   DaliurenChartViewModel,
+  DaliurenCompassDirection,
   DaliurenDimensionObservationMap,
   DaliurenGeneralLandingCorrespondence,
+  DaliurenLocationObservation,
   DaliurenMiddleVoidObservation,
   DaliurenMoneyObservation,
   DaliurenOutcomeObservation,
@@ -12,6 +14,7 @@ import type {
   DaliurenSeasonStrength,
   DaliurenSixRelative,
   DaliurenStateObservation,
+  DaliurenStageBranchDirection,
   DaliurenTimingObservation,
   DaliurenTransmissionStage,
   DaliurenWorkObservation,
@@ -26,6 +29,7 @@ type WealthVoidObservation = Extract<DaliurenMoneyObservation, { readonly wealth
 type WealthVoidRow = WealthVoidObservation["wealth_void_rows"][number];
 type WorkStrength = DaliurenWorkObservation["target_strength"][number];
 type WorkGeneralModifier = DaliurenWorkObservation["target_general_modifier"][number];
+type LocationDirection = DaliurenLocationObservation["stage_branch_directions"][number];
 type DaliurenDimensionId = keyof DaliurenDimensionObservationMap;
 
 export type DaliurenDimensionEvidenceProps = {
@@ -33,6 +37,7 @@ export type DaliurenDimensionEvidenceProps = {
 };
 
 const DIMENSION_LABELS = Object.freeze({
+  location: "方位",
   money: "求财",
   outcome: "结果",
   relationship: "关系",
@@ -40,6 +45,16 @@ const DIMENSION_LABELS = Object.freeze({
   timing: "时机",
   work: "事业",
 }) satisfies Readonly<Record<DaliurenDimensionId, string>>;
+const DIRECTION_LABELS = Object.freeze({
+  east: "正东",
+  north: "正北",
+  northeast: "东北",
+  northwest: "西北",
+  south: "正南",
+  southeast: "东南",
+  southwest: "西南",
+  west: "正西",
+}) satisfies Readonly<Record<DaliurenCompassDirection, LocationDirection["direction_chinese"]>>;
 const OUTCOME_RELATION_FACTS: Readonly<Record<DaliurenOutcomeRelation, string>> = {
   object_overcomes_subject: "客体克主体",
   subject_generates_object: "主体生客体",
@@ -126,18 +141,27 @@ const TARGET_STRENGTH_KEYS = [
 ] as const;
 const TARGET_GENERAL_MODIFIER_KEYS = [...GENERAL_LANDING_KEYS, "six_relative"] as const;
 const TARGET_GENERAL_MODIFIER_UNAVAILABLE_KEYS = [...GENERAL_LANDING_UNAVAILABLE_KEYS, "six_relative"] as const;
+const LOCATION_OBSERVATION_KEYS = ["stage_branch_directions"] as const;
+const LOCATION_DIRECTION_KEYS = [
+  "stage",
+  "branch",
+  "direction",
+  "direction_chinese",
+  "declared_source_anchor",
+  "source_binding_status",
+  "scope",
+] as const;
+const LOCATION_STAGES = ["initial", "middle", "final"] as const;
 
 type EvidenceEntry = {
-  ruleId: string;
+  marker: string;
   fact: string;
   sources: readonly EvidenceSource[];
 };
 
 type EvidenceSource = {
-  pack: string;
-  ruleId: string;
-  quoteId: string | null;
-  anchor: string | null;
+  key: string;
+  label: string;
 };
 
 type EvidenceGroup = {
@@ -174,6 +198,42 @@ function isSeasonStrength(value: unknown): value is DaliurenSeasonStrength {
 
 function isSixRelative(value: unknown): value is DaliurenSixRelative {
   return typeof value === "string" && SIX_RELATIVES.has(value as DaliurenSixRelative);
+}
+
+function isLocationDirection<Stage extends DaliurenTransmissionStage>(
+  value: unknown,
+  stage: Stage,
+): value is DaliurenStageBranchDirection<Stage> {
+  if (!isRecord(value) || !hasExactKeys(value, LOCATION_DIRECTION_KEYS)) return false;
+  const direction = readString(value, "direction");
+  return Boolean(
+    value.stage === stage &&
+      readString(value, "branch") &&
+      direction &&
+      hasOwnKey(DIRECTION_LABELS, direction) &&
+      value.direction_chinese === DIRECTION_LABELS[direction] &&
+      readString(value, "declared_source_anchor") &&
+      value.source_binding_status === "unverified_source_excerpt_not_in_release" &&
+      value.scope === "symbolic_direction_candidate_only",
+  );
+}
+
+function isLocationObservation(value: unknown): value is DaliurenLocationObservation {
+  if (!isRecord(value) || !hasExactKeys(value, LOCATION_OBSERVATION_KEYS)) return false;
+  const rows = value.stage_branch_directions;
+  return (
+    Array.isArray(rows) &&
+    rows.length === LOCATION_STAGES.length &&
+    LOCATION_STAGES.every((stage, index) => isLocationDirection(rows[index], stage))
+  );
+}
+
+function locationFact(value: unknown): string | null {
+  if (!isLocationObservation(value)) return null;
+  const rows = value.stage_branch_directions
+    .map((row) => `${STAGE_FACTS[row.stage]} ${row.branch} · ${row.direction_chinese}`)
+    .join("；");
+  return `三传象意方位候选：${rows} · 边界：只表示地支对应的象意方向；来源摘录尚未纳入签名发行`;
 }
 
 function isMiddleVoidObservation(value: unknown): value is DaliurenMiddleVoidObservation {
@@ -468,6 +528,7 @@ function timingFact(value: unknown): string | null {
 }
 
 const RUNTIME_OBSERVATION_FACTS = Object.freeze({
+  location: locationFact,
   money: moneyFact,
   outcome: outcomeFact,
   relationship: relationshipFact,
@@ -487,11 +548,12 @@ function parseSource(value: unknown): EvidenceSource | null {
   const pack = readString(value, "pack");
   const ruleId = readString(value, "rule_id");
   if (!pack || !ruleId) return null;
+  const quoteId = readString(value, "quote_id");
+  const anchor = readString(value, "source_anchor");
+  const label = [pack, ruleId, quoteId, anchor].filter(Boolean).join(" · ");
   return {
-    pack,
-    ruleId,
-    quoteId: readString(value, "quote_id"),
-    anchor: readString(value, "source_anchor"),
+    key: label,
+    label,
   };
 }
 
@@ -502,7 +564,7 @@ function parseEntry(value: unknown, dimension: DaliurenDimensionId): EvidenceEnt
   if (!ruleId || !fact) return null;
   const refs = value.source_refs;
   return {
-    ruleId,
+    marker: ruleId,
     fact,
     sources: Array.isArray(refs)
       ? refs.map(parseSource).filter((source): source is EvidenceSource => source !== null)
@@ -521,6 +583,26 @@ function parseDimension(value: unknown): EvidenceGroup | null {
     return null;
   }
   if (!Array.isArray(evidence.matched)) return null;
+  if (dimension === "location") {
+    if (requested !== "location" && requested !== "location_direction") return null;
+    const observation = { stage_branch_directions: value.stage_branch_directions };
+    if (!isLocationObservation(observation)) return null;
+    const fact = locationFact(observation);
+    if (!fact) return null;
+    return {
+      dimension,
+      entries: [
+        {
+          marker: "方位候选",
+          fact,
+          sources: observation.stage_branch_directions.map((row) => ({
+            key: `${row.stage}-${row.declared_source_anchor}`,
+            label: `来源标注 · ${row.declared_source_anchor}`,
+          })),
+        },
+      ],
+    };
+  }
   const entries: EvidenceEntry[] = [];
   for (const item of evidence.matched) {
     const entry = parseEntry(item, dimension);
@@ -558,11 +640,11 @@ export function DaliurenDimensionEvidence({ dimensionFacts = null }: DaliurenDim
           <h3 className={styles.heading}>{DIMENSION_LABELS[group.dimension]}</h3>
           <ul className={styles.list}>
             {group.entries.map((entry, entryIndex) => (
-              <li className={styles.item} key={`${group.dimension}-${entry.ruleId}-${entry.fact}-${entryIndex}`}>
+              <li className={styles.item} key={`${group.dimension}-${entry.marker}-${entry.fact}-${entryIndex}`}>
                 {entry.sources.length ? (
                   <details className={styles.drawer}>
                     <summary className={styles.summary}>
-                      <span className={styles.rule}>{entry.ruleId}</span>
+                      <span className={styles.rule}>{entry.marker}</span>
                       <span className={styles.fact}>{entry.fact}</span>
                     </summary>
                     <ol className={styles.sources} aria-label="来源">
@@ -570,16 +652,16 @@ export function DaliurenDimensionEvidence({ dimensionFacts = null }: DaliurenDim
                         <li
                           className={styles.source}
                           data-source-ref={sourceIndex}
-                          key={`${source.pack}-${source.ruleId}-${source.quoteId ?? ""}-${source.anchor ?? ""}-${sourceIndex}`}
+                          key={`${source.key}-${sourceIndex}`}
                         >
-                          {[source.pack, source.ruleId, source.quoteId, source.anchor].filter(Boolean).join(" · ")}
+                          {source.label}
                         </li>
                       ))}
                     </ol>
                   </details>
                 ) : (
                   <div className={styles.plain}>
-                    <span className={styles.rule}>{entry.ruleId}</span>
+                    <span className={styles.rule}>{entry.marker}</span>
                     <span className={styles.fact}>{entry.fact}</span>
                   </div>
                 )}

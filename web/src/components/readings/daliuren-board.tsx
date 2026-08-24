@@ -166,11 +166,13 @@ export function DaliurenBoard({
   mode = "ready",
   offer = null,
   s4Phase = "entry",
+  showInterpretiveSections = true,
 }: Readonly<{
   view?: DaliurenChartViewModel;
   mode?: DaliurenBoardMode;
   offer?: DaliurenS4Offer | null;
   s4Phase?: DaliurenS4Phase;
+  showInterpretiveSections?: boolean;
 }>) {
   const [lockedFact, setLockedFact] = useState<string | null>(null);
   const [focusedFact, setFocusedFact] = useState<string | null>(null);
@@ -181,9 +183,11 @@ export function DaliurenBoard({
   const lessons = view?.lessons ?? EMPTY_LESSONS;
   const transmissions = view?.transmissions ?? EMPTY_TRANSMISSIONS;
   const candidates = mode === "ready" ? (view?.core_facts?.timing_candidates ?? null) : null;
-  const showTiming = Boolean(candidates && candidates.length > 0);
+  const showTiming = showInterpretiveSections && Boolean(candidates && candidates.length > 0);
   const anchored = new Set(
-    (candidates ?? []).map((item) => item.anchor_earth_branch).filter((item) => item.length > 0),
+    (showInterpretiveSections ? (candidates ?? []) : [])
+      .map((item) => item.anchor_earth_branch)
+      .filter((item) => item.length > 0),
   );
   const voids = mode === "ready" && view?.core_facts ? voidBranches(view.core_facts.xunkong) : new Set<string>();
 
@@ -448,7 +452,7 @@ export function DaliurenBoard({
         />
       ) : null}
 
-      {mode === "ready" ? (
+      {mode === "ready" && showInterpretiveSections ? (
         <DaliurenDimensionEvidence dimensionFacts={view?.core_facts?.dimension_facts ?? null} />
       ) : null}
 
@@ -503,7 +507,7 @@ export function DaliurenBoard({
         </section>
       ) : null}
 
-      {mode === "ready" ? (
+      {mode === "ready" && showInterpretiveSections ? (
         <DaliurenFreeSummary
           lessons={lessons}
           offer={offer}

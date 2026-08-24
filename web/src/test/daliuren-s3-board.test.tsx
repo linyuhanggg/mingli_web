@@ -1201,7 +1201,126 @@ describe("大六壬 S3 M6a 维度证据", () => {
     expect(block).not.toHaveTextContent(/吉凶|成败|大吉|大凶|hard_verdict/);
   });
 
-  it("fails closed for an unknown canonical dimension instead of exposing its id or generic text", () => {
+  it("renders the Runtime location shape as neutral symbolic direction candidates with source boundaries", async () => {
+    const user = userEvent.setup();
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            location: dimension({
+              canonical_dimension: "location",
+              requested_dimension: "location",
+              rule_evidence: evidence({ matched: [], status: "not_bound" }),
+              stage_branch_directions: [
+                {
+                  stage: "initial",
+                  branch: "酉",
+                  direction: "west",
+                  direction_chinese: "正西",
+                  declared_source_anchor: "liuren-miben L573",
+                  source_binding_status: "unverified_source_excerpt_not_in_release",
+                  scope: "symbolic_direction_candidate_only",
+                },
+                {
+                  stage: "middle",
+                  branch: "未",
+                  direction: "southwest",
+                  direction_chinese: "西南",
+                  declared_source_anchor: "liuren-miben L569",
+                  source_binding_status: "unverified_source_excerpt_not_in_release",
+                  scope: "symbolic_direction_candidate_only",
+                },
+                {
+                  stage: "final",
+                  branch: "巳",
+                  direction: "southeast",
+                  direction_chinese: "东南",
+                  declared_source_anchor: "liuren-miben L565",
+                  source_binding_status: "unverified_source_excerpt_not_in_release",
+                  scope: "symbolic_direction_candidate_only",
+                },
+              ],
+            }),
+          }),
+        })}
+      />,
+    );
+
+    const location = within(panel()).getByRole("group", { name: "方位" });
+    expect(within(location).getByText("方位候选")).toBeVisible();
+    expect(location).toHaveTextContent(
+      "三传象意方位候选：初传 酉 · 正西；中传 未 · 西南；末传 巳 · 东南 · 边界：只表示地支对应的象意方向；来源摘录尚未纳入签名发行",
+    );
+    expect(location).not.toHaveTextContent(
+      /west|southwest|southeast|symbolic_direction_candidate_only|unverified_source_excerpt_not_in_release/,
+    );
+
+    await user.click(within(location).getByText("方位候选"));
+    expect([...location.querySelectorAll("[data-source-ref]")].map((row) => row.textContent)).toEqual([
+      "来源标注 · liuren-miben L573",
+      "来源标注 · liuren-miben L569",
+      "来源标注 · liuren-miben L565",
+    ]);
+  });
+
+  it("fails closed when a location row breaks the typed candidate or source-boundary contract", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            keep: dimension({
+              canonical_dimension: "relationship",
+              requested_dimension: "relationship",
+              rule_evidence: evidence({
+                matched: [matchedEntry({ observation: { relation: "object_overcomes_subject" } })],
+              }),
+            }),
+            malformed_location: dimension({
+              canonical_dimension: "location",
+              requested_dimension: "location",
+              rule_evidence: evidence({ matched: [], status: "not_bound" }),
+              stage_branch_directions: [
+                {
+                  stage: "initial",
+                  branch: "酉",
+                  direction: "west",
+                  direction_chinese: "正东",
+                  declared_source_anchor: "liuren-miben L573",
+                  source_binding_status: "unverified_source_excerpt_not_in_release",
+                  scope: "symbolic_direction_candidate_only",
+                },
+                {
+                  stage: "middle",
+                  branch: "未",
+                  direction: "southwest",
+                  direction_chinese: "西南",
+                  declared_source_anchor: "liuren-miben L569",
+                  source_binding_status: "unverified_source_excerpt_not_in_release",
+                  scope: "symbolic_direction_candidate_only",
+                },
+                {
+                  stage: "final",
+                  branch: "巳",
+                  direction: "southeast",
+                  direction_chinese: "东南",
+                  declared_source_anchor: "liuren-miben L565",
+                  source_binding_status: "verified",
+                  scope: "actual_location",
+                },
+              ],
+            }),
+          }),
+        })}
+      />,
+    );
+
+    const block = panel();
+    expect(within(block).getByRole("group", { name: "关系" })).toBeVisible();
+    expect(within(block).queryByRole("group", { name: "方位" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/actual_location|verified|正东/);
+  });
+
+  it("continues to fail closed for a truly unknown canonical dimension instead of exposing its id or generic text", () => {
     render(
       <DaliurenBoard
         view={chart({

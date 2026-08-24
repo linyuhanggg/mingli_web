@@ -856,6 +856,7 @@ export type DaliurenDimensionFact = Readonly<{
   readonly canonical_dimension: string;
   readonly requested_dimension: string;
   readonly rule_evidence: DaliurenRuleEvidence;
+  readonly stage_branch_directions?: DaliurenLocationObservation["stage_branch_directions"];
 }> & Readonly<Record<string, unknown>>;
 
 export type DaliurenTimingCandidate = {
@@ -872,6 +873,38 @@ export type DaliurenTimingCandidate = {
 };
 
 export type DaliurenTransmissionStage = "initial" | "middle" | "final";
+
+export type DaliurenCompassDirection =
+  | "north"
+  | "northeast"
+  | "east"
+  | "southeast"
+  | "south"
+  | "southwest"
+  | "west"
+  | "northwest";
+
+export type DaliurenCompassDirectionChinese = "正北" | "东北" | "正东" | "东南" | "正南" | "西南" | "正西" | "西北";
+
+export type DaliurenStageBranchDirection<
+  Stage extends DaliurenTransmissionStage = DaliurenTransmissionStage,
+> = Readonly<{
+  readonly stage: Stage;
+  readonly branch: string;
+  readonly direction: DaliurenCompassDirection;
+  readonly direction_chinese: DaliurenCompassDirectionChinese;
+  readonly declared_source_anchor: string;
+  readonly source_binding_status: "unverified_source_excerpt_not_in_release";
+  readonly scope: "symbolic_direction_candidate_only";
+}>;
+
+export type DaliurenLocationObservation = Readonly<{
+  readonly stage_branch_directions: readonly [
+    DaliurenStageBranchDirection<"initial">,
+    DaliurenStageBranchDirection<"middle">,
+    DaliurenStageBranchDirection<"final">,
+  ];
+}>;
 
 export type DaliurenSixRelative = "兄弟" | "子孙" | "妻财" | "官鬼" | "父母";
 
@@ -988,6 +1021,7 @@ export type DaliurenWorkObservation = Readonly<{
 
 export type DaliurenDimensionObservationMap = Readonly<{
   readonly outcome: DaliurenOutcomeObservation;
+  readonly location: DaliurenLocationObservation;
   readonly money: DaliurenMoneyObservation;
   readonly relationship: DaliurenRelationshipObservation;
   readonly state: DaliurenStateObservation;
