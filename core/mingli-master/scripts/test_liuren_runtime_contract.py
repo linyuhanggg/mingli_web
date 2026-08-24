@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import unittest
 from pathlib import Path
@@ -12,6 +13,7 @@ import liuren_fact_adapter
 from reading_engine.liuren_contract import (
     LiurenRuntimeContractError,
     SCHEMA_VERSION,
+    build_runtime_core_facts,
     validate_runtime_core_facts,
 )
 
@@ -40,6 +42,105 @@ def _contract(
         target_relative="父母",
     )
     return result["runtime_core_facts"]
+
+
+def _all_dimension_extension() -> tuple[dict, dict]:
+    facts = _facts()
+    extension = liuren_calc.extend_liuren_facts(
+        facts,
+        requested_dimensions=(
+            "outcome",
+            "timing",
+            "state",
+            "location",
+            "relationship",
+            "work",
+            "money",
+        ),
+        horizon=HORIZON,
+        target_relative="妻财",
+    )
+    return facts, extension
+
+
+def _fixed_dimension_payloads(dimension_facts: dict) -> list[tuple[str, dict, str]]:
+    return [
+        (
+            "outcome.subject_object_relation",
+            dimension_facts["outcome"]["subject_object_relation"],
+            "subject",
+        ),
+        (
+            "outcome.transmissions_to_day[]",
+            dimension_facts["outcome"]["transmissions_to_day"][0],
+            "stage",
+        ),
+        (
+            "outcome.initial_final_relation",
+            dimension_facts["outcome"]["initial_final_relation"],
+            "subject",
+        ),
+        (
+            "outcome.stage_flow[]",
+            dimension_facts["outcome"]["stage_flow"][0],
+            "from_stage",
+        ),
+        (
+            "timing.candidate_branch",
+            dimension_facts["timing"]["candidate_branch"],
+            "branch",
+        ),
+        (
+            "timing.candidate_date",
+            dimension_facts["timing"]["candidate_date"],
+            "id",
+        ),
+        (
+            "state.stage_status[]",
+            dimension_facts["state"]["stage_status"][0],
+            "stage",
+        ),
+        (
+            "state.general_landing_correspondences[]",
+            dimension_facts["state"]["general_landing_correspondences"][0],
+            "stage",
+        ),
+        (
+            "location.stage_branch_directions[]",
+            dimension_facts["location"]["stage_branch_directions"][0],
+            "stage",
+        ),
+        (
+            "relationship.six_relative_stages[]",
+            dimension_facts["relationship"]["six_relative_stages"][0],
+            "stage",
+        ),
+        (
+            "work.target_strength[]",
+            dimension_facts["work"]["target_strength"][0],
+            "stage",
+        ),
+        (
+            "work.target_general_modifier[]",
+            dimension_facts["work"]["target_general_modifier"][0],
+            "stage",
+        ),
+        (
+            "money.wealth_stage_strength[]",
+            dimension_facts["money"]["wealth_stage_strength"][0],
+            "stage",
+        ),
+        (
+            "money.wealth_void_status[]",
+            dimension_facts["money"]["wealth_void_status"][0],
+            "stage",
+        ),
+        (
+            "money.wealth_general_modifier[]",
+            dimension_facts["money"]["wealth_general_modifier"][0],
+            "stage",
+        ),
+    ]
 
 
 class LiurenRuntimeContractTests(unittest.TestCase):
@@ -159,6 +260,29 @@ class LiurenRuntimeContractTests(unittest.TestCase):
             self.assertNotIn("future_internal_trace", row)
         validate_runtime_core_facts(contract)
 
+    def test_unknown_dimension_helper_keys_are_not_published(self) -> None:
+        facts, extension = _all_dimension_extension()
+        dimension_facts = extension["dimension_facts"]
+        for row in dimension_facts.values():
+            row["future_internal_trace"] = {"opaque": True}
+        for _, payload, _ in _fixed_dimension_payloads(dimension_facts):
+            payload["future_internal_trace"] = {"opaque": True}
+
+        contract = build_runtime_core_facts(
+            facts["output"],
+            dimension_facts,
+            timing_candidates=extension["timing"]["candidates"],
+        )
+
+        for row in contract["dimension_facts"].values():
+            self.assertNotIn("future_internal_trace", row)
+        for label, payload, _ in _fixed_dimension_payloads(
+            contract["dimension_facts"]
+        ):
+            with self.subTest(label=label):
+                self.assertNotIn("future_internal_trace", payload)
+        validate_runtime_core_facts(contract)
+
     def test_missing_required_key_is_rejected(self) -> None:
         contract = _contract()
         del contract["month_general"]
@@ -192,6 +316,43 @@ class LiurenRuntimeContractTests(unittest.TestCase):
 
         for mutation in mutations:
             with self.subTest(keys=list(mutation)):
+                with self.assertRaisesRegex(
+                    LiurenRuntimeContractError, "contains unknown keys"
+                ):
+                    validate_runtime_core_facts(mutation)
+
+    def test_nested_dimension_payloads_fail_closed_on_missing_or_unknown_keys(
+        self,
+    ) -> None:
+        _, extension = _all_dimension_extension()
+        contract = extension["runtime_core_facts"]
+
+        for label, _, required_field in _fixed_dimension_payloads(
+            contract["dimension_facts"]
+        ):
+            with self.subTest(label=label, mutation="missing"):
+                mutation = copy.deepcopy(contract)
+                payloads = {
+                    name: payload
+                    for name, payload, _ in _fixed_dimension_payloads(
+                        mutation["dimension_facts"]
+                    )
+                }
+                del payloads[label][required_field]
+                with self.assertRaisesRegex(
+                    LiurenRuntimeContractError, "missing required keys"
+                ):
+                    validate_runtime_core_facts(mutation)
+
+            with self.subTest(label=label, mutation="unknown"):
+                mutation = copy.deepcopy(contract)
+                payloads = {
+                    name: payload
+                    for name, payload, _ in _fixed_dimension_payloads(
+                        mutation["dimension_facts"]
+                    )
+                }
+                payloads[label]["future_public_field"] = True
                 with self.assertRaisesRegex(
                     LiurenRuntimeContractError, "contains unknown keys"
                 ):

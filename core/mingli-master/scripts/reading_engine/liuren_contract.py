@@ -97,6 +97,69 @@ _DIMENSION_FIELDS = {
         "wealth_general_modifier",
     ),
 }
+_RELATION_FIELDS = (
+    "subject",
+    "subject_value",
+    "subject_element",
+    "object",
+    "object_value",
+    "object_element",
+    "relation",
+)
+_TRANSMISSION_RELATION_ROW_FIELDS = ("stage", *_RELATION_FIELDS)
+_STAGE_FLOW_ROW_FIELDS = ("from_stage", "to_stage", *_RELATION_FIELDS)
+_SIX_RELATIVE_STAGE_ROW_FIELDS = ("stage", "branch", "six_relative")
+_STAGE_STATUS_ROW_FIELDS = (
+    "stage",
+    "branch",
+    "six_relative",
+    "heavenly_general",
+    "season_strength",
+    "is_xunkong",
+)
+_GENERAL_LANDING_ROW_REQUIRED = (
+    "stage",
+    "heavenly_general",
+    "landing_branch",
+    "source_pack",
+    "source_rule",
+    "role",
+    "status",
+)
+_GENERAL_LANDING_ROW_OPTIONAL = ("source_text", "source_anchor")
+_STAGE_BRANCH_DIRECTION_ROW_FIELDS = (
+    "stage",
+    "branch",
+    "direction",
+    "direction_chinese",
+    "declared_source_anchor",
+    "source_binding_status",
+    "scope",
+)
+_TIMING_CANDIDATE_BRANCH_FIELDS = (
+    "branch",
+    "anchor_earth_branch",
+    "source_rule",
+)
+_TARGET_STRENGTH_ROW_FIELDS = (
+    "stage",
+    "branch",
+    "six_relative",
+    "season_strength",
+    "is_xunkong",
+)
+_WEALTH_STAGE_STRENGTH_ROW_FIELDS = (
+    "stage",
+    "branch",
+    "six_relative",
+    "season_strength",
+)
+_WEALTH_VOID_STATUS_ROW_FIELDS = (
+    "stage",
+    "branch",
+    "six_relative",
+    "is_xunkong",
+)
 _REQUESTED_CANONICAL = {
     "outcome": "outcome",
     "timing": "timing",
@@ -153,6 +216,37 @@ _TIMING_CANDIDATE_FIELDS = (
     "source_rule",
     "candidate_not_guarantee",
 )
+_DIMENSION_OBJECT_FIELDS = {
+    "subject_object_relation": _RELATION_FIELDS,
+    "initial_final_relation": _RELATION_FIELDS,
+    "candidate_branch": _TIMING_CANDIDATE_BRANCH_FIELDS,
+    "candidate_date": _TIMING_CANDIDATE_FIELDS,
+}
+_DIMENSION_ROW_FIELDS = {
+    "transmissions_to_day": _TRANSMISSION_RELATION_ROW_FIELDS,
+    "stage_flow": _STAGE_FLOW_ROW_FIELDS,
+    "six_relative_stages": _SIX_RELATIVE_STAGE_ROW_FIELDS,
+    "stage_status": _STAGE_STATUS_ROW_FIELDS,
+    "general_landing_correspondences": (
+        *_GENERAL_LANDING_ROW_REQUIRED,
+        *_GENERAL_LANDING_ROW_OPTIONAL,
+    ),
+    "stage_branch_directions": _STAGE_BRANCH_DIRECTION_ROW_FIELDS,
+    "target_strength": _TARGET_STRENGTH_ROW_FIELDS,
+    "target_general_modifier": (
+        *_GENERAL_LANDING_ROW_REQUIRED,
+        *_GENERAL_LANDING_ROW_OPTIONAL,
+        "six_relative",
+    ),
+    "wealth_stage_strength": _WEALTH_STAGE_STRENGTH_ROW_FIELDS,
+    "wealth_void_status": _WEALTH_VOID_STATUS_ROW_FIELDS,
+    "wealth_general_modifier": (
+        *_GENERAL_LANDING_ROW_REQUIRED,
+        *_GENERAL_LANDING_ROW_OPTIONAL,
+        "six_relative",
+    ),
+}
+_NULLABLE_DIMENSION_OBJECTS = {"candidate_branch", "candidate_date"}
 
 _MISSING = object()
 
@@ -222,6 +316,46 @@ def _project_mapping_rows(
     ]
 
 
+def _project_dimension_payload(value: Any, *, field: str, path: str) -> Any:
+    object_fields = _DIMENSION_OBJECT_FIELDS.get(field)
+    if object_fields is not None:
+        if value is None and field in _NULLABLE_DIMENSION_OBJECTS:
+            return None
+        return _project_mapping(value, fields=object_fields, path=path)
+    row_fields = _DIMENSION_ROW_FIELDS.get(field)
+    if row_fields is not None:
+        return _project_mapping_rows(value, fields=row_fields, path=path)
+    return copy.deepcopy(value)
+
+
+def _project_dimension_facts(value: Any, path: str) -> dict[str, Any]:
+    dimensions = _mapping(value, path)
+    projected: dict[str, Any] = {}
+    for requested, raw in dimensions.items():
+        dimension_path = f"{path}.{requested}"
+        expected_canonical = _REQUESTED_CANONICAL.get(str(requested))
+        if expected_canonical is None:
+            raise LiurenRuntimeContractError(
+                f"{path} contains unsupported requested dimension: {requested}"
+            )
+        item = _mapping(raw, dimension_path)
+        dimension_fields = _DIMENSION_FIELDS[expected_canonical]
+        row: dict[str, Any] = {}
+        for field in (*_DIMENSION_ENVELOPE, *dimension_fields):
+            if field not in item:
+                continue
+            if field in dimension_fields:
+                row[field] = _project_dimension_payload(
+                    item[field],
+                    field=field,
+                    path=f"{dimension_path}.{field}",
+                )
+            else:
+                row[field] = copy.deepcopy(item[field])
+        projected[requested] = row
+    return projected
+
+
 def _nonempty_string(value: Any, path: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise LiurenRuntimeContractError(f"{path} must be a non-empty string")
@@ -232,6 +366,12 @@ def _nullable_string(value: Any, path: str) -> str | None:
     if value is None:
         return None
     return _nonempty_string(value, path)
+
+
+def _boolean(value: Any, path: str) -> bool:
+    if not isinstance(value, bool):
+        raise LiurenRuntimeContractError(f"{path} must be a boolean")
+    return value
 
 
 def _string_array(value: Any, path: str) -> Sequence[Any]:
@@ -331,6 +471,112 @@ def _validate_timing_candidate(value: Any, path: str) -> None:
         )
 
 
+def _validate_fixed_dimension_object(
+    value: Any,
+    *,
+    required: Sequence[str],
+    path: str,
+) -> None:
+    row = _exact_keys(value, required=required, path=path)
+    for field in required:
+        _nonempty_string(row[field], f"{path}.{field}")
+
+
+def _validate_fixed_dimension_rows(
+    value: Any,
+    *,
+    required: Sequence[str],
+    path: str,
+) -> None:
+    rows = _sequence(value, path)
+    for index, raw in enumerate(rows):
+        row_path = f"{path}[{index}]"
+        row = _exact_keys(raw, required=required, path=row_path)
+        for field in required:
+            if field == "is_xunkong":
+                _boolean(row[field], f"{row_path}.{field}")
+            elif field == "season_strength":
+                _nullable_string(row[field], f"{row_path}.{field}")
+            else:
+                _nonempty_string(row[field], f"{row_path}.{field}")
+
+
+def _validate_general_landing_rows(
+    value: Any,
+    *,
+    path: str,
+    include_six_relative: bool = False,
+) -> None:
+    rows = _sequence(value, path)
+    for index, raw in enumerate(rows):
+        row_path = f"{path}[{index}]"
+        base_required = (
+            *_GENERAL_LANDING_ROW_REQUIRED,
+            *(("six_relative",) if include_six_relative else ()),
+        )
+        item = _mapping(raw, row_path)
+        if item.get("status") == "source_correspondence_matched":
+            required = (*base_required, *_GENERAL_LANDING_ROW_OPTIONAL)
+        elif item.get("status") == "no_exact_source_correspondence":
+            required = base_required
+        else:
+            raise LiurenRuntimeContractError(f"{row_path}.status is unsupported")
+        row = _exact_keys(item, required=required, path=row_path)
+        for field in required:
+            _nonempty_string(row[field], f"{row_path}.{field}")
+
+
+def _validate_dimension_payloads(
+    row: Mapping[str, Any],
+    *,
+    canonical: str,
+    path: str,
+) -> None:
+    for field in _DIMENSION_FIELDS[canonical]:
+        field_path = f"{path}.{field}"
+        value = row[field]
+        if field in _NULLABLE_DIMENSION_OBJECTS and value is None:
+            continue
+        if field == "candidate_date":
+            _validate_timing_candidate(value, field_path)
+        elif field == "candidate_branch":
+            branch = _exact_keys(
+                value,
+                required=_TIMING_CANDIDATE_BRANCH_FIELDS,
+                path=field_path,
+            )
+            for branch_field in _TIMING_CANDIDATE_BRANCH_FIELDS:
+                _nonempty_string(branch[branch_field], f"{field_path}.{branch_field}")
+        elif field in {"subject_object_relation", "initial_final_relation"}:
+            _validate_fixed_dimension_object(
+                value,
+                required=_DIMENSION_OBJECT_FIELDS[field],
+                path=field_path,
+            )
+        elif field in {
+            "general_landing_correspondences",
+            "target_general_modifier",
+            "wealth_general_modifier",
+        }:
+            _validate_general_landing_rows(
+                value,
+                path=field_path,
+                include_six_relative=field != "general_landing_correspondences",
+            )
+        elif field in _DIMENSION_ROW_FIELDS:
+            _validate_fixed_dimension_rows(
+                value,
+                required=_DIMENSION_ROW_FIELDS[field],
+                path=field_path,
+            )
+        elif field in {"relative_speed", "target_relative"}:
+            _nullable_string(value, field_path)
+        elif field in {"target_presence", "wealth_presence"}:
+            _boolean(value, field_path)
+        else:
+            _nonempty_string(value, field_path)
+
+
 def _validate_dimension_facts(value: Any, path: str) -> None:
     dimensions = _mapping(value, path)
     for requested, raw in dimensions.items():
@@ -360,22 +606,11 @@ def _validate_dimension_facts(value: Any, path: str) -> None:
             )
         _string_array(row["source_rule_ids"], f"{dimension_path}.source_rule_ids")
         _validate_rule_evidence(row["rule_evidence"], f"{dimension_path}.rule_evidence")
-        if expected_canonical == "timing":
-            if row["candidate_branch"] is not None:
-                branch = _exact_keys(
-                    row["candidate_branch"],
-                    required=("branch", "anchor_earth_branch", "source_rule"),
-                    path=f"{dimension_path}.candidate_branch",
-                )
-                for field in branch:
-                    _nonempty_string(
-                        branch[field], f"{dimension_path}.candidate_branch.{field}"
-                    )
-            _nullable_string(row["relative_speed"], f"{dimension_path}.relative_speed")
-            if row["candidate_date"] is not None:
-                _validate_timing_candidate(
-                    row["candidate_date"], f"{dimension_path}.candidate_date"
-                )
+        _validate_dimension_payloads(
+            row,
+            canonical=expected_canonical,
+            path=dimension_path,
+        )
 
 
 def validate_runtime_core_facts(value: Any) -> None:
@@ -583,7 +818,10 @@ def build_runtime_core_facts(
             path="output.xunkong",
         ),
         "structural_patterns": copy.deepcopy(output.get("structural_patterns")),
-        "dimension_facts": copy.deepcopy(dict(dimension_facts)),
+        "dimension_facts": _project_dimension_facts(
+            dimension_facts,
+            "dimension_facts",
+        ),
     }
     if timing_candidates is not _MISSING:
         contract["timing_candidates"] = copy.deepcopy(timing_candidates)
