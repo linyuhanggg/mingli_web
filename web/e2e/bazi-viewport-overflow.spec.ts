@@ -74,6 +74,54 @@ test("bazi 360 first-screen controls stay above the mobile bottom bar", async ({
   await expect(page.getByRole("checkbox", { name: /不知道出生时辰/ })).toHaveCount(0);
 });
 
+test("bazi input Pattern 1 layout has no overflow and keeps the trust rail populated", async ({ page }, testInfo) => {
+  const viewport = testInfo.project.name;
+  const width = page.viewportSize()?.width ?? 0;
+
+  await page.goto("/bazi", { waitUntil: "domcontentloaded" });
+
+  const layout = page.locator('[data-input-region="first-screen"]');
+  const trustRail = page.getByRole("complementary", { name: "提交后的八字盘面预览" });
+  const submit = page.getByRole("button", { name: "立即排盘（免费）· 查看八字四柱" });
+  await expect(layout).toBeVisible();
+  await expect(trustRail).toBeVisible();
+  await expect(trustRail).toContainText("提交后填入你的盘");
+  await expect(trustRail).toContainText("示意骨架");
+  await expect(trustRail).toContainText("verified_exact");
+  await expect(trustRail).toContainText("1. 提交资料");
+  await expect(trustRail).toContainText("2. 生成事实盘");
+  await expect(trustRail).toContainText("3. 核对引文");
+
+  const report = await page.evaluate(() => {
+    const firstScreen = document.querySelector('[data-input-region="first-screen"]');
+    const placeParts = document.querySelector('[class*="placeParts"]');
+    const submitButton = Array.from(document.querySelectorAll("button")).find((button) => button.textContent?.includes("立即排盘"));
+    const inputGridColumns = firstScreen ? getComputedStyle(firstScreen).gridTemplateColumns.split(" ").filter(Boolean) : [];
+    const placeGridColumns = placeParts ? getComputedStyle(placeParts).gridTemplateColumns.split(" ").filter(Boolean) : [];
+    const submitBox = submitButton?.getBoundingClientRect();
+    return {
+      columns: inputGridColumns.length,
+      placeColumns: placeGridColumns.length,
+      submitHeight: submitBox?.height ?? 0,
+      hasTrustRail: Boolean(document.querySelector('[aria-label="提交后的八字盘面预览"]')),
+      overflowPx: document.documentElement.scrollWidth - window.innerWidth,
+    };
+  });
+
+  expect(report.overflowPx, `${viewport} /bazi input overflow`).toBeLessThanOrEqual(1);
+  expect(report.columns, `${viewport} /bazi input columns`).toBe(width >= 1024 ? 2 : 1);
+  expect(report.submitHeight, `${viewport} submit target height`).toBeGreaterThanOrEqual(48);
+  if (width <= 640) {
+    expect(report.placeColumns, `${viewport} place select columns`).toBe(1);
+  }
+  await expect(submit).toBeVisible();
+  await testInfo.attach(`ming-12-bazi-${viewport}.png`, {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
+  console.log(`MING12_INPUT_LAYOUT ${JSON.stringify({ viewport, width, ...report })}`);
+});
+
 test("bazi result, workbench and hepan do not overflow the viewport", async ({ page }, testInfo) => {
   const viewport = testInfo.project.name;
   const table: Array<Record<string, unknown>> = [];

@@ -23,11 +23,19 @@ function getServerMounted() {
   return false;
 }
 
-function useHydratedReducedMotion() {
-  const mounted = useSyncExternalStore(subscribeToMount, getClientMounted, getServerMounted);
-  const reduceMotion = useSafeReducedMotion();
-  return mounted && reduceMotion;
+function useHydrationReady() {
+  return useSyncExternalStore(subscribeToMount, getClientMounted, getServerMounted);
 }
+
+const visibleEntranceVariants = {
+  hidden: { opacity: 1, y: 12 },
+  shown: { opacity: 1, y: 0 },
+} as const;
+
+const visibleSectionVariants = {
+  hidden: { opacity: 1, y: 16 },
+  shown: { opacity: 1, y: 0 },
+} as const;
 
 export function HomeHeroMotion({
   children,
@@ -36,14 +44,16 @@ export function HomeHeroMotion({
   children: ReactNode;
   className?: string;
 }) {
-  const reduceMotion = useHydratedReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
+  const hydrated = useHydrationReady();
 
   if (reduceMotion) return <div className={className}>{children}</div>;
+  if (!hydrated) return <div className={className}>{children}</div>;
 
   return (
     <motion.div
       className={className}
-      initial="hidden"
+      initial={false}
       animate="shown"
       variants={{ shown: { transition: { staggerChildren: 0.06 } }, hidden: {} }}
     >
@@ -53,13 +63,16 @@ export function HomeHeroMotion({
 }
 
 export function HomeHeroItemMotion({ children }: { children: ReactNode }) {
-  const reduceMotion = useHydratedReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
+  const hydrated = useHydrationReady();
 
   if (reduceMotion) return <div>{children}</div>;
+  if (!hydrated) return <div>{children}</div>;
 
   return (
     <motion.div
-      variants={{ hidden: { opacity: 0, y: 12 }, shown: { opacity: 1, y: 0 } }}
+      initial={false}
+      variants={visibleEntranceVariants}
       transition={{ duration: motionDurations.entrance, ease: easeOutExpo }}
     >
       {children}
@@ -78,9 +91,18 @@ export function HomeSectionMotion({
   delay?: number;
   dividerClassName?: string;
 }) {
-  const reduceMotion = useHydratedReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
+  const hydrated = useHydrationReady();
 
   if (reduceMotion) {
+    return (
+      <div className={className}>
+        {dividerClassName ? <span aria-hidden="true" className={dividerClassName} /> : null}
+        {children}
+      </div>
+    );
+  }
+  if (!hydrated) {
     return (
       <div className={className}>
         {dividerClassName ? <span aria-hidden="true" className={dividerClassName} /> : null}
@@ -92,7 +114,7 @@ export function HomeSectionMotion({
   return (
     <motion.div
       className={className}
-      initial="hidden"
+      initial={false}
       whileInView="shown"
       viewport={{ once: true, amount: 0.2 }}
     >
@@ -100,12 +122,14 @@ export function HomeSectionMotion({
         <motion.span
           aria-hidden="true"
           className={dividerClassName}
+          initial={false}
           variants={{ hidden: { scaleX: 0 }, shown: { scaleX: 1 } }}
           transition={{ duration: 0.5, delay, ease: easeOutExpo }}
         />
       ) : null}
       <motion.div
-        variants={{ hidden: { opacity: 0, y: 12 }, shown: { opacity: 1, y: 0 } }}
+        initial={false}
+        variants={visibleSectionVariants}
         transition={{ duration: motionDurations.entrance, delay, ease: easeOutExpo }}
       >
         {children}
@@ -121,14 +145,16 @@ export function HomeTaskGridMotion({
   children: ReactNode;
   className?: string;
 }) {
-  const reduceMotion = useHydratedReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
+  const hydrated = useHydrationReady();
 
   if (reduceMotion) return <div className={className}>{children}</div>;
+  if (!hydrated) return <div className={className}>{children}</div>;
 
   return (
     <motion.div
       className={className}
-      initial="hidden"
+      initial={false}
       whileInView="shown"
       viewport={{ once: true, amount: 0.2 }}
       variants={{
@@ -156,11 +182,14 @@ export function HomeLedgerMotion({
 }
 
 export function HomeLedgerItemMotion({ children }: { children: ReactNode }) {
-  const reduceMotion = useHydratedReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
+  const hydrated = useHydrationReady();
   if (reduceMotion) return <article>{children}</article>;
+  if (!hydrated) return <article>{children}</article>;
   return (
     <motion.article
-      variants={{ hidden: { opacity: 0, y: 12 }, shown: { opacity: 1, y: 0 } }}
+      initial={false}
+      variants={visibleEntranceVariants}
       transition={{ duration: motionDurations.entrance, ease: easeOutExpo }}
     >
       {children}
@@ -175,12 +204,14 @@ export function HomeStepsMotion({
   children: ReactNode;
   className?: string;
 }) {
-  const reduceMotion = useHydratedReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
+  const hydrated = useHydrationReady();
   if (reduceMotion) return <ol className={className}>{children}</ol>;
+  if (!hydrated) return <ol className={className}>{children}</ol>;
   return (
     <motion.ol
       className={className}
-      initial="hidden"
+      initial={false}
       whileInView="shown"
       viewport={{ once: true, amount: 0.2 }}
       variants={{ shown: { transition: { staggerChildren: 0.06, delayChildren: 0.04 } }, hidden: {} }}
@@ -191,11 +222,14 @@ export function HomeStepsMotion({
 }
 
 export function HomeStepItemMotion({ children }: { children: ReactNode }) {
-  const reduceMotion = useHydratedReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
+  const hydrated = useHydrationReady();
   if (reduceMotion) return <li>{children}</li>;
+  if (!hydrated) return <li>{children}</li>;
   return (
     <motion.li
-      variants={{ hidden: { opacity: 0, y: 12 }, shown: { opacity: 1, y: 0 } }}
+      initial={false}
+      variants={visibleEntranceVariants}
       transition={{ duration: motionDurations.entrance, ease: easeOutExpo }}
     >
       {children}
