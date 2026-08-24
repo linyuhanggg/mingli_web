@@ -120,6 +120,45 @@ class LiurenRuntimeContractTests(unittest.TestCase):
         self.assertNotIn("future_internal_trace", contract)
         validate_runtime_core_facts(contract)
 
+    def test_unknown_nested_adapter_keys_are_not_published(self) -> None:
+        facts = _facts()
+        output = facts["output"]
+        adapter_objects = (
+            output["day_hour"],
+            output["heaven_plate"][0],
+            output["heavenly_generals"][0],
+            output["month_general"],
+            output["noble_person"],
+            output["transmission_method"],
+            output["four_lessons"][0],
+            output["three_transmissions"][0],
+            output["xunkong"],
+        )
+        for row in adapter_objects:
+            row["future_internal_trace"] = {"opaque": True}
+
+        contract = liuren_calc.extend_liuren_facts(
+            facts,
+            requested_dimensions=("relationship",),
+            horizon=HORIZON,
+            target_relative=None,
+        )["runtime_core_facts"]
+        published_objects = (
+            contract["day_hour"],
+            contract["heaven_plate"][0],
+            contract["heavenly_generals"][0],
+            contract["month_general"],
+            contract["noble_person"],
+            contract["lesson_method"],
+            contract["four_lessons"][0],
+            contract["three_transmissions"][0],
+            contract["xunkong"],
+        )
+
+        for row in published_objects:
+            self.assertNotIn("future_internal_trace", row)
+        validate_runtime_core_facts(contract)
+
     def test_missing_required_key_is_rejected(self) -> None:
         contract = _contract()
         del contract["month_general"]

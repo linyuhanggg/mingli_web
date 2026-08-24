@@ -28,6 +28,19 @@ _TOP_LEVEL_REQUIRED = (
     "dimension_facts",
 )
 _TOP_LEVEL_OPTIONAL = ("timing_candidates",)
+_DAY_HOUR_FIELDS = ("day", "hour")
+_HEAVEN_PLATE_ROW_FIELDS = ("earth", "heaven")
+_HEAVENLY_GENERAL_ROW_FIELDS = ("earth", "heaven", "general")
+_MONTH_GENERAL_FIELDS = ("branch", "name")
+_NOBLE_PERSON_FIELDS = (
+    "branch",
+    "period",
+    "earth_position",
+    "direction",
+    "profile",
+    "day_night_profile",
+    "source",
+)
 _LESSON_METHOD_FIELDS = (
     "primary",
     "use_method",
@@ -37,6 +50,14 @@ _LESSON_METHOD_FIELDS = (
     "calculation_source",
     "source_anchor",
 )
+_FOUR_LESSON_ROW_FIELDS = ("lesson", "lower", "lower_lodge", "upper", "relation")
+_THREE_TRANSMISSION_ROW_FIELDS = (
+    "stage",
+    "branch",
+    "heavenly_general",
+    "six_relative",
+)
+_XUNKONG_FIELDS = ("xun", "branches")
 _DIMENSION_ENVELOPE = (
     "requested_dimension",
     "canonical_dimension",
@@ -174,6 +195,31 @@ def _exact_keys(
             f"{path} contains unknown keys: {', '.join(unknown)}"
         )
     return item
+
+
+def _project_mapping(
+    value: Any,
+    *,
+    fields: Sequence[str],
+    path: str,
+) -> dict[str, Any]:
+    """Copy only fields declared by the stable public contract."""
+
+    item = _mapping(value, path)
+    return {field: copy.deepcopy(item[field]) for field in fields if field in item}
+
+
+def _project_mapping_rows(
+    value: Any,
+    *,
+    fields: Sequence[str],
+    path: str,
+) -> list[dict[str, Any]]:
+    rows = _sequence(value, path)
+    return [
+        _project_mapping(row, fields=fields, path=f"{path}[{index}]")
+        for index, row in enumerate(rows)
+    ]
 
 
 def _nonempty_string(value: Any, path: str) -> str:
@@ -345,7 +391,9 @@ def validate_runtime_core_facts(value: Any) -> None:
         raise LiurenRuntimeContractError("runtime_core_facts.schema_version is unsupported")
 
     day_hour = _exact_keys(
-        contract["day_hour"], required=("day", "hour"), path="runtime_core_facts.day_hour"
+        contract["day_hour"],
+        required=_DAY_HOUR_FIELDS,
+        path="runtime_core_facts.day_hour",
     )
     _nonempty_string(day_hour["day"], "runtime_core_facts.day_hour.day")
     _nonempty_string(day_hour["hour"], "runtime_core_facts.day_hour.hour")
@@ -362,7 +410,7 @@ def validate_runtime_core_facts(value: Any) -> None:
     heaven_values: list[str] = []
     for index, raw in enumerate(heaven_plate):
         path = f"runtime_core_facts.heaven_plate[{index}]"
-        row = _exact_keys(raw, required=("earth", "heaven"), path=path)
+        row = _exact_keys(raw, required=_HEAVEN_PLATE_ROW_FIELDS, path=path)
         if row["earth"] != EARTH_PLATE_ORDER[index]:
             raise LiurenRuntimeContractError(f"{path}.earth is out of plate order")
         heaven_values.append(_nonempty_string(row["heaven"], f"{path}.heaven"))
@@ -380,14 +428,14 @@ def validate_runtime_core_facts(value: Any) -> None:
         )
     for index, raw in enumerate(generals):
         path = f"runtime_core_facts.heavenly_generals[{index}]"
-        row = _exact_keys(raw, required=("earth", "heaven", "general"), path=path)
+        row = _exact_keys(raw, required=_HEAVENLY_GENERAL_ROW_FIELDS, path=path)
         if row["earth"] != EARTH_PLATE_ORDER[index] or row["heaven"] != heaven_values[index]:
             raise LiurenRuntimeContractError(f"{path} must align with heaven_plate")
         _nonempty_string(row["general"], f"{path}.general")
 
     month_general = _exact_keys(
         contract["month_general"],
-        required=("branch", "name"),
+        required=_MONTH_GENERAL_FIELDS,
         path="runtime_core_facts.month_general",
     )
     _nonempty_string(month_general["branch"], "runtime_core_facts.month_general.branch")
@@ -395,15 +443,7 @@ def validate_runtime_core_facts(value: Any) -> None:
 
     noble_person = _exact_keys(
         contract["noble_person"],
-        required=(
-            "branch",
-            "period",
-            "earth_position",
-            "direction",
-            "profile",
-            "day_night_profile",
-            "source",
-        ),
+        required=_NOBLE_PERSON_FIELDS,
         path="runtime_core_facts.noble_person",
     )
     for field in noble_person:
@@ -427,7 +467,7 @@ def validate_runtime_core_facts(value: Any) -> None:
         path = f"runtime_core_facts.four_lessons[{index}]"
         row = _exact_keys(
             raw,
-            required=("lesson", "lower", "lower_lodge", "upper", "relation"),
+            required=_FOUR_LESSON_ROW_FIELDS,
             path=path,
         )
         if row["lesson"] != index + 1:
@@ -446,7 +486,7 @@ def validate_runtime_core_facts(value: Any) -> None:
         path = f"runtime_core_facts.three_transmissions[{index}]"
         row = _exact_keys(
             raw,
-            required=("stage", "branch", "heavenly_general", "six_relative"),
+            required=_THREE_TRANSMISSION_ROW_FIELDS,
             path=path,
         )
         if row["stage"] != TRANSMISSION_STAGES[index]:
@@ -461,7 +501,7 @@ def validate_runtime_core_facts(value: Any) -> None:
         )
     xunkong = _exact_keys(
         contract["xunkong"],
-        required=("xun", "branches"),
+        required=_XUNKONG_FIELDS,
         path="runtime_core_facts.xunkong",
     )
     _nonempty_string(xunkong["xun"], "runtime_core_facts.xunkong.xun")
@@ -493,22 +533,55 @@ def build_runtime_core_facts(
 ) -> dict[str, Any]:
     """Build and self-validate the additive v1 public Runtime projection."""
 
-    method = _mapping(output.get("transmission_method"), "output.transmission_method")
     contract: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
-        "day_hour": copy.deepcopy(output.get("day_hour")),
+        "day_hour": _project_mapping(
+            output.get("day_hour"),
+            fields=_DAY_HOUR_FIELDS,
+            path="output.day_hour",
+        ),
         "earth_plate": copy.deepcopy(output.get("earth_plate")),
-        "heaven_plate": copy.deepcopy(output.get("heaven_plate")),
-        "heavenly_generals": copy.deepcopy(output.get("heavenly_generals")),
-        "month_general": copy.deepcopy(output.get("month_general")),
-        "noble_person": copy.deepcopy(output.get("noble_person")),
-        "lesson_method": {
-            field: copy.deepcopy(method.get(field)) for field in _LESSON_METHOD_FIELDS
-        },
-        "four_lessons": copy.deepcopy(output.get("four_lessons")),
-        "three_transmissions": copy.deepcopy(output.get("three_transmissions")),
+        "heaven_plate": _project_mapping_rows(
+            output.get("heaven_plate"),
+            fields=_HEAVEN_PLATE_ROW_FIELDS,
+            path="output.heaven_plate",
+        ),
+        "heavenly_generals": _project_mapping_rows(
+            output.get("heavenly_generals"),
+            fields=_HEAVENLY_GENERAL_ROW_FIELDS,
+            path="output.heavenly_generals",
+        ),
+        "month_general": _project_mapping(
+            output.get("month_general"),
+            fields=_MONTH_GENERAL_FIELDS,
+            path="output.month_general",
+        ),
+        "noble_person": _project_mapping(
+            output.get("noble_person"),
+            fields=_NOBLE_PERSON_FIELDS,
+            path="output.noble_person",
+        ),
+        "lesson_method": _project_mapping(
+            output.get("transmission_method"),
+            fields=_LESSON_METHOD_FIELDS,
+            path="output.transmission_method",
+        ),
+        "four_lessons": _project_mapping_rows(
+            output.get("four_lessons"),
+            fields=_FOUR_LESSON_ROW_FIELDS,
+            path="output.four_lessons",
+        ),
+        "three_transmissions": _project_mapping_rows(
+            output.get("three_transmissions"),
+            fields=_THREE_TRANSMISSION_ROW_FIELDS,
+            path="output.three_transmissions",
+        ),
         "plate_offset": copy.deepcopy(output.get("plate_offset")),
-        "xunkong": copy.deepcopy(output.get("xunkong")),
+        "xunkong": _project_mapping(
+            output.get("xunkong"),
+            fields=_XUNKONG_FIELDS,
+            path="output.xunkong",
+        ),
         "structural_patterns": copy.deepcopy(output.get("structural_patterns")),
         "dimension_facts": copy.deepcopy(dict(dimension_facts)),
     }
