@@ -161,6 +161,23 @@ def test_daliuren_projector_preserves_empty_runtime_arrays() -> None:
     assert empty_patterns_view.core_facts.structural_patterns == ()
 
 
+def test_daliuren_projector_rejects_empty_structural_pattern_entries() -> None:
+    payload = copy.deepcopy(_load_fixture())
+    payload["structural_patterns"] = [""]
+
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is None
+
+    schema_payload = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    schema_payload["core_facts"]["structural_patterns"] = [""]
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert list(Draft202012Validator(schema).iter_errors(schema_payload))
+
+
 def test_daliuren_projector_preserves_explicit_dimension_nulls() -> None:
     payload = copy.deepcopy(_load_fixture())
     timing = payload["dimension_facts"]["timing"]

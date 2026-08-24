@@ -99,7 +99,7 @@
         "month_general": {"oneOf": [{"$ref": "#/$defs/monthGeneral"}, {"type": "null"}]},
         "noble_person": {"oneOf": [{"$ref": "#/$defs/noblePerson"}, {"type": "null"}]},
         "plate_offset": {"type": ["integer", "null"], "minimum": 0, "maximum": 11},
-        "structural_patterns": {"type": ["array", "null"], "items": {"type": "string"}},
+        "structural_patterns": {"type": ["array", "null"], "items": {"type": "string", "minLength": 1}},
         "timing_candidates": {"type": ["array", "null"], "items": {"$ref": "#/$defs/timingCandidate"}},
         "xunkong": {"oneOf": [{"$ref": "#/$defs/xunkong"}, {"type": "null"}]}
       }

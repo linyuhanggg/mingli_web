@@ -2277,7 +2277,7 @@ class DaliurenCoreFacts(ContractModel):
     month_general: DaliurenMonthGeneral | None = None
     noble_person: DaliurenNoblePerson | None = None
     plate_offset: int | None = Field(default=None, ge=0, le=11, strict=True)
-    structural_patterns: tuple[str, ...] | None = None
+    structural_patterns: tuple[Annotated[str, Field(min_length=1)], ...] | None = None
     timing_candidates: tuple[DaliurenTimingCandidate, ...] | None = None
     xunkong: DaliurenXunkong | None = None
 
