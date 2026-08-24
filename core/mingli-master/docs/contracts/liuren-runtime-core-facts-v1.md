@@ -43,7 +43,7 @@
 
 当前来源表只登记已经通过 reference pack 核对的四项：伏吟 `DLR-09 / DLQ-041 / L7696`、反吟 `DLR-10 / DLQ-043 / L7874`、八专日 `DLR-08 / DLQ-039 / L7556`、四课不备 `DLR-07 / DLQ-012 / L58`。其中“四课不备”的古籍锚点明确限定“三课备”，所以只有四课去重后恰为三课才发布来源对象；两课或其他未收录标签继续保留兼容字符串，但不生成伪锚点。
 
-该数组不是吉凶、成败或应期裁决。它没有 `verdict` 字段，也不允许把 `status` 改成结论态。来源登记在 `references/inference/liuren-rules-v1.json`；聚焦审计命令为 `python3 -B scripts/audit_liuren_structural_patterns.py`。
+该数组不是吉凶、成败或应期裁决。它没有 `verdict` 字段，也不允许把 `status` 改成结论态。传输/存量 payload 的稳定身份必须重新绑定到 release-pinned catalog；“四课不备”还会从 `four_lessons[*].upper` 重算去重数并要求恰为 3。来源登记在 `references/inference/liuren-rules-v1.json`；聚焦审计命令为 `python3 -B scripts/audit_liuren_structural_patterns.py`，该审计同时校验 manifest 声明的规范化全文摘要，并在 `source_anchor` 精确行核对短引原文。
 
 ## `dimension_facts`
 

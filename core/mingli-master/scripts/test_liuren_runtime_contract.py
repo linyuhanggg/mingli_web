@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
+import shutil
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -526,6 +529,68 @@ class LiurenRuntimeContractTests(unittest.TestCase):
         ):
             self.assertEqual(build_source_conditioned_patterns(output), [])
 
+    def test_source_conditioned_patterns_reject_forged_catalog_identity(self) -> None:
+        contract = _contract()
+        forged_values = {
+            "rule_id": "FAKE",
+            "local_rule_id": "FAKE-LOCAL",
+            "source_pack": "fake/pack",
+            "source_anchor": "fulltext.md#L999999",
+        }
+        for field, value in forged_values.items():
+            with self.subTest(field=field):
+                mutation = copy.deepcopy(contract)
+                mutation["source_conditioned_patterns"][0][field] = value
+                with self.assertRaisesRegex(
+                    LiurenRuntimeContractError,
+                    "must match the pinned source catalog",
+                ):
+                    validate_runtime_core_facts(mutation)
+
+    def test_source_conditioned_patterns_recompute_three_lesson_condition(self) -> None:
+        three_lesson_facts = liuren_fact_adapter.build_from_chart(
+            day_ganzhi="甲子",
+            hour_ganzhi="甲子",
+            month_general="寅",
+            question="脱敏三课来源样例",
+            location="fixture",
+        )
+        three_lesson_contract = liuren_calc.extend_liuren_facts(
+            three_lesson_facts,
+            requested_dimensions=("relationship",),
+            horizon=HORIZON,
+            target_relative=None,
+        )["runtime_core_facts"]
+        source_row = next(
+            row
+            for row in three_lesson_contract["source_conditioned_patterns"]
+            if row["title"] == "四课不备"
+        )
+
+        one_lesson_facts = liuren_fact_adapter.build_from_chart(
+            day_ganzhi="癸丑",
+            hour_ganzhi="戊午",
+            month_general="午",
+            question="脱敏非三课来源样例",
+            location="fixture",
+        )
+        mutation = liuren_calc.extend_liuren_facts(
+            one_lesson_facts,
+            requested_dimensions=("relationship",),
+            horizon=HORIZON,
+            target_relative=None,
+        )["runtime_core_facts"]
+        self.assertEqual(
+            len({row["upper"] for row in mutation["four_lessons"]}),
+            1,
+        )
+        mutation["source_conditioned_patterns"].append(copy.deepcopy(source_row))
+        with self.assertRaisesRegex(
+            LiurenRuntimeContractError,
+            "requires 3 distinct four-lesson upper values, observed 1",
+        ):
+            validate_runtime_core_facts(mutation)
+
     def test_two_lesson_incomplete_pattern_does_not_reuse_three_lesson_anchor(self) -> None:
         facts = liuren_fact_adapter.build_from_chart(
             day_ganzhi="癸丑",
@@ -547,7 +612,83 @@ class LiurenRuntimeContractTests(unittest.TestCase):
         self.assertTrue(report["ready"], report)
         self.assertEqual(report["pattern_count"], 4)
         self.assertEqual(report["anchored_pattern_count"], 4)
+        self.assertEqual(report["normalized_source_line_count"], 13800)
+        self.assertEqual(
+            report["manifest_normalized_source_sha256"],
+            report["observed_normalized_source_sha256"],
+        )
         self.assertEqual(report["findings"], [])
+
+    def test_structural_pattern_source_audit_rejects_source_drift(self) -> None:
+        pack_relative = Path(
+            "references/books/san-shi/daliuren-daquan"
+        )
+        fulltext_relative = Path(
+            "references/fulltext/san-shi/daliuren-daquan/fulltext.md"
+        )
+        catalog_relative = Path("references/inference/liuren-rules-v1.json")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            isolated_root = Path(temp_dir)
+            shutil.copytree(ROOT / pack_relative, isolated_root / pack_relative)
+            (isolated_root / fulltext_relative).parent.mkdir(parents=True)
+            shutil.copy2(ROOT / fulltext_relative, isolated_root / fulltext_relative)
+            (isolated_root / catalog_relative).parent.mkdir(parents=True)
+            shutil.copy2(ROOT / catalog_relative, isolated_root / catalog_relative)
+
+            manifest_path = isolated_root / pack_relative / "source-manifest.yaml"
+            manifest_text = manifest_path.read_text(encoding="utf-8").replace(
+                "4c5ec0c8ea1f7b36deaf1db317cfa4407b090ad4ed909a3b8a431dced0a25d9d",
+                "0" * 64,
+                1,
+            )
+            manifest_path.write_text(manifest_text, encoding="utf-8")
+
+            fake_quote = "伪造伏吟来源短引"
+            quote_path = isolated_root / pack_relative / "quote-index.md"
+            quote_text = quote_path.read_text(encoding="utf-8").replace(
+                "凡课月将加时，十二神各居本宫，取神克日为用，曰伏吟。",
+                fake_quote,
+                1,
+            )
+            quote_path.write_text(quote_text, encoding="utf-8")
+            catalog_path = isolated_root / catalog_relative
+            catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+            catalog["source_conditioned_patterns"]["伏吟"][
+                "source_excerpt_sha256"
+            ] = hashlib.sha256(fake_quote.encode("utf-8")).hexdigest()
+            catalog_path.write_text(
+                json.dumps(catalog, ensure_ascii=False),
+                encoding="utf-8",
+            )
+
+            with patch.object(
+                audit_liuren_structural_patterns,
+                "ROOT",
+                isolated_root,
+            ), patch.object(
+                audit_liuren_structural_patterns,
+                "RULE_CATALOG",
+                catalog_path,
+            ):
+                report = (
+                    audit_liuren_structural_patterns.audit_liuren_structural_patterns()
+                )
+                self.assertFalse(report["ready"], report)
+                self.assertIn("normalized source digest mismatch", report["findings"])
+                self.assertIn(
+                    "伏吟: exact quote missing from normalized source line",
+                    report["findings"],
+                )
+
+                (isolated_root / fulltext_relative).unlink()
+                missing_report = (
+                    audit_liuren_structural_patterns.audit_liuren_structural_patterns()
+                )
+                self.assertFalse(missing_report["ready"], missing_report)
+                self.assertIn(
+                    f"normalized source file missing: {fulltext_relative}",
+                    missing_report["findings"],
+                )
 
     def test_missing_source_anchor_and_non_null_verdict_are_rejected(self) -> None:
         without_anchor = _contract()

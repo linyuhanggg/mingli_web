@@ -501,13 +501,12 @@ def _structural_pattern_catalog() -> dict[str, Any]:
     return copy.deepcopy(dict(catalog))
 
 
-def _valid_source_pattern_definition(
+def _audited_source_pattern_definition(
     value: Any,
     *,
     title: str,
-    distinct_lesson_count: int,
 ) -> Mapping[str, Any] | None:
-    """Return one audited source definition, or omit it fail-closed."""
+    """Return one structurally auditable source definition."""
 
     if not isinstance(value, Mapping):
         return None
@@ -526,9 +525,30 @@ def _valid_source_pattern_definition(
     if not str(value["source_anchor"]).startswith("fulltext.md#L"):
         return None
     required_count = value.get("required_distinct_lesson_count")
-    if required_count is not None and required_count != distinct_lesson_count:
+    if required_count is not None and (
+        not isinstance(required_count, int)
+        or isinstance(required_count, bool)
+        or required_count < 1
+    ):
         return None
     return value
+
+
+def _valid_source_pattern_definition(
+    value: Any,
+    *,
+    title: str,
+    distinct_lesson_count: int,
+) -> Mapping[str, Any] | None:
+    """Return one applicable audited source definition, or fail closed."""
+
+    definition = _audited_source_pattern_definition(value, title=title)
+    if definition is None:
+        return None
+    required_count = definition.get("required_distinct_lesson_count")
+    if required_count is not None and required_count != distinct_lesson_count:
+        return None
+    return definition
 
 
 def build_source_conditioned_patterns(
@@ -597,9 +617,18 @@ def _validate_source_conditioned_patterns(
     value: Any,
     *,
     structural_patterns: Sequence[Any],
+    four_lessons: Sequence[Any],
     path: str,
 ) -> None:
     rows = _sequence(value, path)
+    catalog = _structural_pattern_catalog()
+    distinct_lesson_count = len(
+        {
+            row["upper"]
+            for row in four_lessons
+            if isinstance(row, Mapping) and isinstance(row.get("upper"), str)
+        }
+    )
     seen_local_rule_ids: set[str] = set()
     for index, raw in enumerate(rows):
         row_path = f"{path}[{index}]"
@@ -631,6 +660,34 @@ def _validate_source_conditioned_patterns(
             raise LiurenRuntimeContractError(
                 f"{row_path}.title must match structural_patterns"
             )
+        definition = _audited_source_pattern_definition(
+            catalog.get(title),
+            title=title,
+        )
+        if definition is None:
+            raise LiurenRuntimeContractError(
+                f"{row_path} is not supported by the pinned source catalog"
+            )
+        for field in (
+            "rule_id",
+            "local_rule_id",
+            "title",
+            "source_pack",
+            "source_anchor",
+        ):
+            if row[field] != definition[field]:
+                raise LiurenRuntimeContractError(
+                    f"{row_path}.{field} must match the pinned source catalog"
+                )
+        required_count = definition.get("required_distinct_lesson_count")
+        if (
+            required_count is not None
+            and distinct_lesson_count != required_count
+        ):
+            raise LiurenRuntimeContractError(
+                f"{row_path}.title requires {required_count} distinct four-lesson "
+                f"upper values, observed {distinct_lesson_count}"
+            )
         local_rule_id = row["local_rule_id"]
         if local_rule_id in seen_local_rule_ids:
             raise LiurenRuntimeContractError(
@@ -654,6 +711,23 @@ def _validate_source_conditioned_patterns(
             raise LiurenRuntimeContractError(
                 f"{row_path}.predicate_audit must record the matched title"
             )
+        if required_count is not None:
+            required_fact_paths = {
+                f"fact:/chart_facts/output/four_lessons/{lesson_index}/upper"
+                for lesson_index in range(len(four_lessons))
+            }
+            if not required_fact_paths.issubset(fact_paths):
+                raise LiurenRuntimeContractError(
+                    f"{row_path}.fact_paths must identify every four-lesson upper"
+                )
+            required_audit = (
+                "/chart_facts/output/four_lessons/*/upper:"
+                f"distinct_count_eq:{required_count}"
+            )
+            if required_audit not in predicate_audit:
+                raise LiurenRuntimeContractError(
+                    f"{row_path}.predicate_audit must record the distinct lesson count"
+                )
 
 
 def _validate_source_refs(value: Any, path: str) -> None:
@@ -1026,6 +1100,7 @@ def validate_runtime_core_facts(value: Any) -> None:
         _validate_source_conditioned_patterns(
             contract["source_conditioned_patterns"],
             structural_patterns=structural_patterns,
+            four_lessons=lessons,
             path="runtime_core_facts.source_conditioned_patterns",
         )
     _validate_dimension_facts(
