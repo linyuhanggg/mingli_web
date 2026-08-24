@@ -38,7 +38,7 @@
 | procedure schema | PASS | 8/8 流程均有 evidence、preconditions、steps、adapter fields、output、stop/exception |
 | source-layer vocabulary | PASS | 规则使用的 4 类 layer 全部在 manifest 注册，无未知 layer |
 | test schema | PASS | 19 个唯一测试：12 should-trigger、3 should-not-trigger、4 edge-case |
-| local adapter core | PASS | `mingli-master.liuren_fact_adapter` 2.0.1；九宗门算法为主，720 表仅作旁证 |
+| local adapter core | PASS | `mingli-master.liuren_fact_adapter` 2.1.0；九宗门算法为主，720 表仅作旁证；三传遁干按占日所属旬确定性映射并与旬空闭环 |
 | full combination invariants | PASS | 60 日 x 12 时支 x 12 月将，共 8,640 组合均通过独立 validator |
 | 720-table audit | PASS with conflicts | 720/720 格式有效；发现 4 条课名和 16 条涉害三传结果冲突，古法算法优先 |
 | classical fixtures | PASS | 元首、重审、比用、涉害、昴星、别责、八专、伏吟、反吟均有回归课例 |

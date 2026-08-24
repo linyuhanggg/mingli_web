@@ -13,6 +13,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import audit_liuren_structural_patterns
+import audit_liuren_transmission_hidden_stems
 import liuren_calc
 import liuren_fact_adapter
 from reading_engine import liuren_contract
@@ -187,6 +188,10 @@ class LiurenRuntimeContractTests(unittest.TestCase):
         self.assertEqual(
             [row["stage"] for row in contract["three_transmissions"]],
             ["initial", "middle", "final"],
+        )
+        self.assertEqual(
+            [row["hidden_stem"] for row in contract["three_transmissions"]],
+            ["壬", "乙", "辛"],
         )
         self.assertEqual(
             list(contract["dimension_facts"]),
@@ -398,6 +403,67 @@ class LiurenRuntimeContractTests(unittest.TestCase):
                     "contains unknown keys: future_public_field",
                 ):
                     validate_runtime_core_facts(contract)
+
+    def test_void_transmission_hidden_stem_is_null(self) -> None:
+        facts = liuren_fact_adapter.build_from_chart(
+            day_ganzhi="甲子",
+            hour_ganzhi="甲子",
+            month_general="卯",
+            question="脱敏遁干空亡样例",
+            location="fixture",
+        )
+        contract = liuren_calc.extend_liuren_facts(
+            facts,
+            requested_dimensions=("relationship",),
+            horizon={"kind": "instant"},
+            target_relative=None,
+        )["runtime_core_facts"]
+
+        self.assertEqual(contract["xunkong"], {"xun": "甲子", "branches": ["戌", "亥"]})
+        self.assertEqual(
+            [
+                (row["branch"], row["hidden_stem"])
+                for row in contract["three_transmissions"]
+            ],
+            [("申", "壬"), ("亥", None), ("寅", "丙")],
+        )
+
+    def test_legacy_contract_may_omit_all_hidden_stems(self) -> None:
+        contract = _contract()
+        for row in contract["three_transmissions"]:
+            del row["hidden_stem"]
+
+        validate_runtime_core_facts(contract)
+
+    def test_partial_or_invalid_hidden_stem_contract_fails_closed(self) -> None:
+        mixed = _contract()
+        del mixed["three_transmissions"][0]["hidden_stem"]
+        with self.assertRaisesRegex(
+            LiurenRuntimeContractError,
+            "present on all three rows or omitted from all three rows",
+        ):
+            validate_runtime_core_facts(mixed)
+
+        wrong_stem = _contract()
+        wrong_stem["three_transmissions"][0]["hidden_stem"] = "甲"
+        with self.assertRaisesRegex(
+            LiurenRuntimeContractError, "does not match the day xun"
+        ):
+            validate_runtime_core_facts(wrong_stem)
+
+        wrong_type = _contract()
+        wrong_type["three_transmissions"][0]["hidden_stem"] = []
+        with self.assertRaisesRegex(
+            LiurenRuntimeContractError, "must be one heavenly stem or null"
+        ):
+            validate_runtime_core_facts(wrong_type)
+
+        wrong_xunkong = _contract()
+        wrong_xunkong["xunkong"]["xun"] = "甲子"
+        with self.assertRaisesRegex(
+            LiurenRuntimeContractError, "xunkong must match day_hour.day"
+        ):
+            validate_runtime_core_facts(wrong_xunkong)
 
     def test_missing_required_key_is_rejected(self) -> None:
         contract = _contract()
@@ -689,6 +755,16 @@ class LiurenRuntimeContractTests(unittest.TestCase):
                     f"normalized source file missing: {fulltext_relative}",
                     missing_report["findings"],
                 )
+
+    def test_transmission_hidden_stem_audit_covers_all_day_xun_mappings(self) -> None:
+        report = audit_liuren_transmission_hidden_stems.audit_liuren_transmission_hidden_stems(
+        )
+
+        self.assertTrue(report["ready"], report)
+        self.assertEqual(report["day_count"], 60)
+        self.assertEqual(report["mapping_checks"], 720)
+        self.assertEqual(report["invalid_case_count"], 4)
+        self.assertEqual(report["findings"], [])
 
     def test_missing_source_anchor_and_non_null_verdict_are_rejected(self) -> None:
         without_anchor = _contract()

@@ -1087,10 +1087,11 @@ def validate_ziwei_extension(payload: dict[str, Any]) -> dict[str, Any]:
 
 LIUREN_STEMS = "甲乙丙丁戊己庚辛壬癸"
 LIUREN_BRANCHES = "子丑寅卯辰巳午未申酉戌亥"
-LIUREN_JIAZI = {
+LIUREN_JIAZI_CYCLE = tuple(
     LIUREN_STEMS[index % 10] + LIUREN_BRANCHES[index % 12]
     for index in range(60)
-}
+)
+LIUREN_JIAZI = set(LIUREN_JIAZI_CYCLE)
 LIUREN_STEM_LODGE = {
     "甲": "寅", "乙": "辰", "丙": "巳", "丁": "未", "戊": "巳",
     "己": "未", "庚": "申", "辛": "戌", "壬": "亥", "癸": "丑",
@@ -1655,6 +1656,11 @@ def _validate_liuren_payload(payload: dict[str, Any], output: dict[str, Any]) ->
         findings.append(_finding("liuren_unverified_adapter", "Liuren payload was not produced by the bundled adapter"))
     if rule_profile.get("transmissions") != "daliuren-daquan-wyg-classical-nine-method-v2":
         findings.append(_finding("liuren_unverified_rule_profile", "Liuren transmission rule profile is not the validated v2 profile"))
+    if rule_profile.get("transmission_hidden_stems") != "sexagenary-day-xun-v1":
+        findings.append(_finding(
+            "liuren_unverified_transmission_hidden_stem_profile",
+            "Liuren transmission hidden stems lack the validated day-xun profile",
+        ))
     if rule_profile.get("biezhe") not in LIUREN_BIEZHE_PROFILES:
         findings.append(_finding("liuren_missing_biezhe_profile", "Liuren payload lacks an explicit supported yin-biezhe profile"))
 
@@ -1927,6 +1933,39 @@ def _validate_liuren_payload(payload: dict[str, Any], output: dict[str, Any]) ->
         stages = [item.get("stage") for item in transmissions if isinstance(item, dict)]
         if stages != ["initial", "middle", "final"] or any(branch not in LIUREN_BRANCHES for branch in transmission_branches):
             findings.append(_finding("liuren_invalid_three_transmissions", "Liuren transmission stages or branches are invalid"))
+        elif day in LIUREN_JIAZI:
+            start = (LIUREN_JIAZI_CYCLE.index(day) // 10) * 10
+            xun_rows = LIUREN_JIAZI_CYCLE[start : start + 10]
+            stem_by_branch = {ganzhi[1]: ganzhi[0] for ganzhi in xun_rows}
+            expected_empty = [
+                branch for branch in LIUREN_BRANCHES if branch not in stem_by_branch
+            ]
+            xunkong = (
+                output.get("xunkong")
+                if isinstance(output.get("xunkong"), dict)
+                else {}
+            )
+            if (
+                xunkong.get("xun") != xun_rows[0]
+                or xunkong.get("branches") != expected_empty
+            ):
+                findings.append(_finding(
+                    "liuren_xunkong_mismatch",
+                    "Liuren Xunkong must match the occupied branches of the day xun",
+                ))
+            for item in transmissions:
+                if not isinstance(item, dict) or "hidden_stem" not in item:
+                    findings.append(_finding(
+                        "liuren_missing_transmission_hidden_stem",
+                        "Every Liuren transmission must publish its day-xun hidden stem",
+                    ))
+                    break
+                if item.get("hidden_stem") != stem_by_branch.get(item.get("branch")):
+                    findings.append(_finding(
+                        "liuren_transmission_hidden_stem_mismatch",
+                        "Liuren transmission hidden stem does not match the day xun",
+                    ))
+                    break
 
     method = output.get("transmission_method") if isinstance(output.get("transmission_method"), dict) else {}
     if method.get("calculation_source") != "classical_nine-method_algorithm":

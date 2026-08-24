@@ -21,7 +21,7 @@
 | `noble_person` | object | 是 | 否 | 不省略 | 天乙贵人支、昼夜、顺逆、落地位、规则 profile 和来源 |
 | `lesson_method` | object | 是 | 仅 `direct_direction` 可为 null | 不省略 | 从原始 `transmission_method` 提取稳定字段；不再公开其内部调试 trace |
 | `four_lessons` | object[4] | 是 | 否 | 不省略 | `lesson` 固定为 1–4；项键见黄金样例 |
-| `three_transmissions` | object[3] | 是 | 否 | 不省略 | `stage` 固定为 `initial → middle → final` |
+| `three_transmissions` | object[3] | 是 | 仅 `hidden_stem` 可为 null | 不省略 | `stage` 固定为 `initial → middle → final`；当前生成器逐行发布旬内遁干 |
 | `plate_offset` | integer | 是 | 否 | 不省略 | 0–11 |
 | `xunkong` | object | 是 | 否 | 不省略 | 严格为 `{xun, branches[2]}` |
 | `structural_patterns` | string[] | 是 | 否 | 不省略 | 兼容字段；仅保留现有算法识别的结构名，不承担“可核验”语义 |
@@ -30,6 +30,14 @@
 | `timing_candidates` | object[] | 否 | 否 | 未请求 timing 时省略 | 已请求 timing 但无有界日期候选时输出 `[]` |
 
 `lesson_method` 的严格键集为：`primary`、`use_method`、`direct_direction`、`selected_initial`、`calculated_transmissions`、`calculation_source`、`source_anchor`。原始 Runtime 的键名是 `transmission_method`；稳定投影只使用产品合同名称 `lesson_method`，不会同时输出两个别名。
+
+## `three_transmissions[].hidden_stem`
+
+`hidden_stem` 是三传支在占日所属六十甲子旬内所占的天干，按 `stage=initial → middle → final` 与初传、中传、末传逐项对应。计算 profile 固定为 `sexagenary-day-xun-v1`：从 `day_hour.day` 定位旬首，枚举该旬十个干支；传支在旬内时输出单个 `甲…癸`，传支等于 `xunkong.branches[]` 之一时输出 `null`。它不是地支藏干、六亲裁决、吉凶、成败或应期。
+
+为保持旧 `mingli-liuren-runtime-core-facts-v1` payload 可读，三行可全部省略 `hidden_stem`；当前生成器总是三行全部输出。部分行有字段、部分行省略会被拒绝。字段存在时，validator 会同时复算 `day_hour.day`、`xunkong.xun/branches` 与每一传支的旬内映射；错类型、错干、错旬或把空亡支补成默认天干都会 fail closed。
+
+脱敏 positive、含 `null` 的 partial、旧 payload absent 与 invalid 样例位于 `references/fixtures/liuren-transmission-hidden-stems-v1.json`。计算审计运行 `python3 -B scripts/audit_liuren_transmission_hidden_stems.py`，覆盖 60 日 × 12 支共 720 个映射，并核对 `LM-Q008` 只作为旬表/天中的文本见证，不把它扩张成吉凶来源。
 
 ## `source_conditioned_patterns`
 
@@ -86,7 +94,7 @@
 ## 顺序、未知键与兼容性
 
 - JSON object 的键顺序不作为跨语言语义；黄金样例固定生成顺序，便于 diff。
-- 数组顺序是合同：地盘/天盘/天将为 `子→亥`，四课为 1–4，三传为初中末。
+- 数组顺序是合同：地盘/天盘/天将为 `子→亥`，四课为 1–4，三传为初中末；`hidden_stem` 不改变传序。
 - `dimension_facts` 按请求维度首次出现顺序生成；重复维度去重。
 - 稳定投影的固定层执行 required-key 和 unknown-key 双向校验。原始 adapter 新增内部 trace 不会自动泄漏到本合同。
 - 本合同是 additive v1。若将来需要新增公开字段，应发布新 schema 或先将字段声明为可选；不得静默改变 v1 的键集、null/省略语义或列表顺序。
