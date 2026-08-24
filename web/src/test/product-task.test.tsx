@@ -26,20 +26,24 @@ vi.mock("@/lib/api", async (importOriginal) => ({
   listProfiles: vi.fn().mockResolvedValue({ profiles: [] }),
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
 
 function taskShellCss() {
   return readFileSync(resolve(process.cwd(), "src/components/task/task-shell.module.css"), "utf8");
 }
 
 describe("ProductTaskPage input shell", () => {
-  it("cuts the large hero: h1 is 30px and the in-page line is 返回 + 任务名 + one sentence", () => {
+  it("cuts the large hero: h1 is 30px and the in-page line is 返回 + 任务名 + one sentence", async () => {
     const css = taskShellCss();
     expect(css).toMatch(/\.pageLine h1\s*\{[^}]*font-size:\s*var\(--font-size-page\)/s);
     expect(css).not.toMatch(/clamp\(2\.25rem/);
     expect(css).not.toMatch(/\.heroCopy/);
 
     render(<BaziPage />);
+    await waitFor(() => expect(listProfiles).toHaveBeenCalled());
 
     const heading = screen.getByRole("heading", { level: 1, name: "八字" });
     const line = heading.closest("header");
@@ -50,24 +54,32 @@ describe("ProductTaskPage input shell", () => {
     expect(line?.querySelector("a")).toHaveTextContent("返回");
   });
 
-  it("keeps the first screen as a centered 496px form without hanging progress or ModulePlan", () => {
+  it("uses Pattern 1: a 496px input column with a non-empty trust rail on desktop", async () => {
     const css = taskShellCss();
+    expect(css).toMatch(/\.inputLayout\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*496px\)\s*minmax\(0,\s*1fr\)[^}]*align-items:\s*start/s);
+    expect(css).toMatch(/@media\s*\(max-width:\s*63\.999rem\)[\s\S]*?\.inputLayout\s*\{[^}]*grid-template-columns:\s*1fr/s);
     expect(css).toMatch(/\.formPanel[\s\S]*?max-width:\s*var\(--container-form\)/);
-    expect(css).toMatch(/\.inputLayout\s*\{[^}]*justify-items:\s*center/s);
-    expect(css).not.toMatch(
-      /grid-template-columns:\s*minmax\(0,\s*var\(--container-form\)\)\s*minmax\(18rem/,
-    );
 
     render(<BaziPage />);
+    await waitFor(() => expect(listProfiles).toHaveBeenCalled());
 
     const form = screen.getByRole("form", { name: "八字任务输入" });
     expect(form.closest("[data-input-region]")).toHaveAttribute("data-input-region", "first-screen");
     expect(screen.queryByRole("navigation", { name: "八字任务进度" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("complementary", { name: /四柱与五行力量/ })).not.toBeInTheDocument();
     expect(screen.queryByText("待接入")).not.toBeInTheDocument();
     expect(screen.queryByText("八字任务输入")).not.toBeInTheDocument();
     expect(screen.queryByText("确认后生成盘面")).not.toBeInTheDocument();
     expect(screen.queryByText("确认后提交到对应计算服务")).not.toBeInTheDocument();
+
+    const trustRail = screen.getByRole("complementary", { name: "提交后的八字盘面预览" });
+    expect(trustRail).toBeVisible();
+    expect(trustRail).toHaveTextContent("提交后填入你的盘");
+    expect(trustRail).toHaveTextContent("示意骨架");
+    expect(trustRail).toHaveTextContent("verified_exact");
+    expect(trustRail).toHaveTextContent("《滴天髓》");
+    expect(trustRail).toHaveTextContent("1. 提交资料");
+    expect(trustRail).toHaveTextContent("2. 生成事实盘");
+    expect(trustRail).toHaveTextContent("3. 核对引文");
   });
 
   it("does not put 待接入 in official page, section, or Status titles", () => {
@@ -86,7 +98,8 @@ describe("ProductTaskPage input shell", () => {
 
     render(<BaziPage />);
 
-    expect(screen.getByRole("group", { name: /出生资料/ })).toBeVisible();
+    const birthGroup = await screen.findByRole("group", { name: /出生资料/ });
+    expect(birthGroup).toBeVisible();
     expect(screen.getByRole("group", { name: /出生日期/ })).toBeVisible();
     expect(screen.getByRole("group", { name: /出生时间/ })).toBeVisible();
     expect(screen.queryByRole("group", { name: /历法/ })).not.toBeInTheDocument();

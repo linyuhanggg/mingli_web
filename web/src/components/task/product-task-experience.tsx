@@ -115,6 +115,54 @@ function TaskProgress({ product, stage }: { product: ProductDefinition; stage: T
   );
 }
 
+function InputTrustRail({ product }: { product: ProductDefinition }) {
+  return (
+    <aside className={styles.inputTrustRail} aria-label={`提交后的${product.name}盘面预览`}>
+      <section className={styles.platePreview} aria-labelledby="task-plate-preview-title">
+        <div className={styles.trustRailHeader}>
+          <span>盘面骨架</span>
+          <h2 id="task-plate-preview-title">提交后填入你的盘</h2>
+          <p>以下干支只作示意骨架；真实盘面只使用提交后返回的版本化 ViewModel。</p>
+        </div>
+        <dl className={styles.plateSkeleton} aria-label="示意骨架，不是真实盘面">
+          <div>
+            <dt>年柱</dt>
+            <dd>甲子</dd>
+          </div>
+          <div>
+            <dt>月柱</dt>
+            <dd>乙丑</dd>
+          </div>
+          <div>
+            <dt>日柱</dt>
+            <dd>丙寅</dd>
+          </div>
+          <div>
+            <dt>时柱</dt>
+            <dd>丁卯</dd>
+          </div>
+        </dl>
+        <p className={styles.skeletonNote}>示意骨架：未知数据保持空态，不用默认干支冒充结果。</p>
+      </section>
+      <figure className={styles.citationSample}>
+        <figcaption>已核对引文样张</figcaption>
+        <blockquote>
+          <p>「天道有寒暖，发育万物，人道得之，不可过也。」</p>
+        </blockquote>
+        <cite>《滴天髓》通神论 · verified_exact</cite>
+      </figure>
+      <section className={styles.trustSteps} aria-labelledby="task-trust-steps-title">
+        <h2 id="task-trust-steps-title">三步看懂结果</h2>
+        <ol>
+          <li><strong>1. 提交资料</strong><span>只提交排盘必需字段。</span></li>
+          <li><strong>2. 生成事实盘</strong><span>先展示可核对的盘面事实。</span></li>
+          <li><strong>3. 核对引文</strong><span>解读句子绑定古籍证据。</span></li>
+        </ol>
+      </section>
+    </aside>
+  );
+}
+
 export function ProductTaskExperience({ product }: { product: ProductDefinition }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -653,6 +701,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             submitError={submitError}
             submitErrorState={submitErrorState}
           />
+          <InputTrustRail product={product} />
         </div>
       ) : null}
       {stage === "workbench" && product.id !== "bazi" && product.id !== "liuyao" ? (
