@@ -153,6 +153,12 @@
     "extension_output_bindings": [
       {
         "json_pointers": [
+          "/fact_extension/facts/runtime_core_facts"
+        ],
+        "name": "runtime_core_facts"
+      },
+      {
+        "json_pointers": [
           "/fact_extension/facts/dimension_facts"
         ],
         "name": "dimension_facts"
@@ -165,6 +171,7 @@
       }
     ],
     "extension_outputs": [
+      "runtime_core_facts",
       "dimension_facts",
       "timing_candidates"
     ],

@@ -35,8 +35,8 @@ SOURCE_SAMPLES = ROOT / "references" / "fixtures" / "algorithm-source-samples-v5
 EXPECTED_FIXTURE_SHA256 = (
     "791640f102d54c857e64a33bc405135125a7a20fb1959f90f1c7c489c3d69960"
 )
-EXPECTED_PROVIDER_ID = "mingli-master.liuren.v7"
-EXPECTED_PROVIDER_VERSION = "mingli-liuren-pipeline-v5-rule-evidence"
+EXPECTED_PROVIDER_ID = "mingli-master.liuren.v8"
+EXPECTED_PROVIDER_VERSION = "mingli-liuren-pipeline-v6-runtime-contract"
 SHARED_CALENDAR_DEPENDENCY_ID = "liuren.calendar.shared-sxtwl-four-pillars"
 SHARED_CALENDAR_DEPENDENCY_VERSION = (
     "sxtwl-2.0.7/exact-jie-boundary-v1.2/"
