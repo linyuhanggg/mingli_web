@@ -564,6 +564,54 @@ function observationFact(dimension: DaliurenDimensionId, value: unknown): string
   return RUNTIME_OBSERVATION_FACTS[dimension](value);
 }
 
+function evidenceObservation(value: unknown): unknown {
+  return isRecord(value) ? value.observation : null;
+}
+
+function moneyPresence(value: unknown): boolean | null {
+  if (!isMoneyObservation(value)) return null;
+  if ("wealth_presence" in value) return value.wealth_presence;
+  return "wealth_void_rows" in value ? true : null;
+}
+
+function workPresence(value: unknown): boolean | null {
+  if (!isWorkObservation(value)) return null;
+  return "target_presence" in value ? false : true;
+}
+
+function hasBooleanConflict(values: readonly (boolean | null)[]): boolean {
+  return values.includes(true) && values.includes(false);
+}
+
+function hasConflictingPresenceObservations(
+  value: Record<string, unknown>,
+  dimension: DaliurenDimensionId,
+  matched: readonly unknown[],
+  scopeBoundaries: readonly unknown[],
+): boolean {
+  if (!matched.length || !scopeBoundaries.length) return false;
+  const observations = [...matched, ...scopeBoundaries].map(evidenceObservation);
+  if (dimension === "money") {
+    const topLevelPresence =
+      typeof value.wealth_presence === "boolean" ? value.wealth_presence : null;
+    return hasBooleanConflict([topLevelPresence, ...observations.map(moneyPresence)]);
+  }
+  if (dimension === "work") {
+    const topLevelPresence =
+      typeof value.target_presence === "boolean" ? value.target_presence : null;
+    const targetRelative = readString(value, "target_relative");
+    const typedObservations = observations.filter(isWorkObservation);
+    return (
+      hasBooleanConflict([topLevelPresence, ...typedObservations.map(workPresence)]) ||
+      Boolean(
+        targetRelative &&
+          typedObservations.some((observation) => observation.target_relative !== targetRelative),
+      )
+    );
+  }
+  return false;
+}
+
 function parseSource(value: unknown): EvidenceSource | null {
   if (!isRecord(value)) return null;
   const pack = readString(value, "pack");
@@ -678,9 +726,12 @@ function parseDimension(value: unknown): EvidenceGroup | null {
   }
   if (!Array.isArray(evidence.matched) || !Array.isArray(evidence.scope_boundaries)) return null;
   if (
-    (dimension === "money" || dimension === "work") &&
-    evidence.matched.length > 0 &&
-    evidence.scope_boundaries.length > 0
+    hasConflictingPresenceObservations(
+      value,
+      dimension,
+      evidence.matched,
+      evidence.scope_boundaries,
+    )
   ) {
     return null;
   }

@@ -1417,6 +1417,47 @@ describe("大六壬 S3 M6a 维度证据", () => {
     expect(document.body).not.toHaveTextContent(/妻财未入三传|工作所取六亲|相对节奏|unresolved/);
   });
 
+  it("keeps compatible wealth-absence and middle-transmission void observations", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            money: dimension({
+              canonical_dimension: "money",
+              requested_dimension: "money",
+              source_rule_ids: ["LM-R10", "MINGLI-LR-SCOPE-02"],
+              wealth_presence: false,
+              wealth_stage_strength: [],
+              wealth_void_status: [],
+              wealth_general_modifier: [],
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    rule_id: "LM-R10",
+                    observation: { stage: "middle", branch: "未", is_xunkong: true },
+                  }),
+                ],
+                status: "matched",
+                scope_boundaries: [
+                  matchedEntry({
+                    rule_id: "MINGLI-LR-SCOPE-02",
+                    status: "scope_boundary",
+                    observation: { wealth_presence: false },
+                  }),
+                ],
+              }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    const money = within(panel()).getByRole("group", { name: "求财" });
+    expect(money).toHaveTextContent("妻财未入三传");
+    expect(money).toHaveTextContent("中传旬空：未");
+    expect(money).not.toHaveTextContent(/wealth_presence|stage|is_xunkong/);
+  });
+
   it.each([
     [
       "money",
