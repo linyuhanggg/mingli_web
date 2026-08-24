@@ -1419,6 +1419,98 @@ describe("大六壬 S3 M6a 维度证据", () => {
     expect(document.body).not.toHaveTextContent(/妻财未入三传|工作所取六亲|相对节奏|unresolved/);
   });
 
+  it.each([
+    [
+      "money",
+      dimension({
+        canonical_dimension: "money",
+        requested_dimension: "money",
+        source_rule_ids: ["LM-R20"],
+        wealth_presence: false,
+        wealth_stage_strength: [],
+        wealth_void_status: [],
+        wealth_general_modifier: [],
+        rule_evidence: evidence({
+          matched: [
+            matchedEntry({
+              rule_id: "LM-R20",
+              observation: {
+                wealth_presence: true,
+                wealth_stages: [
+                  { stage: "initial", branch: "酉", six_relative: "妻财", season_strength: "旺" },
+                ],
+              },
+            }),
+          ],
+          status: "scope_boundary",
+          scope_boundaries: [
+            matchedEntry({
+              rule_id: "LM-R20",
+              status: "scope_boundary",
+              observation: { wealth_presence: false },
+            }),
+          ],
+        }),
+      }),
+    ],
+    [
+      "work",
+      dimension({
+        canonical_dimension: "work",
+        requested_dimension: "work",
+        source_rule_ids: [],
+        target_relative: "官鬼",
+        target_contract_status: "bound",
+        target_presence: false,
+        target_strength: [],
+        target_general_modifier: [],
+        rule_evidence: evidence({
+          matched: [
+            matchedEntry({
+              rule_id: "LR-19",
+              observation: {
+                target_relative: "官鬼",
+                target_strength: [
+                  {
+                    stage: "initial",
+                    branch: "酉",
+                    six_relative: "官鬼",
+                    season_strength: "旺",
+                    is_xunkong: false,
+                  },
+                ],
+                target_general_modifier: [],
+              },
+            }),
+          ],
+          status: "scope_boundary",
+          scope_boundaries: [
+            matchedEntry({
+              rule_id: "LR-19",
+              status: "scope_boundary",
+              observation: {
+                target_relative: "官鬼",
+                target_presence: false,
+                target_contract_status: "bound",
+              },
+            }),
+          ],
+        }),
+      }),
+    ],
+  ])("fails closed when %s no-match boundaries conflict with matched facts", (_dimension, block) => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({ contradiction: block }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/妻财入传|妻财未入三传|工作所取六亲|入传状态/);
+  });
+
   it("fails closed when a location row breaks the typed candidate or source-boundary contract", () => {
     render(
       <DaliurenBoard

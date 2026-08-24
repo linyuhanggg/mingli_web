@@ -672,6 +672,13 @@ function parseDimension(value: unknown): EvidenceGroup | null {
     return null;
   }
   if (!Array.isArray(evidence.matched) || !Array.isArray(evidence.scope_boundaries)) return null;
+  if (
+    (dimension === "money" || dimension === "work") &&
+    evidence.matched.length > 0 &&
+    evidence.scope_boundaries.length > 0
+  ) {
+    return null;
+  }
   if (dimension === "location") {
     if (requested !== "location" && requested !== "location_direction") return null;
     const observation = { stage_branch_directions: value.stage_branch_directions };
