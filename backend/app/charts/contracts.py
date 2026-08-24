@@ -1965,7 +1965,7 @@ class DaliurenRuleSourceRef(ContractModel):
 class DaliurenRuleEvidenceEntry(ContractModel):
     activation_id: str = Field(min_length=1)
     dependency_group: str = Field(min_length=1)
-    fact_paths: tuple[str, ...] = Field(min_length=1)
+    fact_paths: tuple[Annotated[str, Field(min_length=1)], ...]
     observation: dict[str, object]
     polarity: str = Field(min_length=1)
     rule_id: str = Field(min_length=1)

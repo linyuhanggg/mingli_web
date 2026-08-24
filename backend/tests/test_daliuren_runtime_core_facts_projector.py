@@ -397,6 +397,47 @@ def test_daliuren_projector_rejects_empty_source_rule_ids() -> None:
     assert list(Draft202012Validator(schema).iter_errors(schema_payload))
 
 
+def test_daliuren_projector_allows_empty_rule_evidence_fact_paths() -> None:
+    payload = copy.deepcopy(_load_fixture())
+    payload["dimension_facts"]["relationship"]["rule_evidence"]["matched"][0][
+        "fact_paths"
+    ] = []
+
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.dimension_facts is not None
+    matched = view_model.core_facts.dimension_facts[
+        "relationship"
+    ].rule_evidence.matched
+    assert matched[0].fact_paths == ()
+
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    Draft202012Validator(schema).validate(view_model.model_dump(mode="json"))
+
+
+def test_daliuren_projector_rejects_empty_rule_evidence_fact_path_entries() -> None:
+    payload = copy.deepcopy(_load_fixture())
+    payload["dimension_facts"]["relationship"]["rule_evidence"]["matched"][0][
+        "fact_paths"
+    ] = [""]
+
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is None
+
+    schema_payload = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    schema_payload["core_facts"]["dimension_facts"]["relationship"][
+        "rule_evidence"
+    ]["matched"][0]["fact_paths"] = [""]
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert list(Draft202012Validator(schema).iter_errors(schema_payload))
+
+
 def test_daliuren_projector_fails_closed_when_adjudication_is_not_true() -> None:
     payload = copy.deepcopy(_load_fixture())
     payload["dimension_facts"]["relationship"]["rule_evidence"][
