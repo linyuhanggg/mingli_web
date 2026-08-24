@@ -23,9 +23,9 @@ function readText(value: unknown): string | null {
 function methodRows(value: CoreFacts["lesson_method"]): readonly MethodRow[] {
   if (!value) return [];
   const rows = [
-    { label: "课式", value: readText(value.table_label) ?? readText(value.primary) },
+    { label: "课式", value: readText(value.primary) },
     { label: "发用", value: readText(value.use_method) },
-    { label: "三传", value: readText(value.calculated_transmissions) ?? readText(value.table_transmissions) },
+    { label: "三传", value: readText(value.calculated_transmissions) },
   ];
   return rows.filter((row): row is MethodRow => Boolean(row.value));
 }

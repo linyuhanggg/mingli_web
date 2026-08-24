@@ -122,7 +122,13 @@ const TARGET_GENERAL_MODIFIER_UNAVAILABLE_KEYS = [...GENERAL_LANDING_UNAVAILABLE
 type EvidenceEntry = {
   ruleId: string;
   fact: string;
-  pack: string | null;
+  sources: readonly EvidenceSource[];
+};
+
+type EvidenceSource = {
+  pack: string;
+  ruleId: string;
+  quoteId: string | null;
   anchor: string | null;
 };
 
@@ -480,18 +486,31 @@ function observationFact(dimension: string, value: unknown): string | null {
   return firstAllowedText(value);
 }
 
+function parseSource(value: unknown): EvidenceSource | null {
+  if (!isRecord(value)) return null;
+  const pack = readString(value, "pack");
+  const ruleId = readString(value, "rule_id");
+  if (!pack || !ruleId) return null;
+  return {
+    pack,
+    ruleId,
+    quoteId: readString(value, "quote_id"),
+    anchor: readString(value, "source_anchor"),
+  };
+}
+
 function parseEntry(value: unknown, dimension: string): EvidenceEntry | null {
   if (!isRecord(value)) return null;
   const ruleId = readString(value, "rule_id");
   const fact = observationFact(dimension, value.observation);
   if (!ruleId || !fact) return null;
   const refs = value.source_refs;
-  const first = Array.isArray(refs) && refs.length > 0 ? refs[0] : null;
   return {
     ruleId,
     fact,
-    pack: readString(first, "pack"),
-    anchor: readString(first, "source_anchor"),
+    sources: Array.isArray(refs)
+      ? refs.map(parseSource).filter((source): source is EvidenceSource => source !== null)
+      : [],
   };
 }
 
@@ -536,19 +555,25 @@ export function DaliurenDimensionEvidence({ dimensionFacts = null }: DaliurenDim
         <section className={styles.group} aria-label={group.dimension} key={group.dimension} role="group">
           <h3 className={styles.heading}>{group.dimension}</h3>
           <ul className={styles.list}>
-            {group.entries.map((entry) => (
-              <li className={styles.item} key={`${group.dimension}-${entry.ruleId}-${entry.fact}`}>
-                {entry.anchor ? (
+            {group.entries.map((entry, entryIndex) => (
+              <li className={styles.item} key={`${group.dimension}-${entry.ruleId}-${entry.fact}-${entryIndex}`}>
+                {entry.sources.length ? (
                   <details className={styles.drawer}>
                     <summary className={styles.summary}>
-                      <span className={styles.badge} data-badge="evidence">
-                        可核验
-                      </span>
                       <span className={styles.rule}>{entry.ruleId}</span>
                       <span className={styles.fact}>{entry.fact}</span>
                     </summary>
-                    {entry.pack ? <p className={styles.source}>{entry.pack}</p> : null}
-                    <p className={styles.source}>{entry.anchor}</p>
+                    <ol className={styles.sources} aria-label="来源">
+                      {entry.sources.map((source, sourceIndex) => (
+                        <li
+                          className={styles.source}
+                          data-source-ref={sourceIndex}
+                          key={`${source.pack}-${source.ruleId}-${source.quoteId ?? ""}-${source.anchor ?? ""}-${sourceIndex}`}
+                        >
+                          {[source.pack, source.ruleId, source.quoteId, source.anchor].filter(Boolean).join(" · ")}
+                        </li>
+                      ))}
+                    </ol>
                   </details>
                 ) : (
                   <div className={styles.plain}>

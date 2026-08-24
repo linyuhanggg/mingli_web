@@ -5,12 +5,72 @@ import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { DaliurenBoard } from "@/components/readings/daliuren-board";
-import type { DaliurenChartViewModel, DaliurenNoblePerson } from "@/view-models/registry";
+import type {
+  DaliurenChartViewModel,
+  DaliurenLessonMethod,
+  DaliurenNoblePerson,
+  DaliurenRuleSourceRef,
+} from "@/view-models/registry";
 
 afterEach(cleanup);
 
 type CoreFacts = NonNullable<DaliurenChartViewModel["core_facts"]>;
 type TimingCandidate = NonNullable<CoreFacts["timing_candidates"]>[number];
+
+const LESSON_METHOD_KEYS = [
+  "calculated_transmissions",
+  "calculation_source",
+  "direct_direction",
+  "primary",
+  "selected_initial",
+  "source_anchor",
+  "use_method",
+] as const satisfies readonly (keyof DaliurenLessonMethod)[];
+const LESSON_METHOD_KEYS_ARE_EXHAUSTIVE: Exclude<
+  keyof DaliurenLessonMethod,
+  (typeof LESSON_METHOD_KEYS)[number]
+> extends never
+  ? true
+  : never = true;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function requiredString(value: Record<string, unknown>, key: string): string {
+  const field = value[key];
+  if (typeof field !== "string" || !field.trim()) {
+    throw new Error(`Daliuren Runtime golden fixture has invalid ${key}`);
+  }
+  return field;
+}
+
+function goldenLessonMethod(): DaliurenLessonMethod {
+  const payload: unknown = JSON.parse(
+    readFileSync(resolve(process.cwd(), "../backend/tests/fixtures/liuren-runtime-core-facts-v1.json"), "utf8"),
+  );
+  if (!isRecord(payload) || !isRecord(payload.lesson_method)) {
+    throw new Error("Daliuren Runtime golden fixture has no lesson_method");
+  }
+  const value = payload.lesson_method;
+  const actualKeys = Object.keys(value).sort();
+  const expectedKeys = [...LESSON_METHOD_KEYS].sort();
+  if (actualKeys.length !== expectedKeys.length || actualKeys.some((key, index) => key !== expectedKeys[index])) {
+    throw new Error("Daliuren Runtime golden lesson_method does not match the stable seven-field contract");
+  }
+  if (value.direct_direction !== null && typeof value.direct_direction !== "string") {
+    throw new Error("Daliuren Runtime golden fixture has invalid direct_direction");
+  }
+  return {
+    calculated_transmissions: requiredString(value, "calculated_transmissions"),
+    calculation_source: requiredString(value, "calculation_source"),
+    direct_direction: value.direct_direction,
+    primary: requiredString(value, "primary"),
+    selected_initial: requiredString(value, "selected_initial"),
+    source_anchor: requiredString(value, "source_anchor"),
+    use_method: requiredString(value, "use_method"),
+  };
+}
 
 function emptyFacts(overrides: Partial<CoreFacts> = {}): CoreFacts {
   return {
@@ -50,20 +110,10 @@ function lessonMethod(overrides: Partial<CoreFacts["lesson_method"]> = {}): Core
   return {
     calculated_transmissions: "初传酉，中传戌，末传亥",
     calculation_source: "runtime_core_facts",
-    direct_candidates: ["酉"],
     direct_direction: null,
     primary: "贼克课",
-    remote_day_over_god: [],
-    remote_god_over_day: [],
-    rule_order: ["贼克"],
     selected_initial: "酉",
-    selection_trace: {},
     source_anchor: "references/books/san-shi/liuren-miben/rules.md#LM-METHOD",
-    source_label_variants: [],
-    table_disagreement: false,
-    table_label: "贼克课·下贼上发用",
-    table_result_disagreement: false,
-    table_transmissions: "初传酉，中传戌，末传亥",
     use_method: "下贼上发用",
     ...overrides,
   };
@@ -215,7 +265,7 @@ describe("大六壬 S3 课传盘面", () => {
           core_facts: emptyFacts({
             structural_patterns: ["元首课"],
             day_hour: { day: "丙午", hour: "卯" },
-            lesson_method: lessonMethod({ table_label: "贼克课" }),
+            lesson_method: lessonMethod(),
           }),
         })}
       />,
@@ -661,30 +711,28 @@ describe("大六壬 S3 M5 课式与传法", () => {
     expect(screen.queryByText("旧传法")).not.toBeInTheDocument();
   });
 
-  it("reads the first allowed non-empty lesson_method string and ignores later keys or extra fields", () => {
+  it("mirrors and renders the Runtime golden seven-field lesson_method contract", () => {
+    const method = goldenLessonMethod();
     render(
       <DaliurenBoard
         view={chart({
           core_facts: emptyFacts({
-            lesson_method: lessonMethod({
-              note: "备注课",
-              extra: "忽略键",
-            }),
+            lesson_method: method,
           }),
         })}
       />,
     );
 
     const panel = methodPanel();
+    expect(LESSON_METHOD_KEYS_ARE_EXHAUSTIVE).toBe(true);
+    expect(Object.keys(method).sort()).toEqual([...LESSON_METHOD_KEYS].sort());
     expect(within(panel).getByText("课式")).toBeVisible();
-    expect(within(panel).getByText("贼克课·下贼上发用")).toBeVisible();
+    expect(within(panel).getByText("伏吟")).toBeVisible();
     expect(within(panel).getByText("发用")).toBeVisible();
-    expect(within(panel).getByText("下贼上发用")).toBeVisible();
+    expect(within(panel).getByText("伏吟有克/重审")).toBeVisible();
     expect(within(panel).getByText("三传")).toBeVisible();
-    expect(within(panel).getByText("初传酉，中传戌，末传亥")).toBeVisible();
+    expect(within(panel).getByText("辰酉卯")).toBeVisible();
     expect(within(panel).queryByText("传法")).not.toBeInTheDocument();
-    expect(within(panel).queryByText("备注课")).not.toBeInTheDocument();
-    expect(within(panel).queryByText("忽略键")).not.toBeInTheDocument();
     expect(screen.queryByText("display_text")).not.toBeInTheDocument();
     expect(screen.queryByText("lesson_method")).not.toBeInTheDocument();
     expect(screen.queryByText(/GAP-DL/)).not.toBeInTheDocument();
@@ -699,8 +747,6 @@ describe("大六壬 S3 M5 课式与传法", () => {
               lesson_method: lessonMethod({
                 calculated_transmissions: "",
                 primary: "",
-                table_label: "",
-                table_transmissions: "",
                 use_method: "",
               }),
               structural_patterns: null,
@@ -753,7 +799,7 @@ describe("大六壬 S3 M5 课式与传法", () => {
   it("keeps loading and silhouette modes free of method copy", () => {
     const view = chart({
       core_facts: emptyFacts({
-        lesson_method: lessonMethod({ table_label: "贼克课" }),
+        lesson_method: lessonMethod(),
         structural_patterns: ["元首课"],
       }),
     });
@@ -792,6 +838,36 @@ describe("大六壬 S3 M5 课式与传法", () => {
 
 describe("大六壬 S3 M6a 维度证据", () => {
   type FactObject = NonNullable<CoreFacts["dimension_facts"]>;
+
+  function runtimeRuleSourceRefs(
+    ruleKey: "state_general_landing_correspondence" | "wealth_void_miben",
+  ): readonly DaliurenRuleSourceRef[] {
+    const payload: unknown = JSON.parse(
+      readFileSync(
+        resolve(process.cwd(), "../core/mingli-master/references/inference/liuren-rules-v1.json"),
+        "utf8",
+      ),
+    );
+    if (!isRecord(payload) || !isRecord(payload.rules) || !isRecord(payload.rules[ruleKey])) {
+      throw new Error(`Daliuren Runtime rules have no ${ruleKey}`);
+    }
+    const refs = payload.rules[ruleKey].source_refs;
+    if (!Array.isArray(refs)) throw new Error(`Daliuren Runtime rule ${ruleKey} has no source_refs`);
+    return refs.map((ref) => {
+      if (!isRecord(ref)) throw new Error(`Daliuren Runtime rule ${ruleKey} has an invalid source ref`);
+      const pack = requiredString(ref, "pack");
+      const ruleId = requiredString(ref, "rule_id");
+      const quoteId = typeof ref.quote_id === "string" && ref.quote_id.trim() ? ref.quote_id : undefined;
+      const sourceAnchor =
+        typeof ref.source_anchor === "string" && ref.source_anchor.trim() ? ref.source_anchor : undefined;
+      return {
+        pack,
+        rule_id: ruleId,
+        ...(quoteId ? { quote_id: quoteId } : {}),
+        ...(sourceAnchor ? { source_anchor: sourceAnchor } : {}),
+      };
+    });
+  }
 
   function goldenDimensionFacts(): FactObject {
     const payload = JSON.parse(
@@ -1288,8 +1364,10 @@ describe("大六壬 S3 M6a 维度证据", () => {
     expect(within(block).getByText("应期在传支")).toBeVisible();
   });
 
-  it("shows pack and source_anchor as-is, gold only when an anchor exists", async () => {
+  it("preserves every Runtime source ref in order without claiming exact verification", async () => {
     const user = userEvent.setup();
+    const stateSources = runtimeRuleSourceRefs("state_general_landing_correspondence");
+    const moneySources = runtimeRuleSourceRefs("wealth_void_miben");
     render(
       <DaliurenBoard
         view={chart({
@@ -1299,12 +1377,13 @@ describe("大六壬 S3 M6a 维度证据", () => {
                 matched: [
                   matchedEntry({
                     rule_id: "LM-R01",
-                    observation: { label: "类象已核验" },
+                    observation: { label: "类象规则命中" },
+                    source_refs: stateSources,
                   }),
                   matchedEntry({
-                    rule_id: "LR-17",
-                    observation: { name: "主客分向" },
-                    source_refs: [{ pack: "san-shi/liuren-zhiyin", rule_id: "LR-17" }],
+                    rule_id: "LM-R20",
+                    observation: { name: "求财规则命中" },
+                    source_refs: moneySources,
                   }),
                 ],
               }),
@@ -1315,17 +1394,23 @@ describe("大六壬 S3 M6a 维度证据", () => {
     );
 
     const block = panel();
-    const withAnchor = within(block).getByText("LM-R01").closest("li");
-    const withoutAnchor = within(block).getByText("LR-17").closest("li");
-    expect(withAnchor?.querySelector("[data-badge='evidence']")).toBeTruthy();
-    expect(withoutAnchor?.querySelector("[data-badge='evidence']")).toBeFalsy();
-    expect(within(withoutAnchor as HTMLElement).queryByRole("button")).not.toBeInTheDocument();
+    const stateEntry = within(block).getByText("类象规则命中").closest("li");
+    const moneyEntry = within(block).getByText("求财规则命中").closest("li");
+    await user.click((stateEntry as HTMLElement).querySelector("summary") as HTMLElement);
+    await user.click((moneyEntry as HTMLElement).querySelector("summary") as HTMLElement);
 
-    await user.click((withAnchor as HTMLElement).querySelector("summary") as HTMLElement);
-    expect(within(withAnchor as HTMLElement).getByText("san-shi/liuren-miben")).toBeVisible();
-    expect(within(withAnchor as HTMLElement).getByText("rules.md#L10-L16")).toBeVisible();
-    expect(within(block).queryByText("大六壬秘本")).not.toBeInTheDocument();
-    expect(within(withoutAnchor as HTMLElement).queryByText("san-shi/liuren-zhiyin")).not.toBeInTheDocument();
+    const stateRows = [...(stateEntry as HTMLElement).querySelectorAll("[data-source-ref]")];
+    expect(stateRows.map((row) => row.textContent)).toEqual([
+      "san-shi/liuren-miben · LM-R01 · fulltext.md#L82-L359",
+      "san-shi/liuren-miben · LM-R01 · fulltext.md#L600-L771",
+    ]);
+    const moneyRows = [...(moneyEntry as HTMLElement).querySelectorAll("[data-source-ref]")];
+    expect(moneyRows.map((row) => row.textContent)).toEqual([
+      "san-shi/liuren-miben · LM-R20 · LM-Q072 · fulltext.md#L4917",
+      "san-shi/liuren-miben · LM-R10 · LM-Q051 · fulltext.md#L3568",
+    ]);
+    expect(block).not.toHaveTextContent(/可核验|原文/);
+    expect(block.querySelector("[data-badge='evidence']")).toBeNull();
   });
 
   it("hides the whole block when nothing is renderable", () => {
@@ -1371,7 +1456,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
     const experience = readFileSync(resolve(process.cwd(), "src/components/task/product-task-experience.tsx"), "utf8");
     expect(boardSource).toContain("daliuren-dimension-evidence");
     expect(evidenceSource).not.toMatch(/bazi-chart|liuyao-line-tower|runtime-chart|product-task-experience|GAP-DL/);
-    expect(css).toMatch(/--color-evidence/);
+    expect(css).not.toMatch(/--color-evidence/);
     expect(css).toMatch(/min-height:\s*var\(--target-min\)/);
     expect(css).not.toMatch(/color-success|color-danger|surface-success|surface-danger/);
     expect(css).not.toMatch(/linear-gradient|radial-gradient|box-shadow:\s*0 0/);
@@ -1415,7 +1500,7 @@ describe("大六壬 S3 M7 免费摘要 + 深读入口", () => {
         view={chart({
           core_facts: emptyFacts({
             structural_patterns: ["元首课"],
-            lesson_method: lessonMethod({ table_label: "贼克课" }),
+            lesson_method: lessonMethod(),
             timing_candidates: [candidate()],
           }),
         })}
@@ -1486,7 +1571,7 @@ describe("大六壬 S3 M7 免费摘要 + 深读入口", () => {
           lessons: blankLessons(),
           transmissions: blankTransmissions(),
           core_facts: emptyFacts({
-            lesson_method: lessonMethod({ table_label: "贼克课" }),
+            lesson_method: lessonMethod(),
             timing_candidates: [candidate()],
           }),
         })}

@@ -813,22 +813,12 @@ export type DaliurenGeneralCell = {
 export type DaliurenLessonMethod = Readonly<{
   readonly calculated_transmissions: string;
   readonly calculation_source: string;
-  readonly direct_candidates: ReadonlyArray<string>;
   readonly direct_direction: string | null;
   readonly primary: string;
-  readonly remote_day_over_god: ReadonlyArray<string>;
-  readonly remote_god_over_day: ReadonlyArray<string>;
-  readonly rule_order: ReadonlyArray<string>;
   readonly selected_initial: string;
-  readonly selection_trace: Readonly<Record<string, unknown>>;
   readonly source_anchor: string;
-  readonly source_label_variants: ReadonlyArray<unknown>;
-  readonly table_disagreement: boolean;
-  readonly table_label: string;
-  readonly table_result_disagreement: boolean;
-  readonly table_transmissions: string;
   readonly use_method: string;
-}> & Readonly<Record<string, unknown>>;
+}>;
 
 export type DaliurenRuleSourceRef = {
   readonly pack: string;
