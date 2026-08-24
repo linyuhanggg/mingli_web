@@ -64,7 +64,11 @@ class ProvisionRuntimeTests(unittest.TestCase):
             "zhconv==1.4.3",
         ):
             self.assertIn(requirement, text)
-        self.assertEqual(text.count("--hash=sha256:"), 6)
+        self.assertIn(
+            "c458b6d084f9b935061bc36216e8a69a7e293a2f1e68bf956dcd9e6cbcd143f5",
+            text,
+        )
+        self.assertEqual(text.count("--hash=sha256:"), 7)
         requirements_txt = lock.with_name("requirements.txt").read_text(encoding="utf-8")
         self.assertIn("zhconv==1.4.3", requirements_txt.splitlines())
         build_lock = lock.with_name("requirements-runtime-build.lock")
