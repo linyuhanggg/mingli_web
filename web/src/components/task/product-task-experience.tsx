@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Status } from "@/components/ui/status";
+import { ReadingResult } from "@/components/readings/reading-result";
 import { WorkbenchShell } from "@/components/workbench/workbench-shell";
 import {
   confirmProfileDraft,
@@ -127,6 +128,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(null);
   const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(null);
+  const [liuyaoPreviewReadingId, setLiuyaoPreviewReadingId] = useState<string | null>(null);
   const [savedProfiles, setSavedProfiles] = useState<ProfileSummary[]>([]);
   const [savedProfilesLoading, setSavedProfilesLoading] = useState(
     shouldLoadProfiles,
@@ -477,7 +479,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         });
         intentKeyRef.current = intent;
         const response = await startLiuyaoReading(payload, intent.key);
-        router.push(`/app/readings/${response.reading_version_id}`);
+        setLiuyaoPreviewReadingId(response.reading_version_id);
+        setStage("workbench");
         return;
       }
 
@@ -652,7 +655,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           />
         </div>
       ) : null}
-      {stage === "workbench" && product.id !== "bazi" ? (
+      {stage === "workbench" && product.id !== "bazi" && product.id !== "liuyao" ? (
         <WorkbenchShell
           product={product}
           onBack={() => {
@@ -664,6 +667,48 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             setStage("input");
           }}
         />
+      ) : null}
+      {stage === "workbench" && product.id === "liuyao" && !liuyaoPreviewReadingId ? (
+        <Status
+          actions={(
+            <button
+              type="button"
+              onClick={() => {
+                setSubmitError(null);
+                setStage("input");
+              }}
+            >
+              返回录入
+            </button>
+          )}
+          description="当前没有已确认的六爻任务句柄，不会伪造盘面。"
+          state="empty"
+          title="还没有可恢复的盘面"
+        />
+      ) : null}
+      {stage === "workbench" && product.id === "liuyao" && liuyaoPreviewReadingId ? (
+        <>
+          <Status
+            actions={(
+              <button
+                type="button"
+                onClick={() => {
+                  profileVersionRef.current = null;
+                  intentKeyRef.current = null;
+                  setLiuyaoPreviewReadingId(null);
+                  setSubmitError(null);
+                  setStage("input");
+                }}
+              >
+                返回录入
+              </button>
+            )}
+            description="盘面留在本页。登录只用于保存、历史和深读。"
+            state="success"
+            title="六爻盘面"
+          />
+          <ReadingResult readingId={liuyaoPreviewReadingId} />
+        </>
       ) : null}
       {stage === "workbench" && product.id === "bazi" && !baziPreviewReadingId ? (
         <Status
