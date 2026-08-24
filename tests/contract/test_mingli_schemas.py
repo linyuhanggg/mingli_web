@@ -352,3 +352,28 @@ def test_state_token_exists_only_in_runtime_protocol_schemas() -> None:
     assert "state_token" in result_fields
     assert "state_token" not in candidate_fields
     assert "state_token" not in output_fields
+
+
+def test_daliuren_chart_schema_rejects_transmission_method_alias(
+    reject_schema: Callable[[str, object], None],
+) -> None:
+    payload = {
+        "schema_version": "daliuren-chart/v1",
+        "subject_ref": "fixture:probe",
+        "question": "fixture question",
+        "lessons": [
+            {"lesson_id": "1", "upper": "辰", "lower": "庚"},
+            {"lesson_id": "2", "upper": "子", "lower": "辰"},
+            {"lesson_id": "3", "upper": "辰", "lower": "申"},
+            {"lesson_id": "4", "upper": "子", "lower": "辰"},
+        ],
+        "transmissions": [
+            {"stage": "initial", "branch": "子", "general": "青龙"},
+            {"stage": "middle", "branch": "申", "general": "腾蛇"},
+            {"stage": "final", "branch": "辰", "general": "玄武"},
+        ],
+        "core_facts": {
+            "transmission_method": {"primary": "伏吟"},
+        },
+    }
+    reject_schema("views/daliuren-chart-v1.schema.json", payload)

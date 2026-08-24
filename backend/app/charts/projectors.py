@@ -4,6 +4,8 @@ import math
 from collections.abc import Mapping
 from typing import Any, Final, Literal, Protocol, cast
 
+from pydantic import ValidationError
+
 from app.charts.contracts import (
     VIEW_MODEL_TYPES,
     ArtSignal,
@@ -54,7 +56,6 @@ from app.charts.contracts import (
     DaliurenChartV1,
     DaliurenCoreFacts,
     DaliurenLesson,
-    DaliurenTimingCandidate,
     DaliurenTransmission,
     DimensionSynthesis,
     ElementBalance,
@@ -5257,118 +5258,67 @@ def project_qimen_view_model(
     )
 
 
-def _daliuren_core_facts(facts: object) -> DaliurenCoreFacts | None:
-    kwargs: dict[str, object] = {}
-    mapping_fields = (
-        "day_hour",
-        "dimension_facts",
-        "lesson_method",
-        "month_general",
-        "noble_person",
-        "transmission_method",
-        "xunkong",
+_DALIUREN_RUNTIME_CORE_FACTS_VERSION = "mingli-liuren-runtime-core-facts-v1"
+_DALIUREN_RUNTIME_REQUIRED_FIELDS = (
+    "day_hour",
+    "earth_plate",
+    "heaven_plate",
+    "heavenly_generals",
+    "month_general",
+    "noble_person",
+    "lesson_method",
+    "four_lessons",
+    "three_transmissions",
+    "plate_offset",
+    "xunkong",
+    "structural_patterns",
+    "dimension_facts",
+)
+_DALIUREN_RUNTIME_OPTIONAL_FIELDS = ("timing_candidates",)
+_DALIUREN_RUNTIME_ENVELOPE_FIELDS = frozenset(
+    {
+        "schema_version",
+        *_DALIUREN_RUNTIME_REQUIRED_FIELDS,
+        *_DALIUREN_RUNTIME_OPTIONAL_FIELDS,
+    }
+)
+_DALIUREN_RUNTIME_TRANSMISSION_FIELDS = frozenset(
+    {"stage", "branch", "heavenly_general", "six_relative"}
+)
+_DALIUREN_RUNTIME_TRANSMISSION_STAGES = ("initial", "middle", "final")
+
+
+def _daliuren_runtime_core_facts_payload(facts: object) -> Mapping[str, object] | None:
+    """Read the additive Runtime contract from the published brief fact."""
+
+    fact = _brief_fact_value(facts, "runtime_core_facts")
+    if fact is None:
+        return None
+    payload = fact[1]
+    if not isinstance(payload, Mapping):
+        return None
+    if payload.get("schema_version") != _DALIUREN_RUNTIME_CORE_FACTS_VERSION:
+        return None
+    if set(payload) - _DALIUREN_RUNTIME_ENVELOPE_FIELDS:
+        return None
+    if "timing_candidates" in payload and not isinstance(
+        payload["timing_candidates"], list
+    ):
+        return None
+    return payload
+
+
+def _daliuren_required_fields_present(payload: Mapping[str, object]) -> bool:
+    """Reject v1 Runtime bundles that omit a required contract field."""
+
+    return all(
+        field in payload and payload[field] is not None
+        for field in _DALIUREN_RUNTIME_REQUIRED_FIELDS
     )
-    for field in mapping_fields:
-        fact = _brief_fact_value(facts, field)
-        if fact is None:
-            continue
-        parsed = _mapping_copy(fact[1])
-        if parsed is not None:
-            kwargs[field] = parsed
-
-    for field in ("heaven_plate", "heavenly_generals"):
-        fact = _brief_fact_value(facts, field)
-        if fact is None:
-            continue
-        parsed_rows = _mapping_tuple(fact[1])
-        if parsed_rows is not None:
-            kwargs[field] = parsed_rows
-
-    timing_fact = _brief_fact_value(facts, "timing_candidates")
-    if timing_fact is not None:
-        timing_value = timing_fact[1]
-        if not isinstance(timing_value, list):
-            return None
-        timing_candidates: list[DaliurenTimingCandidate] = []
-        for raw in timing_value:
-            if not isinstance(raw, Mapping):
-                return None
-            text_fields = (
-                raw.get("anchor_earth_branch"),
-                raw.get("branch"),
-                raw.get("solar_date"),
-                raw.get("day_ganzhi"),
-                raw.get("source_pack"),
-            )
-            days_after_cast = raw.get("days_after_cast")
-            if (
-                raw.get("id") != "initial_group_upper_candidate"
-                or raw.get("role") != "event_response_candidate"
-                or raw.get("source_rule") != "LM-R21"
-                or raw.get("candidate_not_guarantee") is not True
-                or not all(
-                    isinstance(item, str) and item.strip() for item in text_fields
-                )
-                or not isinstance(days_after_cast, int)
-                or isinstance(days_after_cast, bool)
-                or not 1 <= days_after_cast <= 12
-            ):
-                return None
-            timing_candidates.append(
-                DaliurenTimingCandidate(
-                    id="initial_group_upper_candidate",
-                    role="event_response_candidate",
-                    anchor_earth_branch=cast(str, text_fields[0]),
-                    branch=cast(str, text_fields[1]),
-                    solar_date=cast(str, text_fields[2]),
-                    day_ganzhi=cast(str, text_fields[3]),
-                    days_after_cast=days_after_cast,
-                    source_pack=cast(str, text_fields[4]),
-                    source_rule="LM-R21",
-                    candidate_not_guarantee=True,
-                )
-            )
-        kwargs["timing_candidates"] = tuple(timing_candidates)
-
-    for field in ("earth_plate", "structural_patterns"):
-        fact = _brief_fact_value(facts, field)
-        if fact is None:
-            continue
-        parsed_strings = _text_tuple(fact[1])
-        if parsed_strings is not None:
-            kwargs[field] = parsed_strings
-
-    plate_offset = _brief_fact_value(facts, "plate_offset")
-    if plate_offset is not None and isinstance(plate_offset[1], int) and not isinstance(
-        plate_offset[1], bool
-    ):
-        kwargs["plate_offset"] = plate_offset[1]
-
-    return DaliurenCoreFacts.model_validate(kwargs) if kwargs else None
 
 
-def project_daliuren_view_model(
-    brief: Mapping[str, object] | None,
-) -> DaliurenChartV1 | None:
-    """Project the four lessons and three transmissions from Runtime."""
-
-    if brief is None or not _capability_is(brief, "liuren"):
-        return None
-    facts = brief.get("facts")
-    lesson_fact = _brief_fact_value(facts, "four_lessons")
-    transmission_fact = _brief_fact_value(facts, "three_transmissions")
-    subject_ref = _subject_ref(brief, facts)
-    question = _question(brief)
-    if (
-        lesson_fact is None
-        or transmission_fact is None
-        or subject_ref is None
-        or question is None
-    ):
-        return None
-    raw_lessons = lesson_fact[1]
-    raw_transmissions = transmission_fact[1]
-    if not isinstance(raw_lessons, list) or not isinstance(raw_transmissions, list):
+def _daliuren_lessons_from_runtime(raw_lessons: object) -> tuple[DaliurenLesson, ...] | None:
+    if not isinstance(raw_lessons, list):
         return None
     lessons: list[DaliurenLesson] = []
     for offset, raw in enumerate(raw_lessons, start=1):
@@ -5381,35 +5331,112 @@ def project_daliuren_view_model(
             return None
         if not all(isinstance(item, str) and item.strip() for item in (upper, lower)):
             return None
-        upper = cast(str, upper)
-        lower = cast(str, lower)
-        lessons.append(DaliurenLesson(lesson_id=str(lesson_id), upper=upper, lower=lower))
+        lessons.append(
+            DaliurenLesson(
+                lesson_id=str(lesson_id),
+                upper=cast(str, upper),
+                lower=cast(str, lower),
+            )
+        )
+    if len(lessons) != 4:
+        return None
+    return tuple(lessons)
+
+
+def _daliuren_transmissions_from_runtime(
+    raw_transmissions: object,
+) -> tuple[DaliurenTransmission, ...] | None:
+    if not isinstance(raw_transmissions, list):
+        return None
+    if len(raw_transmissions) != len(_DALIUREN_RUNTIME_TRANSMISSION_STAGES):
+        return None
     transmissions: list[DaliurenTransmission] = []
-    for raw in raw_transmissions:
-        if not isinstance(raw, Mapping):
+    for expected_stage, raw in zip(
+        _DALIUREN_RUNTIME_TRANSMISSION_STAGES,
+        raw_transmissions,
+        strict=True,
+    ):
+        if not isinstance(raw, Mapping) or set(raw) != _DALIUREN_RUNTIME_TRANSMISSION_FIELDS:
             return None
         stage = raw.get("stage")
         branch = raw.get("branch")
-        general = raw.get("heavenly_general", raw.get("general"))
-        if stage not in {"initial", "middle", "final"}:
+        general = raw.get("heavenly_general")
+        six_relative = raw.get("six_relative")
+        if stage != expected_stage:
             return None
-        if not all(isinstance(item, str) and item.strip() for item in (branch, general)):
+        if not all(
+            isinstance(item, str) and item.strip()
+            for item in (branch, general, six_relative)
+        ):
             return None
-        branch = cast(str, branch)
-        general = cast(str, general)
         transmissions.append(
-            DaliurenTransmission(stage=stage, branch=branch, general=general)
+            DaliurenTransmission(
+                stage=cast(Literal["initial", "middle", "final"], stage),
+                branch=cast(str, branch),
+                general=cast(str, general),
+            )
         )
-    if len(lessons) != 4 or len(transmissions) != 3:
+    return tuple(transmissions)
+
+
+def _daliuren_core_facts_from_runtime(
+    payload: Mapping[str, object],
+) -> DaliurenCoreFacts | None:
+    """Project pinned core facts from the validated Runtime bundle."""
+
+    required_core_fields = (
+        "day_hour",
+        "dimension_facts",
+        "earth_plate",
+        "heaven_plate",
+        "heavenly_generals",
+        "lesson_method",
+        "month_general",
+        "noble_person",
+        "plate_offset",
+        "structural_patterns",
+        "xunkong",
+    )
+    # Required Runtime fields must be handed to Pydantic unchanged. Filtering
+    # by shape here would silently turn malformed required facts into defaults.
+    kwargs = {field: payload[field] for field in required_core_fields}
+    if "timing_candidates" in payload:
+        kwargs["timing_candidates"] = payload["timing_candidates"]
+    try:
+        return DaliurenCoreFacts.model_validate(kwargs)
+    except ValidationError:
         return None
-    order = {"initial": 0, "middle": 1, "final": 2}
-    transmissions.sort(key=lambda item: order[item.stage])
+
+
+def project_daliuren_view_model(
+    brief: Mapping[str, object] | None,
+) -> DaliurenChartV1 | None:
+    """Project daliuren-chart/v1 from mingli-liuren-runtime-core-facts-v1 only."""
+
+    if brief is None or not _capability_is(brief, "liuren"):
+        return None
+    facts = brief.get("facts")
+    runtime_core = _daliuren_runtime_core_facts_payload(facts)
+    subject_ref = _subject_ref(brief, facts)
+    question = _question(brief)
+    if runtime_core is None or subject_ref is None or question is None:
+        return None
+    if not _daliuren_required_fields_present(runtime_core):
+        return None
+
+    lessons = _daliuren_lessons_from_runtime(runtime_core.get("four_lessons"))
+    transmissions = _daliuren_transmissions_from_runtime(
+        runtime_core.get("three_transmissions")
+    )
+    if lessons is None or transmissions is None:
+        return None
+
     return DaliurenChartV1(
         subject_ref=subject_ref,
         question=question,
-        lessons=tuple(lessons),
-        transmissions=tuple(transmissions),
-        core_facts=_daliuren_core_facts(facts),
+        lessons=lessons,
+        transmissions=transmissions,
+        core_facts=_daliuren_core_facts_from_runtime(runtime_core),
     )
 
 

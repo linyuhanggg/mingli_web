@@ -1,0 +1,401 @@
+{
+  "schema_version": "mingli-liuren-runtime-core-facts-v1",
+  "day_hour": {
+    "day": "乙酉",
+    "hour": "癸未"
+  },
+  "earth_plate": [
+    "子",
+    "丑",
+    "寅",
+    "卯",
+    "辰",
+    "巳",
+    "午",
+    "未",
+    "申",
+    "酉",
+    "戌",
+    "亥"
+  ],
+  "heaven_plate": [
+    {
+      "earth": "子",
+      "heaven": "子"
+    },
+    {
+      "earth": "丑",
+      "heaven": "丑"
+    },
+    {
+      "earth": "寅",
+      "heaven": "寅"
+    },
+    {
+      "earth": "卯",
+      "heaven": "卯"
+    },
+    {
+      "earth": "辰",
+      "heaven": "辰"
+    },
+    {
+      "earth": "巳",
+      "heaven": "巳"
+    },
+    {
+      "earth": "午",
+      "heaven": "午"
+    },
+    {
+      "earth": "未",
+      "heaven": "未"
+    },
+    {
+      "earth": "申",
+      "heaven": "申"
+    },
+    {
+      "earth": "酉",
+      "heaven": "酉"
+    },
+    {
+      "earth": "戌",
+      "heaven": "戌"
+    },
+    {
+      "earth": "亥",
+      "heaven": "亥"
+    }
+  ],
+  "heavenly_generals": [
+    {
+      "earth": "子",
+      "heaven": "子",
+      "general": "太常"
+    },
+    {
+      "earth": "丑",
+      "heaven": "丑",
+      "general": "白虎"
+    },
+    {
+      "earth": "寅",
+      "heaven": "寅",
+      "general": "天空"
+    },
+    {
+      "earth": "卯",
+      "heaven": "卯",
+      "general": "青龙"
+    },
+    {
+      "earth": "辰",
+      "heaven": "辰",
+      "general": "勾陈"
+    },
+    {
+      "earth": "巳",
+      "heaven": "巳",
+      "general": "六合"
+    },
+    {
+      "earth": "午",
+      "heaven": "午",
+      "general": "朱雀"
+    },
+    {
+      "earth": "未",
+      "heaven": "未",
+      "general": "腾蛇"
+    },
+    {
+      "earth": "申",
+      "heaven": "申",
+      "general": "贵人"
+    },
+    {
+      "earth": "酉",
+      "heaven": "酉",
+      "general": "天后"
+    },
+    {
+      "earth": "戌",
+      "heaven": "戌",
+      "general": "太阴"
+    },
+    {
+      "earth": "亥",
+      "heaven": "亥",
+      "general": "玄武"
+    }
+  ],
+  "month_general": {
+    "branch": "未",
+    "name": "小吉"
+  },
+  "noble_person": {
+    "branch": "申",
+    "period": "day",
+    "earth_position": "申",
+    "direction": "reverse",
+    "profile": "official-corrected",
+    "day_night_profile": "civil-double-hour",
+    "source": "《钦定协纪辨方书》天乙贵人表；《六壬大全》四库提要订正说明"
+  },
+  "lesson_method": {
+    "primary": "伏吟",
+    "use_method": "伏吟有克/重审",
+    "direct_direction": "下贼上",
+    "selected_initial": "辰",
+    "calculated_transmissions": "辰酉卯",
+    "calculation_source": "classical_nine-method_algorithm",
+    "source_anchor": "daliuren-daquan L7696/L7818"
+  },
+  "four_lessons": [
+    {
+      "lesson": 1,
+      "lower": "乙",
+      "lower_lodge": "辰",
+      "upper": "辰",
+      "relation": "下贼上"
+    },
+    {
+      "lesson": 2,
+      "lower": "辰",
+      "lower_lodge": "辰",
+      "upper": "辰",
+      "relation": "比和"
+    },
+    {
+      "lesson": 3,
+      "lower": "酉",
+      "lower_lodge": "酉",
+      "upper": "酉",
+      "relation": "比和"
+    },
+    {
+      "lesson": 4,
+      "lower": "酉",
+      "lower_lodge": "酉",
+      "upper": "酉",
+      "relation": "比和"
+    }
+  ],
+  "three_transmissions": [
+    {
+      "stage": "initial",
+      "branch": "辰",
+      "heavenly_general": "勾陈",
+      "six_relative": "妻财"
+    },
+    {
+      "stage": "middle",
+      "branch": "酉",
+      "heavenly_general": "天后",
+      "six_relative": "官鬼"
+    },
+    {
+      "stage": "final",
+      "branch": "卯",
+      "heavenly_general": "青龙",
+      "six_relative": "兄弟"
+    }
+  ],
+  "plate_offset": 0,
+  "xunkong": {
+    "xun": "甲申",
+    "branches": [
+      "午",
+      "未"
+    ]
+  },
+  "structural_patterns": [
+    "伏吟",
+    "四课不备"
+  ],
+  "dimension_facts": {
+    "relationship": {
+      "requested_dimension": "relationship",
+      "canonical_dimension": "relationship",
+      "status": "calculated_facts_not_verdict",
+      "source_rule_ids": [
+        "LR-17"
+      ],
+      "rule_evidence": {
+        "status": "matched_evidence",
+        "hard_verdict": null,
+        "requires_school_adjudication": true,
+        "matched": [
+          {
+            "rule_key": "relationship_day_branch_overcomes_stem",
+            "activation_id": "liuren.relationship.branch_overcomes_day",
+            "rule_id": "LR-17",
+            "status": "matched",
+            "polarity": "oppose",
+            "weight_class": "primary",
+            "dependency_group": "liuren.subject_object_relation",
+            "source_refs": [
+              {
+                "pack": "san-shi/liuren-zhiyin",
+                "rule_id": "LR-17",
+                "source_anchor": "fulltext.md#L557"
+              }
+            ],
+            "fact_paths": [
+              "dimension_facts.relationship.subject_object_relation"
+            ],
+            "observation": {
+              "relation": "object_overcomes_subject"
+            },
+            "confidence_ceiling": "medium"
+          }
+        ],
+        "scope_boundaries": [],
+        "not_evaluated": [],
+        "catalog_schema": "mingli-liuren-executable-rules-v1"
+      },
+      "six_relative_stages": [
+        {
+          "stage": "initial",
+          "branch": "辰",
+          "six_relative": "妻财"
+        },
+        {
+          "stage": "middle",
+          "branch": "酉",
+          "six_relative": "官鬼"
+        },
+        {
+          "stage": "final",
+          "branch": "卯",
+          "six_relative": "兄弟"
+        }
+      ],
+      "subject_object_relation": {
+        "subject": "day_stem",
+        "subject_value": "乙",
+        "subject_element": "木",
+        "object": "day_branch",
+        "object_value": "酉",
+        "object_element": "金",
+        "relation": "object_overcomes_subject"
+      },
+      "stage_flow": [
+        {
+          "from_stage": "initial",
+          "to_stage": "middle",
+          "subject": "from_branch",
+          "subject_value": "辰",
+          "subject_element": "土",
+          "object": "to_branch",
+          "object_value": "酉",
+          "object_element": "金",
+          "relation": "subject_generates_object"
+        },
+        {
+          "from_stage": "middle",
+          "to_stage": "final",
+          "subject": "from_branch",
+          "subject_value": "酉",
+          "subject_element": "金",
+          "object": "to_branch",
+          "object_value": "卯",
+          "object_element": "木",
+          "relation": "subject_overcomes_object"
+        }
+      ]
+    },
+    "timing": {
+      "requested_dimension": "timing",
+      "canonical_dimension": "timing",
+      "status": "calculated_facts_not_verdict",
+      "source_rule_ids": [
+        "DLR-16",
+        "LM-R21"
+      ],
+      "rule_evidence": {
+        "status": "matched_evidence",
+        "hard_verdict": null,
+        "requires_school_adjudication": true,
+        "matched": [
+          {
+            "rule_key": "timing_candidate_branch",
+            "activation_id": "liuren.timing.candidate_branch",
+            "rule_id": "LM-R21",
+            "status": "matched",
+            "polarity": "uncertain",
+            "weight_class": "primary",
+            "dependency_group": "liuren.timing.initial-group-seasonal-upper",
+            "source_refs": [
+              {
+                "pack": "san-shi/liuren-miben",
+                "rule_id": "LM-R21",
+                "source_anchor": "fulltext.md#L3070-L3076"
+              }
+            ],
+            "fact_paths": [
+              "dimension_facts.timing.candidate_branch"
+            ],
+            "observation": {
+              "candidate_branch": {
+                "branch": "未",
+                "anchor_earth_branch": "未",
+                "source_rule": "LM-R21"
+              },
+              "candidate_date": {
+                "id": "initial_group_upper_candidate",
+                "role": "event_response_candidate",
+                "anchor_earth_branch": "未",
+                "branch": "未",
+                "solar_date": "2026-07-20",
+                "day_ganzhi": "乙未",
+                "days_after_cast": 10,
+                "source_pack": "san-shi/liuren-miben",
+                "source_rule": "LM-R21",
+                "candidate_not_guarantee": true
+              },
+              "relative_speed": "relatively_faster"
+            },
+            "confidence_ceiling": "medium"
+          }
+        ],
+        "scope_boundaries": [],
+        "not_evaluated": [],
+        "catalog_schema": "mingli-liuren-executable-rules-v1"
+      },
+      "relative_speed": "relatively_faster",
+      "candidate_branch": {
+        "branch": "未",
+        "anchor_earth_branch": "未",
+        "source_rule": "LM-R21"
+      },
+      "candidate_date": {
+        "id": "initial_group_upper_candidate",
+        "role": "event_response_candidate",
+        "anchor_earth_branch": "未",
+        "branch": "未",
+        "solar_date": "2026-07-20",
+        "day_ganzhi": "乙未",
+        "days_after_cast": 10,
+        "source_pack": "san-shi/liuren-miben",
+        "source_rule": "LM-R21",
+        "candidate_not_guarantee": true
+      }
+    }
+  },
+  "timing_candidates": [
+    {
+      "id": "initial_group_upper_candidate",
+      "role": "event_response_candidate",
+      "anchor_earth_branch": "未",
+      "branch": "未",
+      "solar_date": "2026-07-20",
+      "day_ganzhi": "乙未",
+      "days_after_cast": 10,
+      "source_pack": "san-shi/liuren-miben",
+      "source_rule": "LM-R21",
+      "candidate_not_guarantee": true
+    }
+  ]
+}
