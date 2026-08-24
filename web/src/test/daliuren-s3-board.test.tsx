@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -336,6 +336,63 @@ describe("大六壬 S3 课传盘面", () => {
     await user.keyboard("{Escape}");
     for (const cell of linkedSi) expect(cell).toHaveAttribute("data-active", "false");
     expect(finalTx).toHaveFocus();
+  });
+
+  it("temporarily links equal facts on focus and hover, then clears them on leave", async () => {
+    const user = userEvent.setup();
+    render(<DaliurenBoard view={chart()} />);
+
+    const firstUpper = screen.getByRole("button", { name: "一课·日干 上神 巳" });
+    const secondLower = screen.getByRole("button", { name: "二课·日支 下神 巳" });
+    const finalTx = screen.getByRole("button", { name: "末传 巳 白虎" });
+    const linkedSi = [firstUpper, secondLower, finalTx];
+
+    act(() => firstUpper.focus());
+    for (const cell of linkedSi) {
+      expect(cell).toHaveAttribute("data-active", "true");
+      expect(cell).toHaveAttribute("aria-pressed", "false");
+    }
+
+    act(() => firstUpper.blur());
+    for (const cell of linkedSi) expect(cell).toHaveAttribute("data-active", "false");
+
+    await user.hover(secondLower);
+    for (const cell of linkedSi) expect(cell).toHaveAttribute("data-active", "true");
+
+    await user.unhover(secondLower);
+    for (const cell of linkedSi) expect(cell).toHaveAttribute("data-active", "false");
+  });
+
+  it("restores the persistent click lock after a different focus or hover preview leaves", async () => {
+    const user = userEvent.setup();
+    render(<DaliurenBoard view={chart()} />);
+
+    const lockedSi = screen.getByRole("button", { name: "一课·日干 上神 巳" });
+    const previewYou = screen.getByRole("button", { name: "初传 酉 贵人" });
+
+    await user.click(lockedSi);
+    await user.unhover(lockedSi);
+    expect(lockedSi).toHaveAttribute("data-active", "true");
+    expect(lockedSi).toHaveAttribute("aria-pressed", "true");
+
+    act(() => previewYou.focus());
+    expect(previewYou).toHaveAttribute("data-active", "true");
+    expect(previewYou).toHaveAttribute("aria-pressed", "false");
+    expect(lockedSi).toHaveAttribute("data-active", "false");
+    expect(lockedSi).toHaveAttribute("aria-pressed", "true");
+
+    act(() => previewYou.blur());
+    expect(previewYou).toHaveAttribute("data-active", "false");
+    expect(lockedSi).toHaveAttribute("data-active", "true");
+
+    await user.hover(previewYou);
+    expect(previewYou).toHaveAttribute("data-active", "true");
+    expect(lockedSi).toHaveAttribute("data-active", "false");
+
+    await user.unhover(previewYou);
+    expect(previewYou).toHaveAttribute("data-active", "false");
+    expect(lockedSi).toHaveAttribute("data-active", "true");
+    expect(lockedSi).toHaveAttribute("aria-pressed", "true");
   });
 
   it("moves among the eight lesson cells and three transmission rows with arrow keys", async () => {
@@ -951,8 +1008,8 @@ describe("大六壬 S3 M6a 维度证据", () => {
 
   function dimension(overrides: Record<string, unknown> = {}) {
     return {
-      canonical_dimension: "correspondence",
-      requested_dimension: "correspondence",
+      canonical_dimension: "relationship",
+      requested_dimension: "relationship",
       rule_evidence: evidence(),
       ...overrides,
     };
@@ -968,7 +1025,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
     return screen.getByRole("region", { name: "维度证据" });
   }
 
-  it("renders the real Runtime relationship and timing observations through frozen field mappings", () => {
+  it("renders the real Runtime relationship and timing observations under frozen Chinese titles", () => {
     render(
       <DaliurenBoard
         view={chart({
@@ -978,8 +1035,8 @@ describe("大六壬 S3 M6a 维度证据", () => {
     );
 
     const block = panel();
-    const relationship = within(block).getByRole("group", { name: "relationship" });
-    const timing = within(block).getByRole("group", { name: "timing" });
+    const relationship = within(block).getByRole("group", { name: "关系" });
+    const timing = within(block).getByRole("group", { name: "时机" });
     expect(within(relationship).getByText("LR-17")).toBeVisible();
     expect(within(relationship).getByText("主客关系：客体克主体")).toBeVisible();
     expect(within(timing).getByText("LM-R21")).toBeVisible();
@@ -987,10 +1044,11 @@ describe("大六壬 S3 M6a 维度证据", () => {
       within(timing).getByText("规则候选支：未 · 候选日期：2026-07-20（乙未日） · 相对节奏：较快"),
     ).toBeVisible();
     expect(block).not.toHaveTextContent(/object_overcomes_subject|candidate_branch|candidate_date|relative_speed/);
+    expect(block).not.toHaveTextContent(/relationship|timing/);
     expect(block).not.toHaveTextContent(/hard_verdict|吉凶|成败|大吉|大凶/);
   });
 
-  it("renders authoritative outcome, money, state and work observations through neutral frozen mappings", () => {
+  it("renders outcome, money, state and work observations under frozen Chinese titles", () => {
     const correspondence = {
       stage: "initial",
       heavenly_general: "勾陈",
@@ -1123,23 +1181,51 @@ describe("大六壬 S3 M6a 维度证据", () => {
     );
 
     const block = panel();
-    expect(within(block).getByRole("group", { name: "outcome" })).toHaveTextContent("结构关系：主体克客体");
-    expect(within(block).getByRole("group", { name: "outcome" })).toHaveTextContent(
+    expect(within(block).getByRole("group", { name: "结果" })).toHaveTextContent("结构关系：主体克客体");
+    expect(within(block).getByRole("group", { name: "结果" })).toHaveTextContent(
       "三传与日干关系：三传支均生日干",
     );
-    expect(within(block).getByRole("group", { name: "outcome" })).toHaveTextContent("中传旬空：午");
-    expect(within(block).getByRole("group", { name: "money" })).toHaveTextContent("妻财入传：初传 辰（旺）");
-    expect(within(block).getByRole("group", { name: "money" })).toHaveTextContent("妻财旬空：初传 辰");
-    expect(within(block).getByRole("group", { name: "state" })).toHaveTextContent(
+    expect(within(block).getByRole("group", { name: "结果" })).toHaveTextContent("中传旬空：午");
+    expect(within(block).getByRole("group", { name: "求财" })).toHaveTextContent("妻财入传：初传 辰（旺）");
+    expect(within(block).getByRole("group", { name: "求财" })).toHaveTextContent("妻财旬空：初传 辰");
+    expect(within(block).getByRole("group", { name: "状态" })).toHaveTextContent(
       "天将落地类象：初传 勾陈落辰 · 共 1 条",
     );
-    expect(within(block).getByRole("group", { name: "work" })).toHaveTextContent(
+    expect(within(block).getByRole("group", { name: "事业" })).toHaveTextContent(
       "工作所取六亲：官鬼 · 入传状态：中传 酉（囚，非旬空）、末传 亥（强弱未提供，旬空） · 天将落地类象：中传 天后落酉、末传 白虎落亥（无精确类象对应）",
     );
     expect(block).not.toHaveTextContent(
       /subject_overcomes_object|subject_generates_object|wealth_presence|matched_count|target_relative|source_correspondence_matched/,
     );
+    expect(block).not.toHaveTextContent(/outcome|money|state|work/);
     expect(block).not.toHaveTextContent(/吉凶|成败|大吉|大凶|hard_verdict/);
+  });
+
+  it("fails closed for an unknown canonical dimension instead of exposing its id or generic text", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            unknown: dimension({
+              canonical_dimension: "future_signal",
+              requested_dimension: "future_signal",
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    rule_id: "FUTURE-1",
+                    observation: { display_text: "不得展示未知维度" },
+                  }),
+                ],
+              }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(screen.queryByText("future_signal")).not.toBeInTheDocument();
+    expect(screen.queryByText("不得展示未知维度")).not.toBeInTheDocument();
   });
 
   it("fails closed for unknown, extra or inconsistent outcome, money, state and work observations", () => {
@@ -1295,16 +1381,14 @@ describe("大六壬 S3 M6a 维度证据", () => {
       <DaliurenBoard
         view={chart({
           core_facts: factsWithDimensions({
-            correspondence: dimension(),
-            host_guest: dimension({
-              canonical_dimension: "host_guest",
-              requested_dimension: "host_guest",
+            relationship: dimension({
+              canonical_dimension: "relationship",
+              requested_dimension: "relationship",
               rule_evidence: evidence({
                 matched: [
                   matchedEntry({
                     rule_id: "LR-17",
-                    observation: { text: "日干生初传" },
-                    polarity: "oppose",
+                    observation: { relation: "object_overcomes_subject" },
                     source_refs: [{ pack: "san-shi/liuren-zhiyin", rule_id: "LR-17" }],
                   }),
                 ],
@@ -1316,13 +1400,9 @@ describe("大六壬 S3 M6a 维度证据", () => {
     );
 
     const block = panel();
-    expect(within(block).getByRole("group", { name: "correspondence" })).toBeVisible();
-    expect(within(block).getByRole("group", { name: "host_guest" })).toBeVisible();
-    expect(within(block).getByText("LM-R01")).toBeVisible();
-    expect(within(block).getByText("初传与日干同类")).toBeVisible();
+    expect(within(block).getByRole("group", { name: "关系" })).toBeVisible();
     expect(within(block).getByText("LR-17")).toBeVisible();
-    expect(within(block).getByText("日干生初传")).toBeVisible();
-    expect(within(block).queryByText("忽略观察")).not.toBeInTheDocument();
+    expect(within(block).getByText("主客关系：客体克主体")).toBeVisible();
     expect(within(block).queryByText("SKIP-9")).not.toBeInTheDocument();
     expect(within(block).queryByText("not requested")).not.toBeInTheDocument();
     expect(within(block).queryByText("暂无证据")).not.toBeInTheDocument();
@@ -1341,41 +1421,17 @@ describe("大六壬 S3 M6a 维度证据", () => {
               rule_evidence: evidence({ hard_verdict: "auspicious" }),
             }),
             missing_requested: {
-              canonical_dimension: "correspondence",
+              canonical_dimension: "relationship",
               rule_evidence: evidence(),
             },
             keep: dimension({
-              canonical_dimension: "host_guest",
-              requested_dimension: "host_guest",
-              rule_evidence: evidence({
-                matched: [matchedEntry({ rule_id: "LR-17", observation: { note: "主客比和" } })],
-              }),
-            }),
-          }),
-        })}
-      />,
-    );
-
-    const block = panel();
-    expect(within(block).queryByRole("group", { name: "timing" })).not.toBeInTheDocument();
-    expect(within(block).queryByText("auspicious")).not.toBeInTheDocument();
-    expect(within(block).getByRole("group", { name: "host_guest" })).toBeVisible();
-    expect(within(block).getByText("主客比和")).toBeVisible();
-  });
-
-  it("drops matched rows without a rule id or observation text, and skips unknown observation keys", () => {
-    render(
-      <DaliurenBoard
-        view={chart({
-          core_facts: factsWithDimensions({
-            correspondence: dimension({
+              canonical_dimension: "relationship",
+              requested_dimension: "relationship",
               rule_evidence: evidence({
                 matched: [
-                  matchedEntry({ rule_id: "", observation: { display_text: "空规则" } }),
-                  matchedEntry({ rule_id: "LM-R01", observation: { primary: "发明事实" } }),
                   matchedEntry({
-                    rule_id: "LM-R21",
-                    observation: { display_text: "", fact_text: "  ", text: "应期在传支" },
+                    rule_id: "LR-17",
+                    observation: { relation: "object_overcomes_subject" },
                   }),
                 ],
               }),
@@ -1386,10 +1442,40 @@ describe("大六壬 S3 M6a 维度证据", () => {
     );
 
     const block = panel();
-    expect(within(block).queryByText("空规则")).not.toBeInTheDocument();
+    expect(within(block).queryByRole("group", { name: "时机" })).not.toBeInTheDocument();
+    expect(within(block).queryByText("auspicious")).not.toBeInTheDocument();
+    expect(within(block).getByRole("group", { name: "关系" })).toBeVisible();
+    expect(within(block).getByText("主客关系：客体克主体")).toBeVisible();
+  });
+
+  it("drops matched rows without a rule id or with malformed observation keys", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            relationship: dimension({
+              canonical_dimension: "relationship",
+              requested_dimension: "relationship",
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({ rule_id: "", observation: { relation: "object_overcomes_subject" } }),
+                  matchedEntry({ rule_id: "LM-R01", observation: { primary: "发明事实" } }),
+                  matchedEntry({
+                    rule_id: "LR-17",
+                    observation: { relation: "object_overcomes_subject" },
+                  }),
+                ],
+              }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    const block = panel();
     expect(within(block).queryByText("发明事实")).not.toBeInTheDocument();
-    expect(within(block).getByText("LM-R21")).toBeVisible();
-    expect(within(block).getByText("应期在传支")).toBeVisible();
+    expect(within(block).getByText("LR-17")).toBeVisible();
+    expect(within(block).getByText("主客关系：客体克主体")).toBeVisible();
   });
 
   it("preserves every Runtime source ref in order without claiming exact verification", async () => {
@@ -1400,17 +1486,19 @@ describe("大六壬 S3 M6a 维度证据", () => {
       <DaliurenBoard
         view={chart({
           core_facts: factsWithDimensions({
-            correspondence: dimension({
+            outcome: dimension({
+              canonical_dimension: "outcome",
+              requested_dimension: "outcome",
               rule_evidence: evidence({
                 matched: [
                   matchedEntry({
                     rule_id: "LM-R01",
-                    observation: { label: "类象规则命中" },
+                    observation: { relation: "subject_overcomes_object" },
                     source_refs: stateSources,
                   }),
                   matchedEntry({
                     rule_id: "LM-R20",
-                    observation: { name: "求财规则命中" },
+                    observation: { stage: "middle", branch: "午", is_xunkong: true },
                     source_refs: moneySources,
                   }),
                 ],
@@ -1422,8 +1510,8 @@ describe("大六壬 S3 M6a 维度证据", () => {
     );
 
     const block = panel();
-    const stateEntry = within(block).getByText("类象规则命中").closest("li");
-    const moneyEntry = within(block).getByText("求财规则命中").closest("li");
+    const stateEntry = within(block).getByText("结构关系：主体克客体").closest("li");
+    const moneyEntry = within(block).getByText("中传旬空：午").closest("li");
     await user.click((stateEntry as HTMLElement).querySelector("summary") as HTMLElement);
     await user.click((moneyEntry as HTMLElement).querySelector("summary") as HTMLElement);
 
@@ -1449,7 +1537,11 @@ describe("大六壬 S3 M6a 维度证据", () => {
       <DaliurenBoard
         view={chart({
           core_facts: factsWithDimensions({
-            empty: dimension({ rule_evidence: evidence({ matched: [] }) }),
+            empty: dimension({
+              canonical_dimension: "relationship",
+              requested_dimension: "relationship",
+              rule_evidence: evidence({ matched: [] }),
+            }),
           }),
         })}
       />,
@@ -1460,14 +1552,27 @@ describe("大六壬 S3 M6a 维度证据", () => {
 
   it("keeps loading and silhouette modes free of dimension evidence", () => {
     const view = chart({
-      core_facts: factsWithDimensions({ correspondence: dimension() }),
+      core_facts: factsWithDimensions({
+        relationship: dimension({
+          canonical_dimension: "relationship",
+          requested_dimension: "relationship",
+          rule_evidence: evidence({
+            matched: [
+              matchedEntry({
+                rule_id: "LR-17",
+                observation: { relation: "object_overcomes_subject" },
+              }),
+            ],
+          }),
+        }),
+      }),
     });
     const { rerender } = render(<DaliurenBoard view={view} mode="loading" />);
     expect(screen.queryByText("维度证据")).not.toBeInTheDocument();
-    expect(screen.queryByText("LM-R01")).not.toBeInTheDocument();
+    expect(screen.queryByText("LR-17")).not.toBeInTheDocument();
 
     rerender(<DaliurenBoard view={view} mode="silhouette" />);
-    expect(screen.queryByText("LM-R01")).not.toBeInTheDocument();
+    expect(screen.queryByText("LR-17")).not.toBeInTheDocument();
   });
 
   it("keeps the dimension-evidence module off shared pages", () => {

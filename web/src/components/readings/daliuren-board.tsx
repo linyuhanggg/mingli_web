@@ -172,7 +172,10 @@ export function DaliurenBoard({
   offer?: DaliurenS4Offer | null;
   s4Phase?: DaliurenS4Phase;
 }>) {
-  const [activeFact, setActiveFact] = useState<string | null>(null);
+  const [lockedFact, setLockedFact] = useState<string | null>(null);
+  const [focusedFact, setFocusedFact] = useState<string | null>(null);
+  const [hoveredFact, setHoveredFact] = useState<string | null>(null);
+  const [previewFact, setPreviewFact] = useState<string | null>(null);
   const [rovingId, setRovingId] = useState<CellId>(FIRST_CELL);
   const cellRefs = useRef<Partial<Record<CellId, HTMLButtonElement | null>>>({});
   const lessons = view?.lessons ?? EMPTY_LESSONS;
@@ -184,34 +187,73 @@ export function DaliurenBoard({
   );
   const voids = mode === "ready" && view?.core_facts ? voidBranches(view.core_facts.xunkong) : new Set<string>();
 
-  function isActive(value: string): boolean {
+  const activeFact = previewFact ?? lockedFact;
+
+  function factValue(value: string): string | null {
     const fact = value.trim();
-    return Boolean(fact && activeFact === fact);
+    return fact || null;
   }
 
-  function focusAndLock(id: CellId) {
-    const fact = cellFact(id, lessons, transmissions);
+  function isActive(value: string): boolean {
+    return activeFact !== null && activeFact === factValue(value);
+  }
+
+  function isLocked(value: string): boolean {
+    return lockedFact !== null && lockedFact === factValue(value);
+  }
+
+  function focusCell(id: CellId) {
     setRovingId(id);
-    setActiveFact(fact || null);
     cellRefs.current[id]?.focus();
   }
 
   function toggleLock(id: CellId) {
-    const fact = cellFact(id, lessons, transmissions);
+    const fact = factValue(cellFact(id, lessons, transmissions));
+    const unlock = fact !== null && lockedFact === fact;
     setRovingId(id);
-    setActiveFact((current) => (fact && current !== fact ? fact : null));
+    setLockedFact(unlock ? null : fact);
+    if (unlock) setPreviewFact(null);
     cellRefs.current[id]?.focus();
+  }
+
+  function startFocusPreview(value: string) {
+    const fact = factValue(value);
+    setFocusedFact(fact);
+    setPreviewFact(fact);
+  }
+
+  function stopFocusPreview(value: string) {
+    const fact = factValue(value);
+    setFocusedFact((current) => (current === fact ? null : current));
+    setPreviewFact((current) => (current === fact ? hoveredFact : current));
+  }
+
+  function startHoverPreview(value: string) {
+    const fact = factValue(value);
+    setHoveredFact(fact);
+    setPreviewFact(fact);
+  }
+
+  function stopHoverPreview(value: string) {
+    const fact = factValue(value);
+    setHoveredFact((current) => (current === fact ? null : current));
+    setPreviewFact((current) => (current === fact ? focusedFact : current));
+  }
+
+  function clearLock() {
+    setLockedFact(null);
+    setPreviewFact(null);
   }
 
   function onCellKeyDown(event: KeyboardEvent<HTMLButtonElement>, id: CellId) {
     if (event.key === "Escape") {
       event.preventDefault();
-      setActiveFact(null);
+      clearLock();
       return;
     }
     if (!isNavigationKey(event.key)) return;
     event.preventDefault();
-    focusAndLock(neighbor(id, event.key));
+    focusCell(neighbor(id, event.key));
   }
 
   return (
@@ -243,13 +285,17 @@ export function DaliurenBoard({
                     data-active={isActive(lesson.upper) ? "true" : "false"}
                     data-void={isVoidCell(lesson.upper, voids) ? "true" : undefined}
                     tabIndex={rovingId === upperId ? 0 : -1}
-                    aria-pressed={isActive(lesson.upper)}
+                    aria-pressed={isLocked(lesson.upper)}
                     aria-label={`${lesson.lesson_id} 上神 ${lesson.upper}`}
                     ref={(node) => {
                       cellRefs.current[upperId] = node;
                     }}
                     onClick={() => toggleLock(upperId)}
+                    onBlur={() => stopFocusPreview(lesson.upper)}
+                    onFocus={() => startFocusPreview(lesson.upper)}
                     onKeyDown={(event) => onCellKeyDown(event, upperId)}
+                    onPointerEnter={() => startHoverPreview(lesson.upper)}
+                    onPointerLeave={() => stopHoverPreview(lesson.upper)}
                   >
                     {lesson.upper}
                     {isVoidCell(lesson.upper, voids) ? <VoidMark /> : null}
@@ -267,13 +313,17 @@ export function DaliurenBoard({
                     data-active={isActive(lesson.lower) ? "true" : "false"}
                     data-void={isVoidCell(lesson.lower, voids) ? "true" : undefined}
                     tabIndex={rovingId === lowerId ? 0 : -1}
-                    aria-pressed={isActive(lesson.lower)}
+                    aria-pressed={isLocked(lesson.lower)}
                     aria-label={`${lesson.lesson_id} 下神 ${lesson.lower}`}
                     ref={(node) => {
                       cellRefs.current[lowerId] = node;
                     }}
                     onClick={() => toggleLock(lowerId)}
+                    onBlur={() => stopFocusPreview(lesson.lower)}
+                    onFocus={() => startFocusPreview(lesson.lower)}
                     onKeyDown={(event) => onCellKeyDown(event, lowerId)}
+                    onPointerEnter={() => startHoverPreview(lesson.lower)}
+                    onPointerLeave={() => stopHoverPreview(lesson.lower)}
                   >
                     {lesson.lower}
                     {isVoidCell(lesson.lower, voids) ? <VoidMark /> : null}
@@ -299,13 +349,17 @@ export function DaliurenBoard({
                     data-active={isActive(item.branch) ? "true" : "false"}
                     data-void={isVoidCell(item.branch, voids) ? "true" : undefined}
                     tabIndex={rovingId === id ? 0 : -1}
-                    aria-pressed={isActive(item.branch)}
+                    aria-pressed={isLocked(item.branch)}
                     aria-label={`${STAGE_LABEL[item.stage]} ${item.branch} ${item.general}`}
                     ref={(node) => {
                       cellRefs.current[id] = node;
                     }}
                     onClick={() => toggleLock(id)}
+                    onBlur={() => stopFocusPreview(item.branch)}
+                    onFocus={() => startFocusPreview(item.branch)}
                     onKeyDown={(event) => onCellKeyDown(event, id)}
+                    onPointerEnter={() => startHoverPreview(item.branch)}
+                    onPointerLeave={() => stopHoverPreview(item.branch)}
                   >
                     <span className={styles.stage}>{STAGE_LABEL[item.stage]}</span>
                     <span className={styles.branch} data-element={branchElement(item.branch)}>
@@ -430,7 +484,7 @@ export function DaliurenBoard({
                           onKeyDown={(event) => {
                             if (event.key !== "Escape") return;
                             event.preventDefault();
-                            setActiveFact(null);
+                            clearLock();
                           }}
                         >
                           {item.branch}

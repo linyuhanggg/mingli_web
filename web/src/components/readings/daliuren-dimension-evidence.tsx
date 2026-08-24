@@ -26,12 +26,20 @@ type WealthVoidObservation = Extract<DaliurenMoneyObservation, { readonly wealth
 type WealthVoidRow = WealthVoidObservation["wealth_void_rows"][number];
 type WorkStrength = DaliurenWorkObservation["target_strength"][number];
 type WorkGeneralModifier = DaliurenWorkObservation["target_general_modifier"][number];
+type DaliurenDimensionId = keyof DaliurenDimensionObservationMap;
 
 export type DaliurenDimensionEvidenceProps = {
   dimensionFacts?: CoreFacts["dimension_facts"];
 };
 
-const TEXT_KEYS = ["display_text", "fact_text", "text", "label", "name", "note"] as const;
+const DIMENSION_LABELS = Object.freeze({
+  money: "求财",
+  outcome: "结果",
+  relationship: "关系",
+  state: "状态",
+  timing: "时机",
+  work: "事业",
+}) satisfies Readonly<Record<DaliurenDimensionId, string>>;
 const OUTCOME_RELATION_FACTS: Readonly<Record<DaliurenOutcomeRelation, string>> = {
   object_overcomes_subject: "客体克主体",
   subject_generates_object: "主体生客体",
@@ -133,7 +141,7 @@ type EvidenceSource = {
 };
 
 type EvidenceGroup = {
-  dimension: string;
+  dimension: DaliurenDimensionId;
   entries: readonly EvidenceEntry[];
 };
 
@@ -154,15 +162,6 @@ function hasExactKeys(value: Record<string, unknown>, keys: readonly string[]): 
 
 function hasOwnKey<T extends object>(value: T, key: PropertyKey): key is keyof T {
   return Object.prototype.hasOwnProperty.call(value, key);
-}
-
-function firstAllowedText(value: unknown): string | null {
-  if (!isRecord(value)) return null;
-  for (const key of TEXT_KEYS) {
-    const text = readString(value, key);
-    if (text) return text;
-  }
-  return null;
 }
 
 function isTransmissionStage(value: unknown): value is DaliurenTransmissionStage {
@@ -479,11 +478,8 @@ const RUNTIME_OBSERVATION_FACTS = Object.freeze({
   [Dimension in keyof DaliurenDimensionObservationMap]: (value: unknown) => string | null;
 }>;
 
-function observationFact(dimension: string, value: unknown): string | null {
-  if (hasOwnKey(RUNTIME_OBSERVATION_FACTS, dimension)) {
-    return RUNTIME_OBSERVATION_FACTS[dimension](value);
-  }
-  return firstAllowedText(value);
+function observationFact(dimension: DaliurenDimensionId, value: unknown): string | null {
+  return RUNTIME_OBSERVATION_FACTS[dimension](value);
 }
 
 function parseSource(value: unknown): EvidenceSource | null {
@@ -499,7 +495,7 @@ function parseSource(value: unknown): EvidenceSource | null {
   };
 }
 
-function parseEntry(value: unknown, dimension: string): EvidenceEntry | null {
+function parseEntry(value: unknown, dimension: DaliurenDimensionId): EvidenceEntry | null {
   if (!isRecord(value)) return null;
   const ruleId = readString(value, "rule_id");
   const fact = observationFact(dimension, value.observation);
@@ -520,6 +516,7 @@ function parseDimension(value: unknown): EvidenceGroup | null {
   const requested = readString(value, "requested_dimension");
   const evidence = value.rule_evidence;
   if (!dimension || !requested || !isRecord(evidence)) return null;
+  if (!hasOwnKey(DIMENSION_LABELS, dimension)) return null;
   if (!Object.prototype.hasOwnProperty.call(evidence, "hard_verdict") || evidence.hard_verdict !== null) {
     return null;
   }
@@ -534,7 +531,7 @@ function parseDimension(value: unknown): EvidenceGroup | null {
 
 function parseGroups(value: CoreFacts["dimension_facts"]): readonly EvidenceGroup[] {
   if (!isRecord(value)) return [];
-  const grouped = new Map<string, EvidenceEntry[]>();
+  const grouped = new Map<DaliurenDimensionId, EvidenceEntry[]>();
   for (const block of Object.values(value)) {
     const parsed = parseDimension(block);
     if (!parsed) continue;
@@ -552,8 +549,13 @@ export function DaliurenDimensionEvidence({ dimensionFacts = null }: DaliurenDim
   return (
     <section className={styles.panel} aria-label="维度证据" data-slot="dimension-evidence">
       {groups.map((group) => (
-        <section className={styles.group} aria-label={group.dimension} key={group.dimension} role="group">
-          <h3 className={styles.heading}>{group.dimension}</h3>
+        <section
+          className={styles.group}
+          aria-label={DIMENSION_LABELS[group.dimension]}
+          key={group.dimension}
+          role="group"
+        >
+          <h3 className={styles.heading}>{DIMENSION_LABELS[group.dimension]}</h3>
           <ul className={styles.list}>
             {group.entries.map((entry, entryIndex) => (
               <li className={styles.item} key={`${group.dimension}-${entry.ruleId}-${entry.fact}-${entryIndex}`}>
