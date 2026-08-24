@@ -210,7 +210,7 @@
         "hard_verdict": {"type": "null"},
         "matched": {"type": "array", "items": {"$ref": "#/$defs/ruleEvidenceEntry"}},
         "not_evaluated": {"type": "array", "items": {"$ref": "#/$defs/ruleNotEvaluatedEntry"}},
-        "requires_school_adjudication": {"type": "boolean"},
+        "requires_school_adjudication": {"const": true},
         "scope_boundaries": {"type": "array", "items": {"$ref": "#/$defs/ruleEvidenceEntry"}},
         "status": {"type": "string", "minLength": 1}
       }

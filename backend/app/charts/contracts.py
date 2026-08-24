@@ -1997,7 +1997,7 @@ class DaliurenRuleEvidence(ContractModel):
     hard_verdict: None = None
     matched: tuple[DaliurenRuleEvidenceEntry, ...]
     not_evaluated: tuple[DaliurenRuleNotEvaluatedEntry, ...]
-    requires_school_adjudication: bool
+    requires_school_adjudication: Literal[True]
     scope_boundaries: tuple[DaliurenRuleEvidenceEntry, ...]
     status: str = Field(min_length=1)
 
@@ -2069,7 +2069,7 @@ class DaliurenDimensionFact(ContractModel):
     requested_dimension: str = Field(min_length=1)
     rule_evidence: DaliurenRuleEvidence
     status: str = Field(min_length=1)
-    source_rule_ids: tuple[str, ...] = Field(min_length=1)
+    source_rule_ids: tuple[str, ...]
     initial_final_relation: DaliurenRelationFact | None = Field(
         default=None,
     )
