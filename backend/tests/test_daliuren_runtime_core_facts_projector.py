@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import copy
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 from app.charts.contracts import DaliurenChartV1
@@ -17,6 +20,12 @@ SCHEMA_PATH = (
     / "schemas"
     / "views"
     / "daliuren-chart-v1.schema.json"
+)
+CORE_SCRIPTS_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "core"
+    / "mingli-master"
+    / "scripts"
 )
 
 
@@ -41,6 +50,43 @@ def _runtime_core_brief(runtime_core_facts: dict[str, object]) -> dict[str, obje
 
 def _load_fixture() -> dict[str, object]:
     return json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+
+
+def _assert_runtime_rejects(
+    runtime_core_facts: dict[str, object],
+    expected_error: str,
+) -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "import json, sys\n"
+                "from reading_engine.liuren_contract import (\n"
+                "    LiurenRuntimeContractError, validate_runtime_core_facts,\n"
+                ")\n"
+                "try:\n"
+                "    validate_runtime_core_facts(json.load(sys.stdin))\n"
+                "except LiurenRuntimeContractError as exc:\n"
+                "    print(exc)\n"
+                "else:\n"
+                "    raise AssertionError('Runtime accepted invalid core facts')\n"
+            ),
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        env={
+            **os.environ,
+            "PYTHONPATH": str(CORE_SCRIPTS_PATH),
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PYTHONPYCACHEPREFIX": "/dev/null",
+        },
+        input=json.dumps(runtime_core_facts),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+    assert expected_error in result.stdout
 
 
 def _state_dimension(
@@ -434,6 +480,67 @@ def test_daliuren_projector_rejects_empty_rule_evidence_fact_path_entries() -> N
     schema_payload["core_facts"]["dimension_facts"]["relationship"][
         "rule_evidence"
     ]["matched"][0]["fact_paths"] = [""]
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert list(Draft202012Validator(schema).iter_errors(schema_payload))
+
+
+def test_daliuren_projector_rejects_boolean_days_after_cast() -> None:
+    payload = copy.deepcopy(_load_fixture())
+    payload["timing_candidates"][0]["days_after_cast"] = True
+
+    _assert_runtime_rejects(payload, "days_after_cast must be an integer")
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is None
+
+    schema_payload = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    schema_payload["core_facts"]["timing_candidates"][0]["days_after_cast"] = True
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert list(Draft202012Validator(schema).iter_errors(schema_payload))
+
+
+def test_daliuren_projector_rejects_empty_xunkong_branch_entries() -> None:
+    payload = copy.deepcopy(_load_fixture())
+    payload["xunkong"]["branches"] = ["", ""]
+
+    _assert_runtime_rejects(payload, "xunkong.branches[0] must be a non-empty string")
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is None
+
+    schema_payload = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    schema_payload["core_facts"]["xunkong"]["branches"] = ["", ""]
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert list(Draft202012Validator(schema).iter_errors(schema_payload))
+
+
+def test_daliuren_projector_rejects_empty_stop_condition_entries() -> None:
+    payload = copy.deepcopy(_load_fixture())
+    payload["dimension_facts"]["relationship"]["rule_evidence"]["matched"][0][
+        "stop_conditions"
+    ] = [""]
+
+    _assert_runtime_rejects(
+        payload,
+        "rule_evidence.matched[0].stop_conditions[0] must be a non-empty string",
+    )
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is None
+
+    schema_payload = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    schema_payload["core_facts"]["dimension_facts"]["relationship"][
+        "rule_evidence"
+    ]["matched"][0]["stop_conditions"] = [""]
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     assert list(Draft202012Validator(schema).iter_errors(schema_payload))
 

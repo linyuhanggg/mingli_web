@@ -1897,7 +1897,7 @@ class DaliurenTimingCandidate(ContractModel):
     branch: str = Field(min_length=1)
     solar_date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
     day_ganzhi: str = Field(min_length=2)
-    days_after_cast: int = Field(ge=1, le=12)
+    days_after_cast: int = Field(ge=1, le=12, strict=True)
     source_pack: str = Field(min_length=1)
     source_rule: Literal["LM-R21"]
     candidate_not_guarantee: Literal[True]
@@ -1924,7 +1924,10 @@ class DaliurenNoblePerson(ContractModel):
 
 
 class DaliurenXunkong(ContractModel):
-    branches: tuple[str, str]
+    branches: tuple[
+        Annotated[str, Field(min_length=1)],
+        Annotated[str, Field(min_length=1)],
+    ]
     xun: str = Field(min_length=2)
 
 
@@ -1978,7 +1981,7 @@ class DaliurenRuleEvidenceEntry(ContractModel):
         min_length=1,
         exclude_if=lambda value: value is None,
     )
-    stop_conditions: tuple[str, ...] | None = Field(
+    stop_conditions: tuple[Annotated[str, Field(min_length=1)], ...] | None = Field(
         default=None,
         exclude_if=lambda value: value is None,
     )
