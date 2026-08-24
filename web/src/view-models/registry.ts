@@ -881,6 +881,36 @@ export type DaliurenTimingCandidate = {
   readonly candidate_not_guarantee: true;
 };
 
+export type DaliurenTransmissionStage = "initial" | "middle" | "final";
+
+export type DaliurenSixRelative = "兄弟" | "子孙" | "妻财" | "官鬼" | "父母";
+
+export type DaliurenSeasonStrength = "旺" | "相" | "休" | "囚" | "死" | "unknown";
+
+export type DaliurenOutcomeRelation =
+  | "subject_generates_object"
+  | "subject_overcomes_object"
+  | "object_overcomes_subject";
+
+export type DaliurenMiddleVoidObservation = Readonly<{
+  readonly stage: "middle";
+  readonly branch: string;
+  readonly is_xunkong: true;
+}>;
+
+export type DaliurenOutcomeObservation =
+  | Readonly<{
+      readonly relation: "subject_overcomes_object" | "object_overcomes_subject";
+    }>
+  | Readonly<{
+      readonly relations: readonly [
+        "subject_generates_object" | "subject_overcomes_object",
+        "subject_generates_object" | "subject_overcomes_object",
+        "subject_generates_object" | "subject_overcomes_object",
+      ];
+    }>
+  | DaliurenMiddleVoidObservation;
+
 export type DaliurenRelationshipObservation = Readonly<{
   readonly relation: "subject_overcomes_object" | "object_overcomes_subject";
 }>;
@@ -895,9 +925,84 @@ export type DaliurenTimingObservation = Readonly<{
   readonly relative_speed: "relatively_faster" | "relatively_slower" | null;
 }>;
 
+export type DaliurenMoneyObservation =
+  | Readonly<{
+      readonly wealth_presence: true;
+      readonly wealth_stages: ReadonlyArray<
+        Readonly<{
+          readonly stage: DaliurenTransmissionStage;
+          readonly branch: string;
+          readonly six_relative: "妻财";
+          readonly season_strength: DaliurenSeasonStrength;
+        }>
+      >;
+    }>
+  | Readonly<{
+      readonly wealth_void_rows: ReadonlyArray<
+        Readonly<{
+          readonly stage: DaliurenTransmissionStage;
+          readonly branch: string;
+          readonly six_relative: "妻财";
+          readonly is_xunkong: true;
+        }>
+      >;
+    }>
+  | DaliurenMiddleVoidObservation;
+
+export type DaliurenGeneralLandingCorrespondence = Readonly<{
+  readonly stage: DaliurenTransmissionStage;
+  readonly heavenly_general: string;
+  readonly landing_branch: string;
+  readonly source_pack: "san-shi/liuren-miben";
+  readonly source_rule: "LM-R01";
+  readonly role: "imagery_correspondence_not_observed_activity";
+  readonly status: "source_correspondence_matched";
+  readonly source_text: string;
+  readonly source_anchor: string;
+}>;
+
+export type DaliurenGeneralLandingUnavailableCorrespondence = Readonly<{
+  readonly stage: DaliurenTransmissionStage;
+  readonly heavenly_general: string;
+  readonly landing_branch: string;
+  readonly source_pack: "san-shi/liuren-miben";
+  readonly source_rule: "LM-R01";
+  readonly role: "imagery_correspondence_not_observed_activity";
+  readonly status: "no_exact_source_correspondence";
+}>;
+
+export type DaliurenStateObservation = Readonly<{
+  readonly matched_count: number;
+  readonly stages: ReadonlyArray<DaliurenTransmissionStage>;
+  readonly correspondences: ReadonlyArray<DaliurenGeneralLandingCorrespondence>;
+}>;
+
+export type DaliurenWorkObservation = Readonly<{
+  readonly target_relative: DaliurenSixRelative;
+  readonly target_strength: ReadonlyArray<
+    Readonly<{
+      readonly stage: DaliurenTransmissionStage;
+      readonly branch: string;
+      readonly six_relative: DaliurenSixRelative;
+      readonly season_strength: DaliurenSeasonStrength;
+      readonly is_xunkong: boolean;
+    }>
+  >;
+  readonly target_general_modifier: ReadonlyArray<
+    (DaliurenGeneralLandingCorrespondence | DaliurenGeneralLandingUnavailableCorrespondence) &
+      Readonly<{
+        readonly six_relative: DaliurenSixRelative;
+      }>
+  >;
+}>;
+
 export type DaliurenDimensionObservationMap = Readonly<{
+  readonly outcome: DaliurenOutcomeObservation;
+  readonly money: DaliurenMoneyObservation;
   readonly relationship: DaliurenRelationshipObservation;
+  readonly state: DaliurenStateObservation;
   readonly timing: DaliurenTimingObservation;
+  readonly work: DaliurenWorkObservation;
 }>;
 
 export type DaliurenChartViewModel = {

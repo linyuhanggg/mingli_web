@@ -28,7 +28,6 @@
 }
 
 .ring {
-  --plate-offset: 0;
   display: none;
   position: relative;
   width: min(100%, 22rem);
@@ -48,8 +47,8 @@
   min-width: 1.75rem;
   min-height: var(--target-min);
   margin: 0;
-  transform: rotate(calc((var(--spoke) + var(--plate-offset)) * 30deg)) translateY(-7.2rem)
-    rotate(calc((var(--spoke) + var(--plate-offset)) * -30deg));
+  transform: rotate(calc(var(--spoke) * 30deg)) translateY(-7.2rem)
+    rotate(calc(var(--spoke) * -30deg));
   transform-origin: center;
 }
 
@@ -70,6 +69,7 @@
   color: var(--color-evidence);
 }
 
+.nobleBadge,
 .timingBadge {
   display: inline-flex;
   align-items: center;
@@ -81,6 +81,10 @@
   color: var(--color-evidence);
   font-size: var(--font-size-meta);
   font-weight: 650;
+}
+
+.nobleBadge {
+  margin-inline-start: 0.25rem;
 }
 
 .voidBadge {

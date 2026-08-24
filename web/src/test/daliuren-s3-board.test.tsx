@@ -107,6 +107,13 @@ function boardCss() {
   return readFileSync(resolve(process.cwd(), "src/components/readings/daliuren-board.module.css"), "utf8");
 }
 
+function plateCss() {
+  return readFileSync(
+    resolve(process.cwd(), "src/components/readings/daliuren-heaven-earth-plate.module.css"),
+    "utf8",
+  );
+}
+
 function board() {
   return screen.getByRole("region", { name: "课传" });
 }
@@ -528,11 +535,13 @@ describe("大六壬 S3 M4 天地盘", () => {
     );
 
     await user.click(screen.getByText("天地盘"));
-    expect(screen.getByRole("table", { name: "天地盘" }).querySelector('[data-branch="未"]')).toHaveAttribute(
-      "data-noble",
-      "true",
-    );
-    expect(screen.getByRole("table", { name: "天地盘" }).querySelector('[data-branch="卯"]')).not.toHaveAttribute(
+    const table = screen.getByRole("table", { name: "天地盘" });
+    const nobleRow = table.querySelector('[data-branch="未"]');
+    expect(nobleRow).toHaveAttribute("data-noble", "true");
+    expect(within(nobleRow as HTMLElement).getByText("贵人落地")).toBeVisible();
+    expect(nobleRow).toHaveAccessibleName(/未.*贵人落地/);
+    expect(within(table).queryByRole("columnheader", { name: "天将" })).not.toBeInTheDocument();
+    expect(table.querySelector('[data-branch="卯"]')).not.toHaveAttribute(
       "data-noble",
     );
     expect(screen.queryByText(/昼|夜|昼夜/)).not.toBeInTheDocument();
@@ -548,17 +557,26 @@ describe("大六壬 S3 M4 天地盘", () => {
     expect(screen.getByRole("table", { name: "天地盘" }).querySelector('[data-branch="卯"]')).not.toHaveAttribute(
       "data-noble",
     );
+    expect(screen.queryByText("贵人落地")).not.toBeInTheDocument();
   });
 
-  it("applies a numeric plate_offset to the ring and ignores a null offset", async () => {
+  it("keeps earth spokes fixed when plate_offset is nonzero and preserves offset only as metadata", async () => {
     const user = userEvent.setup();
     const { rerender } = render(
       <DaliurenBoard view={plate({ plate_offset: 3 })} />,
     );
 
     await user.click(screen.getByText("天地盘"));
-    const ring = screen.getByRole("table", { name: "天地盘" }).closest("[data-slot='heaven-earth']");
-    expect(ring).toHaveAttribute("data-offset", "3");
+    const panel = screen.getByRole("table", { name: "天地盘" }).closest("[data-slot='heaven-earth']");
+    const visualRing = panel?.querySelector("[data-ring='earth']");
+    const earthZi = visualRing?.querySelector('[data-branch="子"]');
+    expect(panel).toHaveAttribute("data-offset", "3");
+    expect(visualRing).not.toHaveStyle("--plate-offset: 3");
+    expect(earthZi).toHaveStyle("--spoke: 0");
+    expect(plateCss()).toMatch(
+      /transform:\s*rotate\(calc\(var\(--spoke\) \* 30deg\)\) translateY\(-7\.2rem\)\s*rotate\(calc\(var\(--spoke\) \* -30deg\)\)/s,
+    );
+    expect(plateCss()).not.toContain("--plate-offset");
 
     rerender(<DaliurenBoard view={plate({ plate_offset: null })} />);
     expect(screen.getByRole("table", { name: "天地盘" }).closest("[data-slot='heaven-earth']")).not.toHaveAttribute(
@@ -846,6 +864,263 @@ describe("大六壬 S3 M6a 维度证据", () => {
     ).toBeVisible();
     expect(block).not.toHaveTextContent(/object_overcomes_subject|candidate_branch|candidate_date|relative_speed/);
     expect(block).not.toHaveTextContent(/hard_verdict|吉凶|成败|大吉|大凶/);
+  });
+
+  it("renders authoritative outcome, money, state and work observations through neutral frozen mappings", () => {
+    const correspondence = {
+      stage: "initial",
+      heavenly_general: "勾陈",
+      landing_branch: "辰",
+      source_pack: "san-shi/liuren-miben",
+      source_rule: "LM-R01",
+      role: "imagery_correspondence_not_observed_activity",
+      status: "source_correspondence_matched",
+      source_text: "勾陈临辰",
+      source_anchor: "fulltext.md#L10",
+    };
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            outcome: dimension({
+              canonical_dimension: "outcome",
+              requested_dimension: "outcome",
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({ rule_id: "LR-17", observation: { relation: "subject_overcomes_object" } }),
+                  matchedEntry({
+                    rule_id: "LR-18",
+                    observation: {
+                      relations: [
+                        "subject_generates_object",
+                        "subject_generates_object",
+                        "subject_generates_object",
+                      ],
+                    },
+                  }),
+                  matchedEntry({
+                    rule_id: "LM-R02",
+                    observation: { stage: "middle", branch: "午", is_xunkong: true },
+                  }),
+                ],
+              }),
+            }),
+            money: dimension({
+              canonical_dimension: "money",
+              requested_dimension: "money",
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    rule_id: "LM-R08",
+                    observation: {
+                      wealth_presence: true,
+                      wealth_stages: [
+                        { stage: "initial", branch: "辰", six_relative: "妻财", season_strength: "旺" },
+                      ],
+                    },
+                  }),
+                  matchedEntry({
+                    rule_id: "LM-R09",
+                    observation: {
+                      wealth_void_rows: [
+                        { stage: "initial", branch: "辰", six_relative: "妻财", is_xunkong: true },
+                      ],
+                    },
+                  }),
+                  matchedEntry({
+                    rule_id: "LM-R02",
+                    observation: { stage: "middle", branch: "午", is_xunkong: true },
+                  }),
+                ],
+              }),
+            }),
+            state: dimension({
+              canonical_dimension: "state",
+              requested_dimension: "state",
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    rule_id: "LM-R01",
+                    observation: {
+                      matched_count: 1,
+                      stages: ["initial"],
+                      correspondences: [correspondence],
+                    },
+                  }),
+                ],
+              }),
+            }),
+            work: dimension({
+              canonical_dimension: "work",
+              requested_dimension: "work",
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    rule_id: "LM-R07",
+                    observation: {
+                      target_relative: "官鬼",
+                      target_strength: [
+                        {
+                          stage: "middle",
+                          branch: "酉",
+                          six_relative: "官鬼",
+                          season_strength: "囚",
+                          is_xunkong: false,
+                        },
+                        {
+                          stage: "final",
+                          branch: "亥",
+                          six_relative: "官鬼",
+                          season_strength: "unknown",
+                          is_xunkong: true,
+                        },
+                      ],
+                      target_general_modifier: [
+                        { ...correspondence, stage: "middle", heavenly_general: "天后", landing_branch: "酉", six_relative: "官鬼" },
+                        {
+                          stage: "final",
+                          heavenly_general: "白虎",
+                          landing_branch: "亥",
+                          source_pack: "san-shi/liuren-miben",
+                          source_rule: "LM-R01",
+                          role: "imagery_correspondence_not_observed_activity",
+                          status: "no_exact_source_correspondence",
+                          six_relative: "官鬼",
+                        },
+                      ],
+                    },
+                  }),
+                ],
+              }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    const block = panel();
+    expect(within(block).getByRole("group", { name: "outcome" })).toHaveTextContent("结构关系：主体克客体");
+    expect(within(block).getByRole("group", { name: "outcome" })).toHaveTextContent(
+      "三传与日干关系：三传支均生日干",
+    );
+    expect(within(block).getByRole("group", { name: "outcome" })).toHaveTextContent("中传旬空：午");
+    expect(within(block).getByRole("group", { name: "money" })).toHaveTextContent("妻财入传：初传 辰（旺）");
+    expect(within(block).getByRole("group", { name: "money" })).toHaveTextContent("妻财旬空：初传 辰");
+    expect(within(block).getByRole("group", { name: "state" })).toHaveTextContent(
+      "天将落地类象：初传 勾陈落辰 · 共 1 条",
+    );
+    expect(within(block).getByRole("group", { name: "work" })).toHaveTextContent(
+      "工作所取六亲：官鬼 · 入传状态：中传 酉（囚，非旬空）、末传 亥（强弱未提供，旬空） · 天将落地类象：中传 天后落酉、末传 白虎落亥（无精确类象对应）",
+    );
+    expect(block).not.toHaveTextContent(
+      /subject_overcomes_object|subject_generates_object|wealth_presence|matched_count|target_relative|source_correspondence_matched/,
+    );
+    expect(block).not.toHaveTextContent(/吉凶|成败|大吉|大凶|hard_verdict/);
+  });
+
+  it("fails closed for unknown, extra or inconsistent outcome, money, state and work observations", () => {
+    const correspondence = {
+      stage: "initial",
+      heavenly_general: "勾陈",
+      landing_branch: "辰",
+      source_pack: "san-shi/liuren-miben",
+      source_rule: "LM-R01",
+      role: "imagery_correspondence_not_observed_activity",
+      status: "source_correspondence_matched",
+      source_text: "勾陈临辰",
+      source_anchor: "fulltext.md#L10",
+    };
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            outcome: dimension({
+              canonical_dimension: "outcome",
+              requested_dimension: "outcome",
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    observation: {
+                      relations: [
+                        "subject_generates_object",
+                        "subject_generates_object",
+                        "subject_generates_object",
+                      ],
+                      raw_dump: "不得展示 outcome",
+                    },
+                  }),
+                ],
+              }),
+            }),
+            money: dimension({
+              canonical_dimension: "money",
+              requested_dimension: "money",
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    observation: {
+                      wealth_presence: true,
+                      wealth_stages: [
+                        {
+                          stage: "initial",
+                          branch: "辰",
+                          six_relative: "妻财",
+                          season_strength: "旺",
+                          extra: "不得展示 money",
+                        },
+                      ],
+                    },
+                  }),
+                ],
+              }),
+            }),
+            state: dimension({
+              canonical_dimension: "state",
+              requested_dimension: "state",
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    observation: {
+                      matched_count: 2,
+                      stages: ["initial"],
+                      correspondences: [correspondence],
+                    },
+                  }),
+                ],
+              }),
+            }),
+            work: dimension({
+              canonical_dimension: "work",
+              requested_dimension: "work",
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    observation: {
+                      target_relative: "官鬼",
+                      target_strength: [
+                        {
+                          stage: "middle",
+                          branch: "酉",
+                          six_relative: "官鬼",
+                          season_strength: "囚",
+                          is_xunkong: false,
+                        },
+                      ],
+                      target_general_modifier: [
+                        { ...correspondence, six_relative: "官鬼", extra: "不得展示 work" },
+                      ],
+                    },
+                  }),
+                ],
+              }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/不得展示|subject_generates_object|wealth_presence|matched_count|target_relative/);
   });
 
   it("fails closed for extra or malformed relationship and timing observation fields", () => {

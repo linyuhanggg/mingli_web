@@ -3,29 +3,71 @@
 import type {
   DaliurenChartViewModel,
   DaliurenDimensionObservationMap,
+  DaliurenGeneralLandingCorrespondence,
+  DaliurenMiddleVoidObservation,
+  DaliurenMoneyObservation,
+  DaliurenOutcomeObservation,
+  DaliurenOutcomeRelation,
   DaliurenRelationshipObservation,
+  DaliurenSeasonStrength,
+  DaliurenSixRelative,
+  DaliurenStateObservation,
   DaliurenTimingObservation,
+  DaliurenTransmissionStage,
+  DaliurenWorkObservation,
 } from "@/view-models/registry";
 
 import styles from "./daliuren-dimension-evidence.module.css";
 
 type CoreFacts = NonNullable<DaliurenChartViewModel["core_facts"]>;
+type WealthPresentObservation = Extract<DaliurenMoneyObservation, { readonly wealth_presence: true }>;
+type WealthStage = WealthPresentObservation["wealth_stages"][number];
+type WealthVoidObservation = Extract<DaliurenMoneyObservation, { readonly wealth_void_rows: ReadonlyArray<unknown> }>;
+type WealthVoidRow = WealthVoidObservation["wealth_void_rows"][number];
+type WorkStrength = DaliurenWorkObservation["target_strength"][number];
+type WorkGeneralModifier = DaliurenWorkObservation["target_general_modifier"][number];
 
 export type DaliurenDimensionEvidenceProps = {
   dimensionFacts?: CoreFacts["dimension_facts"];
 };
 
 const TEXT_KEYS = ["display_text", "fact_text", "text", "label", "name", "note"] as const;
-const RELATION_FACTS: Readonly<Record<DaliurenRelationshipObservation["relation"], string>> = {
+const OUTCOME_RELATION_FACTS: Readonly<Record<DaliurenOutcomeRelation, string>> = {
   object_overcomes_subject: "客体克主体",
+  subject_generates_object: "主体生客体",
   subject_overcomes_object: "主体克客体",
 };
+const RELATIONSHIP_FACTS: Readonly<Record<DaliurenRelationshipObservation["relation"], string>> = {
+  object_overcomes_subject: OUTCOME_RELATION_FACTS.object_overcomes_subject,
+  subject_overcomes_object: OUTCOME_RELATION_FACTS.subject_overcomes_object,
+};
+const TRANSMISSION_RELATION_FACTS = Object.freeze({
+  subject_generates_object: "三传支均生日干",
+  subject_overcomes_object: "三传支均克日干",
+}) satisfies Readonly<Record<"subject_generates_object" | "subject_overcomes_object", string>>;
 const RELATIVE_SPEED_FACTS: Readonly<
   Record<NonNullable<DaliurenTimingObservation["relative_speed"]>, string>
 > = {
   relatively_faster: "较快",
   relatively_slower: "较慢",
 };
+const STAGE_FACTS: Readonly<Record<DaliurenTransmissionStage, string>> = {
+  final: "末传",
+  initial: "初传",
+  middle: "中传",
+};
+const SEASON_STRENGTH_FACTS: Readonly<Record<DaliurenSeasonStrength, string>> = {
+  unknown: "强弱未提供",
+  休: "休",
+  囚: "囚",
+  旺: "旺",
+  死: "死",
+  相: "相",
+};
+const SIX_RELATIVES: ReadonlySet<DaliurenSixRelative> = new Set(["兄弟", "子孙", "妻财", "官鬼", "父母"]);
+const OUTCOME_RELATIONSHIP_KEYS = ["relation"] as const;
+const OUTCOME_TRANSMISSION_KEYS = ["relations"] as const;
+const MIDDLE_VOID_KEYS = ["stage", "branch", "is_xunkong"] as const;
 const RELATIONSHIP_OBSERVATION_KEYS = ["relation"] as const;
 const TIMING_OBSERVATION_KEYS = ["candidate_branch", "candidate_date", "relative_speed"] as const;
 const CANDIDATE_BRANCH_KEYS = ["anchor_earth_branch", "branch", "source_rule"] as const;
@@ -41,6 +83,41 @@ const CANDIDATE_DATE_KEYS = [
   "source_rule",
   "candidate_not_guarantee",
 ] as const;
+const WEALTH_PRESENT_KEYS = ["wealth_presence", "wealth_stages"] as const;
+const WEALTH_STAGE_KEYS = ["stage", "branch", "six_relative", "season_strength"] as const;
+const WEALTH_VOID_KEYS = ["wealth_void_rows"] as const;
+const WEALTH_VOID_ROW_KEYS = ["stage", "branch", "six_relative", "is_xunkong"] as const;
+const STATE_OBSERVATION_KEYS = ["matched_count", "stages", "correspondences"] as const;
+const GENERAL_LANDING_KEYS = [
+  "stage",
+  "heavenly_general",
+  "landing_branch",
+  "source_pack",
+  "source_rule",
+  "role",
+  "status",
+  "source_text",
+  "source_anchor",
+] as const;
+const GENERAL_LANDING_UNAVAILABLE_KEYS = [
+  "stage",
+  "heavenly_general",
+  "landing_branch",
+  "source_pack",
+  "source_rule",
+  "role",
+  "status",
+] as const;
+const WORK_OBSERVATION_KEYS = ["target_relative", "target_strength", "target_general_modifier"] as const;
+const TARGET_STRENGTH_KEYS = [
+  "stage",
+  "branch",
+  "six_relative",
+  "season_strength",
+  "is_xunkong",
+] as const;
+const TARGET_GENERAL_MODIFIER_KEYS = [...GENERAL_LANDING_KEYS, "six_relative"] as const;
+const TARGET_GENERAL_MODIFIER_UNAVAILABLE_KEYS = [...GENERAL_LANDING_UNAVAILABLE_KEYS, "six_relative"] as const;
 
 type EvidenceEntry = {
   ruleId: string;
@@ -82,10 +159,66 @@ function firstAllowedText(value: unknown): string | null {
   return null;
 }
 
+function isTransmissionStage(value: unknown): value is DaliurenTransmissionStage {
+  return typeof value === "string" && hasOwnKey(STAGE_FACTS, value);
+}
+
+function isSeasonStrength(value: unknown): value is DaliurenSeasonStrength {
+  return typeof value === "string" && hasOwnKey(SEASON_STRENGTH_FACTS, value);
+}
+
+function isSixRelative(value: unknown): value is DaliurenSixRelative {
+  return typeof value === "string" && SIX_RELATIVES.has(value as DaliurenSixRelative);
+}
+
+function isMiddleVoidObservation(value: unknown): value is DaliurenMiddleVoidObservation {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, MIDDLE_VOID_KEYS) &&
+    value.stage === "middle" &&
+    Boolean(readString(value, "branch")) &&
+    value.is_xunkong === true
+  );
+}
+
+function middleVoidFact(value: DaliurenMiddleVoidObservation): string {
+  return `中传旬空：${value.branch}`;
+}
+
+function isOutcomeObservation(value: unknown): value is DaliurenOutcomeObservation {
+  if (!isRecord(value)) return false;
+  if (hasExactKeys(value, OUTCOME_RELATIONSHIP_KEYS)) {
+    const relation = readString(value, "relation");
+    return Boolean(
+      relation &&
+        (relation === "subject_overcomes_object" || relation === "object_overcomes_subject"),
+    );
+  }
+  if (hasExactKeys(value, OUTCOME_TRANSMISSION_KEYS)) {
+    const relations = value.relations;
+    return (
+      Array.isArray(relations) &&
+      relations.length === 3 &&
+      relations.every(
+        (relation) => relation === "subject_generates_object" || relation === "subject_overcomes_object",
+      ) &&
+      relations.every((relation) => relation === relations[0])
+    );
+  }
+  return isMiddleVoidObservation(value);
+}
+
+function outcomeFact(value: unknown): string | null {
+  if (!isOutcomeObservation(value)) return null;
+  if ("relation" in value) return `结构关系：${OUTCOME_RELATION_FACTS[value.relation]}`;
+  if ("relations" in value) return `三传与日干关系：${TRANSMISSION_RELATION_FACTS[value.relations[0]]}`;
+  return middleVoidFact(value);
+}
+
 function isRelationshipObservation(value: unknown): value is DaliurenRelationshipObservation {
   if (!isRecord(value) || !hasExactKeys(value, RELATIONSHIP_OBSERVATION_KEYS)) return false;
   const relation = readString(value, "relation");
-  return Boolean(relation && hasOwnKey(RELATION_FACTS, relation));
+  return Boolean(relation && hasOwnKey(RELATIONSHIP_FACTS, relation));
 }
 
 function isCandidateBranch(value: unknown): value is DaliurenTimingObservation["candidate_branch"] {
@@ -137,8 +270,184 @@ function isTimingObservation(value: unknown): value is DaliurenTimingObservation
   );
 }
 
+function isWealthStage(value: unknown): value is WealthStage {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, WEALTH_STAGE_KEYS) &&
+    isTransmissionStage(value.stage) &&
+    Boolean(readString(value, "branch")) &&
+    value.six_relative === "妻财" &&
+    isSeasonStrength(value.season_strength)
+  );
+}
+
+function isWealthVoidRow(value: unknown): value is WealthVoidRow {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, WEALTH_VOID_ROW_KEYS) &&
+    isTransmissionStage(value.stage) &&
+    Boolean(readString(value, "branch")) &&
+    value.six_relative === "妻财" &&
+    value.is_xunkong === true
+  );
+}
+
+function isMoneyObservation(value: unknown): value is DaliurenMoneyObservation {
+  if (!isRecord(value)) return false;
+  if (hasExactKeys(value, WEALTH_PRESENT_KEYS)) {
+    return (
+      value.wealth_presence === true &&
+      Array.isArray(value.wealth_stages) &&
+      value.wealth_stages.length > 0 &&
+      value.wealth_stages.every(isWealthStage)
+    );
+  }
+  if (hasExactKeys(value, WEALTH_VOID_KEYS)) {
+    return (
+      Array.isArray(value.wealth_void_rows) &&
+      value.wealth_void_rows.length > 0 &&
+      value.wealth_void_rows.every(isWealthVoidRow)
+    );
+  }
+  return isMiddleVoidObservation(value);
+}
+
+function moneyFact(value: unknown): string | null {
+  if (!isMoneyObservation(value)) return null;
+  if ("wealth_stages" in value) {
+    const stages = value.wealth_stages
+      .map((row) => `${STAGE_FACTS[row.stage]} ${row.branch}（${SEASON_STRENGTH_FACTS[row.season_strength]}）`)
+      .join("、");
+    return `妻财入传：${stages}`;
+  }
+  if ("wealth_void_rows" in value) {
+    const rows = value.wealth_void_rows.map((row) => `${STAGE_FACTS[row.stage]} ${row.branch}`).join("、");
+    return `妻财旬空：${rows}`;
+  }
+  return middleVoidFact(value);
+}
+
+function hasGeneralLandingBaseFields(value: Record<string, unknown>): boolean {
+  return (
+    isTransmissionStage(value.stage) &&
+    Boolean(readString(value, "heavenly_general")) &&
+    Boolean(readString(value, "landing_branch")) &&
+    value.source_pack === "san-shi/liuren-miben" &&
+    value.source_rule === "LM-R01" &&
+    value.role === "imagery_correspondence_not_observed_activity"
+  );
+}
+
+function isGeneralLandingCorrespondence(value: unknown): value is DaliurenGeneralLandingCorrespondence {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, GENERAL_LANDING_KEYS) &&
+    hasGeneralLandingBaseFields(value) &&
+    value.status === "source_correspondence_matched" &&
+    Boolean(readString(value, "source_text")) &&
+    Boolean(readString(value, "source_anchor"))
+  );
+}
+
+function isStateObservation(value: unknown): value is DaliurenStateObservation {
+  if (!isRecord(value) || !hasExactKeys(value, STATE_OBSERVATION_KEYS)) return false;
+  const stages = value.stages;
+  const correspondences = value.correspondences;
+  if (
+    typeof value.matched_count !== "number" ||
+    !Number.isInteger(value.matched_count) ||
+    value.matched_count <= 0 ||
+    !Array.isArray(stages) ||
+    !stages.every(isTransmissionStage) ||
+    !Array.isArray(correspondences) ||
+    !correspondences.every(isGeneralLandingCorrespondence) ||
+    stages.length !== value.matched_count ||
+    correspondences.length !== value.matched_count
+  ) {
+    return false;
+  }
+  return stages.every((stage, index) => correspondences[index]?.stage === stage);
+}
+
+function stateFact(value: unknown): string | null {
+  if (!isStateObservation(value)) return null;
+  const rows = value.correspondences
+    .map((row) => `${STAGE_FACTS[row.stage]} ${row.heavenly_general}落${row.landing_branch}`)
+    .join("、");
+  return `天将落地类象：${rows} · 共 ${value.matched_count} 条`;
+}
+
+function isWorkStrength(value: unknown): value is WorkStrength {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, TARGET_STRENGTH_KEYS) &&
+    isTransmissionStage(value.stage) &&
+    Boolean(readString(value, "branch")) &&
+    isSixRelative(value.six_relative) &&
+    isSeasonStrength(value.season_strength) &&
+    typeof value.is_xunkong === "boolean"
+  );
+}
+
+function isWorkGeneralModifier(value: unknown): value is WorkGeneralModifier {
+  if (!isRecord(value) || !hasGeneralLandingBaseFields(value) || !isSixRelative(value.six_relative)) return false;
+  if (hasExactKeys(value, TARGET_GENERAL_MODIFIER_KEYS)) {
+    return (
+      value.status === "source_correspondence_matched" &&
+      Boolean(readString(value, "source_text")) &&
+      Boolean(readString(value, "source_anchor"))
+    );
+  }
+  return (
+    hasExactKeys(value, TARGET_GENERAL_MODIFIER_UNAVAILABLE_KEYS) &&
+    value.status === "no_exact_source_correspondence"
+  );
+}
+
+function isWorkObservation(value: unknown): value is DaliurenWorkObservation {
+  if (!isRecord(value) || !hasExactKeys(value, WORK_OBSERVATION_KEYS)) return false;
+  if (
+    !isSixRelative(value.target_relative) ||
+    !Array.isArray(value.target_strength) ||
+    value.target_strength.length === 0 ||
+    !value.target_strength.every(isWorkStrength) ||
+    !Array.isArray(value.target_general_modifier) ||
+    !value.target_general_modifier.every(isWorkGeneralModifier)
+  ) {
+    return false;
+  }
+  return (
+    value.target_strength.every((row) => row.six_relative === value.target_relative) &&
+    value.target_general_modifier.every((row) => row.six_relative === value.target_relative)
+  );
+}
+
+function workFact(value: unknown): string | null {
+  if (!isWorkObservation(value)) return null;
+  const strengths = value.target_strength
+    .map(
+      (row) =>
+        `${STAGE_FACTS[row.stage]} ${row.branch}（${SEASON_STRENGTH_FACTS[row.season_strength]}，${row.is_xunkong ? "旬空" : "非旬空"}）`,
+    )
+    .join("、");
+  const facts = [`工作所取六亲：${value.target_relative}`, `入传状态：${strengths}`];
+  if (value.target_general_modifier.length) {
+    facts.push(
+      `天将落地类象：${value.target_general_modifier
+        .map(
+          (row) =>
+            `${STAGE_FACTS[row.stage]} ${row.heavenly_general}落${row.landing_branch}${
+              row.status === "no_exact_source_correspondence" ? "（无精确类象对应）" : ""
+            }`,
+        )
+        .join("、")}`,
+    );
+  }
+  return facts.join(" · ");
+}
+
 function relationshipFact(value: unknown): string | null {
-  return isRelationshipObservation(value) ? `主客关系：${RELATION_FACTS[value.relation]}` : null;
+  return isRelationshipObservation(value) ? `主客关系：${RELATIONSHIP_FACTS[value.relation]}` : null;
 }
 
 function timingFact(value: unknown): string | null {
@@ -154,14 +463,18 @@ function timingFact(value: unknown): string | null {
 }
 
 const RUNTIME_OBSERVATION_FACTS = Object.freeze({
+  money: moneyFact,
+  outcome: outcomeFact,
   relationship: relationshipFact,
+  state: stateFact,
   timing: timingFact,
+  work: workFact,
 }) satisfies Readonly<{
   [Dimension in keyof DaliurenDimensionObservationMap]: (value: unknown) => string | null;
 }>;
 
 function observationFact(dimension: string, value: unknown): string | null {
-  if (dimension === "relationship" || dimension === "timing") {
+  if (hasOwnKey(RUNTIME_OBSERVATION_FACTS, dimension)) {
     return RUNTIME_OBSERVATION_FACTS[dimension](value);
   }
   return firstAllowedText(value);

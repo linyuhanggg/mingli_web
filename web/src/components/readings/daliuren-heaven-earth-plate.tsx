@@ -100,7 +100,6 @@ export function DaliurenHeavenEarthPlate({
           aria-hidden="true"
           className={styles.ring}
           data-ring="earth"
-          style={offset == null ? undefined : { ["--plate-offset" as string]: String(offset) }}
         >
           {earth.map((branch, index) => (
             <li
@@ -143,6 +142,9 @@ export function DaliurenHeavenEarthPlate({
               >
                 <th scope="row">
                   {branch}
+                  {nobleEarthPosition === branch ? (
+                    <span className={styles.nobleBadge}>贵人落地</span>
+                  ) : null}
                   {timingAnchors.has(branch) ? <TimingMark /> : null}
                   {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
                 </th>
