@@ -25,7 +25,11 @@ function methodRows(value: CoreFacts["lesson_method"]): readonly MethodRow[] {
   const rows = [
     { label: "课式", value: readText(value.primary) },
     { label: "发用", value: readText(value.use_method) },
+    { label: "发用初传", value: readText(value.selected_initial) },
+    { label: "取传方向", value: readText(value.direct_direction) },
     { label: "三传", value: readText(value.calculated_transmissions) },
+    { label: "计算来源", value: readText(value.calculation_source) },
+    { label: "来源定位", value: readText(value.source_anchor) },
   ];
   return rows.filter((row): row is MethodRow => Boolean(row.value));
 }

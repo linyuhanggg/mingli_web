@@ -101,7 +101,34 @@ const SEASON_STRENGTH_FACTS: Readonly<Record<DaliurenSeasonStrength, string>> = 
   相: "相",
 };
 const SIX_RELATIVES: ReadonlySet<DaliurenSixRelative> = new Set(["兄弟", "子孙", "妻财", "官鬼", "父母"]);
-const EARTHLY_BRANCHES: ReadonlySet<string> = new Set(["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]);
+const FIVE_ELEMENTS = ["木", "火", "土", "金", "水"] as const;
+type FiveElement = (typeof FIVE_ELEMENTS)[number];
+const HEAVENLY_STEM_ELEMENTS = Object.freeze({
+  甲: "木",
+  乙: "木",
+  丙: "火",
+  丁: "火",
+  戊: "土",
+  己: "土",
+  庚: "金",
+  辛: "金",
+  壬: "水",
+  癸: "水",
+}) satisfies Readonly<Record<string, FiveElement>>;
+const EARTHLY_BRANCH_ELEMENTS = Object.freeze({
+  子: "水",
+  丑: "土",
+  寅: "木",
+  卯: "木",
+  辰: "土",
+  巳: "火",
+  午: "火",
+  未: "土",
+  申: "金",
+  酉: "金",
+  戌: "土",
+  亥: "水",
+}) satisfies Readonly<Record<string, FiveElement>>;
 const HEAVENLY_GENERALS: ReadonlySet<DaliurenHeavenlyGeneral> = new Set([
   "贵人",
   "腾蛇",
@@ -247,6 +274,22 @@ const WEALTH_VOID_SOURCE_REFS = [
   },
 ] as const;
 const MIDDLE_VOID_SOURCE_REFS = [WEALTH_VOID_SOURCE_REFS[1]] as const;
+const WORK_TARGET_SOURCE_REFS = [
+  {
+    pack: "san-shi/liuren-zhiyin",
+    rule_id: "LR-19",
+    quote_id: "LZ-Q056",
+    source_anchor: "fulltext.md#L777",
+  },
+] as const;
+const WORK_TARGET_FACT_PATHS = [
+  "dimension_facts.work.target_relative",
+  "dimension_facts.work.target_presence",
+] as const;
+const WORK_TARGET_EVIDENCE_KEYS = [
+  ...MATCHED_EVIDENCE_REQUIRED_KEYS,
+  "confidence_ceiling",
+] as const;
 const SIX_RELATIVE_STAGE_KEYS = ["stage", "branch", "six_relative"] as const;
 const STAGE_STATUS_KEYS = [
   "stage",
@@ -314,7 +357,6 @@ const RELATION_FACT_KEYS = [
 ] as const;
 const TRANSMISSION_RELATION_KEYS = [...RELATION_FACT_KEYS, "stage"] as const;
 const STAGE_FLOW_KEYS = [...RELATION_FACT_KEYS, "from_stage", "to_stage"] as const;
-const FIVE_ELEMENTS = ["木", "火", "土", "金", "水"] as const;
 const ELEMENT_GENERATES = Object.freeze({
   木: "火",
   火: "土",
@@ -337,7 +379,6 @@ const DETERMINISTIC_RELATION_FACTS = Object.freeze({
   subject_overcomes_object: "前者克后者",
 });
 
-type FiveElement = (typeof FIVE_ELEMENTS)[number];
 type DeterministicRelation = keyof typeof DETERMINISTIC_RELATION_FACTS;
 
 type DeterministicRelationFact = {
@@ -420,7 +461,7 @@ function isSixRelative(value: unknown): value is DaliurenSixRelative {
 }
 
 function isEarthlyBranch(value: unknown): value is string {
-  return typeof value === "string" && EARTHLY_BRANCHES.has(value);
+  return typeof value === "string" && hasOwnKey(EARTHLY_BRANCH_ELEMENTS, value);
 }
 
 function isHeavenlyGeneral(value: unknown): value is DaliurenHeavenlyGeneral {
@@ -449,6 +490,23 @@ function directedRelation(subject: FiveElement, object: FiveElement): Determinis
   return "object_overcomes_subject";
 }
 
+function fixedElement(role: string, value: string): FiveElement | null {
+  if (role === "day_stem") {
+    return hasOwnKey(HEAVENLY_STEM_ELEMENTS, value) ? HEAVENLY_STEM_ELEMENTS[value] : null;
+  }
+  if (
+    role === "day_branch" ||
+    role === "transmission_branch" ||
+    role === "initial_branch" ||
+    role === "final_branch" ||
+    role === "from_branch" ||
+    role === "to_branch"
+  ) {
+    return hasOwnKey(EARTHLY_BRANCH_ELEMENTS, value) ? EARTHLY_BRANCH_ELEMENTS[value] : null;
+  }
+  return null;
+}
+
 function parseRelationFact(
   value: unknown,
   subject: string,
@@ -464,7 +522,9 @@ function parseRelationFact(
     !subjectValue ||
     !objectValue ||
     !isFiveElement(value.subject_element) ||
-    !isFiveElement(value.object_element)
+    !isFiveElement(value.object_element) ||
+    fixedElement(subject, subjectValue) !== value.subject_element ||
+    fixedElement(object, objectValue) !== value.object_element
   ) {
     return null;
   }
@@ -506,7 +566,7 @@ function parseSixRelativeStage(
 ): DaliurenSixRelativeStage | null {
   if (!isRecord(value) || !hasExactKeys(value, SIX_RELATIVE_STAGE_KEYS)) return null;
   const branch = readString(value, "branch");
-  if (value.stage !== stage || !branch || !isSixRelative(value.six_relative)) return null;
+  if (value.stage !== stage || !isEarthlyBranch(branch) || !isSixRelative(value.six_relative)) return null;
   return { branch, six_relative: value.six_relative, stage };
 }
 
@@ -519,8 +579,8 @@ function parseStageStatus(
   const heavenlyGeneral = readString(value, "heavenly_general");
   if (
     value.stage !== stage ||
-    !branch ||
-    !heavenlyGeneral ||
+    !isEarthlyBranch(branch) ||
+    !isHeavenlyGeneral(heavenlyGeneral) ||
     !isSixRelative(value.six_relative) ||
     !isSeasonStrength(value.season_strength) ||
     typeof value.is_xunkong !== "boolean"
@@ -738,8 +798,8 @@ function moneyFact(value: unknown): string | null {
 function hasGeneralLandingBaseFields(value: Record<string, unknown>): boolean {
   return (
     isTransmissionStage(value.stage) &&
-    Boolean(readString(value, "heavenly_general")) &&
-    Boolean(readString(value, "landing_branch")) &&
+    isHeavenlyGeneral(value.heavenly_general) &&
+    isEarthlyBranch(value.landing_branch) &&
     value.source_pack === "san-shi/liuren-miben" &&
     value.source_rule === "LM-R01" &&
     value.role === "imagery_correspondence_not_observed_activity"
@@ -977,7 +1037,7 @@ function isWorkStrength(value: unknown): value is WorkStrength {
     isRecord(value) &&
     hasExactKeys(value, TARGET_STRENGTH_KEYS) &&
     isTransmissionStage(value.stage) &&
-    Boolean(readString(value, "branch")) &&
+    isEarthlyBranch(value.branch) &&
     isSixRelative(value.six_relative) &&
     isSeasonStrength(value.season_strength) &&
     typeof value.is_xunkong === "boolean"
@@ -1048,6 +1108,101 @@ function workFact(value: unknown): string | null {
     );
   }
   return facts.join(" · ");
+}
+
+function sameWorkStrength(left: WorkStrength, right: WorkStrength): boolean {
+  return (
+    left.stage === right.stage &&
+    left.branch === right.branch &&
+    left.six_relative === right.six_relative &&
+    left.season_strength === right.season_strength &&
+    left.is_xunkong === right.is_xunkong
+  );
+}
+
+function sameWorkGeneralModifier(left: WorkGeneralModifier, right: WorkGeneralModifier): boolean {
+  if (
+    left.stage !== right.stage ||
+    left.heavenly_general !== right.heavenly_general ||
+    left.landing_branch !== right.landing_branch ||
+    left.source_pack !== right.source_pack ||
+    left.source_rule !== right.source_rule ||
+    left.role !== right.role ||
+    left.status !== right.status ||
+    left.six_relative !== right.six_relative
+  ) {
+    return false;
+  }
+  if (left.status === "source_correspondence_matched") {
+    return (
+      right.status === "source_correspondence_matched" &&
+      left.source_text === right.source_text &&
+      left.source_anchor === right.source_anchor
+    );
+  }
+  return right.status === "no_exact_source_correspondence";
+}
+
+function sameWorkObservation(left: DaliurenWorkObservation, right: DaliurenWorkObservation): boolean {
+  if (left.target_relative !== right.target_relative) return false;
+  if ("target_presence" in left || "target_presence" in right) {
+    return (
+      "target_presence" in left &&
+      "target_presence" in right &&
+      left.target_presence === right.target_presence &&
+      left.target_contract_status === right.target_contract_status
+    );
+  }
+  return (
+    left.target_strength.length === right.target_strength.length &&
+    left.target_strength.every((row, index) => {
+      const other = right.target_strength[index];
+      return other !== undefined && sameWorkStrength(row, other);
+    }) &&
+    left.target_general_modifier.length === right.target_general_modifier.length &&
+    left.target_general_modifier.every((row, index) => {
+      const other = right.target_general_modifier[index];
+      return other !== undefined && sameWorkGeneralModifier(row, other);
+    })
+  );
+}
+
+function hasRuntimeWorkEvidenceMetadata(
+  value: unknown,
+  status: "matched" | "scope_boundary",
+): boolean {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, WORK_TARGET_EVIDENCE_KEYS) ||
+    value.activation_id !== "liuren.target.work.present" ||
+    value.dependency_group !== "liuren.target.work.presence" ||
+    value.polarity !== "support" ||
+    value.rule_id !== "LR-19" ||
+    value.rule_key !== "work_target_present" ||
+    value.status !== status ||
+    value.weight_class !== "primary" ||
+    value.confidence_ceiling !== "medium" ||
+    !Array.isArray(value.fact_paths) ||
+    value.fact_paths.length !== WORK_TARGET_FACT_PATHS.length ||
+    value.fact_paths.some((path, index) => path !== WORK_TARGET_FACT_PATHS[index]) ||
+    !Array.isArray(value.source_refs) ||
+    value.source_refs.length !== WORK_TARGET_SOURCE_REFS.length
+  ) {
+    return false;
+  }
+  return value.source_refs.every((source, index) => {
+    const expected = WORK_TARGET_SOURCE_REFS[index];
+    return (
+      expected !== undefined &&
+      isRecord(source) &&
+      hasRequiredAndOptionalKeys(source, SOURCE_REF_REQUIRED_KEYS, SOURCE_REF_OPTIONAL_KEYS) &&
+      Object.keys(source).length === SOURCE_REF_REQUIRED_KEYS.length + SOURCE_REF_OPTIONAL_KEYS.length &&
+      source.pack === expected.pack &&
+      source.rule_id === expected.rule_id &&
+      source.quote_id === expected.quote_id &&
+      source.source_anchor === expected.source_anchor
+    );
+  });
 }
 
 function relationshipFact(value: unknown): string | null {
@@ -1850,6 +2005,177 @@ function parseTopLevelRelationshipFacts(
   return deterministicEntries;
 }
 
+function parseTopLevelWorkFacts(
+  value: Record<string, unknown>,
+  evidence: Record<string, unknown>,
+): readonly EvidenceEntry[] | null {
+  const stageRows = value.six_relative_stages;
+  const statusRows = value.stage_status;
+  const sourceRuleIds = value.source_rule_ids;
+  if (
+    !hasExactKeys(value, WORK_DIMENSION_KEYS) ||
+    value.canonical_dimension !== "work" ||
+    (value.requested_dimension !== "work" && value.requested_dimension !== "career") ||
+    value.status !== "calculated_facts_not_verdict" ||
+    !Array.isArray(sourceRuleIds) ||
+    !sourceRuleIds.every((ruleId) => typeof ruleId === "string" && Boolean(ruleId.trim())) ||
+    !isSixRelative(value.target_relative) ||
+    value.target_contract_status !== "bound" ||
+    typeof value.target_presence !== "boolean" ||
+    !Array.isArray(stageRows) ||
+    stageRows.length !== LOCATION_STAGES.length ||
+    !Array.isArray(statusRows) ||
+    statusRows.length !== LOCATION_STAGES.length ||
+    !hasRuntimeEvidenceEnvelope(evidence) ||
+    !Array.isArray(evidence.matched) ||
+    !Array.isArray(evidence.scope_boundaries) ||
+    !isEmptyArray(evidence.not_evaluated)
+  ) {
+    return null;
+  }
+
+  const subjectObject = parseRelationFact(value.subject_object_relation, "day_stem", "day_branch");
+  const stages = LOCATION_STAGES.map((stage, index) => parseSixRelativeStage(stageRows[index], stage));
+  const statuses = LOCATION_STAGES.map((stage, index) => parseStageStatus(statusRows[index], stage));
+  if (!subjectObject || stages.some((row) => row === null) || statuses.some((row) => row === null)) {
+    return null;
+  }
+  const typedStages = stages as readonly DaliurenSixRelativeStage[];
+  const typedStatuses = statuses as readonly DaliurenStageStatusEntry[];
+  if (
+    typedStatuses.some(
+      (row, index) =>
+        row.branch !== typedStages[index]?.branch ||
+        row.six_relative !== typedStages[index]?.six_relative,
+    )
+  ) {
+    return null;
+  }
+
+  const targetObservation =
+    value.target_presence === false
+      ? {
+          target_relative: value.target_relative,
+          target_presence: false,
+          target_contract_status: value.target_contract_status,
+        }
+      : {
+          target_relative: value.target_relative,
+          target_strength: value.target_strength,
+          target_general_modifier: value.target_general_modifier,
+        };
+  if (!isWorkObservation(targetObservation)) return null;
+
+  const targetStatuses = typedStatuses.filter(
+    (row) => row.six_relative === targetObservation.target_relative,
+  );
+  if ("target_presence" in targetObservation) {
+    if (
+      targetStatuses.length !== 0 ||
+      !isEmptyArray(value.target_strength) ||
+      !isEmptyArray(value.target_general_modifier)
+    ) {
+      return null;
+    }
+  } else {
+    if (
+      targetStatuses.length === 0 ||
+      targetObservation.target_strength.length !== targetStatuses.length ||
+      targetObservation.target_general_modifier.length !== targetStatuses.length ||
+      !hasRuntimeStageOrder(targetObservation.target_strength) ||
+      !hasRuntimeStageOrder(targetObservation.target_general_modifier) ||
+      targetObservation.target_strength.some((row, index) => {
+        const status = targetStatuses[index];
+        return (
+          status === undefined ||
+          row.stage !== status.stage ||
+          row.branch !== status.branch ||
+          row.six_relative !== status.six_relative ||
+          row.season_strength !== status.season_strength ||
+          row.is_xunkong !== status.is_xunkong
+        );
+      }) ||
+      targetObservation.target_general_modifier.some((row, index) => {
+        const status = targetStatuses[index];
+        return (
+          status === undefined ||
+          row.stage !== status.stage ||
+          row.landing_branch !== status.branch ||
+          row.heavenly_general !== status.heavenly_general ||
+          row.six_relative !== status.six_relative
+        );
+      })
+    ) {
+      return null;
+    }
+  }
+
+  const deterministicEntries: readonly EvidenceEntry[] = [
+    {
+      marker: "主客五行",
+      fact: `日干与日支：${relationFactText(subjectObject)}`,
+      sources: [],
+    },
+    {
+      marker: "三传六亲",
+      fact: `三传六亲：${typedStages
+        .map((row) => `${STAGE_FACTS[row.stage]} ${row.branch} · ${row.six_relative}`)
+        .join("；")}`,
+      sources: [],
+    },
+    {
+      marker: "三传状态",
+      fact: `三传状态：${typedStatuses
+        .map(
+          (row) =>
+            `${STAGE_FACTS[row.stage]} ${row.branch} · 六亲${row.six_relative} · 天将${row.heavenly_general} · ${
+              SEASON_STRENGTH_FACTS[row.season_strength]
+            } · ${row.is_xunkong ? "旬空" : "非旬空"}`,
+        )
+        .join("；")}`,
+      sources: [],
+    },
+  ];
+
+  const normalizedSourceRuleIds = sourceRuleIds.map((ruleId) => ruleId.trim());
+  if ("target_presence" in targetObservation) {
+    const scope = evidence.scope_boundaries[0];
+    const parsed = parseScopeBoundaryEntry(scope, "work");
+    if (
+      normalizedSourceRuleIds.length !== 0 ||
+      evidence.status !== "scope_boundary" ||
+      !isEmptyArray(evidence.matched) ||
+      evidence.scope_boundaries.length !== 1 ||
+      !hasRuntimeWorkEvidenceMetadata(scope, "scope_boundary") ||
+      !isRecord(scope) ||
+      !isWorkObservation(scope.observation) ||
+      !sameWorkObservation(scope.observation, targetObservation) ||
+      !parsed
+    ) {
+      return null;
+    }
+    return [parsed, ...deterministicEntries];
+  }
+
+  const matched = evidence.matched[0];
+  const parsed = parseRuntimeMatchedEntry(matched, "work");
+  if (
+    normalizedSourceRuleIds.length !== 1 ||
+    normalizedSourceRuleIds[0] !== "LR-19" ||
+    evidence.status !== "matched_evidence" ||
+    evidence.matched.length !== 1 ||
+    !isEmptyArray(evidence.scope_boundaries) ||
+    !hasRuntimeWorkEvidenceMetadata(matched, "matched") ||
+    !isRecord(matched) ||
+    !isWorkObservation(matched.observation) ||
+    !sameWorkObservation(matched.observation, targetObservation) ||
+    !parsed
+  ) {
+    return null;
+  }
+  return [parsed.entry, ...deterministicEntries];
+}
+
 function isMissingWorkTargetNotEvaluated(value: unknown): boolean {
   return (
     isRuntimeNotEvaluatedEntry(value) &&
@@ -1985,6 +2311,10 @@ function parseDimension(value: unknown): EvidenceGroup | null {
   if (dimension === "work" && value.target_contract_status === "missing_target_relative") {
     const boundary = parseMissingWorkTargetBoundary(value, evidence);
     return boundary ? { dimension, entries: [boundary] } : null;
+  }
+  if (dimension === "work" && value.target_contract_status === "bound") {
+    const workEntries = parseTopLevelWorkFacts(value, evidence);
+    return workEntries ? { dimension, entries: workEntries } : null;
   }
   const entries: EvidenceEntry[] = [];
   for (const item of evidence.matched) {

@@ -840,12 +840,36 @@ describe("大六壬 S3 M5 课式与传法", () => {
     expect(within(panel).getByText("伏吟")).toBeVisible();
     expect(within(panel).getByText("发用")).toBeVisible();
     expect(within(panel).getByText("伏吟有克/重审")).toBeVisible();
+    expect(within(panel).getByText("发用初传")).toBeVisible();
+    expect(within(panel).getByText("辰")).toBeVisible();
+    expect(within(panel).getByText("取传方向")).toBeVisible();
+    expect(within(panel).getByText("下贼上")).toBeVisible();
     expect(within(panel).getByText("三传")).toBeVisible();
     expect(within(panel).getByText("辰酉卯")).toBeVisible();
+    expect(within(panel).getByText("计算来源")).toBeVisible();
+    expect(within(panel).getByText("classical_nine-method_algorithm")).toBeVisible();
+    expect(within(panel).getByText("来源定位")).toBeVisible();
+    expect(within(panel).getByText("daliuren-daquan L7696/L7818")).toBeVisible();
     expect(within(panel).queryByText("传法")).not.toBeInTheDocument();
     expect(screen.queryByText("display_text")).not.toBeInTheDocument();
     expect(screen.queryByText("lesson_method")).not.toBeInTheDocument();
     expect(screen.queryByText(/GAP-DL/)).not.toBeInTheDocument();
+  });
+
+  it("omits only the nullable direction row when Runtime returns null", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: emptyFacts({ lesson_method: lessonMethod({ direct_direction: null }) }),
+        })}
+      />,
+    );
+
+    const panel = methodPanel();
+    expect(within(panel).queryByText("取传方向")).not.toBeInTheDocument();
+    expect(within(panel).getByText("发用初传")).toBeVisible();
+    expect(within(panel).getByText("计算来源")).toBeVisible();
+    expect(within(panel).getByText("来源定位")).toBeVisible();
   });
 
   it("does not invent a method sentence from lessons, transmissions, disallowed keys, or legacy aliases", () => {
@@ -856,7 +880,11 @@ describe("大六壬 S3 M5 课式与传法", () => {
             ...emptyFacts({
               lesson_method: lessonMethod({
                 calculated_transmissions: "",
+                calculation_source: "",
+                direct_direction: null,
                 primary: "",
+                selected_initial: "",
+                source_anchor: "",
                 use_method: "",
               }),
               structural_patterns: null,
@@ -872,6 +900,10 @@ describe("大六壬 S3 M5 课式与传法", () => {
     expect(screen.queryByText("发明传法")).not.toBeInTheDocument();
     expect(screen.queryByText("课式")).not.toBeInTheDocument();
     expect(screen.queryByText("传法")).not.toBeInTheDocument();
+    expect(screen.queryByText("发用初传")).not.toBeInTheDocument();
+    expect(screen.queryByText("取传方向")).not.toBeInTheDocument();
+    expect(screen.queryByText("计算来源")).not.toBeInTheDocument();
+    expect(screen.queryByText("来源定位")).not.toBeInTheDocument();
   });
 
   it("renders non-empty structural patterns as inert chips without evidence gold", () => {
@@ -950,7 +982,11 @@ describe("大六壬 S3 M6a 维度证据", () => {
   type FactObject = NonNullable<CoreFacts["dimension_facts"]>;
 
   function runtimeRuleSourceRefs(
-    ruleKey: "state_general_landing_correspondence" | "wealth_present_miben" | "wealth_void_miben",
+    ruleKey:
+      | "state_general_landing_correspondence"
+      | "wealth_present_miben"
+      | "wealth_void_miben"
+      | "work_target_present",
   ): readonly DaliurenRuleSourceRef[] {
     const payload: unknown = JSON.parse(
       readFileSync(
@@ -1292,6 +1328,127 @@ describe("大六壬 S3 M6a 维度证据", () => {
     };
   }
 
+  function boundWorkProjection(
+    requestedDimension: "work" | "career" = "work",
+    targetRelative: "官鬼" | "父母" = "官鬼",
+  ) {
+    const sixRelativeStages = [
+      { stage: "initial", branch: "辰", six_relative: "妻财" },
+      { stage: "middle", branch: "酉", six_relative: "官鬼" },
+      { stage: "final", branch: "亥", six_relative: "官鬼" },
+    ];
+    const stageStatus = [
+      stateStatus("initial", "辰", "勾陈", { six_relative: "妻财", season_strength: "旺" }),
+      stateStatus("middle", "酉", "天后", { six_relative: "官鬼", season_strength: "囚" }),
+      stateStatus("final", "亥", "白虎", {
+        six_relative: "官鬼",
+        season_strength: "unknown",
+        is_xunkong: true,
+      }),
+    ];
+    const targetStrength =
+      targetRelative === "官鬼"
+        ? [
+            {
+              stage: "middle",
+              branch: "酉",
+              six_relative: "官鬼",
+              season_strength: "囚",
+              is_xunkong: false,
+            },
+            {
+              stage: "final",
+              branch: "亥",
+              six_relative: "官鬼",
+              season_strength: "unknown",
+              is_xunkong: true,
+            },
+          ]
+        : [];
+    const targetGeneralModifier =
+      targetRelative === "官鬼"
+        ? [
+            {
+              stage: "middle",
+              heavenly_general: "天后",
+              landing_branch: "酉",
+              source_pack: "san-shi/liuren-miben",
+              source_rule: "LM-R01",
+              role: "imagery_correspondence_not_observed_activity",
+              status: "source_correspondence_matched",
+              source_text: "天后临酉",
+              source_anchor: "fulltext.md#L11",
+              six_relative: "官鬼",
+            },
+            {
+              stage: "final",
+              heavenly_general: "白虎",
+              landing_branch: "亥",
+              source_pack: "san-shi/liuren-miben",
+              source_rule: "LM-R01",
+              role: "imagery_correspondence_not_observed_activity",
+              status: "no_exact_source_correspondence",
+              six_relative: "官鬼",
+            },
+          ]
+        : [];
+    const targetPresence = targetRelative === "官鬼";
+    const observation = targetPresence
+      ? {
+          target_relative: targetRelative,
+          target_strength: targetStrength,
+          target_general_modifier: targetGeneralModifier,
+        }
+      : {
+          target_relative: targetRelative,
+          target_presence: false,
+          target_contract_status: "bound",
+        };
+    const targetEvidence = matchedEntry({
+      activation_id: "liuren.target.work.present",
+      confidence_ceiling: "medium",
+      dependency_group: "liuren.target.work.presence",
+      fact_paths: [
+        "dimension_facts.work.target_relative",
+        "dimension_facts.work.target_presence",
+      ],
+      observation,
+      polarity: "support",
+      rule_id: "LR-19",
+      rule_key: "work_target_present",
+      source_refs: runtimeRuleSourceRefs("work_target_present"),
+      status: targetPresence ? "matched" : "scope_boundary",
+      weight_class: "primary",
+    });
+    return {
+      canonical_dimension: "work",
+      requested_dimension: requestedDimension,
+      status: "calculated_facts_not_verdict",
+      source_rule_ids: targetPresence ? ["LR-19"] : [],
+      six_relative_stages: sixRelativeStages,
+      stage_status: stageStatus,
+      subject_object_relation: {
+        subject: "day_stem",
+        subject_value: "甲",
+        subject_element: "木",
+        object: "day_branch",
+        object_value: "寅",
+        object_element: "木",
+        relation: "same_element",
+      },
+      target_relative: targetRelative,
+      target_contract_status: "bound",
+      target_presence: targetPresence,
+      target_strength: targetStrength,
+      target_general_modifier: targetGeneralModifier,
+      rule_evidence: runtimeStateEvidence({
+        matched: targetPresence ? [targetEvidence] : [],
+        scope_boundaries: targetPresence ? [] : [targetEvidence],
+        status: targetPresence ? "matched_evidence" : "scope_boundary",
+      }),
+    };
+  }
+
   function missingWorkProjection(requestedDimension: "work" | "career" = "work") {
     return {
       canonical_dimension: "work",
@@ -1454,49 +1611,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
                 ],
               }),
             }),
-            work: dimension({
-              canonical_dimension: "work",
-              requested_dimension: "work",
-              rule_evidence: evidence({
-                matched: [
-                  matchedEntry({
-                    rule_id: "LM-R07",
-                    observation: {
-                      target_relative: "官鬼",
-                      target_strength: [
-                        {
-                          stage: "middle",
-                          branch: "酉",
-                          six_relative: "官鬼",
-                          season_strength: "囚",
-                          is_xunkong: false,
-                        },
-                        {
-                          stage: "final",
-                          branch: "亥",
-                          six_relative: "官鬼",
-                          season_strength: "unknown",
-                          is_xunkong: true,
-                        },
-                      ],
-                      target_general_modifier: [
-                        { ...correspondence, stage: "middle", heavenly_general: "天后", landing_branch: "酉", six_relative: "官鬼" },
-                        {
-                          stage: "final",
-                          heavenly_general: "白虎",
-                          landing_branch: "亥",
-                          source_pack: "san-shi/liuren-miben",
-                          source_rule: "LM-R01",
-                          role: "imagery_correspondence_not_observed_activity",
-                          status: "no_exact_source_correspondence",
-                          six_relative: "官鬼",
-                        },
-                      ],
-                    },
-                  }),
-                ],
-              }),
-            }),
+            work: boundWorkProjection(),
           }),
         })}
       />,
@@ -1521,6 +1636,98 @@ describe("大六壬 S3 M6a 维度证据", () => {
     );
     expect(block).not.toHaveTextContent(/outcome|money|state|work/);
     expect(block).not.toHaveTextContent(/吉凶|成败|大吉|大凶|hard_verdict/);
+  });
+
+  it.each([
+    ["work", "官鬼"],
+    ["career", "官鬼"],
+    ["work", "父母"],
+    ["career", "父母"],
+  ] as const)(
+    "renders the complete bound %s projection for a %s target without inventing a verdict",
+    (requestedDimension, targetRelative) => {
+      render(
+        <DaliurenBoard
+          view={chart({
+            core_facts: factsWithDimensions({
+              work: boundWorkProjection(requestedDimension, targetRelative),
+            }),
+          })}
+        />,
+      );
+
+      const work = within(panel()).getByRole("group", { name: "事业" });
+      expect(work).toHaveTextContent("日干与日支：甲（木）与寅（木）：五行同类");
+      expect(work).toHaveTextContent("三传六亲：初传 辰 · 妻财；中传 酉 · 官鬼；末传 亥 · 官鬼");
+      expect(work).toHaveTextContent(
+        "三传状态：初传 辰 · 六亲妻财 · 天将勾陈 · 旺 · 非旬空；中传 酉 · 六亲官鬼 · 天将天后 · 囚 · 非旬空；末传 亥 · 六亲官鬼 · 天将白虎 · 强弱未提供 · 旬空",
+      );
+      expect(within(work).getByText("LR-19")).toBeVisible();
+      expect(work).toHaveTextContent(
+        targetRelative === "官鬼"
+          ? "工作所取六亲：官鬼 · 入传状态"
+          : "工作所取六亲：父母 · 未入三传",
+      );
+      expect(work).not.toHaveTextContent(
+        /target_relative|target_presence|target_strength|subject_object_relation|吉凶|成败|保证|硬判/,
+      );
+    },
+  );
+
+  it("fails the whole bound work group closed for malformed, drifting or unbound evidence", () => {
+    const mutate = (change: (projection: Record<string, unknown>) => void) => {
+      const projection = structuredClone(boundWorkProjection()) as Record<string, unknown>;
+      change(projection);
+      return projection;
+    };
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            extra_field: mutate((projection) => {
+              projection.raw_dump = "不得展示 work extra";
+            }),
+            invalid_branch: mutate((projection) => {
+              const rows = projection.six_relative_stages as Record<string, unknown>[];
+              rows[0] = { ...rows[0], branch: "非法支" };
+            }),
+            wrong_stage_order: mutate((projection) => {
+              const rows = projection.stage_status as Record<string, unknown>[];
+              projection.stage_status = [rows[1], rows[0], rows[2]];
+            }),
+            unknown_general: mutate((projection) => {
+              const rows = projection.stage_status as Record<string, unknown>[];
+              rows[1] = { ...rows[1], heavenly_general: "未知天将" };
+            }),
+            cross_field_drift: mutate((projection) => {
+              const rows = projection.stage_status as Record<string, unknown>[];
+              rows[1] = { ...rows[1], branch: "申" };
+            }),
+            matched_metadata_drift: mutate((projection) => {
+              const envelope = projection.rule_evidence as Record<string, unknown>;
+              const matched = envelope.matched as Record<string, unknown>[];
+              matched[0] = { ...matched[0], dependency_group: "drift" };
+            }),
+            matched_observation_drift: mutate((projection) => {
+              const envelope = projection.rule_evidence as Record<string, unknown>;
+              const matched = envelope.matched as Record<string, unknown>[];
+              const observation = matched[0]?.observation as Record<string, unknown>;
+              const strengths = observation.target_strength as Record<string, unknown>[];
+              matched[0] = {
+                ...matched[0],
+                observation: {
+                  ...observation,
+                  target_strength: [{ ...strengths[0], branch: "申" }, ...strengths.slice(1)],
+                },
+              };
+            }),
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/不得展示 work extra|工作所取六亲|三传六亲|三传状态/);
   });
 
   it("appends validated present-money general modifiers in Runtime stage order", async () => {
@@ -1994,31 +2201,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
               relative_speed: "relatively_faster",
               rule_evidence: evidence({ matched: [], status: "not_bound" }),
             }),
-            work: dimension({
-              canonical_dimension: "work",
-              requested_dimension: "work",
-              source_rule_ids: [],
-              target_relative: "官鬼",
-              target_contract_status: "bound",
-              target_presence: false,
-              target_strength: [],
-              target_general_modifier: [],
-              rule_evidence: evidence({
-                matched: [],
-                status: "scope_boundary",
-                scope_boundaries: [
-                  matchedEntry({
-                    rule_id: "LR-19",
-                    status: "scope_boundary",
-                    observation: {
-                      target_relative: "官鬼",
-                      target_presence: false,
-                      target_contract_status: "bound",
-                    },
-                  }),
-                ],
-              }),
-            }),
+            work: boundWorkProjection("work", "父母"),
           }),
         })}
       />,
@@ -2027,7 +2210,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
     const block = panel();
     expect(within(block).getByRole("group", { name: "求财" })).toHaveTextContent("妻财未入三传");
     expect(within(block).getByRole("group", { name: "事业" })).toHaveTextContent(
-      "工作所取六亲：官鬼 · 未入三传",
+      "工作所取六亲：父母 · 未入三传",
     );
     expect(within(block).getByRole("group", { name: "时机" })).toHaveTextContent("相对节奏：较快");
     expect(block).not.toHaveTextContent(/wealth_presence|target_presence|relative_speed|吉凶|成败|保证/);
@@ -2444,6 +2627,52 @@ describe("大六壬 S3 M6a 维度证据", () => {
                 { ...validProjection.stage_flow[0], subject_value: "午" },
                 validProjection.stage_flow[1],
               ],
+            },
+            invalid_branch: {
+              ...validProjection,
+              six_relative_stages: [
+                { ...validProjection.six_relative_stages[0], branch: "非法支" },
+                ...validProjection.six_relative_stages.slice(1),
+              ],
+              stage_flow: [
+                { ...validProjection.stage_flow[0], subject_value: "非法支" },
+                validProjection.stage_flow[1],
+              ],
+            },
+            invalid_stem: {
+              ...validProjection,
+              subject_object_relation: {
+                ...validProjection.subject_object_relation,
+                subject_value: "非法干",
+              },
+            },
+            branch_element_drift: {
+              ...validProjection,
+              stage_flow: [
+                {
+                  ...validProjection.stage_flow[0],
+                  subject_element: "水",
+                  object_element: "木",
+                  relation: "subject_generates_object",
+                },
+                validProjection.stage_flow[1],
+              ],
+            },
+            stem_element_drift: {
+              ...validProjection,
+              subject_object_relation: {
+                ...validProjection.subject_object_relation,
+                subject_element: "水",
+                relation: "subject_generates_object",
+              },
+            },
+            day_branch_element_drift: {
+              ...validProjection,
+              subject_object_relation: {
+                ...validProjection.subject_object_relation,
+                object_element: "火",
+                relation: "subject_generates_object",
+              },
             },
             matched_conflict: {
               ...validProjection,
