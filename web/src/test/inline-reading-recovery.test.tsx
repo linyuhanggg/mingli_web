@@ -90,16 +90,21 @@ vi.mock("@/components/task/product-input-form", async (importOriginal) => ({
 
 vi.mock("@/components/readings/reading-result", () => ({
   ReadingResult: ({
+    initialViewModel,
     readingId,
     onRestart,
     startedAt,
   }: {
+    initialViewModel?: { schema_name?: string };
     readingId: string;
     onRestart?: () => void;
     startedAt?: number;
   }) => (
     <section>
       <span>{readingId}</span>
+      <span data-testid={`start-projection-${readingId}`}>
+        {initialViewModel?.schema_name ?? "none"}
+      </span>
       <span data-testid={`started-at-${readingId}`}>{startedAt}</span>
       {onRestart ? (
         <button onClick={onRestart} type="button">
@@ -112,16 +117,21 @@ vi.mock("@/components/readings/reading-result", () => ({
 
 vi.mock("@/components/task/bazi-deep-task-flow", () => ({
   BaziDeepTaskFlow: ({
+    initialPreviewViewModel,
     previewReadingId,
     onRestart,
     startedAt,
   }: {
+    initialPreviewViewModel?: { schema_name?: string };
     previewReadingId: string;
     onRestart?: () => void;
     startedAt?: number;
   }) => (
     <section>
       <span>{previewReadingId}</span>
+      <span data-testid={`start-projection-${previewReadingId}`}>
+        {initialPreviewViewModel?.schema_name ?? "none"}
+      </span>
       <span data-testid={`started-at-${previewReadingId}`}>{startedAt}</span>
       {onRestart ? (
         <button onClick={onRestart} type="button">
@@ -403,5 +413,85 @@ describe("inline reading recovery", () => {
     expect(secondIntent).toEqual(expect.any(String));
     expect(secondIntent).not.toBe(firstIntent);
     expect(loadRecoverableReading("bazi")?.readingVersionId).toBe("newest-bazi");
+  });
+
+  it.each([
+    {
+      productId: "bazi" as const,
+      readingId: "next-bazi",
+      start: api.startPreviewReading,
+      values: { issue: "看看事业", targetYear: "2028" },
+      profileVersionId: PROFILE_VERSION_ID,
+    },
+    {
+      productId: "meihua" as const,
+      readingId: "next-meihua",
+      start: api.startMeihuaReading,
+      values: {
+        issue: "是否继续推进",
+        focus: "outcome",
+        eventTime: "2026-08-25T08:00",
+        timezone: "Asia/Shanghai",
+        location: "上海市",
+        meihuaCastingMethod: "supplied_number",
+        meihuaNumber: "18",
+        meihuaSource: "用户输入",
+      },
+    },
+  ])(
+    "passes the $productId POST ViewModel into the first visible result",
+    async ({ productId, readingId, start, values, profileVersionId }) => {
+      saveRecoverableReading(productId, `old-${productId}`, {
+        ...(profileVersionId ? { profileVersionId } : {}),
+        startedAt: RESTORED_STARTED_AT,
+        values: { ...taskFormDefaultValues, ...values },
+      });
+      start.mockResolvedValueOnce({
+        reading_version_id: readingId,
+        created_at: new Date(SERVER_STARTED_AT).toISOString(),
+        status: "prepared",
+        view_model: { schema_name: `${productId}_chart` },
+      });
+
+      render(<ProductTaskExperience product={getProductDefinition(productId)} />);
+      expect(await screen.findByText(`old-${productId}`)).toBeVisible();
+      fireEvent.click(screen.getByRole("button", { name: "重试（保留原资料）" }));
+
+      expect(await screen.findByText(readingId)).toBeVisible();
+      expect(screen.getByTestId(`start-projection-${readingId}`)).toHaveTextContent(
+        `${productId}_chart`,
+      );
+    },
+  );
+
+  it("does not render an untrusted Daliuren POST projection before capability gating", async () => {
+    saveRecoverableReading("daliuren", "old-daliuren", {
+      startedAt: RESTORED_STARTED_AT,
+      values: {
+        ...taskFormDefaultValues,
+        issue: "何时有回应",
+        focus: "timing",
+        eventTime: "2026-08-25T08:00",
+        timezone: "Asia/Shanghai",
+        location: "上海市",
+        timingStart: "2026-08-26",
+        timingEnd: "2026-09-02",
+      },
+    });
+    api.startDaliurenReading.mockResolvedValueOnce({
+      reading_version_id: "next-daliuren",
+      created_at: new Date(SERVER_STARTED_AT).toISOString(),
+      status: "prepared",
+      view_model: { schema_name: "daliuren_chart" },
+    });
+
+    render(<ProductTaskExperience product={getProductDefinition("daliuren")} />);
+    expect(await screen.findByText("old-daliuren")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "重试（保留原资料）" }));
+
+    expect(await screen.findByText("next-daliuren")).toBeVisible();
+    expect(screen.getByTestId("start-projection-next-daliuren")).toHaveTextContent(
+      "none",
+    );
   });
 });

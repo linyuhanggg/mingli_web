@@ -21,6 +21,7 @@ import {
   extractFortunePeriodMarkers,
   isFortunePeriodMarkerFact,
 } from "@/lib/fortune-period-markers";
+import type { ViewModel } from "@/view-models/registry";
 import surface from "@/components/app-surface.module.css";
 
 import { AcceptedCopy } from "./accepted-copy";
@@ -311,6 +312,8 @@ function WaitingStatus({
 }
 
 type ReadingResultProps = Readonly<{
+  initialSummary?: ReadingVersionSummary;
+  initialViewModel?: ViewModel;
   readingId: string;
   onPollError?: (error: unknown) => void;
   onRestart?: () => void;
@@ -324,15 +327,37 @@ export function ReadingResult(props: ReadingResultProps) {
 }
 
 function ReadingResultForVersion({
+  initialSummary,
+  initialViewModel,
   readingId,
   onPollError,
   onRestart,
   onSummary,
   startedAt,
 }: ReadingResultProps) {
-  const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState<ReadingVersionSummary | null>(null);
-  const [result, setResult] = useState<ReadingResultResponse | null>(null);
+  const seededSummary = initialSummary?.reading_version_id === readingId
+    ? initialSummary
+    : null;
+  const seededViewModel = seededSummary ? initialViewModel ?? null : null;
+  const hasSeededProjection = seededViewModel !== null;
+  const [loading, setLoading] = useState(!hasSeededProjection);
+  const [summary, setSummary] = useState<ReadingVersionSummary | null>(seededSummary);
+  const [result, setResult] = useState<ReadingResultResponse | null>(() =>
+    seededSummary && seededViewModel
+      ? {
+          reading_version_id: readingId,
+          status: seededSummary.status,
+          accepted_copy: null,
+          fact_panel: null,
+          view_model: seededViewModel,
+          verification: null,
+          input_request: seededSummary.input_request,
+          document: null,
+        }
+      : null,
+  );
+  const [usingStartProjection, setUsingStartProjection] =
+    useState(hasSeededProjection);
   const [error, setError] = useState<unknown>(null);
   const [retryKey, setRetryKey] = useState(0);
   const [timerStartedAt, setTimerStartedAt] = useState<number>(
@@ -368,6 +393,7 @@ function ReadingResultForVersion({
     let cancelled = false;
     let pollTimer: ReturnType<typeof setTimeout> | null = null;
     let pollAttempt = 0;
+    let resultFetchedForStatus: ReadingVersionSummary["status"] | null = null;
     const pollController = new AbortController();
 
     function schedule(delayMs: number) {
@@ -382,43 +408,75 @@ function ReadingResultForVersion({
       schedule(delay);
     }
 
+    function applySummary(response: ReadingVersionSummary) {
+      const authoritativeStartedAt = serverStartedAt(response.created_at);
+      if (authoritativeStartedAt !== null) {
+        setTimerStartedAt((current) =>
+          current === authoritativeStartedAt ? current : authoritativeStartedAt,
+        );
+      }
+      setSummary(response);
+      setError(null);
+      onSummaryRef.current?.(response);
+    }
+
+    async function loadReadyResult(response: ReadingVersionSummary) {
+      const shouldFetchResult =
+        resultFetchedForStatus === null
+        || (response.status === "accepted" && resultFetchedForStatus !== "accepted");
+      if (shouldFetchResult) {
+        const nextResult = await getReadingResult(readingId);
+        if (cancelled) return;
+        resultFetchedForStatus = response.status;
+        setResult(nextResult);
+        setUsingStartProjection(false);
+      }
+      setLoading(false);
+      if (response.status === "accepted") return;
+      scheduleNextPoll();
+    }
+
+    async function pollSummary() {
+      const response = await requestJson<ReadingVersionSummary>(
+        `/api/v1/readings/${encodeURIComponent(readingId)}`,
+        { signal: pollController.signal },
+      );
+      if (cancelled) return;
+      applySummary(response);
+
+      if (RESULT_READY_STATUSES.has(response.status)) {
+        await loadReadyResult(response);
+        return;
+      }
+
+      setLoading(false);
+      if (
+        response.status === "waiting_input" ||
+        response.status === "terminal_stopped" ||
+        response.status === "runtime_unknown"
+      ) {
+        return;
+      }
+
+      scheduleNextPoll();
+    }
+
     async function run() {
       if (cancelled) return;
       try {
-        const response = await requestJson<ReadingVersionSummary>(
-          `/api/v1/readings/${encodeURIComponent(readingId)}`,
-          { signal: pollController.signal },
-        );
-        if (cancelled) return;
-        const authoritativeStartedAt = serverStartedAt(response.created_at);
-        if (authoritativeStartedAt !== null) {
-          setTimerStartedAt((current) =>
-            current === authoritativeStartedAt ? current : authoritativeStartedAt,
-          );
+        if (pollAttempt === 0 && seededSummary) {
+          applySummary(seededSummary);
+          if (RESULT_READY_STATUSES.has(seededSummary.status)) {
+            if (hasSeededProjection && seededSummary.status !== "accepted") {
+              setLoading(false);
+              scheduleNextPoll();
+              return;
+            }
+            await loadReadyResult(seededSummary);
+            return;
+          }
         }
-        setSummary(response);
-        setError(null);
-        setLoading(false);
-        onSummaryRef.current?.(response);
-
-        if (RESULT_READY_STATUSES.has(response.status)) {
-          const nextResult = await getReadingResult(readingId);
-          if (cancelled) return;
-          setResult(nextResult);
-          if (response.status === "accepted") return;
-          scheduleNextPoll();
-          return;
-        }
-
-        if (
-          response.status === "waiting_input" ||
-          response.status === "terminal_stopped" ||
-          response.status === "runtime_unknown"
-        ) {
-          return;
-        }
-
-        scheduleNextPoll();
+        await pollSummary();
       } catch (err) {
         if (cancelled || pollController.signal.aborted) return;
         setLoading(false);
@@ -438,7 +496,7 @@ function ReadingResultForVersion({
         clearTimeout(pollTimer);
       }
     };
-  }, [readingId, retryKey]);
+  }, [hasSeededProjection, readingId, retryKey, seededSummary]);
 
   function handleRetry() {
     setLoading(true);
@@ -564,8 +622,10 @@ function ReadingResultForVersion({
     // Runtime ViewModel. Plain legacy result pages do not have this gate.
     const requiresCapabilityProjection = isBazi || result.view_model != null;
     const capabilityTier =
-      result.capability?.tier ?? (requiresCapabilityProjection ? "C" : null);
-    const showRuntimeChart = capabilityTier === "A" || capabilityTier === "B";
+      result.capability?.tier
+      ?? (requiresCapabilityProjection && !usingStartProjection ? "C" : null);
+    const showRuntimeChart =
+      usingStartProjection || capabilityTier === "A" || capabilityTier === "B";
     const isFortune = summary.capability_id === "fortune";
     const isLiuyao = summary.capability_id === "liuyao";
     const isQimen = summary.capability_id === "qimen";

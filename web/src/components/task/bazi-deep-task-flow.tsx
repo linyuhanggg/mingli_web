@@ -21,6 +21,7 @@ import { useOptionalAccountSession } from "@/components/account-session-context"
 import { CURRENT_POLICY_VERSION } from "@/lib/policy";
 import { ReadingResult } from "@/components/readings/reading-result";
 import { Status } from "@/components/ui/status";
+import type { ViewModel } from "@/view-models/registry";
 
 import styles from "./bazi-deep-task-flow.module.css";
 
@@ -66,6 +67,8 @@ export type BaziDeepTaskState =
   | "failed";
 
 export type BaziDeepTaskFlowProps = {
+  initialPreviewSummary?: ReadingVersionSummary;
+  initialPreviewViewModel?: ViewModel;
   previewReadingId: string;
   profileVersionId: string;
   query: string;
@@ -177,6 +180,8 @@ function safeCheckoutRedirect(value: string | null | undefined): string | null {
 }
 
 export function BaziDeepTaskFlow({
+  initialPreviewSummary,
+  initialPreviewViewModel,
   previewReadingId,
   profileVersionId,
   query,
@@ -515,6 +520,8 @@ export function BaziDeepTaskFlow({
           </div>
           <div className={styles.result}>
             <ReadingResult
+              initialSummary={initialPreviewSummary}
+              initialViewModel={initialPreviewViewModel}
               readingId={previewReadingId}
               onPollError={handlePreviewPollError}
               onRestart={onRestart}

@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ReadingResult } from "@/components/readings/reading-result";
 import { VerificationForm } from "@/components/readings/verification-form";
-import { resetApiCache } from "@/lib/api";
+import { resetApiCache, type ReadingVersionSummary } from "@/lib/api";
 
 const { routerPush } = vi.hoisted(() => ({ routerPush: vi.fn() }));
 
@@ -232,6 +232,72 @@ beforeEach(() => {
 });
 
 describe("ReadingVersionSummary polling and explicit result fetch", () => {
+  it("uses the prepared POST summary and does not refetch an unchanged result while polling", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+    const prepared = readingSummary("prepared", {
+      created_at: "2026-08-25T00:01:00Z",
+      capability_id: "meihua",
+      object_id: "concrete_event",
+      horizon: { kind_id: "instant", start: null, end: null },
+    }) as ReadingVersionSummary;
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(readingResult({ status: "prepared" }));
+      }
+      return jsonResponse(prepared);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const initialViewModel = {
+      schema_version: "meihua-chart/v1" as const,
+      subject_ref: "meihua:test",
+      question: "这件事如何推进？",
+      casting_method: "time" as const,
+      primary_hexagram: {
+        name: "水雷屯",
+        upper_trigram: "坎",
+        lower_trigram: "震",
+      },
+      mutual_hexagram: null,
+      changed_hexagram: null,
+      moving_lines: [3],
+      body_use: {
+        body: { position: "lower" as const, trigram: "震", element: "木" },
+        use: { position: "upper" as const, trigram: "坎", element: "水" },
+        relation: "生",
+        status: "calculated_relation_not_verdict",
+      },
+      core_facts: null,
+    };
+
+    const { unmount } = render(
+      <ReadingResult
+        initialSummary={prepared}
+        initialViewModel={initialViewModel ?? undefined}
+        readingId={VERSION_ID}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "盘面事实" })).toBeVisible();
+    expect(screen.getByText("水雷屯")).toBeVisible();
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    await act(async () => vi.advanceTimersByTimeAsync(1_000));
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      `/api/v1/readings/${VERSION_ID}`,
+      `/api/v1/readings/${VERSION_ID}/result`,
+    ]);
+
+    await act(async () => vi.advanceTimersByTimeAsync(2_000));
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      `/api/v1/readings/${VERSION_ID}`,
+      `/api/v1/readings/${VERSION_ID}/result`,
+      `/api/v1/readings/${VERSION_ID}`,
+    ]);
+    unmount();
+  });
+
   it.each([
     {
       elapsedMs: 14_999,

@@ -40,6 +40,7 @@ import {
   type PhysiognomyStartRequest,
   type PreviewStartRequest,
   type ProfileSummary,
+  type ReadingStartResponse,
   type TimeBasisPolicy,
   type SelectionStartRequest,
   type TaiyiStartRequest,
@@ -241,6 +242,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [meihuaPreviewReadingId, setMeihuaPreviewReadingId] = useState<string | null>(null);
   const [daliurenPreviewReadingId, setDaliurenPreviewReadingId] = useState<string | null>(null);
   const [inlineReadingStartedAt, setInlineReadingStartedAt] = useState<number | null>(null);
+  const [inlineReadingSummary, setInlineReadingSummary] =
+    useState<ReadingStartResponse | null>(null);
   const [savedProfiles, setSavedProfiles] = useState<ProfileSummary[]>([]);
   const [savedProfilesLoading, setSavedProfilesLoading] = useState(
     shouldLoadProfiles,
@@ -332,17 +335,19 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   }, [shouldLoadProfiles, requestedProfileVersionId, savedProfilesAttempt]);
 
   function showInlineReading(
-    readingVersionId: string,
+    response: ReadingStartResponse,
     submittedValues: TaskFormValues,
     startedAt: number,
     profileVersionId?: string,
   ) {
+    const readingVersionId = response.reading_version_id;
     saveRecoverableReading(product.id, readingVersionId, {
       ...(profileVersionId ? { profileVersionId } : {}),
       startedAt,
       values: submittedValues,
     });
     setInlineReadingStartedAt(startedAt);
+    setInlineReadingSummary(response);
     if (product.id === "bazi") setBaziPreviewReadingId(readingVersionId);
     if (product.id === "ziwei") setZiweiPreviewReadingId(readingVersionId);
     if (product.id === "liuyao") setLiuyaoPreviewReadingId(readingVersionId);
@@ -361,6 +366,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     setMeihuaPreviewReadingId(null);
     setDaliurenPreviewReadingId(null);
     setInlineReadingStartedAt(null);
+    setInlineReadingSummary(null);
     setSubmitError(null);
     setStage("input");
   }
@@ -515,7 +521,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               : await startQizhengReading(payload, intent.key);
         if (product.id === "bazi" || product.id === "ziwei") {
           showInlineReading(
-            response.reading_version_id,
+            response,
             nextValues,
             resolveReadingStartedAt(response.created_at, fallbackStartedAt),
             profileVersionId,
@@ -664,7 +670,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         const fallbackStartedAt = Date.now();
         const response = await startLiuyaoReading(payload, intent.key);
         showInlineReading(
-          response.reading_version_id,
+          response,
           nextValues,
           resolveReadingStartedAt(response.created_at, fallbackStartedAt),
         );
@@ -750,7 +756,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         const fallbackStartedAt = Date.now();
         const response = await startMeihuaReading(payload, intent.key);
         showInlineReading(
-          response.reading_version_id,
+          response,
           nextValues,
           resolveReadingStartedAt(response.created_at, fallbackStartedAt),
         );
@@ -800,7 +806,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           : await startDaliurenReading(daliurenPayload, intent.key);
       if (product.id === "daliuren") {
         showInlineReading(
-          response.reading_version_id,
+          response,
           nextValues,
           resolveReadingStartedAt(response.created_at, fallbackStartedAt),
         );
@@ -836,6 +842,12 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             : product.id === "daliuren"
               ? daliurenPreviewReadingId
               : null;
+  // The current Daliuren Runtime path is capability-gated as unavailable.
+  // Never let an incidental POST payload bypass the authoritative result gate.
+  const inlineStartViewModel =
+    product.id === "daliuren"
+      ? undefined
+      : inlineReadingSummary?.view_model ?? undefined;
 
   return (
     <div className={styles.experience} data-product={product.id} data-stage={stage}>
@@ -901,6 +913,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             title={`${product.name}盘面`}
           />
           <ReadingResult
+            initialSummary={inlineReadingSummary ?? undefined}
+            initialViewModel={inlineStartViewModel}
             readingId={inlineReadingId}
             onRestart={values ? restartInlineReading : undefined}
             startedAt={inlineReadingStartedAt ?? undefined}
@@ -909,6 +923,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       ) : null}
       {stage === "workbench" && product.id === "bazi" && baziPreviewReadingId ? (
         <BaziDeepTaskFlow
+          initialPreviewSummary={inlineReadingSummary ?? undefined}
+          initialPreviewViewModel={inlineStartViewModel}
           onBack={returnToInput}
           previewReadingId={baziPreviewReadingId}
           profileVersionId={baziProfileVersionId ?? ""}
