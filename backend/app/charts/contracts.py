@@ -1994,6 +1994,7 @@ class DaliurenTimingCandidate(ContractModel):
 
 
 _DALIUREN_STRUCTURAL_INDEX_MAX = 3
+_DALIUREN_STRUCTURAL_INDEX_BY_TOKEN = {"0": 0, "1": 1, "2": 2, "3": 3}
 _DALIUREN_INCOMPLETE_FOUR_LESSONS_RULE_ID = "DLR-S01"
 _DALIUREN_FOUR_LESSON_UPPER_PATHS = frozenset(
     f"fact:/chart_facts/output/four_lessons/{index}/upper" for index in range(4)
@@ -2016,17 +2017,19 @@ def daliuren_in_range_structural_indices(
     )
 
 
+def _daliuren_canonical_structural_index(token: str) -> int:
+    # Exact ASCII "0"-"3" only. str.isdigit()/int() would accept "00"/"０".
+    try:
+        return _DALIUREN_STRUCTURAL_INDEX_BY_TOKEN[token]
+    except KeyError:
+        raise ValueError("source pattern structural index must be 0-3") from None
+
+
 def _daliuren_structural_index_from_fact_path(path: str) -> int | None:
     prefix = "fact:/chart_facts/output/structural_patterns/"
     if not path.startswith(prefix):
         return None
-    suffix = path[len(prefix) :]
-    if not suffix.isdigit():
-        return None
-    index = int(suffix)
-    if index < 0 or index > _DALIUREN_STRUCTURAL_INDEX_MAX:
-        raise ValueError("source pattern structural index must be 0-3")
-    return index
+    return _daliuren_canonical_structural_index(path[len(prefix) :])
 
 
 def _daliuren_structural_index_from_audit(audit: str, title: str) -> int | None:
@@ -2034,13 +2037,7 @@ def _daliuren_structural_index_from_audit(audit: str, title: str) -> int | None:
     suffix = f":eq:{title}"
     if not audit.startswith(prefix) or not audit.endswith(suffix):
         return None
-    middle = audit[len(prefix) : -len(suffix)]
-    if not middle.isdigit():
-        return None
-    index = int(middle)
-    if index < 0 or index > _DALIUREN_STRUCTURAL_INDEX_MAX:
-        raise ValueError("source pattern structural index must be 0-3")
-    return index
+    return _daliuren_canonical_structural_index(audit[len(prefix) : -len(suffix)])
 
 
 def validate_daliuren_source_pattern_provenance(

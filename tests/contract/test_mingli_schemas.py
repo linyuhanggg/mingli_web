@@ -666,6 +666,47 @@ def test_daliuren_chart_schema_accepts_only_typed_source_pattern_fields(
         lesson["upper"] = upper
     reject_schema("views/daliuren-chart-v1.schema.json", forged_non_branch_with_dlrs01)
 
+    for token in ("00", "01", " 0", "+0", "\uff10", "4"):
+        padded = copy.deepcopy(payload)
+        padded["core_facts"]["source_conditioned_patterns"][0]["fact_paths"] = [
+            f"fact:/chart_facts/output/structural_patterns/{token}"
+        ]
+        padded["core_facts"]["source_conditioned_patterns"][0]["predicate_audit"] = [
+            f"/chart_facts/output/structural_patterns/{token}:eq:伏吟"
+        ]
+        reject_schema("views/daliuren-chart-v1.schema.json", padded)
+
+    mixed_zero_pad = copy.deepcopy(payload)
+    mixed_zero_pad["core_facts"]["source_conditioned_patterns"][0][
+        "predicate_audit"
+    ] = ["/chart_facts/output/structural_patterns/00:eq:伏吟"]
+    reject_schema("views/daliuren-chart-v1.schema.json", mixed_zero_pad)
+
+    padded_s01 = copy.deepcopy(incomplete_four_lessons)
+    padded_s01["core_facts"]["source_conditioned_patterns"][0]["fact_paths"][0] = (
+        "fact:/chart_facts/output/structural_patterns/00"
+    )
+    padded_s01["core_facts"]["source_conditioned_patterns"][0]["predicate_audit"][0] = (
+        "/chart_facts/output/structural_patterns/00:eq:四课不备"
+    )
+    reject_schema("views/daliuren-chart-v1.schema.json", padded_s01)
+
+    for index, placeholders in (
+        ("0", ()),
+        ("1", ("未映射课体",)),
+        ("2", ("未映射甲", "未映射乙")),
+        ("3", ("未映射甲", "未映射乙", "未映射丙")),
+    ):
+        legal_index = copy.deepcopy(payload)
+        legal_index["core_facts"]["structural_patterns"] = [*placeholders, "伏吟"]
+        legal_index["core_facts"]["source_conditioned_patterns"][0]["fact_paths"] = [
+            f"fact:/chart_facts/output/structural_patterns/{index}"
+        ]
+        legal_index["core_facts"]["source_conditioned_patterns"][0][
+            "predicate_audit"
+        ] = [f"/chart_facts/output/structural_patterns/{index}:eq:伏吟"]
+        validate_schema("views/daliuren-chart-v1.schema.json", legal_index)
+
 
 def _daliuren_reading_document(view_model: dict[str, Any]) -> dict[str, Any]:
     return {
@@ -906,4 +947,15 @@ def test_reading_document_validates_standalone_without_registry_or_network() -> 
     forged_uppers_without_source["core_facts"].pop("source_conditioned_patterns")
     assert _standalone_validation_errors(
         validator, _daliuren_reading_document(forged_uppers_without_source)
+    )
+
+    padded_index = copy.deepcopy(view_model)
+    padded_index["core_facts"]["source_conditioned_patterns"][0]["fact_paths"] = [
+        "fact:/chart_facts/output/structural_patterns/00"
+    ]
+    padded_index["core_facts"]["source_conditioned_patterns"][0]["predicate_audit"] = [
+        "/chart_facts/output/structural_patterns/00:eq:伏吟"
+    ]
+    assert _standalone_validation_errors(
+        validator, _daliuren_reading_document(padded_index)
     )

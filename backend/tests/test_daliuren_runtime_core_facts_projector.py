@@ -633,6 +633,152 @@ def test_daliuren_source_patterns_reject_qa13_index_duplicate_and_forged_dlr07()
     assert list(schema.iter_errors(forged_dlr07_schema))
 
 
+def _rewrite_structural_index_token(
+    pattern: dict[str, object],
+    token: str,
+    *,
+    audit_token: str | None = None,
+) -> None:
+    audit_token = token if audit_token is None else audit_token
+    title = str(pattern["title"])
+    pattern["fact_paths"] = [
+        (
+            f"fact:/chart_facts/output/structural_patterns/{token}"
+            if str(item).startswith("fact:/chart_facts/output/structural_patterns/")
+            else item
+        )
+        for item in pattern["fact_paths"]
+    ]
+    pattern["predicate_audit"] = [
+        (
+            f"/chart_facts/output/structural_patterns/{audit_token}:eq:{title}"
+            if str(item).startswith("/chart_facts/output/structural_patterns/")
+            else item
+        )
+        for item in pattern["predicate_audit"]
+    ]
+
+
+def test_daliuren_rejects_noncanonical_structural_index_tokens() -> None:
+    schema = _schema_validator()
+    valid_view = project_daliuren_view_model(_runtime_core_brief(_load_fixture()))
+    assert isinstance(valid_view, DaliurenChartV1)
+    valid_payload = valid_view.model_dump(mode="json")
+    illegal_tokens = ("00", "01", " 0", "+0", "\uff10", "4")
+
+    for token in illegal_tokens:
+        runtime_payload = copy.deepcopy(_load_fixture())
+        _rewrite_structural_index_token(
+            runtime_payload["source_conditioned_patterns"][0],
+            token,
+        )
+        view_model = project_daliuren_view_model(_runtime_core_brief(runtime_payload))
+        assert isinstance(view_model, DaliurenChartV1)
+        assert view_model.core_facts is not None
+        assert view_model.core_facts.structural_patterns == ("伏吟", "四课不备")
+        assert view_model.core_facts.source_conditioned_patterns == ()
+        with pytest.raises(ValueError, match="structural index must be 0-3"):
+            DaliurenSourcePattern.model_validate(
+                runtime_payload["source_conditioned_patterns"][0]
+            )
+        imported = copy.deepcopy(valid_payload)
+        _rewrite_structural_index_token(
+            imported["core_facts"]["source_conditioned_patterns"][0],
+            token,
+        )
+        with pytest.raises(ValueError, match="structural index must be 0-3"):
+            DaliurenChartV1.model_validate(imported)
+        assert list(schema.iter_errors(imported)), token
+
+    mixed = copy.deepcopy(_load_fixture())
+    _rewrite_structural_index_token(
+        mixed["source_conditioned_patterns"][0],
+        "0",
+        audit_token="00",
+    )
+    mixed_view = project_daliuren_view_model(_runtime_core_brief(mixed))
+    assert isinstance(mixed_view, DaliurenChartV1)
+    assert mixed_view.core_facts is not None
+    assert mixed_view.core_facts.source_conditioned_patterns == ()
+    with pytest.raises(ValueError, match="structural index must be 0-3"):
+        DaliurenSourcePattern.model_validate(
+            mixed["source_conditioned_patterns"][0]
+        )
+    mixed_imported = copy.deepcopy(valid_payload)
+    _rewrite_structural_index_token(
+        mixed_imported["core_facts"]["source_conditioned_patterns"][0],
+        "0",
+        audit_token="00",
+    )
+    with pytest.raises(ValueError, match="structural index must be 0-3"):
+        DaliurenChartV1.model_validate(mixed_imported)
+    assert list(schema.iter_errors(mixed_imported))
+
+    incomplete = copy.deepcopy(_load_fixture())
+    incomplete["structural_patterns"] = ["四课不备"]
+    incomplete["four_lessons"] = [
+        {"lesson": 1, "upper": "子", "lower": "庚"},
+        {"lesson": 2, "upper": "丑", "lower": "辰"},
+        {"lesson": 3, "upper": "寅", "lower": "申"},
+        {"lesson": 4, "upper": "子", "lower": "辰"},
+    ]
+    incomplete["source_conditioned_patterns"] = [_source_pattern("四课不备")]
+    incomplete["source_conditioned_patterns"][0]["fact_paths"] = [
+        "fact:/chart_facts/output/structural_patterns/0",
+        "fact:/chart_facts/output/four_lessons/0/upper",
+        "fact:/chart_facts/output/four_lessons/1/upper",
+        "fact:/chart_facts/output/four_lessons/2/upper",
+        "fact:/chart_facts/output/four_lessons/3/upper",
+    ]
+    incomplete["source_conditioned_patterns"][0]["predicate_audit"].append(
+        "/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3"
+    )
+    legal_s01 = project_daliuren_view_model(_runtime_core_brief(incomplete))
+    assert isinstance(legal_s01, DaliurenChartV1)
+    assert legal_s01.core_facts is not None
+    assert [item.rule_id for item in legal_s01.core_facts.source_conditioned_patterns] == [
+        "DLR-S01"
+    ]
+    assert legal_s01.core_facts.source_conditioned_patterns[0].model_dump(
+        mode="json"
+    ) == incomplete["source_conditioned_patterns"][0]
+    schema.validate(legal_s01.model_dump(mode="json"))
+
+    padded_s01 = copy.deepcopy(incomplete)
+    _rewrite_structural_index_token(
+        padded_s01["source_conditioned_patterns"][0],
+        "00",
+    )
+    padded_s01_view = project_daliuren_view_model(_runtime_core_brief(padded_s01))
+    assert isinstance(padded_s01_view, DaliurenChartV1)
+    assert padded_s01_view.core_facts is not None
+    assert padded_s01_view.core_facts.source_conditioned_patterns == ()
+    with pytest.raises(ValueError, match="structural index must be 0-3"):
+        DaliurenSourcePattern.model_validate(
+            padded_s01["source_conditioned_patterns"][0]
+        )
+
+    for index in ("0", "1", "2", "3"):
+        legal = copy.deepcopy(_load_fixture())
+        placeholders = [f"占位{marker}" for marker in "甲乙丙"[: int(index)]]
+        legal["structural_patterns"] = [*placeholders, "伏吟"]
+        legal["source_conditioned_patterns"] = [_source_pattern("伏吟")]
+        _rewrite_structural_index_token(
+            legal["source_conditioned_patterns"][0],
+            index,
+        )
+        legal_view = project_daliuren_view_model(_runtime_core_brief(legal))
+        assert isinstance(legal_view, DaliurenChartV1)
+        assert legal_view.core_facts is not None
+        published = legal_view.core_facts.source_conditioned_patterns
+        assert [item.title for item in published] == ["伏吟"]
+        assert published[0].fact_paths == (
+            f"fact:/chart_facts/output/structural_patterns/{index}",
+        )
+        DaliurenChartV1.model_validate(legal_view.model_dump(mode="json"))
+        schema.validate(legal_view.model_dump(mode="json"))
+
+
 @pytest.mark.parametrize(
     "mutate_source",
     [
