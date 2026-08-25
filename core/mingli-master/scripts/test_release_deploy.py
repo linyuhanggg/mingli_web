@@ -773,7 +773,7 @@ class ReleaseCheckoutIsolationTests(unittest.TestCase):
         result = release_deploy._verify_release_sources(
             checkout,
             research,
-            timeout_seconds=0.1,
+            timeout_seconds=2.0,
             progress_stream=progress,
         )
 
@@ -785,7 +785,7 @@ class ReleaseCheckoutIsolationTests(unittest.TestCase):
             result["cancellation"]["stage"],
             "provider_fulltext_audit",
         )
-        self.assertIn("exceeded 0.1 seconds", result["failures"][0])
+        self.assertIn("exceeded 2 seconds", result["failures"][0])
         self.assertIn("timeout_cancel_requested", progress.getvalue())
         self.assertIn("cancel_received", progress.getvalue())
 
