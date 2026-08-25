@@ -525,6 +525,11 @@ def test_view_models_reject_missing_layer_reasons_duplicate_subjects_and_arts() 
         )
 
 
+def test_reading_document_schema_validates_standalone_without_registry() -> None:
+    schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
+    Draft202012Validator(schema).validate(_reading_document_payload())
+
+
 def test_reading_document_is_closed_and_embeds_only_known_view_models() -> None:
     schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
     payload = _reading_document_payload()

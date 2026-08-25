@@ -47,6 +47,15 @@ def schema_validator(name: str) -> Any:
     )
 
 
+def standalone_schema_validator(name: str) -> Any:
+    from jsonschema import Draft202012Validator, FormatChecker
+
+    return Draft202012Validator(
+        load_schema(name),
+        format_checker=FormatChecker(),
+    )
+
+
 @pytest.fixture
 def validate_schema() -> Callable[[str, object], None]:
     def validate(name: str, payload: object) -> None:
@@ -765,4 +774,136 @@ def test_reading_document_daliuren_core_facts_match_chart_schema(
     reject_schema(
         "reading-document-v1.schema.json",
         _daliuren_reading_document(forged_uppers),
+    )
+
+    forged_uppers_without_source = copy.deepcopy(forged_uppers)
+    forged_uppers_without_source["core_facts"].pop("source_conditioned_patterns")
+    reject_schema(
+        "reading-document-v1.schema.json",
+        _daliuren_reading_document(forged_uppers_without_source),
+    )
+
+
+def _collect_schema_refs(node: object) -> list[str]:
+    refs: list[str] = []
+    if isinstance(node, dict):
+        ref = node.get("$ref")
+        if isinstance(ref, str):
+            refs.append(ref)
+        for value in node.values():
+            refs.extend(_collect_schema_refs(value))
+    elif isinstance(node, list):
+        for item in node:
+            refs.extend(_collect_schema_refs(item))
+    return refs
+
+
+def _standalone_validation_errors(validator: Any, payload: object) -> tuple[Any, ...]:
+    from referencing.exceptions import Unresolvable
+
+    try:
+        return tuple(validator.iter_errors(payload))
+    except Unresolvable as exc:
+        raise AssertionError(
+            f"standalone reading-document/v1 raised Unresolvable: {exc}"
+        ) from exc
+    except Exception as exc:
+        names = {type(exc).__name__}
+        cause = getattr(exc, "__cause__", None)
+        if cause is not None:
+            names.add(type(cause).__name__)
+        if "Unresolvable" in names or "ReferencingError" in type(exc).__name__:
+            raise AssertionError(
+                f"standalone reading-document/v1 raised unresolved $ref: {exc}"
+            ) from exc
+        raise
+
+
+def test_reading_document_bundles_identical_daliuren_chart_schema() -> None:
+    document = load_schema("reading-document-v1.schema.json")
+    chart = load_schema("views/daliuren-chart-v1.schema.json")
+    bundled = document["$defs"]["daliurenChart"]
+    assert bundled == chart
+    assert chart["$id"] not in _collect_schema_refs(document)
+
+
+def test_reading_document_validates_standalone_without_registry_or_network() -> None:
+    validator = standalone_schema_validator("reading-document-v1.schema.json")
+    view_model = {
+        "schema_version": "daliuren-chart/v1",
+        "subject_ref": "fixture:probe",
+        "question": "fixture question",
+        "lessons": [
+            {"lesson_id": "1", "upper": "辰", "lower": "庚"},
+            {"lesson_id": "2", "upper": "子", "lower": "辰"},
+            {"lesson_id": "3", "upper": "辰", "lower": "申"},
+            {"lesson_id": "4", "upper": "子", "lower": "辰"},
+        ],
+        "transmissions": [
+            {"stage": "initial", "branch": "子", "general": "青龙"},
+            {"stage": "middle", "branch": "申", "general": "腾蛇"},
+            {"stage": "final", "branch": "辰", "general": "玄武"},
+        ],
+        "core_facts": {
+            "structural_patterns": ["伏吟"],
+            "source_conditioned_patterns": [
+                {
+                    "rule_id": "DLR-09",
+                    "local_rule_id": "liuren.structural.fuyin",
+                    "title": "伏吟",
+                    "source_pack": "san-shi/daliuren-daquan",
+                    "source_anchor": "fulltext.md#L7696",
+                    "status": "predicate_matched_not_verdict",
+                    "fact_paths": [
+                        "fact:/chart_facts/output/structural_patterns/0"
+                    ],
+                    "predicate_audit": [
+                        "/chart_facts/output/structural_patterns/0:eq:伏吟"
+                    ],
+                    "source_dependency_id": (
+                        "liuren.source-conditioned-structural-patterns-v1"
+                    ),
+                }
+            ],
+        },
+    }
+    legal = _daliuren_reading_document(view_model)
+    assert _standalone_validation_errors(validator, legal) == ()
+    validator.validate(legal)
+
+    forged_source = copy.deepcopy(view_model)
+    forged_source["core_facts"]["source_conditioned_patterns"][0][
+        "fact_paths"
+    ] = ["fact:/chart_facts/input/question"]
+    assert _standalone_validation_errors(
+        validator, _daliuren_reading_document(forged_source)
+    )
+
+    contradictory_provenance = copy.deepcopy(view_model)
+    contradictory_provenance["core_facts"]["source_conditioned_patterns"][0][
+        "local_rule_id"
+    ] = "liuren.structural.fanyin"
+    assert _standalone_validation_errors(
+        validator, _daliuren_reading_document(contradictory_provenance)
+    )
+
+    unconstrained_object = copy.deepcopy(view_model)
+    unconstrained_object["core_facts"] = {"verdict": "forged"}
+    assert _standalone_validation_errors(
+        validator, _daliuren_reading_document(unconstrained_object)
+    )
+
+    forged_uppers = copy.deepcopy(view_model)
+    for lesson, upper in zip(
+        forged_uppers["lessons"], ("A", "B", "C", "A"), strict=True
+    ):
+        lesson["upper"] = upper
+    assert _standalone_validation_errors(
+        validator, _daliuren_reading_document(forged_uppers)
+    )
+
+    forged_uppers_without_source = copy.deepcopy(forged_uppers)
+    forged_uppers_without_source["core_facts"].pop("source_conditioned_patterns")
+    assert _standalone_validation_errors(
+        validator, _daliuren_reading_document(forged_uppers_without_source)
     )

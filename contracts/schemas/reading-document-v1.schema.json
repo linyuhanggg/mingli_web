@@ -122,7 +122,3534 @@
     "selectionChart": {"type": "object", "additionalProperties": false, "required": ["schema_version", "subject_ref", "event_profile", "eligible_candidates", "eligible_date_time_candidates", "eliminations", "ranking", "lineage_policy", "no_valid_candidate", "basis_projection"], "properties": {"schema_version": {"const": "selection-chart/v1"}, "subject_ref": {"$ref": "#/$defs/text"}, "event_profile": {"$ref": "#/$defs/text"}, "eligible_candidates": {"type": "array", "items": {"$ref": "#/$defs/selectionCandidate"}}, "eligible_date_time_candidates": {"type": "array", "items": {"type": "string"}}, "eliminations": {"type": "array", "items": {"type": "object"}}, "ranking": {"$ref": "#/$defs/selectionRanking"}, "lineage_policy": {"$ref": "#/$defs/selectionLineage"}, "no_valid_candidate": {"type": "boolean"}, "basis_projection": {"type": "object"}}},
     "fengshuiView": {"type": "object", "additionalProperties": false, "required": ["schema_version", "subject_ref", "active_subprofiles", "observation_provenance", "compass", "building_chronology", "layout_graph", "form", "liqi", "active_source_rule_ids", "conflicts", "uncertainties", "critical_missing"], "properties": {"schema_version": {"const": "fengshui-view/v1"}, "subject_ref": {"$ref": "#/$defs/text"}, "active_subprofiles": {"type": "array", "items": {"enum": ["form", "liqi"]}}, "observation_provenance": {"type": "object"}, "compass": {"type": "object"}, "building_chronology": {"type": "object"}, "layout_graph": {"type": "object"}, "form": {"type": "object"}, "liqi": {"type": "object"}, "active_source_rule_ids": {"type": "array", "items": {"type": "string"}}, "conflicts": {"type": "array", "items": {"type": "object"}}, "uncertainties": {"type": "array", "items": {"type": "object"}}, "critical_missing": {"type": "array", "items": {"type": "string"}}}},
     "qimenChart": {"type": "object", "additionalProperties": false, "required": ["schema_version", "subject_ref", "question", "dun_type", "ju_number", "palaces"], "properties": {"schema_version": {"const": "qimen-chart/v1"}, "subject_ref": {"$ref": "#/$defs/text"}, "question": {"$ref": "#/$defs/text"}, "dun_type": {"enum": ["yin", "yang"]}, "ju_number": {"type": "integer", "minimum": 1, "maximum": 9}, "palaces": {"$ref": "#/$defs/closedObjectArray"}}},
-    "daliurenChart": {"$ref": "https://fateradar.cn/contracts/views/daliuren-chart-v1.schema.json"},
+    "daliurenChart": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "https://fateradar.cn/contracts/views/daliuren-chart-v1.schema.json",
+      "title": "Daliuren Chart ViewModel v1",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "subject_ref",
+        "question",
+        "lessons",
+        "transmissions"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "daliuren-chart/v1"
+        },
+        "subject_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "question": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lessons": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "lesson_id",
+              "upper",
+              "lower"
+            ],
+            "properties": {
+              "lesson_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "upper": {
+                "enum": [
+                  "子",
+                  "丑",
+                  "寅",
+                  "卯",
+                  "辰",
+                  "巳",
+                  "午",
+                  "未",
+                  "申",
+                  "酉",
+                  "戌",
+                  "亥"
+                ]
+              },
+              "lower": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "transmissions": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "stage",
+              "branch",
+              "general"
+            ],
+            "properties": {
+              "stage": {
+                "enum": [
+                  "initial",
+                  "middle",
+                  "final"
+                ]
+              },
+              "branch": {
+                "type": "string",
+                "minLength": 1
+              },
+              "general": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "core_facts": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/coreFacts"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "core_facts"
+            ],
+            "properties": {
+              "core_facts": {
+                "type": "object",
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "type": "array",
+                    "contains": {
+                      "type": "object",
+                      "required": [
+                        "rule_id"
+                      ],
+                      "properties": {
+                        "rule_id": {
+                          "const": "DLR-S01"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "lessons": {
+                "$ref": "#/$defs/threeDistinctLessonUppers"
+              }
+            }
+          }
+        }
+      ],
+      "$defs": {
+        "threeDistinctLessonUppers": {
+          "description": "For four lessons, exactly three distinct branch uppers means exactly one branch occurs twice.",
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": [
+              "upper"
+            ],
+            "properties": {
+              "upper": {
+                "enum": [
+                  "子",
+                  "丑",
+                  "寅",
+                  "卯",
+                  "辰",
+                  "巳",
+                  "午",
+                  "未",
+                  "申",
+                  "酉",
+                  "戌",
+                  "亥"
+                ]
+              }
+            }
+          },
+          "oneOf": [
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "upper"
+                ],
+                "properties": {
+                  "upper": {
+                    "const": "子"
+                  }
+                }
+              },
+              "minContains": 2,
+              "maxContains": 2
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "upper"
+                ],
+                "properties": {
+                  "upper": {
+                    "const": "丑"
+                  }
+                }
+              },
+              "minContains": 2,
+              "maxContains": 2
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "upper"
+                ],
+                "properties": {
+                  "upper": {
+                    "const": "寅"
+                  }
+                }
+              },
+              "minContains": 2,
+              "maxContains": 2
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "upper"
+                ],
+                "properties": {
+                  "upper": {
+                    "const": "卯"
+                  }
+                }
+              },
+              "minContains": 2,
+              "maxContains": 2
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "upper"
+                ],
+                "properties": {
+                  "upper": {
+                    "const": "辰"
+                  }
+                }
+              },
+              "minContains": 2,
+              "maxContains": 2
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "upper"
+                ],
+                "properties": {
+                  "upper": {
+                    "const": "巳"
+                  }
+                }
+              },
+              "minContains": 2,
+              "maxContains": 2
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "upper"
+                ],
+                "properties": {
+                  "upper": {
+                    "const": "午"
+                  }
+                }
+              },
+              "minContains": 2,
+              "maxContains": 2
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "upper"
+                ],
+                "properties": {
+                  "upper": {
+                    "const": "未"
+                  }
+                }
+              },
+              "minContains": 2,
+              "maxContains": 2
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "upper"
+                ],
+                "properties": {
+                  "upper": {
+                    "const": "申"
+                  }
+                }
+              },
+              "minContains": 2,
+              "maxContains": 2
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "upper"
+                ],
+                "properties": {
+                  "upper": {
+                    "const": "酉"
+                  }
+                }
+              },
+              "minContains": 2,
+              "maxContains": 2
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "upper"
+                ],
+                "properties": {
+                  "upper": {
+                    "const": "戌"
+                  }
+                }
+              },
+              "minContains": 2,
+              "maxContains": 2
+            },
+            {
+              "contains": {
+                "type": "object",
+                "required": [
+                  "upper"
+                ],
+                "properties": {
+                  "upper": {
+                    "const": "亥"
+                  }
+                }
+              },
+              "minContains": 2,
+              "maxContains": 2
+            }
+          ]
+        },
+        "coreFacts": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "day_hour": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/dayHour"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "dimension_facts": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "minProperties": 1,
+                  "additionalProperties": false,
+                  "properties": {
+                    "outcome": {
+                      "$ref": "#/$defs/outcomeDimensionFact"
+                    },
+                    "timing": {
+                      "$ref": "#/$defs/timingDimensionFact"
+                    },
+                    "state": {
+                      "$ref": "#/$defs/stateDimensionFact"
+                    },
+                    "current_state": {
+                      "$ref": "#/$defs/currentStateDimensionFact"
+                    },
+                    "location": {
+                      "$ref": "#/$defs/locationDimensionFact"
+                    },
+                    "location_direction": {
+                      "$ref": "#/$defs/locationDirectionDimensionFact"
+                    },
+                    "relationship": {
+                      "$ref": "#/$defs/relationshipDimensionFact"
+                    },
+                    "work": {
+                      "$ref": "#/$defs/workDimensionFact"
+                    },
+                    "career": {
+                      "$ref": "#/$defs/careerDimensionFact"
+                    },
+                    "money": {
+                      "$ref": "#/$defs/moneyDimensionFact"
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "earth_plate": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "const": "子"
+                    },
+                    {
+                      "const": "丑"
+                    },
+                    {
+                      "const": "寅"
+                    },
+                    {
+                      "const": "卯"
+                    },
+                    {
+                      "const": "辰"
+                    },
+                    {
+                      "const": "巳"
+                    },
+                    {
+                      "const": "午"
+                    },
+                    {
+                      "const": "未"
+                    },
+                    {
+                      "const": "申"
+                    },
+                    {
+                      "const": "酉"
+                    },
+                    {
+                      "const": "戌"
+                    },
+                    {
+                      "const": "亥"
+                    }
+                  ],
+                  "items": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "heaven_plate": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "minItems": 12,
+                  "maxItems": 12,
+                  "items": {
+                    "$ref": "#/$defs/heavenPlateCell"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "heavenly_generals": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "minItems": 12,
+                  "maxItems": 12,
+                  "items": {
+                    "$ref": "#/$defs/generalCell"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "lesson_method": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/lessonMethod"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "month_general": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/monthGeneral"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "noble_person": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/noblePerson"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "plate_offset": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 11
+            },
+            "structural_patterns": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "source_conditioned_patterns": {
+              "type": "array",
+              "maxItems": 4,
+              "uniqueItems": true,
+              "allOf": [
+                {
+                  "contains": {
+                    "type": "object",
+                    "properties": {
+                      "rule_id": {
+                        "const": "DLR-S01"
+                      }
+                    },
+                    "required": [
+                      "rule_id"
+                    ]
+                  },
+                  "minContains": 0,
+                  "maxContains": 1
+                },
+                {
+                  "contains": {
+                    "type": "object",
+                    "properties": {
+                      "rule_id": {
+                        "const": "DLR-08"
+                      }
+                    },
+                    "required": [
+                      "rule_id"
+                    ]
+                  },
+                  "minContains": 0,
+                  "maxContains": 1
+                },
+                {
+                  "contains": {
+                    "type": "object",
+                    "properties": {
+                      "rule_id": {
+                        "const": "DLR-09"
+                      }
+                    },
+                    "required": [
+                      "rule_id"
+                    ]
+                  },
+                  "minContains": 0,
+                  "maxContains": 1
+                },
+                {
+                  "contains": {
+                    "type": "object",
+                    "properties": {
+                      "rule_id": {
+                        "const": "DLR-10"
+                      }
+                    },
+                    "required": [
+                      "rule_id"
+                    ]
+                  },
+                  "minContains": 0,
+                  "maxContains": 1
+                }
+              ],
+              "items": {
+                "$ref": "#/$defs/sourcePattern"
+              }
+            },
+            "timing_candidates": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "$ref": "#/$defs/timingCandidate"
+              }
+            },
+            "xunkong": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/xunkong"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "四课不备"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/0"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 1,
+                    "prefixItems": [
+                      {
+                        "const": "四课不备"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "八专日"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/0"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 1,
+                    "prefixItems": [
+                      {
+                        "const": "八专日"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "伏吟"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/0"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 1,
+                    "prefixItems": [
+                      {
+                        "const": "伏吟"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "反吟"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/0"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 1,
+                    "prefixItems": [
+                      {
+                        "const": "反吟"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "四课不备"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/1"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 2,
+                    "prefixItems": [
+                      {},
+                      {
+                        "const": "四课不备"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "八专日"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/1"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 2,
+                    "prefixItems": [
+                      {},
+                      {
+                        "const": "八专日"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "伏吟"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/1"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 2,
+                    "prefixItems": [
+                      {},
+                      {
+                        "const": "伏吟"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "反吟"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/1"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 2,
+                    "prefixItems": [
+                      {},
+                      {
+                        "const": "反吟"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "四课不备"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/2"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 3,
+                    "prefixItems": [
+                      {},
+                      {},
+                      {
+                        "const": "四课不备"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "八专日"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/2"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 3,
+                    "prefixItems": [
+                      {},
+                      {},
+                      {
+                        "const": "八专日"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "伏吟"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/2"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 3,
+                    "prefixItems": [
+                      {},
+                      {},
+                      {
+                        "const": "伏吟"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "反吟"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/2"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 3,
+                    "prefixItems": [
+                      {},
+                      {},
+                      {
+                        "const": "反吟"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "四课不备"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/3"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 4,
+                    "prefixItems": [
+                      {},
+                      {},
+                      {},
+                      {
+                        "const": "四课不备"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "八专日"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/3"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 4,
+                    "prefixItems": [
+                      {},
+                      {},
+                      {},
+                      {
+                        "const": "八专日"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "伏吟"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/3"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 4,
+                    "prefixItems": [
+                      {},
+                      {},
+                      {},
+                      {
+                        "const": "伏吟"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "source_conditioned_patterns"
+                ],
+                "properties": {
+                  "source_conditioned_patterns": {
+                    "contains": {
+                      "required": [
+                        "title",
+                        "fact_paths"
+                      ],
+                      "properties": {
+                        "title": {
+                          "const": "反吟"
+                        },
+                        "fact_paths": {
+                          "contains": {
+                            "const": "fact:/chart_facts/output/structural_patterns/3"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "structural_patterns"
+                ],
+                "properties": {
+                  "structural_patterns": {
+                    "type": "array",
+                    "minItems": 4,
+                    "prefixItems": [
+                      {},
+                      {},
+                      {},
+                      {
+                        "const": "反吟"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "sourcePattern": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rule_id",
+            "local_rule_id",
+            "title",
+            "source_pack",
+            "source_anchor",
+            "status",
+            "fact_paths",
+            "predicate_audit",
+            "source_dependency_id"
+          ],
+          "properties": {
+            "rule_id": {
+              "enum": [
+                "DLR-S01",
+                "DLR-08",
+                "DLR-09",
+                "DLR-10"
+              ]
+            },
+            "local_rule_id": {
+              "enum": [
+                "liuren.structural.incomplete-four-lessons",
+                "liuren.structural.bazhuan-day",
+                "liuren.structural.fuyin",
+                "liuren.structural.fanyin"
+              ]
+            },
+            "title": {
+              "enum": [
+                "四课不备",
+                "八专日",
+                "伏吟",
+                "反吟"
+              ]
+            },
+            "source_pack": {
+              "const": "san-shi/daliuren-daquan"
+            },
+            "source_anchor": {
+              "enum": [
+                "fulltext.md#L58",
+                "fulltext.md#L7556",
+                "fulltext.md#L7696",
+                "fulltext.md#L7874"
+              ]
+            },
+            "status": {
+              "const": "predicate_matched_not_verdict"
+            },
+            "fact_paths": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "predicate_audit": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "source_dependency_id": {
+              "const": "liuren.source-conditioned-structural-patterns-v1"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "rule_id": {
+                    "const": "DLR-S01"
+                  }
+                },
+                "required": [
+                  "rule_id"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "fact_paths": {
+                    "type": "array",
+                    "minItems": 5,
+                    "maxItems": 5,
+                    "uniqueItems": true,
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^fact:/chart_facts/output/structural_patterns/[0-3]$"
+                        },
+                        {
+                          "const": "fact:/chart_facts/output/four_lessons/0/upper"
+                        },
+                        {
+                          "const": "fact:/chart_facts/output/four_lessons/1/upper"
+                        },
+                        {
+                          "const": "fact:/chart_facts/output/four_lessons/2/upper"
+                        },
+                        {
+                          "const": "fact:/chart_facts/output/four_lessons/3/upper"
+                        }
+                      ]
+                    },
+                    "allOf": [
+                      {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/four_lessons/0/upper"
+                        }
+                      },
+                      {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/four_lessons/1/upper"
+                        }
+                      },
+                      {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/four_lessons/2/upper"
+                        }
+                      },
+                      {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/four_lessons/3/upper"
+                        }
+                      }
+                    ]
+                  },
+                  "predicate_audit": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "uniqueItems": true,
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^/chart_facts/output/structural_patterns/[0-3]:eq:四课不备$"
+                        },
+                        {
+                          "const": "/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3"
+                        }
+                      ]
+                    },
+                    "contains": {
+                      "const": "/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3"
+                    }
+                  }
+                },
+                "oneOf": [
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/0"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/0:eq:四课不备"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/1"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/1:eq:四课不备"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/2"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/2:eq:四课不备"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/3"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/3:eq:四课不备"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "rule_id": {
+                    "const": "DLR-08"
+                  }
+                },
+                "required": [
+                  "rule_id"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "fact_paths": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^fact:/chart_facts/output/structural_patterns/[0-3]$"
+                    }
+                  },
+                  "predicate_audit": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^/chart_facts/output/structural_patterns/[0-3]:eq:八专日$"
+                    }
+                  }
+                },
+                "oneOf": [
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/0"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/0:eq:八专日"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/1"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/1:eq:八专日"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/2"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/2:eq:八专日"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/3"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/3:eq:八专日"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "rule_id": {
+                    "const": "DLR-09"
+                  }
+                },
+                "required": [
+                  "rule_id"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "fact_paths": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^fact:/chart_facts/output/structural_patterns/[0-3]$"
+                    }
+                  },
+                  "predicate_audit": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^/chart_facts/output/structural_patterns/[0-3]:eq:伏吟$"
+                    }
+                  }
+                },
+                "oneOf": [
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/0"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/0:eq:伏吟"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/1"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/1:eq:伏吟"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/2"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/2:eq:伏吟"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/3"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/3:eq:伏吟"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "rule_id": {
+                    "const": "DLR-10"
+                  }
+                },
+                "required": [
+                  "rule_id"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "fact_paths": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^fact:/chart_facts/output/structural_patterns/[0-3]$"
+                    }
+                  },
+                  "predicate_audit": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^/chart_facts/output/structural_patterns/[0-3]:eq:反吟$"
+                    }
+                  }
+                },
+                "oneOf": [
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/0"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/0:eq:反吟"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/1"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/1:eq:反吟"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/2"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/2:eq:反吟"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "fact_paths": {
+                        "contains": {
+                          "const": "fact:/chart_facts/output/structural_patterns/3"
+                        }
+                      },
+                      "predicate_audit": {
+                        "contains": {
+                          "const": "/chart_facts/output/structural_patterns/3:eq:反吟"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "oneOf": [
+            {
+              "properties": {
+                "rule_id": {
+                  "const": "DLR-S01"
+                },
+                "local_rule_id": {
+                  "const": "liuren.structural.incomplete-four-lessons"
+                },
+                "title": {
+                  "const": "四课不备"
+                },
+                "source_anchor": {
+                  "const": "fulltext.md#L58"
+                }
+              }
+            },
+            {
+              "properties": {
+                "rule_id": {
+                  "const": "DLR-08"
+                },
+                "local_rule_id": {
+                  "const": "liuren.structural.bazhuan-day"
+                },
+                "title": {
+                  "const": "八专日"
+                },
+                "source_anchor": {
+                  "const": "fulltext.md#L7556"
+                }
+              }
+            },
+            {
+              "properties": {
+                "rule_id": {
+                  "const": "DLR-09"
+                },
+                "local_rule_id": {
+                  "const": "liuren.structural.fuyin"
+                },
+                "title": {
+                  "const": "伏吟"
+                },
+                "source_anchor": {
+                  "const": "fulltext.md#L7696"
+                }
+              }
+            },
+            {
+              "properties": {
+                "rule_id": {
+                  "const": "DLR-10"
+                },
+                "local_rule_id": {
+                  "const": "liuren.structural.fanyin"
+                },
+                "title": {
+                  "const": "反吟"
+                },
+                "source_anchor": {
+                  "const": "fulltext.md#L7874"
+                }
+              }
+            }
+          ]
+        },
+        "dayHour": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "day",
+            "hour"
+          ],
+          "properties": {
+            "day": {
+              "type": "string",
+              "minLength": 2
+            },
+            "hour": {
+              "type": "string",
+              "minLength": 2
+            }
+          }
+        },
+        "monthGeneral": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "branch",
+            "name"
+          ],
+          "properties": {
+            "branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "noblePerson": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "branch",
+            "day_night_profile",
+            "direction",
+            "earth_position",
+            "period",
+            "profile",
+            "source"
+          ],
+          "properties": {
+            "branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "day_night_profile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "direction": {
+              "type": "string",
+              "minLength": 1
+            },
+            "earth_position": {
+              "type": "string",
+              "minLength": 1
+            },
+            "period": {
+              "enum": [
+                "day",
+                "night"
+              ]
+            },
+            "profile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "xunkong": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "branches",
+            "xun"
+          ],
+          "properties": {
+            "branches": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "xun": {
+              "type": "string",
+              "minLength": 2
+            }
+          }
+        },
+        "heavenPlateCell": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "earth",
+            "heaven"
+          ],
+          "properties": {
+            "earth": {
+              "type": "string",
+              "minLength": 1
+            },
+            "heaven": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "generalCell": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "earth",
+            "general",
+            "heaven"
+          ],
+          "properties": {
+            "earth": {
+              "type": "string",
+              "minLength": 1
+            },
+            "general": {
+              "type": "string",
+              "minLength": 1
+            },
+            "heaven": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "lessonMethod": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "calculated_transmissions",
+            "calculation_source",
+            "direct_direction",
+            "primary",
+            "selected_initial",
+            "source_anchor",
+            "use_method"
+          ],
+          "properties": {
+            "calculated_transmissions": {
+              "type": "string",
+              "minLength": 3
+            },
+            "calculation_source": {
+              "type": "string",
+              "minLength": 1
+            },
+            "direct_direction": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "primary": {
+              "type": "string",
+              "minLength": 1
+            },
+            "selected_initial": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "use_method": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "dimensionFact": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "canonical_dimension",
+            "requested_dimension",
+            "rule_evidence",
+            "status",
+            "source_rule_ids"
+          ],
+          "properties": {
+            "canonical_dimension": {
+              "type": "string",
+              "minLength": 1
+            },
+            "requested_dimension": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rule_evidence": {
+              "$ref": "#/$defs/ruleEvidence"
+            },
+            "status": {
+              "const": "calculated_facts_not_verdict"
+            },
+            "source_rule_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "initial_final_relation": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/relationFact"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "subject_object_relation": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/relationFact"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "stage_flow": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "$ref": "#/$defs/stageFlowEntry"
+              }
+            },
+            "transmissions_to_day": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "$ref": "#/$defs/transmissionToDayEntry"
+              }
+            },
+            "six_relative_stages": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "$ref": "#/$defs/sixRelativeStage"
+              }
+            },
+            "stage_status": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "$ref": "#/$defs/stageStatusEntry"
+              }
+            },
+            "stage_branch_directions": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "$ref": "#/$defs/stageBranchDirection"
+              }
+            },
+            "general_landing_correspondences": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "$ref": "#/$defs/generalLanding"
+              }
+            },
+            "candidate_branch": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/candidateBranch"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "candidate_date": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/timingCandidate"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "relative_speed": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "target_contract_status": {
+              "type": "string",
+              "minLength": 1
+            },
+            "target_presence": {
+              "type": "boolean"
+            },
+            "target_relative": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "target_general_modifier": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/generalModifierEntry"
+              }
+            },
+            "target_strength": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/targetStrengthEntry"
+              }
+            },
+            "wealth_presence": {
+              "type": "boolean"
+            },
+            "wealth_general_modifier": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/generalModifierEntry"
+              }
+            },
+            "wealth_stage_strength": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/wealthStageStrengthEntry"
+              }
+            },
+            "wealth_void_status": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/wealthVoidStatusEntry"
+              }
+            }
+          },
+          "dependentSchemas": {
+            "initial_final_relation": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "outcome"
+                }
+              }
+            },
+            "transmissions_to_day": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "outcome"
+                }
+              }
+            },
+            "subject_object_relation": {
+              "properties": {
+                "canonical_dimension": {
+                  "enum": [
+                    "outcome",
+                    "relationship",
+                    "work"
+                  ]
+                }
+              }
+            },
+            "stage_flow": {
+              "properties": {
+                "canonical_dimension": {
+                  "enum": [
+                    "outcome",
+                    "relationship"
+                  ]
+                }
+              }
+            },
+            "candidate_branch": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "timing"
+                }
+              }
+            },
+            "candidate_date": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "timing"
+                }
+              }
+            },
+            "relative_speed": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "timing"
+                }
+              }
+            },
+            "stage_status": {
+              "properties": {
+                "canonical_dimension": {
+                  "enum": [
+                    "state",
+                    "work"
+                  ]
+                }
+              }
+            },
+            "general_landing_correspondences": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "state"
+                }
+              }
+            },
+            "stage_branch_directions": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "location"
+                }
+              }
+            },
+            "six_relative_stages": {
+              "properties": {
+                "canonical_dimension": {
+                  "enum": [
+                    "relationship",
+                    "work"
+                  ]
+                }
+              }
+            },
+            "target_contract_status": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "work"
+                }
+              }
+            },
+            "target_presence": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "work"
+                }
+              }
+            },
+            "target_relative": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "work"
+                }
+              }
+            },
+            "target_general_modifier": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "work"
+                }
+              }
+            },
+            "target_strength": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "work"
+                }
+              }
+            },
+            "wealth_presence": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "money"
+                }
+              }
+            },
+            "wealth_general_modifier": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "money"
+                }
+              }
+            },
+            "wealth_stage_strength": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "money"
+                }
+              }
+            },
+            "wealth_void_status": {
+              "properties": {
+                "canonical_dimension": {
+                  "const": "money"
+                }
+              }
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "canonical_dimension": {
+                    "const": "outcome"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "subject_object_relation",
+                  "transmissions_to_day",
+                  "initial_final_relation",
+                  "stage_flow"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "canonical_dimension": {
+                    "const": "timing"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "relative_speed",
+                  "candidate_branch",
+                  "candidate_date"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "canonical_dimension": {
+                    "const": "state"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "stage_status",
+                  "general_landing_correspondences"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "canonical_dimension": {
+                    "const": "location"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "stage_branch_directions"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "canonical_dimension": {
+                    "const": "relationship"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "six_relative_stages",
+                  "subject_object_relation",
+                  "stage_flow"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "canonical_dimension": {
+                    "const": "work"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "six_relative_stages",
+                  "stage_status",
+                  "subject_object_relation",
+                  "target_relative",
+                  "target_contract_status",
+                  "target_presence",
+                  "target_strength",
+                  "target_general_modifier"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "canonical_dimension": {
+                    "const": "money"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "wealth_presence",
+                  "wealth_stage_strength",
+                  "wealth_void_status",
+                  "wealth_general_modifier"
+                ]
+              }
+            }
+          ]
+        },
+        "outcomeDimensionFact": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/dimensionFact"
+            },
+            {
+              "properties": {
+                "requested_dimension": {
+                  "const": "outcome"
+                },
+                "canonical_dimension": {
+                  "const": "outcome"
+                }
+              }
+            }
+          ]
+        },
+        "timingDimensionFact": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/dimensionFact"
+            },
+            {
+              "properties": {
+                "requested_dimension": {
+                  "const": "timing"
+                },
+                "canonical_dimension": {
+                  "const": "timing"
+                }
+              }
+            }
+          ]
+        },
+        "stateDimensionFact": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/dimensionFact"
+            },
+            {
+              "properties": {
+                "requested_dimension": {
+                  "const": "state"
+                },
+                "canonical_dimension": {
+                  "const": "state"
+                }
+              }
+            }
+          ]
+        },
+        "currentStateDimensionFact": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/dimensionFact"
+            },
+            {
+              "properties": {
+                "requested_dimension": {
+                  "const": "current_state"
+                },
+                "canonical_dimension": {
+                  "const": "state"
+                }
+              }
+            }
+          ]
+        },
+        "locationDimensionFact": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/dimensionFact"
+            },
+            {
+              "properties": {
+                "requested_dimension": {
+                  "const": "location"
+                },
+                "canonical_dimension": {
+                  "const": "location"
+                }
+              }
+            }
+          ]
+        },
+        "locationDirectionDimensionFact": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/dimensionFact"
+            },
+            {
+              "properties": {
+                "requested_dimension": {
+                  "const": "location_direction"
+                },
+                "canonical_dimension": {
+                  "const": "location"
+                }
+              }
+            }
+          ]
+        },
+        "relationshipDimensionFact": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/dimensionFact"
+            },
+            {
+              "properties": {
+                "requested_dimension": {
+                  "const": "relationship"
+                },
+                "canonical_dimension": {
+                  "const": "relationship"
+                }
+              }
+            }
+          ]
+        },
+        "workDimensionFact": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/dimensionFact"
+            },
+            {
+              "properties": {
+                "requested_dimension": {
+                  "const": "work"
+                },
+                "canonical_dimension": {
+                  "const": "work"
+                }
+              }
+            }
+          ]
+        },
+        "careerDimensionFact": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/dimensionFact"
+            },
+            {
+              "properties": {
+                "requested_dimension": {
+                  "const": "career"
+                },
+                "canonical_dimension": {
+                  "const": "work"
+                }
+              }
+            }
+          ]
+        },
+        "moneyDimensionFact": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/dimensionFact"
+            },
+            {
+              "properties": {
+                "requested_dimension": {
+                  "const": "money"
+                },
+                "canonical_dimension": {
+                  "const": "money"
+                }
+              }
+            }
+          ]
+        },
+        "ruleEvidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "catalog_schema",
+            "hard_verdict",
+            "matched",
+            "not_evaluated",
+            "requires_school_adjudication",
+            "scope_boundaries",
+            "status"
+          ],
+          "properties": {
+            "catalog_schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hard_verdict": {
+              "type": "null"
+            },
+            "matched": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ruleEvidenceEntry"
+              }
+            },
+            "not_evaluated": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ruleNotEvaluatedEntry"
+              }
+            },
+            "requires_school_adjudication": {
+              "const": true
+            },
+            "scope_boundaries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ruleEvidenceEntry"
+              }
+            },
+            "status": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "ruleEvidenceEntry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "activation_id",
+            "dependency_group",
+            "fact_paths",
+            "observation",
+            "polarity",
+            "rule_id",
+            "rule_key",
+            "source_refs",
+            "status",
+            "weight_class"
+          ],
+          "properties": {
+            "activation_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confidence_ceiling": {
+              "type": "string",
+              "minLength": 1
+            },
+            "dependency_group": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fact_paths": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "observation": {
+              "type": "object"
+            },
+            "polarity": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rule_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rule_key": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_refs": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/ruleSourceRef"
+              }
+            },
+            "status": {
+              "type": "string",
+              "minLength": 1
+            },
+            "weight_class": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stop_conditions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "ruleNotEvaluatedEntry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "activation_id",
+            "reason",
+            "rule_id",
+            "rule_key",
+            "source_refs",
+            "status"
+          ],
+          "properties": {
+            "activation_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rule_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rule_key": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_refs": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/ruleSourceRef"
+              }
+            },
+            "status": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "ruleSourceRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pack",
+            "rule_id",
+            "source_anchor"
+          ],
+          "properties": {
+            "pack": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rule_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "quote_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_anchor": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "relationFact": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "object",
+            "object_element",
+            "object_value",
+            "relation",
+            "subject",
+            "subject_element",
+            "subject_value"
+          ],
+          "properties": {
+            "object": {
+              "type": "string",
+              "minLength": 1
+            },
+            "object_element": {
+              "type": "string",
+              "minLength": 1
+            },
+            "object_value": {
+              "type": "string",
+              "minLength": 1
+            },
+            "relation": {
+              "type": "string",
+              "minLength": 1
+            },
+            "subject": {
+              "type": "string",
+              "minLength": 1
+            },
+            "subject_element": {
+              "type": "string",
+              "minLength": 1
+            },
+            "subject_value": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "stageFlowEntry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "object",
+            "object_element",
+            "object_value",
+            "relation",
+            "subject",
+            "subject_element",
+            "subject_value",
+            "from_stage",
+            "to_stage"
+          ],
+          "properties": {
+            "object": {
+              "type": "string",
+              "minLength": 1
+            },
+            "object_element": {
+              "type": "string",
+              "minLength": 1
+            },
+            "object_value": {
+              "type": "string",
+              "minLength": 1
+            },
+            "relation": {
+              "type": "string",
+              "minLength": 1
+            },
+            "subject": {
+              "type": "string",
+              "minLength": 1
+            },
+            "subject_element": {
+              "type": "string",
+              "minLength": 1
+            },
+            "subject_value": {
+              "type": "string",
+              "minLength": 1
+            },
+            "from_stage": {
+              "type": "string",
+              "minLength": 1
+            },
+            "to_stage": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "transmissionToDayEntry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "object",
+            "object_element",
+            "object_value",
+            "relation",
+            "subject",
+            "subject_element",
+            "subject_value",
+            "stage"
+          ],
+          "properties": {
+            "object": {
+              "type": "string",
+              "minLength": 1
+            },
+            "object_element": {
+              "type": "string",
+              "minLength": 1
+            },
+            "object_value": {
+              "type": "string",
+              "minLength": 1
+            },
+            "relation": {
+              "type": "string",
+              "minLength": 1
+            },
+            "subject": {
+              "type": "string",
+              "minLength": 1
+            },
+            "subject_element": {
+              "type": "string",
+              "minLength": 1
+            },
+            "subject_value": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stage": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "sixRelativeStage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "branch",
+            "six_relative",
+            "stage"
+          ],
+          "properties": {
+            "branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "six_relative": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stage": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "stageStatusEntry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "branch",
+            "heavenly_general",
+            "is_xunkong",
+            "season_strength",
+            "six_relative",
+            "stage"
+          ],
+          "properties": {
+            "branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "heavenly_general": {
+              "type": "string",
+              "minLength": 1
+            },
+            "is_xunkong": {
+              "type": "boolean"
+            },
+            "season_strength": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "six_relative": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stage": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "targetStrengthEntry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "branch",
+            "is_xunkong",
+            "season_strength",
+            "six_relative",
+            "stage"
+          ],
+          "properties": {
+            "branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "is_xunkong": {
+              "type": "boolean"
+            },
+            "season_strength": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "six_relative": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stage": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "wealthStageStrengthEntry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "branch",
+            "season_strength",
+            "six_relative",
+            "stage"
+          ],
+          "properties": {
+            "branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "season_strength": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "six_relative": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stage": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "wealthVoidStatusEntry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "branch",
+            "is_xunkong",
+            "six_relative",
+            "stage"
+          ],
+          "properties": {
+            "branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "is_xunkong": {
+              "type": "boolean"
+            },
+            "six_relative": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stage": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "stageBranchDirection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "branch",
+            "declared_source_anchor",
+            "direction",
+            "direction_chinese",
+            "scope",
+            "source_binding_status",
+            "stage"
+          ],
+          "properties": {
+            "branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "declared_source_anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "direction": {
+              "type": "string",
+              "minLength": 1
+            },
+            "direction_chinese": {
+              "type": "string",
+              "minLength": 1
+            },
+            "scope": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_binding_status": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stage": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "generalLanding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "heavenly_general",
+            "landing_branch",
+            "role",
+            "source_pack",
+            "source_rule",
+            "stage",
+            "status"
+          ],
+          "properties": {
+            "heavenly_general": {
+              "type": "string",
+              "minLength": 1
+            },
+            "landing_branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "role": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_pack": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_rule": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_text": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stage": {
+              "type": "string",
+              "minLength": 1
+            },
+            "status": {
+              "enum": [
+                "source_correspondence_matched",
+                "no_exact_source_correspondence"
+              ]
+            }
+          },
+          "oneOf": [
+            {
+              "properties": {
+                "status": {
+                  "const": "source_correspondence_matched"
+                }
+              },
+              "required": [
+                "source_anchor",
+                "source_text"
+              ]
+            },
+            {
+              "properties": {
+                "status": {
+                  "const": "no_exact_source_correspondence"
+                }
+              },
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "source_anchor"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "source_text"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "generalModifierEntry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "heavenly_general",
+            "landing_branch",
+            "role",
+            "six_relative",
+            "source_pack",
+            "source_rule",
+            "stage",
+            "status"
+          ],
+          "properties": {
+            "heavenly_general": {
+              "type": "string",
+              "minLength": 1
+            },
+            "landing_branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "role": {
+              "type": "string",
+              "minLength": 1
+            },
+            "six_relative": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_anchor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_pack": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_rule": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_text": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stage": {
+              "type": "string",
+              "minLength": 1
+            },
+            "status": {
+              "enum": [
+                "source_correspondence_matched",
+                "no_exact_source_correspondence"
+              ]
+            }
+          },
+          "oneOf": [
+            {
+              "properties": {
+                "status": {
+                  "const": "source_correspondence_matched"
+                }
+              },
+              "required": [
+                "source_anchor",
+                "source_text"
+              ]
+            },
+            {
+              "properties": {
+                "status": {
+                  "const": "no_exact_source_correspondence"
+                }
+              },
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "source_anchor"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "source_text"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "candidateBranch": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "anchor_earth_branch",
+            "branch",
+            "source_rule"
+          ],
+          "properties": {
+            "anchor_earth_branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_rule": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "timingCandidate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "role",
+            "anchor_earth_branch",
+            "branch",
+            "solar_date",
+            "day_ganzhi",
+            "days_after_cast",
+            "source_pack",
+            "source_rule",
+            "candidate_not_guarantee"
+          ],
+          "properties": {
+            "id": {
+              "const": "initial_group_upper_candidate"
+            },
+            "role": {
+              "const": "event_response_candidate"
+            },
+            "anchor_earth_branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "solar_date": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "day_ganzhi": {
+              "type": "string",
+              "minLength": 2
+            },
+            "days_after_cast": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "source_pack": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_rule": {
+              "const": "LM-R21"
+            },
+            "candidate_not_guarantee": {
+              "const": true
+            }
+          }
+        }
+      }
+    },
     "physiognomyView": {"type": "object", "additionalProperties": false, "required": ["schema_version", "subject_ref", "mode", "observations", "missing_targets", "uncertainties", "conflicts", "cross_capture_variations", "source_comparison", "active_source_rule_ids"], "properties": {"schema_version": {"const": "physiognomy-view/v1"}, "subject_ref": {"$ref": "#/$defs/text"}, "mode": {"enum": ["face", "palm", "posture", "combined"]}, "observations": {"$ref": "#/$defs/closedObjectArray"}, "missing_targets": {"type": "array", "items": {"type": "object"}}, "uncertainties": {"type": "array", "items": {"type": "object"}}, "conflicts": {"type": "array", "items": {"type": "object"}}, "cross_capture_variations": {"type": "array", "items": {"type": "object"}}, "source_comparison": {"type": "object", "additionalProperties": false, "required": ["sources", "disagreements_retained", "disagreements", "forced_resolution"], "properties": {"sources": {"type": "array", "items": {"type": "object"}}, "disagreements_retained": {"type": "boolean"}, "disagreements": {"type": "array", "items": {"type": "object"}}, "forced_resolution": {"type": "boolean"}}}, "active_source_rule_ids": {"type": "array", "items": {"type": "string", "minLength": 1}}}},
     "baziRelationship": {"$ref": "#/$defs/baziRelationshipShape"},
     "baziRelationshipShape": {"type": "object", "additionalProperties": false, "required": ["schema_version", "subjects", "relationship_type", "signals"], "properties": {"schema_version": {"const": "bazi-relationship/v1"}, "subjects": {"$ref": "#/$defs/closedObjectArray"}, "relationship_type": {"enum": ["romantic", "married", "parent_child", "business", "work", "friend"]}, "signals": {"$ref": "#/$defs/closedObjectArray"}}},
