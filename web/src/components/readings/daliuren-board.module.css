@@ -1,0 +1,298 @@
+.wrap {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+  overflow-x: clip;
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.board,
+.timing,
+.semantics {
+  display: grid;
+  gap: var(--space-sm);
+  min-width: 0;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.lessons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-sm);
+  min-width: 0;
+  direction: rtl;
+}
+
+.column {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.lessonName {
+  min-height: 1.2em;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 650;
+  text-align: center;
+}
+
+.upper,
+.lower {
+  display: grid;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  place-items: center;
+  padding: 0.15rem 0.35rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-domain);
+  line-height: 1.1;
+}
+
+.upper {
+  font-size: var(--font-size-emphasis);
+}
+
+.lower {
+  font-size: var(--font-size-body);
+}
+
+.upper[data-element="wood"] { color: var(--element-wood); }
+.lower[data-element="wood"] { color: var(--element-wood); }
+.branch[data-element="wood"] { color: var(--element-wood); }
+.upper[data-element="fire"] { color: var(--element-fire); }
+.lower[data-element="fire"] { color: var(--element-fire); }
+.branch[data-element="fire"] { color: var(--element-fire); }
+.upper[data-element="earth"] { color: var(--element-earth); }
+.lower[data-element="earth"] { color: var(--element-earth); }
+.branch[data-element="earth"] { color: var(--element-earth); }
+.upper[data-element="metal"] { color: var(--element-metal); }
+.lower[data-element="metal"] { color: var(--element-metal); }
+.branch[data-element="metal"] { color: var(--element-metal); }
+.upper[data-element="water"] { color: var(--element-water); }
+.lower[data-element="water"] { color: var(--element-water); }
+.branch[data-element="water"] { color: var(--element-water); }
+
+.rule {
+  display: block;
+  width: 2rem;
+  height: 1px;
+  background: var(--color-border-strong);
+}
+
+.stairs {
+  display: grid;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.tx {
+  display: grid;
+  min-width: 0;
+}
+
+.tx[data-stage="middle"] {
+  margin-inline-start: 1.5rem;
+}
+
+.tx[data-stage="final"] {
+  margin-inline-start: 3rem;
+}
+
+.txButton {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.7rem;
+  width: 100%;
+  min-height: var(--target-min);
+  padding: 0.2rem 0.35rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.upper[data-active="true"],
+.lower[data-active="true"],
+.txButton[data-active="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-surface-muted);
+  font-weight: 700;
+}
+
+.upper:focus-visible,
+.lower:focus-visible,
+.txButton:focus-visible,
+.branchLink:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.stage {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.branch {
+  min-width: 1.25em;
+  min-height: 1.25em;
+  color: var(--color-text);
+  font-family: var(--font-domain);
+  font-size: var(--font-size-card);
+  line-height: 1.1;
+}
+
+.general {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  padding: 0.1rem 0.55rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+}
+
+.general[data-active="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-surface-muted);
+  font-weight: 700;
+}
+
+.voidBadge {
+  display: inline-flex;
+  min-width: 1.1rem;
+  margin-inline-start: 0.2rem;
+  justify-content: center;
+  border: 1px solid var(--color-text);
+  color: var(--color-text);
+  font-size: var(--font-size-meta);
+}
+
+.upper[data-void="true"],
+.lower[data-void="true"],
+.txButton[data-void="true"] {
+  outline: 1px solid var(--color-text);
+  outline-offset: -1px;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+}
+
+.table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  font-size: var(--font-size-aux);
+}
+
+.table caption {
+  text-align: left;
+  font-weight: 650;
+}
+
+.table th,
+.table td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.table tr[data-active="true"] {
+  background: var(--color-surface-muted);
+}
+
+.date {
+  font-variant-numeric: tabular-nums;
+}
+
+.source {
+  color: var(--color-evidence);
+}
+
+.branchLink {
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-accent);
+  font-family: var(--font-domain);
+  font-size: var(--font-size-card);
+}
+
+.upper[data-skeleton="true"],
+.lower[data-skeleton="true"],
+.branch[data-skeleton="true"],
+.general[data-skeleton="true"] {
+  width: 2rem;
+  min-height: 1rem;
+  border-color: var(--color-border);
+  background: var(--color-surface-muted);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.entrySilhouette {
+  display: grid;
+  gap: var(--space-sm);
+  min-width: 0;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.entrySilhouette figcaption {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+}
+
+.wrap[data-mode="silhouette"] .board,
+.wrap[data-mode="loading"] .board {
+  background: var(--color-canvas);
+}
+
+@media (max-width: 22.5rem) {
+  .lessons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tx[data-stage="middle"] {
+    margin-inline-start: 0.75rem;
+  }
+
+  .tx[data-stage="final"] {
+    margin-inline-start: 1.5rem;
+  }
+}

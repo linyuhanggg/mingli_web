@@ -212,11 +212,10 @@ describe("qimen + daliuren result shell", () => {
     render(<ReadingResult readingId={VERSION_ID} />);
 
     expect(await screen.findByRole("heading", { level: 1, name: "大六壬" })).toBeVisible();
-    expect(screen.getByText("四课")).toBeVisible();
-    expect(screen.getByText("三传")).toBeVisible();
-    expect(screen.getByText("朱雀")).toBeVisible();
+    expect(screen.getByRole("region", { name: "课传" })).toBeVisible();
+    expect(screen.getAllByText("朱雀").length).toBeGreaterThan(0);
     expect(
-      screen.getByText("四课").compareDocumentPosition(screen.getByRole("heading", { name: "阅读说明" })) &
+      screen.getByRole("region", { name: "课传" }).compareDocumentPosition(screen.getByRole("heading", { name: "阅读说明" })) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(screen.queryByText("待接入")).not.toBeInTheDocument();
