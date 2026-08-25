@@ -746,10 +746,16 @@ _PREVIOUS_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
 _PREVIOUS_ADMITTED_V53_SOURCE_COMMIT = (
     "0f99c8b37a8f11074e9afb3e4f09ea374949397d"
 )
-_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
+_SUPERSEDED_CORE_34248AC_RELEASE_MANIFEST_SHA = (
     "c3f273c7162fc72f25e3492ff087c419a4ea7f5ddbd7eb34fd4e870c05e5e05e"
 )
-_ADMITTED_V53_SOURCE_COMMIT = "34248ac5b0ef3786f18f0748a5161bc7fa4d9466"
+_SUPERSEDED_CORE_34248AC_SOURCE_COMMIT = (
+    "34248ac5b0ef3786f18f0748a5161bc7fa4d9466"
+)
+_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
+    "3838cbd6c2e3112ecc6c1df59ec10705e94d75303b0fc28a15d2dc8224081870"
+)
+_ADMITTED_V53_SOURCE_COMMIT = "4a1374312c7b0f358d55f6cec6d238415f460ba9"
 
 
 def test_runtime_startup_gate_admits_the_time_check_gap7_release_profile(
@@ -832,6 +838,58 @@ def test_filesystem_release_inspector_rejects_the_previous_admitted_source_ident
     manifest_sha256 = _build_signed_release_fixture(
         release_root,
         source_commit=_PREVIOUS_ADMITTED_V53_SOURCE_COMMIT,
+    )
+
+    with pytest.raises(RuntimeStartupError, match="release identity mismatch"):
+        FileSystemRuntimeReleaseInspector(
+            release_root=release_root,
+            expected_release_manifest_sha256=manifest_sha256,
+            expected_release_name="fixture-release",
+            expected_source_commit=_ADMITTED_V53_SOURCE_COMMIT,
+        ).inspect()
+
+
+async def test_runtime_startup_gate_rejects_the_core_34248ac_manifest_identity(
+    tmp_path: Path,
+) -> None:
+    description = await _fake_description()
+    launcher = _write_executable(tmp_path / "runtime-fixture", description.to_dict())
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    runtime = OneShotMingliRuntimeAdapter(
+        launcher_path=launcher,
+        runtime_python_path=Path("/usr/bin/python3"),
+        state_root=state_root,
+        timeout_seconds=1,
+    )
+    inventory = replace(
+        _inventory(),
+        release_manifest_sha256=_SUPERSEDED_CORE_34248AC_RELEASE_MANIFEST_SHA,
+    )
+    gate = RuntimeStartupGate(
+        runtime=runtime,
+        release_inspector=StaticReleaseInspector(inventory),
+        expected_manifest_digest=description.manifest_digest,
+        expected_release_manifest_sha256=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
+        expected_capability_shape_sha256=runtime_capability_shape_sha256(
+            description.capabilities
+        ),
+    )
+
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        await gate.startup()
+    with pytest.raises(RuntimeStartupError, match="not ready"):
+        await gate.readiness_probe()
+
+
+def test_filesystem_release_inspector_rejects_the_core_34248ac_source_identity(
+    tmp_path: Path,
+) -> None:
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    manifest_sha256 = _build_signed_release_fixture(
+        release_root,
+        source_commit=_SUPERSEDED_CORE_34248AC_SOURCE_COMMIT,
     )
 
     with pytest.raises(RuntimeStartupError, match="release identity mismatch"):
