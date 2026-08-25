@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -10,7 +10,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import runtime_python
-
 
 ROOT = Path(__file__).resolve().parents[1]
 CHILD_LAUNCHERS = (
@@ -114,15 +113,15 @@ class RuntimePythonTests(unittest.TestCase):
     def test_runtime_tree_rejects_unchecked_bytecode(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            package = root / "example"
+            package = root / "sxtwl"
             package.mkdir()
             (package / "module.py").write_text("VALUE = 1\n", encoding="utf-8")
             manifest = runtime_python.build_runtime_tree_manifest(
-                [root], owned_paths={"example/module.py"}
+                [root], owned_paths={"sxtwl/module.py"}
             )
             cache = package / "__pycache__"
             cache.mkdir()
-            (cache / "module.cpython-311.pyc").write_bytes(b"unchecked")
+            (cache / "sxtwl.cpython-314.pyc").write_bytes(b"unchecked")
 
             with self.assertRaisesRegex(RuntimeError, "bytecode"):
                 runtime_python.validate_runtime_tree([root], manifest)
@@ -239,6 +238,41 @@ class RuntimePythonTests(unittest.TestCase):
         self.assertEqual(runtime_python.PINNED_VERSIONS["cnlunar"], "0.2.4")
         requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8")
         self.assertIn("cnlunar==0.2.4", requirements.splitlines())
+
+    def test_runtime_lock_matches_the_complete_distribution_allowlist(self) -> None:
+        lock = ROOT / "requirements-runtime.lock"
+        self.assertEqual(
+            runtime_python.load_hash_locked_distributions(lock),
+            runtime_python.REQUIRED_DISTRIBUTIONS,
+        )
+        self.assertEqual(runtime_python.REQUIRED_DISTRIBUTIONS["zhconv"], "1.4.3")
+
+    def test_runtime_lock_rejects_an_unregistered_distribution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            lock = Path(temporary) / "requirements-runtime.lock"
+            lock.write_text(
+                (ROOT / "requirements-runtime.lock").read_text(encoding="utf-8")
+                + "rogue-runtime==1.0 --hash=sha256:" + "0" * 64 + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(RuntimeError, "distribution allowlist"):
+                runtime_python.validate_runtime_requirements_lock(lock)
+
+    def test_runtime_lock_rejects_a_requirement_without_a_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            lock = Path(temporary) / "requirements-runtime.lock"
+            lock.write_text("zhconv==1.4.3\n", encoding="utf-8")
+            with self.assertRaisesRegex(RuntimeError, "fully hash locked"):
+                runtime_python.load_hash_locked_distributions(lock)
+
+    def test_runtime_pins_and_probes_the_text_normalizer(self) -> None:
+        self.assertIn("zhconv", runtime_python.REQUIRED_MODULES)
+        self.assertEqual(runtime_python.PINNED_VERSIONS["zhconv"], "1.4.3")
+        requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8")
+        self.assertIn("zhconv==1.4.3", requirements.splitlines())
+        identity = runtime_python.current_runtime_identity()
+        self.assertEqual(identity["zhconv"], "1.4.3")
+        self.assertIn("zhconv", identity["origins"])
 
     def test_runtime_probe_ignores_pythonpath_module_shadowing(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

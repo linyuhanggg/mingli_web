@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import sys
 import shlex
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,6 +12,39 @@ import runtime_python as runtime_guard
 
 
 class ProvisionRuntimeTests(unittest.TestCase):
+    def test_pip_runs_without_bytecode_writes_or_inherited_cache_prefix(self) -> None:
+        with (
+            patch.dict(
+                "os.environ",
+                {"PYTHONPYCACHEPREFIX": "/unsafe/cache"},
+                clear=False,
+            ),
+            patch("provision_runtime.subprocess.run") as run,
+        ):
+            provision_runtime.run_pip(Path("/runtime/bin/python"), "install", "demo")
+        command = run.call_args.args[0]
+        environment = run.call_args.kwargs["env"]
+        self.assertEqual(command[1:4], ["-B", "-m", "pip"])
+        self.assertEqual(environment["PYTHONDONTWRITEBYTECODE"], "1")
+        self.assertNotIn("PYTHONPYCACHEPREFIX", environment)
+
+    def test_staged_runtime_bytecode_is_removed_before_manifesting(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            site_root = Path(temporary) / "site-packages"
+            package = site_root / "sxtwl"
+            cache = package / "__pycache__"
+            cache.mkdir(parents=True)
+            source = package / "__init__.py"
+            source.write_text("VERSION = '2.0.7'\n", encoding="utf-8")
+            (cache / "sxtwl.cpython-314.pyc").write_bytes(b"compiled")
+            (package / "legacy.pyo").write_bytes(b"optimized")
+
+            provision_runtime.remove_runtime_bytecode([site_root])
+
+            self.assertTrue(source.is_file())
+            self.assertFalse(cache.exists())
+            self.assertEqual(list(site_root.rglob("*.py[co]")), [])
+
     def test_provision_rejects_a_symlinked_target_parent_before_install(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -132,7 +165,10 @@ class ProvisionRuntimeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             requirements = root / "requirements.txt"
-            requirements.write_text("PyYAML==6.0.3\nsxtwl==2.0.7\n", encoding="utf-8")
+            requirements.write_text(
+                provision_runtime.DEFAULT_REQUIREMENTS.read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
             executable = provision_runtime.runtime_python(root / "venv")
             executable.parent.mkdir(parents=True)
             executable.write_text(
