@@ -50,6 +50,29 @@ class CalendarCoreBoundaryTests(unittest.TestCase):
         )
         self.assertNotEqual(new_york[0]["datetime"], shanghai[0]["datetime"])
 
+    def test_term_pillar_reuse_keeps_fresh_calendar_payloads(self) -> None:
+        calendar_core._term_pillars_for_instant_utc.cache_clear()
+        self.addCleanup(calendar_core._term_pillars_for_instant_utc.cache_clear)
+
+        first = normalize_calendar(
+            "2025-01-10T12:00:00",
+            timezone_name="Asia/Shanghai",
+            location="上海",
+        )
+        first["ganzhi"]["year"] = "mutated caller copy"
+        second = normalize_calendar(
+            "2025-01-11T12:00:00",
+            timezone_name="Asia/Shanghai",
+            location="上海",
+        )
+
+        cache = calendar_core._term_pillars_for_instant_utc.cache_info()
+        self.assertEqual(cache.misses, 2)
+        self.assertGreaterEqual(cache.hits, 2)
+        self.assertNotEqual(second["ganzhi"]["year"], "mutated caller copy")
+        self.assertEqual(second["ganzhi"]["year"], "甲辰")
+        self.assertEqual(second["ganzhi"]["month"], "丁丑")
+
     def test_normalization_is_complete_and_digest_is_deterministic(self) -> None:
         arguments = {
             "civil_datetime": "1990-10-09T13:30:00",

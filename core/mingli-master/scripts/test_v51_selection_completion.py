@@ -1497,6 +1497,57 @@ class SelectionProviderActivationTests(unittest.TestCase):
             all("verdict" not in key for row in patterns for key in row)
         )
 
+    def test_source_pattern_suffix_index_matches_complete_fact_index(self) -> None:
+        indexed = {
+            "chart_facts": {
+                "fact_layer_status": "deterministic_selection_candidates",
+                "output": {
+                    "calendar_candidates": [
+                        {
+                            "calendar": {
+                                "ganzhi": {
+                                    "year": "甲辰",
+                                    "month": "辛未",
+                                    "day": "己丑",
+                                    "hour": "庚午",
+                                }
+                            },
+                            "active_source_rule_ids": ["KR-05", "XR-18"],
+                            "unrelated": {"large": [1, 2, 3]},
+                        }
+                    ]
+                },
+            }
+        }
+        rules = tuple(
+            rule
+            for rule in production_evidence_rules()
+            if rule.system == "selection" and rule.runtime_active
+        )
+        suffixes = tuple(
+            dict.fromkeys(
+                predicate.path_suffix
+                for rule in rules
+                for predicate in (
+                    *rule.required_fact_predicates,
+                    *rule.excluded_fact_predicates,
+                )
+            )
+        )
+        expected = {
+            path: value
+            for path, value in selection._fact_leaves(indexed)
+            if any(
+                path.endswith(suffix) or f"{suffix}/" in path
+                for suffix in suffixes
+            )
+        }
+
+        actual = dict(selection._fact_leaves_at_suffixes(indexed, suffixes))
+
+        self.assertEqual(actual, expected)
+        self.assertFalse(any("unrelated" in path for path in actual))
+
     def test_extension_preserves_source_conditioned_patterns(self) -> None:
         provider = SelectionProvider(ROOT)
         extended = provider.extend(
