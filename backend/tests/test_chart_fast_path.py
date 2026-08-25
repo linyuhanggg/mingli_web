@@ -18,9 +18,11 @@ from app.readings.models import (
 from app.readings.runtime_contracts import Prepare, Prepared, ReadingBrief
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import func, select
+from worker.readings import build_reading_worker
+
+# isort: split
 from test_profiles_api import create_confirmed_profile, create_guest
 from test_readings_api import seed_runtime_release
-from worker.readings import build_reading_worker
 
 _SCHEMA_BY_CAPABILITY = {
     "bazi": "bazi-chart/v1",
