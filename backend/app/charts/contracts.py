@@ -585,14 +585,85 @@ class FortuneCalendarConvention(ContractModel):
     zi_hour_policy: str | None = Field(default=None, min_length=1)
 
 
+# Frozen Fortune solar-term table. Producer:
+# core/mingli-master/scripts/reading_engine/calendar_core.py
+# (JIEQI_NAMES[index], MONTH_BOUNDARY_JIE).
+FORTUNE_JIEQI_NAMES: tuple[str, ...] = (
+    "冬至",
+    "小寒",
+    "大寒",
+    "立春",
+    "雨水",
+    "惊蛰",
+    "春分",
+    "清明",
+    "谷雨",
+    "立夏",
+    "小满",
+    "芒种",
+    "夏至",
+    "小暑",
+    "大暑",
+    "立秋",
+    "处暑",
+    "白露",
+    "秋分",
+    "寒露",
+    "霜降",
+    "立冬",
+    "小雪",
+    "大雪",
+)
+FORTUNE_MONTH_BOUNDARY_JIE: frozenset[int] = frozenset(
+    {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23}
+)
+FORTUNE_SOLAR_TERM_TRIPLES: tuple[tuple[str, int, bool], ...] = tuple(
+    (name, index, index in FORTUNE_MONTH_BOUNDARY_JIE)
+    for index, name in enumerate(FORTUNE_JIEQI_NAMES)
+)
+
+
+def validate_fortune_solar_term_triple(
+    *,
+    name: object,
+    index: object,
+    is_month_boundary_jie: object,
+) -> tuple[str, int, bool]:
+    """Return the frozen (name, index, boundary) triple or raise ValueError."""
+
+    if isinstance(index, bool) or not isinstance(index, int):
+        raise ValueError("fortune solar term index must be an integer in 0-23")
+    if index < 0 or index >= len(FORTUNE_JIEQI_NAMES):
+        raise ValueError("fortune solar term index must be an integer in 0-23")
+    expected_name = FORTUNE_JIEQI_NAMES[index]
+    expected_boundary = index in FORTUNE_MONTH_BOUNDARY_JIE
+    if not isinstance(name, str) or name != expected_name:
+        raise ValueError("fortune solar term name must match index")
+    if (
+        not isinstance(is_month_boundary_jie, bool)
+        or is_month_boundary_jie != expected_boundary
+    ):
+        raise ValueError("fortune solar term boundary must match index")
+    return expected_name, index, expected_boundary
+
+
 class FortuneSolarTerm(ContractModel):
     """One adjacent solar-term boundary exposed by the Fortune provider."""
 
-    name: str = Field(min_length=1)
-    index: int
-    is_month_boundary_jie: bool
+    name: str = Field(min_length=1, strict=True)
+    index: int = Field(ge=0, le=23, strict=True)
+    is_month_boundary_jie: bool = Field(strict=True)
     datetime: str = Field(min_length=1)
     instant_utc: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _name_index_boundary_match_frozen_table(self) -> FortuneSolarTerm:
+        validate_fortune_solar_term_triple(
+            name=self.name,
+            index=self.index,
+            is_month_boundary_jie=self.is_month_boundary_jie,
+        )
+        return self
 
 
 class FortuneSolarTerms(ContractModel):

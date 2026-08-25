@@ -4,7 +4,14 @@ from functools import lru_cache
 from pathlib import Path
 
 import pytest
-from app.charts.contracts import VIEW_MODEL_TYPES, parse_view_model
+from app.charts.contracts import (
+    FORTUNE_JIEQI_NAMES,
+    FORTUNE_SOLAR_TERM_TRIPLES,
+    VIEW_MODEL_TYPES,
+    FortuneFactsViewV1,
+    FortuneSolarTerm,
+    parse_view_model,
+)
 from app.charts.projectors import project_view_model
 from app.readings.presentation import (
     PresentationContract,
@@ -155,6 +162,21 @@ def _bazi_calendar_normalization_payload() -> dict[str, object]:
     }
 
 
+def _fortune_calendar_normalization_payload() -> dict[str, object]:
+    payload = copy.deepcopy(_bazi_calendar_normalization_payload())
+    solar_terms = payload["solar_terms"]
+    assert isinstance(solar_terms, dict)
+    previous = solar_terms["previous"]
+    nxt = solar_terms["next"]
+    assert isinstance(previous, dict)
+    assert isinstance(nxt, dict)
+    previous["index"] = 4
+    previous["is_month_boundary_jie"] = False
+    nxt["index"] = 5
+    nxt["is_month_boundary_jie"] = True
+    return payload
+
+
 def _fortune_payload() -> dict[str, object]:
     return {
         "schema_version": "fortune-facts-view/v1",
@@ -193,7 +215,7 @@ def _fortune_payload() -> dict[str, object]:
                 "unresolved_boundaries": [],
             }
         ],
-        "calendar_normalization": _bazi_calendar_normalization_payload(),
+        "calendar_normalization": _fortune_calendar_normalization_payload(),
     }
 
 
@@ -592,6 +614,12 @@ def test_fortune_calendar_additive_fields_are_typed_in_view_and_document() -> No
     assert normalized.solar_terms is not None
     assert normalized.solar_terms.next is not None
     assert normalized.solar_terms.next.name == "惊蛰"
+    assert normalized.solar_terms.next.index == 5
+    assert normalized.solar_terms.next.is_month_boundary_jie is True
+    assert normalized.solar_terms.previous is not None
+    assert normalized.solar_terms.previous.name == "雨水"
+    assert normalized.solar_terms.previous.index == 4
+    assert normalized.solar_terms.previous.is_month_boundary_jie is False
 
     invalid = copy.deepcopy(document_payload)
     invalid["view_model"]["calendar_normalization"]["solar_terms"][
@@ -600,6 +628,125 @@ def test_fortune_calendar_additive_fields_are_typed_in_view_and_document() -> No
     assert tuple(_draft_validator(document_schema).iter_errors(invalid))
     with pytest.raises(ValidationError):
         ReadingDocumentV1.model_validate(invalid)
+
+
+@pytest.mark.parametrize("index", range(24))
+def test_fortune_schema_and_model_accept_every_frozen_solar_term_triple(
+    index: int,
+) -> None:
+    view_schema = _schema(
+        SCHEMA_ROOT / "views" / "fortune-facts-view-v1.schema.json"
+    )
+    validator = _draft_validator(view_schema)
+    name, expected_index, is_month_boundary_jie = FORTUNE_SOLAR_TERM_TRIPLES[index]
+    term = {
+        "name": name,
+        "index": expected_index,
+        "is_month_boundary_jie": is_month_boundary_jie,
+        "datetime": "1985-02-19T06:00:00+08:00",
+        "instant_utc": "1985-02-18T22:00:00Z",
+    }
+    payload = _fortune_payload()
+    calendar = payload["calendar_normalization"]
+    assert isinstance(calendar, dict)
+    solar_terms = calendar["solar_terms"]
+    assert isinstance(solar_terms, dict)
+    solar_terms["previous"] = term
+    validator.validate(payload)
+    parsed = parse_view_model(payload)
+    assert isinstance(parsed, FortuneFactsViewV1)
+    assert parsed.calendar_normalization.solar_terms is not None
+    previous = parsed.calendar_normalization.solar_terms.previous
+    assert previous is not None
+    assert previous.name == name
+    assert previous.index == expected_index
+    assert previous.is_month_boundary_jie is is_month_boundary_jie
+    FortuneSolarTerm.model_validate(term)
+
+
+def test_fortune_solar_term_schema_matches_frozen_contract_table() -> None:
+    schema = _schema(SCHEMA_ROOT / "views" / "fortune-facts-view-v1.schema.json")
+    defs = schema["$defs"]
+    assert isinstance(defs, dict)
+    solar_term = defs["solarTerm"]
+    assert isinstance(solar_term, dict)
+    properties = solar_term["properties"]
+    assert isinstance(properties, dict)
+    name_schema = properties["name"]
+    index_schema = properties["index"]
+    assert isinstance(name_schema, dict)
+    assert isinstance(index_schema, dict)
+    assert name_schema["enum"] == list(FORTUNE_JIEQI_NAMES)
+    assert index_schema == {"type": "integer", "minimum": 0, "maximum": 23}
+    one_of = solar_term["oneOf"]
+    assert isinstance(one_of, list)
+    triples: list[tuple[str, int, bool]] = []
+    for branch in one_of:
+        assert isinstance(branch, dict)
+        branch_properties = branch["properties"]
+        assert isinstance(branch_properties, dict)
+        name = branch_properties["name"]
+        index = branch_properties["index"]
+        boundary = branch_properties["is_month_boundary_jie"]
+        assert isinstance(name, dict)
+        assert isinstance(index, dict)
+        assert isinstance(boundary, dict)
+        triples.append((name["const"], index["const"], boundary["const"]))
+    assert tuple(triples) == FORTUNE_SOLAR_TERM_TRIPLES
+
+
+@pytest.mark.parametrize(
+    "mutator",
+    [
+        pytest.param(
+            lambda term: {**term, "name": "谷雨", "index": 23, "is_month_boundary_jie": True},
+            id="review-mismatch",
+        ),
+        pytest.param(
+            lambda term: {**term, "is_month_boundary_jie": True},
+            id="boundary-mismatch",
+        ),
+        pytest.param(lambda term: {**term, "index": -1}, id="index-underflow"),
+        pytest.param(lambda term: {**term, "index": 24}, id="index-overflow"),
+        pytest.param(lambda term: {**term, "index": "8"}, id="index-str"),
+        pytest.param(lambda term: {**term, "index": True}, id="index-bool"),
+        pytest.param(lambda term: {**term, "index": 8.0}, id="index-float"),
+        pytest.param(
+            lambda term: {k: v for k, v in term.items() if k != "name"},
+            id="missing-name",
+        ),
+        pytest.param(
+            lambda term: {k: v for k, v in term.items() if k != "index"},
+            id="missing-index",
+        ),
+        pytest.param(
+            lambda term: {k: v for k, v in term.items() if k != "is_month_boundary_jie"},
+            id="missing-boundary",
+        ),
+    ],
+)
+def test_fortune_solar_term_fail_closed_isomorphic_across_layers(
+    mutator: object,
+) -> None:
+    view_schema = _schema(
+        SCHEMA_ROOT / "views" / "fortune-facts-view-v1.schema.json"
+    )
+    validator = _draft_validator(view_schema)
+    payload = _fortune_payload()
+    calendar = payload["calendar_normalization"]
+    assert isinstance(calendar, dict)
+    solar_terms = calendar["solar_terms"]
+    assert isinstance(solar_terms, dict)
+    original = solar_terms["previous"]
+    assert isinstance(original, dict)
+    mutated = mutator(original)  # type: ignore[operator]
+    solar_terms["previous"] = mutated
+
+    assert tuple(validator.iter_errors(payload))
+    with pytest.raises(ValidationError):
+        parse_view_model(payload)
+    with pytest.raises(ValueError):
+        FortuneSolarTerm.model_validate(mutated)
 
 
 @pytest.mark.parametrize("view_kind", ["bazi", "five_elements"])

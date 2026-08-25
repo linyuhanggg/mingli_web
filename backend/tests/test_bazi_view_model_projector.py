@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import pytest
-from app.charts.contracts import BaziCalendarNormalization, FortuneCalendarNormalization
+from app.charts.contracts import (
+    BaziCalendarNormalization,
+    FortuneCalendarNormalization,
+    FortuneSolarTerm,
+)
 from app.charts.projectors import (
     project_bazi_view_model,
     project_runtime_view_model,
@@ -374,19 +378,40 @@ def test_invalid_changed_pillar_is_rejected_by_bazi_contract_and_projector() -> 
     assert view_model.core_facts.calendar_normalization is None
 
 
+def _g3_fortune_calendar_normalization() -> dict[str, object]:
+    calendar = _g3_calendar_normalization()
+    solar_terms = calendar["solar_terms"]
+    assert isinstance(solar_terms, dict)
+    previous = solar_terms["previous"]
+    nxt = solar_terms["next"]
+    assert isinstance(previous, dict)
+    assert isinstance(nxt, dict)
+    previous["index"] = 4
+    previous["is_month_boundary_jie"] = False
+    nxt["index"] = 5
+    nxt["is_month_boundary_jie"] = True
+    return calendar
+
+
 def test_g3_calendar_fields_are_additive_and_strict_in_fortune_contract() -> None:
     normalized = FortuneCalendarNormalization.model_validate(
-        _g3_calendar_normalization()
+        _g3_fortune_calendar_normalization()
     )
     assert normalized.effective_datetime == "1985-03-01T23:33:00+08:00"
     assert normalized.day_boundary is not None
     assert normalized.day_boundary.correction_crossed_date is True
     assert normalized.changed_pillars == ("day", "hour")
     assert normalized.solar_terms is not None
+    assert normalized.solar_terms.previous is not None
+    assert normalized.solar_terms.previous.name == "雨水"
+    assert normalized.solar_terms.previous.index == 4
+    assert normalized.solar_terms.previous.is_month_boundary_jie is False
     assert normalized.solar_terms.next is not None
     assert normalized.solar_terms.next.name == "惊蛰"
+    assert normalized.solar_terms.next.index == 5
+    assert normalized.solar_terms.next.is_month_boundary_jie is True
 
-    legacy = _g3_calendar_normalization()
+    legacy = _g3_fortune_calendar_normalization()
     for field in (
         "effective_datetime",
         "day_boundary",
@@ -402,12 +427,27 @@ def test_g3_calendar_fields_are_additive_and_strict_in_fortune_contract() -> Non
     assert "changed_pillars" not in legacy_dump
     assert "solar_terms" not in legacy_dump
 
-    invalid = _g3_calendar_normalization()
+    invalid = _g3_fortune_calendar_normalization()
     solar_terms = invalid["solar_terms"]
     assert isinstance(solar_terms, dict)
     solar_terms["raw_runtime_payload"] = {}
     with pytest.raises(ValueError):
         FortuneCalendarNormalization.model_validate(invalid)
+
+    mismatched = _g3_fortune_calendar_normalization()
+    mismatched_terms = mismatched["solar_terms"]
+    assert isinstance(mismatched_terms, dict)
+    mismatched_terms["next"] = {
+        "name": "谷雨",
+        "index": 23,
+        "is_month_boundary_jie": True,
+        "datetime": "1985-03-05T17:00:00+08:00",
+        "instant_utc": "1985-03-05T09:00:00Z",
+    }
+    with pytest.raises(ValueError):
+        FortuneCalendarNormalization.model_validate(mismatched)
+    with pytest.raises(ValueError):
+        FortuneSolarTerm.model_validate(mismatched_terms["next"])
 
 
 def test_projects_calculated_bazi_facts_into_versioned_chart() -> None:
