@@ -158,6 +158,7 @@ describe("Runtime capability tier gate", () => {
     expect(screen.queryByRole("region", { name: "基础摘要" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "深读" })).not.toBeInTheDocument();
     expect(screen.queryByText("测试期未开放")).not.toBeInTheDocument();
+    expect(screen.getByText("当前只提供确定性盘面与事实，不提供断语。")).toBeVisible();
   });
 
   it("keeps Daliuren interpretive sections available for an A-tier projection", () => {
@@ -168,5 +169,6 @@ describe("Runtime capability tier gate", () => {
     expect(screen.getByRole("region", { name: "基础摘要" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "深读" })).toBeVisible();
     expect(screen.getByText("测试期未开放")).toBeVisible();
+    expect(screen.queryByText("当前只提供确定性盘面与事实，不提供断语。")).not.toBeInTheDocument();
   });
 });

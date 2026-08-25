@@ -41,6 +41,12 @@ const STAGE_LABEL: Readonly<Record<StageId, string>> = {
 };
 
 const VISUAL_LESSONS = [3, 2, 1, 0] as const;
+const COMPACT_LESSON_QUERY = "(max-width: 22.5rem)";
+const COMPACT_LESSON_GRID: ReadonlyArray<readonly [LessonIndex, LessonIndex]> = [
+  [1, 0],
+  [3, 2],
+];
+const B_TIER_BOUNDARY = "当前只提供确定性盘面与事实，不提供断语。";
 const FIRST_CELL: CellId = "lesson-0-upper";
 const LAST_CELL: CellId = "tx-final";
 const NAVIGATION_KEYS: ReadonlySet<string> = new Set([
@@ -148,11 +154,52 @@ function isNavigationKey(key: string): key is NavigationKey {
   return NAVIGATION_KEYS.has(key);
 }
 
-function neighbor(id: CellId, key: NavigationKey): CellId {
+function usesCompactLessonGrid(): boolean {
+  return typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia(COMPACT_LESSON_QUERY).matches
+    : false;
+}
+
+function compactLessonCoord(index: LessonIndex): { row: 0 | 1; col: 0 | 1 } {
+  for (let row = 0; row < COMPACT_LESSON_GRID.length; row += 1) {
+    const col = COMPACT_LESSON_GRID[row].indexOf(index);
+    if (col >= 0) return { row: row as 0 | 1, col: col as 0 | 1 };
+  }
+  return { row: 0, col: 0 };
+}
+
+function compactLessonAt(row: number, col: number): LessonIndex | null {
+  if (row < 0 || row > 1 || col < 0 || col > 1) return null;
+  return COMPACT_LESSON_GRID[row][col];
+}
+
+function neighbor(id: CellId, key: NavigationKey, compact = usesCompactLessonGrid()): CellId {
   if (key === "Home") return FIRST_CELL;
   if (key === "End") return LAST_CELL;
   const lesson = parseLesson(id);
   if (lesson) {
+    if (compact) {
+      const { row, col } = compactLessonCoord(lesson.index);
+      if (key === "ArrowLeft") {
+        const next = compactLessonAt(row, col - 1);
+        return next == null ? id : `lesson-${next}-${lesson.part}`;
+      }
+      if (key === "ArrowRight") {
+        const next = compactLessonAt(row, col + 1);
+        return next == null ? id : `lesson-${next}-${lesson.part}`;
+      }
+      if (key === "ArrowDown" && lesson.part === "upper") return `lesson-${lesson.index}-lower`;
+      if (key === "ArrowDown" && lesson.part === "lower") {
+        const next = compactLessonAt(row + 1, col);
+        return next == null ? "tx-initial" : `lesson-${next}-upper`;
+      }
+      if (key === "ArrowUp" && lesson.part === "lower") return `lesson-${lesson.index}-upper`;
+      if (key === "ArrowUp" && lesson.part === "upper") {
+        const next = compactLessonAt(row - 1, col);
+        return next == null ? id : `lesson-${next}-lower`;
+      }
+      return id;
+    }
     const visual = VISUAL_LESSONS.indexOf(lesson.index);
     if (key === "ArrowLeft" && visual > 0) {
       return `lesson-${VISUAL_LESSONS[visual - 1]}-${lesson.part}`;
@@ -167,7 +214,7 @@ function neighbor(id: CellId, key: NavigationKey): CellId {
   }
   if (id === "tx-initial") {
     if (key === "ArrowDown") return "tx-middle";
-    if (key === "ArrowUp") return "lesson-0-lower";
+    if (key === "ArrowUp") return compact ? "lesson-2-lower" : "lesson-0-lower";
     return id;
   }
   if (id === "tx-middle") {
@@ -243,20 +290,28 @@ function DaliurenBoardSession({
     cellRefs.current[id]?.focus();
   }
 
+  function shouldUnlock(facts: readonly string[]): boolean {
+    return facts.length > 0 && facts.every((fact) => lockedFacts.includes(fact));
+  }
+
+  function restorePreview() {
+    setPreviewFacts(hoveredFacts.length ? hoveredFacts : focusedFacts);
+  }
+
   function toggleLock(id: CellId) {
     const facts = cellFacts(id, lessons, transmissions);
-    const unlock = facts.length > 0 && lockedFacts[0] === facts[0];
+    const unlock = shouldUnlock(facts);
     setRovingId(id);
     setLockedFacts(unlock ? [] : facts);
-    if (unlock) setPreviewFacts([]);
+    if (unlock) restorePreview();
     cellRefs.current[id]?.focus();
   }
 
   function toggleFactLock(value: string) {
     const facts = asFacts(value);
-    const unlock = facts.length > 0 && lockedFacts[0] === facts[0];
+    const unlock = shouldUnlock(facts);
     setLockedFacts(unlock ? [] : facts);
-    if (unlock) setPreviewFacts([]);
+    if (unlock) restorePreview();
   }
 
   function startFocusPreview(value: string | readonly string[]) {
@@ -285,7 +340,7 @@ function DaliurenBoardSession({
 
   function clearLock() {
     setLockedFacts([]);
-    setPreviewFacts([]);
+    restorePreview();
   }
 
   function onCellKeyDown(event: KeyboardEvent<HTMLButtonElement>, id: CellId) {
@@ -505,6 +560,10 @@ function DaliurenBoardSession({
 
       {mode === "ready" && showInterpretiveSections ? (
         <DaliurenDimensionEvidence dimensionFacts={view?.core_facts?.dimension_facts ?? null} />
+      ) : mode === "ready" ? (
+        <p className={styles.note} data-capability-tier="B">
+          {B_TIER_BOUNDARY}
+        </p>
       ) : null}
 
       {showTiming && candidates ? (

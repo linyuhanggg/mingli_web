@@ -12,7 +12,29 @@ import type {
   DaliurenRuleSourceRef,
 } from "@/view-models/registry";
 
-afterEach(cleanup);
+const originalMatchMedia = window.matchMedia;
+
+afterEach(() => {
+  cleanup();
+  if (originalMatchMedia) window.matchMedia = originalMatchMedia;
+  else Reflect.deleteProperty(window, "matchMedia");
+});
+
+function stubCompactLessonGrid(compact: boolean) {
+  window.matchMedia = ((query: string) =>
+    ({
+      matches: compact && query === "(max-width: 22.5rem)",
+      media: query,
+      onchange: null,
+      addListener() {},
+      removeListener() {},
+      addEventListener() {},
+      removeEventListener() {},
+      dispatchEvent() {
+        return false;
+      },
+    })) as typeof window.matchMedia;
+}
 
 type CoreFacts = NonNullable<DaliurenChartViewModel["core_facts"]>;
 type TimingCandidate = NonNullable<CoreFacts["timing_candidates"]>[number];
@@ -338,14 +360,46 @@ describe("大六壬 S3 课传盘面", () => {
     expect(firstUpper).toHaveFocus();
 
     await user.click(firstUpper);
-    for (const cell of linkedSi) expect(cell).toHaveAttribute("data-active", "false");
+    for (const cell of linkedSi) {
+      expect(cell).toHaveAttribute("aria-pressed", "false");
+      expect(cell).toHaveAttribute("data-active", "true");
+    }
     expect(firstUpper).toHaveFocus();
+    act(() => firstUpper.blur());
+    await user.unhover(firstUpper);
+    for (const cell of linkedSi) expect(cell).toHaveAttribute("data-active", "false");
 
     await user.click(finalTx);
     for (const cell of linkedSi) expect(cell).toHaveAttribute("data-active", "true");
     await user.keyboard("{Escape}");
-    for (const cell of linkedSi) expect(cell).toHaveAttribute("data-active", "false");
+    for (const cell of linkedSi) {
+      expect(cell).toHaveAttribute("aria-pressed", "false");
+      expect(cell).toHaveAttribute("data-active", "true");
+    }
     expect(finalTx).toHaveFocus();
+  });
+
+  it("keeps the focused fact preview after Escape clears a lock", async () => {
+    const user = userEvent.setup();
+    render(<DaliurenBoard view={chart()} />);
+
+    const firstUpper = screen.getByRole("button", { name: "一课·日干 上神 巳" });
+    const secondLower = screen.getByRole("button", { name: "二课·日支 下神 巳" });
+    await user.click(firstUpper);
+    expect(firstUpper).toHaveAttribute("aria-pressed", "true");
+    expect(firstUpper).toHaveAttribute("data-active", "true");
+    expect(secondLower).toHaveAttribute("data-active", "true");
+
+    await user.keyboard("{Escape}");
+    expect(firstUpper).toHaveFocus();
+    expect(firstUpper).toHaveAttribute("aria-pressed", "false");
+    expect(firstUpper).toHaveAttribute("data-active", "true");
+    expect(secondLower).toHaveAttribute("data-active", "true");
+
+    act(() => firstUpper.blur());
+    await user.unhover(firstUpper);
+    expect(firstUpper).toHaveAttribute("data-active", "false");
+    expect(secondLower).toHaveAttribute("data-active", "false");
   });
 
   it("temporarily links equal facts on focus and hover, then clears them on leave", async () => {
@@ -465,6 +519,45 @@ describe("大六壬 S3 课传盘面", () => {
     expect(screen.getByRole("button", { name: "三课·辰干 上神 酉" })).toHaveFocus();
   });
 
+  it("moves through the 360 two-column lesson grid without diagonal jumps", async () => {
+    stubCompactLessonGrid(true);
+    const user = userEvent.setup();
+    render(<DaliurenBoard view={chart()} />);
+
+    const lesson0 = screen.getByRole("button", { name: "一课·日干 上神 巳" });
+    const lesson1 = screen.getByRole("button", { name: "二课·日支 上神 卯" });
+    const lesson1Lower = screen.getByRole("button", { name: "二课·日支 下神 巳" });
+    const lesson2 = screen.getByRole("button", { name: "三课·辰干 上神 酉" });
+    const lesson2Lower = screen.getByRole("button", { name: "三课·辰干 下神 亥" });
+    const lesson3 = screen.getByRole("button", { name: "四课·辰支 上神 未" });
+    const initial = screen.getByRole("button", { name: "初传 酉 贵人" });
+
+    await user.click(lesson1);
+    await user.keyboard("{ArrowLeft}");
+    expect(lesson1).toHaveFocus();
+
+    await user.keyboard("{ArrowRight}");
+    expect(lesson0).toHaveFocus();
+
+    await user.click(lesson1);
+    await user.keyboard("{ArrowDown}");
+    expect(lesson1Lower).toHaveFocus();
+    await user.keyboard("{ArrowDown}");
+    expect(lesson3).toHaveFocus();
+
+    await user.click(lesson0);
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard("{ArrowDown}");
+    expect(lesson2).toHaveFocus();
+
+    await user.click(lesson2Lower);
+    await user.keyboard("{ArrowDown}");
+    expect(initial).toHaveFocus();
+
+    await user.keyboard("{ArrowUp}");
+    expect(lesson2Lower).toHaveFocus();
+  });
+
   it("moves from a transmission to the first and last plate cells with Home and End", async () => {
     const user = userEvent.setup();
     render(<DaliurenBoard view={chart()} />);
@@ -484,6 +577,29 @@ describe("大六壬 S3 课传盘面", () => {
     expect(last).toHaveFocus();
     expect(last).toHaveAttribute("tabindex", "0");
     expect(middle).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("states the B-tier facts-only boundary instead of leaving an unexplained shortened board", () => {
+    render(
+      <DaliurenBoard
+        view={chart({ core_facts: emptyFacts({ timing_candidates: [candidate()] }) })}
+        showInterpretiveSections={false}
+      />,
+    );
+
+    expect(screen.getByText("当前只提供确定性盘面与事实，不提供断语。")).toBeVisible();
+    expect(screen.getByRole("table", { name: "四课" })).toBeVisible();
+    expect(screen.getByRole("table", { name: "三传" })).toBeVisible();
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "应期候选" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "基础摘要" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "深读" })).not.toBeInTheDocument();
+  });
+
+  it("does not show the B-tier boundary on an interpretive board", () => {
+    render(<DaliurenBoard view={chart()} />);
+    expect(screen.queryByText("当前只提供确定性盘面与事实，不提供断语。")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "基础摘要" })).toBeVisible();
   });
 
   it("exposes semantic tables as the accessible alternative", () => {
@@ -580,8 +696,11 @@ describe("大六壬 S3 课传盘面", () => {
     expect(anchor).toHaveAttribute("data-active", "true");
     expect(candidateButton).toHaveAttribute("aria-pressed", "true");
     await user.click(candidateButton);
-    expect(anchor).toHaveAttribute("data-active", "false");
     expect(candidateButton).toHaveAttribute("aria-pressed", "false");
+    expect(anchor).toHaveAttribute("data-active", "true");
+    act(() => candidateButton.blur());
+    await user.unhover(candidateButton);
+    expect(anchor).toHaveAttribute("data-active", "false");
   });
 
   it("uses paper-ink tokens, traditional column order and stair indents without glow or luck dye", () => {
@@ -3923,8 +4042,11 @@ describe("大六壬 S3 天地盘旬空角标", () => {
     expect(boardFact).toHaveAttribute("aria-pressed", "true");
 
     await user.click(boardFact);
-    for (const position of linkedPlatePositions) expect(position).toHaveAttribute("data-active", "false");
     expect(boardFact).toHaveAttribute("aria-pressed", "false");
+    for (const position of linkedPlatePositions) expect(position).toHaveAttribute("data-active", "true");
+    act(() => boardFact.blur());
+    await user.unhover(boardFact);
+    for (const position of linkedPlatePositions) expect(position).toHaveAttribute("data-active", "false");
   });
 
   it("links transmission generals onto repeated plate positions without activating them from a shared branch", async () => {
@@ -4116,6 +4238,10 @@ describe("大六壬 S3 天地盘旬空角标", () => {
     act(() => plateTaichang.focus());
     await user.keyboard("{Escape}");
     expect(plateTaichang).toHaveAttribute("aria-pressed", "false");
+    expect(plateTaichang).toHaveFocus();
+    expect(ziRow).toHaveAttribute("data-active", "true");
+    act(() => plateTaichang.blur());
+    await user.unhover(plateTaichang);
     expect(ziRow).toHaveAttribute("data-active", "false");
 
     expect(plateCss()).toMatch(/\.fact\s*\{[^}]*min-width:\s*var\(--target-min\)/s);
@@ -4255,6 +4381,138 @@ describe("大六壬 S3 天地盘旬空角标", () => {
     expect(plateGouchen).toHaveFocus();
     await user.keyboard("{Escape}");
     expect(within(table).getByRole("button", { name: "天盘 酉" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("unlocks a composite transmission lock from any pressed linked plate fact", async () => {
+    const user = userEvent.setup();
+    const GOLDEN_GENERALS = [
+      ["子", "太常"],
+      ["丑", "白虎"],
+      ["寅", "天空"],
+      ["卯", "青龙"],
+      ["辰", "勾陈"],
+      ["巳", "六合"],
+      ["午", "朱雀"],
+      ["未", "腾蛇"],
+      ["申", "贵人"],
+      ["酉", "天后"],
+      ["戌", "太阴"],
+      ["亥", "玄武"],
+    ] as const;
+    render(
+      <DaliurenBoard
+        view={chart({
+          lessons: [
+            { lesson_id: "一课·日干", upper: "辰", lower: "乙" },
+            { lesson_id: "二课·日支", upper: "辰", lower: "辰" },
+            { lesson_id: "三课·辰干", upper: "酉", lower: "酉" },
+            { lesson_id: "四课·辰支", upper: "酉", lower: "酉" },
+          ],
+          transmissions: [
+            { stage: "initial", branch: "辰", general: "勾陈" },
+            { stage: "middle", branch: "酉", general: "天后" },
+            { stage: "final", branch: "卯", general: "青龙" },
+          ],
+          core_facts: emptyFacts({
+            earth_plate: [...EARTH],
+            heaven_plate: EARTH.map((branch) => ({ earth: branch, heaven: branch })),
+            heavenly_generals: GOLDEN_GENERALS.map(([earth, general]) => ({
+              earth,
+              heaven: earth,
+              general,
+            })),
+          }),
+        })}
+      />,
+    );
+
+    await openPlate();
+    const table = screen.getByRole("table", { name: "天地盘" });
+    const initial = screen.getByRole("button", { name: "初传 辰 勾陈" });
+    const plateGouchen = within(table).getByRole("button", { name: "天将 勾陈" });
+
+    await user.click(initial);
+    expect(initial).toHaveAttribute("aria-pressed", "true");
+    expect(plateGouchen).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(plateGouchen);
+    expect(plateGouchen).toHaveAttribute("aria-pressed", "false");
+    expect(initial).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("moves through the semantic heaven-earth table with arrow keys", async () => {
+    const user = userEvent.setup();
+    const GOLDEN_GENERALS = [
+      ["子", "太常"],
+      ["丑", "白虎"],
+      ["寅", "天空"],
+      ["卯", "青龙"],
+      ["辰", "勾陈"],
+      ["巳", "六合"],
+      ["午", "朱雀"],
+      ["未", "腾蛇"],
+      ["申", "贵人"],
+      ["酉", "天后"],
+      ["戌", "太阴"],
+      ["亥", "玄武"],
+    ] as const;
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: emptyFacts({
+            earth_plate: [...EARTH],
+            heaven_plate: EARTH.map((branch) => ({ earth: branch, heaven: branch })),
+            heavenly_generals: GOLDEN_GENERALS.map(([earth, general]) => ({
+              earth,
+              heaven: earth,
+              general,
+            })),
+          }),
+        })}
+      />,
+    );
+
+    const panel = await openPlate();
+    const table = within(panel).getByRole("table", { name: "天地盘" });
+    const ziEarth = within(table).getByRole("button", { name: "地盘 子" });
+    const ziHeaven = within(table).getByRole("button", { name: "天盘 子" });
+    const ziGeneral = within(table).getByRole("button", { name: "天将 太常" });
+    const chouEarth = within(table).getByRole("button", { name: "地盘 丑" });
+    const chouHeaven = within(table).getByRole("button", { name: "天盘 丑" });
+    const chouGeneral = within(table).getByRole("button", { name: "天将 白虎" });
+    const haiGeneral = within(table).getByRole("button", { name: "天将 玄武" });
+
+    expect(ziEarth).toHaveAttribute("tabindex", "0");
+    expect(ziHeaven).toHaveAttribute("tabindex", "-1");
+    expect(ziGeneral).toHaveAttribute("tabindex", "-1");
+    expect(chouEarth).toHaveAttribute("tabindex", "-1");
+
+    await user.click(ziEarth);
+    await user.keyboard("{ArrowRight}");
+    expect(ziHeaven).toHaveFocus();
+    expect(ziHeaven).toHaveAttribute("tabindex", "0");
+    expect(ziEarth).toHaveAttribute("tabindex", "-1");
+
+    await user.keyboard("{ArrowRight}");
+    expect(ziGeneral).toHaveFocus();
+    await user.keyboard("{ArrowRight}");
+    expect(ziGeneral).toHaveFocus();
+
+    await user.keyboard("{ArrowDown}");
+    expect(chouGeneral).toHaveFocus();
+    await user.keyboard("{ArrowLeft}");
+    expect(chouHeaven).toHaveFocus();
+    await user.keyboard("{ArrowLeft}");
+    expect(chouEarth).toHaveFocus();
+    await user.keyboard("{ArrowUp}");
+    expect(ziEarth).toHaveFocus();
+
+    await user.keyboard("{End}");
+    expect(haiGeneral).toHaveFocus();
+    expect(haiGeneral).toHaveAttribute("tabindex", "0");
+    await user.keyboard("{Home}");
+    expect(ziEarth).toHaveFocus();
+    expect(ziEarth).toHaveAttribute("tabindex", "0");
   });
 
   it("marks matching earth-plate branches from xunkong.branches only", async () => {

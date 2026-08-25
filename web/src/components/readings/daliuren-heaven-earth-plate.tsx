@@ -1,6 +1,6 @@
 "use client";
 
-import type { KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent, type Ref } from "react";
 
 import type { DaliurenChartViewModel } from "@/view-models/registry";
 
@@ -8,6 +8,8 @@ import styles from "./daliuren-heaven-earth-plate.module.css";
 
 type CoreFacts = NonNullable<DaliurenChartViewModel["core_facts"]>;
 type FactKind = "earth" | "heaven" | "general";
+type PlateCellId = `${string}:${FactKind}`;
+type PlateNavKey = "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown" | "Home" | "End";
 
 const FACT_KIND_LABEL: Readonly<Record<FactKind, string>> = {
   earth: "地盘",
@@ -75,39 +77,103 @@ function hasFact(facts: ReadonlySet<string>, value: string | null | undefined): 
   return typeof value === "string" && value.length > 0 && facts.has(value);
 }
 
+const PLATE_NAV_KEYS: ReadonlySet<string> = new Set([
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowUp",
+  "ArrowDown",
+  "Home",
+  "End",
+]);
+
+function plateCellId(earth: string, kind: FactKind): PlateCellId {
+  return `${earth}:${kind}`;
+}
+
+function parsePlateCell(id: PlateCellId): { earth: string; kind: FactKind } | null {
+  const match = /^(.*):(earth|heaven|general)$/.exec(id);
+  if (!match) return null;
+  return { earth: match[1], kind: match[2] as FactKind };
+}
+
+function visibleKinds(showHeaven: boolean, showGeneral: boolean): FactKind[] {
+  const kinds: FactKind[] = ["earth"];
+  if (showHeaven) kinds.push("heaven");
+  if (showGeneral) kinds.push("general");
+  return kinds;
+}
+
+function plateNeighbor(
+  id: PlateCellId,
+  key: PlateNavKey,
+  earths: readonly string[],
+  kinds: readonly FactKind[],
+  valueAt: (earth: string, kind: FactKind) => string | null,
+): PlateCellId {
+  const parsed = parsePlateCell(id);
+  if (!parsed) return id;
+  const cells: PlateCellId[] = [];
+  for (const earth of earths) {
+    for (const kind of kinds) {
+      if (valueAt(earth, kind)) cells.push(plateCellId(earth, kind));
+    }
+  }
+  if (cells.length === 0) return id;
+  if (key === "Home") return cells[0];
+  if (key === "End") return cells[cells.length - 1];
+
+  const row = earths.indexOf(parsed.earth);
+  const col = kinds.indexOf(parsed.kind);
+  if (row < 0 || col < 0) return cells[0];
+
+  if (key === "ArrowLeft" || key === "ArrowRight") {
+    const step = key === "ArrowRight" ? 1 : -1;
+    for (let nextCol = col + step; nextCol >= 0 && nextCol < kinds.length; nextCol += step) {
+      if (valueAt(parsed.earth, kinds[nextCol])) return plateCellId(parsed.earth, kinds[nextCol]);
+    }
+    return id;
+  }
+
+  const step = key === "ArrowDown" ? 1 : -1;
+  for (let nextRow = row + step; nextRow >= 0 && nextRow < earths.length; nextRow += step) {
+    if (valueAt(earths[nextRow], parsed.kind)) return plateCellId(earths[nextRow], parsed.kind);
+  }
+  return id;
+}
+
 function PlateFactButton({
   kind,
   value,
   active,
   locked,
+  tabIndex,
+  buttonRef,
   onToggleFact,
   onFocusFact,
   onBlurFact,
   onHoverFact,
   onLeaveFact,
-  onClearLock,
+  onKeyDown,
 }: {
   kind: FactKind;
   value: string;
   active: boolean;
   locked: boolean;
+  tabIndex: number;
+  buttonRef: Ref<HTMLButtonElement>;
   onToggleFact: (value: string) => void;
   onFocusFact: (value: string) => void;
   onBlurFact: (value: string) => void;
   onHoverFact: (value: string) => void;
   onLeaveFact: (value: string) => void;
-  onClearLock: () => void;
+  onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void;
 }) {
-  function onKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
-    if (event.key !== "Escape") return;
-    event.preventDefault();
-    onClearLock();
-  }
-
   return (
     <button
       className={styles.fact}
       type="button"
+      ref={buttonRef}
+      tabIndex={tabIndex}
       data-active={active ? "true" : "false"}
       data-chip={kind === "general" ? "general" : undefined}
       data-fact={kind}
@@ -158,8 +224,11 @@ export function DaliurenHeavenEarthPlate({
   onLeaveFact,
   onClearLock,
 }: DaliurenHeavenEarthPlateProps) {
-  const earth = asEarthPlate(earthPlate);
-  if (!earth) return null;
+  const earthPlateValues = asEarthPlate(earthPlate);
+  const cellRefs = useRef<Partial<Record<PlateCellId, HTMLButtonElement | null>>>({});
+  const [rovingId, setRovingId] = useState<PlateCellId | null>(null);
+  if (!earthPlateValues) return null;
+  const earth = earthPlateValues;
 
   const earthSet = new Set(earth);
   const heavens = mapByEarth(heavenPlate, earthSet, "heaven");
@@ -168,6 +237,7 @@ export function DaliurenHeavenEarthPlate({
   const voids = voidBranches(xunkong);
   const showHeaven = heavens.size > 0;
   const showGeneral = generals.size > 0;
+  const kinds = visibleKinds(showHeaven, showGeneral);
   const noble = readString(noblePerson, "earth_position");
   const nobleEarthPosition = noble && earthSet.has(noble) ? noble : null;
   const offset = typeof plateOffset === "number" && Number.isFinite(plateOffset) ? plateOffset : null;
@@ -175,27 +245,63 @@ export function DaliurenHeavenEarthPlate({
   const locked = factSet(lockedFacts);
   const interactive = Boolean(onToggleFact && onFocusFact && onBlurFact && onHoverFact && onLeaveFact && onClearLock);
 
+  function plateValue(branch: string, kind: FactKind): string | null {
+    if (kind === "earth") return branch;
+    if (kind === "heaven") return heavens.get(branch) ?? null;
+    return generals.get(branch) ?? null;
+  }
+
+  const parsedRoving = rovingId ? parsePlateCell(rovingId) : null;
+  const currentRoving: PlateCellId =
+    parsedRoving && plateValue(parsedRoving.earth, parsedRoving.kind)
+      ? plateCellId(parsedRoving.earth, parsedRoving.kind)
+      : plateCellId(earth[0], "earth");
+
   function isActiveValue(value: string | null | undefined): boolean {
     return hasFact(active, value);
   }
 
-  function renderFact(kind: FactKind, value: string | null) {
+  function focusPlateCell(id: PlateCellId) {
+    setRovingId(id);
+    cellRefs.current[id]?.focus();
+  }
+
+  function onFactKeyDown(event: KeyboardEvent<HTMLButtonElement>, id: PlateCellId) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClearLock?.();
+      return;
+    }
+    if (!PLATE_NAV_KEYS.has(event.key)) return;
+    event.preventDefault();
+    focusPlateCell(plateNeighbor(id, event.key as PlateNavKey, earth, kinds, plateValue));
+  }
+
+  function renderFact(kind: FactKind, value: string | null, branch: string) {
     if (!value) return null;
     if (!interactive || !onToggleFact || !onFocusFact || !onBlurFact || !onHoverFact || !onLeaveFact || !onClearLock) {
       return value;
     }
+    const id = plateCellId(branch, kind);
     return (
       <PlateFactButton
         kind={kind}
         value={value}
         active={isActiveValue(value)}
         locked={hasFact(locked, value)}
+        tabIndex={currentRoving === id ? 0 : -1}
+        buttonRef={(node) => {
+          cellRefs.current[id] = node;
+        }}
         onBlurFact={onBlurFact}
-        onClearLock={onClearLock}
-        onFocusFact={onFocusFact}
+        onFocusFact={(next) => {
+          setRovingId(id);
+          onFocusFact(next);
+        }}
         onHoverFact={onHoverFact}
         onLeaveFact={onLeaveFact}
         onToggleFact={onToggleFact}
+        onKeyDown={(event) => onFactKeyDown(event, id)}
       />
     );
   }
@@ -299,15 +405,19 @@ export function DaliurenHeavenEarthPlate({
                   key={branch}
                 >
                   <th data-active={earthActive ? "true" : "false"} scope="row">
-                    {renderFact("earth", branch)}
+                    {renderFact("earth", branch, branch)}
                     {nobleEarthPosition === branch ? (
                       <span className={styles.nobleBadge}>贵人落地</span>
                     ) : null}
                     {timingAnchors.has(branch) ? <TimingMark /> : null}
                     {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
                   </th>
-                  {showHeaven ? <td data-active={heavenActive ? "true" : "false"}>{renderFact("heaven", heaven)}</td> : null}
-                  {showGeneral ? <td data-active={generalActive ? "true" : "false"}>{renderFact("general", general)}</td> : null}
+                  {showHeaven ? (
+                    <td data-active={heavenActive ? "true" : "false"}>{renderFact("heaven", heaven, branch)}</td>
+                  ) : null}
+                  {showGeneral ? (
+                    <td data-active={generalActive ? "true" : "false"}>{renderFact("general", general, branch)}</td>
+                  ) : null}
                 </tr>
               );
             })}
