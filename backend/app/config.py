@@ -75,7 +75,7 @@ _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
             "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
         ),
         "release_manifest_sha256": (
-            "d6e0df3e64e588f67cb500283199ae5413001b641d5b54f445ef610caff40130"
+            "9700fe96e2c440dc8b14c41aed576264d893c7a23d638708eafe40388771db71"
         ),
         "release_name": "mingli-master-portable-core",
         "source_commit": "443a777384975b05e50a6d969e3cab5da7a3119a",

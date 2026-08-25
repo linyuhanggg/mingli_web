@@ -1,6 +1,8 @@
 import hashlib
 import importlib
 import json
+import os
+import shutil
 import stat
 import sys
 from dataclasses import replace
@@ -275,7 +277,7 @@ async def test_startup_gate_admits_all_thirteen_but_product_policy_exposes_only_
         launcher_path=launcher,
         runtime_python_path=Path("/usr/bin/python3"),
         state_root=state_root,
-        timeout_seconds=1,
+        timeout_seconds=5,
     )
     gate = RuntimeStartupGate(
         runtime=runtime,
@@ -732,10 +734,35 @@ _PREVIOUS_V53_TIME_CHECK_LISTING_SHA = (
 _PREVIOUS_V53_TIME_CHECK_SOURCE_COMMIT = (
     "b498382e67c0f0a41b0e5563b2773d1e1e3323f5"
 )
-_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
+_CLEAN_443A777_RELEASE_MANIFEST_SHA = (
     "d6e0df3e64e588f67cb500283199ae5413001b641d5b54f445ef610caff40130"
 )
+_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
+    "9700fe96e2c440dc8b14c41aed576264d893c7a23d638708eafe40388771db71"
+)
 _ADMITTED_V53_SOURCE_COMMIT = "443a777384975b05e50a6d969e3cab5da7a3119a"
+_ADMITTED_V53_DESCRIBE_DIGEST = (
+    "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22"
+)
+_ADMITTED_V53_CAPABILITY_SHAPE = (
+    "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
+)
+_QA_LOCKED_BAZI_CALC_SHA256 = (
+    "ab35fbf511693d47487aa0601bdba32d13a44cf988888b90c085d6573027249a"
+)
+_QA_LOCKED_LIUREN_CALC_SHA256 = (
+    "f276643106194766107008dfc08df25ef0c141e9f064c39bd7609d8732668908"
+)
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_QA_CLEAN_RELEASE_ROOT = Path(
+    "/Users/yuhanglin/multica_workspaces_desktop-api.multica.ai/"
+    "72222bca-49d3-4729-97ea-4a84e84ddce7/2927841eff9b/qa-runtime-base-443a777"
+)
+_QA_RUNTIME_PYTHON = Path(
+    "/Users/yuhanglin/multica_workspaces_desktop-api.multica.ai/"
+    "72222bca-49d3-4729-97ea-4a84e84ddce7/2927841eff9b/"
+    "qa-runtime-venv-443a777/bin/python"
+)
 
 
 def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
@@ -767,17 +794,11 @@ def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
     gate = build_runtime_startup_gate(settings)
 
     assert profile == {
-        "manifest_digest": (
-            "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22"
-        ),
-        "capability_shape_sha256": (
-            "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
-        ),
-        "release_manifest_sha256": (
-            "d6e0df3e64e588f67cb500283199ae5413001b641d5b54f445ef610caff40130"
-        ),
+        "manifest_digest": _ADMITTED_V53_DESCRIBE_DIGEST,
+        "capability_shape_sha256": _ADMITTED_V53_CAPABILITY_SHAPE,
+        "release_manifest_sha256": _ADMITTED_V53_RELEASE_MANIFEST_SHA,
         "release_name": "mingli-master-portable-core",
-        "source_commit": "443a777384975b05e50a6d969e3cab5da7a3119a",
+        "source_commit": _ADMITTED_V53_SOURCE_COMMIT,
     }
     assert gate.expected_manifest_digest == profile["manifest_digest"]
     assert gate.expected_capability_shape_sha256 == profile[
@@ -800,9 +821,11 @@ def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
         == V53_TIME_CHECK_RELEASE_FILE_COUNT + 1
     )
     assert profile["release_manifest_sha256"] != _PREVIOUS_V53_TIME_CHECK_LISTING_SHA
+    assert profile["release_manifest_sha256"] != _CLEAN_443A777_RELEASE_MANIFEST_SHA
     assert profile["source_commit"] != _PREVIOUS_V53_TIME_CHECK_SOURCE_COMMIT
     assert profile["release_manifest_sha256"] == _ADMITTED_V53_RELEASE_MANIFEST_SHA
     assert profile["source_commit"] == _ADMITTED_V53_SOURCE_COMMIT
+    assert Settings().chart_fast_path_timeout_seconds == 2.0
 
 
 async def test_runtime_startup_gate_rejects_the_previous_b498_manifest_identity(
@@ -855,6 +878,298 @@ def test_filesystem_release_inspector_rejects_the_previous_b498_source_identity(
             expected_release_name="fixture-release",
             expected_source_commit=_ADMITTED_V53_SOURCE_COMMIT,
         ).inspect()
+
+
+def _discover_clean_v53_release_root() -> Path | None:
+    candidates = []
+    for key in (
+        "MINGLI_MING21_CLEAN_RELEASE_ROOT",
+        "MINGLI_RUNTIME_TEST_RELEASE_ROOT",
+    ):
+        raw = os.environ.get(key)
+        if raw:
+            candidates.append(Path(raw).expanduser())
+    candidates.extend(
+        (
+            _REPO_ROOT / ".runtime" / "v53-time-check-release",
+            _QA_CLEAN_RELEASE_ROOT,
+        )
+    )
+    for path in candidates:
+        manifest = path / ".mingli-release-manifest.json"
+        if not manifest.is_file():
+            continue
+        if _sha256(manifest) == _CLEAN_443A777_RELEASE_MANIFEST_SHA:
+            return path
+    return None
+
+
+def _discover_runtime_python() -> Path | None:
+    candidates = []
+    raw = os.environ.get("MINGLI_RUNTIME_TEST_PYTHON")
+    if raw:
+        candidates.append(Path(raw).expanduser())
+    candidates.extend(
+        (
+            _QA_RUNTIME_PYTHON,
+            Path.home() / ".local/share/mingli-master/venv/bin/python",
+        )
+    )
+    for path in candidates:
+        if path.is_file():
+            return path
+    return None
+
+
+def _copy_signed_release(source: Path, destination: Path) -> None:
+    manifest = json.loads(
+        (source / ".mingli-release-manifest.json").read_text(encoding="utf-8")
+    )
+    destination.mkdir(mode=0o700)
+    shutil.copy2(
+        source / ".mingli-release-manifest.json",
+        destination / ".mingli-release-manifest.json",
+    )
+    for relative in manifest["files"]:
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source / relative, target)
+    for relative, mode in manifest["modes"].items():
+        (destination / relative).chmod(mode)
+
+
+def _overlay_locked_script(
+    release_root: Path,
+    relative: str,
+    source: Path,
+    expected_sha256: str,
+) -> None:
+    payload = source.read_bytes()
+    overlay_sha256 = hashlib.sha256(payload).hexdigest()
+    if overlay_sha256 != expected_sha256:
+        raise AssertionError(f"{relative} is not the QA-locked SHA-256")
+    target = release_root / relative
+    replaced_sha256 = _sha256(target)
+    mode = target.stat().st_mode
+    target.write_bytes(payload)
+    target.chmod(mode)
+    manifest_path = release_root / ".mingli-release-manifest.json"
+    manifest_text = manifest_path.read_text(encoding="utf-8")
+    if manifest_text.count(replaced_sha256) != 1:
+        raise AssertionError(f"{relative} digest is missing or not unique")
+    manifest_path.write_text(
+        manifest_text.replace(replaced_sha256, overlay_sha256),
+        encoding="utf-8",
+    )
+
+
+def _materialize_combined_overlay_release(tmp_path: Path) -> Path:
+    source = _discover_clean_v53_release_root()
+    if source is None:
+        pytest.skip("the clean 443a777 Runtime release is not present")
+    bazi = _REPO_ROOT / "core" / "mingli-master" / "scripts" / "bazi_calc.py"
+    liuren = _REPO_ROOT / "core" / "mingli-master" / "scripts" / "liuren_calc.py"
+    if not bazi.is_file() or not liuren.is_file():
+        pytest.skip("QA-locked Bazi/Liuren overlay scripts are not present")
+    release_root = tmp_path / "combined-overlay-release"
+    _copy_signed_release(source, release_root)
+    _overlay_locked_script(
+        release_root,
+        "scripts/bazi_calc.py",
+        bazi,
+        _QA_LOCKED_BAZI_CALC_SHA256,
+    )
+    _overlay_locked_script(
+        release_root,
+        "scripts/liuren_calc.py",
+        liuren,
+        _QA_LOCKED_LIUREN_CALC_SHA256,
+    )
+    listing = _sha256(release_root / ".mingli-release-manifest.json")
+    assert listing == _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    return release_root
+
+
+def _v53_one_shot_settings(
+    tmp_path: Path,
+    *,
+    release_root: Path,
+    runtime_python: Path,
+) -> Any:
+    from app.config import Settings
+
+    launcher = release_root / "scripts" / "run_reading_transaction.sh"
+    if not launcher.is_file():
+        launcher = tmp_path / "runtime-fixture"
+        launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        launcher.chmod(0o700)
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    return Settings(
+        environment="test",
+        database_url=f"sqlite+aiosqlite:///{tmp_path / 'startup-gate.sqlite3'}",
+        runtime_adapter="one-shot",
+        runtime_release_profile="v53-time-check",
+        runtime_launcher_path=launcher,
+        runtime_python_path=runtime_python,
+        runtime_release_root=release_root,
+        runtime_state_root=state_root,
+        runtime_expected_manifest_digest=_ADMITTED_V53_DESCRIBE_DIGEST,
+        runtime_expected_capability_shape_sha256=_ADMITTED_V53_CAPABILITY_SHAPE,
+        chart_fast_path_timeout_seconds=2.0,
+    )
+
+
+async def test_runtime_startup_gate_rejects_the_clean_443a777_manifest_identity(
+    tmp_path: Path,
+) -> None:
+    description = await _fake_description()
+    launcher = _write_executable(tmp_path / "runtime-fixture", description.to_dict())
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    runtime = OneShotMingliRuntimeAdapter(
+        launcher_path=launcher,
+        runtime_python_path=Path("/usr/bin/python3"),
+        state_root=state_root,
+        timeout_seconds=1,
+    )
+    inventory = replace(
+        _inventory(),
+        release_manifest_sha256=_CLEAN_443A777_RELEASE_MANIFEST_SHA,
+    )
+    gate = RuntimeStartupGate(
+        runtime=runtime,
+        release_inspector=StaticReleaseInspector(inventory),
+        expected_manifest_digest=description.manifest_digest,
+        expected_release_manifest_sha256=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
+        expected_capability_shape_sha256=runtime_capability_shape_sha256(
+            description.capabilities
+        ),
+    )
+
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        await gate.startup()
+    with pytest.raises(RuntimeStartupError, match="not ready"):
+        await gate.readiness_probe()
+
+
+async def test_runtime_startup_gate_rejects_an_arbitrary_wrong_release_manifest_digest(
+    tmp_path: Path,
+) -> None:
+    description = await _fake_description()
+    launcher = _write_executable(tmp_path / "runtime-fixture", description.to_dict())
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    runtime = OneShotMingliRuntimeAdapter(
+        launcher_path=launcher,
+        runtime_python_path=Path("/usr/bin/python3"),
+        state_root=state_root,
+        timeout_seconds=1,
+    )
+    inventory = replace(_inventory(), release_manifest_sha256="0" * 64)
+    gate = RuntimeStartupGate(
+        runtime=runtime,
+        release_inspector=StaticReleaseInspector(inventory),
+        expected_manifest_digest=description.manifest_digest,
+        expected_release_manifest_sha256=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
+        expected_capability_shape_sha256=runtime_capability_shape_sha256(
+            description.capabilities
+        ),
+    )
+
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        await gate.startup()
+    with pytest.raises(RuntimeStartupError, match="not ready"):
+        await gate.readiness_probe()
+
+
+async def test_build_runtime_startup_gate_and_create_app_fail_closed_on_wrong_digest(
+    tmp_path: Path,
+) -> None:
+    release_root = tmp_path / "wrong-digest-release"
+    release_root.mkdir(mode=0o700)
+    (release_root / ".mingli-release-manifest.json").write_text(
+        "{}",
+        encoding="utf-8",
+    )
+    assert _sha256(release_root / ".mingli-release-manifest.json") != (
+        _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    )
+    settings = _v53_one_shot_settings(
+        tmp_path,
+        release_root=release_root,
+        runtime_python=Path("/usr/bin/python3"),
+    )
+    gate = build_runtime_startup_gate(settings)
+    assert gate.expected_release_manifest_sha256 == _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    assert gate.release_inspector.expected_source_commit == _ADMITTED_V53_SOURCE_COMMIT
+    assert gate.expected_release_file_count == 222
+
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        await gate.startup()
+
+    from app.main import create_app
+
+    application = create_app(settings=settings)
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        async with application.router.lifespan_context(application):
+            raise AssertionError("create_app must fail closed on a wrong digest")
+
+
+async def test_build_runtime_startup_gate_and_create_app_fail_closed_on_clean_tree(
+    tmp_path: Path,
+) -> None:
+    source = _discover_clean_v53_release_root()
+    if source is None:
+        pytest.skip("the clean 443a777 Runtime release is not present")
+    release_root = tmp_path / "clean-443a777-release"
+    _copy_signed_release(source, release_root)
+    assert _sha256(release_root / ".mingli-release-manifest.json") == (
+        _CLEAN_443A777_RELEASE_MANIFEST_SHA
+    )
+    settings = _v53_one_shot_settings(
+        tmp_path,
+        release_root=release_root,
+        runtime_python=Path("/usr/bin/python3"),
+    )
+    gate = build_runtime_startup_gate(settings)
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        await gate.startup()
+
+    from app.main import create_app
+
+    application = create_app(settings=settings)
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        async with application.router.lifespan_context(application):
+            raise AssertionError("create_app must reject the clean 443a777 listing")
+
+
+async def test_build_runtime_startup_gate_and_create_app_admit_combined_overlay_tree(
+    tmp_path: Path,
+) -> None:
+    runtime_python = _discover_runtime_python()
+    if runtime_python is None:
+        pytest.skip("the dedicated Mingli Runtime Python is not installed")
+    release_root = _materialize_combined_overlay_release(tmp_path)
+    settings = _v53_one_shot_settings(
+        tmp_path,
+        release_root=release_root,
+        runtime_python=runtime_python,
+    )
+    assert settings.chart_fast_path_timeout_seconds == 2.0
+    gate = build_runtime_startup_gate(settings)
+    described = await gate.startup()
+    await gate.readiness_probe()
+    assert described.manifest_digest == _ADMITTED_V53_DESCRIBE_DIGEST
+    assert runtime_capability_shape_sha256(described.capabilities) == (
+        _ADMITTED_V53_CAPABILITY_SHAPE
+    )
+
+    from app.main import create_app
+
+    application = create_app(settings=settings)
+    async with application.router.lifespan_context(application):
+        assert application.state.chart_runtime is not None
 
 
 async def test_configured_worker_admits_the_real_runtime_before_processing(
