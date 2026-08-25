@@ -758,10 +758,10 @@ def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
             "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
         ),
         "release_manifest_sha256": (
-            "c52b4fae573b5ea68bd78f20fc324f5254c7349b64512e494ad9dc1229764180"
+            "79fd0bbd47fd28568c559383fd1aae0cce0938232056a3e0ad33474fa36e8c40"
         ),
         "release_name": "mingli-master-portable-core",
-        "source_commit": "c8f4383f416d956a217b14db594983866f93d6ed",
+        "source_commit": "b498382e67c0f0a41b0e5563b2773d1e1e3323f5",
     }
     assert gate.expected_manifest_digest == profile["manifest_digest"]
     assert gate.expected_capability_shape_sha256 == profile[
