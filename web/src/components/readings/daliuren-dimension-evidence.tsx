@@ -335,6 +335,23 @@ const TARGET_STRENGTH_KEYS = [
 ] as const;
 const TARGET_GENERAL_MODIFIER_KEYS = [...GENERAL_LANDING_KEYS, "six_relative"] as const;
 const TARGET_GENERAL_MODIFIER_UNAVAILABLE_KEYS = [...GENERAL_LANDING_UNAVAILABLE_KEYS, "six_relative"] as const;
+const TIMING_DIMENSION_KEYS = [
+  "canonical_dimension",
+  "requested_dimension",
+  "status",
+  "source_rule_ids",
+  "rule_evidence",
+  "relative_speed",
+  "candidate_branch",
+  "candidate_date",
+] as const;
+const TIMING_PACE_RULE_IDS = ["DLR-16", "LR-16"] as const;
+const TIMING_CANDIDATE_FACT_PATH = "dimension_facts.timing.candidate_branch";
+const TIMING_CANDIDATE_SOURCE_REF = {
+  pack: "san-shi/liuren-miben",
+  rule_id: "LM-R21",
+  source_anchor: "fulltext.md#L3070-L3076",
+} as const;
 const LOCATION_OBSERVATION_KEYS = ["stage_branch_directions"] as const;
 const LOCATION_DIRECTION_KEYS = [
   "stage",
@@ -1094,20 +1111,25 @@ function workFact(value: unknown): string | null {
         `${STAGE_FACTS[row.stage]} ${row.branch}（${SEASON_STRENGTH_FACTS[row.season_strength]}，${row.is_xunkong ? "旬空" : "非旬空"}）`,
     )
     .join("、");
-  const facts = [`工作所取六亲：${value.target_relative}`, `入传状态：${strengths}`];
-  if (value.target_general_modifier.length) {
-    facts.push(
-      `天将落地类象：${value.target_general_modifier
-        .map(
-          (row) =>
-            `${STAGE_FACTS[row.stage]} ${row.heavenly_general}落${row.landing_branch}${
-              row.status === "no_exact_source_correspondence" ? "（无精确类象对应）" : ""
-            }`,
-        )
-        .join("、")}`,
-    );
-  }
-  return facts.join(" · ");
+  return `工作所取六亲：${value.target_relative} · 入传状态：${strengths}`;
+}
+
+function workGeneralModifierEntries(rows: readonly WorkGeneralModifier[]): readonly EvidenceEntry[] {
+  return rows.map((row) => ({
+    marker: "LM-R01",
+    fact: `${row.six_relative}天将落地类象：${STAGE_FACTS[row.stage]} ${row.heavenly_general}落${row.landing_branch}${
+      row.status === "no_exact_source_correspondence" ? "（无精确类象对应）" : ""
+    }`,
+    sources:
+      row.status === "source_correspondence_matched"
+        ? [
+            {
+              key: `${row.stage}-${row.source_pack}-${row.source_rule}-${row.source_anchor}`,
+              label: `${row.source_pack} · ${row.source_rule} · ${row.source_anchor}`,
+            },
+          ]
+        : [],
+  }));
 }
 
 function sameWorkStrength(left: WorkStrength, right: WorkStrength): boolean {
@@ -1215,9 +1237,6 @@ function timingFact(value: unknown): string | null {
   const facts = [`规则候选支：${value.candidate_branch.branch}`];
   if (value.candidate_date) {
     facts.push(`候选日期：${value.candidate_date.solar_date}（${value.candidate_date.day_ganzhi}日）`);
-  }
-  if (value.relative_speed) {
-    facts.push(`相对节奏：${RELATIVE_SPEED_FACTS[value.relative_speed]}`);
   }
   return facts.join(" · ");
 }
@@ -1677,6 +1696,116 @@ function parseTopLevelMoneyFacts(
   ];
 }
 
+function timingPaceRuleIds(sourceRuleIds: readonly unknown[]): readonly string[] | null {
+  if (
+    !Array.isArray(sourceRuleIds) ||
+    !sourceRuleIds.every((ruleId) => typeof ruleId === "string" && Boolean(ruleId.trim()))
+  ) {
+    return null;
+  }
+  const paceIds = sourceRuleIds
+    .map((ruleId) => (ruleId as string).trim())
+    .filter((ruleId) => ruleId === "DLR-16" || ruleId === "LR-16");
+  const expected = TIMING_PACE_RULE_IDS.filter((ruleId) => paceIds.includes(ruleId));
+  if (paceIds.length !== expected.length || paceIds.some((ruleId, index) => ruleId !== expected[index])) {
+    return null;
+  }
+  return paceIds;
+}
+
+function parseTimingPaceEntry(
+  relativeSpeed: unknown,
+  sourceRuleIds: readonly unknown[],
+): EvidenceEntry | null {
+  if (typeof relativeSpeed !== "string" || !hasOwnKey(RELATIVE_SPEED_FACTS, relativeSpeed)) return null;
+  const paceIds = timingPaceRuleIds(sourceRuleIds);
+  if (!paceIds || paceIds.length === 0) return null;
+  return {
+    marker: paceIds.join(" · "),
+    fact: `相对节奏：${RELATIVE_SPEED_FACTS[relativeSpeed]}`,
+    sources: [],
+  };
+}
+
+function sameCandidateBranch(
+  left: DaliurenTimingCandidateObservation["candidate_branch"],
+  right: DaliurenTimingCandidateObservation["candidate_branch"],
+): boolean {
+  return (
+    left.branch === right.branch &&
+    left.anchor_earth_branch === right.anchor_earth_branch &&
+    left.source_rule === right.source_rule
+  );
+}
+
+function sameCandidateDate(
+  left: NonNullable<DaliurenTimingCandidateObservation["candidate_date"]>,
+  right: NonNullable<DaliurenTimingCandidateObservation["candidate_date"]>,
+): boolean {
+  return (
+    left.id === right.id &&
+    left.role === right.role &&
+    left.anchor_earth_branch === right.anchor_earth_branch &&
+    left.branch === right.branch &&
+    left.solar_date === right.solar_date &&
+    left.day_ganzhi === right.day_ganzhi &&
+    left.days_after_cast === right.days_after_cast &&
+    left.source_pack === right.source_pack &&
+    left.source_rule === right.source_rule &&
+    left.candidate_not_guarantee === right.candidate_not_guarantee
+  );
+}
+
+function hasRuntimeTimingCandidateMetadata(value: unknown): boolean {
+  if (
+    !isRecord(value) ||
+    !hasRequiredAndOptionalKeys(value, MATCHED_EVIDENCE_REQUIRED_KEYS, MATCHED_EVIDENCE_OPTIONAL_KEYS) ||
+    value.activation_id !== "liuren.timing.candidate_branch" ||
+    value.dependency_group !== "liuren.timing.initial-group-seasonal-upper" ||
+    value.polarity !== "uncertain" ||
+    value.rule_id !== "LM-R21" ||
+    value.rule_key !== "timing_candidate_branch" ||
+    value.status !== "matched" ||
+    value.weight_class !== "primary" ||
+    !Array.isArray(value.fact_paths) ||
+    value.fact_paths.length !== 1 ||
+    value.fact_paths[0] !== TIMING_CANDIDATE_FACT_PATH ||
+    !Array.isArray(value.source_refs) ||
+    value.source_refs.length !== 1
+  ) {
+    return false;
+  }
+  const source = value.source_refs[0];
+  return (
+    isRecord(source) &&
+    hasRequiredAndOptionalKeys(source, SOURCE_REF_REQUIRED_KEYS, SOURCE_REF_OPTIONAL_KEYS) &&
+    Object.keys(source).length === SOURCE_REF_REQUIRED_KEYS.length &&
+    source.pack === TIMING_CANDIDATE_SOURCE_REF.pack &&
+    source.rule_id === TIMING_CANDIDATE_SOURCE_REF.rule_id &&
+    source.source_anchor === TIMING_CANDIDATE_SOURCE_REF.source_anchor
+  );
+}
+
+function expectedTimingSourceRuleIds(
+  hasValidPace: boolean,
+  hasCandidate: boolean,
+  sourceRuleIds: readonly string[],
+): readonly string[] | null {
+  if (sourceRuleIds.includes("LR-16") && !hasValidPace) return null;
+  const expected = [
+    ...(hasValidPace ? (["DLR-16"] as const) : []),
+    ...(sourceRuleIds.includes("LR-16") ? (["LR-16"] as const) : []),
+    ...(hasCandidate ? (["LM-R21"] as const) : []),
+  ];
+  if (
+    sourceRuleIds.length !== expected.length ||
+    sourceRuleIds.some((ruleId, index) => ruleId !== expected[index])
+  ) {
+    return null;
+  }
+  return expected;
+}
+
 function parseTopLevelTimingFact(value: Record<string, unknown>): EvidenceEntry | null {
   if (
     (value.candidate_branch !== null && value.candidate_branch !== undefined) ||
@@ -1684,21 +1813,117 @@ function parseTopLevelTimingFact(value: Record<string, unknown>): EvidenceEntry 
   ) {
     return null;
   }
-  const relativeSpeed = readString(value, "relative_speed");
-  if (!relativeSpeed || !hasOwnKey(RELATIVE_SPEED_FACTS, relativeSpeed)) return null;
-  const sourceRuleIds = value.source_rule_ids;
-  if (
-    !Array.isArray(sourceRuleIds) ||
-    sourceRuleIds.length === 0 ||
-    !sourceRuleIds.every((ruleId) => typeof ruleId === "string" && Boolean(ruleId.trim()))
-  ) {
-    return null;
+  return parseTimingPaceEntry(
+    value.relative_speed,
+    Array.isArray(value.source_rule_ids) ? value.source_rule_ids : [],
+  );
+}
+
+function parseTimingFacts(
+  value: Record<string, unknown>,
+  evidence: Record<string, unknown>,
+): readonly EvidenceEntry[] | null {
+  const matched = evidence.matched;
+  if (!Array.isArray(matched) || !Array.isArray(evidence.scope_boundaries)) return null;
+
+  if (hasExactKeys(value, TIMING_DIMENSION_KEYS)) {
+    if (
+      value.canonical_dimension !== "timing" ||
+      value.requested_dimension !== "timing" ||
+      value.status !== "calculated_facts_not_verdict"
+    ) {
+      return null;
+    }
+    const sourceRuleIds = value.source_rule_ids;
+    if (
+      !Array.isArray(sourceRuleIds) ||
+      !sourceRuleIds.every((ruleId) => typeof ruleId === "string" && Boolean(ruleId.trim()))
+    ) {
+      return null;
+    }
+    const normalizedSourceRuleIds = sourceRuleIds.map((ruleId) => (ruleId as string).trim());
+    const relativeSpeed = value.relative_speed;
+    const hasValidPace =
+      typeof relativeSpeed === "string" && hasOwnKey(RELATIVE_SPEED_FACTS, relativeSpeed);
+    const topLevelCandidate = value.candidate_branch;
+    const topLevelDate = value.candidate_date;
+    if (topLevelCandidate !== null && !isCandidateBranch(topLevelCandidate)) return null;
+    if (topLevelDate !== null && !isCandidateDate(topLevelDate)) return null;
+    const candidatePresent = isCandidateBranch(topLevelCandidate);
+    if (
+      candidatePresent &&
+      isCandidateDate(topLevelDate) &&
+      (topLevelDate.branch !== topLevelCandidate.branch ||
+        topLevelDate.anchor_earth_branch !== topLevelCandidate.anchor_earth_branch ||
+        topLevelDate.source_rule !== topLevelCandidate.source_rule)
+    ) {
+      return null;
+    }
+    if (!expectedTimingSourceRuleIds(hasValidPace, candidatePresent, normalizedSourceRuleIds)) {
+      return null;
+    }
+
+    const entries: EvidenceEntry[] = [];
+    if (isCandidateBranch(topLevelCandidate)) {
+      if (
+        !hasRuntimeEvidenceEnvelope(evidence) ||
+        evidence.status !== "matched_evidence" ||
+        matched.length !== 1 ||
+        !isEmptyArray(evidence.scope_boundaries) ||
+        !isEmptyArray(evidence.not_evaluated) ||
+        !hasRuntimeTimingCandidateMetadata(matched[0])
+      ) {
+        return null;
+      }
+      const parsed = parseRuntimeMatchedEntry(matched[0], "timing");
+      if (
+        !parsed ||
+        parsed.entry.marker !== "LM-R21" ||
+        !isTimingObservation(parsed.observation) ||
+        !("candidate_branch" in parsed.observation) ||
+        !sameCandidateBranch(parsed.observation.candidate_branch, topLevelCandidate)
+      ) {
+        return null;
+      }
+      if (topLevelDate === null) {
+        if (parsed.observation.candidate_date !== null) return null;
+      } else if (
+        !isCandidateDate(topLevelDate) ||
+        parsed.observation.candidate_date === null ||
+        !sameCandidateDate(parsed.observation.candidate_date, topLevelDate)
+      ) {
+        return null;
+      }
+      if (
+        parsed.observation.relative_speed !== null &&
+        parsed.observation.relative_speed !== relativeSpeed
+      ) {
+        return null;
+      }
+      entries.push(parsed.entry);
+    } else if (matched.length !== 0 || !isEmptyArray(evidence.scope_boundaries)) {
+      return null;
+    }
+
+    if (hasValidPace) {
+      const pace = parseTimingPaceEntry(relativeSpeed, normalizedSourceRuleIds);
+      if (!pace) return null;
+      entries.push(pace);
+    }
+
+    return entries.length ? entries : null;
   }
-  return {
-    marker: sourceRuleIds.map((ruleId) => ruleId.trim()).join(" · "),
-    fact: `相对节奏：${RELATIVE_SPEED_FACTS[relativeSpeed]}`,
-    sources: [],
-  };
+
+  const entries: EvidenceEntry[] = [];
+  for (const item of matched) {
+    const entry = parseEntry(item, "timing");
+    if (entry) entries.push(entry);
+  }
+  if (!entries.length && isEmptyArray(evidence.scope_boundaries)) {
+    const timingEntry = parseTopLevelTimingFact(value);
+    if (timingEntry) entries.push(timingEntry);
+  }
+  return entries.length ? entries : null;
 }
 
 function relationFactText(value: DeterministicRelationFact): string {
@@ -2181,7 +2406,11 @@ function parseTopLevelWorkFacts(
   ) {
     return null;
   }
-  return [parsed.entry, ...deterministicEntries];
+  return [
+    parsed.entry,
+    ...workGeneralModifierEntries(targetObservation.target_general_modifier),
+    ...deterministicEntries,
+  ];
 }
 
 function isMissingWorkTargetNotEvaluated(value: unknown): boolean {
@@ -2329,6 +2558,10 @@ function parseDimension(value: unknown): EvidenceGroup | null {
     const workEntries = parseTopLevelWorkFacts(value, evidence);
     return workEntries ? { dimension, entries: workEntries } : null;
   }
+  if (dimension === "timing") {
+    const timingEntries = parseTimingFacts(value, evidence);
+    return timingEntries ? { dimension, entries: timingEntries } : null;
+  }
   const entries: EvidenceEntry[] = [];
   for (const item of evidence.matched) {
     const entry = parseEntry(item, dimension);
@@ -2344,10 +2577,6 @@ function parseDimension(value: unknown): EvidenceGroup | null {
   ) {
     const outcomeEntries = parseTopLevelOutcomeFacts(value, evidence);
     return outcomeEntries ? { dimension, entries: outcomeEntries } : null;
-  }
-  if (dimension === "timing" && evidence.matched.length === 0 && evidence.scope_boundaries.length === 0) {
-    const timingEntry = parseTopLevelTimingFact(value);
-    if (timingEntry) entries.push(timingEntry);
   }
   return entries.length ? { dimension, entries } : null;
 }

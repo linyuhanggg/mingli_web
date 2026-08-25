@@ -1653,6 +1653,77 @@ describe("大六壬 S3 M6a 维度证据", () => {
     };
   }
 
+  function boundTimingProjection(overrides: Record<string, unknown> = {}) {
+    const candidateBranch = {
+      branch: "未",
+      anchor_earth_branch: "未",
+      source_rule: "LM-R21",
+    };
+    const candidateDate = {
+      id: "initial_group_upper_candidate",
+      role: "event_response_candidate",
+      anchor_earth_branch: "未",
+      branch: "未",
+      solar_date: "2026-07-20",
+      day_ganzhi: "乙未",
+      days_after_cast: 10,
+      source_pack: "san-shi/liuren-miben",
+      source_rule: "LM-R21",
+      candidate_not_guarantee: true,
+    };
+    return {
+      canonical_dimension: "timing",
+      requested_dimension: "timing",
+      status: "calculated_facts_not_verdict",
+      source_rule_ids: ["DLR-16", "LM-R21"],
+      relative_speed: "relatively_faster",
+      candidate_branch: candidateBranch,
+      candidate_date: candidateDate,
+      rule_evidence: runtimeStateEvidence({
+        matched: [
+          matchedEntry({
+            activation_id: "liuren.timing.candidate_branch",
+            confidence_ceiling: "medium",
+            dependency_group: "liuren.timing.initial-group-seasonal-upper",
+            fact_paths: ["dimension_facts.timing.candidate_branch"],
+            observation: {
+              candidate_branch: candidateBranch,
+              candidate_date: candidateDate,
+              relative_speed: "relatively_faster",
+            },
+            polarity: "uncertain",
+            rule_id: "LM-R21",
+            rule_key: "timing_candidate_branch",
+            source_refs: [
+              {
+                pack: "san-shi/liuren-miben",
+                rule_id: "LM-R21",
+                source_anchor: "fulltext.md#L3070-L3076",
+              },
+            ],
+            weight_class: "primary",
+          }),
+        ],
+        status: "matched_evidence",
+      }),
+      ...overrides,
+    };
+  }
+
+  function timingPaceFallback(overrides: Record<string, unknown> = {}) {
+    return {
+      canonical_dimension: "timing",
+      requested_dimension: "timing",
+      status: "calculated_facts_not_verdict",
+      source_rule_ids: ["DLR-16"],
+      relative_speed: "relatively_faster",
+      candidate_branch: null,
+      candidate_date: null,
+      rule_evidence: runtimeStateEvidence({ matched: [], status: "not_bound" }),
+      ...overrides,
+    };
+  }
+
   function missingWorkProjection(requestedDimension: "work" | "career" = "work") {
     return {
       canonical_dimension: "work",
@@ -1723,9 +1794,12 @@ describe("大六壬 S3 M6a 维度证据", () => {
     expect(relationship).toHaveTextContent("三传六亲：初传 辰 · 妻财；中传 酉 · 官鬼；末传 卯 · 兄弟");
     expect(relationship).toHaveTextContent("三传流转：初传至中传 辰（土）与酉（金）：前者生后者");
     expect(within(timing).getByText("LM-R21")).toBeVisible();
-    expect(
-      within(timing).getByText("规则候选支：未 · 候选日期：2026-07-20（乙未日） · 相对节奏：较快"),
-    ).toBeVisible();
+    expect(within(timing).getByText("规则候选支：未 · 候选日期：2026-07-20（乙未日）")).toBeVisible();
+    expect(within(timing).getByText("DLR-16")).toBeVisible();
+    expect(within(timing).getByText("相对节奏：较快")).toBeVisible();
+    expect(within(timing).getByText("规则候选支：未 · 候选日期：2026-07-20（乙未日）")).not.toHaveTextContent(
+      "相对节奏",
+    );
     expect(block).not.toHaveTextContent(/object_overcomes_subject|candidate_branch|candidate_date|relative_speed/);
     expect(block).not.toHaveTextContent(/relationship|timing/);
     expect(block).not.toHaveTextContent(/hard_verdict|吉凶|成败|大吉|大凶/);
@@ -1833,7 +1907,13 @@ describe("大六壬 S3 M6a 维度证据", () => {
       "天将落地类象：初传 勾陈落辰 · 共 1 条",
     );
     expect(within(block).getByRole("group", { name: "事业" })).toHaveTextContent(
-      "工作所取六亲：官鬼 · 入传状态：中传 酉（囚，非旬空）、末传 亥（强弱未提供，旬空） · 天将落地类象：中传 天后落酉、末传 白虎落亥（无精确类象对应）",
+      "工作所取六亲：官鬼 · 入传状态：中传 酉（囚，非旬空）、末传 亥（强弱未提供，旬空）",
+    );
+    expect(within(block).getByRole("group", { name: "事业" })).toHaveTextContent(
+      "官鬼天将落地类象：中传 天后落酉",
+    );
+    expect(within(block).getByRole("group", { name: "事业" })).toHaveTextContent(
+      "官鬼天将落地类象：末传 白虎落亥（无精确类象对应）",
     );
     expect(block).not.toHaveTextContent(
       /subject_overcomes_object|subject_generates_object|wealth_presence|matched_count|target_relative|source_correspondence_matched/,
@@ -1869,9 +1949,18 @@ describe("大六壬 S3 M6a 维度证据", () => {
       expect(within(work).getByText("LR-19")).toBeVisible();
       expect(work).toHaveTextContent(
         targetRelative === "官鬼"
-          ? "工作所取六亲：官鬼 · 入传状态"
+          ? "工作所取六亲：官鬼 · 入传状态：中传 酉（囚，非旬空）、末传 亥（强弱未提供，旬空）"
           : "工作所取六亲：父母 · 未入三传",
       );
+      if (targetRelative === "官鬼") {
+        expect(within(work).getAllByText("LM-R01")).toHaveLength(2);
+        expect(work).toHaveTextContent("官鬼天将落地类象：中传 天后落酉");
+        expect(work).toHaveTextContent("官鬼天将落地类象：末传 白虎落亥（无精确类象对应）");
+        const targetRow = within(work).getByText(/工作所取六亲：官鬼 · 入传状态/).closest("li");
+        expect(targetRow).not.toHaveTextContent("天将落地类象");
+      } else {
+        expect(work).not.toHaveTextContent("天将落地类象");
+      }
       expect(work).not.toHaveTextContent(
         /target_relative|target_presence|target_strength|subject_object_relation|吉凶|成败|保证|硬判/,
       );
@@ -1945,6 +2034,10 @@ describe("大六壬 S3 M6a 维度证据", () => {
                 },
               };
             }),
+            modifier_source_drift: mutate((projection) => {
+              const rows = projection.target_general_modifier as Record<string, unknown>[];
+              rows[0] = { ...rows[0], source_rule: "LR-19", source_anchor: "fulltext.md#L777" };
+            }),
           }),
         })}
       />,
@@ -1952,6 +2045,38 @@ describe("大六壬 S3 M6a 维度证据", () => {
 
     expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
     expect(document.body).not.toHaveTextContent(/不得展示 work extra|工作所取六亲|三传六亲|三传状态/);
+  });
+
+  it("emits bound work general modifiers as separately sourced LM-R01 facts", async () => {
+    const user = userEvent.setup();
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({ work: boundWorkProjection("work", "官鬼") }),
+        })}
+      />,
+    );
+
+    const work = within(panel()).getByRole("group", { name: "事业" });
+    const rows = [...work.querySelectorAll(":scope > ul > li")].map(
+      (row) => row.querySelector("summary")?.textContent ?? row.textContent,
+    );
+    expect(rows[0]).toContain("LR-19工作所取六亲：官鬼 · 入传状态：中传 酉（囚，非旬空）、末传 亥（强弱未提供，旬空）");
+    expect(rows[0]).not.toContain("天将落地类象");
+    expect(rows[1]).toContain("LM-R01官鬼天将落地类象：中传 天后落酉");
+    expect(rows[2]).toContain("LM-R01官鬼天将落地类象：末传 白虎落亥（无精确类象对应）");
+
+    const targetRow = within(work).getByText(/工作所取六亲：官鬼 · 入传状态/).closest("li");
+    await user.click((targetRow as HTMLElement).querySelector("summary") as HTMLElement);
+    expect(within(targetRow as HTMLElement).getByText(/san-shi\/liuren-zhiyin · LR-19/)).toBeVisible();
+    expect(targetRow).not.toHaveTextContent("fulltext.md#L11");
+
+    const initialModifier = within(work).getByText("官鬼天将落地类象：中传 天后落酉").closest("li");
+    await user.click((initialModifier as HTMLElement).querySelector("summary") as HTMLElement);
+    expect(
+      within(initialModifier as HTMLElement).getByText("san-shi/liuren-miben · LM-R01 · fulltext.md#L11"),
+    ).toBeVisible();
+    expect(work).not.toHaveTextContent(/target_general_modifier|source_correspondence_matched|吉凶|成败|保证|hard_verdict/);
   });
 
   it("appends validated present-money general modifiers in Runtime stage order", async () => {
@@ -2418,13 +2543,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
                 ],
               }),
             }),
-            timing: dimension({
-              canonical_dimension: "timing",
-              requested_dimension: "timing",
-              source_rule_ids: ["DLR-16"],
-              relative_speed: "relatively_faster",
-              rule_evidence: evidence({ matched: [], status: "not_bound" }),
-            }),
+            timing: timingPaceFallback(),
             work: boundWorkProjection("work", "父母"),
           }),
         })}
@@ -2436,8 +2555,83 @@ describe("大六壬 S3 M6a 维度证据", () => {
     expect(within(block).getByRole("group", { name: "事业" })).toHaveTextContent(
       "工作所取六亲：父母 · 未入三传",
     );
-    expect(within(block).getByRole("group", { name: "时机" })).toHaveTextContent("相对节奏：较快");
+    const timing = within(block).getByRole("group", { name: "时机" });
+    expect(within(timing).getByText("DLR-16")).toBeVisible();
+    expect(within(timing).getByText("相对节奏：较快")).toBeVisible();
+    expect(timing).not.toHaveTextContent("LM-R21");
     expect(block).not.toHaveTextContent(/wealth_presence|target_presence|relative_speed|吉凶|成败|保证/);
+  });
+
+  it("keeps DLR-16 relative speed off the LM-R21 candidate drawer", async () => {
+    const user = userEvent.setup();
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({ timing: boundTimingProjection() }),
+        })}
+      />,
+    );
+
+    const timing = within(panel()).getByRole("group", { name: "时机" });
+    const rows = [...timing.querySelectorAll(":scope > ul > li")].map(
+      (row) => row.querySelector("summary")?.textContent ?? row.textContent,
+    );
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toContain("LM-R21规则候选支：未 · 候选日期：2026-07-20（乙未日）");
+    expect(rows[0]).not.toContain("相对节奏");
+    expect(rows[1]).toContain("DLR-16相对节奏：较快");
+
+    const candidate = within(timing).getByText("规则候选支：未 · 候选日期：2026-07-20（乙未日）").closest("li");
+    await user.click((candidate as HTMLElement).querySelector("summary") as HTMLElement);
+    expect(
+      within(candidate as HTMLElement).getByText("san-shi/liuren-miben · LM-R21 · fulltext.md#L3070-L3076"),
+    ).toBeVisible();
+    expect(candidate).not.toHaveTextContent("相对节奏");
+    expect(timing).not.toHaveTextContent(/candidate_branch|relative_speed|吉凶|成败|保证|hard_verdict/);
+  });
+
+  it.each([
+    ["pace source omitted from source_rule_ids", "missing_pace_rule"],
+    ["relative speed disagrees with the candidate observation", "speed_conflict"],
+    ["DLR-16 claimed without a legal pace", "pace_unresolved"],
+    ["LM-R21 source_anchor drift", "candidate_source_drift"],
+  ] as const)("fails the whole timing group closed for %s", (_label, kind) => {
+    const projection = structuredClone(boundTimingProjection()) as Record<string, unknown>;
+    if (kind === "missing_pace_rule") {
+      projection.source_rule_ids = ["LM-R21"];
+    } else if (kind === "speed_conflict") {
+      const envelope = projection.rule_evidence as Record<string, unknown>;
+      const matched = envelope.matched as Record<string, unknown>[];
+      const observation = matched[0]?.observation as Record<string, unknown>;
+      matched[0] = {
+        ...matched[0],
+        observation: { ...observation, relative_speed: "relatively_slower" },
+      };
+    } else if (kind === "pace_unresolved") {
+      projection.relative_speed = "unresolved";
+      const envelope = projection.rule_evidence as Record<string, unknown>;
+      const matched = envelope.matched as Record<string, unknown>[];
+      const observation = matched[0]?.observation as Record<string, unknown>;
+      matched[0] = {
+        ...matched[0],
+        observation: { ...observation, relative_speed: null },
+      };
+    } else {
+      const envelope = projection.rule_evidence as Record<string, unknown>;
+      const matched = envelope.matched as Record<string, unknown>[];
+      const sourceRefs = matched[0]?.source_refs as Record<string, unknown>[];
+      sourceRefs[0] = { ...sourceRefs[0], source_anchor: "fulltext.md#drift" };
+    }
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({ timing: projection }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/规则候选支|相对节奏|fulltext\.md#drift/);
   });
 
   it("fails closed when no-match deterministic fields disagree with their typed scope boundary", () => {
