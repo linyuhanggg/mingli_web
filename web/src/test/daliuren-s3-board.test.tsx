@@ -1079,6 +1079,164 @@ describe("大六壬 S3 M6a 维度证据", () => {
     });
   }
 
+  function matchedOutcomeProjection(overrides: Record<string, unknown> = {}) {
+    return {
+      canonical_dimension: "outcome",
+      requested_dimension: "outcome",
+      status: "calculated_facts_not_verdict",
+      source_rule_ids: ["LR-17"],
+      subject_object_relation: {
+        subject: "day_stem",
+        subject_value: "甲",
+        subject_element: "木",
+        object: "day_branch",
+        object_value: "申",
+        object_element: "金",
+        relation: "object_overcomes_subject",
+      },
+      transmissions_to_day: [
+        {
+          stage: "initial",
+          subject: "transmission_branch",
+          subject_value: "巳",
+          subject_element: "火",
+          object: "day_stem",
+          object_value: "甲",
+          object_element: "木",
+          relation: "object_generates_subject",
+        },
+        {
+          stage: "middle",
+          subject: "transmission_branch",
+          subject_value: "申",
+          subject_element: "金",
+          object: "day_stem",
+          object_value: "甲",
+          object_element: "木",
+          relation: "subject_overcomes_object",
+        },
+        {
+          stage: "final",
+          subject: "transmission_branch",
+          subject_value: "卯",
+          subject_element: "木",
+          object: "day_stem",
+          object_value: "甲",
+          object_element: "木",
+          relation: "same_element",
+        },
+      ],
+      initial_final_relation: {
+        subject: "initial_branch",
+        subject_value: "巳",
+        subject_element: "火",
+        object: "final_branch",
+        object_value: "卯",
+        object_element: "木",
+        relation: "object_generates_subject",
+      },
+      stage_flow: [
+        {
+          from_stage: "initial",
+          to_stage: "middle",
+          subject: "from_branch",
+          subject_value: "巳",
+          subject_element: "火",
+          object: "to_branch",
+          object_value: "申",
+          object_element: "金",
+          relation: "subject_overcomes_object",
+        },
+        {
+          from_stage: "middle",
+          to_stage: "final",
+          subject: "from_branch",
+          subject_value: "申",
+          subject_element: "金",
+          object: "to_branch",
+          object_value: "卯",
+          object_element: "木",
+          relation: "subject_overcomes_object",
+        },
+      ],
+      rule_evidence: runtimeStateEvidence({
+        matched: [
+          matchedEntry({
+            activation_id: "liuren.subject_object.branch_overcomes_day",
+            dependency_group: "liuren.subject_object_relation",
+            fact_paths: ["dimension_facts.outcome.subject_object_relation"],
+            observation: { relation: "object_overcomes_subject" },
+            polarity: "oppose",
+            rule_id: "LR-17",
+            rule_key: "day_branch_overcomes_stem",
+            source_refs: [
+              {
+                pack: "san-shi/liuren-zhiyin",
+                rule_id: "LR-17",
+                quote_id: "LZ-Q054",
+                source_anchor: "fulltext.md#L557",
+              },
+            ],
+          }),
+        ],
+        status: "matched_evidence",
+      }),
+      ...overrides,
+    };
+  }
+
+  function missingWorkProjection(requestedDimension: "work" | "career" = "work") {
+    return {
+      canonical_dimension: "work",
+      requested_dimension: requestedDimension,
+      status: "calculated_facts_not_verdict",
+      source_rule_ids: [],
+      six_relative_stages: [
+        { stage: "initial", branch: "巳", six_relative: "子孙" },
+        { stage: "middle", branch: "申", six_relative: "官鬼" },
+        { stage: "final", branch: "卯", six_relative: "兄弟" },
+      ],
+      stage_status: [
+        stateStatus("initial", "巳", "勾陈", { six_relative: "子孙" }),
+        stateStatus("middle", "申", "天后", { six_relative: "官鬼" }),
+        stateStatus("final", "卯", "白虎", { six_relative: "兄弟" }),
+      ],
+      subject_object_relation: {
+        subject: "day_stem",
+        subject_value: "甲",
+        subject_element: "木",
+        object: "day_branch",
+        object_value: "寅",
+        object_element: "木",
+        relation: "same_element",
+      },
+      target_relative: null,
+      target_contract_status: "missing_target_relative",
+      target_presence: false,
+      target_strength: [],
+      target_general_modifier: [],
+      rule_evidence: runtimeStateEvidence({
+        not_evaluated: [
+          {
+            rule_key: "work_target_present",
+            activation_id: "liuren.target.work.present",
+            rule_id: "LR-19",
+            status: "required_fact_missing",
+            reason: "work_target_relative_not_supplied",
+            source_refs: [
+              {
+                pack: "san-shi/liuren-zhiyin",
+                rule_id: "LR-19",
+                quote_id: "LZ-Q056",
+                source_anchor: "fulltext.md#L777",
+              },
+            ],
+          },
+        ],
+      }),
+    };
+  }
+
   it("renders the real Runtime relationship and timing observations under frozen Chinese titles", () => {
     render(
       <DaliurenBoard
@@ -1093,6 +1251,9 @@ describe("大六壬 S3 M6a 维度证据", () => {
     const timing = within(block).getByRole("group", { name: "时机" });
     expect(within(relationship).getByText("LR-17")).toBeVisible();
     expect(within(relationship).getByText("主客关系：客体克主体")).toBeVisible();
+    expect(relationship).toHaveTextContent("日干与日支：乙（木）与酉（金）：后者克前者");
+    expect(relationship).toHaveTextContent("三传六亲：初传 辰 · 妻财；中传 酉 · 官鬼；末传 卯 · 兄弟");
+    expect(relationship).toHaveTextContent("三传流转：初传至中传 辰（土）与酉（金）：前者生后者");
     expect(within(timing).getByText("LM-R21")).toBeVisible();
     expect(
       within(timing).getByText("规则候选支：未 · 候选日期：2026-07-20（乙未日） · 相对节奏：较快"),
@@ -1871,12 +2032,12 @@ describe("大六壬 S3 M6a 维度证据", () => {
                 {
                   stage: "final",
                   subject: "transmission_branch",
-                  subject_value: "子",
-                  subject_element: "水",
+                  subject_value: "卯",
+                  subject_element: "木",
                   object: "day_stem",
                   object_value: "甲",
                   object_element: "木",
-                  relation: "subject_generates_object",
+                  relation: "same_element",
                 },
               ],
               initial_final_relation: {
@@ -1884,9 +2045,9 @@ describe("大六壬 S3 M6a 维度证据", () => {
                 subject_value: "巳",
                 subject_element: "火",
                 object: "final_branch",
-                object_value: "子",
-                object_element: "水",
-                relation: "object_overcomes_subject",
+                object_value: "卯",
+                object_element: "木",
+                relation: "object_generates_subject",
               },
               stage_flow: [
                 {
@@ -1907,12 +2068,12 @@ describe("大六壬 S3 M6a 维度证据", () => {
                   subject_value: "申",
                   subject_element: "金",
                   object: "to_branch",
-                  object_value: "子",
-                  object_element: "水",
-                  relation: "subject_generates_object",
+                  object_value: "卯",
+                  object_element: "木",
+                  relation: "subject_overcomes_object",
                 },
               ],
-              rule_evidence: evidence({ matched: [], status: "not_bound" }),
+              rule_evidence: runtimeStateEvidence({ status: "not_calculated" }),
             }),
           }),
         })}
@@ -1922,9 +2083,34 @@ describe("大六壬 S3 M6a 维度证据", () => {
     const outcome = within(panel()).getByRole("group", { name: "结果" });
     expect(outcome).toHaveTextContent("日干与日支：甲（木）与寅（木）：五行同类");
     expect(outcome).toHaveTextContent("三传与日干：初传 巳（火）与甲（木）：后者生前者");
-    expect(outcome).toHaveTextContent("初末关系：巳（火）与子（水）：后者克前者");
+    expect(outcome).toHaveTextContent("初末关系：巳（火）与卯（木）：后者生前者");
     expect(outcome).toHaveTextContent("三传流转：初传至中传 巳（火）与申（金）：前者克后者");
     expect(outcome).not.toHaveTextContent(/same_element|object_generates_subject|subject_overcomes_object|吉凶|成败|保证/);
+  });
+
+  it("preserves validated top-level outcome facts and matched source evidence together", async () => {
+    const user = userEvent.setup();
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({ outcome: matchedOutcomeProjection() }),
+        })}
+      />,
+    );
+
+    const outcome = within(panel()).getByRole("group", { name: "结果" });
+    expect(outcome).toHaveTextContent("LR-17");
+    expect(outcome).toHaveTextContent("结构关系：客体克主体");
+    expect(outcome).toHaveTextContent("日干与日支：甲（木）与申（金）：后者克前者");
+    expect(outcome).toHaveTextContent("三传与日干：初传 巳（火）与甲（木）：后者生前者");
+    expect(outcome).toHaveTextContent("初末关系：巳（火）与卯（木）：后者生前者");
+    expect(outcome).toHaveTextContent("三传流转：初传至中传 巳（火）与申（金）：前者克后者");
+
+    const matched = within(outcome).getByText("结构关系：客体克主体").closest("details");
+    expect(matched).not.toBeNull();
+    await user.click((matched as HTMLElement).querySelector("summary") as HTMLElement);
+    expect(within(matched as HTMLElement).getByText(/san-shi\/liuren-zhiyin · LR-17 · LZ-Q054/)).toBeVisible();
+    expect(outcome).not.toHaveTextContent(/object_overcomes_subject|hard_verdict|吉凶|成败|保证/);
   });
 
   it("fails closed for malformed or internally inconsistent top-level outcome facts", () => {
@@ -2127,6 +2313,109 @@ describe("大六壬 S3 M6a 维度证据", () => {
 
     expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
     expect(document.body).not.toHaveTextContent(/不得展示额外字段|未来枚举|日干与日支|三传六亲|主客关系/);
+  });
+
+  it.each(["work", "career"] as const)(
+    "renders the neutral missing-target boundary for a public %s request",
+    (requestedDimension) => {
+      render(
+        <DaliurenBoard
+          view={chart({
+            core_facts: factsWithDimensions({ work: missingWorkProjection(requestedDimension) }),
+          })}
+        />,
+      );
+
+      const work = within(panel()).getByRole("group", { name: "事业" });
+      expect(work).toHaveTextContent("目标边界");
+      expect(work).toHaveTextContent("未绑定目标六亲");
+      expect(work).not.toHaveTextContent(
+        /missing_target_relative|required_fact_missing|work_target_relative_not_supplied|吉凶|成败|保证|硬判/,
+      );
+    },
+  );
+
+  it("fails matched and missing-target groups closed for extra fields or top-level conflicts", () => {
+    const outcome = matchedOutcomeProjection();
+    const outcomeEvidence = outcome.rule_evidence;
+    const outcomeMatched = outcomeEvidence.matched;
+    if (!Array.isArray(outcomeMatched) || !isRecord(outcomeMatched[0])) {
+      throw new Error("Daliuren matched outcome fixture has no evidence record");
+    }
+    const relationship = goldenDimensionFacts().relationship;
+    if (!isRecord(relationship) || !isRecord(relationship.rule_evidence)) {
+      throw new Error("Daliuren Runtime golden fixture has no relationship evidence");
+    }
+    const relationshipMatched = relationship.rule_evidence.matched;
+    if (!Array.isArray(relationshipMatched) || !isRecord(relationshipMatched[0])) {
+      throw new Error("Daliuren Runtime golden fixture has no relationship match");
+    }
+    const missingWork = missingWorkProjection();
+
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            outcome_extra: { ...outcome, raw_dump: "不得展示 outcome extra" },
+            outcome_conflict: {
+              ...outcome,
+              rule_evidence: {
+                ...outcomeEvidence,
+                matched: [
+                  matchedEntry({
+                    activation_id: "liuren.subject_object.day_overcomes_branch",
+                    dependency_group: "liuren.subject_object_relation",
+                    fact_paths: ["dimension_facts.outcome.subject_object_relation"],
+                    observation: { relation: "subject_overcomes_object" },
+                    rule_id: "LR-17",
+                    rule_key: "day_stem_overcomes_branch",
+                    source_refs: [
+                      {
+                        pack: "san-shi/liuren-zhiyin",
+                        rule_id: "LR-17",
+                        quote_id: "LZ-Q054",
+                        source_anchor: "fulltext.md#L557",
+                      },
+                    ],
+                  }),
+                ],
+              },
+            },
+            outcome_matched_extra: {
+              ...outcome,
+              rule_evidence: {
+                ...outcomeEvidence,
+                matched: [{ ...outcomeMatched[0], raw_dump: "不得展示 matched extra" }],
+              },
+            },
+            relationship_extra: { ...relationship, raw_dump: "不得展示 relationship extra" },
+            relationship_conflict: {
+              ...relationship,
+              rule_evidence: {
+                ...relationship.rule_evidence,
+                matched: [
+                  {
+                    ...relationshipMatched[0],
+                    observation: { relation: "subject_overcomes_object" },
+                  },
+                ],
+              },
+            },
+            work_extra: { ...missingWork, raw_dump: "不得展示 work extra" },
+            work_conflict: {
+              ...missingWork,
+              stage_status: [
+                { ...missingWork.stage_status[0], branch: "午" },
+                ...missingWork.stage_status.slice(1),
+              ],
+            },
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/不得展示|结构关系|三传六亲|未绑定目标六亲/);
   });
 
   it.each([

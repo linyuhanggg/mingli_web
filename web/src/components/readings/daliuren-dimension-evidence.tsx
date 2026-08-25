@@ -130,6 +130,17 @@ const STATE_DIMENSION_KEYS = [
   "stage_status",
   "general_landing_correspondences",
 ] as const;
+const OUTCOME_DIMENSION_KEYS = [
+  "canonical_dimension",
+  "requested_dimension",
+  "status",
+  "source_rule_ids",
+  "rule_evidence",
+  "subject_object_relation",
+  "transmissions_to_day",
+  "initial_final_relation",
+  "stage_flow",
+] as const;
 const RELATIONSHIP_DIMENSION_KEYS = [
   "canonical_dimension",
   "requested_dimension",
@@ -140,6 +151,21 @@ const RELATIONSHIP_DIMENSION_KEYS = [
   "six_relative_stages",
   "stage_flow",
 ] as const;
+const WORK_DIMENSION_KEYS = [
+  "canonical_dimension",
+  "requested_dimension",
+  "status",
+  "source_rule_ids",
+  "rule_evidence",
+  "six_relative_stages",
+  "stage_status",
+  "subject_object_relation",
+  "target_relative",
+  "target_contract_status",
+  "target_presence",
+  "target_strength",
+  "target_general_modifier",
+] as const;
 const RULE_EVIDENCE_KEYS = [
   "catalog_schema",
   "hard_verdict",
@@ -149,6 +175,29 @@ const RULE_EVIDENCE_KEYS = [
   "scope_boundaries",
   "status",
 ] as const;
+const MATCHED_EVIDENCE_REQUIRED_KEYS = [
+  "activation_id",
+  "dependency_group",
+  "fact_paths",
+  "observation",
+  "polarity",
+  "rule_id",
+  "rule_key",
+  "source_refs",
+  "status",
+  "weight_class",
+] as const;
+const MATCHED_EVIDENCE_OPTIONAL_KEYS = ["confidence_ceiling", "stop_conditions"] as const;
+const NOT_EVALUATED_KEYS = [
+  "activation_id",
+  "reason",
+  "rule_id",
+  "rule_key",
+  "source_refs",
+  "status",
+] as const;
+const SOURCE_REF_REQUIRED_KEYS = ["pack", "rule_id", "source_anchor"] as const;
+const SOURCE_REF_OPTIONAL_KEYS = ["quote_id"] as const;
 const SIX_RELATIVE_STAGE_KEYS = ["stage", "branch", "six_relative"] as const;
 const STAGE_STATUS_KEYS = [
   "stage",
@@ -285,6 +334,19 @@ function readString(value: unknown, key: string): string | null {
 function hasExactKeys(value: Record<string, unknown>, keys: readonly string[]): boolean {
   const actual = Object.keys(value);
   return actual.length === keys.length && keys.every((key) => Object.prototype.hasOwnProperty.call(value, key));
+}
+
+function hasRequiredAndOptionalKeys(
+  value: Record<string, unknown>,
+  required: readonly string[],
+  optional: readonly string[],
+): boolean {
+  const actual = Object.keys(value);
+  const allowed = new Set([...required, ...optional]);
+  return (
+    required.every((key) => Object.prototype.hasOwnProperty.call(value, key)) &&
+    actual.every((key) => allowed.has(key))
+  );
 }
 
 function hasOwnKey<T extends object>(value: T, key: PropertyKey): key is keyof T {
@@ -959,6 +1021,95 @@ function parseSource(value: unknown): EvidenceSource | null {
   };
 }
 
+function parseRuntimeSource(value: unknown): EvidenceSource | null {
+  if (
+    !isRecord(value) ||
+    !hasRequiredAndOptionalKeys(value, SOURCE_REF_REQUIRED_KEYS, SOURCE_REF_OPTIONAL_KEYS) ||
+    !readString(value, "pack") ||
+    !readString(value, "rule_id") ||
+    !readString(value, "source_anchor") ||
+    (hasOwnKey(value, "quote_id") && !readString(value, "quote_id"))
+  ) {
+    return null;
+  }
+  return parseSource(value);
+}
+
+function hasRuntimeEvidenceEnvelope(value: Record<string, unknown>): boolean {
+  return (
+    hasExactKeys(value, RULE_EVIDENCE_KEYS) &&
+    value.catalog_schema === "mingli-liuren-executable-rules-v1" &&
+    value.hard_verdict === null &&
+    value.requires_school_adjudication === true &&
+    Array.isArray(value.matched) &&
+    Array.isArray(value.not_evaluated) &&
+    Array.isArray(value.scope_boundaries)
+  );
+}
+
+function isRuntimeNotEvaluatedEntry(value: unknown): boolean {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, NOT_EVALUATED_KEYS) ||
+    !readString(value, "activation_id") ||
+    !readString(value, "reason") ||
+    !readString(value, "rule_id") ||
+    !readString(value, "rule_key") ||
+    !readString(value, "status") ||
+    !Array.isArray(value.source_refs) ||
+    value.source_refs.length === 0
+  ) {
+    return false;
+  }
+  return value.source_refs.every((source) => parseRuntimeSource(source) !== null);
+}
+
+function parseRuntimeMatchedEntry(
+  value: unknown,
+  dimension: DaliurenDimensionId,
+): { entry: EvidenceEntry; observation: unknown } | null {
+  if (!isRecord(value)) return null;
+  const ruleId = readString(value, "rule_id");
+  if (
+    !hasRequiredAndOptionalKeys(
+      value,
+      MATCHED_EVIDENCE_REQUIRED_KEYS,
+      MATCHED_EVIDENCE_OPTIONAL_KEYS,
+    ) ||
+    !readString(value, "activation_id") ||
+    !readString(value, "dependency_group") ||
+    !readString(value, "polarity") ||
+    !ruleId ||
+    !readString(value, "rule_key") ||
+    value.status !== "matched" ||
+    !readString(value, "weight_class") ||
+    !Array.isArray(value.fact_paths) ||
+    value.fact_paths.length === 0 ||
+    !value.fact_paths.every((path) => typeof path === "string" && Boolean(path.trim())) ||
+    !Array.isArray(value.source_refs) ||
+    value.source_refs.length === 0 ||
+    (hasOwnKey(value, "confidence_ceiling") && !readString(value, "confidence_ceiling")) ||
+    (hasOwnKey(value, "stop_conditions") &&
+      (!Array.isArray(value.stop_conditions) ||
+        !value.stop_conditions.every(
+          (condition) => typeof condition === "string" && Boolean(condition.trim()),
+        )))
+  ) {
+    return null;
+  }
+  const fact = observationFact(dimension, value.observation);
+  const sources = value.source_refs.map(parseRuntimeSource);
+  if (!fact || sources.some((source) => source === null)) return null;
+  return {
+    entry: {
+      marker: ruleId,
+      fact,
+      sources: sources as readonly EvidenceSource[],
+    },
+    observation: value.observation,
+  };
+}
+
 function parseEntry(value: unknown, dimension: DaliurenDimensionId): EvidenceEntry | null {
   if (!isRecord(value)) return null;
   const ruleId = readString(value, "rule_id");
@@ -1051,8 +1202,25 @@ function relationFactText(value: DeterministicRelationFact): string {
   return `${value.subjectValue}（${value.subjectElement}）与${value.objectValue}（${value.objectElement}）：${DETERMINISTIC_RELATION_FACTS[value.relation]}`;
 }
 
-function parseTopLevelOutcomeFacts(value: Record<string, unknown>): readonly EvidenceEntry[] | null {
-  if (value.status !== "calculated_facts_not_verdict") return null;
+function parseTopLevelOutcomeFacts(
+  value: Record<string, unknown>,
+  evidence: Record<string, unknown>,
+): readonly EvidenceEntry[] | null {
+  const matched = evidence.matched;
+  const notEvaluated = evidence.not_evaluated;
+  if (
+    !hasExactKeys(value, OUTCOME_DIMENSION_KEYS) ||
+    value.canonical_dimension !== "outcome" ||
+    value.requested_dimension !== "outcome" ||
+    value.status !== "calculated_facts_not_verdict" ||
+    !hasRuntimeEvidenceEnvelope(evidence) ||
+    !Array.isArray(matched) ||
+    !Array.isArray(notEvaluated) ||
+    !isEmptyArray(evidence.scope_boundaries) ||
+    !notEvaluated.every(isRuntimeNotEvaluatedEntry)
+  ) {
+    return null;
+  }
   const sourceRuleIds = value.source_rule_ids;
   if (
     !Array.isArray(sourceRuleIds) ||
@@ -1107,7 +1275,33 @@ function parseTopLevelOutcomeFacts(value: Record<string, unknown>): readonly Evi
     return null;
   }
 
-  return [
+  const normalizedSourceRuleIds = sourceRuleIds.map((ruleId) => ruleId.trim());
+  const subjectMatched =
+    subjectObject.relation === "subject_overcomes_object" ||
+    subjectObject.relation === "object_overcomes_subject";
+  const transmissionMatched =
+    typedTransmissions.every((row) => row.relation === "subject_generates_object") ||
+    typedTransmissions.every((row) => row.relation === "subject_overcomes_object");
+  const initialFinalMatched =
+    initialFinal.relation === "subject_overcomes_object" ||
+    initialFinal.relation === "object_overcomes_subject";
+  const flowSourceMatched =
+    typedFlows.every((row) => row.relation === "subject_generates_object") &&
+    (typedTransmissions[2]?.relation === "subject_generates_object" ||
+      typedTransmissions[2]?.relation === "subject_overcomes_object");
+  const expectedSourceRuleIds = [
+    ...(subjectMatched ? ["LR-17"] : []),
+    ...(transmissionMatched || initialFinalMatched ? ["LR-18"] : []),
+    ...(flowSourceMatched ? ["DLR-17"] : []),
+  ];
+  if (
+    normalizedSourceRuleIds.length !== expectedSourceRuleIds.length ||
+    normalizedSourceRuleIds.some((ruleId, index) => ruleId !== expectedSourceRuleIds[index])
+  ) {
+    return null;
+  }
+
+  const deterministicEntries: readonly EvidenceEntry[] = [
     {
       marker: "主客五行",
       fact: `日干与日支：${relationFactText(subjectObject)}`,
@@ -1132,6 +1326,75 @@ function parseTopLevelOutcomeFacts(value: Record<string, unknown>): readonly Evi
         .join("；")}`,
       sources: [],
     },
+  ];
+
+  if (matched.length === 0) {
+    return evidence.status === "not_calculated" && expectedSourceRuleIds.length === 0
+      ? deterministicEntries
+      : null;
+  }
+  if (evidence.status !== "matched_evidence") return null;
+
+  const parsedMatches = matched.map((entry) => parseRuntimeMatchedEntry(entry, "outcome"));
+  if (parsedMatches.some((entry) => entry === null)) return null;
+  let subjectMatchCount = 0;
+  let transmissionMatchCount = 0;
+  let initialFinalMatchCount = 0;
+  let middleVoidMatchCount = 0;
+  for (const parsed of parsedMatches) {
+    if (!parsed) return null;
+    const observation = parsed.observation;
+    if (!isOutcomeObservation(observation)) return null;
+    if (
+      parsed.entry.marker === "LR-17" &&
+      "relation" in observation &&
+      observation.relation === subjectObject.relation
+    ) {
+      subjectMatchCount += 1;
+      continue;
+    }
+    if (parsed.entry.marker === "LR-18" && "relations" in observation) {
+      if (
+        observation.relations.length !== typedTransmissions.length ||
+        observation.relations.some((relation, index) => relation !== typedTransmissions[index]?.relation)
+      ) {
+        return null;
+      }
+      transmissionMatchCount += 1;
+      continue;
+    }
+    if (
+      parsed.entry.marker === "LR-18" &&
+      "relation" in observation &&
+      observation.relation === initialFinal.relation
+    ) {
+      initialFinalMatchCount += 1;
+      continue;
+    }
+    if (
+      parsed.entry.marker === "LM-R10" &&
+      "stage" in observation &&
+      observation.branch === typedTransmissions[1]?.subjectValue
+    ) {
+      middleVoidMatchCount += 1;
+      continue;
+    }
+    return null;
+  }
+  if (
+    subjectMatchCount !== Number(subjectMatched) ||
+    transmissionMatchCount !== Number(transmissionMatched) ||
+    initialFinalMatchCount !== Number(initialFinalMatched) ||
+    middleVoidMatchCount > 1
+  ) {
+    return null;
+  }
+
+  return [
+    ...(parsedMatches as readonly { entry: EvidenceEntry; observation: unknown }[]).map(
+      (entry) => entry.entry,
+    ),
+    ...deterministicEntries,
   ];
 }
 
@@ -1185,33 +1448,7 @@ function parseTopLevelRelationshipFacts(
   }
 
   const normalizedSourceRuleIds = sourceRuleIds.map((ruleId) => ruleId.trim());
-  if (evidence.matched.length) {
-    const matchedEntry = evidence.matched.length === 1 ? parseEntry(evidence.matched[0], "relationship") : null;
-    const matchedObservation = evidenceObservation(evidence.matched[0]);
-    if (
-      evidence.status !== "matched_evidence" ||
-      normalizedSourceRuleIds.length !== 1 ||
-      normalizedSourceRuleIds[0] !== "LR-17" ||
-      !matchedEntry ||
-      matchedEntry.marker !== "LR-17" ||
-      !isRelationshipObservation(matchedObservation) ||
-      matchedObservation.relation !== subjectObject.relation
-    ) {
-      return null;
-    }
-    return [matchedEntry];
-  }
-
-  if (
-    evidence.status !== "not_bound" ||
-    normalizedSourceRuleIds.length !== 0 ||
-    subjectObject.relation === "subject_overcomes_object" ||
-    subjectObject.relation === "object_overcomes_subject"
-  ) {
-    return null;
-  }
-
-  return [
+  const deterministicEntries: readonly EvidenceEntry[] = [
     {
       marker: "主客五行",
       fact: `日干与日支：${relationFactText(subjectObject)}`,
@@ -1232,6 +1469,104 @@ function parseTopLevelRelationshipFacts(
       sources: [],
     },
   ];
+  if (evidence.matched.length) {
+    const matched =
+      evidence.matched.length === 1
+        ? parseRuntimeMatchedEntry(evidence.matched[0], "relationship")
+        : null;
+    if (
+      !hasRuntimeEvidenceEnvelope(evidence) ||
+      evidence.status !== "matched_evidence" ||
+      !isEmptyArray(evidence.not_evaluated) ||
+      normalizedSourceRuleIds.length !== 1 ||
+      normalizedSourceRuleIds[0] !== "LR-17" ||
+      !matched ||
+      matched.entry.marker !== "LR-17" ||
+      !isRelationshipObservation(matched.observation) ||
+      matched.observation.relation !== subjectObject.relation
+    ) {
+      return null;
+    }
+    return [matched.entry, ...deterministicEntries];
+  }
+
+  if (
+    evidence.status !== "not_bound" ||
+    normalizedSourceRuleIds.length !== 0 ||
+    subjectObject.relation === "subject_overcomes_object" ||
+    subjectObject.relation === "object_overcomes_subject"
+  ) {
+    return null;
+  }
+
+  return deterministicEntries;
+}
+
+function isMissingWorkTargetNotEvaluated(value: unknown): boolean {
+  return (
+    isRuntimeNotEvaluatedEntry(value) &&
+    isRecord(value) &&
+    value.rule_key === "work_target_present" &&
+    value.activation_id === "liuren.target.work.present" &&
+    value.rule_id === "LR-19" &&
+    value.status === "required_fact_missing" &&
+    value.reason === "work_target_relative_not_supplied"
+  );
+}
+
+function parseMissingWorkTargetBoundary(
+  value: Record<string, unknown>,
+  evidence: Record<string, unknown>,
+): EvidenceEntry | null {
+  const stageRows = value.six_relative_stages;
+  const statusRows = value.stage_status;
+  if (
+    !hasExactKeys(value, WORK_DIMENSION_KEYS) ||
+    value.canonical_dimension !== "work" ||
+    (value.requested_dimension !== "work" && value.requested_dimension !== "career") ||
+    value.status !== "calculated_facts_not_verdict" ||
+    !isEmptyArray(value.source_rule_ids) ||
+    value.target_relative !== null ||
+    value.target_contract_status !== "missing_target_relative" ||
+    value.target_presence !== false ||
+    !isEmptyArray(value.target_strength) ||
+    !isEmptyArray(value.target_general_modifier) ||
+    !Array.isArray(stageRows) ||
+    stageRows.length !== LOCATION_STAGES.length ||
+    !Array.isArray(statusRows) ||
+    statusRows.length !== LOCATION_STAGES.length ||
+    !parseRelationFact(value.subject_object_relation, "day_stem", "day_branch") ||
+    !hasRuntimeEvidenceEnvelope(evidence) ||
+    evidence.status !== "not_bound" ||
+    !isEmptyArray(evidence.matched) ||
+    !isEmptyArray(evidence.scope_boundaries) ||
+    !Array.isArray(evidence.not_evaluated) ||
+    evidence.not_evaluated.length !== 1 ||
+    !isMissingWorkTargetNotEvaluated(evidence.not_evaluated[0])
+  ) {
+    return null;
+  }
+
+  const stages = LOCATION_STAGES.map((stage, index) => parseSixRelativeStage(stageRows[index], stage));
+  const statuses = LOCATION_STAGES.map((stage, index) => parseStageStatus(statusRows[index], stage));
+  if (stages.some((row) => row === null) || statuses.some((row) => row === null)) return null;
+  const typedStages = stages as readonly DaliurenSixRelativeStage[];
+  const typedStatuses = statuses as readonly DaliurenStageStatusEntry[];
+  if (
+    typedStatuses.some(
+      (row, index) =>
+        row.branch !== typedStages[index]?.branch ||
+        row.six_relative !== typedStages[index]?.six_relative,
+    )
+  ) {
+    return null;
+  }
+
+  return {
+    marker: "目标边界",
+    fact: "未绑定目标六亲",
+    sources: [],
+  };
 }
 
 function parseDimension(value: unknown): EvidenceGroup | null {
@@ -1288,15 +1623,25 @@ function parseDimension(value: unknown): EvidenceGroup | null {
     const relationshipEntries = parseTopLevelRelationshipFacts(value, evidence);
     return relationshipEntries ? { dimension, entries: relationshipEntries } : null;
   }
+  if (dimension === "work" && value.target_contract_status === "missing_target_relative") {
+    const boundary = parseMissingWorkTargetBoundary(value, evidence);
+    return boundary ? { dimension, entries: [boundary] } : null;
+  }
   const entries: EvidenceEntry[] = [];
   for (const item of evidence.matched) {
     const entry = parseEntry(item, dimension);
     if (entry) entries.push(entry);
   }
   entries.push(...parseScopeBoundaryFacts(value, dimension, evidence.scope_boundaries));
-  if (dimension === "outcome" && evidence.matched.length === 0 && evidence.scope_boundaries.length === 0) {
-    const outcomeEntries = parseTopLevelOutcomeFacts(value);
-    if (outcomeEntries) entries.push(...outcomeEntries);
+  if (
+    dimension === "outcome" &&
+    (hasOwnKey(value, "subject_object_relation") ||
+      hasOwnKey(value, "transmissions_to_day") ||
+      hasOwnKey(value, "initial_final_relation") ||
+      hasOwnKey(value, "stage_flow"))
+  ) {
+    const outcomeEntries = parseTopLevelOutcomeFacts(value, evidence);
+    return outcomeEntries ? { dimension, entries: outcomeEntries } : null;
   }
   if (dimension === "timing" && evidence.matched.length === 0 && evidence.scope_boundaries.length === 0) {
     const timingEntry = parseTopLevelTimingFact(value);
