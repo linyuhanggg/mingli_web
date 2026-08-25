@@ -150,6 +150,7 @@ class Settings(BaseSettings):
         pattern=r"^[0-9a-f]{64}$",
     )
     runtime_timeout_seconds: float = Field(default=30.0, gt=0)
+    chart_fast_path_timeout_seconds: float = Field(default=2.0, gt=0, le=2.0)
     runtime_max_stdin_bytes: int = Field(default=2 * 1024 * 1024, ge=1)
     runtime_max_stdout_bytes: int = Field(default=2 * 1024 * 1024, ge=1)
     runtime_max_stderr_bytes: int = Field(default=64 * 1024, ge=1)

@@ -294,6 +294,33 @@ def test_phase_two_mutating_routes_declare_csrf_and_idempotency() -> None:
         assert "#/components/parameters/IdempotencyKey" in parameter_names
 
 
+def test_base_chart_starts_publish_the_deterministic_fast_path_contract() -> None:
+    document = load_openapi_document()
+    schemas = document["components"]["schemas"]
+    start_properties = schemas["ReadingStartResponse"]["properties"]
+    timing = schemas["ChartFastPathTiming"]
+
+    assert {"view_model", "fast_path_timing"}.issubset(start_properties)
+    assert timing["properties"]["execution_lane"]["const"] == "direct_runtime"
+    assert set(timing["required"]) == {
+        "queue_wait_ms",
+        "worker_pickup_ms",
+        "runtime_one_shot_ms",
+        "db_persistence_ms",
+        "total_ms",
+    }
+    for path in (
+        "/api/v1/readings/preview",
+        "/api/v1/readings/ziwei",
+        "/api/v1/readings/liuyao",
+        "/api/v1/readings/meihua",
+        "/api/v1/readings/daliuren",
+    ):
+        operation = document["paths"][path]["post"]
+        assert "synchronously" in operation["summary"]
+        assert "queued" not in operation["responses"]["201"]["description"]
+
+
 def test_fulfillment_contract_requires_payment_and_owner_scoped_idempotency() -> None:
     document = load_openapi_document()
     operation = document["paths"][

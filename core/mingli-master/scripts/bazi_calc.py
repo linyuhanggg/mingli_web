@@ -7,15 +7,11 @@ import argparse
 import importlib
 import json
 import os
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-
-from runtime_python import runtime_command
-
 
 CALCULATION_CONTRACT = "mingli-bazi-pipeline-v1-interpreted"
 MAX_LOCATION_CHARS = 100
@@ -59,68 +55,65 @@ def _import_skill_module(skill_dir: Path, name: str) -> Any:
 
 
 def _run_adapter(skill_dir: Path, args: argparse.Namespace) -> dict[str, Any]:
-    command = [
-        *runtime_command(),
-        str(skill_dir / "scripts" / "bazi_fact_adapter.py"),
-    ]
-    if args.mode == "birth":
-        command.extend(
-            [
-                "birth",
-                "--datetime",
-                args.civil_datetime,
-                "--timezone",
-                args.timezone,
-                "--location",
-                args.location,
-                "--gender",
-                args.gender,
-                "--zi-hour-policy",
-                args.zi_hour_policy,
-            ]
-        )
-        if args.expected_pillars:
-            command.extend(["--expected-pillars", *args.expected_pillars])
-        if getattr(args, "longitude", None) is not None:
-            command.extend(["--longitude", str(args.longitude)])
-        if getattr(args, "latitude", None) is not None:
-            command.extend(["--latitude", str(args.latitude)])
-        if getattr(args, "coordinate_source", None):
-            command.extend(["--coordinate-source", str(args.coordinate_source)])
-        if getattr(args, "coordinate_accuracy_meters", None) is not None:
-            command.extend(["--coordinate-accuracy-meters", str(args.coordinate_accuracy_meters)])
-        if getattr(args, "time_basis_policy", None):
-            command.extend(["--time-basis-policy", str(args.time_basis_policy)])
-        if getattr(args, "reasoning_domains", None):
-            command.extend(["--reasoning-domains", *args.reasoning_domains])
-    else:
-        command.extend(
-            [
-                "pillars",
-                "--pillars",
-                *args.pillars,
-                "--source",
-                args.source,
-            ]
-        )
-        if args.gender:
-            command.extend(["--gender", args.gender])
-        if args.source_ref:
-            command.extend(["--source-ref", args.source_ref])
-        if getattr(args, "reasoning_domains", None):
-            command.extend(["--reasoning-domains", *args.reasoning_domains])
-    completed = subprocess.run(command, check=False, capture_output=True, text=True)
-    if completed.returncode not in {0, 3}:
-        raise RuntimeError(completed.stderr.strip() or "Bazi adapter failed")
+    """Run the deterministic adapter inside the validated Runtime process.
+
+    ``runtime_launcher`` has already validated and loaded the pinned Runtime
+    before a production Provider reaches this seam.  Starting the same Python
+    again here repeated both the Runtime probe and the complete signed evidence
+    index validation.  Calling the bundled adapter module directly preserves
+    that dependency identity while allowing its evidence-rule cache to be
+    shared with the enclosing Prepare.
+
+    The previous subprocess boundary normalized the adapter payload through
+    JSON before returning it.  Keep that byte-level shape (sorted object keys,
+    tuples converted to arrays, and only JSON values) so this optimization
+    cannot change the Provider contract.
+    """
+
+    adapter = _import_skill_module(skill_dir, "bazi_fact_adapter")
     try:
-        payload = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError("Bazi adapter returned invalid JSON") from exc
-    if not isinstance(payload, dict):
+        question_contract = {
+            "domains": list(getattr(args, "reasoning_domains", None) or ()),
+            "gender": args.gender,
+        }
+        if args.mode == "birth":
+            payload, conflict = adapter.build_from_birth(
+                args.civil_datetime,
+                timezone_name=args.timezone,
+                location=args.location,
+                gender=args.gender,
+                expected_pillars=args.expected_pillars,
+                zi_hour_policy=args.zi_hour_policy,
+                longitude=getattr(args, "longitude", None),
+                latitude=getattr(args, "latitude", None),
+                coordinate_source=getattr(args, "coordinate_source", None),
+                coordinate_accuracy_meters=getattr(
+                    args, "coordinate_accuracy_meters", None
+                ),
+                time_basis_policy=(
+                    getattr(args, "time_basis_policy", None) or "civil"
+                ),
+                question_contract=question_contract,
+            )
+        else:
+            payload = adapter.build_from_pillars(
+                args.pillars,
+                gender=args.gender,
+                source=args.source,
+                source_ref=args.source_ref,
+                question_contract=question_contract,
+            )
+            conflict = False
+        normalized = json.loads(
+            json.dumps(payload, ensure_ascii=False, sort_keys=True)
+        )
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise RuntimeError(str(exc) or "Bazi adapter failed") from exc
+    if not isinstance(normalized, dict):
         raise RuntimeError("Bazi adapter returned a non-object")
-    if completed.returncode == 3 or payload.get("conflicts"):
+    if conflict or normalized.get("conflicts"):
         raise RuntimeError("Bazi birth data conflict with the supplied four pillars")
-    return payload
+    return normalized
 
 
 def _validate_facts(skill_dir: Path, facts: dict[str, Any]) -> None:

@@ -1,0 +1,91 @@
+{
+  "runtime_startup_ms": 1754.334,
+  "runtime_admission": "candidate_remanifested",
+  "runtime_identity": {
+    "release_name": "mingli-master-portable-core",
+    "source_commit": "663543e65ae037843b03dca1dec9486293affc9d",
+    "describe_manifest_digest": "3403992cb31aebea19e69ec3b1280a5ef02718c5f9ca3e3f94448ef7b039facc",
+    "release_manifest_sha256": "015e9c64ff423a205d8eb0c5ad8f593564cf0d1f83ec4bd2e64aecb2edb4eb47",
+    "capability_shape_sha256": "fb9da7fa1969e449e91222a0f10a2076da2e8cca43d1083b531aa218ff31e042",
+    "overlay": {
+      "bazi_calc_path": "scripts/bazi_calc.py",
+      "bazi_calc_sha256": "ab35fbf511693d47487aa0601bdba32d13a44cf988888b90c085d6573027249a",
+      "replaced_bazi_calc_sha256": "177f5ad837d59bf5551565d1dd6f9f2249002a9fa3d86fd909909490eb87b477",
+      "release_name": "mingli-master-portable-core",
+      "source_commit": "663543e65ae037843b03dca1dec9486293affc9d",
+      "release_manifest_sha256": "015e9c64ff423a205d8eb0c5ad8f593564cf0d1f83ec4bd2e64aecb2edb4eb47",
+      "file_count": "220",
+      "diff": "scripts/bazi_calc.py only"
+    }
+  },
+  "hot_sample_count_per_product": 30,
+  "cold_definition": "first product-specific request after Runtime admission",
+  "hot_definition": "subsequent request with admitted server and warm filesystem cache",
+  "first_paint_note": "first_renderable_response_ms is the backend boundary; browser layout/paint requires user-test instrumentation",
+  "products": {
+    "bazi": {
+      "cold_ms": {
+        "post_ms": 756.182,
+        "api_orchestration_ms": 17.323,
+        "queue_wait_ms": 0.0,
+        "worker_pickup_ms": 0.0,
+        "runtime_one_shot_ms": 689.837,
+        "db_persistence_ms": 7.399,
+        "first_ready_poll_ms": 13.81,
+        "result_fetch_ms": 52.779,
+        "first_renderable_response_ms": 756.182
+      },
+      "hot_attempt_count": 30,
+      "hot_success_count": 30,
+      "hot_error_count": 0,
+      "hot_errors": [],
+      "hot_ms": {
+        "post_ms": {
+          "p50": 691.866,
+          "p95": 723.706,
+          "p99": 728.324
+        },
+        "api_orchestration_ms": {
+          "p50": 14.154,
+          "p95": 14.848,
+          "p99": 15.439
+        },
+        "queue_wait_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "worker_pickup_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "runtime_one_shot_ms": {
+          "p50": 668.406,
+          "p95": 700.218,
+          "p99": 703.489
+        },
+        "db_persistence_ms": {
+          "p50": 6.018,
+          "p95": 6.525,
+          "p99": 6.572
+        },
+        "first_ready_poll_ms": {
+          "p50": 12.464,
+          "p95": 13.168,
+          "p99": 42.478
+        },
+        "result_fetch_ms": {
+          "p50": 19.194,
+          "p95": 52.298,
+          "p99": 53.898
+        },
+        "first_renderable_response_ms": {
+          "p50": 691.866,
+          "p95": 723.706,
+          "p99": 728.324
+        }
+      }
+    }
+  }
+}
