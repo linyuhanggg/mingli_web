@@ -6,7 +6,7 @@ import hashlib
 import json
 import subprocess
 import unittest
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from unittest import mock
 
@@ -31,6 +31,102 @@ class ZiweiFactAdapterTests(unittest.TestCase):
         self.assertEqual(
             run.call_args.args[0],
             ["node", "--jitless", str(ziwei_fact_adapter.RUNTIME)],
+        )
+        self.assertEqual(
+            run.call_args.kwargs["timeout"],
+            ziwei_fact_adapter.IZTRO_SINGLE_TIMEOUT_SECONDS,
+        )
+
+    def test_large_horizon_has_a_separate_bounded_jitless_timeout(self) -> None:
+        def completed_for_batch(*_args: object, **kwargs: object) -> mock.Mock:
+            payload = json.loads(str(kwargs["input"]))
+            requested = {
+                target: {"decadal": {}, "yearly": {}, "monthly": {}}
+                for target in payload["targetDates"]
+            }
+            return mock.Mock(
+                returncode=0,
+                stdout=json.dumps(
+                    {
+                        "palaces": [{} for _ in range(12)],
+                        "requestedHoroscopes": requested,
+                    }
+                ),
+                stderr="",
+            )
+
+        targets = [
+            date(2026, 1, 1) + timedelta(days=offset)
+            for offset in range(365)
+        ]
+        with mock.patch.object(
+            ziwei_fact_adapter.subprocess,
+            "run",
+            side_effect=completed_for_batch,
+        ) as run:
+            result = ziwei_fact_adapter._run_iztro(
+                datetime(1990, 5, 6, 8),
+                "男",
+                target_dates=targets,
+            )
+
+        calls = list(run.call_args_list)
+        self.assertEqual(len(calls), 6)
+        self.assertEqual(
+            sorted(
+                len(json.loads(call.kwargs["input"])["targetDates"])
+                for call in calls
+            ),
+            [45, 64, 64, 64, 64, 64],
+        )
+        self.assertTrue(
+            all(
+                call.kwargs["timeout"]
+                == ziwei_fact_adapter.IZTRO_HORIZON_BATCH_TIMEOUT_SECONDS
+                for call in calls
+            )
+        )
+        self.assertEqual(ziwei_fact_adapter.IZTRO_SINGLE_TIMEOUT_SECONDS, 30)
+        self.assertEqual(
+            ziwei_fact_adapter.IZTRO_HORIZON_BATCH_TIMEOUT_SECONDS,
+            90,
+        )
+        self.assertEqual(ziwei_fact_adapter.IZTRO_HORIZON_BATCH_DAYS, 64)
+        self.assertEqual(ziwei_fact_adapter.IZTRO_HORIZON_BATCH_WORKERS, 4)
+        self.assertEqual(
+            list(result["requestedHoroscopes"]),
+            [target.isoformat() for target in targets],
+        )
+
+    def test_sharded_horizon_matches_one_jitless_process(self) -> None:
+        targets = [
+            date(2026, 1, 1) + timedelta(days=offset)
+            for offset in range(65)
+        ]
+        payload = {
+            "year": 1990,
+            "month": 5,
+            "day": 6,
+            "hour": 8,
+            "gender": "男",
+            "ziHourPolicy": "midnight",
+            "targetDates": [target.isoformat() for target in targets],
+        }
+
+        expected = ziwei_fact_adapter._run_iztro_payload(
+            payload,
+            timeout_seconds=ziwei_fact_adapter.IZTRO_HORIZON_BATCH_TIMEOUT_SECONDS,
+        )
+        actual = ziwei_fact_adapter._run_iztro(
+            datetime(1990, 5, 6, 8),
+            "男",
+            target_dates=targets,
+        )
+
+        self.assertEqual(actual["palaces"], expected["palaces"])
+        self.assertEqual(
+            actual["requestedHoroscopes"],
+            expected["requestedHoroscopes"],
         )
 
     def test_jitless_runtime_matches_the_default_chart_bytes(self) -> None:

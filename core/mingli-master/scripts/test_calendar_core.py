@@ -21,7 +21,9 @@ ROOT = Path(__file__).resolve().parents[1]
 class CalendarCoreBoundaryTests(unittest.TestCase):
     def test_solar_term_year_reuse_keeps_fresh_timezone_specific_facts(self) -> None:
         calendar_core._solar_terms_for_year_utc.cache_clear()
+        calendar_core._localized_solar_terms.cache_clear()
         self.addCleanup(calendar_core._solar_terms_for_year_utc.cache_clear)
+        self.addCleanup(calendar_core._localized_solar_terms.cache_clear)
         engine = calendar_core.load_sxtwl()
         original = engine.getJieQiByYear
         with mock.patch.object(
@@ -49,6 +51,9 @@ class CalendarCoreBoundaryTests(unittest.TestCase):
             ],
         )
         self.assertNotEqual(new_york[0]["datetime"], shanghai[0]["datetime"])
+        localized_cache = calendar_core._localized_solar_terms.cache_info()
+        self.assertEqual(localized_cache.misses, 2)
+        self.assertGreaterEqual(localized_cache.hits, 1)
 
     def test_term_pillar_reuse_keeps_fresh_calendar_payloads(self) -> None:
         calendar_core._term_pillars_for_instant_utc.cache_clear()
