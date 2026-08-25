@@ -6,6 +6,7 @@ import type {
   DaliurenDimensionObservationMap,
   DaliurenGeneralLandingCorrespondence,
   DaliurenGeneralLandingUnavailableCorrespondence,
+  DaliurenHeavenlyGeneral,
   DaliurenLocationObservation,
   DaliurenMiddleVoidObservation,
   DaliurenMoneyObservation,
@@ -21,6 +22,9 @@ import type {
   DaliurenTimingCandidateObservation,
   DaliurenTimingObservation,
   DaliurenTransmissionStage,
+  DaliurenWealthGeneralModifier,
+  DaliurenWealthStageStrengthEntry,
+  DaliurenWealthVoidStatusEntry,
   DaliurenWorkPresentObservation,
   DaliurenWorkObservation,
 } from "@/view-models/registry";
@@ -28,10 +32,11 @@ import type {
 import styles from "./daliuren-dimension-evidence.module.css";
 
 type CoreFacts = NonNullable<DaliurenChartViewModel["core_facts"]>;
-type WealthPresentObservation = Extract<DaliurenMoneyObservation, { readonly wealth_presence: true }>;
-type WealthStage = WealthPresentObservation["wealth_stages"][number];
+type WealthStage = DaliurenWealthStageStrengthEntry;
 type WealthVoidObservation = Extract<DaliurenMoneyObservation, { readonly wealth_void_rows: ReadonlyArray<unknown> }>;
 type WealthVoidRow = WealthVoidObservation["wealth_void_rows"][number];
+type WealthGeneralModifier = DaliurenWealthGeneralModifier;
+type WealthVoidStatus = DaliurenWealthVoidStatusEntry;
 type WorkStrength = DaliurenWorkPresentObservation["target_strength"][number];
 type WorkGeneralModifier = DaliurenWorkPresentObservation["target_general_modifier"][number];
 type LocationDirection = DaliurenLocationObservation["stage_branch_directions"][number];
@@ -96,6 +101,21 @@ const SEASON_STRENGTH_FACTS: Readonly<Record<DaliurenSeasonStrength, string>> = 
   相: "相",
 };
 const SIX_RELATIVES: ReadonlySet<DaliurenSixRelative> = new Set(["兄弟", "子孙", "妻财", "官鬼", "父母"]);
+const EARTHLY_BRANCHES: ReadonlySet<string> = new Set(["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]);
+const HEAVENLY_GENERALS: ReadonlySet<DaliurenHeavenlyGeneral> = new Set([
+  "贵人",
+  "腾蛇",
+  "朱雀",
+  "六合",
+  "勾陈",
+  "青龙",
+  "天空",
+  "白虎",
+  "太常",
+  "玄武",
+  "太阴",
+  "天后",
+]);
 const OUTCOME_RELATIONSHIP_KEYS = ["relation"] as const;
 const OUTCOME_TRANSMISSION_KEYS = ["relations"] as const;
 const MIDDLE_VOID_KEYS = ["stage", "branch", "is_xunkong"] as const;
@@ -120,6 +140,17 @@ const WEALTH_ABSENT_KEYS = ["wealth_presence"] as const;
 const WEALTH_STAGE_KEYS = ["stage", "branch", "six_relative", "season_strength"] as const;
 const WEALTH_VOID_KEYS = ["wealth_void_rows"] as const;
 const WEALTH_VOID_ROW_KEYS = ["stage", "branch", "six_relative", "is_xunkong"] as const;
+const MONEY_DIMENSION_KEYS = [
+  "canonical_dimension",
+  "requested_dimension",
+  "status",
+  "source_rule_ids",
+  "rule_evidence",
+  "wealth_presence",
+  "wealth_stage_strength",
+  "wealth_void_status",
+  "wealth_general_modifier",
+] as const;
 const STATE_OBSERVATION_KEYS = ["matched_count", "stages", "correspondences"] as const;
 const STATE_DIMENSION_KEYS = [
   "canonical_dimension",
@@ -198,6 +229,24 @@ const NOT_EVALUATED_KEYS = [
 ] as const;
 const SOURCE_REF_REQUIRED_KEYS = ["pack", "rule_id", "source_anchor"] as const;
 const SOURCE_REF_OPTIONAL_KEYS = ["quote_id"] as const;
+const WEALTH_PRESENT_SOURCE_REFS = [
+  {
+    pack: "san-shi/liuren-miben",
+    rule_id: "LM-R20",
+    quote_id: "LM-Q072",
+    source_anchor: "fulltext.md#L4917",
+  },
+] as const;
+const WEALTH_VOID_SOURCE_REFS = [
+  ...WEALTH_PRESENT_SOURCE_REFS,
+  {
+    pack: "san-shi/liuren-miben",
+    rule_id: "LM-R10",
+    quote_id: "LM-Q051",
+    source_anchor: "fulltext.md#L3568",
+  },
+] as const;
+const MIDDLE_VOID_SOURCE_REFS = [WEALTH_VOID_SOURCE_REFS[1]] as const;
 const SIX_RELATIVE_STAGE_KEYS = ["stage", "branch", "six_relative"] as const;
 const STAGE_STATUS_KEYS = [
   "stage",
@@ -226,6 +275,11 @@ const GENERAL_LANDING_UNAVAILABLE_KEYS = [
   "source_rule",
   "role",
   "status",
+] as const;
+const WEALTH_GENERAL_MODIFIER_KEYS = [...GENERAL_LANDING_KEYS, "six_relative"] as const;
+const WEALTH_GENERAL_MODIFIER_UNAVAILABLE_KEYS = [
+  ...GENERAL_LANDING_UNAVAILABLE_KEYS,
+  "six_relative",
 ] as const;
 const WORK_OBSERVATION_KEYS = ["target_relative", "target_strength", "target_general_modifier"] as const;
 const WORK_ABSENT_KEYS = ["target_relative", "target_presence", "target_contract_status"] as const;
@@ -363,6 +417,24 @@ function isSeasonStrength(value: unknown): value is DaliurenSeasonStrength {
 
 function isSixRelative(value: unknown): value is DaliurenSixRelative {
   return typeof value === "string" && SIX_RELATIVES.has(value as DaliurenSixRelative);
+}
+
+function isEarthlyBranch(value: unknown): value is string {
+  return typeof value === "string" && EARTHLY_BRANCHES.has(value);
+}
+
+function isHeavenlyGeneral(value: unknown): value is DaliurenHeavenlyGeneral {
+  return typeof value === "string" && HEAVENLY_GENERALS.has(value as DaliurenHeavenlyGeneral);
+}
+
+function hasRuntimeStageOrder(rows: readonly { readonly stage: DaliurenTransmissionStage }[]): boolean {
+  let previous = -1;
+  for (const row of rows) {
+    const current = LOCATION_STAGES.indexOf(row.stage);
+    if (current <= previous) return false;
+    previous = current;
+  }
+  return true;
 }
 
 function isFiveElement(value: unknown): value is FiveElement {
@@ -609,7 +681,7 @@ function isWealthStage(value: unknown): value is WealthStage {
     isRecord(value) &&
     hasExactKeys(value, WEALTH_STAGE_KEYS) &&
     isTransmissionStage(value.stage) &&
-    Boolean(readString(value, "branch")) &&
+    isEarthlyBranch(value.branch) &&
     value.six_relative === "妻财" &&
     isSeasonStrength(value.season_strength)
   );
@@ -620,7 +692,7 @@ function isWealthVoidRow(value: unknown): value is WealthVoidRow {
     isRecord(value) &&
     hasExactKeys(value, WEALTH_VOID_ROW_KEYS) &&
     isTransmissionStage(value.stage) &&
-    Boolean(readString(value, "branch")) &&
+    isEarthlyBranch(value.branch) &&
     value.six_relative === "妻财" &&
     value.is_xunkong === true
   );
@@ -698,6 +770,58 @@ function isGeneralLandingUnavailableCorrespondence(
 
 function isGeneralLandingRow(value: unknown): value is GeneralLandingCorrespondence {
   return isGeneralLandingCorrespondence(value) || isGeneralLandingUnavailableCorrespondence(value);
+}
+
+function isWealthVoidStatus(value: unknown): value is WealthVoidStatus {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, WEALTH_VOID_ROW_KEYS) &&
+    isTransmissionStage(value.stage) &&
+    isEarthlyBranch(value.branch) &&
+    value.six_relative === "妻财" &&
+    typeof value.is_xunkong === "boolean"
+  );
+}
+
+function isWealthGeneralModifier(value: unknown): value is WealthGeneralModifier {
+  if (
+    !isRecord(value) ||
+    !hasGeneralLandingBaseFields(value) ||
+    !isEarthlyBranch(value.landing_branch) ||
+    !isHeavenlyGeneral(value.heavenly_general) ||
+    value.six_relative !== "妻财"
+  ) {
+    return false;
+  }
+  if (hasExactKeys(value, WEALTH_GENERAL_MODIFIER_KEYS)) {
+    return (
+      value.status === "source_correspondence_matched" &&
+      Boolean(readString(value, "source_text")) &&
+      Boolean(readString(value, "source_anchor"))
+    );
+  }
+  return (
+    hasExactKeys(value, WEALTH_GENERAL_MODIFIER_UNAVAILABLE_KEYS) &&
+    value.status === "no_exact_source_correspondence"
+  );
+}
+
+function sameWealthStage(left: WealthStage, right: WealthStage): boolean {
+  return (
+    left.stage === right.stage &&
+    left.branch === right.branch &&
+    left.six_relative === right.six_relative &&
+    left.season_strength === right.season_strength
+  );
+}
+
+function sameWealthVoidStatus(left: WealthVoidStatus, right: WealthVoidRow): boolean {
+  return (
+    left.stage === right.stage &&
+    left.branch === right.branch &&
+    left.six_relative === right.six_relative &&
+    left.is_xunkong === right.is_xunkong
+  );
 }
 
 function isStateObservation(value: unknown): value is DaliurenStateObservation {
@@ -1035,6 +1159,59 @@ function parseRuntimeSource(value: unknown): EvidenceSource | null {
   return parseSource(value);
 }
 
+type RuntimeMoneyMatchExpectation = Readonly<{
+  activationId: string;
+  dependencyGroup: string;
+  factPath: string;
+  polarity: string;
+  ruleId: string;
+  ruleKey: string;
+  sourceRefs: readonly Readonly<{
+    pack: string;
+    rule_id: string;
+    quote_id: string;
+    source_anchor: string;
+  }>[];
+  weightClass: string;
+}>;
+
+function hasRuntimeMoneyMatchMetadata(
+  value: unknown,
+  expected: RuntimeMoneyMatchExpectation,
+): boolean {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, MATCHED_EVIDENCE_REQUIRED_KEYS) ||
+    value.activation_id !== expected.activationId ||
+    value.dependency_group !== expected.dependencyGroup ||
+    value.polarity !== expected.polarity ||
+    value.rule_id !== expected.ruleId ||
+    value.rule_key !== expected.ruleKey ||
+    value.status !== "matched" ||
+    value.weight_class !== expected.weightClass ||
+    !Array.isArray(value.fact_paths) ||
+    value.fact_paths.length !== 1 ||
+    value.fact_paths[0] !== expected.factPath ||
+    !Array.isArray(value.source_refs) ||
+    value.source_refs.length !== expected.sourceRefs.length
+  ) {
+    return false;
+  }
+  return value.source_refs.every((source, index) => {
+    const expectedSource = expected.sourceRefs[index];
+    return (
+      expectedSource !== undefined &&
+      isRecord(source) &&
+      hasRequiredAndOptionalKeys(source, SOURCE_REF_REQUIRED_KEYS, SOURCE_REF_OPTIONAL_KEYS) &&
+      Object.keys(source).length === SOURCE_REF_REQUIRED_KEYS.length + SOURCE_REF_OPTIONAL_KEYS.length &&
+      source.pack === expectedSource.pack &&
+      source.rule_id === expectedSource.rule_id &&
+      source.quote_id === expectedSource.quote_id &&
+      source.source_anchor === expectedSource.source_anchor
+    );
+  });
+}
+
 function hasRuntimeEvidenceEnvelope(value: Record<string, unknown>): boolean {
   return (
     hasExactKeys(value, RULE_EVIDENCE_KEYS) &&
@@ -1172,6 +1349,177 @@ function parseScopeBoundaryFacts(
     return entries.length === scopeBoundaries.length ? entries : [];
   }
   return [];
+}
+
+function parseTopLevelMoneyFacts(
+  value: Record<string, unknown>,
+  evidence: Record<string, unknown>,
+): readonly EvidenceEntry[] | null {
+  const strengthRows = value.wealth_stage_strength;
+  const voidRows = value.wealth_void_status;
+  const modifierRows = value.wealth_general_modifier;
+  if (
+    !hasExactKeys(value, MONEY_DIMENSION_KEYS) ||
+    value.canonical_dimension !== "money" ||
+    value.requested_dimension !== "money" ||
+    value.status !== "calculated_facts_not_verdict" ||
+    value.wealth_presence !== true ||
+    !Array.isArray(value.source_rule_ids) ||
+    value.source_rule_ids.length !== 1 ||
+    value.source_rule_ids[0] !== "LM-R20" ||
+    !Array.isArray(strengthRows) ||
+    strengthRows.length === 0 ||
+    !strengthRows.every(isWealthStage) ||
+    !Array.isArray(voidRows) ||
+    voidRows.length !== strengthRows.length ||
+    !voidRows.every(isWealthVoidStatus) ||
+    !Array.isArray(modifierRows) ||
+    modifierRows.length !== strengthRows.length ||
+    !modifierRows.every(isWealthGeneralModifier) ||
+    !hasRuntimeEvidenceEnvelope(evidence) ||
+    evidence.status !== "matched_evidence" ||
+    !isEmptyArray(evidence.not_evaluated) ||
+    !isEmptyArray(evidence.scope_boundaries) ||
+    !Array.isArray(evidence.matched) ||
+    evidence.matched.length === 0
+  ) {
+    return null;
+  }
+
+  const typedStrengthRows = strengthRows as readonly WealthStage[];
+  const typedVoidRows = voidRows as readonly WealthVoidStatus[];
+  const typedModifierRows = modifierRows as readonly WealthGeneralModifier[];
+  if (
+    !hasRuntimeStageOrder(typedStrengthRows) ||
+    !hasRuntimeStageOrder(typedVoidRows) ||
+    !hasRuntimeStageOrder(typedModifierRows) ||
+    typedVoidRows.some(
+      (row, index) =>
+        row.stage !== typedStrengthRows[index]?.stage ||
+        row.branch !== typedStrengthRows[index]?.branch,
+    ) ||
+    typedModifierRows.some(
+      (row, index) =>
+        row.stage !== typedStrengthRows[index]?.stage ||
+        row.landing_branch !== typedStrengthRows[index]?.branch,
+    )
+  ) {
+    return null;
+  }
+
+  const parsedMatches = evidence.matched.map((entry) => parseRuntimeMatchedEntry(entry, "money"));
+  if (parsedMatches.some((entry) => entry === null)) return null;
+  const typedMatches = parsedMatches as readonly { entry: EvidenceEntry; observation: unknown }[];
+
+  let matchIndex = 0;
+  const presenceMatch = typedMatches[matchIndex];
+  const presenceRecord = evidence.matched[matchIndex];
+  if (
+    !presenceMatch ||
+    presenceMatch.entry.marker !== "LM-R20" ||
+    !isMoneyObservation(presenceMatch.observation) ||
+    !("wealth_stages" in presenceMatch.observation) ||
+    presenceMatch.observation.wealth_stages.length !== typedStrengthRows.length ||
+    !presenceMatch.observation.wealth_stages.every((row, index) =>
+      sameWealthStage(row, typedStrengthRows[index] as WealthStage),
+    ) ||
+    !hasRuntimeMoneyMatchMetadata(presenceRecord, {
+      activationId: "liuren.wealth.present.miben",
+      dependencyGroup: "wealth_receipt_availability",
+      factPath: "dimension_facts.money.wealth_presence",
+      polarity: "support",
+      ruleId: "LM-R20",
+      ruleKey: "wealth_present_miben",
+      sourceRefs: WEALTH_PRESENT_SOURCE_REFS,
+      weightClass: "primary",
+    })
+  ) {
+    return null;
+  }
+  matchIndex += 1;
+
+  const trueVoidRows = typedVoidRows.filter(
+    (row): row is WealthVoidStatus & { readonly is_xunkong: true } => row.is_xunkong,
+  );
+  if (trueVoidRows.length) {
+    const voidMatch = typedMatches[matchIndex];
+    const voidRecord = evidence.matched[matchIndex];
+    if (
+      !voidMatch ||
+      voidMatch.entry.marker !== "LM-R20" ||
+      !isMoneyObservation(voidMatch.observation) ||
+      !("wealth_void_rows" in voidMatch.observation) ||
+      voidMatch.observation.wealth_void_rows.length !== trueVoidRows.length ||
+      !voidMatch.observation.wealth_void_rows.every((row, index) =>
+        sameWealthVoidStatus(trueVoidRows[index] as WealthVoidStatus, row),
+      ) ||
+      !hasRuntimeMoneyMatchMetadata(voidRecord, {
+        activationId: "liuren.wealth.void",
+        dependencyGroup: "wealth_receipt_availability",
+        factPath: "dimension_facts.money.wealth_void_status",
+        polarity: "oppose",
+        ruleId: "LM-R20",
+        ruleKey: "wealth_void_miben",
+        sourceRefs: WEALTH_VOID_SOURCE_REFS,
+        weightClass: "primary",
+      })
+    ) {
+      return null;
+    }
+    matchIndex += 1;
+  }
+
+  if (matchIndex < typedMatches.length) {
+    const middleMatch = typedMatches[matchIndex];
+    const middleRecord = evidence.matched[matchIndex];
+    if (
+      !middleMatch ||
+      middleMatch.entry.marker !== "LM-R10" ||
+      !isMiddleVoidObservation(middleMatch.observation) ||
+      !isEarthlyBranch(middleMatch.observation.branch) ||
+      !hasRuntimeMoneyMatchMetadata(middleRecord, {
+        activationId: "liuren.process.middle_void",
+        dependencyGroup: "stage_void",
+        factPath: "dimension_facts.money.stage_status",
+        polarity: "uncertain",
+        ruleId: "LM-R10",
+        ruleKey: "middle_void_process",
+        sourceRefs: MIDDLE_VOID_SOURCE_REFS,
+        weightClass: "supporting",
+      })
+    ) {
+      return null;
+    }
+    const middleStrengthIndex = typedStrengthRows.findIndex((row) => row.stage === "middle");
+    if (
+      middleStrengthIndex >= 0 &&
+      (typedStrengthRows[middleStrengthIndex]?.branch !== middleMatch.observation.branch ||
+        typedVoidRows[middleStrengthIndex]?.is_xunkong !== true)
+    ) {
+      return null;
+    }
+    matchIndex += 1;
+  }
+  if (matchIndex !== typedMatches.length) return null;
+
+  return [
+    ...typedMatches.map((match) => match.entry),
+    ...typedModifierRows.map((row) => ({
+      marker: "LM-R01",
+      fact: `妻财天将落地类象：${STAGE_FACTS[row.stage]} ${row.heavenly_general}落${row.landing_branch}${
+        row.status === "no_exact_source_correspondence" ? "（无精确类象对应）" : ""
+      }`,
+      sources:
+        row.status === "source_correspondence_matched"
+          ? [
+              {
+                key: `${row.stage}-${row.source_pack}-${row.source_rule}-${row.source_anchor}`,
+                label: `${row.source_pack} · ${row.source_rule} · ${row.source_anchor}`,
+              },
+            ]
+          : [],
+    })),
+  ];
 }
 
 function parseTopLevelTimingFact(value: Record<string, unknown>): EvidenceEntry | null {
@@ -1609,6 +1957,17 @@ function parseDimension(value: unknown): EvidenceGroup | null {
         },
       ],
     };
+  }
+  if (
+    dimension === "money" &&
+    value.wealth_presence !== false &&
+    (hasOwnKey(value, "wealth_presence") ||
+      hasOwnKey(value, "wealth_stage_strength") ||
+      hasOwnKey(value, "wealth_void_status") ||
+      hasOwnKey(value, "wealth_general_modifier"))
+  ) {
+    const moneyEntries = parseTopLevelMoneyFacts(value, evidence);
+    return moneyEntries ? { dimension, entries: moneyEntries } : null;
   }
   if (dimension === "state" && hasOwnKey(value, "general_landing_correspondences")) {
     const stateEntries = parseTopLevelStateFacts(value, evidence);

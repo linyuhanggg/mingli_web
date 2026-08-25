@@ -950,7 +950,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
   type FactObject = NonNullable<CoreFacts["dimension_facts"]>;
 
   function runtimeRuleSourceRefs(
-    ruleKey: "state_general_landing_correspondence" | "wealth_void_miben",
+    ruleKey: "state_general_landing_correspondence" | "wealth_present_miben" | "wealth_void_miben",
   ): readonly DaliurenRuleSourceRef[] {
     const payload: unknown = JSON.parse(
       readFileSync(
@@ -1077,6 +1077,113 @@ describe("大六壬 S3 M6a 维度证据", () => {
       status: "not_bound",
       ...overrides,
     });
+  }
+
+  function presentMoneyProjection(overrides: Record<string, unknown> = {}) {
+    const wealthStageStrength = [
+      { stage: "initial", branch: "辰", six_relative: "妻财", season_strength: "旺" },
+      { stage: "final", branch: "亥", six_relative: "妻财", season_strength: "休" },
+    ];
+    const wealthVoidStatus = [
+      { stage: "initial", branch: "辰", six_relative: "妻财", is_xunkong: false },
+      { stage: "final", branch: "亥", six_relative: "妻财", is_xunkong: true },
+    ];
+    return {
+      canonical_dimension: "money",
+      requested_dimension: "money",
+      status: "calculated_facts_not_verdict",
+      source_rule_ids: ["LM-R20"],
+      wealth_presence: true,
+      wealth_stage_strength: wealthStageStrength,
+      wealth_void_status: wealthVoidStatus,
+      wealth_general_modifier: [
+        {
+          stage: "initial",
+          heavenly_general: "勾陈",
+          landing_branch: "辰",
+          source_pack: "san-shi/liuren-miben",
+          source_rule: "LM-R01",
+          role: "imagery_correspondence_not_observed_activity",
+          status: "source_correspondence_matched",
+          source_text: "勾陈临辰",
+          source_anchor: "fulltext.md#L10",
+          six_relative: "妻财",
+        },
+        {
+          stage: "final",
+          heavenly_general: "白虎",
+          landing_branch: "亥",
+          source_pack: "san-shi/liuren-miben",
+          source_rule: "LM-R01",
+          role: "imagery_correspondence_not_observed_activity",
+          status: "no_exact_source_correspondence",
+          six_relative: "妻财",
+        },
+      ],
+      rule_evidence: runtimeStateEvidence({
+        matched: [
+          matchedEntry({
+            activation_id: "liuren.wealth.present.miben",
+            dependency_group: "wealth_receipt_availability",
+            fact_paths: ["dimension_facts.money.wealth_presence"],
+            observation: {
+              wealth_presence: true,
+              wealth_stages: wealthStageStrength,
+            },
+            polarity: "support",
+            rule_id: "LM-R20",
+            rule_key: "wealth_present_miben",
+            source_refs: runtimeRuleSourceRefs("wealth_present_miben"),
+            weight_class: "primary",
+          }),
+          matchedEntry({
+            activation_id: "liuren.wealth.void",
+            dependency_group: "wealth_receipt_availability",
+            fact_paths: ["dimension_facts.money.wealth_void_status"],
+            observation: {
+              wealth_void_rows: [wealthVoidStatus[1]],
+            },
+            polarity: "oppose",
+            rule_id: "LM-R20",
+            rule_key: "wealth_void_miben",
+            source_refs: runtimeRuleSourceRefs("wealth_void_miben"),
+            weight_class: "primary",
+          }),
+        ],
+        status: "matched_evidence",
+      }),
+      ...overrides,
+    };
+  }
+
+  function malformedPresentMoneyProjection(
+    kind: "cross_field" | "extra_field" | "general_enum" | "matched_source" | "modifier_source" | "stage_order",
+  ): Record<string, unknown> {
+    const projection = structuredClone(presentMoneyProjection()) as Record<string, unknown>;
+    if (kind === "extra_field") {
+      projection.raw_dump = "不得展示 money extra";
+      return projection;
+    }
+    const strengthRows = projection.wealth_stage_strength as Record<string, unknown>[];
+    const voidRows = projection.wealth_void_status as Record<string, unknown>[];
+    const modifierRows = projection.wealth_general_modifier as Record<string, unknown>[];
+    if (kind === "stage_order") {
+      projection.wealth_stage_strength = [...strengthRows].reverse();
+      projection.wealth_void_status = [...voidRows].reverse();
+      projection.wealth_general_modifier = [...modifierRows].reverse();
+    } else if (kind === "general_enum") {
+      modifierRows[0] = { ...modifierRows[0], heavenly_general: "未知天将" };
+    } else if (kind === "cross_field") {
+      modifierRows[0] = { ...modifierRows[0], landing_branch: "午" };
+    } else if (kind === "modifier_source") {
+      modifierRows[0] = { ...modifierRows[0], source_rule: "LM-R02" };
+    } else {
+      const ruleEvidence = projection.rule_evidence as Record<string, unknown>;
+      const matched = ruleEvidence.matched as Record<string, unknown>[];
+      const sourceRefs = matched[0]?.source_refs as Record<string, unknown>[];
+      sourceRefs[0] = { ...sourceRefs[0], source_anchor: "fulltext.md#drift" };
+    }
+    return projection;
   }
 
   function matchedOutcomeProjection(overrides: Record<string, unknown> = {}) {
@@ -1414,6 +1521,52 @@ describe("大六壬 S3 M6a 维度证据", () => {
     );
     expect(block).not.toHaveTextContent(/outcome|money|state|work/);
     expect(block).not.toHaveTextContent(/吉凶|成败|大吉|大凶|hard_verdict/);
+  });
+
+  it("appends validated present-money general modifiers in Runtime stage order", async () => {
+    const user = userEvent.setup();
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({ money: presentMoneyProjection() }),
+        })}
+      />,
+    );
+
+    const money = within(panel()).getByRole("group", { name: "求财" });
+    const rows = [...money.querySelectorAll(":scope > ul > li")].map(
+      (row) => row.querySelector("summary")?.textContent ?? row.textContent,
+    );
+    expect(rows).toHaveLength(4);
+    expect(rows[0]).toContain("LM-R20妻财入传：初传 辰（旺）、末传 亥（休）");
+    expect(rows[1]).toContain("LM-R20妻财旬空：末传 亥");
+    expect(rows[2]).toContain("LM-R01妻财天将落地类象：初传 勾陈落辰");
+    expect(rows[3]).toContain("LM-R01妻财天将落地类象：末传 白虎落亥（无精确类象对应）");
+
+    const initialModifier = within(money).getByText("妻财天将落地类象：初传 勾陈落辰").closest("li");
+    await user.click((initialModifier as HTMLElement).querySelector("summary") as HTMLElement);
+    expect(within(initialModifier as HTMLElement).getByText("san-shi/liuren-miben · LM-R01 · fulltext.md#L10")).toBeVisible();
+    expect(money).not.toHaveTextContent(/wealth_general_modifier|source_correspondence_matched|吉凶|成败|保证|hard_verdict/);
+  });
+
+  it.each([
+    ["extra top-level field", "extra_field"],
+    ["non-Runtime stage order", "stage_order"],
+    ["unknown heavenly-general enum", "general_enum"],
+    ["wealth branch mismatch", "cross_field"],
+    ["modifier source drift", "modifier_source"],
+    ["matched source drift", "matched_source"],
+  ] as const)("fails the whole present-money group closed for %s", (_label, kind) => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({ money: malformedPresentMoneyProjection(kind) }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/妻财入传|妻财天将落地类象|不得展示|未知天将|fulltext\.md#drift/);
   });
 
   it("merges exact and unavailable top-level state correspondences in Runtime order", () => {

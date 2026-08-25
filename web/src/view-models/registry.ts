@@ -903,6 +903,20 @@ export type DaliurenSixRelative = "兄弟" | "子孙" | "妻财" | "官鬼" | "�
 
 export type DaliurenSeasonStrength = "旺" | "相" | "休" | "囚" | "死" | "unknown";
 
+export type DaliurenHeavenlyGeneral =
+  | "贵人"
+  | "腾蛇"
+  | "朱雀"
+  | "六合"
+  | "勾陈"
+  | "青龙"
+  | "天空"
+  | "白虎"
+  | "太常"
+  | "玄武"
+  | "太阴"
+  | "天后";
+
 export type DaliurenOutcomeRelation =
   | "subject_generates_object"
   | "subject_overcomes_object"
@@ -995,14 +1009,7 @@ export type DaliurenTimingObservation = DaliurenTimingCandidateObservation | Dal
 export type DaliurenMoneyObservation =
   | Readonly<{
       readonly wealth_presence: true;
-      readonly wealth_stages: ReadonlyArray<
-        Readonly<{
-          readonly stage: DaliurenTransmissionStage;
-          readonly branch: string;
-          readonly six_relative: "妻财";
-          readonly season_strength: DaliurenSeasonStrength;
-        }>
-      >;
+      readonly wealth_stages: ReadonlyArray<DaliurenWealthStageStrengthEntry>;
     }>
   | Readonly<{
       readonly wealth_void_rows: ReadonlyArray<
@@ -1040,6 +1047,32 @@ export type DaliurenGeneralLandingUnavailableCorrespondence = Readonly<{
   readonly role: "imagery_correspondence_not_observed_activity";
   readonly status: "no_exact_source_correspondence";
 }>;
+
+export type DaliurenWealthStageStrengthEntry = Readonly<{
+  readonly stage: DaliurenTransmissionStage;
+  readonly branch: string;
+  readonly six_relative: "妻财";
+  readonly season_strength: DaliurenSeasonStrength;
+}>;
+
+export type DaliurenWealthVoidStatusEntry = Readonly<{
+  readonly stage: DaliurenTransmissionStage;
+  readonly branch: string;
+  readonly six_relative: "妻财";
+  readonly is_xunkong: boolean;
+}>;
+
+export type DaliurenWealthGeneralModifier =
+  | (DaliurenGeneralLandingCorrespondence &
+      Readonly<{
+        readonly heavenly_general: DaliurenHeavenlyGeneral;
+        readonly six_relative: "妻财";
+      }>)
+  | (DaliurenGeneralLandingUnavailableCorrespondence &
+      Readonly<{
+        readonly heavenly_general: DaliurenHeavenlyGeneral;
+        readonly six_relative: "妻财";
+      }>);
 
 export type DaliurenStateObservation = Readonly<{
   readonly matched_count: number;
@@ -1109,9 +1142,9 @@ export type DaliurenDimensionFact = Readonly<{
   readonly target_strength?: ReadonlyArray<Readonly<Record<string, unknown>>>;
   readonly target_general_modifier?: ReadonlyArray<Readonly<Record<string, unknown>>>;
   readonly wealth_presence?: boolean;
-  readonly wealth_stage_strength?: ReadonlyArray<Readonly<Record<string, unknown>>>;
-  readonly wealth_void_status?: ReadonlyArray<Readonly<Record<string, unknown>>>;
-  readonly wealth_general_modifier?: ReadonlyArray<Readonly<Record<string, unknown>>>;
+  readonly wealth_stage_strength?: ReadonlyArray<DaliurenWealthStageStrengthEntry>;
+  readonly wealth_void_status?: ReadonlyArray<DaliurenWealthVoidStatusEntry>;
+  readonly wealth_general_modifier?: ReadonlyArray<DaliurenWealthGeneralModifier>;
 }> & Readonly<Record<string, unknown>>;
 
 export type DaliurenChartViewModel = {
