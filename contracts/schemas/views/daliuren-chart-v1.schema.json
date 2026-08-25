@@ -55,7 +55,7 @@
                 "contains": {
                   "type": "object",
                   "required": ["rule_id"],
-                  "properties": {"rule_id": {"const": "DLR-07"}}
+                  "properties": {"rule_id": {"const": "DLR-S01"}}
                 }
               }
             }
@@ -156,14 +156,14 @@
         "month_general": {"oneOf": [{"$ref": "#/$defs/monthGeneral"}, {"type": "null"}]},
         "noble_person": {"oneOf": [{"$ref": "#/$defs/noblePerson"}, {"type": "null"}]},
         "plate_offset": {"type": ["integer", "null"], "minimum": 0, "maximum": 11},
-        "structural_patterns": {"type": ["array", "null"], "items": {"type": "string", "minLength": 1}},
+        "structural_patterns": {"type": ["array", "null"], "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "source_conditioned_patterns": {
           "type": "array",
           "maxItems": 4,
           "uniqueItems": true,
           "allOf": [
             {
-              "contains": {"type": "object", "properties": {"rule_id": {"const": "DLR-07"}}, "required": ["rule_id"]},
+              "contains": {"type": "object", "properties": {"rule_id": {"const": "DLR-S01"}}, "required": ["rule_id"]},
               "minContains": 0,
               "maxContains": 1
             },
@@ -462,7 +462,7 @@
         "source_dependency_id"
       ],
       "properties": {
-        "rule_id": {"enum": ["DLR-07", "DLR-08", "DLR-09", "DLR-10"]},
+        "rule_id": {"enum": ["DLR-S01", "DLR-08", "DLR-09", "DLR-10"]},
         "local_rule_id": {
           "enum": [
             "liuren.structural.incomplete-four-lessons",
@@ -499,7 +499,7 @@
       "allOf": [
         {
           "if": {
-            "properties": {"rule_id": {"const": "DLR-07"}},
+            "properties": {"rule_id": {"const": "DLR-S01"}},
             "required": ["rule_id"]
           },
           "then": {
@@ -723,7 +723,7 @@
       "oneOf": [
         {
           "properties": {
-            "rule_id": {"const": "DLR-07"},
+            "rule_id": {"const": "DLR-S01"},
             "local_rule_id": {"const": "liuren.structural.incomplete-four-lessons"},
             "title": {"const": "四课不备"},
             "source_anchor": {"const": "fulltext.md#L58"}

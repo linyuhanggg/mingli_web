@@ -1974,10 +1974,119 @@ class DaliurenTimingCandidate(ContractModel):
     candidate_not_guarantee: Literal[True]
 
 
+_DALIUREN_STRUCTURAL_INDEX_MAX = 3
+_DALIUREN_INCOMPLETE_FOUR_LESSONS_RULE_ID = "DLR-S01"
+_DALIUREN_FOUR_LESSON_UPPER_PATHS = frozenset(
+    f"fact:/chart_facts/output/four_lessons/{index}/upper" for index in range(4)
+)
+_DALIUREN_FOUR_LESSON_DISTINCT_AUDIT = (
+    "/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3"
+)
+
+
+def daliuren_in_range_structural_indices(
+    structural_patterns: object,
+    title: str,
+) -> tuple[int, ...]:
+    if not isinstance(structural_patterns, (list, tuple)):
+        return ()
+    return tuple(
+        index
+        for index, pattern in enumerate(structural_patterns)
+        if pattern == title and 0 <= index <= _DALIUREN_STRUCTURAL_INDEX_MAX
+    )
+
+
+def _daliuren_structural_index_from_fact_path(path: str) -> int | None:
+    prefix = "fact:/chart_facts/output/structural_patterns/"
+    if not path.startswith(prefix):
+        return None
+    suffix = path[len(prefix) :]
+    if not suffix.isdigit():
+        return None
+    index = int(suffix)
+    if index < 0 or index > _DALIUREN_STRUCTURAL_INDEX_MAX:
+        raise ValueError("source pattern structural index must be 0-3")
+    return index
+
+
+def _daliuren_structural_index_from_audit(audit: str, title: str) -> int | None:
+    prefix = "/chart_facts/output/structural_patterns/"
+    suffix = f":eq:{title}"
+    if not audit.startswith(prefix) or not audit.endswith(suffix):
+        return None
+    middle = audit[len(prefix) : -len(suffix)]
+    if not middle.isdigit():
+        return None
+    index = int(middle)
+    if index < 0 or index > _DALIUREN_STRUCTURAL_INDEX_MAX:
+        raise ValueError("source pattern structural index must be 0-3")
+    return index
+
+
+def validate_daliuren_source_pattern_provenance(
+    *,
+    rule_id: str,
+    title: str,
+    fact_paths: tuple[str, ...],
+    predicate_audit: tuple[str, ...],
+) -> int:
+    """Return the unique in-range structural index or raise ValueError."""
+
+    if len(set(fact_paths)) != len(fact_paths) or len(set(predicate_audit)) != len(
+        predicate_audit
+    ):
+        raise ValueError("source pattern provenance must be unique")
+
+    path_indices: list[int] = []
+    extra_paths: list[str] = []
+    for path in fact_paths:
+        index = _daliuren_structural_index_from_fact_path(path)
+        if index is None:
+            extra_paths.append(path)
+        else:
+            path_indices.append(index)
+
+    audit_indices: list[int] = []
+    extra_audits: list[str] = []
+    for audit in predicate_audit:
+        index = _daliuren_structural_index_from_audit(audit, title)
+        if index is None:
+            extra_audits.append(audit)
+        else:
+            audit_indices.append(index)
+
+    if path_indices != audit_indices or len(path_indices) != 1:
+        raise ValueError("source pattern requires unique structural provenance")
+    structural_index = path_indices[0]
+
+    if rule_id == _DALIUREN_INCOMPLETE_FOUR_LESSONS_RULE_ID:
+        if set(extra_paths) != _DALIUREN_FOUR_LESSON_UPPER_PATHS:
+            raise ValueError("incomplete four lessons must publish four upper paths")
+        if extra_audits != [_DALIUREN_FOUR_LESSON_DISTINCT_AUDIT]:
+            raise ValueError(
+                "incomplete four lessons must publish the distinct-count audit"
+            )
+        if len(fact_paths) != 5 or len(predicate_audit) != 2:
+            raise ValueError("incomplete four lessons provenance cardinality is fixed")
+    elif extra_paths or extra_audits or len(fact_paths) != 1 or len(predicate_audit) != 1:
+        raise ValueError("source pattern provenance must stay on the structural path")
+    return structural_index
+
+
+def daliuren_source_pattern_structural_index(pattern: DaliurenSourcePattern) -> int:
+    return validate_daliuren_source_pattern_provenance(
+        rule_id=pattern.rule_id,
+        title=pattern.title,
+        fact_paths=pattern.fact_paths,
+        predicate_audit=pattern.predicate_audit,
+    )
+
+
 _DALIUREN_SOURCE_PATTERN_IDENTITIES = frozenset(
     {
         (
-            "DLR-07",
+            "DLR-S01",
             "liuren.structural.incomplete-four-lessons",
             "四课不备",
             "fulltext.md#L58",
@@ -2007,7 +2116,7 @@ _DALIUREN_SOURCE_PATTERN_IDENTITIES = frozenset(
 class DaliurenSourcePattern(ContractModel):
     """Audited structural-pattern match, never a divination verdict."""
 
-    rule_id: Literal["DLR-07", "DLR-08", "DLR-09", "DLR-10"]
+    rule_id: Literal["DLR-S01", "DLR-08", "DLR-09", "DLR-10"]
     local_rule_id: Literal[
         "liuren.structural.incomplete-four-lessons",
         "liuren.structural.bazhuan-day",
@@ -2039,6 +2148,12 @@ class DaliurenSourcePattern(ContractModel):
         )
         if identity not in _DALIUREN_SOURCE_PATTERN_IDENTITIES:
             raise ValueError("source pattern identity fields must match one audited rule")
+        validate_daliuren_source_pattern_provenance(
+            rule_id=self.rule_id,
+            title=self.title,
+            fact_paths=self.fact_paths,
+            predicate_audit=self.predicate_audit,
+        )
         return self
 
 
@@ -2535,6 +2650,20 @@ class DaliurenCoreFacts(ContractModel):
         return value
 
     @model_validator(mode="after")
+    def _source_patterns_match_unique_structural_title(self) -> DaliurenCoreFacts:
+        for source in self.source_conditioned_patterns:
+            structural_index = daliuren_source_pattern_structural_index(source)
+            matching = daliuren_in_range_structural_indices(
+                self.structural_patterns,
+                source.title,
+            )
+            if matching != (structural_index,):
+                raise ValueError(
+                    "source pattern requires a unique in-range structural match"
+                )
+        return self
+
+    @model_validator(mode="after")
     def _uses_runtime_v1_plate_topology(self) -> DaliurenCoreFacts:
         """Keep the three published plate layers internally aligned."""
 
@@ -2567,6 +2696,25 @@ class DaliurenChartV1(ContractModel):
     lessons: tuple[DaliurenLesson, ...] = Field(min_length=4, max_length=4)
     transmissions: tuple[DaliurenTransmission, ...] = Field(min_length=3, max_length=3)
     core_facts: DaliurenCoreFacts | None = None
+
+    @model_validator(mode="after")
+    def _incomplete_four_lessons_require_three_distinct_uppers(
+        self,
+    ) -> DaliurenChartV1:
+        core_facts = self.core_facts
+        if core_facts is None:
+            return self
+        if not any(
+            pattern.rule_id == _DALIUREN_INCOMPLETE_FOUR_LESSONS_RULE_ID
+            for pattern in core_facts.source_conditioned_patterns
+        ):
+            return self
+        uppers = tuple(lesson.upper for lesson in self.lessons)
+        if len(set(uppers)) != 3:
+            raise ValueError(
+                "incomplete four lessons require exactly three distinct uppers"
+            )
+        return self
 
 
 class PhysiognomyObservation(ContractModel):

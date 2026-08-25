@@ -252,7 +252,7 @@ def _payload_with_state_work_money_dimensions() -> dict[str, object]:
 
 _MING17_SOURCE_PATTERNS = {
     "四课不备": (
-        "DLR-07",
+        "DLR-S01",
         "liuren.structural.incomplete-four-lessons",
         "fulltext.md#L58",
     ),
@@ -365,9 +365,9 @@ def test_daliuren_projector_projects_each_ming17_source_pattern(title: str) -> N
 
     assert isinstance(view_model, DaliurenChartV1)
     assert view_model.core_facts is not None
-    assert [item.title for item in view_model.core_facts.source_conditioned_patterns] == [
-        title
-    ]
+    published = view_model.core_facts.source_conditioned_patterns
+    assert [item.title for item in published] == [title]
+    assert published[0].rule_id == _MING17_SOURCE_PATTERNS[title][0]
 
 
 @pytest.mark.parametrize(
@@ -476,6 +476,148 @@ def test_daliuren_contract_rejects_mismatched_or_duplicate_source_identity() -> 
 
     with pytest.raises(ValueError, match="identities must be unique"):
         DaliurenCoreFacts.model_validate(duplicate_identity)
+
+
+def _schema_validator() -> Draft202012Validator:
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
+    return Draft202012Validator(schema)
+
+
+def test_daliuren_source_patterns_reject_qa13_index_duplicate_and_forged_dlr07() -> None:
+    schema = _schema_validator()
+    valid_view = project_daliuren_view_model(_runtime_core_brief(_load_fixture()))
+    assert isinstance(valid_view, DaliurenChartV1)
+    valid_payload = valid_view.model_dump(mode="json")
+
+    out_of_range = copy.deepcopy(_load_fixture())
+    out_of_range["structural_patterns"] = ["未映射课体"] * 4 + ["伏吟"]
+    out_of_range["source_conditioned_patterns"] = [_source_pattern("伏吟")]
+    out_of_range["source_conditioned_patterns"][0]["fact_paths"] = [
+        "fact:/chart_facts/output/structural_patterns/4"
+    ]
+    out_of_range["source_conditioned_patterns"][0]["predicate_audit"] = [
+        "/chart_facts/output/structural_patterns/4:eq:伏吟"
+    ]
+    out_of_range_view = project_daliuren_view_model(_runtime_core_brief(out_of_range))
+    assert isinstance(out_of_range_view, DaliurenChartV1)
+    assert out_of_range_view.core_facts is not None
+    assert out_of_range_view.core_facts.source_conditioned_patterns == ()
+    with pytest.raises(ValueError, match="structural index must be 0-3"):
+        DaliurenSourcePattern.model_validate(
+            out_of_range["source_conditioned_patterns"][0]
+        )
+    out_of_range_schema = copy.deepcopy(valid_payload)
+    out_of_range_schema["core_facts"]["source_conditioned_patterns"] = out_of_range[
+        "source_conditioned_patterns"
+    ]
+    assert list(schema.iter_errors(out_of_range_schema))
+
+    duplicate_hit = copy.deepcopy(_load_fixture())
+    duplicate_hit["structural_patterns"] = ["伏吟", "伏吟"]
+    duplicate_hit["source_conditioned_patterns"] = [_source_pattern("伏吟")]
+    duplicate_hit["source_conditioned_patterns"][0]["fact_paths"] = [
+        "fact:/chart_facts/output/structural_patterns/0",
+        "fact:/chart_facts/output/structural_patterns/1",
+    ]
+    duplicate_hit["source_conditioned_patterns"][0]["predicate_audit"] = [
+        "/chart_facts/output/structural_patterns/0:eq:伏吟",
+        "/chart_facts/output/structural_patterns/1:eq:伏吟",
+    ]
+    duplicate_hit_view = project_daliuren_view_model(_runtime_core_brief(duplicate_hit))
+    assert isinstance(duplicate_hit_view, DaliurenChartV1)
+    assert duplicate_hit_view.core_facts is not None
+    assert duplicate_hit_view.core_facts.source_conditioned_patterns == ()
+    with pytest.raises(ValueError, match="unique structural provenance"):
+        DaliurenSourcePattern.model_validate(
+            duplicate_hit["source_conditioned_patterns"][0]
+        )
+    duplicate_hit_schema = copy.deepcopy(valid_payload)
+    duplicate_hit_schema["core_facts"]["structural_patterns"] = ["伏吟", "伏吟"]
+    duplicate_hit_schema["core_facts"]["source_conditioned_patterns"] = duplicate_hit[
+        "source_conditioned_patterns"
+    ]
+    assert list(schema.iter_errors(duplicate_hit_schema))
+
+    duplicate_title_single_path = copy.deepcopy(_load_fixture())
+    duplicate_title_single_path["structural_patterns"] = ["伏吟", "伏吟"]
+    duplicate_title_single_path["source_conditioned_patterns"] = [
+        _source_pattern("伏吟")
+    ]
+    duplicate_title_view = project_daliuren_view_model(
+        _runtime_core_brief(duplicate_title_single_path)
+    )
+    assert isinstance(duplicate_title_view, DaliurenChartV1)
+    assert duplicate_title_view.core_facts is not None
+    assert duplicate_title_view.core_facts.source_conditioned_patterns == ()
+    valid_duplicate_title_document = copy.deepcopy(valid_payload)
+    valid_duplicate_title_document["core_facts"]["structural_patterns"] = [
+        "伏吟",
+        "伏吟",
+    ]
+    with pytest.raises(ValueError, match="unique in-range structural match"):
+        DaliurenChartV1.model_validate(valid_duplicate_title_document)
+    assert list(schema.iter_errors(valid_duplicate_title_document))
+
+    forged_provenance = copy.deepcopy(valid_payload)
+    forged_provenance["core_facts"]["source_conditioned_patterns"][0][
+        "fact_paths"
+    ] = ["fact:/chart_facts/input/question"]
+    forged_provenance["core_facts"]["source_conditioned_patterns"][0][
+        "predicate_audit"
+    ] = ["/unrelated:eq:伏吟"]
+    with pytest.raises(ValueError, match="unique structural provenance"):
+        DaliurenChartV1.model_validate(forged_provenance)
+    assert list(schema.iter_errors(forged_provenance))
+
+    forged_dlr07 = copy.deepcopy(_load_fixture())
+    forged_dlr07["structural_patterns"] = ["四课不备"]
+    forged_dlr07["four_lessons"] = [
+        {"lesson": 1, "upper": "子", "lower": "庚"},
+        {"lesson": 2, "upper": "丑", "lower": "辰"},
+        {"lesson": 3, "upper": "寅", "lower": "申"},
+        {"lesson": 4, "upper": "子", "lower": "辰"},
+    ]
+    forged_dlr07["source_conditioned_patterns"] = [_source_pattern("四课不备")]
+    forged_dlr07["source_conditioned_patterns"][0].update(
+        {
+            "rule_id": "DLR-07",
+            "fact_paths": [
+                "fact:/chart_facts/output/structural_patterns/0",
+                "fact:/chart_facts/output/four_lessons/0/upper",
+                "fact:/chart_facts/output/four_lessons/1/upper",
+                "fact:/chart_facts/output/four_lessons/2/upper",
+                "fact:/chart_facts/output/four_lessons/3/upper",
+            ],
+        }
+    )
+    forged_dlr07["source_conditioned_patterns"][0]["predicate_audit"].append(
+        "/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3"
+    )
+    forged_dlr07_view = project_daliuren_view_model(_runtime_core_brief(forged_dlr07))
+    assert isinstance(forged_dlr07_view, DaliurenChartV1)
+    assert forged_dlr07_view.core_facts is not None
+    assert forged_dlr07_view.core_facts.source_conditioned_patterns == ()
+    assert [
+        item.rule_id
+        for item in forged_dlr07_view.core_facts.source_conditioned_patterns
+    ] == []
+    with pytest.raises(ValueError):
+        DaliurenSourcePattern.model_validate(
+            forged_dlr07["source_conditioned_patterns"][0]
+        )
+    forged_dlr07_schema = copy.deepcopy(valid_payload)
+    forged_dlr07_schema["lessons"] = [
+        {"lesson_id": "1", "upper": "子", "lower": "庚"},
+        {"lesson_id": "2", "upper": "丑", "lower": "辰"},
+        {"lesson_id": "3", "upper": "寅", "lower": "申"},
+        {"lesson_id": "4", "upper": "子", "lower": "辰"},
+    ]
+    forged_dlr07_schema["core_facts"]["structural_patterns"] = ["四课不备"]
+    forged_dlr07_schema["core_facts"]["source_conditioned_patterns"] = forged_dlr07[
+        "source_conditioned_patterns"
+    ]
+    assert list(schema.iter_errors(forged_dlr07_schema))
 
 
 def test_daliuren_projector_fail_closed_without_runtime_core_facts() -> None:

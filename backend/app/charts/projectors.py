@@ -159,6 +159,8 @@ from app.charts.contracts import (
     ZiweiStar,
     ZiweiStarFact,
     ZiweiTransformation,
+    daliuren_in_range_structural_indices,
+    daliuren_source_pattern_structural_index,
 )
 from app.charts.relationship_engine import (
     project_bazi_relationship_view_model,
@@ -5328,7 +5330,7 @@ _DALIUREN_SOURCE_PATTERN_METADATA: Final[
     dict[str, tuple[str, str, str, str, str]]
 ] = {
     "四课不备": (
-        "DLR-07",
+        "DLR-S01",
         "liuren.structural.incomplete-four-lessons",
         "san-shi/daliuren-daquan",
         "fulltext.md#L58",
@@ -5478,7 +5480,7 @@ def _daliuren_source_conditioned_patterns(
             if isinstance(title, str)
             else None
         )
-        if metadata is None or title in seen_titles:
+        if metadata is None or not isinstance(title, str) or title in seen_titles:
             return None
         (
             expected_rule_id,
@@ -5508,41 +5510,32 @@ def _daliuren_source_conditioned_patterns(
             for item in (*fact_paths, *predicate_audit)
         ):
             return None
-        matching_indices = [
-            index
-            for index, pattern in enumerate(structural_patterns)
-            if pattern == title
-        ]
-        if not matching_indices:
+        matching_indices = daliuren_in_range_structural_indices(
+            structural_patterns,
+            title,
+        )
+        if len(matching_indices) != 1:
             return None
         if len(set(fact_paths)) != len(fact_paths) or len(set(predicate_audit)) != len(
             predicate_audit
         ):
             return None
 
-        structural_fact_paths = {
-            index: f"fact:/chart_facts/output/structural_patterns/{index}"
-            for index in matching_indices
-        }
-        structural_predicate_audits = {
-            index: f"/chart_facts/output/structural_patterns/{index}:eq:{title}"
-            for index in matching_indices
-        }
-        published_indices = {
-            index
-            for index, expected_path in structural_fact_paths.items()
-            if expected_path in fact_paths
-        }
-        audited_indices = {
-            index
-            for index, expected_audit in structural_predicate_audits.items()
-            if expected_audit in predicate_audit
-        }
-        if not published_indices or published_indices != audited_indices:
+        matching_index = matching_indices[0]
+        structural_fact_path = (
+            f"fact:/chart_facts/output/structural_patterns/{matching_index}"
+        )
+        structural_predicate_audit = (
+            f"/chart_facts/output/structural_patterns/{matching_index}:eq:{title}"
+        )
+        if (
+            structural_fact_path not in fact_paths
+            or structural_predicate_audit not in predicate_audit
+        ):
             return None
 
-        allowed_fact_paths = set(structural_fact_paths.values())
-        allowed_predicate_audits = set(structural_predicate_audits.values())
+        allowed_fact_paths = {structural_fact_path}
+        allowed_predicate_audits = {structural_predicate_audit}
 
         if title == "四课不备":
             if not isinstance(four_lessons, (list, tuple)) or len(four_lessons) != 4:
@@ -5577,22 +5570,23 @@ def _daliuren_source_conditioned_patterns(
             return None
 
         try:
-            result.append(
-                DaliurenSourcePattern(
-                    rule_id=expected_rule_id,
-                    local_rule_id=expected_local_rule_id,
-                    title=title,
-                    source_pack=expected_source_pack,
-                    source_anchor=expected_source_anchor,
-                    status=_DALIUREN_SOURCE_PATTERN_STATUS,
-                    fact_paths=tuple(fact_paths),
-                    predicate_audit=tuple(predicate_audit),
-                    source_dependency_id=expected_dependency_id,
-                )
+            parsed_pattern = DaliurenSourcePattern(
+                rule_id=expected_rule_id,
+                local_rule_id=expected_local_rule_id,
+                title=title,
+                source_pack=expected_source_pack,
+                source_anchor=expected_source_anchor,
+                status=_DALIUREN_SOURCE_PATTERN_STATUS,
+                fact_paths=tuple(fact_paths),
+                predicate_audit=tuple(predicate_audit),
+                source_dependency_id=expected_dependency_id,
             )
         except ValueError:
             return None
-        seen_titles.add(cast(str, title))
+        if daliuren_source_pattern_structural_index(parsed_pattern) != matching_index:
+            return None
+        result.append(parsed_pattern)
+        seen_titles.add(title)
 
     return tuple(result)
 

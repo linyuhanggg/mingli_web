@@ -521,7 +521,7 @@ def test_daliuren_chart_schema_accepts_only_typed_source_pattern_fields(
     ][0]
     incomplete_pattern.update(
         {
-            "rule_id": "DLR-07",
+            "rule_id": "DLR-S01",
             "local_rule_id": "liuren.structural.incomplete-four-lessons",
             "title": "四课不备",
             "source_anchor": "fulltext.md#L58",
@@ -587,3 +587,25 @@ def test_daliuren_chart_schema_accepts_only_typed_source_pattern_fields(
         "verdict"
     ] = "forged"
     reject_schema("views/daliuren-chart-v1.schema.json", unknown_field)
+
+    out_of_range_index = copy.deepcopy(payload)
+    out_of_range_index["core_facts"]["source_conditioned_patterns"][0][
+        "fact_paths"
+    ] = ["fact:/chart_facts/output/structural_patterns/4"]
+    out_of_range_index["core_facts"]["source_conditioned_patterns"][0][
+        "predicate_audit"
+    ] = ["/chart_facts/output/structural_patterns/4:eq:伏吟"]
+    reject_schema("views/daliuren-chart-v1.schema.json", out_of_range_index)
+
+    duplicate_structural_title = copy.deepcopy(payload)
+    duplicate_structural_title["core_facts"]["structural_patterns"] = [
+        "伏吟",
+        "伏吟",
+    ]
+    reject_schema("views/daliuren-chart-v1.schema.json", duplicate_structural_title)
+
+    forged_old_dlr07 = copy.deepcopy(incomplete_four_lessons)
+    forged_old_dlr07["core_facts"]["source_conditioned_patterns"][0][
+        "rule_id"
+    ] = "DLR-07"
+    reject_schema("views/daliuren-chart-v1.schema.json", forged_old_dlr07)
