@@ -290,14 +290,18 @@ async def _sample(
     path: str,
     payload: dict[str, object],
     schema_version: str,
-) -> tuple[dict[str, float], dict[str, Any]]:
+) -> tuple[dict[str, float], dict[str, Any], dict[str, Any]]:
     started_at = time.perf_counter()
     response = await client.post(path, headers=headers, json=payload)
     post_ms = (time.perf_counter() - started_at) * 1000
     if response.status_code != 201:
-        problem = response.json()
+        try:
+            problem = response.json()
+        except ValueError:
+            problem = {"detail": response.text[:500]}
         raise RuntimeError(
-            f"{path} failed: {response.status_code} {problem.get('detail', problem.get('title'))}"
+            f"{path} failed: {response.status_code} "
+            f"{problem.get('title', '')} {problem.get('detail', problem)}"
         )
     body = response.json()
     view_model = body.get("view_model")
@@ -319,8 +323,16 @@ async def _sample(
     result = await client.get(f"/api/v1/readings/{version_id}/result")
     result_fetch_ms = (time.perf_counter() - result_started_at) * 1000
     result.raise_for_status()
-    if result.json()["view_model"]["schema_version"] != schema_version:
+    result_body = result.json()
+    if result_body["view_model"]["schema_version"] != schema_version:
         raise RuntimeError(f"{path} result projection changed")
+    capability = result_body.get("capability") or {}
+    if capability.get("source_status") != "available":
+        raise RuntimeError(
+            f"{path} result capability.source_status="
+            f"{capability.get('source_status')!r} capability_id="
+            f"{capability.get('capability_id')!r}"
+        )
 
     timings = {
         "post_ms": post_ms,
@@ -340,7 +352,13 @@ async def _sample(
         # body arrives; browser layout/paint remains a user-test measurement.
         "first_renderable_response_ms": post_ms,
     }
-    return timings, view_model
+    return timings, view_model, {
+        "capability_id": capability.get("capability_id"),
+        "source_status": capability.get("source_status"),
+        "source_system": capability.get("source_system"),
+        "runtime_active_rule_count": capability.get("runtime_active_rule_count"),
+        "judgment_rule_count": capability.get("judgment_rule_count"),
+    }
 
 
 async def benchmark(args: argparse.Namespace) -> dict[str, Any]:
@@ -538,8 +556,9 @@ async def benchmark(args: argparse.Namespace) -> dict[str, Any]:
                     if product not in cases_filter:
                         continue
                     cold_view_model: dict[str, Any] | None = None
+                    cold_capability: dict[str, Any] | None = None
                     try:
-                        cold, cold_view_model = await _sample(
+                        cold, cold_view_model, cold_capability = await _sample(
                             client,
                             headers,
                             path,
@@ -554,9 +573,10 @@ async def benchmark(args: argparse.Namespace) -> dict[str, Any]:
                     hot: list[dict[str, float]] = []
                     hot_errors: list[str] = []
                     hot_view_model: dict[str, Any] | None = None
+                    hot_capability: dict[str, Any] | None = None
                     for _ in range(args.samples):
                         try:
-                            sample, sample_view_model = await _sample(
+                            sample, sample_view_model, sample_capability = await _sample(
                                 client,
                                 headers,
                                 path,
@@ -566,10 +586,13 @@ async def benchmark(args: argparse.Namespace) -> dict[str, Any]:
                             hot.append(sample)
                             if hot_view_model is None:
                                 hot_view_model = sample_view_model
+                            if hot_capability is None:
+                                hot_capability = sample_capability
                         except RuntimeError as error:
                             hot_errors.append(str(error))
                     product_result: dict[str, Any] = {
                         "cold_ms": cold_result,
+                        "capability": cold_capability or hot_capability,
                         "hot_attempt_count": args.samples,
                         "hot_success_count": len(hot),
                         "hot_error_count": len(hot_errors),

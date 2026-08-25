@@ -4,6 +4,7 @@ from pathlib import Path
 from app.readings.capability_policy import (
     RuntimeCapabilityProjection,
     project_capabilities,
+    project_capability,
 )
 
 
@@ -96,6 +97,33 @@ def test_capability_tier_changes_when_runtime_rule_role_changes(tmp_path: Path) 
         ],
     )
     assert _by_id(tmp_path)["bazi"].tier == "A"
+
+
+def test_project_capability_maps_liuren_runtime_id_to_public_daliuren_product(
+    tmp_path: Path,
+) -> None:
+    _write_rules(
+        tmp_path,
+        [
+            {
+                "system": "liuren",
+                "runtime_active": True,
+                "evidence_role": "issue_specific_judgment_rule",
+            }
+        ],
+    )
+
+    projection = project_capability(
+        capability_id="liuren",
+        product_id=None,
+        release_root=tmp_path,
+    )
+
+    assert projection.capability_id == "daliuren"
+    assert projection.source_system == "liuren"
+    assert projection.source_status == "available"
+    assert projection.judgment_rule_count == 1
+    assert projection.tier == "A"
 
 
 def test_admitted_v53_projection_matches_the_recorded_runtime_counts() -> None:

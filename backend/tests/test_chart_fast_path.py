@@ -300,6 +300,11 @@ async def test_five_base_charts_finish_inline_without_worker_or_model(
                 capability_id
             ]
             assert result.json()["accepted_copy"] is None
+            public_capability_id = (
+                "daliuren" if capability_id == "liuren" else capability_id
+            )
+            capability = result.json()["capability"]
+            assert capability["capability_id"] == public_capability_id
 
     assert runtime.calls == ["bazi", "ziwei", "liuyao", "meihua", "liuren"]
     async with database.sessions() as session:
