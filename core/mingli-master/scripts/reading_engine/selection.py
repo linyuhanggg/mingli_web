@@ -539,10 +539,17 @@ def _valid_local_instants(
     naive = datetime.fromisoformat(
         f"{civil_date}T{minute_of_day // 60:02d}:{minute_of_day % 60:02d}:00"
     )
+    fold_zero = naive.replace(tzinfo=zone, fold=0)
+    fold_one = naive.replace(tzinfo=zone, fold=1)
+    if fold_zero.utcoffset() == fold_one.utcoffset():
+        # PEP 495's fold flag is ignored outside a gap/fold.  The common path
+        # is therefore already a single valid local instant and needs no UTC
+        # round trip; transition minutes still take the exact validation path
+        # below.
+        return (fold_zero,)
     result: list[datetime] = []
     seen_utc: set[str] = set()
-    for fold in (0, 1):
-        candidate = naive.replace(tzinfo=zone, fold=fold)
+    for candidate in (fold_zero, fold_one):
         roundtrip = candidate.astimezone(timezone.utc).astimezone(zone)
         if roundtrip.replace(tzinfo=None) != naive:
             continue
@@ -2255,12 +2262,83 @@ def _fact_leaves(value: Any, path: str = "") -> Iterator[tuple[str, Any]]:
     yield path or "/", value
 
 
+def _fact_leaves_at_suffixes(
+    value: Any,
+    path_suffixes: tuple[str, ...],
+) -> Iterator[tuple[str, Any]]:
+    """Index only subtrees addressable by the supplied predicates.
+
+    The search visits the fact containers once, follows each JSON-pointer-like
+    suffix exactly, and then delegates to ``_fact_leaves`` for the matched
+    subtree.  Its yielded paths and values are therefore identical to the
+    relevant subset of a complete Runtime fact index.
+    """
+
+    suffixes_by_first_token: dict[str, list[tuple[str, ...]]] = {}
+    for suffix in path_suffixes:
+        segments = tuple(item for item in suffix.split("/") if item)
+        if not segments:
+            yield from _fact_leaves(value)
+            return
+        suffixes_by_first_token.setdefault(segments[0], []).append(segments[1:])
+
+    relevant: dict[str, Any] = {}
+
+    def follow(
+        current: Any,
+        path: str,
+        remaining: tuple[str, ...],
+    ) -> None:
+        if not remaining:
+            for leaf_path, leaf_value in _fact_leaves(current, path):
+                relevant.setdefault(leaf_path, leaf_value)
+            return
+        if not isinstance(current, Mapping):
+            return
+        expected = remaining[0]
+        for key in sorted(current, key=str):
+            token = _escape_fact_token(str(key))
+            if token == expected:
+                follow(current[key], f"{path}/{token}", remaining[1:])
+
+    def search(current: Any, path: str = "") -> None:
+        if isinstance(current, Mapping):
+            for key in sorted(current, key=str):
+                token = _escape_fact_token(str(key))
+                child_path = f"{path}/{token}"
+                child = current[key]
+                for remaining in suffixes_by_first_token.get(token, ()):
+                    follow(child, child_path, remaining)
+                search(child, child_path)
+        elif isinstance(current, (list, tuple)):
+            for index, child in enumerate(current):
+                search(child, f"{path}/{index}")
+
+    search(value)
+    yield from relevant.items()
+
+
 def _source_conditioned_patterns(
     facts: Mapping[str, Any],
 ) -> list[dict[str, Any]]:
     """Expose verified selection predicates without making a day verdict."""
 
     indexed = {"chart_facts": dict(facts)}
+    active_rules = tuple(
+        rule
+        for rule in evidence_rules.production_evidence_rules()
+        if rule.system == "selection" and rule.runtime_active
+    )
+    predicate_suffixes = tuple(
+        dict.fromkeys(
+            predicate.path_suffix
+            for rule in active_rules
+            for predicate in (
+                *rule.required_fact_predicates,
+                *rule.excluded_fact_predicates,
+            )
+        )
+    )
     fact_refs = tuple(
         FactRef(
             fact_id=f"fact:{path}",
@@ -2271,12 +2349,10 @@ def _source_conditioned_patterns(
             reading_id="",
             version=1,
         )
-        for path, value in _fact_leaves(indexed)
+        for path, value in _fact_leaves_at_suffixes(indexed, predicate_suffixes)
     )
     matches: list[dict[str, Any]] = []
-    for rule in evidence_rules.production_evidence_rules():
-        if rule.system != "selection":
-            continue
+    for rule in active_rules:
         matched, fact_ids, predicate_audit = evidence_rules.match_rule(
             rule, fact_refs
         )

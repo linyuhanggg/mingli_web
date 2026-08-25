@@ -313,6 +313,22 @@ def _pillar_source_day(term: Mapping[str, Any]) -> Any:
     )
 
 
+@lru_cache(maxsize=512)
+def _term_pillars_for_instant_utc(instant_utc: str) -> tuple[str, str]:
+    """Return immutable year/month pillars for one exact solar-term identity.
+
+    Selection normalizes every hour variant in a bounded date range.  The
+    active Li Chun and Jie identities are shared by all those instants, while
+    the pinned sxtwl ``getYearGZ``/``getMonthGZ`` calls are comparatively
+    expensive on the admitted Linux runtime.  Cache only their primitive
+    Ganzhi strings, keyed by the exact UTC term instant; calendar/provider
+    results remain freshly materialized and independently verified.
+    """
+
+    source_day = _pillar_source_day({"instant_utc": instant_utc})
+    return ganzhi(source_day.getYearGZ()), ganzhi(source_day.getMonthGZ())
+
+
 def _number(value: float | int | None, *, label: str, minimum: float, maximum: float) -> float | None:
     if value is None:
         return None
@@ -362,13 +378,17 @@ def _pillar_facts_at(
         pillar_date.month,
         pillar_date.day,
     )
-    active_jie_day = _pillar_source_day(previous_jie)
-    active_year_day = _pillar_source_day(recent_li_chun)
+    year_pillar = _term_pillars_for_instant_utc(
+        str(recent_li_chun["instant_utc"])
+    )[0]
+    month_pillar = _term_pillars_for_instant_utc(
+        str(previous_jie["instant_utc"])
+    )[1]
     day = ganzhi(pillar_day.getDayGZ())
     hour_branch = ganzhi(pillar_day.getHourGZ(point.hour))[1]
     pillars = {
-        "year": ganzhi(active_year_day.getYearGZ()),
-        "month": ganzhi(active_jie_day.getMonthGZ()),
+        "year": year_pillar,
+        "month": month_pillar,
         "day": day,
         "hour": hour_pillar(day, hour_branch),
     }
@@ -497,10 +517,14 @@ def normalize_calendar(
         zi_hour_policy=zi_hour_policy,
         terms=terms,
     )
-    effective_pillar_facts = _pillar_facts_at(
-        effective,
-        zi_hour_policy=zi_hour_policy,
-        terms=terms,
+    effective_pillar_facts = (
+        civil_pillar_facts
+        if effective == civil
+        else _pillar_facts_at(
+            effective,
+            zi_hour_policy=zi_hour_policy,
+            terms=terms,
+        )
     )
     pillar_date = effective_pillar_facts["pillar_date"]
     previous_term = effective_pillar_facts["previous_term"]
