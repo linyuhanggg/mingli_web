@@ -13,8 +13,9 @@ import type {
   DaliurenOutcomeRelation,
   DaliurenRelationshipObservation,
   DaliurenSeasonStrength,
-  DaliurenSixRelativeStage,
   DaliurenSixRelative,
+  DaliurenSixRelativeStage,
+  DaliurenStageStatusEntry,
   DaliurenStateObservation,
   DaliurenStageBranchDirection,
   DaliurenTimingCandidateObservation,
@@ -149,6 +150,14 @@ const RULE_EVIDENCE_KEYS = [
   "status",
 ] as const;
 const SIX_RELATIVE_STAGE_KEYS = ["stage", "branch", "six_relative"] as const;
+const STAGE_STATUS_KEYS = [
+  "stage",
+  "branch",
+  "six_relative",
+  "heavenly_general",
+  "season_strength",
+  "is_xunkong",
+] as const;
 const GENERAL_LANDING_KEYS = [
   "stage",
   "heavenly_general",
@@ -365,6 +374,33 @@ function parseSixRelativeStage(
   const branch = readString(value, "branch");
   if (value.stage !== stage || !branch || !isSixRelative(value.six_relative)) return null;
   return { branch, six_relative: value.six_relative, stage };
+}
+
+function parseStageStatus(
+  value: unknown,
+  stage: DaliurenTransmissionStage,
+): DaliurenStageStatusEntry | null {
+  if (!isRecord(value) || !hasExactKeys(value, STAGE_STATUS_KEYS)) return null;
+  const branch = readString(value, "branch");
+  const heavenlyGeneral = readString(value, "heavenly_general");
+  if (
+    value.stage !== stage ||
+    !branch ||
+    !heavenlyGeneral ||
+    !isSixRelative(value.six_relative) ||
+    !isSeasonStrength(value.season_strength) ||
+    typeof value.is_xunkong !== "boolean"
+  ) {
+    return null;
+  }
+  return {
+    branch,
+    heavenly_general: heavenlyGeneral,
+    is_xunkong: value.is_xunkong,
+    season_strength: value.season_strength,
+    six_relative: value.six_relative,
+    stage,
+  };
 }
 
 function isLocationDirection<Stage extends DaliurenTransmissionStage>(
@@ -647,27 +683,58 @@ function sameGeneralLandingCorrespondence(
   );
 }
 
-function parseTopLevelStateFact(
+function parseTopLevelStateFacts(
   value: Record<string, unknown>,
   evidence: Record<string, unknown>,
-): EvidenceEntry | null {
+): readonly EvidenceEntry[] | null {
   const rows = value.general_landing_correspondences;
+  const statusRows = value.stage_status;
   if (
     !hasExactKeys(value, STATE_DIMENSION_KEYS) ||
+    value.canonical_dimension !== "state" ||
+    (value.requested_dimension !== "state" && value.requested_dimension !== "current_state") ||
     value.status !== "calculated_facts_not_verdict" ||
     !Array.isArray(value.source_rule_ids) ||
-    !value.source_rule_ids.every((ruleId) => typeof ruleId === "string" && Boolean(ruleId.trim())) ||
+    !Array.isArray(statusRows) ||
+    statusRows.length !== LOCATION_STAGES.length ||
     !Array.isArray(rows) ||
     rows.length !== LOCATION_STAGES.length ||
     !rows.every(isGeneralLandingRow) ||
     !LOCATION_STAGES.every((stage, index) => rows[index]?.stage === stage) ||
+    !hasExactKeys(evidence, RULE_EVIDENCE_KEYS) ||
+    evidence.catalog_schema !== "mingli-liuren-executable-rules-v1" ||
+    evidence.hard_verdict !== null ||
+    evidence.requires_school_adjudication !== true ||
     !Array.isArray(evidence.matched) ||
+    !isEmptyArray(evidence.not_evaluated) ||
     !isEmptyArray(evidence.scope_boundaries)
   ) {
     return null;
   }
 
+  const parsedStatusRows = LOCATION_STAGES.map((stage, index) => parseStageStatus(statusRows[index], stage));
+  if (parsedStatusRows.some((row) => row === null)) return null;
+  const typedStatusRows = parsedStatusRows as readonly DaliurenStageStatusEntry[];
+  if (
+    typedStatusRows.some(
+      (row, index) =>
+        row.branch !== rows[index]?.landing_branch ||
+        row.heavenly_general !== rows[index]?.heavenly_general,
+    )
+  ) {
+    return null;
+  }
+
   const exactRows = rows.filter(isGeneralLandingCorrespondence);
+  const expectedSourceRuleIds = exactRows.length ? ["LM-R01", "LR-09"] : ["LR-09"];
+  if (
+    value.source_rule_ids.length !== expectedSourceRuleIds.length ||
+    value.source_rule_ids.some((ruleId, index) => ruleId !== expectedSourceRuleIds[index]) ||
+    evidence.status !== (exactRows.length ? "matched_evidence" : "not_bound")
+  ) {
+    return null;
+  }
+
   let sources: readonly EvidenceSource[] = [];
   if (exactRows.length) {
     if (evidence.matched.length !== 1) return null;
@@ -691,18 +758,32 @@ function parseTopLevelStateFact(
     return null;
   }
 
-  return {
-    marker: "LM-R01",
-    fact: `天将落地类象：${rows
-      .map(
-        (row) =>
-          `${STAGE_FACTS[row.stage]} ${row.heavenly_general}落${row.landing_branch}${
-            row.status === "no_exact_source_correspondence" ? "（缺少精确类象来源）" : ""
-          }`,
-      )
-      .join("、")} · 共 ${rows.length} 条`,
-    sources,
-  };
+  return [
+    {
+      marker: "LR-09",
+      fact: `三传状态：${typedStatusRows
+        .map(
+          (row) =>
+            `${STAGE_FACTS[row.stage]} ${row.branch} · 六亲${row.six_relative} · 天将${row.heavenly_general} · ${
+              SEASON_STRENGTH_FACTS[row.season_strength]
+            } · ${row.is_xunkong ? "旬空" : "非旬空"}`,
+        )
+        .join("；")}`,
+      sources: [],
+    },
+    {
+      marker: "LM-R01",
+      fact: `天将落地类象：${rows
+        .map(
+          (row) =>
+            `${STAGE_FACTS[row.stage]} ${row.heavenly_general}落${row.landing_branch}${
+              row.status === "no_exact_source_correspondence" ? "（缺少精确类象来源）" : ""
+            }`,
+        )
+        .join("、")} · 共 ${rows.length} 条`,
+      sources,
+    },
+  ];
 }
 
 function isWorkStrength(value: unknown): value is WorkStrength {
@@ -1195,8 +1276,8 @@ function parseDimension(value: unknown): EvidenceGroup | null {
     };
   }
   if (dimension === "state" && hasOwnKey(value, "general_landing_correspondences")) {
-    const stateEntry = parseTopLevelStateFact(value, evidence);
-    return stateEntry ? { dimension, entries: [stateEntry] } : null;
+    const stateEntries = parseTopLevelStateFacts(value, evidence);
+    return stateEntries ? { dimension, entries: stateEntries } : null;
   }
   if (
     dimension === "relationship" &&

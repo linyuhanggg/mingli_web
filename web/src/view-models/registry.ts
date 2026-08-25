@@ -935,6 +935,15 @@ export type DaliurenSixRelativeStage = Readonly<{
   readonly stage: DaliurenTransmissionStage;
 }>;
 
+export type DaliurenStageStatusEntry = Readonly<{
+  readonly branch: string;
+  readonly heavenly_general: string;
+  readonly is_xunkong: boolean;
+  readonly season_strength: DaliurenSeasonStrength;
+  readonly six_relative: DaliurenSixRelative;
+  readonly stage: DaliurenTransmissionStage;
+}>;
+
 export type DaliurenMiddleVoidObservation = Readonly<{
   readonly stage: "middle";
   readonly branch: string;
@@ -1082,6 +1091,7 @@ export type DaliurenDimensionFact = Readonly<{
   readonly six_relative_stages?: ReadonlyArray<DaliurenSixRelativeStage>;
   readonly stage_branch_directions?: DaliurenLocationObservation["stage_branch_directions"];
   readonly stage_flow?: ReadonlyArray<DaliurenStageFlowEntry>;
+  readonly stage_status?: ReadonlyArray<DaliurenStageStatusEntry>;
   readonly subject_object_relation?: DaliurenRelationFact;
   readonly relative_speed?: DaliurenRelativeSpeed | null;
   readonly candidate_branch?: DaliurenCandidateBranch | null;

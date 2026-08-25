@@ -1050,6 +1050,35 @@ describe("大六壬 S3 M6a 维度证据", () => {
     return screen.getByRole("region", { name: "维度证据" });
   }
 
+  function stateStatus(
+    stage: "initial" | "middle" | "final",
+    branch: string,
+    heavenlyGeneral: string,
+    overrides: Record<string, unknown> = {},
+  ) {
+    return {
+      stage,
+      branch,
+      six_relative: "兄弟",
+      heavenly_general: heavenlyGeneral,
+      season_strength: "休",
+      is_xunkong: false,
+      ...overrides,
+    };
+  }
+
+  function runtimeStateEvidence(overrides: Record<string, unknown> = {}) {
+    return evidence({
+      catalog_schema: "mingli-liuren-executable-rules-v1",
+      matched: [],
+      not_evaluated: [],
+      requires_school_adjudication: true,
+      scope_boundaries: [],
+      status: "not_bound",
+      ...overrides,
+    });
+  }
+
   it("renders the real Runtime relationship and timing observations under frozen Chinese titles", () => {
     render(
       <DaliurenBoard
@@ -1255,7 +1284,21 @@ describe("大六壬 S3 M6a 维度证据", () => {
               requested_dimension: "state",
               status: "calculated_facts_not_verdict",
               source_rule_ids: ["LM-R01", "LR-09"],
-              stage_status: [],
+              stage_status: [
+                stateStatus("initial", "辰", "勾陈", {
+                  six_relative: "妻财",
+                  season_strength: "旺",
+                }),
+                stateStatus("middle", "酉", "天空", {
+                  six_relative: "官鬼",
+                  season_strength: "囚",
+                  is_xunkong: true,
+                }),
+                stateStatus("final", "亥", "白虎", {
+                  six_relative: "父母",
+                  season_strength: "unknown",
+                }),
+              ],
               general_landing_correspondences: [
                 initial,
                 {
@@ -1269,7 +1312,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
                 },
                 final,
               ],
-              rule_evidence: evidence({
+              rule_evidence: runtimeStateEvidence({
                 matched: [
                   matchedEntry({
                     rule_id: "LM-R01",
@@ -1280,6 +1323,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
                     },
                   }),
                 ],
+                status: "matched_evidence",
               }),
             }),
           }),
@@ -1289,9 +1333,14 @@ describe("大六壬 S3 M6a 维度证据", () => {
 
     const state = within(panel()).getByRole("group", { name: "状态" });
     expect(state).toHaveTextContent(
+      "三传状态：初传 辰 · 六亲妻财 · 天将勾陈 · 旺 · 非旬空；中传 酉 · 六亲官鬼 · 天将天空 · 囚 · 旬空；末传 亥 · 六亲父母 · 天将白虎 · 强弱未提供 · 非旬空",
+    );
+    expect(state).toHaveTextContent(
       "天将落地类象：初传 勾陈落辰、中传 天空落酉（缺少精确类象来源）、末传 白虎落亥 · 共 3 条",
     );
-    expect(state).not.toHaveTextContent(/no_exact_source_correspondence|source_correspondence_matched|hard_verdict|吉凶|成败/);
+    expect(state).not.toHaveTextContent(
+      /no_exact_source_correspondence|source_correspondence_matched|season_strength|is_xunkong|hard_verdict|吉凶|成败/,
+    );
   });
 
   it("renders an all-unavailable state group as a neutral source boundary", () => {
@@ -1313,13 +1362,24 @@ describe("大六壬 S3 M6a 维度证据", () => {
               requested_dimension: "state",
               status: "calculated_facts_not_verdict",
               source_rule_ids: ["LR-09"],
-              stage_status: [],
+              stage_status: [
+                stateStatus("initial", "酉", "天空", { season_strength: "相" }),
+                stateStatus("middle", "戌", "天空", {
+                  six_relative: "官鬼",
+                  season_strength: "死",
+                  is_xunkong: true,
+                }),
+                stateStatus("final", "亥", "天空", {
+                  six_relative: "父母",
+                  season_strength: "unknown",
+                }),
+              ],
               general_landing_correspondences: [
                 unavailable("initial", "酉"),
                 unavailable("middle", "戌"),
                 unavailable("final", "亥"),
               ],
-              rule_evidence: evidence({ matched: [], status: "not_bound" }),
+              rule_evidence: runtimeStateEvidence(),
             }),
           }),
         })}
@@ -1328,9 +1388,14 @@ describe("大六壬 S3 M6a 维度证据", () => {
 
     const state = within(panel()).getByRole("group", { name: "状态" });
     expect(state).toHaveTextContent(
+      "三传状态：初传 酉 · 六亲兄弟 · 天将天空 · 相 · 非旬空；中传 戌 · 六亲官鬼 · 天将天空 · 死 · 旬空；末传 亥 · 六亲父母 · 天将天空 · 强弱未提供 · 非旬空",
+    );
+    expect(state).toHaveTextContent(
       "天将落地类象：初传 天空落酉（缺少精确类象来源）、中传 天空落戌（缺少精确类象来源）、末传 天空落亥（缺少精确类象来源） · 共 3 条",
     );
-    expect(state).not.toHaveTextContent(/no_exact_source_correspondence|hard_verdict|吉凶|成败|保证/);
+    expect(state).not.toHaveTextContent(
+      /no_exact_source_correspondence|season_strength|is_xunkong|hard_verdict|吉凶|成败|保证/,
+    );
   });
 
   it("fails the whole state group closed for unknown statuses, extra fields or matched drift", () => {
@@ -1360,11 +1425,22 @@ describe("大六壬 S3 M6a 维度证据", () => {
         requested_dimension: "state",
         status: "calculated_facts_not_verdict",
         source_rule_ids: ["LM-R01", "LR-09"],
-        stage_status: [],
+        stage_status: [
+          stateStatus("initial", "辰", "勾陈", { six_relative: "妻财", season_strength: "旺" }),
+          stateStatus("middle", "酉", "天空", {
+            six_relative: "官鬼",
+            season_strength: "囚",
+            is_xunkong: true,
+          }),
+          stateStatus("final", "亥", "天空", {
+            six_relative: "父母",
+            season_strength: "unknown",
+          }),
+        ],
         general_landing_correspondences: rows,
         rule_evidence: ruleEvidence,
       });
-    const matched = evidence({
+    const matched = runtimeStateEvidence({
       matched: [
         matchedEntry({
           rule_id: "LM-R01",
@@ -1375,6 +1451,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
           },
         }),
       ],
+      status: "matched_evidence",
     });
     render(
       <DaliurenBoard
@@ -1390,7 +1467,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
             ),
             matched_drift: topLevelState(
               [exact, unavailable("middle", "酉"), unavailable("final", "亥")],
-              evidence({
+              runtimeStateEvidence({
                 matched: [
                   matchedEntry({
                     rule_id: "LM-R01",
@@ -1401,6 +1478,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
                     },
                   }),
                 ],
+                status: "matched_evidence",
               }),
             ),
           }),
@@ -1410,6 +1488,102 @@ describe("大六壬 S3 M6a 维度证据", () => {
 
     expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
     expect(document.body).not.toHaveTextContent(/future_status|不得展示额外字段|天将落地类象|raw_dump/);
+  });
+
+  it("fails the whole state group closed for malformed, out-of-order or source-drift stage status", () => {
+    const initial = {
+      stage: "initial",
+      heavenly_general: "勾陈",
+      landing_branch: "辰",
+      source_pack: "san-shi/liuren-miben",
+      source_rule: "LM-R01",
+      role: "imagery_correspondence_not_observed_activity",
+      status: "source_correspondence_matched",
+      source_text: "勾陈临辰",
+      source_anchor: "fulltext.md#L10",
+    };
+    const unavailable = (stage: "middle" | "final", branch: string, general: string) => ({
+      stage,
+      heavenly_general: general,
+      landing_branch: branch,
+      source_pack: "san-shi/liuren-miben",
+      source_rule: "LM-R01",
+      role: "imagery_correspondence_not_observed_activity",
+      status: "no_exact_source_correspondence",
+    });
+    const correspondences = [initial, unavailable("middle", "酉", "天空"), unavailable("final", "亥", "白虎")];
+    const statusRows = [
+      stateStatus("initial", "辰", "勾陈", { six_relative: "妻财", season_strength: "旺" }),
+      stateStatus("middle", "酉", "天空", {
+        six_relative: "官鬼",
+        season_strength: "囚",
+        is_xunkong: true,
+      }),
+      stateStatus("final", "亥", "白虎", {
+        six_relative: "父母",
+        season_strength: "unknown",
+      }),
+    ];
+    const matched = runtimeStateEvidence({
+      matched: [
+        matchedEntry({
+          rule_id: "LM-R01",
+          observation: {
+            matched_count: 1,
+            stages: ["initial"],
+            correspondences: [initial],
+          },
+        }),
+      ],
+      status: "matched_evidence",
+    });
+    const projection = (overrides: Record<string, unknown> = {}) =>
+      dimension({
+        canonical_dimension: "state",
+        requested_dimension: "state",
+        status: "calculated_facts_not_verdict",
+        source_rule_ids: ["LM-R01", "LR-09"],
+        stage_status: statusRows,
+        general_landing_correspondences: correspondences,
+        rule_evidence: matched,
+        ...overrides,
+      });
+
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            missing_rows: projection({ stage_status: [] }),
+            extra_field: projection({
+              stage_status: [{ ...statusRows[0], raw_dump: "不得展示状态原始字段" }, ...statusRows.slice(1)],
+            }),
+            unknown_strength: projection({
+              stage_status: [statusRows[0], { ...statusRows[1], season_strength: "未来旺衰" }, statusRows[2]],
+            }),
+            malformed_void: projection({
+              stage_status: [statusRows[0], { ...statusRows[1], is_xunkong: "true" }, statusRows[2]],
+            }),
+            wrong_stage_order: projection({
+              stage_status: [statusRows[1], statusRows[0], statusRows[2]],
+            }),
+            cross_field_drift: projection({
+              stage_status: [statusRows[0], { ...statusRows[1], branch: "午" }, statusRows[2]],
+            }),
+            source_rule_drift: projection({
+              source_rule_ids: ["LR-09", "LM-R01"],
+            }),
+            evidence_source_drift: projection({
+              rule_evidence: { ...matched, catalog_schema: "future-evidence-schema" },
+            }),
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(
+      /不得展示状态原始字段|未来旺衰|future-evidence-schema|三传状态|天将落地类象|raw_dump/,
+    );
   });
 
   it("renders the Runtime location shape as neutral symbolic direction candidates with source boundaries", async () => {
