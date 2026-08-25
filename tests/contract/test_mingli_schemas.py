@@ -604,6 +604,24 @@ def test_daliuren_chart_schema_accepts_only_typed_source_pattern_fields(
     ]
     reject_schema("views/daliuren-chart-v1.schema.json", duplicate_structural_title)
 
+    omitted_source_duplicate_titles = copy.deepcopy(payload)
+    omitted_source_duplicate_titles["core_facts"]["structural_patterns"] = [
+        "伏吟",
+        "伏吟",
+    ]
+    omitted_source_duplicate_titles["core_facts"].pop("source_conditioned_patterns")
+    reject_schema(
+        "views/daliuren-chart-v1.schema.json", omitted_source_duplicate_titles
+    )
+
+    empty_source_duplicate_titles = copy.deepcopy(payload)
+    empty_source_duplicate_titles["core_facts"]["structural_patterns"] = [
+        "伏吟",
+        "伏吟",
+    ]
+    empty_source_duplicate_titles["core_facts"]["source_conditioned_patterns"] = []
+    reject_schema("views/daliuren-chart-v1.schema.json", empty_source_duplicate_titles)
+
     forged_old_dlr07 = copy.deepcopy(incomplete_four_lessons)
     forged_old_dlr07["core_facts"]["source_conditioned_patterns"][0][
         "rule_id"

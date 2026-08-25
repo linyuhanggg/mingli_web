@@ -491,7 +491,13 @@ def test_daliuren_source_patterns_reject_qa13_index_duplicate_and_forged_dlr07()
     valid_payload = valid_view.model_dump(mode="json")
 
     out_of_range = copy.deepcopy(_load_fixture())
-    out_of_range["structural_patterns"] = ["未映射课体"] * 4 + ["伏吟"]
+    out_of_range["structural_patterns"] = [
+        "未映射课体甲",
+        "未映射课体乙",
+        "未映射课体丙",
+        "未映射课体丁",
+        "伏吟",
+    ]
     out_of_range["source_conditioned_patterns"] = [_source_pattern("伏吟")]
     out_of_range["source_conditioned_patterns"][0]["fact_paths"] = [
         "fact:/chart_facts/output/structural_patterns/4"
@@ -526,8 +532,8 @@ def test_daliuren_source_patterns_reject_qa13_index_duplicate_and_forged_dlr07()
     ]
     duplicate_hit_view = project_daliuren_view_model(_runtime_core_brief(duplicate_hit))
     assert isinstance(duplicate_hit_view, DaliurenChartV1)
-    assert duplicate_hit_view.core_facts is not None
-    assert duplicate_hit_view.core_facts.source_conditioned_patterns == ()
+    assert duplicate_hit_view.core_facts is None
+    schema.validate(duplicate_hit_view.model_dump(mode="json"))
     with pytest.raises(ValueError, match="unique structural provenance"):
         DaliurenSourcePattern.model_validate(
             duplicate_hit["source_conditioned_patterns"][0]
@@ -548,16 +554,21 @@ def test_daliuren_source_patterns_reject_qa13_index_duplicate_and_forged_dlr07()
         _runtime_core_brief(duplicate_title_single_path)
     )
     assert isinstance(duplicate_title_view, DaliurenChartV1)
-    assert duplicate_title_view.core_facts is not None
-    assert duplicate_title_view.core_facts.source_conditioned_patterns == ()
+    assert duplicate_title_view.core_facts is None
+    schema.validate(duplicate_title_view.model_dump(mode="json"))
     valid_duplicate_title_document = copy.deepcopy(valid_payload)
     valid_duplicate_title_document["core_facts"]["structural_patterns"] = [
         "伏吟",
         "伏吟",
     ]
-    with pytest.raises(ValueError, match="unique in-range structural match"):
+    with pytest.raises(ValueError, match="structural_patterns must be unique"):
         DaliurenChartV1.model_validate(valid_duplicate_title_document)
     assert list(schema.iter_errors(valid_duplicate_title_document))
+    mismatched_unique_title = copy.deepcopy(valid_payload)
+    mismatched_unique_title["core_facts"]["structural_patterns"] = ["反吟"]
+    with pytest.raises(ValueError, match="unique in-range structural match"):
+        DaliurenChartV1.model_validate(mismatched_unique_title)
+    assert list(schema.iter_errors(mismatched_unique_title))
 
     forged_provenance = copy.deepcopy(valid_payload)
     forged_provenance["core_facts"]["source_conditioned_patterns"][0][
@@ -618,6 +629,50 @@ def test_daliuren_source_patterns_reject_qa13_index_duplicate_and_forged_dlr07()
         "source_conditioned_patterns"
     ]
     assert list(schema.iter_errors(forged_dlr07_schema))
+
+
+@pytest.mark.parametrize(
+    "mutate_source",
+    [
+        lambda payload: payload.pop("source_conditioned_patterns", None),
+        lambda payload: payload.__setitem__("source_conditioned_patterns", "wrong-type"),
+    ],
+    ids=("omitted", "wrong-type"),
+)
+def test_daliuren_structural_patterns_unique_when_source_block_absent(
+    mutate_source: object,
+) -> None:
+    schema = _schema_validator()
+    payload = copy.deepcopy(_load_fixture())
+    payload["structural_patterns"] = ["伏吟", "伏吟"]
+    assert callable(mutate_source)
+    mutate_source(payload)
+
+    view_model = project_daliuren_view_model(_runtime_core_brief(payload))
+    assert isinstance(view_model, DaliurenChartV1)
+    assert view_model.core_facts is None
+    schema.validate(view_model.model_dump(mode="json"))
+
+    valid_dump = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    duplicate_dump = copy.deepcopy(valid_dump)
+    duplicate_dump["core_facts"]["structural_patterns"] = ["伏吟", "伏吟"]
+    duplicate_dump["core_facts"]["source_conditioned_patterns"] = []
+    with pytest.raises(ValueError, match="structural_patterns must be unique"):
+        DaliurenChartV1.model_validate(duplicate_dump)
+    with pytest.raises(ValueError, match="structural_patterns must be unique"):
+        DaliurenCoreFacts.model_validate(duplicate_dump["core_facts"])
+    assert list(schema.iter_errors(duplicate_dump))
+
+    omitted_dump = copy.deepcopy(valid_dump)
+    omitted_dump["core_facts"]["structural_patterns"] = ["伏吟", "伏吟"]
+    omitted_dump["core_facts"].pop("source_conditioned_patterns", None)
+    with pytest.raises(ValueError, match="structural_patterns must be unique"):
+        DaliurenChartV1.model_validate(omitted_dump)
+    with pytest.raises(ValueError, match="structural_patterns must be unique"):
+        DaliurenCoreFacts.model_validate(omitted_dump["core_facts"])
+    assert list(schema.iter_errors(omitted_dump))
 
 
 def test_daliuren_projector_fail_closed_without_runtime_core_facts() -> None:

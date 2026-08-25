@@ -2612,6 +2612,17 @@ class DaliurenCoreFacts(ContractModel):
     timing_candidates: tuple[DaliurenTimingCandidate, ...] | None = None
     xunkong: DaliurenXunkong | None = None
 
+    @field_validator("structural_patterns")
+    @classmethod
+    def _structural_patterns_are_unique(
+        cls,
+        value: tuple[str, ...] | None,
+    ) -> tuple[str, ...] | None:
+        # Isomorphic to Schema uniqueItems, even without a source block.
+        if value is not None and len(value) != len(set(value)):
+            raise ValueError("structural_patterns must be unique")
+        return value
+
     @field_validator("dimension_facts")
     @classmethod
     def _dimension_facts_use_runtime_requested_dimensions(
