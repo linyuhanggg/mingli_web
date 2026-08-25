@@ -1,0 +1,385 @@
+{
+  "runtime_startup_ms": 1937.669,
+  "runtime_admission": "candidate_remanifested",
+  "runtime_identity": {
+    "release_name": "mingli-master-portable-core",
+    "source_commit": "443a777384975b05e50a6d969e3cab5da7a3119a",
+    "describe_manifest_digest": "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22",
+    "release_manifest_sha256": "9700fe96e2c440dc8b14c41aed576264d893c7a23d638708eafe40388771db71",
+    "capability_shape_sha256": "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af",
+    "overlay": {
+      "bazi_calc_path": "scripts/bazi_calc.py",
+      "bazi_calc_sha256": "ab35fbf511693d47487aa0601bdba32d13a44cf988888b90c085d6573027249a",
+      "replaced_bazi_calc_sha256": "177f5ad837d59bf5551565d1dd6f9f2249002a9fa3d86fd909909490eb87b477",
+      "liuren_calc_path": "scripts/liuren_calc.py",
+      "liuren_calc_sha256": "f276643106194766107008dfc08df25ef0c141e9f064c39bd7609d8732668908",
+      "replaced_liuren_calc_sha256": "c2deb59bdacfa5edcc88f53e51968affed96ef137bec20b4d658959423f00dec",
+      "release_name": "mingli-master-portable-core",
+      "source_commit": "443a777384975b05e50a6d969e3cab5da7a3119a",
+      "release_manifest_sha256": "9700fe96e2c440dc8b14c41aed576264d893c7a23d638708eafe40388771db71",
+      "file_count": "222",
+      "diff": "scripts/bazi_calc.py + scripts/liuren_calc.py"
+    }
+  },
+  "hot_sample_count_per_product": 30,
+  "cold_definition": "first product-specific request after Runtime admission",
+  "hot_definition": "subsequent request with admitted server and warm filesystem cache",
+  "first_paint_note": "first_renderable_response_ms is the backend boundary; browser layout/paint requires user-test instrumentation",
+  "products": {
+    "bazi": {
+      "cold_ms": {
+        "post_ms": 717.059,
+        "api_orchestration_ms": 16.615,
+        "queue_wait_ms": 0.0,
+        "worker_pickup_ms": 0.0,
+        "runtime_one_shot_ms": 652.05,
+        "db_persistence_ms": 7.155,
+        "first_ready_poll_ms": 12.712,
+        "result_fetch_ms": 47.259,
+        "first_renderable_response_ms": 717.059
+      },
+      "hot_attempt_count": 30,
+      "hot_success_count": 30,
+      "hot_error_count": 0,
+      "hot_errors": [],
+      "hot_ms": {
+        "post_ms": {
+          "p50": 676.851,
+          "p95": 691.65,
+          "p99": 726.912
+        },
+        "api_orchestration_ms": {
+          "p50": 13.74,
+          "p95": 14.401,
+          "p99": 14.655
+        },
+        "queue_wait_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "worker_pickup_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "runtime_one_shot_ms": {
+          "p50": 654.58,
+          "p95": 669.403,
+          "p99": 704.937
+        },
+        "db_persistence_ms": {
+          "p50": 5.881,
+          "p95": 6.236,
+          "p99": 6.612
+        },
+        "first_ready_poll_ms": {
+          "p50": 12.137,
+          "p95": 12.739,
+          "p99": 13.136
+        },
+        "result_fetch_ms": {
+          "p50": 18.097,
+          "p95": 45.858,
+          "p99": 46.889
+        },
+        "first_renderable_response_ms": {
+          "p50": 676.851,
+          "p95": 691.65,
+          "p99": 726.912
+        }
+      },
+      "view_model_equivalence": {
+        "schema_version": "bazi-chart/v1",
+        "normalization": "top-level subject_ref",
+        "cold_canonical_sha256": "54e40866441520db3117c85143479be6405fe293e6b020d2cbb7cbd1d4fa81cb",
+        "hot_canonical_sha256": "54e40866441520db3117c85143479be6405fe293e6b020d2cbb7cbd1d4fa81cb",
+        "equal": true
+      }
+    },
+    "ziwei": {
+      "cold_ms": {
+        "post_ms": 753.152,
+        "api_orchestration_ms": 12.772,
+        "queue_wait_ms": 0.0,
+        "worker_pickup_ms": 0.0,
+        "runtime_one_shot_ms": 730.295,
+        "db_persistence_ms": 7.276,
+        "first_ready_poll_ms": 10.952,
+        "result_fetch_ms": 18.098,
+        "first_renderable_response_ms": 753.152
+      },
+      "hot_attempt_count": 30,
+      "hot_success_count": 30,
+      "hot_error_count": 0,
+      "hot_errors": [],
+      "hot_ms": {
+        "post_ms": {
+          "p50": 757.087,
+          "p95": 836.513,
+          "p99": 843.541
+        },
+        "api_orchestration_ms": {
+          "p50": 12.798,
+          "p95": 14.414,
+          "p99": 14.842
+        },
+        "queue_wait_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "worker_pickup_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "runtime_one_shot_ms": {
+          "p50": 733.817,
+          "p95": 810.201,
+          "p99": 816.765
+        },
+        "db_persistence_ms": {
+          "p50": 6.666,
+          "p95": 8.89,
+          "p99": 9.141
+        },
+        "first_ready_poll_ms": {
+          "p50": 11.616,
+          "p95": 13.196,
+          "p99": 40.347
+        },
+        "result_fetch_ms": {
+          "p50": 18.633,
+          "p95": 47.928,
+          "p99": 50.571
+        },
+        "first_renderable_response_ms": {
+          "p50": 757.087,
+          "p95": 836.513,
+          "p99": 843.541
+        }
+      },
+      "view_model_equivalence": {
+        "schema_version": "ziwei-chart/v1",
+        "normalization": "top-level subject_ref",
+        "cold_canonical_sha256": "724e9ee807556ba96ce6e46f5d34c0712ce9f8caf7f84832c6abcd62d5cd38e5",
+        "hot_canonical_sha256": "724e9ee807556ba96ce6e46f5d34c0712ce9f8caf7f84832c6abcd62d5cd38e5",
+        "equal": true
+      }
+    },
+    "liuyao": {
+      "cold_ms": {
+        "post_ms": 736.747,
+        "api_orchestration_ms": 13.504,
+        "queue_wait_ms": 0.0,
+        "worker_pickup_ms": 0.0,
+        "runtime_one_shot_ms": 713.663,
+        "db_persistence_ms": 6.824,
+        "first_ready_poll_ms": 12.172,
+        "result_fetch_ms": 19.53,
+        "first_renderable_response_ms": 736.747
+      },
+      "hot_attempt_count": 30,
+      "hot_success_count": 30,
+      "hot_error_count": 0,
+      "hot_errors": [],
+      "hot_ms": {
+        "post_ms": {
+          "p50": 714.392,
+          "p95": 747.896,
+          "p99": 755.41
+        },
+        "api_orchestration_ms": {
+          "p50": 12.741,
+          "p95": 14.214,
+          "p99": 14.847
+        },
+        "queue_wait_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "worker_pickup_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "runtime_one_shot_ms": {
+          "p50": 691.524,
+          "p95": 722.871,
+          "p99": 729.259
+        },
+        "db_persistence_ms": {
+          "p50": 6.347,
+          "p95": 8.259,
+          "p99": 8.804
+        },
+        "first_ready_poll_ms": {
+          "p50": 11.723,
+          "p95": 12.902,
+          "p99": 39.647
+        },
+        "result_fetch_ms": {
+          "p50": 18.515,
+          "p95": 51.978,
+          "p99": 53.876
+        },
+        "first_renderable_response_ms": {
+          "p50": 714.392,
+          "p95": 747.896,
+          "p99": 755.41
+        }
+      },
+      "view_model_equivalence": {
+        "schema_version": "liuyao-chart/v1",
+        "normalization": "top-level subject_ref",
+        "cold_canonical_sha256": "64ccbbc04ec1b0e11a8ceeae24454b39fed930a6e4b36ccff86ef3eba7ef0001",
+        "hot_canonical_sha256": "64ccbbc04ec1b0e11a8ceeae24454b39fed930a6e4b36ccff86ef3eba7ef0001",
+        "equal": true
+      }
+    },
+    "meihua": {
+      "cold_ms": {
+        "post_ms": 668.793,
+        "api_orchestration_ms": 10.826,
+        "queue_wait_ms": 0.0,
+        "worker_pickup_ms": 0.0,
+        "runtime_one_shot_ms": 649.645,
+        "db_persistence_ms": 5.6,
+        "first_ready_poll_ms": 11.25,
+        "result_fetch_ms": 17.985,
+        "first_renderable_response_ms": 668.793
+      },
+      "hot_attempt_count": 30,
+      "hot_success_count": 30,
+      "hot_error_count": 0,
+      "hot_errors": [],
+      "hot_ms": {
+        "post_ms": {
+          "p50": 638.265,
+          "p95": 670.027,
+          "p99": 737.082
+        },
+        "api_orchestration_ms": {
+          "p50": 10.401,
+          "p95": 11.113,
+          "p99": 11.513
+        },
+        "queue_wait_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "worker_pickup_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "runtime_one_shot_ms": {
+          "p50": 620.364,
+          "p95": 651.522,
+          "p99": 714.577
+        },
+        "db_persistence_ms": {
+          "p50": 4.987,
+          "p95": 8.547,
+          "p99": 20.096
+        },
+        "first_ready_poll_ms": {
+          "p50": 9.193,
+          "p95": 10.259,
+          "p99": 10.521
+        },
+        "result_fetch_ms": {
+          "p50": 16.281,
+          "p95": 44.779,
+          "p99": 45.562
+        },
+        "first_renderable_response_ms": {
+          "p50": 638.265,
+          "p95": 670.027,
+          "p99": 737.082
+        }
+      },
+      "view_model_equivalence": {
+        "schema_version": "meihua-chart/v1",
+        "normalization": "top-level subject_ref",
+        "cold_canonical_sha256": "f874bc2f9b12a80eab800919157218f03c0a5b91298b11318c875b4d7d42d027",
+        "hot_canonical_sha256": "f874bc2f9b12a80eab800919157218f03c0a5b91298b11318c875b4d7d42d027",
+        "equal": true
+      }
+    },
+    "daliuren": {
+      "cold_ms": {
+        "post_ms": 670.325,
+        "api_orchestration_ms": 9.006,
+        "queue_wait_ms": 0.0,
+        "worker_pickup_ms": 0.0,
+        "runtime_one_shot_ms": 653.8,
+        "db_persistence_ms": 5.079,
+        "first_ready_poll_ms": 7.726,
+        "result_fetch_ms": 15.777,
+        "first_renderable_response_ms": 670.325
+      },
+      "hot_attempt_count": 30,
+      "hot_success_count": 30,
+      "hot_error_count": 0,
+      "hot_errors": [],
+      "hot_ms": {
+        "post_ms": {
+          "p50": 648.369,
+          "p95": 663.156,
+          "p99": 665.848
+        },
+        "api_orchestration_ms": {
+          "p50": 8.803,
+          "p95": 9.112,
+          "p99": 9.314
+        },
+        "queue_wait_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "worker_pickup_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "runtime_one_shot_ms": {
+          "p50": 632.612,
+          "p95": 647.478,
+          "p99": 648.667
+        },
+        "db_persistence_ms": {
+          "p50": 5.072,
+          "p95": 7.053,
+          "p99": 10.063
+        },
+        "first_ready_poll_ms": {
+          "p50": 7.536,
+          "p95": 7.936,
+          "p99": 8.213
+        },
+        "result_fetch_ms": {
+          "p50": 15.363,
+          "p95": 43.431,
+          "p99": 44.898
+        },
+        "first_renderable_response_ms": {
+          "p50": 648.369,
+          "p95": 663.156,
+          "p99": 665.848
+        }
+      },
+      "view_model_equivalence": {
+        "schema_version": "daliuren-chart/v1",
+        "normalization": "top-level subject_ref",
+        "cold_canonical_sha256": "1021636c91d7c46ec48e0e9ece99d8b15b7b20b84e30c4ccafe0e9c86ae1d36e",
+        "hot_canonical_sha256": "1021636c91d7c46ec48e0e9ece99d8b15b7b20b84e30c4ccafe0e9c86ae1d36e",
+        "equal": true
+      }
+    }
+  }
+}

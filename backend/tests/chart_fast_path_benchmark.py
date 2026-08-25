@@ -47,7 +47,11 @@ from httpx import ASGITransport, AsyncClient
 QA_LOCKED_BAZI_CALC_SHA256 = (
     "ab35fbf511693d47487aa0601bdba32d13a44cf988888b90c085d6573027249a"
 )
+QA_LOCKED_LIUREN_CALC_SHA256 = (
+    "f276643106194766107008dfc08df25ef0c141e9f064c39bd7609d8732668908"
+)
 _BAZI_CALC_RELATIVE = "scripts/bazi_calc.py"
+_LIUREN_CALC_RELATIVE = "scripts/liuren_calc.py"
 
 
 def _percentile(values: list[float], percentile: float) -> float:
@@ -85,17 +89,21 @@ def _copy_admitted_release(source: Path, destination: Path) -> None:
         (destination / relative).chmod(mode)
 
 
-def _overlay_locked_bazi_calc(release_root: Path, bazi_calc: Path) -> dict[str, str]:
-    """Replace signed bazi_calc.py in place and remanifest that one digest."""
+def _overlay_locked_file(
+    release_root: Path,
+    relative: str,
+    source: Path,
+    expected_sha256: str,
+) -> dict[str, str]:
+    """Replace one signed script in place and remanifest that digest."""
 
-    payload = bazi_calc.read_bytes()
+    payload = source.read_bytes()
     overlay_sha256 = hashlib.sha256(payload).hexdigest()
-    if overlay_sha256 != QA_LOCKED_BAZI_CALC_SHA256:
+    if overlay_sha256 != expected_sha256:
         raise RuntimeError(
-            "overlay bazi_calc.py is not the QA-locked SHA-256 "
-            f"{QA_LOCKED_BAZI_CALC_SHA256}"
+            f"overlay {relative} is not the QA-locked SHA-256 {expected_sha256}"
         )
-    target = release_root / _BAZI_CALC_RELATIVE
+    target = release_root / relative
     replaced_sha256 = _sha256_file(target)
     mode = target.stat().st_mode
     target.write_bytes(payload)
@@ -103,22 +111,61 @@ def _overlay_locked_bazi_calc(release_root: Path, bazi_calc: Path) -> dict[str, 
     manifest_path = release_root / ".mingli-release-manifest.json"
     manifest_text = manifest_path.read_text(encoding="utf-8")
     if manifest_text.count(replaced_sha256) != 1:
-        raise RuntimeError("admitted bazi_calc.py digest is missing or not unique")
+        raise RuntimeError(f"admitted {relative} digest is missing or not unique")
     manifest_path.write_text(
         manifest_text.replace(replaced_sha256, overlay_sha256),
         encoding="utf-8",
     )
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    stem = relative.rsplit("/", 1)[-1].removesuffix(".py")
     return {
-        "bazi_calc_path": _BAZI_CALC_RELATIVE,
-        "bazi_calc_sha256": overlay_sha256,
-        "replaced_bazi_calc_sha256": replaced_sha256,
-        "release_name": str(manifest["release"]),
-        "source_commit": str(manifest["source_commit"]),
-        "release_manifest_sha256": _sha256_file(manifest_path),
-        "file_count": str(len(manifest["files"])),
-        "diff": "scripts/bazi_calc.py only",
+        f"{stem}_path": relative,
+        f"{stem}_sha256": overlay_sha256,
+        f"replaced_{stem}_sha256": replaced_sha256,
     }
+
+
+def _overlay_locked_scripts(
+    release_root: Path,
+    overlays: list[tuple[str, Path, str]],
+) -> dict[str, str]:
+    """Absorb QA-locked scripts into the admitted tree without rewriting semantics."""
+
+    identity: dict[str, str] = {}
+    diffs: list[str] = []
+    for relative, source, expected_sha256 in overlays:
+        identity.update(
+            _overlay_locked_file(release_root, relative, source, expected_sha256)
+        )
+        diffs.append(relative)
+    manifest_path = release_root / ".mingli-release-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    identity.update(
+        {
+            "release_name": str(manifest["release"]),
+            "source_commit": str(manifest["source_commit"]),
+            "release_manifest_sha256": _sha256_file(manifest_path),
+            "file_count": str(len(manifest["files"])),
+            "diff": " + ".join(diffs),
+        }
+    )
+    return identity
+
+
+def _canonical_view_model(view_model: dict[str, Any]) -> dict[str, Any]:
+    canonical = json.loads(json.dumps(view_model, ensure_ascii=False, sort_keys=True))
+    if "subject_ref" in canonical:
+        canonical["subject_ref"] = "<normalized>"
+    return canonical
+
+
+def _view_model_sha256(view_model: dict[str, Any]) -> str:
+    payload = json.dumps(
+        _canonical_view_model(view_model),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def _copy_clean_runtime_python(source_python: Path, destination: Path) -> Path:
@@ -243,7 +290,7 @@ async def _sample(
     path: str,
     payload: dict[str, object],
     schema_version: str,
-) -> dict[str, float]:
+) -> tuple[dict[str, float], dict[str, Any]]:
     started_at = time.perf_counter()
     response = await client.post(path, headers=headers, json=payload)
     post_ms = (time.perf_counter() - started_at) * 1000
@@ -275,7 +322,7 @@ async def _sample(
     if result.json()["view_model"]["schema_version"] != schema_version:
         raise RuntimeError(f"{path} result projection changed")
 
-    return {
+    timings = {
         "post_ms": post_ms,
         "api_orchestration_ms": max(
             0.0,
@@ -293,6 +340,7 @@ async def _sample(
         # body arrives; browser layout/paint remains a user-test measurement.
         "first_renderable_response_ms": post_ms,
     }
+    return timings, view_model
 
 
 async def benchmark(args: argparse.Namespace) -> dict[str, Any]:
@@ -304,11 +352,25 @@ async def benchmark(args: argparse.Namespace) -> dict[str, Any]:
         release_root = temporary_root / "release"
         _copy_admitted_release(args.release_root, release_root)
         overlay_identity: dict[str, str] | None = None
+        overlays: list[tuple[str, Path, str]] = []
         if args.overlay_bazi_calc is not None:
-            overlay_identity = _overlay_locked_bazi_calc(
-                release_root,
-                args.overlay_bazi_calc,
+            overlays.append(
+                (
+                    _BAZI_CALC_RELATIVE,
+                    args.overlay_bazi_calc,
+                    QA_LOCKED_BAZI_CALC_SHA256,
+                )
             )
+        if args.overlay_liuren_calc is not None:
+            overlays.append(
+                (
+                    _LIUREN_CALC_RELATIVE,
+                    args.overlay_liuren_calc,
+                    QA_LOCKED_LIUREN_CALC_SHA256,
+                )
+            )
+        if overlays:
+            overlay_identity = _overlay_locked_scripts(release_root, overlays)
         runtime_python = _copy_clean_runtime_python(
             args.runtime_python,
             temporary_root / "runtime-venv",
@@ -475,8 +537,9 @@ async def benchmark(args: argparse.Namespace) -> dict[str, Any]:
                 ).items():
                     if product not in cases_filter:
                         continue
+                    cold_view_model: dict[str, Any] | None = None
                     try:
-                        cold = await _sample(
+                        cold, cold_view_model = await _sample(
                             client,
                             headers,
                             path,
@@ -490,20 +553,22 @@ async def benchmark(args: argparse.Namespace) -> dict[str, Any]:
                         cold_result = {"error": str(error)}
                     hot: list[dict[str, float]] = []
                     hot_errors: list[str] = []
+                    hot_view_model: dict[str, Any] | None = None
                     for _ in range(args.samples):
                         try:
-                            hot.append(
-                                await _sample(
-                                    client,
-                                    headers,
-                                    path,
-                                    payload,
-                                    schema_version,
-                                )
+                            sample, sample_view_model = await _sample(
+                                client,
+                                headers,
+                                path,
+                                payload,
+                                schema_version,
                             )
+                            hot.append(sample)
+                            if hot_view_model is None:
+                                hot_view_model = sample_view_model
                         except RuntimeError as error:
                             hot_errors.append(str(error))
-                    result["products"][product] = {
+                    product_result: dict[str, Any] = {
                         "cold_ms": cold_result,
                         "hot_attempt_count": args.samples,
                         "hot_success_count": len(hot),
@@ -518,6 +583,17 @@ async def benchmark(args: argparse.Namespace) -> dict[str, Any]:
                             else {}
                         ),
                     }
+                    if cold_view_model is not None and hot_view_model is not None:
+                        cold_sha256 = _view_model_sha256(cold_view_model)
+                        hot_sha256 = _view_model_sha256(hot_view_model)
+                        product_result["view_model_equivalence"] = {
+                            "schema_version": schema_version,
+                            "normalization": "top-level subject_ref",
+                            "cold_canonical_sha256": cold_sha256,
+                            "hot_canonical_sha256": hot_sha256,
+                            "equal": cold_sha256 == hot_sha256,
+                        }
+                    result["products"][product] = product_result
                 return result
         finally:
             await database.dispose()
@@ -533,6 +609,11 @@ def main() -> None:
         "--overlay-bazi-calc",
         type=Path,
         help="QA-locked bazi_calc.py absorbed byte-for-byte into the candidate Runtime",
+    )
+    parser.add_argument(
+        "--overlay-liuren-calc",
+        type=Path,
+        help="QA-locked liuren_calc.py absorbed byte-for-byte into the candidate Runtime",
     )
     parser.add_argument(
         "--products",

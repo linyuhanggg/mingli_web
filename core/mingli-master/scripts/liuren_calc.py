@@ -9,7 +9,6 @@ import hashlib
 import importlib
 import json
 import os
-import subprocess
 import sys
 from datetime import date, datetime, timedelta
 from functools import lru_cache
@@ -24,7 +23,6 @@ from reading_engine.liuren_contract import (
     LIUREN_RULES_SHA256,
     build_runtime_core_facts,
 )
-from runtime_python import runtime_command
 
 
 CALCULATION_CONTRACT = "mingli-liuren-pipeline-v6-runtime-contract"
@@ -1142,47 +1140,49 @@ def _run_adapter(
     question: str,
     civil_datetime: str,
 ) -> dict[str, Any]:
-    command = [
-        *runtime_command(),
-        str(skill_dir / "scripts" / "liuren_fact_adapter.py"),
-        "cast",
-        "--datetime",
-        civil_datetime,
-        "--timezone",
-        args.timezone,
-        "--location",
-        args.location,
-        "--question",
-        question,
-        "--guiren-profile",
-        args.guiren_profile,
-        "--day-night-profile",
-        args.day_night_profile,
-        "--zi-hour-policy",
-        args.zi_hour_policy,
-        "--biezhe-profile",
-        args.biezhe_profile,
-        "--time-basis-policy",
-        str(getattr(args, "time_basis_policy", None) or "civil"),
-    ]
-    if getattr(args, "longitude", None) is not None:
-        command.extend(["--longitude", str(args.longitude)])
-    if getattr(args, "latitude", None) is not None:
-        command.extend(["--latitude", str(args.latitude)])
-    if getattr(args, "coordinate_source", None):
-        command.extend(["--coordinate-source", str(args.coordinate_source)])
-    if getattr(args, "coordinate_accuracy_meters", None) is not None:
-        command.extend(["--coordinate-accuracy-meters", str(args.coordinate_accuracy_meters)])
-    completed = subprocess.run(command, capture_output=True, text=True)
-    if completed.returncode != 0:
-        raise RuntimeError(completed.stderr.strip() or "Da Liu Ren adapter failed")
+    """Run the bundled deterministic adapter in the validated Runtime process.
+
+    The Runtime launcher has already validated the pinned interpreter and the
+    complete signed release before a Provider reaches this seam.  Starting the
+    same interpreter again repeated that identity probe for every Prepare.
+
+    The former subprocess serialized the adapter payload as sorted JSON before
+    reading it back.  Preserve that boundary exactly so tuple/list conversion,
+    key order, and the accepted JSON value surface cannot change here.
+    """
+
+    expected_adapter = (skill_dir / "scripts" / "liuren_fact_adapter.py").resolve()
+    loaded_adapter = Path(str(liuren_fact_adapter.__file__)).resolve()
+    if loaded_adapter != expected_adapter:
+        raise RuntimeError("Da Liu Ren adapter does not belong to this Runtime")
     try:
-        payload = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError("Da Liu Ren adapter returned invalid JSON") from exc
-    if not isinstance(payload, dict):
+        payload = liuren_fact_adapter.build_from_datetime(
+            civil_datetime,
+            timezone_name=args.timezone,
+            location=args.location,
+            question=question,
+            guiren_profile=args.guiren_profile,
+            day_night_profile=args.day_night_profile,
+            zi_hour_policy=args.zi_hour_policy,
+            biezhe_profile=args.biezhe_profile,
+            longitude=getattr(args, "longitude", None),
+            latitude=getattr(args, "latitude", None),
+            coordinate_source=getattr(args, "coordinate_source", None),
+            coordinate_accuracy_meters=getattr(
+                args, "coordinate_accuracy_meters", None
+            ),
+            time_basis_policy=(
+                getattr(args, "time_basis_policy", None) or "civil"
+            ),
+        )
+        normalized = json.loads(
+            json.dumps(payload, ensure_ascii=False, sort_keys=True)
+        )
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise RuntimeError(str(exc) or "Da Liu Ren adapter failed") from exc
+    if not isinstance(normalized, dict):
         raise RuntimeError("Da Liu Ren adapter returned a non-object")
-    return payload
+    return normalized
 
 
 def _import_skill_module(skill_dir: Path, name: str) -> Any:
