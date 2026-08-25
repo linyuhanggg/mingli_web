@@ -9,10 +9,9 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-
 SCHEMA_VERSION = "mingli-liuren-runtime-core-facts-v1"
 LIUREN_RULES_RELATIVE_PATH = Path("references/inference/liuren-rules-v1.json")
-LIUREN_RULES_SHA256 = "0b16659d31494934cec373327f477ff4725e66b0bb20c50602dd34d66d6d147b"
+LIUREN_RULES_SHA256 = "dd8f4da71a1f943c7c72d56aaa94208aa62cfdb588d8a8c0a540c28663d05942"
 
 EARTH_PLATE_ORDER = tuple("子丑寅卯辰巳午未申酉戌亥")
 TRANSMISSION_STAGES = ("initial", "middle", "final")
