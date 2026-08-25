@@ -109,7 +109,7 @@ function candidate(overrides: Partial<TimingCandidate> = {}): TimingCandidate {
 function lessonMethod(overrides: Partial<CoreFacts["lesson_method"]> = {}): CoreFacts["lesson_method"] {
   return {
     calculated_transmissions: "初传酉，中传戌，末传亥",
-    calculation_source: "runtime_core_facts",
+    calculation_source: "classical_nine-method_algorithm",
     direct_direction: null,
     primary: "贼克课",
     selected_initial: "酉",
@@ -740,7 +740,7 @@ describe("大六壬 S3 M4 天地盘", () => {
     const table = screen.getByRole("table", { name: "天地盘" });
     expect(within(table).queryByRole("columnheader", { name: "天盘支" })).not.toBeInTheDocument();
     expect(within(table).queryByRole("columnheader", { name: "天将" })).not.toBeInTheDocument();
-    expect(within(table).getByRole("row", { name: /^子$/ })).toBeTruthy();
+    expect(table.querySelector('[data-branch="子"]')).toBeTruthy();
     expect(within(table).queryByText("天盘戌")).not.toBeInTheDocument();
     expect(within(table).queryByText("螣蛇")).not.toBeInTheDocument();
   });
@@ -896,7 +896,8 @@ describe("大六壬 S3 M5 课式与传法", () => {
     expect(within(panel).getByText("三传")).toBeVisible();
     expect(within(panel).getByText("辰酉卯")).toBeVisible();
     expect(within(panel).getByText("计算来源")).toBeVisible();
-    expect(within(panel).getByText("classical_nine-method_algorithm")).toBeVisible();
+    expect(within(panel).getByText("古典九法")).toBeVisible();
+    expect(within(panel).queryByText("classical_nine-method_algorithm")).not.toBeInTheDocument();
     expect(within(panel).getByText("来源定位")).toBeVisible();
     expect(within(panel).getByText("daliuren-daquan L7696/L7818")).toBeVisible();
     expect(within(panel).queryByText("传法")).not.toBeInTheDocument();
@@ -953,6 +954,39 @@ describe("大六壬 S3 M5 课式与传法", () => {
     expect(screen.queryByText("取传方向")).not.toBeInTheDocument();
     expect(screen.queryByText("计算来源")).not.toBeInTheDocument();
     expect(screen.queryByText("来源定位")).not.toBeInTheDocument();
+  });
+
+  it("maps the classical nine-method source and fails closed for unknown source IDs", () => {
+    const { rerender } = render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: emptyFacts({
+            lesson_method: lessonMethod({ calculation_source: "classical_nine-method_algorithm" }),
+          }),
+        })}
+      />,
+    );
+
+    const panel = methodPanel();
+    expect(within(panel).getByText("计算来源")).toBeVisible();
+    expect(within(panel).getByText("古典九法")).toBeVisible();
+    expect(screen.queryByText("classical_nine-method_algorithm")).not.toBeInTheDocument();
+
+    rerender(
+      <DaliurenBoard
+        view={chart({
+          core_facts: emptyFacts({
+            lesson_method: lessonMethod({ calculation_source: "language_model_guess" }),
+          }),
+        })}
+      />,
+    );
+
+    expect(within(methodPanel()).getByText("课式")).toBeVisible();
+    expect(within(methodPanel()).queryByText("计算来源")).not.toBeInTheDocument();
+    expect(screen.queryByText("language_model_guess")).not.toBeInTheDocument();
+    expect(screen.queryByText("classical_nine-method_algorithm")).not.toBeInTheDocument();
+    expect(screen.queryByText("runtime_core_facts")).not.toBeInTheDocument();
   });
 
   it("renders non-empty structural patterns as inert chips without evidence gold", () => {
@@ -3976,6 +4010,114 @@ describe("大六壬 S3 天地盘旬空角标", () => {
     expect(chenRow).toHaveAttribute("data-active", "false");
     expect(chenGeneral).toHaveAttribute("data-active", "false");
     expect(maoGeneral).toHaveAttribute("data-active", "false");
+  });
+
+  it("lets plate earth, heaven and general facts initiate highlight and lock", async () => {
+    const user = userEvent.setup();
+    const GOLDEN_GENERALS = [
+      ["子", "太常"],
+      ["丑", "白虎"],
+      ["寅", "天空"],
+      ["卯", "青龙"],
+      ["辰", "勾陈"],
+      ["巳", "六合"],
+      ["午", "朱雀"],
+      ["未", "腾蛇"],
+      ["申", "贵人"],
+      ["酉", "天后"],
+      ["戌", "太阴"],
+      ["亥", "玄武"],
+    ] as const;
+    render(
+      <DaliurenBoard
+        view={chart({
+          lessons: [
+            { lesson_id: "一课·日干", upper: "辰", lower: "乙" },
+            { lesson_id: "二课·日支", upper: "辰", lower: "辰" },
+            { lesson_id: "三课·辰干", upper: "酉", lower: "酉" },
+            { lesson_id: "四课·辰支", upper: "酉", lower: "酉" },
+          ],
+          transmissions: [
+            { stage: "initial", branch: "辰", general: "勾陈" },
+            { stage: "middle", branch: "酉", general: "天后" },
+            { stage: "final", branch: "卯", general: "青龙" },
+          ],
+          core_facts: emptyFacts({
+            earth_plate: [...EARTH],
+            heaven_plate: EARTH.map((branch) => ({ earth: branch, heaven: branch })),
+            heavenly_generals: GOLDEN_GENERALS.map(([earth, general]) => ({
+              earth,
+              heaven: earth,
+              general,
+            })),
+          }),
+        })}
+      />,
+    );
+
+    const panel = await openPlate();
+    const table = screen.getByRole("table", { name: "天地盘" });
+    const initial = screen.getByRole("button", { name: "初传 辰 勾陈" });
+    const lessonChen = screen.getByRole("button", { name: "一课·日干 上神 辰" });
+    const plateGouchen = within(table).getByRole("button", { name: "天将 勾陈" });
+    const plateChenEarth = within(table).getByRole("button", { name: "地盘 辰" });
+    const plateTaichang = within(table).getByRole("button", { name: "天将 太常" });
+    const chenRow = panel.querySelector('table [data-branch="辰"]') as HTMLElement;
+    const youRow = panel.querySelector('table [data-branch="酉"]') as HTMLElement;
+    const ziRow = panel.querySelector('table [data-branch="子"]') as HTMLElement;
+    const chenGeneral = panel.querySelector('table [data-branch="辰"] td:last-child') as HTMLElement;
+    const youGeneral = panel.querySelector('table [data-branch="酉"] td:last-child') as HTMLElement;
+    const initialGeneral = initial.querySelector("[data-chip='general']") as HTMLElement;
+
+    act(() => plateGouchen.focus());
+    expect(plateGouchen).toHaveAttribute("aria-pressed", "false");
+    expect(chenRow).toHaveAttribute("data-active", "true");
+    expect(chenGeneral).toHaveAttribute("data-active", "true");
+    expect(initial).toHaveAttribute("data-active", "true");
+    expect(initialGeneral).toHaveAttribute("data-active", "true");
+    expect(lessonChen).toHaveAttribute("data-active", "false");
+    expect(youRow).toHaveAttribute("data-active", "false");
+    expect(youGeneral).toHaveAttribute("data-active", "false");
+    act(() => plateGouchen.blur());
+    expect(chenRow).toHaveAttribute("data-active", "false");
+    expect(initial).toHaveAttribute("data-active", "false");
+
+    await user.hover(plateGouchen);
+    expect(chenGeneral).toHaveAttribute("data-active", "true");
+    expect(initialGeneral).toHaveAttribute("data-active", "true");
+    await user.unhover(plateGouchen);
+    expect(chenGeneral).toHaveAttribute("data-active", "false");
+
+    await user.click(plateGouchen);
+    expect(plateGouchen).toHaveAttribute("aria-pressed", "true");
+    expect(chenGeneral).toHaveAttribute("data-active", "true");
+    expect(initialGeneral).toHaveAttribute("data-active", "true");
+    expect(lessonChen).toHaveAttribute("aria-pressed", "false");
+    expect(youGeneral).toHaveAttribute("data-active", "false");
+
+    await user.click(plateChenEarth);
+    expect(plateChenEarth).toHaveAttribute("aria-pressed", "true");
+    expect(plateGouchen).toHaveAttribute("aria-pressed", "false");
+    expect(lessonChen).toHaveAttribute("data-active", "true");
+    expect(initial).toHaveAttribute("data-active", "true");
+    expect(initialGeneral).toHaveAttribute("data-active", "false");
+    expect(chenGeneral).toHaveAttribute("data-active", "false");
+    expect(youGeneral).toHaveAttribute("data-active", "false");
+
+    await user.click(plateTaichang);
+    expect(plateTaichang).toHaveAttribute("aria-pressed", "true");
+    expect(ziRow).toHaveAttribute("data-active", "true");
+    expect(initial).toHaveAttribute("data-active", "false");
+    expect(lessonChen).toHaveAttribute("data-active", "false");
+    expect(chenRow).toHaveAttribute("data-active", "false");
+
+    act(() => plateTaichang.focus());
+    await user.keyboard("{Escape}");
+    expect(plateTaichang).toHaveAttribute("aria-pressed", "false");
+    expect(ziRow).toHaveAttribute("data-active", "false");
+
+    expect(plateCss()).toMatch(/\.fact\s*\{[^}]*min-width:\s*var\(--target-min\)/s);
+    expect(plateCss()).toMatch(/\.fact\s*\{[^}]*min-height:\s*var\(--target-min\)/s);
   });
 
   it("marks matching earth-plate branches from xunkong.branches only", async () => {

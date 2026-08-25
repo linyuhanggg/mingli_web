@@ -1,13 +1,23 @@
 "use client";
 
+import type { KeyboardEvent } from "react";
+
 import type { DaliurenChartViewModel } from "@/view-models/registry";
 
 import styles from "./daliuren-heaven-earth-plate.module.css";
 
 type CoreFacts = NonNullable<DaliurenChartViewModel["core_facts"]>;
+type FactKind = "earth" | "heaven" | "general";
+
+const FACT_KIND_LABEL: Readonly<Record<FactKind, string>> = {
+  earth: "地盘",
+  heaven: "天盘",
+  general: "天将",
+};
 
 export type DaliurenHeavenEarthPlateProps = {
   activeFact?: string | readonly string[] | null;
+  lockedFacts?: string | readonly string[] | null;
   anchorEarthBranches?: ReadonlySet<string>;
   earthPlate: CoreFacts["earth_plate"];
   heavenPlate?: CoreFacts["heaven_plate"];
@@ -15,6 +25,12 @@ export type DaliurenHeavenEarthPlateProps = {
   plateOffset?: CoreFacts["plate_offset"];
   noblePerson?: CoreFacts["noble_person"];
   xunkong?: CoreFacts["xunkong"];
+  onToggleFact?: (value: string) => void;
+  onFocusFact?: (value: string) => void;
+  onBlurFact?: (value: string) => void;
+  onHoverFact?: (value: string) => void;
+  onLeaveFact?: (value: string) => void;
+  onClearLock?: () => void;
 };
 
 function TimingMark() {
@@ -50,9 +66,63 @@ function voidBranches(value: unknown): ReadonlySet<string> {
   );
 }
 
-function activeFactSet(value: string | readonly string[] | null | undefined): ReadonlySet<string> {
+function factSet(value: string | readonly string[] | null | undefined): ReadonlySet<string> {
   const items = value == null ? [] : typeof value === "string" ? [value] : value;
   return new Set(items.map((item) => item.trim()).filter(Boolean));
+}
+
+function hasFact(facts: ReadonlySet<string>, value: string | null | undefined): boolean {
+  return typeof value === "string" && value.length > 0 && facts.has(value);
+}
+
+function PlateFactButton({
+  kind,
+  value,
+  active,
+  locked,
+  onToggleFact,
+  onFocusFact,
+  onBlurFact,
+  onHoverFact,
+  onLeaveFact,
+  onClearLock,
+}: {
+  kind: FactKind;
+  value: string;
+  active: boolean;
+  locked: boolean;
+  onToggleFact: (value: string) => void;
+  onFocusFact: (value: string) => void;
+  onBlurFact: (value: string) => void;
+  onHoverFact: (value: string) => void;
+  onLeaveFact: (value: string) => void;
+  onClearLock: () => void;
+}) {
+  function onKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
+    if (event.key !== "Escape") return;
+    event.preventDefault();
+    onClearLock();
+  }
+
+  return (
+    <button
+      className={styles.fact}
+      type="button"
+      data-active={active ? "true" : "false"}
+      data-chip={kind === "general" ? "general" : undefined}
+      data-fact={kind}
+      aria-label={`${FACT_KIND_LABEL[kind]} ${value}`}
+      aria-pressed={locked}
+      onBlur={() => onBlurFact(value)}
+      onClick={() => onToggleFact(value)}
+      onFocus={() => onFocusFact(value)}
+      onKeyDown={onKeyDown}
+      onPointerEnter={() => onHoverFact(value)}
+      onPointerLeave={() => onLeaveFact(value)}
+    >
+      {value}
+    </button>
+  );
 }
 
 function mapByEarth(
@@ -73,6 +143,7 @@ function mapByEarth(
 
 export function DaliurenHeavenEarthPlate({
   activeFact = null,
+  lockedFacts = null,
   anchorEarthBranches = new Set(),
   earthPlate,
   heavenPlate = null,
@@ -80,6 +151,12 @@ export function DaliurenHeavenEarthPlate({
   plateOffset = null,
   noblePerson = null,
   xunkong = null,
+  onToggleFact,
+  onFocusFact,
+  onBlurFact,
+  onHoverFact,
+  onLeaveFact,
+  onClearLock,
 }: DaliurenHeavenEarthPlateProps) {
   const earth = asEarthPlate(earthPlate);
   if (!earth) return null;
@@ -94,10 +171,43 @@ export function DaliurenHeavenEarthPlate({
   const noble = readString(noblePerson, "earth_position");
   const nobleEarthPosition = noble && earthSet.has(noble) ? noble : null;
   const offset = typeof plateOffset === "number" && Number.isFinite(plateOffset) ? plateOffset : null;
-  const active = activeFactSet(activeFact);
+  const active = factSet(activeFact);
+  const locked = factSet(lockedFacts);
+  const interactive = Boolean(onToggleFact && onFocusFact && onBlurFact && onHoverFact && onLeaveFact && onClearLock);
 
   function isActiveValue(value: string | null | undefined): boolean {
-    return typeof value === "string" && value.length > 0 && active.has(value);
+    return hasFact(active, value);
+  }
+
+  function renderFact(kind: FactKind, value: string | null) {
+    if (!value) return null;
+    if (!interactive || !onToggleFact || !onFocusFact || !onBlurFact || !onHoverFact || !onLeaveFact || !onClearLock) {
+      return value;
+    }
+    return (
+      <PlateFactButton
+        kind={kind}
+        value={value}
+        active={isActiveValue(value)}
+        locked={hasFact(locked, value)}
+        onBlurFact={onBlurFact}
+        onClearLock={onClearLock}
+        onFocusFact={onFocusFact}
+        onHoverFact={onHoverFact}
+        onLeaveFact={onLeaveFact}
+        onToggleFact={onToggleFact}
+      />
+    );
+  }
+
+  function ringFactProps(value: string | null) {
+    if (!value || !interactive || !onToggleFact || !onHoverFact || !onLeaveFact) return {};
+    return {
+      role: "presentation" as const,
+      onClick: () => onToggleFact(value),
+      onPointerEnter: () => onHoverFact(value),
+      onPointerLeave: () => onLeaveFact(value),
+    };
   }
 
   return (
@@ -130,14 +240,20 @@ export function DaliurenHeavenEarthPlate({
                 key={branch}
                 style={{ ["--spoke" as string]: String(index) }}
               >
-                <span className={styles.earth} data-active={earthActive ? "true" : "false"}>{branch}</span>
+                <span className={styles.earth} data-active={earthActive ? "true" : "false"} {...ringFactProps(branch)}>
+                  {branch}
+                </span>
                 {timingAnchors.has(branch) ? <TimingMark /> : null}
                 {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
                 {showHeaven && heaven ? (
-                  <span className={styles.heaven} data-active={heavenActive ? "true" : "false"}>{heaven}</span>
+                  <span className={styles.heaven} data-active={heavenActive ? "true" : "false"} {...ringFactProps(heaven)}>
+                    {heaven}
+                  </span>
                 ) : null}
                 {showGeneral && general ? (
-                  <span className={styles.general} data-active={generalActive ? "true" : "false"}>{general}</span>
+                  <span className={styles.general} data-active={generalActive ? "true" : "false"} {...ringFactProps(general)}>
+                    {general}
+                  </span>
                 ) : null}
               </li>
             );
@@ -168,15 +284,15 @@ export function DaliurenHeavenEarthPlate({
                   key={branch}
                 >
                   <th data-active={earthActive ? "true" : "false"} scope="row">
-                    {branch}
+                    {renderFact("earth", branch)}
                     {nobleEarthPosition === branch ? (
                       <span className={styles.nobleBadge}>贵人落地</span>
                     ) : null}
                     {timingAnchors.has(branch) ? <TimingMark /> : null}
                     {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
                   </th>
-                  {showHeaven ? <td data-active={heavenActive ? "true" : "false"}>{heaven ?? ""}</td> : null}
-                  {showGeneral ? <td data-active={generalActive ? "true" : "false"}>{general ?? ""}</td> : null}
+                  {showHeaven ? <td data-active={heavenActive ? "true" : "false"}>{renderFact("heaven", heaven)}</td> : null}
+                  {showGeneral ? <td data-active={generalActive ? "true" : "false"}>{renderFact("general", general)}</td> : null}
                 </tr>
               );
             })}

@@ -479,6 +479,7 @@ function DaliurenBoardSession({
       {mode === "ready" ? (
         <DaliurenHeavenEarthPlate
           activeFact={activeFacts}
+          lockedFacts={lockedFacts}
           anchorEarthBranches={anchored}
           earthPlate={view?.core_facts?.earth_plate ?? null}
           heavenPlate={view?.core_facts?.heaven_plate ?? null}
@@ -486,6 +487,12 @@ function DaliurenBoardSession({
           noblePerson={view?.core_facts?.noble_person ?? null}
           plateOffset={view?.core_facts?.plate_offset ?? null}
           xunkong={view?.core_facts?.xunkong ?? null}
+          onBlurFact={stopFocusPreview}
+          onClearLock={clearLock}
+          onFocusFact={startFocusPreview}
+          onHoverFact={startHoverPreview}
+          onLeaveFact={stopHoverPreview}
+          onToggleFact={toggleFactLock}
         />
       ) : null}
 

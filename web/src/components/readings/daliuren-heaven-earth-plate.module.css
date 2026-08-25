@@ -76,6 +76,12 @@
   font-weight: 700;
 }
 
+.earth[role="presentation"],
+.heaven[role="presentation"],
+.general[role="presentation"] {
+  cursor: pointer;
+}
+
 .spoke[data-noble="true"] .earth,
 .table tr[data-noble="true"] th {
   border: 1px solid var(--color-evidence);
@@ -133,6 +139,31 @@
 .table th[scope="row"] {
   font-family: var(--font-domain);
   font-weight: 650;
+}
+
+.fact {
+  display: inline-flex;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  align-items: center;
+  margin: 0;
+  padding: 0 0.2rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.fact:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.fact[data-active="true"] {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+  font-weight: 700;
 }
 
 .table tr[data-active="true"] {

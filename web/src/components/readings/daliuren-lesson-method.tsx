@@ -16,8 +16,18 @@ type MethodRow = {
   value: string;
 };
 
+const CALCULATION_SOURCE_LABELS: Readonly<Record<string, string>> = {
+  "classical_nine-method_algorithm": "古典九法",
+};
+
 function readText(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function calculationSourceLabel(value: unknown): string | null {
+  const source = readText(value);
+  if (!source) return null;
+  return CALCULATION_SOURCE_LABELS[source] ?? null;
 }
 
 function methodRows(value: CoreFacts["lesson_method"]): readonly MethodRow[] {
@@ -28,7 +38,7 @@ function methodRows(value: CoreFacts["lesson_method"]): readonly MethodRow[] {
     { label: "发用初传", value: readText(value.selected_initial) },
     { label: "取传方向", value: readText(value.direct_direction) },
     { label: "三传", value: readText(value.calculated_transmissions) },
-    { label: "计算来源", value: readText(value.calculation_source) },
+    { label: "计算来源", value: calculationSourceLabel(value.calculation_source) },
     { label: "来源定位", value: readText(value.source_anchor) },
   ];
   return rows.filter((row): row is MethodRow => Boolean(row.value));
