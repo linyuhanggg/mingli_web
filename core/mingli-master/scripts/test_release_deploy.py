@@ -754,6 +754,38 @@ class ReleaseCheckoutIsolationTests(unittest.TestCase):
         )
         self.assertEqual(events[-1]["event"], "subprocess_complete")
 
+    def test_gate_runs_provider_audits_in_bounded_worker_processes(self) -> None:
+        _, checkout = self._prepare_checkouts()
+        for module in checkout.glob("scripts/audit_*_marker_b.py"):
+            module.write_text(
+                "import time\n"
+                f"def {module.stem}(*, research_root=None):\n"
+                "    time.sleep(0.4)\n"
+                "    return {'source_verification': {'status': 'verified'}}\n",
+                encoding="utf-8",
+            )
+        research = checkout / "research"
+        research.mkdir()
+
+        result = release_deploy._verify_release_sources(
+            checkout,
+            research,
+            jobs=2,
+        )
+
+        self.assertTrue(result["verified"], result)
+        self.assertEqual(result["provider_jobs"], 2)
+        self.assertEqual(
+            len({metrics["pid"] for metrics in result["provider_metrics"].values()}),
+            2,
+            result["provider_metrics"],
+        )
+        self.assertEqual(result["resource"]["worker_process_count"], 2)
+        self.assertGreater(
+            result["resource"]["parallel_peak_rss_upper_bound_bytes"],
+            result["resource"]["process_peak_rss_bytes"],
+        )
+
     def test_gate_cancels_the_process_group_and_fails_closed_at_sixty_minute_cap(
         self,
     ) -> None:
