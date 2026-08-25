@@ -70,7 +70,11 @@
         "algorithm_version": {"$ref": "#/$defs/text"},
         "time_basis": {"$ref": "#/$defs/calendarTimeBasis"},
         "true_solar_time": {"$ref": "#/$defs/trueSolarTime"},
-        "calendar_convention": {"$ref": "#/$defs/calendarConvention"}
+        "calendar_convention": {"$ref": "#/$defs/calendarConvention"},
+        "effective_datetime": {"oneOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]},
+        "day_boundary": {"oneOf": [{"$ref": "#/$defs/calendarDayBoundary"}, {"type": "null"}]},
+        "changed_pillars": {"oneOf": [{"$ref": "#/$defs/changedPillars"}, {"type": "null"}]},
+        "solar_terms": {"oneOf": [{"$ref": "#/$defs/solarTerms"}, {"type": "null"}]}
       }
     },
     "calendarTimeBasis": {
@@ -130,6 +134,62 @@
         "hour_basis": {"$ref": "#/$defs/nullableText"},
         "zi_hour_policy": {"$ref": "#/$defs/nullableText"}
       }
+    },
+    "solarTerm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "index", "is_month_boundary_jie", "datetime", "instant_utc"],
+      "properties": {
+        "name": {"$ref": "#/$defs/text"},
+        "index": {"type": "integer"},
+        "is_month_boundary_jie": {"type": "boolean"},
+        "datetime": {"$ref": "#/$defs/text"},
+        "instant_utc": {"$ref": "#/$defs/text"}
+      }
+    },
+    "solarTerms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["month_switch_policy"],
+      "properties": {
+        "previous": {"oneOf": [{"$ref": "#/$defs/solarTerm"}, {"type": "null"}]},
+        "next": {"oneOf": [{"$ref": "#/$defs/solarTerm"}, {"type": "null"}]},
+        "month_switch_policy": {"$ref": "#/$defs/text"}
+      }
+    },
+    "calendarDayBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["correction_crossed_date", "zi_policy_advanced_day_pillar"],
+      "properties": {
+        "correction_crossed_date": {"type": "boolean"},
+        "zi_policy_advanced_day_pillar": {"type": "boolean"}
+      }
+    },
+    "changedPillars": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 0,
+      "maxItems": 4,
+      "items": {"enum": ["year", "month", "day", "hour"]},
+      "oneOf": [
+        {"const": []},
+        {"const": ["year"]},
+        {"const": ["month"]},
+        {"const": ["day"]},
+        {"const": ["hour"]},
+        {"const": ["year", "month"]},
+        {"const": ["year", "day"]},
+        {"const": ["year", "hour"]},
+        {"const": ["month", "day"]},
+        {"const": ["month", "hour"]},
+        {"const": ["day", "hour"]},
+        {"const": ["year", "month", "day"]},
+        {"const": ["year", "month", "hour"]},
+        {"const": ["year", "day", "hour"]},
+        {"const": ["month", "day", "hour"]},
+        {"const": ["year", "month", "day", "hour"]}
+      ]
     },
     "dayMaster": {
       "type": "object",

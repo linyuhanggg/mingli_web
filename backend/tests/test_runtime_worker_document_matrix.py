@@ -79,7 +79,12 @@ _REQUIRED_SINGLE_CALCULATED_FACTS = {
         "interpretive_candidates",
         "source_conditioned_patterns",
     ),
-    "fortune": ("active_luck_cycle", "available_periods", "period_markers"),
+    "fortune": (
+        "active_luck_cycle",
+        "available_periods",
+        "period_markers",
+        "calendar_normalization",
+    ),
     "ziwei": (
         "chart_convention",
         "chinese_date",
@@ -367,6 +372,37 @@ def _assert_runtime_golden_facts(
         assert isinstance(markers, list) and markers, label
         assert markers[0]["primary_mechanism_ids"], label
         assert markers[0]["unresolved_boundaries"], label
+        calendar = values["calendar_normalization"]
+        assert isinstance(calendar, dict), label
+        assert set(calendar) == {
+            "status",
+            "algorithm_version",
+            "time_basis",
+            "true_solar_time",
+            "calendar_convention",
+            "effective_datetime",
+            "day_boundary",
+            "changed_pillars",
+            "solar_terms",
+        }, label
+        assert calendar["effective_datetime"] == (
+            "1994-04-30T05:54:54+08:00"
+        ), label
+        assert calendar["day_boundary"] == {
+            "correction_crossed_date": False,
+            "zi_policy_advanced_day_pillar": False,
+        }, label
+        assert calendar["changed_pillars"] == [], label
+        solar_terms = calendar["solar_terms"]
+        assert isinstance(solar_terms, dict), label
+        assert set(solar_terms) == {
+            "previous",
+            "next",
+            "month_switch_policy",
+        }, label
+        assert solar_terms["month_switch_policy"] == "exact Jie instant", label
+        assert solar_terms["previous"]["name"] == "谷雨", label
+        assert solar_terms["next"]["name"] == "立夏", label
     elif capability_id == "ziwei":
         assert values["chinese_date"] == "甲戌 戊辰 丙戌 辛卯", label
         convention = values["chart_convention"]
@@ -689,6 +725,7 @@ def _assert_runtime_golden_facts(
             "ranking.eligible_date_time_candidate_ids": 0,
             "ranking.ordered_candidate_ids": 3,
             "ranking.ordered_date_time_candidate_ids": 39,
+            "source_conditioned_patterns": 1,
         }, label
         ranking = values["ranking"]
         assert isinstance(ranking, dict), label

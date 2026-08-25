@@ -4196,14 +4196,35 @@ def _fortune_period_markers(value: object) -> tuple[FortunePeriodMarker, ...] | 
     return tuple(result)
 
 
+_FORTUNE_CALENDAR_NORMALIZATION_FIELDS = (
+    "status",
+    "algorithm_version",
+    "time_basis",
+    "true_solar_time",
+    "calendar_convention",
+    "effective_datetime",
+    "day_boundary",
+    "changed_pillars",
+    "solar_terms",
+)
+
+
 def _fortune_calendar_normalization(
     value: object,
 ) -> FortuneCalendarNormalization | None:
     plain = _plain_mapping_copy(value)
     if plain is None:
         return None
+    allowed_fields = frozenset(_FORTUNE_CALENDAR_NORMALIZATION_FIELDS)
+    if not set(plain) <= allowed_fields:
+        return None
+    projected = {
+        field: plain[field]
+        for field in _FORTUNE_CALENDAR_NORMALIZATION_FIELDS
+        if field in plain
+    }
     try:
-        return FortuneCalendarNormalization.model_validate(plain)
+        return FortuneCalendarNormalization.model_validate(projected)
     except (TypeError, ValueError):
         return None
 

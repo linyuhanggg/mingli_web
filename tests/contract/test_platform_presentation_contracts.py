@@ -19,6 +19,7 @@ SCHEMA_ROOT = ROOT / "contracts" / "schemas"
 
 VIEW_SCHEMAS = (
     "bazi-chart-v1.schema.json",
+    "fortune-facts-view-v1.schema.json",
     "ziwei-chart-v1.schema.json",
     "qizheng-chart-v1.schema.json",
     "liuyao-chart-v1.schema.json",
@@ -133,6 +134,48 @@ def _bazi_calendar_normalization_payload() -> dict[str, object]:
             },
             "month_switch_policy": "exact_jie_instant",
         },
+    }
+
+
+def _fortune_payload() -> dict[str, object]:
+    return {
+        "schema_version": "fortune-facts-view/v1",
+        "subject_ref": "profile-version:alice-v1",
+        "natal_pillars": {
+            "year": "甲戌",
+            "month": "戊辰",
+            "day": "丙戌",
+            "hour": "辛卯",
+        },
+        "day_master": {"stem": "丙", "element": "fire", "polarity": "阳"},
+        "month_command": {
+            "branch": "辰",
+            "label": "辰月",
+            "main_qi": "戊",
+            "main_qi_element": "earth",
+        },
+        "active_luck_cycle": "乙丑",
+        "target_day": "2026-08-14",
+        "target_period": {
+            "kind": "day",
+            "start": "2026-08-14",
+            "end": "2026-08-14",
+        },
+        "available_periods": ["2026-08-14"],
+        "period_markers": [
+            {
+                "date": "2026-08-14",
+                "day_pillar": "甲子",
+                "day_role": "日运",
+                "active_luck_cycle": "乙丑",
+                "primary_mechanism_ids": ["fortune.day_pillar"],
+                "decisive_mechanism_ids": [],
+                "relations": [],
+                "specific_event_policy": "事实标记，不推出具体事件",
+                "unresolved_boundaries": [],
+            }
+        ],
+        "calendar_normalization": _bazi_calendar_normalization_payload(),
     }
 
 
@@ -505,6 +548,35 @@ def test_bazi_calendar_g3_fields_are_shared_by_view_and_document_schemas() -> No
         "changed_pillars"
     ] = ["day", "week"]
     assert tuple(Draft202012Validator(document_schema).iter_errors(invalid))
+
+
+def test_fortune_calendar_additive_fields_are_typed_in_view_and_document() -> None:
+    view_payload = _fortune_payload()
+    view_schema = _schema(
+        SCHEMA_ROOT / "views" / "fortune-facts-view-v1.schema.json"
+    )
+    Draft202012Validator(view_schema).validate(view_payload)
+
+    document_payload = _reading_document_payload()
+    document_payload["view_model"] = view_payload
+    document_payload["versions"]["view_model_schema"] = "fortune-facts-view/v1"
+    document_schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
+    Draft202012Validator(document_schema).validate(document_payload)
+    document = ReadingDocumentV1.model_validate(document_payload)
+    normalized = document.view_model.calendar_normalization
+    assert normalized.effective_datetime == "1985-03-01T23:33:00+08:00"
+    assert normalized.changed_pillars == ("day", "hour")
+    assert normalized.solar_terms is not None
+    assert normalized.solar_terms.next is not None
+    assert normalized.solar_terms.next.name == "惊蛰"
+
+    invalid = copy.deepcopy(document_payload)
+    invalid["view_model"]["calendar_normalization"]["solar_terms"][
+        "raw_runtime_payload"
+    ] = {}
+    assert tuple(Draft202012Validator(document_schema).iter_errors(invalid))
+    with pytest.raises(ValidationError):
+        ReadingDocumentV1.model_validate(invalid)
 
 
 @pytest.mark.parametrize("view_kind", ["bazi", "five_elements"])

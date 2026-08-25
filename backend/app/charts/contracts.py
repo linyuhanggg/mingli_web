@@ -585,12 +585,83 @@ class FortuneCalendarConvention(ContractModel):
     zi_hour_policy: str | None = Field(default=None, min_length=1)
 
 
+class FortuneSolarTerm(ContractModel):
+    """One adjacent solar-term boundary exposed by the Fortune provider."""
+
+    name: str = Field(min_length=1)
+    index: int
+    is_month_boundary_jie: bool
+    datetime: str = Field(min_length=1)
+    instant_utc: str = Field(min_length=1)
+
+
+class FortuneSolarTerms(ContractModel):
+    """Adjacent solar terms and the exact month-switch policy."""
+
+    previous: FortuneSolarTerm | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    next: FortuneSolarTerm | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    month_switch_policy: str = Field(min_length=1)
+
+
+class FortuneCalendarDayBoundary(ContractModel):
+    """Day-boundary effects calculated by the Runtime calendar correction."""
+
+    correction_crossed_date: bool
+    zi_policy_advanced_day_pillar: bool
+
+
 class FortuneCalendarNormalization(ContractModel):
     status: str = Field(min_length=1)
     algorithm_version: str = Field(min_length=1)
     time_basis: FortuneCalendarTimeBasis
     true_solar_time: FortuneTrueSolarTime
     calendar_convention: FortuneCalendarConvention
+    effective_datetime: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    day_boundary: FortuneCalendarDayBoundary | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    changed_pillars: tuple[Literal["year", "month", "day", "hour"], ...] | None = Field(
+        default=None,
+        min_length=0,
+        max_length=4,
+        exclude_if=lambda value: value is None,
+    )
+    solar_terms: FortuneSolarTerms | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+
+    @model_validator(mode="after")
+    def _changed_pillars_are_stable(
+        self,
+    ) -> FortuneCalendarNormalization:
+        if self.changed_pillars is None:
+            return self
+        if len(set(self.changed_pillars)) != len(self.changed_pillars):
+            raise ValueError("changed Fortune pillars must be unique")
+        order = {
+            position: index
+            for index, position in enumerate(("year", "month", "day", "hour"))
+        }
+        if (
+            tuple(sorted(self.changed_pillars, key=order.__getitem__))
+            != self.changed_pillars
+        ):
+            raise ValueError(
+                "changed Fortune pillars must use year-month-day-hour order"
+            )
+        return self
 
 
 class FortuneFactsViewV1(ContractModel):
