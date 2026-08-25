@@ -824,6 +824,7 @@ def _restore_destination_protection(
 _VERIFY_SOURCE_SUBPROCESS = r"""
 import concurrent.futures
 import importlib
+import inspect
 import json
 import multiprocessing
 import os
@@ -1040,7 +1041,26 @@ def _run_provider(system, module_name, ordinal, provider_count):
                     audit_module=module_name,
                 )
                 try:
-                    report = audit(research_root=resolved_root)
+                    def audit_progress(substage, **details):
+                        stage = f"provider_fulltext_audit:{substage}"
+                        _set_stage(system, stage)
+                        safe_details = {
+                            str(key): value
+                            for key, value in details.items()
+                            if str(key) not in {"event", "provider", "stage"}
+                        }
+                        _emit(
+                            "provider_substage",
+                            provider=system,
+                            stage=stage,
+                            audit_module=module_name,
+                            **safe_details,
+                        )
+
+                    audit_kwargs = {"research_root": resolved_root}
+                    if "progress" in inspect.signature(audit).parameters:
+                        audit_kwargs["progress"] = audit_progress
+                    report = audit(**audit_kwargs)
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except BaseException as exc:  # noqa: BLE001 - fail closed

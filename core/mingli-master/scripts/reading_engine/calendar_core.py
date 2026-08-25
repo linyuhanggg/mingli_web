@@ -9,6 +9,7 @@ import json
 import math
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
+from types import MappingProxyType
 from typing import Any, Mapping
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -262,8 +263,62 @@ def _solar_terms_for_year_utc(year: int) -> tuple[tuple[int, str], ...]:
     )
 
 
-def solar_terms(civil: datetime, *, years_each_side: int = 1) -> list[dict[str, Any]]:
-    terms: list[dict[str, Any]] = []
+@lru_cache(maxsize=256)
+def _localized_solar_terms(
+    year: int,
+    timezone_name: str,
+    years_each_side: int,
+) -> tuple[Mapping[str, Any], ...]:
+    """Materialize one immutable localized term window.
+
+    Selection normalizes hundreds of thousands of instants from the same
+    civil years. The term identities and their localized clocks depend only
+    on the requested year/window/timezone, not on the individual instant.
+    Keep this primitive table immutable; public callers still receive fresh
+    dictionaries and normalized calendar payloads copy only the seven term
+    rows they expose.
+    """
+
+    zone = ZoneInfo(timezone_name)
+    terms: list[Mapping[str, Any]] = []
+    for candidate_year in range(
+        year - years_each_side,
+        year + years_each_side + 1,
+    ):
+        for index, instant_utc in _solar_terms_for_year_utc(candidate_year):
+            point = datetime.fromisoformat(instant_utc).astimezone(zone)
+            terms.append(
+                MappingProxyType(
+                    {
+                        "name": JIEQI_NAMES[index],
+                        "index": index,
+                        "is_month_boundary_jie": index in MONTH_BOUNDARY_JIE,
+                        "datetime": point.isoformat(timespec="microseconds"),
+                        "instant_utc": instant_utc,
+                    }
+                )
+            )
+    unique = {(item["index"], item["instant_utc"]): item for item in terms}
+    return tuple(sorted(unique.values(), key=lambda item: item["instant_utc"]))
+
+
+def _solar_terms_shared(
+    civil: datetime,
+    *,
+    years_each_side: int = 1,
+) -> tuple[Mapping[str, Any], ...]:
+    timezone_name = getattr(civil.tzinfo, "key", None)
+    if timezone_name:
+        return _localized_solar_terms(
+            civil.year,
+            str(timezone_name),
+            years_each_side,
+        )
+
+    # Direct callers may supply a custom tzinfo rather than a ZoneInfo key.
+    # Preserve the exact historical behavior for that uncommon path instead
+    # of guessing a cache identity from one instantaneous UTC offset.
+    terms: list[Mapping[str, Any]] = []
     for year in range(civil.year - years_each_side, civil.year + years_each_side + 1):
         for index, instant_utc in _solar_terms_for_year_utc(year):
             point = datetime.fromisoformat(instant_utc).astimezone(civil.tzinfo)
@@ -279,15 +334,25 @@ def solar_terms(civil: datetime, *, years_each_side: int = 1) -> list[dict[str, 
                 }
             )
     unique = {(item["index"], item["instant_utc"]): item for item in terms}
-    return sorted(unique.values(), key=lambda item: item["instant_utc"])
+    return tuple(sorted(unique.values(), key=lambda item: item["instant_utc"]))
+
+
+def solar_terms(civil: datetime, *, years_each_side: int = 1) -> list[dict[str, Any]]:
+    return [
+        dict(item)
+        for item in _solar_terms_shared(
+            civil,
+            years_each_side=years_each_side,
+        )
+    ]
 
 
 def surrounding_terms(
-    terms: list[dict[str, Any]],
+    terms: list[dict[str, Any]] | tuple[Mapping[str, Any], ...],
     point: datetime,
     *,
     jie_only: bool = False,
-) -> tuple[dict[str, Any], dict[str, Any]]:
+) -> tuple[Mapping[str, Any], Mapping[str, Any]]:
     candidates = [
         item for item in terms if not jie_only or item["is_month_boundary_jie"]
     ]
@@ -511,7 +576,7 @@ def normalize_calendar(
     effective_lunar_day = sxtwl.fromSolar(
         effective.year, effective.month, effective.day
     )
-    terms = solar_terms(effective)
+    terms = _solar_terms_shared(effective)
     civil_pillar_facts = _pillar_facts_at(
         civil,
         zi_hour_policy=zi_hour_policy,
@@ -680,20 +745,25 @@ def normalize_calendar(
         },
         "ganzhi": pillars,
         "solar_terms": {
-            "previous": previous_term,
-            "next": next_term,
-            "previous_month_boundary_jie": previous_jie,
-            "next_month_boundary_jie": next_jie,
-            "active_month_boundary_jie": previous_jie,
-            "active_year_boundary_li_chun": recent_li_chun,
-            "next_year_boundary_li_chun": next_li_chun,
-            "exact_boundary": exact_boundary,
+            "previous": dict(previous_term),
+            "next": dict(next_term),
+            "previous_month_boundary_jie": dict(previous_jie),
+            "next_month_boundary_jie": dict(next_jie),
+            "active_month_boundary_jie": dict(previous_jie),
+            "active_year_boundary_li_chun": dict(recent_li_chun),
+            "next_year_boundary_li_chun": dict(next_li_chun),
+            "exact_boundary": (
+                dict(exact_boundary) if exact_boundary is not None else None
+            ),
             "month_switch_policy": "exact Jie instant",
         },
         "zi_hour_policy": zi_hour_policy,
         "true_solar_time": true_solar_time,
     }
-    digest = calendar_digest(payload)
+    # ``payload`` is newly constructed and cannot yet contain either digest
+    # alias. Hash it directly; ``calendar_digest`` retains its defensive
+    # copy-and-strip behavior for caller-owned payload validation.
+    digest = _digest(payload)
     payload["calendar_digest"] = digest
     payload["digest"] = digest
     return payload

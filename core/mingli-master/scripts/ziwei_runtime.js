@@ -56,15 +56,14 @@ function main() {
   };
   const compactHoroscope = (targetDate) => {
     const horoscope = chart.horoscope(targetDate);
+    // Python only consumes the major-limit, annual and monthly layers for
+    // exact horizon segmentation. Daily/hourly layers made a one-year
+    // --jitless audit serialize hundreds of large unused objects and could
+    // exceed its fixed single-chart timeout on the admitted x86_64 runtime.
     return JSON.parse(JSON.stringify({
-        solarDate: horoscope.solarDate,
-        lunarDate: horoscope.lunarDate,
         decadal: horoscope.decadal,
-        age: horoscope.age,
         yearly: horoscope.yearly,
         monthly: horoscope.monthly,
-        daily: horoscope.daily,
-        hourly: horoscope.hourly,
     }));
   };
   if (Array.isArray(input.targetDates)) {

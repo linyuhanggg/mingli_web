@@ -593,6 +593,12 @@ def {module_name}(research_root=None):
     return {{"source_verification": {{"status": "verified"}}}}
 """
 
+_OBSERVABLE_AUDIT_SOURCE = """\
+def {module_name}(research_root=None, progress=None):
+    progress("fixture_replay", completed=1, total=1)
+    return {{"source_verification": {{"status": "verified"}}}}
+"""
+
 _SKIPPED_AUDIT_SOURCE = """\
 def {module_name}(research_root=None):
     return {{"source_verification": {{"status": "skipped"}}}}
@@ -753,6 +759,46 @@ class ReleaseCheckoutIsolationTests(unittest.TestCase):
             events,
         )
         self.assertEqual(events[-1]["event"], "subprocess_complete")
+
+    def test_gate_streams_supported_audit_substages(self) -> None:
+        _, checkout = self._prepare_checkouts()
+        module = checkout / "scripts" / "audit_alpha_marker_b.py"
+        module.write_text(
+            _OBSERVABLE_AUDIT_SOURCE.format(module_name=module.stem),
+            encoding="utf-8",
+        )
+        research = checkout / "research"
+        research.mkdir()
+        progress = io.StringIO()
+
+        result = release_deploy._verify_release_sources(
+            checkout,
+            research,
+            progress_stream=progress,
+        )
+
+        self.assertTrue(result["verified"], result)
+        events = [
+            json.loads(
+                line.removeprefix(
+                    release_deploy.SOURCE_VERIFICATION_PROGRESS_PREFIX
+                )
+            )
+            for line in progress.getvalue().splitlines()
+            if line.startswith(release_deploy.SOURCE_VERIFICATION_PROGRESS_PREFIX)
+        ]
+        self.assertTrue(
+            any(
+                event.get("event") == "provider_substage"
+                and event.get("provider") == "alpha"
+                and event.get("stage")
+                == "provider_fulltext_audit:fixture_replay"
+                and event.get("completed") == 1
+                and event.get("total") == 1
+                for event in events
+            ),
+            events,
+        )
 
     def test_gate_runs_provider_audits_in_bounded_worker_processes(self) -> None:
         _, checkout = self._prepare_checkouts()
