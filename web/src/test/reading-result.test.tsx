@@ -341,6 +341,57 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     unmount();
   });
 
+  it("keeps one owner across rerenders and aborts the old request before an id handoff", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+    const nextReadingId = "99999999-9999-4999-8999-999999999999";
+    const signals: { next?: AbortSignal; old?: AbortSignal } = {};
+    const firstSummary = vi.fn();
+    const latestSummary = vi.fn();
+    const fetchMock = vi.fn<typeof fetch>((url, options) => {
+      const signal = options?.signal as AbortSignal;
+      if (String(url).endsWith(VERSION_ID)) {
+        signals.old = signal;
+        return new Promise<Response>((_resolve, reject) => {
+          signal.addEventListener(
+            "abort",
+            () => reject(new DOMException("Aborted", "AbortError")),
+            { once: true },
+          );
+        });
+      }
+      signals.next = signal;
+      return Promise.resolve(jsonResponse(readingSummary("input_ready", {
+        created_at: "2026-08-25T00:01:00Z",
+        reading_version_id: nextReadingId,
+      })));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { rerender, unmount } = render(
+      <ReadingResult readingId={VERSION_ID} onSummary={firstSummary} />,
+    );
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(1);
+    expect(signals.old?.aborted).toBe(false);
+
+    rerender(<ReadingResult readingId={VERSION_ID} onSummary={latestSummary} />);
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(1);
+
+    rerender(<ReadingResult readingId={nextReadingId} onSummary={latestSummary} />);
+    expect(signals.old?.aborted).toBe(true);
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(callsTo(fetchMock, nextReadingId)).toHaveLength(1);
+    expect(firstSummary).not.toHaveBeenCalled();
+    expect(latestSummary).toHaveBeenCalledWith(
+      expect.objectContaining({ reading_version_id: nextReadingId }),
+    );
+
+    unmount();
+    expect(signals.next?.aborted).toBe(true);
+  });
+
   it("prefers the server created_at over a fresh component mount", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));

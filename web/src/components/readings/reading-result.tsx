@@ -6,10 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import {
   ApiError,
   getReadingResult,
-  pollReading,
   type ReadingResultResponse,
   type ReadingVersionSummary,
 } from "@/lib/api";
+import { requestJson } from "@/lib/api/client";
 import { Status, type StatusState } from "@/components/ui/status";
 import {
   buildBaziChartView,
@@ -312,7 +312,9 @@ function WaitingStatus({
 
 type ReadingResultProps = Readonly<{
   readingId: string;
+  onPollError?: (error: unknown) => void;
   onRestart?: () => void;
+  onSummary?: (summary: ReadingVersionSummary) => void;
   startedAt?: number;
 }>;
 
@@ -323,7 +325,9 @@ export function ReadingResult(props: ReadingResultProps) {
 
 function ReadingResultForVersion({
   readingId,
+  onPollError,
   onRestart,
+  onSummary,
   startedAt,
 }: ReadingResultProps) {
   const [loading, setLoading] = useState(true);
@@ -337,7 +341,13 @@ function ReadingResultForVersion({
   const [elapsedMs, setElapsedMs] = useState(
     () => (validStartedAt(startedAt) ? elapsedSince(startedAt) : 0),
   );
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onPollErrorRef = useRef(onPollError);
+  const onSummaryRef = useRef(onSummary);
+
+  useEffect(() => {
+    onPollErrorRef.current = onPollError;
+    onSummaryRef.current = onSummary;
+  }, [onPollError, onSummary]);
 
   useEffect(() => {
     const updateElapsed = () => setElapsedMs(elapsedSince(timerStartedAt));
@@ -358,6 +368,7 @@ function ReadingResultForVersion({
     let cancelled = false;
     let pollTimer: ReturnType<typeof setTimeout> | null = null;
     let pollAttempt = 0;
+    const pollController = new AbortController();
 
     function schedule(delayMs: number) {
       if (cancelled) return;
@@ -374,7 +385,10 @@ function ReadingResultForVersion({
     async function run() {
       if (cancelled) return;
       try {
-        const response = await pollReading(readingId);
+        const response = await requestJson<ReadingVersionSummary>(
+          `/api/v1/readings/${encodeURIComponent(readingId)}`,
+          { signal: pollController.signal },
+        );
         if (cancelled) return;
         const authoritativeStartedAt = serverStartedAt(response.created_at);
         if (authoritativeStartedAt !== null) {
@@ -385,6 +399,7 @@ function ReadingResultForVersion({
         setSummary(response);
         setError(null);
         setLoading(false);
+        onSummaryRef.current?.(response);
 
         if (RESULT_READY_STATUSES.has(response.status)) {
           const nextResult = await getReadingResult(readingId);
@@ -405,22 +420,22 @@ function ReadingResultForVersion({
 
         scheduleNextPoll();
       } catch (err) {
-        if (cancelled) return;
+        if (cancelled || pollController.signal.aborted) return;
         setLoading(false);
         setError(err);
+        onPollErrorRef.current?.(err);
       }
     }
 
-    run();
+    // Deferring the first request by one task lets a development StrictMode
+    // mount/unmount probe cancel cleanly before any network work starts.
+    schedule(0);
 
     return () => {
       cancelled = true;
+      pollController.abort();
       if (pollTimer) {
         clearTimeout(pollTimer);
-      }
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
       }
     };
   }, [readingId, retryKey]);

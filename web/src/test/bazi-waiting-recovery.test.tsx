@@ -6,10 +6,10 @@ import { loadRecoverableReading } from "@/lib/reading-recovery";
 import { getProductDefinition } from "@/products/catalog";
 
 const PROFILE_VERSION_ID = "22222222-2222-4222-8222-222222222222";
+const pollTimes = new Map<string, number[]>();
 
 const api = vi.hoisted(() => ({
   listProfiles: vi.fn(),
-  pollReading: vi.fn(),
   startPreviewReading: vi.fn(),
 }));
 
@@ -92,8 +92,8 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-08-25T00:00:00Z"));
   window.sessionStorage.clear();
+  pollTimes.clear();
   api.listProfiles.mockReset();
-  api.pollReading.mockReset();
   api.startPreviewReading.mockReset();
   api.listProfiles.mockResolvedValue({
     profiles: [
@@ -108,14 +108,21 @@ beforeEach(() => {
       },
     ],
   });
-  api.pollReading.mockImplementation(async (readingId: string) =>
-    readingSummary(
-      readingId,
-      readingId === "bazi-reading-1"
-        ? "2026-08-25T00:00:00Z"
-        : "2026-08-25T00:01:00Z",
-    ),
-  );
+  vi.stubGlobal("fetch", vi.fn<typeof fetch>(async (url) => {
+    const readingId = String(url).split("/").at(-1) ?? "";
+    pollTimes.set(readingId, [...(pollTimes.get(readingId) ?? []), Date.now()]);
+    return new Response(
+      JSON.stringify(
+        readingSummary(
+          readingId,
+          readingId === "bazi-reading-1"
+            ? "2026-08-25T00:00:00Z"
+            : "2026-08-25T00:01:00Z",
+        ),
+      ),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }));
   api.startPreviewReading
     .mockResolvedValueOnce(readingSummary("bazi-reading-1", "2026-08-25T00:00:00Z"))
     .mockImplementationOnce(async () =>
@@ -125,6 +132,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
   vi.useRealTimers();
 });
 
@@ -146,8 +154,25 @@ describe("real Bazi workbench waiting recovery", () => {
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
     await act(async () => vi.advanceTimersByTimeAsync(300));
     expect(screen.getByRole("status")).toHaveTextContent("正在为你排盘");
+    expect(pollTimes.get("bazi-reading-1")).toEqual([Date.parse("2026-08-25T00:00:00Z")]);
 
-    await act(async () => vi.advanceTimersByTimeAsync(14_700));
+    await act(async () => vi.advanceTimersByTimeAsync(700));
+    expect(pollTimes.get("bazi-reading-1")?.map((time) => time % 60_000)).toEqual([0, 1_000]);
+    await act(async () => vi.advanceTimersByTimeAsync(1_999));
+    expect(pollTimes.get("bazi-reading-1")).toHaveLength(2);
+    await act(async () => vi.advanceTimersByTimeAsync(1));
+    await act(async () => vi.advanceTimersByTimeAsync(3_999));
+    expect(pollTimes.get("bazi-reading-1")).toHaveLength(3);
+    await act(async () => vi.advanceTimersByTimeAsync(1));
+    await act(async () => vi.advanceTimersByTimeAsync(8_000));
+    expect(pollTimes.get("bazi-reading-1")?.slice(0, 6).map((time) => time % 60_000)).toEqual([
+      0,
+      1_000,
+      3_000,
+      7_000,
+      11_000,
+      15_000,
+    ]);
     expect(screen.getByRole("status")).toHaveTextContent("仍在认真排盘");
     expect(screen.getByRole("link", { name: "稍后查看" })).toBeVisible();
 
@@ -166,6 +191,16 @@ describe("real Bazi workbench waiting recovery", () => {
     expect(secondIntent).toEqual(expect.any(String));
     expect(secondIntent).not.toBe(firstIntent);
     expect(loadRecoverableReading("bazi")?.readingVersionId).toBe("bazi-reading-2");
-    expect(api.pollReading).toHaveBeenCalledWith("bazi-reading-2");
+    const oldReadingCount = pollTimes.get("bazi-reading-1")?.length;
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(pollTimes.get("bazi-reading-2")).toHaveLength(1);
+    await act(async () => vi.advanceTimersByTimeAsync(7_000));
+    expect(pollTimes.get("bazi-reading-1")).toHaveLength(oldReadingCount ?? 0);
+    expect(pollTimes.get("bazi-reading-2")?.map((time) => time - 60_000)).toEqual([
+      Date.parse("2026-08-25T00:00:00Z"),
+      Date.parse("2026-08-25T00:00:01Z"),
+      Date.parse("2026-08-25T00:00:03Z"),
+      Date.parse("2026-08-25T00:00:07Z"),
+    ]);
   });
 });

@@ -58,7 +58,10 @@ const routes: RouteExpectation[] = [
   { Page: WenshiPage, name: "问事合参", input: /同一问题与时空/ },
 ];
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 mockGetCapabilityProjection.mockResolvedValue({
   runtime_release_profile: "v53-time-check",
@@ -72,7 +75,16 @@ mockGetCapabilityProjection.mockResolvedValue({
 beforeEach(() => {
   window.localStorage.clear();
   window.sessionStorage.clear();
+  mockPollReading.mockReset().mockResolvedValue({ status: "input_ready" });
   mockListProfiles.mockReset().mockResolvedValue({ profiles: [] });
+  vi.stubGlobal("fetch", vi.fn<typeof fetch>(async (url) => {
+    const readingId = String(url).split("/").at(-1) ?? "";
+    const summary = await mockPollReading(readingId) as Record<string, unknown>;
+    return new Response(
+      JSON.stringify({ reading_version_id: readingId, ...summary }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }));
 });
 
 describe("primary product route contract", () => {

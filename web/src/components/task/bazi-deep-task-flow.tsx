@@ -12,9 +12,9 @@ import {
   recordConsent,
   createIdempotencyKey,
   getBaziDeepCheckout,
-  pollReading,
   startBaziDeepReading,
   type DeliveryState,
+  type ReadingVersionSummary,
   type ReadingStatus,
 } from "@/lib/api";
 import { useOptionalAccountSession } from "@/components/account-session-context";
@@ -24,7 +24,7 @@ import { Status } from "@/components/ui/status";
 
 import styles from "./bazi-deep-task-flow.module.css";
 
-const POLL_MS = 2_000;
+const CHECKOUT_POLL_MS = 2_000;
 
 function isStalePolicyVersion(reason: unknown): boolean {
   return (
@@ -166,10 +166,6 @@ function readableError(error: unknown): string {
   return "服务暂时无法完成这一步，请稍后重试。";
 }
 
-function isTerminalStatus(status: ReadingStatus): boolean {
-  return status === "delayed" || status === "runtime_unknown" || status === "terminal_stopped";
-}
-
 function safeCheckoutRedirect(value: string | null | undefined): string | null {
   if (!value) return null;
   if (value.startsWith("/") && !value.startsWith("//")) return value;
@@ -196,7 +192,6 @@ export function BaziDeepTaskFlow({
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
-  const [retryKey, setRetryKey] = useState(0);
   const deepStartKeyRef = useRef<string | null>(null);
   const checkoutStartKeyRef = useRef<string | null>(null);
   const fulfillmentKeyRef = useRef<string | null>(null);
@@ -210,35 +205,18 @@ export function BaziDeepTaskFlow({
     };
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    async function run() {
-      if (cancelled) return;
-      try {
-        const summary = await pollReading(previewReadingId);
-        if (cancelled) return;
-        setError(null);
+  const handlePreviewSummary = useCallback((summary: ReadingVersionSummary) => {
+    if (summary.reading_version_id !== previewReadingId) return;
+    setError(null);
     setErrorStatus(null);
-        const nextState = stateForReadingStatus(summary.status, "preview");
-        setState(nextState);
-        if (summary.status === "accepted" || isTerminalStatus(summary.status)) return;
-        timer = setTimeout(run, POLL_MS);
-      } catch (reason) {
-        if (cancelled) return;
-        setState("failed");
-        setErrorStatus(errorHttpStatus(reason));
-        setError(readableError(reason));
-      }
-    }
+    setState(stateForReadingStatus(summary.status, "preview"));
+  }, [previewReadingId]);
 
-    void run();
-    return () => {
-      cancelled = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, [previewReadingId, retryKey]);
+  const handlePreviewPollError = useCallback((reason: unknown) => {
+    setState("failed");
+    setErrorStatus(errorHttpStatus(reason));
+    setError(readableError(reason));
+  }, []);
 
   const accountState = session?.state.status;
   const accessState = (
@@ -386,7 +364,7 @@ export function BaziDeepTaskFlow({
           setState("checkout_failed");
           return;
         }
-        timer = setTimeout(run, POLL_MS);
+        timer = setTimeout(run, CHECKOUT_POLL_MS);
       } catch (reason) {
         if (cancelled) return;
         setState("checkout_failed");
@@ -402,46 +380,22 @@ export function BaziDeepTaskFlow({
     };
   }, [bindConfirmedPayment, checkoutOrderId, deepReadingId, state]);
 
-  useEffect(() => {
-    if (!deepReadingId || !["queued", "running"].includes(state)) return;
-    const readingId = deepReadingId;
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    async function run() {
-      if (cancelled) return;
-      try {
-        const summary = await pollReading(readingId);
-        if (cancelled) return;
-        setError(null);
+  const handleDeepSummary = useCallback((summary: ReadingVersionSummary) => {
+    if (summary.reading_version_id !== deepReadingId) return;
+    setError(null);
     setErrorStatus(null);
-        const nextState = summary.delivery_state
-          ? stateForDeliveryState(summary.delivery_state, state)
-          : summary.status === "input_ready"
-            ? state
-            : stateForReadingStatus(summary.status, "deep");
-        setState(nextState);
-        if (
-          nextState === "succeeded"
-          || nextState === "failed"
-          || summary.status === "accepted"
-          || isTerminalStatus(summary.status)
-        ) return;
-        timer = setTimeout(run, POLL_MS);
-      } catch (reason) {
-        if (cancelled) return;
-        setState("failed");
-        setErrorStatus(errorHttpStatus(reason));
-        setError(readableError(reason));
-      }
-    }
+    setState((current) => summary.delivery_state
+      ? stateForDeliveryState(summary.delivery_state, current)
+      : summary.status === "input_ready"
+        ? current
+        : stateForReadingStatus(summary.status, "deep"));
+  }, [deepReadingId]);
 
-    void run();
-    return () => {
-      cancelled = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, [deepReadingId, state]);
+  const handleDeepPollError = useCallback((reason: unknown) => {
+    setState("failed");
+    setErrorStatus(errorHttpStatus(reason));
+    setError(readableError(reason));
+  }, []);
 
   const phase = statusDescription(accessState);
   const sessionChecking = session?.state.status === "checking";
@@ -462,7 +416,7 @@ export function BaziDeepTaskFlow({
       setState("unpaid");
       return;
     }
-    setRetryKey((value) => value + 1);
+    setState("preview_loading");
   }
 
   return (
@@ -562,7 +516,9 @@ export function BaziDeepTaskFlow({
           <div className={styles.result}>
             <ReadingResult
               readingId={previewReadingId}
+              onPollError={handlePreviewPollError}
               onRestart={onRestart}
+              onSummary={handlePreviewSummary}
               startedAt={startedAt}
             />
           </div>
@@ -644,14 +600,22 @@ export function BaziDeepTaskFlow({
         </section>
       ) : null}
 
-      {showDeepResult ? (
-        <section className={styles.section} aria-labelledby="bazi-deep-result-title">
+      {deepReadingId && ["queued", "running", "succeeded"].includes(accessState) ? (
+        <section
+          className={styles.section}
+          aria-labelledby="bazi-deep-result-title"
+          hidden={!showDeepResult}
+        >
           <div className={styles.statusCopy}>
             <h2 id="bazi-deep-result-title">八字深读结果</h2>
             <p>下面展示已经完成的最终报告；前台不自行生成或补写结论。</p>
           </div>
           <div className={styles.result}>
-            <ReadingResult readingId={deepReadingId} />
+            <ReadingResult
+              readingId={deepReadingId}
+              onPollError={handleDeepPollError}
+              onSummary={handleDeepSummary}
+            />
           </div>
         </section>
       ) : null}

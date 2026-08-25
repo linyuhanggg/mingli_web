@@ -29,11 +29,36 @@ vi.mock("@/components/account-session-context", () => ({
   useOptionalAccountSession: () => ({ state: { status: mockSessionStatus.value } }),
 }));
 
-vi.mock("@/components/readings/reading-result", () => ({
-  ReadingResult: ({ readingId }: { readingId: string }) => (
-    <div data-testid={`reading-result-${readingId}`}>服务端结果 renderer</div>
-  ),
-}));
+vi.mock("@/components/readings/reading-result", async () => {
+  const { useEffect } = await import("react");
+  return {
+    ReadingResult: ({
+      readingId,
+      onPollError,
+      onSummary,
+    }: {
+      readingId: string;
+      onPollError?: (error: unknown) => void;
+      onSummary?: (summary: typeof previewSummary) => void;
+    }) => {
+      useEffect(() => {
+        let active = true;
+        void mockPollReading(readingId).then(
+          (summary: typeof previewSummary) => {
+            if (active) onSummary?.(summary);
+          },
+          (error: unknown) => {
+            if (active) onPollError?.(error);
+          },
+        );
+        return () => {
+          active = false;
+        };
+      }, [readingId, onPollError, onSummary]);
+      return <div data-testid={`reading-result-${readingId}`}>服务端结果 renderer</div>;
+    },
+  };
+});
 
 import {
   BaziDeepTaskFlow,
@@ -142,6 +167,8 @@ describe("Bazi deep task state contract", () => {
 
     expect(await screen.findByText("深读需要登录")).toBeVisible();
     expect(screen.getByTestId("reading-result-preview-1")).toBeVisible();
+    expect(mockPollReading).toHaveBeenCalledTimes(1);
+    expect(mockPollReading).toHaveBeenCalledWith("preview-1");
     expect(mockStartBaziDeepReading).not.toHaveBeenCalled();
     expect(mockBindReadingFulfillment).not.toHaveBeenCalled();
   });
@@ -237,6 +264,10 @@ describe("Bazi deep task state contract", () => {
     await waitFor(() => expect(screen.getByText("已进入深读队列")).toBeVisible());
     await waitFor(() => expect(screen.getByText("深读已完成")).toBeVisible());
     expect(screen.getByTestId("reading-result-deep-1")).toBeVisible();
+    expect(mockPollReading.mock.calls.map(([readingId]) => readingId)).toEqual([
+      "preview-1",
+      "deep-1",
+    ]);
   });
 
   it("fails closed when payment or fulfillment is rejected", async () => {

@@ -5,8 +5,13 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 
 const WAITING_READING_ID = "ming-21-waiting-reading";
 const BAZI_WAITING_READING_ID = "ming-21-bazi-waiting-reading";
+const BAZI_RETRY_READING_ID = "ming-21-bazi-retry-reading";
 let waitingStartedAt = new Date().toISOString();
-type ApiState = { profiles: Array<Record<string, unknown>> };
+type ApiState = {
+  profiles: Array<Record<string, unknown>>;
+  readingCreatedAt: Record<string, string>;
+  readingPollTimes: Record<string, number[]>;
+};
 const apiStateByPage = new WeakMap<Page, ApiState>();
 
 async function json(route: Route, body: unknown, status = 200) {
@@ -17,7 +22,11 @@ async function json(route: Route, body: unknown, status = 200) {
   });
 }
 
-function waitingSummary(readingId = WAITING_READING_ID, productId = "meihua") {
+function waitingSummary(
+  readingId = WAITING_READING_ID,
+  productId = "meihua",
+  createdAt = waitingStartedAt,
+) {
   return {
     reading_version_id: readingId,
     reading_root_id: `${readingId}-root`,
@@ -32,13 +41,20 @@ function waitingSummary(readingId = WAITING_READING_ID, productId = "meihua") {
     horizon: { kind_id: "now", start: null, end: null },
     prior_answer: null,
     input_request: null,
-    created_at: waitingStartedAt,
+    created_at: createdAt,
   };
 }
 
 async function installApiMocks(page: Page) {
   let draftLabel = "";
-  const state: ApiState = { profiles: [] };
+  const state: ApiState = {
+    profiles: [],
+    readingCreatedAt: {
+      [BAZI_WAITING_READING_ID]: waitingStartedAt,
+      [WAITING_READING_ID]: waitingStartedAt,
+    },
+    readingPollTimes: {},
+  };
   apiStateByPage.set(page, state);
 
   await page.context().addCookies([
@@ -100,12 +116,36 @@ async function installApiMocks(page: Page) {
       await json(route, state.profiles[0]);
       return;
     }
-    if (method === "GET" && path === `/api/v1/readings/${WAITING_READING_ID}`) {
-      await json(route, waitingSummary());
+    if (method === "POST" && path === "/api/v1/readings/preview") {
+      const createdAt = new Date().toISOString();
+      state.readingCreatedAt[BAZI_RETRY_READING_ID] = createdAt;
+      await json(
+        route,
+        waitingSummary(BAZI_RETRY_READING_ID, "bazi", createdAt),
+        201,
+      );
       return;
     }
-    if (method === "GET" && path === `/api/v1/readings/${BAZI_WAITING_READING_ID}`) {
-      await json(route, waitingSummary(BAZI_WAITING_READING_ID, "bazi"));
+    const readingId = path.startsWith("/api/v1/readings/")
+      ? path.slice("/api/v1/readings/".length)
+      : null;
+    if (
+      method === "GET"
+      && readingId
+      && [WAITING_READING_ID, BAZI_WAITING_READING_ID, BAZI_RETRY_READING_ID].includes(readingId)
+    ) {
+      state.readingPollTimes[readingId] = [
+        ...(state.readingPollTimes[readingId] ?? []),
+        Date.now(),
+      ];
+      await json(
+        route,
+        waitingSummary(
+          readingId,
+          readingId === WAITING_READING_ID ? "meihua" : "bazi",
+          state.readingCreatedAt[readingId] ?? waitingStartedAt,
+        ),
+      );
       return;
     }
     await json(route, { title: "Unhandled e2e API", detail: `${method} ${path}` }, 599);
@@ -116,6 +156,40 @@ function seedProfiles(page: Page, profiles: ApiState["profiles"]) {
   const state = apiStateByPage.get(page);
   if (!state) throw new Error("API mocks must be installed before seeding profiles");
   state.profiles = profiles;
+}
+
+function readingPollTimes(page: Page, readingId: string): number[] {
+  return [...(apiStateByPage.get(page)?.readingPollTimes[readingId] ?? [])];
+}
+
+function setReadingCreatedAt(page: Page, readingId: string, createdAt: string) {
+  const state = apiStateByPage.get(page);
+  if (!state) throw new Error("API mocks must be installed before setting Reading time");
+  state.readingCreatedAt[readingId] = createdAt;
+}
+
+async function expectSinglePollSequence(
+  page: Page,
+  readingId: string,
+  offset = 0,
+) {
+  await expect.poll(() => readingPollTimes(page, readingId).length).toBe(offset + 1);
+  await page.waitForTimeout(500);
+  expect(readingPollTimes(page, readingId)).toHaveLength(offset + 1);
+  await expect.poll(
+    () => readingPollTimes(page, readingId).length,
+    { timeout: 13_000 },
+  ).toBe(offset + 5);
+  const times = readingPollTimes(page, readingId).slice(offset, offset + 5);
+  const intervals = times.slice(1).map((time, index) => time - times[index]!);
+  expect(intervals[0]).toBeGreaterThanOrEqual(850);
+  expect(intervals[0]).toBeLessThan(1_500);
+  expect(intervals[1]).toBeGreaterThanOrEqual(1_800);
+  expect(intervals[1]).toBeLessThan(2_700);
+  for (const interval of intervals.slice(2)) {
+    expect(interval).toBeGreaterThanOrEqual(3_700);
+    expect(interval).toBeLessThan(4_900);
+  }
 }
 
 async function expectNoHorizontalOverflow(page: Page, label: string) {
@@ -218,6 +292,7 @@ test("profile empty state completes the canonical creation flow", async ({
 test("mobile input geometry and recoverable reading waiting state stay usable", async ({
   page,
 }, testInfo) => {
+  test.slow();
   seedProfiles(page, [
     {
       profile_id: "44444444-4444-4444-8444-444444444444",
@@ -296,9 +371,44 @@ test("mobile input geometry and recoverable reading waiting state stay usable", 
   const baziWaiting = page.getByRole("status").filter({ hasText: "正在为你排盘" });
   await expect(baziWaiting).toBeVisible();
   await expect(baziWaiting).toContainText("通常需要 5–15 秒");
+  const baziPollOffset = readingPollTimes(page, BAZI_WAITING_READING_ID).length - 1;
+  if (testInfo.project.name === "1024") {
+    await expectSinglePollSequence(page, BAZI_WAITING_READING_ID, baziPollOffset);
+    const staleStartedAt = new Date(Date.now() - 61_000).toISOString();
+    setReadingCreatedAt(page, BAZI_WAITING_READING_ID, staleStartedAt);
+    await page.evaluate(({ readingId, startedAt }) => {
+      const key = "mingli.recoverable-reading.v3.bazi";
+      const record = JSON.parse(window.sessionStorage.getItem(key) ?? "{}") as Record<string, unknown>;
+      window.sessionStorage.setItem(key, JSON.stringify({
+        ...record,
+        reading_version_id: readingId,
+        started_at: startedAt,
+      }));
+    }, {
+      readingId: BAZI_WAITING_READING_ID,
+      startedAt: Date.parse(staleStartedAt),
+    });
+    const beforeRefresh = readingPollTimes(page, BAZI_WAITING_READING_ID).length;
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await expect.poll(() => readingPollTimes(page, BAZI_WAITING_READING_ID).length)
+      .toBe(beforeRefresh + 1);
+    await page.waitForTimeout(500);
+    expect(readingPollTimes(page, BAZI_WAITING_READING_ID)).toHaveLength(beforeRefresh + 1);
+    await page.getByRole("button", { name: "重试（保留原资料）" }).click();
+    const oldReadingCount = readingPollTimes(page, BAZI_WAITING_READING_ID).length;
+    await expectSinglePollSequence(page, BAZI_RETRY_READING_ID);
+    expect(readingPollTimes(page, BAZI_WAITING_READING_ID)).toHaveLength(oldReadingCount);
+  } else {
+    await expect.poll(() => readingPollTimes(page, BAZI_WAITING_READING_ID).length)
+      .toBeGreaterThanOrEqual(1);
+    await page.waitForTimeout(500);
+    expect(readingPollTimes(page, BAZI_WAITING_READING_ID)).toHaveLength(1);
+  }
   await expectNoHorizontalOverflow(page, `${testInfo.project.name} bazi waiting state`);
   await screenshot(page, testInfo.project.name, "bazi-waiting");
 
+  const meihuaStartedAt = new Date().toISOString();
+  setReadingCreatedAt(page, WAITING_READING_ID, meihuaStartedAt);
   await page.evaluate(({ readingId, startedAt }) => {
     window.sessionStorage.setItem(
       "mingli.recoverable-reading.v3.meihua",
@@ -323,13 +433,21 @@ test("mobile input geometry and recoverable reading waiting state stay usable", 
     );
   }, {
     readingId: WAITING_READING_ID,
-    startedAt: Date.parse(waitingStartedAt),
+    startedAt: Date.parse(meihuaStartedAt),
   });
   await page.goto("/meihua", { waitUntil: "domcontentloaded" });
 
   const waiting = page.getByRole("status").filter({ hasText: "正在为你排盘" });
   await expect(waiting).toBeVisible();
   await expect(waiting).toContainText("通常需要 5–15 秒");
+  if (testInfo.project.name === "1024") {
+    await expectSinglePollSequence(page, WAITING_READING_ID);
+  } else {
+    await expect.poll(() => readingPollTimes(page, WAITING_READING_ID).length)
+      .toBeGreaterThanOrEqual(1);
+    await page.waitForTimeout(500);
+    expect(readingPollTimes(page, WAITING_READING_ID)).toHaveLength(1);
+  }
   const progress = page.getByRole("list", { name: "排盘进度阶段" });
   await expect(progress).toContainText("资料已提交");
   await expect(progress.locator('[aria-current="step"]')).toHaveText("资料已提交");
