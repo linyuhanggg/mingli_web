@@ -338,7 +338,7 @@ describe("大六壬 S3 课传盘面", () => {
     expect(screen.queryByRole("table", { name: "应期候选" })).not.toBeInTheDocument();
   });
 
-  it("links equal facts and clears the click lock on repeat activation or Escape", async () => {
+  it("keeps compound transmission pressed state aligned with its full lock", async () => {
     const user = userEvent.setup();
     render(<DaliurenBoard view={chart()} />);
 
@@ -355,18 +355,24 @@ describe("大六壬 S3 课传盘面", () => {
     await user.click(firstUpper);
     for (const cell of linkedSi) {
       expect(cell).toHaveAttribute("data-active", "true");
-      expect(cell).toHaveAttribute("aria-pressed", "true");
     }
+    expect(firstUpper).toHaveAttribute("aria-pressed", "true");
+    expect(secondLower).toHaveAttribute("aria-pressed", "true");
+    expect(finalTx).toHaveAttribute("aria-pressed", "false");
     expect(firstUpper).toHaveFocus();
 
-    await user.click(firstUpper);
+    await user.click(finalTx);
+    for (const cell of linkedSi) expect(cell).toHaveAttribute("aria-pressed", "true");
+    expect(finalTx).toHaveFocus();
+
+    await user.click(finalTx);
     for (const cell of linkedSi) {
       expect(cell).toHaveAttribute("aria-pressed", "false");
       expect(cell).toHaveAttribute("data-active", "true");
     }
-    expect(firstUpper).toHaveFocus();
-    act(() => firstUpper.blur());
-    await user.unhover(firstUpper);
+    expect(finalTx).toHaveFocus();
+    act(() => finalTx.blur());
+    await user.unhover(finalTx);
     for (const cell of linkedSi) expect(cell).toHaveAttribute("data-active", "false");
 
     await user.click(finalTx);

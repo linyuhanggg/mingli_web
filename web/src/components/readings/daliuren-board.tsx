@@ -281,8 +281,9 @@ function DaliurenBoardSession({
     return hasFact(activeFacts, value);
   }
 
-  function isLocked(value: string): boolean {
-    return hasFact(lockedFacts, value);
+  function isLocked(value: string | readonly string[]): boolean {
+    const facts = asFacts(value);
+    return facts.length > 0 && facts.every((fact) => lockedFacts.includes(fact));
   }
 
   function focusCell(id: CellId) {
@@ -291,7 +292,7 @@ function DaliurenBoardSession({
   }
 
   function shouldUnlock(facts: readonly string[]): boolean {
-    return facts.length > 0 && facts.every((fact) => lockedFacts.includes(fact));
+    return isLocked(facts);
   }
 
   function restorePreview() {
@@ -447,7 +448,7 @@ function DaliurenBoardSession({
                     data-active={isActive(item.branch) || isActive(item.general) ? "true" : "false"}
                     data-void={isVoidCell(item.branch, voids) ? "true" : undefined}
                     tabIndex={rovingId === id ? 0 : -1}
-                    aria-pressed={isLocked(item.branch)}
+                    aria-pressed={isLocked([item.branch, item.general])}
                     aria-label={`${STAGE_LABEL[item.stage]} ${item.branch} ${item.general}`}
                     ref={(node) => {
                       cellRefs.current[id] = node;
