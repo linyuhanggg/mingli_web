@@ -929,6 +929,11 @@ export type DaliurenStageFlowEntry = DaliurenRelationFact &
     readonly to_stage: DaliurenTransmissionStage;
   }>;
 
+export type DaliurenTransmissionToDayEntry = DaliurenRelationFact &
+  Readonly<{
+    readonly stage: DaliurenTransmissionStage;
+  }>;
+
 export type DaliurenSixRelativeStage = Readonly<{
   readonly branch: string;
   readonly six_relative: DaliurenSixRelative;
@@ -1093,6 +1098,8 @@ export type DaliurenDimensionFact = Readonly<{
   readonly stage_flow?: ReadonlyArray<DaliurenStageFlowEntry>;
   readonly stage_status?: ReadonlyArray<DaliurenStageStatusEntry>;
   readonly subject_object_relation?: DaliurenRelationFact;
+  readonly transmissions_to_day?: ReadonlyArray<DaliurenTransmissionToDayEntry>;
+  readonly initial_final_relation?: DaliurenRelationFact;
   readonly relative_speed?: DaliurenRelativeSpeed | null;
   readonly candidate_branch?: DaliurenCandidateBranch | null;
   readonly candidate_date?: DaliurenTimingCandidate | null;
