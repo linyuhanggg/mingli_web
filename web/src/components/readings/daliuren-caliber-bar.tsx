@@ -98,10 +98,16 @@ function noblePersonLines(value: CoreFacts["noble_person"]): NoblePersonLines | 
 }
 
 function xunkongLine(value: CoreFacts["xunkong"]): string | null {
-  const branches = (value as { branches?: unknown } | null)?.branches;
-  if (!Array.isArray(branches) || branches.length === 0) return null;
-  const texts = branches.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
-  return texts.length ? `旬空：${texts.join("")}` : null;
+  if (!value) return null;
+
+  const record = value as { branches?: unknown; xun?: unknown };
+  const xun = nonEmptyText(record.xun);
+  if (!xun || xun.length < 2 || !Array.isArray(record.branches) || record.branches.length !== 2) return null;
+
+  const branches = record.branches.map(nonEmptyText);
+  if (branches.some((branch) => branch === null)) return null;
+
+  return `旬空：${xun}旬 · ${branches.join("")}`;
 }
 
 export function DaliurenCaliberBar({

@@ -106,15 +106,6 @@ const EMPTY_TRANSMISSIONS: DaliurenChartViewModel["transmissions"] = [
   { stage: "final", branch: "", general: "" },
 ];
 
-function transmissionCellForBranch(
-  transmissions: DaliurenChartViewModel["transmissions"],
-  branch: string,
-): CellId | null {
-  if (!branch) return null;
-  const hit = transmissions.find((row) => row.branch === branch);
-  return hit ? (`tx-${hit.stage}` as CellId) : null;
-}
-
 function cellFact(
   id: CellId,
   lessons: DaliurenChartViewModel["lessons"],
@@ -218,6 +209,13 @@ export function DaliurenBoard({
     setLockedFact(unlock ? null : fact);
     if (unlock) setPreviewFact(null);
     cellRefs.current[id]?.focus();
+  }
+
+  function toggleFactLock(value: string) {
+    const fact = factValue(value);
+    const unlock = fact !== null && lockedFact === fact;
+    setLockedFact(unlock ? null : fact);
+    if (unlock) setPreviewFact(null);
   }
 
   function startFocusPreview(value: string) {
@@ -475,32 +473,28 @@ export function DaliurenBoard({
             </thead>
             <tbody>
               {candidates.map((item) => {
-                const target = transmissionCellForBranch(transmissions, item.branch);
                 return (
                   <tr key={`${item.solar_date}-${item.branch}-${item.days_after_cast}`}>
                     <td className={styles.date}>{`${item.solar_date} · ${item.day_ganzhi}日`}</td>
                     <td>
-                      {target ? (
-                        <button
-                          className={styles.branchLink}
-                          type="button"
-                          aria-label={`候选支 ${item.branch}`}
-                          onClick={() => toggleLock(target)}
-                          onBlur={() => stopFocusPreview(item.branch)}
-                          onFocus={() => startFocusPreview(item.branch)}
-                          onKeyDown={(event) => {
-                            if (event.key !== "Escape") return;
-                            event.preventDefault();
-                            clearLock();
-                          }}
-                          onPointerEnter={() => startHoverPreview(item.branch)}
-                          onPointerLeave={() => stopHoverPreview(item.branch)}
-                        >
-                          {item.branch}
-                        </button>
-                      ) : (
-                        <span className={styles.branch}>{item.branch}</span>
-                      )}
+                      <button
+                        className={styles.branchLink}
+                        type="button"
+                        aria-label={`候选支 ${item.branch}`}
+                        aria-pressed={isLocked(item.branch)}
+                        onClick={() => toggleFactLock(item.branch)}
+                        onBlur={() => stopFocusPreview(item.branch)}
+                        onFocus={() => startFocusPreview(item.branch)}
+                        onKeyDown={(event) => {
+                          if (event.key !== "Escape") return;
+                          event.preventDefault();
+                          clearLock();
+                        }}
+                        onPointerEnter={() => startHoverPreview(item.branch)}
+                        onPointerLeave={() => stopHoverPreview(item.branch)}
+                      >
+                        {item.branch}
+                      </button>
                     </td>
                     <td>{`第 ${item.days_after_cast} 天`}</td>
                     <td className={styles.source}>{sourceLabel(item.source_pack, item.source_rule)}</td>

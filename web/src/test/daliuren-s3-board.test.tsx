@@ -504,7 +504,7 @@ describe("大六壬 S3 课传盘面", () => {
     expect(css).toMatch(/\.branchLink\s*\{[^}]*min-height:\s*var\(--target-min\)/s);
   });
 
-  it("renders an unmatched candidate branch as text and marks its earth-plate anchor", async () => {
+  it("links the golden Runtime candidate by fact value even when it is absent from transmissions", async () => {
     const user = userEvent.setup();
     render(
       <DaliurenBoard
@@ -523,8 +523,8 @@ describe("大六壬 S3 课传盘面", () => {
     );
 
     const timingTable = screen.getByRole("table", { name: "应期候选" });
-    expect(within(timingTable).getByText("未")).toBeVisible();
-    expect(within(timingTable).queryByRole("button", { name: "候选支 未" })).not.toBeInTheDocument();
+    const candidateButton = within(timingTable).getByRole("button", { name: "候选支 未" });
+    expect(candidateButton).toBeVisible();
     expect(board().querySelector("[data-stage] [data-badge='timing']")).toBeNull();
 
     await user.click(screen.getByText("天地盘"));
@@ -533,6 +533,23 @@ describe("大六壬 S3 课传盘面", () => {
     expect(anchor).toHaveAttribute("data-timing", "true");
     expect(within(anchor).getByText("应期")).toBeVisible();
     expect(earthTable.querySelector('[data-branch="辰"]')).not.toHaveAttribute("data-timing");
+
+    act(() => candidateButton.focus());
+    expect(anchor).toHaveAttribute("data-active", "true");
+    act(() => candidateButton.blur());
+    expect(anchor).toHaveAttribute("data-active", "false");
+
+    await user.hover(candidateButton);
+    expect(anchor).toHaveAttribute("data-active", "true");
+    await user.unhover(candidateButton);
+    expect(anchor).toHaveAttribute("data-active", "false");
+
+    await user.click(candidateButton);
+    expect(anchor).toHaveAttribute("data-active", "true");
+    expect(candidateButton).toHaveAttribute("aria-pressed", "true");
+    await user.click(candidateButton);
+    expect(anchor).toHaveAttribute("data-active", "false");
+    expect(candidateButton).toHaveAttribute("aria-pressed", "false");
   });
 
   it("uses paper-ink tokens, traditional column order and stair indents without glow or luck dye", () => {
@@ -3588,7 +3605,7 @@ describe("大六壬 S3 M1 起课口径条", () => {
     expect(within(block).getByText("丙午日 卯时")).toBeVisible();
     expect(within(block).getByText("月将：亥（登明）")).toBeVisible();
     expect(within(block).getByText("贵人：巳")).toBeVisible();
-    expect(within(block).getByText("旬空：辰巳")).toBeVisible();
+    expect(within(block).getByText("旬空：甲子旬 · 辰巳")).toBeVisible();
     expect(screen.queryByText("day_hour")).not.toBeInTheDocument();
     expect(screen.queryByText("month_general")).not.toBeInTheDocument();
     expect(screen.queryByText("昼贵人")).not.toBeInTheDocument();

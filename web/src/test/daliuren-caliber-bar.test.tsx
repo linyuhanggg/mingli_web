@@ -72,3 +72,27 @@ describe("DaliurenCaliberBar noble-person context", () => {
     expect(region).not.toHaveTextContent(/unknown-profile|sideways|twilight/);
   });
 });
+
+describe("DaliurenCaliberBar xunkong context", () => {
+  type Xunkong = NonNullable<Parameters<typeof DaliurenCaliberBar>[0]["xunkong"]>;
+
+  it("renders the Runtime xun together with its two void branches", () => {
+    render(<DaliurenCaliberBar xunkong={{ xun: "甲申", branches: ["午", "未"] }} />);
+
+    expect(screen.getByRole("region", { name: "起课口径" })).toHaveTextContent("旬空：甲申旬 · 午未");
+  });
+
+  it.each([
+    { branches: ["午", "未"] },
+    { xun: "甲申", branches: ["午"] },
+    { xun: " ", branches: ["午", "未"] },
+    { xun: "甲", branches: ["午", "未"] },
+    { xun: "甲申", branches: ["午", " "] },
+  ])("fail-closes an incomplete Runtime xunkong profile %#", (xunkong) => {
+    render(<DaliurenCaliberBar question="验证旬空口径" xunkong={xunkong as unknown as Xunkong} />);
+
+    const region = screen.getByRole("region", { name: "起课口径" });
+    expect(region).toHaveTextContent("验证旬空口径");
+    expect(region).not.toHaveTextContent("旬空：");
+  });
+});
