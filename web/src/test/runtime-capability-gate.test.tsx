@@ -66,6 +66,8 @@ const daliurenView = {
       relationship: {
         canonical_dimension: "relationship",
         requested_dimension: "relationship",
+        status: "calculated_facts_not_verdict",
+        source_rule_ids: ["LR-17"],
         rule_evidence: {
           catalog_schema: "mingli-liuren-executable-rules-v1",
           hard_verdict: null,

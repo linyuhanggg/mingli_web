@@ -1121,8 +1121,8 @@ export type DaliurenDimensionFact = Readonly<{
   readonly canonical_dimension: string;
   readonly requested_dimension: string;
   readonly rule_evidence: DaliurenRuleEvidence;
-  readonly status?: "calculated_facts_not_verdict";
-  readonly source_rule_ids?: ReadonlyArray<string>;
+  readonly status: "calculated_facts_not_verdict";
+  readonly source_rule_ids: ReadonlyArray<string>;
   readonly general_landing_correspondences?: ReadonlyArray<
     DaliurenGeneralLandingCorrespondence | DaliurenGeneralLandingUnavailableCorrespondence
   >;

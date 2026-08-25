@@ -2616,6 +2616,9 @@ describe("大六壬 S3 M6a 维度证据", () => {
   });
 
   it.each([
+    ["dimension status is missing", "missing_status"],
+    ["dimension source_rule_ids is missing", "missing_source_rule_ids"],
+    ["dimension source_rule_ids contains a non-string", "invalid_source_rule_id"],
     ["pace source omitted from source_rule_ids", "missing_pace_rule"],
     ["relative speed disagrees with the candidate observation", "speed_conflict"],
     ["DLR-16 claimed without a legal pace", "pace_unresolved"],
@@ -2627,7 +2630,13 @@ describe("大六壬 S3 M6a 维度证据", () => {
     ["combined candidate source_rule drifts", "combined_source_drift"],
   ] as const)("fails the whole timing group closed for %s", (_label, kind) => {
     const projection = structuredClone(boundTimingProjection()) as Record<string, unknown>;
-    if (kind === "missing_pace_rule") {
+    if (kind === "missing_status") {
+      delete projection.status;
+    } else if (kind === "missing_source_rule_ids") {
+      delete projection.source_rule_ids;
+    } else if (kind === "invalid_source_rule_id") {
+      projection.source_rule_ids = [42];
+    } else if (kind === "missing_pace_rule") {
       projection.source_rule_ids = ["LM-R21"];
     } else if (kind === "speed_conflict") {
       const envelope = projection.rule_evidence as Record<string, unknown>;

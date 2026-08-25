@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import type { DaliurenDimensionFact } from "./registry";
 import {
   VIEW_MODEL_FIXTURES,
   VIEW_MODEL_VERSIONS,
@@ -55,5 +56,45 @@ describe("versioned ViewModel registry", () => {
 
   it("does not resolve an unregistered version", () => {
     expect(getViewModelFixture("reading-document/v1")).toBeUndefined();
+  });
+
+  it("requires the complete Runtime envelope on every Daliuren dimension fact", () => {
+    const validEnvelope: DaliurenDimensionFact = {
+      canonical_dimension: "timing",
+      requested_dimension: "timing",
+      status: "calculated_facts_not_verdict",
+      source_rule_ids: ["DLR-16"],
+      rule_evidence: {} as DaliurenDimensionFact["rule_evidence"],
+    };
+
+    // @ts-expect-error Runtime dimension facts always require status.
+    const missingStatus: DaliurenDimensionFact = {
+      canonical_dimension: "timing",
+      requested_dimension: "timing",
+      source_rule_ids: ["DLR-16"],
+      rule_evidence: {} as DaliurenDimensionFact["rule_evidence"],
+    };
+
+    // @ts-expect-error Runtime dimension facts always require source_rule_ids.
+    const missingSourceRuleIds: DaliurenDimensionFact = {
+      canonical_dimension: "timing",
+      requested_dimension: "timing",
+      status: "calculated_facts_not_verdict",
+      rule_evidence: {} as DaliurenDimensionFact["rule_evidence"],
+    };
+
+    const invalidSourceRuleId: DaliurenDimensionFact = {
+      canonical_dimension: "timing",
+      requested_dimension: "timing",
+      status: "calculated_facts_not_verdict",
+      // @ts-expect-error Runtime source rule ids are strings.
+      source_rule_ids: [42],
+      rule_evidence: {} as DaliurenDimensionFact["rule_evidence"],
+    };
+
+    expect(validEnvelope.source_rule_ids).toEqual(["DLR-16"]);
+    void missingStatus;
+    void missingSourceRuleIds;
+    void invalidSourceRuleId;
   });
 });

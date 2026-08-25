@@ -1914,6 +1914,16 @@ function parseTimingFacts(
     return entries.length ? entries : null;
   }
 
+  if (
+    hasOwnKey(value, "status") ||
+    hasOwnKey(value, "source_rule_ids") ||
+    hasOwnKey(value, "relative_speed") ||
+    hasOwnKey(value, "candidate_branch") ||
+    hasOwnKey(value, "candidate_date")
+  ) {
+    return null;
+  }
+
   const entries: EvidenceEntry[] = [];
   for (const item of matched) {
     const entry = parseEntry(item, "timing");
