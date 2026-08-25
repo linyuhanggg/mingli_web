@@ -1787,6 +1787,174 @@ describe("大六壬 S3 M6a 维度证据", () => {
     expect(document.body).not.toHaveTextContent(/不得展示|日干与日支|三传与日干|初末关系|三传流转/);
   });
 
+  it("renders typed top-level relationship facts when no judgment rule matches", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            relationship: dimension({
+              canonical_dimension: "relationship",
+              requested_dimension: "relationship",
+              status: "calculated_facts_not_verdict",
+              source_rule_ids: [],
+              subject_object_relation: {
+                subject: "day_stem",
+                subject_value: "甲",
+                subject_element: "木",
+                object: "day_branch",
+                object_value: "寅",
+                object_element: "木",
+                relation: "same_element",
+              },
+              six_relative_stages: [
+                { stage: "initial", branch: "巳", six_relative: "子孙" },
+                { stage: "middle", branch: "申", six_relative: "官鬼" },
+                { stage: "final", branch: "子", six_relative: "父母" },
+              ],
+              stage_flow: [
+                {
+                  from_stage: "initial",
+                  to_stage: "middle",
+                  subject: "from_branch",
+                  subject_value: "巳",
+                  subject_element: "火",
+                  object: "to_branch",
+                  object_value: "申",
+                  object_element: "金",
+                  relation: "subject_overcomes_object",
+                },
+                {
+                  from_stage: "middle",
+                  to_stage: "final",
+                  subject: "from_branch",
+                  subject_value: "申",
+                  subject_element: "金",
+                  object: "to_branch",
+                  object_value: "子",
+                  object_element: "水",
+                  relation: "subject_generates_object",
+                },
+              ],
+              rule_evidence: evidence({
+                matched: [],
+                requires_school_adjudication: true,
+                status: "not_bound",
+              }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    const relationship = within(panel()).getByRole("group", { name: "关系" });
+    expect(relationship).toHaveTextContent("日干与日支：甲（木）与寅（木）：五行同类");
+    expect(relationship).toHaveTextContent("三传六亲：初传 巳 · 子孙；中传 申 · 官鬼；末传 子 · 父母");
+    expect(relationship).toHaveTextContent("三传流转：初传至中传 巳（火）与申（金）：前者克后者");
+    expect(relationship).not.toHaveTextContent(
+      /same_element|subject_generates_object|subject_overcomes_object|six_relative_stages|stage_flow|吉凶|成败|保证/,
+    );
+  });
+
+  it("fails the whole relationship group closed for malformed or conflicting top-level projections", () => {
+    const validProjection = {
+      canonical_dimension: "relationship",
+      requested_dimension: "relationship",
+      status: "calculated_facts_not_verdict",
+      source_rule_ids: [] as string[],
+      subject_object_relation: {
+        subject: "day_stem",
+        subject_value: "甲",
+        subject_element: "木",
+        object: "day_branch",
+        object_value: "寅",
+        object_element: "木",
+        relation: "same_element",
+      },
+      six_relative_stages: [
+        { stage: "initial", branch: "巳", six_relative: "子孙" },
+        { stage: "middle", branch: "申", six_relative: "官鬼" },
+        { stage: "final", branch: "子", six_relative: "父母" },
+      ],
+      stage_flow: [
+        {
+          from_stage: "initial",
+          to_stage: "middle",
+          subject: "from_branch",
+          subject_value: "巳",
+          subject_element: "火",
+          object: "to_branch",
+          object_value: "申",
+          object_element: "金",
+          relation: "subject_overcomes_object",
+        },
+        {
+          from_stage: "middle",
+          to_stage: "final",
+          subject: "from_branch",
+          subject_value: "申",
+          subject_element: "金",
+          object: "to_branch",
+          object_value: "子",
+          object_element: "水",
+          relation: "subject_generates_object",
+        },
+      ],
+      rule_evidence: evidence({
+        matched: [],
+        requires_school_adjudication: true,
+        status: "not_bound",
+      }),
+    };
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            extra_field: { ...validProjection, raw_dump: "不得展示额外字段" },
+            unknown_relative: {
+              ...validProjection,
+              six_relative_stages: [
+                { stage: "initial", branch: "巳", six_relative: "未来枚举" },
+                ...validProjection.six_relative_stages.slice(1),
+              ],
+            },
+            wrong_stage_order: {
+              ...validProjection,
+              six_relative_stages: [
+                validProjection.six_relative_stages[1],
+                validProjection.six_relative_stages[0],
+                validProjection.six_relative_stages[2],
+              ],
+            },
+            cross_field_drift: {
+              ...validProjection,
+              stage_flow: [
+                { ...validProjection.stage_flow[0], subject_value: "午" },
+                validProjection.stage_flow[1],
+              ],
+            },
+            matched_conflict: {
+              ...validProjection,
+              source_rule_ids: ["LR-17"],
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    rule_id: "LR-17",
+                    observation: { relation: "object_overcomes_subject" },
+                  }),
+                ],
+                requires_school_adjudication: true,
+                status: "matched_evidence",
+              }),
+            },
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/不得展示额外字段|未来枚举|日干与日支|三传六亲|主客关系/);
+  });
+
   it.each([
     [
       "money",

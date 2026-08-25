@@ -13,6 +13,7 @@ import type {
   DaliurenOutcomeRelation,
   DaliurenRelationshipObservation,
   DaliurenSeasonStrength,
+  DaliurenSixRelativeStage,
   DaliurenSixRelative,
   DaliurenStateObservation,
   DaliurenStageBranchDirection,
@@ -128,6 +129,26 @@ const STATE_DIMENSION_KEYS = [
   "stage_status",
   "general_landing_correspondences",
 ] as const;
+const RELATIONSHIP_DIMENSION_KEYS = [
+  "canonical_dimension",
+  "requested_dimension",
+  "status",
+  "source_rule_ids",
+  "rule_evidence",
+  "subject_object_relation",
+  "six_relative_stages",
+  "stage_flow",
+] as const;
+const RULE_EVIDENCE_KEYS = [
+  "catalog_schema",
+  "hard_verdict",
+  "matched",
+  "not_evaluated",
+  "requires_school_adjudication",
+  "scope_boundaries",
+  "status",
+] as const;
+const SIX_RELATIVE_STAGE_KEYS = ["stage", "branch", "six_relative"] as const;
 const GENERAL_LANDING_KEYS = [
   "stage",
   "heavenly_general",
@@ -334,6 +355,16 @@ function parseStageFlowRelation(
   const relation = parseRelationFact(value, "from_branch", "to_branch", STAGE_FLOW_KEYS);
   if (!relation || !isRecord(value) || value.from_stage !== fromStage || value.to_stage !== toStage) return null;
   return { ...relation, fromStage, toStage };
+}
+
+function parseSixRelativeStage(
+  value: unknown,
+  stage: DaliurenTransmissionStage,
+): DaliurenSixRelativeStage | null {
+  if (!isRecord(value) || !hasExactKeys(value, SIX_RELATIVE_STAGE_KEYS)) return null;
+  const branch = readString(value, "branch");
+  if (value.stage !== stage || !branch || !isSixRelative(value.six_relative)) return null;
+  return { branch, six_relative: value.six_relative, stage };
 }
 
 function isLocationDirection<Stage extends DaliurenTransmissionStage>(
@@ -1023,6 +1054,105 @@ function parseTopLevelOutcomeFacts(value: Record<string, unknown>): readonly Evi
   ];
 }
 
+function parseTopLevelRelationshipFacts(
+  value: Record<string, unknown>,
+  evidence: Record<string, unknown>,
+): readonly EvidenceEntry[] | null {
+  const sourceRuleIds = value.source_rule_ids;
+  const stageRows = value.six_relative_stages;
+  const flowRows = value.stage_flow;
+  if (
+    !hasExactKeys(value, RELATIONSHIP_DIMENSION_KEYS) ||
+    value.requested_dimension !== "relationship" ||
+    value.status !== "calculated_facts_not_verdict" ||
+    !Array.isArray(sourceRuleIds) ||
+    !sourceRuleIds.every((ruleId) => typeof ruleId === "string" && Boolean(ruleId.trim())) ||
+    !hasExactKeys(evidence, RULE_EVIDENCE_KEYS) ||
+    !readString(evidence, "catalog_schema") ||
+    evidence.requires_school_adjudication !== true ||
+    !Array.isArray(evidence.matched) ||
+    !Array.isArray(evidence.not_evaluated) ||
+    !isEmptyArray(evidence.scope_boundaries) ||
+    !Array.isArray(stageRows) ||
+    stageRows.length !== LOCATION_STAGES.length ||
+    !Array.isArray(flowRows) ||
+    flowRows.length !== 2
+  ) {
+    return null;
+  }
+
+  const subjectObject = parseRelationFact(value.subject_object_relation, "day_stem", "day_branch");
+  const stages = LOCATION_STAGES.map((stage, index) => parseSixRelativeStage(stageRows[index], stage));
+  const flows = [
+    parseStageFlowRelation(flowRows[0], "initial", "middle"),
+    parseStageFlowRelation(flowRows[1], "middle", "final"),
+  ] as const;
+  if (!subjectObject || stages.some((row) => row === null) || flows.some((row) => row === null)) {
+    return null;
+  }
+
+  const typedStages = stages as readonly DaliurenSixRelativeStage[];
+  const typedFlows = flows as readonly StageFlowFact[];
+  if (
+    typedFlows.some(
+      (row, index) =>
+        row.subjectValue !== typedStages[index]?.branch ||
+        row.objectValue !== typedStages[index + 1]?.branch,
+    )
+  ) {
+    return null;
+  }
+
+  const normalizedSourceRuleIds = sourceRuleIds.map((ruleId) => ruleId.trim());
+  if (evidence.matched.length) {
+    const matchedEntry = evidence.matched.length === 1 ? parseEntry(evidence.matched[0], "relationship") : null;
+    const matchedObservation = evidenceObservation(evidence.matched[0]);
+    if (
+      evidence.status !== "matched_evidence" ||
+      normalizedSourceRuleIds.length !== 1 ||
+      normalizedSourceRuleIds[0] !== "LR-17" ||
+      !matchedEntry ||
+      matchedEntry.marker !== "LR-17" ||
+      !isRelationshipObservation(matchedObservation) ||
+      matchedObservation.relation !== subjectObject.relation
+    ) {
+      return null;
+    }
+    return [matchedEntry];
+  }
+
+  if (
+    evidence.status !== "not_bound" ||
+    normalizedSourceRuleIds.length !== 0 ||
+    subjectObject.relation === "subject_overcomes_object" ||
+    subjectObject.relation === "object_overcomes_subject"
+  ) {
+    return null;
+  }
+
+  return [
+    {
+      marker: "主客五行",
+      fact: `日干与日支：${relationFactText(subjectObject)}`,
+      sources: [],
+    },
+    {
+      marker: "三传六亲",
+      fact: `三传六亲：${typedStages
+        .map((row) => `${STAGE_FACTS[row.stage]} ${row.branch} · ${row.six_relative}`)
+        .join("；")}`,
+      sources: [],
+    },
+    {
+      marker: "传间流转",
+      fact: `三传流转：${typedFlows
+        .map((row) => `${STAGE_FACTS[row.fromStage]}至${STAGE_FACTS[row.toStage]} ${relationFactText(row)}`)
+        .join("；")}`,
+      sources: [],
+    },
+  ];
+}
+
 function parseDimension(value: unknown): EvidenceGroup | null {
   if (!isRecord(value)) return null;
   const dimension = readString(value, "canonical_dimension");
@@ -1067,6 +1197,15 @@ function parseDimension(value: unknown): EvidenceGroup | null {
   if (dimension === "state" && hasOwnKey(value, "general_landing_correspondences")) {
     const stateEntry = parseTopLevelStateFact(value, evidence);
     return stateEntry ? { dimension, entries: [stateEntry] } : null;
+  }
+  if (
+    dimension === "relationship" &&
+    (hasOwnKey(value, "subject_object_relation") ||
+      hasOwnKey(value, "six_relative_stages") ||
+      hasOwnKey(value, "stage_flow"))
+  ) {
+    const relationshipEntries = parseTopLevelRelationshipFacts(value, evidence);
+    return relationshipEntries ? { dimension, entries: relationshipEntries } : null;
   }
   const entries: EvidenceEntry[] = [];
   for (const item of evidence.matched) {

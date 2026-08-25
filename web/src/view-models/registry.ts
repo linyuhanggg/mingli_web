@@ -908,6 +908,33 @@ export type DaliurenOutcomeRelation =
   | "subject_overcomes_object"
   | "object_overcomes_subject";
 
+export type DaliurenDeterministicRelation =
+  | DaliurenOutcomeRelation
+  | "same_element"
+  | "object_generates_subject";
+
+export type DaliurenRelationFact = Readonly<{
+  readonly object: string;
+  readonly object_element: string;
+  readonly object_value: string;
+  readonly relation: DaliurenDeterministicRelation;
+  readonly subject: string;
+  readonly subject_element: string;
+  readonly subject_value: string;
+}>;
+
+export type DaliurenStageFlowEntry = DaliurenRelationFact &
+  Readonly<{
+    readonly from_stage: DaliurenTransmissionStage;
+    readonly to_stage: DaliurenTransmissionStage;
+  }>;
+
+export type DaliurenSixRelativeStage = Readonly<{
+  readonly branch: string;
+  readonly six_relative: DaliurenSixRelative;
+  readonly stage: DaliurenTransmissionStage;
+}>;
+
 export type DaliurenMiddleVoidObservation = Readonly<{
   readonly stage: "middle";
   readonly branch: string;
@@ -1052,7 +1079,10 @@ export type DaliurenDimensionFact = Readonly<{
   readonly general_landing_correspondences?: ReadonlyArray<
     DaliurenGeneralLandingCorrespondence | DaliurenGeneralLandingUnavailableCorrespondence
   >;
+  readonly six_relative_stages?: ReadonlyArray<DaliurenSixRelativeStage>;
   readonly stage_branch_directions?: DaliurenLocationObservation["stage_branch_directions"];
+  readonly stage_flow?: ReadonlyArray<DaliurenStageFlowEntry>;
+  readonly subject_object_relation?: DaliurenRelationFact;
   readonly relative_speed?: DaliurenRelativeSpeed | null;
   readonly candidate_branch?: DaliurenCandidateBranch | null;
   readonly candidate_date?: DaliurenTimingCandidate | null;
