@@ -38,7 +38,6 @@ from app.readings.request_compiler import (
 )
 from app.readings.runtime_contracts import Prepare
 from app.readings.status import ReadingStatus
-
 from mingli_paths import MINGLI_RUNTIME_RELEASE_ROOT
 
 # isort: split
@@ -80,7 +79,12 @@ _REQUIRED_SINGLE_CALCULATED_FACTS = {
         "interpretive_candidates",
         "source_conditioned_patterns",
     ),
-    "fortune": ("active_luck_cycle", "available_periods", "period_markers"),
+    "fortune": (
+        "active_luck_cycle",
+        "available_periods",
+        "period_markers",
+        "calendar_normalization",
+    ),
     "ziwei": (
         "chart_convention",
         "chinese_date",
@@ -171,35 +175,30 @@ def _calculated_fact_values(
     return values
 
 
-def _assert_bazi_reasoning_sources_are_shipped(
-    reasoning_tools: object,
-) -> None:
-    """Every Bazi reasoning source ref must resolve inside the frozen release."""
+_BAZI_PRIVATE_PROJECTION_KEYS = frozenset(
+    {
+        "binding_digest",
+        "fact_paths",
+        "fact_refs",
+        "predicate_audit",
+        "rule_record_digest",
+        "source_ref",
+        "source_refs",
+        "tool_digest",
+    }
+)
 
-    assert isinstance(reasoning_tools, dict)
-    release_root = MINGLI_RUNTIME_RELEASE_ROOT
-    for tool_id, tool in reasoning_tools.items():
-        assert isinstance(tool, dict), tool_id
-        source_refs = tool.get("source_refs")
-        assert isinstance(source_refs, list) and source_refs, tool_id
-        for source_ref in source_refs:
-            assert isinstance(source_ref, dict), (tool_id, source_ref)
-            pack = source_ref.get("pack")
-            rule_id = source_ref.get("rule_id")
-            assert isinstance(pack, str) and pack, (tool_id, source_ref)
-            assert isinstance(rule_id, str) and rule_id, (tool_id, source_ref)
-            anchor = source_ref.get("source_anchor")
-            if isinstance(anchor, str) and anchor:
-                source_path = release_root / anchor.split("#", 1)[0]
-            else:
-                source_path = release_root / "references" / "books" / pack / "rules.md"
-            assert source_path.is_file(), (tool_id, source_ref, source_path)
-            rule_token = rule_id.split("~", 1)[0]
-            assert rule_token in source_path.read_text(encoding="utf-8"), (
-                tool_id,
-                source_ref,
-                source_path,
-            )
+
+def _assert_bazi_private_evidence_is_not_public(value: object) -> None:
+    """Bazi public facts must not expose the private evidence pipeline."""
+
+    if isinstance(value, dict):
+        assert _BAZI_PRIVATE_PROJECTION_KEYS.isdisjoint(value)
+        for nested in value.values():
+            _assert_bazi_private_evidence_is_not_public(nested)
+    elif isinstance(value, (list, tuple)):
+        for nested in value:
+            _assert_bazi_private_evidence_is_not_public(nested)
 
 
 def _assert_runtime_golden_facts(
@@ -279,11 +278,11 @@ def _assert_runtime_golden_facts(
         assert month_order["status"] == "adjudicated_month_order_state", label
         assert month_order["whole_chart_strength_verdict"] is None, label
         assert month_order["useful_god_verdict"] is None, label
-        assert month_order["source_ref"]["verification_status"] == "verified", label
+        _assert_bazi_private_evidence_is_not_public(month_order)
         assert candidates["structure"]["status"] == "candidate_only", label
         assert len(candidates["salience_signals"]) == 9, label
         reasoning_tools = candidates["reasoning_tools"]
-        _assert_bazi_reasoning_sources_are_shipped(reasoning_tools)
+        _assert_bazi_private_evidence_is_not_public(reasoning_tools)
         expected_tools = {
             "strength_evidence",
             "tiaohou_candidates",
@@ -341,9 +340,6 @@ def _assert_runtime_golden_facts(
             "食神格入口"
         ), label
         assert pattern_adjudication["output"]["hard_verdict"] is None, label
-        assert pattern_adjudication["source_refs"][0][
-            "verification_status"
-        ] == "verified", label
         assert reasoning_tools["domain_work"]["output"]["status"] == (
             "indicators_only"
         ), label
@@ -357,14 +353,10 @@ def _assert_runtime_golden_facts(
             "product_contract_not_classical_verdict"
         ), label
         assert arbitration["output"]["status"] == (
-            "requires_question_specific_adjudication"
+            "unresolved_unverified_cross_layer_arbitrator"
         ), label
         assert arbitration["output"]["selected_primary_view"] is None, label
         assert arbitration["output"]["hard_verdict"] is None, label
-        assert all(
-            isinstance(tool["tool_digest"], str) and len(tool["tool_digest"]) == 64
-            for tool in reasoning_tools.values()
-        ), label
         assert all(
             candidates[section]["hard_verdict"] is None
             for section in (
@@ -380,6 +372,37 @@ def _assert_runtime_golden_facts(
         assert isinstance(markers, list) and markers, label
         assert markers[0]["primary_mechanism_ids"], label
         assert markers[0]["unresolved_boundaries"], label
+        calendar = values["calendar_normalization"]
+        assert isinstance(calendar, dict), label
+        assert set(calendar) == {
+            "status",
+            "algorithm_version",
+            "time_basis",
+            "true_solar_time",
+            "calendar_convention",
+            "effective_datetime",
+            "day_boundary",
+            "changed_pillars",
+            "solar_terms",
+        }, label
+        assert calendar["effective_datetime"] == (
+            "1994-04-30T05:54:54+08:00"
+        ), label
+        assert calendar["day_boundary"] == {
+            "correction_crossed_date": False,
+            "zi_policy_advanced_day_pillar": False,
+        }, label
+        assert calendar["changed_pillars"] == [], label
+        solar_terms = calendar["solar_terms"]
+        assert isinstance(solar_terms, dict), label
+        assert set(solar_terms) == {
+            "previous",
+            "next",
+            "month_switch_policy",
+        }, label
+        assert solar_terms["month_switch_policy"] == "exact Jie instant", label
+        assert solar_terms["previous"]["name"] == "谷雨", label
+        assert solar_terms["next"]["name"] == "立夏", label
     elif capability_id == "ziwei":
         assert values["chinese_date"] == "甲戌 戊辰 丙戌 辛卯", label
         convention = values["chart_convention"]
@@ -436,26 +459,34 @@ def _assert_runtime_golden_facts(
         ), label
     elif capability_id == "liuyao":
         source_patterns = values["source_conditioned_patterns"]
-        expected_source_pattern_ids = [
+        required_source_pattern_ids = {
             "BSZZ-M01",
             "HJC-M001",
             "HZL-M001",
             "ZZR-M001",
-        ]
+        }
         if label in {
             "liuyao-finance",
             "liuyao-two-present-single-moving",
         }:
-            expected_source_pattern_ids.insert(2, "HJC-R009")
+            required_source_pattern_ids.update({"HJC-R009", "ZR-05-05"})
         if label == "liuyao-two-present-single-moving":
-            expected_source_pattern_ids.insert(4, "ZR-04-04")
-        assert [item["local_rule_id"] for item in source_patterns] == (
-            expected_source_pattern_ids
-        ), label
+            required_source_pattern_ids.add("ZR-04-04")
+        source_pattern_ids = [item["local_rule_id"] for item in source_patterns]
+        assert required_source_pattern_ids <= set(source_pattern_ids), label
+        ordered_rule_ids = [item["rule_id"] for item in source_patterns]
+        assert ordered_rule_ids == sorted(ordered_rule_ids), label
+        assert len(ordered_rule_ids) == len(set(ordered_rule_ids)), label
         assert all(
             item["status"] == "predicate_matched_not_verdict"
             and item["source_dependency_id"]
             == "liuyao.source-conditioned-patterns"
+            and isinstance(item["source_pack"], str)
+            and bool(item["source_pack"])
+            and isinstance(item["source_anchor"], str)
+            and bool(item["source_anchor"])
+            and bool(item["fact_paths"])
+            and bool(item["predicate_audit"])
             and "verdict" not in item
             for item in source_patterns
         ), label
@@ -674,6 +705,7 @@ def _assert_runtime_golden_facts(
                 "ranking.eligible_date_time_candidate_ids": 0,
                 "ranking.ordered_candidate_ids": 1,
                 "ranking.ordered_date_time_candidate_ids": 13,
+                "source_conditioned_patterns": 1,
             }, label
             assert values["no_valid_candidate"] is True, label
             ranking = values["ranking"]
@@ -693,6 +725,7 @@ def _assert_runtime_golden_facts(
             "ranking.eligible_date_time_candidate_ids": 0,
             "ranking.ordered_candidate_ids": 3,
             "ranking.ordered_date_time_candidate_ids": 39,
+            "source_conditioned_patterns": 1,
         }, label
         ranking = values["ranking"]
         assert isinstance(ranking, dict), label
@@ -754,6 +787,17 @@ def _assert_runtime_golden_facts(
     elif capability_id == "liuren":
         assert values["day_hour"] == {"day": "庚申", "hour": "辛巳"}, label
         assert values["earth_plate"] == list("子丑寅卯辰巳午未申酉戌亥"), label
+        runtime_core_facts = values["runtime_core_facts"]
+        assert isinstance(runtime_core_facts, dict), label
+        source_patterns = runtime_core_facts["source_conditioned_patterns"]
+        assert isinstance(source_patterns, list) and source_patterns, label
+        assert all(
+            item["status"] == "predicate_matched_not_verdict"
+            and item["source_dependency_id"]
+            == "liuren.source-conditioned-structural-patterns-v1"
+            and "verdict" not in item
+            for item in source_patterns
+        ), label
         lessons = values["four_lessons"]
         assert isinstance(lessons, list), label
         assert lessons[0] == {
@@ -800,20 +844,8 @@ def _assert_runtime_golden_facts(
         comparison = values["source_comparison"]
         assert isinstance(comparison, dict), label
         assert comparison["disagreements_retained"] is True, label
-        patterns = values["source_conditioned_patterns"]
-        assert isinstance(patterns, list), label
-        expected_pattern_ids = {
-            "face": ["LZ-R01", "SR-02-04"],
-            "combined": ["LZ-R01"],
-            "palm": [],
-            "posture": [],
-        }[str(values.get("observation_scope"))]
-        assert [item["local_rule_id"] for item in patterns] == expected_pattern_ids, label
-        assert all(
-            item["status"] == "predicate_matched_not_verdict"
-            and "verdict" not in item
-            for item in patterns
-        ), label
+        assert "active_source_rule_ids" not in values, label
+        assert "source_conditioned_patterns" not in values, label
     elif capability_id == "time-check":
         assert values["candidate_count"] == 12, label
         candidates = values["candidates"]
@@ -1329,6 +1361,7 @@ async def _run_worker_document_job(
     relationship_type: str | None = None,
     runtime_release: str = "mingli-runtime-v51",
     required_primary_calculated_fields: tuple[str, ...] | None = None,
+    expected_generation_errors: tuple[str, ...] | None = None,
 ) -> object | None:
     dimensions = tuple(str(item) for item in prepare.intent["dimension_ids"])
     job = orchestrator_module.ReadingJob(
@@ -1373,6 +1406,14 @@ async def _run_worker_document_job(
         relationship_type=relationship_type,
     )
     completing = await machine.run(job.id)
+    if expected_generation_errors is not None:
+        assert completing.status is ReadingStatus.PREPARED, (
+            label,
+            repository.attempts,
+        )
+        assert repository.attempts == [(1, expected_generation_errors)], label
+        assert repository.saved_document is None, label
+        return None
     assert completing.status is ReadingStatus.COMPLETING, (
         label,
         repository.attempts,
@@ -1394,6 +1435,17 @@ async def _run_worker_document_job(
     # immutable document may still retain opaque claim reference IDs for
     # auditability, so scope this assertion to the typed public ViewModel.
     assert "/input/" not in repr(document.view_model.model_dump(mode="json")), label
+    if expected_schema == "daliuren-chart/v1":
+        core_facts = document.view_model.core_facts
+        assert core_facts is not None, label
+        source_patterns = core_facts.source_conditioned_patterns
+        assert source_patterns, label
+        assert all(
+            item.status == "predicate_matched_not_verdict"
+            and item.source_dependency_id
+            == "liuren.source-conditioned-structural-patterns-v1"
+            for item in source_patterns
+        ), label
     return document
 
 
@@ -1418,8 +1470,8 @@ async def test_real_runtime_core_providers_reach_worker_accepted_and_typed_docum
 
 
 @pytest.mark.asyncio
-async def test_real_runtime_bazi_deep_facts_reach_paid_typed_document() -> None:
-    """The existing Bazi deep contract must also survive model audit."""
+async def test_real_runtime_bazi_deep_generic_fake_fails_closed_without_grounded_text() -> None:
+    """The generic Fake must not bypass the paid Bazi grounding contract."""
 
     runtime = await _runtime()
     prepare = compile_bazi_prepare(
@@ -1435,10 +1487,10 @@ async def test_real_runtime_bazi_deep_facts_reach_paid_typed_document() -> None:
         product_id="bazi-deep",
         expected_schema="bazi-chart/v1",
         prepare=prepare,
+        expected_generation_errors=("bazi_deep_text_not_grounded",),
     )
 
-    assert document is not None
-    assert document.view_model.pillars
+    assert document is None
 
 
 @pytest.mark.asyncio
