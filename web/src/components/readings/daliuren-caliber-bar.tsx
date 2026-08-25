@@ -5,6 +5,7 @@ import type { DaliurenChartViewModel } from "@/view-models/registry";
 import styles from "./daliuren-caliber-bar.module.css";
 
 type CoreFacts = NonNullable<DaliurenChartViewModel["core_facts"]>;
+type NoblePerson = NonNullable<CoreFacts["noble_person"]>;
 
 export type DaliurenCaliberBarProps = {
   question?: string | null;
@@ -15,6 +16,32 @@ export type DaliurenCaliberBarProps = {
 };
 
 const LONG_QUESTION = 24;
+
+const NOBLE_PERIOD_LABELS: Readonly<Record<NoblePerson["period"], string>> = {
+  day: "昼贵",
+  night: "夜贵",
+};
+
+const NOBLE_DIRECTION_LABELS: Readonly<Record<NoblePerson["direction"], string>> = {
+  forward: "顺布",
+  reverse: "逆布",
+};
+
+const NOBLE_PROFILE_LABELS: Readonly<Record<string, string>> = {
+  "official-corrected": "官修订正",
+  "traditional-common": "通行口径",
+};
+
+const DAY_NIGHT_PROFILE_LABELS: Readonly<Record<string, string>> = {
+  "civil-double-hour": "民用双时辰",
+};
+
+type NoblePersonLines = Readonly<{
+  calculation: string | null;
+  summary: string;
+  profile: string | null;
+  source: string | null;
+}>;
 
 function readQuestion(value: string | null | undefined): string | null {
   const text = value?.trim();
@@ -31,8 +58,43 @@ function monthGeneralLine(value: CoreFacts["month_general"]): string | null {
   return `月将：${value.branch}（${value.name}）`;
 }
 
-function noblePersonLine(value: CoreFacts["noble_person"]): string | null {
-  return value?.branch ? `贵人：${value.branch}` : null;
+function nonEmptyText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.trim();
+  return text ? text : null;
+}
+
+function noblePersonLines(value: CoreFacts["noble_person"]): NoblePersonLines | null {
+  if (!value) return null;
+
+  const record = value as Partial<Record<keyof NoblePerson, unknown>>;
+  const branch = nonEmptyText(record.branch);
+  const earthPosition = nonEmptyText(record.earth_position);
+  const period = record.period === "day" || record.period === "night" ? record.period : null;
+  const direction = record.direction === "forward" || record.direction === "reverse" ? record.direction : null;
+  const profile = nonEmptyText(record.profile);
+  const dayNightProfile = nonEmptyText(record.day_night_profile);
+  const source = nonEmptyText(record.source);
+  const profileLabel = profile ? NOBLE_PROFILE_LABELS[profile] : null;
+  const dayNightProfileLabel = dayNightProfile ? DAY_NIGHT_PROFILE_LABELS[dayNightProfile] : null;
+
+  if (!branch) return null;
+
+  if (!earthPosition || !period || !direction || !profileLabel || !dayNightProfileLabel || !source) {
+    return {
+      calculation: null,
+      summary: `贵人：${branch}`,
+      profile: null,
+      source: null,
+    };
+  }
+
+  return {
+    calculation: `贵人时段：${NOBLE_PERIOD_LABELS[period]} · 天将排布：${NOBLE_DIRECTION_LABELS[direction]}`,
+    summary: `贵人：${branch}`,
+    profile: `贵人口径：${profileLabel} · 昼夜口径：${dayNightProfileLabel}`,
+    source: `贵人取法来源：${source}`,
+  };
 }
 
 function xunkongLine(value: CoreFacts["xunkong"]): string | null {
@@ -52,7 +114,7 @@ export function DaliurenCaliberBar({
   const asked = readQuestion(question);
   const day = dayHourLine(dayHour);
   const month = monthGeneralLine(monthGeneral);
-  const noble = noblePersonLine(noblePerson);
+  const noble = noblePersonLines(noblePerson);
   const voids = xunkongLine(xunkong);
   if (!asked && !day && !month && !noble && !voids) return null;
 
@@ -72,7 +134,14 @@ export function DaliurenCaliberBar({
       ) : null}
       {day ? <p className={styles.line}>{day}</p> : null}
       {month ? <p className={styles.line}>{month}</p> : null}
-      {noble ? <p className={styles.line}>{noble}</p> : null}
+      {noble ? (
+        <>
+          <p className={styles.line}>{noble.summary}</p>
+          {noble.calculation ? <p className={styles.line}>{noble.calculation}</p> : null}
+          {noble.profile ? <p className={styles.line}>{noble.profile}</p> : null}
+          {noble.source ? <p className={styles.line}>{noble.source}</p> : null}
+        </>
+      ) : null}
       {voids ? <p className={styles.line}>{voids}</p> : null}
     </section>
   );
