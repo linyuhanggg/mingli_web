@@ -438,6 +438,20 @@ describe("inline reading recovery", () => {
         meihuaSource: "用户输入",
       },
     },
+    {
+      productId: "daliuren" as const,
+      readingId: "next-daliuren",
+      start: api.startDaliurenReading,
+      values: {
+        issue: "何时有回应",
+        focus: "timing",
+        eventTime: "2026-08-25T08:00",
+        timezone: "Asia/Shanghai",
+        location: "上海市",
+        timingStart: "2026-08-26",
+        timingEnd: "2026-09-02",
+      },
+    },
   ])(
     "passes the $productId POST ViewModel into the first visible result",
     async ({ productId, readingId, start, values, profileVersionId }) => {
@@ -463,35 +477,4 @@ describe("inline reading recovery", () => {
       );
     },
   );
-
-  it("does not render an untrusted Daliuren POST projection before capability gating", async () => {
-    saveRecoverableReading("daliuren", "old-daliuren", {
-      startedAt: RESTORED_STARTED_AT,
-      values: {
-        ...taskFormDefaultValues,
-        issue: "何时有回应",
-        focus: "timing",
-        eventTime: "2026-08-25T08:00",
-        timezone: "Asia/Shanghai",
-        location: "上海市",
-        timingStart: "2026-08-26",
-        timingEnd: "2026-09-02",
-      },
-    });
-    api.startDaliurenReading.mockResolvedValueOnce({
-      reading_version_id: "next-daliuren",
-      created_at: new Date(SERVER_STARTED_AT).toISOString(),
-      status: "prepared",
-      view_model: { schema_name: "daliuren_chart" },
-    });
-
-    render(<ProductTaskExperience product={getProductDefinition("daliuren")} />);
-    expect(await screen.findByText("old-daliuren")).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "重试（保留原资料）" }));
-
-    expect(await screen.findByText("next-daliuren")).toBeVisible();
-    expect(screen.getByTestId("start-projection-next-daliuren")).toHaveTextContent(
-      "none",
-    );
-  });
 });

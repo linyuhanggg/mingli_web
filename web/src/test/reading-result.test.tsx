@@ -232,6 +232,58 @@ beforeEach(() => {
 });
 
 describe("ReadingVersionSummary polling and explicit result fetch", () => {
+  it("mounts the available Daliuren POST ViewModel before any summary or result GET", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+    const prepared = readingSummary("prepared", {
+      created_at: "2026-08-25T00:01:00Z",
+      capability_id: "daliuren",
+      product_id: "daliuren",
+      object_id: "concrete_event",
+      horizon: { kind_id: "instant", start: null, end: null },
+    }) as ReadingVersionSummary;
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(readingResult({ status: "prepared" }));
+      }
+      return jsonResponse(prepared);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const initialViewModel = {
+      schema_version: "daliuren-chart/v1",
+      subject_ref: "daliuren:test",
+      question: "何时有回应？",
+      lessons: [
+        { lesson_id: "one", upper: "子", lower: "丑" },
+        { lesson_id: "two", upper: "寅", lower: "卯" },
+        { lesson_id: "three", upper: "辰", lower: "巳" },
+        { lesson_id: "four", upper: "午", lower: "未" },
+      ],
+      transmissions: [
+        { stage: "initial", branch: "申", general: "贵人" },
+        { stage: "middle", branch: "酉", general: "螣蛇" },
+        { stage: "final", branch: "戌", general: "朱雀" },
+      ],
+      core_facts: null,
+    } as const;
+
+    const { unmount } = render(
+      <ReadingResult
+        initialSummary={prepared}
+        initialViewModel={initialViewModel}
+        readingId={VERSION_ID}
+      />,
+    );
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+
+    expect(screen.getByRole("heading", { name: "大六壬" })).toBeVisible();
+    expect(document.querySelector('[data-schema="daliuren-chart/v1"]')).toBeVisible();
+    expect(callsTo(fetchMock, `/api/v1/readings/${VERSION_ID}`)).toHaveLength(0);
+    expect(callsTo(fetchMock, `/api/v1/readings/${VERSION_ID}/result`)).toHaveLength(0);
+    unmount();
+  });
+
   it("uses the prepared POST summary and does not refetch an unchanged result while polling", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));

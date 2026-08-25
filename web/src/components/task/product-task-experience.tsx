@@ -842,12 +842,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             : product.id === "daliuren"
               ? daliurenPreviewReadingId
               : null;
-  // The current Daliuren Runtime path is capability-gated as unavailable.
-  // Never let an incidental POST payload bypass the authoritative result gate.
-  const inlineStartViewModel =
-    product.id === "daliuren"
-      ? undefined
-      : inlineReadingSummary?.view_model ?? undefined;
+  const inlineStartViewModel = inlineReadingSummary?.view_model ?? undefined;
 
   return (
     <div className={styles.experience} data-product={product.id} data-stage={stage}>
