@@ -38,7 +38,6 @@ from app.readings.request_compiler import (
 )
 from app.readings.runtime_contracts import Prepare
 from app.readings.status import ReadingStatus
-
 from mingli_paths import MINGLI_RUNTIME_RELEASE_ROOT
 
 # isort: split
@@ -349,7 +348,7 @@ def _assert_runtime_golden_facts(
             "product_contract_not_classical_verdict"
         ), label
         assert arbitration["output"]["status"] == (
-            "requires_question_specific_adjudication"
+            "unresolved_unverified_cross_layer_arbitrator"
         ), label
         assert arbitration["output"]["selected_primary_view"] is None, label
         assert arbitration["output"]["hard_verdict"] is None, label
@@ -1325,6 +1324,7 @@ async def _run_worker_document_job(
     relationship_type: str | None = None,
     runtime_release: str = "mingli-runtime-v51",
     required_primary_calculated_fields: tuple[str, ...] | None = None,
+    expected_generation_errors: tuple[str, ...] | None = None,
 ) -> object | None:
     dimensions = tuple(str(item) for item in prepare.intent["dimension_ids"])
     job = orchestrator_module.ReadingJob(
@@ -1369,6 +1369,14 @@ async def _run_worker_document_job(
         relationship_type=relationship_type,
     )
     completing = await machine.run(job.id)
+    if expected_generation_errors is not None:
+        assert completing.status is ReadingStatus.PREPARED, (
+            label,
+            repository.attempts,
+        )
+        assert repository.attempts == [(1, expected_generation_errors)], label
+        assert repository.saved_document is None, label
+        return None
     assert completing.status is ReadingStatus.COMPLETING, (
         label,
         repository.attempts,
@@ -1425,8 +1433,8 @@ async def test_real_runtime_core_providers_reach_worker_accepted_and_typed_docum
 
 
 @pytest.mark.asyncio
-async def test_real_runtime_bazi_deep_facts_reach_paid_typed_document() -> None:
-    """The existing Bazi deep contract must also survive model audit."""
+async def test_real_runtime_bazi_deep_generic_fake_fails_closed_without_grounded_text() -> None:
+    """The generic Fake must not bypass the paid Bazi grounding contract."""
 
     runtime = await _runtime()
     prepare = compile_bazi_prepare(
@@ -1442,10 +1450,10 @@ async def test_real_runtime_bazi_deep_facts_reach_paid_typed_document() -> None:
         product_id="bazi-deep",
         expected_schema="bazi-chart/v1",
         prepare=prepare,
+        expected_generation_errors=("bazi_deep_text_not_grounded",),
     )
 
-    assert document is not None
-    assert document.view_model.pillars
+    assert document is None
 
 
 @pytest.mark.asyncio
