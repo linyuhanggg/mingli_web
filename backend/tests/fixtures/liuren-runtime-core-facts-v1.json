@@ -214,6 +214,23 @@
     "伏吟",
     "四课不备"
   ],
+  "source_conditioned_patterns": [
+    {
+      "rule_id": "DLR-09",
+      "local_rule_id": "liuren.structural.fuyin",
+      "title": "伏吟",
+      "source_pack": "san-shi/daliuren-daquan",
+      "source_anchor": "fulltext.md#L7696",
+      "status": "predicate_matched_not_verdict",
+      "fact_paths": [
+        "fact:/chart_facts/output/structural_patterns/0"
+      ],
+      "predicate_audit": [
+        "/chart_facts/output/structural_patterns/0:eq:伏吟"
+      ],
+      "source_dependency_id": "liuren.source-conditioned-structural-patterns-v1"
+    }
+  ],
   "dimension_facts": {
     "relationship": {
       "requested_dimension": "relationship",
