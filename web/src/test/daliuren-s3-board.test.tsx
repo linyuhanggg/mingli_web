@@ -802,10 +802,10 @@ describe("大六壬 S3 M4 天地盘", () => {
     expect(panel).toHaveAttribute("data-offset", "3");
     expect(visualRing).not.toHaveStyle("--plate-offset: 3");
     expect(earthZi).toHaveStyle("--spoke: 0");
-    expect(plateCss()).toMatch(/--earth-radius:\s*22%/);
-    expect(plateCss()).toMatch(/--heaven-radius:\s*33%/);
-    expect(plateCss()).toMatch(/--general-radius:\s*44%/);
-    expect(plateCss()).toMatch(/sin\(calc\(var\(--spoke\) \* 30deg\)\)/);
+    expect(plateCss()).toMatch(/--earth-radius:\s*8rem/);
+    expect(plateCss()).toMatch(/--heaven-radius:\s*12rem/);
+    expect(plateCss()).toMatch(/--general-radius:\s*16rem/);
+    expect(plateCss()).toMatch(/translateY\(calc\(-1 \* var\(--earth-radius\)\)\)/);
     expect(plateCss()).not.toMatch(/translateY\(-7\.2rem\)/);
     expect(plateCss()).not.toContain("--plate-offset");
 
@@ -4182,6 +4182,10 @@ describe("大六壬 S3 天地盘旬空角标", () => {
     expect(ring).toHaveAttribute("aria-hidden", "true");
     expect(ringEarth).toBeTruthy();
     expect(ringGeneral).toBeTruthy();
+    expect(ringEarth).toHaveAttribute("data-fact", "earth");
+    expect(ringHeaven).toHaveAttribute("data-fact", "heaven");
+    expect(ringGeneral).toHaveAttribute("data-fact", "general");
+    expect(ring.querySelectorAll("[data-fact]")).toHaveLength(36);
     expect(ringEarth).not.toHaveAttribute("aria-label");
     expect(ringEarth).not.toHaveAttribute("aria-pressed");
     expect(ringEarth).not.toHaveAttribute("tabindex");
@@ -4194,13 +4198,25 @@ describe("大六壬 S3 天地盘旬空角标", () => {
       /\.earth\[role="presentation"\],\s*\.heaven\[role="presentation"\],\s*\.general\[role="presentation"\]\s*\{[^}]*min-width:\s*var\(--target-min\);[^}]*min-height:\s*var\(--target-min\);/s;
     expect(css).toMatch(pointerRule);
     expect(css).toMatch(/\.spoke\s*\{[^}]*pointer-events:\s*none/s);
-    expect(css).toMatch(/\.ring\s*\{[^}]*overflow:\s*hidden/s);
-    expect(css).toMatch(/--earth-radius:\s*22%/);
-    expect(css).toMatch(/--heaven-radius:\s*33%/);
-    expect(css).toMatch(/--general-radius:\s*44%/);
-    expect(css).toMatch(/sin\(calc\(var\(--spoke\) \* 30deg\)\)/);
+    expect(css).toMatch(/\.ring\s*\{[^}]*width:\s*37rem/s);
+    expect(css).toMatch(/\.ring\s*\{[^}]*height:\s*37rem/s);
+    expect(css).toMatch(/--earth-radius:\s*8rem/);
+    expect(css).toMatch(/--heaven-radius:\s*12rem/);
+    expect(css).toMatch(/--general-radius:\s*16rem/);
+    expect(css).toMatch(/--angle:\s*calc\(var\(--spoke\) \* 30deg\)/);
+    expect(css).toMatch(/translateY\(calc\(-1 \* var\(--earth-radius\)\)\)/);
+    expect(css).toMatch(/translateY\(calc\(-1 \* var\(--heaven-radius\)\)\)/);
+    expect(css).toMatch(/translateY\(calc\(-1 \* var\(--general-radius\)\)\)/);
+    expect(css).toMatch(/\.spoke\s*\{[^}]*width:\s*0;[^}]*height:\s*0/s);
+    expect(css).toMatch(/@media \(min-width: 64rem\)[\s\S]*\.body\s*\{[^}]*gap:\s*var\(--space-lg\)/);
+    expect(css).toMatch(/\.earth\s*>\s*\.voidBadge/);
+    expect(css).not.toMatch(/overflow:\s*hidden/);
+    expect(css).not.toMatch(/min\(100%/);
     expect(css).not.toMatch(/translateY\(-7\.2rem\)/);
     expect(css).not.toMatch(/\.spoke\s*\{[^}]*min-height:\s*var\(--target-min\)/s);
+    expect(css).not.toMatch(/\.earth[^{]*\{[^}]*z-index/s);
+    expect(css).not.toMatch(/\.heaven[^{]*\{[^}]*z-index/s);
+    expect(css).not.toMatch(/\.general[^{]*\{[^}]*z-index/s);
 
     document.documentElement.style.setProperty("--target-min", "44px");
     for (const fact of [ringEarth, ringHeaven, ringGeneral]) {

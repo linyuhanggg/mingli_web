@@ -240,18 +240,33 @@ export function DaliurenHeavenEarthPlate({
                 key={branch}
                 style={{ ["--spoke" as string]: String(index) }}
               >
-                <span className={styles.earth} data-active={earthActive ? "true" : "false"} {...ringFactProps(branch)}>
+                <span
+                  className={styles.earth}
+                  data-active={earthActive ? "true" : "false"}
+                  data-fact="earth"
+                  {...ringFactProps(branch)}
+                >
                   {branch}
+                  {timingAnchors.has(branch) ? <TimingMark /> : null}
+                  {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
                 </span>
-                {timingAnchors.has(branch) ? <TimingMark /> : null}
-                {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
                 {showHeaven && heaven ? (
-                  <span className={styles.heaven} data-active={heavenActive ? "true" : "false"} {...ringFactProps(heaven)}>
+                  <span
+                    className={styles.heaven}
+                    data-active={heavenActive ? "true" : "false"}
+                    data-fact="heaven"
+                    {...ringFactProps(heaven)}
+                  >
                     {heaven}
                   </span>
                 ) : null}
                 {showGeneral && general ? (
-                  <span className={styles.general} data-active={generalActive ? "true" : "false"} {...ringFactProps(general)}>
+                  <span
+                    className={styles.general}
+                    data-active={generalActive ? "true" : "false"}
+                    data-fact="general"
+                    {...ringFactProps(general)}
+                  >
                     {general}
                   </span>
                 ) : null}
