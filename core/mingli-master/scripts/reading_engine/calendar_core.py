@@ -242,13 +242,31 @@ def term_datetime(term: Any, target_timezone: ZoneInfo | timezone) -> datetime:
     return (base + timedelta(seconds=float(value.s))).astimezone(target_timezone)
 
 
+@lru_cache(maxsize=64)
+def _solar_terms_for_year_utc(year: int) -> tuple[tuple[int, str], ...]:
+    """Return one immutable sxtwl term table for ``year``.
+
+    ``getJieQiByYear`` is deterministic for the pinned sxtwl build, but it is
+    comparatively expensive and Selection normalizes thousands of instants
+    from the same few years during an exhaustive provider audit.  Retain only
+    primitive UTC identities here: callers still materialize and compare
+    every requested term window, and no provider/audit result is cached.
+    """
+
+    return tuple(
+        (
+            int(term.jqIndex),
+            term_datetime(term, timezone.utc).isoformat(timespec="microseconds"),
+        )
+        for term in load_sxtwl().getJieQiByYear(year)
+    )
+
+
 def solar_terms(civil: datetime, *, years_each_side: int = 1) -> list[dict[str, Any]]:
-    sxtwl = load_sxtwl()
     terms: list[dict[str, Any]] = []
     for year in range(civil.year - years_each_side, civil.year + years_each_side + 1):
-        for term in sxtwl.getJieQiByYear(year):
-            index = int(term.jqIndex)
-            point = term_datetime(term, civil.tzinfo)
+        for index, instant_utc in _solar_terms_for_year_utc(year):
+            point = datetime.fromisoformat(instant_utc).astimezone(civil.tzinfo)
             terms.append(
                 {
                     "name": JIEQI_NAMES[index],

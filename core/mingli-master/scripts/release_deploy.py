@@ -8,13 +8,16 @@ import hashlib
 import json
 import os
 import secrets
+import selectors
 import shutil
+import signal
 import stat
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path, PurePosixPath
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, TextIO
 
 
 MANIFEST_NAME = ".mingli-release-manifest.json"
@@ -27,6 +30,9 @@ PRESERVE_PREFIXES = (
     "references/fulltext",
 )
 PROTECTION_EXCLUDES = (".git", ".venv", ".benchmarks")
+SOURCE_VERIFICATION_TIMEOUT_SECONDS = 60 * 60
+SOURCE_VERIFICATION_PROGRESS_PREFIX = "MINGLI_SOURCE_VERIFY "
+SOURCE_VERIFICATION_TERMINATE_GRACE_SECONDS = 2.0
 
 
 def _sha256(path: Path) -> str:
@@ -818,27 +824,124 @@ _VERIFY_SOURCE_SUBPROCESS = r"""
 import importlib
 import json
 import os
+import resource
+import signal
 import sys
+import threading
+import time
 from pathlib import Path
 
 
+PROGRESS_PREFIX = "MINGLI_SOURCE_VERIFY "
+STARTED = time.monotonic()
+STATE = {"provider": None, "stage": "subprocess_start"}
+STOP_HEARTBEAT = threading.Event()
+
+
+def _resource_snapshot():
+    usage = resource.getrusage(resource.RUSAGE_SELF)
+    peak_rss_bytes = int(usage.ru_maxrss)
+    if sys.platform != "darwin":
+        peak_rss_bytes *= 1024
+    return {
+        "user_cpu_seconds": round(float(usage.ru_utime), 3),
+        "system_cpu_seconds": round(float(usage.ru_stime), 3),
+        "process_peak_rss_bytes": peak_rss_bytes,
+    }
+
+
+def _completed_metrics(provider_started, resource_before):
+    resource_after = _resource_snapshot()
+    return {
+        "elapsed_seconds": round(time.monotonic() - provider_started, 3),
+        "user_cpu_seconds": round(
+            resource_after["user_cpu_seconds"]
+            - resource_before["user_cpu_seconds"],
+            3,
+        ),
+        "system_cpu_seconds": round(
+            resource_after["system_cpu_seconds"]
+            - resource_before["system_cpu_seconds"],
+            3,
+        ),
+        "process_peak_rss_bytes_after": resource_after[
+            "process_peak_rss_bytes"
+        ],
+    }
+
+
+def _emit(event, **fields):
+    payload = {
+        "event": event,
+        "elapsed_seconds": round(time.monotonic() - STARTED, 3),
+        "pid": os.getpid(),
+        **fields,
+    }
+    print(
+        PROGRESS_PREFIX + json.dumps(payload, sort_keys=True),
+        file=sys.stderr,
+        flush=True,
+    )
+
+
+def _set_stage(provider, stage):
+    STATE["provider"] = provider
+    STATE["stage"] = stage
+
+
+def _heartbeat():
+    while not STOP_HEARTBEAT.wait(15.0):
+        _emit(
+            "heartbeat",
+            provider=STATE["provider"],
+            stage=STATE["stage"],
+            resource=_resource_snapshot(),
+        )
+
+
+def _cancel(signum, _frame):
+    _emit(
+        "cancel_received",
+        provider=STATE["provider"],
+        stage=STATE["stage"],
+        signal=signal.Signals(signum).name,
+        resource=_resource_snapshot(),
+    )
+    raise SystemExit(128 + signum)
+
+
 def _fail(message):
+    STOP_HEARTBEAT.set()
+    _emit(
+        "subprocess_failed",
+        provider=STATE["provider"],
+        stage=STATE["stage"],
+        failure=message,
+        resource=_resource_snapshot(),
+    )
     print(
         json.dumps(
             {
                 "research_root": sys.argv[2] or None,
                 "provider_source_verification": {},
+                "provider_metrics": {},
                 "verified": False,
                 "failures": [message],
+                "elapsed_seconds": round(time.monotonic() - STARTED, 3),
+                "resource": _resource_snapshot(),
             }
-        )
+        ),
+        flush=True,
     )
     raise SystemExit(1)
 
 
+signal.signal(signal.SIGINT, _cancel)
+signal.signal(signal.SIGTERM, _cancel)
 source = Path(sys.argv[1]).resolve()
 research = sys.argv[2] or None
 scripts_dir = source / "scripts"
+_emit("subprocess_start", provider=None, stage="checkout_validation")
 if not scripts_dir.is_dir():
     _fail(f"source checkout has no scripts directory: {scripts_dir}")
 
@@ -864,13 +967,57 @@ provider_audits = {
     for system, module in DEDICATED_AUDIT_MODULES.items()
 }
 resolved_root = Path(research).resolve() if research else None
+_emit(
+    "registry_complete",
+    provider=None,
+    stage="audit_registry",
+    provider_count=len(provider_systems),
+)
+heartbeat_thread = threading.Thread(
+    target=_heartbeat,
+    name="source-verification-heartbeat",
+    daemon=True,
+)
+heartbeat_thread.start()
 
 results = {}
+provider_metrics = {}
 failures = []
 scripts_resolved = scripts_dir.resolve()
 for system in provider_systems:
     module_name = provider_audits[system]
-    module = importlib.import_module(module_name)
+    provider_started = time.monotonic()
+    resource_before = _resource_snapshot()
+    _set_stage(system, "audit_module_import")
+    _emit(
+        "provider_start",
+        provider=system,
+        stage="audit_module_import",
+        audit_module=module_name,
+        ordinal=len(results) + 1,
+        provider_count=len(provider_systems),
+    )
+    try:
+        module = importlib.import_module(module_name)
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except BaseException as exc:  # noqa: BLE001 - gate must fail closed
+        results[system] = "error"
+        failures.append(
+            f"{system}: audit module import raised {type(exc).__name__}"
+        )
+        provider_metrics[system] = _completed_metrics(
+            provider_started,
+            resource_before,
+        )
+        _emit(
+            "provider_complete",
+            provider=system,
+            stage="audit_module_import",
+            status="error",
+            metrics=provider_metrics[system],
+        )
+        continue
     module_file = Path(getattr(module, "__file__", "")).resolve()
     if not module_file.is_relative_to(scripts_resolved):
         failures.append(
@@ -878,6 +1025,17 @@ for system in provider_systems:
             f" checkout: {module_file}"
         )
         results[system] = "error"
+        provider_metrics[system] = _completed_metrics(
+            provider_started,
+            resource_before,
+        )
+        _emit(
+            "provider_complete",
+            provider=system,
+            stage="audit_module_origin",
+            status="error",
+            metrics=provider_metrics[system],
+        )
         continue
     # With no research checkout there is nothing an audit can prove about
     # source fidelity.  We still import every registered audit from the
@@ -889,23 +1047,68 @@ for system in provider_systems:
         failures.append(
             f"{system}: source verification skipped; pass --research-root"
         )
+        provider_metrics[system] = _completed_metrics(
+            provider_started,
+            resource_before,
+        )
+        _emit(
+            "provider_complete",
+            provider=system,
+            stage="fulltext_gate",
+            status="skipped",
+            metrics=provider_metrics[system],
+        )
         continue
     audit = getattr(module, module_name)
+    _set_stage(system, "provider_fulltext_audit")
+    _emit(
+        "provider_stage",
+        provider=system,
+        stage="provider_fulltext_audit",
+        audit_module=module_name,
+    )
     try:
         report = audit(research_root=resolved_root)
+    except (KeyboardInterrupt, SystemExit):
+        raise
     except BaseException as exc:  # noqa: BLE001 - gate must fail closed
         results[system] = "error"
         failures.append(
             f"{system}: source verification raised {type(exc).__name__}"
         )
-        continue
-    status = str(
-        (report.get("source_verification") or {}).get("status") or "skipped"
+    else:
+        status = str(
+            (report.get("source_verification") or {}).get("status") or "skipped"
+        )
+        results[system] = status
+        if status != "verified":
+            failures.append(f"{system}: source verification {status}")
+    provider_metrics[system] = _completed_metrics(
+        provider_started,
+        resource_before,
     )
-    results[system] = status
-    if status != "verified":
-        failures.append(f"{system}: source verification {status}")
+    _emit(
+        "provider_complete",
+        provider=system,
+        stage="provider_fulltext_audit",
+        status=results[system],
+        metrics=provider_metrics[system],
+    )
 
+_set_stage(None, "report")
+STOP_HEARTBEAT.set()
+heartbeat_thread.join(timeout=1.0)
+elapsed_seconds = round(time.monotonic() - STARTED, 3)
+resource_usage = _resource_snapshot()
+_emit(
+    "subprocess_complete",
+    provider=None,
+    stage="report",
+    provider_count=len(provider_systems),
+    verified_count=sum(status == "verified" for status in results.values()),
+    verified=not failures,
+    resource=resource_usage,
+)
 print(
     json.dumps(
         {
@@ -913,15 +1116,65 @@ print(
                 str(resolved_root) if resolved_root is not None else None
             ),
             "provider_source_verification": results,
+            "provider_metrics": provider_metrics,
+            "provider_count": len(provider_systems),
+            "verified_count": sum(
+                status == "verified" for status in results.values()
+            ),
             "verified": not failures,
             "failures": failures,
+            "elapsed_seconds": elapsed_seconds,
+            "resource": resource_usage,
         }
-    )
+    ),
+    flush=True,
 )
 """
 
 
-def _verify_release_sources(source: Path, research_root: Path | None) -> dict:
+def _emit_source_verification_progress(
+    progress_stream: TextIO,
+    event: str,
+    **fields: object,
+) -> None:
+    payload = {
+        "event": event,
+        **fields,
+    }
+    progress_stream.write(
+        SOURCE_VERIFICATION_PROGRESS_PREFIX
+        + json.dumps(payload, sort_keys=True)
+        + "\n"
+    )
+    progress_stream.flush()
+
+
+def _terminate_source_verification(
+    process: subprocess.Popen[bytes],
+) -> None:
+    if process.poll() is not None:
+        return
+    if os.name == "posix":
+        os.killpg(process.pid, signal.SIGTERM)
+    else:  # pragma: no cover - Windows is not a supported release host
+        process.terminate()
+    try:
+        process.wait(timeout=SOURCE_VERIFICATION_TERMINATE_GRACE_SECONDS)
+    except subprocess.TimeoutExpired:
+        if os.name == "posix":
+            os.killpg(process.pid, signal.SIGKILL)
+        else:  # pragma: no cover - Windows is not a supported release host
+            process.kill()
+        process.wait()
+
+
+def _verify_release_sources(
+    source: Path,
+    research_root: Path | None,
+    *,
+    timeout_seconds: float = SOURCE_VERIFICATION_TIMEOUT_SECONDS,
+    progress_stream: TextIO | None = None,
+) -> dict:
     """Run the release source-verification gate over every provider.
 
     Fulltext verification is a release-time responsibility: each dedicated
@@ -941,40 +1194,192 @@ def _verify_release_sources(source: Path, research_root: Path | None) -> dict:
     from the release gate.
     """
 
+    if timeout_seconds <= 0:
+        raise ValueError("source verification timeout must be positive")
+    stream = sys.stderr if progress_stream is None else progress_stream
     env = dict(os.environ)
     env.pop("PYTHONPATH", None)
     env.pop("MINGLI_RESEARCH_ROOT", None)
-    completed = subprocess.run(
-        [
-            sys.executable,
-            "-B",
-            "-c",
-            _VERIFY_SOURCE_SUBPROCESS,
-            str(source),
-            str(research_root) if research_root is not None else "",
-        ],
+    command = [
+        sys.executable,
+        "-B",
+        "-c",
+        _VERIFY_SOURCE_SUBPROCESS,
+        str(source),
+        str(research_root) if research_root is not None else "",
+    ]
+    started = time.monotonic()
+    process = subprocess.Popen(
+        command,
         cwd=str(source),
         env=env,
-        capture_output=True,
-        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=(os.name == "posix"),
     )
-    if completed.returncode != 0:
+    assert process.stdout is not None
+    assert process.stderr is not None
+    selector = selectors.DefaultSelector()
+    selector.register(process.stdout, selectors.EVENT_READ, "stdout")
+    selector.register(process.stderr, selectors.EVENT_READ, "stderr")
+    stdout_chunks: list[bytes] = []
+    stderr_buffer = ""
+    observed: dict[str, object] = {
+        "provider": None,
+        "stage": "subprocess_start",
+        "resource": None,
+        "provider_source_verification": {},
+    }
+    timed_out = False
+
+    def consume_stderr(data: bytes) -> None:
+        nonlocal stderr_buffer
+        rendered = data.decode("utf-8", errors="replace")
+        stream.write(rendered)
+        stream.flush()
+        stderr_buffer += rendered
+        while "\n" in stderr_buffer:
+            line, stderr_buffer = stderr_buffer.split("\n", 1)
+            if not line.startswith(SOURCE_VERIFICATION_PROGRESS_PREFIX):
+                continue
+            try:
+                event = json.loads(
+                    line.removeprefix(SOURCE_VERIFICATION_PROGRESS_PREFIX)
+                )
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(event, dict):
+                continue
+            observed["last_event"] = event
+            if "provider" in event:
+                observed["provider"] = event["provider"]
+            if "stage" in event:
+                observed["stage"] = event["stage"]
+            if "resource" in event:
+                observed["resource"] = event["resource"]
+            if event.get("event") == "provider_complete":
+                statuses = observed["provider_source_verification"]
+                if isinstance(statuses, dict):
+                    statuses[str(event.get("provider"))] = event.get("status")
+
+    try:
+        while selector.get_map():
+            remaining = timeout_seconds - (time.monotonic() - started)
+            if remaining <= 0 and process.poll() is None:
+                timed_out = True
+                _emit_source_verification_progress(
+                    stream,
+                    "timeout_cancel_requested",
+                    elapsed_seconds=round(time.monotonic() - started, 3),
+                    timeout_seconds=timeout_seconds,
+                    provider=observed["provider"],
+                    stage=observed["stage"],
+                    resource=observed["resource"],
+                )
+                _terminate_source_verification(process)
+            events = selector.select(timeout=max(0.0, min(0.25, remaining)))
+            for key, _ in events:
+                data = os.read(key.fileobj.fileno(), 64 * 1024)
+                if not data:
+                    selector.unregister(key.fileobj)
+                    continue
+                if key.data == "stdout":
+                    stdout_chunks.append(data)
+                else:
+                    consume_stderr(data)
+        returncode = process.wait()
+    except KeyboardInterrupt:
+        _emit_source_verification_progress(
+            stream,
+            "user_cancel_requested",
+            elapsed_seconds=round(time.monotonic() - started, 3),
+            provider=observed["provider"],
+            stage=observed["stage"],
+            resource=observed["resource"],
+        )
+        _terminate_source_verification(process)
+        raise
+    finally:
+        selector.close()
+        process.stdout.close()
+        process.stderr.close()
+
+    if stderr_buffer:
+        stream.write("" if stderr_buffer.endswith("\n") else "\n")
+        stream.flush()
+    stdout = b"".join(stdout_chunks).decode("utf-8", errors="replace")
+    if timed_out:
+        provider = observed["provider"] or "unknown"
+        stage = observed["stage"] or "unknown"
         return {
             "research_root": (
                 str(research_root.resolve())
                 if research_root is not None
                 else None
             ),
-            "provider_source_verification": {},
+            "provider_source_verification": observed[
+                "provider_source_verification"
+            ],
+            "provider_metrics": {},
             "verified": False,
             "failures": [
-                "release source verification subprocess failed: "
-                + (completed.stderr.strip() or completed.stdout.strip() or "unknown")
+                (
+                    "release source verification exceeded "
+                    f"{timeout_seconds:g} seconds and was cancelled at "
+                    f"provider={provider}, stage={stage}"
+                )
             ],
+            "elapsed_seconds": round(time.monotonic() - started, 3),
+            "resource": observed["resource"],
+            "cancellation": {
+                "reason": "timeout",
+                "timeout_seconds": timeout_seconds,
+                "provider": provider,
+                "stage": stage,
+                "last_resource": observed["resource"],
+            },
         }
     try:
-        report = json.loads(completed.stdout)
+        report = json.loads(stdout)
     except json.JSONDecodeError:
+        report = None
+    if returncode != 0:
+        failures = (
+            list(report.get("failures") or ())
+            if isinstance(report, dict)
+            else []
+        )
+        failures.append(
+            "release source verification subprocess failed with exit code "
+            f"{returncode} at provider={observed['provider'] or 'unknown'}, "
+            f"stage={observed['stage'] or 'unknown'}"
+        )
+        return {
+            "research_root": (
+                str(research_root.resolve())
+                if research_root is not None
+                else None
+            ),
+            "provider_source_verification": (
+                report.get("provider_source_verification", {})
+                if isinstance(report, dict)
+                else observed["provider_source_verification"]
+            ),
+            "provider_metrics": (
+                report.get("provider_metrics", {})
+                if isinstance(report, dict)
+                else {}
+            ),
+            "verified": False,
+            "failures": failures,
+            "elapsed_seconds": round(time.monotonic() - started, 3),
+            "resource": (
+                report.get("resource")
+                if isinstance(report, dict)
+                else observed["resource"]
+            ),
+        }
+    if report is None:
         return {
             "research_root": (
                 str(research_root.resolve())
