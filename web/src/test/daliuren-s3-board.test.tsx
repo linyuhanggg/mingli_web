@@ -2596,11 +2596,35 @@ describe("大六壬 S3 M6a 维度证据", () => {
     expect(timing).not.toHaveTextContent(/candidate_branch|relative_speed|吉凶|成败|保证|hard_verdict/);
   });
 
+  it("accepts the Runtime source order when 元首 or 重审 activates both timing pace rules", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            timing: boundTimingProjection({
+              source_rule_ids: ["DLR-16", "LM-R21", "LR-16"],
+            }),
+          }),
+        })}
+      />,
+    );
+
+    const timing = within(panel()).getByRole("group", { name: "时机" });
+    expect(within(timing).getByText("LM-R21")).toBeVisible();
+    expect(within(timing).getByText("DLR-16 · LR-16")).toBeVisible();
+    expect(within(timing).getByText("相对节奏：较快")).toBeVisible();
+  });
+
   it.each([
     ["pace source omitted from source_rule_ids", "missing_pace_rule"],
     ["relative speed disagrees with the candidate observation", "speed_conflict"],
     ["DLR-16 claimed without a legal pace", "pace_unresolved"],
     ["LM-R21 source_anchor drift", "candidate_source_drift"],
+    ["combined source sequence is missing LM-R21", "combined_missing"],
+    ["combined source sequence duplicates LR-16", "combined_duplicate"],
+    ["combined source sequence contains an extra rule", "combined_extra"],
+    ["combined source sequence is out of Runtime order", "combined_out_of_order"],
+    ["combined candidate source_rule drifts", "combined_source_drift"],
   ] as const)("fails the whole timing group closed for %s", (_label, kind) => {
     const projection = structuredClone(boundTimingProjection()) as Record<string, unknown>;
     if (kind === "missing_pace_rule") {
@@ -2622,11 +2646,23 @@ describe("大六壬 S3 M6a 维度证据", () => {
         ...matched[0],
         observation: { ...observation, relative_speed: null },
       };
-    } else {
+    } else if (kind === "candidate_source_drift") {
       const envelope = projection.rule_evidence as Record<string, unknown>;
       const matched = envelope.matched as Record<string, unknown>[];
       const sourceRefs = matched[0]?.source_refs as Record<string, unknown>[];
       sourceRefs[0] = { ...sourceRefs[0], source_anchor: "fulltext.md#drift" };
+    } else if (kind === "combined_missing") {
+      projection.source_rule_ids = ["DLR-16", "LR-16"];
+    } else if (kind === "combined_duplicate") {
+      projection.source_rule_ids = ["DLR-16", "LM-R21", "LR-16", "LR-16"];
+    } else if (kind === "combined_extra") {
+      projection.source_rule_ids = ["DLR-16", "LM-R21", "LR-16", "LR-99"];
+    } else if (kind === "combined_out_of_order") {
+      projection.source_rule_ids = ["DLR-16", "LR-16", "LM-R21"];
+    } else {
+      projection.source_rule_ids = ["DLR-16", "LM-R21", "LR-16"];
+      const candidateBranch = projection.candidate_branch as Record<string, unknown>;
+      projection.candidate_branch = { ...candidateBranch, source_rule: "LM-R22" };
     }
     render(
       <DaliurenBoard

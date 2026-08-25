@@ -1794,8 +1794,8 @@ function expectedTimingSourceRuleIds(
   if (sourceRuleIds.includes("LR-16") && !hasValidPace) return null;
   const expected = [
     ...(hasValidPace ? (["DLR-16"] as const) : []),
-    ...(sourceRuleIds.includes("LR-16") ? (["LR-16"] as const) : []),
     ...(hasCandidate ? (["LM-R21"] as const) : []),
+    ...(sourceRuleIds.includes("LR-16") ? (["LR-16"] as const) : []),
   ];
   if (
     sourceRuleIds.length !== expected.length ||
