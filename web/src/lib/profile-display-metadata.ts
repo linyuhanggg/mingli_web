@@ -22,6 +22,12 @@ function normalizedName(value: string): string {
   return value.trim().replace(/\s+/g, " ").slice(0, 80);
 }
 
+function isIsoCalendarDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
 export function defaultProfileName(subject: string, birthDate: string): string {
   const subjectName = normalizedName(subject) || "我自己";
   const year = /^\d{4}/.exec(birthDate)?.[0];
@@ -34,16 +40,14 @@ export function profileDisplayName(profile: ProfileSummary): string {
 
 export function profileBirthDate(profile: ProfileSummary): string {
   const birthDate = displayFields(profile).birth_date;
-  return birthDate && /^\d{4}-\d{2}-\d{2}$/.test(birthDate)
-    ? birthDate
-    : "生日未记录";
+  return birthDate && isIsoCalendarDate(birthDate) ? birthDate : "生日未记录";
 }
 
 export function formatProfileDisplayOption(profile: ProfileSummary): string {
   const fields = displayFields(profile);
   const name = normalizedName(fields.display_name ?? "");
   const birthDate = fields.birth_date;
-  if (!name || !birthDate || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+  if (!name || !birthDate || !isIsoCalendarDate(birthDate)) {
     return formatProfileOption(profile);
   }
   return `${name} · ${birthDate}`;
