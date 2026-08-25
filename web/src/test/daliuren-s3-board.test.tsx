@@ -2922,7 +2922,7 @@ describe("大六壬 S3 M6a 维度证据", () => {
   });
 
   it.each(["work", "career"] as const)(
-    "renders the neutral missing-target boundary for a public %s request",
+    "renders validated top-level facts and the missing-target boundary for a public %s request",
     (requestedDimension) => {
       render(
         <DaliurenBoard
@@ -2933,13 +2933,110 @@ describe("大六壬 S3 M6a 维度证据", () => {
       );
 
       const work = within(panel()).getByRole("group", { name: "事业" });
-      expect(work).toHaveTextContent("目标边界");
-      expect(work).toHaveTextContent("未绑定目标六亲");
+      const rows = [...work.querySelectorAll(":scope > ul > li")].map(
+        (row) => row.querySelector("summary")?.textContent ?? row.textContent,
+      );
+      expect(rows).toHaveLength(4);
+      expect(rows[0]).toContain("目标边界");
+      expect(rows[0]).toContain("未绑定目标六亲");
+      expect(rows[1]).toContain("日干与日支：甲（木）与寅（木）：五行同类");
+      expect(rows[2]).toContain("三传六亲：初传 巳 · 子孙；中传 申 · 官鬼；末传 卯 · 兄弟");
+      expect(rows[3]).toContain(
+        "三传状态：初传 巳 · 六亲子孙 · 天将勾陈 · 休 · 非旬空；中传 申 · 六亲官鬼 · 天将天后 · 休 · 非旬空；末传 卯 · 六亲兄弟 · 天将白虎 · 休 · 非旬空",
+      );
       expect(work).not.toHaveTextContent(
-        /missing_target_relative|required_fact_missing|work_target_relative_not_supplied|吉凶|成败|保证|硬判/,
+        /missing_target_relative|required_fact_missing|work_target_relative_not_supplied|subject_object_relation|six_relative_stages|stage_status|same_element|吉凶|成败|保证|硬判|\{"/,
       );
     },
   );
+
+  it("fails missing-target work and career groups closed for extra fields, malformed keys, or cross-field conflicts", () => {
+    const mutate = (change: (projection: Record<string, unknown>) => void, requested: "work" | "career" = "work") => {
+      const projection = structuredClone(missingWorkProjection(requested)) as Record<string, unknown>;
+      change(projection);
+      return projection;
+    };
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            extra_field: mutate((projection) => {
+              projection.raw_dump = "不得展示 work extra";
+            }),
+            career_extra: mutate((projection) => {
+              projection.raw_dump = "不得展示 career extra";
+            }, "career"),
+            invalid_branch: mutate((projection) => {
+              const rows = projection.six_relative_stages as Record<string, unknown>[];
+              rows[0] = { ...rows[0], branch: "非法支" };
+            }),
+            unknown_relative: mutate((projection) => {
+              const rows = projection.six_relative_stages as Record<string, unknown>[];
+              rows[1] = { ...rows[1], six_relative: "未来枚举" };
+            }),
+            wrong_stage_order: mutate((projection) => {
+              const rows = projection.stage_status as Record<string, unknown>[];
+              projection.stage_status = [rows[1], rows[0], rows[2]];
+            }),
+            unknown_general: mutate((projection) => {
+              const rows = projection.stage_status as Record<string, unknown>[];
+              rows[1] = { ...rows[1], heavenly_general: "未知天将" };
+            }),
+            cross_field_drift: mutate((projection) => {
+              const rows = projection.stage_status as Record<string, unknown>[];
+              rows[0] = { ...rows[0], branch: "午" };
+            }),
+            invalid_stem: mutate((projection) => {
+              const relation = projection.subject_object_relation as Record<string, unknown>;
+              projection.subject_object_relation = { ...relation, subject_value: "非法干" };
+            }),
+            stem_element_drift: mutate((projection) => {
+              const relation = projection.subject_object_relation as Record<string, unknown>;
+              projection.subject_object_relation = {
+                ...relation,
+                subject_element: "水",
+                relation: "subject_generates_object",
+              };
+            }),
+            day_branch_element_drift: mutate((projection) => {
+              const relation = projection.subject_object_relation as Record<string, unknown>;
+              projection.subject_object_relation = {
+                ...relation,
+                object_element: "火",
+                relation: "subject_generates_object",
+              };
+            }),
+            not_evaluated_extra: mutate((projection) => {
+              const envelope = projection.rule_evidence as Record<string, unknown>;
+              const notEvaluated = envelope.not_evaluated as Record<string, unknown>[];
+              envelope.not_evaluated = [{ ...notEvaluated[0], raw_dump: "不得展示 not_evaluated extra" }];
+            }),
+            source_extra: mutate((projection) => {
+              const envelope = projection.rule_evidence as Record<string, unknown>;
+              const notEvaluated = envelope.not_evaluated as Record<string, unknown>[];
+              const sources = notEvaluated[0]?.source_refs as Record<string, unknown>[];
+              envelope.not_evaluated = [
+                {
+                  ...notEvaluated[0],
+                  source_refs: [{ ...sources[0], raw_dump: "不得展示 source extra" }],
+                },
+              ];
+            }),
+            wrong_reason: mutate((projection) => {
+              const envelope = projection.rule_evidence as Record<string, unknown>;
+              const notEvaluated = envelope.not_evaluated as Record<string, unknown>[];
+              envelope.not_evaluated = [{ ...notEvaluated[0], reason: "other_missing_reason" }];
+            }),
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(
+      /不得展示|未来枚举|未绑定目标六亲|日干与日支|三传六亲|三传状态|目标边界/,
+    );
+  });
 
   it("fails matched and missing-target groups closed for extra fields or top-level conflicts", () => {
     const outcome = matchedOutcomeProjection();

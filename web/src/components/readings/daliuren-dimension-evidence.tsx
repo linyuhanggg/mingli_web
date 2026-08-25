@@ -2005,6 +2005,39 @@ function parseTopLevelRelationshipFacts(
   return deterministicEntries;
 }
 
+function workDeterministicEntries(
+  subjectObject: DeterministicRelationFact,
+  stages: readonly DaliurenSixRelativeStage[],
+  statuses: readonly DaliurenStageStatusEntry[],
+): readonly EvidenceEntry[] {
+  return [
+    {
+      marker: "主客五行",
+      fact: `日干与日支：${relationFactText(subjectObject)}`,
+      sources: [],
+    },
+    {
+      marker: "三传六亲",
+      fact: `三传六亲：${stages
+        .map((row) => `${STAGE_FACTS[row.stage]} ${row.branch} · ${row.six_relative}`)
+        .join("；")}`,
+      sources: [],
+    },
+    {
+      marker: "三传状态",
+      fact: `三传状态：${statuses
+        .map(
+          (row) =>
+            `${STAGE_FACTS[row.stage]} ${row.branch} · 六亲${row.six_relative} · 天将${row.heavenly_general} · ${
+              SEASON_STRENGTH_FACTS[row.season_strength]
+            } · ${row.is_xunkong ? "旬空" : "非旬空"}`,
+        )
+        .join("；")}`,
+      sources: [],
+    },
+  ];
+}
+
 function parseTopLevelWorkFacts(
   value: Record<string, unknown>,
   evidence: Record<string, unknown>,
@@ -2110,32 +2143,7 @@ function parseTopLevelWorkFacts(
     }
   }
 
-  const deterministicEntries: readonly EvidenceEntry[] = [
-    {
-      marker: "主客五行",
-      fact: `日干与日支：${relationFactText(subjectObject)}`,
-      sources: [],
-    },
-    {
-      marker: "三传六亲",
-      fact: `三传六亲：${typedStages
-        .map((row) => `${STAGE_FACTS[row.stage]} ${row.branch} · ${row.six_relative}`)
-        .join("；")}`,
-      sources: [],
-    },
-    {
-      marker: "三传状态",
-      fact: `三传状态：${typedStatuses
-        .map(
-          (row) =>
-            `${STAGE_FACTS[row.stage]} ${row.branch} · 六亲${row.six_relative} · 天将${row.heavenly_general} · ${
-              SEASON_STRENGTH_FACTS[row.season_strength]
-            } · ${row.is_xunkong ? "旬空" : "非旬空"}`,
-        )
-        .join("；")}`,
-      sources: [],
-    },
-  ];
+  const deterministicEntries = workDeterministicEntries(subjectObject, typedStages, typedStatuses);
 
   const normalizedSourceRuleIds = sourceRuleIds.map((ruleId) => ruleId.trim());
   if ("target_presence" in targetObservation) {
@@ -2191,7 +2199,7 @@ function isMissingWorkTargetNotEvaluated(value: unknown): boolean {
 function parseMissingWorkTargetBoundary(
   value: Record<string, unknown>,
   evidence: Record<string, unknown>,
-): EvidenceEntry | null {
+): readonly EvidenceEntry[] | null {
   const stageRows = value.six_relative_stages;
   const statusRows = value.stage_status;
   if (
@@ -2209,7 +2217,6 @@ function parseMissingWorkTargetBoundary(
     stageRows.length !== LOCATION_STAGES.length ||
     !Array.isArray(statusRows) ||
     statusRows.length !== LOCATION_STAGES.length ||
-    !parseRelationFact(value.subject_object_relation, "day_stem", "day_branch") ||
     !hasRuntimeEvidenceEnvelope(evidence) ||
     evidence.status !== "not_bound" ||
     !isEmptyArray(evidence.matched) ||
@@ -2221,9 +2228,12 @@ function parseMissingWorkTargetBoundary(
     return null;
   }
 
+  const subjectObject = parseRelationFact(value.subject_object_relation, "day_stem", "day_branch");
   const stages = LOCATION_STAGES.map((stage, index) => parseSixRelativeStage(stageRows[index], stage));
   const statuses = LOCATION_STAGES.map((stage, index) => parseStageStatus(statusRows[index], stage));
-  if (stages.some((row) => row === null) || statuses.some((row) => row === null)) return null;
+  if (!subjectObject || stages.some((row) => row === null) || statuses.some((row) => row === null)) {
+    return null;
+  }
   const typedStages = stages as readonly DaliurenSixRelativeStage[];
   const typedStatuses = statuses as readonly DaliurenStageStatusEntry[];
   if (
@@ -2236,11 +2246,14 @@ function parseMissingWorkTargetBoundary(
     return null;
   }
 
-  return {
-    marker: "目标边界",
-    fact: "未绑定目标六亲",
-    sources: [],
-  };
+  return [
+    {
+      marker: "目标边界",
+      fact: "未绑定目标六亲",
+      sources: [],
+    },
+    ...workDeterministicEntries(subjectObject, typedStages, typedStatuses),
+  ];
 }
 
 function parseDimension(value: unknown): EvidenceGroup | null {
@@ -2309,8 +2322,8 @@ function parseDimension(value: unknown): EvidenceGroup | null {
     return relationshipEntries ? { dimension, entries: relationshipEntries } : null;
   }
   if (dimension === "work" && value.target_contract_status === "missing_target_relative") {
-    const boundary = parseMissingWorkTargetBoundary(value, evidence);
-    return boundary ? { dimension, entries: [boundary] } : null;
+    const entries = parseMissingWorkTargetBoundary(value, evidence);
+    return entries ? { dimension, entries } : null;
   }
   if (dimension === "work" && value.target_contract_status === "bound") {
     const workEntries = parseTopLevelWorkFacts(value, evidence);
