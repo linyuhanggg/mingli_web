@@ -1512,7 +1512,9 @@ class SelectionProviderActivationTests(unittest.TestCase):
                                     "hour": "庚午",
                                 }
                             },
-                            "active_source_rule_ids": ["KR-05", "XR-18"],
+                            "active_source_rule_ids": [
+                                f"rule-{index}" for index in range(12)
+                            ],
                             "unrelated": {"large": [1, 2, 3]},
                         }
                     ]
@@ -1543,10 +1545,14 @@ class SelectionProviderActivationTests(unittest.TestCase):
             )
         }
 
-        actual = dict(selection._fact_leaves_at_suffixes(indexed, suffixes))
+        actual = list(selection._fact_leaves_at_suffixes(indexed, suffixes))
 
-        self.assertEqual(actual, expected)
-        self.assertFalse(any("unrelated" in path for path in actual))
+        self.assertEqual(dict(actual), expected)
+        self.assertEqual(
+            actual,
+            list(selection._fact_leaves_at_suffixes(indexed, suffixes)),
+        )
+        self.assertFalse(any("unrelated" in path for path, _ in actual))
 
     def test_extension_preserves_source_conditioned_patterns(self) -> None:
         provider = SelectionProvider(ROOT)

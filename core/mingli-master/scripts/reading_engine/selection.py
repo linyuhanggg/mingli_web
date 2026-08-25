@@ -375,7 +375,7 @@ def _hour_path(day_branch: str, hour_branch: str) -> dict[str, str]:
     }
 
 
-RuntimeContext = dict[tuple[str, str], Lunar]
+RuntimeContext = dict[tuple[datetime, str, str, str, str], Lunar]
 
 
 def _aligned_runtime(
@@ -383,14 +383,17 @@ def _aligned_runtime(
     calendar: Mapping[str, Any],
     runtime_context: RuntimeContext | None = None,
 ) -> Lunar:
+    ganzhi = calendar["ganzhi"]
     context_key = (
-        local_datetime.isoformat(timespec="microseconds"),
-        canonical_digest({"ganzhi": calendar["ganzhi"]}),
+        local_datetime,
+        str(ganzhi["year"]),
+        str(ganzhi["month"]),
+        str(ganzhi["day"]),
+        str(ganzhi["hour"]),
     )
     if runtime_context is not None and context_key in runtime_context:
         return runtime_context[context_key]
     runtime = Lunar(local_datetime, godType="8char", year8Char="beginningOfSpring")
-    ganzhi = calendar["ganzhi"]
     runtime.year8Char = str(ganzhi["year"])
     runtime.month8Char = str(ganzhi["month"])
     runtime.day8Char = str(ganzhi["day"])
@@ -560,12 +563,13 @@ def _valid_local_instants(
     return tuple(sorted(result, key=lambda item: item.astimezone(timezone.utc)))
 
 
-def _minute_in_windows(minute: int, windows: list[dict[str, str]]) -> bool:
+def _minute_in_windows(
+    minute: int,
+    windows: tuple[tuple[int, int], ...],
+) -> bool:
     if not windows:
         return True
-    for window in windows:
-        start = _minutes(window["start"])
-        end = _minutes(window["end"])
+    for start, end in windows:
         if start < end and start <= minute < end:
             return True
         if start > end and (minute >= start or minute < end):
@@ -713,6 +717,10 @@ def _hour_facts(
     allowed = set(hard_constraints.get("allowed_hour_branches") or BRANCHES)
     excluded = set(hard_constraints.get("excluded_hour_branches") or ())
     windows = list(hard_constraints.get("time_windows") or ())
+    minute_windows = tuple(
+        (_minutes(window["start"]), _minutes(window["end"]))
+        for window in windows
+    )
     result: list[dict[str, Any]] = []
     for index, (branch, hour, segments) in enumerate(
         zip(BRANCHES, HOUR_REPRESENTATIVES, HOUR_CIVIL_SEGMENTS)
@@ -834,7 +842,7 @@ def _hour_facts(
             reasons = list(common_constraint_reasons)
             window_overlap = any(
                 minute_candidates[minute]
-                and _minute_in_windows(minute, windows)
+                and _minute_in_windows(minute, minute_windows)
                 for minute in range(start, end)
             )
             if not window_overlap:
@@ -2269,9 +2277,10 @@ def _fact_leaves_at_suffixes(
     """Index only subtrees addressable by the supplied predicates.
 
     The search visits the fact containers once, follows each JSON-pointer-like
-    suffix exactly, and then delegates to ``_fact_leaves`` for the matched
-    subtree.  Its yielded paths and values are therefore identical to the
-    relevant subset of a complete Runtime fact index.
+    suffix exactly, and iteratively collects the matched subtree. Its yielded
+    paths and values are therefore identical to the relevant subset of a
+    complete Runtime fact index without paying for recursion or irrelevant
+    leaves.
     """
 
     suffixes_by_first_token: dict[str, list[tuple[str, ...]]] = {}
@@ -2284,37 +2293,85 @@ def _fact_leaves_at_suffixes(
 
     relevant: dict[str, Any] = {}
 
+    def token_for(key: Any) -> str:
+        rendered = str(key)
+        return (
+            _escape_fact_token(rendered)
+            if "/" in rendered or "~" in rendered
+            else rendered
+        )
+
+    def collect(current: Any, path: str) -> None:
+        stack: list[tuple[str, Any]] = [(path, current)]
+        while stack:
+            current_path, current_value = stack.pop()
+            if isinstance(current_value, Mapping) and current_value:
+                children = [
+                    (f"{current_path}/{token_for(key)}", child)
+                    for key in sorted(current_value, key=str)
+                    for child in (current_value[key],)
+                ]
+                stack.extend(reversed(children))
+                continue
+            if isinstance(current_value, (list, tuple)) and current_value:
+                stack.extend(
+                    (f"{current_path}/{index}", child)
+                    for index, child in reversed(tuple(enumerate(current_value)))
+                )
+                continue
+            relevant.setdefault(current_path or "/", current_value)
+
     def follow(
         current: Any,
         path: str,
         remaining: tuple[str, ...],
     ) -> None:
-        if not remaining:
-            for leaf_path, leaf_value in _fact_leaves(current, path):
-                relevant.setdefault(leaf_path, leaf_value)
-            return
-        if not isinstance(current, Mapping):
-            return
-        expected = remaining[0]
-        for key in sorted(current, key=str):
-            token = _escape_fact_token(str(key))
-            if token == expected:
-                follow(current[key], f"{path}/{token}", remaining[1:])
+        current_value = current
+        current_path = path
+        for expected in remaining:
+            if not isinstance(current_value, Mapping):
+                return
+            match = next(
+                (
+                    (key, child)
+                    for key, child in current_value.items()
+                    if token_for(key) == expected
+                ),
+                None,
+            )
+            if match is None:
+                return
+            key, current_value = match
+            current_path = f"{current_path}/{token_for(key)}"
+        collect(current_value, current_path)
 
-    def search(current: Any, path: str = "") -> None:
+    stack: list[tuple[str, Any]] = [("", value)]
+    while stack:
+        path, current = stack.pop()
         if isinstance(current, Mapping):
+            children: list[tuple[str, Any]] = []
             for key in sorted(current, key=str):
-                token = _escape_fact_token(str(key))
-                child_path = f"{path}/{token}"
                 child = current[key]
+                token = token_for(key)
+                child_path = f"{path}/{token}"
                 for remaining in suffixes_by_first_token.get(token, ()):
                     follow(child, child_path, remaining)
-                search(child, child_path)
+                if isinstance(child, Mapping) or (
+                    isinstance(child, (list, tuple))
+                    and any(
+                        isinstance(item, (Mapping, list, tuple))
+                        for item in child
+                    )
+                ):
+                    children.append((child_path, child))
+            stack.extend(reversed(children))
         elif isinstance(current, (list, tuple)):
-            for index, child in enumerate(current):
-                search(child, f"{path}/{index}")
+            stack.extend(
+                (f"{path}/{index}", child)
+                for index, child in reversed(tuple(enumerate(current)))
+                if isinstance(child, (Mapping, list, tuple))
+            )
 
-    search(value)
     yield from relevant.items()
 
 
@@ -2682,7 +2739,10 @@ def build_fact_layer(
             ),
         ],
     }
-    facts["fact_digest"] = fact_digest(facts)
+    # This freshly built payload does not yet contain either excluded digest
+    # field. Avoid a full defensive deepcopy here; ``fact_digest`` keeps that
+    # behavior for validating or re-signing caller-owned payloads.
+    facts["fact_digest"] = canonical_digest(facts)
     facts["validation"] = {
         "ok": True,
         "validator": "mingli-master.selection.validate_fact_layer",
