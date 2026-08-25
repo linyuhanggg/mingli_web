@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import stat
@@ -639,6 +640,9 @@ def _write_stub_checkout(
 class ReleaseCheckoutIsolationTests(unittest.TestCase):
     """The release gate must be immune to the parent interpreter's caches."""
 
+    def setUp(self) -> None:
+        self._clear_parent_stub_modules()
+
     def _prepare_checkouts(self) -> tuple[Path, Path]:
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
@@ -657,10 +661,11 @@ class ReleaseCheckoutIsolationTests(unittest.TestCase):
         )
         return checkout_a, checkout_b
 
-    def tearDown(self) -> None:
+    @staticmethod
+    def _clear_parent_stub_modules() -> None:
         # The isolation tests deliberately preload stub audits into the parent
-        # interpreter.  Drop every module they touched so later tests in the
-        # same process resolve the real checkout, never the stub.
+        # interpreter.  Drop every module they touch before and after each test
+        # so the selected fixture checkout is always the import authority.
         prefixes = (
             "audit_alpha_marker_",
             "audit_beta_marker_",
@@ -668,6 +673,9 @@ class ReleaseCheckoutIsolationTests(unittest.TestCase):
         for name in [name for name in sys.modules if name.startswith(prefixes)]:
             del sys.modules[name]
         sys.modules.pop("audit_provider_completeness", None)
+
+    def tearDown(self) -> None:
+        self._clear_parent_stub_modules()
 
     def test_gate_audits_checkout_b_even_when_a_is_preloaded(self) -> None:
         checkout_a, checkout_b = self._prepare_checkouts()
@@ -704,6 +712,82 @@ class ReleaseCheckoutIsolationTests(unittest.TestCase):
             ),
             result["provider_source_verification"],
         )
+
+    def test_gate_streams_provider_stages_and_returns_timing_and_resource_evidence(
+        self,
+    ) -> None:
+        _, checkout = self._prepare_checkouts()
+        research = checkout / "research"
+        research.mkdir()
+        progress = io.StringIO()
+
+        result = release_deploy._verify_release_sources(
+            checkout,
+            research,
+            progress_stream=progress,
+        )
+
+        self.assertTrue(result["verified"], result)
+        self.assertEqual(result["failures"], [])
+        self.assertEqual(result["provider_count"], 2)
+        self.assertEqual(result["verified_count"], 2)
+        self.assertEqual(set(result["provider_metrics"]), {"alpha", "beta"})
+        self.assertGreaterEqual(result["elapsed_seconds"], 0)
+        self.assertGreater(result["resource"]["process_peak_rss_bytes"], 0)
+        events = [
+            json.loads(
+                line.removeprefix(
+                    release_deploy.SOURCE_VERIFICATION_PROGRESS_PREFIX
+                )
+            )
+            for line in progress.getvalue().splitlines()
+            if line.startswith(release_deploy.SOURCE_VERIFICATION_PROGRESS_PREFIX)
+        ]
+        self.assertTrue(
+            any(
+                event.get("event") == "provider_stage"
+                and event.get("provider") == "alpha"
+                and event.get("stage") == "provider_fulltext_audit"
+                for event in events
+            ),
+            events,
+        )
+        self.assertEqual(events[-1]["event"], "subprocess_complete")
+
+    def test_gate_cancels_the_process_group_and_fails_closed_at_sixty_minute_cap(
+        self,
+    ) -> None:
+        _, checkout = self._prepare_checkouts()
+        module = checkout / "scripts" / "audit_alpha_marker_b.py"
+        module.write_text(
+            "import time\n"
+            "def audit_alpha_marker_b(*, research_root=None):\n"
+            "    time.sleep(10)\n"
+            "    return {'source_verification': {'status': 'verified'}}\n",
+            encoding="utf-8",
+        )
+        research = checkout / "research"
+        research.mkdir()
+        progress = io.StringIO()
+
+        result = release_deploy._verify_release_sources(
+            checkout,
+            research,
+            timeout_seconds=0.1,
+            progress_stream=progress,
+        )
+
+        self.assertEqual(release_deploy.SOURCE_VERIFICATION_TIMEOUT_SECONDS, 3600)
+        self.assertFalse(result["verified"])
+        self.assertEqual(result["cancellation"]["reason"], "timeout")
+        self.assertEqual(result["cancellation"]["provider"], "alpha")
+        self.assertEqual(
+            result["cancellation"]["stage"],
+            "provider_fulltext_audit",
+        )
+        self.assertIn("exceeded 0.1 seconds", result["failures"][0])
+        self.assertIn("timeout_cancel_requested", progress.getvalue())
+        self.assertIn("cancel_received", progress.getvalue())
 
     def test_gate_without_research_root_validates_origin_without_running_audits(
         self,

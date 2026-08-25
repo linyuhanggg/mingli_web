@@ -375,7 +375,20 @@ def _hour_path(day_branch: str, hour_branch: str) -> dict[str, str]:
     }
 
 
-def _aligned_runtime(local_datetime: datetime, calendar: Mapping[str, Any]) -> Lunar:
+RuntimeContext = dict[tuple[str, str], Lunar]
+
+
+def _aligned_runtime(
+    local_datetime: datetime,
+    calendar: Mapping[str, Any],
+    runtime_context: RuntimeContext | None = None,
+) -> Lunar:
+    context_key = (
+        local_datetime.isoformat(timespec="microseconds"),
+        canonical_digest({"ganzhi": calendar["ganzhi"]}),
+    )
+    if runtime_context is not None and context_key in runtime_context:
+        return runtime_context[context_key]
     runtime = Lunar(local_datetime, godType="8char", year8Char="beginningOfSpring")
     ganzhi = calendar["ganzhi"]
     runtime.year8Char = str(ganzhi["year"])
@@ -386,6 +399,8 @@ def _aligned_runtime(local_datetime: datetime, calendar: Mapping[str, Any]) -> L
     runtime.get_season()
     runtime.get_today12DayOfficer()
     runtime.angelDemon = runtime.get_AngelDemon()
+    if runtime_context is not None:
+        runtime_context[context_key] = runtime
     return runtime
 
 
@@ -393,12 +408,17 @@ def _official_event_rules_for_calendar(
     calendar: Mapping[str, Any],
     event_profile: str,
     requested_actions: list[str] | tuple[str, ...],
+    runtime_context: RuntimeContext | None = None,
 ) -> dict[str, Any]:
     profiles = source_table()["event_profiles"]
     if event_profile not in profiles:
         raise ValueError("unsupported event profile")
     local_datetime = datetime.fromisoformat(str(calendar["civil_datetime"]))
-    runtime = _aligned_runtime(local_datetime.replace(tzinfo=None), calendar)
+    runtime = _aligned_runtime(
+        local_datetime.replace(tzinfo=None),
+        calendar,
+        runtime_context,
+    )
     official_yi = _clean_unique(runtime.goodThing)
     official_ji = _clean_unique(runtime.badThing)
     declared_actions = [
@@ -681,6 +701,7 @@ def _hour_facts(
     longitude: Any = None,
     latitude: Any = None,
     coordinate_source: Any = None,
+    runtime_context: RuntimeContext | None = None,
 ) -> list[dict[str, Any]]:
     allowed = set(hard_constraints.get("allowed_hour_branches") or BRANCHES)
     excluded = set(hard_constraints.get("excluded_hour_branches") or ())
@@ -843,7 +864,10 @@ def _hour_facts(
             ]
             variant.update(copy.deepcopy(status))
             event_assessment = _official_event_rules_for_calendar(
-                variant, event_profile, requested_actions
+                variant,
+                event_profile,
+                requested_actions,
+                runtime_context,
             )
             variant["official_yiji"] = event_assessment["official_yiji"]
             variant["daily_shensha"] = event_assessment["daily_shensha"]
@@ -1528,6 +1552,7 @@ def build_day_record(
     longitude: Any = None,
     latitude: Any = None,
     coordinate_source: Any = None,
+    _runtime_context: RuntimeContext | None = None,
 ) -> dict[str, Any]:
     profiles = source_table()["event_profiles"]
     if event_profile not in profiles:
@@ -1569,6 +1594,7 @@ def build_day_record(
         raise ValueError(
             "directional_context.site_branch or site_mountain is required for directional_judgment"
         )
+    runtime_context = _runtime_context if _runtime_context is not None else {}
     noon_calendar = _calendar_for(
         civil_date,
         12,
@@ -1621,7 +1647,7 @@ def build_day_record(
             if item.date() == parsed_date
         )
     local_noon = datetime.fromisoformat(f"{civil_date}T12:00:00")
-    runtime = _aligned_runtime(local_noon, noon_calendar)
+    runtime = _aligned_runtime(local_noon, noon_calendar, runtime_context)
     ganzhi = noon_calendar["ganzhi"]
     year_branch = str(ganzhi["year"])[1]
     month_branch = str(ganzhi["month"])[1]
@@ -1643,6 +1669,7 @@ def build_day_record(
         longitude=longitude,
         latitude=latitude,
         coordinate_source=coordinate_source,
+        runtime_context=runtime_context,
     )
     month_variants = list(
         dict.fromkeys(
@@ -1663,7 +1690,10 @@ def build_day_record(
         )
     )
     day_event_assessment = _official_event_rules_for_calendar(
-        noon_calendar, event_profile, actions
+        noon_calendar,
+        event_profile,
+        actions,
+        runtime_context,
     )
     official_yi = day_event_assessment["official_yiji"]["yi"]
     official_ji = day_event_assessment["official_yiji"]["ji"]
@@ -1972,6 +2002,7 @@ def _effective_interval_identity(
 def _date_time_candidates(
     candidates: list[dict[str, Any]],
     constraints: Mapping[str, Any],
+    runtime_context: RuntimeContext | None = None,
 ) -> list[dict[str, Any]]:
     windows = list(constraints.get("time_windows") or ())
     result: list[dict[str, Any]] = []
@@ -1984,6 +2015,7 @@ def _date_time_candidates(
                         tzinfo=None
                     ),
                     variant,
+                    runtime_context,
                 )
                 variant_event_facts = _event_specific_facts(
                     str(event_rules["profile"]),
@@ -2288,6 +2320,7 @@ def build_fact_layer(
     start = date.fromisoformat(normalized["date_range"]["start"])
     end = date.fromisoformat(normalized["date_range"]["end"])
     candidates: list[dict[str, Any]] = []
+    runtime_context: RuntimeContext = {}
     current = start
     while current <= end:
         candidates.append(
@@ -2305,10 +2338,15 @@ def build_fact_layer(
                 longitude=longitude,
                 latitude=latitude,
                 coordinate_source=coordinate_source,
+                _runtime_context=runtime_context,
             )
         )
         current += timedelta(days=1)
-    date_times = _date_time_candidates(candidates, normalized["hard_constraints"])
+    date_times = _date_time_candidates(
+        candidates,
+        normalized["hard_constraints"],
+        runtime_context,
+    )
     ranked_date_times = sorted(date_times, key=_rank_time_key)
     ordered_ids = list(
         dict.fromkeys(row["candidate_id"] for row in ranked_date_times)

@@ -1225,6 +1225,52 @@ print(facts['fact_digest'])
 
 
 class SelectionProviderActivationTests(unittest.TestCase):
+    def test_ephemeral_runtime_reuse_preserves_every_selection_fact(self) -> None:
+        arguments = {
+            "spec": _spec(
+                date_range={"start": "2026-07-24", "end": "2026-07-24"}
+            ),
+            "timezone_name": "Asia/Shanghai",
+            "location": "上海",
+        }
+        lunar_constructor = selection.Lunar
+        with mock.patch.object(
+            selection,
+            "Lunar",
+            side_effect=lunar_constructor,
+        ) as reused_constructor:
+            reused = selection.build_fact_layer(**arguments)
+
+        original_aligned_runtime = selection._aligned_runtime
+
+        def without_context(local_datetime, calendar, runtime_context=None):
+            del runtime_context
+            return original_aligned_runtime(local_datetime, calendar, None)
+
+        with (
+            mock.patch.object(
+                selection,
+                "Lunar",
+                side_effect=lunar_constructor,
+            ) as uncached_constructor,
+            mock.patch.object(
+                selection,
+                "_aligned_runtime",
+                side_effect=without_context,
+            ),
+        ):
+            independently_recalculated = selection.build_fact_layer(**arguments)
+
+        self.assertEqual(reused, independently_recalculated)
+        self.assertLess(
+            reused_constructor.call_count,
+            uncached_constructor.call_count,
+        )
+        self.assertGreaterEqual(
+            uncached_constructor.call_count,
+            2 * reused_constructor.call_count - 1,
+        )
+
     def _prepare_bounded_range(self, end: str) -> tuple[PreparedReading, float]:
         intent = _intent()
         intent["horizon"] = {
