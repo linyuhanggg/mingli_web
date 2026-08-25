@@ -1,6 +1,7 @@
 import copy
 import json
 from collections.abc import Callable
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -8,6 +9,20 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_DIR = ROOT / "contracts" / "schemas"
+
+
+@lru_cache(maxsize=1)
+def schema_registry() -> Any:
+    from referencing import Registry, Resource
+
+    resources: list[tuple[str, Any]] = []
+    for path in SCHEMA_DIR.rglob("*.json"):
+        with path.open(encoding="utf-8") as stream:
+            contents = json.load(stream)
+        schema_id = contents.get("$id")
+        if isinstance(schema_id, str) and schema_id:
+            resources.append((schema_id, Resource.from_contents(contents)))
+    return Registry().with_resources(resources)
 
 
 def load_schema(name: str) -> dict[str, Any]:
@@ -22,16 +37,20 @@ def load_schema(name: str) -> dict[str, Any]:
     return schema
 
 
+def schema_validator(name: str) -> Any:
+    from jsonschema import Draft202012Validator, FormatChecker
+
+    return Draft202012Validator(
+        load_schema(name),
+        format_checker=FormatChecker(),
+        registry=schema_registry(),
+    )
+
+
 @pytest.fixture
 def validate_schema() -> Callable[[str, object], None]:
     def validate(name: str, payload: object) -> None:
-        schema = load_schema(name)
-        from jsonschema import Draft202012Validator, FormatChecker
-
-        Draft202012Validator(
-            schema,
-            format_checker=FormatChecker(),
-        ).validate(payload)
+        schema_validator(name).validate(payload)
 
     return validate
 
@@ -39,15 +58,7 @@ def validate_schema() -> Callable[[str, object], None]:
 @pytest.fixture
 def reject_schema() -> Callable[[str, object], None]:
     def reject(name: str, payload: object) -> None:
-        schema = load_schema(name)
-        from jsonschema import Draft202012Validator, FormatChecker
-
-        errors = tuple(
-            Draft202012Validator(
-                schema,
-                format_checker=FormatChecker(),
-            ).iter_errors(payload)
-        )
+        errors = tuple(schema_validator(name).iter_errors(payload))
         assert errors, f"payload unexpectedly matched {name}"
 
     return reject
@@ -627,3 +638,131 @@ def test_daliuren_chart_schema_accepts_only_typed_source_pattern_fields(
         "rule_id"
     ] = "DLR-07"
     reject_schema("views/daliuren-chart-v1.schema.json", forged_old_dlr07)
+
+    forged_non_branch_uppers = copy.deepcopy(payload)
+    for lesson, upper in zip(
+        forged_non_branch_uppers["lessons"],
+        ("A", "B", "C", "A"),
+        strict=True,
+    ):
+        lesson["upper"] = upper
+    reject_schema("views/daliuren-chart-v1.schema.json", forged_non_branch_uppers)
+
+    forged_non_branch_with_dlrs01 = copy.deepcopy(incomplete_four_lessons)
+    for lesson, upper in zip(
+        forged_non_branch_with_dlrs01["lessons"],
+        ("A", "B", "C", "A"),
+        strict=True,
+    ):
+        lesson["upper"] = upper
+    reject_schema("views/daliuren-chart-v1.schema.json", forged_non_branch_with_dlrs01)
+
+
+def _daliuren_reading_document(view_model: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "schema_version": "reading-document/v1",
+        "document_id": "reading-version:daliuren-fixture",
+        "reading_version_id": "reading-version:daliuren-fixture",
+        "accepted_copy_ref": "accepted-copy:1",
+        "product_version": "daliuren-basic/v1",
+        "presentation_contract_version": "daliuren-basic-presentation/v1",
+        "view_model": view_model,
+        "answer_summary": "fixture summary",
+        "subject_summaries": [{"subject_ref": "fixture:probe", "label": "fixture"}],
+        "themes": [],
+        "claims": [],
+        "evidence": [],
+        "boundaries": [],
+        "actions": {
+            "correction": {"enabled": True},
+            "follow_up": {"enabled": True},
+            "export": {"enabled": False},
+            "share": {"enabled": False},
+        },
+        "versions": {
+            "runtime_release": "runtime:v1",
+            "view_model_schema": "daliuren-chart/v1",
+            "reading_document_schema": "reading-document/v1",
+        },
+    }
+
+
+def test_reading_document_daliuren_core_facts_match_chart_schema(
+    validate_schema: Callable[[str, object], None],
+    reject_schema: Callable[[str, object], None],
+) -> None:
+    view_model = {
+        "schema_version": "daliuren-chart/v1",
+        "subject_ref": "fixture:probe",
+        "question": "fixture question",
+        "lessons": [
+            {"lesson_id": "1", "upper": "辰", "lower": "庚"},
+            {"lesson_id": "2", "upper": "子", "lower": "辰"},
+            {"lesson_id": "3", "upper": "辰", "lower": "申"},
+            {"lesson_id": "4", "upper": "子", "lower": "辰"},
+        ],
+        "transmissions": [
+            {"stage": "initial", "branch": "子", "general": "青龙"},
+            {"stage": "middle", "branch": "申", "general": "腾蛇"},
+            {"stage": "final", "branch": "辰", "general": "玄武"},
+        ],
+        "core_facts": {
+            "structural_patterns": ["伏吟"],
+            "source_conditioned_patterns": [
+                {
+                    "rule_id": "DLR-09",
+                    "local_rule_id": "liuren.structural.fuyin",
+                    "title": "伏吟",
+                    "source_pack": "san-shi/daliuren-daquan",
+                    "source_anchor": "fulltext.md#L7696",
+                    "status": "predicate_matched_not_verdict",
+                    "fact_paths": [
+                        "fact:/chart_facts/output/structural_patterns/0"
+                    ],
+                    "predicate_audit": [
+                        "/chart_facts/output/structural_patterns/0:eq:伏吟"
+                    ],
+                    "source_dependency_id": (
+                        "liuren.source-conditioned-structural-patterns-v1"
+                    ),
+                }
+            ],
+        },
+    }
+    validate_schema(
+        "reading-document-v1.schema.json",
+        _daliuren_reading_document(view_model),
+    )
+
+    forged_source = copy.deepcopy(view_model)
+    forged_source["core_facts"]["source_conditioned_patterns"][0][
+        "fact_paths"
+    ] = ["fact:/chart_facts/input/question"]
+    reject_schema(
+        "reading-document-v1.schema.json",
+        _daliuren_reading_document(forged_source),
+    )
+
+    contradictory_provenance = copy.deepcopy(view_model)
+    contradictory_provenance["core_facts"]["source_conditioned_patterns"][0][
+        "local_rule_id"
+    ] = "liuren.structural.fanyin"
+    reject_schema(
+        "reading-document-v1.schema.json",
+        _daliuren_reading_document(contradictory_provenance),
+    )
+
+    unconstrained_object = copy.deepcopy(view_model)
+    unconstrained_object["core_facts"] = {"verdict": "forged"}
+    reject_schema(
+        "reading-document-v1.schema.json",
+        _daliuren_reading_document(unconstrained_object),
+    )
+
+    forged_uppers = copy.deepcopy(view_model)
+    for lesson, upper in zip(forged_uppers["lessons"], ("A", "B", "C", "A"), strict=True):
+        lesson["upper"] = upper
+    reject_schema(
+        "reading-document-v1.schema.json",
+        _daliuren_reading_document(forged_uppers),
+    )

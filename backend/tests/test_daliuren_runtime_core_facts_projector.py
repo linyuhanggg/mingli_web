@@ -11,10 +11,12 @@ import pytest
 from app.charts.contracts import (
     DaliurenChartV1,
     DaliurenCoreFacts,
+    DaliurenLesson,
     DaliurenSourcePattern,
 )
 from app.charts.projectors import project_daliuren_view_model
 from jsonschema import Draft202012Validator
+from pydantic import ValidationError
 
 FIXTURE_PATH = (
     Path(__file__).resolve().parent / "fixtures" / "liuren-runtime-core-facts-v1.json"
@@ -673,6 +675,57 @@ def test_daliuren_structural_patterns_unique_when_source_block_absent(
     with pytest.raises(ValueError, match="structural_patterns must be unique"):
         DaliurenCoreFacts.model_validate(omitted_dump["core_facts"])
     assert list(schema.iter_errors(omitted_dump))
+
+
+def test_daliuren_lesson_uppers_fail_closed_unless_earthly_branches() -> None:
+    schema = _schema_validator()
+    payload = copy.deepcopy(_load_fixture())
+    payload["four_lessons"] = [
+        {"lesson": 1, "upper": "A", "lower": "庚"},
+        {"lesson": 2, "upper": "B", "lower": "辰"},
+        {"lesson": 3, "upper": "C", "lower": "申"},
+        {"lesson": 4, "upper": "A", "lower": "辰"},
+    ]
+    payload["structural_patterns"] = ["四课不备"]
+    payload["source_conditioned_patterns"] = [_source_pattern("四课不备")]
+    payload["source_conditioned_patterns"][0]["fact_paths"] = [
+        "fact:/chart_facts/output/structural_patterns/0",
+        "fact:/chart_facts/output/four_lessons/0/upper",
+        "fact:/chart_facts/output/four_lessons/1/upper",
+        "fact:/chart_facts/output/four_lessons/2/upper",
+        "fact:/chart_facts/output/four_lessons/3/upper",
+    ]
+    payload["source_conditioned_patterns"][0]["predicate_audit"].append(
+        "/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3"
+    )
+
+    assert project_daliuren_view_model(_runtime_core_brief(payload)) is None
+
+    valid_dump = project_daliuren_view_model(
+        _runtime_core_brief(_load_fixture())
+    ).model_dump(mode="json")
+    forged = copy.deepcopy(valid_dump)
+    for lesson, upper in zip(forged["lessons"], ("A", "B", "C", "A"), strict=True):
+        lesson["upper"] = upper
+    with pytest.raises(ValidationError):
+        DaliurenChartV1.model_validate(forged)
+    with pytest.raises(ValidationError):
+        DaliurenLesson.model_validate(
+            {"lesson_id": "1", "upper": "A", "lower": "庚"}
+        )
+    assert list(schema.iter_errors(forged))
+
+    forged_without_source = copy.deepcopy(valid_dump)
+    forged_without_source["core_facts"].pop("source_conditioned_patterns", None)
+    for lesson, upper in zip(
+        forged_without_source["lessons"],
+        ("A", "B", "C", "A"),
+        strict=True,
+    ):
+        lesson["upper"] = upper
+    with pytest.raises(ValidationError):
+        DaliurenChartV1.model_validate(forged_without_source)
+    assert list(schema.iter_errors(forged_without_source))
 
 
 def test_daliuren_projector_fail_closed_without_runtime_core_facts() -> None:

@@ -7,6 +7,7 @@ from typing import Any, Final, Literal, Protocol, cast
 from pydantic import ValidationError
 
 from app.charts.contracts import (
+    DALIUREN_LESSON_UPPERS,
     VIEW_MODEL_TYPES,
     ArtSignal,
     BaziBoundaryTerm,
@@ -5402,13 +5403,15 @@ def _daliuren_lessons_from_runtime(raw_lessons: object) -> tuple[DaliurenLesson,
         lower = raw.get("lower")
         if not isinstance(lesson_id, (str, int)) or isinstance(lesson_id, bool):
             return None
-        if not all(isinstance(item, str) and item.strip() for item in (upper, lower)):
+        if not isinstance(upper, str) or upper not in DALIUREN_LESSON_UPPERS:
+            return None
+        if not isinstance(lower, str) or not lower.strip():
             return None
         lessons.append(
             DaliurenLesson(
                 lesson_id=str(lesson_id),
-                upper=cast(str, upper),
-                lower=cast(str, lower),
+                upper=upper,
+                lower=lower,
             )
         )
     if len(lessons) != 4:
@@ -5545,7 +5548,7 @@ def _daliuren_source_conditioned_patterns(
                 if not isinstance(lesson, Mapping):
                     return None
                 upper = cast(object, lesson.get("upper"))
-                if not isinstance(upper, str) or not upper.strip():
+                if not isinstance(upper, str) or upper not in DALIUREN_LESSON_UPPERS:
                     return None
                 lesson_uppers.add(upper)
             if len(lesson_uppers) != 3:

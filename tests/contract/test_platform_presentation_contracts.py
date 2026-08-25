@@ -1,5 +1,6 @@
 import copy
 import json
+from functools import lru_cache
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,7 @@ from app.readings.presentation import (
 )
 from jsonschema import Draft202012Validator
 from pydantic import ValidationError
+from referencing import Registry, Resource
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_ROOT = ROOT / "contracts" / "schemas"
@@ -41,12 +43,28 @@ VIEW_SCHEMAS = (
 )
 
 
+@lru_cache(maxsize=1)
+def _schema_registry() -> Registry:
+    resources: list[tuple[str, Resource[object]]] = []
+    for path in SCHEMA_ROOT.rglob("*.json"):
+        with path.open(encoding="utf-8") as stream:
+            contents = json.load(stream)
+        schema_id = contents.get("$id")
+        if isinstance(schema_id, str) and schema_id:
+            resources.append((schema_id, Resource.from_contents(contents)))
+    return Registry().with_resources(resources)
+
+
 def _schema(path: Path) -> dict[str, object]:
     assert path.is_file(), f"missing frozen contract: {path}"
     with path.open(encoding="utf-8") as stream:
         schema = json.load(stream)
     Draft202012Validator.check_schema(schema)
     return schema
+
+
+def _draft_validator(schema: dict[str, object]) -> Draft202012Validator:
+    return Draft202012Validator(schema, registry=_schema_registry())
 
 
 def _bazi_payload() -> dict[str, object]:
@@ -510,11 +528,11 @@ def test_view_models_reject_missing_layer_reasons_duplicate_subjects_and_arts() 
 def test_reading_document_is_closed_and_embeds_only_known_view_models() -> None:
     schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
     payload = _reading_document_payload()
-    Draft202012Validator(schema).validate(payload)
+    _draft_validator(schema).validate(payload)
 
     unknown = copy.deepcopy(payload)
     unknown["raw"] = {"provider_payload": True}
-    assert tuple(Draft202012Validator(schema).iter_errors(unknown))
+    assert tuple(_draft_validator(schema).iter_errors(unknown))
 
     unknown_view = copy.deepcopy(payload)
     unknown_view["view_model"]["schema_version"] = "unknown-view/v1"
@@ -528,12 +546,12 @@ def test_bazi_calendar_g3_fields_are_shared_by_view_and_document_schemas() -> No
     view_payload["core_facts"] = {"calendar_normalization": calendar}
 
     view_schema = _schema(SCHEMA_ROOT / "views" / "bazi-chart-v1.schema.json")
-    Draft202012Validator(view_schema).validate(view_payload)
+    _draft_validator(view_schema).validate(view_payload)
 
     document_payload = _reading_document_payload()
     document_payload["view_model"] = view_payload
     document_schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
-    Draft202012Validator(document_schema).validate(document_payload)
+    _draft_validator(document_schema).validate(document_payload)
     document = ReadingDocumentV1.model_validate(document_payload)
     assert document.view_model.core_facts is not None
     normalized = document.view_model.core_facts.calendar_normalization
@@ -547,7 +565,7 @@ def test_bazi_calendar_g3_fields_are_shared_by_view_and_document_schemas() -> No
     invalid["view_model"]["core_facts"]["calendar_normalization"][
         "changed_pillars"
     ] = ["day", "week"]
-    assert tuple(Draft202012Validator(document_schema).iter_errors(invalid))
+    assert tuple(_draft_validator(document_schema).iter_errors(invalid))
 
 
 def test_fortune_calendar_additive_fields_are_typed_in_view_and_document() -> None:
@@ -555,13 +573,13 @@ def test_fortune_calendar_additive_fields_are_typed_in_view_and_document() -> No
     view_schema = _schema(
         SCHEMA_ROOT / "views" / "fortune-facts-view-v1.schema.json"
     )
-    Draft202012Validator(view_schema).validate(view_payload)
+    _draft_validator(view_schema).validate(view_payload)
 
     document_payload = _reading_document_payload()
     document_payload["view_model"] = view_payload
     document_payload["versions"]["view_model_schema"] = "fortune-facts-view/v1"
     document_schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
-    Draft202012Validator(document_schema).validate(document_payload)
+    _draft_validator(document_schema).validate(document_payload)
     document = ReadingDocumentV1.model_validate(document_payload)
     normalized = document.view_model.calendar_normalization
     assert normalized.effective_datetime == "1985-03-01T23:33:00+08:00"
@@ -574,7 +592,7 @@ def test_fortune_calendar_additive_fields_are_typed_in_view_and_document() -> No
     invalid["view_model"]["calendar_normalization"]["solar_terms"][
         "raw_runtime_payload"
     ] = {}
-    assert tuple(Draft202012Validator(document_schema).iter_errors(invalid))
+    assert tuple(_draft_validator(document_schema).iter_errors(invalid))
     with pytest.raises(ValidationError):
         ReadingDocumentV1.model_validate(invalid)
 
@@ -586,7 +604,7 @@ def test_reading_document_accepts_strict_interpretive_candidates(
     schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
     payload = _reading_document_with_candidates(view_kind)
 
-    Draft202012Validator(schema).validate(payload)
+    _draft_validator(schema).validate(payload)
 
 
 @pytest.mark.parametrize("view_kind", ["bazi", "five_elements"])
@@ -609,7 +627,7 @@ def test_reading_document_rejects_invalid_interpretive_candidates(
     else:
         candidates["unexpected"] = True
 
-    assert tuple(Draft202012Validator(schema).iter_errors(payload))
+    assert tuple(_draft_validator(schema).iter_errors(payload))
 
 
 @pytest.mark.parametrize(
@@ -841,7 +859,7 @@ def test_reading_document_accepts_the_recent_art_view_models(
         **payload["versions"],
         "view_model_schema": schema_version,
     }
-    Draft202012Validator(schema).validate(payload)
+    _draft_validator(schema).validate(payload)
     document = ReadingDocumentV1.model_validate(payload)
     assert document.view_model.schema_version == schema_version
 
@@ -849,7 +867,7 @@ def test_reading_document_accepts_the_recent_art_view_models(
 def test_reading_document_accepts_qizheng_provenance_fields() -> None:
     payload = _qizheng_reading_document_payload()
     schema = _schema(SCHEMA_ROOT / "reading-document-v1.schema.json")
-    Draft202012Validator(schema).validate(payload)
+    _draft_validator(schema).validate(payload)
     document = ReadingDocumentV1.model_validate(payload)
     assert document.view_model.schema_version == "qizheng-chart/v1"
     assert document.view_model.core_facts is not None

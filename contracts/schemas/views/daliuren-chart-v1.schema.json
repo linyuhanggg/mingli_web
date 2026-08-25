@@ -19,7 +19,9 @@
         "required": ["lesson_id", "upper", "lower"],
         "properties": {
           "lesson_id": {"type": "string", "minLength": 1},
-          "upper": {"type": "string", "minLength": 1},
+          "upper": {
+            "enum": ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+          },
           "lower": {"type": "string", "minLength": 1}
         }
       }

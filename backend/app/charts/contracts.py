@@ -1949,9 +1949,28 @@ class QimenChartV1(ContractModel):
     named_patterns: tuple[QimenNamedPattern, ...]
 
 
+DaliurenLessonUpper = Literal[
+    "子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"
+]
+DALIUREN_LESSON_UPPERS: tuple[DaliurenLessonUpper, ...] = (
+    "子",
+    "丑",
+    "寅",
+    "卯",
+    "辰",
+    "巳",
+    "午",
+    "未",
+    "申",
+    "酉",
+    "戌",
+    "亥",
+)
+
+
 class DaliurenLesson(ContractModel):
     lesson_id: str = Field(min_length=1)
-    upper: str = Field(min_length=1)
+    upper: DaliurenLessonUpper
     lower: str = Field(min_length=1)
 
 
@@ -2437,20 +2456,7 @@ _DALIUREN_REQUESTED_TO_CANONICAL = {
     "career": "work",
     "money": "money",
 }
-_DALIUREN_EARTH_PLATE_ORDER = (
-    "子",
-    "丑",
-    "寅",
-    "卯",
-    "辰",
-    "巳",
-    "午",
-    "未",
-    "申",
-    "酉",
-    "戌",
-    "亥",
-)
+_DALIUREN_EARTH_PLATE_ORDER = DALIUREN_LESSON_UPPERS
 
 
 class DaliurenDimensionFact(ContractModel):
