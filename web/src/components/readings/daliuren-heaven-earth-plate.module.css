@@ -28,44 +28,63 @@
 }
 
 .ring {
+  --earth-radius: 22%;
+  --heaven-radius: 33%;
+  --general-radius: 44%;
+  --badge-radius: 12%;
   display: none;
   position: relative;
-  width: min(100%, 22rem);
+  width: min(100%, 36rem);
   aspect-ratio: 1;
   margin: 0 auto;
   padding: 0;
+  overflow: hidden;
+  isolation: isolate;
   list-style: none;
 }
 
 .spoke {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  display: grid;
-  justify-items: center;
-  gap: 0.15rem;
-  min-width: 1.75rem;
-  min-height: var(--target-min);
+  inset: 0;
+  display: block;
   margin: 0;
-  transform: rotate(calc(var(--spoke) * 30deg)) translateY(-7.2rem)
-    rotate(calc(var(--spoke) * -30deg));
-  transform-origin: center;
+  pointer-events: none;
+}
+
+.earth,
+.heaven,
+.general {
+  position: absolute;
+  display: inline-flex;
+  box-sizing: border-box;
+  width: var(--target-min);
+  height: var(--target-min);
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
 }
 
 .earth {
+  left: calc(50% + sin(calc(var(--spoke) * 30deg)) * var(--earth-radius));
+  top: calc(50% - cos(calc(var(--spoke) * 30deg)) * var(--earth-radius));
   font-family: var(--font-domain);
   font-size: var(--font-size-label);
+}
+
+.heaven {
+  left: calc(50% + sin(calc(var(--spoke) * 30deg)) * var(--heaven-radius));
+  top: calc(50% - cos(calc(var(--spoke) * 30deg)) * var(--heaven-radius));
+}
+
+.general {
+  left: calc(50% + sin(calc(var(--spoke) * 30deg)) * var(--general-radius));
+  top: calc(50% - cos(calc(var(--spoke) * 30deg)) * var(--general-radius));
 }
 
 .heaven,
 .general {
   color: var(--color-text-secondary);
   font-size: var(--font-size-meta);
-}
-
-.spoke[data-active="true"] {
-  background: var(--color-surface-muted);
-  font-weight: 700;
 }
 
 .earth[data-active="true"],
@@ -79,13 +98,19 @@
 .earth[role="presentation"],
 .heaven[role="presentation"],
 .general[role="presentation"] {
-  display: inline-flex;
   min-width: var(--target-min);
   min-height: var(--target-min);
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
   cursor: pointer;
+  pointer-events: auto;
+}
+
+.spoke > .timingBadge,
+.spoke > .voidBadge {
+  position: absolute;
+  left: calc(50% + sin(calc(var(--spoke) * 30deg)) * var(--badge-radius));
+  top: calc(50% - cos(calc(var(--spoke) * 30deg)) * var(--badge-radius));
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
 .spoke[data-noble="true"] .earth,

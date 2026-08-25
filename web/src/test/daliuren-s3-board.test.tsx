@@ -802,9 +802,11 @@ describe("大六壬 S3 M4 天地盘", () => {
     expect(panel).toHaveAttribute("data-offset", "3");
     expect(visualRing).not.toHaveStyle("--plate-offset: 3");
     expect(earthZi).toHaveStyle("--spoke: 0");
-    expect(plateCss()).toMatch(
-      /transform:\s*rotate\(calc\(var\(--spoke\) \* 30deg\)\) translateY\(-7\.2rem\)\s*rotate\(calc\(var\(--spoke\) \* -30deg\)\)/s,
-    );
+    expect(plateCss()).toMatch(/--earth-radius:\s*22%/);
+    expect(plateCss()).toMatch(/--heaven-radius:\s*33%/);
+    expect(plateCss()).toMatch(/--general-radius:\s*44%/);
+    expect(plateCss()).toMatch(/sin\(calc\(var\(--spoke\) \* 30deg\)\)/);
+    expect(plateCss()).not.toMatch(/translateY\(-7\.2rem\)/);
     expect(plateCss()).not.toContain("--plate-offset");
 
     rerender(<DaliurenBoard view={plate({ plate_offset: null })} />);
@@ -4191,7 +4193,14 @@ describe("大六壬 S3 天地盘旬空角标", () => {
     const pointerRule =
       /\.earth\[role="presentation"\],\s*\.heaven\[role="presentation"\],\s*\.general\[role="presentation"\]\s*\{[^}]*min-width:\s*var\(--target-min\);[^}]*min-height:\s*var\(--target-min\);/s;
     expect(css).toMatch(pointerRule);
-    expect(css).toMatch(/\.spoke\s*\{[^}]*min-height:\s*var\(--target-min\)/s);
+    expect(css).toMatch(/\.spoke\s*\{[^}]*pointer-events:\s*none/s);
+    expect(css).toMatch(/\.ring\s*\{[^}]*overflow:\s*hidden/s);
+    expect(css).toMatch(/--earth-radius:\s*22%/);
+    expect(css).toMatch(/--heaven-radius:\s*33%/);
+    expect(css).toMatch(/--general-radius:\s*44%/);
+    expect(css).toMatch(/sin\(calc\(var\(--spoke\) \* 30deg\)\)/);
+    expect(css).not.toMatch(/translateY\(-7\.2rem\)/);
+    expect(css).not.toMatch(/\.spoke\s*\{[^}]*min-height:\s*var\(--target-min\)/s);
 
     document.documentElement.style.setProperty("--target-min", "44px");
     for (const fact of [ringEarth, ringHeaven, ringGeneral]) {
