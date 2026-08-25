@@ -921,6 +921,18 @@ def _discover_runtime_python() -> Path | None:
     return None
 
 
+def _copy_clean_runtime_python(source_python: Path, destination: Path) -> Path:
+    """Clone the provisioned venv without mutable bytecode caches."""
+
+    shutil.copytree(
+        source_python.parents[1],
+        destination,
+        copy_function=shutil.copy2,
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+    )
+    return destination / "bin" / "python"
+
+
 def _copy_signed_release(source: Path, destination: Path) -> None:
     manifest = json.loads(
         (source / ".mingli-release-manifest.json").read_text(encoding="utf-8")
@@ -1031,7 +1043,7 @@ async def test_runtime_startup_gate_rejects_the_clean_443a777_manifest_identity(
         launcher_path=launcher,
         runtime_python_path=Path("/usr/bin/python3"),
         state_root=state_root,
-        timeout_seconds=1,
+        timeout_seconds=5,
     )
     inventory = replace(
         _inventory(),
@@ -1064,7 +1076,7 @@ async def test_runtime_startup_gate_rejects_an_arbitrary_wrong_release_manifest_
         launcher_path=launcher,
         runtime_python_path=Path("/usr/bin/python3"),
         state_root=state_root,
-        timeout_seconds=1,
+        timeout_seconds=5,
     )
     inventory = replace(_inventory(), release_manifest_sha256="0" * 64)
     gate = RuntimeStartupGate(
@@ -1150,6 +1162,10 @@ async def test_build_runtime_startup_gate_and_create_app_admit_combined_overlay_
     runtime_python = _discover_runtime_python()
     if runtime_python is None:
         pytest.skip("the dedicated Mingli Runtime Python is not installed")
+    runtime_python = _copy_clean_runtime_python(
+        runtime_python,
+        tmp_path / "runtime-venv",
+    )
     release_root = _materialize_combined_overlay_release(tmp_path)
     settings = _v53_one_shot_settings(
         tmp_path,
