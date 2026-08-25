@@ -1,0 +1,347 @@
+{
+  "runtime_startup_ms": 1408.298,
+  "runtime_admission": "candidate_remanifested",
+  "runtime_identity": {
+    "release_name": "mingli-master-portable-core",
+    "source_commit": "443a777384975b05e50a6d969e3cab5da7a3119a",
+    "describe_manifest_digest": "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22",
+    "release_manifest_sha256": "bb9135594589f7e7d9ab2bbbdb9bd7dd0416a614ed8b65a9d0ffc8aa679acd2b",
+    "capability_shape_sha256": "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af",
+    "overlay": {
+      "bazi_calc_path": "scripts/bazi_calc.py",
+      "bazi_calc_sha256": "ab35fbf511693d47487aa0601bdba32d13a44cf988888b90c085d6573027249a",
+      "replaced_bazi_calc_sha256": "177f5ad837d59bf5551565d1dd6f9f2249002a9fa3d86fd909909490eb87b477",
+      "release_name": "mingli-master-portable-core",
+      "source_commit": "443a777384975b05e50a6d969e3cab5da7a3119a",
+      "release_manifest_sha256": "bb9135594589f7e7d9ab2bbbdb9bd7dd0416a614ed8b65a9d0ffc8aa679acd2b",
+      "file_count": "222",
+      "diff": "scripts/bazi_calc.py only"
+    }
+  },
+  "hot_sample_count_per_product": 30,
+  "cold_definition": "first product-specific request after Runtime admission",
+  "hot_definition": "subsequent request with admitted server and warm filesystem cache",
+  "first_paint_note": "first_renderable_response_ms is the backend boundary; browser layout/paint requires user-test instrumentation",
+  "products": {
+    "bazi": {
+      "cold_ms": {
+        "post_ms": 717.132,
+        "api_orchestration_ms": 16.185,
+        "queue_wait_ms": 0.0,
+        "worker_pickup_ms": 0.0,
+        "runtime_one_shot_ms": 653.743,
+        "db_persistence_ms": 7.336,
+        "first_ready_poll_ms": 12.428,
+        "result_fetch_ms": 48.666,
+        "first_renderable_response_ms": 717.132
+      },
+      "hot_attempt_count": 30,
+      "hot_success_count": 30,
+      "hot_error_count": 0,
+      "hot_errors": [],
+      "hot_ms": {
+        "post_ms": {
+          "p50": 663.388,
+          "p95": 678.808,
+          "p99": 707.091
+        },
+        "api_orchestration_ms": {
+          "p50": 13.419,
+          "p95": 14.24,
+          "p99": 14.347
+        },
+        "queue_wait_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "worker_pickup_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "runtime_one_shot_ms": {
+          "p50": 641.595,
+          "p95": 657.798,
+          "p99": 685.556
+        },
+        "db_persistence_ms": {
+          "p50": 5.528,
+          "p95": 6.335,
+          "p99": 6.594
+        },
+        "first_ready_poll_ms": {
+          "p50": 11.797,
+          "p95": 12.354,
+          "p99": 12.382
+        },
+        "result_fetch_ms": {
+          "p50": 17.818,
+          "p95": 46.416,
+          "p99": 46.52
+        },
+        "first_renderable_response_ms": {
+          "p50": 663.388,
+          "p95": 678.808,
+          "p99": 707.091
+        }
+      }
+    },
+    "ziwei": {
+      "cold_ms": {
+        "post_ms": 745.337,
+        "api_orchestration_ms": 12.455,
+        "queue_wait_ms": 0.0,
+        "worker_pickup_ms": 0.0,
+        "runtime_one_shot_ms": 723.168,
+        "db_persistence_ms": 6.909,
+        "first_ready_poll_ms": 11.223,
+        "result_fetch_ms": 47.402,
+        "first_renderable_response_ms": 745.337
+      },
+      "hot_attempt_count": 30,
+      "hot_success_count": 30,
+      "hot_error_count": 0,
+      "hot_errors": [],
+      "hot_ms": {
+        "post_ms": {
+          "p50": 747.867,
+          "p95": 774.667,
+          "p99": 783.771
+        },
+        "api_orchestration_ms": {
+          "p50": 12.544,
+          "p95": 13.615,
+          "p99": 13.849
+        },
+        "queue_wait_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "worker_pickup_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "runtime_one_shot_ms": {
+          "p50": 726.161,
+          "p95": 753.893,
+          "p99": 761.57
+        },
+        "db_persistence_ms": {
+          "p50": 6.498,
+          "p95": 10.501,
+          "p99": 11.395
+        },
+        "first_ready_poll_ms": {
+          "p50": 11.244,
+          "p95": 39.127,
+          "p99": 40.013
+        },
+        "result_fetch_ms": {
+          "p50": 17.877,
+          "p95": 19.624,
+          "p99": 48.3
+        },
+        "first_renderable_response_ms": {
+          "p50": 747.867,
+          "p95": 774.667,
+          "p99": 783.771
+        }
+      }
+    },
+    "liuyao": {
+      "cold_ms": {
+        "post_ms": 673.515,
+        "api_orchestration_ms": 12.373,
+        "queue_wait_ms": 0.0,
+        "worker_pickup_ms": 0.0,
+        "runtime_one_shot_ms": 652.576,
+        "db_persistence_ms": 5.703,
+        "first_ready_poll_ms": 11.346,
+        "result_fetch_ms": 17.571,
+        "first_renderable_response_ms": 673.515
+      },
+      "hot_attempt_count": 30,
+      "hot_success_count": 30,
+      "hot_error_count": 0,
+      "hot_errors": [],
+      "hot_ms": {
+        "post_ms": {
+          "p50": 679.003,
+          "p95": 754.701,
+          "p99": 783.81
+        },
+        "api_orchestration_ms": {
+          "p50": 12.239,
+          "p95": 17.23,
+          "p99": 21.527
+        },
+        "queue_wait_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "worker_pickup_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "runtime_one_shot_ms": {
+          "p50": 653.443,
+          "p95": 708.17,
+          "p99": 709.995
+        },
+        "db_persistence_ms": {
+          "p50": 9.068,
+          "p95": 44.648,
+          "p99": 58.844
+        },
+        "first_ready_poll_ms": {
+          "p50": 11.154,
+          "p95": 43.882,
+          "p99": 45.458
+        },
+        "result_fetch_ms": {
+          "p50": 17.853,
+          "p95": 46.545,
+          "p99": 47.364
+        },
+        "first_renderable_response_ms": {
+          "p50": 679.003,
+          "p95": 754.701,
+          "p99": 783.81
+        }
+      }
+    },
+    "meihua": {
+      "cold_ms": {
+        "post_ms": 673.648,
+        "api_orchestration_ms": 18.499,
+        "queue_wait_ms": 0.0,
+        "worker_pickup_ms": 0.0,
+        "runtime_one_shot_ms": 648.364,
+        "db_persistence_ms": 4.529,
+        "first_ready_poll_ms": 8.993,
+        "result_fetch_ms": 15.73,
+        "first_renderable_response_ms": 673.648
+      },
+      "hot_attempt_count": 30,
+      "hot_success_count": 30,
+      "hot_error_count": 0,
+      "hot_errors": [],
+      "hot_ms": {
+        "post_ms": {
+          "p50": 642.41,
+          "p95": 677.611,
+          "p99": 681.407
+        },
+        "api_orchestration_ms": {
+          "p50": 10.316,
+          "p95": 17.397,
+          "p99": 18.763
+        },
+        "queue_wait_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "worker_pickup_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "runtime_one_shot_ms": {
+          "p50": 620.054,
+          "p95": 644.063,
+          "p99": 646.326
+        },
+        "db_persistence_ms": {
+          "p50": 5.22,
+          "p95": 27.721,
+          "p99": 32.15
+        },
+        "first_ready_poll_ms": {
+          "p50": 9.014,
+          "p95": 9.593,
+          "p99": 10.264
+        },
+        "result_fetch_ms": {
+          "p50": 16.023,
+          "p95": 44.216,
+          "p99": 44.432
+        },
+        "first_renderable_response_ms": {
+          "p50": 642.41,
+          "p95": 677.611,
+          "p99": 681.407
+        }
+      }
+    },
+    "daliuren": {
+      "cold_ms": {
+        "post_ms": 1089.575,
+        "api_orchestration_ms": 8.763,
+        "queue_wait_ms": 0.0,
+        "worker_pickup_ms": 0.0,
+        "runtime_one_shot_ms": 1067.781,
+        "db_persistence_ms": 10.758,
+        "first_ready_poll_ms": 7.413,
+        "result_fetch_ms": 14.977,
+        "first_renderable_response_ms": 1089.575
+      },
+      "hot_attempt_count": 30,
+      "hot_success_count": 30,
+      "hot_error_count": 0,
+      "hot_errors": [],
+      "hot_ms": {
+        "post_ms": {
+          "p50": 1084.642,
+          "p95": 1119.405,
+          "p99": 1153.868
+        },
+        "api_orchestration_ms": {
+          "p50": 8.84,
+          "p95": 12.333,
+          "p99": 16.294
+        },
+        "queue_wait_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "worker_pickup_ms": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "runtime_one_shot_ms": {
+          "p50": 1066.595,
+          "p95": 1089.462,
+          "p99": 1095.855
+        },
+        "db_persistence_ms": {
+          "p50": 5.201,
+          "p95": 18.151,
+          "p99": 76.207
+        },
+        "first_ready_poll_ms": {
+          "p50": 7.511,
+          "p95": 7.696,
+          "p99": 7.71
+        },
+        "result_fetch_ms": {
+          "p50": 15.145,
+          "p95": 43.961,
+          "p99": 66.028
+        },
+        "first_renderable_response_ms": {
+          "p50": 1084.642,
+          "p95": 1119.405,
+          "p99": 1153.868
+        }
+      }
+    }
+  }
+}
