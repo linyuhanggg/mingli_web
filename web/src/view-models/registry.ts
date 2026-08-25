@@ -1049,6 +1049,9 @@ export type DaliurenDimensionFact = Readonly<{
   readonly rule_evidence: DaliurenRuleEvidence;
   readonly status?: "calculated_facts_not_verdict";
   readonly source_rule_ids?: ReadonlyArray<string>;
+  readonly general_landing_correspondences?: ReadonlyArray<
+    DaliurenGeneralLandingCorrespondence | DaliurenGeneralLandingUnavailableCorrespondence
+  >;
   readonly stage_branch_directions?: DaliurenLocationObservation["stage_branch_directions"];
   readonly relative_speed?: DaliurenRelativeSpeed | null;
   readonly candidate_branch?: DaliurenCandidateBranch | null;

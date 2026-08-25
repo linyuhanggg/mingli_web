@@ -1226,6 +1226,192 @@ describe("大六壬 S3 M6a 维度证据", () => {
     expect(block).not.toHaveTextContent(/吉凶|成败|大吉|大凶|hard_verdict/);
   });
 
+  it("merges exact and unavailable top-level state correspondences in Runtime order", () => {
+    const initial = {
+      stage: "initial",
+      heavenly_general: "勾陈",
+      landing_branch: "辰",
+      source_pack: "san-shi/liuren-miben",
+      source_rule: "LM-R01",
+      role: "imagery_correspondence_not_observed_activity",
+      status: "source_correspondence_matched",
+      source_text: "勾陈临辰",
+      source_anchor: "fulltext.md#L10",
+    };
+    const final = {
+      ...initial,
+      stage: "final",
+      heavenly_general: "白虎",
+      landing_branch: "亥",
+      source_text: "白虎临亥",
+      source_anchor: "fulltext.md#L12",
+    };
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            state: dimension({
+              canonical_dimension: "state",
+              requested_dimension: "state",
+              status: "calculated_facts_not_verdict",
+              source_rule_ids: ["LM-R01", "LR-09"],
+              stage_status: [],
+              general_landing_correspondences: [
+                initial,
+                {
+                  stage: "middle",
+                  heavenly_general: "天空",
+                  landing_branch: "酉",
+                  source_pack: "san-shi/liuren-miben",
+                  source_rule: "LM-R01",
+                  role: "imagery_correspondence_not_observed_activity",
+                  status: "no_exact_source_correspondence",
+                },
+                final,
+              ],
+              rule_evidence: evidence({
+                matched: [
+                  matchedEntry({
+                    rule_id: "LM-R01",
+                    observation: {
+                      matched_count: 2,
+                      stages: ["initial", "final"],
+                      correspondences: [initial, final],
+                    },
+                  }),
+                ],
+              }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    const state = within(panel()).getByRole("group", { name: "状态" });
+    expect(state).toHaveTextContent(
+      "天将落地类象：初传 勾陈落辰、中传 天空落酉（缺少精确类象来源）、末传 白虎落亥 · 共 3 条",
+    );
+    expect(state).not.toHaveTextContent(/no_exact_source_correspondence|source_correspondence_matched|hard_verdict|吉凶|成败/);
+  });
+
+  it("renders an all-unavailable state group as a neutral source boundary", () => {
+    const unavailable = (stage: "initial" | "middle" | "final", branch: string) => ({
+      stage,
+      heavenly_general: "天空",
+      landing_branch: branch,
+      source_pack: "san-shi/liuren-miben",
+      source_rule: "LM-R01",
+      role: "imagery_correspondence_not_observed_activity",
+      status: "no_exact_source_correspondence",
+    });
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            state: dimension({
+              canonical_dimension: "state",
+              requested_dimension: "state",
+              status: "calculated_facts_not_verdict",
+              source_rule_ids: ["LR-09"],
+              stage_status: [],
+              general_landing_correspondences: [
+                unavailable("initial", "酉"),
+                unavailable("middle", "戌"),
+                unavailable("final", "亥"),
+              ],
+              rule_evidence: evidence({ matched: [], status: "not_bound" }),
+            }),
+          }),
+        })}
+      />,
+    );
+
+    const state = within(panel()).getByRole("group", { name: "状态" });
+    expect(state).toHaveTextContent(
+      "天将落地类象：初传 天空落酉（缺少精确类象来源）、中传 天空落戌（缺少精确类象来源）、末传 天空落亥（缺少精确类象来源） · 共 3 条",
+    );
+    expect(state).not.toHaveTextContent(/no_exact_source_correspondence|hard_verdict|吉凶|成败|保证/);
+  });
+
+  it("fails the whole state group closed for unknown statuses, extra fields or matched drift", () => {
+    const exact = {
+      stage: "initial",
+      heavenly_general: "勾陈",
+      landing_branch: "辰",
+      source_pack: "san-shi/liuren-miben",
+      source_rule: "LM-R01",
+      role: "imagery_correspondence_not_observed_activity",
+      status: "source_correspondence_matched",
+      source_text: "勾陈临辰",
+      source_anchor: "fulltext.md#L10",
+    };
+    const unavailable = (stage: "middle" | "final", branch: string) => ({
+      stage,
+      heavenly_general: "天空",
+      landing_branch: branch,
+      source_pack: "san-shi/liuren-miben",
+      source_rule: "LM-R01",
+      role: "imagery_correspondence_not_observed_activity",
+      status: "no_exact_source_correspondence",
+    });
+    const topLevelState = (rows: readonly unknown[], ruleEvidence: Record<string, unknown>) =>
+      dimension({
+        canonical_dimension: "state",
+        requested_dimension: "state",
+        status: "calculated_facts_not_verdict",
+        source_rule_ids: ["LM-R01", "LR-09"],
+        stage_status: [],
+        general_landing_correspondences: rows,
+        rule_evidence: ruleEvidence,
+      });
+    const matched = evidence({
+      matched: [
+        matchedEntry({
+          rule_id: "LM-R01",
+          observation: {
+            matched_count: 1,
+            stages: ["initial"],
+            correspondences: [exact],
+          },
+        }),
+      ],
+    });
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            unknown_status: topLevelState(
+              [exact, { ...unavailable("middle", "酉"), status: "future_status" }, unavailable("final", "亥")],
+              matched,
+            ),
+            extra_field: topLevelState(
+              [exact, { ...unavailable("middle", "酉"), raw_dump: "不得展示额外字段" }, unavailable("final", "亥")],
+              matched,
+            ),
+            matched_drift: topLevelState(
+              [exact, unavailable("middle", "酉"), unavailable("final", "亥")],
+              evidence({
+                matched: [
+                  matchedEntry({
+                    rule_id: "LM-R01",
+                    observation: {
+                      matched_count: 1,
+                      stages: ["initial"],
+                      correspondences: [{ ...exact, landing_branch: "巳" }],
+                    },
+                  }),
+                ],
+              }),
+            ),
+          }),
+        })}
+      />,
+    );
+
+    expect(screen.queryByRole("region", { name: "维度证据" })).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/future_status|不得展示额外字段|天将落地类象|raw_dump/);
+  });
+
   it("renders the Runtime location shape as neutral symbolic direction candidates with source boundaries", async () => {
     const user = userEvent.setup();
     render(

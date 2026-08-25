@@ -5,6 +5,7 @@ import type {
   DaliurenCompassDirection,
   DaliurenDimensionObservationMap,
   DaliurenGeneralLandingCorrespondence,
+  DaliurenGeneralLandingUnavailableCorrespondence,
   DaliurenLocationObservation,
   DaliurenMiddleVoidObservation,
   DaliurenMoneyObservation,
@@ -33,6 +34,9 @@ type WorkStrength = DaliurenWorkPresentObservation["target_strength"][number];
 type WorkGeneralModifier = DaliurenWorkPresentObservation["target_general_modifier"][number];
 type LocationDirection = DaliurenLocationObservation["stage_branch_directions"][number];
 type DaliurenDimensionId = keyof DaliurenDimensionObservationMap;
+type GeneralLandingCorrespondence =
+  | DaliurenGeneralLandingCorrespondence
+  | DaliurenGeneralLandingUnavailableCorrespondence;
 
 export type DaliurenDimensionEvidenceProps = {
   dimensionFacts?: CoreFacts["dimension_facts"];
@@ -115,6 +119,15 @@ const WEALTH_STAGE_KEYS = ["stage", "branch", "six_relative", "season_strength"]
 const WEALTH_VOID_KEYS = ["wealth_void_rows"] as const;
 const WEALTH_VOID_ROW_KEYS = ["stage", "branch", "six_relative", "is_xunkong"] as const;
 const STATE_OBSERVATION_KEYS = ["matched_count", "stages", "correspondences"] as const;
+const STATE_DIMENSION_KEYS = [
+  "canonical_dimension",
+  "requested_dimension",
+  "status",
+  "source_rule_ids",
+  "rule_evidence",
+  "stage_status",
+  "general_landing_correspondences",
+] as const;
 const GENERAL_LANDING_KEYS = [
   "stage",
   "heavenly_general",
@@ -543,6 +556,21 @@ function isGeneralLandingCorrespondence(value: unknown): value is DaliurenGenera
   );
 }
 
+function isGeneralLandingUnavailableCorrespondence(
+  value: unknown,
+): value is DaliurenGeneralLandingUnavailableCorrespondence {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, GENERAL_LANDING_UNAVAILABLE_KEYS) &&
+    hasGeneralLandingBaseFields(value) &&
+    value.status === "no_exact_source_correspondence"
+  );
+}
+
+function isGeneralLandingRow(value: unknown): value is GeneralLandingCorrespondence {
+  return isGeneralLandingCorrespondence(value) || isGeneralLandingUnavailableCorrespondence(value);
+}
+
 function isStateObservation(value: unknown): value is DaliurenStateObservation {
   if (!isRecord(value) || !hasExactKeys(value, STATE_OBSERVATION_KEYS)) return false;
   const stages = value.stages;
@@ -569,6 +597,81 @@ function stateFact(value: unknown): string | null {
     .map((row) => `${STAGE_FACTS[row.stage]} ${row.heavenly_general}落${row.landing_branch}`)
     .join("、");
   return `天将落地类象：${rows} · 共 ${value.matched_count} 条`;
+}
+
+function sameGeneralLandingCorrespondence(
+  left: DaliurenGeneralLandingCorrespondence,
+  right: DaliurenGeneralLandingCorrespondence,
+): boolean {
+  return (
+    left.stage === right.stage &&
+    left.heavenly_general === right.heavenly_general &&
+    left.landing_branch === right.landing_branch &&
+    left.source_pack === right.source_pack &&
+    left.source_rule === right.source_rule &&
+    left.role === right.role &&
+    left.status === right.status &&
+    left.source_text === right.source_text &&
+    left.source_anchor === right.source_anchor
+  );
+}
+
+function parseTopLevelStateFact(
+  value: Record<string, unknown>,
+  evidence: Record<string, unknown>,
+): EvidenceEntry | null {
+  const rows = value.general_landing_correspondences;
+  if (
+    !hasExactKeys(value, STATE_DIMENSION_KEYS) ||
+    value.status !== "calculated_facts_not_verdict" ||
+    !Array.isArray(value.source_rule_ids) ||
+    !value.source_rule_ids.every((ruleId) => typeof ruleId === "string" && Boolean(ruleId.trim())) ||
+    !Array.isArray(rows) ||
+    rows.length !== LOCATION_STAGES.length ||
+    !rows.every(isGeneralLandingRow) ||
+    !LOCATION_STAGES.every((stage, index) => rows[index]?.stage === stage) ||
+    !Array.isArray(evidence.matched) ||
+    !isEmptyArray(evidence.scope_boundaries)
+  ) {
+    return null;
+  }
+
+  const exactRows = rows.filter(isGeneralLandingCorrespondence);
+  let sources: readonly EvidenceSource[] = [];
+  if (exactRows.length) {
+    if (evidence.matched.length !== 1) return null;
+    const matchedEntry = parseEntry(evidence.matched[0], "state");
+    const matchedObservation = isRecord(evidence.matched[0])
+      ? evidence.matched[0].observation
+      : null;
+    if (
+      !matchedEntry ||
+      matchedEntry.marker !== "LM-R01" ||
+      !isStateObservation(matchedObservation) ||
+      matchedObservation.correspondences.length !== exactRows.length ||
+      !matchedObservation.correspondences.every((row, index) =>
+        sameGeneralLandingCorrespondence(row, exactRows[index]),
+      )
+    ) {
+      return null;
+    }
+    sources = matchedEntry.sources;
+  } else if (evidence.matched.length) {
+    return null;
+  }
+
+  return {
+    marker: "LM-R01",
+    fact: `天将落地类象：${rows
+      .map(
+        (row) =>
+          `${STAGE_FACTS[row.stage]} ${row.heavenly_general}落${row.landing_branch}${
+            row.status === "no_exact_source_correspondence" ? "（缺少精确类象来源）" : ""
+          }`,
+      )
+      .join("、")} · 共 ${rows.length} 条`,
+    sources,
+  };
 }
 
 function isWorkStrength(value: unknown): value is WorkStrength {
@@ -960,6 +1063,10 @@ function parseDimension(value: unknown): EvidenceGroup | null {
         },
       ],
     };
+  }
+  if (dimension === "state" && hasOwnKey(value, "general_landing_correspondences")) {
+    const stateEntry = parseTopLevelStateFact(value, evidence);
+    return stateEntry ? { dimension, entries: [stateEntry] } : null;
   }
   const entries: EvidenceEntry[] = [];
   for (const item of evidence.matched) {
