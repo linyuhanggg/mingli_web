@@ -4120,6 +4120,118 @@ describe("大六壬 S3 天地盘旬空角标", () => {
     expect(plateCss()).toMatch(/\.fact\s*\{[^}]*min-height:\s*var\(--target-min\)/s);
   });
 
+  it("gives ≥64rem ring .earth/.heaven/.general their own 44px hit area, not the spoke", async () => {
+    const user = userEvent.setup();
+    const GOLDEN_GENERALS = [
+      ["子", "太常"],
+      ["丑", "白虎"],
+      ["寅", "天空"],
+      ["卯", "青龙"],
+      ["辰", "勾陈"],
+      ["巳", "六合"],
+      ["午", "朱雀"],
+      ["未", "腾蛇"],
+      ["申", "贵人"],
+      ["酉", "天后"],
+      ["戌", "太阴"],
+      ["亥", "玄武"],
+    ] as const;
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 1280 });
+    render(
+      <DaliurenBoard
+        view={chart({
+          lessons: [
+            { lesson_id: "一课·日干", upper: "辰", lower: "乙" },
+            { lesson_id: "二课·日支", upper: "辰", lower: "辰" },
+            { lesson_id: "三课·辰干", upper: "酉", lower: "酉" },
+            { lesson_id: "四课·辰支", upper: "酉", lower: "酉" },
+          ],
+          transmissions: [
+            { stage: "initial", branch: "辰", general: "勾陈" },
+            { stage: "middle", branch: "酉", general: "天后" },
+            { stage: "final", branch: "卯", general: "青龙" },
+          ],
+          core_facts: emptyFacts({
+            earth_plate: [...EARTH],
+            heaven_plate: EARTH.map((branch) => ({ earth: branch, heaven: branch })),
+            heavenly_generals: GOLDEN_GENERALS.map(([earth, general]) => ({
+              earth,
+              heaven: earth,
+              general,
+            })),
+          }),
+        })}
+      />,
+    );
+
+    const panel = await openPlate();
+    const ring = panel.querySelector("[data-ring='earth']") as HTMLElement;
+    const table = screen.getByRole("table", { name: "天地盘" });
+    const initial = screen.getByRole("button", { name: "初传 辰 勾陈" });
+    const lessonChen = screen.getByRole("button", { name: "一课·日干 上神 辰" });
+    const plateGouchen = within(table).getByRole("button", { name: "天将 勾陈" });
+    const chenSpoke = ring.querySelector('[data-branch="辰"]') as HTMLElement;
+    const [ringEarth, ringHeaven, ringGeneral] = [
+      ...chenSpoke.querySelectorAll(":scope > [role='presentation']"),
+    ] as HTMLElement[];
+    const youSpoke = ring.querySelector('[data-branch="酉"]') as HTMLElement;
+    const ringYouHeaven = [...youSpoke.querySelectorAll(":scope > [role='presentation']")][1] as HTMLElement;
+
+    expect(ring).toHaveAttribute("aria-hidden", "true");
+    expect(ringEarth).toBeTruthy();
+    expect(ringGeneral).toBeTruthy();
+    expect(ringEarth).not.toHaveAttribute("aria-label");
+    expect(ringEarth).not.toHaveAttribute("aria-pressed");
+    expect(ringEarth).not.toHaveAttribute("tabindex");
+    expect(ringGeneral).not.toHaveAttribute("aria-label");
+    expect(ringGeneral).not.toHaveAttribute("aria-pressed");
+    expect(ring.querySelectorAll("[aria-label]")).toHaveLength(0);
+
+    const css = plateCss();
+    const pointerRule =
+      /\.earth\[role="presentation"\],\s*\.heaven\[role="presentation"\],\s*\.general\[role="presentation"\]\s*\{[^}]*min-width:\s*var\(--target-min\);[^}]*min-height:\s*var\(--target-min\);/s;
+    expect(css).toMatch(pointerRule);
+    expect(css).toMatch(/\.spoke\s*\{[^}]*min-height:\s*var\(--target-min\)/s);
+
+    document.documentElement.style.setProperty("--target-min", "44px");
+    for (const fact of [ringEarth, ringHeaven, ringGeneral]) {
+      expect(fact).toHaveStyle({ minWidth: "var(--target-min)", minHeight: "var(--target-min)" });
+      const style = window.getComputedStyle(fact);
+      const width = style.minWidth === "var(--target-min)" ? 44 : Number.parseFloat(style.minWidth);
+      const height = style.minHeight === "var(--target-min)" ? 44 : Number.parseFloat(style.minHeight);
+      expect(width).toBeGreaterThanOrEqual(44);
+      expect(height).toBeGreaterThanOrEqual(44);
+      expect(fact).not.toBe(chenSpoke);
+    }
+
+    await user.hover(ringGeneral);
+    expect(initial).toHaveAttribute("data-active", "true");
+    expect(plateGouchen).toHaveAttribute("aria-pressed", "false");
+    expect(lessonChen).toHaveAttribute("data-active", "false");
+    await user.unhover(ringGeneral);
+    expect(initial).toHaveAttribute("data-active", "false");
+
+    await user.click(ringGeneral);
+    expect(plateGouchen).toHaveAttribute("aria-pressed", "true");
+    expect(initial).toHaveAttribute("data-active", "true");
+    expect(lessonChen).toHaveAttribute("aria-pressed", "false");
+    expect(ringGeneral).not.toHaveAttribute("aria-pressed");
+
+    await user.click(ringEarth);
+    expect(within(table).getByRole("button", { name: "地盘 辰" })).toHaveAttribute("aria-pressed", "true");
+    expect(plateGouchen).toHaveAttribute("aria-pressed", "false");
+    expect(lessonChen).toHaveAttribute("data-active", "true");
+
+    await user.click(ringYouHeaven);
+    expect(within(table).getByRole("button", { name: "天盘 酉" })).toHaveAttribute("aria-pressed", "true");
+    expect(within(table).getByRole("button", { name: "地盘 辰" })).toHaveAttribute("aria-pressed", "false");
+
+    act(() => plateGouchen.focus());
+    expect(plateGouchen).toHaveFocus();
+    await user.keyboard("{Escape}");
+    expect(within(table).getByRole("button", { name: "天盘 酉" })).toHaveAttribute("aria-pressed", "false");
+  });
+
   it("marks matching earth-plate branches from xunkong.branches only", async () => {
     render(
       <DaliurenBoard

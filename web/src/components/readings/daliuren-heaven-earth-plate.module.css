@@ -79,6 +79,12 @@
 .earth[role="presentation"],
 .heaven[role="presentation"],
 .general[role="presentation"] {
+  display: inline-flex;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   cursor: pointer;
 }
 
