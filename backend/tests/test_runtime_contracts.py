@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
 from mingli_paths import MINGLI_CORE_ROOT, MINGLI_CORE_SCRIPTS
 
 
@@ -246,6 +245,25 @@ def test_v53_provider_inventory_has_a_typed_view_contract_for_each_chart_provide
     assert set(RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS) == provider_ids
     assert set(RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS.values()) <= set(VIEW_MODEL_TYPES)
     assert RUNTIME_PROVIDER_VIEW_MODEL_SCHEMAS["fortune"] == "fortune-facts-view/v1"
+
+
+def test_fortune_solar_term_table_matches_runtime_producer() -> None:
+    scripts = str(MINGLI_CORE_SCRIPTS)
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    from app.charts.contracts import (
+        FORTUNE_JIEQI_NAMES,
+        FORTUNE_MONTH_BOUNDARY_JIE,
+        FORTUNE_SOLAR_TERM_TRIPLES,
+    )
+    from reading_engine.calendar_core import JIEQI_NAMES, MONTH_BOUNDARY_JIE
+
+    assert FORTUNE_JIEQI_NAMES == JIEQI_NAMES
+    assert FORTUNE_MONTH_BOUNDARY_JIE == MONTH_BOUNDARY_JIE
+    assert tuple(
+        (name, index, index in MONTH_BOUNDARY_JIE)
+        for index, name in enumerate(JIEQI_NAMES)
+    ) == FORTUNE_SOLAR_TERM_TRIPLES
 
 
 @pytest.mark.parametrize(

@@ -4,12 +4,16 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pytest
 from app.charts.contracts import (
+    FORTUNE_JIEQI_NAMES,
+    FORTUNE_SOLAR_TERM_TRIPLES,
     CanwenViewV1,
     DaliurenChartV1,
     FengshuiViewV1,
     FiveElementsFactsViewV1,
     FortuneFactsViewV1,
+    FortuneSolarTerm,
     HecanViewV1,
     LiuyaoChartV1,
     LumingNayinChartV1,
@@ -159,6 +163,160 @@ def test_fortune_projector_preserves_runtime_facts_without_verdict() -> None:
     validator.validate(payload)
     payload["calendar_normalization"]["location"] = {"name": "private fixture"}
     assert not validator.is_valid(payload)
+
+
+def _fortune_values_with_solar_terms(
+    previous: dict[str, object] | None,
+    nxt: dict[str, object] | None,
+) -> dict[str, Any]:
+    values: dict[str, Any] = {
+        "natal_pillars": {
+            "year": "甲戌",
+            "month": "戊辰",
+            "day": "丙戌",
+            "hour": "辛卯",
+        },
+        "day_master": {"stem": "丙", "element": "fire", "polarity": "阳"},
+        "month_command": {
+            "branch": "辰",
+            "label": "辰月",
+            "main_qi": "戊",
+            "main_qi_element": "earth",
+        },
+        "active_luck_cycle": "乙丑",
+        "target_day": "2026-08-14",
+        "target_period": {
+            "kind": "day",
+            "start": "2026-08-14",
+            "end": "2026-08-14",
+        },
+        "available_periods": ["2026-08-14"],
+        "period_markers": [
+            {
+                "date": "2026-08-14",
+                "day_pillar": "甲子",
+                "day_role": "日运",
+                "active_luck_cycle": "乙丑",
+                "primary_mechanism_ids": ["fortune.day_pillar"],
+                "decisive_mechanism_ids": [],
+                "relations": [],
+                "specific_event_policy": "事实标记，不推出具体事件",
+                "unresolved_boundaries": [],
+            }
+        ],
+        "calendar_normalization": {
+            "status": "calculated",
+            "algorithm_version": "fixture-v1",
+            "time_basis": {
+                "policy": "local_apparent_solar-v1",
+                "total_correction_seconds": 1182.0,
+                "algorithm": {},
+                "boundary": {"correction_changes_hour_branch": False},
+            },
+            "true_solar_time": {
+                "status": "apparent_solar_applied",
+                "policy": "local_apparent_solar-v1",
+                "total_correction_seconds": 1182.0,
+            },
+            "calendar_convention": {"hour_basis": "true_solar"},
+            "effective_datetime": "1994-04-30T05:54:54+08:00",
+            "day_boundary": {
+                "correction_crossed_date": False,
+                "zi_policy_advanced_day_pillar": False,
+            },
+            "changed_pillars": [],
+            "solar_terms": {
+                "previous": previous,
+                "next": nxt,
+                "month_switch_policy": "exact Jie instant",
+            },
+        },
+    }
+    return values
+
+
+def _canonical_fortune_solar_term(index: int) -> dict[str, object]:
+    name, _, is_month_boundary_jie = FORTUNE_SOLAR_TERM_TRIPLES[index]
+    return {
+        "name": name,
+        "index": index,
+        "is_month_boundary_jie": is_month_boundary_jie,
+        "datetime": "1994-04-20T15:36:00+08:00",
+        "instant_utc": "1994-04-20T07:36:00+00:00",
+    }
+
+
+@pytest.mark.parametrize("index", [0, 1, 22, 23])
+def test_fortune_projector_accepts_boundary_solar_term_triples(index: int) -> None:
+    term = _canonical_fortune_solar_term(index)
+    view_model = project_fortune_view_model(
+        brief("fortune", _fortune_values_with_solar_terms(term, None))
+    )
+    assert view_model is not None
+    assert view_model.calendar_normalization.solar_terms is not None
+    previous = view_model.calendar_normalization.solar_terms.previous
+    assert previous is not None
+    assert previous.name == FORTUNE_JIEQI_NAMES[index]
+    assert previous.index == index
+    assert previous.is_month_boundary_jie is FORTUNE_SOLAR_TERM_TRIPLES[index][2]
+
+
+@pytest.mark.parametrize(
+    "mutator",
+    [
+        pytest.param(
+            lambda term: {**term, "name": "谷雨", "index": 23, "is_month_boundary_jie": True},
+            id="review-mismatch-guyu-index-23",
+        ),
+        pytest.param(
+            lambda term: {**term, "name": "谷雨", "index": 8, "is_month_boundary_jie": True},
+            id="boundary-mismatch",
+        ),
+        pytest.param(lambda term: {**term, "index": -1}, id="index-underflow"),
+        pytest.param(lambda term: {**term, "index": 24}, id="index-overflow"),
+        pytest.param(lambda term: {**term, "index": "8"}, id="index-str"),
+        pytest.param(lambda term: {**term, "index": True}, id="index-bool"),
+        pytest.param(lambda term: {**term, "index": 8.0}, id="index-float"),
+        pytest.param(
+            lambda term: {**term, "is_month_boundary_jie": "true"},
+            id="boundary-str",
+        ),
+        pytest.param(
+            lambda term: {k: v for k, v in term.items() if k != "name"},
+            id="missing-name",
+        ),
+        pytest.param(
+            lambda term: {k: v for k, v in term.items() if k != "index"},
+            id="missing-index",
+        ),
+        pytest.param(
+            lambda term: {k: v for k, v in term.items() if k != "is_month_boundary_jie"},
+            id="missing-boundary",
+        ),
+    ],
+)
+def test_fortune_projector_fail_closes_invalid_solar_term_triples(
+    mutator: Any,
+) -> None:
+    term = mutator(_canonical_fortune_solar_term(8))
+    values = _fortune_values_with_solar_terms(term, _canonical_fortune_solar_term(9))
+    assert project_fortune_view_model(brief("fortune", values)) is None
+    with pytest.raises(ValueError):
+        FortuneSolarTerm.model_validate(term)
+
+
+def test_fortune_projector_does_not_normalize_mismatched_solar_terms() -> None:
+    illegal = {
+        "name": "谷雨",
+        "index": 23,
+        "is_month_boundary_jie": True,
+        "datetime": "1994-12-07T00:00:00+08:00",
+        "instant_utc": "1994-12-06T16:00:00+00:00",
+    }
+    values = _fortune_values_with_solar_terms(illegal, None)
+    assert project_fortune_view_model(brief("fortune", values)) is None
+    with pytest.raises(ValueError):
+        FortuneSolarTerm.model_validate(illegal)
 
 
 def test_fortune_projector_rejects_private_calendar_input_fields() -> None:

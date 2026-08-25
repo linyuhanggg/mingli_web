@@ -140,12 +140,40 @@
       "additionalProperties": false,
       "required": ["name", "index", "is_month_boundary_jie", "datetime", "instant_utc"],
       "properties": {
-        "name": {"$ref": "#/$defs/text"},
-        "index": {"type": "integer"},
+        "name": {
+          "enum": ["冬至", "小寒", "大寒", "立春", "雨水", "惊蛰", "春分", "清明", "谷雨", "立夏", "小满", "芒种", "夏至", "小暑", "大暑", "立秋", "处暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪"]
+        },
+        "index": {"type": "integer", "minimum": 0, "maximum": 23},
         "is_month_boundary_jie": {"type": "boolean"},
         "datetime": {"$ref": "#/$defs/text"},
         "instant_utc": {"$ref": "#/$defs/text"}
-      }
+      },
+      "oneOf": [
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "冬至"}, "index": {"const": 0}, "is_month_boundary_jie": {"const": false}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "小寒"}, "index": {"const": 1}, "is_month_boundary_jie": {"const": true}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "大寒"}, "index": {"const": 2}, "is_month_boundary_jie": {"const": false}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "立春"}, "index": {"const": 3}, "is_month_boundary_jie": {"const": true}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "雨水"}, "index": {"const": 4}, "is_month_boundary_jie": {"const": false}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "惊蛰"}, "index": {"const": 5}, "is_month_boundary_jie": {"const": true}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "春分"}, "index": {"const": 6}, "is_month_boundary_jie": {"const": false}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "清明"}, "index": {"const": 7}, "is_month_boundary_jie": {"const": true}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "谷雨"}, "index": {"const": 8}, "is_month_boundary_jie": {"const": false}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "立夏"}, "index": {"const": 9}, "is_month_boundary_jie": {"const": true}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "小满"}, "index": {"const": 10}, "is_month_boundary_jie": {"const": false}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "芒种"}, "index": {"const": 11}, "is_month_boundary_jie": {"const": true}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "夏至"}, "index": {"const": 12}, "is_month_boundary_jie": {"const": false}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "小暑"}, "index": {"const": 13}, "is_month_boundary_jie": {"const": true}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "大暑"}, "index": {"const": 14}, "is_month_boundary_jie": {"const": false}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "立秋"}, "index": {"const": 15}, "is_month_boundary_jie": {"const": true}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "处暑"}, "index": {"const": 16}, "is_month_boundary_jie": {"const": false}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "白露"}, "index": {"const": 17}, "is_month_boundary_jie": {"const": true}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "秋分"}, "index": {"const": 18}, "is_month_boundary_jie": {"const": false}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "寒露"}, "index": {"const": 19}, "is_month_boundary_jie": {"const": true}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "霜降"}, "index": {"const": 20}, "is_month_boundary_jie": {"const": false}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "立冬"}, "index": {"const": 21}, "is_month_boundary_jie": {"const": true}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "小雪"}, "index": {"const": 22}, "is_month_boundary_jie": {"const": false}}},
+        {"required": ["name", "index", "is_month_boundary_jie"], "properties": {"name": {"const": "大雪"}, "index": {"const": 23}, "is_month_boundary_jie": {"const": true}}}
+      ]
     },
     "solarTerms": {
       "type": "object",
