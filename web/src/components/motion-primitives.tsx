@@ -1,7 +1,12 @@
 "use client";
 
 import clsx from "clsx";
-import { motion, useReducedMotion } from "motion/react";
+import {
+  motion,
+  useAnimationControls,
+  useIsomorphicLayoutEffect,
+  useReducedMotion,
+} from "motion/react";
 import type { ReactNode } from "react";
 
 export const easeOutExpo = [0.16, 1, 0.3, 1] as const;
@@ -198,18 +203,33 @@ type RouteEnterProps = {
 
 export function RouteEnter({ children, className, routeKey }: RouteEnterProps) {
   const reduceMotion = useSafeReducedMotion();
+  const controls = useAnimationControls();
 
-  if (reduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
+  useIsomorphicLayoutEffect(() => {
+    controls.stop();
+
+    if (reduceMotion) {
+      controls.set({ opacity: 1, y: 0 });
+      return;
+    }
+
+    controls.set({ opacity: 0, y: 8 });
+    void controls.start({
+      opacity: 1,
+      y: 0,
+      transition: { duration: motionDurations.state, ease: easeOutExpo },
+    });
+
+    return () => controls.stop();
+  }, [controls, reduceMotion, routeKey]);
 
   return (
     <motion.div
       key={routeKey}
       className={className}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: motionDurations.state, ease: easeOutExpo }}
+      initial={false}
+      animate={controls}
+      style={{ opacity: 1, transform: "none" }}
     >
       {children}
     </motion.div>

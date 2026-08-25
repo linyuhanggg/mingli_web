@@ -774,6 +774,379 @@ export type CanwenViewModel = {
   readonly dimensions: ReadonlyArray<CrossArtDimension>;
 };
 
+export type DaliurenDayHour = {
+  readonly day: string;
+  readonly hour: string;
+};
+
+export type DaliurenMonthGeneral = {
+  readonly branch: string;
+  readonly name: string;
+};
+
+export type DaliurenNoblePerson = {
+  readonly branch: string;
+  readonly day_night_profile: string;
+  readonly direction: "forward" | "reverse";
+  readonly earth_position: string;
+  readonly period: "day" | "night";
+  readonly profile: string;
+  readonly source: string;
+};
+
+export type DaliurenXunkong = {
+  readonly branches: readonly [string, string];
+  readonly xun: string;
+};
+
+export type DaliurenHeavenPlateCell = {
+  readonly earth: string;
+  readonly heaven: string;
+};
+
+export type DaliurenGeneralCell = {
+  readonly earth: string;
+  readonly general: string;
+  readonly heaven: string;
+};
+
+export type DaliurenLessonMethod = Readonly<{
+  readonly calculated_transmissions: string;
+  readonly calculation_source: string;
+  readonly direct_direction: string | null;
+  readonly primary: string;
+  readonly selected_initial: string;
+  readonly source_anchor: string;
+  readonly use_method: string;
+}>;
+
+export type DaliurenRuleSourceRef = {
+  readonly pack: string;
+  readonly rule_id: string;
+  readonly quote_id?: string;
+  readonly source_anchor?: string;
+};
+
+export type DaliurenRuleEvidenceEntry = Readonly<{
+  readonly activation_id: string;
+  readonly confidence_ceiling?: string;
+  readonly dependency_group: string;
+  readonly fact_paths: ReadonlyArray<string>;
+  readonly observation: Readonly<Record<string, unknown>>;
+  readonly polarity: string;
+  readonly rule_id: string;
+  readonly rule_key: string;
+  readonly source_refs: ReadonlyArray<DaliurenRuleSourceRef>;
+  readonly status: string;
+  readonly stop_conditions?: ReadonlyArray<string>;
+  readonly weight_class: string;
+}> & Readonly<Record<string, unknown>>;
+
+export type DaliurenRuleEvidence = {
+  readonly catalog_schema: string;
+  readonly hard_verdict: null;
+  readonly matched: ReadonlyArray<DaliurenRuleEvidenceEntry>;
+  readonly not_evaluated: ReadonlyArray<Readonly<Record<string, unknown>>>;
+  readonly requires_school_adjudication: boolean;
+  readonly scope_boundaries: ReadonlyArray<DaliurenRuleEvidenceEntry>;
+  readonly status: string;
+};
+
+export type DaliurenTimingCandidate = {
+  readonly id: "initial_group_upper_candidate";
+  readonly role: "event_response_candidate";
+  readonly anchor_earth_branch: string;
+  readonly branch: string;
+  readonly solar_date: string;
+  readonly day_ganzhi: string;
+  readonly days_after_cast: number;
+  readonly source_pack: string;
+  readonly source_rule: "LM-R21";
+  readonly candidate_not_guarantee: true;
+};
+
+export type DaliurenTransmissionStage = "initial" | "middle" | "final";
+
+export type DaliurenCompassDirection =
+  | "north"
+  | "northeast"
+  | "east"
+  | "southeast"
+  | "south"
+  | "southwest"
+  | "west"
+  | "northwest";
+
+export type DaliurenCompassDirectionChinese = "正北" | "东北" | "正东" | "东南" | "正南" | "西南" | "正西" | "西北";
+
+export type DaliurenStageBranchDirection<
+  Stage extends DaliurenTransmissionStage = DaliurenTransmissionStage,
+> = Readonly<{
+  readonly stage: Stage;
+  readonly branch: string;
+  readonly direction: DaliurenCompassDirection;
+  readonly direction_chinese: DaliurenCompassDirectionChinese;
+  readonly declared_source_anchor: string;
+  readonly source_binding_status: "unverified_source_excerpt_not_in_release";
+  readonly scope: "symbolic_direction_candidate_only";
+}>;
+
+export type DaliurenLocationObservation = Readonly<{
+  readonly stage_branch_directions: readonly [
+    DaliurenStageBranchDirection<"initial">,
+    DaliurenStageBranchDirection<"middle">,
+    DaliurenStageBranchDirection<"final">,
+  ];
+}>;
+
+export type DaliurenSixRelative = "兄弟" | "子孙" | "妻财" | "官鬼" | "父母";
+
+export type DaliurenSeasonStrength = "旺" | "相" | "休" | "囚" | "死" | "unknown";
+
+export type DaliurenHeavenlyGeneral =
+  | "贵人"
+  | "腾蛇"
+  | "朱雀"
+  | "六合"
+  | "勾陈"
+  | "青龙"
+  | "天空"
+  | "白虎"
+  | "太常"
+  | "玄武"
+  | "太阴"
+  | "天后";
+
+export type DaliurenOutcomeRelation =
+  | "subject_generates_object"
+  | "subject_overcomes_object"
+  | "object_overcomes_subject";
+
+export type DaliurenDeterministicRelation =
+  | DaliurenOutcomeRelation
+  | "same_element"
+  | "object_generates_subject";
+
+export type DaliurenRelationFact = Readonly<{
+  readonly object: string;
+  readonly object_element: string;
+  readonly object_value: string;
+  readonly relation: DaliurenDeterministicRelation;
+  readonly subject: string;
+  readonly subject_element: string;
+  readonly subject_value: string;
+}>;
+
+export type DaliurenStageFlowEntry = DaliurenRelationFact &
+  Readonly<{
+    readonly from_stage: DaliurenTransmissionStage;
+    readonly to_stage: DaliurenTransmissionStage;
+  }>;
+
+export type DaliurenTransmissionToDayEntry = DaliurenRelationFact &
+  Readonly<{
+    readonly stage: DaliurenTransmissionStage;
+  }>;
+
+export type DaliurenSixRelativeStage = Readonly<{
+  readonly branch: string;
+  readonly six_relative: DaliurenSixRelative;
+  readonly stage: DaliurenTransmissionStage;
+}>;
+
+export type DaliurenStageStatusEntry = Readonly<{
+  readonly branch: string;
+  readonly heavenly_general: string;
+  readonly is_xunkong: boolean;
+  readonly season_strength: DaliurenSeasonStrength;
+  readonly six_relative: DaliurenSixRelative;
+  readonly stage: DaliurenTransmissionStage;
+}>;
+
+export type DaliurenMiddleVoidObservation = Readonly<{
+  readonly stage: "middle";
+  readonly branch: string;
+  readonly is_xunkong: true;
+}>;
+
+export type DaliurenOutcomeObservation =
+  | Readonly<{
+      readonly relation: "subject_overcomes_object" | "object_overcomes_subject";
+    }>
+  | Readonly<{
+      readonly relations: readonly [
+        "subject_generates_object" | "subject_overcomes_object",
+        "subject_generates_object" | "subject_overcomes_object",
+        "subject_generates_object" | "subject_overcomes_object",
+      ];
+    }>
+  | DaliurenMiddleVoidObservation;
+
+export type DaliurenRelationshipObservation = Readonly<{
+  readonly relation: "subject_overcomes_object" | "object_overcomes_subject";
+}>;
+
+export type DaliurenRelativeSpeed = "relatively_faster" | "relatively_slower";
+
+export type DaliurenCandidateBranch = Readonly<{
+  readonly anchor_earth_branch: string;
+  readonly branch: string;
+  readonly source_rule: "LM-R21";
+}>;
+
+export type DaliurenTimingCandidateObservation = Readonly<{
+  readonly candidate_branch: DaliurenCandidateBranch;
+  readonly candidate_date: DaliurenTimingCandidate | null;
+  readonly relative_speed: DaliurenRelativeSpeed | null;
+}>;
+
+export type DaliurenTimingPaceObservation = Readonly<{
+  readonly relative_speed: DaliurenRelativeSpeed;
+}>;
+
+export type DaliurenTimingObservation = DaliurenTimingCandidateObservation | DaliurenTimingPaceObservation;
+
+export type DaliurenMoneyObservation =
+  | Readonly<{
+      readonly wealth_presence: true;
+      readonly wealth_stages: ReadonlyArray<DaliurenWealthStageStrengthEntry>;
+    }>
+  | Readonly<{
+      readonly wealth_void_rows: ReadonlyArray<
+        Readonly<{
+          readonly stage: DaliurenTransmissionStage;
+          readonly branch: string;
+          readonly six_relative: "妻财";
+          readonly is_xunkong: true;
+        }>
+      >;
+    }>
+  | Readonly<{
+      readonly wealth_presence: false;
+    }>
+  | DaliurenMiddleVoidObservation;
+
+export type DaliurenGeneralLandingCorrespondence = Readonly<{
+  readonly stage: DaliurenTransmissionStage;
+  readonly heavenly_general: string;
+  readonly landing_branch: string;
+  readonly source_pack: "san-shi/liuren-miben";
+  readonly source_rule: "LM-R01";
+  readonly role: "imagery_correspondence_not_observed_activity";
+  readonly status: "source_correspondence_matched";
+  readonly source_text: string;
+  readonly source_anchor: string;
+}>;
+
+export type DaliurenGeneralLandingUnavailableCorrespondence = Readonly<{
+  readonly stage: DaliurenTransmissionStage;
+  readonly heavenly_general: string;
+  readonly landing_branch: string;
+  readonly source_pack: "san-shi/liuren-miben";
+  readonly source_rule: "LM-R01";
+  readonly role: "imagery_correspondence_not_observed_activity";
+  readonly status: "no_exact_source_correspondence";
+}>;
+
+export type DaliurenWealthStageStrengthEntry = Readonly<{
+  readonly stage: DaliurenTransmissionStage;
+  readonly branch: string;
+  readonly six_relative: "妻财";
+  readonly season_strength: DaliurenSeasonStrength;
+}>;
+
+export type DaliurenWealthVoidStatusEntry = Readonly<{
+  readonly stage: DaliurenTransmissionStage;
+  readonly branch: string;
+  readonly six_relative: "妻财";
+  readonly is_xunkong: boolean;
+}>;
+
+export type DaliurenWealthGeneralModifier =
+  | (DaliurenGeneralLandingCorrespondence &
+      Readonly<{
+        readonly heavenly_general: DaliurenHeavenlyGeneral;
+        readonly six_relative: "妻财";
+      }>)
+  | (DaliurenGeneralLandingUnavailableCorrespondence &
+      Readonly<{
+        readonly heavenly_general: DaliurenHeavenlyGeneral;
+        readonly six_relative: "妻财";
+      }>);
+
+export type DaliurenStateObservation = Readonly<{
+  readonly matched_count: number;
+  readonly stages: ReadonlyArray<DaliurenTransmissionStage>;
+  readonly correspondences: ReadonlyArray<DaliurenGeneralLandingCorrespondence>;
+}>;
+
+export type DaliurenWorkPresentObservation = Readonly<{
+  readonly target_relative: DaliurenSixRelative;
+  readonly target_strength: ReadonlyArray<
+    Readonly<{
+      readonly stage: DaliurenTransmissionStage;
+      readonly branch: string;
+      readonly six_relative: DaliurenSixRelative;
+      readonly season_strength: DaliurenSeasonStrength;
+      readonly is_xunkong: boolean;
+    }>
+  >;
+  readonly target_general_modifier: ReadonlyArray<
+    (DaliurenGeneralLandingCorrespondence | DaliurenGeneralLandingUnavailableCorrespondence) &
+      Readonly<{
+        readonly six_relative: DaliurenSixRelative;
+      }>
+  >;
+}>;
+
+export type DaliurenWorkAbsentObservation = Readonly<{
+  readonly target_relative: DaliurenSixRelative;
+  readonly target_presence: false;
+  readonly target_contract_status: "bound";
+}>;
+
+export type DaliurenWorkObservation = DaliurenWorkPresentObservation | DaliurenWorkAbsentObservation;
+
+export type DaliurenDimensionObservationMap = Readonly<{
+  readonly outcome: DaliurenOutcomeObservation;
+  readonly location: DaliurenLocationObservation;
+  readonly money: DaliurenMoneyObservation;
+  readonly relationship: DaliurenRelationshipObservation;
+  readonly state: DaliurenStateObservation;
+  readonly timing: DaliurenTimingObservation;
+  readonly work: DaliurenWorkObservation;
+}>;
+
+export type DaliurenDimensionFact = Readonly<{
+  readonly canonical_dimension: string;
+  readonly requested_dimension: string;
+  readonly rule_evidence: DaliurenRuleEvidence;
+  readonly status: "calculated_facts_not_verdict";
+  readonly source_rule_ids: ReadonlyArray<string>;
+  readonly general_landing_correspondences?: ReadonlyArray<
+    DaliurenGeneralLandingCorrespondence | DaliurenGeneralLandingUnavailableCorrespondence
+  >;
+  readonly six_relative_stages?: ReadonlyArray<DaliurenSixRelativeStage>;
+  readonly stage_branch_directions?: DaliurenLocationObservation["stage_branch_directions"];
+  readonly stage_flow?: ReadonlyArray<DaliurenStageFlowEntry>;
+  readonly stage_status?: ReadonlyArray<DaliurenStageStatusEntry>;
+  readonly subject_object_relation?: DaliurenRelationFact;
+  readonly transmissions_to_day?: ReadonlyArray<DaliurenTransmissionToDayEntry>;
+  readonly initial_final_relation?: DaliurenRelationFact;
+  readonly relative_speed?: DaliurenRelativeSpeed | null;
+  readonly candidate_branch?: DaliurenCandidateBranch | null;
+  readonly candidate_date?: DaliurenTimingCandidate | null;
+  readonly target_relative?: DaliurenSixRelative | null;
+  readonly target_contract_status?: "bound" | "missing_target_relative";
+  readonly target_presence?: boolean;
+  readonly target_strength?: ReadonlyArray<Readonly<Record<string, unknown>>>;
+  readonly target_general_modifier?: ReadonlyArray<Readonly<Record<string, unknown>>>;
+  readonly wealth_presence?: boolean;
+  readonly wealth_stage_strength?: ReadonlyArray<DaliurenWealthStageStrengthEntry>;
+  readonly wealth_void_status?: ReadonlyArray<DaliurenWealthVoidStatusEntry>;
+  readonly wealth_general_modifier?: ReadonlyArray<DaliurenWealthGeneralModifier>;
+}> & Readonly<Record<string, unknown>>;
+
 export type DaliurenChartViewModel = {
   readonly schema_version: "daliuren-chart/v1";
   readonly subject_ref: string;
@@ -790,30 +1163,18 @@ export type DaliurenChartViewModel = {
     { readonly stage: "final"; readonly branch: string; readonly general: string },
   ];
   readonly core_facts: {
-    readonly day_hour: StructuredFactObject | null;
-    readonly dimension_facts: StructuredFactObject | null;
+    readonly day_hour: DaliurenDayHour | null;
+    readonly dimension_facts: Readonly<Record<string, DaliurenDimensionFact>> | null;
     readonly earth_plate: ReadonlyArray<string> | null;
-    readonly heaven_plate: ReadonlyArray<StructuredFactObject> | null;
-    readonly heavenly_generals: ReadonlyArray<StructuredFactObject> | null;
-    readonly lesson_method: StructuredFactObject | null;
-    readonly month_general: StructuredFactObject | null;
-    readonly noble_person: StructuredFactObject | null;
+    readonly heaven_plate: ReadonlyArray<DaliurenHeavenPlateCell> | null;
+    readonly heavenly_generals: ReadonlyArray<DaliurenGeneralCell> | null;
+    readonly lesson_method: DaliurenLessonMethod | null;
+    readonly month_general: DaliurenMonthGeneral | null;
+    readonly noble_person: DaliurenNoblePerson | null;
     readonly plate_offset: number | null;
     readonly structural_patterns: ReadonlyArray<string> | null;
-    readonly transmission_method: StructuredFactObject | null;
-    readonly timing_candidates: ReadonlyArray<{
-      readonly id: "initial_group_upper_candidate";
-      readonly role: "event_response_candidate";
-      readonly anchor_earth_branch: string;
-      readonly branch: string;
-      readonly solar_date: string;
-      readonly day_ganzhi: string;
-      readonly days_after_cast: number;
-      readonly source_pack: string;
-      readonly source_rule: "LM-R21";
-      readonly candidate_not_guarantee: true;
-    }> | null;
-    readonly xunkong: StructuredFactObject | null;
+    readonly timing_candidates: ReadonlyArray<DaliurenTimingCandidate> | null;
+    readonly xunkong: DaliurenXunkong | null;
   } | null;
 };
 
