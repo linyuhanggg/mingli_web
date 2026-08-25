@@ -69,7 +69,8 @@
 }
 
 .earth[data-active="true"],
-.heaven[data-active="true"] {
+.heaven[data-active="true"],
+.general[data-active="true"] {
   box-shadow: inset 0 -2px var(--color-accent);
   background: var(--color-surface-muted);
   font-weight: 700;

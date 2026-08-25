@@ -405,6 +405,38 @@ describe("大六壬 S3 课传盘面", () => {
     expect(lockedSi).toHaveAttribute("aria-pressed", "true");
   });
 
+  it("resets lock, preview and roving when the reading identity changes", async () => {
+    const user = userEvent.setup();
+    const firstReading = chart({ subject_ref: "daliuren:reading-a" });
+    const { rerender } = render(<DaliurenBoard view={firstReading} />);
+
+    const firstUpper = screen.getByRole("button", { name: "一课·日干 上神 巳" });
+    await user.click(firstUpper);
+    expect(firstUpper).toHaveAttribute("aria-pressed", "true");
+    expect(firstUpper).toHaveAttribute("data-active", "true");
+    expect(screen.getByRole("button", { name: "末传 巳 白虎" })).toHaveAttribute("tabindex", "-1");
+
+    rerender(<DaliurenBoard view={chart({ subject_ref: "daliuren:reading-a" })} />);
+    expect(screen.getByRole("button", { name: "一课·日干 上神 巳" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "一课·日干 上神 巳" })).toHaveAttribute("data-active", "true");
+
+    rerender(
+      <DaliurenBoard
+        view={chart({
+          subject_ref: "daliuren:reading-b",
+          question: "另一课何时可能出现回应？",
+        })}
+      />,
+    );
+
+    const replacedUpper = screen.getByRole("button", { name: "一课·日干 上神 巳" });
+    expect(replacedUpper).toHaveAttribute("aria-pressed", "false");
+    expect(replacedUpper).toHaveAttribute("data-active", "false");
+    expect(replacedUpper).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("button", { name: "末传 巳 白虎" })).toHaveAttribute("tabindex", "-1");
+    expect(screen.getByRole("button", { name: "末传 巳 白虎" })).toHaveAttribute("aria-pressed", "false");
+  });
+
   it("moves among the eight lesson cells and three transmission rows with arrow keys", async () => {
     const user = userEvent.setup();
     render(<DaliurenBoard view={chart()} />);
@@ -1690,6 +1722,26 @@ describe("大六壬 S3 M6a 维度证据", () => {
       );
     },
   );
+
+  it("deduplicates career and work alias blocks into one 事业 group", () => {
+    render(
+      <DaliurenBoard
+        view={chart({
+          core_facts: factsWithDimensions({
+            career: boundWorkProjection("career", "官鬼"),
+            work: boundWorkProjection("work", "官鬼"),
+          }),
+        })}
+      />,
+    );
+
+    const work = within(panel()).getByRole("group", { name: "事业" });
+    expect(within(panel()).getAllByRole("group", { name: "事业" })).toHaveLength(1);
+    expect(within(work).getAllByText(/工作所取六亲：官鬼/).length).toBe(1);
+    expect(within(work).getAllByText(/日干与日支：甲（木）与寅（木）：五行同类/).length).toBe(1);
+    expect(within(work).getAllByText(/三传六亲：初传 辰 · 妻财/).length).toBe(1);
+    expect(work).not.toHaveTextContent(/canonical_dimension|requested_dimension|吉凶|成败|保证|硬判/);
+  });
 
   it("fails the whole bound work group closed for malformed, drifting or unbound evidence", () => {
     const mutate = (change: (projection: Record<string, unknown>) => void) => {
@@ -3837,6 +3889,93 @@ describe("大六壬 S3 天地盘旬空角标", () => {
     await user.click(boardFact);
     for (const position of linkedPlatePositions) expect(position).toHaveAttribute("data-active", "false");
     expect(boardFact).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("links transmission generals onto repeated plate positions without activating them from a shared branch", async () => {
+    const user = userEvent.setup();
+    const GOLDEN_GENERALS = [
+      ["子", "太常"],
+      ["丑", "白虎"],
+      ["寅", "天空"],
+      ["卯", "青龙"],
+      ["辰", "勾陈"],
+      ["巳", "六合"],
+      ["午", "朱雀"],
+      ["未", "腾蛇"],
+      ["申", "贵人"],
+      ["酉", "天后"],
+      ["戌", "太阴"],
+      ["亥", "玄武"],
+    ] as const;
+    render(
+      <DaliurenBoard
+        view={chart({
+          lessons: [
+            { lesson_id: "一课·日干", upper: "辰", lower: "乙" },
+            { lesson_id: "二课·日支", upper: "辰", lower: "辰" },
+            { lesson_id: "三课·辰干", upper: "酉", lower: "酉" },
+            { lesson_id: "四课·辰支", upper: "酉", lower: "酉" },
+          ],
+          transmissions: [
+            { stage: "initial", branch: "辰", general: "勾陈" },
+            { stage: "middle", branch: "酉", general: "天后" },
+            { stage: "final", branch: "卯", general: "青龙" },
+          ],
+          core_facts: emptyFacts({
+            earth_plate: [...EARTH],
+            heaven_plate: EARTH.map((branch) => ({ earth: branch, heaven: branch })),
+            heavenly_generals: GOLDEN_GENERALS.map(([earth, general]) => ({
+              earth,
+              heaven: earth,
+              general,
+            })),
+          }),
+        })}
+      />,
+    );
+
+    const panel = await openPlate();
+    const lessonChen = screen.getByRole("button", { name: "一课·日干 上神 辰" });
+    const initial = screen.getByRole("button", { name: "初传 辰 勾陈" });
+    const middle = screen.getByRole("button", { name: "中传 酉 天后" });
+    const initialGeneral = initial.querySelector("[data-chip='general']") as HTMLElement;
+    const middleGeneral = middle.querySelector("[data-chip='general']") as HTMLElement;
+    const chenGeneral = panel.querySelector('table [data-branch="辰"] td:last-child') as HTMLElement;
+    const youGeneral = panel.querySelector('table [data-branch="酉"] td:last-child') as HTMLElement;
+    const maoGeneral = panel.querySelector('table [data-branch="卯"] td:last-child') as HTMLElement;
+    const chenRow = panel.querySelector('table [data-branch="辰"]') as HTMLElement;
+    const youRow = panel.querySelector('table [data-branch="酉"]') as HTMLElement;
+
+    act(() => lessonChen.focus());
+    expect(lessonChen).toHaveAttribute("data-active", "true");
+    expect(initial).toHaveAttribute("data-active", "true");
+    expect(initialGeneral).toHaveAttribute("data-active", "false");
+    expect(chenRow).toHaveAttribute("data-active", "true");
+    expect(youRow).toHaveAttribute("data-active", "false");
+    expect(youGeneral).toHaveAttribute("data-active", "false");
+    expect(maoGeneral).toHaveAttribute("data-active", "false");
+    act(() => lessonChen.blur());
+
+    act(() => initial.focus());
+    expect(initial).toHaveAttribute("data-active", "true");
+    expect(initialGeneral).toHaveAttribute("data-active", "true");
+    expect(middleGeneral).toHaveAttribute("data-active", "false");
+    expect(chenRow).toHaveAttribute("data-active", "true");
+    expect(youRow).toHaveAttribute("data-active", "false");
+    expect(youGeneral).toHaveAttribute("data-active", "false");
+    expect(maoGeneral).toHaveAttribute("data-active", "false");
+    expect(panel.querySelector('table [data-branch="辰"] td:last-child')).toHaveAttribute("data-active", "true");
+    act(() => initial.blur());
+
+    await user.click(middle);
+    expect(middle).toHaveAttribute("aria-pressed", "true");
+    expect(middleGeneral).toHaveAttribute("data-active", "true");
+    expect(initialGeneral).toHaveAttribute("data-active", "false");
+    expect(youRow).toHaveAttribute("data-active", "true");
+    expect(youGeneral).toHaveAttribute("data-active", "true");
+    expect(chenRow).toHaveAttribute("data-active", "false");
+    expect(chenGeneral).toHaveAttribute("data-active", "false");
+    expect(maoGeneral).toHaveAttribute("data-active", "false");
   });
 
   it("marks matching earth-plate branches from xunkong.branches only", async () => {

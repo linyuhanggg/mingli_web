@@ -7,7 +7,7 @@ import styles from "./daliuren-heaven-earth-plate.module.css";
 type CoreFacts = NonNullable<DaliurenChartViewModel["core_facts"]>;
 
 export type DaliurenHeavenEarthPlateProps = {
-  activeFact?: string | null;
+  activeFact?: string | readonly string[] | null;
   anchorEarthBranches?: ReadonlySet<string>;
   earthPlate: CoreFacts["earth_plate"];
   heavenPlate?: CoreFacts["heaven_plate"];
@@ -50,6 +50,11 @@ function voidBranches(value: unknown): ReadonlySet<string> {
   );
 }
 
+function activeFactSet(value: string | readonly string[] | null | undefined): ReadonlySet<string> {
+  const items = value == null ? [] : typeof value === "string" ? [value] : value;
+  return new Set(items.map((item) => item.trim()).filter(Boolean));
+}
+
 function mapByEarth(
   items: ReadonlyArray<unknown> | null | undefined,
   earthSet: ReadonlySet<string>,
@@ -89,7 +94,11 @@ export function DaliurenHeavenEarthPlate({
   const noble = readString(noblePerson, "earth_position");
   const nobleEarthPosition = noble && earthSet.has(noble) ? noble : null;
   const offset = typeof plateOffset === "number" && Number.isFinite(plateOffset) ? plateOffset : null;
-  const active = typeof activeFact === "string" ? activeFact.trim() : "";
+  const active = activeFactSet(activeFact);
+
+  function isActiveValue(value: string | null | undefined): boolean {
+    return typeof value === "string" && value.length > 0 && active.has(value);
+  }
 
   return (
     <details
@@ -106,12 +115,14 @@ export function DaliurenHeavenEarthPlate({
         >
           {earth.map((branch, index) => {
             const heaven = heavens.get(branch) ?? null;
-            const earthActive = Boolean(active) && active === branch;
-            const heavenActive = Boolean(active) && active === heaven;
+            const general = generals.get(branch) ?? null;
+            const earthActive = isActiveValue(branch);
+            const heavenActive = isActiveValue(heaven);
+            const generalActive = isActiveValue(general);
             return (
               <li
                 className={styles.spoke}
-                data-active={earthActive || heavenActive ? "true" : "false"}
+                data-active={earthActive || heavenActive || generalActive ? "true" : "false"}
                 data-branch={branch}
                 data-noble={nobleEarthPosition === branch ? "true" : undefined}
                 data-timing={timingAnchors.has(branch) ? "true" : undefined}
@@ -125,8 +136,8 @@ export function DaliurenHeavenEarthPlate({
                 {showHeaven && heaven ? (
                   <span className={styles.heaven} data-active={heavenActive ? "true" : "false"}>{heaven}</span>
                 ) : null}
-                {showGeneral && generals.get(branch) ? (
-                  <span className={styles.general}>{generals.get(branch)}</span>
+                {showGeneral && general ? (
+                  <span className={styles.general} data-active={generalActive ? "true" : "false"}>{general}</span>
                 ) : null}
               </li>
             );
@@ -143,11 +154,13 @@ export function DaliurenHeavenEarthPlate({
           <tbody>
             {earth.map((branch) => {
               const heaven = heavens.get(branch) ?? null;
-              const earthActive = Boolean(active) && active === branch;
-              const heavenActive = Boolean(active) && active === heaven;
+              const general = generals.get(branch) ?? null;
+              const earthActive = isActiveValue(branch);
+              const heavenActive = isActiveValue(heaven);
+              const generalActive = isActiveValue(general);
               return (
                 <tr
-                  data-active={earthActive || heavenActive ? "true" : "false"}
+                  data-active={earthActive || heavenActive || generalActive ? "true" : "false"}
                   data-branch={branch}
                   data-noble={nobleEarthPosition === branch ? "true" : undefined}
                   data-timing={timingAnchors.has(branch) ? "true" : undefined}
@@ -163,7 +176,7 @@ export function DaliurenHeavenEarthPlate({
                     {voids.has(branch) ? <span className={styles.voidBadge}>空</span> : null}
                   </th>
                   {showHeaven ? <td data-active={heavenActive ? "true" : "false"}>{heaven ?? ""}</td> : null}
-                  {showGeneral ? <td>{generals.get(branch) ?? ""}</td> : null}
+                  {showGeneral ? <td data-active={generalActive ? "true" : "false"}>{general ?? ""}</td> : null}
                 </tr>
               );
             })}

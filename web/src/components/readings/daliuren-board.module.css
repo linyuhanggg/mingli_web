@@ -168,6 +168,12 @@
   font-size: var(--font-size-label);
 }
 
+.general[data-active="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-surface-muted);
+  font-weight: 700;
+}
+
 .voidBadge {
   display: inline-flex;
   min-width: 1.1rem;

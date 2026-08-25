@@ -2341,13 +2341,11 @@ function parseDimension(value: unknown): EvidenceGroup | null {
 
 function parseGroups(value: CoreFacts["dimension_facts"]): readonly EvidenceGroup[] {
   if (!isRecord(value)) return [];
-  const grouped = new Map<DaliurenDimensionId, EvidenceEntry[]>();
+  const grouped = new Map<DaliurenDimensionId, readonly EvidenceEntry[]>();
   for (const block of Object.values(value)) {
     const parsed = parseDimension(block);
-    if (!parsed) continue;
-    const current = grouped.get(parsed.dimension) ?? [];
-    current.push(...parsed.entries);
-    grouped.set(parsed.dimension, current);
+    if (!parsed || grouped.has(parsed.dimension)) continue;
+    grouped.set(parsed.dimension, parsed.entries);
   }
   return [...grouped.entries()].map(([dimension, entries]) => ({ dimension, entries }));
 }

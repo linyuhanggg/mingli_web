@@ -106,15 +106,42 @@ const EMPTY_TRANSMISSIONS: DaliurenChartViewModel["transmissions"] = [
   { stage: "final", branch: "", general: "" },
 ];
 
-function cellFact(
+function uniqueFacts(values: readonly string[]): string[] {
+  const facts: string[] = [];
+  const seen = new Set<string>();
+  for (const value of values) {
+    const fact = value.trim();
+    if (!fact || seen.has(fact)) continue;
+    seen.add(fact);
+    facts.push(fact);
+  }
+  return facts;
+}
+
+function cellFacts(
   id: CellId,
   lessons: DaliurenChartViewModel["lessons"],
   transmissions: DaliurenChartViewModel["transmissions"],
-): string {
+): string[] {
   const lesson = parseLesson(id);
-  if (lesson) return lessons[lesson.index]?.[lesson.part].trim() ?? "";
+  if (lesson) return uniqueFacts([lessons[lesson.index]?.[lesson.part] ?? ""]);
   const stage = id.slice(3) as StageId;
-  return transmissions.find((item) => item.stage === stage)?.branch.trim() ?? "";
+  const transmission = transmissions.find((item) => item.stage === stage);
+  if (!transmission) return [];
+  return uniqueFacts([transmission.branch, transmission.general]);
+}
+
+function boardIdentity(view?: DaliurenChartViewModel): string {
+  if (!view) return "empty";
+  const dayHour = view.core_facts?.day_hour;
+  return JSON.stringify({
+    subject: view.subject_ref,
+    question: view.question,
+    lessons: view.lessons,
+    transmissions: view.transmissions,
+    day: dayHour?.day ?? "",
+    hour: dayHour?.hour ?? "",
+  });
 }
 
 function isNavigationKey(key: string): key is NavigationKey {
@@ -152,23 +179,29 @@ function neighbor(id: CellId, key: NavigationKey): CellId {
   return id;
 }
 
-export function DaliurenBoard({
-  view,
-  mode = "ready",
-  offer = null,
-  s4Phase = "entry",
-  showInterpretiveSections = true,
-}: Readonly<{
+type DaliurenBoardProps = Readonly<{
   view?: DaliurenChartViewModel;
   mode?: DaliurenBoardMode;
   offer?: DaliurenS4Offer | null;
   s4Phase?: DaliurenS4Phase;
   showInterpretiveSections?: boolean;
-}>) {
-  const [lockedFact, setLockedFact] = useState<string | null>(null);
-  const [focusedFact, setFocusedFact] = useState<string | null>(null);
-  const [hoveredFact, setHoveredFact] = useState<string | null>(null);
-  const [previewFact, setPreviewFact] = useState<string | null>(null);
+}>;
+
+export function DaliurenBoard(props: DaliurenBoardProps) {
+  return <DaliurenBoardSession key={boardIdentity(props.view)} {...props} />;
+}
+
+function DaliurenBoardSession({
+  view,
+  mode = "ready",
+  offer = null,
+  s4Phase = "entry",
+  showInterpretiveSections = true,
+}: DaliurenBoardProps) {
+  const [lockedFacts, setLockedFacts] = useState<readonly string[]>([]);
+  const [focusedFacts, setFocusedFacts] = useState<readonly string[]>([]);
+  const [hoveredFacts, setHoveredFacts] = useState<readonly string[]>([]);
+  const [previewFacts, setPreviewFacts] = useState<readonly string[]>([]);
   const [rovingId, setRovingId] = useState<CellId>(FIRST_CELL);
   const cellRefs = useRef<Partial<Record<CellId, HTMLButtonElement | null>>>({});
   const lessons = view?.lessons ?? EMPTY_LESSONS;
@@ -182,19 +215,27 @@ export function DaliurenBoard({
   );
   const voids = mode === "ready" && view?.core_facts ? voidBranches(view.core_facts.xunkong) : new Set<string>();
 
-  const activeFact = previewFact ?? lockedFact;
+  const activeFacts = previewFacts.length ? previewFacts : lockedFacts;
 
-  function factValue(value: string): string | null {
+  function asFacts(value: string | readonly string[]): string[] {
+    return uniqueFacts(typeof value === "string" ? [value] : value);
+  }
+
+  function sameFacts(current: readonly string[], next: readonly string[]): boolean {
+    return current.length === next.length && current.every((item, index) => item === next[index]);
+  }
+
+  function hasFact(facts: readonly string[], value: string): boolean {
     const fact = value.trim();
-    return fact || null;
+    return Boolean(fact) && facts.includes(fact);
   }
 
   function isActive(value: string): boolean {
-    return activeFact !== null && activeFact === factValue(value);
+    return hasFact(activeFacts, value);
   }
 
   function isLocked(value: string): boolean {
-    return lockedFact !== null && lockedFact === factValue(value);
+    return hasFact(lockedFacts, value);
   }
 
   function focusCell(id: CellId) {
@@ -203,48 +244,48 @@ export function DaliurenBoard({
   }
 
   function toggleLock(id: CellId) {
-    const fact = factValue(cellFact(id, lessons, transmissions));
-    const unlock = fact !== null && lockedFact === fact;
+    const facts = cellFacts(id, lessons, transmissions);
+    const unlock = facts.length > 0 && lockedFacts[0] === facts[0];
     setRovingId(id);
-    setLockedFact(unlock ? null : fact);
-    if (unlock) setPreviewFact(null);
+    setLockedFacts(unlock ? [] : facts);
+    if (unlock) setPreviewFacts([]);
     cellRefs.current[id]?.focus();
   }
 
   function toggleFactLock(value: string) {
-    const fact = factValue(value);
-    const unlock = fact !== null && lockedFact === fact;
-    setLockedFact(unlock ? null : fact);
-    if (unlock) setPreviewFact(null);
+    const facts = asFacts(value);
+    const unlock = facts.length > 0 && lockedFacts[0] === facts[0];
+    setLockedFacts(unlock ? [] : facts);
+    if (unlock) setPreviewFacts([]);
   }
 
-  function startFocusPreview(value: string) {
-    const fact = factValue(value);
-    setFocusedFact(fact);
-    setPreviewFact(fact);
+  function startFocusPreview(value: string | readonly string[]) {
+    const facts = asFacts(value);
+    setFocusedFacts(facts);
+    setPreviewFacts(facts);
   }
 
-  function stopFocusPreview(value: string) {
-    const fact = factValue(value);
-    setFocusedFact((current) => (current === fact ? null : current));
-    setPreviewFact((current) => (current === fact ? hoveredFact : current));
+  function stopFocusPreview(value: string | readonly string[]) {
+    const facts = asFacts(value);
+    setFocusedFacts((current) => (sameFacts(current, facts) ? [] : current));
+    setPreviewFacts((current) => (sameFacts(current, facts) ? hoveredFacts : current));
   }
 
-  function startHoverPreview(value: string) {
-    const fact = factValue(value);
-    setHoveredFact(fact);
-    setPreviewFact(fact);
+  function startHoverPreview(value: string | readonly string[]) {
+    const facts = asFacts(value);
+    setHoveredFacts(facts);
+    setPreviewFacts(facts);
   }
 
-  function stopHoverPreview(value: string) {
-    const fact = factValue(value);
-    setHoveredFact((current) => (current === fact ? null : current));
-    setPreviewFact((current) => (current === fact ? focusedFact : current));
+  function stopHoverPreview(value: string | readonly string[]) {
+    const facts = asFacts(value);
+    setHoveredFacts((current) => (sameFacts(current, facts) ? [] : current));
+    setPreviewFacts((current) => (sameFacts(current, facts) ? focusedFacts : current));
   }
 
   function clearLock() {
-    setLockedFact(null);
-    setPreviewFact(null);
+    setLockedFacts([]);
+    setPreviewFacts([]);
   }
 
   function onCellKeyDown(event: KeyboardEvent<HTMLButtonElement>, id: CellId) {
@@ -348,7 +389,7 @@ export function DaliurenBoard({
                     className={styles.txButton}
                     type="button"
                     data-cell={id}
-                    data-active={isActive(item.branch) ? "true" : "false"}
+                    data-active={isActive(item.branch) || isActive(item.general) ? "true" : "false"}
                     data-void={isVoidCell(item.branch, voids) ? "true" : undefined}
                     tabIndex={rovingId === id ? 0 : -1}
                     aria-pressed={isLocked(item.branch)}
@@ -357,17 +398,21 @@ export function DaliurenBoard({
                       cellRefs.current[id] = node;
                     }}
                     onClick={() => toggleLock(id)}
-                    onBlur={() => stopFocusPreview(item.branch)}
-                    onFocus={() => startFocusPreview(item.branch)}
+                    onBlur={() => stopFocusPreview([item.branch, item.general])}
+                    onFocus={() => startFocusPreview([item.branch, item.general])}
                     onKeyDown={(event) => onCellKeyDown(event, id)}
-                    onPointerEnter={() => startHoverPreview(item.branch)}
-                    onPointerLeave={() => stopHoverPreview(item.branch)}
+                    onPointerEnter={() => startHoverPreview([item.branch, item.general])}
+                    onPointerLeave={() => stopHoverPreview([item.branch, item.general])}
                   >
                     <span className={styles.stage}>{STAGE_LABEL[item.stage]}</span>
                     <span className={styles.branch} data-element={branchElement(item.branch)}>
                       {item.branch}
                     </span>
-                    <span className={styles.general} data-chip="general">
+                    <span
+                      className={styles.general}
+                      data-chip="general"
+                      data-active={isActive(item.general) ? "true" : "false"}
+                    >
                       {item.general}
                     </span>
                     {isVoidCell(item.branch, voids) ? <VoidMark /> : null}
@@ -420,7 +465,7 @@ export function DaliurenBoard({
             </thead>
             <tbody>
               {transmissions.map((item) => (
-                <tr data-active={isActive(item.branch) ? "true" : "false"} key={item.stage}>
+                <tr data-active={isActive(item.branch) || isActive(item.general) ? "true" : "false"} key={item.stage}>
                   <td>{STAGE_LABEL[item.stage]}</td>
                   <td>{item.branch}</td>
                   <td>{item.general}</td>
@@ -433,7 +478,7 @@ export function DaliurenBoard({
 
       {mode === "ready" ? (
         <DaliurenHeavenEarthPlate
-          activeFact={activeFact}
+          activeFact={activeFacts}
           anchorEarthBranches={anchored}
           earthPlate={view?.core_facts?.earth_plate ?? null}
           heavenPlate={view?.core_facts?.heaven_plate ?? null}
