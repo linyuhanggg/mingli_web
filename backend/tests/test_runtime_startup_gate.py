@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 from app.adapters.runtime import (
     V53_TIME_CHECK_RELEASE_FILE_COUNT,
+    V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT,
     FakeMingliRuntimeAdapter,
     FileSystemRuntimeReleaseInspector,
     OneShotMingliRuntimeAdapter,
@@ -732,9 +733,9 @@ _PREVIOUS_V53_TIME_CHECK_SOURCE_COMMIT = (
     "b498382e67c0f0a41b0e5563b2773d1e1e3323f5"
 )
 _ADMITTED_V53_RELEASE_MANIFEST_SHA = (
-    "c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b"
+    "d6e0df3e64e588f67cb500283199ae5413001b641d5b54f445ef610caff40130"
 )
-_ADMITTED_V53_SOURCE_COMMIT = "663543e65ae037843b03dca1dec9486293affc9d"
+_ADMITTED_V53_SOURCE_COMMIT = "443a777384975b05e50a6d969e3cab5da7a3119a"
 
 
 def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
@@ -767,16 +768,16 @@ def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
 
     assert profile == {
         "manifest_digest": (
-            "3403992cb31aebea19e69ec3b1280a5ef02718c5f9ca3e3f94448ef7b039facc"
+            "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22"
         ),
         "capability_shape_sha256": (
-            "fb9da7fa1969e449e91222a0f10a2076da2e8cca43d1083b531aa218ff31e042"
+            "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
         ),
         "release_manifest_sha256": (
-            "c451de5e4390c2a264a49aed972057081c61cb74ada160df308ac7a2af993c4b"
+            "d6e0df3e64e588f67cb500283199ae5413001b641d5b54f445ef610caff40130"
         ),
         "release_name": "mingli-master-portable-core",
-        "source_commit": "663543e65ae037843b03dca1dec9486293affc9d",
+        "source_commit": "443a777384975b05e50a6d969e3cab5da7a3119a",
     }
     assert gate.expected_manifest_digest == profile["manifest_digest"]
     assert gate.expected_capability_shape_sha256 == profile[
@@ -792,7 +793,12 @@ def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
         gate.release_inspector.expected_release_file_count
         == V53_TIME_CHECK_RELEASE_FILE_COUNT
     )
-    assert V53_TIME_CHECK_RELEASE_FILE_COUNT == 220
+    assert V53_TIME_CHECK_RELEASE_FILE_COUNT == 222
+    assert V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT == 223
+    assert (
+        V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT
+        == V53_TIME_CHECK_RELEASE_FILE_COUNT + 1
+    )
     assert profile["release_manifest_sha256"] != _PREVIOUS_V53_TIME_CHECK_LISTING_SHA
     assert profile["source_commit"] != _PREVIOUS_V53_TIME_CHECK_SOURCE_COMMIT
     assert profile["release_manifest_sha256"] == _ADMITTED_V53_RELEASE_MANIFEST_SHA
