@@ -465,7 +465,7 @@
       "source_excerpt_sha256": "49e85b95bb8434d7d79eb0b93353285615f322d969d67262c608f59bad9e1a35"
     },
     "四课不备": {
-      "rule_id": "DLR-07",
+      "rule_id": "DLR-S01",
       "local_rule_id": "liuren.structural.incomplete-four-lessons",
       "title": "四课不备",
       "source_pack": "san-shi/daliuren-daquan",
