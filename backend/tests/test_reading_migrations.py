@@ -8,6 +8,16 @@ from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.exc import IntegrityError
 
 ROOT = Path(__file__).resolve().parents[2]
+RUNTIME_FAILURE_AUDIT_CHECK = "ck_reading_versions_runtime_failure_audit_all_or_none"
+RUNTIME_FAILURE_AUDIT_DOUBLE_PREFIX = (
+    "ck_reading_versions_ck_reading_versions_runtime_failure_audit_all_or_none"
+)
+RUNTIME_FAILURE_AUDIT_COLUMNS = (
+    "runtime_failure_schema_version",
+    "runtime_failure_code",
+    "runtime_failure_category",
+    "runtime_failure_retryable",
+)
 
 
 def upgraded_engine(tmp_path: Path, monkeypatch, name: str):  # type: ignore[no-untyped-def]
@@ -149,13 +159,17 @@ def test_reading_migration_builds_immutable_phase_two_tables(
             "ck_reading_versions_state_token_envelope_all_or_none",
             "ck_reading_versions_last_result_envelope_all_or_none",
             "ck_reading_versions_completion_envelope_all_or_none",
+            RUNTIME_FAILURE_AUDIT_CHECK,
         },
         "generation_attempts": {"ck_generation_attempts_candidate_envelope_all_or_none"},
     }
     for table, names in expected_checks.items():
-        assert names <= {
+        actual_names = {
             constraint["name"] for constraint in inspector.get_check_constraints(table)
         }
+        assert names <= actual_names
+        if table == "reading_versions":
+            assert RUNTIME_FAILURE_AUDIT_DOUBLE_PREFIX not in actual_names
 
     accepted_columns = {
         column["name"]: column for column in inspector.get_columns("accepted_copies")
@@ -366,6 +380,65 @@ def test_verification_outcome_whitelist_is_enforced_by_the_migrated_database(
             {"id": uuid4().hex, "version_id": version_id},
         )
     engine.dispose()
+
+
+def test_0041_marks_check_name_as_convention_expanded() -> None:
+    source = (
+        ROOT / "backend" / "alembic" / "versions" / "0041_runtime_failure_audit.py"
+    ).read_text(encoding="utf-8")
+    assert 'CHECK_NAME = "ck_reading_versions_runtime_failure_audit_all_or_none"' in source
+    upgrade_src, downgrade_src = source.split("def downgrade()", 1)
+    assert "op.f(CHECK_NAME)" in upgrade_src
+    assert "op.f(CHECK_NAME)" in downgrade_src
+    assert "create_check_constraint(CHECK_NAME," not in source
+    assert "drop_constraint(CHECK_NAME," not in source
+
+
+def test_0041_runtime_failure_audit_round_trips_single_prefix_check_name(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:  # type: ignore[no-untyped-def]
+    database_path = tmp_path / "reading-0041-check-name.sqlite3"
+    monkeypatch.setenv(
+        "MINGLI_DATABASE_URL",
+        f"sqlite+aiosqlite:///{database_path}",
+    )
+    config = Config(str(ROOT / "backend" / "alembic.ini"))
+
+    def check_names() -> set[str | None]:
+        engine = create_engine(f"sqlite:///{database_path}")
+        try:
+            return {
+                constraint["name"]
+                for constraint in inspect(engine).get_check_constraints("reading_versions")
+            }
+        finally:
+            engine.dispose()
+
+    def column_names() -> set[str]:
+        engine = create_engine(f"sqlite:///{database_path}")
+        try:
+            return {column["name"] for column in inspect(engine).get_columns("reading_versions")}
+        finally:
+            engine.dispose()
+
+    command.upgrade(config, "0041_runtime_failure_audit")
+    names = check_names()
+    assert RUNTIME_FAILURE_AUDIT_CHECK in names
+    assert RUNTIME_FAILURE_AUDIT_DOUBLE_PREFIX not in names
+    assert set(RUNTIME_FAILURE_AUDIT_COLUMNS) <= column_names()
+
+    command.downgrade(config, "0040_drop_minor_guardian_ck")
+    names = check_names()
+    assert RUNTIME_FAILURE_AUDIT_CHECK not in names
+    assert RUNTIME_FAILURE_AUDIT_DOUBLE_PREFIX not in names
+    assert set(RUNTIME_FAILURE_AUDIT_COLUMNS).isdisjoint(column_names())
+
+    command.upgrade(config, "0041_runtime_failure_audit")
+    names = check_names()
+    assert RUNTIME_FAILURE_AUDIT_CHECK in names
+    assert RUNTIME_FAILURE_AUDIT_DOUBLE_PREFIX not in names
+    assert set(RUNTIME_FAILURE_AUDIT_COLUMNS) <= column_names()
 
 
 def test_0007_migration_round_trips_between_0006_and_head(
