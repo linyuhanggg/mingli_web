@@ -764,10 +764,16 @@ _SUPERSEDED_CORE_1D9B009_RELEASE_MANIFEST_SHA = (
 _SUPERSEDED_CORE_1D9B009_SOURCE_COMMIT = (
     "1d9b009be90e00ae04562ff8bddd0553360cb4c6"
 )
-_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
+_SUPERSEDED_CORE_4CB7922_RELEASE_MANIFEST_SHA = (
     "56a24a3a530ef9ed8d7437667b8a4d83a851827c73988044e6b928a065af6af4"
 )
-_ADMITTED_V53_SOURCE_COMMIT = "4cb7922cf18289ad43c590ad6d84eca610172a46"
+_SUPERSEDED_CORE_4CB7922_SOURCE_COMMIT = (
+    "4cb7922cf18289ad43c590ad6d84eca610172a46"
+)
+_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
+    "c817915a21fe349630f6b042fd08e3be41822a3e34edd23ecbf61deb9435b7eb"
+)
+_ADMITTED_V53_SOURCE_COMMIT = "139578ce2b43fbe33f5c37eae9b1d19b90f82547"
 
 
 def test_runtime_startup_gate_admits_the_time_check_gap7_release_profile(
@@ -1012,6 +1018,77 @@ def test_filesystem_release_inspector_rejects_the_core_1d9b009_source_identity(
         FileSystemRuntimeReleaseInspector(
             release_root=release_root,
             expected_release_manifest_sha256=manifest_sha256,
+            expected_release_name="fixture-release",
+            expected_source_commit=_ADMITTED_V53_SOURCE_COMMIT,
+        ).inspect()
+
+
+async def test_runtime_startup_gate_rejects_the_core_4cb7922_manifest_identity(
+    tmp_path: Path,
+) -> None:
+    description = await _fake_description()
+    launcher = _write_executable(tmp_path / "runtime-fixture", description.to_dict())
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    runtime = OneShotMingliRuntimeAdapter(
+        launcher_path=launcher,
+        runtime_python_path=Path("/usr/bin/python3"),
+        state_root=state_root,
+        timeout_seconds=1,
+    )
+    inventory = replace(
+        _inventory(),
+        release_manifest_sha256=_SUPERSEDED_CORE_4CB7922_RELEASE_MANIFEST_SHA,
+    )
+    gate = RuntimeStartupGate(
+        runtime=runtime,
+        release_inspector=StaticReleaseInspector(inventory),
+        expected_manifest_digest=description.manifest_digest,
+        expected_release_manifest_sha256=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
+        expected_capability_shape_sha256=runtime_capability_shape_sha256(
+            description.capabilities
+        ),
+    )
+
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        await gate.startup()
+    with pytest.raises(RuntimeStartupError, match="not ready"):
+        await gate.readiness_probe()
+
+
+def test_filesystem_release_inspector_rejects_the_core_4cb7922_source_identity(
+    tmp_path: Path,
+) -> None:
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    manifest_sha256 = _build_signed_release_fixture(
+        release_root,
+        source_commit=_SUPERSEDED_CORE_4CB7922_SOURCE_COMMIT,
+    )
+
+    with pytest.raises(RuntimeStartupError, match="release identity mismatch"):
+        FileSystemRuntimeReleaseInspector(
+            release_root=release_root,
+            expected_release_manifest_sha256=manifest_sha256,
+            expected_release_name="fixture-release",
+            expected_source_commit=_ADMITTED_V53_SOURCE_COMMIT,
+        ).inspect()
+
+
+def test_filesystem_release_inspector_rejects_mixed_4cb7922_source_and_admitted_sha(
+    tmp_path: Path,
+) -> None:
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    _build_signed_release_fixture(
+        release_root,
+        source_commit=_SUPERSEDED_CORE_4CB7922_SOURCE_COMMIT,
+    )
+
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        FileSystemRuntimeReleaseInspector(
+            release_root=release_root,
+            expected_release_manifest_sha256=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
             expected_release_name="fixture-release",
             expected_source_commit=_ADMITTED_V53_SOURCE_COMMIT,
         ).inspect()
