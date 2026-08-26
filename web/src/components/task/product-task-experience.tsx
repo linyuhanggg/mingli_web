@@ -675,11 +675,17 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     void startRuntimeReading(nextValues);
   }
 
+  const shouldKeepZiweiInputMounted = product.id === "ziwei" && values !== null;
+
   return (
     <div className={styles.experience} data-product={product.id} data-stage={stage}>
       {stage !== "input" ? <TaskProgress product={product} stage={stage} /> : null}
-      {stage === "input" ? (
-        <div className={styles.inputLayout} data-input-region="first-screen">
+      {stage === "input" || shouldKeepZiweiInputMounted ? (
+        <div
+          className={styles.inputLayout}
+          data-input-region="first-screen"
+          hidden={stage !== "input"}
+        >
           <ProductInputForm
             busy={busy}
             onProfileVersionChange={(profileVersionId) => {
