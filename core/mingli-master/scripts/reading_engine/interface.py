@@ -78,11 +78,12 @@ def _failure_for_internal_code(code: str) -> RuntimeFailure:
         "MemoryError",
     }:
         return runtime_failure("transient.resource_unavailable")
+    if code == "unknown_state_token":
+        return runtime_failure("input_contract.invalid_state_token")
     if code in {
         "empty_public_copy",
         "invalid_transition",
         "not_prepared",
-        "unknown_state_token",
     }:
         return runtime_failure("input_contract.invalid_payload")
     return runtime_failure("runtime.internal_error")
