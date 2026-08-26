@@ -47,16 +47,15 @@ def _production_settings(**overrides: object):  # type: ignore[no-untyped-def]
         "content_encryption_key_b64": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg=",
         "content_encryption_key_id": "production-content-v1",
         "runtime_adapter": "worker-v2",
-        "runtime_release_profile": "v53-time-check",
         "runtime_launcher_path": "/opt/mingli-master/scripts/run_reading_transaction.sh",
         "runtime_python_path": "/opt/mingli-runtime/venv/bin/python",
         "runtime_release_root": "/opt/mingli-master",
         "runtime_state_root": "/var/lib/mingli",
         "runtime_expected_manifest_digest": (
-            "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22"
+            "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"
         ),
         "runtime_expected_capability_shape_sha256": (
-            "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
+            "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
         ),
         "model_adapter": "deepseek",
         "deepseek_api_key": "test-only-obviously-not-a-real-key",
@@ -586,8 +585,7 @@ def test_filesystem_release_inspector_rejects_resigned_but_incomplete_inventorie
     ("overrides", "message"),
     (
         ({"runtime_adapter": "fake"}, "Fake Runtime"),
-        ({"runtime_release_profile": "v51"}, "v53-time-check"),
-        ({"runtime_release_profile": "v52-relationship"}, "v53-time-check"),
+        ({"runtime_release_profile": "v53-time-check"}, "local/test only"),
         (
             {
                 "runtime_adapter": "one-shot",
@@ -618,31 +616,29 @@ def test_production_runtime_configuration_accepts_only_the_frozen_release() -> N
     profile = _RUNTIME_RELEASE_PROFILES[settings.runtime_release_profile]
 
     assert settings.runtime_adapter == "worker-v2"
-    assert settings.runtime_release_profile == "v53-time-check"
+    assert settings.runtime_release_profile == "v51"
     assert settings.runtime_launcher_path == Path(
         "/opt/mingli-master/scripts/run_reading_transaction.sh"
     )
     assert settings.runtime_python_path == Path("/opt/mingli-runtime/venv/bin/python")
     assert (
         settings.runtime_expected_manifest_digest
-        == "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22"
+        == "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"
     )
     assert (
         settings.runtime_expected_capability_shape_sha256
-        == "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
+        == "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
     )
     assert profile["release_manifest_sha256"] == (
-        "d1b49d5842feb5d4143330d1d250af625f42644a930f7d9d9c344c5d0363b090"
+        "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
     )
-    assert profile["source_commit"] == "9c615a70f08d5609af09ead100d2b5d90e558fe8"
-    assert profile["worker_sha256"] == (
-        "3512987322ef18bb91c4798e77d7ef982d2e7e31ae9e2ddd321d78aa90261b50"
-    )
-    assert profile["worker_protocol"] == "mingli-runtime-worker-v2"
-    assert profile["worker_turn_terminal"] == "result-idle-v1"
+    assert profile["source_commit"] == "494ce0bba174a77800daf9b9c38ce9c9166d9a94"
+    assert "worker_sha256" not in profile
+    assert "worker_protocol" not in profile
+    assert "worker_turn_terminal" not in profile
 
 
-def test_production_omitted_adapter_defaults_to_worker_v2_and_v53() -> None:
+def test_production_omitted_adapter_defaults_to_worker_v2_and_v51() -> None:
     from app.config import Settings
 
     values = {
@@ -657,10 +653,10 @@ def test_production_omitted_adapter_defaults_to_worker_v2_and_v53() -> None:
         "runtime_release_root": "/opt/mingli-master",
         "runtime_state_root": "/var/lib/mingli",
         "runtime_expected_manifest_digest": (
-            "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22"
+            "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"
         ),
         "runtime_expected_capability_shape_sha256": (
-            "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
+            "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
         ),
         "model_adapter": "deepseek",
         "deepseek_api_key": "test-only-obviously-not-a-real-key",
@@ -670,7 +666,7 @@ def test_production_omitted_adapter_defaults_to_worker_v2_and_v53() -> None:
     }
     settings = Settings(**values)
     assert settings.runtime_adapter == "worker-v2"
-    assert settings.runtime_release_profile == "v53-time-check"
+    assert settings.runtime_release_profile == "v51"
 
 
 def test_process_adapter_rejects_group_or_world_writable_state_root(
@@ -955,11 +951,12 @@ def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
     assert Settings().runtime_adapter == "fake"
 
 
-def test_production_worker_v2_gate_constructs_with_admitted_identity(
+def test_production_worker_v2_on_v51_fails_closed_without_signed_worker_artifact(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     from app import config
+    from app.config import _RUNTIME_RELEASE_PROFILES
 
     release_root = tmp_path / "mingli-master"
     release_root.mkdir(mode=0o700)
@@ -982,16 +979,22 @@ def test_production_worker_v2_gate_constructs_with_admitted_identity(
         runtime_release_root=release_root,
         runtime_state_root=state_root,
     )
-    gate = build_runtime_startup_gate(settings)
-
+    v51 = _RUNTIME_RELEASE_PROFILES["v51"]
     assert settings.environment == "production"
     assert settings.runtime_adapter == "worker-v2"
-    assert settings.runtime_release_profile == "v53-time-check"
-    assert gate.runtime.adapter_kind == "runtime-worker-v2"
-    assert gate.expected_release_manifest_sha256 == _ADMITTED_V53_RELEASE_MANIFEST_SHA
-    assert gate.expected_manifest_digest == _ADMITTED_V53_DESCRIBE_DIGEST
-    assert gate.expected_capability_shape_sha256 == _ADMITTED_V53_CAPABILITY_SHAPE
-    assert gate.release_inspector.expected_source_commit == _ADMITTED_V53_SOURCE_COMMIT
+    assert settings.runtime_release_profile == "v51"
+    assert "worker_sha256" not in v51
+    with pytest.raises(RuntimeStartupError, match="worker digest is not admitted") as raised:
+        build_runtime_startup_gate(settings)
+    message = str(raised.value)
+    assert v51["release_manifest_sha256"] in message
+    assert v51["source_commit"] in message
+    assert _ADMITTED_V53_RELEASE_MANIFEST_SHA in message
+    assert _ADMITTED_V53_SOURCE_COMMIT in message
+    assert _ADMITTED_V53_WORKER_SHA256 in message
+    assert "cannot form a signed v51 artifact" in message
+    assert v51["release_manifest_sha256"] != _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    assert v51["source_commit"] != _ADMITTED_V53_SOURCE_COMMIT
 
 
 async def test_runtime_startup_gate_rejects_the_previous_b498_manifest_identity(
@@ -1630,11 +1633,15 @@ async def test_create_app_worker_v2_ready_before_requests_and_five_product_cohor
         runtime_python=runtime_python,
     ).model_copy(update={"reading_write_rate_limit": 200})
 
-    from app.main import create_app
-    from app.readings.repository import SqlReadingRepository
-    from app.security.envelope import EnvelopeCipher
-
-    from test_profiles_api import create_confirmed_profile, create_guest
+    main = importlib.import_module("app.main")
+    readings_repository = importlib.import_module("app.readings.repository")
+    envelope = importlib.import_module("app.security.envelope")
+    profiles_api = importlib.import_module("test_profiles_api")
+    create_app = main.create_app
+    SqlReadingRepository = readings_repository.SqlReadingRepository
+    EnvelopeCipher = envelope.EnvelopeCipher
+    create_confirmed_profile = profiles_api.create_confirmed_profile
+    create_guest = profiles_api.create_guest
 
     gate = build_runtime_startup_gate(settings)
     assert gate.runtime.adapter_kind == "runtime-worker-v2"

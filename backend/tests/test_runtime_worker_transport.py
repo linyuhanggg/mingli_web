@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import importlib
 import json
 import os
-import shutil
 import stat
-import subprocess
 import sys
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -24,15 +23,20 @@ from app.adapters.runtime import (
 )
 from app.readings.capability_policy import V51_RELEASE_CAPABILITY_IDS
 from app.readings.runtime_contracts import Describe, Described, Prepare, Prepared, Stopped
-from mingli_paths import MINGLI_CORE_ROOT
+
+mingli_paths = importlib.import_module("mingli_paths")
+MINGLI_CORE_ROOT = mingli_paths.MINGLI_CORE_ROOT
 
 WORKER_RELATIVE = "scripts/reading_engine/runtime_worker.py"
 WORKER_STOPPED_COPY = "本次处理未完成，请稍后重试。"
 LOCKED_CORE_WORKER_SHA256 = "3512987322ef18bb91c4798e77d7ef982d2e7e31ae9e2ddd321d78aa90261b50"
+LOCKED_CORE_LISTING_SHA256 = (
+    "d1b49d5842feb5d4143330d1d250af625f42644a930f7d9d9c344c5d0363b090"
+)
+LOCKED_CORE_SOURCE_COMMIT = "9c615a70f08d5609af09ead100d2b5d90e558fe8"
 WORKER_PROTOCOL = "mingli-runtime-worker-v2"
 WORKER_TURN_TERMINAL = "result-idle-v1"
 
-ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_PYTHON = Path(
     os.environ.get(
         "MINGLI_RUNTIME_TEST_PYTHON",
@@ -606,76 +610,19 @@ async def test_startup_gate_starts_worker_before_describe() -> None:
     assert capability_ids == V51_RELEASE_CAPABILITY_IDS
 
 
-def _release_paths(core_root: Path) -> list[str]:
-    closure_path = core_root / "release/runtime-closure-v1.json"
-    closure = json.loads(closure_path.read_text(encoding="utf-8"))
-    tracked = subprocess.run(
-        ["git", "-C", str(core_root), "ls-files", "-z"],
-        check=True,
-        capture_output=True,
-    ).stdout.split(b"\0")
-    candidates = {item.decode("utf-8") for item in tracked if item} | {WORKER_RELATIVE}
-    selected = set(closure["files"])
-    for pattern in closure["patterns"]:
-        matches = {
-            relative
-            for relative in candidates
-            if PurePosixPath(relative).match(pattern)
-        }
-        assert matches, pattern
-        selected.update(matches)
-    assert WORKER_RELATIVE in selected
-    return sorted(selected)
-
-
-def _materialize_release(destination: Path, core_root: Path) -> str:
-    destination.mkdir(mode=0o755)
-    files: dict[str, str] = {}
-    modes: dict[str, int] = {}
-    for relative in _release_paths(core_root):
-        source = core_root / relative
-        assert source.is_file(), relative
-        target = destination / relative
-        target.parent.mkdir(parents=True, exist_ok=True, mode=0o755)
-        target.parent.chmod(0o755)
-        shutil.copyfile(source, target)
-        mode = 0o755 if os.access(source, os.X_OK) else 0o644
-        target.chmod(mode)
-        files[relative] = _sha256(target.read_bytes())
-        modes[relative] = mode
-    source_commit = subprocess.run(
-        ["git", "-C", str(ROOT), "rev-parse", "HEAD"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    manifest = {
-        "schema_version": 3,
-        "release": "mingli-master-portable-core",
-        "source_commit": source_commit,
-        "files": files,
-        "modes": modes,
-    }
-    manifest_bytes = (
-        json.dumps(manifest, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
-    ).encode("utf-8")
-    manifest_path = destination / ".mingli-release-manifest.json"
-    manifest_path.write_bytes(manifest_bytes)
-    manifest_path.chmod(0o600)
-    return _sha256(manifest_bytes)
-
-
 def _clone_runtime(destination: Path) -> tuple[Path, str]:
-    source_root = RUNTIME_PYTHON.resolve().parents[1]
-    shutil.copytree(
-        source_root,
-        destination,
-        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
-    )
-    python = destination / "bin/python"
+    startup_gate = importlib.import_module("test_runtime_startup_gate")
+    python = startup_gate._copy_clean_runtime_python(RUNTIME_PYTHON, destination)
     assert python.is_file()
     integrity = _sha256((destination / "runtime-integrity.json").read_bytes())
     return python, integrity
+
+
+def _materialize_locked_core_release(destination: Path) -> str:
+    startup_gate = importlib.import_module("test_runtime_startup_gate")
+    listing = startup_gate._materialize_locked_core_release(destination)
+    assert listing == LOCKED_CORE_LISTING_SHA256
+    return listing
 
 
 @pytest.mark.skipif(not RUNTIME_PYTHON_AVAILABLE, reason="pinned Runtime Python is missing")
@@ -688,11 +635,12 @@ async def test_real_worker_ready_five_products_and_one_shot_shell_100644(
 ) -> None:
     from app.charts.projectors import project_runtime_view_model
 
-    release_root = tmp_path / "release"
-    listing = _materialize_release(release_root, MINGLI_CORE_ROOT)
     python, integrity = _clone_runtime(tmp_path / "runtime")
+    release_root = tmp_path / "release"
+    listing = _materialize_locked_core_release(release_root)
     state_root = _state_root(tmp_path)
     assert _sha256((MINGLI_CORE_ROOT / WORKER_RELATIVE).read_bytes()) == LOCKED_CORE_WORKER_SHA256
+    assert listing == LOCKED_CORE_LISTING_SHA256
     adapter = WorkerV2MingliRuntimeAdapter(
         release_root=release_root,
         runtime_python_path=python,
@@ -716,7 +664,12 @@ async def test_real_worker_ready_five_products_and_one_shot_shell_100644(
     worker_results: dict[str, dict[str, object]] = {}
     for product_id in products:
         result = await adapter.execute(_prepare(product_id, suffix=f"-{product_id}"))
-        assert isinstance(result, Prepared), (product_id, result)
+        assert isinstance(result, Prepared), (
+            product_id,
+            result,
+            adapter._transport_fault,
+            bytes(adapter._stderr),
+        )
         worker_results[product_id] = result.to_dict()
         view_model = project_runtime_view_model(result.brief.to_dict(), product_id=product_id)
         assert view_model is not None
@@ -771,9 +724,9 @@ async def test_real_worker_ready_five_products_and_one_shot_shell_100644(
     reason="worker is not in Core overlay",
 )
 async def test_real_worker_release_drift_returns_generic_stopped(tmp_path: Path) -> None:
-    release_root = tmp_path / "release"
-    listing = _materialize_release(release_root, MINGLI_CORE_ROOT)
     python, integrity = _clone_runtime(tmp_path / "runtime")
+    release_root = tmp_path / "release"
+    listing = _materialize_locked_core_release(release_root)
     adapter = WorkerV2MingliRuntimeAdapter(
         release_root=release_root,
         runtime_python_path=python,

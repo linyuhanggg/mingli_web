@@ -263,11 +263,6 @@ class Settings(BaseSettings):
         updated = dict(data)
         if "runtime_adapter" not in updated:
             updated["runtime_adapter"] = "worker-v2"
-        if (
-            updated.get("runtime_adapter") == "worker-v2"
-            and "runtime_release_profile" not in updated
-        ):
-            updated["runtime_release_profile"] = "v53-time-check"
         return updated
 
     @model_validator(mode="after")
@@ -321,11 +316,6 @@ class Settings(BaseSettings):
             raise ValueError("content encryption key must not reuse identity_hash_key")
         if self.environment == "production" and self.runtime_adapter == "fake":
             raise ValueError("Fake Runtime adapter is forbidden in production")
-        if (
-            self.runtime_adapter == "worker-v2"
-            and self.runtime_release_profile != "v53-time-check"
-        ):
-            raise ValueError("worker-v2 requires the admitted v53-time-check release")
         if self.environment == "production" and self.model_adapter == "fake":
             raise ValueError("Fake Model adapter is forbidden in production")
         if self.environment == "production" and self.dogfood_entitlement_gates_enabled:
@@ -396,7 +386,10 @@ class Settings(BaseSettings):
         if any(path is not None and not path.is_absolute() for path in runtime_paths):
             raise ValueError("Runtime launcher, Python, release and state paths must be absolute")
         if self.environment == "production":
-            if self.runtime_release_profile == "v51-extension-facts":
+            if self.runtime_release_profile in {
+                "v51-extension-facts",
+                "v53-time-check",
+            }:
                 raise ValueError("selected Runtime release is local/test only")
             if self.runtime_launcher_path is None:
                 raise ValueError("production Runtime launcher is required")

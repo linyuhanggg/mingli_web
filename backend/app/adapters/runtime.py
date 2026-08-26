@@ -951,6 +951,7 @@ class WorkerV2MingliRuntimeAdapter:
         self._written_request_ids: set[str] = set()
         self._isolated = False
         self._written_without_result = False
+        self._transport_fault: str | None = None
 
     @property
     def isolated(self) -> bool:
@@ -1066,6 +1067,10 @@ class WorkerV2MingliRuntimeAdapter:
         self._identity_sha256 = identity
         self._next_sequence = 1
 
+    def _generic_stop(self, fault: str) -> Stopped:
+        self._transport_fault = fault
+        return generic_runtime_stopped()
+
     async def execute(self, command: MingliCommand) -> MingliResult:
         async with self._lock:
             if (
@@ -1075,14 +1080,14 @@ class WorkerV2MingliRuntimeAdapter:
                 or self._identity_sha256 is None
                 or self._written_without_result
             ):
-                return generic_runtime_stopped()
+                return self._generic_stop("already-isolated")
             request_id = secrets.token_hex(16)
             if (
                 _REQUEST_ID_RE.fullmatch(request_id) is None
                 or request_id in self._written_request_ids
             ):
                 await self._isolate_locked()
-                return generic_runtime_stopped()
+                return self._generic_stop("request-id")
             sequence = self._next_sequence
             envelope = {
                 "type": "command",
@@ -1096,15 +1101,20 @@ class WorkerV2MingliRuntimeAdapter:
                 encoded = encode_worker_frame(envelope)
             except RuntimeTransportError:
                 await self._isolate_locked()
-                return generic_runtime_stopped()
+                return self._generic_stop("encode")
             stdin = self._process.stdin
             stdout = self._process.stdout
             if stdin is None or stdout is None:
                 await self._isolate_locked()
-                return generic_runtime_stopped()
+                return self._generic_stop("pipe-unavailable")
             if _stream_has_pending(stdout) or self._stderr:
+                fault = (
+                    "pending-before-write"
+                    if _stream_has_pending(stdout)
+                    else f"stderr-before-write:{bytes(self._stderr)[:200]!r}"
+                )
                 await self._isolate_locked()
-                return generic_runtime_stopped()
+                return self._generic_stop(fault)
             try:
                 async with asyncio.timeout(self._request_timeout_seconds):
                     stdin.write(encoded)
@@ -1115,36 +1125,38 @@ class WorkerV2MingliRuntimeAdapter:
                     payload = await _read_worker_frame(stdout)
                     if not self._is_bound_result(payload, request_id, sequence):
                         await self._isolate_locked()
-                        return generic_runtime_stopped()
+                        return self._generic_stop(f"unbound-result:{payload.get('type')}")
                     if payload.get("worker_action") != "continue":
                         await self._isolate_locked()
-                        return generic_runtime_stopped()
+                        return self._generic_stop(
+                            f"worker-isolate:{payload.get('worker_action')}"
+                        )
                     result_payload = payload.get("result")
                     if not isinstance(result_payload, Mapping):
                         await self._isolate_locked()
-                        return generic_runtime_stopped()
+                        return self._generic_stop("invalid-result")
                     try:
                         result = result_from_dict(result_payload)
                     except (KeyError, TypeError, ValueError):
                         await self._isolate_locked()
-                        return generic_runtime_stopped()
+                        return self._generic_stop("result-decode")
                     terminal = await self._read_frame_watching_stderr(stdout)
                     if not self._is_bound_idle(terminal, request_id, sequence):
                         await self._isolate_locked()
-                        return generic_runtime_stopped()
+                        return self._generic_stop(f"unbound-idle:{terminal.get('type')}")
             except TimeoutError:
                 await self._isolate_locked()
-                return generic_runtime_stopped()
-            except (BrokenPipeError, ConnectionResetError, RuntimeTransportError):
+                return self._generic_stop("timeout")
+            except (BrokenPipeError, ConnectionResetError, RuntimeTransportError) as error:
                 await self._isolate_locked()
-                return generic_runtime_stopped()
+                return self._generic_stop(f"transport:{type(error).__name__}")
             except BaseException:
                 await self._isolate_locked()
                 raise
             self._written_without_result = False
             if self._process is not None and self._process.returncode is not None:
                 await self._isolate_locked()
-                return generic_runtime_stopped()
+                return self._generic_stop("process-exited")
             return result
 
     async def close(self) -> None:
@@ -1322,7 +1334,20 @@ def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:
     else:
         expected_worker_sha256 = profile.get("worker_sha256")
         if expected_worker_sha256 is None:
-            raise RuntimeStartupError("Runtime worker digest is not admitted")
+            locked_worker = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
+            raise RuntimeStartupError(
+                "Runtime worker digest is not admitted for "
+                f"{settings.runtime_release_profile}: listing="
+                f"{profile['release_manifest_sha256']} source="
+                f"{profile['source_commit']} has no worker_sha256/"
+                "worker_protocol/worker_turn_terminal; locked worker "
+                f"listing={locked_worker['release_manifest_sha256']} "
+                f"source={locked_worker['source_commit']} "
+                f"worker={locked_worker['worker_sha256']} "
+                f"protocol={locked_worker.get('worker_protocol')}/"
+                f"{locked_worker.get('worker_turn_terminal')} "
+                "cannot form a signed v51 artifact"
+            )
         if profile.get("worker_protocol") != WORKER_PROTOCOL:
             raise RuntimeStartupError("Runtime worker protocol is not admitted")
         if profile.get("worker_turn_terminal") != WORKER_TURN_TERMINAL:
