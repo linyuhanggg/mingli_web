@@ -16,7 +16,7 @@ from app.adapters.otp import OtpSecurityMode
 
 Environment = Literal["local", "test", "staging", "production"]
 OtpAdapterName = Literal["fake", "disabled", "smtp"]
-RuntimeAdapterName = Literal["fake", "one-shot"]
+RuntimeAdapterName = Literal["fake", "one-shot", "worker-v2"]
 RuntimeReleaseProfile = Literal[
     "v51",
     "v51-extension-facts",
@@ -75,10 +75,15 @@ _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
             "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
         ),
         "release_manifest_sha256": (
-            "9700fe96e2c440dc8b14c41aed576264d893c7a23d638708eafe40388771db71"
+            "d1b49d5842feb5d4143330d1d250af625f42644a930f7d9d9c344c5d0363b090"
         ),
         "release_name": "mingli-master-portable-core",
-        "source_commit": "443a777384975b05e50a6d969e3cab5da7a3119a",
+        "source_commit": "9c615a70f08d5609af09ead100d2b5d90e558fe8",
+        "worker_sha256": (
+            "3512987322ef18bb91c4798e77d7ef982d2e7e31ae9e2ddd321d78aa90261b50"
+        ),
+        "worker_protocol": "mingli-runtime-worker-v2",
+        "worker_turn_terminal": "result-idle-v1",
     },
 }
 _P0_MODEL_PROVIDER = "deepseek"

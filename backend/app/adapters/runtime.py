@@ -62,8 +62,8 @@ class MingliRuntime(Protocol):
 
 EXPECTED_RUNTIME_PROTOCOL = "mingli-portable-interface-v2"
 EXPECTED_RELEASE_FILE_COUNT = 217
-V53_TIME_CHECK_RELEASE_FILE_COUNT = 222
-V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT = 223
+V53_TIME_CHECK_RELEASE_FILE_COUNT = 223
+V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT = 224
 EXPECTED_REFERENCE_PACK_COUNT = 55
 EXPECTED_EVIDENCE_RECORD_COUNT = 1328
 FROZEN_RELEASE_MANIFEST_SHA256 = "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
@@ -1248,11 +1248,22 @@ class WorkerV2MingliRuntimeAdapter:
             self._stderr_task = None
 
 
+def _runtime_integrity_sha256(runtime_python_path: Path) -> str:
+    integrity_path = runtime_python_path.resolve().parents[1] / "runtime-integrity.json"
+    try:
+        metadata = integrity_path.lstat()
+    except OSError as error:
+        raise RuntimeStartupError("Runtime integrity manifest is missing") from error
+    if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISREG(metadata.st_mode):
+        raise RuntimeStartupError("Runtime integrity manifest must be a regular file")
+    return _sha256_file(integrity_path)
+
+
 def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:
     """Build the real Runtime boundary exclusively from server settings."""
 
-    if settings.runtime_adapter != "one-shot":
-        raise RuntimeStartupError("a real one-shot Runtime adapter is required")
+    if settings.runtime_adapter not in {"worker-v2", "one-shot"}:
+        raise RuntimeStartupError("a real worker-v2 Runtime adapter is required")
     required_paths = {
         "launcher": settings.runtime_launcher_path,
         "Python": settings.runtime_python_path,
@@ -1298,15 +1309,43 @@ def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:
         if settings.runtime_release_profile == "v53-time-check"
         else EXPECTED_RELEASE_FILE_COUNT
     )
-    runtime = OneShotMingliRuntimeAdapter(
-        launcher_path=launcher_path,
-        runtime_python_path=runtime_python_path,
-        state_root=state_root,
-        timeout_seconds=settings.runtime_timeout_seconds,
-        max_stdin_bytes=settings.runtime_max_stdin_bytes,
-        max_stdout_bytes=settings.runtime_max_stdout_bytes,
-        max_stderr_bytes=settings.runtime_max_stderr_bytes,
-    )
+    if settings.runtime_adapter == "one-shot":
+        runtime: MingliRuntime = OneShotMingliRuntimeAdapter(
+            launcher_path=launcher_path,
+            runtime_python_path=runtime_python_path,
+            state_root=state_root,
+            timeout_seconds=settings.runtime_timeout_seconds,
+            max_stdin_bytes=settings.runtime_max_stdin_bytes,
+            max_stdout_bytes=settings.runtime_max_stdout_bytes,
+            max_stderr_bytes=settings.runtime_max_stderr_bytes,
+        )
+    else:
+        expected_worker_sha256 = profile.get("worker_sha256")
+        if expected_worker_sha256 is None:
+            raise RuntimeStartupError("Runtime worker digest is not admitted")
+        if profile.get("worker_protocol") != WORKER_PROTOCOL:
+            raise RuntimeStartupError("Runtime worker protocol is not admitted")
+        if profile.get("worker_turn_terminal") != WORKER_TURN_TERMINAL:
+            raise RuntimeStartupError("Runtime worker turn terminal is not admitted")
+        worker_path = _require_absolute_regular_file(
+            release_root / WORKER_RELATIVE,
+            "Runtime worker",
+        )
+        if _sha256_file(worker_path) != expected_worker_sha256:
+            raise RuntimeStartupError("Runtime worker digest mismatch")
+        runtime = WorkerV2MingliRuntimeAdapter(
+            release_root=release_root,
+            runtime_python_path=runtime_python_path,
+            state_root=state_root,
+            expected_listing_sha256=profile["release_manifest_sha256"],
+            expected_runtime_integrity_sha256=_runtime_integrity_sha256(
+                runtime_python_path
+            ),
+            request_timeout_seconds=min(
+                settings.chart_fast_path_timeout_seconds,
+                WORKER_REQUEST_TIMEOUT_SECONDS,
+            ),
+        )
     inspector = FileSystemRuntimeReleaseInspector(
         release_root=release_root,
         expected_release_manifest_sha256=profile["release_manifest_sha256"],

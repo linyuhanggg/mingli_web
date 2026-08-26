@@ -5,6 +5,7 @@ import os
 import shutil
 import stat
 import sys
+import time
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -19,16 +20,19 @@ from app.adapters.runtime import (
     RuntimeReleaseInventory,
     RuntimeStartupError,
     RuntimeStartupGate,
+    WorkerV2MingliRuntimeAdapter,
     build_runtime_startup_gate,
     runtime_capability_shape_sha256,
 )
 from app.readings.capability_policy import (
     P0_EXPOSED_CAPABILITY_IDS,
     V51_RELEASE_CAPABILITY_IDS,
+    V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
     CapabilityNotExposedError,
     require_p0_capability,
 )
 from app.readings.runtime_contracts import Describe, Described
+from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
 
 
@@ -42,7 +46,7 @@ def _production_settings(**overrides: object):  # type: ignore[no-untyped-def]
         "identity_hash_key": "production-identity-key",
         "content_encryption_key_b64": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg=",
         "content_encryption_key_id": "production-content-v1",
-        "runtime_adapter": "one-shot",
+        "runtime_adapter": "worker-v2",
         "runtime_launcher_path": "/opt/mingli-master/scripts/run_reading_transaction.sh",
         "runtime_python_path": "/opt/mingli-runtime/venv/bin/python",
         "runtime_release_root": "/opt/mingli-master",
@@ -600,7 +604,7 @@ def test_production_runtime_configuration_fails_closed(
 def test_production_runtime_configuration_accepts_only_the_frozen_release() -> None:
     settings = _production_settings()
 
-    assert settings.runtime_adapter == "one-shot"
+    assert settings.runtime_adapter == "worker-v2"
     assert settings.runtime_launcher_path == Path(
         "/opt/mingli-master/scripts/run_reading_transaction.sh"
     )
@@ -737,16 +741,29 @@ _PREVIOUS_V53_TIME_CHECK_SOURCE_COMMIT = (
 _CLEAN_443A777_RELEASE_MANIFEST_SHA = (
     "d6e0df3e64e588f67cb500283199ae5413001b641d5b54f445ef610caff40130"
 )
-_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
+_PREVIOUS_COMBINED_OVERLAY_LISTING_SHA = (
     "9700fe96e2c440dc8b14c41aed576264d893c7a23d638708eafe40388771db71"
 )
-_ADMITTED_V53_SOURCE_COMMIT = "443a777384975b05e50a6d969e3cab5da7a3119a"
+_HEAD_RESERIALIZED_SOURCE_COMMIT = (
+    "a3a29546e8b46b608314118bdd2d5faf80955149"
+)
+_HEAD_RESERIALIZED_LISTING_SHA = (
+    "42ac0ab548663bea785ba1c7a1b07a74eee9240ddc637ed100451887c8d04a9a"
+)
+_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
+    "d1b49d5842feb5d4143330d1d250af625f42644a930f7d9d9c344c5d0363b090"
+)
+_ADMITTED_V53_SOURCE_COMMIT = "9c615a70f08d5609af09ead100d2b5d90e558fe8"
+_ADMITTED_V53_WORKER_SHA256 = (
+    "3512987322ef18bb91c4798e77d7ef982d2e7e31ae9e2ddd321d78aa90261b50"
+)
 _ADMITTED_V53_DESCRIBE_DIGEST = (
     "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22"
 )
 _ADMITTED_V53_CAPABILITY_SHAPE = (
     "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
 )
+_WORKER_RELATIVE = "scripts/reading_engine/runtime_worker.py"
 _QA_LOCKED_BAZI_CALC_SHA256 = (
     "ab35fbf511693d47487aa0601bdba32d13a44cf988888b90c085d6573027249a"
 )
@@ -765,6 +782,58 @@ _QA_RUNTIME_PYTHON = Path(
 )
 
 
+def _install_locked_worker(release_root: Path) -> Path:
+    source = _REPO_ROOT / "core" / "mingli-master" / _WORKER_RELATIVE
+    worker = release_root / _WORKER_RELATIVE
+    worker.parent.mkdir(parents=True, exist_ok=True)
+    worker.write_bytes(source.read_bytes())
+    worker.chmod(0o644)
+    assert _sha256(worker) == _ADMITTED_V53_WORKER_SHA256
+    return worker
+
+
+def _dummy_runtime_python(tmp_path: Path) -> Path:
+    venv = tmp_path / "dummy-runtime"
+    (venv / "bin").mkdir(parents=True, exist_ok=True)
+    python = venv / "bin" / "python"
+    python.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+    python.chmod(0o700)
+    integrity = venv / "runtime-integrity.json"
+    integrity.write_text("{}\n", encoding="utf-8")
+    integrity.chmod(0o600)
+    return python
+
+
+def _v53_worker_settings(
+    tmp_path: Path,
+    *,
+    release_root: Path,
+    runtime_python: Path,
+) -> Any:
+    from app.config import Settings
+
+    launcher = tmp_path / "runtime-rollback-fixture"
+    if not launcher.is_file():
+        launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        launcher.chmod(0o700)
+    _install_locked_worker(release_root)
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700, exist_ok=True)
+    return Settings(
+        environment="test",
+        database_url=f"sqlite+aiosqlite:///{tmp_path / 'startup-gate.sqlite3'}",
+        runtime_adapter="worker-v2",
+        runtime_release_profile="v53-time-check",
+        runtime_launcher_path=launcher,
+        runtime_python_path=runtime_python,
+        runtime_release_root=release_root,
+        runtime_state_root=state_root,
+        runtime_expected_manifest_digest=_ADMITTED_V53_DESCRIBE_DIGEST,
+        runtime_expected_capability_shape_sha256=_ADMITTED_V53_CAPABILITY_SHAPE,
+        chart_fast_path_timeout_seconds=2.0,
+    )
+
+
 def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
     tmp_path: Path,
 ) -> None:
@@ -775,21 +844,13 @@ def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
     launcher.chmod(0o700)
     release_root = tmp_path / "release-root"
     release_root.mkdir(mode=0o700)
-    state_root = tmp_path / "state"
-    state_root.mkdir(mode=0o700)
     profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
-    settings = Settings(
-        runtime_adapter="one-shot",
-        runtime_release_profile="v53-time-check",
-        runtime_launcher_path=launcher,
-        runtime_python_path=Path("/usr/bin/python3"),
-        runtime_release_root=release_root,
-        runtime_state_root=state_root,
-        runtime_expected_manifest_digest=profile["manifest_digest"],
-        runtime_expected_capability_shape_sha256=profile[
-            "capability_shape_sha256"
-        ],
+    settings = _v53_worker_settings(
+        tmp_path,
+        release_root=release_root,
+        runtime_python=_dummy_runtime_python(tmp_path),
     )
+    settings = settings.model_copy(update={"runtime_launcher_path": launcher})
 
     gate = build_runtime_startup_gate(settings)
 
@@ -799,7 +860,11 @@ def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
         "release_manifest_sha256": _ADMITTED_V53_RELEASE_MANIFEST_SHA,
         "release_name": "mingli-master-portable-core",
         "source_commit": _ADMITTED_V53_SOURCE_COMMIT,
+        "worker_sha256": _ADMITTED_V53_WORKER_SHA256,
+        "worker_protocol": "mingli-runtime-worker-v2",
+        "worker_turn_terminal": "result-idle-v1",
     }
+    assert gate.runtime.adapter_kind == "runtime-worker-v2"
     assert gate.expected_manifest_digest == profile["manifest_digest"]
     assert gate.expected_capability_shape_sha256 == profile[
         "capability_shape_sha256"
@@ -814,18 +879,21 @@ def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
         gate.release_inspector.expected_release_file_count
         == V53_TIME_CHECK_RELEASE_FILE_COUNT
     )
-    assert V53_TIME_CHECK_RELEASE_FILE_COUNT == 222
-    assert V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT == 223
+    assert V53_TIME_CHECK_RELEASE_FILE_COUNT == 223
+    assert V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT == 224
     assert (
         V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT
         == V53_TIME_CHECK_RELEASE_FILE_COUNT + 1
     )
     assert profile["release_manifest_sha256"] != _PREVIOUS_V53_TIME_CHECK_LISTING_SHA
     assert profile["release_manifest_sha256"] != _CLEAN_443A777_RELEASE_MANIFEST_SHA
+    assert profile["release_manifest_sha256"] != _PREVIOUS_COMBINED_OVERLAY_LISTING_SHA
+    assert profile["release_manifest_sha256"] != _HEAD_RESERIALIZED_LISTING_SHA
     assert profile["source_commit"] != _PREVIOUS_V53_TIME_CHECK_SOURCE_COMMIT
     assert profile["release_manifest_sha256"] == _ADMITTED_V53_RELEASE_MANIFEST_SHA
     assert profile["source_commit"] == _ADMITTED_V53_SOURCE_COMMIT
     assert Settings().chart_fast_path_timeout_seconds == 2.0
+    assert Settings().runtime_adapter == "fake"
 
 
 async def test_runtime_startup_gate_rejects_the_previous_b498_manifest_identity(
@@ -911,8 +979,8 @@ def _discover_runtime_python() -> Path | None:
         candidates.append(Path(raw).expanduser())
     candidates.extend(
         (
-            _QA_RUNTIME_PYTHON,
             Path.home() / ".local/share/mingli-master/venv/bin/python",
+            _QA_RUNTIME_PYTHON,
         )
     )
     for path in candidates:
@@ -998,7 +1066,7 @@ def _materialize_combined_overlay_release(tmp_path: Path) -> Path:
         _QA_LOCKED_LIUREN_CALC_SHA256,
     )
     listing = _sha256(release_root / ".mingli-release-manifest.json")
-    assert listing == _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    assert listing == _PREVIOUS_COMBINED_OVERLAY_LISTING_SHA
     return release_root
 
 
@@ -1016,7 +1084,7 @@ def _v53_one_shot_settings(
         launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
         launcher.chmod(0o700)
     state_root = tmp_path / "state"
-    state_root.mkdir(mode=0o700)
+    state_root.mkdir(mode=0o700, exist_ok=True)
     return Settings(
         environment="test",
         database_url=f"sqlite+aiosqlite:///{tmp_path / 'startup-gate.sqlite3'}",
@@ -1107,15 +1175,16 @@ async def test_build_runtime_startup_gate_and_create_app_fail_closed_on_wrong_di
     assert _sha256(release_root / ".mingli-release-manifest.json") != (
         _ADMITTED_V53_RELEASE_MANIFEST_SHA
     )
-    settings = _v53_one_shot_settings(
+    settings = _v53_worker_settings(
         tmp_path,
         release_root=release_root,
-        runtime_python=Path("/usr/bin/python3"),
+        runtime_python=_dummy_runtime_python(tmp_path),
     )
     gate = build_runtime_startup_gate(settings)
+    assert gate.runtime.adapter_kind == "runtime-worker-v2"
     assert gate.expected_release_manifest_sha256 == _ADMITTED_V53_RELEASE_MANIFEST_SHA
     assert gate.release_inspector.expected_source_commit == _ADMITTED_V53_SOURCE_COMMIT
-    assert gate.expected_release_file_count == 222
+    assert gate.expected_release_file_count == 223
 
     with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
         await gate.startup()
@@ -1139,10 +1208,10 @@ async def test_build_runtime_startup_gate_and_create_app_fail_closed_on_clean_tr
     assert _sha256(release_root / ".mingli-release-manifest.json") == (
         _CLEAN_443A777_RELEASE_MANIFEST_SHA
     )
-    settings = _v53_one_shot_settings(
+    settings = _v53_worker_settings(
         tmp_path,
         release_root=release_root,
-        runtime_python=Path("/usr/bin/python3"),
+        runtime_python=_dummy_runtime_python(tmp_path),
     )
     gate = build_runtime_startup_gate(settings)
     with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
@@ -1156,36 +1225,31 @@ async def test_build_runtime_startup_gate_and_create_app_fail_closed_on_clean_tr
             raise AssertionError("create_app must reject the clean 443a777 listing")
 
 
-async def test_build_runtime_startup_gate_and_create_app_admit_combined_overlay_tree(
+async def test_build_runtime_startup_gate_and_create_app_reject_previous_overlay_listing(
     tmp_path: Path,
 ) -> None:
-    runtime_python = _discover_runtime_python()
-    if runtime_python is None:
-        pytest.skip("the dedicated Mingli Runtime Python is not installed")
-    runtime_python = _copy_clean_runtime_python(
-        runtime_python,
-        tmp_path / "runtime-venv",
-    )
+    source = _discover_clean_v53_release_root()
+    if source is None:
+        pytest.skip("the clean 443a777 Runtime release is not present")
     release_root = _materialize_combined_overlay_release(tmp_path)
-    settings = _v53_one_shot_settings(
+    assert _sha256(release_root / ".mingli-release-manifest.json") == (
+        _PREVIOUS_COMBINED_OVERLAY_LISTING_SHA
+    )
+    settings = _v53_worker_settings(
         tmp_path,
         release_root=release_root,
-        runtime_python=runtime_python,
+        runtime_python=_dummy_runtime_python(tmp_path),
     )
-    assert settings.chart_fast_path_timeout_seconds == 2.0
     gate = build_runtime_startup_gate(settings)
-    described = await gate.startup()
-    await gate.readiness_probe()
-    assert described.manifest_digest == _ADMITTED_V53_DESCRIBE_DIGEST
-    assert runtime_capability_shape_sha256(described.capabilities) == (
-        _ADMITTED_V53_CAPABILITY_SHAPE
-    )
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        await gate.startup()
 
     from app.main import create_app
 
     application = create_app(settings=settings)
-    async with application.router.lifespan_context(application):
-        assert application.state.chart_runtime is not None
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        async with application.router.lifespan_context(application):
+            raise AssertionError("create_app must reject the previous overlay listing")
 
 
 async def test_configured_worker_admits_the_real_runtime_before_processing(
@@ -1258,3 +1322,366 @@ async def test_configured_worker_fails_closed_when_runtime_startup_fails(
             pytest.fail("Worker must not start after failed Runtime admission")
 
     assert events == ["runtime-startup", "database-dispose"]
+
+
+def _core_listing_payload(source_commit: str) -> bytes:
+    scripts = str(_REPO_ROOT / "core" / "mingli-master" / "scripts")
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    import release_deploy as rd
+
+    core = _REPO_ROOT / "core" / "mingli-master"
+    manifest = rd.build_manifest(core, rd.tracked_release_files(core), source_commit)
+    return (
+        json.dumps(manifest, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+
+
+def _materialize_locked_core_release(destination: Path) -> str:
+    scripts = str(_REPO_ROOT / "core" / "mingli-master" / "scripts")
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    import release_deploy as rd
+
+    core = _REPO_ROOT / "core" / "mingli-master"
+    files = rd.tracked_release_files(core)
+    manifest = rd.build_manifest(core, files, _ADMITTED_V53_SOURCE_COMMIT)
+    payload = (
+        json.dumps(manifest, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    listing = hashlib.sha256(payload).hexdigest()
+    assert listing == _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    destination.mkdir(mode=0o700)
+    for relative in manifest["files"]:
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(core / relative, target)
+        target.chmod(manifest["modes"][relative])
+    manifest_path = destination / ".mingli-release-manifest.json"
+    manifest_path.write_bytes(payload)
+    manifest_path.chmod(0o600)
+    for path in (destination, *destination.rglob("*")):
+        if path.is_dir():
+            path.chmod(stat.S_IMODE(path.stat().st_mode) & ~0o022)
+    return listing
+
+
+def test_factory_rejects_fake_adapter_and_keeps_one_shot_as_explicit_rollback(
+    tmp_path: Path,
+) -> None:
+    from app.config import Settings
+
+    launcher = tmp_path / "runtime-fixture"
+    launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    launcher.chmod(0o700)
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    fake = Settings(
+        runtime_adapter="fake",
+        runtime_launcher_path=launcher,
+        runtime_python_path=Path("/usr/bin/python3"),
+        runtime_release_root=release_root,
+        runtime_state_root=state_root,
+        runtime_expected_manifest_digest="f" * 64,
+        runtime_expected_capability_shape_sha256="a" * 64,
+    )
+    with pytest.raises(RuntimeStartupError, match="worker-v2"):
+        build_runtime_startup_gate(fake)
+
+    rollback = _v53_one_shot_settings(
+        tmp_path,
+        release_root=release_root,
+        runtime_python=Path("/usr/bin/python3"),
+    )
+    gate = build_runtime_startup_gate(rollback)
+    assert gate.runtime.adapter_kind == "one-shot-process"
+
+
+def test_factory_rejects_worker_identity_drift(tmp_path: Path) -> None:
+    from app.config import Settings
+
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    worker = release_root / _WORKER_RELATIVE
+    worker.parent.mkdir(parents=True)
+    worker.write_bytes(b"not-the-locked-runtime-worker\n")
+    worker.chmod(0o644)
+    launcher = tmp_path / "runtime-rollback-fixture"
+    launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    launcher.chmod(0o700)
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    settings = Settings(
+        environment="test",
+        runtime_adapter="worker-v2",
+        runtime_release_profile="v53-time-check",
+        runtime_launcher_path=launcher,
+        runtime_python_path=_dummy_runtime_python(tmp_path),
+        runtime_release_root=release_root,
+        runtime_state_root=state_root,
+        runtime_expected_manifest_digest=_ADMITTED_V53_DESCRIBE_DIGEST,
+        runtime_expected_capability_shape_sha256=_ADMITTED_V53_CAPABILITY_SHAPE,
+    )
+    assert _sha256(worker) != _ADMITTED_V53_WORKER_SHA256
+    with pytest.raises(RuntimeStartupError, match="worker digest"):
+        build_runtime_startup_gate(settings)
+
+
+async def test_create_app_rejects_head_reserialized_listing(tmp_path: Path) -> None:
+    payload = _core_listing_payload(_HEAD_RESERIALIZED_SOURCE_COMMIT)
+    listing = hashlib.sha256(payload).hexdigest()
+    assert listing == _HEAD_RESERIALIZED_LISTING_SHA
+    assert listing != _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    release_root = tmp_path / "head-reserialized-release"
+    release_root.mkdir(mode=0o700)
+    (release_root / ".mingli-release-manifest.json").write_bytes(payload)
+    settings = _v53_worker_settings(
+        tmp_path,
+        release_root=release_root,
+        runtime_python=_dummy_runtime_python(tmp_path),
+    )
+    gate = build_runtime_startup_gate(settings)
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        await gate.startup()
+
+    from app.main import create_app
+
+    application = create_app(settings=settings)
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        async with application.router.lifespan_context(application):
+            raise AssertionError("create_app must reject head-reserialized listing")
+
+
+async def test_create_app_worker_crash_does_not_fallback_to_one_shot(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    (release_root / ".mingli-release-manifest.json").write_text(
+        "{}",
+        encoding="utf-8",
+    )
+    settings = _v53_worker_settings(
+        tmp_path,
+        release_root=release_root,
+        runtime_python=_dummy_runtime_python(tmp_path),
+    )
+    constructed: list[str] = []
+    original_one_shot = OneShotMingliRuntimeAdapter.__init__
+
+    def tracking_one_shot(
+        self: OneShotMingliRuntimeAdapter,
+        *args: object,
+        **kwargs: object,
+    ) -> None:
+        constructed.append("one-shot")
+        original_one_shot(self, *args, **kwargs)
+
+    async def crash_start(self: WorkerV2MingliRuntimeAdapter) -> dict[str, object]:
+        constructed.append("worker-start")
+        raise RuntimeStartupError("Runtime worker READY is invalid")
+
+    def admitted_inventory(self: FileSystemRuntimeReleaseInspector) -> RuntimeReleaseInventory:
+        return RuntimeReleaseInventory(
+            release_manifest_sha256=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
+            release_file_count=223,
+            provider_ids=V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
+            ready_provider_ids=V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
+            reference_pack_count=55,
+            evidence_record_count=1328,
+            runtime_closure_file_count=223,
+        )
+
+    monkeypatch.setattr(OneShotMingliRuntimeAdapter, "__init__", tracking_one_shot)
+    monkeypatch.setattr(WorkerV2MingliRuntimeAdapter, "start", crash_start)
+    monkeypatch.setattr(FileSystemRuntimeReleaseInspector, "inspect", admitted_inventory)
+
+    gate = build_runtime_startup_gate(settings)
+    assert gate.runtime.adapter_kind == "runtime-worker-v2"
+    assert constructed == []
+    with pytest.raises(RuntimeStartupError, match="READY is invalid"):
+        await gate.startup()
+    assert constructed == ["worker-start"]
+
+    from app.main import create_app
+
+    application = create_app(settings=settings)
+    with pytest.raises(RuntimeStartupError, match="READY is invalid"):
+        async with application.router.lifespan_context(application):
+            raise AssertionError("create_app must not fallback after worker crash")
+    assert "one-shot" not in constructed
+
+
+async def test_create_app_worker_v2_ready_before_requests_and_five_product_cohort(
+    tmp_path: Path,
+    database: Any,
+) -> None:
+    runtime_python = _discover_runtime_python()
+    if runtime_python is None:
+        pytest.skip("the dedicated Mingli Runtime Python is not installed")
+    runtime_python = _copy_clean_runtime_python(runtime_python, tmp_path / "runtime-venv")
+    release_root = tmp_path / "locked-core-release"
+    listing = _materialize_locked_core_release(release_root)
+    assert listing == _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    settings = _v53_worker_settings(
+        tmp_path,
+        release_root=release_root,
+        runtime_python=runtime_python,
+    ).model_copy(update={"reading_write_rate_limit": 200})
+
+    from app.main import create_app
+    from app.readings.repository import SqlReadingRepository
+    from app.security.envelope import EnvelopeCipher
+    from test_profiles_api import create_confirmed_profile, create_guest
+
+    gate = build_runtime_startup_gate(settings)
+    assert gate.runtime.adapter_kind == "runtime-worker-v2"
+    application = create_app(settings=settings, database=database)
+    runtime = None
+    try:
+        async with application.router.lifespan_context(application):
+            runtime = application.state.chart_runtime
+            assert runtime is not None
+            assert runtime.adapter_kind == "runtime-worker-v2"
+            ready = runtime.ready
+            assert ready is not None
+            assert ready["protocol"] == "mingli-runtime-worker-v2"
+            assert ready["turn_terminal"] == "result-idle-v1"
+            assert ready["listing_sha256"] == _ADMITTED_V53_RELEASE_MANIFEST_SHA
+            assert ready["runtime_integrity_sha256"]
+            boot_pid = ready["pid"]
+            async with database.sessions() as session, session.begin():
+                repository = SqlReadingRepository(
+                    session,
+                    EnvelopeCipher.from_settings(settings),
+                )
+                await repository.create_runtime_release(
+                    name="mingli-master-portable-core",
+                    version="5.3",
+                    source_commit=_ADMITTED_V53_SOURCE_COMMIT,
+                    release_manifest_digest=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
+                    protocol_version="mingli-portable-interface-v2",
+                    describe_manifest_digest=_ADMITTED_V53_DESCRIBE_DIGEST,
+                    image_digest=None,
+                    production_ready=True,
+                )
+            async with AsyncClient(
+                transport=ASGITransport(app=application),
+                base_url="https://testserver",
+            ) as client:
+                headers = await create_guest(client)
+                profile = await create_confirmed_profile(client, headers)
+                profile_version_id = profile["profile_version_id"]
+                event_datetime = "2026-08-14T10:00:00+08:00"
+                cases = {
+                    "ziwei": (
+                        "/api/v1/readings/ziwei",
+                        {
+                            "profile_version_id": profile_version_id,
+                            "dimension_ids": ["career"],
+                        },
+                        "ziwei-chart/v1",
+                    ),
+                    "bazi": (
+                        "/api/v1/readings/preview",
+                        {
+                            "profile_version_id": profile_version_id,
+                            "dimension_ids": ["career"],
+                        },
+                        "bazi-chart/v1",
+                    ),
+                    "liuyao": (
+                        "/api/v1/readings/liuyao",
+                        {
+                            "cast": [6, 7, 8, 9, 7, 8],
+                            "event_datetime": event_datetime,
+                            "timezone": "Asia/Shanghai",
+                            "location": "北京市朝阳区",
+                            "dimension_ids": ["outcome"],
+                        },
+                        "liuyao-chart/v1",
+                    ),
+                    "meihua": (
+                        "/api/v1/readings/meihua",
+                        {
+                            "casting_method": "time",
+                            "event_datetime": event_datetime,
+                            "timezone": "Asia/Shanghai",
+                            "location": "北京市朝阳区",
+                            "dimension_ids": ["outcome", "state"],
+                        },
+                        "meihua-chart/v1",
+                    ),
+                    "daliuren": (
+                        "/api/v1/readings/daliuren",
+                        {
+                            "event_datetime": event_datetime,
+                            "timezone": "Asia/Shanghai",
+                            "location": "北京市朝阳区",
+                            "dimension_ids": ["outcome"],
+                        },
+                        "daliuren-chart/v1",
+                    ),
+                }
+                ziwei_path, ziwei_payload, ziwei_schema = cases["ziwei"]
+                ziwei_times: list[float] = []
+                first_view = None
+                for index in range(31):
+                    started = time.perf_counter()
+                    response = await client.post(
+                        ziwei_path,
+                        headers={
+                            **headers,
+                            "Idempotency-Key": f"worker-v2-ziwei-{index:02d}",
+                        },
+                        json=ziwei_payload,
+                    )
+                    elapsed = time.perf_counter() - started
+                    assert response.status_code == 201, response.text
+                    body = response.json()
+                    assert body["status"] == "prepared"
+                    assert body["view_model"]["schema_version"] == ziwei_schema
+                    assert body["fast_path_timing"]["queue_wait_ms"] == 0
+                    assert body["fast_path_timing"]["worker_pickup_ms"] == 0
+                    assert elapsed < 1.0
+                    stored = await client.get(
+                        f"/api/v1/readings/{body['reading_version_id']}/result"
+                    )
+                    assert stored.status_code == 200
+                    assert stored.json()["view_model"] == body["view_model"]
+                    ziwei_times.append(elapsed)
+                    if first_view is None:
+                        first_view = body["view_model"]
+                    else:
+                        assert body["view_model"] == first_view
+                assert len(ziwei_times) == 31
+                for product, (path, payload, schema) in cases.items():
+                    response = await client.post(
+                        path,
+                        headers={
+                            **headers,
+                            "Idempotency-Key": f"worker-v2-product-{product}",
+                        },
+                        json=payload,
+                    )
+                    assert response.status_code == 201, response.text
+                    body = response.json()
+                    assert body["status"] == "prepared"
+                    assert body["view_model"]["schema_version"] == schema
+                    assert body["fast_path_timing"]["queue_wait_ms"] == 0
+                    assert body["fast_path_timing"]["worker_pickup_ms"] == 0
+                    stored = await client.get(
+                        f"/api/v1/readings/{body['reading_version_id']}/result"
+                    )
+                    assert stored.status_code == 200
+                    assert stored.json()["view_model"] == body["view_model"]
+                    assert stored.json()["status"] == "prepared"
+            assert runtime.ready is not None
+            assert runtime.ready["pid"] == boot_pid
+    finally:
+        close = getattr(runtime, "close", None)
+        if callable(close):
+            await close()
