@@ -20,124 +20,6 @@
         { "type": "null" }
       ]
     },
-    "runtimeFailure": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["schema_version", "code", "category", "retryable"],
-      "properties": {
-        "schema_version": { "const": "mingli-runtime-failure/v1" },
-        "code": {
-          "enum": [
-            "bootstrap.unexpected_arguments",
-            "bootstrap.guard_load_failed",
-            "bootstrap.runtime_lock_failed",
-            "bootstrap.runtime_identity_invalid",
-            "bootstrap.state_root_invalid",
-            "input_contract.malformed_json",
-            "input_contract.invalid_command",
-            "input_contract.invalid_payload",
-            "input_contract.invalid_state_token",
-            "runtime.internal_error",
-            "transient.timeout",
-            "transient.resource_unavailable"
-          ]
-        },
-        "category": {
-          "enum": ["bootstrap", "input_contract", "runtime_internal", "transient"]
-        },
-        "retryable": { "type": "boolean" }
-      },
-      "allOf": [
-        {
-          "oneOf": [
-            {
-              "properties": {
-                "code": { "const": "bootstrap.unexpected_arguments" },
-                "category": { "const": "bootstrap" },
-                "retryable": { "const": false }
-              }
-            },
-            {
-              "properties": {
-                "code": { "const": "bootstrap.guard_load_failed" },
-                "category": { "const": "bootstrap" },
-                "retryable": { "const": false }
-              }
-            },
-            {
-              "properties": {
-                "code": { "const": "bootstrap.runtime_lock_failed" },
-                "category": { "const": "bootstrap" },
-                "retryable": { "const": false }
-              }
-            },
-            {
-              "properties": {
-                "code": { "const": "bootstrap.runtime_identity_invalid" },
-                "category": { "const": "bootstrap" },
-                "retryable": { "const": false }
-              }
-            },
-            {
-              "properties": {
-                "code": { "const": "bootstrap.state_root_invalid" },
-                "category": { "const": "bootstrap" },
-                "retryable": { "const": false }
-              }
-            },
-            {
-              "properties": {
-                "code": { "const": "input_contract.malformed_json" },
-                "category": { "const": "input_contract" },
-                "retryable": { "const": false }
-              }
-            },
-            {
-              "properties": {
-                "code": { "const": "input_contract.invalid_command" },
-                "category": { "const": "input_contract" },
-                "retryable": { "const": false }
-              }
-            },
-            {
-              "properties": {
-                "code": { "const": "input_contract.invalid_payload" },
-                "category": { "const": "input_contract" },
-                "retryable": { "const": false }
-              }
-            },
-            {
-              "properties": {
-                "code": { "const": "input_contract.invalid_state_token" },
-                "category": { "const": "input_contract" },
-                "retryable": { "const": false }
-              }
-            },
-            {
-              "properties": {
-                "code": { "const": "runtime.internal_error" },
-                "category": { "const": "runtime_internal" },
-                "retryable": { "const": false }
-              }
-            },
-            {
-              "properties": {
-                "code": { "const": "transient.timeout" },
-                "category": { "const": "transient" },
-                "retryable": { "const": true }
-              }
-            },
-            {
-              "properties": {
-                "code": { "const": "transient.resource_unavailable" },
-                "category": { "const": "transient" },
-                "retryable": { "const": true }
-              }
-            }
-          ]
-        }
-      ]
-    },
     "stringArray": {
       "type": "array",
       "items": { "$ref": "#/$defs/nonEmptyText" },
@@ -509,8 +391,7 @@
     "stopped": {
       "oneOf": [
         { "$ref": "#/$defs/stoppedNeedInput" },
-        { "$ref": "#/$defs/stoppedTerminalNonError" },
-        { "$ref": "#/$defs/stoppedTerminalError" }
+        { "$ref": "#/$defs/stoppedTerminal" }
       ]
     },
     "stoppedNeedInput": {
@@ -529,13 +410,12 @@
         "public_copy": { "$ref": "#/$defs/nonEmptyText" },
         "state_token": { "$ref": "#/$defs/nonEmptyText" },
         "input_request": { "$ref": "#/$defs/inputRequest" },
-        "failure": { "type": "null" },
         "continuation_allowed": { "const": true },
         "terminal": { "const": false },
         "completion_committed": { "const": false }
       }
     },
-    "stoppedTerminalNonError": {
+    "stoppedTerminal": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -547,33 +427,10 @@
       ],
       "properties": {
         "kind": { "const": "stopped" },
-        "reason": { "enum": ["unsupported", "conflict"] },
+        "reason": { "enum": ["unsupported", "conflict", "error"] },
         "public_copy": { "$ref": "#/$defs/nonEmptyText" },
         "state_token": { "$ref": "#/$defs/nullableText" },
         "input_request": { "type": "null" },
-        "failure": { "type": "null" },
-        "continuation_allowed": { "const": false },
-        "terminal": { "const": true },
-        "completion_committed": { "const": false }
-      }
-    },
-    "stoppedTerminalError": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind",
-        "reason",
-        "public_copy",
-        "state_token",
-        "input_request"
-      ],
-      "properties": {
-        "kind": { "const": "stopped" },
-        "reason": { "const": "error" },
-        "public_copy": { "$ref": "#/$defs/nonEmptyText" },
-        "state_token": { "$ref": "#/$defs/nullableText" },
-        "input_request": { "type": "null" },
-        "failure": { "$ref": "#/$defs/runtimeFailure" },
         "continuation_allowed": { "const": false },
         "terminal": { "const": true },
         "completion_committed": { "const": false }

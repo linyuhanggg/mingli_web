@@ -25,15 +25,43 @@ class ContractValidationError(ValueError):
 
 
 @lru_cache(maxsize=8)
-def _validator(schema_name: str) -> Draft202012Validator:
+def _schema_document(schema_name: str) -> dict[str, Any]:
     with (SCHEMA_ROOT / schema_name).open(encoding="utf-8") as stream:
         schema: dict[str, Any] = json.load(stream)
-    return Draft202012Validator(schema)
+    return schema
+
+
+@lru_cache(maxsize=8)
+def _validator(schema_name: str) -> Draft202012Validator:
+    return Draft202012Validator(_schema_document(schema_name))
+
+
+def _result_schema_declares_failure() -> bool:
+    defs = _schema_document(RESULT_SCHEMA).get("$defs")
+    if not isinstance(defs, dict):
+        return False
+    if "runtimeFailure" in defs:
+        return True
+    for definition in defs.values():
+        if isinstance(definition, dict) and "failure" in (definition.get("properties") or {}):
+            return True
+    return False
+
+
+def _payload_for_schema(schema_name: str, payload: Mapping[str, object]) -> dict[str, object]:
+    data = dict(payload)
+    if (
+        schema_name == RESULT_SCHEMA
+        and "failure" in data
+        and not _result_schema_declares_failure()
+    ):
+        data.pop("failure")
+    return data
 
 
 def _validate_schema(schema_name: str, payload: Mapping[str, object]) -> None:
     try:
-        _validator(schema_name).validate(dict(payload))
+        _validator(schema_name).validate(_payload_for_schema(schema_name, payload))
     except ValidationError as error:
         path = "$" + "".join(f"[{part!r}]" for part in error.absolute_path)
         raise ContractValidationError(f"{schema_name} validation failed at {path}") from error
@@ -308,6 +336,24 @@ class RuntimeFailure:
         }
 
 
+RUNTIME_FAILURE_PUBLIC_KEYS = frozenset(
+    {"schema_version", "code", "category", "retryable"}
+)
+
+
+def _runtime_failure_from_public(payload: object) -> RuntimeFailure:
+    if not isinstance(payload, Mapping):
+        raise ContractValidationError("runtime failure must be a closed object")
+    if set(payload) != RUNTIME_FAILURE_PUBLIC_KEYS:
+        raise ContractValidationError("runtime failure must match the closed v1 object")
+    try:
+        return RuntimeFailure.from_dict(payload)
+    except (KeyError, TypeError, ValueError) as error:
+        raise ContractValidationError(
+            "runtime failure must match the closed v1 code table"
+        ) from error
+
+
 @dataclass(frozen=True, slots=True)
 class Stopped:
     reason: StoppedReason
@@ -328,7 +374,7 @@ class Stopped:
             if self.failure is None:
                 object.__setattr__(self, "failure", RuntimeFailure.internal_error())
         elif self.failure is not None:
-            raise ValueError("only Stopped(error) can carry a runtime failure")
+            raise ContractValidationError("only Stopped(error) can carry a runtime failure")
         _validate_schema(RESULT_SCHEMA, self.to_dict())
 
     def to_dict(self) -> dict[str, Any]:
@@ -407,6 +453,6 @@ def result_from_dict(payload: Mapping[str, object]) -> MingliResult:
         failure=(
             None
             if payload.get("failure") is None
-            else RuntimeFailure.from_dict(cast(Mapping[str, object], payload["failure"]))
+            else _runtime_failure_from_public(payload.get("failure"))
         ),
     )
