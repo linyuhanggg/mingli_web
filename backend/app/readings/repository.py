@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
-from typing import cast
+from typing import Any, cast
 from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
@@ -42,6 +42,8 @@ from app.readings.status import ReadingStatus
 from app.security.envelope import EncryptedPayload, EnvelopeCipher
 
 READING_HISTORY_LIMIT = 50
+HOST_LIFECYCLE_KIND = "host_lifecycle"
+HOST_LIFECYCLE_INPUT_WAIT_EXPIRED = "input_wait_expired"
 
 
 class ReadingJobAlreadyQueuedError(ValueError):
@@ -278,6 +280,7 @@ class SqlReadingRepository:
         version.last_result_nonce = None
         version.last_result_ciphertext = None
         version.last_result_digest = None
+        self._clear_runtime_failure_audit(version)
         job.status = "queued"
         job.available_at = available_at or datetime.now(UTC)
         job.lease_owner = None
@@ -392,17 +395,9 @@ class SqlReadingRepository:
         version = await self.session.get(ReadingVersion, version_id)
         if version is None:
             raise LookupError("Reading Version not found")
-        if version.last_result_ciphertext is None:
+        payload = self._decrypt_last_result_payload(version)
+        if payload is None or payload.get("kind") == HOST_LIFECYCLE_KIND:
             return None
-        payload = self.cipher.decrypt_json(
-            self._payload(
-                version.last_result_key_id,
-                version.last_result_nonce,
-                version.last_result_ciphertext,
-                version.last_result_digest,
-            ),
-            context=f"reading-version:{version.id}:last-result",
-        )
         result = result_from_dict(payload)
         if not isinstance(result, Stopped) or result.reason != "need_input":
             return None
@@ -650,19 +645,16 @@ class SqlReadingRepository:
     async def load_checkpoint(self, job_id: str) -> ReadingCheckpoint:
         _job, version = await self._job_and_version(job_id)
         stopped: Stopped | None = None
-        if version.last_result_ciphertext is not None:
-            result_payload = self.cipher.decrypt_json(
-                self._payload(
-                    version.last_result_key_id,
-                    version.last_result_nonce,
-                    version.last_result_ciphertext,
-                    version.last_result_digest,
-                ),
-                context=f"reading-version:{version.id}:last-result",
-            )
-            result = result_from_dict(result_payload)
-            if isinstance(result, Stopped):
-                stopped = result
+        host_lifecycle_copy: str | None = None
+        result_payload = self._decrypt_last_result_payload(version)
+        if result_payload is not None:
+            if result_payload.get("kind") == HOST_LIFECYCLE_KIND:
+                copy = result_payload.get("public_copy")
+                host_lifecycle_copy = copy if isinstance(copy, str) else None
+            else:
+                result = result_from_dict(result_payload)
+                if isinstance(result, Stopped):
+                    stopped = result
 
         token = self._decrypt_optional_text(
             version.state_token_key_id,
@@ -729,6 +721,7 @@ class SqlReadingRepository:
             attempt_count=attempt_count or 0,
             completion_copy=completion_copy,
             accepted=accepted,
+            host_lifecycle_copy=host_lifecycle_copy,
         )
 
     async def record_waiting_input(
@@ -783,12 +776,10 @@ class SqlReadingRepository:
             if job.language.lower().startswith("en")
             else "补充资料超过 7 天，任务已取消。"
         )
-        self._set_last_result(
+        self._set_host_lifecycle_terminal(
             version,
-            Stopped(
-                reason="error",
-                public_copy=public_copy,
-            ),
+            reason=HOST_LIFECYCLE_INPUT_WAIT_EXPIRED,
+            public_copy=public_copy,
         )
         version.status = ReadingStatus.TERMINAL_STOPPED.value
         job.status = "stopped"
@@ -1122,6 +1113,56 @@ class SqlReadingRepository:
         version.last_result_nonce = encrypted.nonce
         version.last_result_ciphertext = encrypted.ciphertext
         version.last_result_digest = encrypted.fingerprint
+        if stopped.failure is None:
+            self._clear_runtime_failure_audit(version)
+            return
+        version.runtime_failure_schema_version = stopped.failure.schema_version
+        version.runtime_failure_code = stopped.failure.code
+        version.runtime_failure_category = stopped.failure.category
+        version.runtime_failure_retryable = stopped.failure.retryable
+
+    def _set_host_lifecycle_terminal(
+        self,
+        version: ReadingVersion,
+        *,
+        reason: str,
+        public_copy: str,
+    ) -> None:
+        encrypted = self.cipher.encrypt_json(
+            {
+                "kind": HOST_LIFECYCLE_KIND,
+                "reason": reason,
+                "public_copy": public_copy,
+            },
+            context=f"reading-version:{version.id}:last-result",
+        )
+        version.last_result_key_id = encrypted.key_id
+        version.last_result_nonce = encrypted.nonce
+        version.last_result_ciphertext = encrypted.ciphertext
+        version.last_result_digest = encrypted.fingerprint
+        self._clear_runtime_failure_audit(version)
+
+    def _decrypt_last_result_payload(
+        self, version: ReadingVersion
+    ) -> dict[str, Any] | None:
+        if version.last_result_ciphertext is None:
+            return None
+        return self.cipher.decrypt_json(
+            self._payload(
+                version.last_result_key_id,
+                version.last_result_nonce,
+                version.last_result_ciphertext,
+                version.last_result_digest,
+            ),
+            context=f"reading-version:{version.id}:last-result",
+        )
+
+    @staticmethod
+    def _clear_runtime_failure_audit(version: ReadingVersion) -> None:
+        version.runtime_failure_schema_version = None
+        version.runtime_failure_code = None
+        version.runtime_failure_category = None
+        version.runtime_failure_retryable = None
 
     def _set_completion(self, version: ReadingVersion, public_copy: str) -> None:
         encrypted = self.cipher.encrypt_text(

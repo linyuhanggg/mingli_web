@@ -32,6 +32,7 @@ import {
 } from "@/lib/reading-display";
 
 import { DaliurenBoard } from "./daliuren-board";
+import { ZiweiPalaceBoard } from "./ziwei-palace-board";
 import styles from "./runtime-chart.module.css";
 
 function Table({
@@ -231,101 +232,11 @@ function ZiweiChart({
   view: ZiweiChartViewModel;
   showInterpretiveSections: boolean;
 }>) {
-  const coreFacts = view.core_facts;
-  const transformations = coreFacts?.transformations ?? [];
-  const annualLayers = coreFacts?.annual_layers ?? [];
-  const monthlyLayers = coreFacts?.monthly_layers ?? [];
-  const interpretiveCandidates = coreFacts?.interpretive_candidates;
+  const annualLayers = view.core_facts?.annual_layers ?? [];
+  const monthlyLayers = view.core_facts?.monthly_layers ?? [];
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
-      <dl className={styles.meta}>
-        <div>
-          <dt>命宫</dt>
-          <dd>{view.life_palace_id}</dd>
-        </div>
-        <div>
-          <dt>身宫</dt>
-          <dd>{view.body_palace_id}</dd>
-        </div>
-        {coreFacts?.five_elements_class ? (
-          <div>
-            <dt>五行局</dt>
-            <dd>{coreFacts.five_elements_class}</dd>
-          </div>
-        ) : null}
-        {coreFacts?.ming_shen ? (
-          <div>
-            <dt>命身</dt>
-            <dd>
-              命 {coreFacts.ming_shen.ming_branch} · 身 {coreFacts.ming_shen.shen_branch}
-            </dd>
-          </div>
-        ) : null}
-        {coreFacts?.major_limit_direction ? (
-          <div>
-            <dt>大限方向</dt>
-            <dd>
-              {coreFacts.major_limit_direction.direction} · 起运 {coreFacts.major_limit_starting_age ?? "—"} 岁
-            </dd>
-          </div>
-        ) : null}
-        {coreFacts?.active_major_limit ? (
-          <div>
-            <dt>当前大限事实</dt>
-            <dd>已返回当前大限</dd>
-          </div>
-        ) : null}
-        {coreFacts?.chinese_date ? (
-          <div>
-            <dt>农历四柱</dt>
-            <dd>{coreFacts.chinese_date}</dd>
-          </div>
-        ) : null}
-      </dl>
-      {showInterpretiveSections && interpretiveCandidates ? (
-        <Table
-          caption="命宫三方四正与古籍候选（非最终结论）"
-          headers={["项目", "盘面输出"]}
-          rows={[
-            ["状态", String(interpretiveCandidates.status ?? "candidate_only")],
-            ["命中候选", String(Array.isArray(interpretiveCandidates.matched_rules) ? interpretiveCandidates.matched_rules.length : 0)],
-            ["四化在三方四正", String(Array.isArray(interpretiveCandidates.transformation_facts) ? interpretiveCandidates.transformation_facts.length : 0)],
-            ["边界", String(interpretiveCandidates.boundary ?? "仅展示盘面候选")],
-          ]}
-        />
-      ) : null}
-      {showInterpretiveSections && coreFacts?.source_conditioned_patterns.length ? (
-        <Table
-          caption="古籍来源条件候选"
-          headers={["规则", "来源", "命中条件", "状态"]}
-          rows={coreFacts.source_conditioned_patterns.map((pattern) => [
-            `${pattern.local_rule_id} · ${pattern.title}`,
-            pattern.source_pack,
-            pattern.predicate_audit.join("；"),
-            "谓词命中，未下断语",
-          ])}
-        />
-      ) : null}
-      <Table
-        caption="十二宫与主星"
-        headers={["宫位", "天干", "地支", "主星", "辅曜"]}
-        rows={view.palaces.map((palace) => [
-          palace.label,
-          palace.heavenly_stem,
-          palace.earthly_branch,
-          palace.major_stars.join("、") || "—",
-          [...(palace.minor_stars ?? []), ...(palace.adjective_stars ?? [])]
-            .map((star) => star.name)
-            .join("、") || "—",
-        ])}
-      />
-      {transformations.length ? (
-        <Table
-          caption="本命四化事实"
-          headers={["星曜", "四化", "落宫", "范围"]}
-          rows={transformations.map((item) => [item.star, item.transformation, `${item.palace} · ${item.palace_branch}`, item.scope])}
-        />
-      ) : null}
+      <ZiweiPalaceBoard showInterpretiveSections={showInterpretiveSections} view={view} />
       {annualLayers.length ? (
         <Table
           caption="流年盘面事实"
@@ -350,7 +261,6 @@ function ZiweiChart({
           ])}
         />
       ) : null}
-      <p className={styles.note}>只展示已返回的宫位、星曜、大限与四化事实，不在浏览器追加判断。</p>
     </div>
   );
 }

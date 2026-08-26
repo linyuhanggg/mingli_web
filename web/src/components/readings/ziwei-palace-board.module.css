@@ -1,0 +1,381 @@
+.board {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+  color: var(--color-text);
+  background: var(--color-canvas);
+}
+
+.silhouetteFigure {
+  display: grid;
+  gap: var(--space-sm);
+  min-width: 0;
+  margin: 0;
+}
+
+.silhouetteFigure figcaption {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+}
+
+.ring {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  aspect-ratio: 1;
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.cell,
+.center {
+  min-width: 0;
+  min-height: var(--target-min);
+  padding: 0.35rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: left;
+}
+
+.cell {
+  display: grid;
+  align-content: start;
+  gap: 0.15rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+.cell[data-empty="true"] {
+  cursor: default;
+}
+
+.cell[data-branch="巳"] {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.cell[data-branch="午"] {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.cell[data-branch="未"] {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.cell[data-branch="申"] {
+  grid-column: 4;
+  grid-row: 1;
+}
+
+.cell[data-branch="辰"] {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.cell[data-branch="酉"] {
+  grid-column: 4;
+  grid-row: 2;
+}
+
+.cell[data-branch="卯"] {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.cell[data-branch="戌"] {
+  grid-column: 4;
+  grid-row: 3;
+}
+
+.cell[data-branch="寅"] {
+  grid-column: 1;
+  grid-row: 4;
+}
+
+.cell[data-branch="丑"] {
+  grid-column: 2;
+  grid-row: 4;
+}
+
+.cell[data-branch="子"] {
+  grid-column: 3;
+  grid-row: 4;
+}
+
+.cell[data-branch="亥"] {
+  grid-column: 4;
+  grid-row: 4;
+}
+
+.center {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 0.25rem;
+  grid-column: 2 / 4;
+  grid-row: 2 / 4;
+}
+
+.cell[data-life="true"] {
+  border: 1px solid var(--color-text);
+}
+
+.cell[data-highlight="primary"] {
+  border-color: var(--color-accent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.cell[data-highlight="related"] {
+  background: var(--color-surface-muted);
+}
+
+.cell:focus-visible,
+.center:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.marks {
+  display: flex;
+  gap: 0.2rem;
+  justify-content: flex-end;
+}
+
+.mark {
+  display: inline-flex;
+  min-width: 1.1rem;
+  justify-content: center;
+  border: 1px solid var(--color-text);
+  color: var(--color-text);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.stars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.35rem;
+  min-width: 0;
+}
+
+.major,
+.palaceName {
+  font-family: var(--font-domain);
+  color: var(--color-text);
+}
+
+.major {
+  font-size: var(--font-size-emphasis);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.minor {
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+}
+
+.adjective {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+}
+
+.brightness {
+  margin-left: 0.1rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+}
+
+.hua {
+  display: inline-flex;
+  min-width: 1.05rem;
+  margin-left: 0.15rem;
+  justify-content: center;
+  border: 1px solid var(--color-evidence);
+  color: var(--color-evidence);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-top: auto;
+}
+
+.palaceName {
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.ganzhi,
+.decade {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}
+
+.density {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.densityButton {
+  min-height: var(--target-min);
+  padding: 0 0.7rem;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+}
+
+.densityButton[aria-pressed="true"] {
+  border-color: var(--color-text);
+}
+
+.gods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.35rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+}
+
+.god {
+  color: var(--color-text-secondary);
+}
+
+.centerLine {
+  margin: 0;
+  font-size: var(--font-size-aux);
+}
+
+.centerName {
+  font-family: var(--font-domain);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.thumbs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.thumb {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  min-height: var(--target-min);
+  padding: 0.15rem;
+  border: 0;
+  color: var(--color-text);
+  background: transparent;
+  font-family: var(--font-domain);
+  font-size: var(--font-size-meta);
+}
+
+.thumb:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.thumb[data-life="true"],
+.thumb[data-body="true"] {
+  box-shadow: inset 0 -1px 0 var(--color-accent);
+}
+
+.thumb[data-highlight="primary"],
+.card[data-highlight="primary"] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.thumb[data-highlight="related"],
+.card[data-highlight="related"] {
+  background: var(--color-surface-muted);
+}
+
+.list {
+  display: grid;
+  gap: var(--space-sm);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.detailTrigger {
+  justify-self: start;
+  min-height: var(--target-min);
+  padding: 0 0.7rem;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--font-size-meta);
+}
+
+.detailTrigger:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-aux);
+}
+
+.table.srOnly {
+  width: 1px;
+  max-width: 1px;
+  table-layout: fixed;
+}
+
+.table th,
+.table td {
+  padding: 0.25rem 0.4rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell,
+  .center,
+  .card {
+    transition: none;
+  }
+}

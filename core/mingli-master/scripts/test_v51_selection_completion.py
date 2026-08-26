@@ -1225,6 +1225,52 @@ print(facts['fact_digest'])
 
 
 class SelectionProviderActivationTests(unittest.TestCase):
+    def test_ephemeral_runtime_reuse_preserves_every_selection_fact(self) -> None:
+        arguments = {
+            "spec": _spec(
+                date_range={"start": "2026-07-24", "end": "2026-07-24"}
+            ),
+            "timezone_name": "Asia/Shanghai",
+            "location": "上海",
+        }
+        lunar_constructor = selection.Lunar
+        with mock.patch.object(
+            selection,
+            "Lunar",
+            side_effect=lunar_constructor,
+        ) as reused_constructor:
+            reused = selection.build_fact_layer(**arguments)
+
+        original_aligned_runtime = selection._aligned_runtime
+
+        def without_context(local_datetime, calendar, runtime_context=None):
+            del runtime_context
+            return original_aligned_runtime(local_datetime, calendar, None)
+
+        with (
+            mock.patch.object(
+                selection,
+                "Lunar",
+                side_effect=lunar_constructor,
+            ) as uncached_constructor,
+            mock.patch.object(
+                selection,
+                "_aligned_runtime",
+                side_effect=without_context,
+            ),
+        ):
+            independently_recalculated = selection.build_fact_layer(**arguments)
+
+        self.assertEqual(reused, independently_recalculated)
+        self.assertLess(
+            reused_constructor.call_count,
+            uncached_constructor.call_count,
+        )
+        self.assertGreaterEqual(
+            uncached_constructor.call_count,
+            2 * reused_constructor.call_count - 1,
+        )
+
     def _prepare_bounded_range(self, end: str) -> tuple[PreparedReading, float]:
         intent = _intent()
         intent["horizon"] = {
@@ -1450,6 +1496,63 @@ class SelectionProviderActivationTests(unittest.TestCase):
         self.assertTrue(
             all("verdict" not in key for row in patterns for key in row)
         )
+
+    def test_source_pattern_suffix_index_matches_complete_fact_index(self) -> None:
+        indexed = {
+            "chart_facts": {
+                "fact_layer_status": "deterministic_selection_candidates",
+                "output": {
+                    "calendar_candidates": [
+                        {
+                            "calendar": {
+                                "ganzhi": {
+                                    "year": "甲辰",
+                                    "month": "辛未",
+                                    "day": "己丑",
+                                    "hour": "庚午",
+                                }
+                            },
+                            "active_source_rule_ids": [
+                                f"rule-{index}" for index in range(12)
+                            ],
+                            "unrelated": {"large": [1, 2, 3]},
+                        }
+                    ]
+                },
+            }
+        }
+        rules = tuple(
+            rule
+            for rule in production_evidence_rules()
+            if rule.system == "selection" and rule.runtime_active
+        )
+        suffixes = tuple(
+            dict.fromkeys(
+                predicate.path_suffix
+                for rule in rules
+                for predicate in (
+                    *rule.required_fact_predicates,
+                    *rule.excluded_fact_predicates,
+                )
+            )
+        )
+        expected = {
+            path: value
+            for path, value in selection._fact_leaves(indexed)
+            if any(
+                path.endswith(suffix) or f"{suffix}/" in path
+                for suffix in suffixes
+            )
+        }
+
+        actual = list(selection._fact_leaves_at_suffixes(indexed, suffixes))
+
+        self.assertEqual(dict(actual), expected)
+        self.assertEqual(
+            actual,
+            list(selection._fact_leaves_at_suffixes(indexed, suffixes)),
+        )
+        self.assertFalse(any("unrelated" in path for path, _ in actual))
 
     def test_extension_preserves_source_conditioned_patterns(self) -> None:
         provider = SelectionProvider(ROOT)

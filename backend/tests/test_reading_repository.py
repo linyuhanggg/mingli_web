@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib
 from collections.abc import AsyncIterator
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -270,6 +270,150 @@ async def test_repository_round_trips_encrypted_orchestrator_checkpoints(
         accepted_copy = await repository.get_accepted_copy(version.id)
         assert fact_brief.payload_digest
         assert accepted_copy.public_copy_digest
+
+
+async def test_repository_persists_only_closed_runtime_failure_audit_fields(
+    reading_database: Any,
+) -> None:
+    models = importlib.import_module("app.readings.models")
+    now = datetime(2026, 8, 9, 12, 0, tzinfo=UTC)
+    async with reading_database.sessions() as session, session.begin():
+        repository, _profile, version, job, contracts = await create_reading_graph(session)
+        await repository.record_terminal_stopped(
+            str(job.id),
+            contracts.Stopped(
+                reason="error",
+                public_copy="含敏感上下文的失败文案不进入审计列。",
+                state_token="runtime-secret-token",
+                failure=contracts.RuntimeFailure(
+                    code="transient.timeout",
+                    category="transient",
+                    retryable=True,
+                ),
+            ),
+            now,
+        )
+        checkpoint = await repository.load_checkpoint(str(job.id))
+        audit_row = (
+            await session.execute(
+                text(
+                    "SELECT runtime_failure_schema_version, runtime_failure_code, "
+                    "runtime_failure_category, runtime_failure_retryable "
+                    "FROM reading_versions"
+                )
+            )
+        ).one()
+
+    assert checkpoint.terminal_stopped is not None
+    assert checkpoint.terminal_stopped.failure == contracts.RuntimeFailure(
+        code="transient.timeout",
+        category="transient",
+        retryable=True,
+    )
+    assert audit_row == (
+        "mingli-runtime-failure/v1",
+        "transient.timeout",
+        "transient",
+        True,
+    )
+
+    async with reading_database.sessions() as session:
+        persisted = await session.get(models.ReadingVersion, version.id)
+        assert persisted is not None
+        serialized = repr(
+            (
+                persisted.last_result_ciphertext,
+                persisted.runtime_failure_schema_version,
+                persisted.runtime_failure_code,
+                persisted.runtime_failure_category,
+                persisted.runtime_failure_retryable,
+            )
+        )
+    assert "runtime-secret-token" not in serialized
+    assert "敏感上下文" not in serialized
+
+
+async def test_expire_waiting_input_uses_host_lifecycle_terminal_without_runtime_failure(
+    reading_database: Any,
+) -> None:
+    models = importlib.import_module("app.readings.models")
+    envelope = importlib.import_module("app.security.envelope")
+    now = datetime(2026, 8, 9, 12, 0, tzinfo=UTC)
+    waiting_at = now - timedelta(days=7)
+    async with reading_database.sessions() as session, session.begin():
+        repository, _profile, version, job, contracts = await create_reading_graph(session)
+        await repository.record_waiting_input(
+            str(job.id),
+            contracts.Stopped(
+                reason="need_input",
+                public_copy="还需要补充资料。",
+                state_token="waiting-input-token",
+                input_request={
+                    "requirements": [
+                        {
+                            "any_of": [
+                                {
+                                    "id": "birth_datetime",
+                                    "label": "出生时间",
+                                    "type_id": "datetime",
+                                    "description": None,
+                                    "choices": [],
+                                }
+                            ]
+                        }
+                    ]
+                },
+            ),
+            waiting_at,
+        )
+        expired = await repository.expire_waiting_input(now=now)
+        assert expired is not None
+        assert expired.id == job.id
+        checkpoint = await repository.load_checkpoint(str(job.id))
+        waiting = await repository.load_waiting_input(version.id)
+        audit_row = (
+            await session.execute(
+                text(
+                    "SELECT runtime_failure_schema_version, runtime_failure_code, "
+                    "runtime_failure_category, runtime_failure_retryable "
+                    "FROM reading_versions"
+                )
+            )
+        ).one()
+
+    assert checkpoint.status.value == "terminal_stopped"
+    assert checkpoint.terminal_stopped is None
+    assert checkpoint.waiting_input is None
+    assert checkpoint.host_lifecycle_copy == "补充资料超过 7 天，任务已取消。"
+    assert waiting is None
+    assert audit_row == (None, None, None, None)
+
+    async with reading_database.sessions() as session:
+        persisted_version = await session.get(models.ReadingVersion, version.id)
+        persisted_job = await session.get(models.ReadingJobRecord, job.id)
+        assert persisted_version is not None
+        assert persisted_job is not None
+        assert persisted_version.status == "terminal_stopped"
+        assert persisted_job.status == "stopped"
+        assert persisted_version.runtime_failure_schema_version is None
+        assert persisted_version.runtime_failure_code is None
+        assert persisted_version.runtime_failure_category is None
+        assert persisted_version.runtime_failure_retryable is None
+        cipher = envelope.EnvelopeCipher(key=b"k" * 32, key_id="test-key-v1")
+        payload = cipher.decrypt_json(
+            envelope.EncryptedPayload(
+                key_id=persisted_version.last_result_key_id or "",
+                nonce=persisted_version.last_result_nonce or "",
+                ciphertext=persisted_version.last_result_ciphertext or "",
+                fingerprint=persisted_version.last_result_digest or "",
+            ),
+            context=f"reading-version:{persisted_version.id}:last-result",
+        )
+    assert payload == {
+        "kind": "host_lifecycle",
+        "reason": "input_wait_expired",
+        "public_copy": "补充资料超过 7 天，任务已取消。",
+    }
 
 
 async def test_load_job_uses_the_immutable_product_version_contract_snapshot(

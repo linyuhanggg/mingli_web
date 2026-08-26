@@ -76,6 +76,7 @@ class ReadingCheckpoint:
     attempt_count: int = 0
     completion_copy: str | None = None
     accepted: Accepted | None = None
+    host_lifecycle_copy: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -245,6 +246,11 @@ class ReadingOrchestrator:
             )
         if checkpoint.terminal_stopped is not None:
             return self._stopped_outcome(checkpoint.terminal_stopped)
+        if checkpoint.status is ReadingStatus.TERMINAL_STOPPED:
+            return ReadingOutcome(
+                status=ReadingStatus.TERMINAL_STOPPED,
+                public_copy=checkpoint.host_lifecycle_copy,
+            )
         if checkpoint.completion_copy is not None:
             if checkpoint.prepared is None:
                 raise OrchestratorInvariantError(

@@ -4,17 +4,22 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import os
 import secrets
+import selectors
 import shutil
+import signal
 import stat
 import subprocess
 import sys
+import tarfile
 import tempfile
+import time
 from pathlib import Path, PurePosixPath
-from typing import Iterable, Mapping
+from typing import Iterable, Iterator, Mapping, TextIO
 
 
 MANIFEST_NAME = ".mingli-release-manifest.json"
@@ -27,6 +32,14 @@ PRESERVE_PREFIXES = (
     "references/fulltext",
 )
 PROTECTION_EXCLUDES = (".git", ".venv", ".benchmarks")
+SOURCE_VERIFICATION_TIMEOUT_SECONDS = 60 * 60
+SOURCE_VERIFICATION_MAX_JOBS = 4
+SOURCE_VERIFICATION_PROGRESS_PREFIX = "MINGLI_SOURCE_VERIFY "
+SOURCE_VERIFICATION_TERMINATE_GRACE_SECONDS = 2.0
+SOURCE_VERIFICATION_REGISTRY_RELATIVE = (
+    "scripts/audit_provider_completeness.py"
+)
+SOURCE_VERIFICATION_AUDIT_PATTERN = "scripts/audit_*_provider.py"
 
 
 def _sha256(path: Path) -> str:
@@ -64,9 +77,35 @@ def _safe_release_pattern(raw: object) -> str:
     return path.as_posix()
 
 
+def _git_scope(source: Path) -> tuple[Path, str]:
+    """Return (repo_root, posix prefix of source inside the repo).
+
+    prefix is empty when source is the git root; otherwise it ends with '/'.
+    The source may be a subdirectory of a parent repository.
+    """
+
+    root = Path(
+        subprocess.run(
+            ["git", "-C", str(source), "rev-parse", "--show-toplevel"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+    )
+    prefix = subprocess.run(
+        ["git", "-C", str(source), "rev-parse", "--show-prefix"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    if prefix and not prefix.endswith("/"):
+        prefix += "/"
+    return root, prefix
+
+
 def _git_tracked_paths(source: Path) -> set[str]:
     result = subprocess.run(
-        ["git", "-C", str(source), "ls-files", "-z"],
+        ["git", "-C", str(source), "ls-files", "-z", "--", "."],
         check=True,
         capture_output=True,
     )
@@ -77,7 +116,55 @@ def _git_tracked_paths(source: Path) -> set[str]:
     }
 
 
-def _runtime_closure(source: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
+def _repo_relative_pathspecs(
+    source: Path,
+    source_pathspecs: Iterable[str],
+) -> list[str]:
+    _, prefix = _git_scope(source)
+    specs: list[str] = []
+    for raw in source_pathspecs:
+        spec = PurePosixPath(str(raw)).as_posix().lstrip("/")
+        if not spec or spec.startswith("/") or ".." in PurePosixPath(spec).parts:
+            raise ValueError(f"unsafe release path: {raw!r}")
+        specs.append(f"{prefix}{spec}" if prefix else spec)
+    return specs
+
+
+def extra_gate_pathspecs(source: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Gate scripts that must be committed with the release, even if not shipped."""
+
+    source_extras = [
+        relative
+        for relative in ("scripts/release_deploy.py", "scripts/test_release_deploy.py")
+        if (source / relative).is_file()
+    ]
+    tracked = _git_tracked_paths(source)
+    if SOURCE_VERIFICATION_REGISTRY_RELATIVE not in tracked:
+        raise ValueError("source verification registry is not tracked")
+    dedicated_audits = sorted(
+        relative
+        for relative in tracked
+        if PurePosixPath(relative).match(
+            SOURCE_VERIFICATION_AUDIT_PATTERN
+        )
+    )
+    if not dedicated_audits:
+        raise ValueError("dedicated provider audits are not tracked")
+    source_extras.extend(
+        [SOURCE_VERIFICATION_REGISTRY_RELATIVE, *dedicated_audits]
+    )
+    repo_root, _prefix = _git_scope(source)
+    repo_extras = tuple(
+        relative
+        for relative in ("scripts/check_mingli_core_workspace.py",)
+        if (repo_root / relative).is_file()
+    )
+    return tuple(dict.fromkeys(source_extras)), repo_extras
+
+
+def _runtime_closure(
+    source: Path,
+) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
     closure_path = source / RUNTIME_CLOSURE_RELATIVE
     if closure_path.is_symlink() or not closure_path.is_file():
         raise ValueError("runtime closure file is missing or unsafe")
@@ -85,30 +172,52 @@ def _runtime_closure(source: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
         payload = json.loads(closure_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError, TypeError) as exc:
         raise ValueError("runtime closure file is invalid") from exc
-    if not isinstance(payload, dict) or set(payload) != {
+    required_keys = {
         "schema_version",
         "files",
         "patterns",
-    }:
+    }
+    allowed_keys = required_keys | {"excluded_files"}
+    if (
+        not isinstance(payload, dict)
+        or not required_keys <= set(payload)
+        or not set(payload) <= allowed_keys
+    ):
         raise ValueError("runtime closure schema is invalid")
     if payload.get("schema_version") != RUNTIME_CLOSURE_SCHEMA:
         raise ValueError("runtime closure schema_version is invalid")
     raw_files = payload.get("files")
     raw_patterns = payload.get("patterns")
-    if not isinstance(raw_files, list) or not isinstance(raw_patterns, list):
-        raise ValueError("runtime closure files and patterns must be lists")
+    raw_excluded_files = payload.get("excluded_files", [])
+    if (
+        not isinstance(raw_files, list)
+        or not isinstance(raw_patterns, list)
+        or not isinstance(raw_excluded_files, list)
+    ):
+        raise ValueError(
+            "runtime closure files, patterns and excluded_files must be lists"
+        )
     try:
         files = tuple(_safe_relative_path(item) for item in raw_files)
         patterns = tuple(_safe_release_pattern(item) for item in raw_patterns)
+        excluded_files = tuple(
+            _safe_relative_path(item) for item in raw_excluded_files
+        )
     except (TypeError, ValueError) as exc:
         raise ValueError("runtime closure contains an unsafe path") from exc
     if not files or len(files) != len(set(files)):
         raise ValueError("runtime closure files must be non-empty and unique")
     if len(patterns) != len(set(patterns)):
         raise ValueError("runtime closure patterns must be unique")
+    if len(excluded_files) != len(set(excluded_files)):
+        raise ValueError("runtime closure excluded_files must be unique")
+    if set(files) & set(excluded_files):
+        raise ValueError(
+            "runtime closure files and excluded_files must not overlap"
+        )
     if RUNTIME_CLOSURE_RELATIVE not in files:
         raise ValueError("runtime closure must include itself")
-    return files, patterns
+    return files, patterns, excluded_files
 
 
 def tracked_release_files(source: Path) -> list[str]:
@@ -121,8 +230,8 @@ def tracked_release_files(source: Path) -> list[str]:
     """
 
     tracked = _git_tracked_paths(source)
-    files, patterns = _runtime_closure(source)
-    untracked = sorted(set(files) - tracked)
+    files, patterns, excluded_files = _runtime_closure(source)
+    untracked = sorted((set(files) | set(excluded_files)) - tracked)
     if untracked:
         raise ValueError(
             "runtime closure references a path that is not tracked: "
@@ -139,6 +248,13 @@ def tracked_release_files(source: Path) -> list[str]:
                 f"runtime closure pattern matches no tracked paths: {pattern}"
             )
         selected.update(matches)
+    unmatched_exclusions = sorted(set(excluded_files) - selected)
+    if unmatched_exclusions:
+        raise ValueError(
+            "runtime closure excludes paths outside its selected surface: "
+            + ", ".join(unmatched_exclusions)
+        )
+    selected.difference_update(excluded_files)
     return sorted(selected)
 
 
@@ -152,9 +268,42 @@ def source_commit(source: Path) -> str:
     return result.stdout.strip()
 
 
-def require_clean_source(source: Path) -> None:
+def require_clean_source(
+    source: Path,
+    pathspecs: Iterable[str] | None = None,
+    extra_repo_pathspecs: Iterable[str] = (),
+) -> None:
+    """Fail if the selected source paths (not the whole parent tree) are dirty.
+
+    When pathspecs is omitted, the entire source prefix is checked. Callers that
+    ship a runtime closure should pass those files plus extra_gate_pathspecs so
+    unrelated dirty files in the source tree do not block a faithful sign.
+    """
+
+    repo_root, prefix = _git_scope(source)
+    specs: list[str] = []
+    if pathspecs is None:
+        specs.append(prefix.rstrip("/") if prefix else ".")
+    else:
+        specs.extend(_repo_relative_pathspecs(source, pathspecs))
+    for raw in extra_repo_pathspecs:
+        spec = PurePosixPath(str(raw)).as_posix().lstrip("/")
+        if not spec or spec.startswith("/") or ".." in PurePosixPath(spec).parts:
+            raise ValueError(f"unsafe release path: {raw!r}")
+        specs.append(spec)
+    if not specs:
+        raise ValueError("source worktree must be clean before deployment")
     result = subprocess.run(
-        ["git", "-C", str(source), "status", "--porcelain", "--untracked-files=all"],
+        [
+            "git",
+            "-C",
+            str(repo_root),
+            "status",
+            "--porcelain",
+            "--untracked-files=all",
+            "--",
+            *specs,
+        ],
         check=True,
         capture_output=True,
         text=True,
@@ -198,6 +347,7 @@ def committed_release_modes(
     commit: str,
 ) -> dict[str, int]:
     expected = {_safe_relative_path(path) for path in relative_paths}
+    _, prefix = _git_scope(source)
     result = subprocess.run(
         ["git", "-C", str(source), "ls-tree", "-rz", "--full-tree", "-r", commit],
         check=True,
@@ -210,6 +360,10 @@ def committed_release_modes(
         metadata, encoded_path = raw.split(b"\t", 1)
         git_mode, object_type, _ = metadata.split(b" ", 2)
         relative = encoded_path.decode("utf-8")
+        if prefix:
+            if not relative.startswith(prefix):
+                continue
+            relative = relative[len(prefix) :]
         if relative not in expected:
             continue
         if object_type != b"blob" or git_mode not in {b"100644", b"100755"}:
@@ -223,18 +377,36 @@ def committed_release_modes(
     return modes
 
 
+def _build_manifest_from_committed_source(
+    source: Path,
+    committed_source: Path,
+    relative_paths: Iterable[str],
+    commit: str,
+) -> dict:
+    """Hash one materialized commit tree and bind its committed file modes."""
+
+    paths = list(relative_paths)
+    return build_manifest(
+        committed_source,
+        paths,
+        commit,
+        committed_modes=committed_release_modes(source, paths, commit),
+    )
+
+
 def build_committed_manifest(
     source: Path,
     relative_paths: Iterable[str],
     commit: str,
 ) -> dict:
     paths = list(relative_paths)
-    return build_manifest(
-        source,
-        paths,
-        commit,
-        committed_modes=committed_release_modes(source, paths, commit),
-    )
+    with _committed_source_snapshot(source, commit) as snapshot:
+        return _build_manifest_from_committed_source(
+            source,
+            snapshot,
+            paths,
+            commit,
+        )
 
 
 def validate_destination_layout(destination: Path) -> None:
@@ -720,30 +892,130 @@ def _restore_destination_protection(
 # scripts directory and fails closed if any loaded audit module resolves
 # outside it.
 _VERIFY_SOURCE_SUBPROCESS = r"""
+import concurrent.futures
 import importlib
+import inspect
 import json
+import multiprocessing
 import os
+import resource
+import signal
 import sys
+import threading
+import time
 from pathlib import Path
 
 
+PROGRESS_PREFIX = "MINGLI_SOURCE_VERIFY "
+STARTED = time.monotonic()
+STATE = {"provider": None, "stage": "subprocess_start"}
+STOP_HEARTBEAT = threading.Event()
+
+
+def _resource_snapshot():
+    usage = resource.getrusage(resource.RUSAGE_SELF)
+    peak_rss_bytes = int(usage.ru_maxrss)
+    if sys.platform != "darwin":
+        peak_rss_bytes *= 1024
+    return {
+        "user_cpu_seconds": round(float(usage.ru_utime), 3),
+        "system_cpu_seconds": round(float(usage.ru_stime), 3),
+        "process_peak_rss_bytes": peak_rss_bytes,
+    }
+
+
+def _completed_metrics(provider_started, resource_before):
+    resource_after = _resource_snapshot()
+    return {
+        "elapsed_seconds": round(time.monotonic() - provider_started, 3),
+        "user_cpu_seconds": round(
+            resource_after["user_cpu_seconds"]
+            - resource_before["user_cpu_seconds"],
+            3,
+        ),
+        "system_cpu_seconds": round(
+            resource_after["system_cpu_seconds"]
+            - resource_before["system_cpu_seconds"],
+            3,
+        ),
+        "process_peak_rss_bytes_after": resource_after[
+            "process_peak_rss_bytes"
+        ],
+    }
+
+
+def _emit(event, **fields):
+    payload = {
+        "event": event,
+        "elapsed_seconds": round(time.monotonic() - STARTED, 3),
+        "pid": os.getpid(),
+        **fields,
+    }
+    print(
+        PROGRESS_PREFIX + json.dumps(payload, sort_keys=True),
+        file=sys.stderr,
+        flush=True,
+    )
+
+
+def _set_stage(provider, stage):
+    STATE["provider"] = provider
+    STATE["stage"] = stage
+
+
+def _heartbeat():
+    while not STOP_HEARTBEAT.wait(15.0):
+        _emit(
+            "heartbeat",
+            provider=STATE["provider"],
+            stage=STATE["stage"],
+            resource=_resource_snapshot(),
+        )
+
+
+def _cancel(signum, _frame):
+    _emit(
+        "cancel_received",
+        provider=STATE["provider"],
+        stage=STATE["stage"],
+        signal=signal.Signals(signum).name,
+        resource=_resource_snapshot(),
+    )
+    raise SystemExit(128 + signum)
+
+
 def _fail(message):
+    STOP_HEARTBEAT.set()
+    _emit(
+        "subprocess_failed",
+        provider=STATE["provider"],
+        stage=STATE["stage"],
+        failure=message,
+        resource=_resource_snapshot(),
+    )
     print(
         json.dumps(
             {
                 "research_root": sys.argv[2] or None,
                 "provider_source_verification": {},
+                "provider_metrics": {},
                 "verified": False,
                 "failures": [message],
+                "elapsed_seconds": round(time.monotonic() - STARTED, 3),
+                "resource": _resource_snapshot(),
             }
-        )
+        ),
+        flush=True,
     )
     raise SystemExit(1)
 
 
+signal.signal(signal.SIGINT, _cancel)
+signal.signal(signal.SIGTERM, _cancel)
 source = Path(sys.argv[1]).resolve()
 research = sys.argv[2] or None
 scripts_dir = source / "scripts"
+_emit("subprocess_start", provider=None, stage="checkout_validation")
 if not scripts_dir.is_dir():
     _fail(f"source checkout has no scripts directory: {scripts_dir}")
 
@@ -768,49 +1040,216 @@ provider_audits = {
     system: module.__name__
     for system, module in DEDICATED_AUDIT_MODULES.items()
 }
+requested_jobs = int(sys.argv[3])
+worker_count = min(requested_jobs, max(1, len(provider_systems)))
 resolved_root = Path(research).resolve() if research else None
+_emit(
+    "registry_complete",
+    provider=None,
+    stage="audit_registry",
+    provider_count=len(provider_systems),
+    provider_jobs=worker_count,
+)
+scripts_resolved = scripts_dir.resolve()
+
+
+def _run_provider(system, module_name, ordinal, provider_count):
+    STOP_HEARTBEAT.clear()
+    provider_started = time.monotonic()
+    resource_before = _resource_snapshot()
+    status = "error"
+    provider_failures = []
+    _set_stage(system, "audit_module_import")
+    _emit(
+        "provider_start",
+        provider=system,
+        stage="audit_module_import",
+        audit_module=module_name,
+        ordinal=ordinal,
+        provider_count=provider_count,
+    )
+    heartbeat_thread = threading.Thread(
+        target=_heartbeat,
+        name=f"source-verification-heartbeat-{system}",
+        daemon=True,
+    )
+    heartbeat_thread.start()
+    try:
+        try:
+            module = importlib.import_module(module_name)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except BaseException as exc:  # noqa: BLE001 - gate must fail closed
+            provider_failures.append(
+                f"{system}: audit module import raised {type(exc).__name__}"
+            )
+        else:
+            module_file = Path(getattr(module, "__file__", "")).resolve()
+            if not module_file.is_relative_to(scripts_resolved):
+                provider_failures.append(
+                    f"{system}: audit module {module_name} resolves outside "
+                    f"the source checkout: {module_file}"
+                )
+                _set_stage(system, "audit_module_origin")
+            elif resolved_root is None:
+                # With no research checkout there is nothing an audit can
+                # prove about source fidelity.  Every registered audit is
+                # still loaded from the selected checkout and origin-checked.
+                status = "skipped"
+                provider_failures.append(
+                    f"{system}: source verification skipped; "
+                    "pass --research-root"
+                )
+                _set_stage(system, "fulltext_gate")
+            else:
+                audit = getattr(module, module_name)
+                _set_stage(system, "provider_fulltext_audit")
+                _emit(
+                    "provider_stage",
+                    provider=system,
+                    stage="provider_fulltext_audit",
+                    audit_module=module_name,
+                )
+                try:
+                    def audit_progress(substage, **details):
+                        stage = f"provider_fulltext_audit:{substage}"
+                        _set_stage(system, stage)
+                        safe_details = {
+                            str(key): value
+                            for key, value in details.items()
+                            if str(key) not in {"event", "provider", "stage"}
+                        }
+                        _emit(
+                            "provider_substage",
+                            provider=system,
+                            stage=stage,
+                            audit_module=module_name,
+                            **safe_details,
+                        )
+
+                    audit_kwargs = {"research_root": resolved_root}
+                    if "progress" in inspect.signature(audit).parameters:
+                        audit_kwargs["progress"] = audit_progress
+                    report = audit(**audit_kwargs)
+                except (KeyboardInterrupt, SystemExit):
+                    raise
+                except BaseException as exc:  # noqa: BLE001 - fail closed
+                    provider_failures.append(
+                        f"{system}: source verification raised "
+                        f"{type(exc).__name__}"
+                    )
+                else:
+                    status = str(
+                        (report.get("source_verification") or {}).get("status")
+                        or "skipped"
+                    )
+                    if status != "verified":
+                        provider_failures.append(
+                            f"{system}: source verification {status}"
+                        )
+    finally:
+        STOP_HEARTBEAT.set()
+        heartbeat_thread.join(timeout=1.0)
+    metrics = _completed_metrics(provider_started, resource_before)
+    metrics["pid"] = os.getpid()
+    _emit(
+        "provider_complete",
+        provider=system,
+        stage=STATE["stage"],
+        status=status,
+        metrics=metrics,
+    )
+    return {
+        "provider": system,
+        "status": status,
+        "failures": provider_failures,
+        "metrics": metrics,
+    }
+
 
 results = {}
+provider_metrics = {}
 failures = []
-scripts_resolved = scripts_dir.resolve()
-for system in provider_systems:
-    module_name = provider_audits[system]
-    module = importlib.import_module(module_name)
-    module_file = Path(getattr(module, "__file__", "")).resolve()
-    if not module_file.is_relative_to(scripts_resolved):
-        failures.append(
-            f"{system}: audit module {module_name} resolves outside the source"
-            f" checkout: {module_file}"
-        )
-        results[system] = "error"
-        continue
-    # With no research checkout there is nothing an audit can prove about
-    # source fidelity.  We still import every registered audit from the
-    # selected release checkout and validate its origin above, then fail
-    # closed without paying for thirteen exhaustive provider replays whose
-    # only possible source status is ``skipped``.
-    if resolved_root is None:
-        results[system] = "skipped"
-        failures.append(
-            f"{system}: source verification skipped; pass --research-root"
-        )
-        continue
-    audit = getattr(module, module_name)
-    try:
-        report = audit(research_root=resolved_root)
-    except BaseException as exc:  # noqa: BLE001 - gate must fail closed
-        results[system] = "error"
-        failures.append(
-            f"{system}: source verification raised {type(exc).__name__}"
-        )
-        continue
-    status = str(
-        (report.get("source_verification") or {}).get("status") or "skipped"
-    )
-    results[system] = status
-    if status != "verified":
-        failures.append(f"{system}: source verification {status}")
+_set_stage(None, "provider_pool")
+_emit(
+    "provider_pool_start",
+    provider=None,
+    stage="provider_pool",
+    provider_count=len(provider_systems),
+    provider_jobs=worker_count,
+)
+fork_context = multiprocessing.get_context("fork")
+with concurrent.futures.ProcessPoolExecutor(
+    max_workers=worker_count,
+    mp_context=fork_context,
+) as executor:
+    futures = {
+        executor.submit(
+            _run_provider,
+            system,
+            provider_audits[system],
+            ordinal,
+            len(provider_systems),
+        ): system
+        for ordinal, system in enumerate(provider_systems, start=1)
+    }
+    for future in concurrent.futures.as_completed(futures):
+        system = futures[future]
+        try:
+            outcome = future.result()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except BaseException as exc:  # noqa: BLE001 - gate must fail closed
+            results[system] = "error"
+            failures.append(
+                f"{system}: source verification worker raised "
+                f"{type(exc).__name__}"
+            )
+            continue
+        results[system] = outcome["status"]
+        failures.extend(outcome["failures"])
+        provider_metrics[system] = outcome["metrics"]
 
+results = dict(sorted(results.items()))
+provider_metrics = dict(sorted(provider_metrics.items()))
+failures.sort()
+
+_set_stage(None, "report")
+elapsed_seconds = round(time.monotonic() - STARTED, 3)
+resource_usage = _resource_snapshot()
+worker_peaks = {}
+for metrics in provider_metrics.values():
+    worker_pid = str(metrics["pid"])
+    worker_peaks[worker_pid] = max(
+        worker_peaks.get(worker_pid, 0),
+        metrics["process_peak_rss_bytes_after"],
+    )
+resource_usage.update(
+    {
+        "worker_process_count": len(worker_peaks),
+        "worker_user_cpu_seconds": round(
+            sum(item["user_cpu_seconds"] for item in provider_metrics.values()),
+            3,
+        ),
+        "worker_system_cpu_seconds": round(
+            sum(item["system_cpu_seconds"] for item in provider_metrics.values()),
+            3,
+        ),
+        "worker_peak_rss_bytes_max": max(worker_peaks.values(), default=0),
+        "parallel_peak_rss_upper_bound_bytes": (
+            resource_usage["process_peak_rss_bytes"] + sum(worker_peaks.values())
+        ),
+    }
+)
+_emit(
+    "subprocess_complete",
+    provider=None,
+    stage="report",
+    provider_count=len(provider_systems),
+    verified_count=sum(status == "verified" for status in results.values()),
+    verified=not failures,
+    resource=resource_usage,
+)
 print(
     json.dumps(
         {
@@ -818,15 +1257,139 @@ print(
                 str(resolved_root) if resolved_root is not None else None
             ),
             "provider_source_verification": results,
+            "provider_metrics": provider_metrics,
+            "provider_count": len(provider_systems),
+            "provider_jobs": worker_count,
+            "verified_count": sum(
+                status == "verified" for status in results.values()
+            ),
             "verified": not failures,
             "failures": failures,
+            "elapsed_seconds": elapsed_seconds,
+            "resource": resource_usage,
         }
-    )
+    ),
+    flush=True,
 )
 """
 
 
-def _verify_release_sources(source: Path, research_root: Path | None) -> dict:
+def _emit_source_verification_progress(
+    progress_stream: TextIO,
+    event: str,
+    **fields: object,
+) -> None:
+    payload = {
+        "event": event,
+        **fields,
+    }
+    progress_stream.write(
+        SOURCE_VERIFICATION_PROGRESS_PREFIX
+        + json.dumps(payload, sort_keys=True)
+        + "\n"
+    )
+    progress_stream.flush()
+
+
+def _terminate_source_verification(
+    process: subprocess.Popen[bytes],
+) -> None:
+    if process.poll() is not None:
+        return
+    if os.name == "posix":
+        os.killpg(process.pid, signal.SIGTERM)
+    else:  # pragma: no cover - Windows is not a supported release host
+        process.terminate()
+    try:
+        process.wait(timeout=SOURCE_VERIFICATION_TERMINATE_GRACE_SECONDS)
+    except subprocess.TimeoutExpired:
+        if os.name == "posix":
+            os.killpg(process.pid, signal.SIGKILL)
+        else:  # pragma: no cover - Windows is not a supported release host
+            process.kill()
+        process.wait()
+
+
+@contextlib.contextmanager
+def _committed_source_snapshot(
+    source: Path,
+    commit: str,
+) -> Iterator[Path]:
+    """Materialize exactly ``source`` from ``commit`` without its worktree."""
+
+    repo_root, prefix = _git_scope(source)
+    treeish = (
+        f"{commit}:{prefix.rstrip('/')}"
+        if prefix
+        else commit
+    )
+    with tempfile.TemporaryDirectory(
+        prefix="mingli-release-committed-source-"
+    ) as temporary:
+        root = Path(temporary)
+        archive_path = root / "source.tar"
+        snapshot = root / "source"
+        snapshot.mkdir()
+        with archive_path.open("wb") as archive_handle:
+            subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(repo_root),
+                    "archive",
+                    "--format=tar",
+                    treeish,
+                ],
+                check=True,
+                stdout=archive_handle,
+            )
+        with tarfile.open(archive_path, mode="r:") as archive:
+            members = archive.getmembers()
+            for member in members:
+                relative = member.name.rstrip("/")
+                _safe_relative_path(relative)
+                if not (member.isdir() or member.isfile()):
+                    raise ValueError(
+                        "committed source snapshot contains a non-regular path: "
+                        f"{member.name}"
+                    )
+            archive.extractall(
+                snapshot,
+                members=members,
+                filter="data",
+            )
+        yield snapshot
+
+
+def _verify_committed_release_sources(
+    source: Path,
+    commit: str,
+    research_root: Path | None,
+    *,
+    timeout_seconds: float = SOURCE_VERIFICATION_TIMEOUT_SECONDS,
+    progress_stream: TextIO | None = None,
+    jobs: int | None = None,
+) -> dict:
+    """Run source audits from the immutable commit tree, never live files."""
+
+    with _committed_source_snapshot(source, commit) as snapshot:
+        return _verify_release_sources(
+            snapshot,
+            research_root,
+            timeout_seconds=timeout_seconds,
+            progress_stream=progress_stream,
+            jobs=jobs,
+        )
+
+
+def _verify_release_sources(
+    source: Path,
+    research_root: Path | None,
+    *,
+    timeout_seconds: float = SOURCE_VERIFICATION_TIMEOUT_SECONDS,
+    progress_stream: TextIO | None = None,
+    jobs: int | None = None,
+) -> dict:
     """Run the release source-verification gate over every provider.
 
     Fulltext verification is a release-time responsibility: each dedicated
@@ -846,40 +1409,223 @@ def _verify_release_sources(source: Path, research_root: Path | None) -> dict:
     from the release gate.
     """
 
+    if timeout_seconds <= 0:
+        raise ValueError("source verification timeout must be positive")
+    if jobs is None:
+        jobs = min(
+            SOURCE_VERIFICATION_MAX_JOBS,
+            max(1, os.cpu_count() or 1),
+        )
+    if jobs <= 0:
+        raise ValueError("source verification jobs must be positive")
+    stream = sys.stderr if progress_stream is None else progress_stream
     env = dict(os.environ)
     env.pop("PYTHONPATH", None)
     env.pop("MINGLI_RESEARCH_ROOT", None)
-    completed = subprocess.run(
-        [
-            sys.executable,
-            "-B",
-            "-c",
-            _VERIFY_SOURCE_SUBPROCESS,
-            str(source),
-            str(research_root) if research_root is not None else "",
-        ],
+    command = [
+        sys.executable,
+        "-B",
+        "-c",
+        _VERIFY_SOURCE_SUBPROCESS,
+        str(source),
+        str(research_root) if research_root is not None else "",
+        str(jobs),
+    ]
+    started = time.monotonic()
+    process = subprocess.Popen(
+        command,
         cwd=str(source),
         env=env,
-        capture_output=True,
-        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=(os.name == "posix"),
     )
-    if completed.returncode != 0:
+    assert process.stdout is not None
+    assert process.stderr is not None
+    selector = selectors.DefaultSelector()
+    selector.register(process.stdout, selectors.EVENT_READ, "stdout")
+    selector.register(process.stderr, selectors.EVENT_READ, "stderr")
+    stdout_chunks: list[bytes] = []
+    stderr_buffer = ""
+    observed: dict[str, object] = {
+        "provider": None,
+        "stage": "subprocess_start",
+        "resource": None,
+        "provider_source_verification": {},
+    }
+    active_providers: set[str] = set()
+    provider_stages: dict[str, object] = {}
+    timed_out = False
+
+    def consume_stderr(data: bytes) -> None:
+        nonlocal stderr_buffer
+        rendered = data.decode("utf-8", errors="replace")
+        stream.write(rendered)
+        stream.flush()
+        stderr_buffer += rendered
+        while "\n" in stderr_buffer:
+            line, stderr_buffer = stderr_buffer.split("\n", 1)
+            if not line.startswith(SOURCE_VERIFICATION_PROGRESS_PREFIX):
+                continue
+            try:
+                event = json.loads(
+                    line.removeprefix(SOURCE_VERIFICATION_PROGRESS_PREFIX)
+                )
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(event, dict):
+                continue
+            observed["last_event"] = event
+            if "provider" in event:
+                observed["provider"] = event["provider"]
+            if "stage" in event:
+                observed["stage"] = event["stage"]
+            if "resource" in event:
+                observed["resource"] = event["resource"]
+            provider = event.get("provider")
+            if provider is not None and "stage" in event:
+                provider_stages[str(provider)] = event["stage"]
+            if event.get("event") == "provider_start":
+                active_providers.add(str(provider))
+            elif event.get("event") == "provider_complete":
+                active_providers.discard(str(provider))
+                statuses = observed["provider_source_verification"]
+                if isinstance(statuses, dict):
+                    statuses[str(provider)] = event.get("status")
+
+    try:
+        while selector.get_map():
+            remaining = timeout_seconds - (time.monotonic() - started)
+            if remaining <= 0 and process.poll() is None:
+                timed_out = True
+                active = sorted(active_providers)
+                provider = active[0] if active else observed["provider"]
+                stage = provider_stages.get(
+                    str(provider),
+                    observed["stage"],
+                )
+                _emit_source_verification_progress(
+                    stream,
+                    "timeout_cancel_requested",
+                    elapsed_seconds=round(time.monotonic() - started, 3),
+                    timeout_seconds=timeout_seconds,
+                    provider=provider,
+                    stage=stage,
+                    active_providers=active,
+                    provider_stages={
+                        item: provider_stages.get(item) for item in active
+                    },
+                    resource=observed["resource"],
+                )
+                _terminate_source_verification(process)
+            events = selector.select(timeout=max(0.0, min(0.25, remaining)))
+            for key, _ in events:
+                data = os.read(key.fileobj.fileno(), 64 * 1024)
+                if not data:
+                    selector.unregister(key.fileobj)
+                    continue
+                if key.data == "stdout":
+                    stdout_chunks.append(data)
+                else:
+                    consume_stderr(data)
+        returncode = process.wait()
+    except KeyboardInterrupt:
+        _emit_source_verification_progress(
+            stream,
+            "user_cancel_requested",
+            elapsed_seconds=round(time.monotonic() - started, 3),
+            provider=observed["provider"],
+            stage=observed["stage"],
+            resource=observed["resource"],
+        )
+        _terminate_source_verification(process)
+        raise
+    finally:
+        selector.close()
+        process.stdout.close()
+        process.stderr.close()
+
+    if stderr_buffer:
+        stream.write("" if stderr_buffer.endswith("\n") else "\n")
+        stream.flush()
+    stdout = b"".join(stdout_chunks).decode("utf-8", errors="replace")
+    if timed_out:
+        active = sorted(active_providers)
+        provider = active[0] if active else observed["provider"] or "unknown"
+        stage = provider_stages.get(str(provider), observed["stage"]) or "unknown"
         return {
             "research_root": (
                 str(research_root.resolve())
                 if research_root is not None
                 else None
             ),
-            "provider_source_verification": {},
+            "provider_source_verification": observed[
+                "provider_source_verification"
+            ],
+            "provider_metrics": {},
             "verified": False,
             "failures": [
-                "release source verification subprocess failed: "
-                + (completed.stderr.strip() or completed.stdout.strip() or "unknown")
+                (
+                    "release source verification exceeded "
+                    f"{timeout_seconds:g} seconds and was cancelled at "
+                    f"provider={provider}, stage={stage}"
+                )
             ],
+            "elapsed_seconds": round(time.monotonic() - started, 3),
+            "resource": observed["resource"],
+            "cancellation": {
+                "reason": "timeout",
+                "timeout_seconds": timeout_seconds,
+                "provider": provider,
+                "stage": stage,
+                "active_providers": active,
+                "provider_stages": {
+                    item: provider_stages.get(item) for item in active
+                },
+                "last_resource": observed["resource"],
+            },
         }
     try:
-        report = json.loads(completed.stdout)
+        report = json.loads(stdout)
     except json.JSONDecodeError:
+        report = None
+    if returncode != 0:
+        failures = (
+            list(report.get("failures") or ())
+            if isinstance(report, dict)
+            else []
+        )
+        failures.append(
+            "release source verification subprocess failed with exit code "
+            f"{returncode} at provider={observed['provider'] or 'unknown'}, "
+            f"stage={observed['stage'] or 'unknown'}"
+        )
+        return {
+            "research_root": (
+                str(research_root.resolve())
+                if research_root is not None
+                else None
+            ),
+            "provider_source_verification": (
+                report.get("provider_source_verification", {})
+                if isinstance(report, dict)
+                else observed["provider_source_verification"]
+            ),
+            "provider_metrics": (
+                report.get("provider_metrics", {})
+                if isinstance(report, dict)
+                else {}
+            ),
+            "verified": False,
+            "failures": failures,
+            "elapsed_seconds": round(time.monotonic() - started, 3),
+            "resource": (
+                report.get("resource")
+                if isinstance(report, dict)
+                else observed["resource"]
+            ),
+        }
+    if report is None:
         return {
             "research_root": (
                 str(research_root.resolve())
@@ -914,61 +1660,80 @@ def main(argv: list[str] | None = None) -> int:
     destinations = [_deployment_destination(path) for path in args.destination]
     if len(set(destinations)) != len(destinations):
         raise ValueError("duplicate deployment destination")
-    require_clean_source(source)
-    source_verification = _verify_release_sources(source, args.research_root)
-    if not source_verification["verified"]:
-        raise ValueError(
-            "release source verification failed: "
-            + "; ".join(source_verification["failures"])
-        )
-    manifest = build_committed_manifest(
+    release_files = tracked_release_files(source)
+    source_extras, repo_extras = extra_gate_pathspecs(source)
+    commit = source_commit(source)
+    require_clean_source(
         source,
-        tracked_release_files(source),
-        source_commit(source),
+        pathspecs=list(dict.fromkeys([*release_files, *source_extras])),
+        extra_repo_pathspecs=repo_extras,
     )
-
-    protected_before = {
-        destination: destination_is_protected(destination)
-        for destination in destinations
-    }
-    results: list[dict] = []
-    operation_error: BaseException | None = None
-    operation_traceback = None
-    try:
-        if args.apply:
-            for destination in destinations:
-                unprotect_destination(destination)
-
-        results = [
-            sync_destination(source, destination, manifest, apply=args.apply)
-            for destination in destinations
-        ]
-    except BaseException as exc:
-        operation_error = exc
-        operation_traceback = exc.__traceback__
-
-    protection_failures = (
-        _restore_destination_protection(
-            destinations,
-            protected_before,
-            args.protect,
+    with _committed_source_snapshot(source, commit) as committed_source:
+        # Bind the release identity before executing committed audit code. Any
+        # later snapshot mutation also fails closed in destination verification.
+        manifest = _build_manifest_from_committed_source(
+            source,
+            committed_source,
+            release_files,
+            commit,
         )
-        if args.apply
-        else []
-    )
-    if operation_error is not None:
-        for failure in protection_failures:
-            operation_error.add_note(
-                "destination protection also failed: "
-                f"{type(failure).__name__}: {failure}"
+        source_verification = _verify_release_sources(
+            committed_source,
+            args.research_root,
+        )
+        if not source_verification["verified"]:
+            raise ValueError(
+                "release source verification failed: "
+                + "; ".join(source_verification["failures"])
             )
-        raise operation_error.with_traceback(operation_traceback)
-    if protection_failures:
-        rendered = "; ".join(
-            f"{type(failure).__name__}: {failure}"
-            for failure in protection_failures
+
+        protected_before = {
+            destination: destination_is_protected(destination)
+            for destination in destinations
+        }
+        results: list[dict] = []
+        operation_error: BaseException | None = None
+        operation_traceback = None
+        try:
+            if args.apply:
+                for destination in destinations:
+                    unprotect_destination(destination)
+
+            results = [
+                sync_destination(
+                    committed_source,
+                    destination,
+                    manifest,
+                    apply=args.apply,
+                )
+                for destination in destinations
+            ]
+        except BaseException as exc:
+            operation_error = exc
+            operation_traceback = exc.__traceback__
+
+        protection_failures = (
+            _restore_destination_protection(
+                destinations,
+                protected_before,
+                args.protect,
+            )
+            if args.apply
+            else []
         )
-        raise RuntimeError(f"destination protection failed: {rendered}")
+        if operation_error is not None:
+            for failure in protection_failures:
+                operation_error.add_note(
+                    "destination protection also failed: "
+                    f"{type(failure).__name__}: {failure}"
+                )
+            raise operation_error.with_traceback(operation_traceback)
+        if protection_failures:
+            rendered = "; ".join(
+                f"{type(failure).__name__}: {failure}"
+                for failure in protection_failures
+            )
+            raise RuntimeError(f"destination protection failed: {rendered}")
 
     print(
         json.dumps(

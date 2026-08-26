@@ -577,14 +577,31 @@ def _exact_rule_evidence_ref(
     return expected if expected in evidence_refs else None
 
 
+# Verified, runtime-active methodology anchors for the structural claim
+# units below.  Each unit renders already-calculated chart facts in the
+# reading order that its quoted source states verbatim; none of them may
+# carry a strength, structure-success, or fortune verdict.
+_BAZI_PILLAR_ROLES_RULE_ID = "bazi/yuanhai-ziping#YR-M01"
+_BAZI_THREE_YUAN_RULE_ID = "bazi/ditiansui-chanwei#DR-01-01"
+_BAZI_ELEMENT_FLOW_RULE_ID = "bazi/sanming-tonghui#R-01-02"
+_BAZI_PILLAR_POSITION_LABELS = {
+    "year": "年",
+    "month": "月",
+    "day": "日",
+    "hour": "时",
+}
+
+
 def _bazi_public_claim_findings(
     value: object,
     *,
     subject_ref: str,
     dimension_ids: tuple[str, ...],
     fact_refs: tuple[str, ...],
+    public_fact_refs: tuple[str, ...],
     evidence_refs: tuple[str, ...],
     evidence_supports: Mapping[str, tuple[str, ...]],
+    chart_output: Mapping[str, Any] | None = None,
 ) -> tuple[dict[str, Any], ...]:
     """Build audited, bounded Bazi prose units from Runtime adjudications.
 
@@ -601,6 +618,15 @@ def _bazi_public_claim_findings(
         return ()
 
     units: list[dict[str, Any]] = []
+    # ``fact_refs`` is the manifest-scoped support for the parent
+    # interpretive finding. Structural units also read public chart outputs,
+    # so bind those values only through fact identities that were actually
+    # projected into this brief.
+    public_fact_ref_set = frozenset(public_fact_refs)
+
+    def public_chart_fact_ref(output_name: str) -> str | None:
+        expected = f"fact:{subject_ref}/calculated/bazi/{output_name}"
+        return expected if expected in public_fact_ref_set else None
 
     def append_unit(
         *,
@@ -608,13 +634,22 @@ def _bazi_public_claim_findings(
         text: str,
         rule_id: str | None,
         data: Mapping[str, Any],
+        claim_fact_refs: tuple[str, ...] | None = None,
     ) -> None:
         evidence_ref = _exact_rule_evidence_ref(rule_id, evidence_refs)
         if evidence_ref is None or not text.strip():
             return
+        base_fact_refs = (
+            fact_refs if claim_fact_refs is None else claim_fact_refs
+        )
+        if not base_fact_refs:
+            return
         grounded_fact_refs = tuple(
             dict.fromkeys(
-                (*fact_refs, *evidence_supports.get(evidence_ref, ()))
+                (
+                    *base_fact_refs,
+                    *evidence_supports.get(evidence_ref, ()),
+                )
             )
         )
         units.append(
@@ -844,6 +879,153 @@ def _bazi_public_claim_findings(
                 },
             )
 
+    pillars = (
+        chart_output.get("four_pillars")
+        if isinstance(chart_output, Mapping)
+        else None
+    )
+    pillar_values: dict[str, str] = {}
+    if isinstance(pillars, Mapping):
+        for position in ("year", "month", "day", "hour"):
+            pillar = pillars.get(position)
+            if isinstance(pillar, str) and len(pillar) == 2:
+                pillar_values[position] = pillar
+
+    four_pillars_fact_ref = public_chart_fact_ref("four_pillars")
+    if len(pillar_values) == 4 and four_pillars_fact_ref is not None:
+        append_unit(
+            unit_id="pillar-roles",
+            text=(
+                f"四柱以日干{pillar_values['day'][0]}为主："
+                f"年柱{pillar_values['year']}为本，"
+                f"月柱{pillar_values['month']}为提纲，"
+                f"时柱{pillar_values['hour']}为辅佐；"
+                "这只是四柱判读次序的定位，格局、旺衰与吉凶仍未裁定。"
+            ),
+            rule_id=_BAZI_PILLAR_ROLES_RULE_ID,
+            data={
+                "claim_unit_id": "bazi.pillar-roles-v1",
+                "day_stem": pillar_values["day"][0],
+                "year_pillar": pillar_values["year"],
+                "month_pillar": pillar_values["month"],
+                "day_pillar": pillar_values["day"],
+                "hour_pillar": pillar_values["hour"],
+                "hard_verdict": None,
+            },
+            claim_fact_refs=(four_pillars_fact_ref,),
+        )
+
+        hidden = (
+            chart_output.get("hidden_stems")
+            if isinstance(chart_output, Mapping)
+            else None
+        )
+        hidden_by_position: dict[str, tuple[str, ...]] = {}
+        if isinstance(hidden, Mapping):
+            for position in ("year", "month", "day", "hour"):
+                entry = hidden.get(position)
+                stems = (
+                    entry.get("stems") if isinstance(entry, Mapping) else None
+                )
+                if (
+                    isinstance(stems, (list, tuple))
+                    and stems
+                    and all(
+                        isinstance(item, str) and item for item in stems
+                    )
+                ):
+                    hidden_by_position[position] = tuple(stems)
+        hidden_stems_fact_ref = public_chart_fact_ref("hidden_stems")
+        if (
+            len(hidden_by_position) == 4
+            and hidden_stems_fact_ref is not None
+        ):
+            ordered_positions = ("year", "month", "day", "hour")
+            stems_clause = "、".join(
+                pillar_values[position][0] for position in ordered_positions
+            )
+            branches_clause = "、".join(
+                pillar_values[position][1] for position in ordered_positions
+            )
+            hidden_clause = "，".join(
+                f"{_BAZI_PILLAR_POSITION_LABELS[position]}"
+                f"{pillar_values[position][1]}藏"
+                + "".join(hidden_by_position[position])
+                for position in ordered_positions
+            )
+            append_unit(
+                unit_id="three-yuan-structure",
+                text=(
+                    f"四柱天干{stems_clause}为天元；"
+                    f"地支{branches_clause}为地元；"
+                    f"支中所藏（{hidden_clause}）为人元；"
+                    "这只是干支藏三元的结构陈列，格局与吉凶仍未裁定。"
+                ),
+                rule_id=_BAZI_THREE_YUAN_RULE_ID,
+                data={
+                    "claim_unit_id": "bazi.three-yuan-structure-v1",
+                    "heavenly_stems": [
+                        pillar_values[position][0]
+                        for position in ordered_positions
+                    ],
+                    "earthly_branches": [
+                        pillar_values[position][1]
+                        for position in ordered_positions
+                    ],
+                    "hidden_stems": {
+                        position: list(hidden_by_position[position])
+                        for position in ordered_positions
+                    },
+                    "hard_verdict": None,
+                },
+                claim_fact_refs=(
+                    four_pillars_fact_ref,
+                    hidden_stems_fact_ref,
+                ),
+            )
+
+    flow_strength = value.get("strength")
+    if isinstance(flow_strength, Mapping):
+        flow_day_element = flow_strength.get("day_element")
+        flow_resource_element = flow_strength.get("resource_element")
+        flow_counts = flow_strength.get("all_element_occurrences")
+        if (
+            all(
+                isinstance(item, str) and item
+                for item in (flow_day_element, flow_resource_element)
+            )
+            and isinstance(flow_counts, Mapping)
+            and all(
+                isinstance(flow_counts.get(element), int)
+                for element in ("木", "火", "土", "金", "水")
+            )
+        ):
+            count_clause = "、".join(
+                f"{element}{flow_counts[element]}"
+                for element in ("木", "火", "土", "金", "水")
+            )
+            append_unit(
+                unit_id="element-flow-inventory",
+                text=(
+                    f"盘中五行（含支藏）出现次数为{count_clause}；"
+                    f"五行顺则相生、逆则相克，日主五行为{flow_day_element}，"
+                    f"生{flow_day_element}者为{flow_resource_element}；"
+                    "这只是五行计数与生克次序的陈列，"
+                    "整盘旺衰、喜忌与吉凶仍未裁定。"
+                ),
+                rule_id=_BAZI_ELEMENT_FLOW_RULE_ID,
+                data={
+                    "claim_unit_id": "bazi.element-flow-inventory-v1",
+                    "day_element": flow_day_element,
+                    "resource_element": flow_resource_element,
+                    "all_element_occurrences": {
+                        element: flow_counts[element]
+                        for element in ("木", "火", "土", "金", "水")
+                    },
+                    "hard_verdict": None,
+                },
+            )
+
     return tuple(units)
 
 
@@ -1014,14 +1196,23 @@ def _declared_public_findings(
             }
         )
         if descriptor.id == "bazi" and binding_id == "interpretive_candidates":
+            chart_found, chart_output = _json_pointer_value(
+                payload, "/facts/chart_facts/output"
+            )
             findings.extend(
                 _bazi_public_claim_findings(
                     claim_source_value,
                     subject_ref=subject_ref,
                     dimension_ids=effective_dimensions,
                     fact_refs=finding_fact_refs,
+                    public_fact_refs=fact_refs,
                     evidence_refs=evidence_refs,
                     evidence_supports=evidence_supports,
+                    chart_output=(
+                        chart_output
+                        if chart_found and isinstance(chart_output, Mapping)
+                        else None
+                    ),
                 )
             )
     return tuple(findings)

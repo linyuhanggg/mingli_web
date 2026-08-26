@@ -13,7 +13,7 @@ import re
 from collections.abc import Mapping
 from datetime import date
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from urllib.request import Request, urlopen
 
 import yaml
@@ -64,6 +64,15 @@ EXPECTED_LUOHOU_MITIGATION_WITNESSES = (
         "81a7c422b8f641aab4549e95ce9f374fbc9375b110042d3684ac21198fdbf7e0",
     ),
 )
+
+
+def _emit_audit_progress(
+    progress: Callable[..., None] | None,
+    stage: str,
+    **fields: object,
+) -> None:
+    if progress is not None:
+        progress(stage, **fields)
 
 
 def _extension_covers_declared_range(
@@ -274,6 +283,7 @@ def audit_selection_provider(
     source_table_path: str | Path = SOURCE_TABLE,
     verify_published_sources: bool = False,
     research_root: Path | None = None,
+    progress: Callable[..., None] | None = None,
 ) -> dict[str, Any]:
     """Audit the live Selection provider against frozen V5.1 fixtures.
 
@@ -300,6 +310,7 @@ def audit_selection_provider(
     fixture = _load(fixture_path)
     source = _load(source_table_path)
     matrix = _load(MATRIX)
+    _emit_audit_progress(progress, "selection_contract_load")
     resolved_research_root = (
         research_root.resolve()
         if research_root is not None
@@ -829,7 +840,20 @@ def audit_selection_provider(
         if source_table_hash_matches and fixture_hash_matches
         else ()
     )
+    _emit_audit_progress(
+        progress,
+        "selection_provider_replay",
+        completed=0,
+        total=len(replay_cases),
+    )
     for index, case in enumerate(replay_cases):
+        _emit_audit_progress(
+            progress,
+            "selection_provider_replay",
+            completed=index,
+            total=len(replay_cases),
+            case_id=str(case.get("id") or ""),
+        )
         try:
             supplied = case["input"]
             civil_date = str(supplied["date"])
@@ -983,6 +1007,13 @@ def audit_selection_provider(
                 unexplained += 1
         except (KeyError, TypeError, ValueError, RuntimeError):
             unexplained += 1
+        _emit_audit_progress(
+            progress,
+            "selection_provider_replay",
+            completed=index + 1,
+            total=len(replay_cases),
+            case_id=str(case.get("id") or ""),
+        )
     if unexplained:
         findings.append(f"Selection external unexplained mismatches: {unexplained}")
     if declared != 1:
@@ -1005,6 +1036,7 @@ def audit_selection_provider(
         )
 
     published_sources = fixture.get("published_calendar_sources") or {}
+    _emit_audit_progress(progress, "selection_source_contract_checks")
     published_cases = fixture.get("published_calendar_cases") or []
     published_mismatches = 0
     external_by_id = {
@@ -1472,6 +1504,12 @@ def audit_selection_provider(
         source_verification["status"] = (
             "verified" if source_verification["ok"] else "failed"
         )
+    _emit_audit_progress(
+        progress,
+        "selection_report",
+        provider_ready=not findings,
+        qualifying_cases=qualifying_cases,
+    )
     return {
         "schema_version": "mingli-selection-provider-audit-v1",
         "system": "selection",

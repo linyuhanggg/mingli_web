@@ -120,6 +120,15 @@ class ReadingVersion(Base):
             name="last_result_envelope_all_or_none",
         ),
         CheckConstraint(
+            "(runtime_failure_schema_version IS NULL AND runtime_failure_code IS NULL "
+            "AND runtime_failure_category IS NULL AND runtime_failure_retryable IS NULL) "
+            "OR (runtime_failure_schema_version IS NOT NULL "
+            "AND runtime_failure_code IS NOT NULL "
+            "AND runtime_failure_category IS NOT NULL "
+            "AND runtime_failure_retryable IS NOT NULL)",
+            name="runtime_failure_audit_all_or_none",
+        ),
+        CheckConstraint(
             "(completion_key_id IS NULL AND completion_nonce IS NULL "
             "AND completion_ciphertext IS NULL AND completion_digest IS NULL) "
             "OR (completion_key_id IS NOT NULL AND completion_nonce IS NOT NULL "
@@ -167,6 +176,10 @@ class ReadingVersion(Base):
     last_result_nonce: Mapped[str | None] = mapped_column(String(64))
     last_result_ciphertext: Mapped[str | None] = mapped_column(Text)
     last_result_digest: Mapped[str | None] = mapped_column(String(64))
+    runtime_failure_schema_version: Mapped[str | None] = mapped_column(String(40))
+    runtime_failure_code: Mapped[str | None] = mapped_column(String(80))
+    runtime_failure_category: Mapped[str | None] = mapped_column(String(40))
+    runtime_failure_retryable: Mapped[bool | None] = mapped_column(Boolean)
     completion_key_id: Mapped[str | None] = mapped_column(String(120))
     completion_nonce: Mapped[str | None] = mapped_column(String(64))
     completion_ciphertext: Mapped[str | None] = mapped_column(Text)

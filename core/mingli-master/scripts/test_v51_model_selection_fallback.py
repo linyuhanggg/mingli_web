@@ -39,6 +39,7 @@ import unittest
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+from unittest import mock
 
 from reading_engine.catalog import (
     CatalogLoader,
@@ -1059,10 +1060,29 @@ class ProviderInternalErrorTests(unittest.TestCase):
         self.assertIsInstance(result, Stopped, result)
         self.assertEqual(result.reason, "error", result)
         self.assertTrue(result.public_copy.strip())
+        assert result.failure is not None
+        self.assertEqual(result.failure.code, "runtime.internal_error")
         # Beta must not have been silently tried instead.
         self.assertEqual(
             self.fixture.engine.providers["capability.beta"].call_log, []
         )
+
+    def test_provider_timeout_has_a_retryable_transient_code(self) -> None:
+        interface = self.fixture.interface()
+        adapter = self.fixture.engine.providers["capability.alpha"]
+        with mock.patch.object(adapter, "prepare", side_effect=TimeoutError()):
+            result = interface.execute(
+                Prepare(
+                    query="中性问句",
+                    intent=_intent(capability_id="capability.alpha"),
+                    facts={"subject:test": {"field.one": "已提供"}},
+                )
+            )
+
+        self.assertIsInstance(result, Stopped, result)
+        assert result.failure is not None
+        self.assertEqual(result.failure.code, "transient.timeout")
+        self.assertTrue(result.failure.retryable)
 
 
 if __name__ == "__main__":

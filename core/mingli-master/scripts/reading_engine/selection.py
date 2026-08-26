@@ -375,9 +375,25 @@ def _hour_path(day_branch: str, hour_branch: str) -> dict[str, str]:
     }
 
 
-def _aligned_runtime(local_datetime: datetime, calendar: Mapping[str, Any]) -> Lunar:
-    runtime = Lunar(local_datetime, godType="8char", year8Char="beginningOfSpring")
+RuntimeContext = dict[tuple[datetime, str, str, str, str], Lunar]
+
+
+def _aligned_runtime(
+    local_datetime: datetime,
+    calendar: Mapping[str, Any],
+    runtime_context: RuntimeContext | None = None,
+) -> Lunar:
     ganzhi = calendar["ganzhi"]
+    context_key = (
+        local_datetime,
+        str(ganzhi["year"]),
+        str(ganzhi["month"]),
+        str(ganzhi["day"]),
+        str(ganzhi["hour"]),
+    )
+    if runtime_context is not None and context_key in runtime_context:
+        return runtime_context[context_key]
+    runtime = Lunar(local_datetime, godType="8char", year8Char="beginningOfSpring")
     runtime.year8Char = str(ganzhi["year"])
     runtime.month8Char = str(ganzhi["month"])
     runtime.day8Char = str(ganzhi["day"])
@@ -386,6 +402,8 @@ def _aligned_runtime(local_datetime: datetime, calendar: Mapping[str, Any]) -> L
     runtime.get_season()
     runtime.get_today12DayOfficer()
     runtime.angelDemon = runtime.get_AngelDemon()
+    if runtime_context is not None:
+        runtime_context[context_key] = runtime
     return runtime
 
 
@@ -393,12 +411,17 @@ def _official_event_rules_for_calendar(
     calendar: Mapping[str, Any],
     event_profile: str,
     requested_actions: list[str] | tuple[str, ...],
+    runtime_context: RuntimeContext | None = None,
 ) -> dict[str, Any]:
     profiles = source_table()["event_profiles"]
     if event_profile not in profiles:
         raise ValueError("unsupported event profile")
     local_datetime = datetime.fromisoformat(str(calendar["civil_datetime"]))
-    runtime = _aligned_runtime(local_datetime.replace(tzinfo=None), calendar)
+    runtime = _aligned_runtime(
+        local_datetime.replace(tzinfo=None),
+        calendar,
+        runtime_context,
+    )
     official_yi = _clean_unique(runtime.goodThing)
     official_ji = _clean_unique(runtime.badThing)
     declared_actions = [
@@ -519,10 +542,17 @@ def _valid_local_instants(
     naive = datetime.fromisoformat(
         f"{civil_date}T{minute_of_day // 60:02d}:{minute_of_day % 60:02d}:00"
     )
+    fold_zero = naive.replace(tzinfo=zone, fold=0)
+    fold_one = naive.replace(tzinfo=zone, fold=1)
+    if fold_zero.utcoffset() == fold_one.utcoffset():
+        # PEP 495's fold flag is ignored outside a gap/fold.  The common path
+        # is therefore already a single valid local instant and needs no UTC
+        # round trip; transition minutes still take the exact validation path
+        # below.
+        return (fold_zero,)
     result: list[datetime] = []
     seen_utc: set[str] = set()
-    for fold in (0, 1):
-        candidate = naive.replace(tzinfo=zone, fold=fold)
+    for candidate in (fold_zero, fold_one):
         roundtrip = candidate.astimezone(timezone.utc).astimezone(zone)
         if roundtrip.replace(tzinfo=None) != naive:
             continue
@@ -533,12 +563,13 @@ def _valid_local_instants(
     return tuple(sorted(result, key=lambda item: item.astimezone(timezone.utc)))
 
 
-def _minute_in_windows(minute: int, windows: list[dict[str, str]]) -> bool:
+def _minute_in_windows(
+    minute: int,
+    windows: tuple[tuple[int, int], ...],
+) -> bool:
     if not windows:
         return True
-    for window in windows:
-        start = _minutes(window["start"])
-        end = _minutes(window["end"])
+    for start, end in windows:
         if start < end and start <= minute < end:
             return True
         if start > end and (minute >= start or minute < end):
@@ -681,10 +712,15 @@ def _hour_facts(
     longitude: Any = None,
     latitude: Any = None,
     coordinate_source: Any = None,
+    runtime_context: RuntimeContext | None = None,
 ) -> list[dict[str, Any]]:
     allowed = set(hard_constraints.get("allowed_hour_branches") or BRANCHES)
     excluded = set(hard_constraints.get("excluded_hour_branches") or ())
     windows = list(hard_constraints.get("time_windows") or ())
+    minute_windows = tuple(
+        (_minutes(window["start"]), _minutes(window["end"]))
+        for window in windows
+    )
     result: list[dict[str, Any]] = []
     for index, (branch, hour, segments) in enumerate(
         zip(BRANCHES, HOUR_REPRESENTATIVES, HOUR_CIVIL_SEGMENTS)
@@ -806,7 +842,7 @@ def _hour_facts(
             reasons = list(common_constraint_reasons)
             window_overlap = any(
                 minute_candidates[minute]
-                and _minute_in_windows(minute, windows)
+                and _minute_in_windows(minute, minute_windows)
                 for minute in range(start, end)
             )
             if not window_overlap:
@@ -843,7 +879,10 @@ def _hour_facts(
             ]
             variant.update(copy.deepcopy(status))
             event_assessment = _official_event_rules_for_calendar(
-                variant, event_profile, requested_actions
+                variant,
+                event_profile,
+                requested_actions,
+                runtime_context,
             )
             variant["official_yiji"] = event_assessment["official_yiji"]
             variant["daily_shensha"] = event_assessment["daily_shensha"]
@@ -1528,6 +1567,7 @@ def build_day_record(
     longitude: Any = None,
     latitude: Any = None,
     coordinate_source: Any = None,
+    _runtime_context: RuntimeContext | None = None,
 ) -> dict[str, Any]:
     profiles = source_table()["event_profiles"]
     if event_profile not in profiles:
@@ -1569,6 +1609,7 @@ def build_day_record(
         raise ValueError(
             "directional_context.site_branch or site_mountain is required for directional_judgment"
         )
+    runtime_context = _runtime_context if _runtime_context is not None else {}
     noon_calendar = _calendar_for(
         civil_date,
         12,
@@ -1621,7 +1662,7 @@ def build_day_record(
             if item.date() == parsed_date
         )
     local_noon = datetime.fromisoformat(f"{civil_date}T12:00:00")
-    runtime = _aligned_runtime(local_noon, noon_calendar)
+    runtime = _aligned_runtime(local_noon, noon_calendar, runtime_context)
     ganzhi = noon_calendar["ganzhi"]
     year_branch = str(ganzhi["year"])[1]
     month_branch = str(ganzhi["month"])[1]
@@ -1643,6 +1684,7 @@ def build_day_record(
         longitude=longitude,
         latitude=latitude,
         coordinate_source=coordinate_source,
+        runtime_context=runtime_context,
     )
     month_variants = list(
         dict.fromkeys(
@@ -1663,7 +1705,10 @@ def build_day_record(
         )
     )
     day_event_assessment = _official_event_rules_for_calendar(
-        noon_calendar, event_profile, actions
+        noon_calendar,
+        event_profile,
+        actions,
+        runtime_context,
     )
     official_yi = day_event_assessment["official_yiji"]["yi"]
     official_ji = day_event_assessment["official_yiji"]["ji"]
@@ -1972,6 +2017,7 @@ def _effective_interval_identity(
 def _date_time_candidates(
     candidates: list[dict[str, Any]],
     constraints: Mapping[str, Any],
+    runtime_context: RuntimeContext | None = None,
 ) -> list[dict[str, Any]]:
     windows = list(constraints.get("time_windows") or ())
     result: list[dict[str, Any]] = []
@@ -1984,6 +2030,7 @@ def _date_time_candidates(
                         tzinfo=None
                     ),
                     variant,
+                    runtime_context,
                 )
                 variant_event_facts = _event_specific_facts(
                     str(event_rules["profile"]),
@@ -2223,12 +2270,132 @@ def _fact_leaves(value: Any, path: str = "") -> Iterator[tuple[str, Any]]:
     yield path or "/", value
 
 
+def _fact_leaves_at_suffixes(
+    value: Any,
+    path_suffixes: tuple[str, ...],
+) -> Iterator[tuple[str, Any]]:
+    """Index only subtrees addressable by the supplied predicates.
+
+    The search visits the fact containers once, follows each JSON-pointer-like
+    suffix exactly, and iteratively collects the matched subtree. Its yielded
+    paths and values are therefore identical to the relevant subset of a
+    complete Runtime fact index without paying for recursion or irrelevant
+    leaves.
+    """
+
+    suffixes_by_first_token: dict[str, list[tuple[str, ...]]] = {}
+    for suffix in path_suffixes:
+        segments = tuple(item for item in suffix.split("/") if item)
+        if not segments:
+            yield from _fact_leaves(value)
+            return
+        suffixes_by_first_token.setdefault(segments[0], []).append(segments[1:])
+
+    relevant: dict[str, Any] = {}
+
+    def token_for(key: Any) -> str:
+        rendered = str(key)
+        return (
+            _escape_fact_token(rendered)
+            if "/" in rendered or "~" in rendered
+            else rendered
+        )
+
+    def collect(current: Any, path: str) -> None:
+        stack: list[tuple[str, Any]] = [(path, current)]
+        while stack:
+            current_path, current_value = stack.pop()
+            if isinstance(current_value, Mapping) and current_value:
+                children = [
+                    (f"{current_path}/{token_for(key)}", child)
+                    for key in sorted(current_value, key=str)
+                    for child in (current_value[key],)
+                ]
+                stack.extend(reversed(children))
+                continue
+            if isinstance(current_value, (list, tuple)) and current_value:
+                stack.extend(
+                    (f"{current_path}/{index}", child)
+                    for index, child in reversed(tuple(enumerate(current_value)))
+                )
+                continue
+            relevant.setdefault(current_path or "/", current_value)
+
+    def follow(
+        current: Any,
+        path: str,
+        remaining: tuple[str, ...],
+    ) -> None:
+        current_value = current
+        current_path = path
+        for expected in remaining:
+            if not isinstance(current_value, Mapping):
+                return
+            match = next(
+                (
+                    (key, child)
+                    for key, child in current_value.items()
+                    if token_for(key) == expected
+                ),
+                None,
+            )
+            if match is None:
+                return
+            key, current_value = match
+            current_path = f"{current_path}/{token_for(key)}"
+        collect(current_value, current_path)
+
+    stack: list[tuple[str, Any]] = [("", value)]
+    while stack:
+        path, current = stack.pop()
+        if isinstance(current, Mapping):
+            children: list[tuple[str, Any]] = []
+            for key in sorted(current, key=str):
+                child = current[key]
+                token = token_for(key)
+                child_path = f"{path}/{token}"
+                for remaining in suffixes_by_first_token.get(token, ()):
+                    follow(child, child_path, remaining)
+                if isinstance(child, Mapping) or (
+                    isinstance(child, (list, tuple))
+                    and any(
+                        isinstance(item, (Mapping, list, tuple))
+                        for item in child
+                    )
+                ):
+                    children.append((child_path, child))
+            stack.extend(reversed(children))
+        elif isinstance(current, (list, tuple)):
+            stack.extend(
+                (f"{path}/{index}", child)
+                for index, child in reversed(tuple(enumerate(current)))
+                if isinstance(child, (Mapping, list, tuple))
+            )
+
+    yield from relevant.items()
+
+
 def _source_conditioned_patterns(
     facts: Mapping[str, Any],
 ) -> list[dict[str, Any]]:
     """Expose verified selection predicates without making a day verdict."""
 
     indexed = {"chart_facts": dict(facts)}
+    active_rules = tuple(
+        rule
+        for rule in evidence_rules.production_evidence_rules()
+        if rule.system == "selection" and rule.runtime_active
+    )
+    predicate_suffixes = tuple(
+        dict.fromkeys(
+            predicate.path_suffix
+            for rule in active_rules
+            for predicate in (
+                *rule.required_fact_predicates,
+                *rule.excluded_fact_predicates,
+            )
+        )
+    )
     fact_refs = tuple(
         FactRef(
             fact_id=f"fact:{path}",
@@ -2239,12 +2406,10 @@ def _source_conditioned_patterns(
             reading_id="",
             version=1,
         )
-        for path, value in _fact_leaves(indexed)
+        for path, value in _fact_leaves_at_suffixes(indexed, predicate_suffixes)
     )
     matches: list[dict[str, Any]] = []
-    for rule in evidence_rules.production_evidence_rules():
-        if rule.system != "selection":
-            continue
+    for rule in active_rules:
         matched, fact_ids, predicate_audit = evidence_rules.match_rule(
             rule, fact_refs
         )
@@ -2288,6 +2453,7 @@ def build_fact_layer(
     start = date.fromisoformat(normalized["date_range"]["start"])
     end = date.fromisoformat(normalized["date_range"]["end"])
     candidates: list[dict[str, Any]] = []
+    runtime_context: RuntimeContext = {}
     current = start
     while current <= end:
         candidates.append(
@@ -2305,10 +2471,15 @@ def build_fact_layer(
                 longitude=longitude,
                 latitude=latitude,
                 coordinate_source=coordinate_source,
+                _runtime_context=runtime_context,
             )
         )
         current += timedelta(days=1)
-    date_times = _date_time_candidates(candidates, normalized["hard_constraints"])
+    date_times = _date_time_candidates(
+        candidates,
+        normalized["hard_constraints"],
+        runtime_context,
+    )
     ranked_date_times = sorted(date_times, key=_rank_time_key)
     ordered_ids = list(
         dict.fromkeys(row["candidate_id"] for row in ranked_date_times)
@@ -2568,7 +2739,10 @@ def build_fact_layer(
             ),
         ],
     }
-    facts["fact_digest"] = fact_digest(facts)
+    # This freshly built payload does not yet contain either excluded digest
+    # field. Avoid a full defensive deepcopy here; ``fact_digest`` keeps that
+    # behavior for validating or re-signing caller-owned payloads.
+    facts["fact_digest"] = canonical_digest(facts)
     facts["validation"] = {
         "ok": True,
         "validator": "mingli-master.selection.validate_fact_layer",
