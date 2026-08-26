@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -267,6 +268,20 @@ class RuntimePythonTests(unittest.TestCase):
                 encoding="utf-8",
             )
             with self.assertRaisesRegex(RuntimeError, "distribution allowlist"):
+                runtime_python.validate_runtime_requirements_lock(lock)
+
+    def test_runtime_lock_rejects_substituted_artifact_hashes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            lock = Path(temporary) / "requirements-runtime.lock"
+            tampered, replaced = re.subn(
+                r"(?<=--hash=sha256:)[0-9a-f]{64}",
+                "0" * 64,
+                (ROOT / "requirements-runtime.lock").read_text(encoding="utf-8"),
+            )
+            self.assertEqual(replaced, 7)
+            lock.write_text(tampered, encoding="utf-8")
+
+            with self.assertRaisesRegex(RuntimeError, "approved artifact hash sets"):
                 runtime_python.validate_runtime_requirements_lock(lock)
 
     def test_runtime_lock_rejects_a_requirement_without_a_hash(self) -> None:

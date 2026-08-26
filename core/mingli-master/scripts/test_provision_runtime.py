@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import re
 import shlex
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -164,6 +166,39 @@ class ProvisionRuntimeTests(unittest.TestCase):
                     requirements,
                     install=False,
                 )
+
+    def test_check_cli_rejects_substituted_runtime_artifact_hashes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            requirements = root / "requirements-runtime.lock"
+            tampered, replaced = re.subn(
+                r"(?<=--hash=sha256:)[0-9a-f]{64}",
+                "0" * 64,
+                provision_runtime.DEFAULT_REQUIREMENTS.read_text(encoding="utf-8"),
+            )
+            self.assertEqual(replaced, 7)
+            requirements.write_text(tampered, encoding="utf-8")
+            executable = provision_runtime.runtime_python(root / "venv")
+            executable.parent.mkdir(parents=True)
+            executable.write_text("not executed\n", encoding="utf-8")
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(Path(provision_runtime.__file__)),
+                    "--venv",
+                    str(root / "venv"),
+                    "--requirements",
+                    str(requirements),
+                    "--check",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertNotEqual(completed.returncode, 0)
+            self.assertIn("approved artifact hash sets", completed.stderr)
 
     def test_check_mode_rejects_wrong_pinned_dependency_versions(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
