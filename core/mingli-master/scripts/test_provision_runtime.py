@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import os
 import re
 import shlex
+import stat
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import patch
 
@@ -121,6 +124,103 @@ class ProvisionRuntimeTests(unittest.TestCase):
         source = Path(provision_runtime.__file__).read_text(encoding="utf-8")
         self.assertIn("runtime_lock", source)
         self.assertIn("exclusive=True", source)
+
+    def test_install_pins_validated_bytes_before_waiting_for_runtime_lock(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            requirements = root / "override-runtime.lock"
+            approved = provision_runtime.DEFAULT_REQUIREMENTS.read_text(
+                encoding="utf-8"
+            )
+            original_pyyaml = "\n".join(
+                (
+                    "PyYAML==6.0.3 \\",
+                    "    --hash=sha256:652cb6edd41e718550aad172851962662ff2681490a8a711af6a4d288dd96824 \\",
+                    "    --hash=sha256:34d5fcd24b8445fadc33f9cf348c1047101756fd760b4dacb5c3e99755703310 \\",
+                    "    --hash=sha256:c458b6d084f9b935061bc36216e8a69a7e293a2f1e68bf956dcd9e6cbcd143f5",
+                )
+            )
+            reordered_pyyaml = "\n".join(
+                (
+                    "PyYAML==6.0.3 \\",
+                    "    --hash=sha256:c458b6d084f9b935061bc36216e8a69a7e293a2f1e68bf956dcd9e6cbcd143f5 \\",
+                    "    --hash=sha256:34d5fcd24b8445fadc33f9cf348c1047101756fd760b4dacb5c3e99755703310 \\",
+                    "    --hash=sha256:652cb6edd41e718550aad172851962662ff2681490a8a711af6a4d288dd96824",
+                )
+            )
+            self.assertIn(original_pyyaml, approved)
+            equivalent = (
+                "# caller comment retained verbatim\n\n"
+                + approved.replace(original_pyyaml, reordered_pyyaml)
+            ).replace("\n", "\r\n")
+            approved_bytes = equivalent.encode("utf-8")
+            requirements.write_bytes(approved_bytes)
+
+            tampered, replaced = re.subn(
+                rb"(?<=--hash=sha256:)[0-9a-f]{64}",
+                b"0" * 64,
+                approved_bytes,
+            )
+            self.assertEqual(replaced, 7)
+            replacement = root / "tampered-runtime.lock"
+            replacement.write_bytes(tampered)
+            observed: dict[str, object] = {}
+
+            @contextmanager
+            def replace_source_while_waiting(
+                _venv_root: Path,
+                *,
+                exclusive: bool,
+            ):
+                self.assertTrue(exclusive)
+                os.replace(replacement, requirements)
+                yield
+
+            def create_staged_runtime(staged: Path) -> None:
+                provision_runtime.runtime_python(staged).parent.mkdir(parents=True)
+
+            def capture_runtime_install(
+                _executable: Path,
+                *arguments: str,
+            ) -> None:
+                if "--no-build-isolation" not in arguments:
+                    return
+                snapshot = Path(arguments[arguments.index("--requirement") + 1])
+                observed.update(
+                    path=snapshot,
+                    parent=snapshot.parent,
+                    bytes=snapshot.read_bytes(),
+                    mode=stat.S_IMODE(snapshot.stat().st_mode),
+                    parent_mode=stat.S_IMODE(snapshot.parent.stat().st_mode),
+                )
+
+            with (
+                patch("provision_runtime.runtime_lock", replace_source_while_waiting),
+                patch(
+                    "provision_runtime.venv.EnvBuilder.create",
+                    side_effect=create_staged_runtime,
+                ),
+                patch("provision_runtime.run_pip", side_effect=capture_runtime_install),
+                patch("provision_runtime.runtime_site_roots", return_value=[]),
+                patch("provision_runtime.write_installed_runtime_manifest"),
+                patch(
+                    "provision_runtime.probe_runtime_identity",
+                    return_value={"probe": "ok"},
+                ),
+            ):
+                provision_runtime.provision(
+                    root / "venv",
+                    requirements,
+                    install=True,
+                )
+
+            self.assertEqual(requirements.read_bytes(), tampered)
+            self.assertNotEqual(observed["path"], requirements)
+            self.assertEqual(observed["bytes"], approved_bytes)
+            self.assertEqual(observed["mode"], 0o400)
+            self.assertEqual(observed["parent_mode"], 0o500)
+            self.assertFalse(Path(observed["path"]).exists())
+            self.assertFalse(Path(observed["parent"]).exists())
 
     def test_provision_removes_bootstrap_site_hooks_before_manifesting(self) -> None:
         source = Path(provision_runtime.__file__).read_text(encoding="utf-8")

@@ -11,6 +11,8 @@ import subprocess
 import sys
 import tempfile
 import venv
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 from runtime_python import (
@@ -46,6 +48,45 @@ def run_pip(executable: Path, *arguments: str) -> None:
         check=True,
         env=runtime_install_environment(),
     )
+
+
+@contextmanager
+def _validated_runtime_requirements_snapshot(
+    requirements: Path,
+    *,
+    directory: Path,
+) -> Iterator[Path]:
+    """Pin exact requirements bytes privately and validate the pinned snapshot."""
+    try:
+        requirements_bytes = requirements.read_bytes()
+    except OSError as exc:
+        raise RuntimeError("runtime requirements lock is unavailable") from exc
+
+    with tempfile.TemporaryDirectory(
+        prefix=".runtime-requirements-", dir=directory
+    ) as temporary:
+        snapshot_directory = Path(temporary)
+        snapshot = snapshot_directory / "requirements-runtime.lock"
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        flags |= getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+        descriptor = os.open(snapshot, flags, 0o600)
+        try:
+            with os.fdopen(descriptor, "wb") as handle:
+                descriptor = -1
+                handle.write(requirements_bytes)
+                handle.flush()
+                os.fsync(handle.fileno())
+                os.fchmod(handle.fileno(), 0o400)
+        finally:
+            if descriptor >= 0:
+                os.close(descriptor)
+
+        snapshot_directory.chmod(0o500)
+        try:
+            validate_runtime_requirements_lock(snapshot)
+            yield snapshot
+        finally:
+            snapshot_directory.chmod(0o700)
 
 
 def remove_runtime_bytecode(site_roots: list[Path]) -> None:
@@ -111,9 +152,13 @@ def provision(
         executable = runtime_python(venv_root)
         if not executable.is_file():
             raise RuntimeError(f"runtime does not exist: {executable}")
-    validate_runtime_requirements_lock(requirements)
     if install:
-        with runtime_lock(venv_root, exclusive=True):
+        with (
+            _validated_runtime_requirements_snapshot(
+                requirements, directory=venv_root.parent
+            ) as requirements_snapshot,
+            runtime_lock(venv_root, exclusive=True),
+        ):
             with tempfile.TemporaryDirectory(
                 prefix=f".{venv_root.name}.stage-", dir=venv_root.parent
             ) as temporary:
@@ -141,7 +186,7 @@ def provision(
                     "--no-binary",
                     "sxtwl",
                     "--requirement",
-                    str(requirements),
+                    str(requirements_snapshot),
                 )
                 run_pip(
                     staged_executable,
@@ -172,6 +217,7 @@ def provision(
                     shutil.rmtree(backup)
         identity = probe_runtime_identity(str(runtime_python(venv_root)))
         return {"runtime_python": str(runtime_python(venv_root)), **identity}
+    validate_runtime_requirements_lock(requirements)
     executable = runtime_python(venv_root)
     identity = probe_runtime_identity(str(executable))
     return {"runtime_python": str(executable), **identity}
