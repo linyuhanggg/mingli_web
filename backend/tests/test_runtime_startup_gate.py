@@ -12,8 +12,6 @@ from typing import Any
 
 import pytest
 from app.adapters.runtime import (
-    V53_TIME_CHECK_RELEASE_FILE_COUNT,
-    V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT,
     FakeMingliRuntimeAdapter,
     FileSystemRuntimeReleaseInspector,
     OneShotMingliRuntimeAdapter,
@@ -27,7 +25,6 @@ from app.adapters.runtime import (
 from app.readings.capability_policy import (
     P0_EXPOSED_CAPABILITY_IDS,
     V51_RELEASE_CAPABILITY_IDS,
-    V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
     CapabilityNotExposedError,
     require_p0_capability,
 )
@@ -1003,18 +1000,18 @@ def _materialize_v51_release(destination: Path) -> str:
     return listing
 
 
-def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
+def test_runtime_startup_gate_admits_the_exact_v51_candidate_identity(
     tmp_path: Path,
 ) -> None:
     from app.config import _RUNTIME_RELEASE_PROFILES, Settings
 
-    launcher = tmp_path / "runtime-v53-fixture"
+    launcher = tmp_path / "runtime-v51-fixture"
     launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
     launcher.chmod(0o700)
     release_root = tmp_path / "release-root"
     release_root.mkdir(mode=0o700)
-    profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
-    settings = _v53_worker_settings(
+    profile = _RUNTIME_RELEASE_PROFILES["v51"]
+    settings = _v51_worker_settings(
         tmp_path,
         release_root=release_root,
         runtime_python=_dummy_runtime_python(tmp_path),
@@ -1024,43 +1021,32 @@ def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
     gate = build_runtime_startup_gate(settings)
 
     assert profile == {
-        "manifest_digest": _ADMITTED_V53_DESCRIBE_DIGEST,
-        "capability_shape_sha256": _ADMITTED_V53_CAPABILITY_SHAPE,
-        "release_manifest_sha256": _ADMITTED_V53_RELEASE_MANIFEST_SHA,
+        "manifest_digest": _ADMITTED_V51_DESCRIBE_DIGEST,
+        "capability_shape_sha256": _ADMITTED_V51_CAPABILITY_SHAPE,
+        "release_manifest_sha256": _ADMITTED_V51_RELEASE_MANIFEST_SHA,
         "release_name": "mingli-master-portable-core",
-        "source_commit": _ADMITTED_V53_SOURCE_COMMIT,
-        "worker_sha256": _ADMITTED_V53_WORKER_SHA256,
+        "source_commit": _ADMITTED_V51_SOURCE_COMMIT,
+        "worker_sha256": _ADMITTED_V51_WORKER_SHA256,
         "worker_protocol": "mingli-runtime-worker-v2",
         "worker_turn_terminal": "result-idle-v1",
     }
     assert gate.runtime.adapter_kind == "runtime-worker-v2"
     assert gate.expected_manifest_digest == profile["manifest_digest"]
-    assert gate.expected_capability_shape_sha256 == profile[
-        "capability_shape_sha256"
-    ]
-    assert gate.expected_release_manifest_sha256 == profile[
-        "release_manifest_sha256"
-    ]
+    assert gate.expected_capability_shape_sha256 == profile["capability_shape_sha256"]
+    assert gate.expected_release_manifest_sha256 == profile["release_manifest_sha256"]
     assert gate.release_inspector.expected_source_commit == profile["source_commit"]
     assert gate.release_inspector.expected_release_name == profile["release_name"]
-    assert gate.expected_release_file_count == V53_TIME_CHECK_RELEASE_FILE_COUNT
-    assert (
-        gate.release_inspector.expected_release_file_count
-        == V53_TIME_CHECK_RELEASE_FILE_COUNT
-    )
-    assert V53_TIME_CHECK_RELEASE_FILE_COUNT == 223
-    assert V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT == 224
-    assert (
-        V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT
-        == V53_TIME_CHECK_RELEASE_FILE_COUNT + 1
-    )
-    assert profile["release_manifest_sha256"] != _PREVIOUS_V53_TIME_CHECK_LISTING_SHA
-    assert profile["release_manifest_sha256"] != _CLEAN_443A777_RELEASE_MANIFEST_SHA
+    assert gate.expected_release_file_count == 218
+    assert gate.release_inspector.expected_release_file_count == 218
+    assert len(V51_RELEASE_CAPABILITY_IDS) == 13
+    assert gate.expected_capability_ids == V51_RELEASE_CAPABILITY_IDS
+    assert profile["release_manifest_sha256"] != _FORBIDDEN_UNSIGNED_V51_LISTING_SHA
+    assert profile["release_manifest_sha256"] != _PREVIOUS_V51_WITHOUT_WORKER_LISTING_SHA
+    assert profile["release_manifest_sha256"] != _ADMITTED_V53_RELEASE_MANIFEST_SHA
     assert profile["release_manifest_sha256"] != _PREVIOUS_COMBINED_OVERLAY_LISTING_SHA
-    assert profile["release_manifest_sha256"] != _HEAD_RESERIALIZED_LISTING_SHA
-    assert profile["source_commit"] != _PREVIOUS_V53_TIME_CHECK_SOURCE_COMMIT
-    assert profile["release_manifest_sha256"] == _ADMITTED_V53_RELEASE_MANIFEST_SHA
-    assert profile["source_commit"] == _ADMITTED_V53_SOURCE_COMMIT
+    assert profile["release_manifest_sha256"] != _CLEAN_443A777_RELEASE_MANIFEST_SHA
+    assert profile["source_commit"] != _ADMITTED_V53_SOURCE_COMMIT
+    assert profile["worker_sha256"] != _ADMITTED_V53_WORKER_SHA256
     assert Settings().chart_fast_path_timeout_seconds == 2.0
     assert Settings().runtime_adapter == "fake"
 
@@ -1075,6 +1061,7 @@ def test_production_v51_rejects_unsigned_and_v53_identities() -> None:
     assert v51["release_manifest_sha256"] != _FORBIDDEN_UNSIGNED_V51_LISTING_SHA
     assert v51["release_manifest_sha256"] != _PREVIOUS_V51_WITHOUT_WORKER_LISTING_SHA
     assert v51["release_manifest_sha256"] != _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    assert v51["release_manifest_sha256"] != _PREVIOUS_COMBINED_OVERLAY_LISTING_SHA
     assert v51["source_commit"] != _ADMITTED_V53_SOURCE_COMMIT
     assert v51["worker_sha256"] != _ADMITTED_V53_WORKER_SHA256
 
@@ -1401,18 +1388,18 @@ async def test_build_runtime_startup_gate_and_create_app_fail_closed_on_wrong_di
         encoding="utf-8",
     )
     assert _sha256(release_root / ".mingli-release-manifest.json") != (
-        _ADMITTED_V53_RELEASE_MANIFEST_SHA
+        _ADMITTED_V51_RELEASE_MANIFEST_SHA
     )
-    settings = _v53_worker_settings(
+    settings = _v51_worker_settings(
         tmp_path,
         release_root=release_root,
         runtime_python=_dummy_runtime_python(tmp_path),
     )
     gate = build_runtime_startup_gate(settings)
     assert gate.runtime.adapter_kind == "runtime-worker-v2"
-    assert gate.expected_release_manifest_sha256 == _ADMITTED_V53_RELEASE_MANIFEST_SHA
-    assert gate.release_inspector.expected_source_commit == _ADMITTED_V53_SOURCE_COMMIT
-    assert gate.expected_release_file_count == 223
+    assert gate.expected_release_manifest_sha256 == _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    assert gate.release_inspector.expected_source_commit == _ADMITTED_V51_SOURCE_COMMIT
+    assert gate.expected_release_file_count == 218
 
     with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
         await gate.startup()
@@ -1428,18 +1415,35 @@ async def test_build_runtime_startup_gate_and_create_app_fail_closed_on_wrong_di
 async def test_build_runtime_startup_gate_and_create_app_fail_closed_on_clean_tree(
     tmp_path: Path,
 ) -> None:
-    source = _discover_clean_v53_release_root()
-    if source is None:
-        pytest.skip("the clean 443a777 Runtime release is not present")
-    release_root = tmp_path / "clean-443a777-release"
-    _copy_signed_release(source, release_root)
-    assert _sha256(release_root / ".mingli-release-manifest.json") == (
-        _CLEAN_443A777_RELEASE_MANIFEST_SHA
+    release_root = tmp_path / "unsigned-clean-release"
+    release_root.mkdir(mode=0o700)
+    (release_root / ".mingli-release-manifest.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 3,
+                "release": "mingli-master-portable-core",
+                "source_commit": _ADMITTED_V51_SOURCE_COMMIT,
+                "files": {},
+                "modes": {},
+            },
+            ensure_ascii=True,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
     )
-    settings = _v53_worker_settings(
+    listing = _sha256(release_root / ".mingli-release-manifest.json")
+    assert listing != _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    assert listing != _PREVIOUS_V51_WITHOUT_WORKER_LISTING_SHA
+    settings = _v51_worker_settings(
         tmp_path,
         release_root=release_root,
         runtime_python=_dummy_runtime_python(tmp_path),
+    )
+    assert settings.runtime_release_profile == "v51"
+    assert (
+        settings.runtime_expected_manifest_digest == _ADMITTED_V51_DESCRIBE_DIGEST
     )
     gate = build_runtime_startup_gate(settings)
     with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
@@ -1450,20 +1454,40 @@ async def test_build_runtime_startup_gate_and_create_app_fail_closed_on_clean_tr
     application = create_app(settings=settings)
     with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
         async with application.router.lifespan_context(application):
-            raise AssertionError("create_app must reject the clean 443a777 listing")
+            raise AssertionError("create_app must reject unsigned or clean-tree listings")
 
 
 async def test_build_runtime_startup_gate_and_create_app_reject_previous_overlay_listing(
     tmp_path: Path,
 ) -> None:
-    source = _discover_clean_v53_release_root()
-    if source is None:
-        pytest.skip("the clean 443a777 Runtime release is not present")
-    release_root = _materialize_combined_overlay_release(tmp_path)
-    assert _sha256(release_root / ".mingli-release-manifest.json") == (
-        _PREVIOUS_COMBINED_OVERLAY_LISTING_SHA
+    from app.config import _RUNTIME_RELEASE_PROFILES
+
+    v51 = _RUNTIME_RELEASE_PROFILES["v51"]
+    assert v51["release_manifest_sha256"] != _PREVIOUS_COMBINED_OVERLAY_LISTING_SHA
+    assert v51["release_manifest_sha256"] != _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    assert v51["release_manifest_sha256"] != _FORBIDDEN_UNSIGNED_V51_LISTING_SHA
+    assert v51["release_manifest_sha256"] != _PREVIOUS_V51_WITHOUT_WORKER_LISTING_SHA
+    release_root = tmp_path / "previous-overlay-release"
+    release_root.mkdir(mode=0o700)
+    (release_root / ".mingli-release-manifest.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 3,
+                "release": "mingli-master-portable-core",
+                "source_commit": _ADMITTED_V53_SOURCE_COMMIT,
+                "files": {},
+                "modes": {},
+            },
+            ensure_ascii=True,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
     )
-    settings = _v53_worker_settings(
+    listing = _sha256(release_root / ".mingli-release-manifest.json")
+    assert listing != _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    settings = _v51_worker_settings(
         tmp_path,
         release_root=release_root,
         runtime_python=_dummy_runtime_python(tmp_path),
@@ -1560,6 +1584,25 @@ def _core_listing_payload(source_commit: str) -> bytes:
 
     core = _REPO_ROOT / "core" / "mingli-master"
     manifest = rd.build_manifest(core, rd.tracked_release_files(core), source_commit)
+    return (
+        json.dumps(manifest, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+
+
+def _v51_listing_payload(source_commit: str) -> bytes:
+    source = _discover_v51_source_root()
+    if source is None:
+        pytest.skip("the admitted v51 worker-v2 source is not present")
+    scripts = str(source / "scripts")
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    import release_deploy as rd
+
+    manifest = rd.build_manifest(
+        source,
+        rd.tracked_release_files(source),
+        source_commit,
+    )
     return (
         json.dumps(manifest, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
     ).encode("utf-8")
@@ -1688,14 +1731,17 @@ def test_factory_rejects_v51_worker_identity_drift(tmp_path: Path) -> None:
 
 
 async def test_create_app_rejects_head_reserialized_listing(tmp_path: Path) -> None:
-    payload = _core_listing_payload(_HEAD_RESERIALIZED_SOURCE_COMMIT)
+    payload = _v51_listing_payload(_HEAD_RESERIALIZED_SOURCE_COMMIT)
     listing = hashlib.sha256(payload).hexdigest()
-    assert listing == _HEAD_RESERIALIZED_LISTING_SHA
+    admitted = hashlib.sha256(_v51_listing_payload(_ADMITTED_V51_SOURCE_COMMIT)).hexdigest()
+    assert admitted == _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    assert listing != _ADMITTED_V51_RELEASE_MANIFEST_SHA
     assert listing != _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    assert listing != _PREVIOUS_COMBINED_OVERLAY_LISTING_SHA
     release_root = tmp_path / "head-reserialized-release"
     release_root.mkdir(mode=0o700)
     (release_root / ".mingli-release-manifest.json").write_bytes(payload)
-    settings = _v53_worker_settings(
+    settings = _v51_worker_settings(
         tmp_path,
         release_root=release_root,
         runtime_python=_dummy_runtime_python(tmp_path),
@@ -1722,7 +1768,7 @@ async def test_create_app_worker_crash_does_not_fallback_to_one_shot(
         "{}",
         encoding="utf-8",
     )
-    settings = _v53_worker_settings(
+    settings = _v51_worker_settings(
         tmp_path,
         release_root=release_root,
         runtime_python=_dummy_runtime_python(tmp_path),
@@ -1744,13 +1790,13 @@ async def test_create_app_worker_crash_does_not_fallback_to_one_shot(
 
     def admitted_inventory(self: FileSystemRuntimeReleaseInspector) -> RuntimeReleaseInventory:
         return RuntimeReleaseInventory(
-            release_manifest_sha256=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
-            release_file_count=223,
-            provider_ids=V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
-            ready_provider_ids=V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
+            release_manifest_sha256=_ADMITTED_V51_RELEASE_MANIFEST_SHA,
+            release_file_count=218,
+            provider_ids=V51_RELEASE_CAPABILITY_IDS,
+            ready_provider_ids=V51_RELEASE_CAPABILITY_IDS,
             reference_pack_count=55,
             evidence_record_count=1328,
-            runtime_closure_file_count=223,
+            runtime_closure_file_count=218,
         )
 
     monkeypatch.setattr(OneShotMingliRuntimeAdapter, "__init__", tracking_one_shot)

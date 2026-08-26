@@ -38,6 +38,8 @@ from app.readings.request_compiler import (
 )
 from app.readings.runtime_contracts import Prepare
 from app.readings.status import ReadingStatus
+
+# isort: split
 from mingli_paths import MINGLI_RUNTIME_RELEASE_ROOT
 
 # isort: split
@@ -67,17 +69,12 @@ _EVENT_DATETIME = datetime.fromisoformat("2026-08-14T10:00:00+08:00")
 
 _REQUIRED_SINGLE_CALCULATED_FACTS = {
     "bazi": (
+        "four_pillars",
+        "hidden_stems",
+        "ten_gods",
         "day_master",
-        "twelve_growth_stages",
-        "xunkong",
-        "san_yuan",
         "month_command",
-        "seasonal_profile",
-        "tiaohou_markers",
-        "element_inventory",
-        "branch_relations",
-        "interpretive_candidates",
-        "source_conditioned_patterns",
+        "luck_cycles",
     ),
     "fortune": (
         "active_luck_cycle",
