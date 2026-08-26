@@ -361,7 +361,7 @@
   position: relative;
   z-index: 2;
   border-block: 1px solid var(--home-line);
-  background: var(--home-glass);
+  background: var(--home-paper-surface);
 }
 
 .quickStartInner {

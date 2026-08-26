@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { adoptCsrfToken, getCsrfToken } from "@/lib/api";
+import { destinationAfterLogin } from "@/lib/login-continue";
 
 import { useOptionalAccountSession } from "./account-session-context";
 import styles from "./otp-form.module.css";
@@ -189,7 +190,7 @@ export function OtpForm() {
       if (accountSession) {
         await accountSession.refresh();
       }
-      router.replace("/account");
+      router.replace(destinationAfterLogin());
     } catch (reason) {
       codeForm.setError(
         "code",

@@ -71,7 +71,7 @@
 }
 
 .earth {
-  font-family: var(--font-domain);
+  font-family: var(--font-sans);
   font-size: var(--font-size-label);
   transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(-1 * var(--earth-radius))) rotate(calc(-1 * var(--angle)));
 }
@@ -183,7 +183,7 @@
 }
 
 .table th[scope="row"] {
-  font-family: var(--font-domain);
+  font-family: var(--font-sans);
   font-weight: 650;
 }
 

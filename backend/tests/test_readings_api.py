@@ -7,6 +7,7 @@ import pytest
 from app.adapters.runtime import FakeMingliRuntimeAdapter
 from app.identity.models import GuestSession
 from app.readings.models import (
+    FactBrief,
     GenerationAttempt,
     ReadingIdempotencyKey,
     ReadingJobRecord,
@@ -23,6 +24,7 @@ from pydantic import ValidationError
 from sqlalchemy import select
 from worker.readings import build_reading_worker
 
+# isort: split
 from test_profiles_api import (
     assert_private_headers,
     create_confirmed_profile,
@@ -169,20 +171,26 @@ async def advance_to_accepted(
         job = await session.scalar(
             select(ReadingJobRecord).where(
                 ReadingJobRecord.reading_version_id == version.id,
-                ReadingJobRecord.status == "queued",
             )
         )
         assert job is not None
-        brief = ReadingBrief.from_dict(brief_payload(subject_ref, version.horizon))
         now = datetime.now(UTC)
-        await repository.record_prepared(
-            str(job.id),
-            Prepared(state_token="api-test-token", brief=brief),
-            now,
+        state_token = (
+            None
+            if version.state_token_fingerprint is None
+            else await repository.load_state_token(version.id)
         )
+        if await repository.load_fact_brief(version.id) is None:
+            brief = ReadingBrief.from_dict(brief_payload(subject_ref, version.horizon))
+            state_token = state_token or "api-test-token"
+            await repository.record_prepared(
+                str(job.id),
+                Prepared(state_token=state_token, brief=brief),
+                now,
+            )
         await repository.record_accepted(
             str(job.id),
-            Accepted(state_token="api-test-token", public_copy=ACCEPTED_COPY),
+            Accepted(state_token=state_token or "api-test-token", public_copy=ACCEPTED_COPY),
             now,
         )
         await session.commit()
@@ -204,14 +212,18 @@ async def simulate_waiting_input(
         job = await session.scalar(
             select(ReadingJobRecord).where(
                 ReadingJobRecord.reading_version_id == version.id,
-                ReadingJobRecord.status == "queued",
             )
         )
         assert job is not None
+        state_token = (
+            None
+            if version.state_token_fingerprint is None
+            else await repository.load_state_token(version.id)
+        )
         stopped = Stopped(
             reason="need_input",
             public_copy="还需要补充摇卦输入。",
-            state_token="api-supply-token",
+            state_token=state_token or "api-supply-token",
             input_request=input_request
             or {
                 "requirements": [
@@ -284,7 +296,7 @@ async def start_preview(
     return response.json()
 
 
-async def test_guest_starts_preview_reading_and_polls_a_queued_job(
+async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
@@ -309,7 +321,9 @@ async def test_guest_starts_preview_reading_and_polls_a_queued_job(
     assert body["profile_version_id"] == confirmed["profile_version_id"]
     assert body["capability_id"] == "bazi"
     assert body["version"] == 1
-    assert body["status"] == "input_ready"
+    assert body["status"] == "prepared"
+    assert body["fast_path_timing"]["execution_lane"] == "direct_runtime"
+    assert body["fast_path_timing"]["queue_wait_ms"] == 0
     assert body["object_id"] == "natal"
     assert body["horizon"]["kind_id"] == "life"
     assert body["prior_answer"] is None
@@ -318,7 +332,7 @@ async def test_guest_starts_preview_reading_and_polls_a_queued_job(
     polled = await client.get(f"/api/v1/readings/{body['reading_version_id']}")
 
     assert polled.status_code == 200
-    assert polled.json()["status"] == "input_ready"
+    assert polled.json()["status"] == "prepared"
     assert_private_headers(polled)
     assert "state_token" not in polled.text
     assert "ciphertext" not in polled.text
@@ -327,14 +341,14 @@ async def test_guest_starts_preview_reading_and_polls_a_queued_job(
     async with database.sessions() as session:
         version = await session.get(ReadingVersion, UUID(body["reading_version_id"]))
         assert version is not None
-        assert version.status == "input_ready"
+        assert version.status == "prepared"
         jobs = list(
             await session.scalars(
                 select(ReadingJobRecord).where(ReadingJobRecord.reading_version_id == version.id)
             )
         )
         assert len(jobs) == 1
-        assert jobs[0].status == "queued"
+        assert jobs[0].status == "complete"
         assert jobs[0].narrative_policy_version
         assert jobs[0].output_contract["contract_id"] == "preview-v1"
 
@@ -549,7 +563,12 @@ async def test_guest_starts_each_new_single_art_reading(
     body = started.json()
     assert body["capability_id"] == expected_capability
     assert body["object_id"] == expected_object
-    assert body["status"] == "input_ready"
+    is_direct_chart = path in {
+        "/api/v1/readings/ziwei",
+        "/api/v1/readings/daliuren",
+        "/api/v1/readings/meihua",
+    }
+    assert body["status"] == ("prepared" if is_direct_chart else "input_ready")
     expected_horizon = (
         "life"
         if expected_object == "natal"
@@ -583,7 +602,7 @@ async def test_guest_starts_each_new_single_art_reading(
             )
         )
         assert len(jobs) == 1
-        assert jobs[0].status == "queued"
+        assert jobs[0].status == ("complete" if is_direct_chart else "queued")
 
 
 async def test_daliuren_timing_rejects_an_unbounded_public_request(
@@ -756,7 +775,7 @@ async def test_liuyao_deep_rejects_partial_dimension_selection(
     assert rejected.json()["title"] == "Invalid reading input"
 
 
-async def test_preview_job_reaches_accepted_under_default_local_fake_stack(
+async def test_preview_chart_bypasses_worker_and_model_under_default_fake_stack(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
@@ -776,19 +795,8 @@ async def test_preview_job_reaches_accepted_under_default_local_fake_stack(
     assert started.status_code == 201, started.text
     version_id = started.json()["reading_version_id"]
 
-    # run_worker_once builds the default local fake stack: the real
-    # FakeMingliRuntimeAdapter + FakeModelGateway wiring driving the real
-    # PREVIEW_V1 OutputContract through the real ReadingOrchestrator.
     processed = await run_worker_once(database, test_settings)
-    assert processed is True
-
-    # Drive the state machine until no job is claimable, with a hard bound so a
-    # future requeue-without-progress regression fails instead of hanging tests.
-    for _ in range(7):
-        if not await run_worker_once(database, test_settings):
-            break
-    else:
-        pytest.fail("preview job did not quiesce within eight worker iterations")
+    assert processed is False
 
     async with database.sessions() as session:
         version = await session.get(ReadingVersion, UUID(version_id))
@@ -805,15 +813,10 @@ async def test_preview_job_reaches_accepted_under_default_local_fake_stack(
             )
         )
 
-    assert job.status == "complete", (
-        "preview job must reach accepted under the default local fake stack; "
-        f"actual job status={job.status!r}, version status={version.status!r}, "
-        "persisted attempts="
-        f"{[(attempt.attempt_number, tuple(attempt.guard_errors)) for attempt in attempts]!r}"
-    )
-    assert version.status == "accepted"
+    assert job.status == "complete"
+    assert version.status == "prepared"
     assert job.output_contract["contract_id"] == "preview-v1"
-    assert len(attempts) == 1
+    assert attempts == []
 
 
 async def test_today_and_week_jobs_reach_accepted_under_default_local_fake_stack(
@@ -1367,7 +1370,7 @@ async def test_supply_input_rejects_value_outside_declared_choices(
     assert response.json()["title"] == "Invalid reading input"
 
 
-async def test_liuyao_need_input_supply_enqueues_a_tokenized_job(
+async def test_liuyao_need_input_supply_finishes_on_the_direct_runtime_lane(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
@@ -1425,8 +1428,9 @@ async def test_liuyao_need_input_supply_enqueues_a_tokenized_job(
 
     assert supplied.status_code == 201
     assert supplied.json()["reading_version_id"] == version_id
-    assert supplied.json()["status"] == "input_ready"
+    assert supplied.json()["status"] == "prepared"
     assert supplied.json()["input_request"] is None
+    assert supplied.json()["fast_path_timing"]["execution_lane"] == "direct_runtime"
 
     repeated = await client.post(
         f"/api/v1/readings/{version_id}/input",
@@ -1455,13 +1459,13 @@ async def test_liuyao_need_input_supply_enqueues_a_tokenized_job(
         )
         assert len(jobs) == 1
         assert jobs[0].id == waiting_job_id
-        assert jobs[0].status == "queued"
+        assert jobs[0].status == "complete"
         cipher = EnvelopeCipher.from_settings(test_settings)
         readings = __import__("app.readings.repository", fromlist=["SqlReadingRepository"])
         repository = readings.SqlReadingRepository(session, cipher)
         supplied_job = jobs[0]
         loaded = await repository.load_job(str(supplied_job.id))
-        assert loaded.prepare_command.state_token == "api-supply-token"
+        assert loaded.prepare_command.state_token is not None
         assert loaded.prepare_command.transition == "correct"
         subject_ref = str(loaded.prepare_command.intent["subject_refs"][0])
         supplied_facts = loaded.prepare_command.facts[subject_ref]
@@ -1471,13 +1475,13 @@ async def test_liuyao_need_input_supply_enqueues_a_tokenized_job(
         assert "prior_answer" not in supplied_facts
 
     processed = await run_worker_once(database, test_settings, runtime=TokenEchoRuntime())
-    assert processed is True
+    assert processed is False
     advanced = await client.get(f"/api/v1/readings/{version_id}")
     assert advanced.status_code == 200
     assert advanced.json()["status"] in {"prepared", "completing", "accepted"}
 
 
-async def test_liuyao_outcome_dimension_worker_reaches_accepted(
+async def test_liuyao_outcome_dimension_finishes_without_worker_or_model(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
@@ -1509,12 +1513,10 @@ async def test_liuyao_outcome_dimension_worker_reaches_accepted(
         assert job.output_contract["required_dimension_ids"] == ["outcome"]
 
     runtime = TokenEchoRuntime()
-    assert await run_worker_once(database, test_settings, runtime=runtime) is True
-    assert await run_worker_once(database, test_settings, runtime=runtime) is True
-    assert await run_worker_once(database, test_settings, runtime=runtime) is True
+    assert await run_worker_once(database, test_settings, runtime=runtime) is False
     finished = await client.get(f"/api/v1/readings/{version_id}")
     assert finished.status_code == 200
-    assert finished.json()["status"] == "accepted"
+    assert finished.json()["status"] == "prepared"
 
 
 async def test_liuyao_start_rejects_an_unknown_timezone(
@@ -1660,7 +1662,9 @@ async def test_accepted_result_verification_and_idempotent_verification(
     assert body["status"] == "accepted"
     assert body["accepted_copy"] == ACCEPTED_COPY
     assert body["document"] is None
-    assert body["fact_panel"]["facts"][0]["display_text"] == "当前结构更支持持续积累。"
+    assert body["fact_panel"]["facts"][0]["display_text"] == (
+        "这是 Fake Runtime 合同事实，不是命理结果。"
+    )
     assert body["fact_panel"]["limits"][0]["kind_id"] == "limit:traditional"
     assert body["verification"] is None
     assert_private_headers(result)
@@ -1801,7 +1805,7 @@ async def test_follow_up_creates_a_new_version_with_projected_prior_answer(
         )
         loaded = await repository.load_job(str(job.id))
         assert loaded.prepare_command.facts[subject_ref]["prior_answer"] == ACCEPTED_COPY
-        assert loaded.prepare_command.state_token == "api-test-token"
+        assert loaded.prepare_command.state_token is not None
         assert loaded.prepare_command.transition is None
 
 
@@ -2105,19 +2109,31 @@ async def test_result_fact_panel_strips_raw_inputs_and_dependent_refs(
         job = await session.scalar(
             select(ReadingJobRecord).where(
                 ReadingJobRecord.reading_version_id == version.id,
-                ReadingJobRecord.status == "queued",
             )
         )
         assert job is not None
+        existing_brief = await session.scalar(
+            select(FactBrief).where(FactBrief.reading_version_id == version.id)
+        )
+        assert existing_brief is not None
+        await session.delete(existing_brief)
+        await session.flush()
+        state_token = await repository.load_state_token(version.id)
         now = datetime.now(UTC)
         await repository.record_prepared(
             str(job.id),
-            Prepared(state_token="api-test-token", brief=ReadingBrief.from_dict(leak_brief)),
+            Prepared(
+                state_token=state_token or "api-test-token",
+                brief=ReadingBrief.from_dict(leak_brief),
+            ),
             now,
         )
         await repository.record_accepted(
             str(job.id),
-            Accepted(state_token="api-test-token", public_copy=ACCEPTED_COPY),
+            Accepted(
+                state_token=state_token or "api-test-token",
+                public_copy=ACCEPTED_COPY,
+            ),
             now,
         )
         await session.commit()
@@ -2367,6 +2383,9 @@ async def test_list_readings_orders_newest_first_caps_at_50_and_stays_private(
         "input_request",
         "created_at",
         "delivery_state",
+        "result_available",
+        "poll_required",
+        "poll_after_seconds",
     }
     assert item["reading_root_id"]
     assert item["profile_version_id"] is None
