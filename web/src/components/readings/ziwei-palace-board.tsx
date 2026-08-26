@@ -62,7 +62,18 @@ export type ZiweiPalaceBoardProps = {
   layout?: Layout;
   offer?: ZiweiS4Offer | null;
   s4Phase?: ZiweiS4Phase;
+  showInterpretiveSections?: boolean;
 };
+
+function GridOwnedCell({ children }: Readonly<{ children: ReactNode }>) {
+  return (
+    <div role="row" style={{ display: "contents" }}>
+      <div role="gridcell" style={{ display: "contents" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 function branchIndex(branch: string): number {
   return BRANCHES.indexOf(branch as (typeof BRANCHES)[number]);
@@ -324,6 +335,7 @@ export function ZiweiPalaceBoard({
   layout,
   offer = null,
   s4Phase = "entry",
+  showInterpretiveSections = true,
 }: ZiweiPalaceBoardProps) {
   const resolvedLayout = useResolvedLayout(layout);
   const structural = mode !== "ready" || !view;
@@ -393,6 +405,12 @@ export function ZiweiPalaceBoard({
     }
   }
 
+  function onBoardKey(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "Escape" || detailBranch) return;
+    event.preventDefault();
+    setSelected(null);
+  }
+
   function palaceName(palace: Palace | undefined, branch: string): string {
     if (!palace) return branch;
     const marks = [
@@ -446,7 +464,7 @@ export function ZiweiPalaceBoard({
 
   if (resolvedLayout === "list") {
     return (
-      <div className={styles.board} data-layout="list" data-mode={mode}>
+      <div className={styles.board} data-layout="list" data-mode={mode} onKeyDown={onBoardKey}>
         {caliber}
         {densitySwitch}
         <nav aria-label="宫位缩略" className={styles.thumbs} data-columns="3">
@@ -542,7 +560,7 @@ export function ZiweiPalaceBoard({
             selectedBranch={selected}
           />
         ) : null}
-        {!structural ? (
+        {!structural && showInterpretiveSections ? (
           <ZiweiSourcePatternDrawer
             items={view?.core_facts?.source_conditioned_patterns}
             onSelectPattern={(branch) => setSelected((current) => (current === branch ? null : branch))}
@@ -550,14 +568,16 @@ export function ZiweiPalaceBoard({
             selectedBranch={selected}
           />
         ) : null}
-        {view && !structural ? <ZiweiFreeSummary offer={offer} s4Phase={s4Phase} view={view} /> : null}
+        {view && !structural && showInterpretiveSections ? (
+          <ZiweiFreeSummary offer={offer} s4Phase={s4Phase} view={view} />
+        ) : null}
         {detailDrawer}
       </div>
     );
   }
 
   return (
-    <div className={styles.board} data-layout="ring" data-mode={mode}>
+    <div className={styles.board} data-layout="ring" data-mode={mode} onKeyDown={onBoardKey}>
       {caliber}
       {densitySwitch}
       <div
@@ -571,31 +591,38 @@ export function ZiweiPalaceBoard({
           const isLife = Boolean(palace && view && palace.palace_id === view.life_palace_id);
           const isBody = Boolean(palace && view && palace.palace_id === view.body_palace_id);
           if (structural) {
-            return <div className={styles.cell} data-branch={branch} data-empty="true" key={branch} />;
+            return (
+              <GridOwnedCell key={branch}>
+                <div className={styles.cell} data-branch={branch} data-empty="true" />
+              </GridOwnedCell>
+            );
           }
           return (
-            <button
-              aria-label={palaceName(palace, branch)}
-              className={styles.cell}
-              data-body={isBody ? "true" : undefined}
-              data-branch={branch}
-              data-highlight={highlightFor(branch, selected)}
-              data-life={isLife ? "true" : undefined}
-              key={branch}
-              onClick={() => setSelected((current) => (current === branch ? null : branch))}
-              onKeyDown={(event) => onPalaceKey(event, branch)}
-              ref={(node) => {
-                buttonRefs.current[branch] = node;
-              }}
-              tabIndex={selected ? (selected === branch ? 0 : -1) : isLife || (!lifeBranch && branch === "子") ? 0 : -1}
-              type="button"
-            >
-              {renderMarks(palace)}
-              {palace ? <PalaceBody brightnessOf={brightnessOf} density={density} huaOf={huaOf} palace={palace} /> : null}
-            </button>
+            <GridOwnedCell key={branch}>
+              <button
+                aria-label={palaceName(palace, branch)}
+                className={styles.cell}
+                data-body={isBody ? "true" : undefined}
+                data-branch={branch}
+                data-highlight={highlightFor(branch, selected)}
+                data-life={isLife ? "true" : undefined}
+                onClick={() => setSelected((current) => (current === branch ? null : branch))}
+                onKeyDown={(event) => onPalaceKey(event, branch)}
+                ref={(node) => {
+                  buttonRefs.current[branch] = node;
+                }}
+                tabIndex={selected ? (selected === branch ? 0 : -1) : isLife || (!lifeBranch && branch === "子") ? 0 : -1}
+                type="button"
+              >
+                {renderMarks(palace)}
+                {palace ? <PalaceBody brightnessOf={brightnessOf} density={density} huaOf={huaOf} palace={palace} /> : null}
+              </button>
+            </GridOwnedCell>
           );
         })}
-        <CenterFacts emptyLabel={!structural} view={structural ? undefined : view} />
+        <GridOwnedCell>
+          <CenterFacts emptyLabel={!structural} view={structural ? undefined : view} />
+        </GridOwnedCell>
       </div>
       {view && !structural ? <SemanticTable view={view} /> : null}
       {!structural ? (
@@ -620,7 +647,7 @@ export function ZiweiPalaceBoard({
           selectedBranch={selected}
         />
       ) : null}
-      {!structural ? (
+      {!structural && showInterpretiveSections ? (
         <ZiweiSourcePatternDrawer
           items={view?.core_facts?.source_conditioned_patterns}
           onSelectPattern={(branch) => setSelected((current) => (current === branch ? null : branch))}
@@ -628,7 +655,9 @@ export function ZiweiPalaceBoard({
           selectedBranch={selected}
         />
       ) : null}
-      {view && !structural ? <ZiweiFreeSummary offer={offer} s4Phase={s4Phase} view={view} /> : null}
+      {view && !structural && showInterpretiveSections ? (
+        <ZiweiFreeSummary offer={offer} s4Phase={s4Phase} view={view} />
+      ) : null}
       {detailDrawer}
     </div>
   );

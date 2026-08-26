@@ -251,6 +251,28 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(palaceButton("午")).not.toHaveAttribute("data-highlight");
   });
 
+  it("clears a locked selection on Escape without stealing the detail drawer Escape", async () => {
+    const user = userEvent.setup();
+    render(<ZiweiPalaceBoard view={chart()} />);
+
+    await user.click(palaceButton("寅"));
+    expect(palaceButton("寅")).toHaveAttribute("data-highlight", "primary");
+    await user.keyboard("{Escape}");
+    expect(palaceButton("寅")).not.toHaveAttribute("data-highlight");
+    expect(palaceButton("午")).not.toHaveAttribute("data-highlight");
+
+    palaceButton("午").focus();
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("dialog", { name: "宫位详情" })).toBeVisible();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: "宫位详情" })).not.toBeInTheDocument();
+    expect(palaceButton("午")).toHaveFocus();
+    expect(palaceButton("午")).toHaveAttribute("data-highlight", "primary");
+
+    await user.keyboard("{Escape}");
+    expect(palaceButton("午")).not.toHaveAttribute("data-highlight");
+  });
+
   it("moves along the earthly-branch ring and jumps with Home and End", async () => {
     const user = userEvent.setup();
     render(<ZiweiPalaceBoard view={chart()} />);
@@ -852,7 +874,7 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(experience).not.toContain("ziwei-star-fact-list");
   });
 
-  it("renders nailed source_conditioned_patterns as a collapsed verifiable drawer", async () => {
+  it("renders nailed source_conditioned_patterns and resolves indexed paths against the actual palace array", async () => {
     const user = userEvent.setup();
     render(
       <ZiweiPalaceBoard
@@ -912,12 +934,43 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(within(block).queryByText(/fact_paths|chart_facts|palaces\/0/)).not.toBeInTheDocument();
 
     await user.click(within(block).getByRole("button", { name: "至玄至微" }));
-    expect(palaceButton("子")).toHaveAttribute("data-highlight", "primary");
-    expect(palaceButton("午")).toHaveAttribute("data-highlight", "related");
-    expect(palaceButton("辰")).toHaveAttribute("data-highlight", "related");
-    expect(palaceButton("申")).toHaveAttribute("data-highlight", "related");
+    expect(chart().palaces[0]?.earthly_branch).toBe("酉");
+    expect(palaceButton("酉")).toHaveAttribute("data-highlight", "primary");
+    expect(palaceButton("卯")).toHaveAttribute("data-highlight", "related");
+    expect(palaceButton("丑")).toHaveAttribute("data-highlight", "related");
+    expect(palaceButton("巳")).toHaveAttribute("data-highlight", "related");
     expect(within(block).getByText("至玄至微").closest("li")).toHaveAttribute("data-highlight", "true");
     expect(within(block).getByText("先看命身").closest("li")).not.toHaveAttribute("data-highlight");
+  });
+
+  it("removes candidate, summary and deep-read sections when interpretation is gated", () => {
+    const gatedView = chart({
+      core_facts: facts({
+        source_conditioned_patterns: [{
+          rule_id: "ziwei/taiwei-fu#TR-01",
+          local_rule_id: "TR-01",
+          title: "至玄至微",
+          source_pack: "ziwei/taiwei-fu",
+          source_anchor: "rules.md#L9-L16",
+          status: "predicate_matched_not_verdict",
+          fact_paths: ["fact:/chart_facts/output/palaces/0/name"],
+          predicate_audit: ["/output/palaces:descendant_eq:命宫"],
+        }],
+      }),
+    });
+    const { rerender } = render(
+      <ZiweiPalaceBoard showInterpretiveSections={false} view={gatedView} />,
+    );
+
+    expect(ring()).toBeVisible();
+    expect(screen.queryByRole("region", { name: "古法命中" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "基础摘要" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "深读" })).not.toBeInTheDocument();
+
+    rerender(<ZiweiPalaceBoard showInterpretiveSections view={gatedView} />);
+    expect(screen.getByRole("region", { name: "古法命中" })).toBeVisible();
+    expect(screen.getByRole("region", { name: "基础摘要" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "深读" })).toBeVisible();
   });
 
   it("does not invent a palace click when fact_paths do not map", async () => {
@@ -1081,6 +1134,26 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(css).not.toMatch(/color-success|color-danger|surface-success|surface-danger/);
     expect(css).not.toMatch(/linear-gradient|radial-gradient|text-shadow|box-shadow:\s*0 0/);
     expect(css).not.toMatch(/星曙/);
+  });
+
+  it("keeps the ring grid ownership valid for interactive and structural cells", () => {
+    const { rerender } = render(<ZiweiPalaceBoard view={chart()} />);
+
+    const readyRows = [...ring().children];
+    expect(readyRows).toHaveLength(13);
+    for (const row of readyRows) {
+      expect(row).toHaveAttribute("role", "row");
+      expect(row.children).toHaveLength(1);
+      expect(row.children[0]).toHaveAttribute("role", "gridcell");
+    }
+
+    rerender(<ZiweiPalaceBoard mode="silhouette" />);
+    const structuralRows = [...ring().children];
+    expect(structuralRows).toHaveLength(13);
+    for (const row of structuralRows) {
+      expect(row).toHaveAttribute("role", "row");
+      expect(row.children[0]).toHaveAttribute("role", "gridcell");
+    }
   });
 });
 

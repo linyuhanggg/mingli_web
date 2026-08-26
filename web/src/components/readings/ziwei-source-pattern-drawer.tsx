@@ -67,9 +67,9 @@ function branchFromFactPath(path: string, palaces: readonly PalaceLike[]): strin
     const raw = segments[index + 1] ?? "";
     if (!/^\d+$/.test(raw)) continue;
     const n = Number(raw);
-    if (n < 0 || n >= BRANCHES.length) return null;
-    const branch = BRANCHES[n];
-    return palaces.some((palace) => palace.earthly_branch === branch) ? branch : null;
+    if (n < 0 || n >= palaces.length) return null;
+    const branch = palaces[n]?.earthly_branch;
+    return branch && (BRANCHES as readonly string[]).includes(branch) ? branch : null;
   }
   return null;
 }
