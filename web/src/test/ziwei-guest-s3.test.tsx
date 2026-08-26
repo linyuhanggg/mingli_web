@@ -112,5 +112,22 @@ describe("/ziwei guest result routing", () => {
     await user.click(screen.getByRole("button", { name: "返回录入" }));
     expect(screen.getByRole("form", { name: /紫微/ })).toBeVisible();
     expect(screen.queryByTestId("ziwei-inline-result")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("出生省份")).toHaveValue("江苏省");
+    expect(screen.getByLabelText("出生城市")).toHaveValue("常州市");
+    expect(screen.getByLabelText("出生区县")).toHaveValue("金坛区");
+    expect(screen.getByRole("region", { name: "提交前摘要" })).toHaveTextContent(
+      "江苏省 / 常州市 / 金坛区",
+    );
+
+    await user.click(screen.getByRole("button", { name: /立即排盘/ }));
+
+    expect(await screen.findByTestId("ziwei-inline-result")).toHaveTextContent(
+      "zw-guest-1",
+    );
+    expect(mockConfirmProfileDraft).toHaveBeenNthCalledWith(
+      2,
+      "draft-zw",
+      expect.objectContaining({ location: "江苏省 / 常州市 / 金坛区" }),
+    );
   });
 });
