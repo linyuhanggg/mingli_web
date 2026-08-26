@@ -193,9 +193,27 @@ describe("ProfileForm", () => {
     await fillRequiredProfile(user);
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
     expect(await screen.findByRole("alertdialog", { name: "档案名称已存在" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "覆盖" })).toHaveFocus();
     await user.click(screen.getByRole("button", { name: "取消" }));
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /保存档案/ })).toHaveFocus();
     expect(routerPush).not.toHaveBeenCalled();
+    expect(api.confirmProfileDraft).toHaveBeenCalledTimes(1);
+  });
+
+  it("closes the 409 dialog with Escape and returns focus to the save action", async () => {
+    const user = userEvent.setup();
+    const conflict = new ApiError("Name conflict", 409, undefined, "profile_name_conflict");
+    conflict.options = ["overwrite", "save_as", "cancel"];
+    conflict.suggestedSaveAsName = "同名档案 (2)";
+    api.confirmProfileDraft.mockRejectedValueOnce(conflict);
+    render(<ProfileForm />);
+    await fillRequiredProfile(user);
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+    expect(await screen.findByRole("alertdialog", { name: "档案名称已存在" })).toBeVisible();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /保存档案/ })).toHaveFocus();
     expect(api.confirmProfileDraft).toHaveBeenCalledTimes(1);
   });
 

@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import BaziPage from "@/app/bazi/page";
+import { ProductInputForm } from "@/components/task/product-input-form";
 import { ApiError } from "@/lib/api";
 import {
   CHART_RUNTIME_FAULT,
@@ -13,7 +14,9 @@ import {
   RATE_LIMIT_EXCEEDED,
   START_READING_UNAVAILABLE,
   mapStartReadingFailure,
+  startReadingFailureAction,
 } from "@/lib/start-reading-error";
+import { getProductDefinition } from "@/products/catalog";
 
 const mockStartPreviewReading = vi.hoisted(() => vi.fn());
 const mockCreateProfileDraft = vi.hoisted(() => vi.fn());
@@ -84,6 +87,44 @@ describe("bazi start unavailable copy", () => {
     expect(
       mapStartReadingFailure(new ApiError("Stopped", 503, undefined, "chart_runtime_error")),
     ).toEqual({ state: "unavailable", title: CHART_RUNTIME_FAULT });
+    expect(startReadingFailureAction(new ApiError("Payment required", 403, undefined, "paid_reading_requires_account"))).toBe("login");
+    expect(startReadingFailureAction(new ApiError("Daily cap", 429, undefined, "guest_daily_reading_limit"))).toBe("login");
+    expect(startReadingFailureAction(new ApiError("Too many requests", 429, undefined, "rate_limit_exceeded"))).toBe("retry");
+    expect(startReadingFailureAction(new ApiError("Stopped", 503, undefined, "chart_runtime_timeout"))).toBe("retry");
+  });
+
+  it("exposes login continue with original next path for paid and guest-limit failures", () => {
+    render(
+      <ProductInputForm
+        loginHref="/auth/login?next=%2Fbazi&idempotency_key=intent-1"
+        onConfirm={vi.fn()}
+        product={getProductDefinition("bazi")}
+        submitError={PAID_READING_REQUIRES_ACCOUNT}
+        submitErrorAction="login"
+        submitErrorState="unauthorized"
+      />,
+    );
+    expect(screen.getByRole("link", { name: "登录后继续" })).toHaveAttribute(
+      "href",
+      "/auth/login?next=%2Fbazi&idempotency_key=intent-1",
+    );
+  });
+
+  it("exposes an explicit retry action for rate-limit and runtime failures", async () => {
+    const user = userEvent.setup();
+    const onRetry = vi.fn();
+    render(
+      <ProductInputForm
+        onConfirm={vi.fn()}
+        onRetry={onRetry}
+        product={getProductDefinition("bazi")}
+        submitError={RATE_LIMIT_EXCEEDED}
+        submitErrorAction="retry"
+        submitErrorState="error"
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "重试" }));
+    expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
   it("stays on the bazi input page and hides Runtime when preview returns 503", async () => {

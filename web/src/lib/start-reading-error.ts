@@ -31,6 +31,20 @@ function chineseOr(fallback: string, ...candidates: Array<string | undefined>): 
   return fallback;
 }
 
+export function startReadingFailureAction(reason: unknown): "login" | "retry" | null {
+  if (!(reason instanceof ApiError) || !reason.code) return null;
+  if (
+    reason.code === "paid_reading_requires_account"
+    || reason.code === "guest_daily_reading_limit"
+  ) {
+    return "login";
+  }
+  if (reason.code === "rate_limit_exceeded" || reason.code.startsWith("chart_runtime_")) {
+    return "retry";
+  }
+  return null;
+}
+
 export function mapStartReadingFailure(reason: unknown): {
   state: "unavailable" | "error" | "unauthorized";
   title: string;

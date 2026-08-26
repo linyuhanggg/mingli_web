@@ -272,18 +272,16 @@ export function ProfileForm() {
     <div className={styles.wrap}>
       <h2>建立命理档案</h2>
       <p className={styles.lead}>这里只记录出生事实，不进行任何本地推算。名称可留空，由服务端生成回退名。</p>
-      {nameConflict ? (
-        <ProfileNameConflictDialog
-          conflict={nameConflict}
-          busy={busy}
-          onOverwrite={() => void resolveConflict("overwrite")}
-          onSaveAs={() => void resolveConflict("save_as")}
-          onCancel={() => {
-            pendingConfirmRef.current = null;
-            setNameConflict(null);
-          }}
-        />
-      ) : null}
+      <ProfileNameConflictDialog
+        conflict={nameConflict}
+        busy={busy}
+        onOverwrite={() => void resolveConflict("overwrite")}
+        onSaveAs={() => void resolveConflict("save_as")}
+        onCancel={() => {
+          pendingConfirmRef.current = null;
+          setNameConflict(null);
+        }}
+      />
 
       {submitError ? (
         <p className={styles.errorBox} role="alert" aria-live="polite">

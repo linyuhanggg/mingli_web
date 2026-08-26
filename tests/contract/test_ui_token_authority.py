@@ -102,6 +102,8 @@ OLD_BRAND_COLOR_RE = re.compile(
 DOMAIN_FONT_ALLOWLIST = {
     "web/src/components/readings/bazi-chart.module.css",
     "web/src/components/readings/liuyao-hexagram.module.css",
+    "web/src/components/readings/daliuren-board.module.css",
+    "web/src/components/readings/ziwei-palace-board.module.css",
 }
 DOMAIN_FONT_ALLOWED_SELECTORS = {
     ".pillarStem",
@@ -109,6 +111,12 @@ DOMAIN_FONT_ALLOWED_SELECTORS = {
     ".names dd",
     ".yaoMark",
     ".hexagramGlyph",
+    ".palaceName",
+    ".centerName",
+    ".thumb",
+    ".lower",
+    ".branch",
+    ".branchLink",
 }
 STATUS_INFINITE_ALLOWLIST = {
     "web/src/components/status-panel.module.css",

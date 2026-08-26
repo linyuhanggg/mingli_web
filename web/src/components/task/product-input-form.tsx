@@ -909,6 +909,10 @@ export function ProductInputForm({
   busy = false,
   submitError = null,
   submitErrorState = "unavailable",
+  submitErrorAction = null,
+  loginHref = "/auth/login",
+  onRetry,
+  hideUnknownHour = false,
 }: {
   product: ProductDefinition;
   initialValues?: TaskFormValues;
@@ -924,6 +928,10 @@ export function ProductInputForm({
   busy?: boolean;
   submitError?: string | null;
   submitErrorState?: "unavailable" | "error" | "unauthorized";
+  submitErrorAction?: "login" | "retry" | null;
+  loginHref?: string;
+  onRetry?: () => void;
+  hideUnknownHour?: boolean;
 }) {
   const schema = useMemo(
     () => schemaFor(product, Boolean(selectedProfileVersionId)),
@@ -1013,6 +1021,7 @@ export function ProductInputForm({
 
   const isCompactBaziInput = product.id === "bazi";
   const usesCrossProfile = product.id === "hecan" || product.id === "canwen";
+  const showUnknownHour = !hideUnknownHour && ["bazi", "ziwei", "qizheng", "luming-nayin"].includes(product.id);
 
   return (
     <form
@@ -1240,6 +1249,16 @@ export function ProductInputForm({
               value={birthTime}
             />
           </div>
+          {showUnknownHour ? (
+            <div className={styles.unknownHour}>
+              <label>
+                <input checked={false} disabled type="checkbox" />
+                不知道出生时辰
+              </label>
+              <p>请填写明确的出生时间。</p>
+              {isCompactBaziInput ? <p>确认后生成盘面</p> : null}
+            </div>
+          ) : null}
           {product.id !== "qizheng" ? (
             <BirthPlaceParts
               error={errors.location?.message}
@@ -1273,19 +1292,20 @@ export function ProductInputForm({
             </fieldset>
           )}
 
+          <SegmentedField
+            legend="时间口径"
+            name={`${product.id}-time-standard`}
+            onChange={(next) => setValue("timeStandard", next, { shouldDirty: true })}
+            options={[
+              { value: "civil", label: "民用钟表时间" },
+              { value: "local-apparent-solar", label: "当地视太阳时" },
+            ]}
+            value={timeStandard}
+          />
+
           <details className={styles.advanced}>
             <summary>高级排盘选项</summary>
             <div className={styles.advancedBody}>
-              <SegmentedField
-                legend="时间口径"
-                name={`${product.id}-time-standard`}
-                onChange={(next) => setValue("timeStandard", next, { shouldDirty: true })}
-                options={[
-                  { value: "civil", label: "民用钟表时间" },
-                  { value: "local-apparent-solar", label: "当地视太阳时" },
-                ]}
-                value={timeStandard}
-              />
               <Field htmlFor={`${product.id}-timezone`} label="出生时区" error={errors.timezone?.message} help="选中国内地点后自动填好；海外地点请自行确认。">
                 <input id={`${product.id}-timezone`} aria-describedby={errors.timezone ? `${product.id}-timezone-error` : `${product.id}-timezone-help`} autoComplete="off" list={`${product.id}-timezone-options`} placeholder="例如 Asia/Shanghai" {...register("timezone")} />
                 <IanaTimeZoneOptions id={`${product.id}-timezone-options`} />
@@ -1635,7 +1655,21 @@ export function ProductInputForm({
       ) : null}
 
       {submitError ? (
-        submitErrorState === "error" ? (
+        submitErrorAction ? (
+          <Status
+            actions={
+              submitErrorAction === "login" ? (
+                <Link href={loginHref}>登录后继续</Link>
+              ) : (
+                <button type="button" onClick={() => onRetry?.()}>
+                  重试
+                </button>
+              )
+            }
+            state={submitErrorState}
+            title={submitError}
+          />
+        ) : submitErrorState === "error" ? (
           <p className={styles.error} role="alert">{submitError}</p>
         ) : (
           <Status
