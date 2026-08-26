@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef } from "react";
+import { Dialog as DialogPrimitive } from "radix-ui";
+import { useRef } from "react";
 
 import type { ZiweiChartViewModel } from "@/view-models/registry";
 
@@ -19,6 +20,7 @@ export type ZiweiPalaceDetailDrawerProps = {
   brightnessOf: (name: string, branch: string) => string | null;
   huaOf: (name: string, branch: string) => string | null;
   onClose: () => void;
+  returnFocusTo?: HTMLElement | null;
 };
 
 function text(value: string | null | undefined): string | null {
@@ -78,37 +80,9 @@ export function ZiweiPalaceDetailDrawer({
   brightnessOf,
   huaOf,
   onClose,
+  returnFocusTo = null,
 }: ZiweiPalaceDetailDrawerProps) {
-  const headingId = useId();
   const closeRef = useRef<HTMLButtonElement | null>(null);
-  const returnFocusRef = useRef<HTMLElement | null>(null);
-
-  const handleClose = useCallback(() => {
-    const returnTarget = returnFocusRef.current;
-    onClose();
-    queueMicrotask(() => returnTarget?.focus());
-  }, [onClose]);
-
-  useEffect(() => {
-    if (!palace) return;
-    const active = document.activeElement;
-    if (active instanceof HTMLElement && active !== closeRef.current) {
-      returnFocusRef.current = active;
-    }
-    closeRef.current?.focus();
-  }, [palace]);
-
-  useEffect(() => {
-    if (!palace) return;
-    function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        handleClose();
-      }
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [handleClose, palace]);
 
   if (!palace) return null;
 
@@ -124,70 +98,94 @@ export function ZiweiPalaceDetailDrawer({
   const godRows = gods(palace);
 
   return (
-    <section aria-labelledby={headingId} className={styles.drawer} data-slot="palace-detail" role="dialog">
-      <header className={styles.header}>
-        <h2 className={styles.heading} id={headingId}>
-          宫位详情
-        </h2>
-        <button aria-label="关闭" className={styles.close} onClick={handleClose} ref={closeRef} type="button">
-          关闭
-        </button>
-      </header>
-      <dl className={styles.facts}>
-        {name ? (
-          <div className={styles.row}>
-            <dt>宫</dt>
-            <dd>{name}</dd>
-          </div>
-        ) : null}
-        {stemBranch ? (
-          <div className={styles.row}>
-            <dt>干支</dt>
-            <dd>{stemBranch}</dd>
-          </div>
-        ) : null}
-        {isLife || isBody ? (
-          <div className={styles.row}>
-            <dt>标记</dt>
-            <dd>
-              {isLife ? <span className={styles.mark}>命</span> : null}
-              {isBody ? <span className={styles.mark}>身</span> : null}
-            </dd>
-          </div>
-        ) : null}
-        {decadeText ? (
-          <div className={styles.row}>
-            <dt>大限</dt>
-            <dd>{decadeText}</dd>
-          </div>
-        ) : null}
-        {ageText ? (
-          <div className={styles.row}>
-            <dt>小限</dt>
-            <dd>{ageText}</dd>
-          </div>
-        ) : null}
-      </dl>
-      {stars.length ? (
-        <ul aria-label="星曜" className={styles.stars}>
-          {stars.map((star) => (
-            <li className={styles[star.kind]} key={`${star.kind}-${star.name}`}>
-              {star.name}
-              {star.brightness ? <sup className={styles.brightness}>{star.brightness}</sup> : null}
-              {star.hua ? <span className={styles.hua}>{star.hua}</span> : null}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {godRows.length ? (
-        <p aria-label="十二神" className={styles.gods}>
-          {godRows.map((god) => (
-            <span data-god={god.key} key={god.key}>
-              {god.label}
-            </span>
-          ))}
-        </p>
-      ) : null}
-    </section>
+    <DialogPrimitive.Root
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className={styles.overlay} />
+        <DialogPrimitive.Content
+          className={styles.drawer}
+          data-slot="palace-detail"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            returnFocusTo?.focus();
+          }}
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            closeRef.current?.focus();
+          }}
+        >
+          <header className={styles.header}>
+            <DialogPrimitive.Title className={styles.heading}>宫位详情</DialogPrimitive.Title>
+            <DialogPrimitive.Description className={styles.srOnly}>
+              查看当前宫位的干支、星曜、大限、小限与十二神事实。
+            </DialogPrimitive.Description>
+            <DialogPrimitive.Close asChild>
+              <button aria-label="关闭" className={styles.close} ref={closeRef} type="button">
+                关闭
+              </button>
+            </DialogPrimitive.Close>
+          </header>
+          <dl className={styles.facts}>
+            {name ? (
+              <div className={styles.row}>
+                <dt>宫</dt>
+                <dd>{name}</dd>
+              </div>
+            ) : null}
+            {stemBranch ? (
+              <div className={styles.row}>
+                <dt>干支</dt>
+                <dd>{stemBranch}</dd>
+              </div>
+            ) : null}
+            {isLife || isBody ? (
+              <div className={styles.row}>
+                <dt>标记</dt>
+                <dd>
+                  {isLife ? <span className={styles.mark}>命</span> : null}
+                  {isBody ? <span className={styles.mark}>身</span> : null}
+                </dd>
+              </div>
+            ) : null}
+            {decadeText ? (
+              <div className={styles.row}>
+                <dt>大限</dt>
+                <dd>{decadeText}</dd>
+              </div>
+            ) : null}
+            {ageText ? (
+              <div className={styles.row}>
+                <dt>小限</dt>
+                <dd>{ageText}</dd>
+              </div>
+            ) : null}
+          </dl>
+          {stars.length ? (
+            <ul aria-label="星曜" className={styles.stars}>
+              {stars.map((star) => (
+                <li className={styles[star.kind]} key={`${star.kind}-${star.name}`}>
+                  {star.name}
+                  {star.brightness ? <sup className={styles.brightness}>{star.brightness}</sup> : null}
+                  {star.hua ? <span className={styles.hua}>{star.hua}</span> : null}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {godRows.length ? (
+            <p aria-label="十二神" className={styles.gods}>
+              {godRows.map((god) => (
+                <span data-god={god.key} key={god.key}>
+                  {god.label}
+                </span>
+              ))}
+            </p>
+          ) : null}
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }

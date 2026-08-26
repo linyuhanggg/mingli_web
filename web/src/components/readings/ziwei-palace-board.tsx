@@ -340,8 +340,10 @@ export function ZiweiPalaceBoard({
   const resolvedLayout = useResolvedLayout(layout);
   const structural = mode !== "ready" || !view;
   const [selected, setSelected] = useState<string | null>(null);
+  const [previewedBranch, setPreviewedBranch] = useState<string | null>(null);
   const [density, setDensity] = useState<GodDensity>("compact");
   const [detailBranch, setDetailBranch] = useState<string | null>(null);
+  const [detailReturnFocusTo, setDetailReturnFocusTo] = useState<HTMLElement | null>(null);
   const buttonRefs = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
   const cardRefs = useRef<Partial<Record<string, HTMLLIElement | null>>>({});
 
@@ -400,6 +402,8 @@ export function ZiweiPalaceBoard({
     }
     if (event.key === "Enter" && !structural) {
       event.preventDefault();
+      setDetailReturnFocusTo(event.currentTarget);
+      setPreviewedBranch(null);
       setSelected(branch);
       setDetailBranch(branch);
     }
@@ -408,6 +412,7 @@ export function ZiweiPalaceBoard({
   function onBoardKey(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key !== "Escape" || detailBranch) return;
     event.preventDefault();
+    setPreviewedBranch(null);
     setSelected(null);
   }
 
@@ -433,9 +438,22 @@ export function ZiweiPalaceBoard({
     );
   }
 
-  function openDetail(branch: string) {
+  function openDetail(branch: string, trigger: HTMLElement) {
+    setDetailReturnFocusTo(trigger);
     setSelected(branch);
     setDetailBranch(branch);
+  }
+
+  function closeDetail() {
+    const returnTarget = detailReturnFocusTo;
+    setDetailBranch(null);
+    setDetailReturnFocusTo(null);
+    queueMicrotask(() => returnTarget?.focus());
+  }
+
+  function toggleLockedBranch(branch: string) {
+    setPreviewedBranch(null);
+    setSelected((current) => (current === branch ? null : branch));
   }
 
   function selectListBranch(branch: string) {
@@ -444,6 +462,9 @@ export function ZiweiPalaceBoard({
   }
 
   const detailPalace = !structural && detailBranch ? palaceMap.get(detailBranch) ?? null : null;
+  const highlightedBranch = resolvedLayout === "ring"
+    ? previewedBranch ?? selected
+    : selected;
   const detailDrawer =
     detailPalace && view ? (
       <ZiweiPalaceDetailDrawer
@@ -451,8 +472,9 @@ export function ZiweiPalaceBoard({
         huaOf={huaOf}
         isBody={detailPalace.palace_id === view.body_palace_id}
         isLife={detailPalace.palace_id === view.life_palace_id}
-        onClose={() => setDetailBranch(null)}
+        onClose={closeDetail}
         palace={detailPalace}
+        returnFocusTo={detailReturnFocusTo}
       />
     ) : null;
 
@@ -493,7 +515,7 @@ export function ZiweiPalaceBoard({
                 className={styles.thumb}
                 data-body={isBody ? "true" : undefined}
                 data-branch={branch}
-                data-highlight={highlightFor(branch, selected)}
+                data-highlight={highlightFor(branch, highlightedBranch)}
                 data-life={isLife ? "true" : undefined}
                 key={branch}
                 type="button"
@@ -514,7 +536,7 @@ export function ZiweiPalaceBoard({
               <li
                 className={styles.card}
                 data-branch={branch}
-                data-highlight={highlightFor(branch, selected)}
+                data-highlight={highlightFor(branch, highlightedBranch)}
                 id={`ziwei-list-${branch}`}
                 key={branch}
                 ref={(node) => {
@@ -529,7 +551,11 @@ export function ZiweiPalaceBoard({
                   <PalaceBody brightnessOf={brightnessOf} density={density} huaOf={huaOf} palace={palace} />
                 ) : null}
                 {palace && !structural ? (
-                  <button className={styles.detailTrigger} type="button" onClick={() => openDetail(branch)}>
+                  <button
+                    className={styles.detailTrigger}
+                    type="button"
+                    onClick={(event) => openDetail(branch, event.currentTarget)}
+                  >
                     详情
                   </button>
                 ) : null}
@@ -542,7 +568,7 @@ export function ZiweiPalaceBoard({
           <ZiweiMajorLimitTrack
             limits={view?.core_facts?.major_limits ?? null}
             onSelectLimit={(branch) => setSelected((current) => (current === branch ? null : branch))}
-            selectedBranch={selected}
+            selectedBranch={highlightedBranch}
             sequence={view?.core_facts?.major_limit_sequence ?? null}
           />
         ) : null}
@@ -550,14 +576,14 @@ export function ZiweiPalaceBoard({
           <ZiweiTransformationTable
             items={view?.core_facts?.transformations ?? null}
             onSelectStar={(branch) => setSelected((current) => (current === branch ? null : branch))}
-            selectedBranch={selected}
+            selectedBranch={highlightedBranch}
           />
         ) : null}
         {!structural ? (
           <ZiweiStarFactList
             items={view?.core_facts?.star_facts ?? null}
             onSelectStar={(branch) => setSelected((current) => (current === branch ? null : branch))}
-            selectedBranch={selected}
+            selectedBranch={highlightedBranch}
           />
         ) : null}
         {!structural && showInterpretiveSections ? (
@@ -565,7 +591,7 @@ export function ZiweiPalaceBoard({
             items={view?.core_facts?.source_conditioned_patterns}
             onSelectPattern={(branch) => setSelected((current) => (current === branch ? null : branch))}
             palaces={view?.palaces}
-            selectedBranch={selected}
+            selectedBranch={highlightedBranch}
           />
         ) : null}
         {view && !structural && showInterpretiveSections ? (
@@ -604,9 +630,13 @@ export function ZiweiPalaceBoard({
                 className={styles.cell}
                 data-body={isBody ? "true" : undefined}
                 data-branch={branch}
-                data-highlight={highlightFor(branch, selected)}
+                data-highlight={highlightFor(branch, highlightedBranch)}
                 data-life={isLife ? "true" : undefined}
-                onClick={() => setSelected((current) => (current === branch ? null : branch))}
+                onBlur={() => setPreviewedBranch((current) => (current === branch ? null : current))}
+                onClick={() => toggleLockedBranch(branch)}
+                onFocus={() => setPreviewedBranch(branch)}
+                onMouseEnter={() => setPreviewedBranch(branch)}
+                onMouseLeave={() => setPreviewedBranch((current) => (current === branch ? null : current))}
                 onKeyDown={(event) => onPalaceKey(event, branch)}
                 ref={(node) => {
                   buttonRefs.current[branch] = node;
@@ -629,7 +659,7 @@ export function ZiweiPalaceBoard({
         <ZiweiMajorLimitTrack
           limits={view?.core_facts?.major_limits ?? null}
           onSelectLimit={(branch) => setSelected((current) => (current === branch ? null : branch))}
-          selectedBranch={selected}
+          selectedBranch={highlightedBranch}
           sequence={view?.core_facts?.major_limit_sequence ?? null}
         />
       ) : null}
@@ -637,14 +667,14 @@ export function ZiweiPalaceBoard({
         <ZiweiTransformationTable
           items={view?.core_facts?.transformations ?? null}
           onSelectStar={(branch) => setSelected((current) => (current === branch ? null : branch))}
-          selectedBranch={selected}
+          selectedBranch={highlightedBranch}
         />
       ) : null}
       {!structural ? (
         <ZiweiStarFactList
           items={view?.core_facts?.star_facts ?? null}
           onSelectStar={(branch) => setSelected((current) => (current === branch ? null : branch))}
-          selectedBranch={selected}
+          selectedBranch={highlightedBranch}
         />
       ) : null}
       {!structural && showInterpretiveSections ? (
@@ -652,7 +682,7 @@ export function ZiweiPalaceBoard({
           items={view?.core_facts?.source_conditioned_patterns}
           onSelectPattern={(branch) => setSelected((current) => (current === branch ? null : branch))}
           palaces={view?.palaces}
-          selectedBranch={selected}
+          selectedBranch={highlightedBranch}
         />
       ) : null}
       {view && !structural && showInterpretiveSections ? (
