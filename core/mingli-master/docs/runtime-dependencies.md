@@ -26,6 +26,12 @@ and validates the pinned dependencies first, then appends the resolved artifact
 same-named `yaml.py` or `cnlunar.py` in the checkout, cwd, or `PYTHONPATH`
 therefore cannot replace the validated runtime dependency.
 
+The Ziwei adapter invokes the vendored Node runtime with the fixed
+`--jitless` flag.  This keeps V8 compatible with hardened service units that
+enforce `MemoryDenyWriteExecute=yes`; the flag is not caller-configurable.
+The pinned chart regression suite verifies that default and JIT-less execution
+produce the same deterministic JSON facts.
+
 For a clean checkout, install the locked Python runtime dependencies before
 running validation. `scripts/provision_runtime.py` creates the dedicated venv
 from the version-pinned `requirements.txt`:

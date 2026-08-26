@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import stat
@@ -32,6 +33,7 @@ class ReleaseDeployTests(unittest.TestCase):
         *,
         files: list[str],
         patterns: list[str] | None = None,
+        excluded_files: list[str] | None = None,
     ) -> None:
         closure = self.source / release_deploy.RUNTIME_CLOSURE_RELATIVE
         closure.parent.mkdir(parents=True, exist_ok=True)
@@ -41,6 +43,7 @@ class ReleaseDeployTests(unittest.TestCase):
                     "schema_version": release_deploy.RUNTIME_CLOSURE_SCHEMA,
                     "files": files,
                     "patterns": patterns or [],
+                    "excluded_files": excluded_files or [],
                 }
             )
             + "\n",
@@ -127,6 +130,41 @@ class ReleaseDeployTests(unittest.TestCase):
                 "resources/runtime/providers/alpha.json",
                 "scripts/runner.py",
             ],
+        )
+
+    def test_runtime_closure_explicitly_excludes_unbound_pattern_matches(
+        self,
+    ) -> None:
+        active = self.source / "scripts" / "reading_engine" / "active.py"
+        inactive = (
+            self.source
+            / "scripts"
+            / "reading_engine"
+            / "contract_only.py"
+        )
+        active.parent.mkdir(parents=True)
+        active.write_text("ACTIVE = True\n", encoding="utf-8")
+        inactive.write_text("ACTIVE = False\n", encoding="utf-8")
+        self._write_runtime_closure(
+            files=[
+                "SKILL.md",
+                release_deploy.RUNTIME_CLOSURE_RELATIVE,
+                "scripts/runner.py",
+            ],
+            patterns=["scripts/reading_engine/*.py"],
+            excluded_files=[
+                "scripts/reading_engine/contract_only.py",
+            ],
+        )
+        subprocess.run(["git", "init", "-q", str(self.source)], check=True)
+        subprocess.run(["git", "-C", str(self.source), "add", "."], check=True)
+
+        selected = release_deploy.tracked_release_files(self.source)
+
+        self.assertIn("scripts/reading_engine/active.py", selected)
+        self.assertNotIn(
+            "scripts/reading_engine/contract_only.py",
+            selected,
         )
 
     def test_runtime_closure_rejects_untracked_or_unlisted_paths(self) -> None:
@@ -348,15 +386,35 @@ class ReleaseDeployTests(unittest.TestCase):
 
         with (
             patch.object(release_deploy, "require_clean_source"),
-            patch.object(release_deploy, "_verify_release_sources", return_value={
-                "research_root": str(self.source),
-                "provider_source_verification": {},
-                "verified": True,
-                "failures": [],
-            }),
+            patch.object(
+                release_deploy,
+                "_verify_release_sources",
+                return_value={
+                    "research_root": str(self.source),
+                    "provider_source_verification": {},
+                    "verified": True,
+                    "failures": [],
+                },
+            ),
+            patch.object(
+                release_deploy,
+                "extra_gate_pathspecs",
+                return_value=((), ()),
+            ),
+            patch.object(
+                release_deploy,
+                "_committed_source_snapshot",
+                return_value=release_deploy.contextlib.nullcontext(
+                    self.source
+                ),
+            ),
             patch.object(release_deploy, "tracked_release_files", return_value=self.files),
             patch.object(release_deploy, "source_commit", return_value="abc123"),
-            patch.object(release_deploy, "build_committed_manifest", return_value=manifest),
+            patch.object(
+                release_deploy,
+                "_build_manifest_from_committed_source",
+                return_value=manifest,
+            ),
             patch.object(release_deploy, "destination_is_protected", return_value=True),
             patch.object(release_deploy, "unprotect_destination"),
             patch.object(release_deploy, "sync_destination", side_effect=ValueError("primary deploy failure")),
@@ -411,6 +469,318 @@ class ReleaseDeployTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "mode mismatch"):
             release_deploy.verify_destination(self.destination, manifest)
 
+    def _init_git(self, repo: Path) -> None:
+        subprocess.run(["git", "init", "-q", str(repo)], check=True)
+        subprocess.run(
+            ["git", "-C", str(repo), "config", "user.name", "Test"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(repo), "config", "user.email", "test@example.invalid"],
+            check=True,
+        )
+
+    def _parent_repo_source(self) -> Path:
+        repo = self.root / "parent"
+        source = repo / "core" / "mingli-master"
+        source.mkdir(parents=True)
+        (source / "scripts").mkdir()
+        (source / "SKILL.md").write_text("release\n", encoding="utf-8")
+        (source / "scripts" / "runner.py").write_text(
+            "print('v2')\n", encoding="utf-8"
+        )
+        closure = source / release_deploy.RUNTIME_CLOSURE_RELATIVE
+        closure.parent.mkdir(parents=True, exist_ok=True)
+        closure.write_text(
+            json.dumps(
+                {
+                    "schema_version": release_deploy.RUNTIME_CLOSURE_SCHEMA,
+                    "files": [
+                        "SKILL.md",
+                        release_deploy.RUNTIME_CLOSURE_RELATIVE,
+                        "scripts/runner.py",
+                    ],
+                    "patterns": [],
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        sibling = repo / "web" / "page.tsx"
+        sibling.parent.mkdir(parents=True)
+        sibling.write_text("dirty sibling\n", encoding="utf-8")
+        self._init_git(repo)
+        subprocess.run(["git", "-C", str(repo), "add", "core"], check=True)
+        subprocess.run(
+            ["git", "-C", str(repo), "commit", "-qm", "source"],
+            check=True,
+        )
+        return source
+
+    def test_require_clean_source_on_parent_git_ignores_sibling_paths(self) -> None:
+        source = self._parent_repo_source()
+        release_deploy.require_clean_source(source)
+
+        (source / "scripts" / "runner.py").write_text("dirty\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "must be clean"):
+            release_deploy.require_clean_source(source)
+
+    def test_require_clean_source_can_limit_pathspecs_to_release_files(self) -> None:
+        source = self._parent_repo_source()
+        (source / "unrelated.md").write_text("unrelated dirty\n", encoding="utf-8")
+        release_deploy.require_clean_source(
+            source,
+            pathspecs=[
+                "SKILL.md",
+                "scripts/runner.py",
+                release_deploy.RUNTIME_CLOSURE_RELATIVE,
+            ],
+        )
+
+        (source / "scripts" / "runner.py").write_text("dirty\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "must be clean"):
+            release_deploy.require_clean_source(
+                source,
+                pathspecs=["SKILL.md", "scripts/runner.py"],
+            )
+
+    def test_tracked_release_files_and_committed_modes_use_source_prefix_in_parent_repo(
+        self,
+    ) -> None:
+        source = self._parent_repo_source()
+        runner = source / "scripts" / "runner.py"
+        runner.chmod(0o755)
+        subprocess.run(["git", "-C", str(source), "add", "scripts/runner.py"], check=True)
+        subprocess.run(
+            ["git", "-C", str(source), "commit", "-qm", "mode"],
+            check=True,
+        )
+        files = release_deploy.tracked_release_files(source)
+        self.assertEqual(
+            files,
+            [
+                "SKILL.md",
+                release_deploy.RUNTIME_CLOSURE_RELATIVE,
+                "scripts/runner.py",
+            ],
+        )
+        commit = release_deploy.source_commit(source)
+        modes = release_deploy.committed_release_modes(source, files, commit)
+        self.assertEqual(modes["scripts/runner.py"], 0o755)
+        self.assertEqual(len(commit), 40)
+
+    def test_verifier_registry_and_dedicated_audits_are_clean_gated(
+        self,
+    ) -> None:
+        source = self._parent_repo_source()
+        registry = source / "scripts" / "audit_provider_completeness.py"
+        dedicated = source / "scripts" / "audit_alpha_provider.py"
+        registry.write_text(
+            "import audit_alpha_provider\n"
+            "DEDICATED_AUDIT_MODULES = "
+            "{'alpha': audit_alpha_provider}\n",
+            encoding="utf-8",
+        )
+        dedicated.write_text(
+            "def audit_alpha_provider(*, research_root=None):\n"
+            "    return {'source_verification': {'status': 'verified'}}\n",
+            encoding="utf-8",
+        )
+        subprocess.run(
+            ["git", "-C", str(source), "add", "scripts"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(source), "commit", "-qm", "audits"],
+            check=True,
+        )
+
+        source_extras, _repo_extras = release_deploy.extra_gate_pathspecs(
+            source
+        )
+
+        self.assertIn(
+            release_deploy.SOURCE_VERIFICATION_REGISTRY_RELATIVE,
+            source_extras,
+        )
+        self.assertIn("scripts/audit_alpha_provider.py", source_extras)
+        dedicated.write_text("DIRTY = True\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "must be clean"):
+            release_deploy.require_clean_source(
+                source,
+                pathspecs=source_extras,
+            )
+
+    def test_committed_source_snapshot_ignores_live_worktree_content(
+        self,
+    ) -> None:
+        source = self._parent_repo_source()
+        commit = release_deploy.source_commit(source)
+        runner = source / "scripts" / "runner.py"
+        runner.write_text("print('dirty')\n", encoding="utf-8")
+
+        with release_deploy._committed_source_snapshot(
+            source,
+            commit,
+        ) as snapshot:
+            snapshotted = (
+                snapshot / "scripts" / "runner.py"
+            ).read_text(encoding="utf-8")
+
+        self.assertEqual(snapshotted, "print('v2')\n")
+
+    def test_source_verification_executes_the_committed_audits(self) -> None:
+        source = self._parent_repo_source()
+        registry = source / "scripts" / "audit_provider_completeness.py"
+        dedicated = source / "scripts" / "audit_alpha_provider.py"
+        registry.write_text(
+            "import audit_alpha_provider\n"
+            "DEDICATED_AUDIT_MODULES = "
+            "{'alpha': audit_alpha_provider}\n",
+            encoding="utf-8",
+        )
+        dedicated.write_text(
+            "def audit_alpha_provider(*, research_root=None):\n"
+            "    return {'source_verification': {'status': 'verified'}}\n",
+            encoding="utf-8",
+        )
+        subprocess.run(
+            ["git", "-C", str(source), "add", "scripts"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(source), "commit", "-qm", "audits"],
+            check=True,
+        )
+        commit = release_deploy.source_commit(source)
+        dedicated.write_text(
+            "raise AssertionError('dirty audit executed')\n",
+            encoding="utf-8",
+        )
+        research = self.root / "research"
+        research.mkdir()
+
+        result = release_deploy._verify_committed_release_sources(
+            source,
+            commit,
+            research,
+            jobs=1,
+        )
+
+        self.assertTrue(result["verified"], result)
+        self.assertEqual(
+            result["provider_source_verification"],
+            {"alpha": "verified"},
+        )
+
+    def test_clean_check_then_live_injection_cannot_drift_release(self) -> None:
+        source = self._parent_repo_source()
+        destination = self.root / "installed"
+        files = release_deploy.tracked_release_files(source)
+        commit = release_deploy.source_commit(source)
+        expected_manifest = release_deploy.build_committed_manifest(
+            source,
+            files,
+            commit,
+        )
+        real_require_clean_source = release_deploy.require_clean_source
+        observed_snapshots: list[Path] = []
+
+        def clean_then_inject(*args, **kwargs) -> None:
+            real_require_clean_source(*args, **kwargs)
+            (source / "SKILL.md").write_text(
+                "dirty after clean check\n",
+                encoding="utf-8",
+            )
+
+        def verify_snapshot(snapshot, research_root, **kwargs):
+            observed_snapshots.append(snapshot)
+            self.assertNotEqual(snapshot, source)
+            self.assertEqual(
+                (snapshot / "SKILL.md").read_text(encoding="utf-8"),
+                "release\n",
+            )
+            return {
+                "research_root": str(research_root),
+                "provider_source_verification": {},
+                "verified": True,
+                "failures": [],
+            }
+
+        output = io.StringIO()
+        with (
+            patch.object(
+                release_deploy,
+                "extra_gate_pathspecs",
+                return_value=((), ()),
+            ),
+            patch.object(
+                release_deploy,
+                "require_clean_source",
+                side_effect=clean_then_inject,
+            ),
+            patch.object(
+                release_deploy,
+                "_verify_release_sources",
+                side_effect=verify_snapshot,
+            ),
+            patch("sys.stdout", output),
+        ):
+            result = release_deploy.main(
+                [
+                    "--source",
+                    str(source),
+                    "--destination",
+                    str(destination),
+                    "--apply",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        self.assertEqual(len(observed_snapshots), 1)
+        self.assertEqual(
+            (source / "SKILL.md").read_text(encoding="utf-8"),
+            "dirty after clean check\n",
+        )
+        self.assertEqual(
+            release_deploy.build_committed_manifest(source, files, commit),
+            expected_manifest,
+        )
+        self.assertEqual(
+            (destination / "SKILL.md").read_text(encoding="utf-8"),
+            "release\n",
+        )
+        installed_manifest = json.loads(
+            (destination / release_deploy.MANIFEST_NAME).read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(installed_manifest, expected_manifest)
+        self.assertEqual(
+            json.loads(output.getvalue())["manifest"],
+            expected_manifest,
+        )
+
+
+class ProductionLauncherModeContractTests(unittest.TestCase):
+    """The signed direct entrypoint must remain directly spawnable."""
+
+    def test_committed_launcher_modes_match_the_production_spawn_contract(self) -> None:
+        source = Path(__file__).resolve().parents[1]
+        paths = (
+            "scripts/run_reading_transaction.sh",
+            "scripts/runtime_launcher.py",
+        )
+
+        modes = release_deploy.committed_release_modes(
+            source,
+            paths,
+            release_deploy.source_commit(source),
+        )
+
+        self.assertEqual(modes["scripts/run_reading_transaction.sh"], 0o755)
+        self.assertEqual(modes["scripts/runtime_launcher.py"], 0o644)
+
 
 class ReleaseSourceVerificationTests(unittest.TestCase):
     """The release gate must audit the checkout being released."""
@@ -435,6 +805,20 @@ class ReleaseSourceVerificationTests(unittest.TestCase):
             for system, module in DEDICATED_AUDIT_MODULES.items()
         }
         self.assertEqual(len(expected), 13)
+        source_extras, _repo_extras = release_deploy.extra_gate_pathspecs(
+            repo
+        )
+        expected_gate_paths = {
+            release_deploy.SOURCE_VERIFICATION_REGISTRY_RELATIVE,
+            *(
+                f"scripts/{module_name}.py"
+                for module_name in expected.values()
+            ),
+        }
+        self.assertTrue(
+            expected_gate_paths <= set(source_extras),
+            sorted(expected_gate_paths - set(source_extras)),
+        )
         for module_name in expected.values():
             self.assertTrue(
                 (repo / "scripts" / f"{module_name}.py").is_file(),
@@ -464,6 +848,12 @@ class ReleaseSourceVerificationTests(unittest.TestCase):
 # are test fixtures only; they never run a real fulltext audit.
 _VERIFIED_AUDIT_SOURCE = """\
 def {module_name}(research_root=None):
+    return {{"source_verification": {{"status": "verified"}}}}
+"""
+
+_OBSERVABLE_AUDIT_SOURCE = """\
+def {module_name}(research_root=None, progress=None):
+    progress("fixture_replay", completed=1, total=1)
     return {{"source_verification": {{"status": "verified"}}}}
 """
 
@@ -514,6 +904,9 @@ def _write_stub_checkout(
 class ReleaseCheckoutIsolationTests(unittest.TestCase):
     """The release gate must be immune to the parent interpreter's caches."""
 
+    def setUp(self) -> None:
+        self._clear_parent_stub_modules()
+
     def _prepare_checkouts(self) -> tuple[Path, Path]:
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
@@ -532,10 +925,11 @@ class ReleaseCheckoutIsolationTests(unittest.TestCase):
         )
         return checkout_a, checkout_b
 
-    def tearDown(self) -> None:
+    @staticmethod
+    def _clear_parent_stub_modules() -> None:
         # The isolation tests deliberately preload stub audits into the parent
-        # interpreter.  Drop every module they touched so later tests in the
-        # same process resolve the real checkout, never the stub.
+        # interpreter.  Drop every module they touch before and after each test
+        # so the selected fixture checkout is always the import authority.
         prefixes = (
             "audit_alpha_marker_",
             "audit_beta_marker_",
@@ -543,6 +937,9 @@ class ReleaseCheckoutIsolationTests(unittest.TestCase):
         for name in [name for name in sys.modules if name.startswith(prefixes)]:
             del sys.modules[name]
         sys.modules.pop("audit_provider_completeness", None)
+
+    def tearDown(self) -> None:
+        self._clear_parent_stub_modules()
 
     def test_gate_audits_checkout_b_even_when_a_is_preloaded(self) -> None:
         checkout_a, checkout_b = self._prepare_checkouts()
@@ -579,6 +976,154 @@ class ReleaseCheckoutIsolationTests(unittest.TestCase):
             ),
             result["provider_source_verification"],
         )
+
+    def test_gate_streams_provider_stages_and_returns_timing_and_resource_evidence(
+        self,
+    ) -> None:
+        _, checkout = self._prepare_checkouts()
+        research = checkout / "research"
+        research.mkdir()
+        progress = io.StringIO()
+
+        result = release_deploy._verify_release_sources(
+            checkout,
+            research,
+            progress_stream=progress,
+        )
+
+        self.assertTrue(result["verified"], result)
+        self.assertEqual(result["failures"], [])
+        self.assertEqual(result["provider_count"], 2)
+        self.assertEqual(result["verified_count"], 2)
+        self.assertEqual(set(result["provider_metrics"]), {"alpha", "beta"})
+        self.assertGreaterEqual(result["elapsed_seconds"], 0)
+        self.assertGreater(result["resource"]["process_peak_rss_bytes"], 0)
+        events = [
+            json.loads(
+                line.removeprefix(
+                    release_deploy.SOURCE_VERIFICATION_PROGRESS_PREFIX
+                )
+            )
+            for line in progress.getvalue().splitlines()
+            if line.startswith(release_deploy.SOURCE_VERIFICATION_PROGRESS_PREFIX)
+        ]
+        self.assertTrue(
+            any(
+                event.get("event") == "provider_stage"
+                and event.get("provider") == "alpha"
+                and event.get("stage") == "provider_fulltext_audit"
+                for event in events
+            ),
+            events,
+        )
+        self.assertEqual(events[-1]["event"], "subprocess_complete")
+
+    def test_gate_streams_supported_audit_substages(self) -> None:
+        _, checkout = self._prepare_checkouts()
+        module = checkout / "scripts" / "audit_alpha_marker_b.py"
+        module.write_text(
+            _OBSERVABLE_AUDIT_SOURCE.format(module_name=module.stem),
+            encoding="utf-8",
+        )
+        research = checkout / "research"
+        research.mkdir()
+        progress = io.StringIO()
+
+        result = release_deploy._verify_release_sources(
+            checkout,
+            research,
+            progress_stream=progress,
+        )
+
+        self.assertTrue(result["verified"], result)
+        events = [
+            json.loads(
+                line.removeprefix(
+                    release_deploy.SOURCE_VERIFICATION_PROGRESS_PREFIX
+                )
+            )
+            for line in progress.getvalue().splitlines()
+            if line.startswith(release_deploy.SOURCE_VERIFICATION_PROGRESS_PREFIX)
+        ]
+        self.assertTrue(
+            any(
+                event.get("event") == "provider_substage"
+                and event.get("provider") == "alpha"
+                and event.get("stage")
+                == "provider_fulltext_audit:fixture_replay"
+                and event.get("completed") == 1
+                and event.get("total") == 1
+                for event in events
+            ),
+            events,
+        )
+
+    def test_gate_runs_provider_audits_in_bounded_worker_processes(self) -> None:
+        _, checkout = self._prepare_checkouts()
+        for module in checkout.glob("scripts/audit_*_marker_b.py"):
+            module.write_text(
+                "import time\n"
+                f"def {module.stem}(*, research_root=None):\n"
+                "    time.sleep(0.4)\n"
+                "    return {'source_verification': {'status': 'verified'}}\n",
+                encoding="utf-8",
+            )
+        research = checkout / "research"
+        research.mkdir()
+
+        result = release_deploy._verify_release_sources(
+            checkout,
+            research,
+            jobs=2,
+        )
+
+        self.assertTrue(result["verified"], result)
+        self.assertEqual(result["provider_jobs"], 2)
+        self.assertEqual(
+            len({metrics["pid"] for metrics in result["provider_metrics"].values()}),
+            2,
+            result["provider_metrics"],
+        )
+        self.assertEqual(result["resource"]["worker_process_count"], 2)
+        self.assertGreater(
+            result["resource"]["parallel_peak_rss_upper_bound_bytes"],
+            result["resource"]["process_peak_rss_bytes"],
+        )
+
+    def test_gate_cancels_the_process_group_and_fails_closed_at_sixty_minute_cap(
+        self,
+    ) -> None:
+        _, checkout = self._prepare_checkouts()
+        module = checkout / "scripts" / "audit_alpha_marker_b.py"
+        module.write_text(
+            "import time\n"
+            "def audit_alpha_marker_b(*, research_root=None):\n"
+            "    time.sleep(10)\n"
+            "    return {'source_verification': {'status': 'verified'}}\n",
+            encoding="utf-8",
+        )
+        research = checkout / "research"
+        research.mkdir()
+        progress = io.StringIO()
+
+        result = release_deploy._verify_release_sources(
+            checkout,
+            research,
+            timeout_seconds=2.0,
+            progress_stream=progress,
+        )
+
+        self.assertEqual(release_deploy.SOURCE_VERIFICATION_TIMEOUT_SECONDS, 3600)
+        self.assertFalse(result["verified"])
+        self.assertEqual(result["cancellation"]["reason"], "timeout")
+        self.assertEqual(result["cancellation"]["provider"], "alpha")
+        self.assertEqual(
+            result["cancellation"]["stage"],
+            "provider_fulltext_audit",
+        )
+        self.assertIn("exceeded 2 seconds", result["failures"][0])
+        self.assertIn("timeout_cancel_requested", progress.getvalue())
+        self.assertIn("cancel_received", progress.getvalue())
 
     def test_gate_without_research_root_validates_origin_without_running_audits(
         self,

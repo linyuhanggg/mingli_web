@@ -14,6 +14,23 @@ PROTOCOL_VERSION = "mingli-portable-interface-v2"
 
 STOPPED_REASONS = ("need_input", "unsupported", "conflict", "error")
 
+RUNTIME_FAILURE_SCHEMA_VERSION = "mingli-runtime-failure/v1"
+
+_RUNTIME_FAILURE_SPECS = {
+    "bootstrap.unexpected_arguments": ("bootstrap", False),
+    "bootstrap.guard_load_failed": ("bootstrap", False),
+    "bootstrap.runtime_lock_failed": ("bootstrap", False),
+    "bootstrap.runtime_identity_invalid": ("bootstrap", False),
+    "bootstrap.state_root_invalid": ("bootstrap", False),
+    "input_contract.malformed_json": ("input_contract", False),
+    "input_contract.invalid_command": ("input_contract", False),
+    "input_contract.invalid_payload": ("input_contract", False),
+    "input_contract.invalid_state_token": ("input_contract", False),
+    "runtime.internal_error": ("runtime_internal", False),
+    "transient.timeout": ("transient", True),
+    "transient.resource_unavailable": ("transient", True),
+}
+
 TRANSITIONS = ("correct", "restart")
 
 
@@ -34,6 +51,70 @@ def _mapping(value: object, field_name: str) -> Mapping[str, Any]:
     if not isinstance(value, Mapping):
         raise ValueError(f"{field_name} must be a JSON object")
     return value
+
+
+@dataclass(frozen=True)
+class RuntimeFailure:
+    """Bounded, PII-free diagnostics for ``Stopped(reason="error")``.
+
+    ``code`` is deliberately closed over a static registry.  No exception
+    text, paths, command values, state tokens or caller identifiers can be
+    serialized through this object.
+    """
+
+    code: str
+    category: Literal[
+        "bootstrap", "input_contract", "runtime_internal", "transient"
+    ]
+    retryable: bool
+    schema_version: Literal["mingli-runtime-failure/v1"] = (
+        RUNTIME_FAILURE_SCHEMA_VERSION
+    )
+
+    def __post_init__(self) -> None:
+        expected = _RUNTIME_FAILURE_SPECS.get(self.code)
+        if expected is None:
+            raise ValueError(f"unknown Runtime failure code: {self.code!r}")
+        if (self.category, self.retryable) != expected:
+            raise ValueError("Runtime failure metadata does not match its code")
+        if self.schema_version != RUNTIME_FAILURE_SCHEMA_VERSION:
+            raise ValueError("unsupported Runtime failure schema version")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "code": self.code,
+            "category": self.category,
+            "retryable": self.retryable,
+        }
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> "RuntimeFailure":
+        payload = _mapping(payload, "RuntimeFailure")
+        expected_keys = {"schema_version", "code", "category", "retryable"}
+        if set(payload) != expected_keys:
+            raise ValueError("RuntimeFailure must contain only the v1 fields")
+        retryable = payload["retryable"]
+        if not isinstance(retryable, bool):
+            raise ValueError("RuntimeFailure.retryable must be boolean")
+        return cls(
+            schema_version=str(payload["schema_version"]),  # type: ignore[arg-type]
+            code=str(payload["code"]),
+            category=str(payload["category"]),  # type: ignore[arg-type]
+            retryable=retryable,
+        )
+
+
+def runtime_failure(code: str) -> RuntimeFailure:
+    try:
+        category, retryable = _RUNTIME_FAILURE_SPECS[code]
+    except KeyError as exc:
+        raise ValueError(f"unknown Runtime failure code: {code!r}") from exc
+    return RuntimeFailure(
+        code=code,
+        category=category,  # type: ignore[arg-type]
+        retryable=retryable,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -910,6 +991,7 @@ class Stopped:
     public_copy: str
     state_token: str | None = None
     input_request: InputRequest | None = None
+    failure: RuntimeFailure | None = None
     kind: Literal["stopped"] = "stopped"
 
     def __post_init__(self) -> None:
@@ -918,6 +1000,14 @@ class Stopped:
         _require_non_empty_text(self.public_copy, "Stopped.public_copy")
         if self.input_request is not None and self.reason != "need_input":
             raise ValueError("input_request is only valid for need_input")
+        if self.reason == "error" and self.failure is None:
+            object.__setattr__(
+                self,
+                "failure",
+                runtime_failure("runtime.internal_error"),
+            )
+        if self.reason != "error" and self.failure is not None:
+            raise ValueError("failure is only valid for Stopped.error")
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -930,6 +1020,7 @@ class Stopped:
                 if self.input_request is None
                 else self.input_request.to_dict()
             ),
+            "failure": None if self.failure is None else self.failure.to_dict(),
             "continuation_allowed": self.reason == "need_input",
             "terminal": self.reason != "need_input",
             "completion_committed": False,
@@ -975,6 +1066,13 @@ def result_from_dict(payload: Mapping[str, Any]) -> Result:
                 if payload.get("input_request") is None
                 else InputRequest.from_dict(
                     _mapping(payload["input_request"], "input_request")
+                )
+            ),
+            failure=(
+                None
+                if payload.get("failure") is None
+                else RuntimeFailure.from_dict(
+                    _mapping(payload["failure"], "failure")
                 )
             ),
         )

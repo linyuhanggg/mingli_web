@@ -112,6 +112,9 @@ Result 只有四类：
 
 - `error`：本轮已经结束，不得靠清空、改写或试探语义字段（范围、对象、
   维度）盲目重试；同一请求不重复提交，不得沿用失败分支的分数或完成状态。
+  同时读取 `failure`：它固定使用 `mingli-runtime-failure/v1`，只包含
+  `code/category/retryable`，用于区分 bootstrap、输入合同、Runtime 内部与
+  瞬态故障；不得从 `public_copy` 猜分类，也不得把失败码直接展示给普通用户。
 - `need_input`：这是唯一可以续接的情况；按其结构化请求收集用户补充的
   资料后，带原 token 再次 `prepare`。
 - `unsupported` / `conflict`：如实说明，不改写语义字段重试。

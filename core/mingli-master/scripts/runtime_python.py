@@ -21,12 +21,13 @@ from pathlib import Path
 
 ENV_NAME = "MINGLI_PYTHON"
 MINIMUM_VERSION = (3, 10)
-REQUIRED_MODULES = ("yaml", "sxtwl", "astronomy", "cnlunar")
+REQUIRED_MODULES = ("yaml", "sxtwl", "astronomy", "cnlunar", "zhconv")
 PINNED_VERSIONS = {
     "yaml": "6.0.3",
     "sxtwl": "2.0.7",
     "astronomy": "2.1.19",
     "cnlunar": "0.2.4",
+    "zhconv": "1.4.3",
 }
 PROBE_MARKER = "mingli-runtime-v1"
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,6 +48,7 @@ REQUIRED_DISTRIBUTIONS = {
     "sxtwl": "2.0.7",
     "astronomy_engine": "2.1.19",
     "cnlunar": "0.2.4",
+    "zhconv": "1.4.3",
 }
 
 
@@ -304,6 +306,7 @@ def current_runtime_identity() -> dict[str, object]:
     import cnlunar
     import sxtwl
     import yaml
+    import zhconv
     from datetime import datetime
 
     lunar = cnlunar.Lunar(datetime(2024, 2, 10, 12))
@@ -314,7 +317,7 @@ def current_runtime_identity() -> dict[str, object]:
         if installed.parent != package_root or not installed.is_file():
             raise RuntimeError(f"cnlunar reviewed runtime file is missing: {relative}")
         reviewed_files[relative] = hashlib.sha256(installed.read_bytes()).hexdigest()
-    modules = (astronomy, cnlunar, yaml, sxtwl)
+    modules = (astronomy, cnlunar, yaml, sxtwl, zhconv)
     return {
         "marker": PROBE_MARKER,
         "python": list(sys.version_info[:3]),
@@ -322,6 +325,7 @@ def current_runtime_identity() -> dict[str, object]:
         "sxtwl": importlib.metadata.version("sxtwl"),
         "astronomy": importlib.metadata.version("astronomy-engine"),
         "cnlunar": importlib.metadata.version("cnlunar"),
+        "zhconv": importlib.metadata.version("zhconv"),
         "origins": {
             module.__name__: str(Path(module.__file__).resolve()) for module in modules
         },
@@ -370,7 +374,7 @@ def validate_runtime_identity(
     origins = result.get("origins")
     origins_are_isolated = (
         isinstance(origins, dict)
-        and set(origins) == {"astronomy", "cnlunar", "yaml", "sxtwl"}
+        and set(origins) == {"astronomy", "cnlunar", "yaml", "sxtwl", "zhconv"}
         and all(root.name in {"site-packages", "dist-packages"} for root in resolved_site_roots)
         and all(root.is_relative_to(prefix) for root in resolved_site_roots)
         and all(

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import hashlib
 import json
 import subprocess
@@ -21,6 +22,12 @@ ADAPTER_NAME = "mingli-master.ziwei_fact_adapter"
 ADAPTER_VERSION = "1.2.0"
 IZTRO_VERSION = "2.5.8"
 RUNTIME = Path(__file__).with_name("ziwei_runtime.js")
+NODE_RUNTIME_FLAGS = ("--jitless",)
+IZTRO_SINGLE_TIMEOUT_SECONDS = 30
+IZTRO_LARGE_HORIZON_THRESHOLD_DAYS = 31
+IZTRO_HORIZON_BATCH_DAYS = 64
+IZTRO_HORIZON_BATCH_WORKERS = 4
+IZTRO_HORIZON_BATCH_TIMEOUT_SECONDS = 90
 VENDOR = Path(__file__).resolve().parents[1] / "vendor" / f"iztro-{IZTRO_VERSION}"
 YANG_STEMS = frozenset("甲丙戊庚壬")
 TRANSFORMATION_EFFECTS = ("禄", "权", "科", "忌")
@@ -105,6 +112,27 @@ def _local_datetime(value: str, timezone_name: str) -> datetime:
     return parsed.replace(tzinfo=zone) if parsed.tzinfo is None else parsed.astimezone(zone)
 
 
+def _run_iztro_payload(
+    payload: Mapping[str, Any],
+    *,
+    timeout_seconds: int,
+) -> dict[str, Any]:
+    completed = subprocess.run(
+        ["node", *NODE_RUNTIME_FLAGS, str(RUNTIME)],
+        input=json.dumps(payload, ensure_ascii=False),
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=timeout_seconds,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(completed.stderr.strip() or "iztro runtime failed")
+    chart = json.loads(completed.stdout)
+    if not isinstance(chart, dict) or len(chart.get("palaces") or []) != 12:
+        raise RuntimeError("iztro returned an incomplete chart")
+    return chart
+
+
 def _run_iztro(
     local: datetime,
     gender_zh: str,
@@ -115,7 +143,7 @@ def _run_iztro(
 ) -> dict[str, Any]:
     if zi_hour_policy not in calendar_core.ZI_HOUR_POLICIES:
         raise ValueError(f"unsupported Zi-hour policy: {zi_hour_policy!r}")
-    payload = {
+    payload: dict[str, Any] = {
         "year": local.year,
         "month": local.month,
         "day": local.day,
@@ -131,20 +159,50 @@ def _run_iztro(
         payload["targetDate"] = (
             f"{target_date.year}-{target_date.month}-{target_date.day}"
         )
-    completed = subprocess.run(
-        ["node", str(RUNTIME)],
-        input=json.dumps(payload, ensure_ascii=False),
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
-    if completed.returncode != 0:
-        raise RuntimeError(completed.stderr.strip() or "iztro runtime failed")
-    chart = json.loads(completed.stdout)
-    if not isinstance(chart, dict) or len(chart.get("palaces") or []) != 12:
-        raise RuntimeError("iztro returned an incomplete chart")
-    return chart
+    target_values = list(payload.get("targetDates") or ())
+    if len(target_values) <= IZTRO_LARGE_HORIZON_THRESHOLD_DAYS:
+        return _run_iztro_payload(
+            payload,
+            timeout_seconds=IZTRO_SINGLE_TIMEOUT_SECONDS,
+        )
+
+    # A one-year exact horizon asks iztro to calculate every civil day. One
+    # --jitless process exceeded even 90 seconds under admitted x86_64 QEMU.
+    # Keep every target and every independent provider replay, but distribute
+    # bounded 64-day shards over the four admitted vCPUs. Each child remains
+    # fail-closed at 90 seconds; a 366-day horizon has at most two waves.
+    batches = [
+        target_values[index : index + IZTRO_HORIZON_BATCH_DAYS]
+        for index in range(0, len(target_values), IZTRO_HORIZON_BATCH_DAYS)
+    ]
+
+    def run_batch(batch: list[str]) -> dict[str, Any]:
+        batch_payload = dict(payload)
+        batch_payload["targetDates"] = batch
+        return _run_iztro_payload(
+            batch_payload,
+            timeout_seconds=IZTRO_HORIZON_BATCH_TIMEOUT_SECONDS,
+        )
+
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=min(IZTRO_HORIZON_BATCH_WORKERS, len(batches))
+    ) as executor:
+        charts = list(executor.map(run_batch, batches))
+
+    requested: dict[str, Any] = {}
+    for batch, chart in zip(batches, charts):
+        snapshots = chart.get("requestedHoroscopes")
+        if not isinstance(snapshots, dict) or set(snapshots) != set(batch):
+            raise RuntimeError("iztro returned an incomplete requested horoscope shard")
+        requested.update(snapshots)
+    if set(requested) != set(target_values):
+        raise RuntimeError("iztro returned an incomplete requested horoscope range")
+
+    result = dict(charts[0])
+    result["requestedHoroscopes"] = {
+        target: requested[target] for target in target_values
+    }
+    return result
 
 
 def _parse_horizon_month(value: str) -> tuple[int, int]:

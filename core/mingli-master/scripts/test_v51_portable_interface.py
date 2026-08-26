@@ -25,9 +25,11 @@ from reading_engine.interface_contracts import (
     PublicLimit,
     PublicTerm,
     ReadingBrief,
+    RuntimeFailure,
     Stopped,
     command_from_dict,
     result_from_dict,
+    runtime_failure,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -197,6 +199,51 @@ class PortableInterfaceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             Stopped(reason="not-a-reason", public_copy="text")
 
+    def test_stopped_error_has_a_versioned_pii_free_failure(self) -> None:
+        result = Stopped(reason="error", public_copy="safe failure text")
+
+        self.assertEqual(
+            result.failure,
+            RuntimeFailure(
+                schema_version="mingli-runtime-failure/v1",
+                code="runtime.internal_error",
+                category="runtime_internal",
+                retryable=False,
+            ),
+        )
+        assert result.failure is not None
+        self.assertEqual(
+            set(result.failure.to_dict()),
+            {"schema_version", "code", "category", "retryable"},
+        )
+
+    def test_failure_code_registry_is_closed_and_reason_scoped(self) -> None:
+        with self.assertRaises(ValueError):
+            runtime_failure("runtime.user-submitted-value")
+        with self.assertRaises(ValueError):
+            RuntimeFailure(
+                code="transient.timeout",
+                category="runtime_internal",
+                retryable=False,
+            )
+        with self.assertRaises(ValueError):
+            Stopped(
+                reason="unsupported",
+                public_copy="unsupported",
+                failure=runtime_failure("runtime.internal_error"),
+            )
+
+    def test_failure_decoder_rejects_extra_diagnostic_fields(self) -> None:
+        payload = Stopped(
+            reason="error",
+            public_copy="safe failure text",
+        ).to_dict()
+        assert isinstance(payload["failure"], dict)
+        payload["failure"]["exception"] = "private path or caller data"
+
+        with self.assertRaises(ValueError):
+            result_from_dict(payload)
+
     def test_each_public_command_round_trips(self) -> None:
         for command in self.describe_prepare_complete_examples():
             self.assertEqual(command_from_dict(command.to_dict()), command)
@@ -298,6 +345,120 @@ class DescribeExecutionTests(unittest.TestCase):
         self.assertIsInstance(result, Stopped)
         self.assertEqual(result.reason, "error")
         self.assertTrue(result.public_copy.strip())
+        self.assertEqual(
+            result.failure,
+            runtime_failure("input_contract.invalid_command"),
+        )
+
+    def test_invalid_values_on_typed_commands_are_payload_failures(self) -> None:
+        intent = IntentSelection(
+            subject_refs=("subject:client",),
+            object_id="natal",
+            dimension_ids=(),
+            horizon=HorizonSelection(kind_id="year"),
+            capability_id="bazi",
+        )
+        commands = (
+            Describe(kind="other"),  # type: ignore[arg-type]
+            Prepare(
+                query=42,  # type: ignore[arg-type]
+                intent=intent,
+                facts={},
+            ),
+            Prepare(
+                query="看一下",
+                intent=IntentSelection(
+                    subject_refs=["subject:client"],  # type: ignore[arg-type]
+                    object_id="natal",
+                    dimension_ids=(),
+                    horizon=HorizonSelection(kind_id="year"),
+                    capability_id="bazi",
+                ),
+                facts={},
+            ),
+            Complete(
+                state_token=object(),  # type: ignore[arg-type]
+                public_copy="正文",
+            ),
+        )
+
+        for command in commands:
+            with self.subTest(command=type(command).__name__):
+                result = self.interface.execute(command)
+                self.assertIsInstance(result, Stopped)
+                self.assertEqual(
+                    result.failure,
+                    runtime_failure("input_contract.invalid_payload"),
+                )
+
+    def test_internal_type_errors_stay_runtime_internal_on_every_surface(
+        self,
+    ) -> None:
+        from reading_engine.interface import ReadingInterface
+
+        prepare = Prepare(
+            query="看一下这个八字",
+            intent=IntentSelection(
+                subject_refs=("subject:client",),
+                object_id="natal",
+                dimension_ids=(),
+                horizon=HorizonSelection(kind_id="year"),
+                capability_id="bazi",
+            ),
+            facts={},
+        )
+
+        class BrokenCatalog:
+            def __init__(self, error: BaseException) -> None:
+                self.error = error
+
+            @property
+            def manifest_digest(self) -> str:
+                raise self.error
+
+            @property
+            def descriptors(self) -> tuple[object, ...]:
+                return ()
+
+        class BrokenEngine:
+            def __init__(self, error: BaseException) -> None:
+                self.error = error
+
+            def prepare_turn(self, *_args, **_kwargs):
+                raise self.error
+
+            def complete_turn(self, *_args, **_kwargs):
+                raise self.error
+
+        for error_type in (KeyError, TypeError, ValueError):
+            for surface in ("describe", "provider", "store"):
+                with self.subTest(error=error_type.__name__, surface=surface):
+                    error = error_type("internal invariant")
+                    if surface == "describe":
+                        interface = ReadingInterface(
+                            skill_root=ROOT,
+                            catalog=BrokenCatalog(error),  # type: ignore[arg-type]
+                        )
+                        command = Describe()
+                    else:
+                        interface = ReadingInterface(
+                            skill_root=ROOT,
+                            engine=BrokenEngine(error),
+                        )
+                        command = (
+                            prepare
+                            if surface == "provider"
+                            else Complete(
+                                state_token="token",
+                                public_copy="正文",
+                            )
+                        )
+                    result = interface.execute(command)
+                    self.assertIsInstance(result, Stopped)
+                    self.assertEqual(
+                        result.failure,
+                        runtime_failure("runtime.internal_error"),
+                    )
 
 
 
@@ -326,6 +487,46 @@ class ProductionFlowTests(unittest.TestCase):
             "location": "福建省福州市",
             "gender": "female",
         }
+
+    def test_unknown_state_token_matches_for_prepare_and_complete(self) -> None:
+        interface = self._interface(default_timezone_name="Asia/Shanghai")
+        intent = IntentSelection(
+            subject_refs=("subject:client",),
+            object_id="natal",
+            dimension_ids=(),
+            horizon=HorizonSelection(kind_id="year"),
+            capability_id="bazi",
+        )
+        results = (
+            interface.execute(
+                Prepare(
+                    query="继续看",
+                    intent=intent,
+                    facts={},
+                    state_token="unknown-state-token",
+                )
+            ),
+            interface.execute(
+                Complete(
+                    state_token="unknown-state-token",
+                    public_copy="不会提交的正文。",
+                )
+            ),
+        )
+        expected = runtime_failure("input_contract.invalid_state_token")
+        for result in results:
+            with self.subTest(result_kind=type(result).__name__):
+                self.assertIsInstance(result, Stopped)
+                self.assertEqual(result.reason, "error")
+                self.assertEqual(result.failure, expected)
+
+    def test_other_internal_payload_failures_keep_generic_code(self) -> None:
+        from reading_engine.interface import _failure_for_internal_code
+
+        expected = runtime_failure("input_contract.invalid_payload")
+        for code in ("empty_public_copy", "invalid_transition", "not_prepared"):
+            with self.subTest(code=code):
+                self.assertEqual(_failure_for_internal_code(code), expected)
 
     def test_broad_weekly_question_prepares_with_default_dimensions(self) -> None:
         interface = self._interface(

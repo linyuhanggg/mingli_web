@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import copy
 import unittest
+from datetime import datetime
 from pathlib import Path
+from unittest import mock
+from zoneinfo import ZoneInfo
 
-import bazi_fact_adapter
 import adapter_validate
+import bazi_fact_adapter
 import liuren_fact_adapter
 import ziwei_fact_adapter
+from reading_engine import calendar_core
 from reading_engine.calendar_core import normalize_calendar
 
 
@@ -15,6 +19,65 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class CalendarCoreBoundaryTests(unittest.TestCase):
+    def test_solar_term_year_reuse_keeps_fresh_timezone_specific_facts(self) -> None:
+        calendar_core._solar_terms_for_year_utc.cache_clear()
+        calendar_core._localized_solar_terms.cache_clear()
+        self.addCleanup(calendar_core._solar_terms_for_year_utc.cache_clear)
+        self.addCleanup(calendar_core._localized_solar_terms.cache_clear)
+        engine = calendar_core.load_sxtwl()
+        original = engine.getJieQiByYear
+        with mock.patch.object(
+            engine,
+            "getJieQiByYear",
+            wraps=original,
+        ) as get_terms:
+            shanghai = calendar_core.solar_terms(
+                datetime(2024, 6, 1, tzinfo=ZoneInfo("Asia/Shanghai"))
+            )
+            shanghai[0]["name"] = "mutated caller copy"
+            new_york = calendar_core.solar_terms(
+                datetime(2024, 6, 1, tzinfo=ZoneInfo("America/New_York"))
+            )
+
+        self.assertEqual(get_terms.call_count, 3)
+        self.assertNotEqual(new_york[0]["name"], "mutated caller copy")
+        self.assertEqual(
+            [item["instant_utc"] for item in new_york],
+            [
+                item["instant_utc"]
+                for item in calendar_core.solar_terms(
+                    datetime(2024, 6, 1, tzinfo=ZoneInfo("Asia/Shanghai"))
+                )
+            ],
+        )
+        self.assertNotEqual(new_york[0]["datetime"], shanghai[0]["datetime"])
+        localized_cache = calendar_core._localized_solar_terms.cache_info()
+        self.assertEqual(localized_cache.misses, 2)
+        self.assertGreaterEqual(localized_cache.hits, 1)
+
+    def test_term_pillar_reuse_keeps_fresh_calendar_payloads(self) -> None:
+        calendar_core._term_pillars_for_instant_utc.cache_clear()
+        self.addCleanup(calendar_core._term_pillars_for_instant_utc.cache_clear)
+
+        first = normalize_calendar(
+            "2025-01-10T12:00:00",
+            timezone_name="Asia/Shanghai",
+            location="上海",
+        )
+        first["ganzhi"]["year"] = "mutated caller copy"
+        second = normalize_calendar(
+            "2025-01-11T12:00:00",
+            timezone_name="Asia/Shanghai",
+            location="上海",
+        )
+
+        cache = calendar_core._term_pillars_for_instant_utc.cache_info()
+        self.assertEqual(cache.misses, 2)
+        self.assertGreaterEqual(cache.hits, 2)
+        self.assertNotEqual(second["ganzhi"]["year"], "mutated caller copy")
+        self.assertEqual(second["ganzhi"]["year"], "甲辰")
+        self.assertEqual(second["ganzhi"]["month"], "丁丑")
+
     def test_normalization_is_complete_and_digest_is_deterministic(self) -> None:
         arguments = {
             "civil_datetime": "1990-10-09T13:30:00",

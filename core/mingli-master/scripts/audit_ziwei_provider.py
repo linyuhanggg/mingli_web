@@ -8,7 +8,7 @@ import hashlib
 import json
 from collections import Counter
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 import yaml
 
@@ -47,6 +47,15 @@ INDEPENDENT_ORACLE_SHA256 = (
     "84c3db3b9ed415883341f2af74d74384b3fa22b0a2dc432c04e6c549e2ecb826"
 )
 TRANSFORMATION_ORDER = ("禄", "权", "科", "忌")
+
+
+def _emit_audit_progress(
+    progress: Callable[..., None] | None,
+    stage: str,
+    **fields: object,
+) -> None:
+    if progress is not None:
+        progress(stage, **fields)
 
 
 def _sha256(path: Path) -> str:
@@ -502,6 +511,7 @@ def audit_ziwei_provider(
     fixture_path: Path = FIXTURE,
     source_matrix_path: Path = SOURCE_MATRIX,
     research_root: Path | None = None,
+    progress: Callable[..., None] | None = None,
 ) -> dict[str, Any]:
     """Audit the live Ziwei provider against frozen V5.1 fixtures.
 
@@ -519,6 +529,12 @@ def audit_ziwei_provider(
     cases = list(payload.get("cases") or ())
     findings: list[str] = []
     provider = ZiweiProvider(ROOT)
+    _emit_audit_progress(
+        progress,
+        "ziwei_fixture_replay",
+        completed=0,
+        total=len(cases),
+    )
     category_counts = Counter(str(case.get("category") or "") for case in cases)
     fixture_sha256 = _sha256(fixture_path)
     _finding(
@@ -633,7 +649,14 @@ def audit_ziwei_provider(
     source_dependency_bindings_complete = True
     qualifying_cases = 0
 
-    for case in cases:
+    for index, case in enumerate(cases):
+        _emit_audit_progress(
+            progress,
+            "ziwei_fixture_replay",
+            completed=index,
+            total=len(cases),
+            case_id=str(case.get("id") or ""),
+        )
         case_findings_start = len(findings)
         case_id = str(case.get("id") or "")
         request = _request(case, contract)
@@ -703,6 +726,13 @@ def audit_ziwei_provider(
                 _check_temporal_case(findings, case, first, extended[0])
         if len(findings) == case_findings_start:
             qualifying_cases += 1
+        _emit_audit_progress(
+            progress,
+            "ziwei_fixture_replay",
+            completed=index + 1,
+            total=len(cases),
+            case_id=case_id,
+        )
 
     declared_horizon_coverage = {"life": False, "month": temporal_extension_cases > 0, "year": False}
     horizon_probes = (
@@ -720,6 +750,12 @@ def audit_ziwei_provider(
         ),
     )
     for kind, case_id, dimensions, horizon in horizon_probes:
+        _emit_audit_progress(
+            progress,
+            "ziwei_horizon_probe",
+            kind=kind,
+            case_id=case_id,
+        )
         bases = bases_by_case.get(case_id)
         if bases is None:
             findings.append(f"declared horizon probe lacks base calculation: {kind}")
@@ -757,6 +793,7 @@ def audit_ziwei_provider(
         "independent 1970 benchmark did not pass",
     )
 
+    _emit_audit_progress(progress, "ziwei_source_contract_checks")
     source_payload = yaml.safe_load(source_matrix_path.read_text(encoding="utf-8"))
     provider_sources = dict((source_payload.get("providers") or {}).get("ziwei") or {})
     source_dependency_ids = [
@@ -822,6 +859,12 @@ def audit_ziwei_provider(
         category: category_counts[category] > 0 for category in REQUIRED_CATEGORIES
     }
     provider_ready = not findings
+    _emit_audit_progress(
+        progress,
+        "ziwei_report",
+        provider_ready=provider_ready,
+        qualifying_cases=qualifying_cases,
+    )
     return {
         "schema_version": "mingli-ziwei-provider-audit-v1",
         "system": "ziwei",

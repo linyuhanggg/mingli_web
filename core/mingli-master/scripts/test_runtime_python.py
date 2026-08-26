@@ -240,6 +240,13 @@ class RuntimePythonTests(unittest.TestCase):
         requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8")
         self.assertIn("cnlunar==0.2.4", requirements.splitlines())
 
+    def test_runtime_pins_and_manifests_the_text_normalizer(self) -> None:
+        self.assertIn("zhconv", runtime_python.REQUIRED_MODULES)
+        self.assertEqual(runtime_python.PINNED_VERSIONS["zhconv"], "1.4.3")
+        self.assertEqual(runtime_python.REQUIRED_DISTRIBUTIONS["zhconv"], "1.4.3")
+        requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8")
+        self.assertIn("zhconv==1.4.3", requirements.splitlines())
+
     def test_runtime_probe_ignores_pythonpath_module_shadowing(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             shadow = Path(temporary) / "cnlunar.py"

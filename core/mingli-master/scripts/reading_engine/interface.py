@@ -8,7 +8,9 @@ through ``prepare`` and ``complete`` only.
 
 from __future__ import annotations
 
+import errno
 import json
+import subprocess
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -20,8 +22,10 @@ from .interface_contracts import (
     CapabilityView,
     Command,
     Complete,
+    ComparisonSelection,
     Describe,
     Described,
+    HorizonSelection,
     InputFieldView,
     InputRequest,
     InputRequirement,
@@ -30,8 +34,10 @@ from .interface_contracts import (
     Prepared,
     PublicTerm,
     Result,
+    RuntimeFailure,
     Stopped,
     TimeSemanticsView,
+    runtime_failure,
 )
 from .provider_protocol import ResolvedComparison
 
@@ -40,6 +46,126 @@ _DEFAULT_LOCALE = "zh-CN"
 # Human-readable, domain-free fallback used when even the message catalog
 # cannot be consulted. Never empty.
 FALLBACK_ERROR_TEXT = "本次处理未完成，请稍后重试。"
+
+_TRANSIENT_ERRNOS = frozenset(
+    {
+        errno.EAGAIN,
+        errno.EINTR,
+        errno.EMFILE,
+        errno.ENFILE,
+        errno.ENOMEM,
+        errno.ETIMEDOUT,
+    }
+)
+
+
+def _failure_for_exception(error: BaseException) -> RuntimeFailure:
+    if isinstance(error, (TimeoutError, subprocess.TimeoutExpired)):
+        return runtime_failure("transient.timeout")
+    if isinstance(error, MemoryError):
+        return runtime_failure("transient.resource_unavailable")
+    if isinstance(error, OSError) and error.errno in _TRANSIENT_ERRNOS:
+        return runtime_failure("transient.resource_unavailable")
+    return runtime_failure("runtime.internal_error")
+
+
+def _failure_for_internal_code(code: str) -> RuntimeFailure:
+    if code in {"TimeoutError", "TimeoutExpired"}:
+        return runtime_failure("transient.timeout")
+    if code in {
+        "BlockingIOError",
+        "InterruptedError",
+        "MemoryError",
+    }:
+        return runtime_failure("transient.resource_unavailable")
+    if code == "unknown_state_token":
+        return runtime_failure("input_contract.invalid_state_token")
+    if code in {
+        "empty_public_copy",
+        "invalid_transition",
+        "not_prepared",
+    }:
+        return runtime_failure("input_contract.invalid_payload")
+    return runtime_failure("runtime.internal_error")
+
+
+def _require_string_tuple(value: object, field_name: str) -> None:
+    if not isinstance(value, tuple) or not all(
+        isinstance(item, str) for item in value
+    ):
+        raise TypeError(f"{field_name} must be a tuple of strings")
+
+
+def _require_optional_string(value: object, field_name: str) -> None:
+    if value is not None and not isinstance(value, str):
+        raise TypeError(f"{field_name} must be text or null")
+
+
+def _validate_typed_command(command: Command) -> None:
+    """Validate only caller-owned values before Runtime execution.
+
+    The JSON codec already validates and constructs these immutable command
+    objects.  This second boundary protects direct Python callers without
+    treating provider, catalog, Describe or store ``ValueError`` exceptions
+    as user input failures.
+    """
+
+    if isinstance(command, Describe):
+        if command.kind != "describe":
+            raise ValueError("Describe.kind is invalid")
+        return
+    if isinstance(command, Complete):
+        if command.kind != "complete":
+            raise ValueError("Complete.kind is invalid")
+        if not isinstance(command.state_token, str):
+            raise TypeError("Complete.state_token must be text")
+        if not isinstance(command.public_copy, str):
+            raise TypeError("Complete.public_copy must be text")
+        return
+
+    if not isinstance(command.query, str):
+        raise TypeError("Prepare.query must be text")
+    if command.kind != "prepare":
+        raise ValueError("Prepare.kind is invalid")
+    if not isinstance(command.intent, IntentSelection):
+        raise TypeError("Prepare.intent must be an IntentSelection")
+    _require_optional_string(command.state_token, "Prepare.state_token")
+    if command.transition not in {None, "correct", "restart"}:
+        raise ValueError("Prepare.transition is invalid")
+
+    intent = command.intent
+    _require_string_tuple(intent.subject_refs, "IntentSelection.subject_refs")
+    if not isinstance(intent.object_id, str):
+        raise TypeError("IntentSelection.object_id must be text")
+    _require_string_tuple(intent.dimension_ids, "IntentSelection.dimension_ids")
+    _require_optional_string(
+        intent.capability_id,
+        "IntentSelection.capability_id",
+    )
+    if not isinstance(intent.horizon, HorizonSelection):
+        raise TypeError("IntentSelection.horizon must be a HorizonSelection")
+    if not isinstance(intent.horizon.kind_id, str):
+        raise TypeError("HorizonSelection.kind_id must be text")
+    _require_optional_string(intent.horizon.start, "HorizonSelection.start")
+    _require_optional_string(intent.horizon.end, "HorizonSelection.end")
+
+    if not isinstance(intent.comparisons, tuple):
+        raise TypeError("IntentSelection.comparisons must be a tuple")
+    for comparison in intent.comparisons:
+        if not isinstance(comparison, ComparisonSelection):
+            raise TypeError("comparison must be a ComparisonSelection")
+        if not isinstance(comparison.capability_id, str):
+            raise TypeError("ComparisonSelection.capability_id must be text")
+        if comparison.requirement not in {"required", "optional"}:
+            raise ValueError("ComparisonSelection.requirement is invalid")
+
+    if not isinstance(command.facts, Mapping):
+        raise TypeError("Prepare.facts must be an object")
+    for subject_ref, fields in command.facts.items():
+        if not isinstance(subject_ref, str):
+            raise TypeError("Prepare.facts keys must be strings")
+        if not isinstance(fields, Mapping):
+            raise TypeError("Prepare.facts values must be objects")
 
 
 def _localized(display: Mapping[str, Any], locale: str = _DEFAULT_LOCALE) -> Any:
@@ -238,19 +364,33 @@ class ReadingInterface:
         return PublicTerm(id=term_id, label=term_id)
 
     def execute(self, command: Command) -> Result:
+        if not isinstance(command, (Describe, Prepare, Complete)):
+            return Stopped(
+                reason="error",
+                public_copy=FALLBACK_ERROR_TEXT,
+                failure=runtime_failure("input_contract.invalid_command"),
+            )
+        try:
+            _validate_typed_command(command)
+        except (KeyError, TypeError, ValueError):
+            return Stopped(
+                reason="error",
+                public_copy=FALLBACK_ERROR_TEXT,
+                failure=runtime_failure("input_contract.invalid_payload"),
+            )
+
         try:
             if isinstance(command, Describe):
                 return self._describe()
             if isinstance(command, Prepare):
                 return self._prepare(command)
-            if isinstance(command, Complete):
-                return self._complete(command)
+            return self._complete(command)
+        except Exception as error:  # noqa: BLE001 - never leak internals
             return Stopped(
                 reason="error",
                 public_copy=FALLBACK_ERROR_TEXT,
+                failure=_failure_for_exception(error),
             )
-        except Exception:  # noqa: BLE001 - the interface never leaks internals
-            return Stopped(reason="error", public_copy=FALLBACK_ERROR_TEXT)
 
     # -- complete ----------------------------------------------------------
 
@@ -263,10 +403,12 @@ class ReadingInterface:
                 state_token=command.state_token,
                 public_copy=result.public_copy,
             )
+        code = str(getattr(result, "code", ""))
         return Stopped(
             reason="error",
             public_copy=self._reason_text("error"),
             state_token=command.state_token,
+            failure=_failure_for_internal_code(code),
         )
 
     # -- prepare -----------------------------------------------------------
@@ -287,6 +429,9 @@ class ReadingInterface:
                 return Stopped(
                     reason="error",
                     public_copy=self._reason_text("error"),
+                    failure=runtime_failure(
+                        "input_contract.invalid_state_token"
+                    ),
                 )
             if record.phase == "accepted" and record.reading_id:
                 prior = self.engine.store.load(record.reading_id)
@@ -730,8 +875,13 @@ class ReadingInterface:
                 reason="error",
                 public_copy=self._reason_text("error"),
                 state_token=turn.state_token,
+                failure=_failure_for_internal_code(code),
             )
-        return Stopped(reason="error", public_copy=FALLBACK_ERROR_TEXT)
+        return Stopped(
+            reason="error",
+            public_copy=FALLBACK_ERROR_TEXT,
+            failure=runtime_failure("runtime.internal_error"),
+        )
 
     def _describe(self) -> Described:
         if self._described is None:

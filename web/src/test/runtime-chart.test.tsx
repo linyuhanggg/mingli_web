@@ -443,10 +443,121 @@ it("renders Runtime Ziwei core facts without adding browser-side judgments", () 
   );
 
   expect(screen.getByText("水二局")).toBeVisible();
-  expect(screen.getByText("本命四化事实")).toBeVisible();
-  expect(screen.getByText("廉贞")).toBeVisible();
-  expect(screen.getByText("TR-01 · 至玄至微")).toBeVisible();
-  expect(screen.getByText(/不在浏览器追加判断/)).toBeVisible();
+  expect(screen.getByText("紫微")).toBeVisible();
+  expect(screen.getByRole("region", { name: "四化" })).toHaveTextContent("廉贞");
+  expect(screen.queryByText("本命四化事实")).not.toBeInTheDocument();
+  expect(screen.queryByText("TR-01 · 至玄至微")).not.toBeInTheDocument();
+  expect(screen.queryByText(/不在浏览器追加判断/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/吉凶|大吉|大凶/)).not.toBeInTheDocument();
+});
+
+it("keeps Ziwei time-layer facts visible while tier B suppresses interpretive sections", () => {
+  const branches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"] as const;
+  render(
+    <RuntimeChart
+      capability={{
+        capability_id: "ziwei",
+        label: "紫微",
+        tier: "B",
+        source_system: "ziwei",
+        runtime_active_rule_count: 2,
+        judgment_rule_count: 0,
+        source_status: "available",
+      }}
+      viewModel={{
+        schema_version: "ziwei-chart/v1",
+        subject_ref: "profile-version:time-layer-fixture",
+        life_palace_id: "0",
+        body_palace_id: "1",
+        palaces: branches.map((branch, index) => ({
+          palace_id: String(index),
+          label: index === 0 ? "命宫" : `宫${index}`,
+          heavenly_stem: "甲",
+          earthly_branch: branch,
+          major_stars: index === 0 ? ["紫微"] : [],
+        })),
+        time_layers: [],
+        core_facts: {
+          five_elements_class: "水二局",
+          source_conditioned_patterns: [{
+            rule_id: "ziwei/taiwei-fu#TR-01",
+            local_rule_id: "TR-01",
+            title: "至玄至微",
+            source_pack: "ziwei/taiwei-fu",
+            source_anchor: "rules.md#L9-L16",
+            status: "predicate_matched_not_verdict",
+            fact_paths: ["fact:/chart_facts/output/palaces/0/name"],
+            predicate_audit: ["/output/palaces:descendant_eq:命宫"],
+          }],
+          ming_shen: null,
+          major_limit_direction: null,
+          major_limit_starting_age: null,
+          major_limit_sequence: null,
+          major_limits: null,
+          transformations: null,
+          star_facts: null,
+          annual_layers: [{
+            year: 2026,
+            coverage_start: "2026-02-17",
+            coverage_end_exclusive: "2027-02-06",
+            liu_nian: { life_palace: "午" },
+            segments: [{ segment: "annual" }],
+            representative_scope: "annual",
+          }],
+          monthly_layers: [{
+            year: 2026,
+            month: 8,
+            liu_yue: { life_palace: "申" },
+            segments: [{ segment: "monthly" }, { segment: "daily" }],
+            representative_scope: "monthly",
+          }],
+        },
+      }}
+    />,
+  );
+
+  expect(screen.getByRole("grid", { name: "十二宫环盘" })).toBeVisible();
+  expect(screen.getByRole("table", { name: "流年盘面事实" })).toHaveTextContent(
+    "2026-02-17—2027-02-06",
+  );
+  expect(screen.getByRole("table", { name: "流月盘面事实" })).toHaveTextContent("2026");
+  expect(screen.getByRole("table", { name: "流月盘面事实" })).toHaveTextContent("8");
+  expect(screen.queryByRole("region", { name: "古法命中" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "基础摘要" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "深读" })).not.toBeInTheDocument();
+});
+
+it("renders ZiweiPalaceBoard for ziwei-chart/v1 and fail-closes missing core_facts modules", () => {
+  const branches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"] as const;
+  render(
+    <RuntimeChart
+      viewModel={{
+        schema_version: "ziwei-chart/v1",
+        subject_ref: "profile-version:fixture",
+        life_palace_id: "0",
+        body_palace_id: "1",
+        palaces: branches.map((branch, index) => ({
+          palace_id: String(index),
+          label: index === 0 ? "命宫" : `宫${index}`,
+          heavenly_stem: "甲",
+          earthly_branch: branch,
+          major_stars: index === 0 ? ["紫微"] : [],
+          minor_stars: [],
+          adjective_stars: [],
+        })),
+        time_layers: [],
+        core_facts: null,
+      }}
+    />,
+  );
+
+  expect(screen.getByRole("grid", { name: "十二宫环盘" })).toBeVisible();
+  expect(screen.getAllByText("紫微").length).toBeGreaterThan(0);
+  expect(screen.getAllByText("命宫").length).toBeGreaterThan(0);
+  expect(screen.queryByRole("region", { name: "口径" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "四化" })).not.toBeInTheDocument();
+  expect(screen.queryByText("测试期未开放")).toBeVisible();
+  expect(screen.queryByText(/¥/)).not.toBeInTheDocument();
 });
 
 it("renders Runtime Qizheng core facts and keeps absent aspects absent", () => {
