@@ -388,7 +388,7 @@ class ReleaseDeployTests(unittest.TestCase):
             patch.object(release_deploy, "require_clean_source"),
             patch.object(
                 release_deploy,
-                "_verify_committed_release_sources",
+                "_verify_release_sources",
                 return_value={
                     "research_root": str(self.source),
                     "provider_source_verification": {},
@@ -401,9 +401,20 @@ class ReleaseDeployTests(unittest.TestCase):
                 "extra_gate_pathspecs",
                 return_value=((), ()),
             ),
+            patch.object(
+                release_deploy,
+                "_committed_source_snapshot",
+                return_value=release_deploy.contextlib.nullcontext(
+                    self.source
+                ),
+            ),
             patch.object(release_deploy, "tracked_release_files", return_value=self.files),
             patch.object(release_deploy, "source_commit", return_value="abc123"),
-            patch.object(release_deploy, "build_committed_manifest", return_value=manifest),
+            patch.object(
+                release_deploy,
+                "_build_manifest_from_committed_source",
+                return_value=manifest,
+            ),
             patch.object(release_deploy, "destination_is_protected", return_value=True),
             patch.object(release_deploy, "unprotect_destination"),
             patch.object(release_deploy, "sync_destination", side_effect=ValueError("primary deploy failure")),
@@ -660,6 +671,94 @@ class ReleaseDeployTests(unittest.TestCase):
         self.assertEqual(
             result["provider_source_verification"],
             {"alpha": "verified"},
+        )
+
+    def test_clean_check_then_live_injection_cannot_drift_release(self) -> None:
+        source = self._parent_repo_source()
+        destination = self.root / "installed"
+        files = release_deploy.tracked_release_files(source)
+        commit = release_deploy.source_commit(source)
+        expected_manifest = release_deploy.build_committed_manifest(
+            source,
+            files,
+            commit,
+        )
+        real_require_clean_source = release_deploy.require_clean_source
+        observed_snapshots: list[Path] = []
+
+        def clean_then_inject(*args, **kwargs) -> None:
+            real_require_clean_source(*args, **kwargs)
+            (source / "SKILL.md").write_text(
+                "dirty after clean check\n",
+                encoding="utf-8",
+            )
+
+        def verify_snapshot(snapshot, research_root, **kwargs):
+            observed_snapshots.append(snapshot)
+            self.assertNotEqual(snapshot, source)
+            self.assertEqual(
+                (snapshot / "SKILL.md").read_text(encoding="utf-8"),
+                "release\n",
+            )
+            return {
+                "research_root": str(research_root),
+                "provider_source_verification": {},
+                "verified": True,
+                "failures": [],
+            }
+
+        output = io.StringIO()
+        with (
+            patch.object(
+                release_deploy,
+                "extra_gate_pathspecs",
+                return_value=((), ()),
+            ),
+            patch.object(
+                release_deploy,
+                "require_clean_source",
+                side_effect=clean_then_inject,
+            ),
+            patch.object(
+                release_deploy,
+                "_verify_release_sources",
+                side_effect=verify_snapshot,
+            ),
+            patch("sys.stdout", output),
+        ):
+            result = release_deploy.main(
+                [
+                    "--source",
+                    str(source),
+                    "--destination",
+                    str(destination),
+                    "--apply",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        self.assertEqual(len(observed_snapshots), 1)
+        self.assertEqual(
+            (source / "SKILL.md").read_text(encoding="utf-8"),
+            "dirty after clean check\n",
+        )
+        self.assertEqual(
+            release_deploy.build_committed_manifest(source, files, commit),
+            expected_manifest,
+        )
+        self.assertEqual(
+            (destination / "SKILL.md").read_text(encoding="utf-8"),
+            "release\n",
+        )
+        installed_manifest = json.loads(
+            (destination / release_deploy.MANIFEST_NAME).read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(installed_manifest, expected_manifest)
+        self.assertEqual(
+            json.loads(output.getvalue())["manifest"],
+            expected_manifest,
         )
 
 

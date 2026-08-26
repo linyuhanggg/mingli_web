@@ -377,18 +377,36 @@ def committed_release_modes(
     return modes
 
 
+def _build_manifest_from_committed_source(
+    source: Path,
+    committed_source: Path,
+    relative_paths: Iterable[str],
+    commit: str,
+) -> dict:
+    """Hash one materialized commit tree and bind its committed file modes."""
+
+    paths = list(relative_paths)
+    return build_manifest(
+        committed_source,
+        paths,
+        commit,
+        committed_modes=committed_release_modes(source, paths, commit),
+    )
+
+
 def build_committed_manifest(
     source: Path,
     relative_paths: Iterable[str],
     commit: str,
 ) -> dict:
     paths = list(relative_paths)
-    return build_manifest(
-        source,
-        paths,
-        commit,
-        committed_modes=committed_release_modes(source, paths, commit),
-    )
+    with _committed_source_snapshot(source, commit) as snapshot:
+        return _build_manifest_from_committed_source(
+            source,
+            snapshot,
+            paths,
+            commit,
+        )
 
 
 def validate_destination_layout(destination: Path) -> None:
@@ -1650,64 +1668,72 @@ def main(argv: list[str] | None = None) -> int:
         pathspecs=list(dict.fromkeys([*release_files, *source_extras])),
         extra_repo_pathspecs=repo_extras,
     )
-    source_verification = _verify_committed_release_sources(
-        source,
-        commit,
-        args.research_root,
-    )
-    if not source_verification["verified"]:
-        raise ValueError(
-            "release source verification failed: "
-            + "; ".join(source_verification["failures"])
+    with _committed_source_snapshot(source, commit) as committed_source:
+        # Bind the release identity before executing committed audit code. Any
+        # later snapshot mutation also fails closed in destination verification.
+        manifest = _build_manifest_from_committed_source(
+            source,
+            committed_source,
+            release_files,
+            commit,
         )
-    manifest = build_committed_manifest(
-        source,
-        release_files,
-        commit,
-    )
-
-    protected_before = {
-        destination: destination_is_protected(destination)
-        for destination in destinations
-    }
-    results: list[dict] = []
-    operation_error: BaseException | None = None
-    operation_traceback = None
-    try:
-        if args.apply:
-            for destination in destinations:
-                unprotect_destination(destination)
-
-        results = [
-            sync_destination(source, destination, manifest, apply=args.apply)
-            for destination in destinations
-        ]
-    except BaseException as exc:
-        operation_error = exc
-        operation_traceback = exc.__traceback__
-
-    protection_failures = (
-        _restore_destination_protection(
-            destinations,
-            protected_before,
-            args.protect,
+        source_verification = _verify_release_sources(
+            committed_source,
+            args.research_root,
         )
-        if args.apply
-        else []
-    )
-    if operation_error is not None:
-        for failure in protection_failures:
-            operation_error.add_note(
-                "destination protection also failed: "
-                f"{type(failure).__name__}: {failure}"
+        if not source_verification["verified"]:
+            raise ValueError(
+                "release source verification failed: "
+                + "; ".join(source_verification["failures"])
             )
-        raise operation_error.with_traceback(operation_traceback)
-    if protection_failures:
-        rendered = "; ".join(
-            f"{type(failure).__name__}: {failure}"
-            for failure in protection_failures
+
+        protected_before = {
+            destination: destination_is_protected(destination)
+            for destination in destinations
+        }
+        results: list[dict] = []
+        operation_error: BaseException | None = None
+        operation_traceback = None
+        try:
+            if args.apply:
+                for destination in destinations:
+                    unprotect_destination(destination)
+
+            results = [
+                sync_destination(
+                    committed_source,
+                    destination,
+                    manifest,
+                    apply=args.apply,
+                )
+                for destination in destinations
+            ]
+        except BaseException as exc:
+            operation_error = exc
+            operation_traceback = exc.__traceback__
+
+        protection_failures = (
+            _restore_destination_protection(
+                destinations,
+                protected_before,
+                args.protect,
+            )
+            if args.apply
+            else []
         )
-        raise RuntimeError(f"destination protection failed: {rendered}")
+        if operation_error is not None:
+            for failure in protection_failures:
+                operation_error.add_note(
+                    "destination protection also failed: "
+                    f"{type(failure).__name__}: {failure}"
+                )
+            raise operation_error.with_traceback(operation_traceback)
+        if protection_failures:
+            rendered = "; ".join(
+                f"{type(failure).__name__}: {failure}"
+                for failure in protection_failures
+            )
+            raise RuntimeError(f"destination protection failed: {rendered}")
 
     print(
         json.dumps(
