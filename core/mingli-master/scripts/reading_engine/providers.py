@@ -598,6 +598,7 @@ def _bazi_public_claim_findings(
     subject_ref: str,
     dimension_ids: tuple[str, ...],
     fact_refs: tuple[str, ...],
+    public_fact_refs: tuple[str, ...],
     evidence_refs: tuple[str, ...],
     evidence_supports: Mapping[str, tuple[str, ...]],
     chart_output: Mapping[str, Any] | None = None,
@@ -617,6 +618,15 @@ def _bazi_public_claim_findings(
         return ()
 
     units: list[dict[str, Any]] = []
+    # ``fact_refs`` is the manifest-scoped support for the parent
+    # interpretive finding. Structural units also read public chart outputs,
+    # so bind those values only through fact identities that were actually
+    # projected into this brief.
+    public_fact_ref_set = frozenset(public_fact_refs)
+
+    def public_chart_fact_ref(output_name: str) -> str | None:
+        expected = f"fact:{subject_ref}/calculated/bazi/{output_name}"
+        return expected if expected in public_fact_ref_set else None
 
     def append_unit(
         *,
@@ -624,13 +634,22 @@ def _bazi_public_claim_findings(
         text: str,
         rule_id: str | None,
         data: Mapping[str, Any],
+        claim_fact_refs: tuple[str, ...] | None = None,
     ) -> None:
         evidence_ref = _exact_rule_evidence_ref(rule_id, evidence_refs)
         if evidence_ref is None or not text.strip():
             return
+        base_fact_refs = (
+            fact_refs if claim_fact_refs is None else claim_fact_refs
+        )
+        if not base_fact_refs:
+            return
         grounded_fact_refs = tuple(
             dict.fromkeys(
-                (*fact_refs, *evidence_supports.get(evidence_ref, ()))
+                (
+                    *base_fact_refs,
+                    *evidence_supports.get(evidence_ref, ()),
+                )
             )
         )
         units.append(
@@ -872,7 +891,8 @@ def _bazi_public_claim_findings(
             if isinstance(pillar, str) and len(pillar) == 2:
                 pillar_values[position] = pillar
 
-    if len(pillar_values) == 4:
+    four_pillars_fact_ref = public_chart_fact_ref("four_pillars")
+    if len(pillar_values) == 4 and four_pillars_fact_ref is not None:
         append_unit(
             unit_id="pillar-roles",
             text=(
@@ -892,6 +912,7 @@ def _bazi_public_claim_findings(
                 "hour_pillar": pillar_values["hour"],
                 "hard_verdict": None,
             },
+            claim_fact_refs=(four_pillars_fact_ref,),
         )
 
         hidden = (
@@ -914,7 +935,11 @@ def _bazi_public_claim_findings(
                     )
                 ):
                     hidden_by_position[position] = tuple(stems)
-        if len(hidden_by_position) == 4:
+        hidden_stems_fact_ref = public_chart_fact_ref("hidden_stems")
+        if (
+            len(hidden_by_position) == 4
+            and hidden_stems_fact_ref is not None
+        ):
             ordered_positions = ("year", "month", "day", "hour")
             stems_clause = "、".join(
                 pillar_values[position][0] for position in ordered_positions
@@ -953,6 +978,10 @@ def _bazi_public_claim_findings(
                     },
                     "hard_verdict": None,
                 },
+                claim_fact_refs=(
+                    four_pillars_fact_ref,
+                    hidden_stems_fact_ref,
+                ),
             )
 
     flow_strength = value.get("strength")
@@ -1176,6 +1205,7 @@ def _declared_public_findings(
                     subject_ref=subject_ref,
                     dimension_ids=effective_dimensions,
                     fact_refs=finding_fact_refs,
+                    public_fact_refs=fact_refs,
                     evidence_refs=evidence_refs,
                     evidence_supports=evidence_supports,
                     chart_output=(
