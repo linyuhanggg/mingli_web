@@ -146,6 +146,10 @@
   gap: var(--space-xl);
 }
 
+.inputLayout[hidden] {
+  display: none;
+}
+
 .inputLayout > * {
   min-width: 0;
 }
