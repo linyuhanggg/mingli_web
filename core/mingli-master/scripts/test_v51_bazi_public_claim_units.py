@@ -13,6 +13,7 @@ from reading_engine.interface_contracts import (
     Prepare,
     Prepared,
 )
+from reading_engine.providers import _bazi_public_claim_findings
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -88,6 +89,53 @@ class BaziPublicClaimUnitTests(unittest.TestCase):
             if finding.data["claim_unit_id"] == claim_unit_id
         )
 
+    def _structural_claim_units(
+        self,
+        result: Prepared,
+        public_fact_refs: tuple[str, ...],
+    ) -> tuple[dict, ...]:
+        subject_ref = "subject:test"
+        four_pillars_ref = (
+            f"fact:{subject_ref}/calculated/bazi/four_pillars"
+        )
+        hidden_stems_ref = (
+            f"fact:{subject_ref}/calculated/bazi/hidden_stems"
+        )
+        facts = {fact.ref: fact for fact in result.brief.facts}
+        interpretive = next(
+            finding
+            for finding in result.brief.findings
+            if finding.ref
+            == f"finding:{subject_ref}/bazi/interpretive_candidates"
+        )
+        units = _bazi_public_claim_findings(
+            interpretive.data,
+            subject_ref=subject_ref,
+            dimension_ids=interpretive.dimension_ids,
+            fact_refs=interpretive.fact_refs,
+            public_fact_refs=public_fact_refs,
+            evidence_refs=tuple(
+                evidence.ref for evidence in result.brief.evidence
+            ),
+            evidence_supports={
+                evidence.ref: evidence.supports_fact_refs
+                for evidence in result.brief.evidence
+            },
+            chart_output={
+                "four_pillars": facts[four_pillars_ref].value,
+                "hidden_stems": facts[hidden_stems_ref].value,
+            },
+        )
+        return tuple(
+            unit
+            for unit in units
+            if unit["data"].get("claim_unit_id")
+            in {
+                "bazi.pillar-roles-v1",
+                "bazi.three-yuan-structure-v1",
+            }
+        )
+
     def test_bazi_prepare_emits_seven_exact_public_claim_units(self) -> None:
         result = self._prepare(["乙酉", "辛巳", "丙午", "癸巳"])
         claims = self._public_claims(result)
@@ -134,6 +182,26 @@ class BaziPublicClaimUnitTests(unittest.TestCase):
             pillar_roles.evidence_refs,
             ("evidence:bazi/bazi/yuanhai-ziping#YR-M01",),
         )
+        facts = {fact.ref: fact for fact in result.brief.facts}
+        four_pillars_ref = (
+            "fact:subject:test/calculated/bazi/four_pillars"
+        )
+        hidden_stems_ref = (
+            "fact:subject:test/calculated/bazi/hidden_stems"
+        )
+        self.assertEqual(
+            pillar_roles.fact_refs,
+            (
+                four_pillars_ref,
+                "fact:subject:test/calculated/bazi/day_master",
+                "fact:subject:test/calculated/bazi/month_command",
+            ),
+        )
+        for position in ("year", "month", "day", "hour"):
+            self.assertEqual(
+                pillar_roles.data[f"{position}_pillar"],
+                facts[four_pillars_ref].value[position],
+            )
 
         three_yuan = self._claim_by_id(claims, "bazi.three-yuan-structure-v1")
         self.assertEqual(
@@ -148,6 +216,20 @@ class BaziPublicClaimUnitTests(unittest.TestCase):
             three_yuan.evidence_refs,
             ("evidence:bazi/bazi/ditiansui-chanwei#DR-01-01",),
         )
+        self.assertEqual(
+            three_yuan.fact_refs,
+            (
+                four_pillars_ref,
+                hidden_stems_ref,
+                "fact:subject:test/calculated/bazi/interpretive_candidates",
+                "fact:subject:test/calculated/bazi/ten_gods",
+            ),
+        )
+        for position in ("year", "month", "day", "hour"):
+            self.assertEqual(
+                three_yuan.data["hidden_stems"][position],
+                facts[hidden_stems_ref].value[position]["stems"],
+            )
 
         element_flow = self._claim_by_id(
             claims, "bazi.element-flow-inventory-v1"
@@ -188,6 +270,48 @@ class BaziPublicClaimUnitTests(unittest.TestCase):
             },
         )
         self._assert_exact_claim_shape(result, claims)
+
+    def test_structural_claim_units_require_public_chart_fact_refs(
+        self,
+    ) -> None:
+        result = self._prepare(["乙酉", "辛巳", "丙午", "癸巳"])
+        subject_ref = "subject:test"
+        four_pillars_ref = (
+            f"fact:{subject_ref}/calculated/bazi/four_pillars"
+        )
+        hidden_stems_ref = (
+            f"fact:{subject_ref}/calculated/bazi/hidden_stems"
+        )
+
+        missing_pillars = self._structural_claim_units(
+            result,
+            (hidden_stems_ref,)
+        )
+        self.assertEqual(missing_pillars, ())
+
+        missing_hidden_stems = self._structural_claim_units(
+            result,
+            (four_pillars_ref,)
+        )
+        self.assertEqual(
+            tuple(
+                unit["data"]["claim_unit_id"]
+                for unit in missing_hidden_stems
+            ),
+            ("bazi.pillar-roles-v1",),
+        )
+
+        complete = self._structural_claim_units(
+            result,
+            (four_pillars_ref, hidden_stems_ref)
+        )
+        self.assertEqual(
+            tuple(unit["data"]["claim_unit_id"] for unit in complete),
+            (
+                "bazi.pillar-roles-v1",
+                "bazi.three-yuan-structure-v1",
+            ),
+        )
 
 
 if __name__ == "__main__":
