@@ -11,6 +11,8 @@ import subprocess
 import sys
 import tempfile
 import venv
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 from runtime_python import (
@@ -18,9 +20,9 @@ from runtime_python import (
     probe_runtime_identity,
     runtime_lock,
     runtime_site_roots,
+    validate_runtime_requirements_lock,
     write_installed_runtime_manifest,
 )
-
 
 DEFAULT_VENV = Path("~/.local/share/mingli-master/venv").expanduser()
 DEFAULT_REQUIREMENTS = Path(__file__).resolve().parents[1] / "requirements-runtime.lock"
@@ -31,6 +33,73 @@ DEFAULT_BUILD_REQUIREMENTS = (
 
 def runtime_python(venv_root: Path) -> Path:
     return venv_root / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+
+
+def runtime_install_environment() -> dict[str, str]:
+    environment = os.environ.copy()
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    environment.pop("PYTHONPYCACHEPREFIX", None)
+    return environment
+
+
+def run_pip(executable: Path, *arguments: str) -> None:
+    subprocess.run(
+        [str(executable), "-B", "-m", "pip", *arguments],
+        check=True,
+        env=runtime_install_environment(),
+    )
+
+
+@contextmanager
+def _validated_runtime_requirements_snapshot(
+    requirements: Path,
+    *,
+    directory: Path,
+) -> Iterator[Path]:
+    """Pin exact requirements bytes privately and validate the pinned snapshot."""
+    try:
+        requirements_bytes = requirements.read_bytes()
+    except OSError as exc:
+        raise RuntimeError("runtime requirements lock is unavailable") from exc
+
+    with tempfile.TemporaryDirectory(
+        prefix=".runtime-requirements-", dir=directory
+    ) as temporary:
+        snapshot_directory = Path(temporary)
+        snapshot = snapshot_directory / "requirements-runtime.lock"
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        flags |= getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+        descriptor = os.open(snapshot, flags, 0o600)
+        try:
+            with os.fdopen(descriptor, "wb") as handle:
+                descriptor = -1
+                handle.write(requirements_bytes)
+                handle.flush()
+                os.fsync(handle.fileno())
+                os.fchmod(handle.fileno(), 0o400)
+        finally:
+            if descriptor >= 0:
+                os.close(descriptor)
+
+        snapshot_directory.chmod(0o500)
+        try:
+            validate_runtime_requirements_lock(snapshot)
+            yield snapshot
+        finally:
+            snapshot_directory.chmod(0o700)
+
+
+def remove_runtime_bytecode(site_roots: list[Path]) -> None:
+    for site_root in site_roots:
+        for cache in site_root.rglob("__pycache__"):
+            if cache.is_symlink():
+                raise RuntimeError("runtime bytecode cache is a symlink")
+            if cache.is_dir():
+                shutil.rmtree(cache)
+        for bytecode in (*site_root.rglob("*.pyc"), *site_root.rglob("*.pyo")):
+            if bytecode.is_symlink() or not bytecode.is_file():
+                raise RuntimeError("runtime bytecode path is unsafe")
+            bytecode.unlink()
 
 
 def assert_provision_interpreter_compatible(venv_root: Path) -> None:
@@ -79,70 +148,56 @@ def provision(
             assert_provision_interpreter_compatible(venv_root)
         venv_root.parent.mkdir(parents=True, exist_ok=True)
         assert_runtime_path_not_symlink(venv_root)
-        with runtime_lock(venv_root, exclusive=True):
+    else:
+        executable = runtime_python(venv_root)
+        if not executable.is_file():
+            raise RuntimeError(f"runtime does not exist: {executable}")
+    if install:
+        with (
+            _validated_runtime_requirements_snapshot(
+                requirements, directory=venv_root.parent
+            ) as requirements_snapshot,
+            runtime_lock(venv_root, exclusive=True),
+        ):
             with tempfile.TemporaryDirectory(
                 prefix=f".{venv_root.name}.stage-", dir=venv_root.parent
             ) as temporary:
                 staged = Path(temporary) / "runtime"
                 venv.EnvBuilder(with_pip=True, clear=False, symlinks=False).create(staged)
                 staged_executable = runtime_python(staged)
-                subprocess.run(
-                    [
-                        str(staged_executable),
-                        "-m",
-                        "pip",
-                        "install",
-                        "--require-hashes",
-                        "--no-compile",
-                        "--only-binary",
-                        ":all:",
-                        "--requirement",
-                        str(DEFAULT_BUILD_REQUIREMENTS),
-                    ],
-                    check=True,
+                run_pip(
+                    staged_executable,
+                    "install",
+                    "--require-hashes",
+                    "--no-compile",
+                    "--only-binary",
+                    ":all:",
+                    "--requirement",
+                    str(DEFAULT_BUILD_REQUIREMENTS),
                 )
-                subprocess.run(
-                    [
-                        str(staged_executable),
-                        "-m",
-                        "pip",
-                        "install",
-                        "--require-hashes",
-                        "--no-compile",
-                        "--no-build-isolation",
-                        "--only-binary",
-                        "PyYAML",
-                        "--no-binary",
-                        "sxtwl",
-                        "--requirement",
-                        str(requirements),
-                    ],
-                    check=True,
+                run_pip(
+                    staged_executable,
+                    "install",
+                    "--require-hashes",
+                    "--no-compile",
+                    "--no-build-isolation",
+                    "--only-binary",
+                    "PyYAML",
+                    "--no-binary",
+                    "sxtwl",
+                    "--requirement",
+                    str(requirements_snapshot),
                 )
-                subprocess.run(
-                    [
-                        str(staged_executable),
-                        "-m",
-                        "pip",
-                        "uninstall",
-                        "--yes",
-                        "pip",
-                        "setuptools",
-                        "wheel",
-                        "packaging",
-                    ],
-                    check=True,
+                run_pip(
+                    staged_executable,
+                    "uninstall",
+                    "--yes",
+                    "pip",
+                    "setuptools",
+                    "wheel",
+                    "packaging",
                 )
-                for site_root in runtime_site_roots(staged_executable):
-                    for cache in site_root.rglob("__pycache__"):
-                        if cache.is_symlink():
-                            raise RuntimeError("runtime bytecode cache is a symlink")
-                        if cache.is_dir():
-                            shutil.rmtree(cache)
-                    for bytecode in (*site_root.rglob("*.pyc"), *site_root.rglob("*.pyo")):
-                        if bytecode.is_symlink() or not bytecode.is_file():
-                            raise RuntimeError("runtime bytecode path is unsafe")
-                        bytecode.unlink()
+                remove_runtime_bytecode(runtime_site_roots(staged_executable))
                 write_installed_runtime_manifest(staged_executable)
                 probe_runtime_identity(str(staged_executable))
                 backup = venv_root.parent / f".{venv_root.name}.backup-{os.getpid()}"
@@ -162,9 +217,8 @@ def provision(
                     shutil.rmtree(backup)
         identity = probe_runtime_identity(str(runtime_python(venv_root)))
         return {"runtime_python": str(runtime_python(venv_root)), **identity}
+    validate_runtime_requirements_lock(requirements)
     executable = runtime_python(venv_root)
-    if not executable.is_file():
-        raise RuntimeError(f"runtime does not exist: {executable}")
     identity = probe_runtime_identity(str(executable))
     return {"runtime_python": str(executable), **identity}
 
