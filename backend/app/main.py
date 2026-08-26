@@ -151,7 +151,9 @@ def create_app(
             title=error.title,
             problem_type=error.problem_type,
             detail=error.detail,
+            code=error.code,
             headers=error.headers,
+            extensions=error.extensions,
         )
         if error.clear_device_cookies:
             clear_device_cookies(response, settings=request.app.state.settings)

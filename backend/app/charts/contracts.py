@@ -18,6 +18,13 @@ class ContractModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
+class PublicKeyLabel(ContractModel):
+    """Chinese label for one internal ViewModel key that must not be shown raw."""
+
+    key: str = Field(min_length=1, max_length=80)
+    label: str = Field(min_length=1, max_length=80)
+
+
 class TimeLayer(ContractModel):
     layer_id: str = Field(min_length=1)
     label: str = Field(min_length=1)
@@ -1570,6 +1577,7 @@ class MeihuaChartV1(ContractModel):
     moving_lines: tuple[int, ...] = Field(min_length=0, max_length=6)
     body_use: MeihuaBodyUse
     core_facts: MeihuaCoreFacts | None = None
+    public_labels: tuple[PublicKeyLabel, ...] = ()
 
 
 class LumingNayinPillar(ContractModel):
@@ -2711,6 +2719,7 @@ class DaliurenChartV1(ContractModel):
     lessons: tuple[DaliurenLesson, ...] = Field(min_length=4, max_length=4)
     transmissions: tuple[DaliurenTransmission, ...] = Field(min_length=3, max_length=3)
     core_facts: DaliurenCoreFacts | None = None
+    public_labels: tuple[PublicKeyLabel, ...] = ()
 
     @model_validator(mode="after")
     def _incomplete_four_lessons_require_three_distinct_uppers(

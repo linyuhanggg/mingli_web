@@ -102,7 +102,7 @@
     "hexagram": {"type": "object", "additionalProperties": false, "required": ["name", "upper_trigram", "lower_trigram"], "properties": {"name": {"$ref": "#/$defs/text"}, "upper_trigram": {"$ref": "#/$defs/text"}, "lower_trigram": {"$ref": "#/$defs/text"}}},
     "meihuaTrigram": {"type": "object", "additionalProperties": false, "required": ["position", "trigram", "element"], "properties": {"position": {"enum": ["upper", "lower"]}, "trigram": {"$ref": "#/$defs/text"}, "element": {"$ref": "#/$defs/text"}}},
     "meihuaBodyUse": {"type": "object", "additionalProperties": false, "required": ["body", "use", "relation", "status"], "properties": {"body": {"$ref": "#/$defs/meihuaTrigram"}, "use": {"$ref": "#/$defs/meihuaTrigram"}, "relation": {"$ref": "#/$defs/text"}, "status": {"$ref": "#/$defs/text"}}},
-    "meihuaChart": {"type": "object", "additionalProperties": false, "required": ["schema_version", "subject_ref", "question", "casting_method", "primary_hexagram", "mutual_hexagram", "changed_hexagram", "moving_lines", "body_use"], "properties": {"schema_version": {"const": "meihua-chart/v1"}, "subject_ref": {"$ref": "#/$defs/text"}, "question": {"$ref": "#/$defs/text"}, "casting_method": {"enum": ["time", "supplied_number", "sound_count", "observation", "supplied_hexagram"]}, "primary_hexagram": {"$ref": "#/$defs/hexagram"}, "mutual_hexagram": {"oneOf": [{"$ref": "#/$defs/hexagram"}, {"type": "null"}]}, "changed_hexagram": {"oneOf": [{"$ref": "#/$defs/hexagram"}, {"type": "null"}]}, "moving_lines": {"type": "array", "minItems": 0, "maxItems": 6, "items": {"type": "integer"}}, "body_use": {"$ref": "#/$defs/meihuaBodyUse"}, "core_facts": {"oneOf": [{"type": "object"}, {"type": "null"}]}}},
+    "meihuaChart": {"type": "object", "additionalProperties": false, "required": ["schema_version", "subject_ref", "question", "casting_method", "primary_hexagram", "mutual_hexagram", "changed_hexagram", "moving_lines", "body_use"], "properties": {"schema_version": {"const": "meihua-chart/v1"}, "subject_ref": {"$ref": "#/$defs/text"}, "question": {"$ref": "#/$defs/text"}, "casting_method": {"enum": ["time", "supplied_number", "sound_count", "observation", "supplied_hexagram"]}, "primary_hexagram": {"$ref": "#/$defs/hexagram"}, "mutual_hexagram": {"oneOf": [{"$ref": "#/$defs/hexagram"}, {"type": "null"}]}, "changed_hexagram": {"oneOf": [{"$ref": "#/$defs/hexagram"}, {"type": "null"}]}, "moving_lines": {"type": "array", "minItems": 0, "maxItems": 6, "items": {"type": "integer"}}, "body_use": {"$ref": "#/$defs/meihuaBodyUse"}, "core_facts": {"oneOf": [{"type": "object"}, {"type": "null"}]}, "public_labels": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["key", "label"], "properties": {"key": {"type": "string", "minLength": 1}, "label": {"type": "string", "minLength": 1}}}}}},
     "lumingNayinPillar": {"type": "object", "additionalProperties": false, "required": ["position", "stem", "branch", "nayin"], "properties": {"position": {"enum": ["year", "month", "day", "hour"]}, "stem": {"$ref": "#/$defs/text"}, "branch": {"$ref": "#/$defs/text"}, "nayin": {"$ref": "#/$defs/text"}}},
     "lumingNayinRelation": {"type": "object", "additionalProperties": false, "required": ["category", "relation", "anchor", "anchor_pillar", "status", "target_branch", "candidates", "matched_positions", "recension"], "properties": {"category": {"enum": ["lu", "ma", "gui"]}, "relation": {"$ref": "#/$defs/text"}, "anchor": {"$ref": "#/$defs/text"}, "anchor_pillar": {"$ref": "#/$defs/text"}, "status": {"$ref": "#/$defs/text"}, "target_branch": {"type": ["string", "null"], "minLength": 1}, "candidates": {"type": "array", "items": {"type": "string"}}, "matched_positions": {"type": "array", "items": {"type": "string"}}, "recension": {"type": ["string", "null"], "minLength": 1}}},
     "lumingNayinChart": {"type": "object", "additionalProperties": false, "required": ["schema_version", "subject_ref", "pillars", "three_yuan_profiles", "taiyuan", "relations"], "properties": {"schema_version": {"const": "luming-nayin-chart/v1"}, "subject_ref": {"$ref": "#/$defs/text"}, "pillars": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"$ref": "#/$defs/lumingNayinPillar"}}, "three_yuan_profiles": {"type": "object"}, "taiyuan": {"oneOf": [{"type": "object"}, {"type": "null"}]}, "relations": {"type": "array", "items": {"$ref": "#/$defs/lumingNayinRelation"}}}},
@@ -184,6 +184,18 @@
                 "type": "string",
                 "minLength": 1
               }
+            }
+          }
+        },
+        "public_labels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "label"],
+            "properties": {
+              "key": {"type": "string", "minLength": 1, "maxLength": 80},
+              "label": {"type": "string", "minLength": 1, "maxLength": 80}
             }
           }
         },

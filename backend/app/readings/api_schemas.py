@@ -586,6 +586,9 @@ class ReadingVersionSummary(BaseModel):
     # internal ReadingStatus state machine.  Free previews do not have a
     # fulfillment gate; paid products expose only this bounded projection.
     delivery_state: DeliveryState = "not_required"
+    result_available: bool = False
+    poll_required: bool = True
+    poll_after_seconds: int | None = Field(default=None, ge=0)
 
 
 class ChartFastPathTiming(BaseModel):
@@ -711,6 +714,9 @@ class ReadingResultResponse(BaseModel):
     verification: ReadingVerificationSummary | None
     input_request: JsonObject | None
     document: ReadingDocumentV1 | None
+    result_available: bool = False
+    poll_required: bool = True
+    poll_after_seconds: int | None = Field(default=None, ge=0)
 
 
 class ClaimVerificationSummary(BaseModel):

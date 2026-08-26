@@ -131,16 +131,27 @@ def _check_dogfood_daily_limits(
     if not settings.dogfood_entitlement_gates_enabled:
         return
     owner_key = f"{owner.kind}:{owner.id}"
+    limit_scope = "guest_session" if owner.kind == "guest" else "user_account"
     check_rate_limiter(
         limiter=request.app.state.dogfood_daily_reading_limiter,
         key=owner_key,
         title="Daily reading limit reached",
+        code="guest_daily_reading_limit"
+        if owner.kind == "guest"
+        else "user_daily_reading_limit",
+        owner_kind=owner.kind,
+        limit_scope=limit_scope,
     )
     if paid:
         check_rate_limiter(
             limiter=request.app.state.dogfood_daily_paid_reading_limiter,
             key=owner_key,
             title="Daily paid reading limit reached",
+            code="guest_daily_paid_reading_limit"
+            if owner.kind == "guest"
+            else "user_daily_paid_reading_limit",
+            owner_kind=owner.kind,
+            limit_scope=limit_scope,
         )
 
 
@@ -204,12 +215,20 @@ def _reading_problem(error: ReadingServiceError) -> ApiProblem:
         return ApiProblem(status=503, title="Runtime release unavailable")
     if isinstance(error, ChartFastPathUnavailableError):
         return ApiProblem(
-            status=503,
+            status=400 if error.code == "chart_runtime_need_input" else 503,
             title="Chart generation unavailable",
+            problem_type=f"urn:mingli:problem:{error.code}",
             detail=error.detail,
+            code=error.code,
         )
     if isinstance(error, PaidReadingNotGrantedError):
-        return ApiProblem(status=403, title=error.title, detail=error.detail)
+        return ApiProblem(
+            status=403,
+            title=error.title,
+            problem_type=f"urn:mingli:problem:{error.code}",
+            detail=error.detail,
+            code=error.code,
+        )
     return ApiProblem(status=400, title="Invalid request")
 
 
@@ -610,7 +629,7 @@ async def start_liuyao_reading(
     ),
 ) -> ReadingStartResponse:
     _check_rate(owner, request)
-    _check_dogfood_daily_limits(owner, request, paid=True)
+    _check_dogfood_daily_limits(owner, request, paid=False)
     cast_value = tuple(payload.cast) if isinstance(payload.cast, list) else payload.cast
     try:
         result = await _service(request, session).start_liuyao(
@@ -1577,8 +1596,10 @@ async def create_reading_recast(
     _check_dogfood_daily_limits(
         owner,
         request,
-        paid=not isinstance(payload, RecastProfileRequest)
-        or payload.action in {"today", "week"},
+        paid=(
+            isinstance(payload, RecastProfileRequest)
+            and payload.action in {"today", "week"}
+        ),
     )
     try:
         service = _service(request, session)

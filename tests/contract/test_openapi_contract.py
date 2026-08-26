@@ -300,7 +300,13 @@ def test_base_chart_starts_publish_the_deterministic_fast_path_contract() -> Non
     start_properties = schemas["ReadingStartResponse"]["properties"]
     timing = schemas["ChartFastPathTiming"]
 
-    assert {"view_model", "fast_path_timing"}.issubset(start_properties)
+    assert {
+        "view_model",
+        "fast_path_timing",
+        "result_available",
+        "poll_required",
+        "poll_after_seconds",
+    }.issubset(start_properties)
     assert timing["properties"]["execution_lane"]["const"] == "direct_runtime"
     assert set(timing["required"]) == {
         "queue_wait_ms",

@@ -94,6 +94,15 @@ _PAID_PRODUCT_IDS = frozenset({"bazi-deep", "qimen-deep", "liuyao-deep"})
 _DIRECT_CHART_PRODUCT_IDS = frozenset(
     {"bazi", "ziwei", "liuyao", "meihua", "daliuren", "liuren"}
 )
+_POLL_STOP_STATUSES = frozenset(
+    {
+        ReadingStatus.PREPARED,
+        ReadingStatus.ACCEPTED,
+        ReadingStatus.TERMINAL_STOPPED,
+        ReadingStatus.RUNTIME_UNKNOWN,
+        ReadingStatus.WAITING_INPUT,
+    }
+)
 _logger = logging.getLogger("mingli.chart_fast_path")
 DEFAULT_QUERIES = {
     "profile_preview": "请预览我的本命格局。",
@@ -165,9 +174,10 @@ class RuntimeReleaseUnavailableError(ReadingServiceError):
 class ChartFastPathUnavailableError(ReadingServiceError):
     """The deterministic chart Runtime did not finish within its short budget."""
 
-    def __init__(self, detail: str) -> None:
+    def __init__(self, detail: str, *, code: str | None = None) -> None:
         super().__init__(detail)
         self.detail = detail
+        self.code = code or detail
 
 
 class InvalidReadingInputError(ReadingServiceError):
@@ -185,10 +195,17 @@ class IdempotencyConflictError(ReadingServiceError):
 class PaidReadingNotGrantedError(ReadingServiceError):
     """Dogfood paid capability is closed for this owner."""
 
-    def __init__(self, title: str, *, detail: str | None = None) -> None:
+    def __init__(
+        self,
+        title: str,
+        *,
+        detail: str | None = None,
+        code: str = "paid_reading_not_granted",
+    ) -> None:
         super().__init__(title)
         self.title = title
         self.detail = detail
+        self.code = code
 
 
 class ReadingFulfillmentUnavailableError(ReadingServiceError):
@@ -264,7 +281,11 @@ class ReadingService:
         try:
             await self.entitlements.require_paid_action(owner, action=action)
         except EntitlementDeniedError as error:
-            raise PaidReadingNotGrantedError(error.title, detail=error.detail) from error
+            raise PaidReadingNotGrantedError(
+                error.title,
+                detail=error.detail,
+                code=error.code or "paid_reading_not_granted",
+            ) from error
 
     async def start_preview(
         self,
@@ -365,6 +386,7 @@ class ReadingService:
             raise PaidReadingNotGrantedError(
                 "Paid reading not granted",
                 detail="Paid deep reads cannot be created for a guest owner.",
+                code="paid_reading_requires_account",
             )
         await self._require_paid_action(owner, action="bazi_deep")
         resolved_query = query or DEFAULT_QUERIES["bazi_deep"]
@@ -1367,7 +1389,6 @@ class ReadingService:
         replayed = await self._replay_idempotency(owner, idempotency)
         if replayed is not None:
             return replayed, False
-        await self._require_paid_action(owner, action="liuyao_one_question")
         resolved_subject_ref = subject_ref or f"liuyao:{uuid4().hex}"
         prepare = compile_liuyao_prepare(
             action="liuyao_one_question",
@@ -1955,7 +1976,6 @@ class ReadingService:
         if replayed is not None:
             return replayed, False
         await self._require_accepted_source(owner, source_version_id)
-        await self._require_paid_action(owner, action="liuyao_one_question")
         prepare = compile_liuyao_prepare(
             action="liuyao_one_question",
             query=resolved_query,
@@ -2127,20 +2147,26 @@ class ReadingService:
             release_root=self.settings.runtime_release_root,
             release_profile=self.settings.runtime_release_profile,
         )
+        view_model = (
+            None
+            if brief is None
+            else project_runtime_view_model(
+                brief.to_dict(),
+                product_id=version.product_id or root.product_id,
+                relationship_type=version.relationship_type,
+            )
+        )
+        status = ReadingStatus(version.status)
+        result_available, poll_required, poll_after_seconds = self._poll_fields(
+            status,
+            view_model,
+        )
         return ReadingResultResponse(
             reading_version_id=version.id,
-            status=ReadingStatus(version.status),
+            status=status,
             accepted_copy=accepted_copy,
             fact_panel=project_public_fact_panel(brief),
-            view_model=(
-                None
-                if brief is None
-                else project_runtime_view_model(
-                    brief.to_dict(),
-                    product_id=version.product_id or root.product_id,
-                    relationship_type=version.relationship_type,
-                )
-            ),
+            view_model=view_model,
             capability=CapabilityProjection(
                 capability_id=capability_projection.capability_id,
                 label=capability_projection.label,
@@ -2160,6 +2186,9 @@ class ReadingService:
                 None if waiting is None else _public_json(waiting.input_request)
             ),
             document=document,
+            result_available=result_available,
+            poll_required=poll_required,
+            poll_after_seconds=poll_after_seconds,
         )
 
     async def submit_verification(
@@ -2430,20 +2459,38 @@ class ReadingService:
         """Prepare one deterministic base chart without exposing it to the Worker."""
 
         if self.chart_runtime is None:
-            raise ChartFastPathUnavailableError("chart_runtime_not_configured")
+            raise ChartFastPathUnavailableError(
+                "chart_runtime_not_configured",
+                code="chart_runtime_not_configured",
+            )
         prepare = await self.repository.load_prepare(version.id)
         runtime_started_at = perf_counter()
         try:
             async with asyncio.timeout(self.settings.chart_fast_path_timeout_seconds):
                 result = await self.chart_runtime.execute(prepare)
         except TimeoutError as error:
-            raise ChartFastPathUnavailableError("chart_runtime_timeout") from error
+            raise ChartFastPathUnavailableError(
+                "chart_runtime_timeout",
+                code="chart_runtime_timeout",
+            ) from error
         except RuntimeTransportError as error:
             raise ChartFastPathUnavailableError(
-                f"chart_runtime_transport:{error}"
+                f"chart_runtime_transport:{error}",
+                code="chart_runtime_transport",
             ) from error
         except Exception as error:
-            raise ChartFastPathUnavailableError("chart_runtime_error") from error
+            _logger.exception(
+                "chart_runtime_error",
+                extra={
+                    "reading_version_id": str(version.id),
+                    "capability_id": version.capability_id,
+                    "error_type": type(error).__name__,
+                },
+            )
+            raise ChartFastPathUnavailableError(
+                "chart_runtime_error",
+                code="chart_runtime_error",
+            ) from error
         runtime_ms = (perf_counter() - runtime_started_at) * 1000
 
         persistence_started_at = perf_counter()
@@ -2455,16 +2502,26 @@ class ReadingService:
                 relationship_type=version.relationship_type,
             )
             if view_model is None and getattr(self.chart_runtime, "adapter_kind", None) != "fake":
-                raise ChartFastPathUnavailableError("chart_view_model_projection_failed")
+                raise ChartFastPathUnavailableError(
+                    "chart_view_model_projection_failed",
+                    code="chart_view_model_projection_failed",
+                )
             await self.repository.record_prepared(str(job.id), result, now)
             job.status = "complete"
             await self.session.flush()
         elif isinstance(result, Stopped) and result.reason == "need_input":
             await self.repository.record_waiting_input(str(job.id), result, now)
         elif isinstance(result, Stopped):
-            raise ChartFastPathUnavailableError(f"chart_runtime_{result.reason}")
+            code = f"chart_runtime_{result.reason}"
+            raise ChartFastPathUnavailableError(
+                result.public_copy or code,
+                code=code,
+            )
         else:
-            raise ChartFastPathUnavailableError("chart_runtime_protocol_error")
+            raise ChartFastPathUnavailableError(
+                "chart_runtime_protocol_error",
+                code="chart_runtime_protocol_error",
+            )
         return runtime_ms, (perf_counter() - persistence_started_at) * 1000
 
     async def _create_version_and_job(
@@ -2649,6 +2706,18 @@ class ReadingService:
         except LookupError as error:
             raise ReadingNotFoundError("Reading Version not found") from error
 
+    @staticmethod
+    def _poll_fields(
+        status: ReadingStatus,
+        view_model: object,
+    ) -> tuple[bool, bool, int | None]:
+        result_available = view_model is not None and status in {
+            ReadingStatus.PREPARED,
+            ReadingStatus.ACCEPTED,
+        }
+        poll_required = not (result_available or status in _POLL_STOP_STATUSES)
+        return result_available, poll_required, 4 if poll_required else None
+
     async def _summary(
         self,
         root: Any,
@@ -2656,6 +2725,20 @@ class ReadingService:
     ) -> ReadingStartResponse:
         waiting = await self.repository.load_waiting_input(version.id)
         brief = await self.repository.load_fact_brief(version.id)
+        view_model = (
+            None
+            if brief is None
+            else project_runtime_view_model(
+                brief.to_dict(),
+                product_id=version.product_id or root.product_id,
+                relationship_type=version.relationship_type,
+            )
+        )
+        status = ReadingStatus(version.status)
+        result_available, poll_required, poll_after_seconds = self._poll_fields(
+            status,
+            view_model,
+        )
         return ReadingStartResponse(
             reading_version_id=version.id,
             reading_root_id=root.id,
@@ -2668,7 +2751,7 @@ class ReadingService:
                 else [version.capability_id]
             ),
             version=version.version,
-            status=ReadingStatus(version.status),
+            status=status,
             object_id=version.object_id,
             dimension_ids=list(version.dimension_ids),
             horizon=Horizon.model_validate(version.horizon),
@@ -2676,17 +2759,12 @@ class ReadingService:
             input_request=(
                 None if waiting is None else _public_json(waiting.input_request)
             ),
-            view_model=(
-                None
-                if brief is None
-                else project_runtime_view_model(
-                    brief.to_dict(),
-                    product_id=version.product_id or root.product_id,
-                    relationship_type=version.relationship_type,
-                )
-            ),
+            view_model=view_model,
             created_at=version.created_at,
             delivery_state=await self._delivery_state(root, version),
+            result_available=result_available,
+            poll_required=poll_required,
+            poll_after_seconds=poll_after_seconds,
         )
 
     async def _delivery_state(self, root: Any, version: Any) -> DeliveryState:

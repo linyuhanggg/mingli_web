@@ -165,6 +165,7 @@ from app.charts.contracts import (
     daliuren_in_range_structural_indices,
     daliuren_source_pattern_structural_index,
 )
+from app.charts.public_labels import DALIUREN_PUBLIC_LABELS, MEIHUA_PUBLIC_LABELS, public_key_labels
 from app.charts.relationship_engine import (
     project_bazi_relationship_view_model,
     project_qizheng_relationship_view_model,
@@ -3847,6 +3848,7 @@ def project_meihua_view_model(
         moving_lines=parsed_lines,
         body_use=parsed_body_use,
         core_facts=_meihua_core_facts(facts),
+        public_labels=public_key_labels(MEIHUA_PUBLIC_LABELS),
     )
 
 
@@ -5711,6 +5713,7 @@ def project_daliuren_view_model(
         lessons=lessons,
         transmissions=transmissions,
         core_facts=_daliuren_core_facts_from_runtime(runtime_core),
+        public_labels=public_key_labels(DALIUREN_PUBLIC_LABELS),
     )
 
 

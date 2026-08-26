@@ -3265,10 +3265,9 @@ components:
     ProfileDraftRequest:
       type: object
       additionalProperties: false
-      required: [label]
       properties:
         label:
-          type: string
+          type: [string, "null"]
           minLength: 1
           maxLength: 80
           pattern: ".*\\S.*"
@@ -3342,6 +3341,10 @@ components:
         minor_guardian_confirmed:
           type: boolean
           default: false
+        on_name_conflict:
+          type: string
+          enum: [reject, save_as, overwrite]
+          default: reject
     ProfileVersionRequest:
       type: object
       additionalProperties: false
@@ -4470,6 +4473,13 @@ components:
         created_at:
           type: string
           format: date-time
+        result_available:
+          type: boolean
+        poll_required:
+          type: boolean
+        poll_after_seconds:
+          type: [integer, "null"]
+          minimum: 0
         view_model:
           oneOf:
             - type: object
@@ -5097,6 +5107,13 @@ components:
             - $ref: "#/components/schemas/ReadingDocumentV1"
             - type: "null"
           additionalProperties: true
+        result_available:
+          type: boolean
+        poll_required:
+          type: boolean
+        poll_after_seconds:
+          type: [integer, "null"]
+          minimum: 0
     Problem:
       type: object
       additionalProperties: false
@@ -5113,6 +5130,33 @@ components:
           type: string
         request_id:
           type: string
+        code:
+          type: string
+        owner_kind:
+          type: string
+          enum: [guest, user]
+        limit_scope:
+          type: string
+          enum: [guest_session, user_account]
+        limit:
+          type: integer
+          minimum: 1
+        remaining:
+          type: integer
+          minimum: 0
+        existing_profile_id:
+          type: string
+          format: uuid
+        existing_profile_version_id:
+          type: string
+          format: uuid
+        suggested_save_as_name:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+            enum: [overwrite, save_as, cancel]
   responses:
     BadRequest:
       description: Invalid or expired request

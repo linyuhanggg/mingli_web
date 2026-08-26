@@ -26,6 +26,18 @@
         }
       }
     },
+    "public_labels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "label"],
+        "properties": {
+          "key": {"type": "string", "minLength": 1, "maxLength": 80},
+          "label": {"type": "string", "minLength": 1, "maxLength": 80}
+        }
+      }
+    },
     "transmissions": {
       "type": "array",
       "minItems": 3,

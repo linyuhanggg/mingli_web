@@ -2383,6 +2383,9 @@ async def test_list_readings_orders_newest_first_caps_at_50_and_stays_private(
         "input_request",
         "created_at",
         "delivery_state",
+        "result_available",
+        "poll_required",
+        "poll_after_seconds",
     }
     assert item["reading_root_id"]
     assert item["profile_version_id"] is None

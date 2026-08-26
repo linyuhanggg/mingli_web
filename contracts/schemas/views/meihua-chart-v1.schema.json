@@ -15,9 +15,22 @@
     "changed_hexagram": {"oneOf": [{"$ref": "#/$defs/hexagram"}, {"type": "null"}]},
     "moving_lines": {"type": "array", "minItems": 0, "maxItems": 6, "items": {"type": "integer"}},
     "body_use": {"$ref": "#/$defs/bodyUse"},
-    "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]}
+    "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]},
+    "public_labels": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/publicKeyLabel"}
+    }
   },
   "$defs": {
+    "publicKeyLabel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "label"],
+      "properties": {
+        "key": {"type": "string", "minLength": 1, "maxLength": 80},
+        "label": {"type": "string", "minLength": 1, "maxLength": 80}
+      }
+    },
     "hexagram": {
       "type": "object",
       "additionalProperties": false,
