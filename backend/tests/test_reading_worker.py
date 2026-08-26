@@ -391,7 +391,26 @@ async def test_worker_expires_stale_waiting_input_and_releases_fulfillment(
         assert persisted_fulfillment is not None
         assert persisted_version.status == "terminal_stopped"
         assert persisted_job.status == "stopped"
+        assert persisted_version.runtime_failure_schema_version is None
+        assert persisted_version.runtime_failure_code is None
+        assert persisted_version.runtime_failure_category is None
+        assert persisted_version.runtime_failure_retryable is None
         assert persisted_fulfillment.status == "released"
+        envelope = importlib.import_module("app.security.envelope")
+        payload = make_test_cipher().decrypt_json(
+            envelope.EncryptedPayload(
+                key_id=persisted_version.last_result_key_id or "",
+                nonce=persisted_version.last_result_nonce or "",
+                ciphertext=persisted_version.last_result_ciphertext or "",
+                fingerprint=persisted_version.last_result_digest or "",
+            ),
+            context=f"reading-version:{persisted_version.id}:last-result",
+        )
+        assert payload == {
+            "kind": "host_lifecycle",
+            "reason": "input_wait_expired",
+            "public_copy": "补充资料超过 7 天，任务已取消。",
+        }
         release_events = list(
             await session.scalars(
                 select(commerce_models.EntitlementEventRecord).where(
