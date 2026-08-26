@@ -221,6 +221,91 @@ class Accepted:
 
 
 type StoppedReason = Literal["need_input", "unsupported", "conflict", "error"]
+type RuntimeFailureCategory = Literal[
+    "bootstrap", "input_contract", "runtime_internal", "transient"
+]
+type RuntimeFailureCode = Literal[
+    "bootstrap.unexpected_arguments",
+    "bootstrap.guard_load_failed",
+    "bootstrap.runtime_lock_failed",
+    "bootstrap.runtime_identity_invalid",
+    "bootstrap.state_root_invalid",
+    "input_contract.malformed_json",
+    "input_contract.invalid_command",
+    "input_contract.invalid_payload",
+    "input_contract.invalid_state_token",
+    "runtime.internal_error",
+    "transient.timeout",
+    "transient.resource_unavailable",
+]
+
+RUNTIME_FAILURE_SCHEMA_VERSION: Literal["mingli-runtime-failure/v1"] = (
+    "mingli-runtime-failure/v1"
+)
+_RUNTIME_FAILURE_METADATA: Mapping[
+    RuntimeFailureCode, tuple[RuntimeFailureCategory, bool]
+] = MappingProxyType(
+    {
+        "bootstrap.unexpected_arguments": ("bootstrap", False),
+        "bootstrap.guard_load_failed": ("bootstrap", False),
+        "bootstrap.runtime_lock_failed": ("bootstrap", False),
+        "bootstrap.runtime_identity_invalid": ("bootstrap", False),
+        "bootstrap.state_root_invalid": ("bootstrap", False),
+        "input_contract.malformed_json": ("input_contract", False),
+        "input_contract.invalid_command": ("input_contract", False),
+        "input_contract.invalid_payload": ("input_contract", False),
+        "input_contract.invalid_state_token": ("input_contract", False),
+        "runtime.internal_error": ("runtime_internal", False),
+        "transient.timeout": ("transient", True),
+        "transient.resource_unavailable": ("transient", True),
+    }
+)
+
+
+@dataclass(frozen=True, slots=True)
+class RuntimeFailure:
+    """Closed, non-PII Runtime failure classification for host audit only."""
+
+    code: RuntimeFailureCode
+    category: RuntimeFailureCategory
+    retryable: bool
+    schema_version: Literal["mingli-runtime-failure/v1"] = RUNTIME_FAILURE_SCHEMA_VERSION
+
+    def __post_init__(self) -> None:
+        expected = _RUNTIME_FAILURE_METADATA.get(self.code)
+        if (
+            self.schema_version != RUNTIME_FAILURE_SCHEMA_VERSION
+            or expected is None
+            or expected != (self.category, self.retryable)
+        ):
+            raise ValueError("runtime failure must match the closed v1 code table")
+
+    @classmethod
+    def internal_error(cls) -> RuntimeFailure:
+        return cls(
+            code="runtime.internal_error",
+            category="runtime_internal",
+            retryable=False,
+        )
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, object]) -> RuntimeFailure:
+        return cls(
+            schema_version=cast(
+                Literal["mingli-runtime-failure/v1"], payload["schema_version"]
+            ),
+            code=cast(RuntimeFailureCode, payload["code"]),
+            category=cast(RuntimeFailureCategory, payload["category"]),
+            retryable=cast(bool, payload["retryable"]),
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": self.schema_version,
+            "code": self.code,
+            "category": self.category,
+            "retryable": self.retryable,
+        }
 
 
 @dataclass(frozen=True, slots=True)
@@ -229,6 +314,7 @@ class Stopped:
     public_copy: str
     state_token: str | None = None
     input_request: Mapping[str, object] | None = None
+    failure: RuntimeFailure | None = None
     kind: Literal["stopped"] = "stopped"
 
     def __post_init__(self) -> None:
@@ -238,6 +324,11 @@ class Stopped:
                 "input_request",
                 _freeze_object(self.input_request),
             )
+        if self.reason == "error":
+            if self.failure is None:
+                object.__setattr__(self, "failure", RuntimeFailure.internal_error())
+        elif self.failure is not None:
+            raise ValueError("only Stopped(error) can carry a runtime failure")
         _validate_schema(RESULT_SCHEMA, self.to_dict())
 
     def to_dict(self) -> dict[str, Any]:
@@ -249,6 +340,7 @@ class Stopped:
             "input_request": (
                 None if self.input_request is None else _thaw_object(self.input_request)
             ),
+            "failure": None if self.failure is None else self.failure.to_dict(),
         }
 
 
@@ -312,4 +404,9 @@ def result_from_dict(payload: Mapping[str, object]) -> MingliResult:
         public_copy=cast(str, payload["public_copy"]),
         state_token=cast(str | None, payload["state_token"]),
         input_request=cast(Mapping[str, object] | None, payload["input_request"]),
+        failure=(
+            None
+            if payload.get("failure") is None
+            else RuntimeFailure.from_dict(cast(Mapping[str, object], payload["failure"]))
+        ),
     )

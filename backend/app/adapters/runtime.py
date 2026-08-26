@@ -684,19 +684,53 @@ async def _kill_process_group(
     await process.wait()
 
 
-def one_shot_spawn_argv(launcher_path: Path) -> tuple[str, ...]:
+def _python_shebang_interpreter(launcher_path: Path) -> Path | None:
+    try:
+        with launcher_path.open("rb") as handle:
+            first = handle.readline(256)
+    except OSError:
+        return None
+    if not first.startswith(b"#!"):
+        return None
+    try:
+        line = first[2:].decode("ascii").strip()
+    except UnicodeDecodeError:
+        return None
+    if not line:
+        return None
+    interpreter = Path(line.split()[0])
+    if not interpreter.is_absolute() or not interpreter.name.lower().startswith("python"):
+        return None
+    return interpreter
+
+
+def one_shot_spawn_argv(
+    launcher_path: Path,
+    runtime_python_path: Path | None = None,
+) -> tuple[str, ...]:
     """Fixed argv for the one-shot rollback launcher.
 
     ``run_reading_transaction.sh`` is invoked through ``/bin/sh`` and the
-    absolute launcher path.  The Git mode may be ``100644``; this path never
-    chmod's the file and never interpolates user input.
+    absolute launcher path.  Python launchers use the worker-v2 isolated
+    interpreter form ``python -I -S -B <launcher>`` so the first Describe
+    does not pay kernel shebang plus site import against
+    ``PYTHONPYCACHEPREFIX=/dev/null`` — that combination hangs a cold
+    interpreter past the 2s budget.  The Git mode may be ``100644``; this
+    path never chmod's the file and never interpolates user input.
     """
 
     if not launcher_path.is_absolute():
         raise ValueError("Runtime launcher path must be absolute")
     if launcher_path.name == ONE_SHOT_SHELL_NAME:
         return (str(ONE_SHOT_SHELL_INTERPRETER), str(launcher_path))
-    return (str(launcher_path),)
+    interpreter = _python_shebang_interpreter(launcher_path)
+    if interpreter is None and runtime_python_path is not None:
+        if not runtime_python_path.is_absolute():
+            raise ValueError("Runtime Python path must be absolute")
+        interpreter = runtime_python_path
+    if interpreter is None:
+        return (str(launcher_path),)
+    return (str(interpreter), "-I", "-S", "-B", str(launcher_path))
 
 
 def generic_runtime_stopped() -> Stopped:
@@ -852,7 +886,7 @@ class OneShotMingliRuntimeAdapter:
         }
         try:
             process = await asyncio.create_subprocess_exec(
-                *one_shot_spawn_argv(self._launcher_path),
+                *one_shot_spawn_argv(self._launcher_path, self._runtime_python_path),
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,

@@ -2,6 +2,7 @@ import json
 import os
 import stat
 import sys
+import time
 import traceback
 from datetime import datetime
 from pathlib import Path
@@ -125,6 +126,45 @@ print(json.dumps({
     assert result.transition_ids == ("correct", "restart")
     assert json.loads(launcher.with_suffix(".stdin").read_bytes()) == {"kind": "describe"}
     assert launcher.with_suffix(".stdin").read_bytes().endswith(b"\n")
+
+
+async def test_process_adapter_first_describe_stays_inside_two_second_budget(
+    tmp_path: Path,
+) -> None:
+    launcher = _write_executable(
+        tmp_path / "runtime-fixture",
+        """#!/usr/bin/env python3
+import json
+import sys
+
+raw = sys.stdin.buffer.read()
+command = json.loads(raw)
+assert command == {"kind": "describe"}
+print(json.dumps({
+    "kind": "described",
+    "protocol_version": "mingli-portable-interface-v2",
+    "manifest_digest": "0" * 64,
+    "capabilities": [],
+}, separators=(",", ":")))
+""",
+    )
+    state_root = tmp_path / "state"
+    state_root.mkdir()
+    adapter = _adapter(launcher, state_root)
+    started = time.perf_counter()
+
+    result = await adapter.execute(Describe())
+
+    elapsed = time.perf_counter() - started
+    assert isinstance(result, Described)
+    assert elapsed < 2.0
+    assert one_shot_spawn_argv(launcher) == (
+        sys.executable,
+        "-I",
+        "-S",
+        "-B",
+        str(launcher),
+    )
 
 
 async def test_process_adapter_decodes_the_entire_result_union(tmp_path: Path) -> None:
@@ -450,7 +490,9 @@ print(json.dumps({
 
     await _adapter(launcher, state_root).execute(command)
 
-    assert json.loads(launcher.with_suffix(".argv").read_text()) == [str(launcher)]
+    argv = json.loads(launcher.with_suffix(".argv").read_text())
+    assert argv == [str(launcher)]
+    assert query not in json.dumps(argv)
     assert not shell_side_effect.exists()
 
 
@@ -1490,6 +1532,15 @@ def test_one_shot_shell_argv_is_bin_sh_plus_fixed_absolute_path(tmp_path: Path) 
     launcher.chmod(0o644)
 
     assert one_shot_spawn_argv(launcher) == ("/bin/sh", str(launcher))
+    python_launcher = tmp_path / "runtime-fixture"
+    python_launcher.write_text(f"#!{sys.executable}\n", encoding="utf-8")
+    assert one_shot_spawn_argv(python_launcher) == (
+        sys.executable,
+        "-I",
+        "-S",
+        "-B",
+        str(python_launcher),
+    )
 
 
 async def test_one_shot_shell_mode_100644_starts_without_chmod_or_user_argv(
