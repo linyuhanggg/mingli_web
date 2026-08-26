@@ -208,7 +208,7 @@ function taskErrorField(productId: string, fieldName: string, errors?: FieldErro
 function schemaFor(product: ProductDefinition, usesSavedProfile = false) {
   return taskSchemaBase.superRefine((values, context) => {
     if (product.group === "natal") {
-      if (!usesSavedProfile && !values.subject.trim()) context.addIssue({ code: "custom", path: ["subject"], message: "请填写受测对象" });
+      if (!usesSavedProfile && values.subject.trim().length > 80) context.addIssue({ code: "custom", path: ["subject"], message: "名称最多 80 个字" });
       if (!usesSavedProfile && !/^\d{4}-\d{2}-\d{2}$/.test(values.birthDate)) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择完整出生日期" });
       if (!usesSavedProfile && !values.unknownTime && !values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间" });
       if (!usesSavedProfile && !values.location.trim()) context.addIssue({ code: "custom", path: ["location"], message: "请填写出生地点" });
@@ -372,7 +372,7 @@ function schemaFor(product: ProductDefinition, usesSavedProfile = false) {
 
     if (product.id === "hecan") {
       if (!usesSavedProfile) {
-        if (!values.subject.trim()) context.addIssue({ code: "custom", path: ["subject"], message: "请填写受测对象" });
+        if (values.subject.trim().length > 80) context.addIssue({ code: "custom", path: ["subject"], message: "名称最多 80 个字" });
         if (values.calendar !== "gregorian") context.addIssue({ code: "custom", path: ["calendar"], message: "请填写公历出生日期。" });
         if (!/^\d{4}-\d{2}-\d{2}$/.test(values.birthDate)) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择完整出生日期" });
         if (!values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间" });
@@ -387,7 +387,7 @@ function schemaFor(product: ProductDefinition, usesSavedProfile = false) {
     if (product.id === "canwen") {
       if (!values.issue.trim()) context.addIssue({ code: "custom", path: ["issue"], message: "请写清当前问题" });
       if (!usesSavedProfile) {
-        if (!values.subject.trim()) context.addIssue({ code: "custom", path: ["subject"], message: "请填写受测对象" });
+        if (values.subject.trim().length > 80) context.addIssue({ code: "custom", path: ["subject"], message: "名称最多 80 个字" });
         if (values.calendar !== "gregorian") context.addIssue({ code: "custom", path: ["calendar"], message: "请填写公历出生日期。" });
         if (!/^\d{4}-\d{2}-\d{2}$/.test(values.birthDate)) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择完整出生日期" });
         if (!values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间" });
@@ -923,7 +923,7 @@ export function ProductInputForm({
   onRetryProfiles?: () => void;
   busy?: boolean;
   submitError?: string | null;
-  submitErrorState?: "unavailable" | "error";
+  submitErrorState?: "unavailable" | "error" | "unauthorized";
 }) {
   const schema = useMemo(
     () => schemaFor(product, Boolean(selectedProfileVersionId)),
@@ -1173,7 +1173,7 @@ export function ProductInputForm({
             htmlFor={`${product.id}-subject`}
             label="受测对象"
             error={errors.subject?.message}
-            help={isCompactBaziInput ? undefined : "可以填写“本人”或便于自己识别的称呼。"}
+            help={isCompactBaziInput ? undefined : "可以填写便于识别的称呼；留空则由服务端生成回退名。"}
           >
             <input
               id={`${product.id}-subject`}
@@ -1638,7 +1638,10 @@ export function ProductInputForm({
         submitErrorState === "error" ? (
           <p className={styles.error} role="alert">{submitError}</p>
         ) : (
-          <Status state="unavailable" title={submitError} />
+          <Status
+            state={submitErrorState === "unauthorized" ? "unauthorized" : "unavailable"}
+            title={submitError}
+          />
         )
       ) : null}
 

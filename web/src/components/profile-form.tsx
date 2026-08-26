@@ -11,16 +11,23 @@ import {
   confirmProfileDraft,
   createProfileDraft,
   type Gender,
+  type ProfileConfirmRequest,
   type TimeBasisPolicy,
   type ZiHourPolicy,
 } from "@/lib/api";
 import { localDateTimeWithOffset } from "@/lib/date-time";
 import { isIanaTimeZone } from "@/lib/iana-timezones";
+import {
+  isProfileNameConflict,
+  readProfileNameConflict,
+  type ProfileNameConflict,
+} from "@/lib/profile-conflict";
 
 import {
   BirthBasisSummary,
   type BirthBasisSummaryValues,
 } from "./birth-basis-summary";
+import { ProfileNameConflictDialog } from "./profile-name-conflict-dialog";
 import styles from "./profile-form.module.css";
 import formControls from "./form-controls.module.css";
 import { IanaTimeZoneOptions } from "./iana-timezone-options";
@@ -65,6 +72,7 @@ const latitudeField = z
 
 const profileSchema = z
   .object({
+    display_name: z.string().trim().max(80, "名称最多 80 个字").default(""),
     birth_datetime: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/, "请填写出生时间"),
@@ -113,6 +121,11 @@ export function ProfileForm() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [nameConflict, setNameConflict] = useState<ProfileNameConflict | null>(null);
+  const pendingConfirmRef = useRef<{
+    draftId: string;
+    body: ProfileConfirmRequest;
+  } | null>(null);
   const busyRef = useRef(false);
   const {
     register,
@@ -122,6 +135,7 @@ export function ProfileForm() {
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
+      display_name: "",
       birth_datetime: "",
       timezone: "Asia/Shanghai",
       location: "",
@@ -176,9 +190,10 @@ export function ProfileForm() {
       busyRef.current = true;
       setBusy(true);
       setSubmitError("");
+      setNameConflict(null);
       try {
-        const draft = await createProfileDraft("本人");
-        await confirmProfileDraft(draft.draft_id, {
+        const draft = await createProfileDraft(values.display_name?.trim() || undefined);
+        const body: ProfileConfirmRequest = {
           birth_datetime: localDateTimeWithOffset(
             values.birth_datetime,
             values.timezone,
@@ -203,7 +218,43 @@ export function ProfileForm() {
             values.coordinate_source?.trim() === ""
               ? undefined
               : values.coordinate_source?.trim(),
+          on_name_conflict: "reject",
+        };
+        pendingConfirmRef.current = { draftId: draft.draft_id, body };
+        await confirmProfileDraft(draft.draft_id, body);
+        pendingConfirmRef.current = null;
+        router.push("/app/profiles?created=1");
+      } catch (reason) {
+        if (isProfileNameConflict(reason)) {
+          setNameConflict(readProfileNameConflict(reason));
+        } else {
+          pendingConfirmRef.current = null;
+          setSubmitError(
+            reason instanceof Error ? reason.message : "档案保存失败，请稍后重试。",
+          );
+        }
+      } finally {
+        busyRef.current = false;
+        setBusy(false);
+      }
+    },
+    [router],
+  );
+
+  const resolveConflict = useCallback(
+    async (action: "overwrite" | "save_as") => {
+      const pending = pendingConfirmRef.current;
+      if (!pending || busyRef.current) return;
+      busyRef.current = true;
+      setBusy(true);
+      setSubmitError("");
+      try {
+        await confirmProfileDraft(pending.draftId, {
+          ...pending.body,
+          on_name_conflict: action,
         });
+        pendingConfirmRef.current = null;
+        setNameConflict(null);
         router.push("/app/profiles?created=1");
       } catch (reason) {
         setSubmitError(
@@ -220,7 +271,19 @@ export function ProfileForm() {
   return (
     <div className={styles.wrap}>
       <h2>建立命理档案</h2>
-      <p className={styles.lead}>这里只记录出生事实，不进行任何本地推算。</p>
+      <p className={styles.lead}>这里只记录出生事实，不进行任何本地推算。名称可留空，由服务端生成回退名。</p>
+      {nameConflict ? (
+        <ProfileNameConflictDialog
+          conflict={nameConflict}
+          busy={busy}
+          onOverwrite={() => void resolveConflict("overwrite")}
+          onSaveAs={() => void resolveConflict("save_as")}
+          onCancel={() => {
+            pendingConfirmRef.current = null;
+            setNameConflict(null);
+          }}
+        />
+      ) : null}
 
       {submitError ? (
         <p className={styles.errorBox} role="alert" aria-live="polite">
@@ -244,6 +307,24 @@ export function ProfileForm() {
             </div>
           </div>
           <div className={styles.grid}>
+          <div className={formControls.field}>
+            <label htmlFor="profile-display-name">档案名称（可选）</label>
+            <input
+              id="profile-display-name"
+              className={formControls.input}
+              autoComplete="nickname"
+              disabled={busy}
+              placeholder="留空则使用服务端回退名"
+              {...register("display_name")}
+            />
+            {errors.display_name ? (
+              <p className={formControls.error} role="alert">
+                {errors.display_name.message}
+              </p>
+            ) : (
+              <p className={formControls.hint}>可不填。保存后可在档案列表重命名。</p>
+            )}
+          </div>
           <div className={formControls.field}>
             <label htmlFor="profile-birth-datetime">出生时间</label>
             <input

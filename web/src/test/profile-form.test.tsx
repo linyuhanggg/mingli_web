@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ProfileForm } from "@/components/profile-form";
+import { ApiError } from "@/lib/api/client";
 import { IANA_TIME_ZONES } from "@/lib/iana-timezones";
 
 
@@ -159,7 +160,7 @@ describe("ProfileForm", () => {
     await waitFor(() =>
       expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
     );
-    expect(api.createProfileDraft).toHaveBeenCalledWith("本人");
+    expect(api.createProfileDraft).toHaveBeenCalledWith(undefined);
     expect(api.confirmProfileDraft).toHaveBeenCalledWith(
       "55555555-5555-4555-8555-555555555555",
       expect.objectContaining({
@@ -168,7 +169,69 @@ describe("ProfileForm", () => {
         gender: "female",
         time_basis_policy: "civil",
         zi_hour_policy: "midnight",
+        on_name_conflict: "reject",
       }),
+    );
+  });
+
+  async function fillRequiredProfile(user: ReturnType<typeof userEvent.setup>) {
+    await user.type(screen.getByLabelText("档案名称（可选）"), "同名档案");
+    await user.type(screen.getByLabelText("出生时间"), "1992-07-08T08:00");
+    await user.type(screen.getByLabelText("出生地点"), "上海市");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
+  }
+
+  it("cancels a same-name 409 without writing again", async () => {
+    const user = userEvent.setup();
+    const conflict = new ApiError("Name conflict", 409, undefined, "profile_name_conflict");
+    conflict.options = ["overwrite", "save_as", "cancel"];
+    conflict.suggestedSaveAsName = "同名档案 (2)";
+    api.confirmProfileDraft.mockRejectedValueOnce(conflict);
+    render(<ProfileForm />);
+    await fillRequiredProfile(user);
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+    expect(await screen.findByRole("alertdialog", { name: "档案名称已存在" })).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "取消" }));
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(routerPush).not.toHaveBeenCalled();
+    expect(api.confirmProfileDraft).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries a same-name 409 with overwrite", async () => {
+    const user = userEvent.setup();
+    const conflict = new ApiError("Name conflict", 409, undefined, "profile_name_conflict");
+    conflict.options = ["overwrite", "save_as", "cancel"];
+    conflict.suggestedSaveAsName = "同名档案 (2)";
+    api.confirmProfileDraft.mockRejectedValueOnce(conflict);
+    render(<ProfileForm />);
+    await fillRequiredProfile(user);
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+    await user.click(await screen.findByRole("button", { name: "覆盖" }));
+    await waitFor(() =>
+      expect(api.confirmProfileDraft).toHaveBeenCalledWith(
+        "55555555-5555-4555-8555-555555555555",
+        expect.objectContaining({ on_name_conflict: "overwrite" }),
+      ),
+    );
+  });
+
+  it("retries a same-name 409 with save_as", async () => {
+    const user = userEvent.setup();
+    const conflict = new ApiError("Name conflict", 409, undefined, "profile_name_conflict");
+    conflict.options = ["overwrite", "save_as", "cancel"];
+    conflict.suggestedSaveAsName = "同名档案 (2)";
+    api.confirmProfileDraft.mockRejectedValueOnce(conflict);
+    render(<ProfileForm />);
+    await fillRequiredProfile(user);
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+    await user.click(await screen.findByRole("button", { name: "另存为「同名档案 (2)」" }));
+    await waitFor(() =>
+      expect(api.confirmProfileDraft).toHaveBeenCalledWith(
+        "55555555-5555-4555-8555-555555555555",
+        expect.objectContaining({ on_name_conflict: "save_as" }),
+      ),
     );
   });
 

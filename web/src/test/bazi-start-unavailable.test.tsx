@@ -7,6 +7,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import BaziPage from "@/app/bazi/page";
 import { ApiError } from "@/lib/api";
 import {
+  CHART_RUNTIME_FAULT,
+  GUEST_DAILY_READING_LIMIT,
+  PAID_READING_REQUIRES_ACCOUNT,
+  RATE_LIMIT_EXCEEDED,
   START_READING_UNAVAILABLE,
   mapStartReadingFailure,
 } from "@/lib/start-reading-error";
@@ -68,6 +72,18 @@ describe("bazi start unavailable copy", () => {
       state: "error",
       title: "请重新选择见相照片后再提交。",
     });
+    expect(
+      mapStartReadingFailure(new ApiError("Payment required", 403, undefined, "paid_reading_requires_account")),
+    ).toEqual({ state: "unauthorized", title: PAID_READING_REQUIRES_ACCOUNT });
+    expect(
+      mapStartReadingFailure(new ApiError("Too many requests", 429, undefined, "rate_limit_exceeded")),
+    ).toEqual({ state: "error", title: RATE_LIMIT_EXCEEDED });
+    expect(
+      mapStartReadingFailure(new ApiError("Daily cap", 429, undefined, "guest_daily_reading_limit")),
+    ).toEqual({ state: "error", title: GUEST_DAILY_READING_LIMIT });
+    expect(
+      mapStartReadingFailure(new ApiError("Stopped", 503, undefined, "chart_runtime_error")),
+    ).toEqual({ state: "unavailable", title: CHART_RUNTIME_FAULT });
   });
 
   it("stays on the bazi input page and hides Runtime when preview returns 503", async () => {

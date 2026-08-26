@@ -103,7 +103,7 @@ describe("primary product route contract", () => {
     const submit = await screen.findByRole("button", { name: /^立即排盘（免费）/ });
 
     await user.click(submit);
-    expect(await screen.findByText("请填写受测对象")).toBeVisible();
+    expect(await screen.findByText("请选择完整出生日期")).toBeVisible();
 
     await user.type(screen.getByLabelText("受测对象"), "本人");
     await user.selectOptions(screen.getByLabelText("出生年份"), "1990");
@@ -115,7 +115,6 @@ describe("primary product route contract", () => {
     await user.selectOptions(screen.getByLabelText("出生城市"), "常州市");
     await user.selectOptions(screen.getByLabelText("出生区县"), "金坛区");
     await user.click(screen.getByRole("radio", { name: "男" }));
-    expect(screen.getByText("江苏省 / 常州市 / 金坛区")).toBeVisible();
     await user.click(submit);
 
     await waitFor(() => expect(mockStartPreviewReading).toHaveBeenCalled());
