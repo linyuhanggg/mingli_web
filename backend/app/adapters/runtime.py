@@ -1,4 +1,5 @@
 import asyncio
+import fcntl
 import hashlib
 import json
 import os
@@ -28,6 +29,7 @@ from app.readings.runtime_contracts import (
     Prepare,
     Prepared,
     ReadingBrief,
+    RuntimeFailure,
     Stopped,
     result_from_dict,
 )
@@ -102,6 +104,8 @@ WORKER_MAX_FRAME_BYTES = 4 * 1024 * 1024
 WORKER_DEFAULT_READY_TIMEOUT_SECONDS = 15.0
 WORKER_REQUEST_TIMEOUT_SECONDS = 2.0
 WORKER_STOPPED_COPY = "本次处理未完成，请稍后重试。"
+RUNTIME_TURN_AUDIT_NAME = "runtime-turn-audit.jsonl"
+_COMMAND_DIGEST_REDACTED_KEYS = frozenset({"facts", "query", "public_copy"})
 _RESULT_FRAME_KEYS = frozenset(
     {
         "type",
@@ -733,13 +737,90 @@ def one_shot_spawn_argv(
     return (str(interpreter), "-I", "-S", "-B", str(launcher_path))
 
 
-def generic_runtime_stopped() -> Stopped:
+@dataclass(frozen=True, slots=True)
+class RuntimeTurnAudit:
+    """Host-side, non-PII record of one Runtime turn."""
+
+    command_digest: str
+    command_kind: str
+    worker_pid: int | None
+    worker_boot_nonce: str | None
+    sequence: int | None
+    result_kind: str
+    failure: Mapping[str, object] | None
+    transport_fault: str | None
+    isolated: bool
+    store_root: str
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "command_digest": self.command_digest,
+            "command_kind": self.command_kind,
+            "worker_pid": self.worker_pid,
+            "worker_boot_nonce": self.worker_boot_nonce,
+            "sequence": self.sequence,
+            "result_kind": self.result_kind,
+            "failure": None if self.failure is None else dict(self.failure),
+            "transport_fault": self.transport_fault,
+            "isolated": self.isolated,
+            "store_root": self.store_root,
+        }
+
+
+def runtime_command_digest(command: MingliCommand) -> str:
+    """Digest a Command without retaining facts, query text, or public copy."""
+
+    payload = command.to_dict()
+    redacted: dict[str, object] = {}
+    for key, value in payload.items():
+        if key in _COMMAND_DIGEST_REDACTED_KEYS:
+            redacted[key] = {
+                "digest": hashlib.sha256(_canonical_json_bytes(value)).hexdigest()
+            }
+        else:
+            redacted[key] = value
+    return hashlib.sha256(_canonical_json_bytes(redacted)).hexdigest()
+
+
+def failure_for_transport_fault(fault: str) -> RuntimeFailure:
+    if fault == "timeout":
+        return RuntimeFailure(
+            code="transient.timeout",
+            category="transient",
+            retryable=True,
+        )
+    if fault in {"already-isolated", "pipe-unavailable", "process-exited"}:
+        return RuntimeFailure(
+            code="transient.resource_unavailable",
+            category="transient",
+            retryable=True,
+        )
+    return RuntimeFailure.internal_error()
+
+
+def generic_runtime_stopped(*, failure: RuntimeFailure | None = None) -> Stopped:
     return Stopped(
         reason="error",
         public_copy=WORKER_STOPPED_COPY,
         state_token=None,
         input_request=None,
+        failure=failure or RuntimeFailure.internal_error(),
     )
+
+
+def append_runtime_turn_audit(path: Path, record: Mapping[str, object]) -> None:
+    flags = os.O_APPEND | os.O_CREAT | os.O_WRONLY
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    rendered = json.dumps(dict(record), ensure_ascii=False, sort_keys=True) + "\n"
+    descriptor = os.open(path, flags, 0o600)
+    try:
+        os.fchmod(descriptor, 0o600)
+        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        os.write(descriptor, rendered.encode("utf-8"))
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
 
 
 def _reject_non_finite_json(value: str) -> object:
@@ -1007,6 +1088,10 @@ class WorkerV2MingliRuntimeAdapter:
         self._isolated = False
         self._written_without_result = False
         self._transport_fault: str | None = None
+        self._audit_pid: int | None = None
+        self._audit_boot_nonce: str | None = None
+        self._last_sequence: int | None = None
+        self.last_turn: RuntimeTurnAudit | None = None
 
     @property
     def isolated(self) -> bool:
@@ -1121,98 +1206,131 @@ class WorkerV2MingliRuntimeAdapter:
         self._ready = dict(ready)
         self._identity_sha256 = identity
         self._next_sequence = 1
+        pid = ready.get("pid")
+        boot_nonce = ready.get("boot_nonce")
+        self._audit_pid = pid if isinstance(pid, int) else None
+        self._audit_boot_nonce = boot_nonce if isinstance(boot_nonce, str) else None
 
     def _generic_stop(self, fault: str) -> Stopped:
         self._transport_fault = fault
-        return generic_runtime_stopped()
+        return generic_runtime_stopped(failure=failure_for_transport_fault(fault))
+
+    def _publish_turn(self, command: MingliCommand, result: MingliResult) -> None:
+        failure = None
+        if isinstance(result, Stopped) and result.failure is not None:
+            failure = result.failure.to_dict()
+        record = RuntimeTurnAudit(
+            command_digest=runtime_command_digest(command),
+            command_kind=command.kind,
+            worker_pid=self._audit_pid,
+            worker_boot_nonce=self._audit_boot_nonce,
+            sequence=self._last_sequence,
+            result_kind=result.kind,
+            failure=failure,
+            transport_fault=self._transport_fault,
+            isolated=self._isolated,
+            store_root=str(self._state_root),
+        )
+        self.last_turn = record
+        append_runtime_turn_audit(
+            self._state_root / RUNTIME_TURN_AUDIT_NAME,
+            record.to_dict(),
+        )
 
     async def execute(self, command: MingliCommand) -> MingliResult:
         async with self._lock:
-            if (
-                self._isolated
-                or self._process is None
-                or self._ready is None
-                or self._identity_sha256 is None
-                or self._written_without_result
-            ):
-                return self._generic_stop("already-isolated")
-            request_id = secrets.token_hex(16)
-            if (
-                _REQUEST_ID_RE.fullmatch(request_id) is None
-                or request_id in self._written_request_ids
-            ):
-                await self._isolate_locked()
-                return self._generic_stop("request-id")
-            sequence = self._next_sequence
-            envelope = {
-                "type": "command",
-                "protocol": WORKER_PROTOCOL,
-                "identity_sha256": self._identity_sha256,
-                "request_id": request_id,
-                "sequence": sequence,
-                "command": command.to_dict(),
-            }
-            try:
-                encoded = encode_worker_frame(envelope)
-            except RuntimeTransportError:
-                await self._isolate_locked()
-                return self._generic_stop("encode")
-            stdin = self._process.stdin
-            stdout = self._process.stdout
-            if stdin is None or stdout is None:
-                await self._isolate_locked()
-                return self._generic_stop("pipe-unavailable")
-            if _stream_has_pending(stdout) or self._stderr:
-                fault = (
-                    "pending-before-write"
-                    if _stream_has_pending(stdout)
-                    else f"stderr-before-write:{bytes(self._stderr)[:200]!r}"
-                )
-                await self._isolate_locked()
-                return self._generic_stop(fault)
-            try:
-                async with asyncio.timeout(self._request_timeout_seconds):
-                    stdin.write(encoded)
-                    await stdin.drain()
-                    self._written_request_ids.add(request_id)
-                    self._next_sequence = sequence + 1
-                    self._written_without_result = True
-                    payload = await _read_worker_frame(stdout)
-                    if not self._is_bound_result(payload, request_id, sequence):
-                        await self._isolate_locked()
-                        return self._generic_stop(f"unbound-result:{payload.get('type')}")
-                    if payload.get("worker_action") != "continue":
-                        await self._isolate_locked()
-                        return self._generic_stop(
-                            f"worker-isolate:{payload.get('worker_action')}"
-                        )
-                    result_payload = payload.get("result")
-                    if not isinstance(result_payload, Mapping):
-                        await self._isolate_locked()
-                        return self._generic_stop("invalid-result")
-                    try:
-                        result = result_from_dict(result_payload)
-                    except (KeyError, TypeError, ValueError):
-                        await self._isolate_locked()
-                        return self._generic_stop("result-decode")
-                    terminal = await self._read_frame_watching_stderr(stdout)
-                    if not self._is_bound_idle(terminal, request_id, sequence):
-                        await self._isolate_locked()
-                        return self._generic_stop(f"unbound-idle:{terminal.get('type')}")
-            except TimeoutError:
-                await self._isolate_locked()
-                return self._generic_stop("timeout")
-            except (BrokenPipeError, ConnectionResetError, RuntimeTransportError) as error:
-                await self._isolate_locked()
-                return self._generic_stop(f"transport:{type(error).__name__}")
-            except BaseException:
-                await self._isolate_locked()
-                raise
-            self._written_without_result = False
-            if self._process is not None and self._process.returncode is not None:
-                await self._isolate_locked()
-                return self._generic_stop("process-exited")
+            result = await self._execute_locked(command)
+            self._publish_turn(command, result)
             return result
+
+    async def _execute_locked(self, command: MingliCommand) -> MingliResult:
+        self._transport_fault = None
+        if (
+            self._isolated
+            or self._process is None
+            or self._ready is None
+            or self._identity_sha256 is None
+            or self._written_without_result
+        ):
+            return self._generic_stop("already-isolated")
+        request_id = secrets.token_hex(16)
+        if (
+            _REQUEST_ID_RE.fullmatch(request_id) is None
+            or request_id in self._written_request_ids
+        ):
+            await self._isolate_locked()
+            return self._generic_stop("request-id")
+        sequence = self._next_sequence
+        self._last_sequence = sequence
+        envelope = {
+            "type": "command",
+            "protocol": WORKER_PROTOCOL,
+            "identity_sha256": self._identity_sha256,
+            "request_id": request_id,
+            "sequence": sequence,
+            "command": command.to_dict(),
+        }
+        try:
+            encoded = encode_worker_frame(envelope)
+        except RuntimeTransportError:
+            await self._isolate_locked()
+            return self._generic_stop("encode")
+        stdin = self._process.stdin
+        stdout = self._process.stdout
+        if stdin is None or stdout is None:
+            await self._isolate_locked()
+            return self._generic_stop("pipe-unavailable")
+        if _stream_has_pending(stdout) or self._stderr:
+            fault = (
+                "pending-before-write"
+                if _stream_has_pending(stdout)
+                else f"stderr-before-write:{bytes(self._stderr)[:200]!r}"
+            )
+            await self._isolate_locked()
+            return self._generic_stop(fault)
+        try:
+            async with asyncio.timeout(self._request_timeout_seconds):
+                stdin.write(encoded)
+                await stdin.drain()
+                self._written_request_ids.add(request_id)
+                self._next_sequence = sequence + 1
+                self._written_without_result = True
+                payload = await _read_worker_frame(stdout)
+                if not self._is_bound_result(payload, request_id, sequence):
+                    await self._isolate_locked()
+                    return self._generic_stop(f"unbound-result:{payload.get('type')}")
+                if payload.get("worker_action") != "continue":
+                    await self._isolate_locked()
+                    return self._generic_stop(
+                        f"worker-isolate:{payload.get('worker_action')}"
+                    )
+                result_payload = payload.get("result")
+                if not isinstance(result_payload, Mapping):
+                    await self._isolate_locked()
+                    return self._generic_stop("invalid-result")
+                try:
+                    result = result_from_dict(result_payload)
+                except (KeyError, TypeError, ValueError):
+                    await self._isolate_locked()
+                    return self._generic_stop("result-decode")
+                terminal = await self._read_frame_watching_stderr(stdout)
+                if not self._is_bound_idle(terminal, request_id, sequence):
+                    await self._isolate_locked()
+                    return self._generic_stop(f"unbound-idle:{terminal.get('type')}")
+        except TimeoutError:
+            await self._isolate_locked()
+            return self._generic_stop("timeout")
+        except (BrokenPipeError, ConnectionResetError, RuntimeTransportError) as error:
+            await self._isolate_locked()
+            return self._generic_stop(f"transport:{type(error).__name__}")
+        except BaseException:
+            await self._isolate_locked()
+            raise
+        self._written_without_result = False
+        if self._process is not None and self._process.returncode is not None:
+            await self._isolate_locked()
+            return self._generic_stop("process-exited")
+        return result
 
     async def close(self) -> None:
         async with self._lock:
