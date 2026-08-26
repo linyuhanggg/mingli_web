@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from reading_engine.catalog import CatalogError, CatalogLoader
 
@@ -521,6 +524,65 @@ class ProviderRegistryTests(unittest.TestCase):
         for provider_id, adapter in adapters.items():
             with self.subTest(capability=provider_id):
                 self.assertNotIn("capability", type(adapter).__dict__)
+
+    def test_ziwei_provider_import_defers_unrelated_implementations(self) -> None:
+        """A one-shot Ziwei import must not compile every other art first."""
+
+        probe = """
+import json
+import sys
+
+from reading_engine import providers
+
+unrelated = (
+    "bazi_calc",
+    "liuren_calc",
+    "reading_engine.physiognomy",
+    "reading_engine.selection",
+    "reading_engine.xingming",
+)
+before = [name for name in unrelated if name in sys.modules]
+ziwei_version = providers.ZiweiProvider.provider_version
+after = [name for name in unrelated if name in sys.modules]
+print(json.dumps({"before": before, "after": after, "ziwei": ziwei_version}))
+"""
+        completed = subprocess.run(
+            [sys.executable, "-B", "-c", probe],
+            capture_output=True,
+            text=True,
+            cwd=str(ROOT),
+            env={"PYTHONPATH": str(ROOT / "scripts"), "PATH": "/usr/bin:/bin"},
+            check=True,
+        )
+        result = json.loads(completed.stdout)
+        self.assertEqual(result["before"], [])
+        self.assertEqual(result["after"], [])
+        self.assertIn("iztro-", result["ziwei"])
+
+    def test_ziwei_prepare_scopes_production_evidence(self) -> None:
+        from reading_engine import providers
+
+        adapter = providers.ZiweiProvider(ROOT)
+        expected = object()
+        with (
+            mock.patch.object(
+                providers.evidence_rules,
+                "production_evidence_scope",
+            ) as scope,
+            mock.patch.object(
+                providers._AdapterSeam,
+                "prepare",
+                return_value=expected,
+            ) as base_prepare,
+        ):
+            actual = adapter.prepare(mock.sentinel.request, mock.sentinel.context)
+
+        self.assertIs(actual, expected)
+        scope.assert_called_once_with("ziwei")
+        base_prepare.assert_called_once_with(
+            mock.sentinel.request,
+            mock.sentinel.context,
+        )
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import calendar as stdlib_calendar
 import copy
+import importlib
 import json
 import re
 import secrets
@@ -17,10 +18,6 @@ from typing import Any, Literal, Mapping
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import adapter_validate
-import bazi_calc
-import bazi_fact_adapter
-import liuren_calc
-import near_time_fortune_adapter
 import reading_evidence_bundle
 import reading_source_plan
 import ziwei_fact_adapter
@@ -37,18 +34,7 @@ from .contracts import (
 )
 from .catalog import CatalogLoader, ProviderDescriptor
 from .fact_index import build_fact_index, indexed_fact_payload
-from . import (
-    calendar_core,
-    fengshui,
-    physiognomy,
-    liuyao,
-    luming,
-    meihua,
-    qimen,
-    selection,
-    taiyi,
-    xingming,
-)
+from . import calendar_core, evidence_rules
 from .image_chart import ImageChartVerification, validate_image_chart_transcription
 from .intent_frame import IntentFrame
 from .provider_protocol import (
@@ -64,6 +50,62 @@ from .structured_input import normalize_structured_chart
 
 
 GANZHI_RE = re.compile(r"[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]")
+
+
+class _LazyModule:
+    """Load one provider implementation only when that provider executes.
+
+    The production entrypoint is a fresh Python process for every chart.  A
+    Ziwei turn must therefore not compile Astronomy, Physiognomy, Selection,
+    or another unrelated provider before it can start its selected adapter.
+    The catalog and every adapter class remain available at import time; only
+    provider-private implementation modules are deferred.
+    """
+
+    __slots__ = ("_module", "_module_name")
+
+    def __init__(self, module_name: str) -> None:
+        self._module_name = module_name
+        self._module: Any | None = None
+
+    def _load(self) -> Any:
+        module = self._module
+        if module is None:
+            module = importlib.import_module(self._module_name)
+            self._module = module
+        return module
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._load(), name)
+
+
+class _LazyModuleAttribute:
+    """Resolve a provider version without defeating :class:`_LazyModule`."""
+
+    __slots__ = ("_attribute", "_module")
+
+    def __init__(self, module: _LazyModule, attribute: str) -> None:
+        self._module = module
+        self._attribute = attribute
+
+    def __get__(self, instance: object, owner: type | None = None) -> Any:
+        del instance, owner
+        return getattr(self._module, self._attribute)
+
+
+bazi_calc = _LazyModule("bazi_calc")
+bazi_fact_adapter = _LazyModule("bazi_fact_adapter")
+liuren_calc = _LazyModule("liuren_calc")
+near_time_fortune_adapter = _LazyModule("near_time_fortune_adapter")
+luming = _LazyModule(f"{__package__}.luming")
+liuyao = _LazyModule(f"{__package__}.liuyao")
+meihua = _LazyModule(f"{__package__}.meihua")
+qimen = _LazyModule(f"{__package__}.qimen")
+taiyi = _LazyModule(f"{__package__}.taiyi")
+selection = _LazyModule(f"{__package__}.selection")
+xingming = _LazyModule(f"{__package__}.xingming")
+fengshui = _LazyModule(f"{__package__}.fengshui")
+physiognomy = _LazyModule(f"{__package__}.physiognomy")
 # Live provider capability declarations, intentionally independent of the
 # provenance manifests. The release audit compares the two authorities so a
 # manifest edit cannot silently rewrite what live code claims to execute.
@@ -2654,7 +2696,7 @@ class LiurenProvider(_AdapterSeam, _SourceRouteMixin):
             roles.add("imagery_correspondence")
         route["allowed_evidence_roles"] = sorted(roles)
         return route
-    provider_version = liuren_calc.CALCULATION_CONTRACT
+    provider_version = _LazyModuleAttribute(liuren_calc, "CALCULATION_CONTRACT")
     @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
@@ -2818,7 +2860,7 @@ class LiurenProvider(_AdapterSeam, _SourceRouteMixin):
 
 class BaziProvider(_AdapterSeam, _SourceRouteMixin):
     provider_id = "mingli-master.bazi.v7"
-    provider_version = bazi_calc.CALCULATION_CONTRACT
+    provider_version = _LazyModuleAttribute(bazi_calc, "CALCULATION_CONTRACT")
     _REASONING_DOMAIN_BY_DIMENSION = {
         "career": "work",
         "work": "work",
@@ -3189,7 +3231,7 @@ class LumingProvider(_AdapterSeam, _SourceRouteMixin):
             "required_fields": ["pillars", "three_yuan_profiles", "relations"],
         },
     }
-    provider_version = luming.ADAPTER_VERSION
+    provider_version = _LazyModuleAttribute(luming, "ADAPTER_VERSION")
     @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
@@ -3452,7 +3494,7 @@ class LiuyaoProvider(_AdapterSeam, _SourceRouteMixin):
             ],
         },
     }
-    provider_version = liuyao.ADAPTER_VERSION
+    provider_version = _LazyModuleAttribute(liuyao, "ADAPTER_VERSION")
     @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
@@ -3821,7 +3863,7 @@ class MeihuaProvider(_AdapterSeam, _SourceRouteMixin):
             ],
         },
     }
-    provider_version = meihua.ADAPTER_VERSION
+    provider_version = _LazyModuleAttribute(meihua, "ADAPTER_VERSION")
     @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
@@ -4067,7 +4109,7 @@ class QimenProvider(_AdapterSeam, _SourceRouteMixin):
             ],
         },
     }
-    provider_version = qimen.ADAPTER_VERSION
+    provider_version = _LazyModuleAttribute(qimen, "ADAPTER_VERSION")
     @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
@@ -4268,7 +4310,7 @@ class TaiyiProvider(_AdapterSeam, _SourceRouteMixin):
         },
         "scope_requirement": {"calculation_object": "macro_historical"},
     }
-    provider_version = taiyi.ADAPTER_VERSION
+    provider_version = _LazyModuleAttribute(taiyi, "ADAPTER_VERSION")
     @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
@@ -4511,7 +4553,7 @@ class SelectionProvider(_AdapterSeam, _SourceRouteMixin):
             else []
         )
         return route
-    provider_version = selection.ADAPTER_VERSION
+    provider_version = _LazyModuleAttribute(selection, "ADAPTER_VERSION")
     @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
@@ -5060,7 +5102,9 @@ def _resolved_profile(
 
 class FortuneProvider(_AdapterSeam, _SourceRouteMixin):
     provider_id = "mingli-master.fortune.v6"
-    provider_version = near_time_fortune_adapter.CONTRACT_VERSION
+    provider_version = _LazyModuleAttribute(
+        near_time_fortune_adapter, "CONTRACT_VERSION"
+    )
     @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
@@ -5540,7 +5584,7 @@ class XingmingProvider(_AdapterSeam, _SourceRouteMixin):
             ],
         },
     }
-    provider_version = xingming.ADAPTER_VERSION
+    provider_version = _LazyModuleAttribute(xingming, "ADAPTER_VERSION")
     @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
@@ -5820,7 +5864,7 @@ class FengshuiProvider(_AdapterSeam, _SourceRouteMixin):
         route["packs"] = list(dict.fromkeys(packs))
         route["layers"] = list(dict.fromkeys(layers))
         return route
-    provider_version = fengshui.ADAPTER_VERSION
+    provider_version = _LazyModuleAttribute(fengshui, "ADAPTER_VERSION")
     @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
@@ -6087,7 +6131,7 @@ class PhysiognomyProvider(_AdapterSeam, _SourceRouteMixin):
             "source_conditioned_patterns",
         ] if active_rule_ids else ["observation_intake_prerequisites"]
         return route
-    provider_version = physiognomy.ADAPTER_VERSION
+    provider_version = _LazyModuleAttribute(physiognomy, "ADAPTER_VERSION")
     @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
@@ -6589,6 +6633,14 @@ class ZiweiProvider(_AdapterSeam, _SourceRouteMixin):
 
     def __init__(self, skill_dir: str | Path) -> None:
         self.skill_dir = Path(skill_dir).resolve()
+
+    def prepare(
+        self,
+        request: ProviderRequest,
+        context: ProviderContext,
+    ) -> ProviderPreparation | ProviderNeedInput | ProviderUnsupported:
+        with evidence_rules.production_evidence_scope("ziwei"):
+            return super().prepare(request, context)
 
     def _compile(
         self,

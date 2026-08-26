@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import re
+import secrets
 import signal
 import stat
 from collections.abc import Mapping
@@ -69,6 +70,17 @@ FROZEN_RELEASE_MANIFEST_SHA256 = "e8d4111342d2334868bfa570d31c4105126301e44766a9
 FROZEN_RELEASE_NAME = "mingli-master-portable-core"
 FROZEN_SOURCE_COMMIT = "494ce0bba174a77800daf9b9c38ce9c9166d9a94"
 RUNTIME_PROCESS_PATH = "/opt/node/bin:/usr/local/bin:/usr/bin:/bin"
+ONE_SHOT_SHELL_NAME = "run_reading_transaction.sh"
+ONE_SHOT_SHELL_INTERPRETER = Path("/bin/sh")
+WORKER_PROTOCOL = "mingli-runtime-worker-v1"
+WORKER_RELATIVE = "scripts/reading_engine/runtime_worker.py"
+WORKER_FRAME_HEADER_BYTES = 4
+WORKER_MAX_FRAME_BYTES = 4 * 1024 * 1024
+WORKER_DEFAULT_READY_TIMEOUT_SECONDS = 15.0
+WORKER_REQUEST_TIMEOUT_SECONDS = 2.0
+WORKER_STOPPED_COPY = "本次处理未完成，请稍后重试。"
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 
 
 class RuntimeStartupError(RuntimeError):
@@ -513,9 +525,13 @@ class RuntimeStartupGate:
     async def startup(self) -> Described:
         self._ready = False
         try:
-            if getattr(self.runtime, "adapter_kind", None) != "one-shot-process":
+            adapter_kind = getattr(self.runtime, "adapter_kind", None)
+            if adapter_kind not in {"one-shot-process", "runtime-worker-v1"}:
                 raise RuntimeStartupError("Fake Runtime is forbidden by the startup gate")
             inventory = self.release_inspector.inspect()
+            start = getattr(self.runtime, "start", None)
+            if callable(start):
+                await start()
             result = await self.runtime.execute(Describe())
             if not isinstance(result, Described):
                 raise RuntimeStartupError("Runtime describe did not return Described")
@@ -633,6 +649,114 @@ async def _kill_process_group(
     await process.wait()
 
 
+def one_shot_spawn_argv(launcher_path: Path) -> tuple[str, ...]:
+    """Fixed argv for the one-shot rollback launcher.
+
+    ``run_reading_transaction.sh`` is invoked through ``/bin/sh`` and the
+    absolute launcher path.  The Git mode may be ``100644``; this path never
+    chmod's the file and never interpolates user input.
+    """
+
+    if not launcher_path.is_absolute():
+        raise ValueError("Runtime launcher path must be absolute")
+    if launcher_path.name == ONE_SHOT_SHELL_NAME:
+        return (str(ONE_SHOT_SHELL_INTERPRETER), str(launcher_path))
+    return (str(launcher_path),)
+
+
+def generic_runtime_stopped() -> Stopped:
+    return Stopped(
+        reason="error",
+        public_copy=WORKER_STOPPED_COPY,
+        state_token=None,
+        input_request=None,
+    )
+
+
+def _reject_non_finite_json(value: str) -> object:
+    raise ValueError(f"non-finite JSON number: {value}")
+
+
+def _object_without_duplicate_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def _canonical_json_bytes(payload: object) -> bytes:
+    try:
+        rendered = json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+    except (TypeError, ValueError, RecursionError) as error:
+        raise RuntimeTransportError("runtime_invalid_output") from error
+    return rendered.encode("utf-8")
+
+
+def encode_worker_frame(
+    payload: object,
+    *,
+    max_bytes: int = WORKER_MAX_FRAME_BYTES,
+) -> bytes:
+    body = _canonical_json_bytes(payload)
+    if not body or len(body) > max_bytes:
+        raise RuntimeTransportError("runtime_invalid_output")
+    return len(body).to_bytes(WORKER_FRAME_HEADER_BYTES, "big") + body
+
+
+def _stream_has_pending(reader: asyncio.StreamReader) -> bool:
+    buffer = getattr(reader, "_buffer", b"")
+    return bool(buffer)
+
+
+async def _read_worker_frame(
+    reader: asyncio.StreamReader,
+    *,
+    max_bytes: int = WORKER_MAX_FRAME_BYTES,
+) -> dict[str, Any]:
+    try:
+        header = await reader.readexactly(WORKER_FRAME_HEADER_BYTES)
+    except asyncio.IncompleteReadError as error:
+        raise RuntimeTransportError("runtime_invalid_output") from error
+    length = int.from_bytes(header, "big")
+    if length < 1 or length > max_bytes:
+        raise RuntimeTransportError("runtime_invalid_output")
+    try:
+        body = await reader.readexactly(length)
+    except asyncio.IncompleteReadError as error:
+        raise RuntimeTransportError("runtime_invalid_output") from error
+    try:
+        decoded: object = json.loads(
+            body.decode("utf-8"),
+            object_pairs_hook=_object_without_duplicate_keys,
+            parse_constant=_reject_non_finite_json,
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError, RecursionError) as error:
+        raise RuntimeTransportError("runtime_invalid_output") from error
+    if not isinstance(decoded, dict):
+        raise RuntimeTransportError("runtime_invalid_output")
+    return decoded
+
+
+def _require_absolute_regular_file(path: Path, label: str) -> Path:
+    if not path.is_absolute():
+        raise ValueError(f"{label} path must be absolute")
+    try:
+        metadata = path.lstat()
+    except OSError as error:
+        raise RuntimeStartupError(f"{label} is missing") from error
+    if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISREG(metadata.st_mode):
+        raise RuntimeStartupError(f"{label} must be a regular file")
+    return path
+
+
 class OneShotMingliRuntimeAdapter:
     """Call the fixed portable JSON Runtime exactly once per command."""
 
@@ -693,7 +817,7 @@ class OneShotMingliRuntimeAdapter:
         }
         try:
             process = await asyncio.create_subprocess_exec(
-                str(self._launcher_path),
+                *one_shot_spawn_argv(self._launcher_path),
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
@@ -741,6 +865,319 @@ class OneShotMingliRuntimeAdapter:
             stdout = b""
             raise RuntimeTransportError("runtime_invalid_result")
         return result
+
+
+class WorkerV1MingliRuntimeAdapter:
+    """Identity-bound, single-flight Runtime worker client.
+
+    The worker is started from a fixed signed release and pinned Python.  The
+    one-shot launcher remains an explicit rollback path and is never used as a
+    silent fallback.  A fully written command is never replayed.
+    """
+
+    adapter_kind = "runtime-worker-v1"
+    production_ready = False
+
+    def __init__(
+        self,
+        *,
+        release_root: Path,
+        runtime_python_path: Path,
+        state_root: Path,
+        expected_listing_sha256: str,
+        expected_runtime_integrity_sha256: str,
+        ready_timeout_seconds: float = WORKER_DEFAULT_READY_TIMEOUT_SECONDS,
+        request_timeout_seconds: float = WORKER_REQUEST_TIMEOUT_SECONDS,
+        max_stderr_bytes: int = 64 * 1024,
+    ) -> None:
+        if _SHA256_RE.fullmatch(expected_listing_sha256) is None:
+            raise ValueError("Runtime expected listing SHA-256 is invalid")
+        if _SHA256_RE.fullmatch(expected_runtime_integrity_sha256) is None:
+            raise ValueError("Runtime expected integrity SHA-256 is invalid")
+        if not (0 < ready_timeout_seconds <= 120.0):
+            raise ValueError("Runtime worker READY timeout is outside the explicit bound")
+        if not (0 < request_timeout_seconds <= WORKER_REQUEST_TIMEOUT_SECONDS):
+            raise ValueError("Runtime worker request timeout must be positive and at most 2s")
+        if max_stderr_bytes < 1:
+            raise ValueError("Runtime I/O limits must be positive")
+        if not runtime_python_path.is_absolute():
+            raise ValueError("Runtime Python path must be absolute")
+        if not release_root.is_absolute():
+            raise ValueError("Runtime release root must be absolute")
+        if not state_root.is_absolute():
+            raise ValueError("Runtime state root must be absolute")
+        _require_private_directory(state_root, "Runtime state root", writable=True)
+        self._release_root = release_root.resolve()
+        self._worker_path = _require_absolute_regular_file(
+            self._release_root / WORKER_RELATIVE,
+            "Runtime worker",
+        )
+        resolved_worker = self._worker_path.resolve(strict=True)
+        if resolved_worker != (self._release_root / WORKER_RELATIVE).resolve(strict=True):
+            raise RuntimeStartupError("Runtime worker escapes the release root")
+        if not runtime_python_path.is_file():
+            raise RuntimeStartupError("Runtime Python is missing")
+        self._runtime_python_path = runtime_python_path
+        self._state_root = state_root
+        self._expected_listing_sha256 = expected_listing_sha256
+        self._expected_runtime_integrity_sha256 = expected_runtime_integrity_sha256
+        self._ready_timeout_seconds = ready_timeout_seconds
+        self._request_timeout_seconds = request_timeout_seconds
+        self._max_stderr_bytes = max_stderr_bytes
+        self._lock = asyncio.Lock()
+        self._process: asyncio.subprocess.Process | None = None
+        self._process_group_id: int | None = None
+        self._stderr_task: asyncio.Task[None] | None = None
+        self._stderr = bytearray()
+        self._ready: dict[str, Any] | None = None
+        self._identity_sha256: str | None = None
+        self._next_sequence = 1
+        self._written_request_ids: set[str] = set()
+        self._isolated = False
+        self._written_without_result = False
+
+    @property
+    def isolated(self) -> bool:
+        return self._isolated
+
+    @property
+    def ready(self) -> Mapping[str, Any] | None:
+        return None if self._ready is None else dict(self._ready)
+
+    def spawn_argv(self) -> tuple[str, ...]:
+        return (
+            str(self._runtime_python_path),
+            "-I",
+            "-S",
+            "-B",
+            str(self._worker_path),
+            "--expected-listing-sha256",
+            self._expected_listing_sha256,
+            "--expected-runtime-integrity-sha256",
+            self._expected_runtime_integrity_sha256,
+            "--ready-timeout-seconds",
+            f"{self._ready_timeout_seconds:g}",
+        )
+
+    def _environment(self) -> dict[str, str]:
+        return {
+            "HOME": "/nonexistent",
+            "LANG": "C.UTF-8",
+            "LC_ALL": "C.UTF-8",
+            "MINGLI_STORE_ROOT": str(self._state_root),
+            "PATH": RUNTIME_PROCESS_PATH,
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PYTHONPYCACHEPREFIX": "/dev/null",
+            "TZ": "UTC",
+        }
+
+    async def start(self) -> Mapping[str, Any]:
+        async with self._lock:
+            if self._isolated:
+                raise RuntimeStartupError("isolated Runtime worker cannot be restarted in place")
+            if self._ready is not None:
+                return dict(self._ready)
+            try:
+                process = await asyncio.create_subprocess_exec(
+                    *self.spawn_argv(),
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    env=self._environment(),
+                    start_new_session=True,
+                )
+            except OSError as error:
+                raise RuntimeStartupError("Runtime worker spawn failed") from error
+            self._process = process
+            try:
+                self._process_group_id = os.getpgid(process.pid)
+            except ProcessLookupError:
+                self._process_group_id = None
+            self._stderr_task = asyncio.create_task(self._drain_stderr())
+            try:
+                async with asyncio.timeout(self._ready_timeout_seconds):
+                    if process.stdout is None:
+                        raise RuntimeStartupError("Runtime worker pipe is unavailable")
+                    ready = await _read_worker_frame(process.stdout)
+                    if _stream_has_pending(process.stdout) or self._stderr:
+                        raise RuntimeStartupError("Runtime worker emitted extra stdio during READY")
+            except TimeoutError as error:
+                await self._isolate_locked()
+                raise RuntimeStartupError("Runtime worker READY timed out") from error
+            except RuntimeTransportError as error:
+                await self._isolate_locked()
+                raise RuntimeStartupError("Runtime worker READY is invalid") from error
+            except RuntimeStartupError:
+                await self._isolate_locked()
+                raise
+            except BaseException:
+                await self._isolate_locked()
+                raise
+            try:
+                self._bind_ready(ready)
+            except RuntimeStartupError:
+                await self._isolate_locked()
+                raise
+            return dict(ready)
+
+    def _bind_ready(self, ready: Mapping[str, Any]) -> None:
+        identity = ready.get("identity_sha256")
+        listing = ready.get("listing_sha256")
+        integrity = ready.get("runtime_integrity_sha256")
+        sequence_start = ready.get("sequence_start")
+        if (
+            ready.get("type") != "ready"
+            or ready.get("protocol") != WORKER_PROTOCOL
+            or ready.get("runtime_protocol") != EXPECTED_RUNTIME_PROTOCOL
+            or not isinstance(identity, str)
+            or _SHA256_RE.fullmatch(identity) is None
+            or listing != self._expected_listing_sha256
+            or integrity != self._expected_runtime_integrity_sha256
+            or ready.get("single_in_flight") is not True
+            or ready.get("replay_policy") != "forbidden"
+            or ready.get("fallback_policy") != "forbidden"
+            or ready.get("max_frame_bytes") != WORKER_MAX_FRAME_BYTES
+            or sequence_start != 1
+            or not isinstance(ready.get("pid"), int)
+            or not isinstance(ready.get("boot_nonce"), str)
+            or not ready.get("boot_nonce")
+        ):
+            raise RuntimeStartupError("Runtime worker READY identity is invalid")
+        self._ready = dict(ready)
+        self._identity_sha256 = identity
+        self._next_sequence = 1
+
+    async def execute(self, command: MingliCommand) -> MingliResult:
+        async with self._lock:
+            if (
+                self._isolated
+                or self._process is None
+                or self._ready is None
+                or self._identity_sha256 is None
+                or self._written_without_result
+            ):
+                return generic_runtime_stopped()
+            request_id = secrets.token_hex(16)
+            if (
+                _REQUEST_ID_RE.fullmatch(request_id) is None
+                or request_id in self._written_request_ids
+            ):
+                await self._isolate_locked()
+                return generic_runtime_stopped()
+            sequence = self._next_sequence
+            envelope = {
+                "type": "command",
+                "protocol": WORKER_PROTOCOL,
+                "identity_sha256": self._identity_sha256,
+                "request_id": request_id,
+                "sequence": sequence,
+                "command": command.to_dict(),
+            }
+            try:
+                encoded = encode_worker_frame(envelope)
+            except RuntimeTransportError:
+                await self._isolate_locked()
+                return generic_runtime_stopped()
+            stdin = self._process.stdin
+            stdout = self._process.stdout
+            if stdin is None or stdout is None:
+                await self._isolate_locked()
+                return generic_runtime_stopped()
+            if _stream_has_pending(stdout) or self._stderr:
+                await self._isolate_locked()
+                return generic_runtime_stopped()
+            try:
+                async with asyncio.timeout(self._request_timeout_seconds):
+                    stdin.write(encoded)
+                    await stdin.drain()
+                    self._written_request_ids.add(request_id)
+                    self._next_sequence = sequence + 1
+                    self._written_without_result = True
+                    payload = await _read_worker_frame(stdout)
+                    extra_stdio = _stream_has_pending(stdout) or bool(self._stderr)
+                    if not extra_stdio:
+                        await asyncio.sleep(0.02)
+                        extra_stdio = _stream_has_pending(stdout) or bool(self._stderr)
+            except TimeoutError:
+                await self._isolate_locked()
+                return generic_runtime_stopped()
+            except (BrokenPipeError, ConnectionResetError, RuntimeTransportError):
+                await self._isolate_locked()
+                return generic_runtime_stopped()
+            except BaseException:
+                await self._isolate_locked()
+                raise
+            if extra_stdio:
+                await self._isolate_locked()
+                return generic_runtime_stopped()
+            return await self._accept_result_locked(payload, request_id, sequence)
+
+    async def close(self) -> None:
+        async with self._lock:
+            await self._isolate_locked()
+
+    async def _accept_result_locked(
+        self,
+        payload: Mapping[str, Any],
+        request_id: str,
+        sequence: int,
+    ) -> MingliResult:
+        isolate = payload.get("worker_action") != "continue"
+        result_payload = payload.get("result")
+        accepted = (
+            payload.get("type") == "result"
+            and payload.get("protocol") == WORKER_PROTOCOL
+            and payload.get("identity_sha256") == self._identity_sha256
+            and payload.get("request_id") == request_id
+            and payload.get("sequence") == sequence
+            and payload.get("worker_action") in {"continue", "isolate"}
+            and isinstance(result_payload, Mapping)
+        )
+        if not accepted or not isinstance(result_payload, Mapping):
+            await self._isolate_locked()
+            return generic_runtime_stopped()
+        try:
+            result = result_from_dict(result_payload)
+        except (KeyError, TypeError, ValueError):
+            await self._isolate_locked()
+            return generic_runtime_stopped()
+        self._written_without_result = False
+        if isolate:
+            await self._isolate_locked()
+            return generic_runtime_stopped()
+        if self._process is not None and self._process.returncode is not None:
+            await self._isolate_locked()
+            return generic_runtime_stopped()
+        return result
+
+    async def _drain_stderr(self) -> None:
+        process = self._process
+        if process is None or process.stderr is None:
+            return
+        try:
+            while chunk := await process.stderr.read(64 * 1024):
+                remaining = self._max_stderr_bytes + 1 - len(self._stderr)
+                if remaining <= 0:
+                    return
+                self._stderr.extend(chunk[:remaining])
+        except (asyncio.CancelledError, OSError):
+            return
+
+    async def _isolate_locked(self) -> None:
+        self._isolated = True
+        process = self._process
+        process_group_id = self._process_group_id
+        self._process = None
+        self._process_group_id = None
+        self._ready = None
+        self._identity_sha256 = None
+        if process is not None:
+            await _kill_process_group(process, process_group_id)
+        if self._stderr_task is not None:
+            self._stderr_task.cancel()
+            with suppress(asyncio.CancelledError, Exception):
+                await self._stderr_task
+            self._stderr_task = None
 
 
 def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:

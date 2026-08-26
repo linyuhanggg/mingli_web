@@ -10,8 +10,10 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import build_evidence_index
+from reading_engine import evidence_rules
 from reading_engine.evidence_rules import load_evidence_rules
 
 
@@ -57,6 +59,76 @@ def _copy_required_research_sources(
 
 
 class EvidenceSourceIntegrityTests(unittest.TestCase):
+    def test_loader_validates_only_the_requested_system_partition(self) -> None:
+        with mock.patch.object(
+            evidence_rules,
+            "_validate_rule",
+            wraps=evidence_rules._validate_rule,
+        ) as validate_rule:
+            loaded = load_evidence_rules(INDEX, root=ROOT, system="ziwei")
+
+        self.assertEqual(len(loaded), 95)
+        self.assertEqual({rule.system for rule in loaded}, {"ziwei"})
+        self.assertEqual(validate_rule.call_count, 95)
+
+    def test_partition_loader_still_fails_closed_on_schema_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            index = Path(temporary) / "evidence-rules.jsonl"
+            index.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "unsupported",
+                        "system": "bazi",
+                    },
+                    separators=(",", ":"),
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "unsupported evidence rule schema"):
+                load_evidence_rules(index, root=ROOT, system="ziwei")
+
+    def test_loader_hashes_a_shared_release_source_once(self) -> None:
+        records = [
+            json.loads(line)
+            for line in INDEX.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ][:2]
+        self.assertEqual(records[0]["source_path"], records[1]["source_path"])
+        source = (ROOT / records[0]["source_path"]).resolve(strict=True)
+        source_reads = 0
+        original_read_bytes = Path.read_bytes
+
+        def tracked_read_bytes(path: Path) -> bytes:
+            nonlocal source_reads
+            if path == source:
+                source_reads += 1
+            return original_read_bytes(path)
+
+        build_evidence_index._source_rule_bindings.cache_clear()
+        with tempfile.TemporaryDirectory() as temporary:
+            index = Path(temporary) / "evidence-rules.jsonl"
+            index.write_text(
+                "".join(
+                    json.dumps(
+                        record,
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    )
+                    + "\n"
+                    for record in records
+                ),
+                encoding="utf-8",
+            )
+            with mock.patch.object(Path, "read_bytes", tracked_read_bytes):
+                loaded = load_evidence_rules(index, root=ROOT)
+
+        self.assertEqual(len(loaded), 2)
+        # One release digest plus one source-parser read; neither repeats for
+        # the second rule that points at the same immutable source file.
+        self.assertEqual(source_reads, 2)
+
     def test_compiler_fails_closed_when_a_research_source_tree_is_missing(self) -> None:
         source = {
             "path": "references/fulltext/bazi/qiongtong-baojian/fulltext.md",

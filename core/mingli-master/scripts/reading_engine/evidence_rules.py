@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -33,6 +35,10 @@ EVIDENCE_ROLES = frozenset(
         "timing_rule",
         "verdict_prohibited",
     }
+)
+_PRODUCTION_SYSTEM: ContextVar[str | None] = ContextVar(
+    "mingli_production_evidence_system",
+    default=None,
 )
 
 
@@ -204,19 +210,41 @@ class EvidenceRule:
         return " ".join((self.title, self.chapter, self.quote, *self.topics))
 
 
-def _validate_rule(rule: EvidenceRule, *, root: Path) -> None:
+def _validated_source(
+    rule: EvidenceRule,
+    *,
+    root: Path,
+    cache: dict[str, tuple[Path, str]],
+) -> Path:
+    """Resolve and hash one immutable release source once per index load."""
+
+    cached = cache.get(rule.source_path)
+    if cached is None:
+        source = (root / rule.source_path).resolve(strict=True)
+        if not source.is_relative_to(root):
+            raise ValueError("evidence rule source escapes the skill root")
+        actual = hashlib.sha256(source.read_bytes()).hexdigest()
+        cache[rule.source_path] = (source, actual)
+    else:
+        source, actual = cached
+    if actual != rule.source_sha256:
+        raise ValueError(f"evidence rule source hash mismatch: {rule.rule_id}")
+    return source
+
+
+def _validate_rule(
+    rule: EvidenceRule,
+    *,
+    root: Path,
+    source_cache: dict[str, tuple[Path, str]],
+) -> None:
     if rule.record_kind != "substantive_rule":
         raise ValueError(f"non-substantive evidence record: {rule.rule_id}")
     if not rule.rule_id or not rule.source_pack or not rule.quote.strip():
         raise ValueError("evidence rule has an empty identity or quote")
     if rule.evidence_role not in EVIDENCE_ROLES:
         raise ValueError(f"invalid evidence role: {rule.rule_id}")
-    source = (root / rule.source_path).resolve(strict=True)
-    if not source.is_relative_to(root.resolve()):
-        raise ValueError("evidence rule source escapes the skill root")
-    actual = hashlib.sha256(source.read_bytes()).hexdigest()
-    if actual != rule.source_sha256:
-        raise ValueError(f"evidence rule source hash mismatch: {rule.rule_id}")
+    source = _validated_source(rule, root=root, cache=source_cache)
     expected_quote_hash = hashlib.sha256(rule.quote.encode("utf-8")).hexdigest()
     if rule.quote_hash != expected_quote_hash:
         raise ValueError(f"evidence rule quote hash mismatch: {rule.rule_id}")
@@ -273,11 +301,13 @@ def load_evidence_rules(
     path: str | Path = INDEX_PATH,
     *,
     root: str | Path | None = None,
+    system: str | None = None,
 ) -> tuple[EvidenceRule, ...]:
     source = Path(path).resolve(strict=True)
     skill_root = Path(root).resolve() if root is not None else source.parents[2]
     rules: list[EvidenceRule] = []
     seen: set[str] = set()
+    source_cache: dict[str, tuple[Path, str]] = {}
     for line_number, line in enumerate(
         source.read_text(encoding="utf-8").splitlines(),
         start=1,
@@ -291,8 +321,10 @@ def load_evidence_rules(
             raise ValueError(
                 f"unsupported evidence rule schema on line {line_number}"
             )
+        if system is not None and payload.get("system") != system:
+            continue
         rule = EvidenceRule.from_dict(payload)
-        _validate_rule(rule, root=skill_root)
+        _validate_rule(rule, root=skill_root, source_cache=source_cache)
         if rule.rule_id in seen:
             raise ValueError(f"duplicate evidence rule id: {rule.rule_id}")
         seen.add(rule.rule_id)
@@ -302,9 +334,26 @@ def load_evidence_rules(
     return tuple(rules)
 
 
-@lru_cache(maxsize=1)
+@contextmanager
+def production_evidence_scope(system: str):
+    """Limit one provider turn to its source-bound evidence partition."""
+
+    if not isinstance(system, str) or not system:
+        raise ValueError("production evidence system must be non-empty")
+    token = _PRODUCTION_SYSTEM.set(system)
+    try:
+        yield
+    finally:
+        _PRODUCTION_SYSTEM.reset(token)
+
+
+@lru_cache(maxsize=None)
+def _production_evidence_rules(system: str | None) -> tuple[EvidenceRule, ...]:
+    return load_evidence_rules(INDEX_PATH, system=system)
+
+
 def production_evidence_rules() -> tuple[EvidenceRule, ...]:
-    return load_evidence_rules(INDEX_PATH)
+    return _production_evidence_rules(_PRODUCTION_SYSTEM.get())
 
 
 def _predicate_fact_refs(
@@ -448,6 +497,7 @@ __all__ = [
     "SCHEMA_VERSION",
     "CLASSICAL_EVIDENCE_BINDINGS_SHA256",
     "load_evidence_rules",
+    "production_evidence_scope",
     "match_rule",
     "production_evidence_rules",
 ]
