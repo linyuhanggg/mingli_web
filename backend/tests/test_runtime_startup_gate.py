@@ -758,10 +758,16 @@ _SUPERSEDED_CORE_4A137431_RELEASE_MANIFEST_SHA = (
 _SUPERSEDED_CORE_4A137431_SOURCE_COMMIT = (
     "4a1374312c7b0f358d55f6cec6d238415f460ba9"
 )
-_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
+_SUPERSEDED_CORE_1D9B009_RELEASE_MANIFEST_SHA = (
     "f9aecc7d07f9462bdda4477308e11eb3a79d0446cf89948d13f709dd914afe17"
 )
-_ADMITTED_V53_SOURCE_COMMIT = "1d9b009be90e00ae04562ff8bddd0553360cb4c6"
+_SUPERSEDED_CORE_1D9B009_SOURCE_COMMIT = (
+    "1d9b009be90e00ae04562ff8bddd0553360cb4c6"
+)
+_ADMITTED_V53_RELEASE_MANIFEST_SHA = (
+    "56a24a3a530ef9ed8d7437667b8a4d83a851827c73988044e6b928a065af6af4"
+)
+_ADMITTED_V53_SOURCE_COMMIT = "4cb7922cf18289ad43c590ad6d84eca610172a46"
 
 
 def test_runtime_startup_gate_admits_the_time_check_gap7_release_profile(
@@ -790,11 +796,11 @@ def test_runtime_startup_gate_admits_the_time_check_gap7_release_profile(
 
     gate = build_runtime_startup_gate(settings)
 
-    assert V53_TIME_CHECK_RELEASE_FILE_COUNT == 224
+    assert V53_TIME_CHECK_RELEASE_FILE_COUNT == 225
     assert gate.expected_release_manifest_sha256 == profile["release_manifest_sha256"]
     assert gate.expected_release_manifest_sha256 == _ADMITTED_V53_RELEASE_MANIFEST_SHA
-    assert gate.expected_release_file_count == 224
-    assert gate.release_inspector.expected_release_file_count == 224
+    assert gate.expected_release_file_count == 225
+    assert gate.release_inspector.expected_release_file_count == 225
     assert gate.release_inspector.expected_source_commit == _ADMITTED_V53_SOURCE_COMMIT
     assert gate.release_inspector.expected_release_name == profile["release_name"]
     assert gate.expected_capability_ids == V53_TIME_CHECK_RELEASE_CAPABILITY_IDS
@@ -957,6 +963,94 @@ def test_filesystem_release_inspector_rejects_the_core_4a137431_source_identity(
             expected_release_name="fixture-release",
             expected_source_commit=_ADMITTED_V53_SOURCE_COMMIT,
         ).inspect()
+
+
+async def test_runtime_startup_gate_rejects_the_core_1d9b009_manifest_identity(
+    tmp_path: Path,
+) -> None:
+    description = await _fake_description()
+    launcher = _write_executable(tmp_path / "runtime-fixture", description.to_dict())
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    runtime = OneShotMingliRuntimeAdapter(
+        launcher_path=launcher,
+        runtime_python_path=Path("/usr/bin/python3"),
+        state_root=state_root,
+        timeout_seconds=1,
+    )
+    inventory = replace(
+        _inventory(),
+        release_manifest_sha256=_SUPERSEDED_CORE_1D9B009_RELEASE_MANIFEST_SHA,
+    )
+    gate = RuntimeStartupGate(
+        runtime=runtime,
+        release_inspector=StaticReleaseInspector(inventory),
+        expected_manifest_digest=description.manifest_digest,
+        expected_release_manifest_sha256=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
+        expected_capability_shape_sha256=runtime_capability_shape_sha256(
+            description.capabilities
+        ),
+    )
+
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        await gate.startup()
+    with pytest.raises(RuntimeStartupError, match="not ready"):
+        await gate.readiness_probe()
+
+
+def test_filesystem_release_inspector_rejects_the_core_1d9b009_source_identity(
+    tmp_path: Path,
+) -> None:
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    manifest_sha256 = _build_signed_release_fixture(
+        release_root,
+        source_commit=_SUPERSEDED_CORE_1D9B009_SOURCE_COMMIT,
+    )
+
+    with pytest.raises(RuntimeStartupError, match="release identity mismatch"):
+        FileSystemRuntimeReleaseInspector(
+            release_root=release_root,
+            expected_release_manifest_sha256=manifest_sha256,
+            expected_release_name="fixture-release",
+            expected_source_commit=_ADMITTED_V53_SOURCE_COMMIT,
+        ).inspect()
+
+
+async def test_runtime_startup_gate_rejects_the_superseded_1d9b009_file_count(
+    tmp_path: Path,
+) -> None:
+    description = await _fake_description()
+    launcher = _write_executable(tmp_path / "runtime-fixture", description.to_dict())
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    runtime = OneShotMingliRuntimeAdapter(
+        launcher_path=launcher,
+        runtime_python_path=Path("/usr/bin/python3"),
+        state_root=state_root,
+        timeout_seconds=1,
+    )
+    inventory = replace(
+        _inventory(),
+        release_manifest_sha256=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
+        release_file_count=224,
+        runtime_closure_file_count=224,
+    )
+    gate = RuntimeStartupGate(
+        runtime=runtime,
+        release_inspector=StaticReleaseInspector(inventory),
+        expected_manifest_digest=description.manifest_digest,
+        expected_release_manifest_sha256=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
+        expected_capability_shape_sha256=runtime_capability_shape_sha256(
+            description.capabilities
+        ),
+        expected_release_file_count=225,
+    )
+
+    with pytest.raises(RuntimeStartupError, match="release manifest is incomplete"):
+        await gate.startup()
+    with pytest.raises(RuntimeStartupError, match="not ready"):
+        await gate.readiness_probe()
 
 
 def test_runtime_startup_gate_rejects_stale_v53_time_check_digests(
