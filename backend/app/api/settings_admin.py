@@ -43,6 +43,7 @@ async def get_admin_settings(
         cookie_secure=settings.cookie_secure,
         otp_adapter=settings.otp_adapter,
         runtime_adapter=settings.runtime_adapter,
+        runtime_release_profile=settings.runtime_release_profile,
         admin_session_hours=settings.admin_session_hours,
         dogfood_entitlement_gates_enabled=settings.dogfood_entitlement_gates_enabled,
         real_traffic_enabled=settings.real_traffic_enabled,
