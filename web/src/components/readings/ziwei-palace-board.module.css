@@ -359,6 +359,12 @@
   font-size: var(--font-size-aux);
 }
 
+.table.srOnly {
+  width: 1px;
+  max-width: 1px;
+  table-layout: fixed;
+}
+
 .table th,
 .table td {
   padding: 0.25rem 0.4rem;

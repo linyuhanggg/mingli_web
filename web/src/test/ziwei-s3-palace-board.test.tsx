@@ -251,6 +251,37 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(palaceButton("午")).not.toHaveAttribute("data-highlight");
   });
 
+  it("previews the same linked palaces on direct focus and hover without replacing the click lock", async () => {
+    const user = userEvent.setup();
+    render(<ZiweiPalaceBoard view={chart()} />);
+
+    await act(async () => {
+      palaceButton("寅").focus();
+    });
+    expect(palaceButton("寅")).toHaveAttribute("data-highlight", "primary");
+    expect(palaceButton("午")).toHaveAttribute("data-highlight", "related");
+    expect(palaceButton("戌")).toHaveAttribute("data-highlight", "related");
+    expect(palaceButton("申")).toHaveAttribute("data-highlight", "related");
+
+    await act(async () => {
+      palaceButton("寅").blur();
+    });
+    expect(ring().querySelectorAll("[data-highlight]")).toHaveLength(0);
+
+    await user.click(palaceButton("午"));
+    expect(palaceButton("午")).toHaveAttribute("data-highlight", "primary");
+
+    await user.hover(palaceButton("寅"));
+    expect(palaceButton("寅")).toHaveAttribute("data-highlight", "primary");
+    expect(palaceButton("午")).toHaveAttribute("data-highlight", "related");
+    expect(palaceButton("戌")).toHaveAttribute("data-highlight", "related");
+    expect(palaceButton("申")).toHaveAttribute("data-highlight", "related");
+
+    await user.unhover(palaceButton("寅"));
+    expect(palaceButton("午")).toHaveAttribute("data-highlight", "primary");
+    expect(palaceButton("寅")).toHaveAttribute("data-highlight", "related");
+  });
+
   it("clears a locked selection on Escape without stealing the detail drawer Escape", async () => {
     const user = userEvent.setup();
     render(<ZiweiPalaceBoard view={chart()} />);
@@ -309,6 +340,7 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(within(table).getByText("紫微 天府")).toBeTruthy();
     expect(within(table).getByText("壬寅")).toBeTruthy();
     expect(within(table).getByText("3–12")).toBeTruthy();
+    expect(getComputedStyle(table).width).toBe("1px");
   });
 
   it("renders the list layout from the life palace when layout is list", () => {
@@ -1796,6 +1828,28 @@ describe("紫微 S3 M2 宫位详情抽屉", () => {
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog", { name: "宫位详情" })).not.toBeInTheDocument();
     expect(palaceButton("午")).toHaveFocus();
+  });
+
+  it("traps forward and reverse Tab inside the modal drawer before restoring its trigger", async () => {
+    const user = userEvent.setup();
+    render(<ZiweiPalaceBoard layout="list" view={drawerView()} />);
+    const lifeCard = screen.getByRole("list", { name: "十二宫列表" }).querySelector(
+      '[data-branch="寅"]',
+    ) as HTMLElement;
+    const trigger = within(lifeCard).getByRole("button", { name: "详情" });
+
+    await user.click(trigger);
+    const close = within(detail()).getByRole("button", { name: "关闭" });
+    expect(close).toHaveFocus();
+
+    await user.tab();
+    expect(close).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(close).toHaveFocus();
+
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: "宫位详情" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
   });
 
   it("opens from the list 详情 control and stays closed in silhouette or loading", async () => {
