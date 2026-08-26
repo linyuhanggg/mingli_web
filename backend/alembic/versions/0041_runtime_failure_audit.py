@@ -32,12 +32,12 @@ def upgrade() -> None:
         batch.add_column(sa.Column("runtime_failure_code", sa.String(length=80)))
         batch.add_column(sa.Column("runtime_failure_category", sa.String(length=40)))
         batch.add_column(sa.Column("runtime_failure_retryable", sa.Boolean()))
-        batch.create_check_constraint(CHECK_NAME, CHECK)
+        batch.create_check_constraint(op.f(CHECK_NAME), CHECK)
 
 
 def downgrade() -> None:
     with op.batch_alter_table(TABLE) as batch:
-        batch.drop_constraint(CHECK_NAME, type_="check")
+        batch.drop_constraint(op.f(CHECK_NAME), type_="check")
         batch.drop_column("runtime_failure_retryable")
         batch.drop_column("runtime_failure_category")
         batch.drop_column("runtime_failure_code")
