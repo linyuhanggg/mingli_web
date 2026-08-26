@@ -18,7 +18,6 @@ from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
 
-
 ENV_NAME = "MINGLI_PYTHON"
 MINIMUM_VERSION = (3, 10)
 REQUIRED_MODULES = ("yaml", "sxtwl", "astronomy", "cnlunar", "zhconv")
@@ -50,6 +49,10 @@ REQUIRED_DISTRIBUTIONS = {
     "cnlunar": "0.2.4",
     "zhconv": "1.4.3",
 }
+LOCKED_REQUIREMENT_PATTERN = re.compile(
+    r"^([A-Za-z0-9][A-Za-z0-9._-]*)==([^\s\\]+)(?:\s+(.+))?$"
+)
+LOCKED_HASH_PATTERN = re.compile(r"--hash=sha256:([0-9a-f]{64})")
 
 
 def assert_runtime_path_not_symlink(runtime_root: Path) -> None:
@@ -116,6 +119,57 @@ def runtime_lock(
 
 def _file_digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _normalized_distribution_name(name: str) -> str:
+    return re.sub(r"[-_.]+", "_", name).lower()
+
+
+def load_hash_locked_distributions(requirements: Path) -> dict[str, str]:
+    try:
+        physical_lines = requirements.read_text(encoding="utf-8").splitlines()
+    except OSError as exc:
+        raise RuntimeError("runtime requirements lock is unavailable") from exc
+    statements: list[str] = []
+    current: list[str] = []
+    for physical_line in physical_lines:
+        line = physical_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        continued = line.endswith("\\")
+        current.append(line[:-1].rstrip() if continued else line)
+        if not continued:
+            statements.append(" ".join(current))
+            current = []
+    if current or not statements:
+        raise RuntimeError("runtime requirements lock has an invalid continuation")
+
+    distributions: dict[str, str] = {}
+    for statement in statements:
+        match = LOCKED_REQUIREMENT_PATTERN.fullmatch(statement)
+        if match is None:
+            raise RuntimeError("runtime requirements lock contains an unsupported entry")
+        name, version, options = match.groups()
+        option_tokens = (options or "").split()
+        if not option_tokens or any(
+            LOCKED_HASH_PATTERN.fullmatch(token) is None for token in option_tokens
+        ):
+            raise RuntimeError("runtime requirements lock entry is not fully hash locked")
+        normalized = _normalized_distribution_name(name)
+        if normalized in distributions:
+            raise RuntimeError(
+                f"runtime requirements lock duplicates a distribution: {normalized}"
+            )
+        distributions[normalized] = version
+    return distributions
+
+
+def validate_runtime_requirements_lock(requirements: Path) -> None:
+    distributions = load_hash_locked_distributions(requirements)
+    if distributions != REQUIRED_DISTRIBUTIONS:
+        raise RuntimeError(
+            "runtime requirements lock does not match the distribution allowlist"
+        )
 
 
 def build_runtime_tree_manifest(
@@ -302,12 +356,13 @@ def load_cnlunar_reviewed_hashes(
 
 
 def current_runtime_identity() -> dict[str, object]:
+    from datetime import datetime
+
     import astronomy
     import cnlunar
     import sxtwl
     import yaml
     import zhconv
-    from datetime import datetime
 
     lunar = cnlunar.Lunar(datetime(2024, 2, 10, 12))
     package_root = Path(cnlunar.__file__).resolve().parent
