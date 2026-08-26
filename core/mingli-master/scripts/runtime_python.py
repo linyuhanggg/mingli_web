@@ -30,6 +30,7 @@ PINNED_VERSIONS = {
 }
 PROBE_MARKER = "mingli-runtime-v1"
 ROOT = Path(__file__).resolve().parents[1]
+APPROVED_RUNTIME_REQUIREMENTS = ROOT / "requirements-runtime.lock"
 CNLUNAR_PROVENANCE = ROOT / "vendor/cnlunar-0.2.4/PROVENANCE.json"
 CNLUNAR_REVIEWED_FILES = (
     "cnlunar/__init__.py",
@@ -125,7 +126,9 @@ def _normalized_distribution_name(name: str) -> str:
     return re.sub(r"[-_.]+", "_", name).lower()
 
 
-def load_hash_locked_distributions(requirements: Path) -> dict[str, str]:
+def load_hash_locked_distribution_artifacts(
+    requirements: Path,
+) -> dict[str, tuple[str, frozenset[str]]]:
     try:
         physical_lines = requirements.read_text(encoding="utf-8").splitlines()
     except OSError as exc:
@@ -144,31 +147,56 @@ def load_hash_locked_distributions(requirements: Path) -> dict[str, str]:
     if current or not statements:
         raise RuntimeError("runtime requirements lock has an invalid continuation")
 
-    distributions: dict[str, str] = {}
+    distributions: dict[str, tuple[str, frozenset[str]]] = {}
     for statement in statements:
         match = LOCKED_REQUIREMENT_PATTERN.fullmatch(statement)
         if match is None:
             raise RuntimeError("runtime requirements lock contains an unsupported entry")
         name, version, options = match.groups()
         option_tokens = (options or "").split()
-        if not option_tokens or any(
-            LOCKED_HASH_PATTERN.fullmatch(token) is None for token in option_tokens
-        ):
+        hashes: set[str] = set()
+        for token in option_tokens:
+            hash_match = LOCKED_HASH_PATTERN.fullmatch(token)
+            if hash_match is None:
+                raise RuntimeError(
+                    "runtime requirements lock entry is not fully hash locked"
+                )
+            hashes.add(hash_match.group(1))
+        if not hashes:
             raise RuntimeError("runtime requirements lock entry is not fully hash locked")
         normalized = _normalized_distribution_name(name)
         if normalized in distributions:
             raise RuntimeError(
                 f"runtime requirements lock duplicates a distribution: {normalized}"
             )
-        distributions[normalized] = version
+        distributions[normalized] = (version, frozenset(hashes))
     return distributions
 
 
+def load_hash_locked_distributions(requirements: Path) -> dict[str, str]:
+    return {
+        name: version
+        for name, (version, _hashes) in load_hash_locked_distribution_artifacts(
+            requirements
+        ).items()
+    }
+
+
 def validate_runtime_requirements_lock(requirements: Path) -> None:
-    distributions = load_hash_locked_distributions(requirements)
+    artifacts = load_hash_locked_distribution_artifacts(requirements)
+    distributions = {
+        name: version for name, (version, _hashes) in artifacts.items()
+    }
     if distributions != REQUIRED_DISTRIBUTIONS:
         raise RuntimeError(
             "runtime requirements lock does not match the distribution allowlist"
+        )
+    approved_artifacts = load_hash_locked_distribution_artifacts(
+        APPROVED_RUNTIME_REQUIREMENTS
+    )
+    if artifacts != approved_artifacts:
+        raise RuntimeError(
+            "runtime requirements lock does not match the approved artifact hash sets"
         )
 
 
