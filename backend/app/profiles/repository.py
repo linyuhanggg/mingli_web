@@ -172,6 +172,17 @@ class ProfileRepository:
             )
         )
 
+    async def get_latest_version(self, profile_id: UUID) -> ProfileVersion | None:
+        return cast(
+            ProfileVersion | None,
+            await self.session.scalar(
+                select(ProfileVersion)
+                .where(ProfileVersion.profile_id == profile_id)
+                .order_by(ProfileVersion.version.desc())
+                .limit(1)
+            ),
+        )
+
     async def get_owned_profile_version(
         self,
         version_id: UUID,
@@ -240,6 +251,9 @@ class ProfileRepository:
         version = await self.session.get(ProfileVersion, version_id)
         if version is None:
             raise LookupError("ProfileVersion not found")
+        return self.decrypt_version_payload(version)
+
+    def decrypt_version_payload(self, version: ProfileVersion) -> dict[str, object]:
         payload = EncryptedPayload(
             key_id=version.payload_key_id,
             nonce=version.payload_nonce,

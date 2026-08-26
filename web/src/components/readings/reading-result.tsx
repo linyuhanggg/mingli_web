@@ -10,6 +10,7 @@ import {
   type ReadingResultResponse,
   type ReadingVersionSummary,
 } from "@/lib/api";
+import { shouldKeepPolling } from "@/lib/reading-poll";
 import { Status, type StatusState } from "@/components/ui/status";
 import {
   buildBaziChartView,
@@ -238,24 +239,31 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
         setError(null);
         setLoading(false);
 
-        if (RESULT_READY_STATUSES.has(response.status)) {
+        if (RESULT_READY_STATUSES.has(response.status) || response.result_available) {
           const nextResult = await getReadingResult(readingId);
           if (cancelled) return;
           setResult(nextResult);
-          if (response.status === "accepted") return;
-          schedule(DEFAULT_POLL_MS);
+          if (!shouldKeepPolling({
+            status: nextResult.status,
+            poll_required: nextResult.poll_required ?? response.poll_required,
+          })) {
+            return;
+          }
+          schedule(
+            (nextResult.poll_after_seconds ?? response.poll_after_seconds) != null
+              ? (nextResult.poll_after_seconds ?? response.poll_after_seconds ?? 0) * 1000
+              : DEFAULT_POLL_MS,
+          );
           return;
         }
 
-        if (
-          response.status === "waiting_input" ||
-          response.status === "terminal_stopped" ||
-          response.status === "runtime_unknown"
-        ) {
+        if (!shouldKeepPolling(response)) {
           return;
         }
 
-        schedule(DEFAULT_POLL_MS);
+        schedule(response.poll_after_seconds != null
+          ? response.poll_after_seconds * 1000
+          : DEFAULT_POLL_MS);
       } catch (err) {
         if (cancelled) return;
         setLoading(false);

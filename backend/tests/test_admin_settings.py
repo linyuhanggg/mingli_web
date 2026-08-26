@@ -22,6 +22,8 @@ async def test_admin_settings_returns_safe_runtime_flags_without_secrets(
     assert response.status_code == 200, response.text
     assert response.json()["environment"] == "test"
     assert response.json()["otp_adapter"] == "fake"
+    assert response.json()["runtime_adapter"] == "fake"
+    assert response.json()["runtime_release_profile"] == "v51"
     assert "database_url" not in response.text
     assert "identity_hash_key" not in response.text
 

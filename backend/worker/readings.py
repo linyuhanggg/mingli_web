@@ -322,7 +322,7 @@ def build_reading_worker(
         model=resolved_model,
         clock=resolved_clock,
         alert_sink=build_alert_sink(enabled=settings.alert_sink_enabled),
-        require_reading_document=settings.runtime_adapter == "one-shot",
+        require_reading_document=settings.runtime_adapter in {"one-shot", "worker-v2"},
     )
     source = ReadingJobWorkSource(
         sessions=database.sessions,
@@ -346,9 +346,9 @@ async def configured_reading_worker() -> AsyncIterator[Worker]:
     database = Database(settings.database_url)
     worker_id = f"{socket.gethostname()}:{os.getpid()}:{uuid4().hex}"
     model_adapter: DeepSeekStandaloneModelAdapter | None = None
+    runtime: RuntimePort | None = None
     try:
-        runtime: RuntimePort | None = None
-        if settings.runtime_adapter == "one-shot":
+        if settings.runtime_adapter in {"one-shot", "worker-v2"}:
             runtime_gate = build_runtime_startup_gate(settings)
             await runtime_gate.startup()
             runtime = runtime_gate.runtime
@@ -365,7 +365,12 @@ async def configured_reading_worker() -> AsyncIterator[Worker]:
         )
     finally:
         try:
-            if model_adapter is not None:
-                await model_adapter.aclose()
+            close = getattr(runtime, "close", None)
+            if callable(close):
+                await close()
         finally:
-            await database.dispose()
+            try:
+                if model_adapter is not None:
+                    await model_adapter.aclose()
+            finally:
+                await database.dispose()

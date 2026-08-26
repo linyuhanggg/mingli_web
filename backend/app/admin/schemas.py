@@ -182,7 +182,13 @@ class AdminCapabilitiesResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     environment: Literal["local", "test", "staging", "production"]
-    runtime_adapter: Literal["fake", "one-shot"]
+    runtime_adapter: Literal["fake", "one-shot", "worker-v2"]
+    runtime_release_profile: Literal[
+        "v51",
+        "v51-extension-facts",
+        "v52-relationship",
+        "v53-time-check",
+    ]
     runtime_health: Literal["unverified"]
     production_ready: bool
     capabilities: list[AdminCapabilityResponse]
@@ -343,7 +349,13 @@ class AdminSettingsResponse(BaseModel):
     environment: Literal["local", "test", "staging", "production"]
     cookie_secure: bool
     otp_adapter: Literal["fake", "disabled", "smtp"]
-    runtime_adapter: Literal["fake", "one-shot"]
+    runtime_adapter: Literal["fake", "one-shot", "worker-v2"]
+    runtime_release_profile: Literal[
+        "v51",
+        "v51-extension-facts",
+        "v52-relationship",
+        "v53-time-check",
+    ]
     admin_session_hours: int = Field(ge=1, le=24)
     dogfood_entitlement_gates_enabled: bool
     real_traffic_enabled: bool

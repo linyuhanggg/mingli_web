@@ -12,11 +12,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Popover as PopoverPrimitive } from "radix-ui";
 import {
+  createContext,
+  useContext,
   useEffect,
   useRef,
   useState,
   type KeyboardEvent,
   type MouseEvent,
+  type ReactNode,
 } from "react";
 
 import {
@@ -59,15 +62,15 @@ const divinationGroups = [
   },
 ] as const;
 
-const homepageProductHrefs = new Set([
-  "/bazi",
-  "/ziwei",
-  "/qizheng",
-  "/liuyao",
-  "/qimen",
-  "/daliuren",
-  "/jianxiang",
-]);
+const PublicShellChromeContext = createContext(false);
+
+export function PublicShellChrome({ children }: { children: ReactNode }) {
+  return (
+    <PublicShellChromeContext.Provider value={true}>
+      {children}
+    </PublicShellChromeContext.Provider>
+  );
+}
 
 const crossLinks = [
   {
@@ -188,12 +191,6 @@ function menuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
 function MegaMenu() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() ?? "/";
-  const visibleGroups = pathname === "/"
-    ? divinationGroups.map((group) => ({
-        ...group,
-        items: group.items.filter((item) => homepageProductHrefs.has(item.href)),
-      }))
-    : divinationGroups;
 
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
@@ -229,7 +226,7 @@ function MegaMenu() {
             });
           }}
         >
-              {visibleGroups.map((group) => (
+              {divinationGroups.map((group) => (
             <section className={styles.megaGroup} key={group.label}>
               <h2>{group.label}</h2>
               <div className={styles.megaLinks}>
@@ -523,6 +520,7 @@ export function SitePrimaryNavigation() {
 
 export function SiteHeader() {
   const pathname = usePathname() || "/";
+  const inPublicShell = useContext(PublicShellChromeContext);
 
   return (
     <>
@@ -540,6 +538,7 @@ export function SiteHeader() {
           </div>
         </Container>
       </header>
+      {inPublicShell ? null : <MobileNavigation pathname={pathname} />}
     </>
   );
 }

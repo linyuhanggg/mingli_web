@@ -451,7 +451,8 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
 
     expect(await screen.findByText("按时间起卦")).toBeVisible();
     expect(screen.getByText("水雷屯")).toBeVisible();
-    expect(screen.getAllByText("calculated_relation_not_verdict").length).toBe(2);
+    expect(screen.queryByText("calculated_relation_not_verdict")).not.toBeInTheDocument();
+    expect(screen.getAllByText("已计算关系").length).toBeGreaterThan(0);
     expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith("/result"))).toBe(true);
     expect(screen.queryByText("复核与追问")).not.toBeInTheDocument();
     unmount();
