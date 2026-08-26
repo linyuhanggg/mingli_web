@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib
 import io
 import json
 import os
@@ -11,25 +12,24 @@ import struct
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import unittest
 from dataclasses import replace
 from pathlib import Path, PurePosixPath
+from typing import BinaryIO
 from unittest.mock import Mock, patch
-
 
 SCRIPTS = Path(__file__).resolve().parent
 ROOT = SCRIPTS.parent
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from reading_engine import runtime_worker
-from reading_engine.interface_contracts import (
-    HorizonSelection,
-    IntentSelection,
-    Prepare,
-)
-
+runtime_worker = importlib.import_module("reading_engine.runtime_worker")
+interface_contracts = importlib.import_module("reading_engine.interface_contracts")
+HorizonSelection = interface_contracts.HorizonSelection
+IntentSelection = interface_contracts.IntentSelection
+Prepare = interface_contracts.Prepare
 
 WORKER_RELATIVE = "scripts/reading_engine/runtime_worker.py"
 
@@ -125,16 +125,83 @@ def _command(
     *,
     request_id: str = "request-1",
     identity_sha256: str = "a" * 64,
+    protocol: str = runtime_worker.WORKER_PROTOCOL,
     command: dict[str, object] | None = None,
 ) -> dict[str, object]:
     return {
         "type": "command",
-        "protocol": runtime_worker.WORKER_PROTOCOL,
+        "protocol": protocol,
         "identity_sha256": identity_sha256,
         "request_id": request_id,
         "sequence": sequence,
         "command": command or {"kind": "describe"},
     }
+
+
+def _expected_terminal(
+    *,
+    identity_sha256: str = "a" * 64,
+    request_id: str = "request-1",
+    sequence: int = 1,
+) -> dict[str, object]:
+    return {
+        "type": runtime_worker.TURN_TERMINAL_TYPE,
+        "protocol": runtime_worker.WORKER_PROTOCOL,
+        "identity_sha256": identity_sha256,
+        "request_id": request_id,
+        "sequence": sequence,
+    }
+
+
+def _read_success_turn(
+    stream: BinaryIO,
+    *,
+    stderr: BinaryIO | None = None,
+    identity_sha256: str = "a" * 64,
+    request_id: str = "request-1",
+    sequence: int = 1,
+) -> dict[str, object]:
+    """Independent host probe for the frozen Result -> idle turn contract."""
+
+    result = runtime_worker.read_frame(stream)
+    if (
+        not isinstance(result, dict)
+        or set(result)
+        != {
+            "type",
+            "protocol",
+            "identity_sha256",
+            "request_id",
+            "sequence",
+            "result",
+            "worker_action",
+        }
+        or result.get("type") != "result"
+        or result.get("protocol") != runtime_worker.WORKER_PROTOCOL
+        or result.get("identity_sha256") != identity_sha256
+        or result.get("request_id") != request_id
+        or result.get("sequence") != sequence
+        or result.get("worker_action") != "continue"
+    ):
+        raise runtime_worker.FrameError("turn did not begin with Result")
+    if stderr is not None:
+        readable, _, _ = select.select([stream, stderr], [], [], 2.0)
+        if not readable:
+            raise runtime_worker.FrameError("turn terminal did not arrive")
+        if stderr in readable and stderr.read(1):
+            raise runtime_worker.FrameError("stderr arrived before turn terminal")
+        if stream not in readable:
+            readable, _, _ = select.select([stream], [], [], 2.0)
+            if not readable:
+                raise runtime_worker.FrameError("turn terminal did not arrive")
+    terminal = runtime_worker.read_frame(stream)
+    if terminal != _expected_terminal(
+        identity_sha256=identity_sha256,
+        request_id=request_id,
+        sequence=sequence,
+    ):
+        raise runtime_worker.FrameError("turn terminal is invalid")
+    return result
 
 
 class SyntheticRelease:
@@ -153,7 +220,7 @@ class SyntheticRelease:
             runtime_worker.RUNTIME_CLOSURE: (
                 json.dumps(closure, sort_keys=True, separators=(",", ":")) + "\n"
             ).encode(),
-            runtime_worker.WORKER_RELATIVE: b"worker-v1\n",
+            runtime_worker.WORKER_RELATIVE: b"worker-v2\n",
             "scripts/runtime_launcher.py": b"one-shot-python\n",
             "scripts/run_reading_transaction.sh": b"one-shot-shell\n",
         }
@@ -307,6 +374,7 @@ class WorkerIdentityTests(unittest.TestCase):
     def identity(self) -> runtime_worker.WorkerIdentity:
         return runtime_worker.WorkerIdentity(
             protocol=runtime_worker.WORKER_PROTOCOL,
+            turn_terminal=runtime_worker.TURN_TERMINAL_CAPABILITY,
             runtime_protocol=runtime_worker.RUNTIME_PROTOCOL,
             release_path="/verified/release",
             listing_sha256="1" * 64,
@@ -332,6 +400,10 @@ class WorkerIdentityTests(unittest.TestCase):
         )
         self.assertEqual(ready["type"], "ready")
         self.assertEqual(ready["protocol"], runtime_worker.WORKER_PROTOCOL)
+        self.assertEqual(
+            ready["turn_terminal"],
+            runtime_worker.TURN_TERMINAL_CAPABILITY,
+        )
         self.assertEqual(ready["identity_sha256"], identity.identity_sha256)
         for field in (
             "release_path",
@@ -352,15 +424,20 @@ class WorkerIdentityTests(unittest.TestCase):
 
     def test_any_bound_identity_change_changes_the_digest(self) -> None:
         identity = self.identity()
-        changed = replace(identity, listing_sha256="7" * 64)
-        self.assertNotEqual(identity.identity_sha256, changed.identity_sha256)
+        for changed in (
+            replace(identity, listing_sha256="7" * 64),
+            replace(identity, turn_terminal="legacy-no-terminal"),
+        ):
+            self.assertNotEqual(identity.identity_sha256, changed.identity_sha256)
 
     def test_ready_timeout_has_an_independent_explicit_bound(self) -> None:
         for value in (0, -1, runtime_worker.MAX_READY_TIMEOUT_SECONDS + 0.1):
-            with self.subTest(value=value):
-                with self.assertRaisesRegex(ValueError, "explicit bound"):
-                    with runtime_worker._ready_deadline(value):
-                        pass
+            with (
+                self.subTest(value=value),
+                self.assertRaisesRegex(ValueError, "explicit bound"),
+                runtime_worker._ready_deadline(value),
+            ):
+                pass
 
     def test_runtime_site_roots_are_admitted_before_identity_imports(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -407,9 +484,7 @@ class WorkerSessionTests(unittest.TestCase):
         session = self.session(execute=execute, verify=verify)
 
         first, first_isolate = session.process(_command())
-        second, second_isolate = session.process(
-            _command(2, request_id="request-2")
-        )
+        second, second_isolate = session.process(_command(2, request_id="request-2"))
 
         self.assertFalse(first_isolate)
         self.assertFalse(second_isolate)
@@ -424,6 +499,10 @@ class WorkerSessionTests(unittest.TestCase):
         cases = (
             (_command(2), "out-of-order"),
             (_command(identity_sha256="0" * 64), "identity-mismatch"),
+            (
+                _command(protocol="mingli-runtime-worker-v1"),
+                "legacy-protocol-mismatch",
+            ),
         )
         for payload, label in cases:
             with self.subTest(label=label):
@@ -435,9 +514,7 @@ class WorkerSessionTests(unittest.TestCase):
 
         session = self.session()
         session.process(_command())
-        response, isolate = session.process(
-            _command(2, request_id="request-1")
-        )
+        response, isolate = session.process(_command(2, request_id="request-1"))
         self.assertTrue(isolate)
         self.assertEqual(response["result"]["kind"], "stopped")  # type: ignore[index]
 
@@ -449,7 +526,9 @@ class WorkerSessionTests(unittest.TestCase):
         self.assertTrue(isolate)
         self.assertIsNone(response)
 
-    def test_runtime_error_invalid_result_and_identity_drift_stop_and_isolate(self) -> None:
+    def test_runtime_error_invalid_result_and_identity_drift_stop_and_isolate(
+        self,
+    ) -> None:
         execute_error = self.session(execute=Mock(side_effect=RuntimeError("boom")))
         response, isolate = execute_error.process(_command())
         self.assertTrue(isolate)
@@ -467,25 +546,45 @@ class WorkerSessionTests(unittest.TestCase):
         self.assertTrue(isolate)
         self.assertEqual(response["result"]["kind"], "stopped")  # type: ignore[index]
 
-    def test_runtime_cannot_emit_a_second_result_over_stdio(self) -> None:
-        class NoisyInterface:
-            def execute(self, _command: object) -> Mock:
-                os.write(sys.stdout.fileno(), b'{"kind":"described"}\n')
-                os.write(sys.stderr.fileno(), b"unexpected side channel\n")
-                return Mock(
-                    to_dict=Mock(
-                        return_value={"kind": "described", "capabilities": []}
+    def test_runtime_cannot_emit_delayed_result_or_stdio_before_terminal(self) -> None:
+        for delay_seconds in (0.0, 0.08):
+            with self.subTest(delay_seconds=delay_seconds):
+
+                class NoisyInterface:
+                    def __init__(self, delay: float) -> None:
+                        self.delay = delay
+
+                    def execute(self, _command: object) -> Mock:
+                        time.sleep(self.delay)
+                        os.write(
+                            sys.stdout.fileno(),
+                            runtime_worker.encode_frame(
+                                {"type": "result", "result": {"kind": "described"}}
+                            ),
+                        )
+                        os.write(sys.stderr.fileno(), b"unexpected side channel\n")
+                        return Mock(
+                            to_dict=Mock(
+                                return_value={"kind": "described", "capabilities": []}
+                            )
+                        )
+
+                session = self.session(
+                    execute=runtime_worker._execute_with_interface(
+                        NoisyInterface(delay_seconds)
                     )
                 )
+                response, isolate = session.process(_command())
 
-        session = self.session(
-            execute=runtime_worker._execute_with_interface(NoisyInterface())
-        )
-        response, isolate = session.process(_command())
-
-        self.assertTrue(isolate)
-        self.assertEqual(response["result"]["kind"], "stopped")  # type: ignore[index]
-        self.assertEqual(response["worker_action"], "isolate")  # type: ignore[index]
+                self.assertTrue(isolate)
+                self.assertEqual(
+                    response["result"]["kind"],  # type: ignore[index]
+                    "stopped",
+                )
+                self.assertEqual(
+                    response["worker_action"],  # type: ignore[index]
+                    "isolate",
+                )
 
     def test_release_drift_before_execution_is_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -527,7 +626,7 @@ class WorkerServeTests(unittest.TestCase):
             verify_identity=Mock(return_value=None),
         )
 
-    def test_one_command_writes_exactly_one_result_frame(self) -> None:
+    def test_one_command_writes_exactly_one_result_then_bound_terminal(self) -> None:
         stdin = io.BytesIO(runtime_worker.encode_frame(_command()))
         stdout = io.BytesIO()
         stderr = io.StringIO()
@@ -538,6 +637,10 @@ class WorkerServeTests(unittest.TestCase):
         response = runtime_worker.read_frame(reader)
         self.assertEqual(response["type"], "result")  # type: ignore[index]
         self.assertEqual(response["result"]["kind"], "described")  # type: ignore[index]
+        self.assertEqual(
+            runtime_worker.read_frame(reader),
+            _expected_terminal(),
+        )
         self.assertIsNone(runtime_worker.read_frame(reader))
         self.assertEqual(stderr.getvalue(), "")
 
@@ -601,6 +704,142 @@ class WorkerServeTests(unittest.TestCase):
             self.assertEqual(marker.read_bytes(), b"x")
 
 
+class TurnTerminalContractTests(unittest.TestCase):
+    def _result(self) -> dict[str, object]:
+        session = runtime_worker.WorkerSession(
+            identity_sha256="a" * 64,
+            execute_command=Mock(return_value={"kind": "described"}),
+            verify_identity=Mock(return_value=None),
+        )
+        response, isolate = session.process(_command())
+        self.assertFalse(isolate)
+        assert response is not None
+        return response
+
+    @staticmethod
+    def _write_faulty_turn(
+        stdout_writer: BinaryIO,
+        stderr_writer: BinaryIO,
+        result: dict[str, object],
+        delay_seconds: float,
+        fault_kind: str,
+        writer_errors: list[Exception],
+    ) -> None:
+        try:
+            runtime_worker.write_frame(stdout_writer, result)
+            time.sleep(delay_seconds)
+            if fault_kind == "second-result":
+                runtime_worker.write_frame(stdout_writer, result)
+            elif fault_kind == "stdout":
+                stdout_writer.write(b"unframed-stdout")
+                stdout_writer.flush()
+            elif fault_kind == "stderr":
+                stderr_writer.write(b"unexpected-stderr")
+                stderr_writer.flush()
+            terminal = _expected_terminal()
+            if fault_kind == "identity":
+                terminal["identity_sha256"] = "0" * 64
+            elif fault_kind == "sequence":
+                terminal["sequence"] = 2
+            runtime_worker.write_frame(stdout_writer, terminal)
+        except BrokenPipeError:
+            pass
+        except (OSError, RuntimeError, TypeError, ValueError) as exc:
+            writer_errors.append(exc)
+        finally:
+            stdout_writer.close()
+            stderr_writer.close()
+
+    @staticmethod
+    def _write_late_unsolicited_result(
+        writer: BinaryIO,
+        result: dict[str, object],
+        delay_seconds: float,
+    ) -> None:
+        runtime_worker.write_frame(writer, result)
+        runtime_worker.write_frame(writer, _expected_terminal())
+        time.sleep(delay_seconds)
+        runtime_worker.write_frame(writer, result)
+        writer.close()
+
+    def test_zero_and_eighty_ms_pre_terminal_faults_do_not_use_a_grace_window(
+        self,
+    ) -> None:
+        for delay_seconds in (0.0, 0.08):
+            for fault_kind in (
+                "second-result",
+                "stdout",
+                "stderr",
+                "identity",
+                "sequence",
+            ):
+                with self.subTest(
+                    delay_seconds=delay_seconds,
+                    fault_kind=fault_kind,
+                ):
+                    stdout_read_fd, stdout_write_fd = os.pipe()
+                    stderr_read_fd, stderr_write_fd = os.pipe()
+                    stdout_reader = os.fdopen(stdout_read_fd, "rb", buffering=0)
+                    stdout_writer = os.fdopen(stdout_write_fd, "wb", buffering=0)
+                    stderr_reader = os.fdopen(stderr_read_fd, "rb", buffering=0)
+                    stderr_writer = os.fdopen(stderr_write_fd, "wb", buffering=0)
+                    writer_errors: list[Exception] = []
+                    result = self._result()
+                    writer = threading.Thread(
+                        target=self._write_faulty_turn,
+                        args=(
+                            stdout_writer,
+                            stderr_writer,
+                            result,
+                            delay_seconds,
+                            fault_kind,
+                            writer_errors,
+                        ),
+                        daemon=True,
+                    )
+                    writer.start()
+                    started = time.perf_counter()
+                    with (
+                        stdout_reader,
+                        stderr_reader,
+                        self.assertRaises(runtime_worker.FrameError),
+                    ):
+                        _read_success_turn(
+                            stdout_reader,
+                            stderr=stderr_reader,
+                        )
+                    elapsed = time.perf_counter() - started
+                    writer.join(timeout=2)
+                    self.assertFalse(writer.is_alive())
+                    self.assertEqual(writer_errors, [])
+                    if delay_seconds:
+                        self.assertGreaterEqual(elapsed, 0.06)
+
+    def test_post_terminal_bytes_do_not_rewrite_the_returned_turn(self) -> None:
+        for delay_seconds in (0.0, 0.08):
+            with self.subTest(delay_seconds=delay_seconds):
+                read_fd, write_fd = os.pipe()
+                reader = os.fdopen(read_fd, "rb", buffering=0)
+                writer = os.fdopen(write_fd, "wb", buffering=0)
+                result = self._result()
+                thread = threading.Thread(
+                    target=self._write_late_unsolicited_result,
+                    args=(writer, result, delay_seconds),
+                    daemon=True,
+                )
+                thread.start()
+                with reader:
+                    returned = _read_success_turn(reader)
+                    self.assertEqual(returned["result"]["kind"], "described")  # type: ignore[index]
+                    thread.join(timeout=2)
+                    self.assertFalse(thread.is_alive())
+                    self.assertTrue(
+                        runtime_worker._input_has_buffered_data(reader),
+                        "a host must isolate before writing the next Command",
+                    )
+                    self.assertEqual(runtime_worker.read_frame(reader), result)
+
+
 class CompatibilityBoundaryTests(unittest.TestCase):
     def test_one_shot_entrypoint_remains_separate_and_unchanged_in_role(self) -> None:
         launcher = (SCRIPTS / "runtime_launcher.py").read_text(encoding="utf-8")
@@ -649,9 +888,9 @@ class RuntimeWorkerProcessIntegrationTests(unittest.TestCase):
             check=True,
             capture_output=True,
         ).stdout.split(b"\0")
-        candidates = {
-            item.decode("utf-8") for item in tracked if item
-        } | {WORKER_RELATIVE}
+        candidates = {item.decode("utf-8") for item in tracked if item} | {
+            WORKER_RELATIVE
+        }
         selected = set(closure["files"])
         for pattern in closure["patterns"]:
             matches = {
@@ -725,6 +964,7 @@ class RuntimeWorkerProcessIntegrationTests(unittest.TestCase):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            bufsize=0,
             env=environment,
         )
 
@@ -777,6 +1017,16 @@ class RuntimeWorkerProcessIntegrationTests(unittest.TestCase):
         started = time.perf_counter()
         runtime_worker.write_frame(process.stdin, envelope)
         result = self._read_process_frame(process)
+        if result.get("worker_action") == "continue":
+            terminal = self._read_process_frame(process)
+            self.assertEqual(
+                terminal,
+                _expected_terminal(
+                    identity_sha256=str(ready["identity_sha256"]),
+                    request_id=request_id,
+                    sequence=sequence,
+                ),
+            )
         return result, (time.perf_counter() - started) * 1000
 
     def _assert_isolating_result(
@@ -804,7 +1054,9 @@ class RuntimeWorkerProcessIntegrationTests(unittest.TestCase):
     def _assert_no_worker_stdio(self, process: subprocess.Popen) -> None:
         assert process.stderr is not None
         readable, _, _ = select.select([process.stderr], [], [], 0)
-        self.assertFalse(readable, "worker leaked Runtime diagnostics on a success path")
+        self.assertFalse(
+            readable, "worker leaked Runtime diagnostics on a success path"
+        )
 
     def _run_one_shot(self, command: dict, store_base: Path) -> tuple[dict, bytes]:
         environment = os.environ.copy()
@@ -818,8 +1070,7 @@ class RuntimeWorkerProcessIntegrationTests(unittest.TestCase):
                 str(self.release_root / "scripts/run_reading_transaction.sh"),
             ],
             input=(
-                json.dumps(command, ensure_ascii=False, separators=(",", ":"))
-                + "\n"
+                json.dumps(command, ensure_ascii=False, separators=(",", ":")) + "\n"
             ).encode("utf-8"),
             capture_output=True,
             check=True,
@@ -835,7 +1086,9 @@ class RuntimeWorkerProcessIntegrationTests(unittest.TestCase):
         token_record = json.loads(token_path.read_text(encoding="utf-8"))
         reading_id = token_record["reading_id"]
         reading_root = store_root / "readings" / reading_id
-        pending = json.loads((reading_root / "pending.json").read_text(encoding="utf-8"))
+        pending = json.loads(
+            (reading_root / "pending.json").read_text(encoding="utf-8")
+        )
         history = json.loads(
             (reading_root / "prepared/000001.json").read_text(encoding="utf-8")
         )
@@ -853,11 +1106,15 @@ class RuntimeWorkerProcessIntegrationTests(unittest.TestCase):
                 }
             if isinstance(value, list):
                 return [normalize(item, key) for item in value]
-            if key in {
-                "reading_id",
-                "root_reading_id",
-                "parent_reading_id",
-            } and value == reading_id:
+            if (
+                key
+                in {
+                    "reading_id",
+                    "root_reading_id",
+                    "parent_reading_id",
+                }
+                and value == reading_id
+            ):
                 return "<reading-id>"
             if key in {"token_hash", "parent_token_hash"} and value == token_hash:
                 return "<token-hash>"
@@ -878,13 +1135,19 @@ class RuntimeWorkerProcessIntegrationTests(unittest.TestCase):
             "projection": normalize(projection),
         }
 
-    def test_full_verification_emits_identity_bound_ready_with_bounded_boot(self) -> None:
+    def test_full_verification_emits_identity_bound_ready_with_bounded_boot(
+        self,
+    ) -> None:
         started = time.perf_counter()
         process = self._start_worker()
         ready = self._read_process_frame(process)
         external_boot_ms = (time.perf_counter() - started) * 1000
         self.assertEqual(ready["type"], "ready", ready)
         self.assertEqual(ready["protocol"], runtime_worker.WORKER_PROTOCOL)
+        self.assertEqual(
+            ready["turn_terminal"],
+            runtime_worker.TURN_TERMINAL_CAPABILITY,
+        )
         self.assertLess(external_boot_ms, float(ready["ready_timeout_seconds"]) * 1000)
         self.assertLess(float(ready["boot_ms"]), 15_000)
         self.assertEqual(ready["release_path"], str(self.release_root))
@@ -907,6 +1170,7 @@ class RuntimeWorkerProcessIntegrationTests(unittest.TestCase):
                     "external_boot_ms": round(external_boot_ms, 3),
                     "listing": ready["listing_sha256"],
                     "runtime_integrity": ready["runtime_integrity_sha256"],
+                    "turn_terminal": ready["turn_terminal"],
                     "worker_identity": ready["identity_sha256"],
                 },
                 sort_keys=True,
@@ -918,6 +1182,21 @@ class RuntimeWorkerProcessIntegrationTests(unittest.TestCase):
         damaged.write_bytes(damaged.read_bytes() + b"\n")
         process = self._start_worker()
         self._assert_startup_rejected(process)
+
+    def test_legacy_v1_command_is_stopped_and_isolated_by_v2_worker(self) -> None:
+        process = self._start_worker()
+        ready = self._read_process_frame(process)
+        self.assertEqual(ready["protocol"], "mingli-runtime-worker-v2")
+        assert process.stdin is not None
+        runtime_worker.write_frame(
+            process.stdin,
+            _command(
+                protocol="mingli-runtime-worker-v1",
+                identity_sha256=str(ready["identity_sha256"]),
+            ),
+        )
+        response = self._read_process_frame(process)
+        self._assert_isolating_result(process, response)
 
     def test_commands_are_serial_and_echo_the_exact_bound_identity(self) -> None:
         process = self._start_worker()
@@ -1171,7 +1450,6 @@ class RuntimeWorkerProcessIntegrationTests(unittest.TestCase):
             if path.is_file()
         )
         self.assertEqual(after_restart, before_restart)
-
 
 
 if __name__ == "__main__":

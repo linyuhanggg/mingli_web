@@ -17,7 +17,7 @@ from app.adapters.runtime import (
     RuntimeReleaseInventory,
     RuntimeStartupError,
     RuntimeStartupGate,
-    WorkerV1MingliRuntimeAdapter,
+    WorkerV2MingliRuntimeAdapter,
     generic_runtime_stopped,
     one_shot_spawn_argv,
     runtime_capability_shape_sha256,
@@ -28,6 +28,9 @@ from mingli_paths import MINGLI_CORE_ROOT
 
 WORKER_RELATIVE = "scripts/reading_engine/runtime_worker.py"
 WORKER_STOPPED_COPY = "本次处理未完成，请稍后重试。"
+LOCKED_CORE_WORKER_SHA256 = "3512987322ef18bb91c4798e77d7ef982d2e7e31ae9e2ddd321d78aa90261b50"
+WORKER_PROTOCOL = "mingli-runtime-worker-v2"
+WORKER_TURN_TERMINAL = "result-idle-v1"
 
 ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_PYTHON = Path(
@@ -54,6 +57,7 @@ _BEHAVIOR_PATH = ROOT / "behavior"
 BEHAVIOR = _BEHAVIOR_PATH.read_text(encoding="utf-8").strip() if _BEHAVIOR_PATH.exists() else "ok"
 LOG = ROOT / "commands.log"
 BOOT = ROOT / "boot.count"
+PROTOCOL = "mingli-runtime-worker-v2"
 
 
 def _count_boot() -> None:
@@ -86,7 +90,8 @@ def _argv_value(flag: str) -> str:
 def _ready() -> dict[str, object]:
     return {
         "type": "ready",
-        "protocol": "mingli-runtime-worker-v1",
+        "protocol": PROTOCOL,
+        "turn_terminal": "result-idle-v1",
         "runtime_protocol": "mingli-portable-interface-v2",
         "identity_sha256": "c" * 64,
         "listing_sha256": _argv_value("--expected-listing-sha256"),
@@ -104,7 +109,7 @@ def _ready() -> dict[str, object]:
 def _described_result(command: dict[str, object]) -> dict[str, object]:
     return {
         "type": "result",
-        "protocol": "mingli-runtime-worker-v1",
+        "protocol": PROTOCOL,
         "identity_sha256": command["identity_sha256"],
         "request_id": command["request_id"],
         "sequence": command["sequence"],
@@ -116,6 +121,42 @@ def _described_result(command: dict[str, object]) -> dict[str, object]:
             "capabilities": [],
         },
     }
+
+
+def _idle(command: dict[str, object]) -> dict[str, object]:
+    return {
+        "type": "idle",
+        "protocol": PROTOCOL,
+        "identity_sha256": command["identity_sha256"],
+        "request_id": command["request_id"],
+        "sequence": command["sequence"],
+    }
+
+
+def _emit_pre_terminal_fault(command: dict[str, object], fault: str, delay: float) -> None:
+    _write_frame(_described_result(command))
+    if delay:
+        time.sleep(delay)
+    if fault == "second-result":
+        _write_frame(_described_result(command))
+    elif fault == "stdout":
+        sys.stdout.buffer.write(b"unframed-stdout")
+        sys.stdout.buffer.flush()
+    elif fault == "stderr":
+        sys.stderr.write("unexpected-stderr")
+        sys.stderr.flush()
+    elif fault == "identity":
+        idle = _idle(command)
+        idle["identity_sha256"] = "0" * 64
+        _write_frame(idle)
+    elif fault == "sequence":
+        idle = _idle(command)
+        idle["sequence"] = int(command["sequence"]) + 1
+        _write_frame(idle)
+    else:
+        raise SystemExit(3)
+    time.sleep(1)
+    raise SystemExit(0)
 
 
 _count_boot()
@@ -143,6 +184,19 @@ if BEHAVIOR == "wrong-identity":
     _write_frame(ready)
     time.sleep(1)
     raise SystemExit(0)
+if BEHAVIOR == "v1-ready":
+    ready = _ready()
+    ready["protocol"] = "mingli-runtime-worker-v1"
+    del ready["turn_terminal"]
+    _write_frame(ready)
+    time.sleep(1)
+    raise SystemExit(0)
+if BEHAVIOR == "ready-no-terminal":
+    ready = _ready()
+    del ready["turn_terminal"]
+    _write_frame(ready)
+    time.sleep(1)
+    raise SystemExit(0)
 
 _write_frame(_ready())
 if BEHAVIOR == "ready-extra-stdout":
@@ -157,21 +211,33 @@ if BEHAVIOR == "crash-after-read":
     os._exit(9)
 if BEHAVIOR == "sleep":
     time.sleep(5)
-if BEHAVIOR == "two-results":
+if BEHAVIOR in {"two-results", "result-extra-stdout", "result-extra-stderr"} or BEHAVIOR.startswith(
+    "pre-terminal:"
+):
+    fault_map = {
+        "two-results": ("second-result", 0.0),
+        "result-extra-stdout": ("stdout", 0.0),
+        "result-extra-stderr": ("stderr", 0.0),
+    }
+    if BEHAVIOR in fault_map:
+        fault, delay = fault_map[BEHAVIOR]
+    else:
+        _prefix, fault, delay_text = BEHAVIOR.split(":", 2)
+        delay = float(delay_text)
+    _emit_pre_terminal_fault(command, fault, delay)
+if BEHAVIOR.startswith("post-terminal:"):
+    delay = float(BEHAVIOR.split(":", 1)[1])
     _write_frame(_described_result(command))
+    _write_frame(_idle(command))
+    if delay:
+        time.sleep(delay)
     _write_frame(_described_result(command))
     time.sleep(1)
     raise SystemExit(0)
-if BEHAVIOR == "result-extra-stdout":
-    _write_frame(_described_result(command))
-    sys.stdout.buffer.write(b"SECOND")
-    sys.stdout.buffer.flush()
-    time.sleep(1)
-    raise SystemExit(0)
-if BEHAVIOR == "result-extra-stderr":
-    _write_frame(_described_result(command))
-    sys.stderr.write("second-channel\n")
-    sys.stderr.flush()
+if BEHAVIOR == "v1-result":
+    payload = _described_result(command)
+    payload["protocol"] = "mingli-runtime-worker-v1"
+    _write_frame(payload)
     time.sleep(1)
     raise SystemExit(0)
 if BEHAVIOR == "isolate":
@@ -194,6 +260,7 @@ if BEHAVIOR == "invalid-result":
     raise SystemExit(0)
 
 _write_frame(_described_result(command))
+_write_frame(_idle(command))
 while True:
     header = sys.stdin.buffer.read(4)
     if len(header) != 4:
@@ -203,6 +270,7 @@ while True:
     command = json.loads(body.decode("utf-8"))
     LOG.write_text(json.dumps(command) + "\n", encoding="utf-8")
     _write_frame(_described_result(command))
+    _write_frame(_idle(command))
 """
 
 
@@ -301,7 +369,7 @@ def _adapter(
     *,
     behavior: str = "ok",
     **overrides: Any,
-) -> WorkerV1MingliRuntimeAdapter:
+) -> WorkerV2MingliRuntimeAdapter:
     release_root = tmp_path / "release"
     _write_fake_worker(release_root, behavior=behavior)
     options: dict[str, Any] = {
@@ -314,7 +382,7 @@ def _adapter(
         "request_timeout_seconds": 0.4,
     }
     options.update(overrides)
-    return WorkerV1MingliRuntimeAdapter(**options)
+    return WorkerV2MingliRuntimeAdapter(**options)
 
 
 def test_generic_stopped_is_opaque() -> None:
@@ -327,15 +395,20 @@ def test_generic_stopped_is_opaque() -> None:
 async def test_worker_start_binds_ready_and_execute_is_single_result(tmp_path: Path) -> None:
     adapter = _adapter(tmp_path)
     ready = await adapter.start()
-    assert ready["protocol"] == "mingli-runtime-worker-v1"
+    assert ready["protocol"] == WORKER_PROTOCOL
+    assert ready["turn_terminal"] == WORKER_TURN_TERMINAL
     assert ready["listing_sha256"] == LISTING_SHA256
     assert ready["single_in_flight"] is True
     assert " $( " not in " ".join(adapter.spawn_argv())
     result = await adapter.execute(Describe())
     assert isinstance(result, Described)
+    second = await adapter.execute(Describe())
+    assert isinstance(second, Described)
+    assert adapter.isolated is False
     command_log = (tmp_path / "release" / WORKER_RELATIVE).parent / "commands.log"
     log = json.loads(command_log.read_text())
-    assert log["sequence"] == 1
+    assert log["sequence"] == 2
+    assert log["protocol"] == WORKER_PROTOCOL
     assert log["request_id"]
     await adapter.close()
 
@@ -364,6 +437,8 @@ async def test_worker_does_not_fallback_or_replay_after_a_written_crash(tmp_path
         "duplicate-key",
         "wrong-identity",
         "ready-extra-stdout",
+        "v1-ready",
+        "ready-no-terminal",
     ),
 )
 async def test_worker_ready_failures_isolate_without_ready(tmp_path: Path, behavior: str) -> None:
@@ -387,6 +462,7 @@ async def test_worker_ready_failures_isolate_without_ready(tmp_path: Path, behav
         "invalid-result",
         "sleep",
         "crash-after-read",
+        "v1-result",
     ),
 )
 async def test_worker_request_faults_return_generic_stopped(tmp_path: Path, behavior: str) -> None:
@@ -415,6 +491,75 @@ async def test_worker_startup_timeout_is_independent_of_request_timeout(tmp_path
     assert elapsed < 1.0
 
 
+@pytest.mark.parametrize("delay", (0.0, 0.08))
+@pytest.mark.parametrize(
+    "fault",
+    ("second-result", "stdout", "stderr", "identity", "sequence"),
+)
+async def test_pre_terminal_faults_stop_the_current_request(
+    tmp_path: Path,
+    delay: float,
+    fault: str,
+) -> None:
+    adapter = _adapter(
+        tmp_path,
+        behavior=f"pre-terminal:{fault}:{delay}",
+        request_timeout_seconds=0.4,
+    )
+    await adapter.start()
+    started = asyncio.get_running_loop().time()
+    result = await adapter.execute(Describe())
+    elapsed = asyncio.get_running_loop().time() - started
+    assert isinstance(result, Stopped)
+    assert result.public_copy == WORKER_STOPPED_COPY
+    assert adapter.isolated is True
+    if delay:
+        assert elapsed >= 0.06
+    if fault != "stdout":
+        assert elapsed < 0.35
+    await adapter.close()
+
+
+@pytest.mark.parametrize("delay", (0.0, 0.08))
+async def test_post_terminal_bytes_do_not_rewrite_returned_result(
+    tmp_path: Path,
+    delay: float,
+) -> None:
+    adapter = _adapter(
+        tmp_path,
+        behavior=f"post-terminal:{delay}",
+        request_timeout_seconds=0.4,
+    )
+    await adapter.start()
+    started = asyncio.get_running_loop().time()
+    first = await adapter.execute(Describe())
+    elapsed = asyncio.get_running_loop().time() - started
+    assert isinstance(first, Described)
+    assert adapter.isolated is False
+    if delay:
+        assert elapsed < delay + 0.05
+        await asyncio.sleep(delay + 0.05)
+    second = await adapter.execute(Describe())
+    assert isinstance(second, Stopped)
+    assert second.public_copy == WORKER_STOPPED_COPY
+    assert adapter.isolated is True
+    await adapter.close()
+
+
+async def test_pending_bytes_before_next_command_write_isolate(tmp_path: Path) -> None:
+    adapter = _adapter(tmp_path, behavior="post-terminal:0.0")
+    await adapter.start()
+    first = await adapter.execute(Describe())
+    assert isinstance(first, Described)
+    assert adapter.isolated is False
+    second = await adapter.execute(Describe())
+    assert isinstance(second, Stopped)
+    assert adapter.isolated is True
+    boot = tmp_path / "release" / WORKER_RELATIVE
+    assert boot.parent.joinpath("boot.count").read_text() == "1"
+    await adapter.close()
+
+
 async def test_startup_gate_starts_worker_before_describe() -> None:
     started: list[str] = []
     fake = FakeMingliRuntimeAdapter()
@@ -423,7 +568,7 @@ async def test_startup_gate_starts_worker_before_describe() -> None:
     capability_ids = tuple(str(item["id"]) for item in description.capabilities)
 
     class _Worker:
-        adapter_kind = "runtime-worker-v1"
+        adapter_kind = "runtime-worker-v2"
 
         async def start(self) -> dict[str, object]:
             started.append("start")
@@ -547,7 +692,8 @@ async def test_real_worker_ready_five_products_and_one_shot_shell_100644(
     listing = _materialize_release(release_root, MINGLI_CORE_ROOT)
     python, integrity = _clone_runtime(tmp_path / "runtime")
     state_root = _state_root(tmp_path)
-    adapter = WorkerV1MingliRuntimeAdapter(
+    assert _sha256((MINGLI_CORE_ROOT / WORKER_RELATIVE).read_bytes()) == LOCKED_CORE_WORKER_SHA256
+    adapter = WorkerV2MingliRuntimeAdapter(
         release_root=release_root,
         runtime_python_path=python,
         state_root=state_root,
@@ -557,10 +703,13 @@ async def test_real_worker_ready_five_products_and_one_shot_shell_100644(
         request_timeout_seconds=2.0,
     )
     ready = await adapter.start()
+    assert ready["protocol"] == WORKER_PROTOCOL
+    assert ready["turn_terminal"] == WORKER_TURN_TERMINAL
     assert ready["listing_sha256"] == listing
     assert ready["runtime_integrity_sha256"] == integrity
     assert ready["single_in_flight"] is True
     assert ready["replay_policy"] == "forbidden"
+    assert ready["fallback_policy"] == "forbidden"
     assert len(ready["capability_ids"]) == 14
 
     products = ("ziwei", "bazi", "liuren", "meihua", "liuyao")
@@ -625,7 +774,7 @@ async def test_real_worker_release_drift_returns_generic_stopped(tmp_path: Path)
     release_root = tmp_path / "release"
     listing = _materialize_release(release_root, MINGLI_CORE_ROOT)
     python, integrity = _clone_runtime(tmp_path / "runtime")
-    adapter = WorkerV1MingliRuntimeAdapter(
+    adapter = WorkerV2MingliRuntimeAdapter(
         release_root=release_root,
         runtime_python_path=python,
         state_root=_state_root(tmp_path),

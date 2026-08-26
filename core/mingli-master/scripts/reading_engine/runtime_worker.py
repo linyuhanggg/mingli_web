@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
 """Identity-bound, single-flight Runtime worker transport.
 
 The existing ``runtime_launcher.py`` remains the one-shot compatibility
-entrypoint.  This module is a separate v1 transport candidate: it verifies a
+entrypoint.  This module is a separate v2 transport candidate: it verifies a
 complete signed release and the pinned Python Runtime before emitting READY,
-then accepts one length-prefixed Command at a time and emits exactly one
-length-prefixed Result for every accepted command.
+then accepts one length-prefixed Command at a time.  Every continuing turn
+emits exactly one length-prefixed Result followed by one identity-bound
+``idle`` terminal frame; an isolating Result terminates the process instead.
 
 There is deliberately no retry, replay, batch, fallback, or caller-selected
 entrypoint.  A framing violation, sequence violation, identity drift, or
@@ -29,17 +29,19 @@ import stat
 import sys
 import tempfile
 import time
-from contextlib import contextmanager
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import Any, BinaryIO, Callable, Iterator, Mapping, TextIO
-
+from typing import Any, BinaryIO, TextIO
 
 sys.dont_write_bytecode = True
 sys.pycache_prefix = "/dev/null"
 
 
-WORKER_PROTOCOL = "mingli-runtime-worker-v1"
+WORKER_PROTOCOL = "mingli-runtime-worker-v2"
+TURN_TERMINAL_CAPABILITY = "result-idle-v1"
+TURN_TERMINAL_TYPE = "idle"
 RUNTIME_PROTOCOL = "mingli-portable-interface-v2"
 WORKER_RELATIVE = "scripts/reading_engine/runtime_worker.py"
 ONE_SHOT_RELATIVES = frozenset(
@@ -201,11 +203,7 @@ def _safe_relative(value: object, label: str) -> str:
     if not isinstance(value, str) or not value:
         raise IdentityError(f"{label} path is invalid")
     relative = PurePosixPath(value)
-    if (
-        relative.is_absolute()
-        or ".." in relative.parts
-        or value != relative.as_posix()
-    ):
+    if relative.is_absolute() or ".." in relative.parts or value != relative.as_posix():
         raise IdentityError(f"{label} path is unsafe")
     return value
 
@@ -325,7 +323,8 @@ def verify_release(
         raise IdentityError("Runtime release manifest digest mismatch")
     manifest = _load_json_bytes(manifest_payload, "Runtime release manifest")
     if (
-        set(manifest) != {
+        set(manifest)
+        != {
             "schema_version",
             "release",
             "source_commit",
@@ -411,8 +410,7 @@ def verify_release(
     ):
         raise IdentityError("Runtime closure contract is invalid")
     selected = {
-        _safe_relative(item, "Runtime closure")
-        for item in closure_payload["files"]
+        _safe_relative(item, "Runtime closure") for item in closure_payload["files"]
     }
     for raw_pattern in closure_payload["patterns"]:
         pattern = _safe_release_pattern(raw_pattern)
@@ -433,9 +431,7 @@ def verify_release(
     if verify_semantics:
         _verify_reference_catalog(root, signed_paths)
 
-    signed_paths_sha256 = _sha256_bytes(
-        "\n".join(sorted(signed_paths)).encode("utf-8")
-    )
+    signed_paths_sha256 = _sha256_bytes("\n".join(sorted(signed_paths)).encode("utf-8"))
     return ReleaseIdentity(
         root=str(root),
         listing_sha256=listing_sha256,
@@ -611,6 +607,7 @@ def _ready_deadline(seconds: float) -> Iterator[None]:
     previous_handler: Any = None
     previous_timer: tuple[float, float] | None = None
     if can_alarm:
+
         def timeout_handler(_signum: int, _frame: object) -> None:
             raise ReadyTimeout("worker READY deadline expired")
 
@@ -636,6 +633,7 @@ def _ready_deadline(seconds: float) -> Iterator[None]:
 @dataclass(frozen=True)
 class WorkerIdentity:
     protocol: str
+    turn_terminal: str
     runtime_protocol: str
     release_path: str
     listing_sha256: str
@@ -655,6 +653,7 @@ class WorkerIdentity:
     def bound_payload(self) -> dict[str, object]:
         return {
             "protocol": self.protocol,
+            "turn_terminal": self.turn_terminal,
             "runtime_protocol": self.runtime_protocol,
             "release_path": self.release_path,
             "listing_sha256": self.listing_sha256,
@@ -715,7 +714,7 @@ class ProtocolFault:
 
 
 class WorkerSession:
-    """Strict monotonic Command/Result state machine for one worker boot."""
+    """Strict monotonic Command/Result/terminal state machine for one boot."""
 
     def __init__(
         self,
@@ -757,16 +756,29 @@ class WorkerSession:
             return ProtocolFault("command envelope fields are invalid")
         if safe_request_id is None or safe_sequence is None:
             return ProtocolFault("command request identity is invalid")
-        if payload.get("type") != "command" or payload.get("protocol") != WORKER_PROTOCOL:
-            return ProtocolFault("command protocol is invalid", safe_request_id, safe_sequence)
+        if (
+            payload.get("type") != "command"
+            or payload.get("protocol") != WORKER_PROTOCOL
+        ):
+            return ProtocolFault(
+                "command protocol is invalid", safe_request_id, safe_sequence
+            )
         if payload.get("identity_sha256") != self.identity_sha256:
-            return ProtocolFault("worker identity mismatch", safe_request_id, safe_sequence)
+            return ProtocolFault(
+                "worker identity mismatch", safe_request_id, safe_sequence
+            )
         if safe_sequence != self.next_sequence:
-            return ProtocolFault("command sequence is out of order", safe_request_id, safe_sequence)
+            return ProtocolFault(
+                "command sequence is out of order", safe_request_id, safe_sequence
+            )
         if safe_request_id in self.request_ids:
-            return ProtocolFault("request id is duplicated", safe_request_id, safe_sequence)
+            return ProtocolFault(
+                "request id is duplicated", safe_request_id, safe_sequence
+            )
         if not isinstance(payload.get("command"), Mapping):
-            return ProtocolFault("command payload is invalid", safe_request_id, safe_sequence)
+            return ProtocolFault(
+                "command payload is invalid", safe_request_id, safe_sequence
+            )
         return None
 
     def _result_envelope(
@@ -787,12 +799,30 @@ class WorkerSession:
             "worker_action": "isolate" if isolate else "continue",
         }
 
+    def _terminal_envelope(
+        self,
+        *,
+        request_id: str,
+        sequence: int,
+    ) -> dict[str, object]:
+        """Return the exact terminal shape frozen by the v2 READY identity."""
+
+        return {
+            "type": TURN_TERMINAL_TYPE,
+            "protocol": WORKER_PROTOCOL,
+            "identity_sha256": self.identity_sha256,
+            "request_id": request_id,
+            "sequence": sequence,
+        }
+
     def reject_pipelined(
         self,
         payload: Mapping[str, object],
     ) -> dict[str, object] | None:
         fault = self._fault(payload)
-        request_id = fault.request_id if fault is not None else payload.get("request_id")
+        request_id = (
+            fault.request_id if fault is not None else payload.get("request_id")
+        )
         sequence = fault.sequence if fault is not None else payload.get("sequence")
         if not isinstance(request_id, str) or not isinstance(sequence, int):
             return None
@@ -829,11 +859,12 @@ class WorkerSession:
         try:
             self.verify_identity()
             result = self.execute_command(payload["command"])  # type: ignore[arg-type]
-            if (
-                not isinstance(result, dict)
-                or result.get("kind")
-                not in {"described", "prepared", "accepted", "stopped"}
-            ):
+            if not isinstance(result, dict) or result.get("kind") not in {
+                "described",
+                "prepared",
+                "accepted",
+                "stopped",
+            }:
                 raise WorkerError("Runtime returned an invalid Result union")
             self.verify_identity()
         except Exception:  # noqa: BLE001 - isolate without leaking internals
@@ -920,9 +951,23 @@ def serve(
                 return EXIT_PROTOCOL
             except (BrokenPipeError, OSError):
                 return EXIT_TRANSPORT
+            if not isolate and not pipelined_during_execution:
+                terminal = session._terminal_envelope(
+                    request_id=str(response["request_id"]),
+                    sequence=int(response["sequence"]),
+                )
+                try:
+                    write_frame(stdout, terminal)
+                except FrameError:
+                    return EXIT_PROTOCOL
+                except (BrokenPipeError, OSError):
+                    return EXIT_TRANSPORT
         if isolate or pipelined_during_execution:
             if pipelined_during_execution:
-                print("runtime_worker: multiple in-flight commands; isolating", file=stderr)
+                print(
+                    "runtime_worker: multiple in-flight commands; isolating",
+                    file=stderr,
+                )
             return EXIT_PROTOCOL
 
 
@@ -946,7 +991,6 @@ def bootstrap(
     scripts_root = resolved_script.parent.parent
     release_root = scripts_root.parent.resolve(strict=True)
     guard = _load_guard(scripts_root)
-    runtime_root = guard.runtime_root_for_executable(sys.executable)
 
     with _ready_deadline(ready_timeout_seconds):
         release = verify_release(
@@ -966,6 +1010,7 @@ def bootstrap(
             sys.path.insert(0, str(scripts_root))
 
         from adapters.json_cli import resolve_store_root
+
         from reading_engine.evidence_rules import production_evidence_rules
         from reading_engine.interface import ReadingInterface
         from reading_engine.interface_contracts import Describe, Described
@@ -995,7 +1040,7 @@ def bootstrap(
             raise IdentityError("Runtime capability inventory is incomplete")
         # Build the production engine now so request latency does not include
         # store/catalog/provider factory construction.
-        interface.engine
+        _ = interface.engine
 
         python_identity = {
             "implementation": platform.python_implementation(),
@@ -1005,6 +1050,7 @@ def bootstrap(
         }
         identity = WorkerIdentity(
             protocol=WORKER_PROTOCOL,
+            turn_terminal=TURN_TERMINAL_CAPABILITY,
             runtime_protocol=described.protocol_version,
             release_path=release.root,
             listing_sha256=release.listing_sha256,
@@ -1053,25 +1099,22 @@ def _reject_internal_stdio() -> Iterator[None]:
     """Keep Runtime writes from ever corrupting the framed transport."""
 
     for stream in (sys.stdout, sys.stderr):
-        try:
+        with suppress(AttributeError, OSError, ValueError):
             stream.flush()
-        except (AttributeError, OSError, ValueError):
-            pass
     saved_stdout = os.dup(sys.stdout.fileno())
     saved_stderr = os.dup(sys.stderr.fileno())
-    with tempfile.TemporaryFile(mode="w+b") as captured_stdout, tempfile.TemporaryFile(
-        mode="w+b"
-    ) as captured_stderr:
+    with (
+        tempfile.TemporaryFile(mode="w+b") as captured_stdout,
+        tempfile.TemporaryFile(mode="w+b") as captured_stderr,
+    ):
         try:
             os.dup2(captured_stdout.fileno(), sys.stdout.fileno())
             os.dup2(captured_stderr.fileno(), sys.stderr.fileno())
             yield
         finally:
             for stream in (sys.stdout, sys.stderr):
-                try:
+                with suppress(AttributeError, OSError, ValueError):
                     stream.flush()
-                except (AttributeError, OSError, ValueError):
-                    pass
             os.dup2(saved_stdout, sys.stdout.fileno())
             os.dup2(saved_stderr, sys.stderr.fileno())
             os.close(saved_stdout)
@@ -1082,7 +1125,9 @@ def _reject_internal_stdio() -> Iterator[None]:
             raise WorkerError("Runtime wrote outside the Result transport")
 
 
-def _execute_with_interface(interface: object) -> Callable[[Mapping[str, object]], dict[str, object]]:
+def _execute_with_interface(
+    interface: object,
+) -> Callable[[Mapping[str, object]], dict[str, object]]:
     def execute(payload: Mapping[str, object]) -> dict[str, object]:
         with _reject_internal_stdio():
             from reading_engine.interface_contracts import command_from_dict

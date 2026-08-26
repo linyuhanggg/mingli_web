@@ -72,13 +72,27 @@ FROZEN_SOURCE_COMMIT = "494ce0bba174a77800daf9b9c38ce9c9166d9a94"
 RUNTIME_PROCESS_PATH = "/opt/node/bin:/usr/local/bin:/usr/bin:/bin"
 ONE_SHOT_SHELL_NAME = "run_reading_transaction.sh"
 ONE_SHOT_SHELL_INTERPRETER = Path("/bin/sh")
-WORKER_PROTOCOL = "mingli-runtime-worker-v1"
+WORKER_PROTOCOL = "mingli-runtime-worker-v2"
+WORKER_TURN_TERMINAL = "result-idle-v1"
+WORKER_TURN_TERMINAL_TYPE = "idle"
 WORKER_RELATIVE = "scripts/reading_engine/runtime_worker.py"
 WORKER_FRAME_HEADER_BYTES = 4
 WORKER_MAX_FRAME_BYTES = 4 * 1024 * 1024
 WORKER_DEFAULT_READY_TIMEOUT_SECONDS = 15.0
 WORKER_REQUEST_TIMEOUT_SECONDS = 2.0
 WORKER_STOPPED_COPY = "本次处理未完成，请稍后重试。"
+_RESULT_FRAME_KEYS = frozenset(
+    {
+        "type",
+        "protocol",
+        "identity_sha256",
+        "request_id",
+        "sequence",
+        "result",
+        "worker_action",
+    }
+)
+_IDLE_FRAME_KEYS = frozenset({"type", "protocol", "identity_sha256", "request_id", "sequence"})
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 
@@ -526,7 +540,7 @@ class RuntimeStartupGate:
         self._ready = False
         try:
             adapter_kind = getattr(self.runtime, "adapter_kind", None)
-            if adapter_kind not in {"one-shot-process", "runtime-worker-v1"}:
+            if adapter_kind not in {"one-shot-process", "runtime-worker-v2"}:
                 raise RuntimeStartupError("Fake Runtime is forbidden by the startup gate")
             inventory = self.release_inspector.inspect()
             start = getattr(self.runtime, "start", None)
@@ -867,15 +881,16 @@ class OneShotMingliRuntimeAdapter:
         return result
 
 
-class WorkerV1MingliRuntimeAdapter:
-    """Identity-bound, single-flight Runtime worker client.
+class WorkerV2MingliRuntimeAdapter:
+    """Identity-bound, single-flight Runtime worker v2 client.
 
-    The worker is started from a fixed signed release and pinned Python.  The
-    one-shot launcher remains an explicit rollback path and is never used as a
-    silent fallback.  A fully written command is never replayed.
+    Turns are `Result → idle` with no silent window.  The one-shot launcher
+    remains an explicit rollback path and is never used as a silent fallback.
+    A fully written command is never replayed.  Late post-terminal bytes do
+    not rewrite a returned Result; the next Command write isolates instead.
     """
 
-    adapter_kind = "runtime-worker-v1"
+    adapter_kind = "runtime-worker-v2"
     production_ready = False
 
     def __init__(
@@ -929,6 +944,7 @@ class WorkerV1MingliRuntimeAdapter:
         self._process_group_id: int | None = None
         self._stderr_task: asyncio.Task[None] | None = None
         self._stderr = bytearray()
+        self._stderr_event = asyncio.Event()
         self._ready: dict[str, Any] | None = None
         self._identity_sha256: str | None = None
         self._next_sequence = 1
@@ -993,6 +1009,8 @@ class WorkerV1MingliRuntimeAdapter:
                 self._process_group_id = os.getpgid(process.pid)
             except ProcessLookupError:
                 self._process_group_id = None
+            self._stderr = bytearray()
+            self._stderr_event = asyncio.Event()
             self._stderr_task = asyncio.create_task(self._drain_stderr())
             try:
                 async with asyncio.timeout(self._ready_timeout_seconds):
@@ -1028,6 +1046,7 @@ class WorkerV1MingliRuntimeAdapter:
         if (
             ready.get("type") != "ready"
             or ready.get("protocol") != WORKER_PROTOCOL
+            or ready.get("turn_terminal") != WORKER_TURN_TERMINAL
             or ready.get("runtime_protocol") != EXPECTED_RUNTIME_PROTOCOL
             or not isinstance(identity, str)
             or _SHA256_RE.fullmatch(identity) is None
@@ -1094,10 +1113,25 @@ class WorkerV1MingliRuntimeAdapter:
                     self._next_sequence = sequence + 1
                     self._written_without_result = True
                     payload = await _read_worker_frame(stdout)
-                    extra_stdio = _stream_has_pending(stdout) or bool(self._stderr)
-                    if not extra_stdio:
-                        await asyncio.sleep(0.02)
-                        extra_stdio = _stream_has_pending(stdout) or bool(self._stderr)
+                    if not self._is_bound_result(payload, request_id, sequence):
+                        await self._isolate_locked()
+                        return generic_runtime_stopped()
+                    if payload.get("worker_action") != "continue":
+                        await self._isolate_locked()
+                        return generic_runtime_stopped()
+                    result_payload = payload.get("result")
+                    if not isinstance(result_payload, Mapping):
+                        await self._isolate_locked()
+                        return generic_runtime_stopped()
+                    try:
+                        result = result_from_dict(result_payload)
+                    except (KeyError, TypeError, ValueError):
+                        await self._isolate_locked()
+                        return generic_runtime_stopped()
+                    terminal = await self._read_frame_watching_stderr(stdout)
+                    if not self._is_bound_idle(terminal, request_id, sequence):
+                        await self._isolate_locked()
+                        return generic_runtime_stopped()
             except TimeoutError:
                 await self._isolate_locked()
                 return generic_runtime_stopped()
@@ -1107,48 +1141,78 @@ class WorkerV1MingliRuntimeAdapter:
             except BaseException:
                 await self._isolate_locked()
                 raise
-            if extra_stdio:
+            self._written_without_result = False
+            if self._process is not None and self._process.returncode is not None:
                 await self._isolate_locked()
                 return generic_runtime_stopped()
-            return await self._accept_result_locked(payload, request_id, sequence)
+            return result
 
     async def close(self) -> None:
         async with self._lock:
             await self._isolate_locked()
 
-    async def _accept_result_locked(
+    def _is_bound_result(
         self,
         payload: Mapping[str, Any],
         request_id: str,
         sequence: int,
-    ) -> MingliResult:
-        isolate = payload.get("worker_action") != "continue"
-        result_payload = payload.get("result")
-        accepted = (
-            payload.get("type") == "result"
+    ) -> bool:
+        return (
+            set(payload) == _RESULT_FRAME_KEYS
+            and payload.get("type") == "result"
             and payload.get("protocol") == WORKER_PROTOCOL
             and payload.get("identity_sha256") == self._identity_sha256
             and payload.get("request_id") == request_id
             and payload.get("sequence") == sequence
             and payload.get("worker_action") in {"continue", "isolate"}
-            and isinstance(result_payload, Mapping)
+            and isinstance(payload.get("result"), Mapping)
         )
-        if not accepted or not isinstance(result_payload, Mapping):
-            await self._isolate_locked()
-            return generic_runtime_stopped()
+
+    def _is_bound_idle(
+        self,
+        payload: Mapping[str, Any],
+        request_id: str,
+        sequence: int,
+    ) -> bool:
+        return (
+            set(payload) == _IDLE_FRAME_KEYS
+            and payload.get("type") == WORKER_TURN_TERMINAL_TYPE
+            and payload.get("protocol") == WORKER_PROTOCOL
+            and payload.get("identity_sha256") == self._identity_sha256
+            and payload.get("request_id") == request_id
+            and payload.get("sequence") == sequence
+        )
+
+    async def _read_frame_watching_stderr(
+        self,
+        stdout: asyncio.StreamReader,
+    ) -> dict[str, Any]:
+        if self._stderr:
+            raise RuntimeTransportError("runtime_invalid_output")
+        read_task = asyncio.create_task(_read_worker_frame(stdout))
+        stderr_task = asyncio.create_task(self._stderr_event.wait())
         try:
-            result = result_from_dict(result_payload)
-        except (KeyError, TypeError, ValueError):
-            await self._isolate_locked()
-            return generic_runtime_stopped()
-        self._written_without_result = False
-        if isolate:
-            await self._isolate_locked()
-            return generic_runtime_stopped()
-        if self._process is not None and self._process.returncode is not None:
-            await self._isolate_locked()
-            return generic_runtime_stopped()
-        return result
+            done, pending = await asyncio.wait(
+                {read_task, stderr_task},
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+        except BaseException:
+            read_task.cancel()
+            stderr_task.cancel()
+            with suppress(asyncio.CancelledError, Exception):
+                await read_task
+            with suppress(asyncio.CancelledError, Exception):
+                await stderr_task
+            raise
+        for task in pending:
+            task.cancel()
+            with suppress(asyncio.CancelledError, Exception):
+                await task
+        if self._stderr:
+            raise RuntimeTransportError("runtime_invalid_output")
+        if read_task not in done:
+            raise RuntimeTransportError("runtime_invalid_output")
+        return read_task.result()
 
     async def _drain_stderr(self) -> None:
         process = self._process
@@ -1158,8 +1222,11 @@ class WorkerV1MingliRuntimeAdapter:
             while chunk := await process.stderr.read(64 * 1024):
                 remaining = self._max_stderr_bytes + 1 - len(self._stderr)
                 if remaining <= 0:
+                    self._stderr_event.set()
                     return
                 self._stderr.extend(chunk[:remaining])
+                if self._stderr:
+                    self._stderr_event.set()
         except (asyncio.CancelledError, OSError):
             return
 
@@ -1171,6 +1238,7 @@ class WorkerV1MingliRuntimeAdapter:
         self._process_group_id = None
         self._ready = None
         self._identity_sha256 = None
+        self._stderr_event.set()
         if process is not None:
             await _kill_process_group(process, process_group_id)
         if self._stderr_task is not None:
