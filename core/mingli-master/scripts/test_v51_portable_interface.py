@@ -374,6 +374,46 @@ class ProductionFlowTests(unittest.TestCase):
             "gender": "female",
         }
 
+    def test_unknown_state_token_matches_for_prepare_and_complete(self) -> None:
+        interface = self._interface(default_timezone_name="Asia/Shanghai")
+        intent = IntentSelection(
+            subject_refs=("subject:client",),
+            object_id="natal",
+            dimension_ids=(),
+            horizon=HorizonSelection(kind_id="year"),
+            capability_id="bazi",
+        )
+        results = (
+            interface.execute(
+                Prepare(
+                    query="继续看",
+                    intent=intent,
+                    facts={},
+                    state_token="unknown-state-token",
+                )
+            ),
+            interface.execute(
+                Complete(
+                    state_token="unknown-state-token",
+                    public_copy="不会提交的正文。",
+                )
+            ),
+        )
+        expected = runtime_failure("input_contract.invalid_state_token")
+        for result in results:
+            with self.subTest(result_kind=type(result).__name__):
+                self.assertIsInstance(result, Stopped)
+                self.assertEqual(result.reason, "error")
+                self.assertEqual(result.failure, expected)
+
+    def test_other_internal_payload_failures_keep_generic_code(self) -> None:
+        from reading_engine.interface import _failure_for_internal_code
+
+        expected = runtime_failure("input_contract.invalid_payload")
+        for code in ("empty_public_copy", "invalid_transition", "not_prepared"):
+            with self.subTest(code=code):
+                self.assertEqual(_failure_for_internal_code(code), expected)
+
     def test_broad_weekly_question_prepares_with_default_dimensions(self) -> None:
         interface = self._interface(
             now_iso="2026-07-29T10:00:00+08:00",
