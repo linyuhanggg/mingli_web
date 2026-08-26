@@ -61,14 +61,34 @@ class MingliRuntime(Protocol):
 
 
 EXPECTED_RUNTIME_PROTOCOL = "mingli-portable-interface-v2"
-EXPECTED_RELEASE_FILE_COUNT = 217
+EXPECTED_RELEASE_FILE_COUNT = 218
 V53_TIME_CHECK_RELEASE_FILE_COUNT = 223
 V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT = 224
 EXPECTED_REFERENCE_PACK_COUNT = 55
 EXPECTED_EVIDENCE_RECORD_COUNT = 1328
-FROZEN_RELEASE_MANIFEST_SHA256 = "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
+FROZEN_RELEASE_MANIFEST_SHA256 = (
+    "93433f7fa9a9bef1115216240767c2c8e12e4ad9f0807124d05a47ddd0701f5d"
+)
 FROZEN_RELEASE_NAME = "mingli-master-portable-core"
-FROZEN_SOURCE_COMMIT = "494ce0bba174a77800daf9b9c38ce9c9166d9a94"
+FROZEN_SOURCE_COMMIT = "adfd7b6bf1c6a5e6df184bdd792bbf4956b009e1"
+_FORBIDDEN_V51_LISTINGS = frozenset(
+    {
+        "251ecf42ea12a64c7d38618a794442007beea7432835e414251006809c2d3611",
+        "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68",
+        "d1b49d5842feb5d4143330d1d250af625f42644a930f7d9d9c344c5d0363b090",
+    }
+)
+_FORBIDDEN_V51_SOURCES = frozenset(
+    {
+        "494ce0bba174a77800daf9b9c38ce9c9166d9a94",
+        "9c615a70f08d5609af09ead100d2b5d90e558fe8",
+    }
+)
+_FORBIDDEN_V51_WORKERS = frozenset(
+    {
+        "3512987322ef18bb91c4798e77d7ef982d2e7e31ae9e2ddd321d78aa90261b50",
+    }
+)
 RUNTIME_PROCESS_PATH = "/opt/node/bin:/usr/local/bin:/usr/bin:/bin"
 ONE_SHOT_SHELL_NAME = "run_reading_transaction.sh"
 ONE_SHOT_SHELL_INTERPRETER = Path("/bin/sh")
@@ -1291,6 +1311,14 @@ def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:
     profile = _RUNTIME_RELEASE_PROFILES.get(settings.runtime_release_profile)
     if profile is None:
         raise RuntimeStartupError("Runtime release profile is not admitted")
+    if settings.runtime_release_profile == "v51":
+        if profile["release_manifest_sha256"] in _FORBIDDEN_V51_LISTINGS:
+            raise RuntimeStartupError("Runtime release listing is a forbidden v51 identity")
+        if profile["source_commit"] in _FORBIDDEN_V51_SOURCES:
+            raise RuntimeStartupError("Runtime source commit is a forbidden v51 identity")
+        worker_digest = profile.get("worker_sha256")
+        if worker_digest in _FORBIDDEN_V51_WORKERS:
+            raise RuntimeStartupError("Runtime worker digest is a forbidden v51 identity")
     if settings.environment == "production" or settings.runtime_release_profile != "v51":
         if settings.runtime_expected_manifest_digest != profile["manifest_digest"]:
             raise RuntimeStartupError(

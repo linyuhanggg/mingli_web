@@ -2459,7 +2459,7 @@ _DALIUREN_EARTH_PLATE_ORDER = DALIUREN_LESSON_UPPERS
 class DaliurenDimensionFact(ContractModel):
     canonical_dimension: str = Field(min_length=1)
     requested_dimension: str = Field(min_length=1)
-    rule_evidence: DaliurenRuleEvidence
+    rule_evidence: DaliurenRuleEvidence | None = None
     status: Literal["calculated_facts_not_verdict"]
     source_rule_ids: tuple[Annotated[str, Field(min_length=1)], ...]
     initial_final_relation: DaliurenRelationFact | None = Field(
@@ -2547,7 +2547,8 @@ class DaliurenDimensionFact(ContractModel):
         expected_fields = _DALIUREN_DIMENSION_ENVELOPE_FIELDS | (
             _DALIUREN_CANONICAL_DIMENSION_FIELDS[canonical]
         )
-        if set(value) != expected_fields:
+        present = set(value)
+        if present != expected_fields and present != expected_fields - {"rule_evidence"}:
             raise ValueError(
                 f"{canonical} dimensions must use the complete Runtime v1 field set"
             )

@@ -2226,3 +2226,69 @@ def test_wenshi_projector_exposes_liuren_timing_candidate_evidence() -> None:
 
 def test_runtime_dispatch_returns_none_for_a_capability_without_a_projector() -> None:
     assert project_runtime_view_model(brief("fortune", {"target_date": "fixture"})) is None
+
+
+def test_liuyao_projector_keeps_v51_core_facts_without_complete_useful_spirit() -> None:
+    view_model = project_liuyao_view_model(
+        brief(
+            "liuyao",
+            {
+                "primary_hexagram": {
+                    "name": "乾为天",
+                    "upper_trigram": "乾",
+                    "lower_trigram": "乾",
+                },
+                "lines": [
+                    {"line": 1, "state": "老阳"},
+                    {"line": 2, "state": "少阳"},
+                    {"line": 3, "state": "少阴"},
+                    {"line": 4, "state": "老阴"},
+                    {"line": 5, "state": "少阳"},
+                    {"line": 6, "state": "少阴"},
+                ],
+                "najia": [{"line": 1, "ganzhi": "甲子"}],
+                "useful_spirit_selection": {
+                    "status": "evidence_bound",
+                    "reason": (
+                        "school-dependent adjudication is outside deterministic calculation"
+                    ),
+                    "query_word_matching": False,
+                    "source_dependency_id": (
+                        "liuyao.relations.returning-and-useful-spirit-candidates"
+                    ),
+                },
+            },
+        )
+    )
+
+    assert isinstance(view_model, LiuyaoChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.najia == ({"line": 1, "ganzhi": "甲子"},)
+    assert view_model.core_facts.useful_spirit_selection is None
+
+
+def test_daliuren_projector_maps_v51_individual_facts_without_runtime_core_envelope() -> None:
+    fixture_path = (
+        Path(__file__).resolve().parent / "fixtures" / "liuren-runtime-core-facts-v1.json"
+    )
+    runtime_core_facts = json.loads(fixture_path.read_text(encoding="utf-8"))
+    values = {
+        field: value
+        for field, value in runtime_core_facts.items()
+        if field != "schema_version"
+    }
+    lesson_method = dict(values["lesson_method"])
+    lesson_method["table_label"] = "八专"
+    lesson_method["selection_trace"] = {"result": "八专"}
+    values["lesson_method"] = lesson_method
+
+    view_model = project_daliuren_view_model(brief("liuren", values))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert [item.lesson_id for item in view_model.lessons] == ["1", "2", "3", "4"]
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.day_hour is not None
+    assert view_model.core_facts.day_hour.day == "乙酉"
+    assert view_model.core_facts.heaven_plate is not None
+    assert view_model.core_facts.lesson_method is not None
+    assert view_model.core_facts.lesson_method.primary == values["lesson_method"]["primary"]

@@ -12,6 +12,7 @@ from app.api.errors import ApiProblem
 from app.readings.capability_policy import (
     CAPABILITY_LABELS,
     P0_EXPOSED_CAPABILITY_IDS,
+    V51_RELEASE_CAPABILITY_IDS,
     V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
     product_actions_for_capability,
 )
@@ -37,8 +38,13 @@ async def list_admin_capabilities(
 ) -> AdminCapabilitiesResponse:
     _require_capability_read(principal[1])
     settings = request.app.state.settings
+    capability_ids = (
+        V53_TIME_CHECK_RELEASE_CAPABILITY_IDS
+        if settings.runtime_release_profile == "v53-time-check"
+        else V51_RELEASE_CAPABILITY_IDS
+    )
     capabilities = []
-    for capability_id in V53_TIME_CHECK_RELEASE_CAPABILITY_IDS[:limit]:
+    for capability_id in capability_ids[:limit]:
         public = capability_id in P0_EXPOSED_CAPABILITY_IDS
         capabilities.append(
             AdminCapabilityResponse(
@@ -53,6 +59,7 @@ async def list_admin_capabilities(
     return AdminCapabilitiesResponse(
         environment=settings.environment,
         runtime_adapter=settings.runtime_adapter,
+        runtime_release_profile=settings.runtime_release_profile,
         runtime_health="unverified",
         production_ready=False,
         capabilities=capabilities,

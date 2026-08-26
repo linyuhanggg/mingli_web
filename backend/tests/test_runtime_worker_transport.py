@@ -586,12 +586,12 @@ async def test_startup_gate_starts_worker_before_describe() -> None:
         def inspect(self) -> RuntimeReleaseInventory:
             return RuntimeReleaseInventory(
                 release_manifest_sha256="e" * 64,
-                release_file_count=217,
+                release_file_count=218,
                 provider_ids=capability_ids,
                 ready_provider_ids=capability_ids,
                 reference_pack_count=55,
                 evidence_record_count=1328,
-                runtime_closure_file_count=217,
+                runtime_closure_file_count=218,
             )
 
     gate = RuntimeStartupGate(

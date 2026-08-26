@@ -97,12 +97,12 @@ sys.stdout.write({encoded!r} + "\\n")
 def _inventory() -> RuntimeReleaseInventory:
     return RuntimeReleaseInventory(
         release_manifest_sha256="e" * 64,
-        release_file_count=217,
+        release_file_count=218,
         provider_ids=V51_RELEASE_CAPABILITY_IDS,
         ready_provider_ids=V51_RELEASE_CAPABILITY_IDS,
         reference_pack_count=55,
         evidence_record_count=1328,
-        runtime_closure_file_count=217,
+        runtime_closure_file_count=218,
     )
 
 
@@ -219,7 +219,7 @@ def _build_signed_release_fixture(
     filler_root = root / "release" / "fixture"
     filler_root.mkdir(parents=True)
     runtime_closure = root / "release" / "runtime-closure-v1.json"
-    filler_count = 217 - len(existing) - 1
+    filler_count = 218 - len(existing) - 1
     assert filler_count >= 0
     for index in range(filler_count):
         (filler_root / f"file-{index:03d}.txt").write_text("fixture", encoding="utf-8")
@@ -242,7 +242,7 @@ def _build_signed_release_fixture(
         for path in root.rglob("*")
         if path.is_file()
     }
-    assert len(files) == 217
+    assert len(files) == 218
     manifest = root / ".mingli-release-manifest.json"
     manifest.write_text(
         json.dumps(
@@ -467,12 +467,12 @@ def test_filesystem_release_inspector_recomputes_the_complete_signed_inventory(
 
     assert inventory == RuntimeReleaseInventory(
         release_manifest_sha256=manifest_sha256,
-        release_file_count=217,
+        release_file_count=218,
         provider_ids=V51_RELEASE_CAPABILITY_IDS,
         ready_provider_ids=V51_RELEASE_CAPABILITY_IDS,
         reference_pack_count=55,
         evidence_record_count=1328,
-        runtime_closure_file_count=217,
+        runtime_closure_file_count=218,
     )
 
 
@@ -539,7 +539,7 @@ def test_filesystem_release_inspector_rejects_unsigned_empty_directories(
         ("provider", "13 Provider catalog"),
         ("reference", "55/55"),
         ("evidence", "1328"),
-        ("closure", "all 217"),
+        ("closure", "all 218"),
     ),
 )
 def test_filesystem_release_inspector_rejects_resigned_but_incomplete_inventories(
@@ -630,12 +630,14 @@ def test_production_runtime_configuration_accepts_only_the_frozen_release() -> N
         == "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
     )
     assert profile["release_manifest_sha256"] == (
-        "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
+        "93433f7fa9a9bef1115216240767c2c8e12e4ad9f0807124d05a47ddd0701f5d"
     )
-    assert profile["source_commit"] == "494ce0bba174a77800daf9b9c38ce9c9166d9a94"
-    assert "worker_sha256" not in profile
-    assert "worker_protocol" not in profile
-    assert "worker_turn_terminal" not in profile
+    assert profile["source_commit"] == "adfd7b6bf1c6a5e6df184bdd792bbf4956b009e1"
+    assert profile["worker_sha256"] == (
+        "b8d05ca1a4d6392598442e8fed80d73a2ce079b757c2d6bc059f5ff13b629e3e"
+    )
+    assert profile["worker_protocol"] == "mingli-runtime-worker-v2"
+    assert profile["worker_turn_terminal"] == "result-idle-v1"
 
 
 def test_production_omitted_adapter_defaults_to_worker_v2_and_v51() -> None:
@@ -818,6 +820,25 @@ _ADMITTED_V53_DESCRIBE_DIGEST = (
 _ADMITTED_V53_CAPABILITY_SHAPE = (
     "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
 )
+_ADMITTED_V51_SOURCE_COMMIT = "adfd7b6bf1c6a5e6df184bdd792bbf4956b009e1"
+_ADMITTED_V51_RELEASE_MANIFEST_SHA = (
+    "93433f7fa9a9bef1115216240767c2c8e12e4ad9f0807124d05a47ddd0701f5d"
+)
+_ADMITTED_V51_WORKER_SHA256 = (
+    "b8d05ca1a4d6392598442e8fed80d73a2ce079b757c2d6bc059f5ff13b629e3e"
+)
+_ADMITTED_V51_DESCRIBE_DIGEST = (
+    "7ddbc04a04cad101dc1ab4951982c60b3138ffbb1b09463c64df719c69940342"
+)
+_ADMITTED_V51_CAPABILITY_SHAPE = (
+    "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
+)
+_FORBIDDEN_UNSIGNED_V51_LISTING_SHA = (
+    "251ecf42ea12a64c7d38618a794442007beea7432835e414251006809c2d3611"
+)
+_PREVIOUS_V51_WITHOUT_WORKER_LISTING_SHA = (
+    "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
+)
 _WORKER_RELATIVE = "scripts/reading_engine/runtime_worker.py"
 _QA_LOCKED_BAZI_CALC_SHA256 = (
     "ab35fbf511693d47487aa0601bdba32d13a44cf988888b90c085d6573027249a"
@@ -844,6 +865,38 @@ def _install_locked_worker(release_root: Path) -> Path:
     worker.write_bytes(source.read_bytes())
     worker.chmod(0o644)
     assert _sha256(worker) == _ADMITTED_V53_WORKER_SHA256
+    return worker
+
+
+def _discover_v51_source_root() -> Path | None:
+    candidates: list[Path] = []
+    raw = os.environ.get("MINGLI_V51_RELEASE_SOURCE")
+    if raw:
+        candidates.append(Path(raw).expanduser())
+    candidates.extend(
+        (
+            Path("/tmp/ming21-v51-adfd7b6"),
+            _REPO_ROOT / ".runtime-cache" / "v51-adfd7b6",
+            Path.home() / ".codex" / "skills" / "mingli-master",
+        )
+    )
+    for path in candidates:
+        worker = path / _WORKER_RELATIVE
+        if worker.is_file() and _sha256(worker) == _ADMITTED_V51_WORKER_SHA256:
+            return path
+    return None
+
+
+def _install_v51_worker(release_root: Path) -> Path:
+    source_root = _discover_v51_source_root()
+    if source_root is None:
+        pytest.skip("the admitted v51 worker-v2 source is not present")
+    source = source_root / _WORKER_RELATIVE
+    worker = release_root / _WORKER_RELATIVE
+    worker.parent.mkdir(parents=True, exist_ok=True)
+    worker.write_bytes(source.read_bytes())
+    worker.chmod(0o644)
+    assert _sha256(worker) == _ADMITTED_V51_WORKER_SHA256
     return worker
 
 
@@ -887,6 +940,67 @@ def _v53_worker_settings(
         runtime_expected_capability_shape_sha256=_ADMITTED_V53_CAPABILITY_SHAPE,
         chart_fast_path_timeout_seconds=2.0,
     )
+
+
+def _v51_worker_settings(
+    tmp_path: Path,
+    *,
+    release_root: Path,
+    runtime_python: Path,
+) -> Any:
+    from app.config import Settings
+
+    launcher = tmp_path / "runtime-v51-fixture"
+    if not launcher.is_file():
+        launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        launcher.chmod(0o700)
+    _install_v51_worker(release_root)
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700, exist_ok=True)
+    return Settings(
+        environment="test",
+        database_url=f"sqlite+aiosqlite:///{tmp_path / 'startup-gate.sqlite3'}",
+        runtime_adapter="worker-v2",
+        runtime_release_profile="v51",
+        runtime_launcher_path=launcher,
+        runtime_python_path=runtime_python,
+        runtime_release_root=release_root,
+        runtime_state_root=state_root,
+        runtime_expected_manifest_digest=_ADMITTED_V51_DESCRIBE_DIGEST,
+        runtime_expected_capability_shape_sha256=_ADMITTED_V51_CAPABILITY_SHAPE,
+        chart_fast_path_timeout_seconds=2.0,
+    )
+
+
+def _materialize_v51_release(destination: Path) -> str:
+    source = _discover_v51_source_root()
+    if source is None:
+        pytest.skip("the admitted v51 worker-v2 source is not present")
+    scripts = str(source / "scripts")
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    import release_deploy as rd
+
+    files = rd.tracked_release_files(source)
+    manifest = rd.build_manifest(source, files, _ADMITTED_V51_SOURCE_COMMIT)
+    payload = (
+        json.dumps(manifest, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    listing = hashlib.sha256(payload).hexdigest()
+    assert listing == _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    destination.mkdir(mode=0o700)
+    for relative in manifest["files"]:
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source / relative, target)
+        target.chmod(manifest["modes"][relative])
+    manifest_path = destination / ".mingli-release-manifest.json"
+    manifest_path.write_bytes(payload)
+    manifest_path.chmod(0o600)
+    for path in (destination, *destination.rglob("*")):
+        if path.is_dir():
+            path.chmod(stat.S_IMODE(path.stat().st_mode) & ~0o022)
+    return listing
 
 
 def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
@@ -951,7 +1065,21 @@ def test_runtime_startup_gate_admits_the_exact_v53_candidate_identity(
     assert Settings().runtime_adapter == "fake"
 
 
-def test_production_worker_v2_on_v51_fails_closed_without_signed_worker_artifact(
+def test_production_v51_rejects_unsigned_and_v53_identities() -> None:
+    from app.config import _RUNTIME_RELEASE_PROFILES
+
+    v51 = _RUNTIME_RELEASE_PROFILES["v51"]
+    assert v51["release_manifest_sha256"] == _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    assert v51["source_commit"] == _ADMITTED_V51_SOURCE_COMMIT
+    assert v51["worker_sha256"] == _ADMITTED_V51_WORKER_SHA256
+    assert v51["release_manifest_sha256"] != _FORBIDDEN_UNSIGNED_V51_LISTING_SHA
+    assert v51["release_manifest_sha256"] != _PREVIOUS_V51_WITHOUT_WORKER_LISTING_SHA
+    assert v51["release_manifest_sha256"] != _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    assert v51["source_commit"] != _ADMITTED_V53_SOURCE_COMMIT
+    assert v51["worker_sha256"] != _ADMITTED_V53_WORKER_SHA256
+
+
+def test_production_worker_v2_on_v51_admits_locked_worker_and_rejects_drift(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -967,7 +1095,7 @@ def test_production_worker_v2_on_v51_fails_closed_without_signed_worker_artifact
     python = _dummy_runtime_python(tmp_path)
     state_root = tmp_path / "mingli-state"
     state_root.mkdir(mode=0o700)
-    _install_locked_worker(release_root)
+    _install_v51_worker(release_root)
     monkeypatch.setattr(config, "_PRODUCTION_RUNTIME_LAUNCHER", launcher)
     monkeypatch.setattr(config, "_PRODUCTION_RUNTIME_PYTHON", python)
     monkeypatch.setattr(config, "_PRODUCTION_RUNTIME_RELEASE_ROOT", release_root)
@@ -983,18 +1111,17 @@ def test_production_worker_v2_on_v51_fails_closed_without_signed_worker_artifact
     assert settings.environment == "production"
     assert settings.runtime_adapter == "worker-v2"
     assert settings.runtime_release_profile == "v51"
-    assert "worker_sha256" not in v51
-    with pytest.raises(RuntimeStartupError, match="worker digest is not admitted") as raised:
+    gate = build_runtime_startup_gate(settings)
+    assert gate.runtime.adapter_kind == "runtime-worker-v2"
+    assert gate.expected_release_manifest_sha256 == v51["release_manifest_sha256"]
+    assert gate.release_inspector.expected_source_commit == v51["source_commit"]
+    assert gate.expected_release_file_count == 218
+
+    drifted = release_root / _WORKER_RELATIVE
+    drifted.write_bytes(b"not-the-admitted-v51-runtime-worker\n")
+    drifted.chmod(0o644)
+    with pytest.raises(RuntimeStartupError, match="worker digest mismatch"):
         build_runtime_startup_gate(settings)
-    message = str(raised.value)
-    assert v51["release_manifest_sha256"] in message
-    assert v51["source_commit"] in message
-    assert _ADMITTED_V53_RELEASE_MANIFEST_SHA in message
-    assert _ADMITTED_V53_SOURCE_COMMIT in message
-    assert _ADMITTED_V53_WORKER_SHA256 in message
-    assert "cannot form a signed v51 artifact" in message
-    assert v51["release_manifest_sha256"] != _ADMITTED_V53_RELEASE_MANIFEST_SHA
-    assert v51["source_commit"] != _ADMITTED_V53_SOURCE_COMMIT
 
 
 async def test_runtime_startup_gate_rejects_the_previous_b498_manifest_identity(
@@ -1376,7 +1503,7 @@ async def test_configured_worker_admits_the_real_runtime_before_processing(
             events.append("runtime-startup")
 
     database = DatabaseFixture()
-    settings = config.Settings(environment="test", runtime_adapter="one-shot")
+    settings = config.Settings(environment="test", runtime_adapter="worker-v2")
 
     def build_worker_fixture(**kwargs: Any) -> object:
         events.append("worker-build")
@@ -1413,7 +1540,7 @@ async def test_configured_worker_fails_closed_when_runtime_startup_fails(
             events.append("runtime-startup")
             raise RuntimeStartupError("describe admission failed")
 
-    settings = config.Settings(environment="test", runtime_adapter="one-shot")
+    settings = config.Settings(environment="test", runtime_adapter="worker-v2")
     monkeypatch.setattr(readings, "get_settings", lambda: settings)
     monkeypatch.setattr(readings, "Database", lambda _url: DatabaseFixture())
     monkeypatch.setattr(readings, "build_runtime_startup_gate", lambda _settings: GateFixture())
@@ -1530,6 +1657,36 @@ def test_factory_rejects_worker_identity_drift(tmp_path: Path) -> None:
         build_runtime_startup_gate(settings)
 
 
+def test_factory_rejects_v51_worker_identity_drift(tmp_path: Path) -> None:
+    from app.config import Settings
+
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    worker = release_root / _WORKER_RELATIVE
+    worker.parent.mkdir(parents=True)
+    worker.write_bytes(b"not-the-admitted-v51-runtime-worker\n")
+    worker.chmod(0o644)
+    launcher = tmp_path / "runtime-v51-fixture"
+    launcher.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    launcher.chmod(0o700)
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    settings = Settings(
+        environment="test",
+        runtime_adapter="worker-v2",
+        runtime_release_profile="v51",
+        runtime_launcher_path=launcher,
+        runtime_python_path=_dummy_runtime_python(tmp_path),
+        runtime_release_root=release_root,
+        runtime_state_root=state_root,
+        runtime_expected_manifest_digest=_ADMITTED_V51_DESCRIBE_DIGEST,
+        runtime_expected_capability_shape_sha256=_ADMITTED_V51_CAPABILITY_SHAPE,
+    )
+    assert _sha256(worker) != _ADMITTED_V51_WORKER_SHA256
+    with pytest.raises(RuntimeStartupError, match="worker digest"):
+        build_runtime_startup_gate(settings)
+
+
 async def test_create_app_rejects_head_reserialized_listing(tmp_path: Path) -> None:
     payload = _core_listing_payload(_HEAD_RESERIALIZED_SOURCE_COMMIT)
     listing = hashlib.sha256(payload).hexdigest()
@@ -1616,6 +1773,67 @@ async def test_create_app_worker_crash_does_not_fallback_to_one_shot(
     assert "one-shot" not in constructed
 
 
+async def test_create_app_v51_worker_crash_does_not_fallback_to_one_shot(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    (release_root / ".mingli-release-manifest.json").write_text(
+        "{}",
+        encoding="utf-8",
+    )
+    settings = _v51_worker_settings(
+        tmp_path,
+        release_root=release_root,
+        runtime_python=_dummy_runtime_python(tmp_path),
+    )
+    constructed: list[str] = []
+    original_one_shot = OneShotMingliRuntimeAdapter.__init__
+
+    def tracking_one_shot(
+        self: OneShotMingliRuntimeAdapter,
+        *args: object,
+        **kwargs: object,
+    ) -> None:
+        constructed.append("one-shot")
+        original_one_shot(self, *args, **kwargs)
+
+    async def crash_start(self: WorkerV2MingliRuntimeAdapter) -> dict[str, object]:
+        constructed.append("worker-start")
+        raise RuntimeStartupError("Runtime worker READY is invalid")
+
+    def admitted_inventory(self: FileSystemRuntimeReleaseInspector) -> RuntimeReleaseInventory:
+        return RuntimeReleaseInventory(
+            release_manifest_sha256=_ADMITTED_V51_RELEASE_MANIFEST_SHA,
+            release_file_count=218,
+            provider_ids=V51_RELEASE_CAPABILITY_IDS,
+            ready_provider_ids=V51_RELEASE_CAPABILITY_IDS,
+            reference_pack_count=55,
+            evidence_record_count=1328,
+            runtime_closure_file_count=218,
+        )
+
+    monkeypatch.setattr(OneShotMingliRuntimeAdapter, "__init__", tracking_one_shot)
+    monkeypatch.setattr(WorkerV2MingliRuntimeAdapter, "start", crash_start)
+    monkeypatch.setattr(FileSystemRuntimeReleaseInspector, "inspect", admitted_inventory)
+
+    gate = build_runtime_startup_gate(settings)
+    assert gate.runtime.adapter_kind == "runtime-worker-v2"
+    assert constructed == []
+    with pytest.raises(RuntimeStartupError, match="READY is invalid"):
+        await gate.startup()
+    assert constructed == ["worker-start"]
+
+    from app.main import create_app
+
+    application = create_app(settings=settings)
+    with pytest.raises(RuntimeStartupError, match="READY is invalid"):
+        async with application.router.lifespan_context(application):
+            raise AssertionError("create_app must not fallback after v51 worker crash")
+    assert "one-shot" not in constructed
+
+
 async def test_create_app_worker_v2_ready_before_requests_and_five_product_cohort(
     tmp_path: Path,
     database: Any,
@@ -1624,10 +1842,10 @@ async def test_create_app_worker_v2_ready_before_requests_and_five_product_cohor
     if runtime_python is None:
         pytest.skip("the dedicated Mingli Runtime Python is not installed")
     runtime_python = _copy_clean_runtime_python(runtime_python, tmp_path / "runtime-venv")
-    release_root = tmp_path / "locked-core-release"
-    listing = _materialize_locked_core_release(release_root)
-    assert listing == _ADMITTED_V53_RELEASE_MANIFEST_SHA
-    settings = _v53_worker_settings(
+    release_root = tmp_path / "locked-v51-release"
+    listing = _materialize_v51_release(release_root)
+    assert listing == _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    settings = _v51_worker_settings(
         tmp_path,
         release_root=release_root,
         runtime_python=runtime_python,
@@ -1656,7 +1874,7 @@ async def test_create_app_worker_v2_ready_before_requests_and_five_product_cohor
             assert ready is not None
             assert ready["protocol"] == "mingli-runtime-worker-v2"
             assert ready["turn_terminal"] == "result-idle-v1"
-            assert ready["listing_sha256"] == _ADMITTED_V53_RELEASE_MANIFEST_SHA
+            assert ready["listing_sha256"] == _ADMITTED_V51_RELEASE_MANIFEST_SHA
             assert ready["runtime_integrity_sha256"]
             boot_pid = ready["pid"]
             async with database.sessions() as session, session.begin():
@@ -1666,11 +1884,11 @@ async def test_create_app_worker_v2_ready_before_requests_and_five_product_cohor
                 )
                 await repository.create_runtime_release(
                     name="mingli-master-portable-core",
-                    version="5.3",
-                    source_commit=_ADMITTED_V53_SOURCE_COMMIT,
-                    release_manifest_digest=_ADMITTED_V53_RELEASE_MANIFEST_SHA,
+                    version="5.1",
+                    source_commit=_ADMITTED_V51_SOURCE_COMMIT,
+                    release_manifest_digest=_ADMITTED_V51_RELEASE_MANIFEST_SHA,
                     protocol_version="mingli-portable-interface-v2",
-                    describe_manifest_digest=_ADMITTED_V53_DESCRIBE_DIGEST,
+                    describe_manifest_digest=_ADMITTED_V51_DESCRIBE_DIGEST,
                     image_digest=None,
                     production_ready=True,
                 )

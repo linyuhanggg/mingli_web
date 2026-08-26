@@ -57,6 +57,7 @@ from app.charts.contracts import (
     DaliurenChartV1,
     DaliurenCoreFacts,
     DaliurenLesson,
+    DaliurenLessonMethod,
     DaliurenSourcePattern,
     DaliurenTransmission,
     DimensionSynthesis,
@@ -76,6 +77,7 @@ from app.charts.contracts import (
     LiuyaoCoreFacts,
     LiuyaoLine,
     LiuyaoSourcePattern,
+    LiuyaoUsefulSpiritSelection,
     LumingNayinChartV1,
     LumingNayinPillar,
     LumingNayinRelation,
@@ -3479,7 +3481,18 @@ def _liuyao_core_facts(facts: object) -> LiuyaoCoreFacts | None:
         if parsed_source_patterns is not None:
             kwargs["source_conditioned_patterns"] = parsed_source_patterns
 
-    return LiuyaoCoreFacts.model_validate(kwargs) if kwargs else None
+    selection = kwargs.get("useful_spirit_selection")
+    if selection is not None:
+        try:
+            LiuyaoUsefulSpiritSelection.model_validate(selection)
+        except ValidationError:
+            kwargs.pop("useful_spirit_selection")
+    if not kwargs:
+        return None
+    try:
+        return LiuyaoCoreFacts.model_validate(kwargs)
+    except ValidationError:
+        return None
 
 
 def project_liuyao_view_model(
@@ -5362,6 +5375,13 @@ _DALIUREN_SOURCE_PATTERN_METADATA: Final[
 _DALIUREN_SOURCE_PATTERN_STATUS = "predicate_matched_not_verdict"
 
 
+def _daliuren_filter_lesson_method(value: object) -> object:
+    if not isinstance(value, Mapping):
+        return value
+    allowed = set(DaliurenLessonMethod.model_fields)
+    return {key: value[key] for key in allowed if key in value}
+
+
 def _daliuren_runtime_core_facts_payload(facts: object) -> Mapping[str, object] | None:
     """Read the additive Runtime contract from the published brief fact."""
 
@@ -5378,6 +5398,34 @@ def _daliuren_runtime_core_facts_payload(facts: object) -> Mapping[str, object] 
     if "timing_candidates" in payload and not isinstance(
         payload["timing_candidates"], list
     ):
+        return None
+    return payload
+
+
+def _daliuren_individual_facts_payload(facts: object) -> Mapping[str, object] | None:
+    """Assemble v51 Liuren plate facts published as individual brief rows."""
+
+    payload: dict[str, object] = {
+        "schema_version": _DALIUREN_RUNTIME_CORE_FACTS_VERSION,
+    }
+    for field in (
+        *_DALIUREN_RUNTIME_REQUIRED_FIELDS,
+        *_DALIUREN_RUNTIME_OPTIONAL_FIELDS,
+    ):
+        fact = _brief_fact_value(facts, field)
+        if fact is None:
+            continue
+        value: object = fact[1]
+        if field == "lesson_method":
+            value = _daliuren_filter_lesson_method(value)
+        payload[field] = value
+    if set(payload) - _DALIUREN_RUNTIME_ENVELOPE_FIELDS:
+        return None
+    if "timing_candidates" in payload and not isinstance(
+        payload["timing_candidates"], list
+    ):
+        return None
+    if not _daliuren_required_fields_present(payload):
         return None
     return payload
 
@@ -5641,6 +5689,8 @@ def project_daliuren_view_model(
         return None
     facts = brief.get("facts")
     runtime_core = _daliuren_runtime_core_facts_payload(facts)
+    if runtime_core is None:
+        runtime_core = _daliuren_individual_facts_payload(facts)
     subject_ref = _subject_ref(brief, facts)
     question = _question(brief)
     if runtime_core is None or subject_ref is None or question is None:
