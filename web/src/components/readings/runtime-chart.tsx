@@ -225,8 +225,44 @@ function fengshuiMissingLabel(value: string): string {
   return labels[value] ?? "其他关键资料";
 }
 
-function ZiweiChart({ view }: Readonly<{ view: ZiweiChartViewModel }>) {
-  return <ZiweiPalaceBoard view={view} />;
+function ZiweiChart({
+  view,
+  showInterpretiveSections,
+}: Readonly<{
+  view: ZiweiChartViewModel;
+  showInterpretiveSections: boolean;
+}>) {
+  const annualLayers = view.core_facts?.annual_layers ?? [];
+  const monthlyLayers = view.core_facts?.monthly_layers ?? [];
+  return (
+    <div className={styles.wrap} data-schema={view.schema_version}>
+      <ZiweiPalaceBoard showInterpretiveSections={showInterpretiveSections} view={view} />
+      {annualLayers.length ? (
+        <Table
+          caption="流年盘面事实"
+          headers={["年份", "覆盖区间", "流年结构", "分段"]}
+          rows={annualLayers.map((item) => [
+            String(item.year),
+            `${item.coverage_start}—${item.coverage_end_exclusive}`,
+            item.representative_scope,
+            String(item.segments.length),
+          ])}
+        />
+      ) : null}
+      {monthlyLayers.length ? (
+        <Table
+          caption="流月盘面事实"
+          headers={["年份", "月份", "流月结构", "分段"]}
+          rows={monthlyLayers.map((item) => [
+            String(item.year),
+            String(item.month),
+            item.representative_scope,
+            String(item.segments.length),
+          ])}
+        />
+      ) : null}
+    </div>
+  );
 }
 
 function QizhengChart({
@@ -1458,7 +1494,7 @@ export function RuntimeChart({
     case "wenshi-view/v1":
       return <WenshiChart view={viewModel} />;
     case "ziwei-chart/v1":
-      return <ZiweiChart view={viewModel} />;
+      return <ZiweiChart view={viewModel} showInterpretiveSections={showInterpretiveSections} />;
     case "qizheng-chart/v1":
       return <QizhengChart view={viewModel} showInterpretiveSections={showInterpretiveSections} />;
     case "liuyao-chart/v1":
