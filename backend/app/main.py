@@ -51,7 +51,10 @@ def create_app(
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         if resolved_chart_runtime is None:
-            runtime_gate = build_runtime_startup_gate(resolved_settings)
+            runtime_gate = build_runtime_startup_gate(
+                resolved_settings,
+                host_owner="chart-api",
+            )
             await runtime_gate.startup()
             application.state.chart_runtime = runtime_gate.runtime
         yield

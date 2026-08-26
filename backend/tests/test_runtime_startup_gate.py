@@ -1536,7 +1536,12 @@ async def test_configured_worker_admits_the_real_runtime_before_processing(
 
     monkeypatch.setattr(readings, "get_settings", lambda: settings)
     monkeypatch.setattr(readings, "Database", lambda _url: database)
-    monkeypatch.setattr(readings, "build_runtime_startup_gate", lambda _settings: GateFixture())
+
+    def build_gate_fixture(_settings: object, **kwargs: Any) -> GateFixture:
+        assert kwargs.get("host_owner") == "job-worker"
+        return GateFixture()
+
+    monkeypatch.setattr(readings, "build_runtime_startup_gate", build_gate_fixture)
     monkeypatch.setattr(readings, "build_reading_worker", build_worker_fixture)
 
     async with readings.configured_reading_worker() as worker:
@@ -1567,7 +1572,12 @@ async def test_configured_worker_fails_closed_when_runtime_startup_fails(
     settings = config.Settings(environment="test", runtime_adapter="worker-v2")
     monkeypatch.setattr(readings, "get_settings", lambda: settings)
     monkeypatch.setattr(readings, "Database", lambda _url: DatabaseFixture())
-    monkeypatch.setattr(readings, "build_runtime_startup_gate", lambda _settings: GateFixture())
+
+    def build_gate_fixture(_settings: object, **kwargs: Any) -> GateFixture:
+        assert kwargs.get("host_owner") == "job-worker"
+        return GateFixture()
+
+    monkeypatch.setattr(readings, "build_runtime_startup_gate", build_gate_fixture)
 
     with pytest.raises(RuntimeStartupError, match="describe admission failed"):
         async with readings.configured_reading_worker():

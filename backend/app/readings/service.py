@@ -8,6 +8,7 @@ import logging
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 from time import perf_counter
 from typing import Any, cast
 from uuid import UUID, uuid4
@@ -16,7 +17,14 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.adapters.runtime import MingliRuntime
+from app.adapters.runtime import (
+    RUNTIME_TURN_AUDIT_NAME,
+    MingliRuntime,
+    RuntimeTurnAudit,
+    append_runtime_turn_audit,
+    failure_for_transport_fault,
+    runtime_command_digest,
+)
 from app.charts.projectors import project_runtime_view_model
 from app.commerce.models import FulfillmentRecord, Order, Payment, ProductFamily, ProductVersion
 from app.commerce.public_service import BAZI_DEEP_PRODUCT_FAMILY_KEY
@@ -2469,16 +2477,27 @@ class ReadingService:
             async with asyncio.timeout(self.settings.chart_fast_path_timeout_seconds):
                 result = await self.chart_runtime.execute(prepare)
         except TimeoutError as error:
+            self._remember_chart_runtime_audit(prepare, None, fault="timeout")
             raise ChartFastPathUnavailableError(
                 "chart_runtime_timeout",
                 code="chart_runtime_timeout",
             ) from error
         except RuntimeTransportError as error:
+            self._remember_chart_runtime_audit(
+                prepare,
+                None,
+                fault=f"transport:{type(error).__name__}",
+            )
             raise ChartFastPathUnavailableError(
                 f"chart_runtime_transport:{error}",
                 code="chart_runtime_transport",
             ) from error
         except Exception as error:
+            self._remember_chart_runtime_audit(
+                prepare,
+                None,
+                fault=f"exception:{type(error).__name__}",
+            )
             _logger.exception(
                 "chart_runtime_error",
                 extra={
@@ -2512,17 +2531,78 @@ class ReadingService:
         elif isinstance(result, Stopped) and result.reason == "need_input":
             await self.repository.record_waiting_input(str(job.id), result, now)
         elif isinstance(result, Stopped):
+            self._remember_chart_runtime_audit(prepare, result)
             code = f"chart_runtime_{result.reason}"
             raise ChartFastPathUnavailableError(
                 result.public_copy or code,
                 code=code,
             )
         else:
+            self._remember_chart_runtime_audit(
+                prepare,
+                result,
+                fault="protocol-error",
+            )
             raise ChartFastPathUnavailableError(
                 "chart_runtime_protocol_error",
                 code="chart_runtime_protocol_error",
             )
         return runtime_ms, (perf_counter() - persistence_started_at) * 1000
+
+    def _remember_chart_runtime_audit(
+        self,
+        prepare: Prepare,
+        result: Prepared | Stopped | object | None,
+        *,
+        fault: str | None = None,
+    ) -> RuntimeTurnAudit:
+        runtime = self.chart_runtime
+        existing = getattr(runtime, "last_turn", None)
+        if isinstance(existing, RuntimeTurnAudit) and (
+            fault is None or existing.transport_fault is not None
+        ):
+            return existing
+        failure = None
+        result_kind = "error"
+        if isinstance(result, Stopped):
+            result_kind = result.kind
+            if result.failure is not None:
+                failure = result.failure.to_dict()
+        elif isinstance(result, Prepared):
+            result_kind = result.kind
+        if failure is None and fault is not None:
+            failure = failure_for_transport_fault(fault).to_dict()
+        state = getattr(runtime, "_state_root", None)
+        if isinstance(state, Path):
+            store_namespace = str(state)
+            audit_path: Path | None = state / RUNTIME_TURN_AUDIT_NAME
+        elif self.settings.runtime_state_root is not None:
+            store_namespace = str(self.settings.runtime_state_root)
+            audit_path = self.settings.runtime_state_root / RUNTIME_TURN_AUDIT_NAME
+        else:
+            store_namespace = "unbound"
+            audit_path = None
+        pid = getattr(runtime, "_audit_pid", None)
+        boot_nonce = getattr(runtime, "_audit_boot_nonce", None)
+        sequence = getattr(runtime, "_last_sequence", None)
+        transport_fault = fault or getattr(runtime, "_transport_fault", None)
+        record = RuntimeTurnAudit(
+            command_digest=runtime_command_digest(prepare),
+            command_kind=prepare.kind,
+            worker_pid=pid if isinstance(pid, int) else None,
+            worker_boot_nonce=boot_nonce if isinstance(boot_nonce, str) else None,
+            sequence=sequence if isinstance(sequence, int) else None,
+            result_kind=result_kind,
+            failure=failure,
+            transport_fault=transport_fault if isinstance(transport_fault, str) else None,
+            isolated=bool(getattr(runtime, "isolated", False)),
+            store_namespace=store_namespace,
+        )
+        if runtime is not None:
+            cast(Any, runtime).last_turn = record
+        if audit_path is not None:
+            append_runtime_turn_audit(audit_path, record.to_dict())
+        return record
 
     async def _create_version_and_job(
         self,

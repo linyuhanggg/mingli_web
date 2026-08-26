@@ -394,6 +394,13 @@ def test_generic_stopped_is_opaque() -> None:
     assert stopped.reason == "error"
     assert stopped.public_copy == WORKER_STOPPED_COPY
     assert stopped.state_token is None
+    assert stopped.failure is not None
+    assert stopped.failure.to_dict() == {
+        "schema_version": "mingli-runtime-failure/v1",
+        "code": "runtime.internal_error",
+        "category": "runtime_internal",
+        "retryable": False,
+    }
 
 
 async def test_worker_start_binds_ready_and_execute_is_single_result(tmp_path: Path) -> None:

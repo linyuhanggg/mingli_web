@@ -349,7 +349,10 @@ async def configured_reading_worker() -> AsyncIterator[Worker]:
     runtime: RuntimePort | None = None
     try:
         if settings.runtime_adapter in {"one-shot", "worker-v2"}:
-            runtime_gate = build_runtime_startup_gate(settings)
+            runtime_gate = build_runtime_startup_gate(
+                settings,
+                host_owner="job-worker",
+            )
             await runtime_gate.startup()
             runtime = runtime_gate.runtime
         model: NarrativeModelPort | None = None
