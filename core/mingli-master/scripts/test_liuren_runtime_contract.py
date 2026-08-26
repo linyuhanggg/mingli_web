@@ -17,13 +17,12 @@ import liuren_calc
 import liuren_fact_adapter
 from reading_engine import liuren_contract
 from reading_engine.liuren_contract import (
-    LiurenRuntimeContractError,
     SCHEMA_VERSION,
+    LiurenRuntimeContractError,
     build_runtime_core_facts,
     build_source_conditioned_patterns,
     validate_runtime_core_facts,
 )
-
 
 ROOT = Path(__file__).resolve().parents[1]
 GOLDEN = ROOT / "references" / "fixtures" / "liuren-runtime-core-facts-v1.json"
@@ -566,6 +565,44 @@ class LiurenRuntimeContractTests(unittest.TestCase):
             for row in three_lesson_contract["source_conditioned_patterns"]
             if row["title"] == "四课不备"
         )
+        self.assertEqual(three_lesson_contract["lesson_method"]["primary"], "重审")
+        self.assertEqual(
+            source_row,
+            {
+                "rule_id": "DLR-S01",
+                "local_rule_id": "liuren.structural.incomplete-four-lessons",
+                "title": "四课不备",
+                "source_pack": "san-shi/daliuren-daquan",
+                "source_anchor": "fulltext.md#L58",
+                "status": "predicate_matched_not_verdict",
+                "fact_paths": [
+                    "fact:/chart_facts/output/structural_patterns/0",
+                    "fact:/chart_facts/output/four_lessons/0/upper",
+                    "fact:/chart_facts/output/four_lessons/1/upper",
+                    "fact:/chart_facts/output/four_lessons/2/upper",
+                    "fact:/chart_facts/output/four_lessons/3/upper",
+                ],
+                "predicate_audit": [
+                    "/chart_facts/output/structural_patterns/0:eq:四课不备",
+                    (
+                        "/chart_facts/output/four_lessons/*/upper:"
+                        "distinct_count_eq:3"
+                    ),
+                ],
+                "source_dependency_id": (
+                    "liuren.source-conditioned-structural-patterns-v1"
+                ),
+            },
+        )
+        forged_biezhe_identity = copy.deepcopy(three_lesson_contract)
+        forged_biezhe_identity["source_conditioned_patterns"][0][
+            "rule_id"
+        ] = "DLR-07"
+        with self.assertRaisesRegex(
+            LiurenRuntimeContractError,
+            "must match the pinned source catalog",
+        ):
+            validate_runtime_core_facts(forged_biezhe_identity)
 
         one_lesson_facts = liuren_fact_adapter.build_from_chart(
             day_ganzhi="癸丑",
@@ -590,6 +627,24 @@ class LiurenRuntimeContractTests(unittest.TestCase):
             "requires 3 distinct four-lesson upper values, observed 1",
         ):
             validate_runtime_core_facts(mutation)
+
+    def test_biezhe_identity_remains_a_complete_transmission_method(self) -> None:
+        biezhe_facts = liuren_fact_adapter.build_from_chart(
+            day_ganzhi="丙辰",
+            hour_ganzhi="辛卯",
+            month_general="辰",
+            question="脱敏别责来源边界",
+            location="fixture",
+        )
+        output = biezhe_facts["output"]
+        self.assertEqual(output["transmission_method"]["primary"], "别责")
+        self.assertEqual(
+            len({row["upper"] for row in output["four_lessons"]}),
+            3,
+        )
+        rows = build_source_conditioned_patterns(output)
+        self.assertEqual([row["rule_id"] for row in rows], ["DLR-S01"])
+        self.assertNotIn("DLR-07", {row["rule_id"] for row in rows})
 
     def test_two_lesson_incomplete_pattern_does_not_reuse_three_lesson_anchor(self) -> None:
         facts = liuren_fact_adapter.build_from_chart(
@@ -618,6 +673,26 @@ class LiurenRuntimeContractTests(unittest.TestCase):
             report["observed_normalized_source_sha256"],
         )
         self.assertEqual(report["findings"], [])
+        self.assertEqual(
+            report["biezhe_rule_identity"],
+            {
+                "rule_id": "DLR-07",
+                "quote_id": "DLQ-012",
+                "required_predicates": (
+                    "distinct_lesson_count_eq:3",
+                    "has_direct_overcome:eq:false",
+                    "has_remote_overcome:eq:false",
+                ),
+            },
+        )
+        incomplete = next(
+            row for row in report["patterns"] if row["title"] == "四课不备"
+        )
+        self.assertEqual(incomplete["rule_id"], "DLR-S01")
+        self.assertEqual(
+            incomplete["local_rule_id"],
+            "liuren.structural.incomplete-four-lessons",
+        )
 
     def test_structural_pattern_source_audit_rejects_source_drift(self) -> None:
         pack_relative = Path(
@@ -656,6 +731,9 @@ class LiurenRuntimeContractTests(unittest.TestCase):
             catalog["source_conditioned_patterns"]["伏吟"][
                 "source_excerpt_sha256"
             ] = hashlib.sha256(fake_quote.encode("utf-8")).hexdigest()
+            catalog["source_conditioned_patterns"]["四课不备"][
+                "rule_id"
+            ] = "DLR-07"
             catalog_path.write_text(
                 json.dumps(catalog, ensure_ascii=False),
                 encoding="utf-8",
@@ -679,6 +757,14 @@ class LiurenRuntimeContractTests(unittest.TestCase):
                     "伏吟: exact quote missing from normalized source line",
                     report["findings"],
                 )
+                self.assertIn(
+                    "四课不备: rule identity must be DLR-S01",
+                    report["findings"],
+                )
+                self.assertIn(
+                    "四课不备: must not reuse DLR-07 别责 identity",
+                    report["findings"],
+                )
 
                 (isolated_root / fulltext_relative).unlink()
                 missing_report = (
@@ -689,6 +775,51 @@ class LiurenRuntimeContractTests(unittest.TestCase):
                     f"normalized source file missing: {fulltext_relative}",
                     missing_report["findings"],
                 )
+
+    def test_structural_pattern_source_audit_rejects_biezhe_predicate_drift(
+        self,
+    ) -> None:
+        pack_relative = Path("references/books/san-shi/daliuren-daquan")
+        fulltext_relative = Path(
+            "references/fulltext/san-shi/daliuren-daquan/fulltext.md"
+        )
+        catalog_relative = Path("references/inference/liuren-rules-v1.json")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            isolated_root = Path(temp_dir)
+            shutil.copytree(ROOT / pack_relative, isolated_root / pack_relative)
+            (isolated_root / fulltext_relative).parent.mkdir(parents=True)
+            shutil.copy2(ROOT / fulltext_relative, isolated_root / fulltext_relative)
+            (isolated_root / catalog_relative).parent.mkdir(parents=True)
+            shutil.copy2(ROOT / catalog_relative, isolated_root / catalog_relative)
+
+            rules_path = isolated_root / pack_relative / "rules.md"
+            rules_path.write_text(
+                rules_path.read_text(encoding="utf-8").replace(
+                    "去重后恰为三课，且无直接克、无遥克。",
+                    "去重后恰为三课。",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+            catalog_path = isolated_root / catalog_relative
+            with patch.object(
+                audit_liuren_structural_patterns,
+                "ROOT",
+                isolated_root,
+            ), patch.object(
+                audit_liuren_structural_patterns,
+                "RULE_CATALOG",
+                catalog_path,
+            ):
+                report = (
+                    audit_liuren_structural_patterns.audit_liuren_structural_patterns()
+                )
+
+            self.assertFalse(report["ready"], report)
+            self.assertIn(
+                "别责: complete three-lesson/no-overcome predicate drift",
+                report["findings"],
+            )
 
     def test_missing_source_anchor_and_non_null_verdict_are_rejected(self) -> None:
         without_anchor = _contract()

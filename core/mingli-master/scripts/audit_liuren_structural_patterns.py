@@ -11,11 +11,19 @@ from typing import Any, Mapping
 
 import yaml
 
-
 ROOT = Path(__file__).resolve().parents[1]
 RULE_CATALOG = ROOT / "references/inference/liuren-rules-v1.json"
-EXPECTED_PATTERNS = ("伏吟", "反吟", "八专日", "四课不备")
+EXPECTED_PATTERN_IDENTITIES = {
+    "伏吟": ("DLR-09", "liuren.structural.fuyin"),
+    "反吟": ("DLR-10", "liuren.structural.fanyin"),
+    "八专日": ("DLR-08", "liuren.structural.bazhuan-day"),
+    "四课不备": ("DLR-S01", "liuren.structural.incomplete-four-lessons"),
+}
+EXPECTED_PATTERNS = tuple(EXPECTED_PATTERN_IDENTITIES)
 EXPECTED_SOURCE_PACK = "san-shi/daliuren-daquan"
+BIEZHE_RULE_ID = "DLR-07"
+BIEZHE_QUOTE_ID = "DLQ-012"
+BIEZHE_PRECONDITION = "去重后恰为三课，且无直接克、无遥克。"
 REQUIRED_FIELDS = (
     "rule_id",
     "local_rule_id",
@@ -114,6 +122,16 @@ def audit_liuren_structural_patterns() -> dict[str, Any]:
     pack_root = ROOT / "references/books" / EXPECTED_SOURCE_PACK
     rules_text = (pack_root / "rules.md").read_text(encoding="utf-8")
     quotes_text = (pack_root / "quote-index.md").read_text(encoding="utf-8")
+    biezhe_section = _section(rules_text, BIEZHE_RULE_ID, 2)
+    if biezhe_section is None:
+        findings.append(f"别责: rule card {BIEZHE_RULE_ID} missing")
+    else:
+        if f"`{BIEZHE_QUOTE_ID}`" not in biezhe_section:
+            findings.append(
+                f"别责: rule card does not cite {BIEZHE_QUOTE_ID}"
+            )
+        if BIEZHE_PRECONDITION not in biezhe_section:
+            findings.append("别责: complete three-lesson/no-overcome predicate drift")
     manifest_path = pack_root / "source-manifest.yaml"
     try:
         manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
@@ -164,14 +182,35 @@ def audit_liuren_structural_patterns() -> dict[str, Any]:
         if raw.get("source_pack") != EXPECTED_SOURCE_PACK:
             findings.append(f"{title}: source pack mismatch")
 
+        expected_rule_id, expected_local_rule_id = (
+            EXPECTED_PATTERN_IDENTITIES[title]
+        )
+        if raw.get("rule_id") != expected_rule_id:
+            findings.append(
+                f"{title}: rule identity must be {expected_rule_id}"
+            )
+        if raw.get("local_rule_id") != expected_local_rule_id:
+            findings.append(
+                f"{title}: local rule identity must be {expected_local_rule_id}"
+            )
+        if title == "四课不备":
+            if raw.get("rule_id") == BIEZHE_RULE_ID:
+                findings.append("四课不备: must not reuse DLR-07 别责 identity")
+            if raw.get("required_distinct_lesson_count") != 3:
+                findings.append(
+                    "四课不备: required distinct lesson count must be 3"
+                )
+
         rule_id = str(raw.get("rule_id") or "")
         quote_id = str(raw.get("quote_id") or "")
         source_anchor = str(raw.get("source_anchor") or "")
-        rule_section = _section(rules_text, rule_id, 2)
+        rule_section = (
+            None if title == "四课不备" else _section(rules_text, rule_id, 2)
+        )
         quote_section = _section(quotes_text, quote_id, 3)
-        if rule_section is None:
+        if title != "四课不备" and rule_section is None:
             findings.append(f"{title}: rule card {rule_id} missing")
-        elif f"`{quote_id}`" not in rule_section:
+        elif rule_section is not None and f"`{quote_id}`" not in rule_section:
             findings.append(f"{title}: rule card does not cite {quote_id}")
         if quote_section is None:
             findings.append(f"{title}: quote index {quote_id} missing")
@@ -215,6 +254,7 @@ def audit_liuren_structural_patterns() -> dict[str, Any]:
             {
                 "title": title,
                 "rule_id": rule_id,
+                "local_rule_id": str(raw.get("local_rule_id") or ""),
                 "quote_id": quote_id,
                 "source_pack": str(raw.get("source_pack") or ""),
                 "source_anchor": source_anchor,
@@ -231,6 +271,15 @@ def audit_liuren_structural_patterns() -> dict[str, Any]:
         "manifest_normalized_source_sha256": declared_source_sha256,
         "observed_normalized_source_sha256": observed_source_sha256,
         "normalized_source_line_count": len(normalized_source_lines),
+        "biezhe_rule_identity": {
+            "rule_id": BIEZHE_RULE_ID,
+            "quote_id": BIEZHE_QUOTE_ID,
+            "required_predicates": (
+                "distinct_lesson_count_eq:3",
+                "has_direct_overcome:eq:false",
+                "has_remote_overcome:eq:false",
+            ),
+        },
         "patterns": audited,
         "findings": findings,
         "ready": not findings,

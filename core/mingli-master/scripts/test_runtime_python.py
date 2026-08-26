@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -246,6 +247,49 @@ class RuntimePythonTests(unittest.TestCase):
         self.assertEqual(runtime_python.REQUIRED_DISTRIBUTIONS["zhconv"], "1.4.3")
         requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8")
         self.assertIn("zhconv==1.4.3", requirements.splitlines())
+        identity = runtime_python.current_runtime_identity()
+        self.assertEqual(identity["zhconv"], "1.4.3")
+        self.assertIn("zhconv", identity["origins"])
+
+    def test_runtime_lock_matches_the_complete_distribution_allowlist(self) -> None:
+        lock = ROOT / "requirements-runtime.lock"
+        self.assertEqual(
+            runtime_python.load_hash_locked_distributions(lock),
+            runtime_python.REQUIRED_DISTRIBUTIONS,
+        )
+        self.assertEqual(runtime_python.REQUIRED_DISTRIBUTIONS["zhconv"], "1.4.3")
+
+    def test_runtime_lock_rejects_an_unregistered_distribution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            lock = Path(temporary) / "requirements-runtime.lock"
+            lock.write_text(
+                (ROOT / "requirements-runtime.lock").read_text(encoding="utf-8")
+                + "rogue-runtime==1.0 --hash=sha256:" + "0" * 64 + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(RuntimeError, "distribution allowlist"):
+                runtime_python.validate_runtime_requirements_lock(lock)
+
+    def test_runtime_lock_rejects_substituted_artifact_hashes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            lock = Path(temporary) / "requirements-runtime.lock"
+            tampered, replaced = re.subn(
+                r"(?<=--hash=sha256:)[0-9a-f]{64}",
+                "0" * 64,
+                (ROOT / "requirements-runtime.lock").read_text(encoding="utf-8"),
+            )
+            self.assertEqual(replaced, 7)
+            lock.write_text(tampered, encoding="utf-8")
+
+            with self.assertRaisesRegex(RuntimeError, "approved artifact hash sets"):
+                runtime_python.validate_runtime_requirements_lock(lock)
+
+    def test_runtime_lock_rejects_a_requirement_without_a_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            lock = Path(temporary) / "requirements-runtime.lock"
+            lock.write_text("zhconv==1.4.3\n", encoding="utf-8")
+            with self.assertRaisesRegex(RuntimeError, "fully hash locked"):
+                runtime_python.load_hash_locked_distributions(lock)
 
     def test_runtime_probe_ignores_pythonpath_module_shadowing(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
