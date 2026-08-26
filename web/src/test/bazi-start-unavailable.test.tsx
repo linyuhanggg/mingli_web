@@ -74,7 +74,7 @@ describe("bazi start unavailable copy", () => {
     const user = userEvent.setup();
     render(<BaziPage />);
 
-    const submit = await screen.findByRole("button", { name: /^立即排盘（免费）/ });
+    const submit = await screen.findByRole("button", { name: /^免费排盘/ });
     await user.type(screen.getByLabelText("受测对象"), "林宇航");
     await user.selectOptions(screen.getByLabelText("出生年份"), "2000");
     await user.selectOptions(screen.getByLabelText("出生月份"), "10");

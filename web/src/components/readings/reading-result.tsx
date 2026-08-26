@@ -6,10 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import {
   ApiError,
   getReadingResult,
-  pollReading,
   type ReadingResultResponse,
   type ReadingVersionSummary,
 } from "@/lib/api";
+import { requestJson } from "@/lib/api/client";
 import { Status, type StatusState } from "@/components/ui/status";
 import {
   buildBaziChartView,
@@ -21,6 +21,7 @@ import {
   extractFortunePeriodMarkers,
   isFortunePeriodMarkerFact,
 } from "@/lib/fortune-period-markers";
+import type { ViewModel } from "@/view-models/registry";
 import surface from "@/components/app-surface.module.css";
 
 import { AcceptedCopy } from "./accepted-copy";
@@ -37,7 +38,11 @@ import { ReadingExportPanel } from "./reading-export-panel";
 import { RuntimeChart } from "./runtime-chart";
 import { VerificationForm } from "./verification-form";
 
-const DEFAULT_POLL_MS = 2000;
+const POLL_DELAYS_MS = [1000, 2000, 4000] as const;
+const POLLING_CAP_MS = 10 * 60 * 1000;
+const LOADING_REVEAL_MS = 300;
+const HISTORY_ESCAPE_MS = 15 * 1000;
+const RETRY_ESCAPE_MS = 60 * 1000;
 const RUNTIME_CHART_VERSIONS = new Set([
   "hecan-view/v1",
   "canwen-view/v1",
@@ -70,6 +75,19 @@ const RELATIONSHIP_PRODUCT_IDS = new Set([
 ]);
 const RESULT_READY_STATUSES = new Set(["prepared", "completing", "accepted"]);
 
+function validStartedAt(value: number | undefined): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+function elapsedSince(startedAt: number): number {
+  return Math.max(0, Date.now() - startedAt);
+}
+
+function serverStartedAt(value: string | undefined): number | null {
+  const parsed = typeof value === "string" ? Date.parse(value) : Number.NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
 type StatusTone = "processing" | "success" | "error";
 
 function statusMeta(
@@ -84,20 +102,20 @@ function statusMeta(
       };
     case "prepared":
       return {
-        label: "事实已准备",
-        text: "确定性事实已就绪，正在生成正文。",
+        label: "盘面已好",
+        text: "盘面已好，正在撰写解读。",
         tone: "processing",
       };
     case "completing":
       return {
-        label: "正在接纳正文",
-        text: "服务端正在接纳并固定正文。",
+        label: "正在整理解读",
+        text: "解读写好了，正在装订成册。",
         tone: "processing",
       };
     case "delayed":
       return {
-        label: "交付延迟",
-        text: "服务繁忙，正在继续处理。",
+        label: "仍在处理中",
+        text: "今天排队的人有点多，继续为你处理中。",
         tone: "processing",
       };
     case "waiting_input":
@@ -114,8 +132,8 @@ function statusMeta(
       };
     case "accepted":
       return {
-        label: "已交付",
-        text: "正文已接纳并固定，可随时回看。",
+        label: "解读已完成",
+        text: "解读已完成，可随时回看。",
         tone: "success",
       };
     case "runtime_unknown":
@@ -198,6 +216,7 @@ function ArchiveRail({
             {meta.label}
           </span>
         </p>
+        <p className={surface.railNote}>{meta.text}</p>
         <p className={surface.railNote}>
           这份报告保留当前版本，后续修改不会覆盖本次内容。
         </p>
@@ -212,70 +231,272 @@ function ArchiveRail({
   );
 }
 
-export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
-  const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState<ReadingVersionSummary | null>(null);
-  const [result, setResult] = useState<ReadingResultResponse | null>(null);
+function WaitingStatus({
+  context,
+  deliveryState,
+  elapsedMs,
+  onRestart,
+  onRetry,
+  status,
+}: Readonly<{
+  context?: string;
+  deliveryState?: ReadingVersionSummary["delivery_state"];
+  elapsedMs: number;
+  onRestart?: () => void;
+  onRetry: () => void;
+  status?: ReadingVersionSummary["status"];
+}>) {
+  const elapsedSeconds = Math.floor(elapsedMs / 1000);
+  const canLeaveForHistory = elapsedMs >= HISTORY_ESCAPE_MS;
+  const canRestart = elapsedMs >= RETRY_ESCAPE_MS;
+  const pollingEnded = elapsedMs >= POLLING_CAP_MS;
+  const isLongWait = elapsedMs >= HISTORY_ESCAPE_MS;
+  const isBusy = elapsedMs >= RETRY_ESCAPE_MS;
+  const title = isBusy
+    ? "这次排盘比平时久"
+    : isLongWait
+      ? "仍在认真排盘"
+      : "正在为你排盘";
+  const description = pollingEnded
+    ? "自动检查已暂停。资料仍然保留，可以重新发起或稍后查看。"
+    : isBusy
+      ? "可能服务繁忙；资料不会丢。可以重试新任务，或稍后在推演历史查看。"
+      : isLongWait
+        ? "仍在认真排盘。你可以离开，完成后在推演历史找到它。"
+        : "通常需要 5–15 秒。可以留在这里等待结果。";
+  const activeProgressIndex = status === "completing"
+    ? 2
+    : status === "prepared"
+      ? 1
+      : status === "input_ready" || deliveryState === "queued"
+        ? 0
+        : null;
+  const progressSteps = ["资料已提交", "盘面已好", "解读整理中"];
+
+  return (
+    <section aria-atomic="true" aria-busy={!pollingEnded} role="status">
+      <p>排盘进度</p>
+      <h2>
+        {title}
+        <span aria-hidden="true"> · 已等待 {elapsedSeconds} 秒</span>
+      </h2>
+      <p>{description}</p>
+      {context ? <p>{context}</p> : null}
+      {activeProgressIndex === null ? null : (
+        <ol aria-label="排盘进度阶段">
+          {progressSteps.map((step, index) => (
+            <li
+              aria-current={index === activeProgressIndex ? "step" : undefined}
+              data-state={index < activeProgressIndex ? "complete" : index === activeProgressIndex ? "active" : "pending"}
+              key={step}
+            >
+              {step}
+            </li>
+          ))}
+        </ol>
+      )}
+      {canLeaveForHistory ? (
+        <div className={surface.actionRow}>
+          {canRestart ? (
+            <button type="button" onClick={onRestart ?? onRetry}>
+              {onRestart ? "重试（保留原资料）" : "重新检查状态"}
+            </button>
+          ) : null}
+          <Link data-variant="secondary" href="/account/history">
+            稍后查看
+          </Link>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+type ReadingResultProps = Readonly<{
+  initialSummary?: ReadingVersionSummary;
+  initialViewModel?: ViewModel;
+  readingId: string;
+  onPollError?: (error: unknown) => void;
+  onRestart?: () => void;
+  onSummary?: (summary: ReadingVersionSummary) => void;
+  startedAt?: number;
+}>;
+
+export function ReadingResult(props: ReadingResultProps) {
+  const instanceKey = `${props.readingId}:${props.startedAt ?? "fresh"}`;
+  return <ReadingResultForVersion key={instanceKey} {...props} />;
+}
+
+function ReadingResultForVersion({
+  initialSummary,
+  initialViewModel,
+  readingId,
+  onPollError,
+  onRestart,
+  onSummary,
+  startedAt,
+}: ReadingResultProps) {
+  const seededSummary = initialSummary?.reading_version_id === readingId
+    ? initialSummary
+    : null;
+  const seededViewModel = seededSummary ? initialViewModel ?? null : null;
+  const hasSeededProjection = seededViewModel !== null;
+  const [loading, setLoading] = useState(!hasSeededProjection);
+  const [summary, setSummary] = useState<ReadingVersionSummary | null>(seededSummary);
+  const [result, setResult] = useState<ReadingResultResponse | null>(() =>
+    seededSummary && seededViewModel
+      ? {
+          reading_version_id: readingId,
+          status: seededSummary.status,
+          accepted_copy: null,
+          fact_panel: null,
+          view_model: seededViewModel,
+          verification: null,
+          input_request: seededSummary.input_request,
+          document: null,
+        }
+      : null,
+  );
+  const [usingStartProjection, setUsingStartProjection] =
+    useState(hasSeededProjection);
   const [error, setError] = useState<unknown>(null);
   const [retryKey, setRetryKey] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [timerStartedAt, setTimerStartedAt] = useState<number>(
+    () => (validStartedAt(startedAt) ? startedAt : Date.now()),
+  );
+  const [elapsedMs, setElapsedMs] = useState(
+    () => (validStartedAt(startedAt) ? elapsedSince(startedAt) : 0),
+  );
+  const onPollErrorRef = useRef(onPollError);
+  const onSummaryRef = useRef(onSummary);
+
+  useEffect(() => {
+    onPollErrorRef.current = onPollError;
+    onSummaryRef.current = onSummary;
+  }, [onPollError, onSummary]);
+
+  useEffect(() => {
+    const updateElapsed = () => setElapsedMs(elapsedSince(timerStartedAt));
+    const currentElapsed = elapsedSince(timerStartedAt);
+    const boundaryTimers = [LOADING_REVEAL_MS, HISTORY_ESCAPE_MS, RETRY_ESCAPE_MS]
+      .filter((boundary) => boundary > currentElapsed)
+      .map((boundary) => window.setTimeout(updateElapsed, boundary - currentElapsed));
+    const elapsedTimer = window.setInterval(updateElapsed, 1000);
+    updateElapsed();
+
+    return () => {
+      for (const timer of boundaryTimers) window.clearTimeout(timer);
+      window.clearInterval(elapsedTimer);
+    };
+  }, [timerStartedAt]);
 
   useEffect(() => {
     let cancelled = false;
     let pollTimer: ReturnType<typeof setTimeout> | null = null;
+    let pollAttempt = 0;
+    let resultFetchedForStatus: ReadingVersionSummary["status"] | null = null;
+    const pollController = new AbortController();
 
     function schedule(delayMs: number) {
       if (cancelled) return;
       pollTimer = setTimeout(run, delayMs);
     }
 
+    function scheduleNextPoll() {
+      const delay = POLL_DELAYS_MS[Math.min(pollAttempt, POLL_DELAYS_MS.length - 1)]
+        ?? POLL_DELAYS_MS[2];
+      pollAttempt += 1;
+      schedule(delay);
+    }
+
+    function applySummary(response: ReadingVersionSummary) {
+      const authoritativeStartedAt = serverStartedAt(response.created_at);
+      if (authoritativeStartedAt !== null) {
+        setTimerStartedAt((current) =>
+          current === authoritativeStartedAt ? current : authoritativeStartedAt,
+        );
+      }
+      setSummary(response);
+      setError(null);
+      onSummaryRef.current?.(response);
+    }
+
+    async function loadReadyResult(response: ReadingVersionSummary) {
+      const shouldFetchResult =
+        resultFetchedForStatus === null
+        || (response.status === "accepted" && resultFetchedForStatus !== "accepted");
+      if (shouldFetchResult) {
+        const nextResult = await getReadingResult(readingId);
+        if (cancelled) return;
+        resultFetchedForStatus = response.status;
+        setResult(nextResult);
+        setUsingStartProjection(false);
+      }
+      setLoading(false);
+      if (response.status === "accepted") return;
+      scheduleNextPoll();
+    }
+
+    async function pollSummary() {
+      const response = await requestJson<ReadingVersionSummary>(
+        `/api/v1/readings/${encodeURIComponent(readingId)}`,
+        { signal: pollController.signal },
+      );
+      if (cancelled) return;
+      applySummary(response);
+
+      if (RESULT_READY_STATUSES.has(response.status)) {
+        await loadReadyResult(response);
+        return;
+      }
+
+      setLoading(false);
+      if (
+        response.status === "waiting_input" ||
+        response.status === "terminal_stopped" ||
+        response.status === "runtime_unknown"
+      ) {
+        return;
+      }
+
+      scheduleNextPoll();
+    }
+
     async function run() {
       if (cancelled) return;
       try {
-        const response = await pollReading(readingId);
-        if (cancelled) return;
-        setSummary(response);
-        setError(null);
-        setLoading(false);
-
-        if (RESULT_READY_STATUSES.has(response.status)) {
-          const nextResult = await getReadingResult(readingId);
-          if (cancelled) return;
-          setResult(nextResult);
-          if (response.status === "accepted") return;
-          schedule(DEFAULT_POLL_MS);
-          return;
+        if (pollAttempt === 0 && seededSummary) {
+          applySummary(seededSummary);
+          if (RESULT_READY_STATUSES.has(seededSummary.status)) {
+            if (hasSeededProjection && seededSummary.status !== "accepted") {
+              setLoading(false);
+              scheduleNextPoll();
+              return;
+            }
+            await loadReadyResult(seededSummary);
+            return;
+          }
         }
-
-        if (
-          response.status === "waiting_input" ||
-          response.status === "terminal_stopped" ||
-          response.status === "runtime_unknown"
-        ) {
-          return;
-        }
-
-        schedule(DEFAULT_POLL_MS);
+        await pollSummary();
       } catch (err) {
-        if (cancelled) return;
+        if (cancelled || pollController.signal.aborted) return;
         setLoading(false);
         setError(err);
+        onPollErrorRef.current?.(err);
       }
     }
 
-    run();
+    // Deferring the first request by one task lets a development StrictMode
+    // mount/unmount probe cancel cleanly before any network work starts.
+    schedule(0);
 
     return () => {
       cancelled = true;
+      pollController.abort();
       if (pollTimer) {
         clearTimeout(pollTimer);
       }
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
     };
-  }, [readingId, retryKey]);
+  }, [hasSeededProjection, readingId, retryKey, seededSummary]);
 
   function handleRetry() {
     setLoading(true);
@@ -319,12 +540,23 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     loading ||
     (summary && RESULT_READY_STATUSES.has(summary.status) && !result)
   ) {
+    if (elapsedMs < LOADING_REVEAL_MS) {
+      return (
+        <article
+          aria-busy="true"
+          aria-label="正在读取结果"
+          className={surface.readingBody}
+        />
+      );
+    }
     return (
       <article className={surface.readingBody}>
-        <Status
-          description="页面只展示服务端公开摘要；状态与正文分开保存。"
-          state="loading"
-          title="正在读取结果…"
+        <WaitingStatus
+          deliveryState={summary?.delivery_state}
+          elapsedMs={elapsedMs}
+          onRestart={onRestart}
+          onRetry={handleRetry}
+          status={summary?.status}
         />
       </article>
     );
@@ -390,8 +622,10 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     // Runtime ViewModel. Plain legacy result pages do not have this gate.
     const requiresCapabilityProjection = isBazi || result.view_model != null;
     const capabilityTier =
-      result.capability?.tier ?? (requiresCapabilityProjection ? "C" : null);
-    const showRuntimeChart = capabilityTier === "A" || capabilityTier === "B";
+      result.capability?.tier
+      ?? (requiresCapabilityProjection && !usingStartProjection ? "C" : null);
+    const showRuntimeChart =
+      usingStartProjection || capabilityTier === "A" || capabilityTier === "B";
     const isFortune = summary.capability_id === "fortune";
     const isLiuyao = summary.capability_id === "liuyao";
     const isQimen = summary.capability_id === "qimen";
@@ -997,7 +1231,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
             <h2>{productId === "bazi-deep" ? "八字深度解读" : "八字命盘"}</h2>
             <p>
               {productId === "bazi-deep"
-                ? "盘面事实与已接纳解读分开展示，便于逐项核对。"
+                ? "盘面事实与已经完成的解读分开展示，便于逐项核对。"
                 : "四柱、日主、月令、大运与已返回的盘面事实。"}
             </p>
           </header>
@@ -1059,11 +1293,11 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
               <h2 id="reading-note-title">阅读说明</h2>
               {productId === "bazi-deep" ? (
                 <p className={surface.inlineNote}>
-                  深度解读只采用本次盘面与已接纳正文，不会把内部字段当作结论展示。
+                  深度解读只采用本次盘面与已经整理完成的正文，不会把内部字段当作结论展示。
                 </p>
               ) : (
                 <p className={surface.inlineNote}>
-                  当前是免费排盘预览，只提供命盘与确定性事实。完整深度解读待接入。
+                  当前是免费排盘预览，只提供命盘与已确认的盘面事实。完整深度解读待接入。
                 </p>
               )}
               <LimitNotice limits={result.fact_panel?.limits ?? null} />
@@ -1123,18 +1357,57 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     );
   }
 
+  if (summary.status === "runtime_unknown") {
+    return (
+      <div className={surface.readingLayout}>
+        <article className={surface.readingBody}>
+          <Status
+            actions={(
+              <button type="button" onClick={handleRetry}>
+                重新检查状态
+              </button>
+            )}
+            description="运行状态暂时未知，资料仍然保留，可以重新检查。"
+            state="unavailable"
+            title="暂时无法确认进度"
+          />
+        </article>
+        <ArchiveRail readingId={readingId} summary={summary} result={null} />
+      </div>
+    );
+  }
+
   const meta = statusMeta(summary.status);
+  if (meta.tone === "processing") {
+    if (elapsedMs < LOADING_REVEAL_MS) {
+      return (
+        <article
+          aria-busy="true"
+          aria-label="正在准备排盘结果"
+          className={surface.readingBody}
+        />
+      );
+    }
+    return (
+      <div className={surface.readingLayout}>
+        <article className={surface.readingBody}>
+          <WaitingStatus
+            context={`${meta.text} 目标日期：${formatHorizon(summary.horizon)}`}
+            deliveryState={summary.delivery_state}
+            elapsedMs={elapsedMs}
+            onRestart={onRestart}
+            onRetry={handleRetry}
+            status={summary.status}
+          />
+        </article>
+        <ArchiveRail readingId={readingId} summary={summary} result={null} />
+      </div>
+    );
+  }
   return (
     <div className={surface.readingLayout}>
       <article className={surface.readingBody}>
         <Status
-          actions={
-            summary.status === "runtime_unknown" ? (
-              <button type="button" onClick={handleRetry}>
-                重新检查状态
-              </button>
-            ) : null
-          }
           description={`${meta.text} 目标日期：${formatHorizon(summary.horizon)}`}
           state={meta.tone === "error" ? "error" : "processing"}
           title={meta.label}

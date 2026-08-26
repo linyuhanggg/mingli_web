@@ -1,4 +1,5 @@
 from datetime import timedelta
+from time import perf_counter
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Request, Response, status
@@ -73,6 +74,7 @@ from app.readings.delivery import (
 )
 from app.readings.request_compiler import RequestCompilationError
 from app.readings.service import (
+    ChartFastPathUnavailableError,
     IdempotencyConflictError,
     InvalidReadingInputError,
     PaidReadingNotGrantedError,
@@ -103,7 +105,11 @@ def _delivery_service(request: Request, session: AsyncSession) -> ReadingDeliver
 
 
 def _service(request: Request, session: AsyncSession) -> ReadingService:
-    return ReadingService(session, request.app.state.settings)
+    return ReadingService(
+        session,
+        request.app.state.settings,
+        request.app.state.chart_runtime,
+    )
 
 
 def _check_rate(owner: Owner, request: Request) -> None:
@@ -145,7 +151,34 @@ def _start_response(
     summary, created = result
     if not created:
         response.status_code = status.HTTP_200_OK
+    timing = summary.fast_path_timing
+    if timing is not None:
+        response.headers["Server-Timing"] = ", ".join(
+            (
+                f"chart-runtime;dur={timing.runtime_one_shot_ms:.3f}",
+                f"chart-db;dur={timing.db_persistence_ms:.3f}",
+                f"chart-direct;dur={timing.total_ms:.3f}",
+                "chart-queue;dur=0",
+                "chart-worker;dur=0",
+            )
+        )
     return summary
+
+
+async def _commit_chart_start_response(
+    result: tuple[ReadingStartResponse, bool],
+    response: Response,
+    session: AsyncSession,
+) -> ReadingStartResponse:
+    commit_started_at = perf_counter()
+    await session.commit()
+    commit_ms = (perf_counter() - commit_started_at) * 1000
+    timing = result[0].fast_path_timing
+    if timing is not None:
+        timing.db_persistence_ms += commit_ms
+        timing.total_ms += commit_ms
+    mark_private(response)
+    return _start_response(result, response)
 
 
 def _reading_problem(error: ReadingServiceError) -> ApiProblem:
@@ -169,6 +202,12 @@ def _reading_problem(error: ReadingServiceError) -> ApiProblem:
         return ApiProblem(status=409, title="Fulfillment unavailable")
     if isinstance(error, RuntimeReleaseUnavailableError):
         return ApiProblem(status=503, title="Runtime release unavailable")
+    if isinstance(error, ChartFastPathUnavailableError):
+        return ApiProblem(
+            status=503,
+            title="Chart generation unavailable",
+            detail=error.detail,
+        )
     if isinstance(error, PaidReadingNotGrantedError):
         return ApiProblem(status=403, title=error.title, detail=error.detail)
     return ApiProblem(status=400, title="Invalid request")
@@ -222,9 +261,7 @@ async def start_preview_reading(
         raise ApiProblem(status=400, title="Invalid request") from error
     except ReadingServiceError as error:
         raise _reading_problem(error) from error
-    await session.commit()
-    mark_private(response)
-    return _start_response(result, response)
+    return await _commit_chart_start_response(result, response, session)
 
 
 @router.post(
@@ -592,9 +629,7 @@ async def start_liuyao_reading(
         raise ApiProblem(status=400, title="Invalid request") from error
     except ReadingServiceError as error:
         raise _reading_problem(error) from error
-    await session.commit()
-    mark_private(response)
-    return _start_response(result, response)
+    return await _commit_chart_start_response(result, response, session)
 
 
 @router.post(
@@ -725,9 +760,7 @@ async def start_ziwei_reading(
         raise ApiProblem(status=400, title="Invalid request") from error
     except ReadingServiceError as error:
         raise _reading_problem(error) from error
-    await session.commit()
-    mark_private(response)
-    return _start_response(result, response)
+    return await _commit_chart_start_response(result, response, session)
 
 
 @router.post(
@@ -1200,9 +1233,7 @@ async def start_daliuren_reading(
         raise ApiProblem(status=400, title="Invalid request") from error
     except ReadingServiceError as error:
         raise _reading_problem(error) from error
-    await session.commit()
-    mark_private(response)
-    return _start_response(result, response)
+    return await _commit_chart_start_response(result, response, session)
 
 
 @router.post(
@@ -1254,9 +1285,7 @@ async def start_meihua_reading(
         raise ApiProblem(status=400, title="Invalid request") from error
     except ReadingServiceError as error:
         raise _reading_problem(error) from error
-    await session.commit()
-    mark_private(response)
-    return _start_response(result, response)
+    return await _commit_chart_start_response(result, response, session)
 
 
 @router.post(
@@ -1429,9 +1458,7 @@ async def supply_reading_input(
         )
     except ReadingServiceError as error:
         raise _reading_problem(error) from error
-    await session.commit()
-    mark_private(response)
-    return summary
+    return await _commit_chart_start_response((summary, True), response, session)
 
 
 @router.get(
@@ -1586,9 +1613,7 @@ async def create_reading_recast(
         raise ApiProblem(status=400, title="Invalid request") from error
     except ReadingServiceError as error:
         raise _reading_problem(error) from error
-    await session.commit()
-    mark_private(response)
-    return _start_response(result, response)
+    return await _commit_chart_start_response(result, response, session)
 
 
 @router.post(

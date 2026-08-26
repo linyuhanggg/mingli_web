@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import hmac
 import json
+import logging
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
+from time import perf_counter
 from typing import Any, cast
 from uuid import UUID, uuid4
 
@@ -13,6 +16,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.adapters.runtime import MingliRuntime
 from app.charts.projectors import project_runtime_view_model
 from app.commerce.models import FulfillmentRecord, Order, Payment, ProductFamily, ProductVersion
 from app.commerce.public_service import BAZI_DEEP_PRODUCT_FAMILY_KEY
@@ -26,6 +30,7 @@ from app.readings.api_schemas import (
     AccountHistoryRootResponse,
     AccountHistoryVersionSummary,
     CapabilityProjection,
+    ChartFastPathTiming,
     DeliveryState,
     Horizon,
     ReadingResultResponse,
@@ -38,6 +43,7 @@ from app.readings.capability_policy import (
     require_public_product_exposure,
     require_public_runtime_capabilities,
 )
+from app.readings.errors import RuntimeTransportError
 from app.readings.models import ReadingJobRecord, ReadingVersion
 from app.readings.output_contracts import output_contract_for_product
 from app.readings.public_fact_panel import project_public_fact_panel
@@ -79,12 +85,16 @@ from app.readings.request_compiler import (
     compile_ziwei_prepare,
     compile_ziwei_year_prepare,
 )
-from app.readings.runtime_contracts import Prepare
+from app.readings.runtime_contracts import Prepare, Prepared, Stopped
 from app.readings.status import ReadingStatus
 from app.security.envelope import EnvelopeCipher
 
 NARRATIVE_POLICY_VERSION = "policy-v1"
 _PAID_PRODUCT_IDS = frozenset({"bazi-deep", "qimen-deep", "liuyao-deep"})
+_DIRECT_CHART_PRODUCT_IDS = frozenset(
+    {"bazi", "ziwei", "liuyao", "meihua", "daliuren", "liuren"}
+)
+_logger = logging.getLogger("mingli.chart_fast_path")
 DEFAULT_QUERIES = {
     "profile_preview": "请预览我的本命格局。",
     "bazi_deep": "请围绕事业主线生成八字结构化深读。",
@@ -150,6 +160,14 @@ class ReadingFollowUpUnavailableError(ReadingServiceError):
 
 class RuntimeReleaseUnavailableError(ReadingServiceError):
     """No Runtime Release is registered for a new Reading Version."""
+
+
+class ChartFastPathUnavailableError(ReadingServiceError):
+    """The deterministic chart Runtime did not finish within its short budget."""
+
+    def __init__(self, detail: str) -> None:
+        super().__init__(detail)
+        self.detail = detail
 
 
 class InvalidReadingInputError(ReadingServiceError):
@@ -223,7 +241,12 @@ _INPUT_FIELD_POLICIES: dict[str, InputFieldPolicy] = {
 
 
 class ReadingService:
-    def __init__(self, session: AsyncSession, settings: Settings) -> None:
+    def __init__(
+        self,
+        session: AsyncSession,
+        settings: Settings,
+        chart_runtime: MingliRuntime | None = None,
+    ) -> None:
         self.session = session
         self.settings = settings
         self.repository = SqlReadingRepository(
@@ -232,6 +255,7 @@ class ReadingService:
         )
         self.profiles = ProfileService(session, settings)
         self.entitlements = EntitlementService(session, settings)
+        self.chart_runtime = chart_runtime
         self._idempotency_secret = settings.identity_hash_key.get_secret_value().encode(
             "utf-8"
         )
@@ -324,6 +348,7 @@ class ReadingService:
             capability_id="bazi",
             profile_version_id=profile_version_id,
             idempotency=idempotency,
+            direct_chart=True,
         )
 
     async def start_bazi_deep(
@@ -948,6 +973,7 @@ class ReadingService:
             capability_id="ziwei",
             profile_version_id=profile_version_id,
             idempotency=idempotency,
+            direct_chart=True,
         )
 
     async def start_qizheng(
@@ -1360,6 +1386,7 @@ class ReadingService:
             capability_id="liuyao",
             profile_version_id=None,
             idempotency=idempotency,
+            direct_chart=True,
         )
 
     async def start_liuyao_deep(
@@ -1702,6 +1729,7 @@ class ReadingService:
             capability_id="liuren",
             profile_version_id=None,
             idempotency=idempotency,
+            direct_chart=True,
         )
 
     async def start_meihua(
@@ -1790,6 +1818,7 @@ class ReadingService:
             capability_id="meihua",
             profile_version_id=None,
             idempotency=idempotency,
+            direct_chart=True,
         )
 
     async def start_physiognomy(
@@ -1886,6 +1915,7 @@ class ReadingService:
             capability_id=capability_id,
             profile_version_id=profile_version_id,
             idempotency=idempotency,
+            direct_chart=capability_id == "bazi",
         )
 
     async def recast_liuyao(
@@ -1943,6 +1973,7 @@ class ReadingService:
             capability_id="liuyao",
             profile_version_id=None,
             idempotency=idempotency,
+            direct_chart=True,
         )
 
     async def supply_input(
@@ -1952,6 +1983,7 @@ class ReadingService:
         version_id: UUID,
         values: Mapping[str, Any],
     ) -> ReadingStartResponse:
+        started_at = perf_counter()
         root, version = await self._load_owned_version(
             owner,
             version_id,
@@ -1972,14 +2004,30 @@ class ReadingService:
             transition="correct",
         )
         try:
-            await self.repository.replace_prepare(version_id, new_prepare)
+            job = await self.repository.replace_prepare(version_id, new_prepare)
         except ReadingJobAlreadyQueuedError as error:
             raise ReadingAlreadyQueuedError("Reading is already queued") from error
         except ValueError as error:
             raise ReadingNotWaitingInputError(
                 "Reading is not waiting for input"
             ) from error
-        return await self.get_summary(owner, version_id)
+        product_id = version.product_id or root.product_id or root.capability_id
+        if product_id in _DIRECT_CHART_PRODUCT_IDS:
+            runtime_ms, persistence_ms = await self._run_chart_fast_path(
+                job,
+                version,
+                product_id=product_id,
+            )
+            summary = await self._summary(root, version)
+            summary.fast_path_timing = ChartFastPathTiming(
+                queue_wait_ms=0,
+                worker_pickup_ms=0,
+                runtime_one_shot_ms=runtime_ms,
+                db_persistence_ms=persistence_ms,
+                total_ms=(perf_counter() - started_at) * 1000,
+            )
+            return summary
+        return await self._summary(root, version)
 
     async def get_summary(
         self,
@@ -2287,7 +2335,9 @@ class ReadingService:
         relationship_type: str | None = None,
         idempotency: IdempotencyContext | None,
         initial_job_status: str = "queued",
+        direct_chart: bool = False,
     ) -> tuple[ReadingStartResponse, bool]:
+        started_at = perf_counter()
         user_id, guest_id = owner_ids(owner)
         release = await self._runtime_release()
         resolved_runtime_capability_ids = runtime_capability_ids
@@ -2328,7 +2378,15 @@ class ReadingService:
             relationship_type=relationship_type,
         )
         await self.session.refresh(version)
-        await self._create_job(version.id, status=initial_job_status)
+        job = await self._create_job(version.id, status=initial_job_status)
+        runtime_ms = 0.0
+        persistence_ms = 0.0
+        if direct_chart:
+            runtime_ms, persistence_ms = await self._run_chart_fast_path(
+                job,
+                version,
+                product_id=version.product_id or root.product_id or root.capability_id,
+            )
         if idempotency is not None:
             replayed = await self._save_idempotency_or_replay(
                 idempotency,
@@ -2338,7 +2396,76 @@ class ReadingService:
             )
             if replayed is not None:
                 return replayed, False
-        return await self._summary(root, version), True
+        summary = await self._summary(root, version)
+        if direct_chart:
+            summary.fast_path_timing = ChartFastPathTiming(
+                queue_wait_ms=0,
+                worker_pickup_ms=0,
+                runtime_one_shot_ms=runtime_ms,
+                db_persistence_ms=persistence_ms,
+                total_ms=(perf_counter() - started_at) * 1000,
+            )
+            _logger.info(
+                "chart_fast_path",
+                extra={
+                    "reading_version_id": str(version.id),
+                    "capability_id": version.capability_id,
+                    "product_id": version.product_id,
+                    "runtime_one_shot_ms": round(runtime_ms, 3),
+                    "db_persistence_ms": round(persistence_ms, 3),
+                    "total_ms": round(summary.fast_path_timing.total_ms, 3),
+                    "queue_wait_ms": 0,
+                    "worker_pickup_ms": 0,
+                },
+            )
+        return summary, True
+
+    async def _run_chart_fast_path(
+        self,
+        job: ReadingJobRecord,
+        version: ReadingVersion,
+        *,
+        product_id: str,
+    ) -> tuple[float, float]:
+        """Prepare one deterministic base chart without exposing it to the Worker."""
+
+        if self.chart_runtime is None:
+            raise ChartFastPathUnavailableError("chart_runtime_not_configured")
+        prepare = await self.repository.load_prepare(version.id)
+        runtime_started_at = perf_counter()
+        try:
+            async with asyncio.timeout(self.settings.chart_fast_path_timeout_seconds):
+                result = await self.chart_runtime.execute(prepare)
+        except TimeoutError as error:
+            raise ChartFastPathUnavailableError("chart_runtime_timeout") from error
+        except RuntimeTransportError as error:
+            raise ChartFastPathUnavailableError(
+                f"chart_runtime_transport:{error}"
+            ) from error
+        except Exception as error:
+            raise ChartFastPathUnavailableError("chart_runtime_error") from error
+        runtime_ms = (perf_counter() - runtime_started_at) * 1000
+
+        persistence_started_at = perf_counter()
+        now = datetime.now(UTC)
+        if isinstance(result, Prepared):
+            view_model = project_runtime_view_model(
+                cast(Any, result.brief).to_dict(),
+                product_id=product_id,
+                relationship_type=version.relationship_type,
+            )
+            if view_model is None and getattr(self.chart_runtime, "adapter_kind", None) != "fake":
+                raise ChartFastPathUnavailableError("chart_view_model_projection_failed")
+            await self.repository.record_prepared(str(job.id), result, now)
+            job.status = "complete"
+            await self.session.flush()
+        elif isinstance(result, Stopped) and result.reason == "need_input":
+            await self.repository.record_waiting_input(str(job.id), result, now)
+        elif isinstance(result, Stopped):
+            raise ChartFastPathUnavailableError(f"chart_runtime_{result.reason}")
+        else:
+            raise ChartFastPathUnavailableError("chart_runtime_protocol_error")
+        return runtime_ms, (perf_counter() - persistence_started_at) * 1000
 
     async def _create_version_and_job(
         self,
@@ -2355,7 +2482,12 @@ class ReadingService:
         await self._create_job(version.id)
         return version
 
-    async def _create_job(self, version_id: UUID, *, status: str = "queued") -> None:
+    async def _create_job(
+        self,
+        version_id: UUID,
+        *,
+        status: str = "queued",
+    ) -> ReadingJobRecord:
         prepare = await self.repository.load_prepare(version_id)
         raw_dimensions = prepare.intent.get("dimension_ids")
         dimensions = (
@@ -2367,7 +2499,7 @@ class ReadingService:
         if version is None:
             raise ReadingNotFoundError("Reading Version not found")
         output_contract = output_contract_for_product(version.product_id, dimensions)
-        await self.repository.create_job(
+        return await self.repository.create_job(
             reading_version_id=version_id,
             narrative_policy_version=NARRATIVE_POLICY_VERSION,
             output_contract=output_contract,
@@ -2523,6 +2655,7 @@ class ReadingService:
         version: Any,
     ) -> ReadingStartResponse:
         waiting = await self.repository.load_waiting_input(version.id)
+        brief = await self.repository.load_fact_brief(version.id)
         return ReadingStartResponse(
             reading_version_id=version.id,
             reading_root_id=root.id,
@@ -2542,6 +2675,15 @@ class ReadingService:
             prior_answer=await self._projected_prior_answer(version.id),
             input_request=(
                 None if waiting is None else _public_json(waiting.input_request)
+            ),
+            view_model=(
+                None
+                if brief is None
+                else project_runtime_view_model(
+                    brief.to_dict(),
+                    product_id=version.product_id or root.product_id,
+                    relationship_type=version.relationship_type,
+                )
             ),
             created_at=version.created_at,
             delivery_state=await self._delivery_state(root, version),

@@ -14,6 +14,11 @@ from app.adapters.otp import (
     ProductionFailClosedOtpDeliveryAdapter,
     SmtpOtpDeliveryAdapter,
 )
+from app.adapters.runtime import (
+    FakeMingliRuntimeAdapter,
+    MingliRuntime,
+    build_runtime_startup_gate,
+)
 from app.api.errors import ApiProblem
 from app.api.health import ReadinessProbe
 from app.api.problems import problem_response
@@ -34,13 +39,21 @@ def create_app(
     settings: Settings | None = None,
     readiness_probe: ReadinessProbe | None = None,
     database: Database | None = None,
+    chart_runtime: MingliRuntime | None = None,
 ) -> FastAPI:
     resolved_settings = settings or get_settings()
     resolved_database = database or Database(resolved_settings.database_url)
     owns_database = database is None
+    resolved_chart_runtime = chart_runtime
+    if resolved_chart_runtime is None and resolved_settings.runtime_adapter == "fake":
+        resolved_chart_runtime = FakeMingliRuntimeAdapter()
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        if resolved_chart_runtime is None:
+            runtime_gate = build_runtime_startup_gate(resolved_settings)
+            await runtime_gate.startup()
+            application.state.chart_runtime = runtime_gate.runtime
         yield
         application.state.reading_write_rate_limiter.clear()
         application.state.profile_write_rate_limiter.clear()
@@ -61,6 +74,7 @@ def create_app(
     application.state.settings = resolved_settings
     application.state.database = resolved_database
     application.state.session_factory = resolved_database.sessions
+    application.state.chart_runtime = resolved_chart_runtime
     application.state.physiognomy_media_store = (
         InMemoryPrivateMediaStore()
         if resolved_settings.physiognomy_media_root is None

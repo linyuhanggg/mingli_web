@@ -27,6 +27,7 @@ import type {
   ReadingResultResponse,
   ReadingShareCreateResponse,
   ReadingShareResponse,
+  ReadingStartResponse,
   ReadingVersionSummary,
   ReadingVerificationSummary,
   RecastRequest,
@@ -96,8 +97,8 @@ export async function listReadings(): Promise<ReadingListResponse> {
 export async function startPreviewReading(
   body: PreviewStartRequest,
   idempotencyKey: string,
-): Promise<ReadingVersionSummary> {
-  return jsonPost<ReadingVersionSummary>("/api/v1/readings/preview", body, {
+): Promise<ReadingStartResponse> {
+  return jsonPost<ReadingStartResponse>("/api/v1/readings/preview", body, {
     idempotencyKey,
   });
 }
@@ -220,8 +221,8 @@ export async function startQizhengRelationshipReading(
 export async function startZiweiReading(
   body: PreviewStartRequest,
   idempotencyKey: string,
-): Promise<ReadingVersionSummary> {
-  return jsonPost<ReadingVersionSummary>("/api/v1/readings/ziwei", body, {
+): Promise<ReadingStartResponse> {
+  return jsonPost<ReadingStartResponse>("/api/v1/readings/ziwei", body, {
     idempotencyKey,
   });
 }
@@ -334,8 +335,8 @@ export async function startWeekReading(
 export async function startLiuyaoReading(
   body: LiuyaoStartRequest,
   idempotencyKey: string,
-): Promise<ReadingVersionSummary> {
-  return jsonPost<ReadingVersionSummary>("/api/v1/readings/liuyao", body, {
+): Promise<ReadingStartResponse> {
+  return jsonPost<ReadingStartResponse>("/api/v1/readings/liuyao", body, {
     idempotencyKey,
   });
 }
@@ -361,8 +362,8 @@ export async function startQimenReading(
 export async function startDaliurenReading(
   body: DaliurenStartRequest,
   idempotencyKey: string,
-): Promise<ReadingVersionSummary> {
-  return jsonPost<ReadingVersionSummary>("/api/v1/readings/daliuren", body, {
+): Promise<ReadingStartResponse> {
+  return jsonPost<ReadingStartResponse>("/api/v1/readings/daliuren", body, {
     idempotencyKey,
   });
 }
@@ -370,8 +371,8 @@ export async function startDaliurenReading(
 export async function startMeihuaReading(
   body: MeihuaStartRequest,
   idempotencyKey: string,
-): Promise<ReadingVersionSummary> {
-  return jsonPost<ReadingVersionSummary>("/api/v1/readings/meihua", body, {
+): Promise<ReadingStartResponse> {
+  return jsonPost<ReadingStartResponse>("/api/v1/readings/meihua", body, {
     idempotencyKey,
   });
 }

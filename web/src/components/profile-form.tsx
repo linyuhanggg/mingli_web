@@ -3,19 +3,28 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { Dialog as DialogPrimitive } from "radix-ui";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import {
+  appendProfileVersion,
   confirmProfileDraft,
   createProfileDraft,
+  listProfiles,
   type Gender,
   type TimeBasisPolicy,
   type ZiHourPolicy,
 } from "@/lib/api";
 import { localDateTimeWithOffset } from "@/lib/date-time";
 import { isIanaTimeZone } from "@/lib/iana-timezones";
+import {
+  defaultProfileName,
+  findProfileWithDisplayName,
+  setProfileSavedFlash,
+  suggestUniqueProfileName,
+} from "@/lib/profile-display-metadata";
 
 import {
   BirthBasisSummary,
@@ -24,6 +33,171 @@ import {
 import styles from "./profile-form.module.css";
 import formControls from "./form-controls.module.css";
 import { IanaTimeZoneOptions } from "./iana-timezone-options";
+
+type ProfileNameConflictDialogProps = {
+  readonly open: boolean;
+  readonly existingName: string;
+  readonly suggestedName: string;
+  readonly busy: boolean;
+  readonly returnFocusRef: RefObject<HTMLElement | null>;
+  readonly onUpdate: () => void;
+  readonly onSaveAs: (name: string) => void;
+  readonly onCancel: () => void;
+};
+
+function ProfileNameConflictDialog({
+  open,
+  existingName,
+  suggestedName,
+  busy,
+  returnFocusRef,
+  onUpdate,
+  onSaveAs,
+  onCancel,
+}: ProfileNameConflictDialogProps) {
+  const [nextName, setNextName] = useState(suggestedName);
+  const [nameError, setNameError] = useState("");
+
+  function handleSaveAs() {
+    const normalized = nextName.trim();
+    if (!normalized) {
+      setNameError("请填写新档案名称");
+      return;
+    }
+    if (normalized === existingName) {
+      setNameError("新档案需要使用不同的名称");
+      return;
+    }
+    onSaveAs(normalized);
+  }
+
+  return (
+    <DialogPrimitive.Root
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen && !busy) onCancel();
+      }}
+    >
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay
+          style={{ position: "fixed", inset: 0, background: "var(--color-overlay)" }}
+        />
+        <DialogPrimitive.Content
+          aria-busy={busy}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            returnFocusRef.current?.focus();
+          }}
+          onEscapeKeyDown={(event) => {
+            if (busy) event.preventDefault();
+          }}
+          onInteractOutside={(event) => {
+            if (busy) event.preventDefault();
+          }}
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            width: "min(32rem, calc(100vw - 2rem))",
+            maxHeight: "calc(100vh - 2rem)",
+            overflowY: "auto",
+            transform: "translate(-50%, -50%)",
+            padding: "1.25rem",
+            border: "1px solid var(--color-border-strong)",
+            borderRadius: "var(--radius-panel)",
+            background: "var(--color-surface)",
+            color: "var(--color-text)",
+            boxShadow: "var(--shadow-overlay)",
+          }}
+        >
+          <DialogPrimitive.Title>已有同名档案“{existingName}”</DialogPrimitive.Title>
+          <DialogPrimitive.Description>
+            选择如何保存。更新会追加新版本，所有历史版本都能继续回看。
+          </DialogPrimitive.Description>
+          <div
+            className={formControls.field}
+            style={{ gap: "1rem", marginTop: "1.25rem" }}
+          >
+            <button
+              autoFocus
+              className={clsx(formControls.action, formControls.actionPrimary)}
+              data-variant="primary"
+              disabled={busy}
+              onClick={onUpdate}
+              style={{ width: "100%" }}
+              type="button"
+            >
+              {busy ? "正在保存…" : `更新“${existingName}”`}
+            </button>
+            <div
+              aria-labelledby="profile-conflict-save-as-title"
+              data-variant="secondary-card"
+              role="group"
+              style={{
+                display: "grid",
+                gap: "0.65rem",
+                padding: "1rem",
+                border: "1px solid var(--color-border-strong)",
+                borderRadius: "var(--radius-control)",
+                background: "var(--color-surface-subtle)",
+              }}
+            >
+              <strong id="profile-conflict-save-as-title">另存为新档案</strong>
+              <span style={{ color: "var(--color-text-secondary)", fontSize: "var(--font-size-aux)" }}>
+                保留原档案不变，用新名称再保存一份。
+              </span>
+              <label htmlFor="profile-conflict-new-name">新档案名称</label>
+              <input
+                aria-describedby={nameError ? "profile-conflict-new-name-error" : undefined}
+                aria-invalid={Boolean(nameError)}
+                className={formControls.input}
+                disabled={busy}
+                id="profile-conflict-new-name"
+                maxLength={80}
+                onChange={(event) => {
+                  setNextName(event.currentTarget.value);
+                  if (nameError) setNameError("");
+                }}
+                type="text"
+                value={nextName}
+              />
+              {nameError ? (
+                <p className={formControls.error} id="profile-conflict-new-name-error" role="alert">
+                  {nameError}
+                </p>
+              ) : null}
+              <button
+                className={clsx(formControls.action, formControls.actionSecondary)}
+                data-variant="secondary"
+                disabled={busy}
+                onClick={handleSaveAs}
+                type="button"
+              >
+                另存为新档案
+              </button>
+            </div>
+            <DialogPrimitive.Close asChild>
+              <button
+                data-variant="ghost"
+                disabled={busy}
+                style={{
+                  minHeight: "2.75rem",
+                  border: 0,
+                  background: "transparent",
+                  color: "var(--color-text-secondary)",
+                  cursor: busy ? "not-allowed" : "pointer",
+                }}
+                type="button"
+              >
+                取消
+              </button>
+            </DialogPrimitive.Close>
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+  );
+}
 
 const GENDERS: { value: Gender; label: string }[] = [
   { value: "female", label: "女" },
@@ -65,6 +239,11 @@ const latitudeField = z
 
 const profileSchema = z
   .object({
+    profile_name: z
+      .string()
+      .trim()
+      .min(1, "请填写档案名称")
+      .max(80, "档案名称最多 80 个字"),
     birth_datetime: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/, "请填写出生时间"),
@@ -113,15 +292,24 @@ export function ProfileForm() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [nameConflict, setNameConflict] = useState<{
+    values: ProfileFormValues;
+    existingProfileId: string;
+    existingName: string;
+    suggestedName: string;
+  } | null>(null);
   const busyRef = useRef(false);
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
   const {
     register,
     handleSubmit,
     control,
-    formState: { errors },
+    formState: { errors, dirtyFields },
+    setValue,
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
+      profile_name: "我自己",
       birth_datetime: "",
       timezone: "Asia/Shanghai",
       location: "",
@@ -134,6 +322,7 @@ export function ProfileForm() {
     },
   });
   const [
+    profile_name,
     birth_datetime,
     timezone,
     location,
@@ -144,6 +333,7 @@ export function ProfileForm() {
   ] = useWatch({
     control,
     name: [
+      "profile_name",
       "birth_datetime",
       "timezone",
       "location",
@@ -153,6 +343,15 @@ export function ProfileForm() {
       "latitude",
     ],
   });
+
+  useEffect(() => {
+    if (dirtyFields.profile_name || !birth_datetime) return;
+    setValue(
+      "profile_name",
+      defaultProfileName("我自己", birth_datetime.slice(0, 10)),
+      { shouldDirty: false, shouldValidate: false },
+    );
+  }, [birth_datetime, dirtyFields.profile_name, setValue]);
   const watchedValues: BirthBasisSummaryValues = {
     birth_datetime,
     timezone,
@@ -163,9 +362,12 @@ export function ProfileForm() {
     latitude,
   };
 
-  const handleSave = useCallback(
-    async (values: ProfileFormValues) => {
-      if (busyRef.current) return;
+  const persistProfile = useCallback(
+    async (
+      values: ProfileFormValues,
+      displayName: string,
+      existingProfileId?: string,
+    ) => {
       if (
         !values.gender ||
         !values.time_basis_policy ||
@@ -173,12 +375,7 @@ export function ProfileForm() {
       ) {
         return;
       }
-      busyRef.current = true;
-      setBusy(true);
-      setSubmitError("");
-      try {
-        const draft = await createProfileDraft("本人");
-        await confirmProfileDraft(draft.draft_id, {
+      const request = {
           birth_datetime: localDateTimeWithOffset(
             values.birth_datetime,
             values.timezone,
@@ -203,9 +400,46 @@ export function ProfileForm() {
             values.coordinate_source?.trim() === ""
               ? undefined
               : values.coordinate_source?.trim(),
-        });
-        router.push("/app/profiles?created=1");
+      };
+      const profile = existingProfileId
+        ? await appendProfileVersion(existingProfileId, {
+            ...request,
+            difference_acknowledged: true,
+          })
+        : await createProfileDraft(
+            globalThis.location?.pathname.startsWith("/account/")
+              ? displayName
+              : "本人",
+          ).then((draft) =>
+            confirmProfileDraft(draft.draft_id, request),
+          );
+      const returnedDisplayName = (profile as typeof profile & {
+        display_name?: string | null;
+      }).display_name;
+      setProfileSavedFlash(returnedDisplayName ?? displayName, profile.profile_id);
+      router.push(
+        globalThis.location?.pathname.startsWith("/account/")
+          ? "/account/profiles?created=1"
+          : "/app/profiles?created=1",
+      );
+    },
+    [router],
+  );
+
+  const saveProfile = useCallback(
+    async (
+      values: ProfileFormValues,
+      displayName: string,
+      existingProfileId?: string,
+    ) => {
+      if (busyRef.current) return;
+      busyRef.current = true;
+      setBusy(true);
+      setSubmitError("");
+      try {
+        await persistProfile(values, displayName, existingProfileId);
       } catch (reason) {
+        setNameConflict(null);
         setSubmitError(
           reason instanceof Error ? reason.message : "档案保存失败，请稍后重试。",
         );
@@ -214,13 +448,51 @@ export function ProfileForm() {
         setBusy(false);
       }
     },
-    [router],
+    [persistProfile],
+  );
+
+  const handleSave = useCallback(
+    async (values: ProfileFormValues) => {
+      if (busyRef.current) return;
+      const displayName = values.profile_name.trim();
+      busyRef.current = true;
+      setBusy(true);
+      setSubmitError("");
+      try {
+        let profiles: Awaited<ReturnType<typeof listProfiles>>["profiles"] = [];
+        try {
+          ({ profiles } = await listProfiles());
+        } catch {
+          // 名称预检不可用时仍允许服务端保存；冲突可在档案列表中继续处理。
+        }
+        const existingProfile = findProfileWithDisplayName(profiles, displayName);
+        if (existingProfile) {
+          setNameConflict({
+            values,
+            existingProfileId: existingProfile.profile_id,
+            existingName: displayName,
+            suggestedName: suggestUniqueProfileName(profiles, displayName),
+          });
+          return;
+        }
+        await persistProfile(values, displayName);
+      } catch (reason) {
+        setNameConflict(null);
+        setSubmitError(
+          reason instanceof Error ? reason.message : "档案保存失败，请稍后重试。",
+        );
+      } finally {
+        busyRef.current = false;
+        setBusy(false);
+      }
+    },
+    [persistProfile],
   );
 
   return (
     <div className={styles.wrap}>
       <h2>建立命理档案</h2>
-      <p className={styles.lead}>这里只记录出生事实，不进行任何本地推算。</p>
+      <p className={styles.lead}>先为档案命名，再核对出生资料。</p>
 
       {submitError ? (
         <p className={styles.errorBox} role="alert" aria-live="polite">
@@ -244,6 +516,33 @@ export function ProfileForm() {
             </div>
           </div>
           <div className={styles.grid}>
+          <div className={formControls.field}>
+            <label htmlFor="profile-name">档案名称</label>
+            <input
+              id="profile-name"
+              className={formControls.input}
+              type="text"
+              autoComplete="off"
+              maxLength={80}
+              disabled={busy}
+              required
+              aria-required="true"
+              aria-invalid={Boolean(errors.profile_name)}
+              aria-describedby={
+                errors.profile_name ? "profile-name-error" : "profile-name-help"
+              }
+              {...register("profile_name")}
+            />
+            {errors.profile_name ? (
+              <p className={formControls.error} id="profile-name-error" role="alert">
+                {errors.profile_name.message}
+              </p>
+            ) : null}
+            <p className={formControls.hint} id="profile-name-help">
+              默认按“对象 · 出生年份”命名，可随时修改显示名称。
+            </p>
+          </div>
+
           <div className={formControls.field}>
             <label htmlFor="profile-birth-datetime">出生时间</label>
             <input
@@ -287,7 +586,7 @@ export function ProfileForm() {
               autoComplete="off"
               spellCheck="false"
               list="profile-timezone-options"
-              placeholder="输入并选择，例如 Asia/Shanghai…"
+              placeholder="例如 Asia/Shanghai，请从列表选择"
               disabled={busy}
               required
               aria-required="true"
@@ -308,7 +607,7 @@ export function ProfileForm() {
               </p>
             ) : null}
             <p className={formControls.hint} id="profile-timezone-help">
-              按出生城市主动确认；输入地区或城市可筛选完整 IANA 列表，界面不会读取设备时区。
+              请输入并从列表选择出生城市对应的 IANA 时区；界面不会读取设备时区。
             </p>
           </div>
 
@@ -542,7 +841,7 @@ export function ProfileForm() {
             <span className={styles.stepIndex} aria-hidden="true">03</span>
             <div>
               <h3 id="profile-step-review">3. 提交前核对</h3>
-              <p>保存后形成不可变档案版本；以后修改会保留旧版本。</p>
+              <p>保存后形成一个档案版本；以后更新仍会保留旧版本。</p>
             </div>
           </div>
           <BirthBasisSummary values={watchedValues} />
@@ -555,6 +854,7 @@ export function ProfileForm() {
         ) : null}
         <div className={formControls.actions}>
           <button
+            ref={submitButtonRef}
             className={clsx(formControls.action, formControls.actionPrimary)}
             type="submit"
             disabled={busy}
@@ -564,6 +864,27 @@ export function ProfileForm() {
           </button>
         </div>
       </form>
+      <ProfileNameConflictDialog
+        key={nameConflict?.existingProfileId ?? "closed"}
+        busy={busy}
+        existingName={nameConflict?.existingName ?? profile_name}
+        onCancel={() => setNameConflict(null)}
+        onSaveAs={(nextName) => {
+          if (!nameConflict) return;
+          void saveProfile(nameConflict.values, nextName);
+        }}
+        onUpdate={() => {
+          if (!nameConflict) return;
+          void saveProfile(
+            nameConflict.values,
+            nameConflict.existingName,
+            nameConflict.existingProfileId,
+          );
+        }}
+        open={Boolean(nameConflict)}
+        returnFocusRef={submitButtonRef}
+        suggestedName={nameConflict?.suggestedName ?? ""}
+      />
     </div>
   );
 }

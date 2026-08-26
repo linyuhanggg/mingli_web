@@ -1,5 +1,6 @@
 import json
 import os
+import stat
 import sys
 import traceback
 from datetime import datetime
@@ -10,6 +11,7 @@ from app.adapters.runtime import (
     FakeMingliRuntimeAdapter,
     OneShotMingliRuntimeAdapter,
     build_runtime_startup_gate,
+    one_shot_spawn_argv,
 )
 from app.charts.contracts import (
     CanwenViewV1,
@@ -84,7 +86,7 @@ def _adapter(launcher: Path, state_root: Path, **overrides: object) -> OneShotMi
         "launcher_path": launcher,
         "runtime_python_path": Path("/usr/bin/python3"),
         "state_root": state_root,
-        "timeout_seconds": 1,
+        "timeout_seconds": 2,
     }
     options.update(overrides)
     return OneShotMingliRuntimeAdapter(**options)  # type: ignore[arg-type]
@@ -1480,3 +1482,68 @@ async def test_frozen_runtime_rejects_combined_taxonomy_region_mismatch() -> Non
 
     assert isinstance(result, Stopped)
     assert result.reason == "error"
+
+
+def test_one_shot_shell_argv_is_bin_sh_plus_fixed_absolute_path(tmp_path: Path) -> None:
+    launcher = tmp_path / "run_reading_transaction.sh"
+    launcher.write_text("#!/bin/sh\n", encoding="utf-8")
+    launcher.chmod(0o644)
+
+    assert one_shot_spawn_argv(launcher) == ("/bin/sh", str(launcher))
+
+
+async def test_one_shot_shell_mode_100644_starts_without_chmod_or_user_argv(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    launcher = tmp_path / "run_reading_transaction.sh"
+    described = json.dumps(_described_payload(), separators=(",", ":"))
+    launcher.write_text(
+        f"""#!/bin/sh
+printf '%s\\n' "$0" > "$(dirname "$0")/argv.log"
+cat > "$(dirname "$0")/stdin.log"
+printf '%s\\n' '{described}'
+""",
+        encoding="utf-8",
+    )
+    launcher.chmod(0o644)
+    chmod_paths: list[str] = []
+    original_os_chmod = os.chmod
+    original_path_chmod = Path.chmod
+
+    def tracking_os_chmod(path: object, mode: int, *args: object, **kwargs: object) -> None:
+        chmod_paths.append(os.fspath(path))
+        original_os_chmod(path, mode, *args, **kwargs)
+
+    def tracking_path_chmod(self: Path, mode: int, *args: object, **kwargs: object) -> None:
+        chmod_paths.append(str(self))
+        original_path_chmod(self, mode, *args, **kwargs)
+
+    monkeypatch.setattr(os, "chmod", tracking_os_chmod)
+    monkeypatch.setattr(Path, "chmod", tracking_path_chmod)
+    state_root = tmp_path / "state"
+    state_root.mkdir()
+    query = "$(touch injected) `id`"
+
+    result = await _adapter(launcher, state_root).execute(
+        Prepare(
+            query=query,
+            intent={
+                "subject_refs": ["fixture:subject"],
+                "object_id": "natal",
+                "dimension_ids": [],
+                "horizon": {"kind_id": "life", "start": None, "end": None},
+                "capability_id": "bazi",
+                "comparisons": [],
+            },
+            facts={"fixture:subject": {"fixture_input": query}},
+        )
+    )
+
+    assert isinstance(result, Described)
+    assert stat.S_IMODE(launcher.stat().st_mode) == 0o644
+    assert str(launcher) not in chmod_paths
+    assert (tmp_path / "argv.log").read_text(encoding="utf-8") == f"{launcher}\n"
+    stdin = (tmp_path / "stdin.log").read_text(encoding="utf-8")
+    assert json.loads(stdin)["query"] == query
+    assert "$(touch" not in (tmp_path / "argv.log").read_text(encoding="utf-8")
