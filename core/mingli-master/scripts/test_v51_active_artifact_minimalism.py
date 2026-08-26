@@ -33,6 +33,12 @@ RETIRED_MODULES = (
     "reading_engine.capability_resolver",
 )
 
+SOURCE_ONLY_MODULES = (
+    "reading_engine.cross_art_synthesis",
+    "reading_engine.dream_interpretation",
+    "reading_engine.name_analysis",
+)
+
 RETIRED_ARCHIVE_PATHS = (
     "scripts/route_capabilities.py",
     "scripts/query_intent.py",
@@ -99,7 +105,9 @@ class ProductionImportGraphTests(unittest.TestCase):
             "from reading_engine.interface import ReadingInterface;"
             "interface = ReadingInterface(skill_root='.');"
             "interface.execute.__name__;"
-            "banned = " + repr(list(RETIRED_MODULES)) + ";"
+            "banned = "
+            + repr(list((*RETIRED_MODULES, *SOURCE_ONLY_MODULES)))
+            + ";"
             "loaded = sorted(name for name in banned if name in sys.modules);"
             "print(json.dumps(loaded)) if False else print(','.join(loaded))"
         )
@@ -140,7 +148,9 @@ class ProductionImportGraphTests(unittest.TestCase):
             "    }},"
             "));"
             "assert isinstance(result, Prepared), type(result).__name__;"
-            "banned = " + repr(list(RETIRED_MODULES)) + ";"
+            "banned = "
+            + repr(list((*RETIRED_MODULES, *SOURCE_ONLY_MODULES)))
+            + ";"
             "loaded = sorted(name for name in banned if name in sys.modules);"
             "print(','.join(loaded))"
         )
