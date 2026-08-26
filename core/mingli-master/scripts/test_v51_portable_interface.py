@@ -345,6 +345,120 @@ class DescribeExecutionTests(unittest.TestCase):
         self.assertIsInstance(result, Stopped)
         self.assertEqual(result.reason, "error")
         self.assertTrue(result.public_copy.strip())
+        self.assertEqual(
+            result.failure,
+            runtime_failure("input_contract.invalid_command"),
+        )
+
+    def test_invalid_values_on_typed_commands_are_payload_failures(self) -> None:
+        intent = IntentSelection(
+            subject_refs=("subject:client",),
+            object_id="natal",
+            dimension_ids=(),
+            horizon=HorizonSelection(kind_id="year"),
+            capability_id="bazi",
+        )
+        commands = (
+            Describe(kind="other"),  # type: ignore[arg-type]
+            Prepare(
+                query=42,  # type: ignore[arg-type]
+                intent=intent,
+                facts={},
+            ),
+            Prepare(
+                query="看一下",
+                intent=IntentSelection(
+                    subject_refs=["subject:client"],  # type: ignore[arg-type]
+                    object_id="natal",
+                    dimension_ids=(),
+                    horizon=HorizonSelection(kind_id="year"),
+                    capability_id="bazi",
+                ),
+                facts={},
+            ),
+            Complete(
+                state_token=object(),  # type: ignore[arg-type]
+                public_copy="正文",
+            ),
+        )
+
+        for command in commands:
+            with self.subTest(command=type(command).__name__):
+                result = self.interface.execute(command)
+                self.assertIsInstance(result, Stopped)
+                self.assertEqual(
+                    result.failure,
+                    runtime_failure("input_contract.invalid_payload"),
+                )
+
+    def test_internal_type_errors_stay_runtime_internal_on_every_surface(
+        self,
+    ) -> None:
+        from reading_engine.interface import ReadingInterface
+
+        prepare = Prepare(
+            query="看一下这个八字",
+            intent=IntentSelection(
+                subject_refs=("subject:client",),
+                object_id="natal",
+                dimension_ids=(),
+                horizon=HorizonSelection(kind_id="year"),
+                capability_id="bazi",
+            ),
+            facts={},
+        )
+
+        class BrokenCatalog:
+            def __init__(self, error: BaseException) -> None:
+                self.error = error
+
+            @property
+            def manifest_digest(self) -> str:
+                raise self.error
+
+            @property
+            def descriptors(self) -> tuple[object, ...]:
+                return ()
+
+        class BrokenEngine:
+            def __init__(self, error: BaseException) -> None:
+                self.error = error
+
+            def prepare_turn(self, *_args, **_kwargs):
+                raise self.error
+
+            def complete_turn(self, *_args, **_kwargs):
+                raise self.error
+
+        for error_type in (KeyError, TypeError, ValueError):
+            for surface in ("describe", "provider", "store"):
+                with self.subTest(error=error_type.__name__, surface=surface):
+                    error = error_type("internal invariant")
+                    if surface == "describe":
+                        interface = ReadingInterface(
+                            skill_root=ROOT,
+                            catalog=BrokenCatalog(error),  # type: ignore[arg-type]
+                        )
+                        command = Describe()
+                    else:
+                        interface = ReadingInterface(
+                            skill_root=ROOT,
+                            engine=BrokenEngine(error),
+                        )
+                        command = (
+                            prepare
+                            if surface == "provider"
+                            else Complete(
+                                state_token="token",
+                                public_copy="正文",
+                            )
+                        )
+                    result = interface.execute(command)
+                    self.assertIsInstance(result, Stopped)
+                    self.assertEqual(
+                        result.failure,
+                        runtime_failure("runtime.internal_error"),
+                    )
 
 
 

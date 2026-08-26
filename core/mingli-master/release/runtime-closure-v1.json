@@ -68,5 +68,10 @@
     "scripts/fact_contracts/*.py",
     "references/books/*/*/rules.md",
     "references/books/*/*/quote-index.md"
+  ],
+  "excluded_files": [
+    "scripts/reading_engine/cross_art_synthesis.py",
+    "scripts/reading_engine/dream_interpretation.py",
+    "scripts/reading_engine/name_analysis.py"
   ]
 }

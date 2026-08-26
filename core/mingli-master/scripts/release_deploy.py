@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import os
@@ -14,10 +15,11 @@ import signal
 import stat
 import subprocess
 import sys
+import tarfile
 import tempfile
 import time
 from pathlib import Path, PurePosixPath
-from typing import Iterable, Mapping, TextIO
+from typing import Iterable, Iterator, Mapping, TextIO
 
 
 MANIFEST_NAME = ".mingli-release-manifest.json"
@@ -34,6 +36,10 @@ SOURCE_VERIFICATION_TIMEOUT_SECONDS = 60 * 60
 SOURCE_VERIFICATION_MAX_JOBS = 4
 SOURCE_VERIFICATION_PROGRESS_PREFIX = "MINGLI_SOURCE_VERIFY "
 SOURCE_VERIFICATION_TERMINATE_GRACE_SECONDS = 2.0
+SOURCE_VERIFICATION_REGISTRY_RELATIVE = (
+    "scripts/audit_provider_completeness.py"
+)
+SOURCE_VERIFICATION_AUDIT_PATTERN = "scripts/audit_*_provider.py"
 
 
 def _sha256(path: Path) -> str:
@@ -127,10 +133,25 @@ def _repo_relative_pathspecs(
 def extra_gate_pathspecs(source: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
     """Gate scripts that must be committed with the release, even if not shipped."""
 
-    source_extras = tuple(
+    source_extras = [
         relative
         for relative in ("scripts/release_deploy.py", "scripts/test_release_deploy.py")
         if (source / relative).is_file()
+    ]
+    tracked = _git_tracked_paths(source)
+    if SOURCE_VERIFICATION_REGISTRY_RELATIVE not in tracked:
+        raise ValueError("source verification registry is not tracked")
+    dedicated_audits = sorted(
+        relative
+        for relative in tracked
+        if PurePosixPath(relative).match(
+            SOURCE_VERIFICATION_AUDIT_PATTERN
+        )
+    )
+    if not dedicated_audits:
+        raise ValueError("dedicated provider audits are not tracked")
+    source_extras.extend(
+        [SOURCE_VERIFICATION_REGISTRY_RELATIVE, *dedicated_audits]
     )
     repo_root, _prefix = _git_scope(source)
     repo_extras = tuple(
@@ -138,10 +159,12 @@ def extra_gate_pathspecs(source: Path) -> tuple[tuple[str, ...], tuple[str, ...]
         for relative in ("scripts/check_mingli_core_workspace.py",)
         if (repo_root / relative).is_file()
     )
-    return source_extras, repo_extras
+    return tuple(dict.fromkeys(source_extras)), repo_extras
 
 
-def _runtime_closure(source: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
+def _runtime_closure(
+    source: Path,
+) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
     closure_path = source / RUNTIME_CLOSURE_RELATIVE
     if closure_path.is_symlink() or not closure_path.is_file():
         raise ValueError("runtime closure file is missing or unsafe")
@@ -149,30 +172,52 @@ def _runtime_closure(source: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
         payload = json.loads(closure_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError, TypeError) as exc:
         raise ValueError("runtime closure file is invalid") from exc
-    if not isinstance(payload, dict) or set(payload) != {
+    required_keys = {
         "schema_version",
         "files",
         "patterns",
-    }:
+    }
+    allowed_keys = required_keys | {"excluded_files"}
+    if (
+        not isinstance(payload, dict)
+        or not required_keys <= set(payload)
+        or not set(payload) <= allowed_keys
+    ):
         raise ValueError("runtime closure schema is invalid")
     if payload.get("schema_version") != RUNTIME_CLOSURE_SCHEMA:
         raise ValueError("runtime closure schema_version is invalid")
     raw_files = payload.get("files")
     raw_patterns = payload.get("patterns")
-    if not isinstance(raw_files, list) or not isinstance(raw_patterns, list):
-        raise ValueError("runtime closure files and patterns must be lists")
+    raw_excluded_files = payload.get("excluded_files", [])
+    if (
+        not isinstance(raw_files, list)
+        or not isinstance(raw_patterns, list)
+        or not isinstance(raw_excluded_files, list)
+    ):
+        raise ValueError(
+            "runtime closure files, patterns and excluded_files must be lists"
+        )
     try:
         files = tuple(_safe_relative_path(item) for item in raw_files)
         patterns = tuple(_safe_release_pattern(item) for item in raw_patterns)
+        excluded_files = tuple(
+            _safe_relative_path(item) for item in raw_excluded_files
+        )
     except (TypeError, ValueError) as exc:
         raise ValueError("runtime closure contains an unsafe path") from exc
     if not files or len(files) != len(set(files)):
         raise ValueError("runtime closure files must be non-empty and unique")
     if len(patterns) != len(set(patterns)):
         raise ValueError("runtime closure patterns must be unique")
+    if len(excluded_files) != len(set(excluded_files)):
+        raise ValueError("runtime closure excluded_files must be unique")
+    if set(files) & set(excluded_files):
+        raise ValueError(
+            "runtime closure files and excluded_files must not overlap"
+        )
     if RUNTIME_CLOSURE_RELATIVE not in files:
         raise ValueError("runtime closure must include itself")
-    return files, patterns
+    return files, patterns, excluded_files
 
 
 def tracked_release_files(source: Path) -> list[str]:
@@ -185,8 +230,8 @@ def tracked_release_files(source: Path) -> list[str]:
     """
 
     tracked = _git_tracked_paths(source)
-    files, patterns = _runtime_closure(source)
-    untracked = sorted(set(files) - tracked)
+    files, patterns, excluded_files = _runtime_closure(source)
+    untracked = sorted((set(files) | set(excluded_files)) - tracked)
     if untracked:
         raise ValueError(
             "runtime closure references a path that is not tracked: "
@@ -203,6 +248,13 @@ def tracked_release_files(source: Path) -> list[str]:
                 f"runtime closure pattern matches no tracked paths: {pattern}"
             )
         selected.update(matches)
+    unmatched_exclusions = sorted(set(excluded_files) - selected)
+    if unmatched_exclusions:
+        raise ValueError(
+            "runtime closure excludes paths outside its selected surface: "
+            + ", ".join(unmatched_exclusions)
+        )
+    selected.difference_update(excluded_files)
     return sorted(selected)
 
 
@@ -1240,6 +1292,78 @@ def _terminate_source_verification(
         process.wait()
 
 
+@contextlib.contextmanager
+def _committed_source_snapshot(
+    source: Path,
+    commit: str,
+) -> Iterator[Path]:
+    """Materialize exactly ``source`` from ``commit`` without its worktree."""
+
+    repo_root, prefix = _git_scope(source)
+    treeish = (
+        f"{commit}:{prefix.rstrip('/')}"
+        if prefix
+        else commit
+    )
+    with tempfile.TemporaryDirectory(
+        prefix="mingli-release-committed-source-"
+    ) as temporary:
+        root = Path(temporary)
+        archive_path = root / "source.tar"
+        snapshot = root / "source"
+        snapshot.mkdir()
+        with archive_path.open("wb") as archive_handle:
+            subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(repo_root),
+                    "archive",
+                    "--format=tar",
+                    treeish,
+                ],
+                check=True,
+                stdout=archive_handle,
+            )
+        with tarfile.open(archive_path, mode="r:") as archive:
+            members = archive.getmembers()
+            for member in members:
+                relative = member.name.rstrip("/")
+                _safe_relative_path(relative)
+                if not (member.isdir() or member.isfile()):
+                    raise ValueError(
+                        "committed source snapshot contains a non-regular path: "
+                        f"{member.name}"
+                    )
+            archive.extractall(
+                snapshot,
+                members=members,
+                filter="data",
+            )
+        yield snapshot
+
+
+def _verify_committed_release_sources(
+    source: Path,
+    commit: str,
+    research_root: Path | None,
+    *,
+    timeout_seconds: float = SOURCE_VERIFICATION_TIMEOUT_SECONDS,
+    progress_stream: TextIO | None = None,
+    jobs: int | None = None,
+) -> dict:
+    """Run source audits from the immutable commit tree, never live files."""
+
+    with _committed_source_snapshot(source, commit) as snapshot:
+        return _verify_release_sources(
+            snapshot,
+            research_root,
+            timeout_seconds=timeout_seconds,
+            progress_stream=progress_stream,
+            jobs=jobs,
+        )
+
+
 def _verify_release_sources(
     source: Path,
     research_root: Path | None,
@@ -1520,12 +1644,17 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("duplicate deployment destination")
     release_files = tracked_release_files(source)
     source_extras, repo_extras = extra_gate_pathspecs(source)
+    commit = source_commit(source)
     require_clean_source(
         source,
         pathspecs=list(dict.fromkeys([*release_files, *source_extras])),
         extra_repo_pathspecs=repo_extras,
     )
-    source_verification = _verify_release_sources(source, args.research_root)
+    source_verification = _verify_committed_release_sources(
+        source,
+        commit,
+        args.research_root,
+    )
     if not source_verification["verified"]:
         raise ValueError(
             "release source verification failed: "
@@ -1534,7 +1663,7 @@ def main(argv: list[str] | None = None) -> int:
     manifest = build_committed_manifest(
         source,
         release_files,
-        source_commit(source),
+        commit,
     )
 
     protected_before = {

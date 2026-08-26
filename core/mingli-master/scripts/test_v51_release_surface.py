@@ -15,6 +15,11 @@ import release_deploy
 
 
 ROOT = Path(__file__).resolve().parents[1]
+UNBOUND_READING_ENGINE_MODULES = {
+    "scripts/reading_engine/cross_art_synthesis.py",
+    "scripts/reading_engine/dream_interpretation.py",
+    "scripts/reading_engine/name_analysis.py",
+}
 
 
 def _selected_snapshot_paths() -> set[str]:
@@ -60,6 +65,42 @@ class ReleaseSurfaceTests(unittest.TestCase):
         self.assertFalse(
             any(path.startswith("scripts/test_") for path in selected)
         )
+
+    def test_unbound_cross_art_modules_are_source_only_and_not_enabled(
+        self,
+    ) -> None:
+        selected = _selected_snapshot_paths()
+
+        self.assertFalse(
+            UNBOUND_READING_ENGINE_MODULES & selected,
+            sorted(UNBOUND_READING_ENGINE_MODULES & selected),
+        )
+        name_contract = (
+            ROOT
+            / "references"
+            / "matrices"
+            / "name-analysis-source-rules-v1.yaml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("runtime_binding: not_in_runtime", name_contract)
+        self.assertIn("provider_status: contract_only_no_provider", name_contract)
+        for unresolved_resource in (
+            "dream-interpretation-source-rules-v1.yaml",
+            "cross-art-synthesis-source-rules-v1.yaml",
+        ):
+            self.assertFalse(
+                (ROOT / "references" / "matrices" / unresolved_resource).exists(),
+                unresolved_resource,
+            )
+        catalog_text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in (ROOT / "resources" / "runtime").rglob("*.json")
+        )
+        for module_name in (
+            "cross_art_synthesis",
+            "dream_interpretation",
+            "name_analysis",
+        ):
+            self.assertNotIn(module_name, catalog_text)
 
     def test_runtime_closure_keeps_the_artifacts_eager_validation_reads(self) -> None:
         selected = _selected_snapshot_paths()
@@ -109,6 +150,11 @@ class ReleaseSurfaceTests(unittest.TestCase):
                 manifest,
                 apply=True,
             )
+            for relative in UNBOUND_READING_ENGINE_MODULES:
+                self.assertFalse(
+                    (destination / relative).exists(),
+                    relative,
+                )
             environment = {
                 "HOME": str(home),
                 "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
