@@ -322,7 +322,7 @@ def build_reading_worker(
         model=resolved_model,
         clock=resolved_clock,
         alert_sink=build_alert_sink(enabled=settings.alert_sink_enabled),
-        require_reading_document=settings.runtime_adapter == "one-shot",
+        require_reading_document=settings.runtime_adapter in {"one-shot", "worker-v2"},
     )
     source = ReadingJobWorkSource(
         sessions=database.sessions,
