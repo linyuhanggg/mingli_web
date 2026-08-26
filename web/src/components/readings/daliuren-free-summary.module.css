@@ -40,7 +40,7 @@
 .quote {
   margin: 0;
   padding: 0.35rem 0 0.35rem 0.75rem;
-  border-left: 2px solid var(--color-evidence-line);
+  border-left: 2px solid var(--color-border-strong);
   color: var(--color-text);
   font-size: var(--font-size-body);
 }

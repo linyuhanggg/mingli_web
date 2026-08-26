@@ -114,6 +114,20 @@ export type ReadingVersionSummary = {
   delivery_state?: DeliveryState;
 };
 
+export type ChartFastPathTiming = {
+  execution_lane: "direct_runtime";
+  queue_wait_ms: number;
+  worker_pickup_ms: number;
+  runtime_one_shot_ms: number;
+  db_persistence_ms: number;
+  total_ms: number;
+};
+
+export type ReadingStartResponse = ReadingVersionSummary & {
+  view_model?: import("@/view-models/registry").ViewModel | null;
+  fast_path_timing?: ChartFastPathTiming | null;
+};
+
 export type PreviewStartRequest = {
   profile_version_id: string;
   query?: string;

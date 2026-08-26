@@ -269,6 +269,7 @@ _PRODUCT_ALIASES: Final = {
     "qizheng-relationship": "qizheng",
     "ziwei-relationship": "ziwei",
     "bazi-relationship": "bazi",
+    "liuren": "daliuren",
 }
 
 _DIVINATION_PREFIXES: Final = {
@@ -417,7 +418,8 @@ def project_capability(
     release_root: Path | None,
     release_profile: str = "v53-time-check",
 ) -> RuntimeCapabilityProjection:
-    requested_id = _PRODUCT_ALIASES.get(product_id or "", product_id or capability_id)
+    raw_id = product_id or capability_id
+    requested_id = _PRODUCT_ALIASES.get(raw_id, raw_id)
     if requested_id == "xingming":
         requested_id = "qizheng"
     for projection in project_capabilities(

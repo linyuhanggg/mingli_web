@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Literal, Protocol
 from uuid import UUID
 
@@ -10,7 +10,11 @@ from app.config import Settings
 from app.identity.models import GuestSession
 from app.profiles.models import ProfileVersion, SubjectProfile
 from app.profiles.repository import ProfileRepository
-from app.profiles.schemas import ProfileConfirmRequest, ProfileSummary, ProfileVersionRequest
+from app.profiles.schemas import (
+    ProfileConfirmRequest,
+    ProfileSummary,
+    ProfileVersionRequest,
+)
 from app.readings.models import ReadingIdempotencyKey, ReadingRoot
 from app.security.envelope import EnvelopeCipher
 
@@ -132,7 +136,7 @@ class ProfileService:
             difference_acknowledged=False,
         )
         await self.session.refresh(version)
-        return _summary(draft.id, version)
+        return self._summary(draft, version)
 
     async def append_version(
         self,
@@ -178,7 +182,7 @@ class ProfileService:
             difference_acknowledged=payload.difference_acknowledged,
         )
         await self.session.refresh(version)
-        return _summary(profile.id, version)
+        return self._summary(profile, version)
 
     async def list_profile_versions(
         self,
@@ -194,7 +198,7 @@ class ProfileService:
         if profile is None:
             raise ProfileNotFoundError("Subject Profile not found")
         versions = await self.repository.list_versions(profile.id)
-        return [_summary(profile.id, version) for version in versions]
+        return [self._summary(profile, version) for version in versions]
 
     async def list_profiles(self, owner: OwnerProtocol) -> list[ProfileSummary]:
         user_id, guest_id = owner_ids(owner)
@@ -202,7 +206,28 @@ class ProfileService:
             owner_user_id=user_id,
             owner_guest_session_id=guest_id,
         )
-        return [_summary(profile.id, version) for profile, version in rows]
+        return [self._summary(profile, version) for profile, version in rows]
+
+    async def update_display_name(
+        self,
+        owner: OwnerProtocol,
+        profile_id: UUID,
+        display_name: str,
+    ) -> ProfileSummary:
+        user_id, guest_id = owner_ids(owner)
+        profile = await self.repository.get_owned_profile(
+            profile_id,
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+        )
+        if profile is None:
+            raise ProfileNotFoundError("Subject Profile not found")
+        latest_version = await self.repository.get_latest_version(profile.id)
+        if latest_version is None:
+            raise ProfileNotConfirmedError("Subject Profile has no confirmed version")
+        profile.label = display_name
+        await self.session.flush()
+        return self._summary(profile, latest_version)
 
     async def get_owned_profile_version(
         self,
@@ -293,12 +318,42 @@ class ProfileService:
                 "the visible difference from the previous ProfileVersion must be acknowledged"
             )
 
+    def _summary(
+        self,
+        profile: SubjectProfile,
+        version: ProfileVersion,
+    ) -> ProfileSummary:
+        payload = self.repository.decrypt_version_payload(version)
+        return _summary(profile, version, payload)
 
-def _summary(profile_id: UUID, version: ProfileVersion) -> ProfileSummary:
+
+def _summary(
+    profile: SubjectProfile,
+    version: ProfileVersion,
+    payload: dict[str, object],
+) -> ProfileSummary:
     return ProfileSummary(
-        profile_id=profile_id,
+        profile_id=profile.id,
         profile_version_id=version.id,
         subject_ref=f"profile-version:{version.id}",
         version=version.version,
+        display_name=_display_name_projection(profile.label),
+        birth_date=_birth_date_projection(payload),
         created_at=version.created_at,
     )
+
+
+def _display_name_projection(label: str | None) -> str | None:
+    if label is None or not label.strip():
+        return None
+    return label
+
+
+def _birth_date_projection(payload: dict[str, object]) -> date | None:
+    value = payload.get("birth_datetime")
+    if not isinstance(value, str):
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).date()
+    except ValueError:
+        return None

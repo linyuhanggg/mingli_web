@@ -356,7 +356,13 @@ function DaliurenBoardSession({
   }
 
   return (
-    <section className={styles.wrap} data-mode={mode} aria-label="课传" aria-busy={mode === "loading" || undefined}>
+    <section
+      aria-busy={mode === "loading" || undefined}
+      aria-label="课传"
+      className={styles.wrap}
+      data-mode={mode}
+      data-schema={view?.schema_version}
+    >
       {mode === "ready" ? (
         <DaliurenCaliberBar
           dayHour={view?.core_facts?.day_hour ?? null}

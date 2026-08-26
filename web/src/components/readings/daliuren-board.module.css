@@ -1,4 +1,10 @@
 .wrap {
+  --element-earth: var(--color-text-secondary);
+  --element-fire: var(--color-text);
+  --element-metal: var(--color-text-muted);
+  --element-water: var(--color-accent);
+  --element-wood: var(--color-text-secondary);
+  --color-evidence: var(--color-text-secondary);
   display: grid;
   gap: var(--space-md);
   min-width: 0;

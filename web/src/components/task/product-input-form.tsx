@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import { Status } from "@/components/ui/status";
 import { IanaTimeZoneOptions } from "@/components/iana-timezone-options";
-import { formatProfileOption, type ProfileSummary } from "@/lib/api";
+import { type ProfileSummary } from "@/lib/api";
 import {
   CHINA_TIME_ZONE,
   joinLocation,
@@ -17,6 +17,7 @@ import {
   type ProvinceCityAreas,
 } from "@/lib/china-division";
 import { isIanaTimeZone } from "@/lib/iana-timezones";
+import { formatProfileDisplayOption } from "@/lib/profile-display-metadata";
 import type { ProductDefinition } from "@/products/catalog";
 
 import styles from "./task-shell.module.css";
@@ -909,6 +910,7 @@ export function ProductInputForm({
   busy = false,
   submitError = null,
   submitErrorState = "unavailable",
+  showFrozenUnknownTimeControl,
 }: {
   product: ProductDefinition;
   initialValues?: TaskFormValues;
@@ -924,6 +926,7 @@ export function ProductInputForm({
   busy?: boolean;
   submitError?: string | null;
   submitErrorState?: "unavailable" | "error";
+  showFrozenUnknownTimeControl?: boolean;
 }) {
   const schema = useMemo(
     () => schemaFor(product, Boolean(selectedProfileVersionId)),
@@ -1013,6 +1016,10 @@ export function ProductInputForm({
 
   const isCompactBaziInput = product.id === "bazi";
   const usesCrossProfile = product.id === "hecan" || product.id === "canwen";
+  // The integrated compact Bazi page omits dead controls; standalone form previews expose the frozen option.
+  const shouldShowFrozenUnknownTimeControl =
+    showFrozenUnknownTimeControl
+    ?? (product.id !== "bazi" || onProfileVersionChange === undefined);
 
   return (
     <form
@@ -1030,6 +1037,10 @@ export function ProductInputForm({
           </div>
           <span><Info aria-hidden="true" size={16} /> {confirmHint(product.id)}</span>
         </div>
+      ) : null}
+
+      {isCompactBaziInput && shouldShowFrozenUnknownTimeControl ? (
+        <p className={styles.productNote}>确认后生成盘面</p>
       ) : null}
 
       {validationErrors.length > 0 ? (
@@ -1083,7 +1094,7 @@ export function ProductInputForm({
               >
                 {profiles.map((profile) => (
                   <option key={profile.profile_version_id} value={profile.profile_version_id}>
-                    {formatProfileOption(profile)}
+                    {formatProfileDisplayOption(profile)}
                   </option>
                 ))}
                 <option value="">重新录入并建立新档案</option>
@@ -1092,11 +1103,11 @@ export function ProductInputForm({
           ) : null}
           {selectedProfile ? (
             <p className={styles.productNote}>
-              本次将直接使用已保存的不可变档案版本；如出生资料有变化，请选择重新录入。
+              将直接使用这份已保存资料；如出生信息有变化，选重新录入。
             </p>
           ) : !profileLookupPending ? (
             <p className={styles.productNote}>
-              本次将核对出生资料并建立新的不可变档案版本。
+              将核对出生资料并保存为新档案。
             </p>
           ) : null}
         </fieldset>
@@ -1141,7 +1152,7 @@ export function ProductInputForm({
               >
                 {profiles.map((profile) => (
                   <option key={profile.profile_version_id} value={profile.profile_version_id}>
-                    {formatProfileOption(profile)}
+                    {formatProfileDisplayOption(profile)}
                   </option>
                 ))}
                 <option value="">重新录入并建立新档案</option>
@@ -1150,7 +1161,7 @@ export function ProductInputForm({
           ) : null}
           {selectedProfile ? (
             <p className={styles.productNote}>
-              本次将使用已确认的立命档案：{formatProfileOption(selectedProfile)}。
+              本次将使用已确认的立命档案：{formatProfileDisplayOption(selectedProfile)}。
             </p>
           ) : !profileLookupPending ? (
             <>
@@ -1160,7 +1171,7 @@ export function ProductInputForm({
                   ，或直接填写出生资料建立新档案。
                 </p>
               ) : null}
-              <p className={styles.productNote}>填写后会在服务端确认一份不可变档案，再用来合参。</p>
+              <p className={styles.productNote}>填写后会保存为新档案，再用来合参。</p>
             </>
           ) : null}
         </fieldset>
@@ -1240,6 +1251,32 @@ export function ProductInputForm({
               value={birthTime}
             />
           </div>
+          {shouldShowFrozenUnknownTimeControl ? (
+            <label className={styles.checkRow}>
+              <input
+                aria-describedby={`${product.id}-unknown-time-reason`}
+                disabled
+                type="checkbox"
+                {...register("unknownTime")}
+              />
+              <span>
+                <strong>不知道出生时辰</strong>
+                <small id={`${product.id}-unknown-time-reason`}>
+                  请填写明确的出生时间。
+                </small>
+              </span>
+            </label>
+          ) : null}
+          <SegmentedField
+            legend="时间口径"
+            name={`${product.id}-time-standard`}
+            onChange={(next) => setValue("timeStandard", next, { shouldDirty: true })}
+            options={[
+              { value: "civil", label: "民用钟表时间" },
+              { value: "local-apparent-solar", label: "当地视太阳时" },
+            ]}
+            value={timeStandard}
+          />
           {product.id !== "qizheng" ? (
             <BirthPlaceParts
               error={errors.location?.message}
@@ -1276,16 +1313,6 @@ export function ProductInputForm({
           <details className={styles.advanced}>
             <summary>高级排盘选项</summary>
             <div className={styles.advancedBody}>
-              <SegmentedField
-                legend="时间口径"
-                name={`${product.id}-time-standard`}
-                onChange={(next) => setValue("timeStandard", next, { shouldDirty: true })}
-                options={[
-                  { value: "civil", label: "民用钟表时间" },
-                  { value: "local-apparent-solar", label: "当地视太阳时" },
-                ]}
-                value={timeStandard}
-              />
               <Field htmlFor={`${product.id}-timezone`} label="出生时区" error={errors.timezone?.message} help="选中国内地点后自动填好；海外地点请自行确认。">
                 <input id={`${product.id}-timezone`} aria-describedby={errors.timezone ? `${product.id}-timezone-error` : `${product.id}-timezone-help`} autoComplete="off" list={`${product.id}-timezone-options`} placeholder="例如 Asia/Shanghai" {...register("timezone")} />
                 <IanaTimeZoneOptions id={`${product.id}-timezone-options`} />
@@ -1629,7 +1656,7 @@ export function ProductInputForm({
       {!isCompactBaziInput ? (
         <SubmitSummary
           product={product}
-          profileLabel={selectedProfile ? formatProfileOption(selectedProfile) : null}
+          profileLabel={selectedProfile ? formatProfileDisplayOption(selectedProfile) : null}
           values={summaryValues}
         />
       ) : null}
@@ -1668,25 +1695,25 @@ const RUNTIME_SUBMIT_IDS = [
 ];
 
 const SUBMIT_LABELS: Record<string, string> = {
-  bazi: "立即排盘（免费）· 查看八字四柱",
-  ziwei: "立即排盘（免费）· 查看十二宫",
-  qizheng: "立即排盘（免费）· 查看星盘",
-  "luming-nayin": "立即排盘（免费）· 查看禄命纳音",
-  liuyao: "立即起卦 · 查看本卦与变卦",
-  meihua: "立即起卦 · 查看本卦与体用",
-  qimen: "立即起局 · 查看九宫",
-  daliuren: "立即起课 · 查看四课三传",
-  taiyi: "立即起局 · 查看年度结构",
-  selection: "立即排候选 · 查看日期排序",
-  wenshi: "立即起卦 · 三术分别呈现",
-  hecan: "立即合参 · 各术分别呈现",
-  canwen: "立即合参 · 各术分别呈现",
+  bazi: "免费排盘 · 查看四柱",
+  ziwei: "免费排盘 · 查看十二宫",
+  qizheng: "免费排盘 · 查看星盘",
+  "luming-nayin": "免费排盘 · 查看禄命纳音",
+  liuyao: "起卦 · 查看本卦与变卦",
+  meihua: "起卦 · 查看本卦与体用",
+  qimen: "起局 · 查看九宫",
+  daliuren: "起课 · 查看四课三传",
+  taiyi: "起局 · 查看年度结构",
+  selection: "排列候选 · 查看日期排序",
+  wenshi: "起卦 · 三术分别呈现",
+  hecan: "开始合参 · 各术分别呈现",
+  canwen: "开始合参 · 各术分别呈现",
   jianxiang: "开始观照 · 生成结构化观察",
-  fengshui: "立即起盘 · 查看形势与理气",
+  fengshui: "起盘 · 查看形势与理气",
 };
 
 function submitLabel(product: ProductDefinition) {
-  return SUBMIT_LABELS[product.id] ?? `立即排盘 · 查看${product.moduleTitle}`;
+  return SUBMIT_LABELS[product.id] ?? `排盘 · 查看${product.moduleTitle}`;
 }
 
 function confirmHint(productId: string) {

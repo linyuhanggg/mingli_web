@@ -14,7 +14,7 @@ export function PublicPageShell({ children }: Readonly<{ children: ReactNode }>)
 
   return (
     <div className={styles.shell} data-home-chrome={isHome ? "true" : undefined}>
-      <SiteHeader />
+      <SiteHeader includeMobileNavigation={false} />
       {children}
       <MobileNavigation pathname={pathname} />
       <SiteFooter home={isHome} />

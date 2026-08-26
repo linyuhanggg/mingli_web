@@ -588,8 +588,24 @@ class ReadingVersionSummary(BaseModel):
     delivery_state: DeliveryState = "not_required"
 
 
+class ChartFastPathTiming(BaseModel):
+    """Bounded server-side stages for deterministic chart preparation."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    execution_lane: Literal["direct_runtime"] = "direct_runtime"
+    queue_wait_ms: float = Field(ge=0)
+    worker_pickup_ms: float = Field(ge=0)
+    runtime_one_shot_ms: float = Field(ge=0)
+    db_persistence_ms: float = Field(ge=0)
+    total_ms: float = Field(ge=0)
+
+
 class ReadingStartResponse(ReadingVersionSummary):
-    pass
+    # Base-chart starts can paint directly from this versioned Runtime
+    # projection. Existing clients may continue with GET /result.
+    view_model: ViewModel | None = None
+    fast_path_timing: ChartFastPathTiming | None = None
 
 
 class FulfillmentBindingRequest(BaseModel):

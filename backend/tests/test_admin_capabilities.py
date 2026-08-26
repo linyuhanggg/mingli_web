@@ -1,7 +1,7 @@
 from app.admin.models import StaffUser
 from app.readings.capability_policy import (
     P0_EXPOSED_CAPABILITY_IDS,
-    V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
+    V51_RELEASE_CAPABILITY_IDS,
 )
 from httpx import AsyncClient
 from sqlalchemy import select
@@ -28,8 +28,9 @@ async def test_admin_capabilities_exposes_policy_without_claiming_runtime_health
     payload = response.json()
     assert payload["environment"] == "test"
     assert payload["runtime_adapter"] == "fake"
+    assert payload["runtime_release_profile"] == "v51"
     assert [item["capability_id"] for item in payload["capabilities"]] == list(
-        V53_TIME_CHECK_RELEASE_CAPABILITY_IDS
+        V51_RELEASE_CAPABILITY_IDS
     )
     states = {
         item["capability_id"]: item["release_state"] for item in payload["capabilities"]
@@ -38,12 +39,7 @@ async def test_admin_capabilities_exposes_policy_without_claiming_runtime_health
         P0_EXPOSED_CAPABILITY_IDS
     )
     assert states["physiognomy"] == "INTERNAL_TEST"
-    assert states["time-check"] == "INTERNAL_TEST"
-    assert "time_check_preview" in next(
-        item["product_actions"]
-        for item in payload["capabilities"]
-        if item["capability_id"] == "time-check"
-    )
+    assert "time-check" not in states
     assert payload["runtime_health"] == "unverified"
     assert payload["production_ready"] is False
     assert "api_key" not in response.text

@@ -9,7 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useId } from "react";
+import { useId, type MouseEventHandler } from "react";
 
 import styles from "./status-panel.module.css";
 
@@ -28,6 +28,7 @@ type StatusPanelProps = {
   description?: string;
   actionHref?: string;
   actionLabel?: string;
+  actionOnClick?: MouseEventHandler<HTMLAnchorElement>;
 };
 
 type StatusDefinition = {
@@ -75,6 +76,7 @@ export function StatusPanel({
   description,
   actionHref,
   actionLabel,
+  actionOnClick,
 }: StatusPanelProps) {
   const headingId = useId();
   const descriptionId = useId();
@@ -106,7 +108,7 @@ export function StatusPanel({
         </p>
 
         {actionHref && actionLabel ? (
-          <Link className={styles.action} href={actionHref}>
+          <Link className={styles.action} href={actionHref} onClick={actionOnClick}>
             <span>{actionLabel}</span>
             <ArrowRight aria-hidden="true" size={18} strokeWidth={1.75} />
           </Link>

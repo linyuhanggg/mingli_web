@@ -40,6 +40,7 @@ import {
   type PhysiognomyStartRequest,
   type PreviewStartRequest,
   type ProfileSummary,
+  type ReadingStartResponse,
   type TimeBasisPolicy,
   type SelectionStartRequest,
   type TaiyiStartRequest,
@@ -47,6 +48,12 @@ import {
 } from "@/lib/api";
 import { localDateTimeWithOffset } from "@/lib/date-time";
 import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
+import {
+  clearRecoverableReading,
+  loadRecoverableReading,
+  resolveReadingStartedAt,
+  saveRecoverableReading,
+} from "@/lib/reading-recovery";
 import { mapStartReadingFailure } from "@/lib/start-reading-error";
 import type { ProductDefinition } from "@/products/catalog";
 
@@ -64,6 +71,60 @@ const steps: Array<{ id: TaskStage | "report"; label: string }> = [
 ];
 
 const stageIndex: Record<TaskStage, number> = { input: 0, workbench: 1 };
+const INLINE_RESULT_PRODUCT_IDS = new Set(["bazi", "ziwei", "liuyao", "meihua", "daliuren"]);
+
+const RECOVERED_FORM_DEFAULTS: TaskFormValues = {
+  subject: "",
+  calendar: "gregorian",
+  birthDate: "",
+  birthTime: "",
+  targetYear: "",
+  targetMonth: "",
+  targetDate: "",
+  unknownTime: false,
+  location: "",
+  timezone: "Asia/Shanghai",
+  gender: "",
+  timeStandard: "civil",
+  longitude: "",
+  latitude: "",
+  coordinateSource: "",
+  issue: "",
+  focus: "",
+  eventTime: "",
+  timingStart: "",
+  timingEnd: "",
+  divinationMethod: "coins",
+  meihuaCastingMethod: "time",
+  meihuaNumber: "",
+  meihuaCount: "",
+  meihuaUpperTrigram: "乾",
+  meihuaLowerTrigram: "坤",
+  meihuaMovingLine: "1",
+  meihuaSource: "",
+  observationMode: "face",
+  observationRegion: "forehead",
+  observationDescriptor: "region_visible",
+  observationVisibility: "full",
+  observationUncertainty: "0",
+  selectionEventProfile: "business_opening_transaction",
+  selectionActions: "开市",
+  selectionStart: "",
+  selectionEnd: "",
+  selectionConstraints: "",
+  fengshuiPropertyScope: "residential",
+  fengshuiSelectedSchool: "bazhai",
+  fengshuiFacingDegrees: "180",
+  fengshuiUncertaintyDegrees: "0",
+  consent: false,
+  photoSelected: false,
+  observationNotes: "",
+  saveToArchive: false,
+  profile: "",
+  arts: [],
+  preference: "direct",
+  lines: ["", "", "", "", "", ""],
+};
 
 const RUNTIME_PRODUCT_IDS = new Set<ProductDefinition["id"]>([
   "bazi",
@@ -122,7 +183,7 @@ function InputTrustRail({ product }: { product: ProductDefinition }) {
         <div className={styles.trustRailHeader}>
           <span>盘面骨架</span>
           <h2 id="task-plate-preview-title">提交后填入你的盘</h2>
-          <p>以下干支只作示意骨架；真实盘面只使用提交后返回的版本化 ViewModel。</p>
+          <p>先看看结果的样式；真实盘面以提交后返回为准。</p>
         </div>
         <dl className={styles.plateSkeleton} aria-label="示意骨架，不是真实盘面">
           <div>
@@ -149,7 +210,7 @@ function InputTrustRail({ product }: { product: ProductDefinition }) {
         <blockquote>
           <p>「天道有寒暖，发育万物，人道得之，不可过也。」</p>
         </blockquote>
-        <cite>《滴天髓》通神论 · verified_exact</cite>
+        <cite>引文核对：精确匹配《滴天髓·通神论》</cite>
       </figure>
       <section className={styles.trustSteps} aria-labelledby="task-trust-steps-title">
         <h2 id="task-trust-steps-title">三步看懂结果</h2>
@@ -176,7 +237,13 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(null);
   const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(null);
+  const [ziweiPreviewReadingId, setZiweiPreviewReadingId] = useState<string | null>(null);
   const [liuyaoPreviewReadingId, setLiuyaoPreviewReadingId] = useState<string | null>(null);
+  const [meihuaPreviewReadingId, setMeihuaPreviewReadingId] = useState<string | null>(null);
+  const [daliurenPreviewReadingId, setDaliurenPreviewReadingId] = useState<string | null>(null);
+  const [inlineReadingStartedAt, setInlineReadingStartedAt] = useState<number | null>(null);
+  const [inlineReadingSummary, setInlineReadingSummary] =
+    useState<ReadingStartResponse | null>(null);
   const [savedProfiles, setSavedProfiles] = useState<ProfileSummary[]>([]);
   const [savedProfilesLoading, setSavedProfilesLoading] = useState(
     shouldLoadProfiles,
@@ -187,6 +254,32 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [savedProfilesAttempt, setSavedProfilesAttempt] = useState(0);
   const profileVersionRef = useRef<string | null>(null);
   const intentKeyRef = useRef<IntentKey | null>(null);
+
+  useEffect(() => {
+    const recovery = loadRecoverableReading(product.id);
+    if (!recovery) return;
+    const restoreTimer = window.setTimeout(() => {
+      const restoredValues: TaskFormValues = {
+        ...RECOVERED_FORM_DEFAULTS,
+        ...recovery.submission.values,
+      };
+      const profileVersionId = recovery.submission.profileVersionId ?? null;
+      setValues(restoredValues);
+      setInlineReadingStartedAt(recovery.startedAt);
+      profileVersionRef.current = profileVersionId;
+      if (profileVersionId) {
+        setSelectedProfileVersionId(profileVersionId);
+        setBaziProfileVersionId(profileVersionId);
+      }
+      if (product.id === "bazi") setBaziPreviewReadingId(recovery.readingVersionId);
+      if (product.id === "ziwei") setZiweiPreviewReadingId(recovery.readingVersionId);
+      if (product.id === "liuyao") setLiuyaoPreviewReadingId(recovery.readingVersionId);
+      if (product.id === "meihua") setMeihuaPreviewReadingId(recovery.readingVersionId);
+      if (product.id === "daliuren") setDaliurenPreviewReadingId(recovery.readingVersionId);
+      setStage("workbench");
+    }, 0);
+    return () => window.clearTimeout(restoreTimer);
+  }, [product.id]);
 
   useEffect(() => {
     if (!shouldLoadProfiles) return;
@@ -240,6 +333,49 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       active = false;
     };
   }, [shouldLoadProfiles, requestedProfileVersionId, savedProfilesAttempt]);
+
+  function showInlineReading(
+    response: ReadingStartResponse,
+    submittedValues: TaskFormValues,
+    startedAt: number,
+    profileVersionId?: string,
+  ) {
+    const readingVersionId = response.reading_version_id;
+    saveRecoverableReading(product.id, readingVersionId, {
+      ...(profileVersionId ? { profileVersionId } : {}),
+      startedAt,
+      values: submittedValues,
+    });
+    setInlineReadingStartedAt(startedAt);
+    setInlineReadingSummary(response);
+    if (product.id === "bazi") setBaziPreviewReadingId(readingVersionId);
+    if (product.id === "ziwei") setZiweiPreviewReadingId(readingVersionId);
+    if (product.id === "liuyao") setLiuyaoPreviewReadingId(readingVersionId);
+    if (product.id === "meihua") setMeihuaPreviewReadingId(readingVersionId);
+    if (product.id === "daliuren") setDaliurenPreviewReadingId(readingVersionId);
+    setStage("workbench");
+  }
+
+  function returnToInput() {
+    clearRecoverableReading(product.id);
+    profileVersionRef.current = null;
+    intentKeyRef.current = null;
+    setBaziPreviewReadingId(null);
+    setZiweiPreviewReadingId(null);
+    setLiuyaoPreviewReadingId(null);
+    setMeihuaPreviewReadingId(null);
+    setDaliurenPreviewReadingId(null);
+    setInlineReadingStartedAt(null);
+    setInlineReadingSummary(null);
+    setSubmitError(null);
+    setStage("input");
+  }
+
+  function restartInlineReading() {
+    if (!values || busy) return;
+    intentKeyRef.current = null;
+    void startRuntimeReading(values);
+  }
 
   async function startRuntimeReading(nextValues: TaskFormValues) {
     if (!hasRuntimeStart(product)) {
@@ -374,6 +510,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
+        const fallbackStartedAt = Date.now();
         const response =
           product.id === "bazi"
             ? await startPreviewReading(payload, intent.key)
@@ -382,9 +519,13 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             : product.id === "ziwei"
               ? await startZiweiReading(payload, intent.key)
               : await startQizhengReading(payload, intent.key);
-        if (product.id === "bazi") {
-          setBaziPreviewReadingId(response.reading_version_id);
-          setStage("workbench");
+        if (product.id === "bazi" || product.id === "ziwei") {
+          showInlineReading(
+            response,
+            nextValues,
+            resolveReadingStartedAt(response.created_at, fallbackStartedAt),
+            profileVersionId,
+          );
         } else {
           router.push(`/app/readings/${response.reading_version_id}`);
         }
@@ -526,9 +667,13 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
+        const fallbackStartedAt = Date.now();
         const response = await startLiuyaoReading(payload, intent.key);
-        setLiuyaoPreviewReadingId(response.reading_version_id);
-        setStage("workbench");
+        showInlineReading(
+          response,
+          nextValues,
+          resolveReadingStartedAt(response.created_at, fallbackStartedAt),
+        );
         return;
       }
 
@@ -608,8 +753,13 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
+        const fallbackStartedAt = Date.now();
         const response = await startMeihuaReading(payload, intent.key);
-        router.push(`/app/readings/${response.reading_version_id}`);
+        showInlineReading(
+          response,
+          nextValues,
+          resolveReadingStartedAt(response.created_at, fallbackStartedAt),
+        );
         return;
       }
 
@@ -649,11 +799,20 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         payload: product.id === "qimen" ? payload : daliurenPayload,
       });
       intentKeyRef.current = intent;
+      const fallbackStartedAt = Date.now();
       const response =
         product.id === "qimen"
           ? await startQimenReading(payload, intent.key)
           : await startDaliurenReading(daliurenPayload, intent.key);
-      router.push(`/app/readings/${response.reading_version_id}`);
+      if (product.id === "daliuren") {
+        showInlineReading(
+          response,
+          nextValues,
+          resolveReadingStartedAt(response.created_at, fallbackStartedAt),
+        );
+      } else {
+        router.push(`/app/readings/${response.reading_version_id}`);
+      }
     } catch (reason) {
       const mapped = mapStartReadingFailure(reason);
       setSubmitErrorState(mapped.state);
@@ -670,6 +829,20 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     setValues(nextValues);
     void startRuntimeReading(nextValues);
   }
+
+  const inlineReadingId =
+    product.id === "bazi"
+      ? baziPreviewReadingId
+      : product.id === "ziwei"
+        ? ziweiPreviewReadingId
+        : product.id === "liuyao"
+          ? liuyaoPreviewReadingId
+          : product.id === "meihua"
+            ? meihuaPreviewReadingId
+            : product.id === "daliuren"
+              ? daliurenPreviewReadingId
+              : null;
+  const inlineStartViewModel = inlineReadingSummary?.view_model ?? undefined;
 
   return (
     <div className={styles.experience} data-product={product.id} data-stage={stage}>
@@ -704,92 +877,55 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           <InputTrustRail product={product} />
         </div>
       ) : null}
-      {stage === "workbench" && product.id !== "bazi" && product.id !== "liuyao" ? (
+      {stage === "workbench" && !INLINE_RESULT_PRODUCT_IDS.has(product.id) ? (
         <WorkbenchShell
           product={product}
-          onBack={() => {
-            profileVersionRef.current = null;
-            setBaziProfileVersionId(null);
-            intentKeyRef.current = null;
-            setBaziPreviewReadingId(null);
-            setSubmitError(null);
-            setStage("input");
-          }}
+          onBack={returnToInput}
         />
       ) : null}
-      {stage === "workbench" && product.id === "liuyao" && !liuyaoPreviewReadingId ? (
+      {stage === "workbench" && INLINE_RESULT_PRODUCT_IDS.has(product.id) && !inlineReadingId ? (
         <Status
           actions={(
-            <button
-              type="button"
-              onClick={() => {
-                setSubmitError(null);
-                setStage("input");
-              }}
-            >
+            <button type="button" onClick={returnToInput}>
               返回录入
             </button>
           )}
-          description="当前没有已确认的六爻任务句柄，不会伪造盘面。"
+          description="返回录入后，可以用原资料重新开始。"
           state="empty"
-          title="还没有可恢复的盘面"
+          title="上一次排盘没有完成"
         />
       ) : null}
-      {stage === "workbench" && product.id === "liuyao" && liuyaoPreviewReadingId ? (
+      {stage === "workbench" && product.id !== "bazi" && inlineReadingId ? (
         <>
           <Status
             actions={(
-              <button
-                type="button"
-                onClick={() => {
-                  profileVersionRef.current = null;
-                  intentKeyRef.current = null;
-                  setLiuyaoPreviewReadingId(null);
-                  setSubmitError(null);
-                  setStage("input");
-                }}
-              >
+              <button type="button" onClick={returnToInput}>
                 返回录入
               </button>
             )}
             description="盘面留在本页。登录只用于保存、历史和深读。"
             state="success"
-            title="六爻盘面"
+            title={`${product.name}盘面`}
           />
-          <ReadingResult readingId={liuyaoPreviewReadingId} />
+          <ReadingResult
+            initialSummary={inlineReadingSummary ?? undefined}
+            initialViewModel={inlineStartViewModel}
+            readingId={inlineReadingId}
+            onRestart={values ? restartInlineReading : undefined}
+            startedAt={inlineReadingStartedAt ?? undefined}
+          />
         </>
-      ) : null}
-      {stage === "workbench" && product.id === "bazi" && !baziPreviewReadingId ? (
-        <Status
-          actions={(
-            <button
-              type="button"
-              onClick={() => {
-                setSubmitError(null);
-                setStage("input");
-              }}
-            >
-              返回录入
-            </button>
-          )}
-          description="当前没有已确认的八字任务句柄，不会伪造盘面。"
-          state="empty"
-          title="还没有可恢复的盘面"
-        />
       ) : null}
       {stage === "workbench" && product.id === "bazi" && baziPreviewReadingId ? (
         <BaziDeepTaskFlow
-          onBack={() => {
-            profileVersionRef.current = null;
-            setBaziProfileVersionId(null);
-            intentKeyRef.current = null;
-            setBaziPreviewReadingId(null);
-            setSubmitError(null);
-            setStage("input");
-          }}
+          initialPreviewSummary={inlineReadingSummary ?? undefined}
+          initialPreviewViewModel={inlineStartViewModel}
+          onBack={returnToInput}
           previewReadingId={baziPreviewReadingId}
           profileVersionId={baziProfileVersionId ?? ""}
           query={values?.issue.trim() || "请预览我的八字命盘。"}
+          startedAt={inlineReadingStartedAt ?? undefined}
+          onRestart={values ? restartInlineReading : undefined}
         />
       ) : null}
     </div>

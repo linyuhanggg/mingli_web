@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+# isort: split
 from mingli_paths import MINGLI_CORE_ROOT, MINGLI_CORE_SCRIPTS
 
 
@@ -47,7 +48,7 @@ def brief_payload() -> dict[str, Any]:
 
 
 def test_bazi_public_core_facts_are_declared_by_runtime_manifest() -> None:
-    """Facts consumed by the Bazi ViewModels must retain Runtime provenance."""
+    """Backend-required Bazi facts must be an honest subset of locked v51 outputs."""
 
     root = Path(__file__).parents[2]
     provider = json.loads(
@@ -60,7 +61,16 @@ def test_bazi_public_core_facts_are_declared_by_runtime_manifest() -> None:
         item["name"]: tuple(item["json_pointers"])
         for item in runtime["output_bindings"]
     }
-    expected = {
+    declared = set(runtime["outputs"])
+    required_public_facts = {
+        "four_pillars",
+        "hidden_stems",
+        "ten_gods",
+        "day_master",
+        "month_command",
+        "luck_cycles",
+    }
+    undeclared_optional = {
         "seasonal_profile",
         "tiaohou_markers",
         "element_inventory",
@@ -70,8 +80,10 @@ def test_bazi_public_core_facts_are_declared_by_runtime_manifest() -> None:
         "interpretive_candidates",
     }
 
-    assert expected <= set(bindings)
-    for name in expected:
+    assert declared == set(bindings)
+    assert declared == required_public_facts
+    assert required_public_facts.isdisjoint(undeclared_optional)
+    for name in required_public_facts:
         assert bindings[name] == (f"/facts/chart_facts/output/{name}",)
 
 

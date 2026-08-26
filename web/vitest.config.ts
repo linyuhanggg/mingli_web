@@ -13,6 +13,11 @@ export default defineConfig({
   test: {
     include: ["src/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
     environment: "jsdom",
+    environmentOptions: {
+      jsdom: {
+        url: "http://localhost/",
+      },
+    },
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     css: true,

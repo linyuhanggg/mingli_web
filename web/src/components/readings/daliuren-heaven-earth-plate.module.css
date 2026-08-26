@@ -1,4 +1,7 @@
 .panel {
+  --color-evidence: var(--color-text);
+  --color-evidence-line: var(--color-border-strong);
+  --color-evidence-wash: var(--color-surface-subtle);
   min-width: 0;
   color: var(--color-text);
   background: var(--color-canvas);
@@ -44,6 +47,7 @@
 }
 
 .spoke {
+  --spoke: 0;
   --angle: calc(var(--spoke) * 30deg);
   position: absolute;
   top: 50%;

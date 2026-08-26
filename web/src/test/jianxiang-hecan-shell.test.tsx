@@ -52,7 +52,7 @@ describe("jianxiang + hecan three items", () => {
     render(<ProductInputForm product={getProductDefinition("hecan")} onConfirm={() => undefined} />);
 
     expect(screen.getByText("确认后生成")).toBeVisible();
-    expect(screen.getByRole("button", { name: /立即合参/ })).toBeVisible();
+    expect(screen.getByRole("button", { name: /开始合参/ })).toBeVisible();
     expect(screen.queryByText(/计算服务/)).not.toBeInTheDocument();
     expect(screen.getByText("八字为主理，再从紫微、七政中选择。没有结果就说没有可展示的互证。")).toBeVisible();
     expect(screen.queryByText(/接入/)).not.toBeInTheDocument();
@@ -82,7 +82,7 @@ describe("jianxiang + hecan three items", () => {
 
     await user.click(screen.getByRole("checkbox", { name: /八字/ }));
     await user.click(screen.getByRole("checkbox", { name: /紫微/ }));
-    await user.click(screen.getByRole("button", { name: /立即合参/ }));
+    await user.click(screen.getByRole("button", { name: /开始合参/ }));
 
     await waitFor(() => expect(mockStartHecanReading).toHaveBeenCalledTimes(1));
     expect(mockStartHecanReading).toHaveBeenCalledWith(

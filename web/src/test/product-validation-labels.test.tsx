@@ -29,7 +29,7 @@ describe("product validation labels", () => {
       );
 
       await user.clear(screen.getByLabelText("事件时区"));
-      await user.click(screen.getByRole("button", { name: /立即起卦/ }));
+      await user.click(screen.getByRole("button", { name: /起卦/ }));
 
       const summary = await screen.findByRole("alert", { name: "请先修正以下输入" });
       const summaryLinks = within(summary).getAllByRole("link");
@@ -60,7 +60,7 @@ describe("product validation labels", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: /立即起盘/ }));
+    await user.click(screen.getByRole("button", { name: /起盘/ }));
 
     const summary = await screen.findByRole("alert", { name: "请先修正以下输入" });
     const summaryLabels = within(summary)

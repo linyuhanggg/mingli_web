@@ -101,9 +101,17 @@ OLD_BRAND_COLOR_RE = re.compile(
 )
 DOMAIN_FONT_ALLOWLIST = {
     "web/src/components/readings/bazi-chart.module.css",
+    "web/src/components/readings/daliuren-board.module.css",
+    "web/src/components/readings/daliuren-heaven-earth-plate.module.css",
     "web/src/components/readings/liuyao-hexagram.module.css",
 }
 DOMAIN_FONT_ALLOWED_SELECTORS = {
+    ".upper",
+    ".lower",
+    ".branch",
+    ".branchLink",
+    ".earth",
+    '.table th[scope="row"]',
     ".pillarStem",
     ".pillarBranch",
     ".names dd",
@@ -136,6 +144,11 @@ HOME_GLASS_SELECTORS = {
     ".crossCard",
     ".auxGrid",
     ".hero",
+}
+SITE_CHROME_CSS_REL = "web/src/components/site-chrome.module.css"
+SITE_CHROME_GLASS_SELECTORS = {
+    '.header[data-home-chrome="true"]',
+    '.header[data-home-chrome="true"] :where(.utilityLink)',
 }
 
 
@@ -382,6 +395,23 @@ def test_gradients_and_glass_effects_are_banned() -> None:
                         for part in sorted(_selector_parts(selector) - HOME_GLASS_SELECTORS)
                     )
             continue
+        if rel == SITE_CHROME_CSS_REL:
+            for selector, body in _iter_rule_blocks(source):
+                has_gradient = GRADIENT_RE.search(body) is not None
+                has_glass = GLASS_SURFACE_RE.search(body) is not None
+                if has_gradient:
+                    violations.extend(
+                        f"{rel}: {part}: site chrome gradient is not approved"
+                        for part in sorted(_selector_parts(selector))
+                    )
+                if has_glass:
+                    violations.extend(
+                        f"{rel}: {part}: non-home chrome glass is not approved"
+                        for part in sorted(
+                            _selector_parts(selector) - SITE_CHROME_GLASS_SELECTORS
+                        )
+                    )
+            continue
         for line_no, line in enumerate(source.splitlines(), start=1):
             if GRADIENT_RE.search(line) or GLASS_SURFACE_RE.search(line):
                 violations.append(f"{rel}:{line_no}:{line.strip()}")
@@ -418,14 +448,11 @@ def test_font_domain_is_limited_to_chart_glyphs() -> None:
                 if FONT_DOMAIN_USE_RE.search(line):
                     leaks.append(f"{rel}:{line_no}:{line.strip()}")
             continue
-        current_selectors: list[str] = []
-        for line_no, line in enumerate(source.splitlines(), start=1):
-            if "{" in line:
-                current_selectors = [part.strip() for part in line.split("{", 1)[0].split(",")]
-            if FONT_DOMAIN_USE_RE.search(line) and not any(
-                selector in DOMAIN_FONT_ALLOWED_SELECTORS for selector in current_selectors
+        for selector, body in _iter_rule_blocks(source):
+            if FONT_DOMAIN_USE_RE.search(body) and not _selector_parts(selector).issubset(
+                DOMAIN_FONT_ALLOWED_SELECTORS
             ):
-                leaks.append(f"{rel}:{line_no}:{','.join(current_selectors)}:{line.strip()}")
+                leaks.append(f"{rel}:{selector}")
     assert leaks == []
 
 

@@ -59,16 +59,6 @@ const divinationGroups = [
   },
 ] as const;
 
-const homepageProductHrefs = new Set([
-  "/bazi",
-  "/ziwei",
-  "/qizheng",
-  "/liuyao",
-  "/qimen",
-  "/daliuren",
-  "/jianxiang",
-]);
-
 const crossLinks = [
   {
     href: "/hecan",
@@ -188,12 +178,6 @@ function menuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
 function MegaMenu() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() ?? "/";
-  const visibleGroups = pathname === "/"
-    ? divinationGroups.map((group) => ({
-        ...group,
-        items: group.items.filter((item) => homepageProductHrefs.has(item.href)),
-      }))
-    : divinationGroups;
 
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
@@ -229,7 +213,7 @@ function MegaMenu() {
             });
           }}
         >
-              {visibleGroups.map((group) => (
+          {divinationGroups.map((group) => (
             <section className={styles.megaGroup} key={group.label}>
               <h2>{group.label}</h2>
               <div className={styles.megaLinks}>
@@ -521,7 +505,9 @@ export function SitePrimaryNavigation() {
   );
 }
 
-export function SiteHeader() {
+export function SiteHeader({
+  includeMobileNavigation = true,
+}: Readonly<{ includeMobileNavigation?: boolean }> = {}) {
   const pathname = usePathname() || "/";
 
   return (
@@ -540,6 +526,7 @@ export function SiteHeader() {
           </div>
         </Container>
       </header>
+      {includeMobileNavigation ? <MobileNavigation pathname={pathname} /> : null}
     </>
   );
 }

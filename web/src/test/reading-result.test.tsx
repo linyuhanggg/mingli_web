@@ -1,13 +1,13 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ReadingResult } from "@/components/readings/reading-result";
 import { VerificationForm } from "@/components/readings/verification-form";
-import { resetApiCache } from "@/lib/api";
+import { resetApiCache, type ReadingVersionSummary } from "@/lib/api";
 
 const { routerPush } = vi.hoisted(() => ({ routerPush: vi.fn() }));
 
@@ -223,6 +223,7 @@ function callsTo(fetchMock: ReturnType<typeof vi.fn>, suffix: string) {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.useRealTimers();
   routerPush.mockReset();
 });
 
@@ -231,6 +232,303 @@ beforeEach(() => {
 });
 
 describe("ReadingVersionSummary polling and explicit result fetch", () => {
+  it("mounts the available Daliuren POST ViewModel before any summary or result GET", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+    const prepared = readingSummary("prepared", {
+      created_at: "2026-08-25T00:01:00Z",
+      capability_id: "daliuren",
+      product_id: "daliuren",
+      object_id: "concrete_event",
+      horizon: { kind_id: "instant", start: null, end: null },
+    }) as ReadingVersionSummary;
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(readingResult({ status: "prepared" }));
+      }
+      return jsonResponse(prepared);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const initialViewModel = {
+      schema_version: "daliuren-chart/v1",
+      subject_ref: "daliuren:test",
+      question: "何时有回应？",
+      lessons: [
+        { lesson_id: "one", upper: "子", lower: "丑" },
+        { lesson_id: "two", upper: "寅", lower: "卯" },
+        { lesson_id: "three", upper: "辰", lower: "巳" },
+        { lesson_id: "four", upper: "午", lower: "未" },
+      ],
+      transmissions: [
+        { stage: "initial", branch: "申", general: "贵人" },
+        { stage: "middle", branch: "酉", general: "螣蛇" },
+        { stage: "final", branch: "戌", general: "朱雀" },
+      ],
+      core_facts: null,
+    } as const;
+
+    const { unmount } = render(
+      <ReadingResult
+        initialSummary={prepared}
+        initialViewModel={initialViewModel}
+        readingId={VERSION_ID}
+      />,
+    );
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+
+    expect(screen.getByRole("heading", { name: "大六壬" })).toBeVisible();
+    expect(document.querySelector('[data-schema="daliuren-chart/v1"]')).toBeVisible();
+    expect(callsTo(fetchMock, `/api/v1/readings/${VERSION_ID}`)).toHaveLength(0);
+    expect(callsTo(fetchMock, `/api/v1/readings/${VERSION_ID}/result`)).toHaveLength(0);
+    unmount();
+  });
+
+  it("uses the prepared POST summary and does not refetch an unchanged result while polling", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+    const prepared = readingSummary("prepared", {
+      created_at: "2026-08-25T00:01:00Z",
+      capability_id: "meihua",
+      object_id: "concrete_event",
+      horizon: { kind_id: "instant", start: null, end: null },
+    }) as ReadingVersionSummary;
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/result")) {
+        return jsonResponse(readingResult({ status: "prepared" }));
+      }
+      return jsonResponse(prepared);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const initialViewModel = {
+      schema_version: "meihua-chart/v1" as const,
+      subject_ref: "meihua:test",
+      question: "这件事如何推进？",
+      casting_method: "time" as const,
+      primary_hexagram: {
+        name: "水雷屯",
+        upper_trigram: "坎",
+        lower_trigram: "震",
+      },
+      mutual_hexagram: null,
+      changed_hexagram: null,
+      moving_lines: [3],
+      body_use: {
+        body: { position: "lower" as const, trigram: "震", element: "木" },
+        use: { position: "upper" as const, trigram: "坎", element: "水" },
+        relation: "生",
+        status: "calculated_relation_not_verdict",
+      },
+      core_facts: null,
+    };
+
+    const { unmount } = render(
+      <ReadingResult
+        initialSummary={prepared}
+        initialViewModel={initialViewModel ?? undefined}
+        readingId={VERSION_ID}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "盘面事实" })).toBeVisible();
+    expect(screen.getByText("水雷屯")).toBeVisible();
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    await act(async () => vi.advanceTimersByTimeAsync(1_000));
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      `/api/v1/readings/${VERSION_ID}`,
+      `/api/v1/readings/${VERSION_ID}/result`,
+    ]);
+
+    await act(async () => vi.advanceTimersByTimeAsync(2_000));
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      `/api/v1/readings/${VERSION_ID}`,
+      `/api/v1/readings/${VERSION_ID}/result`,
+      `/api/v1/readings/${VERSION_ID}`,
+    ]);
+    unmount();
+  });
+
+  it.each([
+    {
+      elapsedMs: 14_999,
+      before: "正在为你排盘",
+      after: "仍在认真排盘",
+      action: "稍后查看",
+    },
+    {
+      elapsedMs: 59_999,
+      before: "仍在认真排盘",
+      after: "这次排盘比平时久",
+      action: "重试（保留原资料）",
+    },
+  ])(
+    "continues a restored Reading across the $elapsedMs ms boundary",
+    async ({ elapsedMs, before, after, action }) => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+      vi.stubGlobal("fetch", vi.fn<typeof fetch>(() => new Promise<Response>(() => {})));
+
+      render(
+        <ReadingResult
+          readingId={VERSION_ID}
+          onRestart={vi.fn()}
+          startedAt={Date.now() - elapsedMs}
+        />,
+      );
+      await act(async () => vi.advanceTimersByTime(0));
+
+      expect(screen.getByRole("status")).toHaveTextContent(before);
+      expect(screen.queryByRole("list", { name: "排盘进度阶段" }))
+        .not.toBeInTheDocument();
+      expect(screen.queryByRole(action === "稍后查看" ? "link" : "button", { name: action }))
+        .not.toBeInTheDocument();
+
+      await act(async () => vi.advanceTimersByTime(1));
+
+      expect(screen.getByRole("status")).toHaveTextContent(after);
+      expect(screen.getByRole(action === "稍后查看" ? "link" : "button", { name: action }))
+        .toBeVisible();
+    },
+  );
+
+  it.each([
+    ["input_ready", undefined, "资料已提交"],
+    ["input_ready", "queued", "资料已提交"],
+    ["prepared", undefined, "盘面已好"],
+    ["completing", undefined, "解读整理中"],
+  ])(
+    "maps the authoritative %s/%s stage without inventing progress",
+    async (status, deliveryState, currentStep) => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+      const fetchMock = vi.fn<typeof fetch>(async (url) => {
+        if (String(url).endsWith("/result")) {
+          return new Promise<Response>(() => {});
+        }
+        return jsonResponse(
+          readingSummary(status, {
+            created_at: "2026-08-25T00:01:00Z",
+            delivery_state: deliveryState,
+          }),
+        );
+      });
+      vi.stubGlobal("fetch", fetchMock);
+
+      const { unmount } = render(<ReadingResult readingId={VERSION_ID} />);
+      await act(async () => vi.advanceTimersByTimeAsync(300));
+
+      const progress = screen.getByRole("list", { name: "排盘进度阶段" });
+      expect(progress.querySelector("[aria-current='step']")).toHaveTextContent(currentStep);
+      expect(progress.querySelectorAll("[aria-current='step']")).toHaveLength(1);
+      unmount();
+    },
+  );
+
+  it("polls immediately, then backs off 1 → 2 → 4 seconds and stays capped", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse(
+        readingSummary("input_ready", { created_at: "2026-08-25T00:01:00Z" }),
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { unmount } = render(<ReadingResult readingId={VERSION_ID} />);
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(1);
+
+    await act(async () => vi.advanceTimersByTimeAsync(999));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(1);
+    await act(async () => vi.advanceTimersByTimeAsync(1));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(2);
+
+    await act(async () => vi.advanceTimersByTimeAsync(1_999));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(2);
+    await act(async () => vi.advanceTimersByTimeAsync(1));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(3);
+
+    await act(async () => vi.advanceTimersByTimeAsync(3_999));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(3);
+    await act(async () => vi.advanceTimersByTimeAsync(1));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(4);
+    await act(async () => vi.advanceTimersByTimeAsync(4_000));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(5);
+    unmount();
+  });
+
+  it("keeps one owner across rerenders and aborts the old request before an id handoff", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+    const nextReadingId = "99999999-9999-4999-8999-999999999999";
+    const signals: { next?: AbortSignal; old?: AbortSignal } = {};
+    const firstSummary = vi.fn();
+    const latestSummary = vi.fn();
+    const fetchMock = vi.fn<typeof fetch>((url, options) => {
+      const signal = options?.signal as AbortSignal;
+      if (String(url).endsWith(VERSION_ID)) {
+        signals.old = signal;
+        return new Promise<Response>((_resolve, reject) => {
+          signal.addEventListener(
+            "abort",
+            () => reject(new DOMException("Aborted", "AbortError")),
+            { once: true },
+          );
+        });
+      }
+      signals.next = signal;
+      return Promise.resolve(jsonResponse(readingSummary("input_ready", {
+        created_at: "2026-08-25T00:01:00Z",
+        reading_version_id: nextReadingId,
+      })));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { rerender, unmount } = render(
+      <ReadingResult readingId={VERSION_ID} onSummary={firstSummary} />,
+    );
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(1);
+    expect(signals.old?.aborted).toBe(false);
+
+    rerender(<ReadingResult readingId={VERSION_ID} onSummary={latestSummary} />);
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(callsTo(fetchMock, VERSION_ID)).toHaveLength(1);
+
+    rerender(<ReadingResult readingId={nextReadingId} onSummary={latestSummary} />);
+    expect(signals.old?.aborted).toBe(true);
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(callsTo(fetchMock, nextReadingId)).toHaveLength(1);
+    expect(firstSummary).not.toHaveBeenCalled();
+    expect(latestSummary).toHaveBeenCalledWith(
+      expect.objectContaining({ reading_version_id: nextReadingId }),
+    );
+
+    unmount();
+    expect(signals.next?.aborted).toBe(true);
+  });
+
+  it("prefers the server created_at over a fresh component mount", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-25T00:01:00Z"));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>(async () =>
+        jsonResponse(
+          readingSummary("input_ready", { created_at: "2026-08-25T00:00:00Z" }),
+        ),
+      ),
+    );
+
+    render(<ReadingResult readingId={VERSION_ID} onRestart={vi.fn()} />);
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+
+    expect(screen.getByRole("status")).toHaveTextContent("这次排盘比平时久");
+    expect(screen.getByRole("button", { name: "重试（保留原资料）" })).toBeVisible();
+  });
+
   it("polls the summary, then GETs /result and renders the exact Accepted Copy", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
@@ -249,6 +547,7 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     const acceptedRegion = await screen.findByRole("region", { name: "判断" });
     const copy = within(acceptedRegion).getByText(acceptedCopyQuery);
     expect(copy.textContent).toBe(acceptedCopy);
+    expect(screen.getByText("解读已完成，可随时回看。")).toBeVisible();
     expect(screen.queryByRole("heading", { name: "分享" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("追问")).not.toBeInTheDocument();
     expect(fetchMock.mock.calls.map(([url]) => String(url)).slice(0, 2)).toEqual([
@@ -530,11 +829,11 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
   });
 
   it.each([
-    ["input_ready", "准备解读"],
-    ["prepared", "事实已准备"],
-    ["completing", "正在接纳正文"],
-    ["delayed", "交付延迟"],
-  ])("shows the real %s state and the server-provided horizon", async (status, text) => {
+    ["input_ready", "准备解读", "事实已就绪，正在准备解读。"],
+    ["prepared", "盘面已好", "盘面已好，正在撰写解读。"],
+    ["completing", "正在整理解读", "解读写好了，正在装订成册。"],
+    ["delayed", "仍在处理中", "今天排队的人有点多，继续为你处理中。"],
+  ])("shows the real %s state and the server-provided horizon", async (status, text, description) => {
     const fetchMock = vi.fn<typeof fetch>(async (url) =>
       String(url).endsWith("/result")
         ? jsonResponse(readingResult({ status }))
@@ -547,6 +846,7 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     const matches = await screen.findAllByText(text);
     expect(matches.length).toBeGreaterThan(0);
     expect(matches[0]).toBeVisible();
+    expect(screen.getAllByText(description, { exact: false }).length).toBeGreaterThan(0);
     const horizons = screen.getAllByText(/2026年8月10日.*2026年8月16日/);
     expect(horizons.length).toBeGreaterThan(0);
     expect(screen.queryByText(/排队中/)).not.toBeInTheDocument();
@@ -560,7 +860,9 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    expect(await screen.findByText(/运行状态暂时未知/)).toBeVisible();
+    expect(
+      await screen.findByText("运行状态暂时未知，资料仍然保留，可以重新检查。"),
+    ).toBeVisible();
     expect(screen.getByRole("button", { name: /重新检查状态/ })).toBeVisible();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
