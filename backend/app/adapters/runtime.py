@@ -104,6 +104,7 @@ WORKER_MAX_FRAME_BYTES = 4 * 1024 * 1024
 WORKER_DEFAULT_READY_TIMEOUT_SECONDS = 15.0
 WORKER_REQUEST_TIMEOUT_SECONDS = 2.0
 WORKER_AUDIT_TIMEOUT_SECONDS = 0.25
+WORKER_MAX_PENDING_AUDIT_APPENDS = 2
 WORKER_STOPPED_COPY = "本次处理未完成，请稍后重试。"
 RUNTIME_TURN_AUDIT_NAME = "runtime-turn-audit.jsonl"
 _COMMAND_DIGEST_REDACTED_KEYS = frozenset({"facts", "query", "public_copy"})
@@ -1133,6 +1134,7 @@ class WorkerV2MingliRuntimeAdapter:
         self._last_sequence: int | None = None
         self.last_turn: RuntimeTurnAudit | None = None
         self._audit_tail: asyncio.Task[None] | None = None
+        self._audit_pending: set[asyncio.Task[None]] = set()
 
     @property
     def isolated(self) -> bool:
@@ -1315,6 +1317,8 @@ class WorkerV2MingliRuntimeAdapter:
 
         record = self._turn_audit(command, result)
         self.last_turn = record
+        if len(self._audit_pending) >= WORKER_MAX_PENDING_AUDIT_APPENDS:
+            return
         previous = self._audit_tail
 
         async def append_in_order() -> None:
@@ -1328,14 +1332,24 @@ class WorkerV2MingliRuntimeAdapter:
             )
 
         pending = asyncio.create_task(append_in_order())
-        pending.add_done_callback(_consume_task_exception)
+        self._audit_pending.add(pending)
+
+        def finish(task: asyncio.Task[None]) -> None:
+            self._audit_pending.discard(task)
+            if self._audit_tail is task:
+                self._audit_tail = None
+            _consume_task_exception(task)
+
+        pending.add_done_callback(finish)
         self._audit_tail = pending
         try:
             async with asyncio.timeout(self._audit_timeout_seconds):
                 await asyncio.shield(pending)
         except TimeoutError:
-            # The ordered tail keeps draining off-loop. Runtime result/fault and
-            # worker health remain independent from a slow audit filesystem.
+            # Keep at most one detached stalled write plus one replacement.
+            # Later records must not form an unbounded chain behind this tail.
+            if self._audit_tail is pending:
+                self._audit_tail = None
             return
 
     async def execute(self, command: MingliCommand) -> MingliResult:
@@ -1459,10 +1473,12 @@ class WorkerV2MingliRuntimeAdapter:
     async def close(self) -> None:
         async with self._lock:
             await self._isolate_locked()
-            if self._audit_tail is not None:
+            if self._audit_pending:
                 with suppress(Exception):
-                    async with asyncio.timeout(self._audit_timeout_seconds):
-                        await asyncio.shield(self._audit_tail)
+                    await asyncio.wait(
+                        tuple(self._audit_pending),
+                        timeout=self._audit_timeout_seconds,
+                    )
 
     def _is_bound_result(
         self,
