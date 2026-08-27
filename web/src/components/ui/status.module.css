@@ -41,9 +41,10 @@
   border-style: dashed;
 }
 
-.loading .icon,
-.processing .icon {
+.loading .icon svg,
+.processing .icon svg {
   animation: status-spin 1.6s linear infinite;
+  transform-origin: center;
 }
 
 .ready,
@@ -127,8 +128,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loading .icon,
-  .processing .icon {
+  .loading .icon svg,
+  .processing .icon svg {
     animation: none;
   }
 }

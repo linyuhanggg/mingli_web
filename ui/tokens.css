@@ -243,6 +243,50 @@
   --element-water-wash: rgb(116 164 220 / 16%);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --ds-canvas: #151613;
+    --ds-surface: #1c1e1a;
+    --ds-surface-subtle: #242620;
+    --ds-ink: #f1f0e9;
+    --ds-ink-soft: #d1d2ca;
+    --ds-muted: #a9aca3;
+    --ds-quiet: #858981;
+    --ds-on-ink: #151613;
+    --ds-line: #35382f;
+    --ds-line-strong: #555950;
+    --ds-line-ink: #92978e;
+    --ds-scrim: rgb(0 0 0 / 68%);
+    --ds-accent: #df7061;
+    --ds-accent-hover: #ef8b7d;
+    --ds-accent-active: #c85e51;
+    --ds-accent-soft: #402724;
+    --ds-accent-ink: #f39a8d;
+    --ds-on-accent: #151613;
+    --ds-focus: #85b9d2;
+    --ds-shadow-focus: 0 0 0 3px rgb(133 185 210 / 28%);
+    --ds-info: #8cb7cb;
+    --ds-info-soft: #20323a;
+    --ds-success: #8fbea2;
+    --ds-success-soft: #20342a;
+    --ds-warning: #dbb36b;
+    --ds-warning-soft: #3b301c;
+    --ds-danger: #df7061;
+    --ds-danger-soft: #402724;
+    --element-wood: #a3c07e;
+    --element-wood-wash: rgb(163 192 126 / 16%);
+    --element-fire: #de8a52;
+    --element-fire-wash: rgb(222 138 82 / 16%);
+    --element-earth: #c99a66;
+    --element-earth-wash: rgb(201 154 102 / 16%);
+    --element-metal: #a9afaa;
+    --element-metal-wash: rgb(169 175 170 / 16%);
+    --element-water: #74a4dc;
+    --element-water-wash: rgb(116 164 220 / 16%);
+  }
+}
+
 [data-density="compact"] {
   --ds-control-sm: 32px;
   --ds-control-md: 32px;
