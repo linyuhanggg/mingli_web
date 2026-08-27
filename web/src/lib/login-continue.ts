@@ -1,3 +1,5 @@
+const UNSAFE_CONTINUE_CHARS = /[\u0000-\u001F\u007F\\]/;
+
 export function loginContinueHref(
   pathname: string,
   search = "",
@@ -18,7 +20,16 @@ export function safeContinuePath(
     || !candidate.startsWith("/")
     || candidate.startsWith("//")
     || candidate.includes("://")
+    || UNSAFE_CONTINUE_CHARS.test(candidate)
   ) {
+    return fallback;
+  }
+  try {
+    const resolved = new URL(candidate, "https://mingli.invalid");
+    if (resolved.origin !== "https://mingli.invalid") {
+      return fallback;
+    }
+  } catch {
     return fallback;
   }
   return candidate;
