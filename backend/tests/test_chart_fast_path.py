@@ -435,6 +435,57 @@ async def test_five_base_charts_finish_inline_without_worker_or_model(
     assert model.calls == 0
 
 
+async def test_direct_chart_without_idempotency_key_fails_before_runtime(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    runtime = DeterministicChartRuntime()
+    application = create_app(
+        settings=test_settings,
+        database=database,
+        chart_runtime=runtime,
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as client:
+        headers = await create_guest(client)
+        profile = await create_confirmed_profile(client, headers)
+        await seed_runtime_release(database, test_settings)
+
+        response = await client.post(
+            "/api/v1/readings/preview",
+            headers=headers,
+            json={
+                "profile_version_id": profile["profile_version_id"],
+                "dimension_ids": ["career"],
+            },
+        )
+
+    assert response.status_code == 400, response.text
+    assert response.json()["title"] == "Invalid reading input"
+    assert runtime.calls == []
+    async with database.sessions() as session:
+        counts = {
+            "roots": int(
+                await session.scalar(select(func.count()).select_from(ReadingRoot)) or 0
+            ),
+            "versions": int(
+                await session.scalar(select(func.count()).select_from(ReadingVersion)) or 0
+            ),
+            "jobs": int(
+                await session.scalar(select(func.count()).select_from(ReadingJobRecord)) or 0
+            ),
+            "idempotency": int(
+                await session.scalar(
+                    select(func.count()).select_from(ReadingIdempotencyKey)
+                )
+                or 0
+            ),
+        }
+    assert counts == {"roots": 0, "versions": 0, "jobs": 0, "idempotency": 0}
+
+
 async def test_existing_queue_does_not_delay_direct_chart_path(
     database: Any,
     test_settings: Any,
