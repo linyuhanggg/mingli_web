@@ -47,6 +47,7 @@ import {
   type TaiyiStartRequest,
   type WenshiStartRequest,
 } from "@/lib/api";
+import { baziPreviewHref, readBaziPreviewReadingId } from "@/lib/bazi-preview-restore";
 import { localDateTimeWithOffset } from "@/lib/date-time";
 import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
 import {
@@ -178,8 +179,10 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const pathname = usePathname() || `/${product.id}`;
   const searchParams = useSearchParams();
   const requestedProfileVersionId = searchParams.get("profile") ?? "";
+  const restoredBaziReadingId =
+    product.id === "bazi" ? readBaziPreviewReadingId(searchParams) : null;
   const shouldLoadProfiles = usesSavedProfiles(product);
-  const [stage, setStage] = useState<TaskStage>("input");
+  const [stage, setStage] = useState<TaskStage>(restoredBaziReadingId ? "workbench" : "input");
   const [values, setValues] = useState<TaskFormValues | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitErrorState, setSubmitErrorState] = useState<"unavailable" | "error" | "unauthorized">("unavailable");
@@ -189,8 +192,12 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [createdProfile, setCreatedProfile] = useState<ProfileSummary | null>(null);
   const [busy, setBusy] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(null);
-  const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(null);
+  const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(
+    restoredBaziReadingId,
+  );
+  const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(
+    restoredBaziReadingId ? requestedProfileVersionId || null : null,
+  );
   const [ziweiPreviewReadingId, setZiweiPreviewReadingId] = useState<string | null>(null);
   const [liuyaoPreviewReadingId, setLiuyaoPreviewReadingId] = useState<string | null>(null);
   const [savedProfiles, setSavedProfiles] = useState<ProfileSummary[]>([]);
@@ -208,6 +215,18 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     body: ProfileConfirmRequest;
     nextValues: TaskFormValues;
   } | null>(null);
+
+  function writeBaziPreviewRoute(readingId: string | null, profileVersionId?: string | null) {
+    const href = baziPreviewHref(pathname, searchParams, readingId, profileVersionId);
+    const navigate = router.replace ?? router.push;
+    navigate(href);
+  }
+
+  useEffect(() => {
+    if (restoredBaziReadingId && requestedProfileVersionId) {
+      profileVersionRef.current = requestedProfileVersionId;
+    }
+  }, [restoredBaziReadingId, requestedProfileVersionId]);
 
   useEffect(() => {
     if (!shouldLoadProfiles) return;
@@ -420,6 +439,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         if (product.id === "bazi") {
           setBaziPreviewReadingId(response.reading_version_id);
           setStage("workbench");
+          writeBaziPreviewRoute(response.reading_version_id, profileVersionId);
         } else if (product.id === "ziwei") {
           setZiweiPreviewReadingId(response.reading_version_id);
           setStage("workbench");
@@ -894,6 +914,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
                 setSubmitErrorAction(null);
                 setLoginIntentKey(undefined);
                 setStage("input");
+                writeBaziPreviewRoute(null);
               }}
             >
               返回录入
@@ -915,6 +936,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             setSubmitErrorAction(null);
             setLoginIntentKey(undefined);
             setStage("input");
+            writeBaziPreviewRoute(null);
           }}
           previewReadingId={baziPreviewReadingId}
           profileVersionId={baziProfileVersionId ?? ""}

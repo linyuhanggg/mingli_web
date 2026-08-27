@@ -14,6 +14,7 @@ import WenshiPage from "@/app/wenshi/page";
 import ZiweiPage from "@/app/ziwei/page";
 
 const mockRouterPush = vi.hoisted(() => vi.fn());
+const mockRouterReplace = vi.hoisted(() => vi.fn());
 const mockCreateProfileDraft = vi.hoisted(() => vi.fn());
 const mockConfirmProfileDraft = vi.hoisted(() => vi.fn());
 const mockStartPreviewReading = vi.hoisted(() => vi.fn());
@@ -23,7 +24,7 @@ const mockListProfiles = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", async (importOriginal) => ({
   ...(await importOriginal<typeof import("next/navigation")>()),
-  useRouter: () => ({ push: mockRouterPush }),
+  useRouter: () => ({ push: mockRouterPush, replace: mockRouterReplace }),
   usePathname: () => "/",
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -126,6 +127,9 @@ describe("primary product route contract", () => {
     expect(await screen.findByRole("heading", { name: "八字工作台" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "免费确定性盘面" })).toBeVisible();
     expect(mockRouterPush).not.toHaveBeenCalled();
+    expect(mockRouterReplace).toHaveBeenCalledWith(
+      expect.stringMatching(/reading=reading-1/),
+    );
   });
 
   it("reuses the newest saved profile on bazi without asking for birth data again", async () => {
