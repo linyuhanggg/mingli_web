@@ -30,10 +30,10 @@
 }
 
 .header[data-home-chrome="true"] {
+  --home-chrome-fill: var(--paper-glass-strong);
   border-bottom-color: var(--paper-line);
-  background: var(--paper-glass-strong);
+  background: var(--paper-surface);
   color: var(--paper-text);
-  backdrop-filter: blur(16px) saturate(1.1);
 }
 
 .header[data-home-chrome="true"] :where(.brand, .navItem, .utilityLink) {
@@ -46,7 +46,7 @@
 
 .header[data-home-chrome="true"] :where(.utilityLink) {
   border-color: var(--paper-line-strong);
-  background: var(--paper-glass);
+  background: var(--paper-surface);
 }
 
 .headerInner {
@@ -659,8 +659,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .header[data-home-chrome="true"] {
-    background: var(--paper-glass-strong);
-    backdrop-filter: none;
+    background: var(--paper-surface);
   }
 
   .skipLink,

@@ -2,6 +2,7 @@ import importlib
 from collections.abc import Awaitable, Callable
 from typing import Any
 
+from app.main import create_app
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
@@ -52,6 +53,29 @@ async def test_readiness_succeeds_when_the_database_probe_succeeds() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok", "service": "database"}
+
+
+async def test_readiness_fails_when_persistent_runtime_is_isolated() -> None:
+    async def database_is_ready() -> None:
+        return None
+
+    class IsolatedRuntime:
+        isolated = True
+
+    async with AsyncClient(
+        transport=ASGITransport(
+            app=create_app(
+                readiness_probe=database_is_ready,
+                chart_runtime=IsolatedRuntime(),  # type: ignore[arg-type]
+            )
+        ),
+        base_url="https://testserver",
+    ) as client:
+        response = await client.get("/api/v1/health/ready")
+
+    assert response.status_code == 503
+    assert response.headers["content-type"].startswith("application/problem+json")
+    assert response.json()["title"] == "Service unavailable"
 
 
 async def test_readiness_returns_a_safe_problem_when_database_is_unavailable() -> None:

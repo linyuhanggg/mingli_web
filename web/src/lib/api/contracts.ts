@@ -9,6 +9,8 @@ export type ProfileSummary = {
   profile_version_id: string;
   subject_ref: string;
   version: number;
+  display_name?: string | null;
+  birth_date?: string | null;
   created_at: string;
 };
 
@@ -32,6 +34,7 @@ export type ProfileConfirmRequest = {
   authorization_confirmed?: boolean;
   photo_authorization_confirmed?: boolean;
   minor_guardian_confirmed?: boolean;
+  on_name_conflict?: "reject" | "save_as" | "overwrite";
 };
 
 export type ProfileVersionRequest = ProfileConfirmRequest & {
@@ -112,6 +115,10 @@ export type ReadingVersionSummary = {
   input_request: NeedInputRequest | null;
   created_at: string;
   delivery_state?: DeliveryState;
+  result_available?: boolean;
+  poll_required?: boolean;
+  poll_after_seconds?: number | null;
+  view_model?: ViewModel | null;
 };
 
 export type PreviewStartRequest = {
@@ -511,6 +518,9 @@ export type ReadingResultResponse = {
   verification: ReadingVerificationSummary | null;
   input_request: NeedInputRequest | null;
   document: ReadingDocumentV1 | null;
+  result_available?: boolean;
+  poll_required?: boolean;
+  poll_after_seconds?: number | null;
 };
 
 export type ReadingDocumentV1 = {

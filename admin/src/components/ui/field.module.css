@@ -1,4 +1,6 @@
 .field {
+  --field-control-height: var(--target-submit);
+  --field-textarea-height: 7rem;
   display: grid;
   gap: 0.5rem;
   min-width: 0;

@@ -1176,6 +1176,7 @@ export type DaliurenChartViewModel = {
     readonly timing_candidates: ReadonlyArray<DaliurenTimingCandidate> | null;
     readonly xunkong: DaliurenXunkong | null;
   } | null;
+  readonly public_labels?: ReadonlyArray<{ readonly key: string; readonly label: string }>;
 };
 
 export type HecanViewModel = {
@@ -1475,6 +1476,7 @@ export type MeihuaChartViewModel = {
     readonly interpretive_candidates: MeihuaInterpretiveCandidates | null;
     readonly interpretation_status: string | null;
   } | null;
+  readonly public_labels?: ReadonlyArray<{ readonly key: string; readonly label: string }>;
 };
 
 export type StructuredFactValue =

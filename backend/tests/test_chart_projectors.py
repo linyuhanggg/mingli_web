@@ -99,6 +99,29 @@ def test_fortune_projector_preserves_runtime_facts_without_verdict() -> None:
                         "total_correction_seconds": 1182.0,
                     },
                     "calendar_convention": {"hour_basis": "true_solar"},
+                    "effective_datetime": "1994-04-30T05:54:54+08:00",
+                    "day_boundary": {
+                        "correction_crossed_date": False,
+                        "zi_policy_advanced_day_pillar": False,
+                    },
+                    "changed_pillars": [],
+                    "solar_terms": {
+                        "previous": {
+                            "name": "谷雨",
+                            "index": 8,
+                            "is_month_boundary_jie": False,
+                            "datetime": "1994-04-20T15:36:00+08:00",
+                            "instant_utc": "1994-04-20T07:36:00+00:00",
+                        },
+                        "next": {
+                            "name": "立夏",
+                            "index": 9,
+                            "is_month_boundary_jie": True,
+                            "datetime": "1994-05-06T01:54:05+08:00",
+                            "instant_utc": "1994-05-05T17:54:05+00:00",
+                        },
+                        "month_switch_policy": "exact Jie instant",
+                    },
                 },
             },
         )
@@ -110,6 +133,17 @@ def test_fortune_projector_preserves_runtime_facts_without_verdict() -> None:
     assert view_model.day_master.element == "fire"
     assert view_model.period_markers[0].primary_mechanism_ids == ("fortune.day_pillar",)
     assert view_model.period_markers[0].specific_event_policy == "事实标记，不推出具体事件"
+    normalization = view_model.calendar_normalization
+    assert normalization.effective_datetime == "1994-04-30T05:54:54+08:00"
+    assert normalization.day_boundary is not None
+    assert normalization.day_boundary.correction_crossed_date is False
+    assert normalization.changed_pillars == ()
+    assert normalization.solar_terms is not None
+    assert normalization.solar_terms.previous is not None
+    assert normalization.solar_terms.previous.name == "谷雨"
+    assert normalization.solar_terms.next is not None
+    assert normalization.solar_terms.next.is_month_boundary_jie is True
+    assert normalization.solar_terms.month_switch_policy == "exact Jie instant"
 
     schema_path = (
         Path(__file__).resolve().parents[2]
@@ -175,6 +209,52 @@ def test_fortune_projector_rejects_private_calendar_input_fields() -> None:
             "calendar_convention": {},
             "civil_datetime": "2000-01-01T00:00:00+08:00",
             "location": {"name": "private fixture"},
+        },
+    }
+
+    assert project_fortune_view_model(brief("fortune", values)) is None
+
+
+def test_fortune_projector_rejects_unknown_nested_calendar_fields() -> None:
+    values = {
+        "natal_pillars": {
+            "year": "甲戌",
+            "month": "戊辰",
+            "day": "丙戌",
+            "hour": "辛卯",
+        },
+        "day_master": {"stem": "丙", "element": "fire", "polarity": "阳"},
+        "month_command": {
+            "branch": "辰",
+            "label": "辰月",
+            "main_qi": "戊",
+            "main_qi_element": "earth",
+        },
+        "active_luck_cycle": "乙丑",
+        "target_day": "2026-08-14",
+        "target_period": {
+            "kind": "day",
+            "start": "2026-08-14",
+            "end": "2026-08-14",
+        },
+        "available_periods": ["2026-08-14"],
+        "period_markers": [],
+        "calendar_normalization": {
+            "status": "calculated",
+            "algorithm_version": "fixture-v1",
+            "time_basis": {
+                "policy": "local_apparent_solar-v1",
+                "algorithm": {},
+                "boundary": {},
+            },
+            "true_solar_time": {"status": "apparent_solar_applied"},
+            "calendar_convention": {},
+            "solar_terms": {
+                "previous": None,
+                "next": None,
+                "month_switch_policy": "exact Jie instant",
+                "raw_runtime_payload": {},
+            },
         },
     }
 
@@ -1130,7 +1210,11 @@ def test_selection_projector_uses_bounded_public_basis_projection() -> None:
                     "preserve_disagreement": True,
                 },
                 "no_valid_candidate": False,
-                "basis_projection": {"candidate_limit_per_list": 12},
+                "basis_projection": {
+                    "candidate_limit_per_list": 12,
+                    "complete_counts": {"source_conditioned_patterns": 1},
+                    "full_facts_remain_in_calculation_record": True,
+                },
                 "source_conditioned_patterns": [
                     {
                         "rule_id": "selection/xingli-kaoyuan#KR-05",
@@ -1153,6 +1237,9 @@ def test_selection_projector_uses_bounded_public_basis_projection() -> None:
     assert [item.local_rule_id for item in view_model.source_conditioned_patterns] == [
         "KR-05"
     ]
+    assert view_model.basis_projection["complete_counts"] == {
+        "source_conditioned_patterns": 1
+    }
 
 
 def test_fengshui_projector_preserves_observation_boundary() -> None:
@@ -2139,3 +2226,69 @@ def test_wenshi_projector_exposes_liuren_timing_candidate_evidence() -> None:
 
 def test_runtime_dispatch_returns_none_for_a_capability_without_a_projector() -> None:
     assert project_runtime_view_model(brief("fortune", {"target_date": "fixture"})) is None
+
+
+def test_liuyao_projector_keeps_v51_core_facts_without_complete_useful_spirit() -> None:
+    view_model = project_liuyao_view_model(
+        brief(
+            "liuyao",
+            {
+                "primary_hexagram": {
+                    "name": "乾为天",
+                    "upper_trigram": "乾",
+                    "lower_trigram": "乾",
+                },
+                "lines": [
+                    {"line": 1, "state": "老阳"},
+                    {"line": 2, "state": "少阳"},
+                    {"line": 3, "state": "少阴"},
+                    {"line": 4, "state": "老阴"},
+                    {"line": 5, "state": "少阳"},
+                    {"line": 6, "state": "少阴"},
+                ],
+                "najia": [{"line": 1, "ganzhi": "甲子"}],
+                "useful_spirit_selection": {
+                    "status": "evidence_bound",
+                    "reason": (
+                        "school-dependent adjudication is outside deterministic calculation"
+                    ),
+                    "query_word_matching": False,
+                    "source_dependency_id": (
+                        "liuyao.relations.returning-and-useful-spirit-candidates"
+                    ),
+                },
+            },
+        )
+    )
+
+    assert isinstance(view_model, LiuyaoChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.najia == ({"line": 1, "ganzhi": "甲子"},)
+    assert view_model.core_facts.useful_spirit_selection is None
+
+
+def test_daliuren_projector_maps_v51_individual_facts_without_runtime_core_envelope() -> None:
+    fixture_path = (
+        Path(__file__).resolve().parent / "fixtures" / "liuren-runtime-core-facts-v1.json"
+    )
+    runtime_core_facts = json.loads(fixture_path.read_text(encoding="utf-8"))
+    values = {
+        field: value
+        for field, value in runtime_core_facts.items()
+        if field != "schema_version"
+    }
+    lesson_method = dict(values["lesson_method"])
+    lesson_method["table_label"] = "八专"
+    lesson_method["selection_trace"] = {"result": "八专"}
+    values["lesson_method"] = lesson_method
+
+    view_model = project_daliuren_view_model(brief("liuren", values))
+
+    assert isinstance(view_model, DaliurenChartV1)
+    assert [item.lesson_id for item in view_model.lessons] == ["1", "2", "3", "4"]
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.day_hour is not None
+    assert view_model.core_facts.day_hour.day == "乙酉"
+    assert view_model.core_facts.heaven_plate is not None
+    assert view_model.core_facts.lesson_method is not None
+    assert view_model.core_facts.lesson_method.primary == values["lesson_method"]["primary"]

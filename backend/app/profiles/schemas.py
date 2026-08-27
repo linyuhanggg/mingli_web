@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import Literal
+from datetime import date, datetime
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -10,7 +10,19 @@ from app.api.validators import validate_iana_timezone
 class ProfileDraftRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    label: str = Field(min_length=1, max_length=80)
+    label: str | None = Field(default=None, max_length=80, pattern=r".*\S.*")
+
+    @field_validator("label", mode="before")
+    @classmethod
+    def _normalize_label(cls, value: object) -> object:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            stripped = value.strip()
+            if not stripped:
+                raise ValueError("label must not be blank when provided")
+            return stripped
+        return value
 
 
 class ProfileDraftResponse(BaseModel):
@@ -41,6 +53,7 @@ class ProfileConfirmRequest(BaseModel):
     authorization_confirmed: bool = False
     photo_authorization_confirmed: bool = False
     minor_guardian_confirmed: bool = False
+    on_name_conflict: Literal["reject", "save_as", "overwrite"] = "reject"
 
     @field_validator("timezone")
     @classmethod
@@ -54,6 +67,21 @@ class ProfileVersionRequest(ProfileConfirmRequest):
     difference_acknowledged: bool
 
 
+class ProfileDisplayNameUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    display_name: str = Field(
+        min_length=1,
+        max_length=80,
+        pattern=r".*\S.*",
+    )
+
+    @field_validator("display_name", mode="before")
+    @classmethod
+    def _normalize_display_name(cls, value: object) -> object:
+        return value.strip() if isinstance(value, str) else value
+
+
 class ProfileSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -61,6 +89,8 @@ class ProfileSummary(BaseModel):
     profile_version_id: UUID
     subject_ref: str
     version: int
+    display_name: Annotated[str, Field(min_length=1, max_length=80)] | None
+    birth_date: date | None
     created_at: datetime
 
 

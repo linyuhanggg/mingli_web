@@ -1,8 +1,8 @@
 "use client";
 
 import { Check, ChevronRight, Circle } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Status } from "@/components/ui/status";
 import { ReadingResult } from "@/components/readings/reading-result";
@@ -10,8 +10,11 @@ import { WorkbenchShell } from "@/components/workbench/workbench-shell";
 import {
   confirmProfileDraft,
   createProfileDraft,
+  discardProfileDraft,
+  formatProfileOption,
   ApiError,
   listProfiles,
+  type ProfileConfirmRequest,
   startFengshuiReading,
   startPhysiognomyReading,
   startCanwenReading,
@@ -47,14 +50,159 @@ import {
 } from "@/lib/api";
 import { localDateTimeWithOffset } from "@/lib/date-time";
 import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
-import { mapStartReadingFailure } from "@/lib/start-reading-error";
+import {
+  isProfileNameConflict,
+  readProfileNameConflict,
+  type ProfileNameConflict,
+} from "@/lib/profile-conflict";
+import {
+  consumePendingStartTask,
+  isPendingStartStorageFailure,
+  loadPendingStartTask,
+  loginContinueHref,
+  persistPendingStartTask,
+  subscribePendingStartTasks,
+} from "@/lib/login-continue";
+import { mapStartReadingFailure, startReadingFailureAction } from "@/lib/start-reading-error";
 import type { ProductDefinition } from "@/products/catalog";
 
+import { ProfileNameConflictDialog } from "../profile-name-conflict-dialog";
+import { ProfileRenameControl } from "../profile-rename-control";
 import { ProductInputForm, type TaskFormValues } from "./product-input-form";
-import { BaziDeepTaskFlow } from "./bazi-deep-task-flow";
+import {
+  BaziDeepTaskFlow,
+  baziPreviewRestoreHref,
+  readBaziPreviewReadingId,
+} from "./bazi-deep-task-flow";
 import styles from "./task-shell.module.css";
 
 type TaskStage = "input" | "workbench";
+
+const PENDING_START_READ_ERROR = "无法恢复登录前的排盘资料";
+const PENDING_START_WRITE_ERROR = "无法保存登录续接资料，请允许本网站使用会话存储后重试。";
+
+type PendingStartFormState = {
+  version: 1;
+  formValues: TaskFormValues;
+  profileVersionId?: string;
+};
+
+function readPendingStartFormState(values: unknown): PendingStartFormState | null {
+  if (!values || typeof values !== "object" || Array.isArray(values)) return null;
+  const candidate = values as Record<string, unknown>;
+  if (
+    candidate.version === 1
+    && candidate.formValues
+    && typeof candidate.formValues === "object"
+    && !Array.isArray(candidate.formValues)
+  ) {
+    const profileVersionId =
+      typeof candidate.profileVersionId === "string"
+        ? candidate.profileVersionId.trim()
+        : "";
+    return {
+      version: 1,
+      formValues: candidate.formValues as TaskFormValues,
+      ...(profileVersionId ? { profileVersionId } : {}),
+    };
+  }
+  return {
+    version: 1,
+    formValues: values as TaskFormValues,
+  };
+}
+
+const BAZI_PREVIEW_RECOVERY_PREFIX = "mingli.bazi-preview-recovery:";
+
+export type BaziPreviewRecoveryState = {
+  version: 1;
+  readingId: string;
+  profileVersionId: string;
+  question: string;
+};
+
+function baziPreviewRecoveryKey(readingId: string): string {
+  return `${BAZI_PREVIEW_RECOVERY_PREFIX}${readingId}`;
+}
+
+export function persistBaziPreviewRecoveryState(
+  recovery: Omit<BaziPreviewRecoveryState, "version">,
+): BaziPreviewRecoveryState | null {
+  const readingId = recovery.readingId.trim();
+  const profileVersionId = recovery.profileVersionId.trim();
+  const question = recovery.question.trim();
+  if (!readingId || !profileVersionId || !question) return null;
+  const persisted: BaziPreviewRecoveryState = {
+    version: 1,
+    readingId,
+    profileVersionId,
+    question,
+  };
+  if (typeof window !== "undefined") {
+    try {
+      window.sessionStorage.setItem(
+        baziPreviewRecoveryKey(readingId),
+        JSON.stringify(persisted),
+      );
+    } catch {
+      // A blocked storage write must not break the free chart. A later refresh
+      // will fail closed instead of inventing a deep-reading question.
+    }
+  }
+  return persisted;
+}
+
+export function readBaziPreviewRecoveryState(
+  readingId: string | null | undefined,
+): BaziPreviewRecoveryState | null {
+  const expectedReadingId = readingId?.trim() ?? "";
+  if (!expectedReadingId || typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(baziPreviewRecoveryKey(expectedReadingId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<BaziPreviewRecoveryState>;
+    const profileVersionId = parsed.profileVersionId?.trim() ?? "";
+    const question = parsed.question?.trim() ?? "";
+    if (
+      parsed.version !== 1
+      || parsed.readingId?.trim() !== expectedReadingId
+      || !profileVersionId
+      || !question
+    ) {
+      return null;
+    }
+    return {
+      version: 1,
+      readingId: expectedReadingId,
+      profileVersionId,
+      question,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function clearBaziPreviewRecoveryState(readingId: string | null | undefined): void {
+  const normalizedReadingId = readingId?.trim() ?? "";
+  if (!normalizedReadingId || typeof window === "undefined") return;
+  try {
+    window.sessionStorage.removeItem(baziPreviewRecoveryKey(normalizedReadingId));
+  } catch {
+    // The route is still cleared even when browser storage is unavailable.
+  }
+}
+
+function subscribeBrowserReady(): () => void {
+  return () => undefined;
+}
+
+function browserReadySnapshot(): boolean {
+  return true;
+}
+
+function serverReadySnapshot(): boolean {
+  return false;
+}
 
 // 「输入确认」不再是独立一步：提交前摘要随填随现，长在录入面板底部。
 const steps: Array<{ id: TaskStage | "report"; label: string }> = [
@@ -165,17 +313,62 @@ function InputTrustRail({ product }: { product: ProductDefinition }) {
 
 export function ProductTaskExperience({ product }: { product: ProductDefinition }) {
   const router = useRouter();
+  const pathname = usePathname() || `/${product.id}`;
   const searchParams = useSearchParams();
+  const resumeKey = searchParams.get("idempotency_key");
+  const [, setResumeReadAttempt] = useState(0);
+  const pendingStartSnapshot = useSyncExternalStore(
+    subscribePendingStartTasks,
+    () => {
+      const pending = loadPendingStartTask(resumeKey);
+      if (isPendingStartStorageFailure(pending)) return pending;
+      return pending?.productId === product.id ? pending : null;
+    },
+    () => null,
+  );
+  const resumeStorageFailure = isPendingStartStorageFailure(pendingStartSnapshot)
+    ? pendingStartSnapshot
+    : null;
+  const resumedTask = isPendingStartStorageFailure(pendingStartSnapshot)
+    ? null
+    : pendingStartSnapshot;
+  const resumedFormState = readPendingStartFormState(resumedTask?.values);
+  const resumedProfileVersionId = resumedFormState?.profileVersionId ?? "";
+  const resumedSelectionContext =
+    resumedTask && resumeKey ? `${resumeKey}:${resumedTask.fingerprint}` : "";
   const requestedProfileVersionId = searchParams.get("profile") ?? "";
+  const restoredBaziReadingId =
+    product.id === "bazi" ? readBaziPreviewReadingId(searchParams) : null;
   const shouldLoadProfiles = usesSavedProfiles(product);
-  const [stage, setStage] = useState<TaskStage>("input");
+  const [stage, setStage] = useState<TaskStage>(restoredBaziReadingId ? "workbench" : "input");
   const [values, setValues] = useState<TaskFormValues | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitErrorState, setSubmitErrorState] = useState<"unavailable" | "error">("unavailable");
+  const [submitErrorState, setSubmitErrorState] = useState<"unavailable" | "error" | "unauthorized">("unavailable");
+  const [submitErrorAction, setSubmitErrorAction] = useState<"login" | "retry" | null>(null);
+  const [loginIntentKey, setLoginIntentKey] = useState<string | undefined>();
+  const [nameConflict, setNameConflict] = useState<ProfileNameConflict | null>(null);
+  const [createdProfile, setCreatedProfile] = useState<ProfileSummary | null>(null);
   const [busy, setBusy] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(null);
-  const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(null);
+  const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(
+    restoredBaziReadingId,
+  );
+  const [baziPreviewRecovery, setBaziPreviewRecovery] =
+    useState<BaziPreviewRecoveryState | null>(null);
+  const browserReady = useSyncExternalStore(
+    subscribeBrowserReady,
+    browserReadySnapshot,
+    serverReadySnapshot,
+  );
+  const restoredBaziRecovery = browserReady
+    ? readBaziPreviewRecoveryState(restoredBaziReadingId)
+    : null;
+  const activeBaziRecovery =
+    baziPreviewRecovery?.readingId === baziPreviewReadingId
+      ? baziPreviewRecovery
+      : restoredBaziRecovery?.readingId === baziPreviewReadingId
+        ? restoredBaziRecovery
+        : null;
   const [ziweiPreviewReadingId, setZiweiPreviewReadingId] = useState<string | null>(null);
   const [liuyaoPreviewReadingId, setLiuyaoPreviewReadingId] = useState<string | null>(null);
   const [savedProfiles, setSavedProfiles] = useState<ProfileSummary[]>([]);
@@ -187,7 +380,46 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [selectedProfileVersionId, setSelectedProfileVersionId] = useState("");
   const [savedProfilesAttempt, setSavedProfilesAttempt] = useState(0);
   const profileVersionRef = useRef<string | null>(null);
+  const profileSelectionContextRef = useRef<string | null>(null);
   const intentKeyRef = useRef<IntentKey | null>(null);
+  const pendingProfileRef = useRef<{
+    draftId: string;
+    body: ProfileConfirmRequest;
+    nextValues: TaskFormValues;
+  } | null>(null);
+
+  async function startAndConsumeContinuation<T>(start: () => Promise<T>): Promise<T> {
+    const response = await start();
+    if (resumedTask && resumeKey) {
+      void consumePendingStartTask(resumeKey);
+      intentKeyRef.current = null;
+    }
+    return response;
+  }
+
+  function writeBaziPreviewRoute(readingId: string | null, profileVersionId?: string | null) {
+    if (typeof router.replace !== "function") return;
+    router.replace(baziPreviewRestoreHref(pathname, searchParams, readingId, profileVersionId));
+  }
+
+  function returnToBaziInput() {
+    clearBaziPreviewRecoveryState(baziPreviewReadingId);
+    profileVersionRef.current = null;
+    setBaziPreviewRecovery(null);
+    intentKeyRef.current = null;
+    setBaziPreviewReadingId(null);
+    setSubmitError(null);
+    setSubmitErrorAction(null);
+    setLoginIntentKey(undefined);
+    setStage("input");
+    writeBaziPreviewRoute(null);
+  }
+
+  useEffect(() => {
+    if (restoredBaziReadingId && requestedProfileVersionId) {
+      profileVersionRef.current = requestedProfileVersionId;
+    }
+  }, [restoredBaziReadingId, requestedProfileVersionId]);
 
   useEffect(() => {
     if (!shouldLoadProfiles) return;
@@ -196,10 +428,29 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     void listProfiles()
       .then(({ profiles }) => {
         if (!active) return;
-        setSavedProfilesError(null);
+        const selectionContextChanged =
+          profileSelectionContextRef.current !== resumedSelectionContext;
+        profileSelectionContextRef.current = resumedSelectionContext;
+        const resumedProfileAvailable =
+          !resumedProfileVersionId
+          || profiles.some(
+            (profile) => profile.profile_version_id === resumedProfileVersionId,
+          );
+        setSavedProfilesError(
+          selectionContextChanged && !resumedProfileAvailable
+            ? "登录后未能恢复原先选择的档案，请重新读取已保存资料。"
+            : null,
+        );
         setSavedProfilesSignedOut(false);
         setSavedProfiles(profiles);
         setSelectedProfileVersionId((current) => {
+          if (
+            resumedSelectionContext
+            && resumedProfileAvailable
+            && resumedProfileVersionId
+          ) {
+            return resumedProfileVersionId;
+          }
           if (
             requestedProfileVersionId &&
             profiles.some(
@@ -208,11 +459,22 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           ) {
             return requestedProfileVersionId;
           }
+          if (selectionContextChanged) {
+            if (resumedProfileAvailable && resumedProfileVersionId) {
+              return resumedProfileVersionId;
+            }
+            return resumedProfileAvailable
+              ? profiles[0]?.profile_version_id ?? ""
+              : "";
+          }
           if (
             current &&
             profiles.some((profile) => profile.profile_version_id === current)
           ) {
             return current;
+          }
+          if (resumedProfileAvailable && resumedProfileVersionId) {
+            return resumedProfileVersionId;
           }
           return profiles[0]?.profile_version_id ?? "";
         });
@@ -240,9 +502,47 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     return () => {
       active = false;
     };
-  }, [shouldLoadProfiles, requestedProfileVersionId, savedProfilesAttempt]);
+  }, [
+    shouldLoadProfiles,
+    requestedProfileVersionId,
+    resumedProfileVersionId,
+    resumedSelectionContext,
+    savedProfilesAttempt,
+  ]);
+
+  async function confirmTaskProfile(
+    nextValues: TaskFormValues,
+    body: ProfileConfirmRequest,
+  ): Promise<ProfileSummary | null> {
+    let pending = pendingProfileRef.current;
+    if (pending && pending.nextValues !== nextValues) {
+      await discardProfileDraft(pending.draftId);
+      pendingProfileRef.current = null;
+      pending = null;
+    }
+    if (!pending) {
+      const draft = await createProfileDraft(nextValues.subject.trim() || undefined);
+      pending = { draftId: draft.draft_id, body, nextValues };
+      pendingProfileRef.current = pending;
+    }
+    try {
+      const profile = await confirmProfileDraft(pending.draftId, pending.body);
+      pendingProfileRef.current = null;
+      setCreatedProfile(profile);
+      return profile;
+    } catch (reason) {
+      if (isProfileNameConflict(reason)) {
+        setNameConflict(readProfileNameConflict(reason));
+        return null;
+      }
+      throw reason;
+    }
+  }
 
   async function startRuntimeReading(nextValues: TaskFormValues) {
+    if (resumedTask && resumeKey) {
+      intentKeyRef.current = { fingerprint: resumedTask.fingerprint, key: resumeKey };
+    }
     if (!hasRuntimeStart(product)) {
       setStage("workbench");
       return;
@@ -250,6 +550,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     if (busy) return;
     setBusy(true);
     setSubmitError(null);
+    setSubmitErrorAction(null);
+    setLoginIntentKey(undefined);
 
     try {
       if (product.id === "jianxiang") {
@@ -281,7 +583,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startPhysiognomyReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startPhysiognomyReading(payload, intent.key),
+        );
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -327,15 +631,16 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startFengshuiReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startFengshuiReading(payload, intent.key),
+        );
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
       if (product.group === "natal") {
         let profileVersionId = selectedProfileVersionId || profileVersionRef.current;
         if (!profileVersionId) {
-          const draft = await createProfileDraft(nextValues.subject.trim());
-          const profile = await confirmProfileDraft(draft.draft_id, {
+          const body: ProfileConfirmRequest = {
             birth_datetime: localDateTimeWithOffset(
               `${nextValues.birthDate}T${nextValues.birthTime}`,
               nextValues.timezone,
@@ -350,11 +655,13 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             longitude: nextValues.longitude.trim() ? Number(nextValues.longitude) : undefined,
             latitude: nextValues.latitude.trim() ? Number(nextValues.latitude) : undefined,
             coordinate_source: nextValues.coordinateSource.trim() || undefined,
-          });
+            on_name_conflict: "reject",
+          };
+          const profile = await confirmTaskProfile(nextValues, body);
+          if (!profile) return;
           profileVersionId = profile.profile_version_id;
         }
         profileVersionRef.current = profileVersionId;
-        if (product.id === "bazi") setBaziProfileVersionId(profileVersionId);
 
         const payload: PreviewStartRequest = {
           profile_version_id: profileVersionId,
@@ -375,17 +682,25 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response =
+        const response = await startAndConsumeContinuation(() => (
           product.id === "bazi"
-            ? await startPreviewReading(payload, intent.key)
+            ? startPreviewReading(payload, intent.key)
             : product.id === "luming-nayin"
-              ? await startLumingNayinReading(payload as LumingNayinStartRequest, intent.key)
+              ? startLumingNayinReading(payload as LumingNayinStartRequest, intent.key)
             : product.id === "ziwei"
-              ? await startZiweiReading(payload, intent.key)
-              : await startQizhengReading(payload, intent.key);
+              ? startZiweiReading(payload, intent.key)
+              : startQizhengReading(payload, intent.key)
+        ));
         if (product.id === "bazi") {
+          const recovery = persistBaziPreviewRecoveryState({
+            readingId: response.reading_version_id,
+            profileVersionId,
+            question: payload.query ?? "",
+          });
+          setBaziPreviewRecovery(recovery);
           setBaziPreviewReadingId(response.reading_version_id);
           setStage("workbench");
+          writeBaziPreviewRoute(response.reading_version_id, profileVersionId);
         } else if (product.id === "ziwei") {
           setZiweiPreviewReadingId(response.reading_version_id);
           setStage("workbench");
@@ -398,8 +713,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       if (product.id === "hecan" || product.id === "canwen") {
         let profileVersionId = selectedProfileVersionId || profileVersionRef.current;
         if (!profileVersionId) {
-          const draft = await createProfileDraft(nextValues.subject.trim());
-          const profile = await confirmProfileDraft(draft.draft_id, {
+          const body: ProfileConfirmRequest = {
             birth_datetime: localDateTimeWithOffset(
               `${nextValues.birthDate}T${nextValues.birthTime}`,
               nextValues.timezone,
@@ -411,7 +725,10 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               nextValues.timeStandard === "local-apparent-solar" ? "solar" : "civil"
             ) as TimeBasisPolicy,
             zi_hour_policy: "midnight",
-          });
+            on_name_conflict: "reject",
+          };
+          const profile = await confirmTaskProfile(nextValues, body);
+          if (!profile) return;
           profileVersionId = profile.profile_version_id;
         }
         profileVersionRef.current = profileVersionId;
@@ -433,10 +750,11 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response =
+        const response = await startAndConsumeContinuation(() => (
           product.id === "hecan"
-            ? await startHecanReading(payload, intent.key)
-            : await startCanwenReading(payload, intent.key);
+            ? startHecanReading(payload, intent.key)
+            : startCanwenReading(payload, intent.key)
+        ));
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -469,7 +787,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startTaiyiReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startTaiyiReading(payload, intent.key),
+        );
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -502,7 +822,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startSelectionReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startSelectionReading(payload, intent.key),
+        );
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -530,7 +852,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startLiuyaoReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startLiuyaoReading(payload, intent.key),
+        );
         setLiuyaoPreviewReadingId(response.reading_version_id);
         setStage("workbench");
         return;
@@ -561,7 +885,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startWenshiReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startWenshiReading(payload, intent.key),
+        );
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -612,7 +938,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startMeihuaReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startMeihuaReading(payload, intent.key),
+        );
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -653,15 +981,42 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         payload: product.id === "qimen" ? payload : daliurenPayload,
       });
       intentKeyRef.current = intent;
-      const response =
+      const response = await startAndConsumeContinuation(() => (
         product.id === "qimen"
-          ? await startQimenReading(payload, intent.key)
-          : await startDaliurenReading(daliurenPayload, intent.key);
+          ? startQimenReading(payload, intent.key)
+          : startDaliurenReading(daliurenPayload, intent.key)
+      ));
       router.push(`/app/readings/${response.reading_version_id}`);
     } catch (reason) {
       const mapped = mapStartReadingFailure(reason);
+      const action = startReadingFailureAction(reason);
       setSubmitErrorState(mapped.state);
       setSubmitError(mapped.title);
+      const intent = intentKeyRef.current;
+      if (action === "login" && intent) {
+        const profileVersionId =
+          profileVersionRef.current?.trim()
+          || selectedProfileVersionId.trim()
+          || undefined;
+        const storageFailure = persistPendingStartTask(intent.key, {
+          productId: product.id,
+          fingerprint: intent.fingerprint,
+          values: {
+            version: 1,
+            formValues: nextValues,
+            ...(profileVersionId ? { profileVersionId } : {}),
+          } satisfies PendingStartFormState,
+        });
+        if (storageFailure) {
+          setSubmitErrorState("error");
+          setSubmitError(PENDING_START_WRITE_ERROR);
+          setSubmitErrorAction("retry");
+          setLoginIntentKey(undefined);
+          return;
+        }
+      }
+      setSubmitErrorAction(action);
+      setLoginIntentKey(intent?.key);
     } finally {
       setBusy(false);
     }
@@ -671,46 +1026,144 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   // 因此这里不再插入一个独立的「输入确认」页，直接进入生成。
   function handleConfirm(nextValues: TaskFormValues) {
     setSubmitError(null);
+    setSubmitErrorAction(null);
+    setLoginIntentKey(undefined);
+    setNameConflict(null);
     setValues(nextValues);
     void startRuntimeReading(nextValues);
   }
 
+  async function cancelProfileConflict() {
+    const pending = pendingProfileRef.current;
+    pendingProfileRef.current = null;
+    if (!pending) {
+      setNameConflict(null);
+      return;
+    }
+    setBusy(true);
+    setSubmitError(null);
+    try {
+      await discardProfileDraft(pending.draftId);
+      setNameConflict(null);
+    } catch (reason) {
+      pendingProfileRef.current = pending;
+      const mapped = mapStartReadingFailure(reason);
+      setSubmitErrorState(mapped.state);
+      setSubmitError(mapped.title);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resolveProfileConflict(action: "overwrite" | "save_as") {
+    const pending = pendingProfileRef.current;
+    if (!pending) return;
+    setBusy(true);
+    setSubmitError(null);
+    setSubmitErrorAction(null);
+    setLoginIntentKey(undefined);
+    try {
+      const profile = await confirmProfileDraft(pending.draftId, {
+        ...pending.body,
+        on_name_conflict: action,
+      });
+      pendingProfileRef.current = null;
+      setNameConflict(null);
+      setCreatedProfile(profile);
+      profileVersionRef.current = profile.profile_version_id;
+      setSelectedProfileVersionId(profile.profile_version_id);
+      await startRuntimeReading(pending.nextValues);
+    } catch (reason) {
+      const mapped = mapStartReadingFailure(reason);
+      setSubmitErrorState(mapped.state);
+      setSubmitError(mapped.title);
+      setSubmitErrorAction(startReadingFailureAction(reason));
+      setLoginIntentKey(intentKeyRef.current?.key);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const shouldKeepZiweiInputMounted = product.id === "ziwei" && values !== null;
+  const search = searchParams.toString();
+  const loginHref = loginContinueHref(
+    pathname,
+    search ? `?${search}` : "",
+    loginIntentKey ?? resumeKey ?? undefined,
+  );
 
   return (
     <div className={styles.experience} data-product={product.id} data-stage={stage}>
+      <ProfileNameConflictDialog
+        conflict={nameConflict}
+        busy={busy}
+        onOverwrite={() => void resolveProfileConflict("overwrite")}
+        onSaveAs={() => void resolveProfileConflict("save_as")}
+        onCancel={() => {
+          void cancelProfileConflict();
+        }}
+      />
       {stage !== "input" ? <TaskProgress product={product} stage={stage} /> : null}
+      {createdProfile && stage === "workbench" ? (
+        <div className={styles.renameBar}>
+          <p>当前档案：{createdProfile.display_name?.trim() || formatProfileOption(createdProfile)}</p>
+          <ProfileRenameControl profile={createdProfile} onRenamed={setCreatedProfile} />
+        </div>
+      ) : null}
       {stage === "input" || shouldKeepZiweiInputMounted ? (
         <div
           className={styles.inputLayout}
           data-input-region="first-screen"
           hidden={stage !== "input"}
         >
-          <ProductInputForm
-            busy={busy}
-            onProfileVersionChange={(profileVersionId) => {
-              setSelectedProfileVersionId(profileVersionId);
-              profileVersionRef.current = profileVersionId || null;
-              intentKeyRef.current = null;
-            }}
-            product={product}
-            profileLookupError={savedProfilesError}
-            profileLookupPending={savedProfilesLoading}
-            profileLookupSignedOut={savedProfilesSignedOut}
-            profiles={savedProfiles}
-            selectedProfileVersionId={selectedProfileVersionId}
-            initialValues={values ?? undefined}
-            onConfirm={handleConfirm}
-            onPhotoChange={setPhotoFile}
-            onRetryProfiles={() => {
-              setSavedProfilesLoading(true);
-              setSavedProfilesError(null);
-              setSavedProfilesSignedOut(false);
-              setSavedProfilesAttempt((value) => value + 1);
-            }}
-            submitError={submitError}
-            submitErrorState={submitErrorState}
-          />
+          {resumeStorageFailure ? (
+            <Status
+              actions={(
+                <button
+                  type="button"
+                  onClick={() => setResumeReadAttempt((attempt) => attempt + 1)}
+                >
+                  重试恢复
+                </button>
+              )}
+              description="请允许本网站使用会话存储，或关闭相关隐私限制后重试。"
+              state="error"
+              title={PENDING_START_READ_ERROR}
+            />
+          ) : (
+            <ProductInputForm
+              key={resumedTask && resumeKey ? `resume-${resumeKey}` : "input"}
+              busy={busy}
+              onProfileVersionChange={(profileVersionId) => {
+                setSelectedProfileVersionId(profileVersionId);
+                profileVersionRef.current = profileVersionId || null;
+                intentKeyRef.current = null;
+              }}
+              product={product}
+              profileLookupError={savedProfilesError}
+              profileLookupPending={savedProfilesLoading}
+              profileLookupSignedOut={savedProfilesSignedOut}
+              profiles={savedProfiles}
+              selectedProfileVersionId={selectedProfileVersionId}
+              initialValues={values ?? resumedFormState?.formValues}
+              onConfirm={handleConfirm}
+              onPhotoChange={setPhotoFile}
+              onRetryProfiles={() => {
+                setSavedProfilesLoading(true);
+                setSavedProfilesError(null);
+                setSavedProfilesSignedOut(false);
+                setSavedProfilesAttempt((value) => value + 1);
+              }}
+              submitError={submitError}
+              submitErrorState={submitErrorState}
+              submitErrorAction={submitErrorAction}
+              loginHref={loginHref}
+              hideUnknownHour={product.id === "bazi"}
+              onRetry={() => {
+                if (values) void startRuntimeReading(values);
+              }}
+            />
+          )}
           <InputTrustRail product={product} />
         </div>
       ) : null}
@@ -719,11 +1172,12 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           product={product}
           onBack={() => {
             profileVersionRef.current = null;
-            setBaziProfileVersionId(null);
             intentKeyRef.current = null;
             setBaziPreviewReadingId(null);
             setZiweiPreviewReadingId(null);
             setSubmitError(null);
+            setSubmitErrorAction(null);
+            setLoginIntentKey(undefined);
             setStage("input");
           }}
         />
@@ -735,6 +1189,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               type="button"
               onClick={() => {
                 setSubmitError(null);
+                setSubmitErrorAction(null);
+                setLoginIntentKey(undefined);
                 setStage("input");
               }}
             >
@@ -757,6 +1213,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
                   intentKeyRef.current = null;
                   setLiuyaoPreviewReadingId(null);
                   setSubmitError(null);
+                  setSubmitErrorAction(null);
+                  setLoginIntentKey(undefined);
                   setStage("input");
                 }}
               >
@@ -777,7 +1235,10 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               type="button"
               onClick={() => {
                 setSubmitError(null);
+                setSubmitErrorAction(null);
+                setLoginIntentKey(undefined);
                 setStage("input");
+                writeBaziPreviewRoute(null);
               }}
             >
               返回录入
@@ -789,19 +1250,34 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         />
       ) : null}
       {stage === "workbench" && product.id === "bazi" && baziPreviewReadingId ? (
-        <BaziDeepTaskFlow
-          onBack={() => {
-            profileVersionRef.current = null;
-            setBaziProfileVersionId(null);
-            intentKeyRef.current = null;
-            setBaziPreviewReadingId(null);
-            setSubmitError(null);
-            setStage("input");
-          }}
-          previewReadingId={baziPreviewReadingId}
-          profileVersionId={baziProfileVersionId ?? ""}
-          query={values?.issue.trim() || "请预览我的八字命盘。"}
-        />
+        activeBaziRecovery ? (
+          <BaziDeepTaskFlow
+            onBack={returnToBaziInput}
+            previewReadingId={baziPreviewReadingId}
+            profileVersionId={activeBaziRecovery.profileVersionId}
+            query={activeBaziRecovery.question}
+          />
+        ) : !browserReady ? (
+          <Status
+            description="正在核对当前盘面的恢复信息，不会在确认原问题前开放深读。"
+            state="loading"
+            title="正在恢复八字盘面"
+          />
+        ) : (
+          <>
+            <Status
+              actions={(
+                <button onClick={returnToBaziInput} type="button">
+                  返回录入
+                </button>
+              )}
+              description="这份旧恢复状态没有保存原始问题。请返回录入重新提交；当前不会创建深读或结账请求。"
+              state="unavailable"
+              title="深读需要重新输入原问题"
+            />
+            <ReadingResult readingId={baziPreviewReadingId} />
+          </>
+        )
       ) : null}
       {stage === "workbench" && product.id === "ziwei" && !ziweiPreviewReadingId ? (
         <Status
@@ -810,6 +1286,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               type="button"
               onClick={() => {
                 setSubmitError(null);
+                setSubmitErrorAction(null);
+                setLoginIntentKey(undefined);
                 setStage("input");
               }}
             >
@@ -832,6 +1310,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
                   intentKeyRef.current = null;
                   setZiweiPreviewReadingId(null);
                   setSubmitError(null);
+                  setSubmitErrorAction(null);
+                  setLoginIntentKey(undefined);
                   setStage("input");
                 }}
               >

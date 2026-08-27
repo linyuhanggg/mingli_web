@@ -1,15 +1,23 @@
+import asyncio
 import json
 import os
+import stat
 import sys
+import threading
+import time
 import traceback
 from datetime import datetime
 from pathlib import Path
 
+import app.adapters.runtime as runtime_module
 import pytest
 from app.adapters.runtime import (
+    RUNTIME_TURN_AUDIT_NAME,
     FakeMingliRuntimeAdapter,
     OneShotMingliRuntimeAdapter,
+    WorkerV2MingliRuntimeAdapter,
     build_runtime_startup_gate,
+    one_shot_spawn_argv,
 )
 from app.charts.contracts import (
     CanwenViewV1,
@@ -36,6 +44,7 @@ from app.charts.projectors import (
     project_wenshi_view_model,
 )
 from app.config import Settings
+from app.main import create_app
 from app.readings.errors import RuntimeTransportError
 from app.readings.request_compiler import (
     ConfirmedProfileVersion,
@@ -59,6 +68,7 @@ from app.readings.runtime_contracts import (
     Prepared,
     Stopped,
 )
+from httpx import ASGITransport, AsyncClient
 
 
 def _write_executable(path: Path, source: str) -> Path:
@@ -79,15 +89,93 @@ def _described_payload() -> dict[str, object]:
     }
 
 
+def _audit_only_worker(
+    state_root: Path,
+    *,
+    audit_timeout_seconds: float = 0.05,
+) -> WorkerV2MingliRuntimeAdapter:
+    adapter = object.__new__(WorkerV2MingliRuntimeAdapter)
+    adapter._state_root = state_root
+    adapter._audit_pid = 1234
+    adapter._audit_boot_nonce = "test-audit-boot"
+    adapter._last_sequence = 1
+    adapter._transport_fault = None
+    adapter._isolated = False
+    adapter._audit_timeout_seconds = audit_timeout_seconds
+    adapter._audit_tail = None
+    adapter._audit_pending = set()
+    adapter.last_turn = None
+    return adapter
+
+
 def _adapter(launcher: Path, state_root: Path, **overrides: object) -> OneShotMingliRuntimeAdapter:
     options: dict[str, object] = {
         "launcher_path": launcher,
         "runtime_python_path": Path("/usr/bin/python3"),
         "state_root": state_root,
-        "timeout_seconds": 1,
+        "timeout_seconds": 2,
     }
     options.update(overrides)
     return OneShotMingliRuntimeAdapter(**options)  # type: ignore[arg-type]
+
+
+def _idle_worker_adapter(tmp_path: Path) -> tuple[WorkerV2MingliRuntimeAdapter, Path]:
+    release_root = tmp_path / "release"
+    worker = release_root / "scripts" / "reading_engine" / "runtime_worker.py"
+    worker.parent.mkdir(parents=True)
+    exit_signal = worker.parent / "exit"
+    worker.write_text(
+        """from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+import sys
+import time
+
+
+def argv_value(flag: str) -> str:
+    return sys.argv[sys.argv.index(flag) + 1]
+
+
+payload = {
+    "type": "ready",
+    "protocol": "mingli-runtime-worker-v2",
+    "turn_terminal": "result-idle-v1",
+    "runtime_protocol": "mingli-portable-interface-v2",
+    "identity_sha256": "c" * 64,
+    "listing_sha256": argv_value("--expected-listing-sha256"),
+    "runtime_integrity_sha256": argv_value("--expected-runtime-integrity-sha256"),
+    "single_in_flight": True,
+    "replay_policy": "forbidden",
+    "fallback_policy": "forbidden",
+    "max_frame_bytes": 4 * 1024 * 1024,
+    "sequence_start": 1,
+    "pid": os.getpid(),
+    "boot_nonce": "d" * 64,
+}
+body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
+sys.stdout.buffer.write(len(body).to_bytes(4, "big") + body)
+sys.stdout.buffer.flush()
+exit_signal = Path(__file__).with_name("exit")
+while not exit_signal.exists():
+    time.sleep(0.01)
+""",
+        encoding="utf-8",
+    )
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    state_root.chmod(0o700)
+    adapter = WorkerV2MingliRuntimeAdapter(
+        release_root=release_root,
+        runtime_python_path=Path(sys.executable),
+        state_root=state_root,
+        expected_listing_sha256="a" * 64,
+        expected_runtime_integrity_sha256="b" * 64,
+        ready_timeout_seconds=2,
+        request_timeout_seconds=0.4,
+    )
+    return adapter, exit_signal
 
 
 async def test_process_adapter_sends_one_json_command_on_stdin_and_reads_one_result(
@@ -123,6 +211,205 @@ print(json.dumps({
     assert result.transition_ids == ("correct", "restart")
     assert json.loads(launcher.with_suffix(".stdin").read_bytes()) == {"kind": "describe"}
     assert launcher.with_suffix(".stdin").read_bytes().endswith(b"\n")
+
+
+async def test_readiness_rejects_worker_that_exits_while_idle(tmp_path: Path) -> None:
+    async def database_is_ready() -> None:
+        return None
+
+    adapter, exit_signal = _idle_worker_adapter(tmp_path)
+    await adapter.start()
+    application = create_app(
+        readiness_probe=database_is_ready,
+        chart_runtime=adapter,
+    )
+
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as client:
+            healthy = await client.get("/api/v1/health/ready")
+            assert healthy.status_code == 200
+            assert adapter.process_alive is True
+
+            exit_signal.touch()
+            for _ in range(100):
+                if not adapter.process_alive:
+                    break
+                await asyncio.sleep(0.01)
+
+            assert adapter.isolated is False
+            assert adapter.process_alive is False
+            unavailable = await client.get("/api/v1/health/ready")
+    finally:
+        await adapter.close()
+
+    assert unavailable.status_code == 503
+    assert unavailable.headers["content-type"].startswith("application/problem+json")
+    assert unavailable.json()["title"] == "Service unavailable"
+
+
+def test_worker_turn_audit_redacts_late_stderr_bytes(tmp_path: Path) -> None:
+    sentinel = "PRIVATE-BIRTH-FACT-1994-04-30"
+    adapter = _audit_only_worker(tmp_path)
+    adapter._transport_fault = f"stderr-before-write:{sentinel}"
+
+    adapter._publish_turn(
+        Describe(),
+        Described(
+            protocol_version="mingli-portable-interface-v2",
+            manifest_digest="0" * 64,
+            capabilities=(),
+        ),
+    )
+
+    rendered = (tmp_path / RUNTIME_TURN_AUDIT_NAME).read_text(encoding="utf-8")
+    payload = json.loads(rendered)
+    assert payload["transport_fault"] == "stderr-before-write"
+    assert sentinel not in rendered
+    assert adapter.last_turn is not None
+    assert adapter.last_turn.transport_fault == "stderr-before-write"
+
+
+async def test_worker_durable_audit_breaks_a_stalled_tail_without_pending_growth(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    loop = asyncio.get_running_loop()
+    first_write_started = asyncio.Event()
+    release_first_write = threading.Event()
+    persisted_sequences: list[int] = []
+
+    def slow_append(_path: Path, record: dict[str, object]) -> None:
+        sequence = record["sequence"]
+        assert isinstance(sequence, int)
+        if sequence == 1:
+            loop.call_soon_threadsafe(first_write_started.set)
+            release_first_write.wait(timeout=1.0)
+        persisted_sequences.append(sequence)
+
+    monkeypatch.setattr(runtime_module, "append_runtime_turn_audit", slow_append)
+    adapter = _audit_only_worker(tmp_path, audit_timeout_seconds=0.02)
+    result = Described(
+        protocol_version="mingli-portable-interface-v2",
+        manifest_digest="0" * 64,
+        capabilities=(),
+    )
+    heartbeat = asyncio.Event()
+    loop.call_later(0.005, heartbeat.set)
+
+    started_at = time.perf_counter()
+    first_publish = asyncio.create_task(adapter._publish_turn_durable(Describe(), result))
+    await asyncio.wait_for(first_write_started.wait(), timeout=0.2)
+    await first_publish
+    elapsed = time.perf_counter() - started_at
+
+    assert heartbeat.is_set()
+    assert elapsed < 0.15
+    assert adapter.isolated is False
+    assert adapter._transport_fault is None
+
+    try:
+        assert adapter._audit_tail is None
+        assert len(adapter._audit_pending) == 1
+
+        adapter._last_sequence = 2
+        await adapter._publish_turn_durable(Describe(), result)
+        assert persisted_sequences == [2]
+        assert len(adapter._audit_pending) == 1
+
+        adapter._last_sequence = 3
+        await adapter._publish_turn_durable(Describe(), result)
+        assert persisted_sequences == [2, 3]
+        assert len(adapter._audit_pending) == 1
+    finally:
+        release_first_write.set()
+        if adapter._audit_pending:
+            await asyncio.wait_for(
+                asyncio.gather(*tuple(adapter._audit_pending)),
+                timeout=0.5,
+            )
+
+    assert len(adapter._audit_pending) == 0
+
+
+async def test_worker_durable_audit_keeps_normal_turn_order(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    loop = asyncio.get_running_loop()
+    first_write_started = asyncio.Event()
+    release_first_write = threading.Event()
+    persisted_sequences: list[int] = []
+
+    def ordered_append(_path: Path, record: dict[str, object]) -> None:
+        sequence = record["sequence"]
+        assert isinstance(sequence, int)
+        if sequence == 1:
+            loop.call_soon_threadsafe(first_write_started.set)
+            release_first_write.wait(timeout=0.2)
+        persisted_sequences.append(sequence)
+
+    monkeypatch.setattr(runtime_module, "append_runtime_turn_audit", ordered_append)
+    adapter = _audit_only_worker(tmp_path, audit_timeout_seconds=0.15)
+    result = Described(
+        protocol_version="mingli-portable-interface-v2",
+        manifest_digest="0" * 64,
+        capabilities=(),
+    )
+
+    first_publish = asyncio.create_task(adapter._publish_turn_durable(Describe(), result))
+    await asyncio.wait_for(first_write_started.wait(), timeout=0.1)
+    adapter._last_sequence = 2
+    second_publish = asyncio.create_task(adapter._publish_turn_durable(Describe(), result))
+    await asyncio.sleep(0.01)
+    assert persisted_sequences == []
+
+    release_first_write.set()
+    await asyncio.gather(first_publish, second_publish)
+
+    assert persisted_sequences == [1, 2]
+    assert adapter._audit_pending == set()
+
+
+async def test_process_adapter_first_describe_stays_inside_two_second_budget(
+    tmp_path: Path,
+) -> None:
+    launcher = _write_executable(
+        tmp_path / "runtime-fixture",
+        """#!/usr/bin/env python3
+import json
+import sys
+
+raw = sys.stdin.buffer.read()
+command = json.loads(raw)
+assert command == {"kind": "describe"}
+print(json.dumps({
+    "kind": "described",
+    "protocol_version": "mingli-portable-interface-v2",
+    "manifest_digest": "0" * 64,
+    "capabilities": [],
+}, separators=(",", ":")))
+""",
+    )
+    state_root = tmp_path / "state"
+    state_root.mkdir()
+    adapter = _adapter(launcher, state_root)
+    started = time.perf_counter()
+
+    result = await adapter.execute(Describe())
+
+    elapsed = time.perf_counter() - started
+    assert isinstance(result, Described)
+    assert elapsed < 2.0
+    assert one_shot_spawn_argv(launcher) == (
+        sys.executable,
+        "-I",
+        "-S",
+        "-B",
+        str(launcher),
+    )
 
 
 async def test_process_adapter_decodes_the_entire_result_union(tmp_path: Path) -> None:
@@ -448,7 +735,9 @@ print(json.dumps({
 
     await _adapter(launcher, state_root).execute(command)
 
-    assert json.loads(launcher.with_suffix(".argv").read_text()) == [str(launcher)]
+    argv = json.loads(launcher.with_suffix(".argv").read_text())
+    assert argv == [str(launcher)]
+    assert query not in json.dumps(argv)
     assert not shell_side_effect.exists()
 
 
@@ -1480,3 +1769,77 @@ async def test_frozen_runtime_rejects_combined_taxonomy_region_mismatch() -> Non
 
     assert isinstance(result, Stopped)
     assert result.reason == "error"
+
+
+def test_one_shot_shell_argv_is_bin_sh_plus_fixed_absolute_path(tmp_path: Path) -> None:
+    launcher = tmp_path / "run_reading_transaction.sh"
+    launcher.write_text("#!/bin/sh\n", encoding="utf-8")
+    launcher.chmod(0o644)
+
+    assert one_shot_spawn_argv(launcher) == ("/bin/sh", str(launcher))
+    python_launcher = tmp_path / "runtime-fixture"
+    python_launcher.write_text(f"#!{sys.executable}\n", encoding="utf-8")
+    assert one_shot_spawn_argv(python_launcher) == (
+        sys.executable,
+        "-I",
+        "-S",
+        "-B",
+        str(python_launcher),
+    )
+
+
+async def test_one_shot_shell_mode_100644_starts_without_chmod_or_user_argv(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    launcher = tmp_path / "run_reading_transaction.sh"
+    described = json.dumps(_described_payload(), separators=(",", ":"))
+    launcher.write_text(
+        f"""#!/bin/sh
+printf '%s\\n' "$0" > "$(dirname "$0")/argv.log"
+cat > "$(dirname "$0")/stdin.log"
+printf '%s\\n' '{described}'
+""",
+        encoding="utf-8",
+    )
+    launcher.chmod(0o644)
+    chmod_paths: list[str] = []
+    original_os_chmod = os.chmod
+    original_path_chmod = Path.chmod
+
+    def tracking_os_chmod(path: object, mode: int, *args: object, **kwargs: object) -> None:
+        chmod_paths.append(os.fspath(path))
+        original_os_chmod(path, mode, *args, **kwargs)
+
+    def tracking_path_chmod(self: Path, mode: int, *args: object, **kwargs: object) -> None:
+        chmod_paths.append(str(self))
+        original_path_chmod(self, mode, *args, **kwargs)
+
+    monkeypatch.setattr(os, "chmod", tracking_os_chmod)
+    monkeypatch.setattr(Path, "chmod", tracking_path_chmod)
+    state_root = tmp_path / "state"
+    state_root.mkdir()
+    query = "$(touch injected) `id`"
+
+    result = await _adapter(launcher, state_root).execute(
+        Prepare(
+            query=query,
+            intent={
+                "subject_refs": ["fixture:subject"],
+                "object_id": "natal",
+                "dimension_ids": [],
+                "horizon": {"kind_id": "life", "start": None, "end": None},
+                "capability_id": "bazi",
+                "comparisons": [],
+            },
+            facts={"fixture:subject": {"fixture_input": query}},
+        )
+    )
+
+    assert isinstance(result, Described)
+    assert stat.S_IMODE(launcher.stat().st_mode) == 0o644
+    assert str(launcher) not in chmod_paths
+    assert (tmp_path / "argv.log").read_text(encoding="utf-8") == f"{launcher}\n"
+    stdin = (tmp_path / "stdin.log").read_text(encoding="utf-8")
+    assert json.loads(stdin)["query"] == query
+    assert "$(touch" not in (tmp_path / "argv.log").read_text(encoding="utf-8")

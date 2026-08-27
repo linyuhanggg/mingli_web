@@ -17,6 +17,7 @@ from app.identity.models import DeviceSession
 from app.privacy.service import DataRightsService
 from app.profiles.schemas import (
     ProfileConfirmRequest,
+    ProfileDisplayNameUpdateRequest,
     ProfileDraftRequest,
     ProfileDraftResponse,
     ProfileListResponse,
@@ -30,6 +31,7 @@ from app.profiles.service import (
     ProfileAuthorizationPayloadError,
     ProfileAuthorizationRequiredError,
     ProfileDifferenceNotAcknowledgedError,
+    ProfileNameConflictError,
     ProfileNotConfirmedError,
     ProfileNotFoundError,
     ProfileService,
@@ -70,6 +72,27 @@ async def create_profile_draft(
     return ProfileDraftResponse(draft_id=draft_id)
 
 
+@router.delete(
+    "/drafts/{draft_id}",
+    operation_id="deleteProfileDraft",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_profile_draft(
+    request: Request,
+    response: Response,
+    draft_id: UUID,
+    session: AsyncSession = Depends(database_session),
+    owner: Owner = Depends(require_owner_csrf),
+) -> None:
+    _check_rate(owner, request)
+    try:
+        await _service(request, session).delete_draft(owner, draft_id)
+    except ProfileNotFoundError as error:
+        raise ApiProblem(status=404, title="Profile Draft not found") from error
+    await session.commit()
+    mark_private(response)
+
+
 @router.post(
     "/drafts/{draft_id}/confirm",
     operation_id="confirmProfileDraft",
@@ -104,6 +127,20 @@ async def confirm_profile_draft(
         raise ApiProblem(status=400, title="Profile authorization payload is invalid") from error
     except MinorGuardianConfirmationRequiredError as error:
         raise ApiProblem(status=400, title="Minor guardian confirmation is required") from error
+    except ProfileNameConflictError as error:
+        raise ApiProblem(
+            status=409,
+            title="Profile name already exists",
+            problem_type="urn:mingli:problem:profile_name_conflict",
+            detail="A confirmed profile already uses this name and birth date.",
+            code="profile_name_conflict",
+            extensions={
+                "existing_profile_id": str(error.existing_profile_id),
+                "existing_profile_version_id": str(error.existing_profile_version_id),
+                "suggested_save_as_name": error.suggested_save_as_name,
+                "options": ["overwrite", "save_as", "cancel"],
+            },
+        ) from error
     await session.commit()
     mark_private(response)
     return summary
@@ -144,6 +181,20 @@ async def append_profile_version(
         raise ApiProblem(
             status=400,
             title="Profile version difference must be acknowledged",
+        ) from error
+    except ProfileNameConflictError as error:
+        raise ApiProblem(
+            status=409,
+            title="Profile name already exists",
+            problem_type="urn:mingli:problem:profile_name_conflict",
+            detail="A confirmed profile already uses this name and birth date.",
+            code="profile_name_conflict",
+            extensions={
+                "existing_profile_id": str(error.existing_profile_id),
+                "existing_profile_version_id": str(error.existing_profile_version_id),
+                "suggested_save_as_name": error.suggested_save_as_name,
+                "options": ["overwrite", "save_as", "cancel"],
+            },
         ) from error
     await session.commit()
     mark_private(response)
@@ -186,6 +237,52 @@ async def list_profile_versions(
     await session.commit()
     mark_private(response)
     return ProfileVersionListResponse(versions=versions)
+
+
+@router.patch(
+    "/{profile_id}",
+    operation_id="updateProfileDisplayName",
+    response_model=ProfileSummary,
+)
+async def update_profile_display_name(
+    profile_id: UUID,
+    request: Request,
+    response: Response,
+    payload: ProfileDisplayNameUpdateRequest,
+    session: AsyncSession = Depends(database_session),
+    owner: Owner = Depends(require_owner_csrf),
+) -> ProfileSummary:
+    _check_rate(owner, request)
+    try:
+        summary = await _service(request, session).update_display_name(
+            owner,
+            profile_id,
+            payload.display_name,
+        )
+    except ProfileNotFoundError as error:
+        raise ApiProblem(status=404, title="Subject Profile not found") from error
+    except ProfileNotConfirmedError as error:
+        raise ApiProblem(
+            status=409,
+            title="Subject Profile has no confirmed version",
+        ) from error
+    except ProfileNameConflictError as error:
+        raise ApiProblem(
+            status=409,
+            title="Profile name already exists",
+            problem_type="urn:mingli:problem:profile_name_conflict",
+            detail="A confirmed profile already uses this name and birth date.",
+            code="profile_name_conflict",
+            extensions={
+                "existing_profile_id": str(error.existing_profile_id),
+                "existing_profile_version_id": str(error.existing_profile_version_id),
+                "suggested_save_as_name": error.suggested_save_as_name,
+                "options": ["overwrite", "save_as", "cancel"],
+            },
+        ) from error
+    await session.commit()
+    mark_private(response)
+    return summary
 
 
 @router.delete(

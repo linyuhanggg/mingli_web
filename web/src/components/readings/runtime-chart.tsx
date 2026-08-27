@@ -1,3 +1,5 @@
+import { displayPublicText, type PublicKeyLabel } from "@/lib/public-labels";
+
 import type {
   CanwenViewModel,
   ChartSimilarityViewModel,
@@ -103,16 +105,19 @@ const FACT_STATUS_LABELS: Record<string, string> = {
   sequence_only: "仅展示顺序",
 };
 
-function factStatusLabel(value: string): string {
-  return FACT_STATUS_LABELS[value] ?? value;
+function factStatusLabel(value: string, labels?: readonly PublicKeyLabel[]): string {
+  return displayPublicText(labels, value, FACT_STATUS_LABELS) || "—";
 }
 
-function structuredValueSummary(value: StructuredFactValue | undefined): string {
+function structuredValueSummary(
+  value: StructuredFactValue | undefined,
+  labels?: readonly PublicKeyLabel[],
+): string {
   if (value == null) {
     return "—";
   }
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return typeof value === "string" ? factStatusLabel(value) : String(value);
+    return typeof value === "string" ? factStatusLabel(value, labels) : String(value);
   }
   if (Array.isArray(value)) {
     return value.length === 0 ? "无" : `${value.length} 项结构化事实`;
@@ -121,7 +126,7 @@ function structuredValueSummary(value: StructuredFactValue | undefined): string 
     return "—";
   }
   if (typeof value.status === "string") {
-    return factStatusLabel(value.status);
+    return factStatusLabel(value.status, labels);
   }
   if (typeof value.name === "string") {
     return value.name;
@@ -130,14 +135,17 @@ function structuredValueSummary(value: StructuredFactValue | undefined): string 
   return fieldCount === 0 ? "空" : `${fieldCount} 个结构化字段`;
 }
 
-function structuredPrimitive(value: StructuredFactValue | undefined): string {
+function structuredPrimitive(
+  value: StructuredFactValue | undefined,
+  labels?: readonly PublicKeyLabel[],
+): string {
   if (value == null) {
     return "—";
   }
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return typeof value === "string" ? factStatusLabel(value) : String(value);
+    return typeof value === "string" ? factStatusLabel(value, labels) : String(value);
   }
-  return structuredValueSummary(value);
+  return structuredValueSummary(value, labels);
 }
 
 function structuredText(value: StructuredFactObject, keys: ReadonlyArray<string>): string | null {
@@ -470,6 +478,7 @@ function MeihuaChart({
   view: MeihuaChartViewModel;
   showInterpretiveSections: boolean;
 }>) {
+  const labels = view.public_labels;
   const relationPolarityLabels = {
     supportive: "用生体（支持体）",
     depleting: "体生用（体有耗）",
@@ -491,18 +500,20 @@ function MeihuaChart({
     structuredText(item, ["trigram"]) ?? "—",
     structuredText(item, ["element"]) ?? "—",
     structuredText(item, ["relation"]) ?? "—",
-    structuredPrimitive(item.status),
+    structuredPrimitive(item.status, labels),
   ]);
   const seasonalRows = view.core_facts?.seasonal_strength
     ? Object.entries(view.core_facts.seasonal_strength).flatMap(([name, value]) => {
         if (!isStructuredObject(value)) return [];
+        const caption = displayPublicText(labels, name) || structuredText(value, ["trigram"]);
+        if (!caption) return [];
         return [[
-          name,
+          caption,
           structuredText(value, ["trigram"]) ?? "—",
           structuredText(value, ["month_branch"]) ?? "—",
-          structuredText(value, ["season"]) ?? "—",
-          structuredPrimitive(value.state),
-          structuredPrimitive(value.status),
+          displayPublicText(labels, structuredText(value, ["season"]) ?? "") || structuredText(value, ["season"]) || "—",
+          structuredPrimitive(value.state, labels),
+          structuredPrimitive(value.status, labels),
         ]];
       })
     : [];
@@ -515,6 +526,7 @@ function MeihuaChart({
     relationPolarityLabels[value.relation_adjudication.source_polarity],
     "关系极性已裁定",
   ]) ?? [];
+  const bodyUseStatus = factStatusLabel(view.body_use.status, labels);
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
       <dl className={styles.meta}>
@@ -532,8 +544,8 @@ function MeihuaChart({
         caption="体用关系"
         headers={["位置", "卦", "五行", "关系", "状态"]}
         rows={[
-          ["体", view.body_use.body.trigram, view.body_use.body.element, view.body_use.relation, view.body_use.status],
-          ["用", view.body_use.use.trigram, view.body_use.use.element, view.body_use.relation, view.body_use.status],
+          ["体", view.body_use.body.trigram, view.body_use.body.element, view.body_use.relation, bodyUseStatus],
+          ["用", view.body_use.use.trigram, view.body_use.use.element, view.body_use.relation, bodyUseStatus],
         ]}
       />
       {bodyRelationRows.length ? (
@@ -1014,7 +1026,11 @@ function DaliurenChart({
   view: DaliurenChartViewModel;
   showInterpretiveSections: boolean;
 }>) {
-  return <DaliurenBoard view={view} showInterpretiveSections={showInterpretiveSections} />;
+  return (
+    <div className={styles.wrap} data-schema={view.schema_version}>
+      <DaliurenBoard view={view} showInterpretiveSections={showInterpretiveSections} />
+    </div>
+  );
 }
 
 function PhysiognomyChart({ view }: Readonly<{ view: PhysiognomyViewModel }>) {

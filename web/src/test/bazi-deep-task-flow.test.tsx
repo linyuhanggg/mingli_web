@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -9,6 +9,11 @@ const mockGetBaziDeepCheckout = vi.hoisted(() => vi.fn());
 const mockBindReadingFulfillment = vi.hoisted(() => vi.fn());
 const mockRecordConsent = vi.hoisted(() => vi.fn());
 const mockReplace = vi.hoisted(() => vi.fn());
+const mockStartPreviewReading = vi.hoisted(() => vi.fn());
+const mockCreateProfileDraft = vi.hoisted(() => vi.fn());
+const mockConfirmProfileDraft = vi.hoisted(() => vi.fn());
+const mockListProfiles = vi.hoisted(() => vi.fn());
+const mockSearch = vi.hoisted(() => ({ value: new URLSearchParams() }));
 const mockSessionStatus = vi.hoisted(() => ({ value: "signedOut" as "checking" | "signedOut" | "signedIn" }));
 
 vi.mock("@/lib/api", async (importOriginal) => ({
@@ -19,10 +24,17 @@ vi.mock("@/lib/api", async (importOriginal) => ({
   getBaziDeepCheckout: mockGetBaziDeepCheckout,
   bindReadingFulfillment: mockBindReadingFulfillment,
   recordConsent: mockRecordConsent,
+  startPreviewReading: mockStartPreviewReading,
+  createProfileDraft: mockCreateProfileDraft,
+  confirmProfileDraft: mockConfirmProfileDraft,
+  listProfiles: mockListProfiles,
+  getAccount: vi.fn(() => new Promise(() => undefined)),
 }));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: mockReplace, push: vi.fn(), prefetch: vi.fn(), refresh: vi.fn(), back: vi.fn(), forward: vi.fn() }),
+  usePathname: () => "/bazi",
+  useSearchParams: () => mockSearch.value,
 }));
 
 vi.mock("@/components/account-session-context", () => ({
@@ -36,10 +48,19 @@ vi.mock("@/components/readings/reading-result", () => ({
 }));
 
 import {
+  ProductTaskExperience,
+  persistBaziPreviewRecoveryState,
+  readBaziPreviewRecoveryState,
+} from "@/components/task/product-task-experience";
+import {
   BaziDeepTaskFlow,
+  baziPreviewRestoreHref,
+  isPreviewChartReady,
+  readBaziPreviewReadingId,
   stateForDeliveryState,
   stateForReadingStatus,
 } from "@/components/task/bazi-deep-task-flow";
+import { PRODUCT_CATALOG } from "@/products/catalog";
 
 const previewSummary = {
   reading_version_id: "preview-1",
@@ -96,7 +117,9 @@ const checkoutConfirmed = {
 };
 
 beforeEach(() => {
+  window.sessionStorage.clear();
   mockSessionStatus.value = "signedOut";
+  mockSearch.value = new URLSearchParams();
   mockPollReading.mockReset();
   mockStartBaziDeepReading.mockReset();
   mockCreateBaziDeepCheckout.mockReset();
@@ -105,15 +128,38 @@ beforeEach(() => {
   mockRecordConsent.mockReset();
   mockRecordConsent.mockResolvedValue({});
   mockReplace.mockReset();
+  mockStartPreviewReading.mockReset();
+  mockCreateProfileDraft.mockReset().mockResolvedValue({ draft_id: "draft-1", status: "draft" });
+  mockConfirmProfileDraft.mockReset().mockResolvedValue({
+    profile_version_id: "profile-version-1",
+    profile_id: "profile-1",
+    subject_ref: "本人",
+    version: 1,
+    created_at: "2026-08-14T00:00:00Z",
+  });
+  mockListProfiles.mockReset().mockResolvedValue({ profiles: [] });
 });
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe("Bazi deep task state contract", () => {
   it("maps only public ReadingVersion statuses and keeps job states explicit", () => {
     expect(stateForReadingStatus("accepted", "preview")).toBe("free");
     expect(stateForReadingStatus("input_ready", "preview")).toBe("preview_loading");
-    expect(stateForReadingStatus("prepared", "preview")).toBe("preview_loading");
+    expect(stateForReadingStatus("prepared", "preview")).toBe("free");
+    expect(stateForReadingStatus("prepared", "preview", {
+      result_available: true,
+      poll_required: false,
+    })).toBe("free");
+    expect(isPreviewChartReady("prepared", {
+      result_available: true,
+      poll_required: false,
+    })).toBe(true);
+    expect(stateForReadingStatus("prepared", "preview", { poll_required: true })).toBe("preview_loading");
+    expect(stateForReadingStatus("completing", "preview")).toBe("preview_loading");
     expect(stateForReadingStatus("input_ready", "deep")).toBe("awaiting_fulfillment");
     expect(stateForReadingStatus("prepared", "deep")).toBe("running");
     expect(stateForReadingStatus("completing", "deep")).toBe("running");
@@ -126,6 +172,68 @@ describe("Bazi deep task state contract", () => {
     expect(stateForDeliveryState("processing", "queued")).toBe("running");
     expect(stateForDeliveryState("delivered", "running")).toBe("succeeded");
     expect(stateForDeliveryState("failed", "running")).toBe("failed");
+  });
+
+  it("exits preview loading and mounts ReadingResult for prepared + result_available + poll_required=false", async () => {
+    vi.useFakeTimers();
+    mockPollReading.mockResolvedValue({
+      ...previewSummary,
+      status: "prepared",
+      result_available: true,
+      poll_required: false,
+    });
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getByTestId("reading-result-preview-1")).toBeVisible();
+    expect(screen.queryByText("正在准备免费盘面")).not.toBeInTheDocument();
+    expect(mockPollReading).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(4000);
+    });
+    expect(mockPollReading).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps preview loading and continues polling while input_ready", async () => {
+    vi.useFakeTimers();
+    mockPollReading.mockResolvedValue({
+      ...previewSummary,
+      status: "input_ready",
+    });
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getByText("正在准备免费盘面")).toBeVisible();
+    expect(screen.queryByTestId("reading-result-preview-1")).not.toBeInTheDocument();
+    expect(mockPollReading).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+    expect(mockPollReading).toHaveBeenCalledTimes(2);
   });
 
   it("keeps a free preview usable for a signed-out visitor and never starts deep reading", async () => {
@@ -299,5 +407,228 @@ describe("Bazi deep task state contract", () => {
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/auth/consent"));
     expect(mockCreateBaziDeepCheckout).not.toHaveBeenCalled();
     expect(screen.queryByText("Policy version is not current")).not.toBeInTheDocument();
+  });
+
+  it("writes the reading query while the workbench is mounted and clears it on back", async () => {
+    mockPollReading.mockResolvedValue({
+      ...previewSummary,
+      status: "prepared",
+      result_available: true,
+      poll_required: false,
+    });
+    const onBack = vi.fn();
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={onBack}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    expect(await screen.findByTestId("reading-result-preview-1")).toBeVisible();
+    expect(mockReplace).toHaveBeenCalledWith("/bazi?reading=preview-1&profile=profile-1");
+
+    await userEvent.click(screen.getByRole("button", { name: "返回录入" }));
+    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith("/bazi");
+  });
+
+  it("fail-closes with a recover entry when the restored preview reading is gone", async () => {
+    const { ApiError } = await import("@/lib/api");
+    mockPollReading.mockRejectedValue(new ApiError("任务不存在", 404));
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="missing-preview"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    expect(await screen.findByText("还没有可展示的盘面")).toBeVisible();
+    expect(screen.getByRole("button", { name: "返回修改资料" })).toBeVisible();
+    expect(screen.queryByTestId("reading-result-missing-preview")).not.toBeInTheDocument();
+  });
+});
+
+describe("guest bazi preview restore", () => {
+  const preparedPreview = {
+    ...previewSummary,
+    status: "prepared" as const,
+    result_available: true,
+    poll_required: false,
+  };
+
+  async function fillGuestBaziForm() {
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText("受测对象"), "本人");
+    await user.selectOptions(screen.getByLabelText("出生年份"), "1990");
+    await user.selectOptions(screen.getByLabelText("出生月份"), "05");
+    await user.selectOptions(screen.getByLabelText("出生日期"), "06");
+    await user.selectOptions(screen.getByLabelText("出生小时"), "08");
+    await user.selectOptions(screen.getByLabelText("出生分钟"), "30");
+    await user.selectOptions(screen.getByLabelText("出生省份"), "江苏省");
+    await user.selectOptions(screen.getByLabelText("出生城市"), "常州市");
+    await user.selectOptions(screen.getByLabelText("出生区县"), "金坛区");
+    await user.click(screen.getByRole("radio", { name: "男" }));
+    return user;
+  }
+
+  function persistPreviewRecovery(question = "请预览我的八字命盘。") {
+    persistBaziPreviewRecoveryState({
+      readingId: "preview-1",
+      profileVersionId: "profile-1",
+      question,
+    });
+  }
+
+  it("reads and writes the guest reading query without dropping other params", () => {
+    const current = new URLSearchParams("profile=profile-1");
+    expect(readBaziPreviewReadingId(current)).toBeNull();
+    expect(baziPreviewRestoreHref("/bazi", current, "preview-1", "profile-1")).toBe(
+      "/bazi?profile=profile-1&reading=preview-1",
+    );
+    expect(readBaziPreviewReadingId(new URLSearchParams("reading=preview-1"))).toBe("preview-1");
+    expect(baziPreviewRestoreHref("/bazi", new URLSearchParams("reading=preview-1&profile=profile-1"), null)).toBe(
+      "/bazi?profile=profile-1",
+    );
+  });
+
+  it("restores a prepared preview after a /bazi refresh that still carries the reading query", async () => {
+    persistPreviewRecovery();
+    mockSearch.value = new URLSearchParams("reading=preview-1&profile=profile-1");
+    mockPollReading.mockResolvedValue(preparedPreview);
+
+    render(<ProductTaskExperience product={PRODUCT_CATALOG.bazi} />);
+
+    expect(await screen.findByRole("heading", { name: "八字工作台" })).toBeVisible();
+    expect(screen.getByTestId("reading-result-preview-1")).toBeVisible();
+    expect(screen.queryByRole("form", { name: "八字任务输入" })).not.toBeInTheDocument();
+    expect(mockStartPreviewReading).not.toHaveBeenCalled();
+    expect(mockPollReading).toHaveBeenCalledTimes(1);
+  });
+
+  it("writes the reading query on first chart generation so refresh can recover it", async () => {
+    mockStartPreviewReading.mockResolvedValue({ reading_version_id: "preview-new" });
+    mockPollReading.mockResolvedValue(preparedPreview);
+
+    render(<ProductTaskExperience product={PRODUCT_CATALOG.bazi} />);
+
+    expect(await screen.findByRole("form", { name: "八字任务输入" })).toBeVisible();
+    const user = await fillGuestBaziForm();
+    await user.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+
+    expect(await screen.findByRole("heading", { name: "八字工作台" })).toBeVisible();
+    expect(mockStartPreviewReading).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith(
+      "/bazi?reading=preview-new&profile=profile-version-1",
+    );
+    expect(readBaziPreviewRecoveryState("preview-new")).toEqual({
+      version: 1,
+      readingId: "preview-new",
+      profileVersionId: "profile-version-1",
+      question: "请预览我的八字命盘。",
+    });
+  });
+
+  it("restores the submitted question for deep reading instead of using a UI fallback", async () => {
+    persistPreviewRecovery("问题 A：未来一年应优先调整什么？");
+    mockSearch.value = new URLSearchParams("reading=preview-1&profile=profile-1");
+    mockSessionStatus.value = "signedIn";
+    mockPollReading.mockResolvedValue(preparedPreview);
+    mockStartBaziDeepReading.mockResolvedValue({
+      ...deepSummary,
+      status: "input_ready",
+      delivery_state: "payment_required",
+    });
+    mockCreateBaziDeepCheckout.mockResolvedValue({
+      ...checkoutPending,
+      gateway_status: "unavailable",
+      redirect_url: null,
+    });
+
+    render(<ProductTaskExperience product={PRODUCT_CATALOG.bazi} />);
+
+    await userEvent.click(await screen.findByRole("button", { name: "开始安全结账" }));
+
+    await waitFor(() => {
+      expect(mockStartBaziDeepReading).toHaveBeenCalledWith(
+        {
+          profile_version_id: "profile-1",
+          query: "问题 A：未来一年应优先调整什么？",
+        },
+        expect.any(String),
+      );
+    });
+    expect(mockStartBaziDeepReading).not.toHaveBeenCalledWith(
+      expect.objectContaining({ query: "请预览我的八字命盘。" }),
+      expect.any(String),
+    );
+  });
+
+  it("fail-closes old restored previews that have no persisted question", async () => {
+    window.sessionStorage.setItem(
+      "mingli.bazi-preview-recovery:preview-1",
+      JSON.stringify({
+        version: 1,
+        readingId: "preview-1",
+        profileVersionId: "profile-1",
+      }),
+    );
+    mockSearch.value = new URLSearchParams("reading=preview-1&profile=profile-1");
+    mockSessionStatus.value = "signedIn";
+    mockPollReading.mockResolvedValue(preparedPreview);
+
+    render(<ProductTaskExperience product={PRODUCT_CATALOG.bazi} />);
+
+    expect(await screen.findByText("深读需要重新输入原问题")).toBeVisible();
+    expect(screen.getByTestId("reading-result-preview-1")).toBeVisible();
+    expect(screen.queryByRole("button", { name: "开始安全结账" })).not.toBeInTheDocument();
+    expect(mockStartBaziDeepReading).not.toHaveBeenCalled();
+  });
+
+  it("returns to the input form and drops the reading query", async () => {
+    persistPreviewRecovery();
+    mockSearch.value = new URLSearchParams("reading=preview-1");
+    mockPollReading.mockResolvedValue(preparedPreview);
+
+    render(<ProductTaskExperience product={PRODUCT_CATALOG.bazi} />);
+
+    expect(await screen.findByRole("heading", { name: "八字工作台" })).toBeVisible();
+    await userEvent.click(screen.getByRole("button", { name: "返回录入" }));
+
+    expect(await screen.findByRole("form", { name: "八字任务输入" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "八字工作台" })).not.toBeInTheDocument();
+    expect(mockReplace).toHaveBeenCalledWith("/bazi");
+  });
+
+  it("keeps polling a truly pending preview after restore", async () => {
+    vi.useFakeTimers();
+    persistPreviewRecovery();
+    mockSearch.value = new URLSearchParams("reading=preview-1");
+    mockPollReading.mockResolvedValue({
+      ...preparedPreview,
+      status: "input_ready",
+      result_available: undefined,
+      poll_required: undefined,
+    });
+
+    render(<ProductTaskExperience product={PRODUCT_CATALOG.bazi} />);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getByText("正在准备免费盘面")).toBeVisible();
+    expect(screen.queryByTestId("reading-result-preview-1")).not.toBeInTheDocument();
+    expect(mockPollReading).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+    expect(mockPollReading).toHaveBeenCalledTimes(2);
   });
 });

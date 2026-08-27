@@ -8,6 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
 
+from app.identity.models import GuestSession, User
 from app.profiles.models import ProfileVersion, ProfileVersionAuthorization, SubjectProfile
 from app.security.envelope import EncryptedPayload, EnvelopeCipher
 
@@ -19,10 +20,42 @@ def subject_profile_version_lock_statement(
     return select(SubjectProfile).where(SubjectProfile.id == profile_id).with_for_update()
 
 
+def profile_owner_lock_statement(
+    *,
+    owner_user_id: UUID | None,
+    owner_guest_session_id: UUID | None,
+) -> Select[tuple[UUID]]:
+    """Serialize profile tuple conflict checks across every Draft for one owner."""
+    if (owner_user_id is None) == (owner_guest_session_id is None):
+        raise ValueError("a profile owner lock requires exactly one User or Guest owner")
+    if owner_user_id is not None:
+        return select(User.id).where(User.id == owner_user_id).with_for_update()
+    return (
+        select(GuestSession.id)
+        .where(GuestSession.id == owner_guest_session_id)
+        .with_for_update()
+    )
+
+
 class ProfileRepository:
     def __init__(self, session: AsyncSession, cipher: EnvelopeCipher) -> None:
         self.session = session
         self.cipher = cipher
+
+    async def lock_profile_owner(
+        self,
+        *,
+        owner_user_id: UUID | None,
+        owner_guest_session_id: UUID | None,
+    ) -> None:
+        owner_id = await self.session.scalar(
+            profile_owner_lock_statement(
+                owner_user_id=owner_user_id,
+                owner_guest_session_id=owner_guest_session_id,
+            )
+        )
+        if owner_id is None:
+            raise LookupError("Profile owner not found")
 
     async def create_profile(
         self,
@@ -144,6 +177,36 @@ class ProfileRepository:
         )
         return profile
 
+    async def delete_owned_unconfirmed_draft(
+        self,
+        draft_id: UUID,
+        *,
+        owner_user_id: UUID | None,
+        owner_guest_session_id: UUID | None,
+    ) -> bool:
+        profile = await self.session.scalar(
+            select(SubjectProfile)
+            .where(
+                SubjectProfile.id == draft_id,
+                SubjectProfile.owner_user_id == owner_user_id,
+                SubjectProfile.owner_guest_session_id == owner_guest_session_id,
+                SubjectProfile.status == "active",
+            )
+            .with_for_update()
+        )
+        if profile is None:
+            return False
+        confirmed = await self.session.scalar(
+            select(ProfileVersion.id)
+            .where(ProfileVersion.profile_id == profile.id)
+            .limit(1)
+        )
+        if confirmed is not None:
+            return False
+        await self.session.delete(profile)
+        await self.session.flush()
+        return True
+
     async def get_owned_profile(
         self,
         profile_id: UUID,
@@ -170,6 +233,17 @@ class ProfileRepository:
                 .where(ProfileVersion.profile_id == profile_id)
                 .order_by(ProfileVersion.version)
             )
+        )
+
+    async def get_latest_version(self, profile_id: UUID) -> ProfileVersion | None:
+        return cast(
+            ProfileVersion | None,
+            await self.session.scalar(
+                select(ProfileVersion)
+                .where(ProfileVersion.profile_id == profile_id)
+                .order_by(ProfileVersion.version.desc())
+                .limit(1)
+            ),
         )
 
     async def get_owned_profile_version(
@@ -240,6 +314,9 @@ class ProfileRepository:
         version = await self.session.get(ProfileVersion, version_id)
         if version is None:
             raise LookupError("ProfileVersion not found")
+        return self.decrypt_version_payload(version)
+
+    def decrypt_version_payload(self, version: ProfileVersion) -> dict[str, object]:
         payload = EncryptedPayload(
             key_id=version.payload_key_id,
             nonce=version.payload_nonce,

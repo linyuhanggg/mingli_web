@@ -9,7 +9,6 @@ from app.readings.presentation.builder import (
     ReadingDocumentContext,
 )
 from app.readings.runtime_contracts import Prepared, ReadingBrief
-
 from orchestrator_fakes import make_candidate
 from test_narrative_guard import build_brief
 

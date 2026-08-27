@@ -18,6 +18,7 @@ import type {
 import {
   getCsrfToken,
   jsonDelete,
+  jsonPatch,
   jsonPut,
   jsonPost,
   requestJson,
@@ -25,12 +26,13 @@ import {
 } from "./client";
 
 export async function createProfileDraft(
-  label = "本人",
+  label?: string,
 ): Promise<ProfileDraftResponse> {
-  const normalizedLabel = label.trim() || "本人";
-  return jsonPost<ProfileDraftResponse>("/api/v1/profiles/drafts", {
-    label: normalizedLabel,
-  });
+  const normalizedLabel = label?.trim();
+  return jsonPost<ProfileDraftResponse>(
+    "/api/v1/profiles/drafts",
+    normalizedLabel ? { label: normalizedLabel } : {},
+  );
 }
 
 export async function confirmProfileDraft(
@@ -40,6 +42,12 @@ export async function confirmProfileDraft(
   return jsonPost<ProfileSummary>(
     `/api/v1/profiles/drafts/${encodeURIComponent(draftId)}/confirm`,
     body,
+  );
+}
+
+export async function discardProfileDraft(draftId: string): Promise<void> {
+  await jsonDelete<void>(
+    `/api/v1/profiles/drafts/${encodeURIComponent(draftId)}`,
   );
 }
 
@@ -65,6 +73,15 @@ export async function listProfileVersions(
 export async function listProfiles(): Promise<{ profiles: ProfileSummary[] }> {
   await getCsrfToken();
   return requestJson<{ profiles: ProfileSummary[] }>("/api/v1/profiles");
+}
+
+export async function updateProfileDisplayName(
+  profileId: string,
+  displayName: string,
+): Promise<ProfileSummary> {
+  return jsonPatch<ProfileSummary>(`/api/v1/profiles/${encodeURIComponent(profileId)}`, {
+    display_name: displayName.trim(),
+  });
 }
 
 export async function getAccount(): Promise<AccountResponse> {
@@ -167,6 +184,10 @@ export async function logoutCurrentDevice(): Promise<void> {
 }
 
 export function formatProfileOption(profile: ProfileSummary): string {
+  const displayName = profile.display_name?.trim();
+  if (displayName) {
+    return displayName;
+  }
   return `档案 ${profile.version} · ${new Intl.DateTimeFormat("zh-CN", {
     dateStyle: "medium",
     timeStyle: "short",

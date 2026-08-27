@@ -46,7 +46,7 @@
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
-  font-family: var(--font-domain);
+  font-family: var(--font-sans);
   font-size: var(--font-size-label);
   font-weight: 600;
 }
