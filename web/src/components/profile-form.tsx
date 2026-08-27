@@ -133,6 +133,7 @@ export function ProfileForm() {
   const [pendingConfirm, setPendingConfirm] = useState<{
     draftId: string;
     body: ProfileConfirmRequest;
+    formSnapshot: string;
   } | null>(null);
   const busyRef = useRef(false);
   const {
@@ -201,36 +202,46 @@ export function ProfileForm() {
       setNameConflict(null);
       let pending = pendingConfirm;
       try {
+        const displayName = values.display_name?.trim() || undefined;
+        const body: ProfileConfirmRequest = {
+          birth_datetime: localDateTimeWithOffset(
+            values.birth_datetime,
+            values.timezone,
+          ),
+          timezone: values.timezone,
+          location: values.location.trim(),
+          gender: values.gender,
+          time_basis_policy: values.time_basis_policy,
+          zi_hour_policy: values.zi_hour_policy,
+          longitude:
+            values.time_basis_policy !== "solar" ||
+            values.longitude?.trim() === ""
+              ? undefined
+              : Number(values.longitude),
+          latitude:
+            values.time_basis_policy !== "solar" ||
+            values.latitude?.trim() === ""
+              ? undefined
+              : Number(values.latitude),
+          coordinate_source:
+            values.time_basis_policy !== "solar" ||
+            values.coordinate_source?.trim() === ""
+              ? undefined
+              : values.coordinate_source?.trim(),
+          on_name_conflict: "reject",
+        };
+        const formSnapshot = JSON.stringify({
+          displayName: displayName ?? null,
+          body,
+        });
+        if (pending && pending.formSnapshot !== formSnapshot) {
+          await discardProfileDraft(pending.draftId);
+          setPendingConfirm(null);
+          pending = null;
+        }
         if (!pending) {
-          const draft = await createProfileDraft(values.display_name?.trim() || undefined);
-          const body: ProfileConfirmRequest = {
-            birth_datetime: localDateTimeWithOffset(
-              values.birth_datetime,
-              values.timezone,
-            ),
-            timezone: values.timezone,
-            location: values.location.trim(),
-            gender: values.gender,
-            time_basis_policy: values.time_basis_policy,
-            zi_hour_policy: values.zi_hour_policy,
-            longitude:
-              values.time_basis_policy !== "solar" ||
-              values.longitude?.trim() === ""
-                ? undefined
-                : Number(values.longitude),
-            latitude:
-              values.time_basis_policy !== "solar" ||
-              values.latitude?.trim() === ""
-                ? undefined
-                : Number(values.latitude),
-            coordinate_source:
-              values.time_basis_policy !== "solar" ||
-              values.coordinate_source?.trim() === ""
-                ? undefined
-                : values.coordinate_source?.trim(),
-            on_name_conflict: "reject",
-          };
-          pending = { draftId: draft.draft_id, body };
+          const draft = await createProfileDraft(displayName);
+          pending = { draftId: draft.draft_id, body, formSnapshot };
           setPendingConfirm(pending);
         }
         await confirmProfileDraft(pending.draftId, pending.body);
@@ -255,29 +266,6 @@ export function ProfileForm() {
     },
     [pendingConfirm, router],
   );
-
-  const retryPendingConfirm = useCallback(async () => {
-    if (!pendingConfirm || busyRef.current) return;
-    busyRef.current = true;
-    setBusy(true);
-    setSubmitError("");
-    try {
-      await confirmProfileDraft(pendingConfirm.draftId, pendingConfirm.body);
-      setPendingConfirm(null);
-      router.push("/app/profiles?created=1");
-    } catch (reason) {
-      if (isProfileNameConflict(reason)) {
-        setNameConflict(readProfileNameConflict(reason));
-      } else {
-        setSubmitError(
-          `${reason instanceof Error ? reason.message : "档案保存失败，请稍后重试。"} 未确认草稿仍已保留；可以再次重试或明确放弃。`,
-        );
-      }
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-    }
-  }, [pendingConfirm, router]);
 
   const resolveConflict = useCallback(
     async (action: "overwrite" | "save_as") => {
@@ -354,7 +342,7 @@ export function ProfileForm() {
           <button
             className={clsx(formControls.action, formControls.actionSecondary)}
             disabled={busy}
-            onClick={() => void retryPendingConfirm()}
+            onClick={() => void handleSubmit(handleSave)()}
             type="button"
           >
             重试确认
