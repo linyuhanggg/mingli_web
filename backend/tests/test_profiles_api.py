@@ -425,6 +425,40 @@ async def test_duplicate_display_names_are_listed_and_rename_preserves_versions(
     ) == immutable_before
 
 
+async def test_rename_rejects_name_and_birth_date_collision(
+    client: AsyncClient,
+) -> None:
+    headers = await create_guest(client)
+    first = await create_confirmed_profile(client, headers, label="甲")
+    second = await create_confirmed_profile(
+        client,
+        headers,
+        label="乙",
+        birth_datetime="1994-04-30T09:30:00+08:00",
+        location="上海市",
+    )
+
+    renamed = await client.patch(
+        f"/api/v1/profiles/{second['profile_id']}",
+        headers=headers,
+        json={"display_name": "甲"},
+    )
+
+    assert renamed.status_code == 409, renamed.text
+    body = renamed.json()
+    assert body["code"] == "profile_name_conflict"
+    assert body["existing_profile_id"] == first["profile_id"]
+    listed = await client.get("/api/v1/profiles")
+    names = {
+        item["profile_id"]: item["display_name"]
+        for item in listed.json()["profiles"]
+    }
+    assert names == {
+        first["profile_id"]: "甲",
+        second["profile_id"]: "乙",
+    }
+
+
 async def test_profile_rename_is_csrf_protected_and_owner_scoped(
     database: Any,
     test_settings: Any,

@@ -561,6 +561,12 @@ class RuntimeStartupGate:
     expected_release_file_count: int = EXPECTED_RELEASE_FILE_COUNT
     _ready: bool = field(default=False, init=False)
 
+    async def _close_runtime(self) -> None:
+        close = getattr(self.runtime, "close", None)
+        if callable(close):
+            with suppress(Exception):
+                await close()
+
     async def startup(self) -> Described:
         self._ready = False
         try:
@@ -576,8 +582,10 @@ class RuntimeStartupGate:
                 raise RuntimeStartupError("Runtime describe did not return Described")
             self._validate(result, inventory)
         except RuntimeStartupError:
+            await self._close_runtime()
             raise
         except Exception as error:
+            await self._close_runtime()
             raise RuntimeStartupError("runtime_startup_failed") from error
         self._ready = True
         return result
@@ -789,7 +797,10 @@ def failure_for_transport_fault(fault: str) -> RuntimeFailure:
             category="transient",
             retryable=True,
         )
-    if fault in {"already-isolated", "pipe-unavailable", "process-exited"}:
+    if (
+        fault in {"already-isolated", "pipe-unavailable", "process-exited", "encode"}
+        or fault.startswith("transport:")
+    ):
         return RuntimeFailure(
             code="transient.resource_unavailable",
             category="transient",
@@ -1215,6 +1226,15 @@ class WorkerV2MingliRuntimeAdapter:
         self._transport_fault = fault
         return generic_runtime_stopped(failure=failure_for_transport_fault(fault))
 
+    def _retryable_transport_fault(self) -> bool:
+        return self._transport_fault in {
+            "timeout",
+            "pipe-unavailable",
+            "encode",
+            "transport:BrokenPipeError",
+            "transport:ConnectionResetError",
+        }
+
     def _publish_turn(self, command: MingliCommand, result: MingliResult) -> None:
         failure = None
         if isinstance(result, Stopped) and result.failure is not None:
@@ -1239,11 +1259,23 @@ class WorkerV2MingliRuntimeAdapter:
 
     async def execute(self, command: MingliCommand) -> MingliResult:
         async with self._lock:
-            result = await self._execute_locked(command)
+            try:
+                result = await self._execute_locked(command)
+            except RuntimeTransportError:
+                self._publish_turn(
+                    command,
+                    generic_runtime_stopped(
+                        failure=failure_for_transport_fault(
+                            self._transport_fault or "timeout"
+                        )
+                    ),
+                )
+                raise
             self._publish_turn(command, result)
             return result
 
     async def _execute_locked(self, command: MingliCommand) -> MingliResult:
+        previous_transport_fault = self._transport_fault
         self._transport_fault = None
         if (
             self._isolated
@@ -1252,6 +1284,9 @@ class WorkerV2MingliRuntimeAdapter:
             or self._identity_sha256 is None
             or self._written_without_result
         ):
+            self._transport_fault = previous_transport_fault
+            if self._retryable_transport_fault():
+                raise RuntimeTransportError("runtime_pipe_unavailable")
             return self._generic_stop("already-isolated")
         request_id = secrets.token_hex(16)
         if (
@@ -1274,12 +1309,14 @@ class WorkerV2MingliRuntimeAdapter:
             encoded = encode_worker_frame(envelope)
         except RuntimeTransportError:
             await self._isolate_locked()
-            return self._generic_stop("encode")
+            self._transport_fault = "encode"
+            raise
         stdin = self._process.stdin
         stdout = self._process.stdout
         if stdin is None or stdout is None:
             await self._isolate_locked()
-            return self._generic_stop("pipe-unavailable")
+            self._transport_fault = "pipe-unavailable"
+            raise RuntimeTransportError("runtime_pipe_unavailable")
         if _stream_has_pending(stdout) or self._stderr:
             fault = (
                 "pending-before-write"
@@ -1317,12 +1354,17 @@ class WorkerV2MingliRuntimeAdapter:
                 if not self._is_bound_idle(terminal, request_id, sequence):
                     await self._isolate_locked()
                     return self._generic_stop(f"unbound-idle:{terminal.get('type')}")
-        except TimeoutError:
+        except TimeoutError as error:
             await self._isolate_locked()
-            return self._generic_stop("timeout")
-        except (BrokenPipeError, ConnectionResetError, RuntimeTransportError) as error:
+            self._transport_fault = "timeout"
+            raise RuntimeTransportError("runtime_timed_out") from error
+        except (BrokenPipeError, ConnectionResetError) as error:
             await self._isolate_locked()
-            return self._generic_stop(f"transport:{type(error).__name__}")
+            self._transport_fault = f"transport:{type(error).__name__}"
+            raise RuntimeTransportError("runtime_pipe_unavailable") from error
+        except RuntimeTransportError:
+            await self._isolate_locked()
+            return self._generic_stop("transport:RuntimeTransportError")
         except BaseException:
             await self._isolate_locked()
             raise

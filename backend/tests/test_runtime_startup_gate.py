@@ -448,6 +448,88 @@ async def test_startup_gate_rejects_describe_contract_drift(
         await gate.readiness_probe()
 
 
+async def test_startup_gate_closes_started_worker_when_admission_fails() -> None:
+    description = await _fake_description()
+
+    class StartedRuntime:
+        adapter_kind = "runtime-worker-v2"
+        started = False
+        closed = False
+
+        async def start(self) -> dict[str, object]:
+            self.started = True
+            return {}
+
+        async def execute(self, command: object) -> Described:
+            return description
+
+        async def close(self) -> None:
+            self.closed = True
+
+    runtime = StartedRuntime()
+    gate = RuntimeStartupGate(
+        runtime=runtime,  # type: ignore[arg-type]
+        release_inspector=StaticReleaseInspector(_inventory()),
+        expected_manifest_digest="0" * 64,
+        expected_release_manifest_sha256="e" * 64,
+        expected_capability_shape_sha256=runtime_capability_shape_sha256(
+            description.capabilities
+        ),
+    )
+
+    with pytest.raises(RuntimeStartupError, match="manifest digest mismatch"):
+        await gate.startup()
+    assert runtime.started is True
+    assert runtime.closed is True
+    with pytest.raises(RuntimeStartupError, match="not ready"):
+        await gate.readiness_probe()
+
+
+async def test_create_app_closes_owned_runtime_on_lifespan_exit(
+    monkeypatch: pytest.MonkeyPatch,
+    database: Any,
+) -> None:
+    description = await _fake_description()
+    closed: list[str] = []
+
+    class OwnedRuntime:
+        adapter_kind = "runtime-worker-v2"
+        isolated = False
+
+        async def start(self) -> dict[str, object]:
+            return {}
+
+        async def execute(self, command: object) -> Described:
+            return description
+
+        async def close(self) -> None:
+            closed.append("closed")
+            self.isolated = True
+
+    runtime = OwnedRuntime()
+
+    def fake_build(_settings: object) -> RuntimeStartupGate:
+        return RuntimeStartupGate(
+            runtime=runtime,  # type: ignore[arg-type]
+            release_inspector=StaticReleaseInspector(_inventory()),
+            expected_manifest_digest=description.manifest_digest,
+            expected_release_manifest_sha256="e" * 64,
+            expected_capability_shape_sha256=runtime_capability_shape_sha256(
+                description.capabilities
+            ),
+        )
+
+    monkeypatch.setattr("app.main.build_runtime_startup_gate", fake_build)
+    settings = _production_settings(environment="test", cookie_secure=False)
+    from app.main import create_app
+
+    application = create_app(settings=settings, database=database)
+    async with application.router.lifespan_context(application):
+        assert application.state.chart_runtime is runtime
+        assert application.state.runtime_gate is not None
+    assert closed == ["closed"]
+
+
 def test_filesystem_release_inspector_recomputes_the_complete_signed_inventory(
     tmp_path: Path,
 ) -> None:
