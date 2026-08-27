@@ -625,7 +625,11 @@ async def test_draft_delete_fails_closed_for_csrf_other_missing_and_confirmed(
             f"/api/v1/profiles/drafts/{confirmed['profile_id']}",
             headers=first_headers,
         )
-        cleanup = await first.delete(
+        first_delete = await first.delete(
+            f"/api/v1/profiles/drafts/{draft_id}",
+            headers=first_headers,
+        )
+        repeated_delete = await first.delete(
             f"/api/v1/profiles/drafts/{draft_id}",
             headers=first_headers,
         )
@@ -636,7 +640,9 @@ async def test_draft_delete_fails_closed_for_csrf_other_missing_and_confirmed(
     assert cross_owner.json()["title"] == "Profile Draft not found"
     assert missing.status_code == 404
     assert confirmed_delete.status_code == 404
-    assert cleanup.status_code == 204
+    assert first_delete.status_code == 204
+    assert repeated_delete.status_code == 404
+    assert repeated_delete.json()["title"] == "Profile Draft not found"
     from app.profiles.models import SubjectProfile
 
     async with database.sessions() as session:
