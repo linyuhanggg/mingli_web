@@ -47,7 +47,11 @@ vi.mock("@/components/readings/reading-result", () => ({
   ),
 }));
 
-import { ProductTaskExperience } from "@/components/task/product-task-experience";
+import {
+  ProductTaskExperience,
+  persistBaziPreviewRecoveryState,
+  readBaziPreviewRecoveryState,
+} from "@/components/task/product-task-experience";
 import {
   BaziDeepTaskFlow,
   baziPreviewRestoreHref,
@@ -113,6 +117,7 @@ const checkoutConfirmed = {
 };
 
 beforeEach(() => {
+  window.sessionStorage.clear();
   mockSessionStatus.value = "signedOut";
   mockSearch.value = new URLSearchParams();
   mockPollReading.mockReset();
@@ -472,6 +477,14 @@ describe("guest bazi preview restore", () => {
     return user;
   }
 
+  function persistPreviewRecovery(question = "请预览我的八字命盘。") {
+    persistBaziPreviewRecoveryState({
+      readingId: "preview-1",
+      profileVersionId: "profile-1",
+      question,
+    });
+  }
+
   it("reads and writes the guest reading query without dropping other params", () => {
     const current = new URLSearchParams("profile=profile-1");
     expect(readBaziPreviewReadingId(current)).toBeNull();
@@ -485,6 +498,7 @@ describe("guest bazi preview restore", () => {
   });
 
   it("restores a prepared preview after a /bazi refresh that still carries the reading query", async () => {
+    persistPreviewRecovery();
     mockSearch.value = new URLSearchParams("reading=preview-1&profile=profile-1");
     mockPollReading.mockResolvedValue(preparedPreview);
 
@@ -512,9 +526,72 @@ describe("guest bazi preview restore", () => {
     expect(mockReplace).toHaveBeenCalledWith(
       "/bazi?reading=preview-new&profile=profile-version-1",
     );
+    expect(readBaziPreviewRecoveryState("preview-new")).toEqual({
+      version: 1,
+      readingId: "preview-new",
+      profileVersionId: "profile-version-1",
+      question: "请预览我的八字命盘。",
+    });
+  });
+
+  it("restores the submitted question for deep reading instead of using a UI fallback", async () => {
+    persistPreviewRecovery("问题 A：未来一年应优先调整什么？");
+    mockSearch.value = new URLSearchParams("reading=preview-1&profile=profile-1");
+    mockSessionStatus.value = "signedIn";
+    mockPollReading.mockResolvedValue(preparedPreview);
+    mockStartBaziDeepReading.mockResolvedValue({
+      ...deepSummary,
+      status: "input_ready",
+      delivery_state: "payment_required",
+    });
+    mockCreateBaziDeepCheckout.mockResolvedValue({
+      ...checkoutPending,
+      gateway_status: "unavailable",
+      redirect_url: null,
+    });
+
+    render(<ProductTaskExperience product={PRODUCT_CATALOG.bazi} />);
+
+    await userEvent.click(await screen.findByRole("button", { name: "开始安全结账" }));
+
+    await waitFor(() => {
+      expect(mockStartBaziDeepReading).toHaveBeenCalledWith(
+        {
+          profile_version_id: "profile-1",
+          query: "问题 A：未来一年应优先调整什么？",
+        },
+        expect.any(String),
+      );
+    });
+    expect(mockStartBaziDeepReading).not.toHaveBeenCalledWith(
+      expect.objectContaining({ query: "请预览我的八字命盘。" }),
+      expect.any(String),
+    );
+  });
+
+  it("fail-closes old restored previews that have no persisted question", async () => {
+    window.sessionStorage.setItem(
+      "mingli.bazi-preview-recovery:preview-1",
+      JSON.stringify({
+        version: 1,
+        readingId: "preview-1",
+        profileVersionId: "profile-1",
+      }),
+    );
+    mockSearch.value = new URLSearchParams("reading=preview-1&profile=profile-1");
+    mockSessionStatus.value = "signedIn";
+    mockPollReading.mockResolvedValue(preparedPreview);
+
+    render(<ProductTaskExperience product={PRODUCT_CATALOG.bazi} />);
+
+    expect(await screen.findByText("深读需要重新输入原问题")).toBeVisible();
+    expect(screen.getByTestId("reading-result-preview-1")).toBeVisible();
+    expect(screen.queryByRole("button", { name: "开始安全结账" })).not.toBeInTheDocument();
+    expect(mockStartBaziDeepReading).not.toHaveBeenCalled();
   });
 
   it("returns to the input form and drops the reading query", async () => {
+    persistPreviewRecovery();
     mockSearch.value = new URLSearchParams("reading=preview-1");
     mockPollReading.mockResolvedValue(preparedPreview);
 
@@ -530,6 +607,7 @@ describe("guest bazi preview restore", () => {
 
   it("keeps polling a truly pending preview after restore", async () => {
     vi.useFakeTimers();
+    persistPreviewRecovery();
     mockSearch.value = new URLSearchParams("reading=preview-1");
     mockPollReading.mockResolvedValue({
       ...preparedPreview,

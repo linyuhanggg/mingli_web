@@ -76,6 +76,98 @@ import styles from "./task-shell.module.css";
 
 type TaskStage = "input" | "workbench";
 
+const BAZI_PREVIEW_RECOVERY_PREFIX = "mingli.bazi-preview-recovery:";
+
+export type BaziPreviewRecoveryState = {
+  version: 1;
+  readingId: string;
+  profileVersionId: string;
+  question: string;
+};
+
+function baziPreviewRecoveryKey(readingId: string): string {
+  return `${BAZI_PREVIEW_RECOVERY_PREFIX}${readingId}`;
+}
+
+export function persistBaziPreviewRecoveryState(
+  recovery: Omit<BaziPreviewRecoveryState, "version">,
+): BaziPreviewRecoveryState | null {
+  const readingId = recovery.readingId.trim();
+  const profileVersionId = recovery.profileVersionId.trim();
+  const question = recovery.question.trim();
+  if (!readingId || !profileVersionId || !question) return null;
+  const persisted: BaziPreviewRecoveryState = {
+    version: 1,
+    readingId,
+    profileVersionId,
+    question,
+  };
+  if (typeof window !== "undefined") {
+    try {
+      window.sessionStorage.setItem(
+        baziPreviewRecoveryKey(readingId),
+        JSON.stringify(persisted),
+      );
+    } catch {
+      // A blocked storage write must not break the free chart. A later refresh
+      // will fail closed instead of inventing a deep-reading question.
+    }
+  }
+  return persisted;
+}
+
+export function readBaziPreviewRecoveryState(
+  readingId: string | null | undefined,
+): BaziPreviewRecoveryState | null {
+  const expectedReadingId = readingId?.trim() ?? "";
+  if (!expectedReadingId || typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(baziPreviewRecoveryKey(expectedReadingId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<BaziPreviewRecoveryState>;
+    const profileVersionId = parsed.profileVersionId?.trim() ?? "";
+    const question = parsed.question?.trim() ?? "";
+    if (
+      parsed.version !== 1
+      || parsed.readingId?.trim() !== expectedReadingId
+      || !profileVersionId
+      || !question
+    ) {
+      return null;
+    }
+    return {
+      version: 1,
+      readingId: expectedReadingId,
+      profileVersionId,
+      question,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function clearBaziPreviewRecoveryState(readingId: string | null | undefined): void {
+  const normalizedReadingId = readingId?.trim() ?? "";
+  if (!normalizedReadingId || typeof window === "undefined") return;
+  try {
+    window.sessionStorage.removeItem(baziPreviewRecoveryKey(normalizedReadingId));
+  } catch {
+    // The route is still cleared even when browser storage is unavailable.
+  }
+}
+
+function subscribeBrowserReady(): () => void {
+  return () => undefined;
+}
+
+function browserReadySnapshot(): boolean {
+  return true;
+}
+
+function serverReadySnapshot(): boolean {
+  return false;
+}
+
 // 「输入确认」不再是独立一步：提交前摘要随填随现，长在录入面板底部。
 const steps: Array<{ id: TaskStage | "report"; label: string }> = [
   { id: "input", label: "录入与核对" },
@@ -204,9 +296,22 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(
     restoredBaziReadingId,
   );
-  const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(
-    restoredBaziReadingId ? requestedProfileVersionId || null : null,
+  const [baziPreviewRecovery, setBaziPreviewRecovery] =
+    useState<BaziPreviewRecoveryState | null>(null);
+  const browserReady = useSyncExternalStore(
+    subscribeBrowserReady,
+    browserReadySnapshot,
+    serverReadySnapshot,
   );
+  const restoredBaziRecovery = browserReady
+    ? readBaziPreviewRecoveryState(restoredBaziReadingId)
+    : null;
+  const activeBaziRecovery =
+    baziPreviewRecovery?.readingId === baziPreviewReadingId
+      ? baziPreviewRecovery
+      : restoredBaziRecovery?.readingId === baziPreviewReadingId
+        ? restoredBaziRecovery
+        : null;
   const [ziweiPreviewReadingId, setZiweiPreviewReadingId] = useState<string | null>(null);
   const [liuyaoPreviewReadingId, setLiuyaoPreviewReadingId] = useState<string | null>(null);
   const [savedProfiles, setSavedProfiles] = useState<ProfileSummary[]>([]);
@@ -228,6 +333,19 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   function writeBaziPreviewRoute(readingId: string | null, profileVersionId?: string | null) {
     if (typeof router.replace !== "function") return;
     router.replace(baziPreviewRestoreHref(pathname, searchParams, readingId, profileVersionId));
+  }
+
+  function returnToBaziInput() {
+    clearBaziPreviewRecoveryState(baziPreviewReadingId);
+    profileVersionRef.current = null;
+    setBaziPreviewRecovery(null);
+    intentKeyRef.current = null;
+    setBaziPreviewReadingId(null);
+    setSubmitError(null);
+    setSubmitErrorAction(null);
+    setLoginIntentKey(undefined);
+    setStage("input");
+    writeBaziPreviewRoute(null);
   }
 
   useEffect(() => {
@@ -428,7 +546,6 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           }
         }
         profileVersionRef.current = profileVersionId;
-        if (product.id === "bazi") setBaziProfileVersionId(profileVersionId);
 
         const payload: PreviewStartRequest = {
           profile_version_id: profileVersionId,
@@ -458,6 +575,12 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               ? await startZiweiReading(payload, intent.key)
               : await startQizhengReading(payload, intent.key);
         if (product.id === "bazi") {
+          const recovery = persistBaziPreviewRecoveryState({
+            readingId: response.reading_version_id,
+            profileVersionId,
+            question: payload.query ?? "",
+          });
+          setBaziPreviewRecovery(recovery);
           setBaziPreviewReadingId(response.reading_version_id);
           setStage("workbench");
           writeBaziPreviewRoute(response.reading_version_id, profileVersionId);
@@ -899,7 +1022,6 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           product={product}
           onBack={() => {
             profileVersionRef.current = null;
-            setBaziProfileVersionId(null);
             intentKeyRef.current = null;
             setBaziPreviewReadingId(null);
             setZiweiPreviewReadingId(null);
@@ -978,22 +1100,34 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         />
       ) : null}
       {stage === "workbench" && product.id === "bazi" && baziPreviewReadingId ? (
-        <BaziDeepTaskFlow
-          onBack={() => {
-            profileVersionRef.current = null;
-            setBaziProfileVersionId(null);
-            intentKeyRef.current = null;
-            setBaziPreviewReadingId(null);
-            setSubmitError(null);
-            setSubmitErrorAction(null);
-            setLoginIntentKey(undefined);
-            setStage("input");
-            writeBaziPreviewRoute(null);
-          }}
-          previewReadingId={baziPreviewReadingId}
-          profileVersionId={baziProfileVersionId ?? ""}
-          query={values?.issue.trim() || "请预览我的八字命盘。"}
-        />
+        activeBaziRecovery ? (
+          <BaziDeepTaskFlow
+            onBack={returnToBaziInput}
+            previewReadingId={baziPreviewReadingId}
+            profileVersionId={activeBaziRecovery.profileVersionId}
+            query={activeBaziRecovery.question}
+          />
+        ) : !browserReady ? (
+          <Status
+            description="正在核对当前盘面的恢复信息，不会在确认原问题前开放深读。"
+            state="loading"
+            title="正在恢复八字盘面"
+          />
+        ) : (
+          <>
+            <Status
+              actions={(
+                <button onClick={returnToBaziInput} type="button">
+                  返回录入
+                </button>
+              )}
+              description="这份旧恢复状态没有保存原始问题。请返回录入重新提交；当前不会创建深读或结账请求。"
+              state="unavailable"
+              title="深读需要重新输入原问题"
+            />
+            <ReadingResult readingId={baziPreviewReadingId} />
+          </>
+        )
       ) : null}
       {stage === "workbench" && product.id === "ziwei" && !ziweiPreviewReadingId ? (
         <Status
