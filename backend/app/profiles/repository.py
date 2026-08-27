@@ -144,6 +144,36 @@ class ProfileRepository:
         )
         return profile
 
+    async def delete_owned_unconfirmed_draft(
+        self,
+        draft_id: UUID,
+        *,
+        owner_user_id: UUID | None,
+        owner_guest_session_id: UUID | None,
+    ) -> bool:
+        profile = await self.session.scalar(
+            select(SubjectProfile)
+            .where(
+                SubjectProfile.id == draft_id,
+                SubjectProfile.owner_user_id == owner_user_id,
+                SubjectProfile.owner_guest_session_id == owner_guest_session_id,
+                SubjectProfile.status == "active",
+            )
+            .with_for_update()
+        )
+        if profile is None:
+            return False
+        confirmed = await self.session.scalar(
+            select(ProfileVersion.id)
+            .where(ProfileVersion.profile_id == profile.id)
+            .limit(1)
+        )
+        if confirmed is not None:
+            return False
+        await self.session.delete(profile)
+        await self.session.flush()
+        return True
+
     async def get_owned_profile(
         self,
         profile_id: UUID,

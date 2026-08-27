@@ -72,6 +72,27 @@ async def create_profile_draft(
     return ProfileDraftResponse(draft_id=draft_id)
 
 
+@router.delete(
+    "/drafts/{draft_id}",
+    operation_id="deleteProfileDraft",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_profile_draft(
+    request: Request,
+    response: Response,
+    draft_id: UUID,
+    session: AsyncSession = Depends(database_session),
+    owner: Owner = Depends(require_owner_csrf),
+) -> None:
+    _check_rate(owner, request)
+    try:
+        await _service(request, session).delete_draft(owner, draft_id)
+    except ProfileNotFoundError as error:
+        raise ApiProblem(status=404, title="Profile Draft not found") from error
+    await session.commit()
+    mark_private(response)
+
+
 @router.post(
     "/drafts/{draft_id}/confirm",
     operation_id="confirmProfileDraft",

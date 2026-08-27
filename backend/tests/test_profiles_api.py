@@ -536,6 +536,114 @@ async def test_draft_label_is_persisted_not_discarded(
         assert profile.label == "本人"
 
 
+async def test_guest_can_delete_own_unconfirmed_draft(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    headers = await create_guest(client)
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "临时档案"},
+    )
+    assert draft.status_code == 201, draft.text
+
+    deleted = await client.delete(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}",
+        headers=headers,
+    )
+
+    assert deleted.status_code == 204, deleted.text
+    assert deleted.content == b""
+    assert_private_headers(deleted)
+    from app.profiles.models import SubjectProfile
+
+    async with database.sessions() as session:
+        assert await session.scalar(select(SubjectProfile)) is None
+
+
+async def test_user_can_delete_own_unconfirmed_draft(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    guest_headers = await create_guest(client)
+    logged_in = await login_current_guest(client, guest_headers)
+    user_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=user_headers,
+        json={"label": "登录后临时档案"},
+    )
+    assert draft.status_code == 201, draft.text
+
+    deleted = await client.delete(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}",
+        headers=user_headers,
+    )
+
+    assert deleted.status_code == 204, deleted.text
+    assert deleted.content == b""
+    assert_private_headers(deleted)
+    from app.profiles.models import SubjectProfile
+
+    async with database.sessions() as session:
+        assert await session.scalar(select(SubjectProfile)) is None
+
+
+async def test_draft_delete_fails_closed_for_csrf_other_missing_and_confirmed(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    transport = ASGITransport(app=application)
+    async with (
+        AsyncClient(transport=transport, base_url="https://testserver") as first,
+        AsyncClient(transport=transport, base_url="https://testserver") as second,
+    ):
+        first_headers = await create_guest(first)
+        draft = await first.post(
+            "/api/v1/profiles/drafts",
+            headers=first_headers,
+            json={"label": "仅本人可删"},
+        )
+        assert draft.status_code == 201, draft.text
+        draft_id = draft.json()["draft_id"]
+        second_headers = await create_guest(second)
+
+        missing_csrf = await first.delete(f"/api/v1/profiles/drafts/{draft_id}")
+        cross_owner = await second.delete(
+            f"/api/v1/profiles/drafts/{draft_id}",
+            headers=second_headers,
+        )
+        missing = await first.delete(
+            f"/api/v1/profiles/drafts/{UUID(int=0)}",
+            headers=first_headers,
+        )
+        confirmed = await create_confirmed_profile(first, first_headers, label="已确认")
+        confirmed_delete = await first.delete(
+            f"/api/v1/profiles/drafts/{confirmed['profile_id']}",
+            headers=first_headers,
+        )
+        cleanup = await first.delete(
+            f"/api/v1/profiles/drafts/{draft_id}",
+            headers=first_headers,
+        )
+
+    assert missing_csrf.status_code == 403
+    assert missing_csrf.json()["title"] == "CSRF validation failed"
+    assert cross_owner.status_code == 404
+    assert cross_owner.json()["title"] == "Profile Draft not found"
+    assert missing.status_code == 404
+    assert confirmed_delete.status_code == 404
+    assert cleanup.status_code == 204
+    from app.profiles.models import SubjectProfile
+
+    async with database.sessions() as session:
+        remaining = list(await session.scalars(select(SubjectProfile)))
+    assert [str(profile.id) for profile in remaining] == [confirmed["profile_id"]]
+
+
 async def test_profile_writes_require_matching_csrf(client: AsyncClient) -> None:
     await create_guest(client)
 

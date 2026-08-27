@@ -125,6 +125,20 @@ class ProfileService:
         )
         return profile.id
 
+    async def delete_draft(
+        self,
+        owner: OwnerProtocol,
+        draft_id: UUID,
+    ) -> None:
+        user_id, guest_id = owner_ids(owner)
+        deleted = await self.repository.delete_owned_unconfirmed_draft(
+            draft_id,
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+        )
+        if not deleted:
+            raise ProfileNotFoundError("Profile Draft not found")
+
     async def confirm_draft(
         self,
         owner: OwnerProtocol,
