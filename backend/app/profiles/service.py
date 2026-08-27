@@ -226,6 +226,13 @@ class ProfileService:
         payload: ProfileVersionRequest,
     ) -> ProfileSummary:
         user_id, guest_id = owner_ids(owner)
+        try:
+            await self.repository.lock_profile_owner(
+                owner_user_id=user_id,
+                owner_guest_session_id=guest_id,
+            )
+        except LookupError as error:
+            raise ProfileNotFoundError("Profile owner not found") from error
         profile = await self.repository.get_owned_profile(
             profile_id,
             owner_user_id=user_id,
@@ -233,12 +240,31 @@ class ProfileService:
         )
         if profile is None:
             raise ProfileNotFoundError("Subject Profile not found")
-        has_version = await self.session.scalar(
-            select(ProfileVersion.id).where(ProfileVersion.profile_id == profile.id).limit(1)
-        )
-        if has_version is None:
+        latest_version = await self.repository.get_latest_version(profile.id)
+        if latest_version is None:
             raise ProfileNotConfirmedError("Subject Profile has no confirmed version")
         self._validate_version_authorization(payload)
+        birth_date = _birth_date_from_datetime(payload.birth_datetime)
+        display_name = _resolved_display_name(profile.label, birth_date)
+        conflict = await self._name_birth_conflict(
+            owner,
+            display_name=display_name,
+            birth_date=birth_date,
+            exclude_profile_id=profile.id,
+        )
+        if conflict is not None:
+            existing_profile, existing_version = conflict
+            suggested = await self._unique_save_as_name(
+                owner,
+                display_name,
+                exclude_profile_id=profile.id,
+            )
+            raise ProfileNameConflictError(
+                existing_profile_id=existing_profile.id,
+                existing_profile_version_id=existing_version.id,
+                display_name=display_name,
+                suggested_save_as_name=suggested,
+            )
         version = await self.repository.create_version(
             profile_id=profile.id,
             payload=_version_facts(payload),

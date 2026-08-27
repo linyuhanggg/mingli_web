@@ -2,7 +2,7 @@ import asyncio
 import importlib
 import os
 from collections.abc import AsyncIterator
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from types import SimpleNamespace
 from typing import Any
 from uuid import UUID, uuid4
@@ -176,6 +176,49 @@ async def test_identical_identity_fields_do_not_auto_merge_profiles(
         second_payload = await service.repository.load_version_payload(second.profile_version_id)
         assert first_payload["birth_datetime"] == second_payload["birth_datetime"]
         assert first_payload["location"] == second_payload["location"]
+
+
+async def test_append_rejects_name_and_birth_date_collision_without_new_version(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    async with database.sessions() as session:
+        user = User()
+        session.add(user)
+        await session.flush()
+        service = ProfileService(session, test_settings)
+        owner = _owner(user.id)
+        first_draft = await service.create_draft(owner, label="同名档案")
+        second_draft = await service.create_draft(owner, label="同名档案")
+        first = await service.confirm_draft(owner, first_draft, _confirm_payload())
+        second = await service.confirm_draft(
+            owner,
+            second_draft,
+            _confirm_payload(birth_datetime="2001-07-12T09:30:00+08:00"),
+        )
+
+        with pytest.raises(ProfileNameConflictError) as conflicted:
+            await service.append_version(
+                owner,
+                second.profile_id,
+                _version_payload(
+                    birth_datetime="1994-04-30T06:10:00+08:00",
+                ),
+            )
+
+        assert conflicted.value.existing_profile_id == first.profile_id
+        assert conflicted.value.existing_profile_version_id == first.profile_version_id
+        assert conflicted.value.display_name == "同名档案"
+        assert conflicted.value.suggested_save_as_name == "同名档案 (2)"
+        versions = list(
+            await session.scalars(
+                select(ProfileVersion)
+                .where(ProfileVersion.profile_id == second.profile_id)
+                .order_by(ProfileVersion.version)
+            )
+        )
+        assert [version.id for version in versions] == [second.profile_version_id]
+        assert await session.scalar(select(func.count(ProfileVersion.id))) == 2
 
 
 async def test_append_without_difference_ack_is_rejected(
@@ -599,6 +642,44 @@ async def test_profile_rename_locks_owner_before_reading_profile(
         assert calls[:2] == ["lock", "read"]
 
 
+async def test_profile_correction_locks_owner_before_reading_profile(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async with database.sessions() as session:
+        user = User()
+        session.add(user)
+        await session.flush()
+        service = ProfileService(session, test_settings)
+        owner = _owner(user.id)
+        draft_id = await service.create_draft(owner, label="本人")
+        confirmed = await service.confirm_draft(owner, draft_id, _confirm_payload())
+        calls: list[str] = []
+        original_lock = service.repository.lock_profile_owner
+        original_get = service.repository.get_owned_profile
+
+        async def tracked_lock(**kwargs: Any) -> None:
+            calls.append("lock")
+            await original_lock(**kwargs)
+
+        async def tracked_get(*args: Any, **kwargs: Any) -> SubjectProfile | None:
+            calls.append("read")
+            return await original_get(*args, **kwargs)
+
+        monkeypatch.setattr(service.repository, "lock_profile_owner", tracked_lock)
+        monkeypatch.setattr(service.repository, "get_owned_profile", tracked_get)
+
+        corrected = await service.append_version(
+            owner,
+            confirmed.profile_id,
+            _version_payload(),
+        )
+
+        assert corrected.version == 2
+        assert calls[:2] == ["lock", "read"]
+
+
 async def test_guest_claim_locks_guest_then_user_before_scan_and_transfer(
     database: Any,
     test_settings: Any,
@@ -754,6 +835,69 @@ async def test_postgresql_owner_lock_serializes_concurrent_profile_renames(
             )
         )
     assert confirmed_target_count == 1
+
+
+async def test_postgresql_owner_lock_serializes_concurrent_profile_corrections(
+    postgres_profile_database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async with postgres_profile_database.sessions() as session, session.begin():
+        user = User()
+        session.add(user)
+        await session.flush()
+        service = ProfileService(session, test_settings)
+        owner = _owner(user.id)
+        first_draft = await service.create_draft(owner, label="同名档案")
+        second_draft = await service.create_draft(owner, label="同名档案")
+        first = await service.confirm_draft(owner, first_draft, _confirm_payload())
+        second = await service.confirm_draft(
+            owner,
+            second_draft,
+            _confirm_payload(birth_datetime="2001-07-12T09:30:00+08:00"),
+        )
+        user_id = user.id
+
+    first_check_finished, second_check_started, release_first = (
+        _delay_first_profile_conflict_check(monkeypatch)
+    )
+
+    async def correct(profile_id: UUID) -> str:
+        async with postgres_profile_database.sessions() as session, session.begin():
+            service = ProfileService(session, test_settings)
+            try:
+                await service.append_version(
+                    _owner(user_id),
+                    profile_id,
+                    _version_payload(
+                        birth_datetime="1988-08-08T08:08:00+08:00",
+                    ),
+                )
+            except ProfileNameConflictError:
+                return "conflict"
+        return "corrected"
+
+    first_task = asyncio.create_task(correct(first.profile_id))
+    await asyncio.wait_for(first_check_finished.wait(), timeout=2)
+    second_task = asyncio.create_task(correct(second.profile_id))
+    second_was_blocked = await _profile_conflict_call_was_blocked(second_check_started)
+    release_first.set()
+    outcomes = await asyncio.wait_for(
+        asyncio.gather(first_task, second_task),
+        timeout=5,
+    )
+
+    assert second_was_blocked is True
+    assert sorted(outcomes) == ["conflict", "corrected"]
+    async with postgres_profile_database.sessions() as session:
+        profiles = await ProfileService(session, test_settings).list_profiles(
+            _owner(user_id)
+        )
+    assert sum(
+        profile.display_name == "同名档案"
+        and profile.birth_date == date(1988, 8, 8)
+        for profile in profiles
+    ) == 1
 
 
 async def test_postgresql_owner_lock_serializes_rename_with_draft_confirmation(
