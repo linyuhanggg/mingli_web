@@ -3,7 +3,7 @@
 Walks one fictional email through the real FastAPI app, real repositories,
 and the in-memory SQLite database with the Fake OTP adapter (code 246810):
 guest session -> email OTP -> first-login account creation -> fictional
-profile -> Fake preview reading to the accepted terminal state -> reading
+profile -> deterministic Fake preview chart without Worker/model -> reading
 history -> second login with a fresh client resolving to the same user ->
 negative OTP and cross-account isolation checks -> CSRF transition from the
 guest token to the device token.  No network access and no real personal data.
@@ -12,14 +12,12 @@ guest token to the device token.  No network access and no real personal data.
 from typing import Any
 from uuid import UUID
 
-import pytest
 from app.identity.models import DeviceSession, LoginIdentity, User
 from app.identity.policy import CURRENT_POLICY_VERSION
 from app.main import create_app
 from app.security.envelope import EncryptedPayload, EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
-from worker.readings import build_reading_worker
 
 EMAIL_RAW = "  Mingli.Journey.User@Example.COM "
 EMAIL_NORMALIZED = "mingli.journey.user@example.com"
@@ -154,19 +152,6 @@ async def seed_runtime_release(database: Any, settings: Any) -> None:
         await session.commit()
 
 
-async def drive_worker_to_quiescence(database: Any, settings: Any) -> None:
-    """Poll the real worker once per iteration until no job is claimable."""
-    worker = build_reading_worker(
-        settings=settings,
-        database=database,
-        worker_id="email-journey-test-worker",
-    )
-    for _ in range(8):
-        if not await worker.run_once():
-            return
-    pytest.fail("reading jobs did not quiesce within eight worker iterations")
-
-
 async def test_email_registration_login_full_journey(
     client: AsyncClient,
     database: Any,
@@ -243,7 +228,7 @@ async def test_email_registration_login_full_journey(
     ):
         assert banned not in account.text
 
-    # 4. Fictional profile, then a real Fake preview reading to terminal state.
+    # 4. Fictional profile, then a deterministic Fake chart without the Worker.
     confirmed = await create_confirmed_profile(client, device_headers)
     await seed_runtime_release(database, test_settings)
     started = await client.post(
@@ -256,14 +241,11 @@ async def test_email_registration_login_full_journey(
     )
     assert started.status_code == 201, started.text
     version_id = started.json()["reading_version_id"]
-    await drive_worker_to_quiescence(database, test_settings)
-
     result = await client.get(f"/api/v1/readings/{version_id}/result")
     assert result.status_code == 200
     result_body = result.json()
-    assert result_body["status"] == "accepted"
-    assert result_body["accepted_copy"].startswith("这是合同测试候选稿")
-    assert "仅供传统文化参考" in result_body["accepted_copy"]
+    assert result_body["status"] == "prepared"
+    assert result_body["accepted_copy"] is None
     assert result_body["fact_panel"]["facts"]
     assert any(
         limit["kind_id"] == "limit:traditional"
@@ -290,7 +272,7 @@ async def test_email_registration_login_full_journey(
     ]
     summary = await client.get(f"/api/v1/readings/{version_id}")
     assert summary.status_code == 200
-    assert summary.json()["status"] == "accepted"
+    assert summary.json()["status"] == "prepared"
     for banned in ("state_token", "ciphertext", "candidate"):
         assert banned not in summary.text
 
@@ -319,10 +301,12 @@ async def test_email_registration_login_full_journey(
             "profiles": [
                 {
                     "profile_id": confirmed["profile_id"],
-                    "profile_version_id": confirmed["profile_version_id"],
-                    "subject_ref": confirmed["subject_ref"],
-                    "version": 1,
-                    "created_at": confirmed["created_at"],
+                        "profile_version_id": confirmed["profile_version_id"],
+                        "subject_ref": confirmed["subject_ref"],
+                        "version": 1,
+                        "display_name": "本人",
+                        "birth_date": "1994-04-30",
+                        "created_at": confirmed["created_at"],
                 }
             ]
         }

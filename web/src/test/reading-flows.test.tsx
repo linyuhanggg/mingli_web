@@ -97,7 +97,7 @@ beforeEach(() => {
 });
 
 describe("Profile contract", () => {
-  it("creates a non-empty 本人 draft and confirms backend-valid enums and offset datetime", async () => {
+  it("omits a blank archive name so the backend can assign a fallback", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
       if (path === "/api/v1/guest-sessions") return guestSession();
@@ -128,7 +128,7 @@ describe("Profile contract", () => {
       expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
     );
     const draftCall = callsTo(fetchMock, "/api/v1/profiles/drafts")[0];
-    expect(JSON.parse(String(draftCall[1]?.body))).toEqual({ label: "本人" });
+    expect(JSON.parse(String(draftCall[1]?.body))).toEqual({});
 
     const confirmCall = fetchMock.mock.calls.find(([url]) =>
       String(url).endsWith("/confirm"),

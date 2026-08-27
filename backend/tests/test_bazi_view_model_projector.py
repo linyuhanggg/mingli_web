@@ -374,9 +374,40 @@ def test_invalid_changed_pillar_is_rejected_by_bazi_contract_and_projector() -> 
     assert view_model.core_facts.calendar_normalization is None
 
 
-def test_g3_calendar_fields_are_bazi_specific_and_do_not_relax_fortune_contract() -> None:
+def test_g3_calendar_fields_are_additive_and_strict_in_fortune_contract() -> None:
+    normalized = FortuneCalendarNormalization.model_validate(
+        _g3_calendar_normalization()
+    )
+    assert normalized.effective_datetime == "1985-03-01T23:33:00+08:00"
+    assert normalized.day_boundary is not None
+    assert normalized.day_boundary.correction_crossed_date is True
+    assert normalized.changed_pillars == ("day", "hour")
+    assert normalized.solar_terms is not None
+    assert normalized.solar_terms.next is not None
+    assert normalized.solar_terms.next.name == "惊蛰"
+
+    legacy = _g3_calendar_normalization()
+    for field in (
+        "effective_datetime",
+        "day_boundary",
+        "changed_pillars",
+        "solar_terms",
+    ):
+        legacy.pop(field)
+    legacy_dump = FortuneCalendarNormalization.model_validate(legacy).model_dump(
+        mode="json"
+    )
+    assert "effective_datetime" not in legacy_dump
+    assert "day_boundary" not in legacy_dump
+    assert "changed_pillars" not in legacy_dump
+    assert "solar_terms" not in legacy_dump
+
+    invalid = _g3_calendar_normalization()
+    solar_terms = invalid["solar_terms"]
+    assert isinstance(solar_terms, dict)
+    solar_terms["raw_runtime_payload"] = {}
     with pytest.raises(ValueError):
-        FortuneCalendarNormalization.model_validate(_g3_calendar_normalization())
+        FortuneCalendarNormalization.model_validate(invalid)
 
 
 def test_projects_calculated_bazi_facts_into_versioned_chart() -> None:

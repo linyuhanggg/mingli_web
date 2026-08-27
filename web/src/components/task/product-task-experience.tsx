@@ -2,7 +2,7 @@
 
 import { Check, ChevronRight, Circle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Status } from "@/components/ui/status";
 import { ReadingResult } from "@/components/readings/reading-result";
@@ -10,8 +10,10 @@ import { WorkbenchShell } from "@/components/workbench/workbench-shell";
 import {
   confirmProfileDraft,
   createProfileDraft,
+  formatProfileOption,
   ApiError,
   listProfiles,
+  type ProfileConfirmRequest,
   startFengshuiReading,
   startPhysiognomyReading,
   startCanwenReading,
@@ -47,9 +49,17 @@ import {
 } from "@/lib/api";
 import { localDateTimeWithOffset } from "@/lib/date-time";
 import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
-import { mapStartReadingFailure } from "@/lib/start-reading-error";
+import {
+  isProfileNameConflict,
+  readProfileNameConflict,
+  type ProfileNameConflict,
+} from "@/lib/profile-conflict";
+import { loginContinueHref } from "@/lib/login-continue";
+import { mapStartReadingFailure, startReadingFailureAction } from "@/lib/start-reading-error";
 import type { ProductDefinition } from "@/products/catalog";
 
+import { ProfileNameConflictDialog } from "../profile-name-conflict-dialog";
+import { ProfileRenameControl } from "../profile-rename-control";
 import { ProductInputForm, type TaskFormValues } from "./product-input-form";
 import { BaziDeepTaskFlow } from "./bazi-deep-task-flow";
 import styles from "./task-shell.module.css";
@@ -165,13 +175,18 @@ function InputTrustRail({ product }: { product: ProductDefinition }) {
 
 export function ProductTaskExperience({ product }: { product: ProductDefinition }) {
   const router = useRouter();
+  const pathname = usePathname() || `/${product.id}`;
   const searchParams = useSearchParams();
   const requestedProfileVersionId = searchParams.get("profile") ?? "";
   const shouldLoadProfiles = usesSavedProfiles(product);
   const [stage, setStage] = useState<TaskStage>("input");
   const [values, setValues] = useState<TaskFormValues | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitErrorState, setSubmitErrorState] = useState<"unavailable" | "error">("unavailable");
+  const [submitErrorState, setSubmitErrorState] = useState<"unavailable" | "error" | "unauthorized">("unavailable");
+  const [submitErrorAction, setSubmitErrorAction] = useState<"login" | "retry" | null>(null);
+  const [loginIntentKey, setLoginIntentKey] = useState<string | undefined>();
+  const [nameConflict, setNameConflict] = useState<ProfileNameConflict | null>(null);
+  const [createdProfile, setCreatedProfile] = useState<ProfileSummary | null>(null);
   const [busy, setBusy] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(null);
@@ -188,6 +203,11 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [savedProfilesAttempt, setSavedProfilesAttempt] = useState(0);
   const profileVersionRef = useRef<string | null>(null);
   const intentKeyRef = useRef<IntentKey | null>(null);
+  const pendingProfileRef = useRef<{
+    draftId: string;
+    body: ProfileConfirmRequest;
+    nextValues: TaskFormValues;
+  } | null>(null);
 
   useEffect(() => {
     if (!shouldLoadProfiles) return;
@@ -250,6 +270,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     if (busy) return;
     setBusy(true);
     setSubmitError(null);
+    setSubmitErrorAction(null);
+    setLoginIntentKey(undefined);
 
     try {
       if (product.id === "jianxiang") {
@@ -334,8 +356,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       if (product.group === "natal") {
         let profileVersionId = selectedProfileVersionId || profileVersionRef.current;
         if (!profileVersionId) {
-          const draft = await createProfileDraft(nextValues.subject.trim());
-          const profile = await confirmProfileDraft(draft.draft_id, {
+          const draft = await createProfileDraft(nextValues.subject.trim() || undefined);
+          const body: ProfileConfirmRequest = {
             birth_datetime: localDateTimeWithOffset(
               `${nextValues.birthDate}T${nextValues.birthTime}`,
               nextValues.timezone,
@@ -350,8 +372,20 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             longitude: nextValues.longitude.trim() ? Number(nextValues.longitude) : undefined,
             latitude: nextValues.latitude.trim() ? Number(nextValues.latitude) : undefined,
             coordinate_source: nextValues.coordinateSource.trim() || undefined,
-          });
-          profileVersionId = profile.profile_version_id;
+            on_name_conflict: "reject",
+          };
+          try {
+            const profile = await confirmProfileDraft(draft.draft_id, body);
+            profileVersionId = profile.profile_version_id;
+            setCreatedProfile(profile);
+          } catch (reason) {
+            if (isProfileNameConflict(reason)) {
+              pendingProfileRef.current = { draftId: draft.draft_id, body, nextValues };
+              setNameConflict(readProfileNameConflict(reason));
+              return;
+            }
+            throw reason;
+          }
         }
         profileVersionRef.current = profileVersionId;
         if (product.id === "bazi") setBaziProfileVersionId(profileVersionId);
@@ -398,8 +432,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       if (product.id === "hecan" || product.id === "canwen") {
         let profileVersionId = selectedProfileVersionId || profileVersionRef.current;
         if (!profileVersionId) {
-          const draft = await createProfileDraft(nextValues.subject.trim());
-          const profile = await confirmProfileDraft(draft.draft_id, {
+          const draft = await createProfileDraft(nextValues.subject.trim() || undefined);
+          const body: ProfileConfirmRequest = {
             birth_datetime: localDateTimeWithOffset(
               `${nextValues.birthDate}T${nextValues.birthTime}`,
               nextValues.timezone,
@@ -411,8 +445,20 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               nextValues.timeStandard === "local-apparent-solar" ? "solar" : "civil"
             ) as TimeBasisPolicy,
             zi_hour_policy: "midnight",
-          });
-          profileVersionId = profile.profile_version_id;
+            on_name_conflict: "reject",
+          };
+          try {
+            const profile = await confirmProfileDraft(draft.draft_id, body);
+            profileVersionId = profile.profile_version_id;
+            setCreatedProfile(profile);
+          } catch (reason) {
+            if (isProfileNameConflict(reason)) {
+              pendingProfileRef.current = { draftId: draft.draft_id, body, nextValues };
+              setNameConflict(readProfileNameConflict(reason));
+              return;
+            }
+            throw reason;
+          }
         }
         profileVersionRef.current = profileVersionId;
         const artByLabel: Record<string, "bazi" | "ziwei" | "qizheng"> = {
@@ -662,6 +708,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       const mapped = mapStartReadingFailure(reason);
       setSubmitErrorState(mapped.state);
       setSubmitError(mapped.title);
+      setSubmitErrorAction(startReadingFailureAction(reason));
+      setLoginIntentKey(intentKeyRef.current?.key);
     } finally {
       setBusy(false);
     }
@@ -671,15 +719,69 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   // 因此这里不再插入一个独立的「输入确认」页，直接进入生成。
   function handleConfirm(nextValues: TaskFormValues) {
     setSubmitError(null);
+    setSubmitErrorAction(null);
+    setLoginIntentKey(undefined);
+    setNameConflict(null);
     setValues(nextValues);
     void startRuntimeReading(nextValues);
   }
 
+  async function resolveProfileConflict(action: "overwrite" | "save_as") {
+    const pending = pendingProfileRef.current;
+    if (!pending) return;
+    setBusy(true);
+    setSubmitError(null);
+    setSubmitErrorAction(null);
+    setLoginIntentKey(undefined);
+    try {
+      const profile = await confirmProfileDraft(pending.draftId, {
+        ...pending.body,
+        on_name_conflict: action,
+      });
+      pendingProfileRef.current = null;
+      setNameConflict(null);
+      setCreatedProfile(profile);
+      profileVersionRef.current = profile.profile_version_id;
+      setSelectedProfileVersionId(profile.profile_version_id);
+      await startRuntimeReading(pending.nextValues);
+    } catch (reason) {
+      const mapped = mapStartReadingFailure(reason);
+      setSubmitErrorState(mapped.state);
+      setSubmitError(mapped.title);
+      setSubmitErrorAction(startReadingFailureAction(reason));
+      setLoginIntentKey(intentKeyRef.current?.key);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const shouldKeepZiweiInputMounted = product.id === "ziwei" && values !== null;
+  const search = searchParams.toString();
+  const loginHref = loginContinueHref(
+    pathname,
+    search ? `?${search}` : "",
+    loginIntentKey,
+  );
 
   return (
     <div className={styles.experience} data-product={product.id} data-stage={stage}>
+      <ProfileNameConflictDialog
+        conflict={nameConflict}
+        busy={busy}
+        onOverwrite={() => void resolveProfileConflict("overwrite")}
+        onSaveAs={() => void resolveProfileConflict("save_as")}
+        onCancel={() => {
+          pendingProfileRef.current = null;
+          setNameConflict(null);
+        }}
+      />
       {stage !== "input" ? <TaskProgress product={product} stage={stage} /> : null}
+      {createdProfile && stage === "workbench" ? (
+        <div className={styles.renameBar}>
+          <p>当前档案：{createdProfile.display_name?.trim() || formatProfileOption(createdProfile)}</p>
+          <ProfileRenameControl profile={createdProfile} onRenamed={setCreatedProfile} />
+        </div>
+      ) : null}
       {stage === "input" || shouldKeepZiweiInputMounted ? (
         <div
           className={styles.inputLayout}
@@ -710,6 +812,12 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             }}
             submitError={submitError}
             submitErrorState={submitErrorState}
+            submitErrorAction={submitErrorAction}
+            loginHref={loginHref}
+            hideUnknownHour={product.id === "bazi"}
+            onRetry={() => {
+              if (values) void startRuntimeReading(values);
+            }}
           />
           <InputTrustRail product={product} />
         </div>
@@ -724,6 +832,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             setBaziPreviewReadingId(null);
             setZiweiPreviewReadingId(null);
             setSubmitError(null);
+            setSubmitErrorAction(null);
+            setLoginIntentKey(undefined);
             setStage("input");
           }}
         />
@@ -735,6 +845,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               type="button"
               onClick={() => {
                 setSubmitError(null);
+                setSubmitErrorAction(null);
+                setLoginIntentKey(undefined);
                 setStage("input");
               }}
             >
@@ -757,6 +869,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
                   intentKeyRef.current = null;
                   setLiuyaoPreviewReadingId(null);
                   setSubmitError(null);
+                  setSubmitErrorAction(null);
+                  setLoginIntentKey(undefined);
                   setStage("input");
                 }}
               >
@@ -777,6 +891,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               type="button"
               onClick={() => {
                 setSubmitError(null);
+                setSubmitErrorAction(null);
+                setLoginIntentKey(undefined);
                 setStage("input");
               }}
             >
@@ -796,6 +912,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             intentKeyRef.current = null;
             setBaziPreviewReadingId(null);
             setSubmitError(null);
+            setSubmitErrorAction(null);
+            setLoginIntentKey(undefined);
             setStage("input");
           }}
           previewReadingId={baziPreviewReadingId}
@@ -810,6 +928,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               type="button"
               onClick={() => {
                 setSubmitError(null);
+                setSubmitErrorAction(null);
+                setLoginIntentKey(undefined);
                 setStage("input");
               }}
             >
@@ -832,6 +952,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
                   intentKeyRef.current = null;
                   setZiweiPreviewReadingId(null);
                   setSubmitError(null);
+                  setSubmitErrorAction(null);
+                  setLoginIntentKey(undefined);
                   setStage("input");
                 }}
               >
