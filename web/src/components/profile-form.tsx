@@ -118,6 +118,13 @@ const profileSchema = z
 
 type ProfileFormValues = z.input<typeof profileSchema>;
 
+function confirmedProfileHref(profile: {
+  profile_id: string;
+  profile_version_id: string;
+}): string {
+  return `/account/profiles/${encodeURIComponent(profile.profile_id)}?version=${encodeURIComponent(profile.profile_version_id)}`;
+}
+
 export function ProfileForm() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -280,13 +287,13 @@ export function ProfileForm() {
       setBusy(true);
       setSubmitError("");
       try {
-        await confirmProfileDraft(pending.draftId, {
+        const profile = await confirmProfileDraft(pending.draftId, {
           ...pending.body,
           on_name_conflict: action,
         });
         setPendingConfirm(null);
         setNameConflict(null);
-        router.push("/app/profiles?created=1");
+        router.push(confirmedProfileHref(profile));
       } catch (reason) {
         setSubmitError(
           reason instanceof Error ? reason.message : "档案保存失败，请稍后重试。",

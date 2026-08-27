@@ -42,6 +42,7 @@ import {
 import { getProductDefinition } from "@/products/catalog";
 
 const profileVersionId = "11111111-1111-4111-8111-111111111111";
+const resumedProfileVersionId = "22222222-2222-4222-8222-222222222222";
 const pendingStartReadError = "无法恢复登录前的排盘资料";
 const pendingStartWriteError = "无法保存登录续接资料，请允许本网站使用会话存储后重试。";
 const nativeSessionStorage = window.sessionStorage;
@@ -249,5 +250,82 @@ describe("ProductTaskExperience pending start storage failures", () => {
     restoreSessionStorage();
     await user.click(screen.getByRole("button", { name: "重试恢复" }));
     expect(await screen.findByRole("form", { name: "八字任务输入" })).toBeVisible();
+  });
+});
+
+describe("ProductTaskExperience resumed profile selection", () => {
+  const profiles = [
+    {
+      profile_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      profile_version_id: profileVersionId,
+      subject_ref: `profile-version:${profileVersionId}`,
+      version: 1,
+      display_name: "路由档案 A",
+      created_at: "2026-08-27T00:00:00Z",
+    },
+    {
+      profile_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      profile_version_id: resumedProfileVersionId,
+      subject_ref: `profile-version:${resumedProfileVersionId}`,
+      version: 1,
+      display_name: "续接档案 B",
+      created_at: "2026-08-27T00:01:00Z",
+    },
+  ];
+
+  it("prefers the persisted login-continuation selection over a stale route profile", async () => {
+    mockNavigation.searchParams = new URLSearchParams({ profile: profileVersionId });
+    mockListProfiles.mockResolvedValue({ profiles });
+    const user = userEvent.setup();
+    render(createElement(ProductTaskExperience, {
+      product: getProductDefinition("bazi"),
+    }));
+
+    const profileSelect = await screen.findByRole("combobox", { name: "排盘资料" });
+    expect(profileSelect).toHaveValue(profileVersionId);
+    await user.selectOptions(profileSelect, resumedProfileVersionId);
+    await user.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    expect(await screen.findByRole("link", { name: "登录后继续" })).toBeVisible();
+
+    const resumeKey = mockStartPreviewReading.mock.calls[0]?.[1] as string;
+    expect(loadPendingStartTask(resumeKey)).toMatchObject({
+      values: { profileVersionId: resumedProfileVersionId },
+    });
+
+    cleanup();
+    mockNavigation.searchParams = new URLSearchParams({
+      profile: profileVersionId,
+      idempotency_key: resumeKey,
+    });
+    render(createElement(ProductTaskExperience, {
+      product: getProductDefinition("bazi"),
+    }));
+
+    const resumedSelect = await screen.findByRole("combobox", { name: "排盘资料" });
+    await waitFor(() => expect(resumedSelect).toHaveValue(resumedProfileVersionId));
+    const resumedUser = userEvent.setup();
+    await resumedUser.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    await waitFor(() => expect(mockStartPreviewReading).toHaveBeenCalledTimes(2));
+    expect(mockStartPreviewReading.mock.calls[1]?.[0]).toMatchObject({
+      profile_version_id: resumedProfileVersionId,
+    });
+  });
+
+  it("still honors a valid route profile when there is no continuation", async () => {
+    mockNavigation.searchParams = new URLSearchParams({ profile: profileVersionId });
+    mockListProfiles.mockResolvedValue({ profiles });
+
+    render(createElement(ProductTaskExperience, {
+      product: getProductDefinition("bazi"),
+    }));
+
+    const profileSelect = await screen.findByRole("combobox", { name: "排盘资料" });
+    await waitFor(() => expect(profileSelect).toHaveValue(profileVersionId));
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    await waitFor(() => expect(mockStartPreviewReading).toHaveBeenCalledTimes(1));
+    expect(mockStartPreviewReading.mock.calls[0]?.[0]).toMatchObject({
+      profile_version_id: profileVersionId,
+    });
   });
 });

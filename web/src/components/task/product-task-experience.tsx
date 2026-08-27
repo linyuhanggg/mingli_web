@@ -435,6 +435,13 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         setSavedProfiles(profiles);
         setSelectedProfileVersionId((current) => {
           if (
+            resumedSelectionContext
+            && resumedProfileAvailable
+            && resumedProfileVersionId
+          ) {
+            return resumedProfileVersionId;
+          }
+          if (
             requestedProfileVersionId &&
             profiles.some(
               (profile) => profile.profile_version_id === requestedProfileVersionId,
@@ -492,6 +499,35 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     resumedSelectionContext,
     savedProfilesAttempt,
   ]);
+
+  async function confirmTaskProfile(
+    nextValues: TaskFormValues,
+    body: ProfileConfirmRequest,
+  ): Promise<ProfileSummary | null> {
+    let pending = pendingProfileRef.current;
+    if (pending && pending.nextValues !== nextValues) {
+      await discardProfileDraft(pending.draftId);
+      pendingProfileRef.current = null;
+      pending = null;
+    }
+    if (!pending) {
+      const draft = await createProfileDraft(nextValues.subject.trim() || undefined);
+      pending = { draftId: draft.draft_id, body, nextValues };
+      pendingProfileRef.current = pending;
+    }
+    try {
+      const profile = await confirmProfileDraft(pending.draftId, pending.body);
+      pendingProfileRef.current = null;
+      setCreatedProfile(profile);
+      return profile;
+    } catch (reason) {
+      if (isProfileNameConflict(reason)) {
+        setNameConflict(readProfileNameConflict(reason));
+        return null;
+      }
+      throw reason;
+    }
+  }
 
   async function startRuntimeReading(nextValues: TaskFormValues) {
     if (resumedTask && resumeKey) {
@@ -590,7 +626,6 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       if (product.group === "natal") {
         let profileVersionId = selectedProfileVersionId || profileVersionRef.current;
         if (!profileVersionId) {
-          const draft = await createProfileDraft(nextValues.subject.trim() || undefined);
           const body: ProfileConfirmRequest = {
             birth_datetime: localDateTimeWithOffset(
               `${nextValues.birthDate}T${nextValues.birthTime}`,
@@ -608,18 +643,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             coordinate_source: nextValues.coordinateSource.trim() || undefined,
             on_name_conflict: "reject",
           };
-          try {
-            const profile = await confirmProfileDraft(draft.draft_id, body);
-            profileVersionId = profile.profile_version_id;
-            setCreatedProfile(profile);
-          } catch (reason) {
-            if (isProfileNameConflict(reason)) {
-              pendingProfileRef.current = { draftId: draft.draft_id, body, nextValues };
-              setNameConflict(readProfileNameConflict(reason));
-              return;
-            }
-            throw reason;
-          }
+          const profile = await confirmTaskProfile(nextValues, body);
+          if (!profile) return;
+          profileVersionId = profile.profile_version_id;
         }
         profileVersionRef.current = profileVersionId;
 
@@ -672,7 +698,6 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       if (product.id === "hecan" || product.id === "canwen") {
         let profileVersionId = selectedProfileVersionId || profileVersionRef.current;
         if (!profileVersionId) {
-          const draft = await createProfileDraft(nextValues.subject.trim() || undefined);
           const body: ProfileConfirmRequest = {
             birth_datetime: localDateTimeWithOffset(
               `${nextValues.birthDate}T${nextValues.birthTime}`,
@@ -687,18 +712,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             zi_hour_policy: "midnight",
             on_name_conflict: "reject",
           };
-          try {
-            const profile = await confirmProfileDraft(draft.draft_id, body);
-            profileVersionId = profile.profile_version_id;
-            setCreatedProfile(profile);
-          } catch (reason) {
-            if (isProfileNameConflict(reason)) {
-              pendingProfileRef.current = { draftId: draft.draft_id, body, nextValues };
-              setNameConflict(readProfileNameConflict(reason));
-              return;
-            }
-            throw reason;
-          }
+          const profile = await confirmTaskProfile(nextValues, body);
+          if (!profile) return;
+          profileVersionId = profile.profile_version_id;
         }
         profileVersionRef.current = profileVersionId;
         const artByLabel: Record<string, "bazi" | "ziwei" | "qizheng"> = {
