@@ -5,7 +5,6 @@ from pathlib import Path
 from app.readings.export import _document_lines, _pdf_font_name, render_reading_export
 from app.readings.presentation import ReadingDocumentV1, build_reading_document
 from reportlab.pdfbase.ttfonts import TTFError
-
 from test_reading_delivery import _document_payload, _presentation_contract
 
 

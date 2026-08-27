@@ -4,6 +4,7 @@ import asyncio
 import importlib
 import os
 from collections.abc import AsyncIterator
+from contextlib import suppress
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -763,6 +764,84 @@ async def test_postgresql_idempotency_key_insert_is_atomic_per_owner(
     async with postgres_worker_database.sessions() as session:
         records = list(await session.scalars(select(reading_models.ReadingIdempotencyKey)))
     assert len(records) == 1
+
+
+async def test_postgresql_owner_lock_serializes_same_tuple_profile_confirms(
+    postgres_worker_database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    identity_models = importlib.import_module("app.identity.models")
+    profile_models = importlib.import_module("app.profiles.models")
+    profile_schemas = importlib.import_module("app.profiles.schemas")
+    profile_service = importlib.import_module("app.profiles.service")
+
+    async with postgres_worker_database.sessions() as session, session.begin():
+        user = identity_models.User()
+        session.add(user)
+        await session.flush()
+        service = profile_service.ProfileService(session, test_settings)
+        owner = type("Owner", (), {"kind": "user", "id": user.id})()
+        first_draft_id = await service.create_draft(owner, label="本人")
+        second_draft_id = await service.create_draft(owner, label="本人")
+        user_id = user.id
+
+    first_check_finished = asyncio.Event()
+    second_check_finished = asyncio.Event()
+    release_first = asyncio.Event()
+    original_check = profile_service.ProfileService._name_birth_conflict
+    check_count = 0
+
+    async def delayed_conflict_check(self: Any, *args: Any, **kwargs: Any) -> Any:
+        nonlocal check_count
+        conflict = await original_check(self, *args, **kwargs)
+        check_count += 1
+        if check_count == 1:
+            first_check_finished.set()
+            await release_first.wait()
+        else:
+            second_check_finished.set()
+        return conflict
+
+    monkeypatch.setattr(
+        profile_service.ProfileService,
+        "_name_birth_conflict",
+        delayed_conflict_check,
+    )
+    payload = profile_schemas.ProfileConfirmRequest(
+        birth_datetime="1994-04-30T05:55:00+08:00",
+        timezone="Asia/Shanghai",
+        location="北京市朝阳区",
+        gender="female",
+        time_basis_policy="civil",
+        zi_hour_policy="midnight",
+    )
+
+    async def confirm(draft_id: Any) -> str:
+        async with postgres_worker_database.sessions() as session:
+            service = profile_service.ProfileService(session, test_settings)
+            owner = type("Owner", (), {"kind": "user", "id": user_id})()
+            try:
+                await service.confirm_draft(owner, draft_id, payload)
+            except profile_service.ProfileNameConflictError:
+                await session.rollback()
+                return "conflict"
+            await session.commit()
+            return "confirmed"
+
+    first = asyncio.create_task(confirm(first_draft_id))
+    await asyncio.wait_for(first_check_finished.wait(), timeout=2)
+    second = asyncio.create_task(confirm(second_draft_id))
+    with suppress(TimeoutError):
+        await asyncio.wait_for(second_check_finished.wait(), timeout=0.2)
+    release_first.set()
+
+    outcomes = await asyncio.wait_for(asyncio.gather(first, second), timeout=5)
+
+    assert sorted(outcomes) == ["confirmed", "conflict"]
+    async with postgres_worker_database.sessions() as session:
+        versions = list(await session.scalars(select(profile_models.ProfileVersion)))
+    assert len(versions) == 1
 
 
 async def test_active_postgresql_processor_lock_fences_an_expired_reclaim(

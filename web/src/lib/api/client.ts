@@ -1,6 +1,15 @@
 type ProblemBody = {
   title?: string;
   detail?: string;
+  code?: string;
+  options?: unknown;
+  suggested_save_as_name?: string;
+  existing_profile_id?: string;
+  existing_profile_version_id?: string;
+  owner_kind?: string;
+  limit_scope?: string;
+  limit?: number;
+  remaining?: number;
 };
 
 type PostOptions = {
@@ -47,13 +56,57 @@ function notifyAccountSessionInvalidated(): void {
 export class ApiError extends Error {
   status: number;
   detail?: string;
+  code?: string;
+  options?: string[];
+  suggestedSaveAsName?: string;
+  existingProfileId?: string;
+  existingProfileVersionId?: string;
+  ownerKind?: string;
+  limitScope?: string;
+  limit?: number;
+  remaining?: number;
 
-  constructor(message: string, status = 0, detail?: string) {
+  constructor(message: string, status = 0, detail?: string, code?: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.detail = detail;
+    this.code = code;
   }
+}
+
+function problemError(body: ProblemBody | null, status: number): ApiError {
+  const error = new ApiError(
+    body?.title ?? "服务暂时不可用，请稍后重试",
+    status,
+    body?.detail,
+    body?.code,
+  );
+  if (Array.isArray(body?.options)) {
+    error.options = body.options.filter((item): item is string => typeof item === "string");
+  }
+  if (typeof body?.suggested_save_as_name === "string") {
+    error.suggestedSaveAsName = body.suggested_save_as_name;
+  }
+  if (typeof body?.existing_profile_id === "string") {
+    error.existingProfileId = body.existing_profile_id;
+  }
+  if (typeof body?.existing_profile_version_id === "string") {
+    error.existingProfileVersionId = body.existing_profile_version_id;
+  }
+  if (typeof body?.owner_kind === "string") {
+    error.ownerKind = body.owner_kind;
+  }
+  if (typeof body?.limit_scope === "string") {
+    error.limitScope = body.limit_scope;
+  }
+  if (typeof body?.limit === "number") {
+    error.limit = body.limit;
+  }
+  if (typeof body?.remaining === "number") {
+    error.remaining = body.remaining;
+  }
+  return error;
 }
 
 export async function requestJson<T>(
@@ -78,11 +131,7 @@ export async function requestJson<T>(
         notifyAccountSessionInvalidated();
       }
     }
-    throw new ApiError(
-      body?.title ?? "服务暂时不可用，请稍后重试",
-      response.status,
-      body?.detail,
-    );
+    throw problemError(body, response.status);
   }
 
   if (response.status === 204) {
@@ -122,6 +171,34 @@ export async function jsonPost<T>(
     return requestJson<T>(url, {
       method: "POST",
       headers,
+      body: JSON.stringify(payload),
+    });
+  };
+
+  try {
+    return await execute();
+  } catch (error) {
+    if (
+      !(error instanceof ApiError) ||
+      error.status !== 403 ||
+      error.message !== "CSRF validation failed"
+    ) {
+      throw error;
+    }
+    clearCsrfCache();
+    return execute();
+  }
+}
+
+export async function jsonPatch<T>(url: string, payload: unknown): Promise<T> {
+  const execute = async () => {
+    const csrf = await getCsrfToken();
+    return requestJson<T>(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrf,
+      },
       body: JSON.stringify(payload),
     });
   };

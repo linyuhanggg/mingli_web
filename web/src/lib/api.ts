@@ -7,6 +7,7 @@ export {
   createIdempotencyKey,
   getCsrfToken,
   jsonDelete,
+  jsonPatch,
   jsonPut,
   resetApiCache,
   subscribeAccountSessionInvalidation,

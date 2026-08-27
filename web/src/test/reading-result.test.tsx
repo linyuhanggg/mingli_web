@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -257,6 +257,111 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     ]);
   });
 
+  it("refreshes a stale prepared summary when the result is already accepted", async () => {
+    let summaryCount = 0;
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path === `/api/v1/readings/${VERSION_ID}`) {
+        summaryCount += 1;
+        return jsonResponse(
+          readingSummary(summaryCount === 1 ? "prepared" : "accepted"),
+        );
+      }
+      if (path === `/api/v1/readings/${VERSION_ID}/result`) {
+        return jsonResponse(
+          readingResult({
+            document: {
+              ...readingDocument(),
+              actions: {
+                ...readingDocument().actions,
+                export: { enabled: true },
+              },
+            },
+          }),
+        );
+      }
+      return problemResponse("Unexpected request", 500);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByText(acceptedCopyQuery)).toBeVisible();
+    expect(screen.getByText("已交付")).toBeVisible();
+    expect(screen.getByLabelText("追问")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "分享" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "导出报告" })).toBeVisible();
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      `/api/v1/readings/${VERSION_ID}`,
+      `/api/v1/readings/${VERSION_ID}/result`,
+      `/api/v1/readings/${VERSION_ID}`,
+    ]);
+  });
+
+  it("keeps an accepted result visible while retrying a failed final summary refresh", async () => {
+    let summaryCount = 0;
+    let resolveRetrySummary!: (response: Response) => void;
+    const retrySummary = new Promise<Response>((resolve) => {
+      resolveRetrySummary = resolve;
+    });
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path === `/api/v1/readings/${VERSION_ID}`) {
+        summaryCount += 1;
+        if (summaryCount === 1) {
+          return jsonResponse(
+            readingSummary("prepared", { poll_after_seconds: 0 }),
+          );
+        }
+        if (summaryCount === 2) {
+          return problemResponse("Summary temporarily unavailable", 503);
+        }
+        return retrySummary;
+      }
+      if (path === `/api/v1/readings/${VERSION_ID}/result`) {
+        return jsonResponse(
+          readingResult({
+            document: {
+              ...readingDocument(),
+              actions: {
+                ...readingDocument().actions,
+                export: { enabled: true },
+              },
+            },
+          }),
+        );
+      }
+      return problemResponse("Unexpected request", 500);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByText(acceptedCopyQuery)).toBeVisible();
+    expect(screen.getByText("事实已准备")).toBeVisible();
+    expect(screen.queryByText("读取失败，请重试")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("追问")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "分享" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "导出报告" })).not.toBeInTheDocument();
+    await waitFor(() => expect(summaryCount).toBe(3));
+
+    await act(async () => {
+      resolveRetrySummary(jsonResponse(readingSummary("accepted")));
+    });
+
+    expect(await screen.findByText("已交付")).toBeVisible();
+    expect(screen.getByLabelText("追问")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "分享" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "导出报告" })).toBeVisible();
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      `/api/v1/readings/${VERSION_ID}`,
+      `/api/v1/readings/${VERSION_ID}/result`,
+      `/api/v1/readings/${VERSION_ID}`,
+      `/api/v1/readings/${VERSION_ID}`,
+      `/api/v1/readings/${VERSION_ID}/result`,
+    ]);
+  });
+
   it("does not fall back to a Bazi chart when a relationship ViewModel is unavailable", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
@@ -451,7 +556,8 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
 
     expect(await screen.findByText("按时间起卦")).toBeVisible();
     expect(screen.getByText("水雷屯")).toBeVisible();
-    expect(screen.getAllByText("calculated_relation_not_verdict").length).toBe(2);
+    expect(screen.queryByText("calculated_relation_not_verdict")).not.toBeInTheDocument();
+    expect(screen.getAllByText("已计算关系").length).toBeGreaterThan(0);
     expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith("/result"))).toBe(true);
     expect(screen.queryByText("复核与追问")).not.toBeInTheDocument();
     unmount();

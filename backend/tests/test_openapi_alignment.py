@@ -108,6 +108,29 @@ def test_verification_request_contract_is_four_value_and_aligned() -> None:
     assert runtime["properties"]["note"]["anyOf"][0]["maxLength"] == 500
 
 
+def test_profile_summary_display_name_constraints_are_aligned() -> None:
+    frozen = _frozen_schemas()["ProfileSummary"]
+    runtime = _runtime_spec()["components"]["schemas"]["ProfileSummary"]
+
+    assert set(frozen["required"]) == set(runtime["required"])
+    frozen_display_name = frozen["properties"]["display_name"]
+    runtime_display_name = runtime["properties"]["display_name"]
+    assert _is_nullable(frozen_display_name)
+    assert _is_nullable(runtime_display_name)
+    assert frozen_display_name["minLength"] == 1
+    assert frozen_display_name["maxLength"] == 80
+    runtime_string = next(
+        item
+        for item in runtime_display_name["anyOf"]
+        if item.get("type") == "string"
+    )
+    assert runtime_string == {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80,
+    }
+
+
 def test_verification_summary_contract_is_four_value_and_aligned() -> None:
     frozen_schemas = _frozen_schemas()
     runtime_schemas = _runtime_spec()["components"]["schemas"]

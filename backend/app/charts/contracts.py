@@ -18,6 +18,13 @@ class ContractModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
+class PublicKeyLabel(ContractModel):
+    """Chinese label for one internal ViewModel key that must not be shown raw."""
+
+    key: str = Field(min_length=1, max_length=80)
+    label: str = Field(min_length=1, max_length=80)
+
+
 class TimeLayer(ContractModel):
     layer_id: str = Field(min_length=1)
     label: str = Field(min_length=1)
@@ -585,12 +592,83 @@ class FortuneCalendarConvention(ContractModel):
     zi_hour_policy: str | None = Field(default=None, min_length=1)
 
 
+class FortuneSolarTerm(ContractModel):
+    """One adjacent solar-term boundary exposed by the Fortune provider."""
+
+    name: str = Field(min_length=1)
+    index: int
+    is_month_boundary_jie: bool
+    datetime: str = Field(min_length=1)
+    instant_utc: str = Field(min_length=1)
+
+
+class FortuneSolarTerms(ContractModel):
+    """Adjacent solar terms and the exact month-switch policy."""
+
+    previous: FortuneSolarTerm | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    next: FortuneSolarTerm | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    month_switch_policy: str = Field(min_length=1)
+
+
+class FortuneCalendarDayBoundary(ContractModel):
+    """Day-boundary effects calculated by the Runtime calendar correction."""
+
+    correction_crossed_date: bool
+    zi_policy_advanced_day_pillar: bool
+
+
 class FortuneCalendarNormalization(ContractModel):
     status: str = Field(min_length=1)
     algorithm_version: str = Field(min_length=1)
     time_basis: FortuneCalendarTimeBasis
     true_solar_time: FortuneTrueSolarTime
     calendar_convention: FortuneCalendarConvention
+    effective_datetime: str | None = Field(
+        default=None,
+        min_length=1,
+        exclude_if=lambda value: value is None,
+    )
+    day_boundary: FortuneCalendarDayBoundary | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+    changed_pillars: tuple[Literal["year", "month", "day", "hour"], ...] | None = Field(
+        default=None,
+        min_length=0,
+        max_length=4,
+        exclude_if=lambda value: value is None,
+    )
+    solar_terms: FortuneSolarTerms | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
+
+    @model_validator(mode="after")
+    def _changed_pillars_are_stable(
+        self,
+    ) -> FortuneCalendarNormalization:
+        if self.changed_pillars is None:
+            return self
+        if len(set(self.changed_pillars)) != len(self.changed_pillars):
+            raise ValueError("changed Fortune pillars must be unique")
+        order = {
+            position: index
+            for index, position in enumerate(("year", "month", "day", "hour"))
+        }
+        if (
+            tuple(sorted(self.changed_pillars, key=order.__getitem__))
+            != self.changed_pillars
+        ):
+            raise ValueError(
+                "changed Fortune pillars must use year-month-day-hour order"
+            )
+        return self
 
 
 class FortuneFactsViewV1(ContractModel):
@@ -1499,6 +1577,7 @@ class MeihuaChartV1(ContractModel):
     moving_lines: tuple[int, ...] = Field(min_length=0, max_length=6)
     body_use: MeihuaBodyUse
     core_facts: MeihuaCoreFacts | None = None
+    public_labels: tuple[PublicKeyLabel, ...] = ()
 
 
 class LumingNayinPillar(ContractModel):
@@ -1878,9 +1957,28 @@ class QimenChartV1(ContractModel):
     named_patterns: tuple[QimenNamedPattern, ...]
 
 
+DaliurenLessonUpper = Literal[
+    "子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"
+]
+DALIUREN_LESSON_UPPERS: tuple[DaliurenLessonUpper, ...] = (
+    "子",
+    "丑",
+    "寅",
+    "卯",
+    "辰",
+    "巳",
+    "午",
+    "未",
+    "申",
+    "酉",
+    "戌",
+    "亥",
+)
+
+
 class DaliurenLesson(ContractModel):
     lesson_id: str = Field(min_length=1)
-    upper: str = Field(min_length=1)
+    upper: DaliurenLessonUpper
     lower: str = Field(min_length=1)
 
 
@@ -1901,6 +1999,186 @@ class DaliurenTimingCandidate(ContractModel):
     source_pack: str = Field(min_length=1)
     source_rule: Literal["LM-R21"]
     candidate_not_guarantee: Literal[True]
+
+
+_DALIUREN_STRUCTURAL_INDEX_MAX = 3
+_DALIUREN_STRUCTURAL_INDEX_BY_TOKEN = {"0": 0, "1": 1, "2": 2, "3": 3}
+_DALIUREN_INCOMPLETE_FOUR_LESSONS_RULE_ID = "DLR-S01"
+_DALIUREN_FOUR_LESSON_UPPER_PATHS = frozenset(
+    f"fact:/chart_facts/output/four_lessons/{index}/upper" for index in range(4)
+)
+_DALIUREN_FOUR_LESSON_DISTINCT_AUDIT = (
+    "/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3"
+)
+
+
+def daliuren_in_range_structural_indices(
+    structural_patterns: object,
+    title: str,
+) -> tuple[int, ...]:
+    if not isinstance(structural_patterns, (list, tuple)):
+        return ()
+    return tuple(
+        index
+        for index, pattern in enumerate(structural_patterns)
+        if pattern == title and 0 <= index <= _DALIUREN_STRUCTURAL_INDEX_MAX
+    )
+
+
+def _daliuren_canonical_structural_index(token: str) -> int:
+    # Exact ASCII "0"-"3" only. str.isdigit()/int() would accept "00"/"０".
+    try:
+        return _DALIUREN_STRUCTURAL_INDEX_BY_TOKEN[token]
+    except KeyError:
+        raise ValueError("source pattern structural index must be 0-3") from None
+
+
+def _daliuren_structural_index_from_fact_path(path: str) -> int | None:
+    prefix = "fact:/chart_facts/output/structural_patterns/"
+    if not path.startswith(prefix):
+        return None
+    return _daliuren_canonical_structural_index(path[len(prefix) :])
+
+
+def _daliuren_structural_index_from_audit(audit: str, title: str) -> int | None:
+    prefix = "/chart_facts/output/structural_patterns/"
+    suffix = f":eq:{title}"
+    if not audit.startswith(prefix) or not audit.endswith(suffix):
+        return None
+    return _daliuren_canonical_structural_index(audit[len(prefix) : -len(suffix)])
+
+
+def validate_daliuren_source_pattern_provenance(
+    *,
+    rule_id: str,
+    title: str,
+    fact_paths: tuple[str, ...],
+    predicate_audit: tuple[str, ...],
+) -> int:
+    """Return the unique in-range structural index or raise ValueError."""
+
+    if len(set(fact_paths)) != len(fact_paths) or len(set(predicate_audit)) != len(
+        predicate_audit
+    ):
+        raise ValueError("source pattern provenance must be unique")
+
+    path_indices: list[int] = []
+    extra_paths: list[str] = []
+    for path in fact_paths:
+        index = _daliuren_structural_index_from_fact_path(path)
+        if index is None:
+            extra_paths.append(path)
+        else:
+            path_indices.append(index)
+
+    audit_indices: list[int] = []
+    extra_audits: list[str] = []
+    for audit in predicate_audit:
+        index = _daliuren_structural_index_from_audit(audit, title)
+        if index is None:
+            extra_audits.append(audit)
+        else:
+            audit_indices.append(index)
+
+    if path_indices != audit_indices or len(path_indices) != 1:
+        raise ValueError("source pattern requires unique structural provenance")
+    structural_index = path_indices[0]
+
+    if rule_id == _DALIUREN_INCOMPLETE_FOUR_LESSONS_RULE_ID:
+        if set(extra_paths) != _DALIUREN_FOUR_LESSON_UPPER_PATHS:
+            raise ValueError("incomplete four lessons must publish four upper paths")
+        if extra_audits != [_DALIUREN_FOUR_LESSON_DISTINCT_AUDIT]:
+            raise ValueError(
+                "incomplete four lessons must publish the distinct-count audit"
+            )
+        if len(fact_paths) != 5 or len(predicate_audit) != 2:
+            raise ValueError("incomplete four lessons provenance cardinality is fixed")
+    elif extra_paths or extra_audits or len(fact_paths) != 1 or len(predicate_audit) != 1:
+        raise ValueError("source pattern provenance must stay on the structural path")
+    return structural_index
+
+
+def daliuren_source_pattern_structural_index(pattern: DaliurenSourcePattern) -> int:
+    return validate_daliuren_source_pattern_provenance(
+        rule_id=pattern.rule_id,
+        title=pattern.title,
+        fact_paths=pattern.fact_paths,
+        predicate_audit=pattern.predicate_audit,
+    )
+
+
+_DALIUREN_SOURCE_PATTERN_IDENTITIES = frozenset(
+    {
+        (
+            "DLR-S01",
+            "liuren.structural.incomplete-four-lessons",
+            "四课不备",
+            "fulltext.md#L58",
+        ),
+        (
+            "DLR-08",
+            "liuren.structural.bazhuan-day",
+            "八专日",
+            "fulltext.md#L7556",
+        ),
+        (
+            "DLR-09",
+            "liuren.structural.fuyin",
+            "伏吟",
+            "fulltext.md#L7696",
+        ),
+        (
+            "DLR-10",
+            "liuren.structural.fanyin",
+            "反吟",
+            "fulltext.md#L7874",
+        ),
+    }
+)
+
+
+class DaliurenSourcePattern(ContractModel):
+    """Audited structural-pattern match, never a divination verdict."""
+
+    rule_id: Literal["DLR-S01", "DLR-08", "DLR-09", "DLR-10"]
+    local_rule_id: Literal[
+        "liuren.structural.incomplete-four-lessons",
+        "liuren.structural.bazhuan-day",
+        "liuren.structural.fuyin",
+        "liuren.structural.fanyin",
+    ]
+    title: Literal["四课不备", "八专日", "伏吟", "反吟"]
+    source_pack: Literal["san-shi/daliuren-daquan"]
+    source_anchor: Literal[
+        "fulltext.md#L58",
+        "fulltext.md#L7556",
+        "fulltext.md#L7696",
+        "fulltext.md#L7874",
+    ]
+    status: Literal["predicate_matched_not_verdict"]
+    fact_paths: tuple[str, ...] = Field(min_length=1)
+    predicate_audit: tuple[str, ...] = Field(min_length=1)
+    source_dependency_id: Literal[
+        "liuren.source-conditioned-structural-patterns-v1"
+    ]
+
+    @model_validator(mode="after")
+    def _uses_one_audited_rule_identity(self) -> DaliurenSourcePattern:
+        identity = (
+            self.rule_id,
+            self.local_rule_id,
+            self.title,
+            self.source_anchor,
+        )
+        if identity not in _DALIUREN_SOURCE_PATTERN_IDENTITIES:
+            raise ValueError("source pattern identity fields must match one audited rule")
+        validate_daliuren_source_pattern_provenance(
+            rule_id=self.rule_id,
+            title=self.title,
+            fact_paths=self.fact_paths,
+            predicate_audit=self.predicate_audit,
+        )
+        return self
 
 
 class DaliurenDayHour(ContractModel):
@@ -2183,26 +2461,13 @@ _DALIUREN_REQUESTED_TO_CANONICAL = {
     "career": "work",
     "money": "money",
 }
-_DALIUREN_EARTH_PLATE_ORDER = (
-    "子",
-    "丑",
-    "寅",
-    "卯",
-    "辰",
-    "巳",
-    "午",
-    "未",
-    "申",
-    "酉",
-    "戌",
-    "亥",
-)
+_DALIUREN_EARTH_PLATE_ORDER = DALIUREN_LESSON_UPPERS
 
 
 class DaliurenDimensionFact(ContractModel):
     canonical_dimension: str = Field(min_length=1)
     requested_dimension: str = Field(min_length=1)
-    rule_evidence: DaliurenRuleEvidence
+    rule_evidence: DaliurenRuleEvidence | None = None
     status: Literal["calculated_facts_not_verdict"]
     source_rule_ids: tuple[Annotated[str, Field(min_length=1)], ...]
     initial_final_relation: DaliurenRelationFact | None = Field(
@@ -2290,7 +2555,8 @@ class DaliurenDimensionFact(ContractModel):
         expected_fields = _DALIUREN_DIMENSION_ENVELOPE_FIELDS | (
             _DALIUREN_CANONICAL_DIMENSION_FIELDS[canonical]
         )
-        if set(value) != expected_fields:
+        present = set(value)
+        if present != expected_fields and present != expected_fields - {"rule_evidence"}:
             raise ValueError(
                 f"{canonical} dimensions must use the complete Runtime v1 field set"
             )
@@ -2351,8 +2617,23 @@ class DaliurenCoreFacts(ContractModel):
     noble_person: DaliurenNoblePerson | None = None
     plate_offset: int | None = Field(default=None, ge=0, le=11, strict=True)
     structural_patterns: tuple[Annotated[str, Field(min_length=1)], ...] | None = None
+    source_conditioned_patterns: tuple[DaliurenSourcePattern, ...] = Field(
+        default=(),
+        max_length=4,
+    )
     timing_candidates: tuple[DaliurenTimingCandidate, ...] | None = None
     xunkong: DaliurenXunkong | None = None
+
+    @field_validator("structural_patterns")
+    @classmethod
+    def _structural_patterns_are_unique(
+        cls,
+        value: tuple[str, ...] | None,
+    ) -> tuple[str, ...] | None:
+        # Isomorphic to Schema uniqueItems, even without a source block.
+        if value is not None and len(value) != len(set(value)):
+            raise ValueError("structural_patterns must be unique")
+        return value
 
     @field_validator("dimension_facts")
     @classmethod
@@ -2379,6 +2660,31 @@ class DaliurenCoreFacts(ContractModel):
                 + ", ".join(mismatched)
             )
         return value
+
+    @field_validator("source_conditioned_patterns")
+    @classmethod
+    def _source_pattern_identities_are_unique(
+        cls,
+        value: tuple[DaliurenSourcePattern, ...],
+    ) -> tuple[DaliurenSourcePattern, ...]:
+        identities = tuple(pattern.rule_id for pattern in value)
+        if len(identities) != len(set(identities)):
+            raise ValueError("source pattern identities must be unique")
+        return value
+
+    @model_validator(mode="after")
+    def _source_patterns_match_unique_structural_title(self) -> DaliurenCoreFacts:
+        for source in self.source_conditioned_patterns:
+            structural_index = daliuren_source_pattern_structural_index(source)
+            matching = daliuren_in_range_structural_indices(
+                self.structural_patterns,
+                source.title,
+            )
+            if matching != (structural_index,):
+                raise ValueError(
+                    "source pattern requires a unique in-range structural match"
+                )
+        return self
 
     @model_validator(mode="after")
     def _uses_runtime_v1_plate_topology(self) -> DaliurenCoreFacts:
@@ -2413,6 +2719,26 @@ class DaliurenChartV1(ContractModel):
     lessons: tuple[DaliurenLesson, ...] = Field(min_length=4, max_length=4)
     transmissions: tuple[DaliurenTransmission, ...] = Field(min_length=3, max_length=3)
     core_facts: DaliurenCoreFacts | None = None
+    public_labels: tuple[PublicKeyLabel, ...] = ()
+
+    @model_validator(mode="after")
+    def _incomplete_four_lessons_require_three_distinct_uppers(
+        self,
+    ) -> DaliurenChartV1:
+        core_facts = self.core_facts
+        if core_facts is None:
+            return self
+        if not any(
+            pattern.rule_id == _DALIUREN_INCOMPLETE_FOUR_LESSONS_RULE_ID
+            for pattern in core_facts.source_conditioned_patterns
+        ):
+            return self
+        uppers = tuple(lesson.upper for lesson in self.lessons)
+        if len(set(uppers)) != 3:
+            raise ValueError(
+                "incomplete four lessons require exactly three distinct uppers"
+            )
+        return self
 
 
 class PhysiognomyObservation(ContractModel):

@@ -14,6 +14,7 @@ import {
 import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
 
 import surface from "./app-surface.module.css";
+import { ProfileRenameControl } from "./profile-rename-control";
 import { StatusPanel } from "./status-panel";
 
 import styles from "./profile-archive.module.css";
@@ -211,6 +212,16 @@ export function ProfileArchive() {
                 </span>
               </div>
               <div className={styles.profileActions}>
+                <ProfileRenameControl
+                  profile={entry}
+                  onRenamed={(next) => {
+                    setProfiles((current) =>
+                      current?.map((item) =>
+                        item.profile_id === next.profile_id ? { ...item, ...next } : item,
+                      ) ?? null,
+                    );
+                  }}
+                />
                 <button
                   type="button"
                   className={surface.secondaryButton}

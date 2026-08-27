@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ProfileForm } from "@/components/profile-form";
+import { ApiError } from "@/lib/api/client";
 import { IANA_TIME_ZONES } from "@/lib/iana-timezones";
 
 
@@ -22,6 +23,7 @@ vi.mock("next/navigation", () => ({
 const api = vi.hoisted(() => ({
   createProfileDraft: vi.fn(),
   confirmProfileDraft: vi.fn(),
+  discardProfileDraft: vi.fn(),
 }));
 
 vi.mock("@/lib/api", () => api);
@@ -31,6 +33,8 @@ beforeEach(() => {
   routerPush.mockReset();
   api.createProfileDraft.mockReset();
   api.confirmProfileDraft.mockReset();
+  api.discardProfileDraft.mockReset();
+  api.discardProfileDraft.mockResolvedValue(undefined);
   api.createProfileDraft.mockResolvedValue({
     draft_id: "55555555-5555-4555-8555-555555555555",
     status: "draft",
@@ -159,7 +163,7 @@ describe("ProfileForm", () => {
     await waitFor(() =>
       expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
     );
-    expect(api.createProfileDraft).toHaveBeenCalledWith("本人");
+    expect(api.createProfileDraft).toHaveBeenCalledWith(undefined);
     expect(api.confirmProfileDraft).toHaveBeenCalledWith(
       "55555555-5555-4555-8555-555555555555",
       expect.objectContaining({
@@ -168,8 +172,217 @@ describe("ProfileForm", () => {
         gender: "female",
         time_basis_policy: "civil",
         zi_hour_policy: "midnight",
+        on_name_conflict: "reject",
       }),
     );
+  });
+
+  it("retries the same retained draft after a transient confirmation failure", async () => {
+    const user = userEvent.setup();
+    api.confirmProfileDraft.mockRejectedValueOnce(new Error("确认服务暂时不可用。"));
+    render(<ProfileForm />);
+
+    await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
+    await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "未确认草稿已保留；重试不会创建新草稿",
+    );
+    expect(api.createProfileDraft).toHaveBeenCalledTimes(1);
+    expect(api.confirmProfileDraft).toHaveBeenCalledTimes(1);
+    expect(routerPush).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "重试确认" }));
+
+    await waitFor(() =>
+      expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
+    );
+    expect(api.createProfileDraft).toHaveBeenCalledTimes(1);
+    expect(api.confirmProfileDraft).toHaveBeenCalledTimes(2);
+    expect(api.confirmProfileDraft).toHaveBeenNthCalledWith(
+      2,
+      "55555555-5555-4555-8555-555555555555",
+      expect.objectContaining({ on_name_conflict: "reject" }),
+    );
+    expect(api.discardProfileDraft).not.toHaveBeenCalled();
+  });
+
+  it("discards the retained draft and submits the current form after identity fields change", async () => {
+    const user = userEvent.setup();
+    api.createProfileDraft
+      .mockResolvedValueOnce({
+        draft_id: "55555555-5555-4555-8555-555555555555",
+        status: "draft",
+      })
+      .mockResolvedValueOnce({
+        draft_id: "66666666-6666-4666-8666-666666666666",
+        status: "draft",
+      });
+    api.confirmProfileDraft.mockRejectedValueOnce(new Error("确认服务暂时不可用。"));
+    render(<ProfileForm />);
+
+    await user.type(screen.getByLabelText("档案名称（可选）"), "旧档案");
+    await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
+    await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "未确认草稿已保留；重试不会创建新草稿",
+    );
+
+    await user.clear(screen.getByLabelText("档案名称（可选）"));
+    await user.type(screen.getByLabelText("档案名称（可选）"), "新档案");
+    await user.clear(screen.getByLabelText("出生地点"));
+    await user.type(screen.getByLabelText("出生地点"), "浙江省杭州市");
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+
+    await waitFor(() =>
+      expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
+    );
+    expect(api.discardProfileDraft).toHaveBeenCalledWith(
+      "55555555-5555-4555-8555-555555555555",
+    );
+    expect(api.createProfileDraft).toHaveBeenCalledTimes(2);
+    expect(api.createProfileDraft).toHaveBeenNthCalledWith(2, "新档案");
+    expect(api.confirmProfileDraft).toHaveBeenCalledTimes(2);
+    expect(api.confirmProfileDraft).toHaveBeenNthCalledWith(
+      2,
+      "66666666-6666-4666-8666-666666666666",
+      expect.objectContaining({
+        location: "浙江省杭州市",
+        on_name_conflict: "reject",
+      }),
+    );
+    expect(api.discardProfileDraft.mock.invocationCallOrder[0]).toBeLessThan(
+      api.createProfileDraft.mock.invocationCallOrder[1],
+    );
+  });
+
+  it("explicitly discards a retained draft without creating another one", async () => {
+    const user = userEvent.setup();
+    api.confirmProfileDraft.mockRejectedValueOnce(new Error("确认服务暂时不可用。"));
+    render(<ProfileForm />);
+
+    await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
+    await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+    await user.click(
+      await screen.findByRole("button", { name: "放弃未确认草稿" }),
+    );
+
+    await waitFor(() =>
+      expect(api.discardProfileDraft).toHaveBeenCalledWith(
+        "55555555-5555-4555-8555-555555555555",
+      ),
+    );
+    expect(api.createProfileDraft).toHaveBeenCalledTimes(1);
+    expect(api.confirmProfileDraft).toHaveBeenCalledTimes(1);
+    expect(routerPush).not.toHaveBeenCalled();
+  });
+
+  async function fillRequiredProfile(user: ReturnType<typeof userEvent.setup>) {
+    await user.type(screen.getByLabelText("档案名称（可选）"), "同名档案");
+    await user.type(screen.getByLabelText("出生时间"), "1992-07-08T08:00");
+    await user.type(screen.getByLabelText("出生地点"), "上海市");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
+  }
+
+  it("cancels a same-name 409 by discarding the persisted draft", async () => {
+    const user = userEvent.setup();
+    const conflict = new ApiError("Name conflict", 409, undefined, "profile_name_conflict");
+    conflict.options = ["overwrite", "save_as", "cancel"];
+    conflict.suggestedSaveAsName = "同名档案 (2)";
+    api.confirmProfileDraft.mockRejectedValueOnce(conflict);
+    render(<ProfileForm />);
+    await fillRequiredProfile(user);
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+    expect(await screen.findByRole("alertdialog", { name: "档案名称已存在" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "覆盖" })).toHaveFocus();
+    await user.click(screen.getByRole("button", { name: "取消" }));
+    await waitFor(() =>
+      expect(api.discardProfileDraft).toHaveBeenCalledWith(
+        "55555555-5555-4555-8555-555555555555",
+      ),
+    );
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /保存档案/ })).toHaveFocus();
+    expect(routerPush).not.toHaveBeenCalled();
+    expect(api.confirmProfileDraft).toHaveBeenCalledTimes(1);
+  });
+
+  it("closes the 409 dialog with Escape and returns focus to the save action", async () => {
+    const user = userEvent.setup();
+    const conflict = new ApiError("Name conflict", 409, undefined, "profile_name_conflict");
+    conflict.options = ["overwrite", "save_as", "cancel"];
+    conflict.suggestedSaveAsName = "同名档案 (2)";
+    api.confirmProfileDraft.mockRejectedValueOnce(conflict);
+    render(<ProfileForm />);
+    await fillRequiredProfile(user);
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+    expect(await screen.findByRole("alertdialog", { name: "档案名称已存在" })).toBeVisible();
+    await user.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(api.discardProfileDraft).toHaveBeenCalledWith(
+        "55555555-5555-4555-8555-555555555555",
+      ),
+    );
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /保存档案/ })).toHaveFocus();
+    expect(api.confirmProfileDraft).toHaveBeenCalledTimes(1);
+  });
+
+  it("routes an overwrite success to the exact profile and version returned by the API", async () => {
+    const user = userEvent.setup();
+    const conflict = new ApiError("Name conflict", 409, undefined, "profile_name_conflict");
+    conflict.options = ["overwrite", "save_as", "cancel"];
+    conflict.suggestedSaveAsName = "同名档案 (2)";
+    api.confirmProfileDraft.mockRejectedValueOnce(conflict);
+    render(<ProfileForm />);
+    await fillRequiredProfile(user);
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+    await user.click(await screen.findByRole("button", { name: "覆盖" }));
+    await waitFor(() =>
+      expect(api.confirmProfileDraft).toHaveBeenCalledWith(
+        "55555555-5555-4555-8555-555555555555",
+        expect.objectContaining({ on_name_conflict: "overwrite" }),
+      ),
+    );
+    expect(routerPush).toHaveBeenCalledWith(
+      "/account/profiles/11111111-1111-4111-8111-111111111111?version=22222222-2222-4222-8222-222222222222",
+    );
+    expect(routerPush).not.toHaveBeenCalledWith("/app/profiles?created=1");
+    expect(api.discardProfileDraft).not.toHaveBeenCalled();
+  });
+
+  it("retries a same-name 409 with save_as", async () => {
+    const user = userEvent.setup();
+    const conflict = new ApiError("Name conflict", 409, undefined, "profile_name_conflict");
+    conflict.options = ["overwrite", "save_as", "cancel"];
+    conflict.suggestedSaveAsName = "同名档案 (2)";
+    api.confirmProfileDraft.mockRejectedValueOnce(conflict);
+    render(<ProfileForm />);
+    await fillRequiredProfile(user);
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+    await user.click(await screen.findByRole("button", { name: "另存为「同名档案 (2)」" }));
+    await waitFor(() =>
+      expect(api.confirmProfileDraft).toHaveBeenCalledWith(
+        "55555555-5555-4555-8555-555555555555",
+        expect.objectContaining({ on_name_conflict: "save_as" }),
+      ),
+    );
+    expect(api.discardProfileDraft).not.toHaveBeenCalled();
   });
 
   it("restates birth basis choices live before submit", async () => {

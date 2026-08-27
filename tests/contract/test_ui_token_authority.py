@@ -102,6 +102,8 @@ OLD_BRAND_COLOR_RE = re.compile(
 DOMAIN_FONT_ALLOWLIST = {
     "web/src/components/readings/bazi-chart.module.css",
     "web/src/components/readings/liuyao-hexagram.module.css",
+    "web/src/components/readings/daliuren-board.module.css",
+    "web/src/components/readings/ziwei-palace-board.module.css",
 }
 DOMAIN_FONT_ALLOWED_SELECTORS = {
     ".pillarStem",
@@ -109,6 +111,14 @@ DOMAIN_FONT_ALLOWED_SELECTORS = {
     ".names dd",
     ".yaoMark",
     ".hexagramGlyph",
+    ".palaceName",
+    ".major",
+    ".centerName",
+    ".thumb",
+    ".upper",
+    ".lower",
+    ".branch",
+    ".branchLink",
 }
 STATUS_INFINITE_ALLOWLIST = {
     "web/src/components/status-panel.module.css",
@@ -418,14 +428,11 @@ def test_font_domain_is_limited_to_chart_glyphs() -> None:
                 if FONT_DOMAIN_USE_RE.search(line):
                     leaks.append(f"{rel}:{line_no}:{line.strip()}")
             continue
-        current_selectors: list[str] = []
-        for line_no, line in enumerate(source.splitlines(), start=1):
-            if "{" in line:
-                current_selectors = [part.strip() for part in line.split("{", 1)[0].split(",")]
-            if FONT_DOMAIN_USE_RE.search(line) and not any(
-                selector in DOMAIN_FONT_ALLOWED_SELECTORS for selector in current_selectors
+        for selector, body in _iter_rule_blocks(source):
+            if FONT_DOMAIN_USE_RE.search(body) and not _selector_parts(selector).issubset(
+                DOMAIN_FONT_ALLOWED_SELECTORS
             ):
-                leaks.append(f"{rel}:{line_no}:{','.join(current_selectors)}:{line.strip()}")
+                leaks.append(f"{rel}:{selector}")
     assert leaks == []
 
 

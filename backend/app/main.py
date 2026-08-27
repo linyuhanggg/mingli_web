@@ -1,5 +1,5 @@
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from typing import Any, cast
 
 from fastapi import FastAPI, Request
@@ -13,6 +13,12 @@ from app.adapters.otp import (
     OtpDeliveryAdapter,
     ProductionFailClosedOtpDeliveryAdapter,
     SmtpOtpDeliveryAdapter,
+)
+from app.adapters.runtime import (
+    FakeMingliRuntimeAdapter,
+    MingliRuntime,
+    RuntimeStartupError,
+    build_runtime_startup_gate,
 )
 from app.api.errors import ApiProblem
 from app.api.health import ReadinessProbe
@@ -34,22 +40,47 @@ def create_app(
     settings: Settings | None = None,
     readiness_probe: ReadinessProbe | None = None,
     database: Database | None = None,
+    chart_runtime: MingliRuntime | None = None,
 ) -> FastAPI:
     resolved_settings = settings or get_settings()
     resolved_database = database or Database(resolved_settings.database_url)
     owns_database = database is None
+    resolved_chart_runtime = chart_runtime
+    if resolved_chart_runtime is None and resolved_settings.runtime_adapter == "fake":
+        resolved_chart_runtime = FakeMingliRuntimeAdapter()
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-        yield
-        application.state.reading_write_rate_limiter.clear()
-        application.state.profile_write_rate_limiter.clear()
-        application.state.dogfood_daily_reading_limiter.clear()
-        application.state.dogfood_daily_paid_reading_limiter.clear()
-        application.state.guest_session_create_rate_limiter.clear()
-        application.state.admin_login_rate_limiter.clear()
-        if owns_database:
-            await resolved_database.dispose()
+        runtime_to_close: Any = None
+        if resolved_chart_runtime is None:
+            runtime_gate = build_runtime_startup_gate(resolved_settings)
+            try:
+                await runtime_gate.startup()
+            except BaseException:
+                close = getattr(runtime_gate.runtime, "close", None)
+                if callable(close):
+                    with suppress(Exception):
+                        await close()
+                raise
+            application.state.runtime_gate = runtime_gate
+            application.state.chart_runtime = runtime_gate.runtime
+            runtime_to_close = runtime_gate.runtime
+        try:
+            yield
+        finally:
+            application.state.reading_write_rate_limiter.clear()
+            application.state.profile_write_rate_limiter.clear()
+            application.state.dogfood_daily_reading_limiter.clear()
+            application.state.dogfood_daily_paid_reading_limiter.clear()
+            application.state.guest_session_create_rate_limiter.clear()
+            application.state.admin_login_rate_limiter.clear()
+            if runtime_to_close is not None:
+                close = getattr(runtime_to_close, "close", None)
+                if callable(close):
+                    with suppress(Exception):
+                        await close()
+            if owns_database:
+                await resolved_database.dispose()
 
     application = FastAPI(
         title=resolved_settings.app_name,
@@ -61,6 +92,28 @@ def create_app(
     application.state.settings = resolved_settings
     application.state.database = resolved_database
     application.state.session_factory = resolved_database.sessions
+    application.state.chart_runtime = resolved_chart_runtime
+    application.state.runtime_gate = None
+
+    async def app_readiness() -> None:
+        if readiness_probe is not None:
+            await readiness_probe()
+        else:
+            await resolved_database.probe()
+        runtime = getattr(application.state, "chart_runtime", None)
+        if getattr(runtime, "isolated", False):
+            raise RuntimeStartupError("Runtime worker is isolated")
+        if getattr(runtime, "process_alive", True) is False:
+            raise RuntimeStartupError("Runtime worker process is not alive")
+        gate = getattr(application.state, "runtime_gate", None)
+        if gate is not None:
+            await gate.readiness_probe()
+        elif (
+            resolved_chart_runtime is None
+            and resolved_settings.runtime_adapter in {"one-shot", "worker-v2"}
+        ):
+            raise RuntimeStartupError("Runtime startup admission is not ready")
+
     application.state.physiognomy_media_store = (
         InMemoryPrivateMediaStore()
         if resolved_settings.physiognomy_media_root is None
@@ -137,7 +190,9 @@ def create_app(
             title=error.title,
             problem_type=error.problem_type,
             detail=error.detail,
+            code=error.code,
             headers=error.headers,
+            extensions=error.extensions,
         )
         if error.clear_device_cookies:
             clear_device_cookies(response, settings=request.app.state.settings)
@@ -157,7 +212,7 @@ def create_app(
 
     configure_logging(resolved_settings.log_level)
     install_request_observability(application)
-    application.include_router(build_api_router(readiness_probe or resolved_database.probe))
+    application.include_router(build_api_router(app_readiness))
 
     base_openapi = application.openapi
 
