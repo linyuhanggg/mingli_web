@@ -3,6 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import {
   adoptCsrfToken,
   createProfileDraft,
+  discardProfileDraft,
   getAccount,
   getCsrfToken,
   logoutCurrentDevice,
@@ -158,6 +159,70 @@ it("sends the adopted device CSRF on authenticated calls without a second Guest"
   });
   expect(new Headers(requestInit?.headers).get("X-CSRF-Token")).toBe(
     "device-csrf-token-with-at-least-32-characters",
+  );
+});
+
+it("deletes a Guest-owned profile draft with the Guest Session CSRF", async () => {
+  const fetchMock = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(
+      jsonResponse(
+        {
+          status: "active",
+          expires_at: "2026-08-10T00:00:00Z",
+          csrf_token: "guest-csrf-token-for-draft-deletion",
+        },
+        201,
+      ),
+    )
+    .mockResolvedValueOnce(new Response(null, { status: 204 }));
+  vi.stubGlobal("fetch", fetchMock);
+
+  await expect(
+    discardProfileDraft("86c9d8d9-1b45-4a27-8efd-946ef0e5186b"),
+  ).resolves.toBeUndefined();
+
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(fetchMock).toHaveBeenNthCalledWith(
+    1,
+    "/api/v1/guest-sessions",
+    expect.objectContaining({ method: "POST", credentials: "include" }),
+  );
+  const [url, requestInit] = fetchMock.mock.calls[1]!;
+  expect(url).toBe(
+    "/api/v1/profiles/drafts/86c9d8d9-1b45-4a27-8efd-946ef0e5186b",
+  );
+  expect(requestInit).toMatchObject({
+    method: "DELETE",
+    credentials: "include",
+  });
+  expect(new Headers(requestInit?.headers).get("X-CSRF-Token")).toBe(
+    "guest-csrf-token-for-draft-deletion",
+  );
+});
+
+it("deletes a device-owned profile draft with the adopted device CSRF", async () => {
+  const fetchMock = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(new Response(null, { status: 204 }));
+  vi.stubGlobal("fetch", fetchMock);
+  adoptCsrfToken("device-csrf-token-for-draft-deletion");
+
+  await expect(
+    discardProfileDraft("2ec4dc6c-3e6e-4aef-ae3b-c900b3f1d239"),
+  ).resolves.toBeUndefined();
+
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  const [url, requestInit] = fetchMock.mock.calls[0]!;
+  expect(url).toBe(
+    "/api/v1/profiles/drafts/2ec4dc6c-3e6e-4aef-ae3b-c900b3f1d239",
+  );
+  expect(requestInit).toMatchObject({
+    method: "DELETE",
+    credentials: "include",
+  });
+  expect(new Headers(requestInit?.headers).get("X-CSRF-Token")).toBe(
+    "device-csrf-token-for-draft-deletion",
   );
 });
 
