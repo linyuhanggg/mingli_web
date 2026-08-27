@@ -12,18 +12,24 @@
 }
 
 .breadcrumb {
+  color: var(--ds-muted);
+  font-size: var(--ds-text-14);
+}
+
+.breadcrumbList {
   display: flex;
   min-height: 46px;
   align-items: center;
   gap: var(--ds-space-2);
+  margin: 0;
+  padding: 0;
   overflow-x: auto;
-  color: var(--ds-muted);
-  font-size: var(--ds-text-14);
+  list-style: none;
   white-space: nowrap;
   scrollbar-width: none;
 }
 
-.breadcrumb::-webkit-scrollbar {
+.breadcrumbList::-webkit-scrollbar {
   display: none;
 }
 
@@ -49,4 +55,11 @@
 .breadcrumb [aria-current="page"] {
   color: var(--ds-ink);
   font-weight: 500;
+}
+
+@media (max-width: 839px) {
+  .shell {
+    padding-bottom: calc(var(--nav-bottom) + env(safe-area-inset-bottom));
+    scroll-padding-bottom: calc(var(--nav-bottom) + env(safe-area-inset-bottom));
+  }
 }
