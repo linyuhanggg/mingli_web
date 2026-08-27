@@ -125,16 +125,19 @@ describe("ProfileArchive", () => {
     api.listProfiles.mockResolvedValue({
       profiles: [profile({ display_name: "档案 · 1992-07-08" })],
     });
-    api.updateProfileDisplayName.mockResolvedValue(
-      profile({ display_name: "游客重命名档案" }),
-    );
+    let resolveRename!: (next: ReturnType<typeof profile>) => void;
+    const renameRequest = new Promise<ReturnType<typeof profile>>((resolve) => {
+      resolveRename = resolve;
+    });
+    api.updateProfileDisplayName.mockReturnValue(renameRequest);
 
     render(<ProfilesPage />);
     fireEvent.click(await screen.findByRole("button", { name: "重命名" }));
     fireEvent.change(screen.getByLabelText("档案名称"), {
       target: { value: "游客重命名档案" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "保存名称" }));
+    const saveButton = screen.getByRole("button", { name: "保存名称" });
+    fireEvent.click(saveButton);
 
     await waitFor(() =>
       expect(api.updateProfileDisplayName).toHaveBeenCalledWith(
@@ -142,7 +145,22 @@ describe("ProfileArchive", () => {
         "游客重命名档案",
       ),
     );
+    const savingStatus = screen.getByRole("status");
+    expect(savingStatus).toBeVisible();
+    expect(savingStatus).toHaveTextContent("正在保存名称…");
+    expect(savingStatus.closest('[aria-busy="true"]')).not.toBeNull();
+    expect(screen.getByLabelText("档案名称")).toBeDisabled();
+    expect(saveButton).toBeDisabled();
+    expect(screen.getByRole("button", { name: "取消" })).toBeDisabled();
+
+    fireEvent.click(saveButton);
+    expect(api.updateProfileDisplayName).toHaveBeenCalledTimes(1);
+
+    resolveRename(profile({ display_name: "游客重命名档案" }));
+
     expect(await screen.findByText("游客重命名档案")).toBeVisible();
+    expect(screen.queryByText("正在保存名称…")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "重命名" })).toBeEnabled();
   });
 
   it("names the career scope before starting the supported archive preview", async () => {
