@@ -257,6 +257,47 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     ]);
   });
 
+  it("refreshes a stale prepared summary when the result is already accepted", async () => {
+    let summaryCount = 0;
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path === `/api/v1/readings/${VERSION_ID}`) {
+        summaryCount += 1;
+        return jsonResponse(
+          readingSummary(summaryCount === 1 ? "prepared" : "accepted"),
+        );
+      }
+      if (path === `/api/v1/readings/${VERSION_ID}/result`) {
+        return jsonResponse(
+          readingResult({
+            document: {
+              ...readingDocument(),
+              actions: {
+                ...readingDocument().actions,
+                export: { enabled: true },
+              },
+            },
+          }),
+        );
+      }
+      return problemResponse("Unexpected request", 500);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByText(acceptedCopyQuery)).toBeVisible();
+    expect(screen.getByText("已交付")).toBeVisible();
+    expect(screen.getByLabelText("追问")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "分享" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "导出报告" })).toBeVisible();
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      `/api/v1/readings/${VERSION_ID}`,
+      `/api/v1/readings/${VERSION_ID}/result`,
+      `/api/v1/readings/${VERSION_ID}`,
+    ]);
+  });
+
   it("does not fall back to a Bazi chart when a relationship ViewModel is unavailable", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
