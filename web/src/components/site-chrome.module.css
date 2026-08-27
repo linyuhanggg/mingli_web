@@ -410,9 +410,13 @@
   .mobileMenuTrigger { display: inline-flex; }
 
   .mobileBottomBar {
-    position: static;
+    position: fixed;
+    z-index: var(--z-nav);
+    right: 0;
+    bottom: 0;
+    left: 0;
     display: grid;
-    min-height: var(--nav-bottom);
+    min-height: calc(var(--nav-bottom) + env(safe-area-inset-bottom));
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-xs);
     padding: var(--space-xs) var(--space-xs) calc(var(--space-xs) + env(safe-area-inset-bottom));

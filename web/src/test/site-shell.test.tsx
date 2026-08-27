@@ -234,24 +234,48 @@ describe("public shell navigation", () => {
 });
 
 describe("public shell responsive and cache contracts", () => {
-  it("uses the single 840px navigation boundary and a non-fixed mobile bottom bar", () => {
+  it.each([360, 768])(
+    "keeps the mobile bottom bar fixed and reserves its safe area at %ipx",
+    (viewportWidth) => {
+      const css = readFileSync(
+        resolve(process.cwd(), "src/components/site-chrome.module.css"),
+        "utf8",
+      );
+      const shellCss = readFileSync(
+        resolve(process.cwd(), "src/components/public-page-shell.module.css"),
+        "utf8",
+      );
+
+      expect(viewportWidth).toBeLessThan(840);
+      expect(css).toMatch(/@media \(max-width:\s*839px\)/);
+      expect(css).toMatch(/\.header[\s\S]*min-height:\s*var\(--header-desktop\)/);
+      expect(css).toMatch(/@media \(max-width:\s*839px\)[\s\S]*\.header,[\s\S]*min-height:\s*var\(--header-mobile\)/);
+      expect(css).toMatch(/\.mobileBottomBar\s*\{[^}]*position:\s*fixed/);
+      expect(css).toMatch(/\.mobileBottomBar\s*\{[^}]*bottom:\s*0/);
+      expect(css).toMatch(/\.mobileBottomBar[\s\S]*grid-template-columns:\s*repeat\(4,/);
+      expect(css).toMatch(/\.mobileBottomBar\s*\{[^}]*min-height:\s*calc\(var\(--nav-bottom\) \+ env\(safe-area-inset-bottom\)\)/);
+      expect(css).toMatch(/env\(safe-area-inset-bottom\)/);
+      expect(css).toMatch(/overflow-x:\s*clip/);
+      expect(css).toMatch(/\.mobileDrawer[\s\S]*width:\s*min\(28rem,\s*100vw\)/);
+      expect(shellCss).toMatch(
+        /@media \(max-width:\s*839px\)[\s\S]*\.shell\s*\{[^}]*padding-bottom:\s*calc\(var\(--nav-bottom\) \+ env\(safe-area-inset-bottom\)\)/,
+      );
+      expect(shellCss).toMatch(
+        /@media \(max-width:\s*839px\)[\s\S]*\.shell\s*\{[^}]*scroll-padding-bottom:\s*calc\(var\(--nav-bottom\) \+ env\(safe-area-inset-bottom\)\)/,
+      );
+    },
+  );
+
+  it("keeps the fixed mobile navigation mutually exclusive with desktop navigation at 840px", () => {
     const css = readFileSync(
       resolve(process.cwd(), "src/components/site-chrome.module.css"),
       "utf8",
     );
 
-    expect(css).toMatch(/@media \(max-width:\s*839px\)/);
     expect(css).toMatch(/@media \(min-width:\s*840px\)/);
-    expect(css).toMatch(/\.header[\s\S]*min-height:\s*var\(--header-desktop\)/);
-    expect(css).toMatch(/@media \(max-width:\s*839px\)[\s\S]*\.header,[\s\S]*min-height:\s*var\(--header-mobile\)/);
-    expect(css).toMatch(/\.mobileBottomBar[\s\S]*position:\s*static/);
-    expect(css).toMatch(/\.mobileBottomBar[\s\S]*grid-template-columns:\s*repeat\(4,/);
-    expect(css).toMatch(/\.mobileBottomBar[\s\S]*min-height:\s*var\(--nav-bottom\)/);
-    expect(css).toMatch(/env\(safe-area-inset-bottom\)/);
-    expect(css).toMatch(/overflow-x:\s*clip/);
-    expect(css).toMatch(/\.mobileDrawer[\s\S]*width:\s*min\(28rem,\s*100vw\)/);
     expect(css).toMatch(/@media \(min-width:\s*840px\)[\s\S]*\.mobileBottomBar,[\s\S]*display:\s*none/);
-    expect(css).not.toMatch(/position:\s*fixed[^}]*mobileBottomBar/);
+    expect(css).toMatch(/\.desktopOnly\s*\{[^}]*display:\s*flex/);
+    expect(css).toMatch(/@media \(max-width:\s*839px\)[\s\S]*\.desktopOnly,[\s\S]*display:\s*none/);
   });
 
   it("backs every shell destination with either a product surface or a public page", () => {
