@@ -123,7 +123,7 @@ export function ProfileForm() {
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [nameConflict, setNameConflict] = useState<ProfileNameConflict | null>(null);
-  const pendingConfirmRef = useRef<{
+  const [pendingConfirm, setPendingConfirm] = useState<{
     draftId: string;
     body: ProfileConfirmRequest;
   } | null>(null);
@@ -192,46 +192,53 @@ export function ProfileForm() {
       setBusy(true);
       setSubmitError("");
       setNameConflict(null);
+      let pending = pendingConfirm;
       try {
-        const draft = await createProfileDraft(values.display_name?.trim() || undefined);
-        const body: ProfileConfirmRequest = {
-          birth_datetime: localDateTimeWithOffset(
-            values.birth_datetime,
-            values.timezone,
-          ),
-          timezone: values.timezone,
-          location: values.location.trim(),
-          gender: values.gender,
-          time_basis_policy: values.time_basis_policy,
-          zi_hour_policy: values.zi_hour_policy,
-          longitude:
-            values.time_basis_policy !== "solar" ||
-            values.longitude?.trim() === ""
-              ? undefined
-              : Number(values.longitude),
-          latitude:
-            values.time_basis_policy !== "solar" ||
-            values.latitude?.trim() === ""
-              ? undefined
-              : Number(values.latitude),
-          coordinate_source:
-            values.time_basis_policy !== "solar" ||
-            values.coordinate_source?.trim() === ""
-              ? undefined
-              : values.coordinate_source?.trim(),
-          on_name_conflict: "reject",
-        };
-        pendingConfirmRef.current = { draftId: draft.draft_id, body };
-        await confirmProfileDraft(draft.draft_id, body);
-        pendingConfirmRef.current = null;
+        if (!pending) {
+          const draft = await createProfileDraft(values.display_name?.trim() || undefined);
+          const body: ProfileConfirmRequest = {
+            birth_datetime: localDateTimeWithOffset(
+              values.birth_datetime,
+              values.timezone,
+            ),
+            timezone: values.timezone,
+            location: values.location.trim(),
+            gender: values.gender,
+            time_basis_policy: values.time_basis_policy,
+            zi_hour_policy: values.zi_hour_policy,
+            longitude:
+              values.time_basis_policy !== "solar" ||
+              values.longitude?.trim() === ""
+                ? undefined
+                : Number(values.longitude),
+            latitude:
+              values.time_basis_policy !== "solar" ||
+              values.latitude?.trim() === ""
+                ? undefined
+                : Number(values.latitude),
+            coordinate_source:
+              values.time_basis_policy !== "solar" ||
+              values.coordinate_source?.trim() === ""
+                ? undefined
+                : values.coordinate_source?.trim(),
+            on_name_conflict: "reject",
+          };
+          pending = { draftId: draft.draft_id, body };
+          setPendingConfirm(pending);
+        }
+        await confirmProfileDraft(pending.draftId, pending.body);
+        setPendingConfirm(null);
         router.push("/app/profiles?created=1");
       } catch (reason) {
         if (isProfileNameConflict(reason)) {
           setNameConflict(readProfileNameConflict(reason));
         } else {
-          pendingConfirmRef.current = null;
+          const message =
+            reason instanceof Error ? reason.message : "档案保存失败，请稍后重试。";
           setSubmitError(
-            reason instanceof Error ? reason.message : "档案保存失败，请稍后重试。",
+            pending
+              ? `${message} 未确认草稿已保留；重试不会创建新草稿。如需按当前表单重建，请先放弃草稿。`
+              : message,
           );
         }
       } finally {
@@ -239,12 +246,35 @@ export function ProfileForm() {
         setBusy(false);
       }
     },
-    [router],
+    [pendingConfirm, router],
   );
+
+  const retryPendingConfirm = useCallback(async () => {
+    if (!pendingConfirm || busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    setSubmitError("");
+    try {
+      await confirmProfileDraft(pendingConfirm.draftId, pendingConfirm.body);
+      setPendingConfirm(null);
+      router.push("/app/profiles?created=1");
+    } catch (reason) {
+      if (isProfileNameConflict(reason)) {
+        setNameConflict(readProfileNameConflict(reason));
+      } else {
+        setSubmitError(
+          `${reason instanceof Error ? reason.message : "档案保存失败，请稍后重试。"} 未确认草稿仍已保留；可以再次重试或明确放弃。`,
+        );
+      }
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
+  }, [pendingConfirm, router]);
 
   const resolveConflict = useCallback(
     async (action: "overwrite" | "save_as") => {
-      const pending = pendingConfirmRef.current;
+      const pending = pendingConfirm;
       if (!pending || busyRef.current) return;
       busyRef.current = true;
       setBusy(true);
@@ -254,7 +284,7 @@ export function ProfileForm() {
           ...pending.body,
           on_name_conflict: action,
         });
-        pendingConfirmRef.current = null;
+        setPendingConfirm(null);
         setNameConflict(null);
         router.push("/app/profiles?created=1");
       } catch (reason) {
@@ -266,11 +296,11 @@ export function ProfileForm() {
         setBusy(false);
       }
     },
-    [router],
+    [pendingConfirm, router],
   );
 
-  const dismissConflict = useCallback(async () => {
-    const pending = pendingConfirmRef.current;
+  const discardPendingDraft = useCallback(async () => {
+    const pending = pendingConfirm;
     if (!pending) {
       setNameConflict(null);
       return;
@@ -281,7 +311,7 @@ export function ProfileForm() {
     setSubmitError("");
     try {
       await discardProfileDraft(pending.draftId);
-      pendingConfirmRef.current = null;
+      setPendingConfirm(null);
       setNameConflict(null);
     } catch (reason) {
       setSubmitError(
@@ -291,7 +321,7 @@ export function ProfileForm() {
       busyRef.current = false;
       setBusy(false);
     }
-  }, []);
+  }, [pendingConfirm]);
 
   return (
     <div className={styles.wrap}>
@@ -303,7 +333,7 @@ export function ProfileForm() {
         onOverwrite={() => void resolveConflict("overwrite")}
         onSaveAs={() => void resolveConflict("save_as")}
         onCancel={() => {
-          void dismissConflict();
+          void discardPendingDraft();
         }}
       />
 
@@ -311,6 +341,26 @@ export function ProfileForm() {
         <p className={styles.errorBox} role="alert" aria-live="polite">
           {submitError}
         </p>
+      ) : null}
+      {submitError && pendingConfirm && !nameConflict ? (
+        <div className={formControls.actions} role="group" aria-label="未确认草稿操作">
+          <button
+            className={clsx(formControls.action, formControls.actionSecondary)}
+            disabled={busy}
+            onClick={() => void retryPendingConfirm()}
+            type="button"
+          >
+            重试确认
+          </button>
+          <button
+            className={clsx(formControls.action, formControls.actionSecondary)}
+            disabled={busy}
+            onClick={() => void discardPendingDraft()}
+            type="button"
+          >
+            放弃未确认草稿
+          </button>
+        </div>
       ) : null}
 
       <form

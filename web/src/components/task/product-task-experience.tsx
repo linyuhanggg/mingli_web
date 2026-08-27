@@ -76,6 +76,37 @@ import styles from "./task-shell.module.css";
 
 type TaskStage = "input" | "workbench";
 
+type PendingStartFormState = {
+  version: 1;
+  formValues: TaskFormValues;
+  profileVersionId?: string;
+};
+
+function readPendingStartFormState(values: unknown): PendingStartFormState | null {
+  if (!values || typeof values !== "object" || Array.isArray(values)) return null;
+  const candidate = values as Record<string, unknown>;
+  if (
+    candidate.version === 1
+    && candidate.formValues
+    && typeof candidate.formValues === "object"
+    && !Array.isArray(candidate.formValues)
+  ) {
+    const profileVersionId =
+      typeof candidate.profileVersionId === "string"
+        ? candidate.profileVersionId.trim()
+        : "";
+    return {
+      version: 1,
+      formValues: candidate.formValues as TaskFormValues,
+      ...(profileVersionId ? { profileVersionId } : {}),
+    };
+  }
+  return {
+    version: 1,
+    formValues: values as TaskFormValues,
+  };
+}
+
 const BAZI_PREVIEW_RECOVERY_PREFIX = "mingli.bazi-preview-recovery:";
 
 export type BaziPreviewRecoveryState = {
@@ -279,6 +310,19 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const router = useRouter();
   const pathname = usePathname() || `/${product.id}`;
   const searchParams = useSearchParams();
+  const resumeKey = searchParams.get("idempotency_key");
+  const resumedTask = useSyncExternalStore(
+    subscribePendingStartTasks,
+    () => {
+      const pending = loadPendingStartTask(resumeKey);
+      return pending?.productId === product.id ? pending : null;
+    },
+    () => null,
+  );
+  const resumedFormState = readPendingStartFormState(resumedTask?.values);
+  const resumedProfileVersionId = resumedFormState?.profileVersionId ?? "";
+  const resumedSelectionContext =
+    resumedTask && resumeKey ? `${resumeKey}:${resumedTask.fingerprint}` : "";
   const requestedProfileVersionId = searchParams.get("profile") ?? "";
   const restoredBaziReadingId =
     product.id === "bazi" ? readBaziPreviewReadingId(searchParams) : null;
@@ -323,6 +367,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [selectedProfileVersionId, setSelectedProfileVersionId] = useState("");
   const [savedProfilesAttempt, setSavedProfilesAttempt] = useState(0);
   const profileVersionRef = useRef<string | null>(null);
+  const profileSelectionContextRef = useRef<string | null>(null);
   const intentKeyRef = useRef<IntentKey | null>(null);
   const pendingProfileRef = useRef<{
     draftId: string;
@@ -361,7 +406,19 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     void listProfiles()
       .then(({ profiles }) => {
         if (!active) return;
-        setSavedProfilesError(null);
+        const selectionContextChanged =
+          profileSelectionContextRef.current !== resumedSelectionContext;
+        profileSelectionContextRef.current = resumedSelectionContext;
+        const resumedProfileAvailable =
+          !resumedProfileVersionId
+          || profiles.some(
+            (profile) => profile.profile_version_id === resumedProfileVersionId,
+          );
+        setSavedProfilesError(
+          selectionContextChanged && !resumedProfileAvailable
+            ? "登录后未能恢复原先选择的档案，请重新读取已保存资料。"
+            : null,
+        );
         setSavedProfilesSignedOut(false);
         setSavedProfiles(profiles);
         setSelectedProfileVersionId((current) => {
@@ -373,11 +430,22 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           ) {
             return requestedProfileVersionId;
           }
+          if (selectionContextChanged) {
+            if (resumedProfileAvailable && resumedProfileVersionId) {
+              return resumedProfileVersionId;
+            }
+            return resumedProfileAvailable
+              ? profiles[0]?.profile_version_id ?? ""
+              : "";
+          }
           if (
             current &&
             profiles.some((profile) => profile.profile_version_id === current)
           ) {
             return current;
+          }
+          if (resumedProfileAvailable && resumedProfileVersionId) {
+            return resumedProfileVersionId;
           }
           return profiles[0]?.profile_version_id ?? "";
         });
@@ -405,17 +473,13 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     return () => {
       active = false;
     };
-  }, [shouldLoadProfiles, requestedProfileVersionId, savedProfilesAttempt]);
-
-  const resumeKey = searchParams.get("idempotency_key");
-  const resumedTask = useSyncExternalStore(
-    subscribePendingStartTasks,
-    () => {
-      const pending = loadPendingStartTask(resumeKey);
-      return pending?.productId === product.id ? pending : null;
-    },
-    () => null,
-  );
+  }, [
+    shouldLoadProfiles,
+    requestedProfileVersionId,
+    resumedProfileVersionId,
+    resumedSelectionContext,
+    savedProfilesAttempt,
+  ]);
 
   async function startRuntimeReading(nextValues: TaskFormValues) {
     if (resumedTask && resumeKey) {
@@ -877,10 +941,18 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       const intent = intentKeyRef.current;
       setLoginIntentKey(intent?.key);
       if (action === "login" && intent) {
+        const profileVersionId =
+          profileVersionRef.current?.trim()
+          || selectedProfileVersionId.trim()
+          || undefined;
         persistPendingStartTask(intent.key, {
           productId: product.id,
           fingerprint: intent.fingerprint,
-          values: nextValues,
+          values: {
+            version: 1,
+            formValues: nextValues,
+            ...(profileVersionId ? { profileVersionId } : {}),
+          } satisfies PendingStartFormState,
         });
       }
     } finally {
@@ -996,7 +1068,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             profileLookupSignedOut={savedProfilesSignedOut}
             profiles={savedProfiles}
             selectedProfileVersionId={selectedProfileVersionId}
-            initialValues={values ?? (resumedTask?.values as TaskFormValues | undefined)}
+            initialValues={values ?? resumedFormState?.formValues}
             onConfirm={handleConfirm}
             onPhotoChange={setPhotoFile}
             onRetryProfiles={() => {
