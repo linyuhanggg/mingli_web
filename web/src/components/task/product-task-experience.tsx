@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronRight, Circle } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Status } from "@/components/ui/status";
@@ -10,6 +10,7 @@ import { WorkbenchShell } from "@/components/workbench/workbench-shell";
 import {
   confirmProfileDraft,
   createProfileDraft,
+  discardProfileDraft,
   formatProfileOption,
   ApiError,
   listProfiles,
@@ -54,7 +55,12 @@ import {
   readProfileNameConflict,
   type ProfileNameConflict,
 } from "@/lib/profile-conflict";
-import { loginContinueHref } from "@/lib/login-continue";
+import {
+  loadPendingStartTask,
+  loginContinueHref,
+  persistPendingStartTask,
+  subscribePendingStartTasks,
+} from "@/lib/login-continue";
 import { mapStartReadingFailure, startReadingFailureAction } from "@/lib/start-reading-error";
 import type { ProductDefinition } from "@/products/catalog";
 
@@ -262,7 +268,20 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     };
   }, [shouldLoadProfiles, requestedProfileVersionId, savedProfilesAttempt]);
 
+  const resumeKey = searchParams.get("idempotency_key");
+  const resumedTask = useSyncExternalStore(
+    subscribePendingStartTasks,
+    () => {
+      const pending = loadPendingStartTask(resumeKey);
+      return pending?.productId === product.id ? pending : null;
+    },
+    () => null,
+  );
+
   async function startRuntimeReading(nextValues: TaskFormValues) {
+    if (resumedTask && resumeKey) {
+      intentKeyRef.current = { fingerprint: resumedTask.fingerprint, key: resumeKey };
+    }
     if (!hasRuntimeStart(product)) {
       setStage("workbench");
       return;
@@ -706,10 +725,19 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       router.push(`/app/readings/${response.reading_version_id}`);
     } catch (reason) {
       const mapped = mapStartReadingFailure(reason);
+      const action = startReadingFailureAction(reason);
       setSubmitErrorState(mapped.state);
       setSubmitError(mapped.title);
-      setSubmitErrorAction(startReadingFailureAction(reason));
-      setLoginIntentKey(intentKeyRef.current?.key);
+      setSubmitErrorAction(action);
+      const intent = intentKeyRef.current;
+      setLoginIntentKey(intent?.key);
+      if (action === "login" && intent) {
+        persistPendingStartTask(intent.key, {
+          productId: product.id,
+          fingerprint: intent.fingerprint,
+          values: nextValues,
+        });
+      }
     } finally {
       setBusy(false);
     }
@@ -724,6 +752,28 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     setNameConflict(null);
     setValues(nextValues);
     void startRuntimeReading(nextValues);
+  }
+
+  async function cancelProfileConflict() {
+    const pending = pendingProfileRef.current;
+    pendingProfileRef.current = null;
+    if (!pending) {
+      setNameConflict(null);
+      return;
+    }
+    setBusy(true);
+    setSubmitError(null);
+    try {
+      await discardProfileDraft(pending.draftId);
+      setNameConflict(null);
+    } catch (reason) {
+      pendingProfileRef.current = pending;
+      const mapped = mapStartReadingFailure(reason);
+      setSubmitErrorState(mapped.state);
+      setSubmitError(mapped.title);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function resolveProfileConflict(action: "overwrite" | "save_as") {
@@ -760,7 +810,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const loginHref = loginContinueHref(
     pathname,
     search ? `?${search}` : "",
-    loginIntentKey,
+    loginIntentKey ?? resumeKey ?? undefined,
   );
 
   return (
@@ -771,8 +821,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         onOverwrite={() => void resolveProfileConflict("overwrite")}
         onSaveAs={() => void resolveProfileConflict("save_as")}
         onCancel={() => {
-          pendingProfileRef.current = null;
-          setNameConflict(null);
+          void cancelProfileConflict();
         }}
       />
       {stage !== "input" ? <TaskProgress product={product} stage={stage} /> : null}
@@ -789,6 +838,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           hidden={stage !== "input"}
         >
           <ProductInputForm
+            key={resumedTask && resumeKey ? `resume-${resumeKey}` : "input"}
             busy={busy}
             onProfileVersionChange={(profileVersionId) => {
               setSelectedProfileVersionId(profileVersionId);
@@ -801,7 +851,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             profileLookupSignedOut={savedProfilesSignedOut}
             profiles={savedProfiles}
             selectedProfileVersionId={selectedProfileVersionId}
-            initialValues={values ?? undefined}
+            initialValues={values ?? (resumedTask?.values as TaskFormValues | undefined)}
             onConfirm={handleConfirm}
             onPhotoChange={setPhotoFile}
             onRetryProfiles={() => {

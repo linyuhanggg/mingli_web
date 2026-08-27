@@ -4,7 +4,23 @@ export const START_READING_UNAVAILABLE = "服务暂时不可用，请稍后重�
 export const PAID_READING_REQUIRES_ACCOUNT = "这项解读需要登录后付费使用。";
 export const RATE_LIMIT_EXCEEDED = "提交过于频繁，请稍后再试。";
 export const GUEST_DAILY_READING_LIMIT = "今日游客排盘次数已用完，请明日再试或登录后继续。";
+export const GUEST_DAILY_PAID_READING_LIMIT = "今日游客付费排盘次数已用完，请明日再试或登录后继续。";
+export const USER_DAILY_READING_LIMIT = "今日排盘次数已用完，请明日再试。";
+export const USER_DAILY_PAID_READING_LIMIT = "今日付费排盘次数已用完，请明日再试。";
 export const CHART_RUNTIME_FAULT = "排盘引擎暂时无法完成这次计算，请稍后重试。";
+
+const DAILY_LIMIT_COPY: Record<string, string> = {
+  guest_daily_reading_limit: GUEST_DAILY_READING_LIMIT,
+  guest_daily_paid_reading_limit: GUEST_DAILY_PAID_READING_LIMIT,
+  user_daily_reading_limit: USER_DAILY_READING_LIMIT,
+  user_daily_paid_reading_limit: USER_DAILY_PAID_READING_LIMIT,
+};
+
+const LOGIN_FAILURE_CODES = new Set([
+  "paid_reading_requires_account",
+  "guest_daily_reading_limit",
+  "guest_daily_paid_reading_limit",
+]);
 
 const CONSTRUCTION = /Runtime|Provider|适配器|development_code|release unavailable/i;
 const RUNTIME_CODES = new Set([
@@ -33,10 +49,7 @@ function chineseOr(fallback: string, ...candidates: Array<string | undefined>): 
 
 export function startReadingFailureAction(reason: unknown): "login" | "retry" | null {
   if (!(reason instanceof ApiError) || !reason.code) return null;
-  if (
-    reason.code === "paid_reading_requires_account"
-    || reason.code === "guest_daily_reading_limit"
-  ) {
+  if (LOGIN_FAILURE_CODES.has(reason.code)) {
     return "login";
   }
   if (reason.code === "rate_limit_exceeded" || reason.code.startsWith("chart_runtime_")) {
@@ -62,10 +75,10 @@ export function mapStartReadingFailure(reason: unknown): {
         title: chineseOr(RATE_LIMIT_EXCEEDED, reason.detail, reason.message),
       };
     }
-    if (reason.code === "guest_daily_reading_limit") {
+    if (reason.code && DAILY_LIMIT_COPY[reason.code]) {
       return {
         state: "error",
-        title: chineseOr(GUEST_DAILY_READING_LIMIT, reason.detail, reason.message),
+        title: chineseOr(DAILY_LIMIT_COPY[reason.code], reason.detail, reason.message),
       };
     }
     if (reason.code && (RUNTIME_CODES.has(reason.code) || reason.code.startsWith("chart_runtime_"))) {
