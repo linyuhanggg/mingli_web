@@ -389,7 +389,7 @@
 }
 
 .cardMeta {
-  color: var(--ds-quiet);
+  color: var(--ds-muted);
   font-size: var(--ds-text-12);
 }
 

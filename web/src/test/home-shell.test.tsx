@@ -30,6 +30,35 @@ const PRODUCT_ENTRIES = [
   ["知识内容", "/library"],
 ] as const;
 
+function relativeLuminance(color: string) {
+  const channels = color
+    .slice(1)
+    .match(/.{2}/g)!
+    .map((channel) => Number.parseInt(channel, 16) / 255)
+    .map((channel) =>
+      channel <= 0.04045
+        ? channel / 12.92
+        : ((channel + 0.055) / 1.055) ** 2.4,
+    );
+
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrastRatio(foreground: string, background: string) {
+  const foregroundLuminance = relativeLuminance(foreground);
+  const backgroundLuminance = relativeLuminance(background);
+  return (
+    (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) /
+    (Math.min(foregroundLuminance, backgroundLuminance) + 0.05)
+  );
+}
+
+function readHexToken(css: string, name: string) {
+  const match = css.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, "i"));
+  expect(match, `missing hex token --${name}`).not.toBeNull();
+  return match![1];
+}
+
 describe("public home shell", () => {
   it("keeps the Xuan Order heading, primary action, and product map", () => {
     render(<HomePage />);
@@ -83,6 +112,18 @@ describe("public home shell", () => {
     expect(css).toMatch(/\.sectionDivider\s*\{[^}]*background:\s*var\(--ds-line\)/s);
     expect(css).not.toMatch(/(?:linear|radial|conic)-gradient/);
     expect(css).not.toMatch(/§10|§6\.2/);
+  });
+
+  it("keeps 12px card metadata at WCAG AA contrast on the light canvas", () => {
+    const homeCss = readFileSync(resolve(process.cwd(), "src/app/home.module.css"), "utf8");
+    const tokens = readFileSync(resolve(process.cwd(), "../ui/tokens.css"), "utf8");
+
+    expect(homeCss).toMatch(
+      /\.cardMeta\s*\{[^}]*color:\s*var\(--ds-muted\)[^}]*font-size:\s*var\(--ds-text-12\)/s,
+    );
+    expect(
+      contrastRatio(readHexToken(tokens, "ds-muted"), readHexToken(tokens, "ds-canvas")),
+    ).toBeGreaterThanOrEqual(4.5);
   });
 
   it("uses one Xuan Order visual authority instead of a second homepage brand", () => {
