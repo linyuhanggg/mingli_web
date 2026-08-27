@@ -601,6 +601,31 @@ def test_profile_version_numbers_are_serialized_by_a_postgresql_profile_lock() -
     assert "FOR UPDATE" in compiled
 
 
+@pytest.mark.parametrize(
+    ("owner_user_id", "owner_guest_session_id", "owner_table"),
+    [
+        (uuid4(), None, "USERS"),
+        (None, uuid4(), "GUEST_SESSIONS"),
+    ],
+)
+def test_profile_conflict_checks_are_serialized_by_a_postgresql_owner_lock(
+    owner_user_id: Any,
+    owner_guest_session_id: Any,
+    owner_table: str,
+) -> None:
+    profiles = importlib.import_module("app.profiles.repository")
+
+    compiled = str(
+        profiles.profile_owner_lock_statement(
+            owner_user_id=owner_user_id,
+            owner_guest_session_id=owner_guest_session_id,
+        ).compile(dialect=postgresql.dialect())
+    ).upper()
+
+    assert "FOR UPDATE" in compiled
+    assert owner_table in compiled
+
+
 async def test_profile_version_requires_an_existing_locked_profile(
     reading_database: Any,
 ) -> None:

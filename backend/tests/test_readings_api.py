@@ -18,6 +18,8 @@ from app.readings.models import (
 )
 from app.readings.request_compiler import compile_liuyao_prepare
 from app.readings.runtime_contracts import Accepted, Prepared, ReadingBrief, Stopped
+from app.readings.service import ReadingService
+from app.readings.status import ReadingStatus
 from app.security.envelope import EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
@@ -333,6 +335,8 @@ async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
 
     assert polled.status_code == 200
     assert polled.json()["status"] == "prepared"
+    assert polled.json()["poll_required"] is False
+    assert polled.json()["poll_after_seconds"] is None
     assert_private_headers(polled)
     assert "state_token" not in polled.text
     assert "ciphertext" not in polled.text
@@ -351,6 +355,22 @@ async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
         assert jobs[0].status == "complete"
         assert jobs[0].narrative_policy_version
         assert jobs[0].output_contract["contract_id"] == "preview-v1"
+
+
+def test_queued_prepared_reading_keeps_polling_until_job_is_complete() -> None:
+    queued = ReadingService._poll_fields(
+        ReadingStatus.PREPARED,
+        object(),
+        job_status="running",
+    )
+    direct_terminal = ReadingService._poll_fields(
+        ReadingStatus.PREPARED,
+        object(),
+        job_status="complete",
+    )
+
+    assert queued == (True, True, 4)
+    assert direct_terminal == (True, False, None)
 
 
 @pytest.mark.parametrize(

@@ -146,6 +146,13 @@ class ProfileService:
         payload: ProfileConfirmRequest,
     ) -> ProfileSummary:
         user_id, guest_id = owner_ids(owner)
+        try:
+            await self.repository.lock_profile_owner(
+                owner_user_id=user_id,
+                owner_guest_session_id=guest_id,
+            )
+        except LookupError as error:
+            raise ProfileNotFoundError("Profile owner not found") from error
         draft = await self.repository.get_owned_draft(
             draft_id,
             owner_user_id=user_id,
