@@ -8,7 +8,6 @@ from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from test_reading_repository import create_reading_graph
 
 

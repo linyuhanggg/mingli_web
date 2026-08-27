@@ -938,7 +938,7 @@ paths:
             format: uuid
       responses:
         "200":
-          description: Public version metadata only; payloads stay encrypted
+          description: Owner-only private/no-store display metadata; encrypted payloads stay private
           content:
             application/json:
               schema:
@@ -954,7 +954,7 @@ paths:
       summary: List immutable Profile Versions owned by the current session
       responses:
         "200":
-          description: Public profile metadata only; payloads stay encrypted
+          description: Owner-only private/no-store profile summaries; encrypted payloads stay private
           content:
             application/json:
               schema:
@@ -962,6 +962,41 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
   /api/v1/profiles/{profile_id}:
+    patch:
+      operationId: updateProfileDisplayName
+      tags: [Profiles]
+      summary: Update only the persisted display name of one owned Subject Profile
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - name: profile_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileDisplayNameUpdateRequest"
+      responses:
+        "200":
+          description: Owner-only private/no-store summary with the updated display name
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
     delete:
       operationId: deleteProfile
       tags: [Profiles]
@@ -989,7 +1024,7 @@ paths:
     post:
       operationId: startPreviewReading
       tags: [Readings]
-      summary: Enqueue a Bazi natal preview Reading Version
+      summary: Prepare a Bazi chart synchronously on the deterministic Runtime lane
       parameters:
         - $ref: "#/components/parameters/CsrfToken"
         - $ref: "#/components/parameters/IdempotencyKey"
@@ -1001,7 +1036,7 @@ paths:
               $ref: "#/components/schemas/PreviewStartRequest"
       responses:
         "201":
-          description: Reading Version created and queued
+          description: Reading Version created with renderable chart facts
           content:
             application/json:
               schema:
@@ -1316,7 +1351,7 @@ paths:
     post:
       operationId: startZiweiReading
       tags: [Readings]
-      summary: Enqueue a Ziwei natal preview Reading Version
+      summary: Prepare a Ziwei chart synchronously on the deterministic Runtime lane
       parameters:
         - $ref: "#/components/parameters/CsrfToken"
         - $ref: "#/components/parameters/IdempotencyKey"
@@ -1328,7 +1363,7 @@ paths:
               $ref: "#/components/schemas/PreviewStartRequest"
       responses:
         "201":
-          description: Reading Version created and queued
+          description: Reading Version created with renderable chart facts
           content:
             application/json:
               schema:
@@ -1695,7 +1730,7 @@ paths:
     post:
       operationId: startLiuyaoReading
       tags: [Readings]
-      summary: Enqueue a Liuyao Reading Version from a cast
+      summary: Prepare a Liuyao chart synchronously on the deterministic Runtime lane
       parameters:
         - $ref: "#/components/parameters/CsrfToken"
         - $ref: "#/components/parameters/IdempotencyKey"
@@ -1707,7 +1742,7 @@ paths:
               $ref: "#/components/schemas/LiuyaoStartRequest"
       responses:
         "201":
-          description: Reading Version created and queued
+          description: Reading Version created with renderable chart facts or waiting input
           content:
             application/json:
               schema:
@@ -1800,7 +1835,7 @@ paths:
     post:
       operationId: startMeihuaReading
       tags: [Readings]
-      summary: Enqueue a Meihua time-casting Reading Version
+      summary: Prepare a Meihua chart synchronously on the deterministic Runtime lane
       parameters:
         - $ref: "#/components/parameters/CsrfToken"
         - $ref: "#/components/parameters/IdempotencyKey"
@@ -1812,7 +1847,7 @@ paths:
               $ref: "#/components/schemas/MeihuaStartRequest"
       responses:
         "201":
-          description: Reading Version created and queued
+          description: Reading Version created with renderable chart facts
           content:
             application/json:
               schema:
@@ -1905,7 +1940,7 @@ paths:
     post:
       operationId: startDaliurenReading
       tags: [Readings]
-      summary: Enqueue a Daliuren event Reading Version
+      summary: Prepare a Daliuren chart synchronously on the deterministic Runtime lane
       parameters:
         - $ref: "#/components/parameters/CsrfToken"
         - $ref: "#/components/parameters/IdempotencyKey"
@@ -1917,7 +1952,7 @@ paths:
               $ref: "#/components/schemas/EventArtStartRequest"
       responses:
         "201":
-          description: Reading Version created and queued
+          description: Reading Version created with renderable chart facts
           content:
             application/json:
               schema:
@@ -3230,12 +3265,12 @@ components:
     ProfileDraftRequest:
       type: object
       additionalProperties: false
-      required: [label]
       properties:
         label:
-          type: string
+          type: [string, "null"]
           minLength: 1
           maxLength: 80
+          pattern: ".*\\S.*"
     ProfileDraftResponse:
       type: object
       additionalProperties: false
@@ -3306,6 +3341,10 @@ components:
         minor_guardian_confirmed:
           type: boolean
           default: false
+        on_name_conflict:
+          type: string
+          enum: [reject, save_as, overwrite]
+          default: reject
     ProfileVersionRequest:
       type: object
       additionalProperties: false
@@ -3368,10 +3407,22 @@ components:
           default: false
         difference_acknowledged:
           type: boolean
+    ProfileDisplayNameUpdateRequest:
+      type: object
+      additionalProperties: false
+      required: [display_name]
+      properties:
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          pattern: ".*\\S.*"
     ProfileSummary:
       type: object
       additionalProperties: false
-      required: [profile_id, profile_version_id, subject_ref, version, created_at]
+      required:
+        [profile_id, profile_version_id, subject_ref, version, display_name,
+        birth_date, created_at]
       properties:
         profile_id:
           type: string
@@ -3384,6 +3435,14 @@ components:
         version:
           type: integer
           minimum: 1
+        display_name:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 80
+        birth_date:
+          type: [string, "null"]
+          format: date
+          description: Owner-only calendar-date projection; more precise birth fields stay encrypted
         created_at:
           type: string
           format: date-time
@@ -4312,11 +4371,125 @@ components:
         created_at:
           type: string
           format: date-time
+    ChartFastPathTiming:
+      type: object
+      additionalProperties: false
+      required:
+        - queue_wait_ms
+        - worker_pickup_ms
+        - runtime_one_shot_ms
+        - db_persistence_ms
+        - total_ms
+      properties:
+        execution_lane:
+          type: string
+          const: direct_runtime
+          default: direct_runtime
+        queue_wait_ms:
+          type: number
+          minimum: 0
+        worker_pickup_ms:
+          type: number
+          minimum: 0
+        runtime_one_shot_ms:
+          type: number
+          minimum: 0
+        db_persistence_ms:
+          type: number
+          minimum: 0
+        total_ms:
+          type: number
+          minimum: 0
     ReadingStartResponse:
       type: object
       additionalProperties: false
-      allOf:
-        - $ref: "#/components/schemas/ReadingVersionSummary"
+      required:
+        - reading_version_id
+        - reading_root_id
+        - profile_version_id
+        - capability_id
+        - version
+        - status
+        - object_id
+        - dimension_ids
+        - horizon
+        - created_at
+      properties:
+        reading_version_id:
+          type: string
+          format: uuid
+        reading_root_id:
+          type: string
+          format: uuid
+        profile_version_id:
+          type: [string, "null"]
+          format: uuid
+        capability_id:
+          type: string
+        product_id:
+          type: [string, "null"]
+        runtime_capability_ids:
+          type: array
+          items:
+            type: string
+        version:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum:
+            - input_ready
+            - waiting_input
+            - terminal_stopped
+            - prepared
+            - completing
+            - accepted
+            - delayed
+            - runtime_unknown
+        object_id:
+          type: string
+        dimension_ids:
+          type: array
+          items:
+            type: string
+        horizon:
+          type: object
+          additionalProperties: false
+          required: [kind_id, start, end]
+          properties:
+            kind_id:
+              type: string
+            start:
+              type: [string, "null"]
+              format: date
+            end:
+              type: [string, "null"]
+              format: date
+        prior_answer:
+          type: [string, "null"]
+        input_request:
+          type: [object, "null"]
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+        result_available:
+          type: boolean
+        poll_required:
+          type: boolean
+        poll_after_seconds:
+          type: [integer, "null"]
+          minimum: 0
+        view_model:
+          oneOf:
+            - type: object
+              description: Versioned Runtime ViewModel selected by the reading product.
+              additionalProperties: true
+            - type: "null"
+        fast_path_timing:
+          oneOf:
+            - $ref: "#/components/schemas/ChartFastPathTiming"
+            - type: "null"
     FulfillmentBindingRequest:
       type: object
       additionalProperties: false
@@ -4934,6 +5107,13 @@ components:
             - $ref: "#/components/schemas/ReadingDocumentV1"
             - type: "null"
           additionalProperties: true
+        result_available:
+          type: boolean
+        poll_required:
+          type: boolean
+        poll_after_seconds:
+          type: [integer, "null"]
+          minimum: 0
     Problem:
       type: object
       additionalProperties: false
@@ -4950,6 +5130,33 @@ components:
           type: string
         request_id:
           type: string
+        code:
+          type: string
+        owner_kind:
+          type: string
+          enum: [guest, user]
+        limit_scope:
+          type: string
+          enum: [guest_session, user_account]
+        limit:
+          type: integer
+          minimum: 1
+        remaining:
+          type: integer
+          minimum: 0
+        existing_profile_id:
+          type: string
+          format: uuid
+        existing_profile_version_id:
+          type: string
+          format: uuid
+        suggested_save_as_name:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+            enum: [overwrite, save_as, cancel]
   responses:
     BadRequest:
       description: Invalid or expired request

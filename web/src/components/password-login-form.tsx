@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { adoptCsrfToken, ApiError, loginWithPassword } from "@/lib/api";
+import { destinationAfterLogin } from "@/lib/login-continue";
 
 import { useOptionalAccountSession } from "./account-session-context";
 import authStyles from "./auth-shell.module.css";
@@ -41,7 +42,7 @@ export function PasswordLoginForm() {
       if (accountSession) {
         void accountSession.refresh({ force: true });
       }
-      router.replace("/account");
+      router.replace(destinationAfterLogin());
     } catch (reason) {
       const invalidCredentials =
         (reason instanceof ApiError && reason.status === 401)

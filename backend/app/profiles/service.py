@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Literal, Protocol
 from uuid import UUID
 
@@ -10,7 +10,11 @@ from app.config import Settings
 from app.identity.models import GuestSession
 from app.profiles.models import ProfileVersion, SubjectProfile
 from app.profiles.repository import ProfileRepository
-from app.profiles.schemas import ProfileConfirmRequest, ProfileSummary, ProfileVersionRequest
+from app.profiles.schemas import (
+    ProfileConfirmRequest,
+    ProfileSummary,
+    ProfileVersionRequest,
+)
 from app.readings.models import ReadingIdempotencyKey, ReadingRoot
 from app.security.envelope import EnvelopeCipher
 
@@ -45,6 +49,24 @@ class ProfileDifferenceNotAcknowledgedError(ValueError):
 
 class ProfileNotConfirmedError(ValueError):
     """An append was requested for a SubjectProfile with no first version."""
+
+
+class ProfileNameConflictError(ValueError):
+    """An owner already has a confirmed profile with this name and birth date."""
+
+    def __init__(
+        self,
+        *,
+        existing_profile_id: UUID,
+        existing_profile_version_id: UUID,
+        display_name: str,
+        suggested_save_as_name: str,
+    ) -> None:
+        super().__init__("a profile with this name and birth date already exists")
+        self.existing_profile_id = existing_profile_id
+        self.existing_profile_version_id = existing_profile_version_id
+        self.display_name = display_name
+        self.suggested_save_as_name = suggested_save_as_name
 
 
 class OwnerProtocol(Protocol):
@@ -97,6 +119,34 @@ class ProfileService:
         if draft is None:
             raise ProfileNotFoundError("Profile Draft not found")
         self._validate_authorization(payload)
+        birth_date = _birth_date_from_datetime(payload.birth_datetime)
+        resolved_label = _resolved_display_name(draft.label, birth_date)
+        conflict = await self._name_birth_conflict(
+            owner,
+            display_name=resolved_label,
+            birth_date=birth_date,
+            exclude_profile_id=draft.id,
+        )
+        if conflict is not None:
+            existing_profile, existing_version = conflict
+            suggested = await self._unique_save_as_name(
+                owner,
+                resolved_label,
+                exclude_profile_id=draft.id,
+            )
+            if payload.on_name_conflict == "reject":
+                raise ProfileNameConflictError(
+                    existing_profile_id=existing_profile.id,
+                    existing_profile_version_id=existing_version.id,
+                    display_name=resolved_label,
+                    suggested_save_as_name=suggested,
+                )
+            if payload.on_name_conflict == "overwrite":
+                await self.session.delete(draft)
+                await self.session.flush()
+                return self._summary(existing_profile, existing_version)
+            resolved_label = suggested
+        draft.label = resolved_label
         try:
             version = await self.repository.create_version_if_unconfirmed(
                 profile_id=draft.id,
@@ -132,7 +182,7 @@ class ProfileService:
             difference_acknowledged=False,
         )
         await self.session.refresh(version)
-        return _summary(draft.id, version)
+        return self._summary(draft, version)
 
     async def append_version(
         self,
@@ -178,7 +228,7 @@ class ProfileService:
             difference_acknowledged=payload.difference_acknowledged,
         )
         await self.session.refresh(version)
-        return _summary(profile.id, version)
+        return self._summary(profile, version)
 
     async def list_profile_versions(
         self,
@@ -194,7 +244,7 @@ class ProfileService:
         if profile is None:
             raise ProfileNotFoundError("Subject Profile not found")
         versions = await self.repository.list_versions(profile.id)
-        return [_summary(profile.id, version) for version in versions]
+        return [self._summary(profile, version) for version in versions]
 
     async def list_profiles(self, owner: OwnerProtocol) -> list[ProfileSummary]:
         user_id, guest_id = owner_ids(owner)
@@ -202,7 +252,28 @@ class ProfileService:
             owner_user_id=user_id,
             owner_guest_session_id=guest_id,
         )
-        return [_summary(profile.id, version) for profile, version in rows]
+        return [self._summary(profile, version) for profile, version in rows]
+
+    async def update_display_name(
+        self,
+        owner: OwnerProtocol,
+        profile_id: UUID,
+        display_name: str,
+    ) -> ProfileSummary:
+        user_id, guest_id = owner_ids(owner)
+        profile = await self.repository.get_owned_profile(
+            profile_id,
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+        )
+        if profile is None:
+            raise ProfileNotFoundError("Subject Profile not found")
+        latest_version = await self.repository.get_latest_version(profile.id)
+        if latest_version is None:
+            raise ProfileNotConfirmedError("Subject Profile has no confirmed version")
+        profile.label = display_name
+        await self.session.flush()
+        return self._summary(profile, latest_version)
 
     async def get_owned_profile_version(
         self,
@@ -293,12 +364,105 @@ class ProfileService:
                 "the visible difference from the previous ProfileVersion must be acknowledged"
             )
 
+    async def _name_birth_conflict(
+        self,
+        owner: OwnerProtocol,
+        *,
+        display_name: str,
+        birth_date: date | None,
+        exclude_profile_id: UUID,
+    ) -> tuple[SubjectProfile, ProfileVersion] | None:
+        if birth_date is None:
+            return None
+        user_id, guest_id = owner_ids(owner)
+        rows = await self.repository.list_latest_versions(
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+        )
+        for profile, version in rows:
+            if profile.id == exclude_profile_id:
+                continue
+            summary = self._summary(profile, version)
+            if summary.display_name == display_name and summary.birth_date == birth_date:
+                return profile, version
+        return None
 
-def _summary(profile_id: UUID, version: ProfileVersion) -> ProfileSummary:
+    async def _unique_save_as_name(
+        self,
+        owner: OwnerProtocol,
+        display_name: str,
+        *,
+        exclude_profile_id: UUID,
+    ) -> str:
+        user_id, guest_id = owner_ids(owner)
+        rows = await self.repository.list_latest_versions(
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+        )
+        taken = {
+            self._summary(profile, version).display_name
+            for profile, version in rows
+            if profile.id != exclude_profile_id
+        }
+        index = 2
+        candidate = f"{display_name} ({index})"
+        while candidate in taken:
+            index += 1
+            candidate = f"{display_name} ({index})"
+        return candidate
+
+    def _summary(
+        self,
+        profile: SubjectProfile,
+        version: ProfileVersion,
+    ) -> ProfileSummary:
+        payload = self.repository.decrypt_version_payload(version)
+        return _summary(profile, version, payload)
+
+
+def _summary(
+    profile: SubjectProfile,
+    version: ProfileVersion,
+    payload: dict[str, object],
+) -> ProfileSummary:
     return ProfileSummary(
-        profile_id=profile_id,
+        profile_id=profile.id,
         profile_version_id=version.id,
         subject_ref=f"profile-version:{version.id}",
         version=version.version,
+        display_name=_display_name_projection(profile.label),
+        birth_date=_birth_date_projection(payload),
         created_at=version.created_at,
     )
+
+
+def _display_name_projection(label: str | None) -> str | None:
+    if label is None or not label.strip():
+        return None
+    return label
+
+
+def _resolved_display_name(label: str | None, birth_date: date | None) -> str:
+    projected = _display_name_projection(label)
+    if projected is not None:
+        return projected
+    if birth_date is not None:
+        return f"档案 · {birth_date.isoformat()}"
+    return "未命名档案"
+
+
+def _birth_date_from_datetime(value: str) -> date | None:
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).date()
+    except ValueError:
+        return None
+
+
+def _birth_date_projection(payload: dict[str, object]) -> date | None:
+    value = payload.get("birth_datetime")
+    if not isinstance(value, str):
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).date()
+    except ValueError:
+        return None

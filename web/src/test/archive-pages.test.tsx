@@ -10,6 +10,7 @@ const api = vi.hoisted(() => ({
   listProfiles: vi.fn(),
   listReadings: vi.fn(),
   startPreviewReading: vi.fn(),
+  updateProfileDisplayName: vi.fn(),
 }));
 
 const navigation = vi.hoisted(() => ({
@@ -36,6 +37,7 @@ vi.mock("@/lib/api", async (importOriginal) => {
     listProfiles: api.listProfiles,
     listReadings: api.listReadings,
     startPreviewReading: api.startPreviewReading,
+    updateProfileDisplayName: api.updateProfileDisplayName,
   };
 });
 
@@ -76,6 +78,7 @@ beforeEach(() => {
   api.listProfiles.mockReset();
   api.listReadings.mockReset();
   api.startPreviewReading.mockReset();
+  api.updateProfileDisplayName.mockReset();
   navigation.routerPush.mockReset();
   navigation.searchParams = new URLSearchParams();
 });
@@ -115,6 +118,31 @@ describe("ProfileArchive", () => {
       "/app/bazi",
     );
     expect(api.listProfiles).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByRole("button", { name: "重命名" }).length).toBe(2);
+  });
+
+  it("lets a guest rename a saved profile", async () => {
+    api.listProfiles.mockResolvedValue({
+      profiles: [profile({ display_name: "档案 · 1992-07-08" })],
+    });
+    api.updateProfileDisplayName.mockResolvedValue(
+      profile({ display_name: "游客重命名档案" }),
+    );
+
+    render(<ProfilesPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "重命名" }));
+    fireEvent.change(screen.getByLabelText("档案名称"), {
+      target: { value: "游客重命名档案" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "保存名称" }));
+
+    await waitFor(() =>
+      expect(api.updateProfileDisplayName).toHaveBeenCalledWith(
+        "11111111-1111-4111-8111-111111111111",
+        "游客重命名档案",
+      ),
+    );
+    expect(await screen.findByText("游客重命名档案")).toBeVisible();
   });
 
   it("names the career scope before starting the supported archive preview", async () => {

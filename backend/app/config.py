@@ -16,7 +16,7 @@ from app.adapters.otp import OtpSecurityMode
 
 Environment = Literal["local", "test", "staging", "production"]
 OtpAdapterName = Literal["fake", "disabled", "smtp"]
-RuntimeAdapterName = Literal["fake", "one-shot"]
+RuntimeAdapterName = Literal["fake", "one-shot", "worker-v2"]
 RuntimeReleaseProfile = Literal[
     "v51",
     "v51-extension-facts",
@@ -36,7 +36,7 @@ _V52_RELATIONSHIP_DESCRIBE_MANIFEST_DIGEST = (
     "6118c5f525c87b9cbde95b4d51c945be18bfd18fff8e03306da9fa748b87d917"
 )
 _V53_TIME_CHECK_DESCRIBE_MANIFEST_DIGEST = (
-    "d6a3adb4e1257eece83c47bac901ea96f4039165bc30fb1ee41bc42c917c4d29"
+    "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22"
 )
 _FROZEN_CAPABILITY_SHAPE_SHA256 = "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
 _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
@@ -44,10 +44,15 @@ _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
         "manifest_digest": _FROZEN_DESCRIBE_MANIFEST_DIGEST,
         "capability_shape_sha256": _FROZEN_CAPABILITY_SHAPE_SHA256,
         "release_manifest_sha256": (
-            "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68"
+            "93433f7fa9a9bef1115216240767c2c8e12e4ad9f0807124d05a47ddd0701f5d"
         ),
         "release_name": "mingli-master-portable-core",
-        "source_commit": "494ce0bba174a77800daf9b9c38ce9c9166d9a94",
+        "source_commit": "adfd7b6bf1c6a5e6df184bdd792bbf4956b009e1",
+        "worker_sha256": (
+            "b8d05ca1a4d6392598442e8fed80d73a2ce079b757c2d6bc059f5ff13b629e3e"
+        ),
+        "worker_protocol": "mingli-runtime-worker-v2",
+        "worker_turn_terminal": "result-idle-v1",
     },
     "v51-extension-facts": {
         "manifest_digest": (
@@ -75,10 +80,15 @@ _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
             "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
         ),
         "release_manifest_sha256": (
-            "8c92f23ebd72740259541920de6838373eee3ae9ffac60706e090b16a979493b"
+            "d1b49d5842feb5d4143330d1d250af625f42644a930f7d9d9c344c5d0363b090"
         ),
         "release_name": "mingli-master-portable-core",
-        "source_commit": "aabfef686b192671c79f866fee05bd6df9aeb375",
+        "source_commit": "9c615a70f08d5609af09ead100d2b5d90e558fe8",
+        "worker_sha256": (
+            "3512987322ef18bb91c4798e77d7ef982d2e7e31ae9e2ddd321d78aa90261b50"
+        ),
+        "worker_protocol": "mingli-runtime-worker-v2",
+        "worker_turn_terminal": "result-idle-v1",
     },
 }
 _P0_MODEL_PROVIDER = "deepseek"
@@ -150,6 +160,7 @@ class Settings(BaseSettings):
         pattern=r"^[0-9a-f]{64}$",
     )
     runtime_timeout_seconds: float = Field(default=30.0, gt=0)
+    chart_fast_path_timeout_seconds: float = Field(default=2.0, gt=0, le=2.0)
     runtime_max_stdin_bytes: int = Field(default=2 * 1024 * 1024, ge=1)
     runtime_max_stdout_bytes: int = Field(default=2 * 1024 * 1024, ge=1)
     runtime_max_stderr_bytes: int = Field(default=64 * 1024, ge=1)
@@ -246,6 +257,18 @@ class Settings(BaseSettings):
             _MappingSettingsSource(settings_cls, filtered_dotenv),
             _MappingSettingsSource(settings_cls, filtered_file_secrets),
         )
+
+    @model_validator(mode="before")
+    @classmethod
+    def apply_production_runtime_defaults(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if data.get("environment") != "production":
+            return data
+        updated = dict(data)
+        if "runtime_adapter" not in updated:
+            updated["runtime_adapter"] = "worker-v2"
+        return updated
 
     @model_validator(mode="after")
     def enforce_production_safety(self) -> Self:
