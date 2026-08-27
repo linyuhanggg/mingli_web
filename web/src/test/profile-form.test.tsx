@@ -23,6 +23,7 @@ vi.mock("next/navigation", () => ({
 const api = vi.hoisted(() => ({
   createProfileDraft: vi.fn(),
   confirmProfileDraft: vi.fn(),
+  discardProfileDraft: vi.fn(),
 }));
 
 vi.mock("@/lib/api", () => api);
@@ -32,6 +33,8 @@ beforeEach(() => {
   routerPush.mockReset();
   api.createProfileDraft.mockReset();
   api.confirmProfileDraft.mockReset();
+  api.discardProfileDraft.mockReset();
+  api.discardProfileDraft.mockResolvedValue(undefined);
   api.createProfileDraft.mockResolvedValue({
     draft_id: "55555555-5555-4555-8555-555555555555",
     status: "draft",
@@ -183,7 +186,7 @@ describe("ProfileForm", () => {
     await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
   }
 
-  it("cancels a same-name 409 without writing again", async () => {
+  it("cancels a same-name 409 by discarding the persisted draft", async () => {
     const user = userEvent.setup();
     const conflict = new ApiError("Name conflict", 409, undefined, "profile_name_conflict");
     conflict.options = ["overwrite", "save_as", "cancel"];
@@ -195,6 +198,11 @@ describe("ProfileForm", () => {
     expect(await screen.findByRole("alertdialog", { name: "档案名称已存在" })).toBeVisible();
     expect(screen.getByRole("button", { name: "覆盖" })).toHaveFocus();
     await user.click(screen.getByRole("button", { name: "取消" }));
+    await waitFor(() =>
+      expect(api.discardProfileDraft).toHaveBeenCalledWith(
+        "55555555-5555-4555-8555-555555555555",
+      ),
+    );
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /保存档案/ })).toHaveFocus();
     expect(routerPush).not.toHaveBeenCalled();
@@ -212,6 +220,11 @@ describe("ProfileForm", () => {
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
     expect(await screen.findByRole("alertdialog", { name: "档案名称已存在" })).toBeVisible();
     await user.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(api.discardProfileDraft).toHaveBeenCalledWith(
+        "55555555-5555-4555-8555-555555555555",
+      ),
+    );
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /保存档案/ })).toHaveFocus();
     expect(api.confirmProfileDraft).toHaveBeenCalledTimes(1);
@@ -233,6 +246,7 @@ describe("ProfileForm", () => {
         expect.objectContaining({ on_name_conflict: "overwrite" }),
       ),
     );
+    expect(api.discardProfileDraft).not.toHaveBeenCalled();
   });
 
   it("retries a same-name 409 with save_as", async () => {
@@ -251,6 +265,7 @@ describe("ProfileForm", () => {
         expect.objectContaining({ on_name_conflict: "save_as" }),
       ),
     );
+    expect(api.discardProfileDraft).not.toHaveBeenCalled();
   });
 
   it("restates birth basis choices live before submit", async () => {

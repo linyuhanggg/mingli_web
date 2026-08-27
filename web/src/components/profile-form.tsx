@@ -10,6 +10,7 @@ import { z } from "zod";
 import {
   confirmProfileDraft,
   createProfileDraft,
+  discardProfileDraft,
   type Gender,
   type ProfileConfirmRequest,
   type TimeBasisPolicy,
@@ -268,6 +269,30 @@ export function ProfileForm() {
     [router],
   );
 
+  const dismissConflict = useCallback(async () => {
+    const pending = pendingConfirmRef.current;
+    if (!pending) {
+      setNameConflict(null);
+      return;
+    }
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    setSubmitError("");
+    try {
+      await discardProfileDraft(pending.draftId);
+      pendingConfirmRef.current = null;
+      setNameConflict(null);
+    } catch (reason) {
+      setSubmitError(
+        reason instanceof Error ? reason.message : "未能删除未确认草稿，请稍后重试。",
+      );
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
+  }, []);
+
   return (
     <div className={styles.wrap}>
       <h2>建立命理档案</h2>
@@ -278,8 +303,7 @@ export function ProfileForm() {
         onOverwrite={() => void resolveConflict("overwrite")}
         onSaveAs={() => void resolveConflict("save_as")}
         onCancel={() => {
-          pendingConfirmRef.current = null;
-          setNameConflict(null);
+          void dismissConflict();
         }}
       />
 

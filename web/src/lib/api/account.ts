@@ -45,6 +45,10 @@ export async function confirmProfileDraft(
   );
 }
 
+export async function discardProfileDraft(draftId: string): Promise<void> {
+  await jsonDelete<void>(`/api/v1/profiles/${encodeURIComponent(draftId)}`);
+}
+
 export async function appendProfileVersion(
   profileId: string,
   body: ProfileVersionRequest,
