@@ -7,6 +7,8 @@ ROOT = Path(__file__).resolve().parents[2]
 TOKENS_CSS = ROOT / "ui" / "tokens.css"
 WEB_GLOBALS = ROOT / "web" / "src" / "app" / "globals.css"
 ADMIN_GLOBALS = ROOT / "admin" / "src" / "app" / "globals.css"
+WEB_LAYOUT = ROOT / "web" / "src" / "app" / "layout.tsx"
+ADMIN_LAYOUT = ROOT / "admin" / "src" / "app" / "layout.tsx"
 APP_CSS_ROOTS = (ROOT / "web" / "src", ROOT / "admin" / "src")
 
 DESIGN_TOKEN_VALUES = {
@@ -335,18 +337,23 @@ def test_dark_theme_values_are_declared_exactly() -> None:
     assert mismatched == []
 
 
-def test_dark_theme_is_reachable_from_system_preference() -> None:
+def test_dark_theme_is_reachable_from_web_system_preference_only() -> None:
     source = TOKENS_CSS.read_text(encoding="utf-8")
     dark = _selector_tokens(source, '[data-theme="dark"]')
     fallback_bodies = [
         body
         for selector, body in _iter_rule_blocks(source)
-        if selector == ":root:not([data-theme])"
+        if selector == ':root[data-theme-system="auto"]:not([data-theme])'
     ]
+    web_layout = WEB_LAYOUT.read_text(encoding="utf-8")
+    admin_layout = ADMIN_LAYOUT.read_text(encoding="utf-8")
 
     assert len(fallback_bodies) == 1
     assert re.search(r"\bcolor-scheme\s*:\s*dark\s*;", fallback_bodies[0])
     assert _declared_tokens(fallback_bodies[0]) == dark
+    assert 'data-theme-system="auto"' in web_layout
+    assert 'data-theme-system="auto"' not in admin_layout
+    assert _rule_bodies("ui/tokens.css", ":root:not([data-theme])") == []
 
 
 def test_five_element_tokens_are_exact_and_chart_fact_only() -> None:

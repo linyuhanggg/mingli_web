@@ -53,6 +53,16 @@
   filter: grayscale(1) contrast(1.08);
 }
 
+:global([data-theme="dark"]) .brandSymbolImage {
+  filter: grayscale(1) invert(1) contrast(1.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root[data-theme-system="auto"]:not([data-theme])) .brandSymbolImage {
+    filter: grayscale(1) invert(1) contrast(1.08);
+  }
+}
+
 .brand > span:last-child {
   display: grid;
   line-height: var(--line-height-title);

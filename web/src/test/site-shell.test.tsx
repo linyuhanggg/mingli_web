@@ -234,6 +234,25 @@ describe("public shell navigation", () => {
 });
 
 describe("public shell responsive and cache contracts", () => {
+  it("keeps the brand mark legible in explicit and opted-in system dark themes", () => {
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/site-chrome.module.css"),
+      "utf8",
+    );
+    const layout = readFileSync(resolve(process.cwd(), "src/app/layout.tsx"), "utf8");
+
+    expect(layout).toContain('data-theme-system="auto"');
+    expect(css).toMatch(
+      /\.brandSymbolImage\s*\{[^}]*filter:\s*grayscale\(1\) contrast\(1\.08\)/,
+    );
+    expect(css).toMatch(
+      /:global\(\[data-theme="dark"\]\)\s+\.brandSymbolImage\s*\{[^}]*filter:[^;}]*invert\(1\)/,
+    );
+    expect(css).toMatch(
+      /@media \(prefers-color-scheme:\s*dark\)[\s\S]*:global\(:root\[data-theme-system="auto"\]:not\(\[data-theme\]\)\)\s+\.brandSymbolImage\s*\{[^}]*filter:[^;}]*invert\(1\)/,
+    );
+  });
+
   it.each([360, 768])(
     "keeps the mobile bottom bar fixed and reserves its safe area at %ipx",
     (viewportWidth) => {
