@@ -19,6 +19,7 @@ import {
 } from "@/lib/api";
 import { useOptionalAccountSession } from "@/components/account-session-context";
 import { CURRENT_POLICY_VERSION } from "@/lib/policy";
+import { shouldKeepPolling } from "@/lib/reading-poll";
 import { ReadingResult } from "@/components/readings/reading-result";
 import { Status } from "@/components/ui/status";
 
@@ -164,10 +165,6 @@ function readableError(error: unknown): string {
   return "服务暂时无法完成这一步，请稍后重试。";
 }
 
-function isTerminalStatus(status: ReadingStatus): boolean {
-  return status === "delayed" || status === "runtime_unknown" || status === "terminal_stopped";
-}
-
 function safeCheckoutRedirect(value: string | null | undefined): string | null {
   if (!value) return null;
   if (value.startsWith("/") && !value.startsWith("//")) return value;
@@ -219,7 +216,7 @@ export function BaziDeepTaskFlow({
     setErrorStatus(null);
         const nextState = stateForReadingStatus(summary.status, "preview");
         setState(nextState);
-        if (summary.status === "accepted" || isTerminalStatus(summary.status)) return;
+        if (!shouldKeepPolling(summary)) return;
         timer = setTimeout(run, POLL_MS);
       } catch (reason) {
         if (cancelled) return;
@@ -420,8 +417,7 @@ export function BaziDeepTaskFlow({
         if (
           nextState === "succeeded"
           || nextState === "failed"
-          || summary.status === "accepted"
-          || isTerminalStatus(summary.status)
+          || !shouldKeepPolling(summary)
         ) return;
         timer = setTimeout(run, POLL_MS);
       } catch (reason) {

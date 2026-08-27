@@ -242,6 +242,13 @@ type RuntimeFailureCode = Literal[
 RUNTIME_FAILURE_SCHEMA_VERSION: Literal["mingli-runtime-failure/v1"] = (
     "mingli-runtime-failure/v1"
 )
+RUNTIME_FAILURE_SCHEMA_VERSION_V2: Literal["mingli-runtime-failure/v2"] = (
+    "mingli-runtime-failure/v2"
+)
+type RuntimeFailureSchemaVersion = Literal[
+    "mingli-runtime-failure/v1",
+    "mingli-runtime-failure/v2",
+]
 _RUNTIME_FAILURE_METADATA: Mapping[
     RuntimeFailureCode, tuple[RuntimeFailureCategory, bool]
 ] = MappingProxyType(
@@ -260,6 +267,34 @@ _RUNTIME_FAILURE_METADATA: Mapping[
         "transient.resource_unavailable": ("transient", True),
     }
 )
+SAFE_INTERNAL_FAILURE_CODES = frozenset(
+    {
+        "KeyError",
+        "OSError",
+        "RuntimeError",
+        "TypeError",
+        "ValueError",
+        "action_requires_correct",
+        "action_requires_correct_or_recast",
+        "action_requires_recast",
+        "descriptor_invalid",
+        "descriptor_unbound",
+        "empty_public_copy",
+        "evidence_binding",
+        "extension_digest_changed",
+        "extension_missing",
+        "invalid_preparation",
+        "invalid_transition",
+        "not_prepared",
+        "subject_scope",
+        "unknown_state_token",
+        "wrong_system",
+    }
+)
+_V1_FAILURE_FIELDS = frozenset({"schema_version", "code", "category", "retryable"})
+_V2_FAILURE_FIELDS = frozenset(
+    {"schema_version", "code", "category", "retryable", "internal_code"}
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -269,16 +304,29 @@ class RuntimeFailure:
     code: RuntimeFailureCode
     category: RuntimeFailureCategory
     retryable: bool
-    schema_version: Literal["mingli-runtime-failure/v1"] = RUNTIME_FAILURE_SCHEMA_VERSION
+    schema_version: RuntimeFailureSchemaVersion = RUNTIME_FAILURE_SCHEMA_VERSION
+    internal_code: str | None = None
 
     def __post_init__(self) -> None:
         expected = _RUNTIME_FAILURE_METADATA.get(self.code)
-        if (
-            self.schema_version != RUNTIME_FAILURE_SCHEMA_VERSION
-            or expected is None
-            or expected != (self.category, self.retryable)
-        ):
+        if expected is None or expected != (self.category, self.retryable):
             raise ValueError("runtime failure must match the closed v1 code table")
+        if self.schema_version == RUNTIME_FAILURE_SCHEMA_VERSION:
+            if self.internal_code is not None:
+                raise ValueError("runtime failure must match the closed v1 code table")
+            return
+        if self.schema_version != RUNTIME_FAILURE_SCHEMA_VERSION_V2:
+            raise ValueError("runtime failure must match the closed v1 code table")
+        if (
+            self.code != "runtime.internal_error"
+            or self.category != "runtime_internal"
+            or self.retryable is not False
+            or (
+                self.internal_code is not None
+                and self.internal_code not in SAFE_INTERNAL_FAILURE_CODES
+            )
+        ):
+            raise ValueError("runtime failure must match the closed v2 code table")
 
     @classmethod
     def internal_error(cls) -> RuntimeFailure:
@@ -290,21 +338,55 @@ class RuntimeFailure:
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, object]) -> RuntimeFailure:
-        return cls(
-            schema_version=cast(
-                Literal["mingli-runtime-failure/v1"], payload["schema_version"]
-            ),
-            code=cast(RuntimeFailureCode, payload["code"]),
-            category=cast(RuntimeFailureCategory, payload["category"]),
-            retryable=cast(bool, payload["retryable"]),
-        )
+        version = payload.get("schema_version")
+        if version == RUNTIME_FAILURE_SCHEMA_VERSION:
+            if set(payload) != _V1_FAILURE_FIELDS:
+                raise ValueError("runtime failure fields are invalid")
+            return cls(
+                schema_version=RUNTIME_FAILURE_SCHEMA_VERSION,
+                code=cast(RuntimeFailureCode, payload["code"]),
+                category=cast(RuntimeFailureCategory, payload["category"]),
+                retryable=cast(bool, payload["retryable"]),
+            )
+        if version == RUNTIME_FAILURE_SCHEMA_VERSION_V2:
+            if set(payload) != _V2_FAILURE_FIELDS:
+                raise ValueError("runtime failure fields are invalid")
+            internal_code = payload["internal_code"]
+            if internal_code is not None and (
+                not isinstance(internal_code, str)
+                or internal_code not in SAFE_INTERNAL_FAILURE_CODES
+            ):
+                raise ValueError("internal failure code is not in the safe code table")
+            return cls(
+                schema_version=RUNTIME_FAILURE_SCHEMA_VERSION_V2,
+                code=cast(RuntimeFailureCode, payload["code"]),
+                category=cast(RuntimeFailureCategory, payload["category"]),
+                retryable=cast(bool, payload["retryable"]),
+                internal_code=internal_code,
+            )
+        raise ValueError("runtime failure must match the closed v1 code table")
 
     def to_dict(self) -> dict[str, object]:
+        """Public classification used by HTTP, DB, copy, and frozen result JSON."""
+
         return {
-            "schema_version": self.schema_version,
+            "schema_version": RUNTIME_FAILURE_SCHEMA_VERSION,
             "code": self.code,
             "category": self.category,
             "retryable": self.retryable,
+        }
+
+    def to_audit_dict(self) -> dict[str, object]:
+        """Typed turn-audit payload. v2 may include allowlisted internal_code."""
+
+        if self.schema_version != RUNTIME_FAILURE_SCHEMA_VERSION_V2:
+            return self.to_dict()
+        return {
+            "schema_version": RUNTIME_FAILURE_SCHEMA_VERSION_V2,
+            "code": self.code,
+            "category": self.category,
+            "retryable": self.retryable,
+            "internal_code": self.internal_code,
         }
 
 
@@ -369,7 +451,27 @@ def command_from_dict(payload: Mapping[str, object]) -> MingliCommand:
     )
 
 
+def _failure_from_stopped_payload(
+    payload: Mapping[str, object],
+) -> tuple[Mapping[str, object], RuntimeFailure | None]:
+    raw_failure = payload.get("failure")
+    if not isinstance(raw_failure, Mapping):
+        return payload, None
+    if raw_failure.get("schema_version") != RUNTIME_FAILURE_SCHEMA_VERSION_V2:
+        return payload, None
+    try:
+        typed = RuntimeFailure.from_dict(raw_failure)
+    except ValueError as error:
+        raise ContractValidationError(str(error)) from error
+    public = dict(payload)
+    public["failure"] = typed.to_dict()
+    return public, typed
+
+
 def result_from_dict(payload: Mapping[str, object]) -> MingliResult:
+    typed_v2_failure: RuntimeFailure | None = None
+    if payload.get("kind") == "stopped":
+        payload, typed_v2_failure = _failure_from_stopped_payload(payload)
     _validate_schema(RESULT_SCHEMA, payload)
     kind = payload["kind"]
     if kind == "described":
@@ -399,14 +501,16 @@ def result_from_dict(payload: Mapping[str, object]) -> MingliResult:
             state_token=cast(str, payload["state_token"]),
             public_copy=cast(str, payload["public_copy"]),
         )
+    if typed_v2_failure is not None:
+        failure: RuntimeFailure | None = typed_v2_failure
+    elif payload.get("failure") is None:
+        failure = None
+    else:
+        failure = RuntimeFailure.from_dict(cast(Mapping[str, object], payload["failure"]))
     return Stopped(
         reason=cast(StoppedReason, payload["reason"]),
         public_copy=cast(str, payload["public_copy"]),
         state_token=cast(str | None, payload["state_token"]),
         input_request=cast(Mapping[str, object] | None, payload["input_request"]),
-        failure=(
-            None
-            if payload.get("failure") is None
-            else RuntimeFailure.from_dict(cast(Mapping[str, object], payload["failure"]))
-        ),
+        failure=failure,
     )

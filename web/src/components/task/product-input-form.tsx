@@ -208,7 +208,7 @@ function taskErrorField(productId: string, fieldName: string, errors?: FieldErro
 function schemaFor(product: ProductDefinition, usesSavedProfile = false) {
   return taskSchemaBase.superRefine((values, context) => {
     if (product.group === "natal") {
-      if (!usesSavedProfile && !values.subject.trim()) context.addIssue({ code: "custom", path: ["subject"], message: "请填写受测对象" });
+      if (!usesSavedProfile && values.subject.trim().length > 80) context.addIssue({ code: "custom", path: ["subject"], message: "名称最多 80 个字" });
       if (!usesSavedProfile && !/^\d{4}-\d{2}-\d{2}$/.test(values.birthDate)) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择完整出生日期" });
       if (!usesSavedProfile && !values.unknownTime && !values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间" });
       if (!usesSavedProfile && !values.location.trim()) context.addIssue({ code: "custom", path: ["location"], message: "请填写出生地点" });
@@ -372,7 +372,7 @@ function schemaFor(product: ProductDefinition, usesSavedProfile = false) {
 
     if (product.id === "hecan") {
       if (!usesSavedProfile) {
-        if (!values.subject.trim()) context.addIssue({ code: "custom", path: ["subject"], message: "请填写受测对象" });
+        if (values.subject.trim().length > 80) context.addIssue({ code: "custom", path: ["subject"], message: "名称最多 80 个字" });
         if (values.calendar !== "gregorian") context.addIssue({ code: "custom", path: ["calendar"], message: "请填写公历出生日期。" });
         if (!/^\d{4}-\d{2}-\d{2}$/.test(values.birthDate)) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择完整出生日期" });
         if (!values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间" });
@@ -387,7 +387,7 @@ function schemaFor(product: ProductDefinition, usesSavedProfile = false) {
     if (product.id === "canwen") {
       if (!values.issue.trim()) context.addIssue({ code: "custom", path: ["issue"], message: "请写清当前问题" });
       if (!usesSavedProfile) {
-        if (!values.subject.trim()) context.addIssue({ code: "custom", path: ["subject"], message: "请填写受测对象" });
+        if (values.subject.trim().length > 80) context.addIssue({ code: "custom", path: ["subject"], message: "名称最多 80 个字" });
         if (values.calendar !== "gregorian") context.addIssue({ code: "custom", path: ["calendar"], message: "请填写公历出生日期。" });
         if (!/^\d{4}-\d{2}-\d{2}$/.test(values.birthDate)) context.addIssue({ code: "custom", path: ["birthDate"], message: "请选择完整出生日期" });
         if (!values.birthTime) context.addIssue({ code: "custom", path: ["birthTime"], message: "请选择出生时间" });
@@ -909,6 +909,10 @@ export function ProductInputForm({
   busy = false,
   submitError = null,
   submitErrorState = "unavailable",
+  submitErrorAction = null,
+  loginHref = "/auth/login",
+  onRetry,
+  hideUnknownHour = false,
 }: {
   product: ProductDefinition;
   initialValues?: TaskFormValues;
@@ -923,7 +927,11 @@ export function ProductInputForm({
   onRetryProfiles?: () => void;
   busy?: boolean;
   submitError?: string | null;
-  submitErrorState?: "unavailable" | "error";
+  submitErrorState?: "unavailable" | "error" | "unauthorized";
+  submitErrorAction?: "login" | "retry" | null;
+  loginHref?: string;
+  onRetry?: () => void;
+  hideUnknownHour?: boolean;
 }) {
   const schema = useMemo(
     () => schemaFor(product, Boolean(selectedProfileVersionId)),
@@ -1013,6 +1021,7 @@ export function ProductInputForm({
 
   const isCompactBaziInput = product.id === "bazi";
   const usesCrossProfile = product.id === "hecan" || product.id === "canwen";
+  const showUnknownHour = !hideUnknownHour && ["bazi", "ziwei", "qizheng", "luming-nayin"].includes(product.id);
 
   return (
     <form
@@ -1173,7 +1182,7 @@ export function ProductInputForm({
             htmlFor={`${product.id}-subject`}
             label="受测对象"
             error={errors.subject?.message}
-            help={isCompactBaziInput ? undefined : "可以填写“本人”或便于自己识别的称呼。"}
+            help={isCompactBaziInput ? undefined : "可以填写便于识别的称呼；留空则由服务端生成回退名。"}
           >
             <input
               id={`${product.id}-subject`}
@@ -1240,6 +1249,16 @@ export function ProductInputForm({
               value={birthTime}
             />
           </div>
+          {showUnknownHour ? (
+            <div className={styles.unknownHour}>
+              <label>
+                <input checked={false} disabled type="checkbox" />
+                不知道出生时辰
+              </label>
+              <p>请填写明确的出生时间。</p>
+              {isCompactBaziInput ? <p>确认后生成盘面</p> : null}
+            </div>
+          ) : null}
           {product.id !== "qizheng" ? (
             <BirthPlaceParts
               error={errors.location?.message}
@@ -1273,19 +1292,20 @@ export function ProductInputForm({
             </fieldset>
           )}
 
+          <SegmentedField
+            legend="时间口径"
+            name={`${product.id}-time-standard`}
+            onChange={(next) => setValue("timeStandard", next, { shouldDirty: true })}
+            options={[
+              { value: "civil", label: "民用钟表时间" },
+              { value: "local-apparent-solar", label: "当地视太阳时" },
+            ]}
+            value={timeStandard}
+          />
+
           <details className={styles.advanced}>
             <summary>高级排盘选项</summary>
             <div className={styles.advancedBody}>
-              <SegmentedField
-                legend="时间口径"
-                name={`${product.id}-time-standard`}
-                onChange={(next) => setValue("timeStandard", next, { shouldDirty: true })}
-                options={[
-                  { value: "civil", label: "民用钟表时间" },
-                  { value: "local-apparent-solar", label: "当地视太阳时" },
-                ]}
-                value={timeStandard}
-              />
               <Field htmlFor={`${product.id}-timezone`} label="出生时区" error={errors.timezone?.message} help="选中国内地点后自动填好；海外地点请自行确认。">
                 <input id={`${product.id}-timezone`} aria-describedby={errors.timezone ? `${product.id}-timezone-error` : `${product.id}-timezone-help`} autoComplete="off" list={`${product.id}-timezone-options`} placeholder="例如 Asia/Shanghai" {...register("timezone")} />
                 <IanaTimeZoneOptions id={`${product.id}-timezone-options`} />
@@ -1635,10 +1655,27 @@ export function ProductInputForm({
       ) : null}
 
       {submitError ? (
-        submitErrorState === "error" ? (
+        submitErrorAction ? (
+          <Status
+            actions={
+              submitErrorAction === "login" ? (
+                <Link href={loginHref}>登录后继续</Link>
+              ) : (
+                <button type="button" onClick={() => onRetry?.()}>
+                  重试
+                </button>
+              )
+            }
+            state={submitErrorState}
+            title={submitError}
+          />
+        ) : submitErrorState === "error" ? (
           <p className={styles.error} role="alert">{submitError}</p>
         ) : (
-          <Status state="unavailable" title={submitError} />
+          <Status
+            state={submitErrorState === "unauthorized" ? "unauthorized" : "unavailable"}
+            title={submitError}
+          />
         )
       ) : null}
 

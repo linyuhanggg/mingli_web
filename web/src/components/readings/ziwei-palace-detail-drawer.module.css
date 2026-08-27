@@ -104,7 +104,7 @@
 }
 
 .major {
-  font-family: var(--font-domain);
+  font-family: var(--font-sans);
   font-size: var(--font-size-emphasis);
   font-weight: 600;
 }

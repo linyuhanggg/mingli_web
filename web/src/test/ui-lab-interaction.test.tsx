@@ -81,7 +81,7 @@ describe("Web UI Lab interactions", () => {
     await user.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
 
     expect(screen.getByRole("heading", { name: "请先修正以下输入" })).toBeVisible();
-    expect(screen.getByLabelText("受测对象")).toHaveFocus();
+    expect(screen.getByRole("group", { name: /出生日期/ })).toHaveFocus();
   });
 
   it("fills the production product form when the filled state is selected", async () => {

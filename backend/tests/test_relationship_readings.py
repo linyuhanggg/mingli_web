@@ -8,6 +8,7 @@ from app.readings.models import ReadingRoot, ReadingVersion
 from app.readings.runtime_contracts import Prepare, Prepared, ReadingBrief
 from httpx import AsyncClient
 
+# isort: split
 from test_profiles_api import create_confirmed_profile, create_guest
 from test_readings_api import run_worker_once, seed_runtime_release
 
@@ -92,8 +93,13 @@ async def test_bazi_relationship_persists_two_profiles_and_projects_view_model(
     test_settings: Any,
 ) -> None:
     headers = await create_guest(client)
-    first = await create_confirmed_profile(client, headers)
-    second = await create_confirmed_profile(client, headers, location="上海市浦东新区")
+    first = await create_confirmed_profile(client, headers, label="本人甲")
+    second = await create_confirmed_profile(
+        client,
+        headers,
+        label="本人乙",
+        location="上海市浦东新区",
+    )
     await seed_runtime_release(database, test_settings)
 
     started = await client.post(
@@ -143,8 +149,13 @@ async def test_chart_similarity_persists_two_profiles_and_projects_exact_pillars
     test_settings: Any,
 ) -> None:
     headers = await create_guest(client)
-    first = await create_confirmed_profile(client, headers)
-    second = await create_confirmed_profile(client, headers, location="上海市浦东新区")
+    first = await create_confirmed_profile(client, headers, label="本人甲")
+    second = await create_confirmed_profile(
+        client,
+        headers,
+        label="本人乙",
+        location="上海市浦东新区",
+    )
     await seed_runtime_release(database, test_settings)
 
     started = await client.post(

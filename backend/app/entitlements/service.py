@@ -17,7 +17,6 @@ PAID_READING_CAPABILITIES = frozenset(
 _ACTION_TO_CAPABILITY = {
     "today": "today",
     "near_seven": "week",
-    "liuyao_one_question": "liuyao",
     "wenshi_one_question": "liuyao",
     "bazi_deep": "bazi_deep",
     "qimen_deep": "qimen_deep",
@@ -46,10 +45,11 @@ def formal_grant_covers_capability(
 class EntitlementDeniedError(RuntimeError):
     """Caller may not start this paid reading action under dogfood gates."""
 
-    def __init__(self, title: str, *, detail: str | None = None) -> None:
+    def __init__(self, title: str, *, detail: str | None = None, code: str | None = None) -> None:
         super().__init__(title)
         self.title = title
         self.detail = detail
+        self.code = code
 
 
 def paid_capability_for_action(action: str) -> str | None:
@@ -85,6 +85,7 @@ class EntitlementService:
             raise EntitlementDeniedError(
                 "Paid reading requires a signed-in account",
                 detail="Sign in with email, then ask an operator to grant dogfood access.",
+                code="paid_reading_requires_account",
             )
         grant = await self.repository.get_active_grant(
             owner_user_id=owner.id,
@@ -97,6 +98,7 @@ class EntitlementService:
                     f"Capability {capability_id!r} is closed for this account. "
                     "Dogfood access is operator-granted only; there is no self-serve checkout."
                 ),
+                code="paid_reading_not_granted",
             )
 
     async def has_available_formal_grant(

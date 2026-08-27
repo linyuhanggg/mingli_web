@@ -19,8 +19,22 @@
         "required": ["lesson_id", "upper", "lower"],
         "properties": {
           "lesson_id": {"type": "string", "minLength": 1},
-          "upper": {"type": "string", "minLength": 1},
+          "upper": {
+            "enum": ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+          },
           "lower": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "public_labels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "label"],
+        "properties": {
+          "key": {"type": "string", "minLength": 1, "maxLength": 80},
+          "label": {"type": "string", "minLength": 1, "maxLength": 80}
         }
       }
     },
@@ -41,7 +55,64 @@
     },
     "core_facts": {"oneOf": [{"$ref": "#/$defs/coreFacts"}, {"type": "null"}]}
   },
+  "allOf": [
+    {
+      "if": {
+        "required": ["core_facts"],
+        "properties": {
+          "core_facts": {
+            "type": "object",
+            "required": ["source_conditioned_patterns"],
+            "properties": {
+              "source_conditioned_patterns": {
+                "type": "array",
+                "contains": {
+                  "type": "object",
+                  "required": ["rule_id"],
+                  "properties": {"rule_id": {"const": "DLR-S01"}}
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "lessons": {"$ref": "#/$defs/threeDistinctLessonUppers"}
+        }
+      }
+    }
+  ],
   "$defs": {
+    "threeDistinctLessonUppers": {
+      "description": "For four lessons, exactly three distinct branch uppers means exactly one branch occurs twice.",
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["upper"],
+        "properties": {
+          "upper": {
+            "enum": ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+          }
+        }
+      },
+      "oneOf": [
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "子"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "丑"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "寅"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "卯"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "辰"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "巳"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "午"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "未"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "申"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "酉"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "戌"}}}, "minContains": 2, "maxContains": 2},
+        {"contains": {"type": "object", "required": ["upper"], "properties": {"upper": {"const": "亥"}}}, "minContains": 2, "maxContains": 2}
+      ]
+    },
     "coreFacts": {
       "type": "object",
       "additionalProperties": false,
@@ -99,10 +170,604 @@
         "month_general": {"oneOf": [{"$ref": "#/$defs/monthGeneral"}, {"type": "null"}]},
         "noble_person": {"oneOf": [{"$ref": "#/$defs/noblePerson"}, {"type": "null"}]},
         "plate_offset": {"type": ["integer", "null"], "minimum": 0, "maximum": 11},
-        "structural_patterns": {"type": ["array", "null"], "items": {"type": "string", "minLength": 1}},
+        "structural_patterns": {"type": ["array", "null"], "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "source_conditioned_patterns": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "allOf": [
+            {
+              "contains": {"type": "object", "properties": {"rule_id": {"const": "DLR-S01"}}, "required": ["rule_id"]},
+              "minContains": 0,
+              "maxContains": 1
+            },
+            {
+              "contains": {"type": "object", "properties": {"rule_id": {"const": "DLR-08"}}, "required": ["rule_id"]},
+              "minContains": 0,
+              "maxContains": 1
+            },
+            {
+              "contains": {"type": "object", "properties": {"rule_id": {"const": "DLR-09"}}, "required": ["rule_id"]},
+              "minContains": 0,
+              "maxContains": 1
+            },
+            {
+              "contains": {"type": "object", "properties": {"rule_id": {"const": "DLR-10"}}, "required": ["rule_id"]},
+              "minContains": 0,
+              "maxContains": 1
+            }
+          ],
+          "items": {"$ref": "#/$defs/sourcePattern"}
+        },
         "timing_candidates": {"type": ["array", "null"], "items": {"$ref": "#/$defs/timingCandidate"}},
         "xunkong": {"oneOf": [{"$ref": "#/$defs/xunkong"}, {"type": "null"}]}
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "四课不备"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/0"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 1, "prefixItems": [{"const": "四课不备"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "八专日"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/0"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 1, "prefixItems": [{"const": "八专日"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "伏吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/0"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 1, "prefixItems": [{"const": "伏吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "反吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/0"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 1, "prefixItems": [{"const": "反吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "四课不备"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/1"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 2, "prefixItems": [{}, {"const": "四课不备"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "八专日"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/1"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 2, "prefixItems": [{}, {"const": "八专日"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "伏吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/1"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 2, "prefixItems": [{}, {"const": "伏吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "反吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/1"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 2, "prefixItems": [{}, {"const": "反吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "四课不备"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/2"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 3, "prefixItems": [{}, {}, {"const": "四课不备"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "八专日"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/2"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 3, "prefixItems": [{}, {}, {"const": "八专日"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "伏吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/2"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 3, "prefixItems": [{}, {}, {"const": "伏吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "反吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/2"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 3, "prefixItems": [{}, {}, {"const": "反吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "四课不备"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/3"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 4, "prefixItems": [{}, {}, {}, {"const": "四课不备"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "八专日"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/3"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 4, "prefixItems": [{}, {}, {}, {"const": "八专日"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "伏吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/3"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 4, "prefixItems": [{}, {}, {}, {"const": "伏吟"}]}}
+          }
+        },
+        {
+          "if": {
+            "required": ["source_conditioned_patterns"],
+            "properties": {"source_conditioned_patterns": {"contains": {
+              "required": ["title", "fact_paths"],
+              "properties": {
+                "title": {"const": "反吟"},
+                "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/3"}}
+              }
+            }}}
+          },
+          "then": {
+            "required": ["structural_patterns"],
+            "properties": {"structural_patterns": {"type": "array", "minItems": 4, "prefixItems": [{}, {}, {}, {"const": "反吟"}]}}
+          }
+        }
+      ]
+    },
+    "sourcePattern": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id",
+        "local_rule_id",
+        "title",
+        "source_pack",
+        "source_anchor",
+        "status",
+        "fact_paths",
+        "predicate_audit",
+        "source_dependency_id"
+      ],
+      "properties": {
+        "rule_id": {"enum": ["DLR-S01", "DLR-08", "DLR-09", "DLR-10"]},
+        "local_rule_id": {
+          "enum": [
+            "liuren.structural.incomplete-four-lessons",
+            "liuren.structural.bazhuan-day",
+            "liuren.structural.fuyin",
+            "liuren.structural.fanyin"
+          ]
+        },
+        "title": {"enum": ["四课不备", "八专日", "伏吟", "反吟"]},
+        "source_pack": {"const": "san-shi/daliuren-daquan"},
+        "source_anchor": {
+          "enum": [
+            "fulltext.md#L58",
+            "fulltext.md#L7556",
+            "fulltext.md#L7696",
+            "fulltext.md#L7874"
+          ]
+        },
+        "status": {"const": "predicate_matched_not_verdict"},
+        "fact_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "predicate_audit": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "source_dependency_id": {
+          "const": "liuren.source-conditioned-structural-patterns-v1"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"rule_id": {"const": "DLR-S01"}},
+            "required": ["rule_id"]
+          },
+          "then": {
+            "properties": {
+              "fact_paths": {
+                "type": "array",
+                "minItems": 5,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "oneOf": [
+                    {"type": "string", "pattern": "^fact:/chart_facts/output/structural_patterns/[0-3]$"},
+                    {"const": "fact:/chart_facts/output/four_lessons/0/upper"},
+                    {"const": "fact:/chart_facts/output/four_lessons/1/upper"},
+                    {"const": "fact:/chart_facts/output/four_lessons/2/upper"},
+                    {"const": "fact:/chart_facts/output/four_lessons/3/upper"}
+                  ]
+                },
+                "allOf": [
+                  {"contains": {"const": "fact:/chart_facts/output/four_lessons/0/upper"}},
+                  {"contains": {"const": "fact:/chart_facts/output/four_lessons/1/upper"}},
+                  {"contains": {"const": "fact:/chart_facts/output/four_lessons/2/upper"}},
+                  {"contains": {"const": "fact:/chart_facts/output/four_lessons/3/upper"}}
+                ]
+              },
+              "predicate_audit": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "uniqueItems": true,
+                "items": {
+                  "oneOf": [
+                    {"type": "string", "pattern": "^/chart_facts/output/structural_patterns/[0-3]:eq:四课不备$"},
+                    {"const": "/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3"}
+                  ]
+                },
+                "contains": {
+                  "const": "/chart_facts/output/four_lessons/*/upper:distinct_count_eq:3"
+                }
+              }
+            },
+            "oneOf": [
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/0"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/0:eq:四课不备"}}
+                }
+              },
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/1"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/1:eq:四课不备"}}
+                }
+              },
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/2"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/2:eq:四课不备"}}
+                }
+              },
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/3"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/3:eq:四课不备"}}
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {"rule_id": {"const": "DLR-08"}},
+            "required": ["rule_id"]
+          },
+          "then": {
+            "properties": {
+              "fact_paths": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "uniqueItems": true,
+                "items": {"type": "string", "pattern": "^fact:/chart_facts/output/structural_patterns/[0-3]$"}
+              },
+              "predicate_audit": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "uniqueItems": true,
+                "items": {"type": "string", "pattern": "^/chart_facts/output/structural_patterns/[0-3]:eq:八专日$"}
+              }
+            },
+            "oneOf": [
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/0"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/0:eq:八专日"}}
+                }
+              },
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/1"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/1:eq:八专日"}}
+                }
+              },
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/2"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/2:eq:八专日"}}
+                }
+              },
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/3"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/3:eq:八专日"}}
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {"rule_id": {"const": "DLR-09"}},
+            "required": ["rule_id"]
+          },
+          "then": {
+            "properties": {
+              "fact_paths": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "uniqueItems": true,
+                "items": {"type": "string", "pattern": "^fact:/chart_facts/output/structural_patterns/[0-3]$"}
+              },
+              "predicate_audit": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "uniqueItems": true,
+                "items": {"type": "string", "pattern": "^/chart_facts/output/structural_patterns/[0-3]:eq:伏吟$"}
+              }
+            },
+            "oneOf": [
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/0"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/0:eq:伏吟"}}
+                }
+              },
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/1"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/1:eq:伏吟"}}
+                }
+              },
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/2"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/2:eq:伏吟"}}
+                }
+              },
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/3"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/3:eq:伏吟"}}
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {"rule_id": {"const": "DLR-10"}},
+            "required": ["rule_id"]
+          },
+          "then": {
+            "properties": {
+              "fact_paths": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "uniqueItems": true,
+                "items": {"type": "string", "pattern": "^fact:/chart_facts/output/structural_patterns/[0-3]$"}
+              },
+              "predicate_audit": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "uniqueItems": true,
+                "items": {"type": "string", "pattern": "^/chart_facts/output/structural_patterns/[0-3]:eq:反吟$"}
+              }
+            },
+            "oneOf": [
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/0"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/0:eq:反吟"}}
+                }
+              },
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/1"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/1:eq:反吟"}}
+                }
+              },
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/2"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/2:eq:反吟"}}
+                }
+              },
+              {
+                "properties": {
+                  "fact_paths": {"contains": {"const": "fact:/chart_facts/output/structural_patterns/3"}},
+                  "predicate_audit": {"contains": {"const": "/chart_facts/output/structural_patterns/3:eq:反吟"}}
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "oneOf": [
+        {
+          "properties": {
+            "rule_id": {"const": "DLR-S01"},
+            "local_rule_id": {"const": "liuren.structural.incomplete-four-lessons"},
+            "title": {"const": "四课不备"},
+            "source_anchor": {"const": "fulltext.md#L58"}
+          }
+        },
+        {
+          "properties": {
+            "rule_id": {"const": "DLR-08"},
+            "local_rule_id": {"const": "liuren.structural.bazhuan-day"},
+            "title": {"const": "八专日"},
+            "source_anchor": {"const": "fulltext.md#L7556"}
+          }
+        },
+        {
+          "properties": {
+            "rule_id": {"const": "DLR-09"},
+            "local_rule_id": {"const": "liuren.structural.fuyin"},
+            "title": {"const": "伏吟"},
+            "source_anchor": {"const": "fulltext.md#L7696"}
+          }
+        },
+        {
+          "properties": {
+            "rule_id": {"const": "DLR-10"},
+            "local_rule_id": {"const": "liuren.structural.fanyin"},
+            "title": {"const": "反吟"},
+            "source_anchor": {"const": "fulltext.md#L7874"}
+          }
+        }
+      ]
     },
     "dayHour": {
       "type": "object",
