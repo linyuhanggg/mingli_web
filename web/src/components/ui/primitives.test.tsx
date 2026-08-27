@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fireEvent } from "@testing-library/react";
@@ -93,6 +96,17 @@ const sampleRows = [
 ];
 
 describe("Button", () => {
+  it("keeps every button at least 44px tall when any coarse pointer is available", () => {
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/ui/button.module.css"),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /@media \(max-width: 839px\), \(any-pointer: coarse\)\s*\{[\s\S]*?\.button\s*\{[^}]*min-width:\s*var\(--ds-touch-min\)[^}]*min-height:\s*var\(--ds-touch-min\)/,
+    );
+  });
+
   it("renders the canonical variants and size contract", () => {
     const { rerender } = render(<Button>保存</Button>);
     const primary = screen.getByRole("button", { name: "保存" });

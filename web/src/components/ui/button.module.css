@@ -141,7 +141,7 @@
   animation: button-spin 700ms linear infinite;
 }
 
-@media (max-width: 839px), (pointer: coarse) {
+@media (max-width: 839px), (any-pointer: coarse) {
   .button {
     min-width: var(--ds-touch-min);
     min-height: var(--ds-touch-min);
