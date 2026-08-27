@@ -1,16 +1,21 @@
+import asyncio
 import json
 import os
 import stat
 import sys
+import threading
 import time
 import traceback
 from datetime import datetime
 from pathlib import Path
 
+import app.adapters.runtime as runtime_module
 import pytest
 from app.adapters.runtime import (
+    RUNTIME_TURN_AUDIT_NAME,
     FakeMingliRuntimeAdapter,
     OneShotMingliRuntimeAdapter,
+    WorkerV2MingliRuntimeAdapter,
     build_runtime_startup_gate,
     one_shot_spawn_argv,
 )
@@ -82,6 +87,24 @@ def _described_payload() -> dict[str, object]:
     }
 
 
+def _audit_only_worker(
+    state_root: Path,
+    *,
+    audit_timeout_seconds: float = 0.05,
+) -> WorkerV2MingliRuntimeAdapter:
+    adapter = object.__new__(WorkerV2MingliRuntimeAdapter)
+    adapter._state_root = state_root
+    adapter._audit_pid = 1234
+    adapter._audit_boot_nonce = "test-audit-boot"
+    adapter._last_sequence = 1
+    adapter._transport_fault = None
+    adapter._isolated = False
+    adapter._audit_timeout_seconds = audit_timeout_seconds
+    adapter._audit_tail = None
+    adapter.last_turn = None
+    return adapter
+
+
 def _adapter(launcher: Path, state_root: Path, **overrides: object) -> OneShotMingliRuntimeAdapter:
     options: dict[str, object] = {
         "launcher_path": launcher,
@@ -126,6 +149,76 @@ print(json.dumps({
     assert result.transition_ids == ("correct", "restart")
     assert json.loads(launcher.with_suffix(".stdin").read_bytes()) == {"kind": "describe"}
     assert launcher.with_suffix(".stdin").read_bytes().endswith(b"\n")
+
+
+def test_worker_turn_audit_redacts_late_stderr_bytes(tmp_path: Path) -> None:
+    sentinel = "PRIVATE-BIRTH-FACT-1994-04-30"
+    adapter = _audit_only_worker(tmp_path)
+    adapter._transport_fault = f"stderr-before-write:{sentinel}"
+
+    adapter._publish_turn(
+        Describe(),
+        Described(
+            protocol_version="mingli-portable-interface-v2",
+            manifest_digest="0" * 64,
+            capabilities=(),
+        ),
+    )
+
+    rendered = (tmp_path / RUNTIME_TURN_AUDIT_NAME).read_text(encoding="utf-8")
+    payload = json.loads(rendered)
+    assert payload["transport_fault"] == "stderr-before-write"
+    assert sentinel not in rendered
+    assert adapter.last_turn is not None
+    assert adapter.last_turn.transport_fault == "stderr-before-write"
+
+
+async def test_worker_durable_audit_write_is_off_loop_bounded_and_ordered(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    loop = asyncio.get_running_loop()
+    first_write_started = asyncio.Event()
+    release_first_write = threading.Event()
+    persisted_sequences: list[int] = []
+
+    def slow_append(_path: Path, record: dict[str, object]) -> None:
+        sequence = record["sequence"]
+        assert isinstance(sequence, int)
+        if sequence == 1:
+            loop.call_soon_threadsafe(first_write_started.set)
+            release_first_write.wait(timeout=0.5)
+        persisted_sequences.append(sequence)
+
+    monkeypatch.setattr(runtime_module, "append_runtime_turn_audit", slow_append)
+    adapter = _audit_only_worker(tmp_path, audit_timeout_seconds=0.02)
+    result = Described(
+        protocol_version="mingli-portable-interface-v2",
+        manifest_digest="0" * 64,
+        capabilities=(),
+    )
+    heartbeat = asyncio.Event()
+    loop.call_later(0.005, heartbeat.set)
+
+    started_at = time.perf_counter()
+    first_publish = asyncio.create_task(adapter._publish_turn_durable(Describe(), result))
+    await asyncio.wait_for(first_write_started.wait(), timeout=0.2)
+    await first_publish
+    elapsed = time.perf_counter() - started_at
+
+    assert heartbeat.is_set()
+    assert elapsed < 0.15
+    assert adapter.isolated is False
+    assert adapter._transport_fault is None
+
+    adapter._last_sequence = 2
+    await adapter._publish_turn_durable(Describe(), result)
+    assert persisted_sequences == []
+
+    release_first_write.set()
+    assert adapter._audit_tail is not None
+    await asyncio.wait_for(adapter._audit_tail, timeout=0.5)
+    assert persisted_sequences == [1, 2]
 
 
 async def test_process_adapter_first_describe_stays_inside_two_second_budget(

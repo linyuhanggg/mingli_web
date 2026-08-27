@@ -2422,14 +2422,6 @@ class ReadingService:
         )
         await self.session.refresh(version)
         job = await self._create_job(version.id, status=initial_job_status)
-        runtime_ms = 0.0
-        persistence_ms = 0.0
-        if direct_chart:
-            runtime_ms, persistence_ms = await self._run_chart_fast_path(
-                job,
-                version,
-                product_id=version.product_id or root.product_id or root.capability_id,
-            )
         if idempotency is not None:
             replayed = await self._save_idempotency_or_replay(
                 idempotency,
@@ -2439,6 +2431,14 @@ class ReadingService:
             )
             if replayed is not None:
                 return replayed, False
+        runtime_ms = 0.0
+        persistence_ms = 0.0
+        if direct_chart:
+            runtime_ms, persistence_ms = await self._run_chart_fast_path(
+                job,
+                version,
+                product_id=version.product_id or root.product_id or root.capability_id,
+            )
         summary = await self._summary(root, version)
         if direct_chart:
             summary.fast_path_timing = ChartFastPathTiming(

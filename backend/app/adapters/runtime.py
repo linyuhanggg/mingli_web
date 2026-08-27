@@ -103,6 +103,7 @@ WORKER_FRAME_HEADER_BYTES = 4
 WORKER_MAX_FRAME_BYTES = 4 * 1024 * 1024
 WORKER_DEFAULT_READY_TIMEOUT_SECONDS = 15.0
 WORKER_REQUEST_TIMEOUT_SECONDS = 2.0
+WORKER_AUDIT_TIMEOUT_SECONDS = 0.25
 WORKER_STOPPED_COPY = "本次处理未完成，请稍后重试。"
 RUNTIME_TURN_AUDIT_NAME = "runtime-turn-audit.jsonl"
 _COMMAND_DIGEST_REDACTED_KEYS = frozenset({"facts", "query", "public_copy"})
@@ -834,6 +835,30 @@ def append_runtime_turn_audit(path: Path, record: Mapping[str, object]) -> None:
         os.close(descriptor)
 
 
+def _audit_safe_transport_fault(fault: str | None) -> str | None:
+    """Keep worker-controlled bytes out of the durable audit."""
+
+    if fault is None:
+        return None
+    for dynamic_prefix in (
+        "stderr-before-write:",
+        "unbound-result:",
+        "unbound-idle:",
+    ):
+        if fault.startswith(dynamic_prefix):
+            return dynamic_prefix.removesuffix(":")
+    return fault
+
+
+def _consume_task_exception(task: asyncio.Task[None]) -> None:
+    """Retrieve a detached audit-tail failure to avoid loop-level warnings."""
+
+    if task.cancelled():
+        return
+    with suppress(Exception):
+        task.result()
+
+
 def _reject_non_finite_json(value: str) -> object:
     raise ValueError(f"non-finite JSON number: {value}")
 
@@ -1050,6 +1075,7 @@ class WorkerV2MingliRuntimeAdapter:
         expected_runtime_integrity_sha256: str,
         ready_timeout_seconds: float = WORKER_DEFAULT_READY_TIMEOUT_SECONDS,
         request_timeout_seconds: float = WORKER_REQUEST_TIMEOUT_SECONDS,
+        audit_timeout_seconds: float = WORKER_AUDIT_TIMEOUT_SECONDS,
         max_stderr_bytes: int = 64 * 1024,
     ) -> None:
         if _SHA256_RE.fullmatch(expected_listing_sha256) is None:
@@ -1060,6 +1086,8 @@ class WorkerV2MingliRuntimeAdapter:
             raise ValueError("Runtime worker READY timeout is outside the explicit bound")
         if not (0 < request_timeout_seconds <= WORKER_REQUEST_TIMEOUT_SECONDS):
             raise ValueError("Runtime worker request timeout must be positive and at most 2s")
+        if not (0 < audit_timeout_seconds <= WORKER_REQUEST_TIMEOUT_SECONDS):
+            raise ValueError("Runtime audit timeout must be positive and at most 2s")
         if max_stderr_bytes < 1:
             raise ValueError("Runtime I/O limits must be positive")
         if not runtime_python_path.is_absolute():
@@ -1085,6 +1113,7 @@ class WorkerV2MingliRuntimeAdapter:
         self._expected_runtime_integrity_sha256 = expected_runtime_integrity_sha256
         self._ready_timeout_seconds = ready_timeout_seconds
         self._request_timeout_seconds = request_timeout_seconds
+        self._audit_timeout_seconds = audit_timeout_seconds
         self._max_stderr_bytes = max_stderr_bytes
         self._lock = asyncio.Lock()
         self._process: asyncio.subprocess.Process | None = None
@@ -1103,6 +1132,7 @@ class WorkerV2MingliRuntimeAdapter:
         self._audit_boot_nonce: str | None = None
         self._last_sequence: int | None = None
         self.last_turn: RuntimeTurnAudit | None = None
+        self._audit_tail: asyncio.Task[None] | None = None
 
     @property
     def isolated(self) -> bool:
@@ -1235,11 +1265,15 @@ class WorkerV2MingliRuntimeAdapter:
             "transport:ConnectionResetError",
         }
 
-    def _publish_turn(self, command: MingliCommand, result: MingliResult) -> None:
+    def _turn_audit(
+        self,
+        command: MingliCommand,
+        result: MingliResult,
+    ) -> RuntimeTurnAudit:
         failure = None
         if isinstance(result, Stopped) and result.failure is not None:
             failure = result.failure.to_audit_dict()
-        record = RuntimeTurnAudit(
+        return RuntimeTurnAudit(
             command_digest=runtime_command_digest(command),
             command_kind=command.kind,
             worker_pid=self._audit_pid,
@@ -1247,31 +1281,69 @@ class WorkerV2MingliRuntimeAdapter:
             sequence=self._last_sequence,
             result_kind=result.kind,
             failure=failure,
-            transport_fault=self._transport_fault,
+            transport_fault=_audit_safe_transport_fault(self._transport_fault),
             isolated=self._isolated,
             store_root=str(self._state_root),
         )
+
+    def _publish_turn(self, command: MingliCommand, result: MingliResult) -> None:
+        """Synchronously publish a turn for explicit offline/audit callers."""
+
+        record = self._turn_audit(command, result)
         self.last_turn = record
         append_runtime_turn_audit(
             self._state_root / RUNTIME_TURN_AUDIT_NAME,
             record.to_dict(),
         )
 
+    async def _publish_turn_durable(
+        self,
+        command: MingliCommand,
+        result: MingliResult,
+    ) -> None:
+        """Publish off-loop while retaining turn order and a bounded request wait."""
+
+        record = self._turn_audit(command, result)
+        self.last_turn = record
+        previous = self._audit_tail
+
+        async def append_in_order() -> None:
+            if previous is not None:
+                with suppress(Exception):
+                    await asyncio.shield(previous)
+            await asyncio.to_thread(
+                append_runtime_turn_audit,
+                self._state_root / RUNTIME_TURN_AUDIT_NAME,
+                record.to_dict(),
+            )
+
+        pending = asyncio.create_task(append_in_order())
+        pending.add_done_callback(_consume_task_exception)
+        self._audit_tail = pending
+        try:
+            async with asyncio.timeout(self._audit_timeout_seconds):
+                await asyncio.shield(pending)
+        except TimeoutError:
+            # The ordered tail keeps draining off-loop. Runtime result/fault and
+            # worker health remain independent from a slow audit filesystem.
+            return
+
     async def execute(self, command: MingliCommand) -> MingliResult:
         async with self._lock:
             try:
                 result = await self._execute_locked(command)
             except RuntimeTransportError:
-                self._publish_turn(
-                    command,
-                    generic_runtime_stopped(
-                        failure=failure_for_transport_fault(
-                            self._transport_fault or "timeout"
-                        )
-                    ),
-                )
+                with suppress(Exception):
+                    await self._publish_turn_durable(
+                        command,
+                        generic_runtime_stopped(
+                            failure=failure_for_transport_fault(
+                                self._transport_fault or "timeout"
+                            )
+                        ),
+                    )
                 raise
-            self._publish_turn(command, result)
+            await self._publish_turn_durable(command, result)
             return result
 
     async def _execute_locked(self, command: MingliCommand) -> MingliResult:
@@ -1321,7 +1393,7 @@ class WorkerV2MingliRuntimeAdapter:
             fault = (
                 "pending-before-write"
                 if _stream_has_pending(stdout)
-                else f"stderr-before-write:{bytes(self._stderr)[:200]!r}"
+                else "stderr-before-write"
             )
             await self._isolate_locked()
             return self._generic_stop(fault)
@@ -1377,6 +1449,10 @@ class WorkerV2MingliRuntimeAdapter:
     async def close(self) -> None:
         async with self._lock:
             await self._isolate_locked()
+            if self._audit_tail is not None:
+                with suppress(Exception):
+                    async with asyncio.timeout(self._audit_timeout_seconds):
+                        await asyncio.shield(self._audit_tail)
 
     def _is_bound_result(
         self,
