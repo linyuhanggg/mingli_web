@@ -289,7 +289,7 @@ describe("ProfileForm", () => {
     expect(api.confirmProfileDraft).toHaveBeenCalledTimes(1);
   });
 
-  it("retries a same-name 409 with overwrite", async () => {
+  it("routes an overwrite success to the exact profile and version returned by the API", async () => {
     const user = userEvent.setup();
     const conflict = new ApiError("Name conflict", 409, undefined, "profile_name_conflict");
     conflict.options = ["overwrite", "save_as", "cancel"];
@@ -305,6 +305,10 @@ describe("ProfileForm", () => {
         expect.objectContaining({ on_name_conflict: "overwrite" }),
       ),
     );
+    expect(routerPush).toHaveBeenCalledWith(
+      "/account/profiles/11111111-1111-4111-8111-111111111111?version=22222222-2222-4222-8222-222222222222",
+    );
+    expect(routerPush).not.toHaveBeenCalledWith("/app/profiles?created=1");
     expect(api.discardProfileDraft).not.toHaveBeenCalled();
   });
 

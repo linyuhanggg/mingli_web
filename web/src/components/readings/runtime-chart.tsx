@@ -471,19 +471,6 @@ function LiuyaoChart({
   );
 }
 
-function PublicLabelsNote({
-  labels,
-}: Readonly<{ labels?: ReadonlyArray<{ readonly key: string; readonly label: string }> }>) {
-  if (!labels?.length) return null;
-  return (
-    <ul className={styles.publicLabels} data-public-labels="true">
-      {labels.map((item) => (
-        <li key={item.key}>{item.label}</li>
-      ))}
-    </ul>
-  );
-}
-
 function MeihuaChart({
   view,
   showInterpretiveSections,
@@ -542,7 +529,6 @@ function MeihuaChart({
   const bodyUseStatus = factStatusLabel(view.body_use.status, labels);
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
-      <PublicLabelsNote labels={labels} />
       <dl className={styles.meta}>
         <div>
           <dt>起卦方式</dt>
@@ -1042,7 +1028,6 @@ function DaliurenChart({
 }>) {
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
-      <PublicLabelsNote labels={view.public_labels} />
       <DaliurenBoard view={view} showInterpretiveSections={showInterpretiveSections} />
     </div>
   );

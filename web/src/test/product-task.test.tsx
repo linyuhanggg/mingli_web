@@ -1,16 +1,26 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import BaziPage from "@/app/bazi/page";
 import { ProductTaskPage } from "@/components/task/product-task-page";
 import { ApiError, listProfiles } from "@/lib/api";
 import { PRODUCT_CATALOG } from "@/products/catalog";
 
+const taskMocks = vi.hoisted(() => ({
+  confirmProfileDraft: vi.fn(),
+  createProfileDraft: vi.fn(),
+  listProfiles: vi.fn(),
+  routerPush: vi.fn(),
+  startHecanReading: vi.fn(),
+  startPreviewReading: vi.fn(),
+}));
+
 vi.mock("next/navigation", async (importOriginal) => ({
   ...(await importOriginal<typeof import("next/navigation")>()),
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: taskMocks.routerPush, replace: vi.fn() }),
   usePathname: () => "/bazi",
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -23,8 +33,32 @@ vi.mock("@/lib/api", async (importOriginal) => ({
     source_status: "available",
     capabilities: [],
   }),
-  listProfiles: vi.fn().mockResolvedValue({ profiles: [] }),
+  confirmProfileDraft: taskMocks.confirmProfileDraft,
+  createProfileDraft: taskMocks.createProfileDraft,
+  listProfiles: taskMocks.listProfiles,
+  startHecanReading: taskMocks.startHecanReading,
+  startPreviewReading: taskMocks.startPreviewReading,
 }));
+
+const confirmedProfile = {
+  profile_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  profile_version_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+  subject_ref: "profile-version:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+  version: 1,
+  created_at: "2026-08-27T00:00:00Z",
+};
+
+beforeEach(() => {
+  taskMocks.confirmProfileDraft.mockReset().mockResolvedValue(confirmedProfile);
+  taskMocks.createProfileDraft.mockReset().mockResolvedValue({
+    draft_id: "draft-retry-1",
+    status: "draft",
+  });
+  taskMocks.listProfiles.mockReset().mockResolvedValue({ profiles: [] });
+  taskMocks.routerPush.mockReset();
+  taskMocks.startHecanReading.mockReset();
+  taskMocks.startPreviewReading.mockReset();
+});
 
 afterEach(() => {
   cleanup();
@@ -33,6 +67,19 @@ afterEach(() => {
 
 function taskShellCss() {
   return readFileSync(resolve(process.cwd(), "src/components/task/task-shell.module.css"), "utf8");
+}
+
+async function fillNatalTask(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(await screen.findByLabelText("受测对象"), "本人");
+  await user.selectOptions(screen.getByLabelText("出生年份"), "1990");
+  await user.selectOptions(screen.getByLabelText("出生月份"), "05");
+  await user.selectOptions(screen.getByLabelText("出生日期"), "06");
+  await user.selectOptions(screen.getByLabelText("出生小时"), "08");
+  await user.selectOptions(screen.getByLabelText("出生分钟"), "30");
+  await user.selectOptions(screen.getByLabelText("出生省份"), "江苏省");
+  await user.selectOptions(screen.getByLabelText("出生城市"), "常州市");
+  await user.selectOptions(screen.getByLabelText("出生区县"), "金坛区");
+  await user.click(screen.getByRole("radio", { name: "男" }));
 }
 
 describe("ProductTaskPage input shell", () => {
@@ -122,5 +169,53 @@ describe("ProductTaskPage input shell", () => {
     expect(screen.queryByRole("checkbox", { name: /不知道出生时辰/ })).not.toBeInTheDocument();
     expect(screen.queryByText("请填写明确的出生时间。")).not.toBeInTheDocument();
     expect(screen.getByText("确认后生成盘面")).toBeVisible();
+  });
+});
+
+describe("ProductTaskExperience retained profile drafts", () => {
+  it("retries the same draft in a regular natal flow after a transient confirm failure", async () => {
+    taskMocks.confirmProfileDraft
+      .mockRejectedValueOnce(
+        new ApiError("确认服务暂时不可用", 503, undefined, "chart_runtime_transport"),
+      )
+      .mockResolvedValueOnce(confirmedProfile);
+    taskMocks.startPreviewReading.mockRejectedValue(new Error("排盘服务暂时不可用"));
+    const user = userEvent.setup();
+    render(<ProductTaskPage productId="bazi" />);
+    await fillNatalTask(user);
+
+    await user.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    await waitFor(() => expect(taskMocks.confirmProfileDraft).toHaveBeenCalledTimes(1));
+    await user.click(await screen.findByRole("button", { name: "重试" }));
+    await waitFor(() => expect(taskMocks.startPreviewReading).toHaveBeenCalledTimes(1));
+
+    expect(taskMocks.createProfileDraft).toHaveBeenCalledTimes(1);
+    expect(taskMocks.confirmProfileDraft).toHaveBeenCalledTimes(2);
+    expect(taskMocks.confirmProfileDraft.mock.calls[0]?.[0]).toBe("draft-retry-1");
+    expect(taskMocks.confirmProfileDraft.mock.calls[1]?.[0]).toBe("draft-retry-1");
+  });
+
+  it("retries the same draft in the shared Hecan/Canwen flow after a transient confirm failure", async () => {
+    taskMocks.confirmProfileDraft
+      .mockRejectedValueOnce(
+        new ApiError("确认服务暂时不可用", 503, undefined, "chart_runtime_transport"),
+      )
+      .mockResolvedValueOnce(confirmedProfile);
+    taskMocks.startHecanReading.mockRejectedValue(new Error("合参服务暂时不可用"));
+    const user = userEvent.setup();
+    render(<ProductTaskPage productId="hecan" />);
+    await fillNatalTask(user);
+    await user.click(screen.getByRole("checkbox", { name: /八字/ }));
+    await user.click(screen.getByRole("checkbox", { name: /紫微/ }));
+
+    await user.click(screen.getByRole("button", { name: /^立即合参/ }));
+    await waitFor(() => expect(taskMocks.confirmProfileDraft).toHaveBeenCalledTimes(1));
+    await user.click(await screen.findByRole("button", { name: "重试" }));
+    await waitFor(() => expect(taskMocks.startHecanReading).toHaveBeenCalledTimes(1));
+
+    expect(taskMocks.createProfileDraft).toHaveBeenCalledTimes(1);
+    expect(taskMocks.confirmProfileDraft).toHaveBeenCalledTimes(2);
+    expect(taskMocks.confirmProfileDraft.mock.calls[0]?.[0]).toBe("draft-retry-1");
+    expect(taskMocks.confirmProfileDraft.mock.calls[1]?.[0]).toBe("draft-retry-1");
   });
 });

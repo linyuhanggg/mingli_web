@@ -987,7 +987,13 @@ it("renders Meihua source-adjudicated relation polarity without inventing an eve
         },
         core_facts: {
           body_relation_facts: [],
-          seasonal_strength: null,
+          seasonal_strength: {
+            autumn: {
+              trigram: "兑",
+              season: "autumn",
+              status: "calculated_strength_not_verdict",
+            },
+          },
           interpretation_status: "source_adjudicated_relations",
           interpretive_candidates: {
             schema_version: "mingli-meihua-interpretive-candidates-v1",
@@ -1036,12 +1042,20 @@ it("renders Meihua source-adjudicated relation polarity without inventing an eve
             boundary: "关系极性已裁定，综合事件结论仍待裁决",
           },
         },
+        public_labels: [
+          { key: "autumn", label: "秋" },
+          { key: "spring", label: "春" },
+          { key: "calculated_strength_not_verdict", label: "旺衰已计算，尚非断语" },
+        ],
       }}
     />,
   );
 
   expect(screen.getByText("体用关系来源裁定（未形成事件结论）")).toBeVisible();
   expect(screen.getByText("体用比和")).toBeVisible();
+  expect(screen.getAllByText("秋")).toHaveLength(2);
+  expect(screen.getByText("旺衰已计算，尚非断语")).toBeVisible();
+  expect(screen.queryByText("春")).not.toBeInTheDocument();
   expect(screen.getByText("关系极性已裁定")).toBeVisible();
   expect(screen.getByText(/综合成败与应期仍待正式合成裁决/)).toBeVisible();
   expect(screen.queryByText("体用关系候选（非最终结论）")).toBeNull();
@@ -1306,6 +1320,9 @@ it("renders a bounded Daliuren timing candidate as a non-guaranteed date", () =>
           }],
           xunkong: null,
         },
+        public_labels: [
+          { key: "money", label: "求财" },
+        ],
       }}
     />,
   );
@@ -1313,6 +1330,7 @@ it("renders a bounded Daliuren timing candidate as a non-guaranteed date", () =>
   expect(screen.getByRole("region", { name: "课传" })).toBeVisible();
   expect(screen.getByRole("button", { name: "初传 酉 朱雀" })).toBeVisible();
   expect(screen.getByText(/2026-08-21/)).toBeVisible();
+  expect(screen.queryByText("求财")).not.toBeInTheDocument();
   expect(screen.getByText("以下为古籍规则产生的候选日期，不是保证的应期")).toBeVisible();
   expect(screen.queryByText("有界应期候选")).not.toBeInTheDocument();
   expect(screen.queryByText("丁卯 · 酉")).not.toBeInTheDocument();
@@ -1352,12 +1370,18 @@ it("renders DaliurenBoard for daliuren-chart/v1 and fail-closes missing timing_c
           timing_candidates: null,
           xunkong: null,
         },
+        public_labels: [
+          { key: "money", label: "求财" },
+          { key: "timing", label: "时机" },
+        ],
       }}
     />,
   );
 
   expect(screen.getByRole("region", { name: "课传" })).toBeVisible();
   expect(screen.getByRole("button", { name: "初传 酉 朱雀" })).toBeVisible();
+  expect(screen.queryByText("求财")).not.toBeInTheDocument();
+  expect(screen.queryByText("时机")).not.toBeInTheDocument();
   expect(screen.queryByText("2026-08-21")).not.toBeInTheDocument();
   expect(screen.queryByRole("region", { name: "应期" })).not.toBeInTheDocument();
   expect(screen.queryByText("有界应期候选")).not.toBeInTheDocument();
