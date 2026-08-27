@@ -21,6 +21,7 @@ from app.adapters.runtime import (
     RUNTIME_TURN_AUDIT_NAME,
     MingliRuntime,
     RuntimeTurnAudit,
+    WorkerV2MingliRuntimeAdapter,
     append_runtime_turn_audit,
     failure_for_transport_fault,
     runtime_command_digest,
@@ -93,7 +94,7 @@ from app.readings.request_compiler import (
     compile_ziwei_prepare,
     compile_ziwei_year_prepare,
 )
-from app.readings.runtime_contracts import Prepare, Prepared, Stopped
+from app.readings.runtime_contracts import MingliResult, Prepare, Prepared, Stopped
 from app.readings.status import ReadingStatus
 from app.security.envelope import EnvelopeCipher
 
@@ -104,7 +105,6 @@ _DIRECT_CHART_PRODUCT_IDS = frozenset(
 )
 _POLL_STOP_STATUSES = frozenset(
     {
-        ReadingStatus.PREPARED,
         ReadingStatus.ACCEPTED,
         ReadingStatus.TERMINAL_STOPPED,
         ReadingStatus.RUNTIME_UNKNOWN,
@@ -2165,9 +2165,15 @@ class ReadingService:
             )
         )
         status = ReadingStatus(version.status)
+        job_status = (
+            await self._latest_job_status(version.id)
+            if status is ReadingStatus.PREPARED
+            else None
+        )
         result_available, poll_required, poll_after_seconds = self._poll_fields(
             status,
             view_model,
+            job_status=job_status,
         )
         return ReadingResultResponse(
             reading_version_id=version.id,
@@ -2474,8 +2480,7 @@ class ReadingService:
         prepare = await self.repository.load_prepare(version.id)
         runtime_started_at = perf_counter()
         try:
-            async with asyncio.timeout(self.settings.chart_fast_path_timeout_seconds):
-                result = await self.chart_runtime.execute(prepare)
+            result = await self._execute_chart_runtime(prepare)
         except TimeoutError as error:
             self._remember_chart_runtime_audit(prepare, None, fault="timeout")
             raise ChartFastPathUnavailableError(
@@ -2483,6 +2488,12 @@ class ReadingService:
                 code="chart_runtime_timeout",
             ) from error
         except RuntimeTransportError as error:
+            if str(error) == "runtime_timed_out":
+                self._remember_chart_runtime_audit(prepare, None, fault="timeout")
+                raise ChartFastPathUnavailableError(
+                    "chart_runtime_timeout",
+                    code="chart_runtime_timeout",
+                ) from error
             self._remember_chart_runtime_audit(
                 prepare,
                 None,
@@ -2548,6 +2559,18 @@ class ReadingService:
                 code="chart_runtime_protocol_error",
             )
         return runtime_ms, (perf_counter() - persistence_started_at) * 1000
+
+    async def _execute_chart_runtime(self, prepare: Prepare) -> MingliResult:
+        """Run Worker v2 after its own admission lock starts the execution budget."""
+        if self.chart_runtime is None:
+            raise ChartFastPathUnavailableError(
+                "chart_runtime_not_configured",
+                code="chart_runtime_not_configured",
+            )
+        if isinstance(self.chart_runtime, WorkerV2MingliRuntimeAdapter):
+            return await self.chart_runtime.execute(prepare)
+        async with asyncio.timeout(self.settings.chart_fast_path_timeout_seconds):
+            return await self.chart_runtime.execute(prepare)
 
     def _remember_chart_runtime_audit(
         self,
@@ -2790,13 +2813,31 @@ class ReadingService:
     def _poll_fields(
         status: ReadingStatus,
         view_model: object,
+        *,
+        job_status: str | None = None,
     ) -> tuple[bool, bool, int | None]:
         result_available = view_model is not None and status in {
             ReadingStatus.PREPARED,
             ReadingStatus.ACCEPTED,
         }
-        poll_required = not (result_available or status in _POLL_STOP_STATUSES)
+        terminal_direct_prepared = (
+            status is ReadingStatus.PREPARED and job_status == "complete"
+        )
+        poll_required = not (
+            terminal_direct_prepared or status in _POLL_STOP_STATUSES
+        )
         return result_available, poll_required, 4 if poll_required else None
+
+    async def _latest_job_status(self, version_id: UUID) -> str | None:
+        return cast(
+            str | None,
+            await self.session.scalar(
+                select(ReadingJobRecord.status)
+                .where(ReadingJobRecord.reading_version_id == version_id)
+                .order_by(ReadingJobRecord.created_at.desc(), ReadingJobRecord.id.desc())
+                .limit(1)
+            ),
+        )
 
     async def _summary(
         self,
@@ -2815,9 +2856,15 @@ class ReadingService:
             )
         )
         status = ReadingStatus(version.status)
+        job_status = (
+            await self._latest_job_status(version.id)
+            if status is ReadingStatus.PREPARED
+            else None
+        )
         result_available, poll_required, poll_after_seconds = self._poll_fields(
             status,
             view_model,
+            job_status=job_status,
         )
         return ReadingStartResponse(
             reading_version_id=version.id,

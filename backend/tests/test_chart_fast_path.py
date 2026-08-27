@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 
+from app.adapters.runtime import WorkerV2MingliRuntimeAdapter
 from app.main import create_app
 from app.readings.models import (
     GenerationAttempt,
@@ -16,6 +17,7 @@ from app.readings.models import (
     ReadingVersion,
 )
 from app.readings.runtime_contracts import Prepare, Prepared, ReadingBrief
+from app.readings.service import ReadingService
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import func, select
 from worker.readings import build_reading_worker
@@ -184,6 +186,28 @@ class HangingChartRuntime:
         assert isinstance(command, Prepare)
         await asyncio.Event().wait()
         raise AssertionError("unreachable")
+
+
+class ManagedSingleFlightChartRuntime(WorkerV2MingliRuntimeAdapter):
+    """Model the production worker's admission lock and internal timeout lane."""
+
+    def __init__(self) -> None:
+        self._lock = asyncio.Lock()
+        self.first_turn_started = asyncio.Event()
+        self.turns_started = 0
+        self._isolated = False
+
+    async def execute(self, command: Any) -> Any:
+        async with self._lock:
+            self.turns_started += 1
+            if self.turns_started == 1:
+                self.first_turn_started.set()
+            try:
+                await asyncio.sleep(0.04)
+            except asyncio.CancelledError:
+                self._isolated = True
+                raise
+            return command
 
 
 class ExplodingModel:
@@ -391,6 +415,38 @@ async def test_existing_queue_does_not_delay_direct_chart_path(
     assert statuses.count("queued") == 20
     assert statuses.count("complete") == 1
     assert runtime.calls == ["bazi"]
+
+
+async def test_worker_slot_wait_does_not_consume_chart_execution_timeout(
+    test_settings: Any,
+) -> None:
+    runtime = ManagedSingleFlightChartRuntime()
+    settings = test_settings.model_copy(
+        update={"chart_fast_path_timeout_seconds": 0.05}
+    )
+    service = ReadingService(
+        session=object(),  # type: ignore[arg-type]
+        settings=settings,
+        chart_runtime=runtime,
+    )
+    command = object()
+
+    first = asyncio.create_task(
+        service._execute_chart_runtime(command)  # type: ignore[arg-type]
+    )
+    await asyncio.wait_for(runtime.first_turn_started.wait(), timeout=0.5)
+    second = asyncio.create_task(
+        service._execute_chart_runtime(command)  # type: ignore[arg-type]
+    )
+
+    results = await asyncio.wait_for(
+        asyncio.gather(first, second),
+        timeout=0.5,
+    )
+
+    assert results == [command, command]
+    assert runtime.turns_started == 2
+    assert runtime.isolated is False
 
 
 async def test_chart_runtime_timeout_fails_fast_and_rolls_back(

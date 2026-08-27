@@ -8,6 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
 
+from app.identity.models import GuestSession, User
 from app.profiles.models import ProfileVersion, ProfileVersionAuthorization, SubjectProfile
 from app.security.envelope import EncryptedPayload, EnvelopeCipher
 
@@ -19,10 +20,42 @@ def subject_profile_version_lock_statement(
     return select(SubjectProfile).where(SubjectProfile.id == profile_id).with_for_update()
 
 
+def profile_owner_lock_statement(
+    *,
+    owner_user_id: UUID | None,
+    owner_guest_session_id: UUID | None,
+) -> Select[tuple[UUID]]:
+    """Serialize profile tuple conflict checks across every Draft for one owner."""
+    if (owner_user_id is None) == (owner_guest_session_id is None):
+        raise ValueError("a profile owner lock requires exactly one User or Guest owner")
+    if owner_user_id is not None:
+        return select(User.id).where(User.id == owner_user_id).with_for_update()
+    return (
+        select(GuestSession.id)
+        .where(GuestSession.id == owner_guest_session_id)
+        .with_for_update()
+    )
+
+
 class ProfileRepository:
     def __init__(self, session: AsyncSession, cipher: EnvelopeCipher) -> None:
         self.session = session
         self.cipher = cipher
+
+    async def lock_profile_owner(
+        self,
+        *,
+        owner_user_id: UUID | None,
+        owner_guest_session_id: UUID | None,
+    ) -> None:
+        owner_id = await self.session.scalar(
+            profile_owner_lock_statement(
+                owner_user_id=owner_user_id,
+                owner_guest_session_id=owner_guest_session_id,
+            )
+        )
+        if owner_id is None:
+            raise LookupError("Profile owner not found")
 
     async def create_profile(
         self,
