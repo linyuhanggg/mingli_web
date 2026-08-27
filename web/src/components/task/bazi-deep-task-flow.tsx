@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
@@ -26,6 +26,40 @@ import { Status } from "@/components/ui/status";
 import styles from "./bazi-deep-task-flow.module.css";
 
 const POLL_MS = 2_000;
+const EMPTY_SEARCH = new URLSearchParams();
+
+export const BAZI_PREVIEW_READING_QUERY = "reading";
+
+type SearchLike = {
+  get(name: string): string | null;
+  toString(): string;
+};
+
+export function readBaziPreviewReadingId(searchParams: SearchLike): string | null {
+  const value = searchParams.get(BAZI_PREVIEW_READING_QUERY)?.trim() ?? "";
+  return value ? value : null;
+}
+
+export function baziPreviewRestoreHref(
+  pathname: string,
+  searchParams: SearchLike,
+  readingId: string | null,
+  profileVersionId?: string | null,
+): string {
+  const next = new URLSearchParams(searchParams.toString());
+  const trimmedReading = readingId?.trim() ?? "";
+  if (trimmedReading) {
+    next.set(BAZI_PREVIEW_READING_QUERY, trimmedReading);
+  } else {
+    next.delete(BAZI_PREVIEW_READING_QUERY);
+  }
+  const profile = profileVersionId?.trim();
+  if (profile) {
+    next.set("profile", profile);
+  }
+  const query = next.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
 
 function isStalePolicyVersion(reason: unknown): boolean {
   return (
@@ -218,6 +252,12 @@ export function BaziDeepTaskFlow({
   onBack,
 }: BaziDeepTaskFlowProps) {
   const router = useRouter();
+  const pathname = usePathname() || "/bazi";
+  const searchParams = useSearchParams() ?? EMPTY_SEARCH;
+  const writeHref = useCallback((href: string) => {
+    if (typeof router.replace !== "function") return;
+    router.replace(href);
+  }, [router]);
   const session = useOptionalAccountSession();
   const [state, setState] = useState<BaziDeepTaskState>("preview_loading");
   const [deepReadingId, setDeepReadingId] = useState<string | null>(null);
@@ -238,6 +278,24 @@ export function BaziDeepTaskFlow({
       mountedRef.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    const href = baziPreviewRestoreHref(
+      pathname,
+      searchParams,
+      previewReadingId,
+      profileVersionId,
+    );
+    const nextQuery = href.includes("?") ? href.slice(href.indexOf("?") + 1) : "";
+    if (searchParams.toString() !== nextQuery) {
+      writeHref(href);
+    }
+  }, [pathname, previewReadingId, profileVersionId, searchParams, writeHref]);
+
+  const handleBack = useCallback(() => {
+    writeHref(baziPreviewRestoreHref(pathname, searchParams, null));
+    onBack();
+  }, [onBack, pathname, searchParams, writeHref]);
 
   useEffect(() => {
     let cancelled = false;
@@ -497,7 +555,7 @@ export function BaziDeepTaskFlow({
   return (
     <section className={styles.flow} aria-labelledby="bazi-deep-task-title">
       <header className={styles.toolbar}>
-        <button className={styles.backButton} onClick={onBack} type="button">
+        <button className={styles.backButton} onClick={handleBack} type="button">
           <ArrowLeft aria-hidden="true" size={17} />
           返回录入
         </button>
@@ -521,7 +579,7 @@ export function BaziDeepTaskFlow({
               ) : (
                 <>
                   <button onClick={retry} type="button">重试状态读取</button>
-                  <button data-variant="secondary" onClick={onBack} type="button">返回修改资料</button>
+                  <button data-variant="secondary" onClick={handleBack} type="button">返回修改资料</button>
                 </>
               )
             }
@@ -664,7 +722,7 @@ export function BaziDeepTaskFlow({
           <p className={styles.securityNote}>没有确认 Payment，不会绑定履约，也不会请求深读结果。</p>
           <div className={styles.actionRow}>
             <button className={styles.primaryAction} onClick={retry} type="button">重试结账状态</button>
-            <button className={styles.secondaryAction} onClick={onBack} type="button">返回修改资料</button>
+            <button className={styles.secondaryAction} onClick={handleBack} type="button">返回修改资料</button>
           </div>
         </section>
       ) : null}

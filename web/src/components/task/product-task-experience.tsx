@@ -61,7 +61,11 @@ import type { ProductDefinition } from "@/products/catalog";
 import { ProfileNameConflictDialog } from "../profile-name-conflict-dialog";
 import { ProfileRenameControl } from "../profile-rename-control";
 import { ProductInputForm, type TaskFormValues } from "./product-input-form";
-import { BaziDeepTaskFlow } from "./bazi-deep-task-flow";
+import {
+  BaziDeepTaskFlow,
+  baziPreviewRestoreHref,
+  readBaziPreviewReadingId,
+} from "./bazi-deep-task-flow";
 import styles from "./task-shell.module.css";
 
 type TaskStage = "input" | "workbench";
@@ -178,8 +182,10 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const pathname = usePathname() || `/${product.id}`;
   const searchParams = useSearchParams();
   const requestedProfileVersionId = searchParams.get("profile") ?? "";
+  const restoredBaziReadingId =
+    product.id === "bazi" ? readBaziPreviewReadingId(searchParams) : null;
   const shouldLoadProfiles = usesSavedProfiles(product);
-  const [stage, setStage] = useState<TaskStage>("input");
+  const [stage, setStage] = useState<TaskStage>(restoredBaziReadingId ? "workbench" : "input");
   const [values, setValues] = useState<TaskFormValues | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitErrorState, setSubmitErrorState] = useState<"unavailable" | "error" | "unauthorized">("unavailable");
@@ -189,8 +195,12 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [createdProfile, setCreatedProfile] = useState<ProfileSummary | null>(null);
   const [busy, setBusy] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(null);
-  const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(null);
+  const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(
+    restoredBaziReadingId,
+  );
+  const [baziProfileVersionId, setBaziProfileVersionId] = useState<string | null>(
+    restoredBaziReadingId ? requestedProfileVersionId || null : null,
+  );
   const [ziweiPreviewReadingId, setZiweiPreviewReadingId] = useState<string | null>(null);
   const [liuyaoPreviewReadingId, setLiuyaoPreviewReadingId] = useState<string | null>(null);
   const [savedProfiles, setSavedProfiles] = useState<ProfileSummary[]>([]);
@@ -208,6 +218,17 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     body: ProfileConfirmRequest;
     nextValues: TaskFormValues;
   } | null>(null);
+
+  function writeBaziPreviewRoute(readingId: string | null, profileVersionId?: string | null) {
+    if (typeof router.replace !== "function") return;
+    router.replace(baziPreviewRestoreHref(pathname, searchParams, readingId, profileVersionId));
+  }
+
+  useEffect(() => {
+    if (restoredBaziReadingId && requestedProfileVersionId) {
+      profileVersionRef.current = requestedProfileVersionId;
+    }
+  }, [restoredBaziReadingId, requestedProfileVersionId]);
 
   useEffect(() => {
     if (!shouldLoadProfiles) return;
@@ -420,6 +441,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         if (product.id === "bazi") {
           setBaziPreviewReadingId(response.reading_version_id);
           setStage("workbench");
+          writeBaziPreviewRoute(response.reading_version_id, profileVersionId);
         } else if (product.id === "ziwei") {
           setZiweiPreviewReadingId(response.reading_version_id);
           setStage("workbench");
@@ -894,6 +916,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
                 setSubmitErrorAction(null);
                 setLoginIntentKey(undefined);
                 setStage("input");
+                writeBaziPreviewRoute(null);
               }}
             >
               返回录入
@@ -915,6 +938,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             setSubmitErrorAction(null);
             setLoginIntentKey(undefined);
             setStage("input");
+            writeBaziPreviewRoute(null);
           }}
           previewReadingId={baziPreviewReadingId}
           profileVersionId={baziProfileVersionId ?? ""}
