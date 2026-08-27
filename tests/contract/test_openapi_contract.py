@@ -60,6 +60,7 @@ def test_contract_does_not_expose_future_payment_or_model_routes() -> None:
 
 PHASE_TWO_PATHS = {
     "/api/v1/profiles/drafts": "post",
+    "/api/v1/profiles/drafts/{draft_id}": "delete",
     "/api/v1/profiles/drafts/{draft_id}/confirm": "post",
     "/api/v1/profiles": "get",
     "/api/v1/readings/preview": "post",
@@ -183,6 +184,27 @@ def test_profile_display_contract_is_owner_only_minimized_and_rename_only() -> N
         assert "private/no-store" in description
 
 
+def test_profile_draft_delete_is_owner_scoped_without_relaxing_profile_delete() -> None:
+    paths = load_openapi_document()["paths"]
+    delete_draft = paths["/api/v1/profiles/drafts/{draft_id}"]["delete"]
+
+    assert delete_draft["operationId"] == "deleteProfileDraft"
+    assert {item.get("$ref") for item in delete_draft["parameters"] if "$ref" in item} == {
+        "#/components/parameters/CsrfToken"
+    }
+    assert delete_draft["parameters"][1] == {
+        "name": "draft_id",
+        "in": "path",
+        "required": True,
+        "schema": {"type": "string", "format": "uuid"},
+    }
+    assert set(delete_draft["responses"]) == {"204", "401", "403", "404", "429"}
+    assert "security" not in delete_draft
+    assert paths["/api/v1/profiles/{profile_id}"]["delete"]["security"] == [
+        {"deviceSession": []}
+    ]
+
+
 def test_reading_result_contract_exposes_the_runtime_view_model_slot() -> None:
     schema = load_openapi_document()["components"]["schemas"]["ReadingResultResponse"]
 
@@ -258,6 +280,7 @@ def test_phase_two_mutating_routes_declare_csrf_and_idempotency() -> None:
     paths = load_openapi_document()["paths"]
     csrf_mutating_paths = {
         "/api/v1/profiles/drafts": "post",
+        "/api/v1/profiles/drafts/{draft_id}": "delete",
         "/api/v1/profiles/drafts/{draft_id}/confirm": "post",
         "/api/v1/profiles/{profile_id}": "patch",
         "/api/v1/readings/preview": "post",

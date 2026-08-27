@@ -853,6 +853,30 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+  /api/v1/profiles/drafts/{draft_id}:
+    delete:
+      operationId: deleteProfileDraft
+      tags: [Profiles]
+      summary: Delete an unconfirmed Profile Draft owned by the current User or Guest
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - name: draft_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Owned unconfirmed Profile Draft deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
   /api/v1/profiles/drafts/{draft_id}/confirm:
     post:
       operationId: confirmProfileDraft
