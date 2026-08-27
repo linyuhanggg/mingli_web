@@ -335,6 +335,20 @@ def test_dark_theme_values_are_declared_exactly() -> None:
     assert mismatched == []
 
 
+def test_dark_theme_is_reachable_from_system_preference() -> None:
+    source = TOKENS_CSS.read_text(encoding="utf-8")
+    dark = _selector_tokens(source, '[data-theme="dark"]')
+    fallback_bodies = [
+        body
+        for selector, body in _iter_rule_blocks(source)
+        if selector == ":root:not([data-theme])"
+    ]
+
+    assert len(fallback_bodies) == 1
+    assert re.search(r"\bcolor-scheme\s*:\s*dark\s*;", fallback_bodies[0])
+    assert _declared_tokens(fallback_bodies[0]) == dark
+
+
 def test_five_element_tokens_are_exact_and_chart_fact_only() -> None:
     source = TOKENS_CSS.read_text(encoding="utf-8")
     light = _selector_tokens(source, ":root")
@@ -716,6 +730,14 @@ def test_spinner_animations_disable_under_prefers_reduced_motion() -> None:
         assert "@keyframes" in source, rel
         assert "prefers-reduced-motion" in source, rel
         assert "animation: none" in source, rel
+
+
+def test_web_status_busy_animation_targets_the_loader_glyph() -> None:
+    source = (ROOT / "web/src/components/ui/status.module.css").read_text(encoding="utf-8")
+
+    for state in ("loading", "processing"):
+        assert f".{state} .icon svg" in source
+        assert not re.search(rf"\.{state}\s+\.icon\s*(?:,|\{{)", source)
 
 
 def test_standalone_start_uses_a_single_root_server_path() -> None:

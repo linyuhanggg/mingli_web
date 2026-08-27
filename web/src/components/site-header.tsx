@@ -112,6 +112,14 @@ function isDivinationActive(pathname: string) {
   );
 }
 
+function isToolActive(pathname: string) {
+  return (
+    isDivinationActive(pathname) ||
+    isRouteActive(pathname, "/tools") ||
+    isRouteActive(pathname, "/arts")
+  );
+}
+
 function isCrossActive(pathname: string) {
   return crossLinks.some((item) => isRouteActive(pathname, item.href));
 }
@@ -193,7 +201,7 @@ function ToolMenu() {
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
       <PopoverPrimitive.Trigger asChild>
         <button
-          aria-current={isDivinationActive(pathname) || isRouteActive(pathname, "/tools") ? "page" : undefined}
+          aria-current={isToolActive(pathname) ? "page" : undefined}
           aria-haspopup="menu"
           className={styles.navItem}
           type="button"
@@ -388,7 +396,11 @@ export function MobileNavigation({ pathname }: { pathname: string }) {
     <nav aria-label="移动底栏" className={styles.mobileBottomBar}>
       {mobileLinks.map(({ href, label, icon: Icon }) => (
         <Link
-          aria-current={isRouteActive(pathname, href) ? "page" : undefined}
+          aria-current={
+            (href === "/tools" ? isToolActive(pathname) : isRouteActive(pathname, href))
+              ? "page"
+              : undefined
+          }
           className={styles.mobileNavItem}
           href={href}
           key={href}

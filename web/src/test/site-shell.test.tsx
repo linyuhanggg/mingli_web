@@ -9,7 +9,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SiteHeader } from "@/components/site-header";
 import { ApiError } from "@/lib/api";
 
-const { getAccountMock } = vi.hoisted(() => ({ getAccountMock: vi.fn() }));
+const { getAccountMock, usePathnameMock } = vi.hoisted(() => ({
+  getAccountMock: vi.fn(),
+  usePathnameMock: vi.fn(),
+}));
 
 type TestLinkProps = ComponentPropsWithoutRef<"a"> & {
   href: string;
@@ -32,7 +35,7 @@ vi.mock("next/link", () => ({
 }));
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/",
+  usePathname: usePathnameMock,
 }));
 
 vi.mock("@/lib/api", async (importOriginal) => ({
@@ -44,6 +47,8 @@ beforeEach(() => {
   window.history.replaceState(null, "", "/");
   getAccountMock.mockReset();
   getAccountMock.mockImplementation(() => new Promise(() => undefined));
+  usePathnameMock.mockReset();
+  usePathnameMock.mockReturnValue("/");
 });
 
 afterEach(() => {
@@ -116,6 +121,22 @@ describe("public shell navigation", () => {
       "href",
       "/wenshi",
     );
+  });
+
+  it("marks the arts overview as the current tool section", () => {
+    usePathnameMock.mockReturnValue("/arts");
+    render(<SiteHeader />);
+
+    expect(screen.getByRole("button", { name: "工具" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(
+      within(screen.getByLabelText("移动底栏")).getByRole("link", {
+        name: "工具",
+        hidden: true,
+      }),
+    ).toHaveAttribute("aria-current", "page");
   });
 
   it("closes the desktop menu with Escape and returns focus to its trigger", async () => {
