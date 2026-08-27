@@ -724,6 +724,111 @@ async def test_locked_confirm_recheck_rejects_an_already_confirmed_draft(
     assert len(versions) == 1
 
 
+async def test_overwrite_keeps_corrected_birth_facts_on_existing_profile(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    first = await create_confirmed_profile(client, headers)
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "本人"},
+    )
+    assert draft.status_code == 201, draft.text
+    overwritten = await client.post(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm",
+        headers=headers,
+        json={
+            "birth_datetime": "1994-04-30T06:10:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市黄浦区",
+            "gender": "female",
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+            "longitude": 121.4737,
+            "latitude": 31.2304,
+            "coordinate_source": "user_confirmed",
+            "on_name_conflict": "overwrite",
+        },
+    )
+
+    assert overwritten.status_code == 201, overwritten.text
+    body = overwritten.json()
+    assert body["profile_id"] == first["profile_id"]
+    assert body["version"] == 2
+    assert body["profile_version_id"] != first["profile_version_id"]
+    assert body["display_name"] == "本人"
+    assert body["birth_date"] == "1994-04-30"
+
+    history = await client.get(f"/api/v1/profiles/{first['profile_id']}/versions")
+    listed = await client.get("/api/v1/profiles")
+    assert history.status_code == 200, history.text
+    assert [item["version"] for item in history.json()["versions"]] == [1, 2]
+    assert listed.json()["profiles"][0]["profile_version_id"] == body["profile_version_id"]
+
+    from app.profiles.models import SubjectProfile
+    from app.profiles.service import ProfileService
+
+    async with database.sessions() as session:
+        payload = await ProfileService(session, test_settings).repository.load_version_payload(
+            UUID(body["profile_version_id"])
+        )
+        remaining = list(await session.scalars(select(SubjectProfile)))
+    assert payload["birth_datetime"] == "1994-04-30T06:10:00+08:00"
+    assert payload["location"] == "上海市黄浦区"
+    assert {str(item.id) for item in remaining} == {first["profile_id"]}
+
+
+async def test_save_as_conflict_name_is_truncated_to_label_limit(
+    client: AsyncClient,
+) -> None:
+    long_name = "本" * 80
+    headers = await create_guest(client)
+    first = await create_confirmed_profile(client, headers, label=long_name)
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": long_name},
+    )
+    assert draft.status_code == 201, draft.text
+    conflict = await client.post(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm",
+        headers=headers,
+        json={
+            "birth_datetime": "1994-04-30T05:55:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "北京市朝阳区",
+            "gender": "female",
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+        },
+    )
+    assert conflict.status_code == 409, conflict.text
+    suggested = conflict.json()["suggested_save_as_name"]
+    assert len(suggested) <= 80
+    assert suggested != long_name
+
+    saved = await client.post(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm",
+        headers=headers,
+        json={
+            "birth_datetime": "1994-04-30T05:55:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "北京市朝阳区",
+            "gender": "female",
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+            "on_name_conflict": "save_as",
+        },
+    )
+    assert saved.status_code == 201, saved.text
+    assert saved.json()["profile_id"] != first["profile_id"]
+    assert len(saved.json()["display_name"]) <= 80
+    assert saved.json()["display_name"] == suggested
+
+
 async def test_guest_claim_rejects_an_already_claimed_session(
     database: Any,
     test_settings: Any,

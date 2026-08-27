@@ -18,6 +18,19 @@ from app.profiles.schemas import (
 from app.readings.models import ReadingIdempotencyKey, ReadingRoot
 from app.security.envelope import EnvelopeCipher
 
+_DISPLAY_NAME_MAX_LENGTH = 80
+_VERSION_FACT_KEYS = (
+    "birth_datetime",
+    "timezone",
+    "location",
+    "gender",
+    "time_basis_policy",
+    "zi_hour_policy",
+    "longitude",
+    "latitude",
+    "coordinate_source",
+)
+
 
 class ProfileNotFoundError(LookupError):
     """A Draft or Profile Version is missing or belongs to another owner."""
@@ -142,25 +155,18 @@ class ProfileService:
                     suggested_save_as_name=suggested,
                 )
             if payload.on_name_conflict == "overwrite":
-                await self.session.delete(draft)
-                await self.session.flush()
-                return self._summary(existing_profile, existing_version)
+                return await self._overwrite_existing_profile(
+                    draft=draft,
+                    existing_profile=existing_profile,
+                    existing_version=existing_version,
+                    payload=payload,
+                )
             resolved_label = suggested
         draft.label = resolved_label
         try:
             version = await self.repository.create_version_if_unconfirmed(
                 profile_id=draft.id,
-                payload={
-                    "birth_datetime": payload.birth_datetime,
-                    "timezone": payload.timezone,
-                    "location": payload.location,
-                    "gender": payload.gender,
-                    "time_basis_policy": payload.time_basis_policy,
-                    "zi_hour_policy": payload.zi_hour_policy,
-                    "longitude": payload.longitude,
-                    "latitude": payload.latitude,
-                    "coordinate_source": payload.coordinate_source,
-                },
+                payload=_version_facts(payload),
             )
         except LookupError as error:
             raise ProfileNotFoundError("Profile Draft not found") from error
@@ -206,17 +212,7 @@ class ProfileService:
         self._validate_version_authorization(payload)
         version = await self.repository.create_version(
             profile_id=profile.id,
-            payload={
-                "birth_datetime": payload.birth_datetime,
-                "timezone": payload.timezone,
-                "location": payload.location,
-                "gender": payload.gender,
-                "time_basis_policy": payload.time_basis_policy,
-                "zi_hour_policy": payload.zi_hour_policy,
-                "longitude": payload.longitude,
-                "latitude": payload.latitude,
-                "coordinate_source": payload.coordinate_source,
-            },
+            payload=_version_facts(payload),
         )
         await self.repository.create_version_authorization(
             profile_version_id=version.id,
@@ -364,6 +360,38 @@ class ProfileService:
                 "the visible difference from the previous ProfileVersion must be acknowledged"
             )
 
+    async def _overwrite_existing_profile(
+        self,
+        *,
+        draft: SubjectProfile,
+        existing_profile: SubjectProfile,
+        existing_version: ProfileVersion,
+        payload: ProfileConfirmRequest,
+    ) -> ProfileSummary:
+        incoming = _version_facts(payload)
+        stored = self.repository.decrypt_version_payload(existing_version)
+        if _facts_match(stored, incoming):
+            await self.session.delete(draft)
+            await self.session.flush()
+            return self._summary(existing_profile, existing_version)
+        version = await self.repository.create_version(
+            profile_id=existing_profile.id,
+            payload=incoming,
+        )
+        await self.repository.create_version_authorization(
+            profile_version_id=version.id,
+            subject_type=payload.subject_type,
+            is_minor=payload.is_minor,
+            authorization_confirmed=payload.authorization_confirmed,
+            photo_authorization_confirmed=payload.photo_authorization_confirmed,
+            minor_guardian_confirmed=payload.minor_guardian_confirmed,
+            difference_acknowledged=True,
+        )
+        await self.session.delete(draft)
+        await self.session.flush()
+        await self.session.refresh(version)
+        return self._summary(existing_profile, version)
+
     async def _name_birth_conflict(
         self,
         owner: OwnerProtocol,
@@ -405,10 +433,10 @@ class ProfileService:
             if profile.id != exclude_profile_id
         }
         index = 2
-        candidate = f"{display_name} ({index})"
+        candidate = _save_as_candidate(display_name, index)
         while candidate in taken:
             index += 1
-            candidate = f"{display_name} ({index})"
+            candidate = _save_as_candidate(display_name, index)
         return candidate
 
     def _summary(
@@ -418,6 +446,35 @@ class ProfileService:
     ) -> ProfileSummary:
         payload = self.repository.decrypt_version_payload(version)
         return _summary(profile, version, payload)
+
+
+def _version_facts(payload: ProfileConfirmRequest) -> dict[str, object]:
+    return {
+        "birth_datetime": payload.birth_datetime,
+        "timezone": payload.timezone,
+        "location": payload.location,
+        "gender": payload.gender,
+        "time_basis_policy": payload.time_basis_policy,
+        "zi_hour_policy": payload.zi_hour_policy,
+        "longitude": payload.longitude,
+        "latitude": payload.latitude,
+        "coordinate_source": payload.coordinate_source,
+    }
+
+
+def _facts_match(stored: dict[str, object], incoming: dict[str, object]) -> bool:
+    return all(stored.get(key) == incoming.get(key) for key in _VERSION_FACT_KEYS)
+
+
+def _save_as_candidate(
+    display_name: str,
+    index: int,
+    max_length: int = _DISPLAY_NAME_MAX_LENGTH,
+) -> str:
+    suffix = f" ({index})"
+    if len(suffix) >= max_length:
+        return suffix[:max_length]
+    return f"{display_name[: max_length - len(suffix)]}{suffix}"
 
 
 def _summary(
