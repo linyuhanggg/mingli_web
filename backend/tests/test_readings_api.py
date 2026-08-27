@@ -261,7 +261,7 @@ async def start_waiting_liuyao(
     await seed_runtime_release(database, settings)
     started = await client.post(
         "/api/v1/readings/liuyao",
-        headers=headers,
+        headers={**headers, "Idempotency-Key": "waiting-liuyao-v1"},
         json={
             "cast": "digital_coin",
             "event_datetime": "2026-08-10T12:00:00+08:00",
@@ -309,7 +309,7 @@ async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
 
     started = await client.post(
         "/api/v1/readings/preview",
-        headers=headers,
+        headers={**headers, "Idempotency-Key": "guest-preview-poll"},
         json={
             "profile_version_id": confirmed["profile_version_id"],
             "dimension_ids": ["career"],
@@ -395,7 +395,7 @@ async def test_guest_starts_targeted_bazi_preview_with_public_horizon_boundary(
 
     started = await client.post(
         "/api/v1/readings/preview",
-        headers=headers,
+        headers={**headers, "Idempotency-Key": "targeted-bazi-preview"},
         json={
             "profile_version_id": confirmed["profile_version_id"],
             "dimension_ids": ["career"],
@@ -577,7 +577,11 @@ async def test_guest_starts_each_new_single_art_reading(
         payload = {**payload, "profile_version_id": profile["profile_version_id"]}
     await seed_runtime_release(database, test_settings)
 
-    started = await client.post(path, headers=headers, json=payload)
+    started = await client.post(
+        path,
+        headers={**headers, "Idempotency-Key": "single-art-start"},
+        json=payload,
+    )
 
     assert started.status_code == 201, started.text
     body = started.json()
@@ -806,7 +810,7 @@ async def test_preview_chart_bypasses_worker_and_model_under_default_fake_stack(
 
     started = await client.post(
         "/api/v1/readings/preview",
-        headers=headers,
+        headers={**headers, "Idempotency-Key": "worker-bypass-preview"},
         json={
             "profile_version_id": confirmed["profile_version_id"],
             "dimension_ids": ["career"],
@@ -921,7 +925,7 @@ async def test_reading_start_fails_closed_without_an_admitted_runtime_release(
 
     response = await client.post(
         "/api/v1/readings/preview",
-        headers=headers,
+        headers={**headers, "Idempotency-Key": "runtime-release-closed"},
         json={"profile_version_id": confirmed["profile_version_id"]},
     )
 
@@ -1187,7 +1191,7 @@ async def test_reading_resources_are_owner_scoped_with_cross_owner_404(
         await seed_runtime_release(database, test_settings)
         started = await first.post(
             "/api/v1/readings/preview",
-            headers=first_headers,
+            headers={**first_headers, "Idempotency-Key": "owner-scope-preview"},
             json={
                 "profile_version_id": confirmed["profile_version_id"],
                 "dimension_ids": ["career"],
@@ -1338,7 +1342,7 @@ async def test_supply_input_rejects_value_outside_declared_choices(
     await seed_runtime_release(database, test_settings)
     started = await client.post(
         "/api/v1/readings/liuyao",
-        headers=headers,
+        headers={**headers, "Idempotency-Key": "declared-choices-liuyao"},
         json={
             "cast": "digital_coin",
             "event_datetime": "2026-08-10T12:00:00+08:00",
@@ -1399,7 +1403,7 @@ async def test_liuyao_need_input_supply_finishes_on_the_direct_runtime_lane(
     await seed_runtime_release(database, test_settings)
     started = await client.post(
         "/api/v1/readings/liuyao",
-        headers=headers,
+        headers={**headers, "Idempotency-Key": "need-input-direct-liuyao"},
         json={
             "cast": "digital_coin",
             "event_datetime": "2026-08-10T12:00:00+08:00",
@@ -1510,7 +1514,7 @@ async def test_liuyao_outcome_dimension_finishes_without_worker_or_model(
     await seed_runtime_release(database, test_settings)
     started = await client.post(
         "/api/v1/readings/liuyao",
-        headers=headers,
+        headers={**headers, "Idempotency-Key": "outcome-direct-liuyao"},
         json={
             "cast": [7, 8, 6, 9, 7, 8],
             "event_datetime": "2026-08-10T12:00:00+08:00",
@@ -1660,7 +1664,7 @@ async def test_accepted_result_verification_and_idempotent_verification(
     await seed_runtime_release(database, test_settings)
     started = await client.post(
         "/api/v1/readings/preview",
-        headers=headers,
+        headers={**headers, "Idempotency-Key": "accepted-verification-preview"},
         json={
             "profile_version_id": confirmed["profile_version_id"],
             "dimension_ids": ["career"],
@@ -2214,10 +2218,10 @@ async def test_reading_start_writes_are_rate_limited(
     await seed_runtime_release(database, test_settings)
 
     responses = []
-    for _ in range(10):
+    for index in range(10):
         response = await client.post(
             "/api/v1/readings/preview",
-            headers=headers,
+            headers={**headers, "Idempotency-Key": f"rate-limit-{index:02d}"},
             json={
                 "profile_version_id": confirmed["profile_version_id"],
                 "dimension_ids": ["career"],
@@ -2226,7 +2230,7 @@ async def test_reading_start_writes_are_rate_limited(
         responses.append(response.status_code)
     limited = await client.post(
         "/api/v1/readings/preview",
-        headers=headers,
+        headers={**headers, "Idempotency-Key": "rate-limit-overflow"},
         json={
             "profile_version_id": confirmed["profile_version_id"],
             "dimension_ids": ["career"],
@@ -2252,7 +2256,7 @@ async def test_user_owner_can_start_a_reading_after_login_claim(
 
     started = await client.post(
         "/api/v1/readings/preview",
-        headers=user_headers,
+        headers={**user_headers, "Idempotency-Key": "claimed-user-preview"},
         json={
             "profile_version_id": confirmed["profile_version_id"],
             "dimension_ids": ["career"],

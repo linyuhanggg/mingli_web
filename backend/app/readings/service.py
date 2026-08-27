@@ -2381,6 +2381,10 @@ class ReadingService:
         initial_job_status: str = "queued",
         direct_chart: bool = False,
     ) -> tuple[ReadingStartResponse, bool]:
+        if direct_chart and idempotency is None:
+            raise InvalidReadingInputError(
+                "Idempotency-Key is required for direct Runtime starts"
+            )
         started_at = perf_counter()
         user_id, guest_id = owner_ids(owner)
         release = await self._runtime_release()
