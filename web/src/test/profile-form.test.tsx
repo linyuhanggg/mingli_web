@@ -211,6 +211,60 @@ describe("ProfileForm", () => {
     expect(api.discardProfileDraft).not.toHaveBeenCalled();
   });
 
+  it("discards the retained draft and submits the current form after identity fields change", async () => {
+    const user = userEvent.setup();
+    api.createProfileDraft
+      .mockResolvedValueOnce({
+        draft_id: "55555555-5555-4555-8555-555555555555",
+        status: "draft",
+      })
+      .mockResolvedValueOnce({
+        draft_id: "66666666-6666-4666-8666-666666666666",
+        status: "draft",
+      });
+    api.confirmProfileDraft.mockRejectedValueOnce(new Error("确认服务暂时不可用。"));
+    render(<ProfileForm />);
+
+    await user.type(screen.getByLabelText("档案名称（可选）"), "旧档案");
+    await user.type(screen.getByLabelText("出生时间"), "1994-04-30T05:55");
+    await user.type(screen.getByLabelText("出生地点"), "北京市朝阳区");
+    await user.selectOptions(screen.getByLabelText("性别"), "female");
+    await user.selectOptions(screen.getByLabelText("时间口径"), "civil");
+    await user.selectOptions(screen.getByLabelText("子时口径"), "midnight");
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "未确认草稿已保留；重试不会创建新草稿",
+    );
+
+    await user.clear(screen.getByLabelText("档案名称（可选）"));
+    await user.type(screen.getByLabelText("档案名称（可选）"), "新档案");
+    await user.clear(screen.getByLabelText("出生地点"));
+    await user.type(screen.getByLabelText("出生地点"), "浙江省杭州市");
+    await user.click(screen.getByRole("button", { name: /保存档案/ }));
+
+    await waitFor(() =>
+      expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
+    );
+    expect(api.discardProfileDraft).toHaveBeenCalledWith(
+      "55555555-5555-4555-8555-555555555555",
+    );
+    expect(api.createProfileDraft).toHaveBeenCalledTimes(2);
+    expect(api.createProfileDraft).toHaveBeenNthCalledWith(2, "新档案");
+    expect(api.confirmProfileDraft).toHaveBeenCalledTimes(2);
+    expect(api.confirmProfileDraft).toHaveBeenNthCalledWith(
+      2,
+      "66666666-6666-4666-8666-666666666666",
+      expect.objectContaining({
+        location: "浙江省杭州市",
+        on_name_conflict: "reject",
+      }),
+    );
+    expect(api.discardProfileDraft.mock.invocationCallOrder[0]).toBeLessThan(
+      api.createProfileDraft.mock.invocationCallOrder[1],
+    );
+  });
+
   it("explicitly discards a retained draft without creating another one", async () => {
     const user = userEvent.setup();
     api.confirmProfileDraft.mockRejectedValueOnce(new Error("确认服务暂时不可用。"));
