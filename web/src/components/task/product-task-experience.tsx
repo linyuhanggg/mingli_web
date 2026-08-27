@@ -56,6 +56,7 @@ import {
   type ProfileNameConflict,
 } from "@/lib/profile-conflict";
 import {
+  consumePendingStartTask,
   isPendingStartStorageFailure,
   loadPendingStartTask,
   loginContinueHref,
@@ -387,6 +388,15 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     nextValues: TaskFormValues;
   } | null>(null);
 
+  async function startAndConsumeContinuation<T>(start: () => Promise<T>): Promise<T> {
+    const response = await start();
+    if (resumedTask && resumeKey) {
+      void consumePendingStartTask(resumeKey);
+      intentKeyRef.current = null;
+    }
+    return response;
+  }
+
   function writeBaziPreviewRoute(readingId: string | null, profileVersionId?: string | null) {
     if (typeof router.replace !== "function") return;
     router.replace(baziPreviewRestoreHref(pathname, searchParams, readingId, profileVersionId));
@@ -573,7 +583,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startPhysiognomyReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startPhysiognomyReading(payload, intent.key),
+        );
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -619,7 +631,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startFengshuiReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startFengshuiReading(payload, intent.key),
+        );
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -668,14 +682,15 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response =
+        const response = await startAndConsumeContinuation(() => (
           product.id === "bazi"
-            ? await startPreviewReading(payload, intent.key)
+            ? startPreviewReading(payload, intent.key)
             : product.id === "luming-nayin"
-              ? await startLumingNayinReading(payload as LumingNayinStartRequest, intent.key)
+              ? startLumingNayinReading(payload as LumingNayinStartRequest, intent.key)
             : product.id === "ziwei"
-              ? await startZiweiReading(payload, intent.key)
-              : await startQizhengReading(payload, intent.key);
+              ? startZiweiReading(payload, intent.key)
+              : startQizhengReading(payload, intent.key)
+        ));
         if (product.id === "bazi") {
           const recovery = persistBaziPreviewRecoveryState({
             readingId: response.reading_version_id,
@@ -735,10 +750,11 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response =
+        const response = await startAndConsumeContinuation(() => (
           product.id === "hecan"
-            ? await startHecanReading(payload, intent.key)
-            : await startCanwenReading(payload, intent.key);
+            ? startHecanReading(payload, intent.key)
+            : startCanwenReading(payload, intent.key)
+        ));
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -771,7 +787,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startTaiyiReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startTaiyiReading(payload, intent.key),
+        );
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -804,7 +822,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startSelectionReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startSelectionReading(payload, intent.key),
+        );
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -832,7 +852,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startLiuyaoReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startLiuyaoReading(payload, intent.key),
+        );
         setLiuyaoPreviewReadingId(response.reading_version_id);
         setStage("workbench");
         return;
@@ -863,7 +885,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startWenshiReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startWenshiReading(payload, intent.key),
+        );
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -914,7 +938,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startMeihuaReading(payload, intent.key);
+        const response = await startAndConsumeContinuation(
+          () => startMeihuaReading(payload, intent.key),
+        );
         router.push(`/app/readings/${response.reading_version_id}`);
         return;
       }
@@ -955,10 +981,11 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         payload: product.id === "qimen" ? payload : daliurenPayload,
       });
       intentKeyRef.current = intent;
-      const response =
+      const response = await startAndConsumeContinuation(() => (
         product.id === "qimen"
-          ? await startQimenReading(payload, intent.key)
-          : await startDaliurenReading(daliurenPayload, intent.key);
+          ? startQimenReading(payload, intent.key)
+          : startDaliurenReading(daliurenPayload, intent.key)
+      ));
       router.push(`/app/readings/${response.reading_version_id}`);
     } catch (reason) {
       const mapped = mapStartReadingFailure(reason);

@@ -4,19 +4,21 @@ import { createElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockStartPreviewReading = vi.hoisted(() => vi.fn());
+const mockStartZiweiReading = vi.hoisted(() => vi.fn());
 const mockCreateProfileDraft = vi.hoisted(() => vi.fn());
 const mockConfirmProfileDraft = vi.hoisted(() => vi.fn());
 const mockListProfiles = vi.hoisted(() => vi.fn());
 const mockRouterPush = vi.hoisted(() => vi.fn());
 const mockRouterReplace = vi.hoisted(() => vi.fn());
 const mockNavigation = vi.hoisted(() => ({
+  pathname: "/bazi",
   searchParams: new URLSearchParams(),
 }));
 
 vi.mock("next/navigation", async (importOriginal) => ({
   ...(await importOriginal<typeof import("next/navigation")>()),
   useRouter: () => ({ push: mockRouterPush, replace: mockRouterReplace }),
-  usePathname: () => "/bazi",
+  usePathname: () => mockNavigation.pathname,
   useSearchParams: () => mockNavigation.searchParams,
 }));
 
@@ -26,12 +28,14 @@ vi.mock("@/lib/api", async (importOriginal) => ({
   createProfileDraft: mockCreateProfileDraft,
   confirmProfileDraft: mockConfirmProfileDraft,
   startPreviewReading: mockStartPreviewReading,
+  startZiweiReading: mockStartZiweiReading,
   listProfiles: mockListProfiles,
 }));
 
 import { ProductTaskExperience } from "@/components/task/product-task-experience";
 import { ApiError } from "@/lib/api";
 import {
+  consumePendingStartTask,
   destinationAfterLogin,
   loadPendingStartTask,
   loginContinueHref,
@@ -82,6 +86,7 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  mockNavigation.pathname = "/bazi";
   mockNavigation.searchParams = new URLSearchParams();
   window.sessionStorage.clear();
   mockRouterPush.mockReset();
@@ -99,6 +104,9 @@ beforeEach(() => {
   mockCreateProfileDraft.mockReset();
   mockConfirmProfileDraft.mockReset();
   mockStartPreviewReading.mockReset().mockRejectedValue(
+    new ApiError("Daily cap", 429, undefined, "guest_daily_reading_limit"),
+  );
+  mockStartZiweiReading.mockReset().mockRejectedValue(
     new ApiError("Daily cap", 429, undefined, "guest_daily_reading_limit"),
   );
 });
@@ -190,6 +198,20 @@ describe("pending start task storage", () => {
     });
     expect(loadPendingStartTask("missing")).toBeNull();
   });
+
+  it("consumes both storage copies once and remains safe when repeated", () => {
+    expect(persistPendingStartTask("intent-consume", {
+      productId: "bazi",
+      fingerprint: "{\"product\":\"bazi\"}",
+      values: { subject: "本人" },
+    })).toBeNull();
+    expect(window.sessionStorage.getItem("mingli.pending-start:intent-consume")).not.toBeNull();
+
+    expect(consumePendingStartTask("intent-consume")).toBeNull();
+    expect(window.sessionStorage.getItem("mingli.pending-start:intent-consume")).toBeNull();
+    expect(loadPendingStartTask("intent-consume")).toBeNull();
+    expect(consumePendingStartTask("intent-consume")).toBeNull();
+  });
 });
 
 describe("ProductTaskExperience pending start storage failures", () => {
@@ -273,7 +295,7 @@ describe("ProductTaskExperience resumed profile selection", () => {
     },
   ];
 
-  it("prefers the persisted login-continuation selection over a stale route profile", async () => {
+  it("consumes a successful Bazi continuation so its old URL starts a new reading", async () => {
     mockNavigation.searchParams = new URLSearchParams({ profile: profileVersionId });
     mockListProfiles.mockResolvedValue({ profiles });
     const user = userEvent.setup();
@@ -297,6 +319,9 @@ describe("ProductTaskExperience resumed profile selection", () => {
       profile: profileVersionId,
       idempotency_key: resumeKey,
     });
+    mockStartPreviewReading.mockRejectedValueOnce(
+      new ApiError("Runtime timeout", 503, undefined, "chart_runtime_timeout"),
+    );
     render(createElement(ProductTaskExperience, {
       product: getProductDefinition("bazi"),
     }));
@@ -309,6 +334,67 @@ describe("ProductTaskExperience resumed profile selection", () => {
     expect(mockStartPreviewReading.mock.calls[1]?.[0]).toMatchObject({
       profile_version_id: resumedProfileVersionId,
     });
+    expect(mockStartPreviewReading.mock.calls[1]?.[1]).toBe(resumeKey);
+    expect(loadPendingStartTask(resumeKey)).not.toBeNull();
+
+    mockStartPreviewReading.mockResolvedValueOnce({
+      reading_version_id: "reading-after-login",
+    });
+    await resumedUser.click(await screen.findByRole("button", { name: "重试" }));
+    await waitFor(() => expect(mockStartPreviewReading).toHaveBeenCalledTimes(3));
+    expect(mockStartPreviewReading.mock.calls[2]?.[1]).toBe(resumeKey);
+    expect(window.sessionStorage.getItem(`mingli.pending-start:${resumeKey}`)).toBeNull();
+    expect(loadPendingStartTask(resumeKey)).toBeNull();
+
+    cleanup();
+    mockNavigation.searchParams = new URLSearchParams({
+      profile: resumedProfileVersionId,
+      idempotency_key: resumeKey,
+    });
+    mockStartPreviewReading.mockResolvedValueOnce({
+      reading_version_id: "reading-from-old-url",
+    });
+    render(createElement(ProductTaskExperience, {
+      product: getProductDefinition("bazi"),
+    }));
+
+    const oldUrlProfileSelect = await screen.findByRole("combobox", { name: "排盘资料" });
+    await waitFor(() => expect(oldUrlProfileSelect).toHaveValue(resumedProfileVersionId));
+    await userEvent.setup().click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    await waitFor(() => expect(mockStartPreviewReading).toHaveBeenCalledTimes(4));
+    expect(mockStartPreviewReading.mock.calls[3]?.[1]).not.toBe(resumeKey);
+  });
+
+  it("also consumes a successful non-Bazi continuation", async () => {
+    mockNavigation.pathname = "/ziwei";
+    const user = userEvent.setup();
+    render(createElement(ProductTaskExperience, {
+      product: getProductDefinition("ziwei"),
+    }));
+
+    const profileSelect = await screen.findByRole("combobox", { name: "排盘资料" });
+    await waitFor(() => expect(profileSelect).toHaveValue(profileVersionId));
+    await user.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    expect(await screen.findByRole("link", { name: "登录后继续" })).toBeVisible();
+
+    const resumeKey = mockStartZiweiReading.mock.calls[0]?.[1] as string;
+    expect(loadPendingStartTask(resumeKey)).not.toBeNull();
+
+    cleanup();
+    mockNavigation.searchParams = new URLSearchParams({ idempotency_key: resumeKey });
+    mockStartZiweiReading.mockResolvedValueOnce({
+      reading_version_id: "ziwei-after-login",
+    });
+    render(createElement(ProductTaskExperience, {
+      product: getProductDefinition("ziwei"),
+    }));
+
+    const resumedProfileSelect = await screen.findByRole("combobox", { name: "排盘资料" });
+    await waitFor(() => expect(resumedProfileSelect).toHaveValue(profileVersionId));
+    await userEvent.setup().click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    await waitFor(() => expect(mockStartZiweiReading).toHaveBeenCalledTimes(2));
+    expect(window.sessionStorage.getItem(`mingli.pending-start:${resumeKey}`)).toBeNull();
+    expect(loadPendingStartTask(resumeKey)).toBeNull();
   });
 
   it("still honors a valid route profile when there is no continuation", async () => {

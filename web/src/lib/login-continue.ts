@@ -92,6 +92,11 @@ export function destinationAfterLogin(): string {
 }
 
 const pendingStartCache = new Map<string, PendingStartTask>();
+const pendingStartListeners = new Set<() => void>();
+
+function notifyPendingStartListeners() {
+  pendingStartListeners.forEach((listener) => listener());
+}
 
 export function persistPendingStartTask(
   idempotencyKey: string,
@@ -107,6 +112,22 @@ export function persistPendingStartTask(
     return pendingStartWriteFailure;
   }
   pendingStartCache.set(idempotencyKey, payload);
+  notifyPendingStartListeners();
+  return null;
+}
+
+export function consumePendingStartTask(
+  idempotencyKey: string | null | undefined,
+): PendingStartStorageFailure | null {
+  if (!idempotencyKey || typeof window === "undefined") return null;
+  pendingStartCache.delete(idempotencyKey);
+  try {
+    window.sessionStorage.removeItem(`${PENDING_START_PREFIX}${idempotencyKey}`);
+  } catch {
+    notifyPendingStartListeners();
+    return pendingStartWriteFailure;
+  }
+  notifyPendingStartListeners();
   return null;
 }
 
@@ -137,6 +158,10 @@ export function loadPendingStartTask(
 
 export function subscribePendingStartTasks(onStoreChange: () => void): () => void {
   if (typeof window === "undefined") return () => undefined;
+  pendingStartListeners.add(onStoreChange);
   window.addEventListener("storage", onStoreChange);
-  return () => window.removeEventListener("storage", onStoreChange);
+  return () => {
+    pendingStartListeners.delete(onStoreChange);
+    window.removeEventListener("storage", onStoreChange);
+  };
 }
