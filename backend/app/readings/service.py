@@ -2495,9 +2495,9 @@ class ReadingService:
                     "chart_runtime_timeout",
                     code="chart_runtime_timeout",
                 ) from error
-            await self._remember_chart_runtime_audit(
+            await self._record_chart_runtime_fault(
+                job,
                 prepare,
-                None,
                 fault=f"transport:{type(error).__name__}",
             )
             raise ChartFastPathUnavailableError(
@@ -2527,22 +2527,32 @@ class ReadingService:
         persistence_started_at = perf_counter()
         now = datetime.now(UTC)
         if isinstance(result, Prepared):
-            view_model = project_runtime_view_model(
-                cast(Any, result.brief).to_dict(),
-                product_id=product_id,
-                relationship_type=version.relationship_type,
-            )
+            await self.repository.record_prepared(str(job.id), result, now)
+            try:
+                view_model = project_runtime_view_model(
+                    cast(Any, result.brief).to_dict(),
+                    product_id=product_id,
+                    relationship_type=version.relationship_type,
+                )
+            except Exception as error:
+                await self.session.commit()
+                raise ChartFastPathUnavailableError(
+                    "chart_view_model_projection_failed",
+                    code="chart_view_model_projection_failed",
+                ) from error
             if view_model is None and getattr(self.chart_runtime, "adapter_kind", None) != "fake":
+                await self.session.commit()
                 raise ChartFastPathUnavailableError(
                     "chart_view_model_projection_failed",
                     code="chart_view_model_projection_failed",
                 )
-            await self.repository.record_prepared(str(job.id), result, now)
             job.status = "complete"
             await self.session.flush()
         elif isinstance(result, Stopped) and result.reason == "need_input":
             await self.repository.record_waiting_input(str(job.id), result, now)
         elif isinstance(result, Stopped):
+            await self.repository.record_terminal_stopped(str(job.id), result, now)
+            await self.session.commit()
             await self._remember_chart_runtime_audit(prepare, result)
             code = f"chart_runtime_{result.reason}"
             raise ChartFastPathUnavailableError(
@@ -2578,12 +2588,21 @@ class ReadingService:
         job: ReadingJobRecord,
         prepare: Prepare,
     ) -> None:
+        await self._record_chart_runtime_fault(job, prepare, fault="timeout")
+
+    async def _record_chart_runtime_fault(
+        self,
+        job: ReadingJobRecord,
+        prepare: Prepare,
+        *,
+        fault: str,
+    ) -> None:
         if prepare.state_token is None:
             await self.repository.mark_runtime_unknown(str(job.id), datetime.now(UTC))
             # The API maps this outcome to a 503 and the request dependency rolls
             # back raised errors. Commit the non-replayable no-token claim first.
             await self.session.commit()
-        await self._remember_chart_runtime_audit(prepare, None, fault="timeout")
+        await self._remember_chart_runtime_audit(prepare, None, fault=fault)
 
     async def _remember_chart_runtime_audit(
         self,

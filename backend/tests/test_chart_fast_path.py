@@ -20,8 +20,10 @@ from app.readings.models import (
     ReadingRoot,
     ReadingVersion,
 )
-from app.readings.runtime_contracts import Prepare, Prepared, ReadingBrief
+from app.readings.repository import SqlReadingRepository
+from app.readings.runtime_contracts import Prepare, Prepared, ReadingBrief, Stopped
 from app.readings.service import ReadingService
+from app.security.envelope import EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import func, select, text
 from worker.readings import build_reading_worker
@@ -29,6 +31,7 @@ from worker.readings import build_reading_worker
 # isort: split
 from test_profiles_api import create_confirmed_profile, create_guest
 from test_readings_api import seed_runtime_release
+from test_runtime_worker_transport import _adapter as make_worker_v2_adapter
 
 _SCHEMA_BY_CAPABILITY = {
     "bazi": "bazi-chart/v1",
@@ -211,6 +214,55 @@ class HangingChartRuntime:
         self.calls += 1
         await asyncio.Event().wait()
         raise AssertionError("unreachable")
+
+
+class ProjectionFailingChartRuntime:
+    adapter_kind = "test-projection-failing-chart-runtime"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def execute(self, command: Any) -> Prepared:
+        assert isinstance(command, Prepare)
+        self.calls += 1
+        return Prepared(
+            state_token="projection-failure-state-token",
+            brief=ReadingBrief.from_dict(
+                {
+                    "question": command.query,
+                    "vocabulary": [],
+                    "facts": [],
+                    "evidence": [],
+                    "findings": [],
+                    "claim_scopes": [],
+                    "limits": [],
+                    "prior_answer": None,
+                    "request_view": {
+                        "subject_refs": list(command.intent["subject_refs"]),
+                        "capability_ids": [command.intent["capability_id"]],
+                        "object_id": command.intent["object_id"],
+                        "dimension_ids": list(command.intent["dimension_ids"]),
+                        "horizon": dict(command.intent["horizon"]),
+                    },
+                }
+            ),
+        )
+
+
+class TerminalStoppedChartRuntime:
+    adapter_kind = "test-terminal-stopped-chart-runtime"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def execute(self, command: Any) -> Stopped:
+        assert isinstance(command, Prepare)
+        self.calls += 1
+        return Stopped(
+            reason="error",
+            public_copy="Runtime 已终止本次出盘。",
+            state_token="terminal-stopped-state-token",
+        )
 
 
 class ManagedSingleFlightChartRuntime(WorkerV2MingliRuntimeAdapter):
@@ -630,6 +682,192 @@ async def test_chart_runtime_timeout_persists_unknown_and_idempotency_claim(
         "job_statuses": ["runtime_unknown"],
         "version_statuses": ["runtime_unknown"],
     }
+
+
+async def test_chart_runtime_eof_persists_unknown_and_replays_without_second_root(
+    tmp_path: Path,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    runtime = make_worker_v2_adapter(
+        tmp_path,
+        behavior="crash-after-read",
+        request_timeout_seconds=0.3,
+    )
+    await runtime.start()
+    application = create_app(
+        settings=test_settings,
+        database=database,
+        chart_runtime=runtime,
+    )
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as client:
+            headers = await create_guest(client)
+            profile = await create_confirmed_profile(client, headers)
+            await seed_runtime_release(database, test_settings)
+            request_headers = {
+                **headers,
+                "Idempotency-Key": "chart-worker-eof-proof",
+            }
+            payload = {
+                "profile_version_id": profile["profile_version_id"],
+                "dimension_ids": ["career"],
+            }
+
+            response = await client.post(
+                "/api/v1/readings/preview",
+                headers=request_headers,
+                json=payload,
+            )
+            replay = await client.post(
+                "/api/v1/readings/preview",
+                headers=request_headers,
+                json=payload,
+            )
+    finally:
+        await runtime.close()
+
+    assert response.status_code == 503, response.text
+    assert response.json()["code"] == "chart_runtime_transport"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "runtime_unknown"
+    assert runtime._next_sequence == 2
+    async with database.sessions() as session:
+        counts = {
+            "roots": int(
+                await session.scalar(select(func.count()).select_from(ReadingRoot)) or 0
+            ),
+            "versions": int(
+                await session.scalar(select(func.count()).select_from(ReadingVersion)) or 0
+            ),
+            "idempotency": int(
+                await session.scalar(
+                    select(func.count()).select_from(ReadingIdempotencyKey)
+                )
+                or 0
+            ),
+        }
+    assert counts == {"roots": 1, "versions": 1, "idempotency": 1}
+
+
+async def test_chart_projection_failure_commits_prepared_checkpoint_before_error(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    runtime = ProjectionFailingChartRuntime()
+    application = create_app(
+        settings=test_settings,
+        database=database,
+        chart_runtime=runtime,
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as client:
+        headers = await create_guest(client)
+        profile = await create_confirmed_profile(client, headers)
+        await seed_runtime_release(database, test_settings)
+        request_headers = {
+            **headers,
+            "Idempotency-Key": "chart-projection-checkpoint-proof",
+        }
+        payload = {
+            "profile_version_id": profile["profile_version_id"],
+            "dimension_ids": ["career"],
+        }
+
+        response = await client.post(
+            "/api/v1/readings/preview",
+            headers=request_headers,
+            json=payload,
+        )
+        replay = await client.post(
+            "/api/v1/readings/preview",
+            headers=request_headers,
+            json=payload,
+        )
+
+    assert response.status_code == 503, response.text
+    assert response.json()["code"] == "chart_view_model_projection_failed"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "prepared"
+    assert runtime.calls == 1
+    assert replay.json()["reading_version_id"]
+    async with database.sessions() as session:
+        version_id = UUID(replay.json()["reading_version_id"])
+        job_id = await session.scalar(
+            select(ReadingJobRecord.id).where(
+                ReadingJobRecord.reading_version_id == version_id
+            )
+        )
+        assert job_id is not None
+        checkpoint = await SqlReadingRepository(
+            session,
+            EnvelopeCipher.from_settings(test_settings),
+        ).load_checkpoint(str(job_id))
+    assert checkpoint.prepared is not None
+    assert checkpoint.prepared.state_token == "projection-failure-state-token"
+
+
+async def test_chart_terminal_stopped_commits_checkpoint_before_error(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    runtime = TerminalStoppedChartRuntime()
+    application = create_app(
+        settings=test_settings,
+        database=database,
+        chart_runtime=runtime,
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as client:
+        headers = await create_guest(client)
+        profile = await create_confirmed_profile(client, headers)
+        await seed_runtime_release(database, test_settings)
+        request_headers = {
+            **headers,
+            "Idempotency-Key": "chart-terminal-stopped-proof",
+        }
+        payload = {
+            "profile_version_id": profile["profile_version_id"],
+            "dimension_ids": ["career"],
+        }
+
+        response = await client.post(
+            "/api/v1/readings/preview",
+            headers=request_headers,
+            json=payload,
+        )
+        replay = await client.post(
+            "/api/v1/readings/preview",
+            headers=request_headers,
+            json=payload,
+        )
+
+    assert response.status_code == 503, response.text
+    assert response.json()["code"] == "chart_runtime_error"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "terminal_stopped"
+    assert runtime.calls == 1
+    async with database.sessions() as session:
+        version_id = UUID(replay.json()["reading_version_id"])
+        job_id = await session.scalar(
+            select(ReadingJobRecord.id).where(
+                ReadingJobRecord.reading_version_id == version_id
+            )
+        )
+        assert job_id is not None
+        checkpoint = await SqlReadingRepository(
+            session,
+            EnvelopeCipher.from_settings(test_settings),
+        ).load_checkpoint(str(job_id))
+    assert checkpoint.terminal_stopped is not None
+    assert checkpoint.terminal_stopped.state_token == "terminal-stopped-state-token"
 
 
 async def test_one_shot_failure_audit_is_off_loop_and_bounded(

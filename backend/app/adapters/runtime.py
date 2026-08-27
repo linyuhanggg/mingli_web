@@ -1275,6 +1275,7 @@ class WorkerV2MingliRuntimeAdapter:
             "encode",
             "transport:BrokenPipeError",
             "transport:ConnectionResetError",
+            "transport:RuntimeTransportError",
         }
 
     def _turn_audit(
@@ -1460,7 +1461,8 @@ class WorkerV2MingliRuntimeAdapter:
             raise RuntimeTransportError("runtime_pipe_unavailable") from error
         except RuntimeTransportError:
             await self._isolate_locked()
-            return self._generic_stop("transport:RuntimeTransportError")
+            self._transport_fault = "transport:RuntimeTransportError"
+            raise
         except BaseException:
             await self._isolate_locked()
             raise
