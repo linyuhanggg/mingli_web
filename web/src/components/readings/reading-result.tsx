@@ -248,13 +248,22 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
             poll_required: nextResult.poll_required ?? response.poll_required,
           })) {
             if (nextResult.status === "accepted" && response.status !== "accepted") {
-              const finalSummary = await pollReading(readingId);
-              if (cancelled) return;
-              setSummary(finalSummary);
-              if (shouldKeepPolling(finalSummary)) {
+              try {
+                const finalSummary = await pollReading(readingId);
+                if (cancelled) return;
+                setSummary(finalSummary);
+                if (shouldKeepPolling(finalSummary)) {
+                  schedule(
+                    finalSummary.poll_after_seconds != null
+                      ? finalSummary.poll_after_seconds * 1000
+                      : DEFAULT_POLL_MS,
+                  );
+                }
+              } catch {
+                if (cancelled) return;
                 schedule(
-                  finalSummary.poll_after_seconds != null
-                    ? finalSummary.poll_after_seconds * 1000
+                  response.poll_after_seconds != null
+                    ? response.poll_after_seconds * 1000
                     : DEFAULT_POLL_MS,
                 );
               }
